@@ -9,27 +9,26 @@ env_text_server_adv = env_modules.Clone()
 def make_icu_data(target, source, env):
     dst = target[0].srcnode().abspath
 
-    g = open(dst, "w", encoding="utf-8")
+    with open(dst, "w", encoding="utf-8", newline="\n") as g:
+        g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+        g.write("/* (C) 2016 and later: Unicode, Inc. and others. */\n")
+        g.write("/* License & terms of use: https://www.unicode.org/copyright.html */\n")
+        g.write("#ifndef _ICU_DATA_H\n")
+        g.write("#define _ICU_DATA_H\n")
+        g.write('#include "unicode/utypes.h"\n')
+        g.write('#include "unicode/udata.h"\n')
+        g.write('#include "unicode/uversion.h"\n')
 
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("/* (C) 2016 and later: Unicode, Inc. and others. */\n")
-    g.write("/* License & terms of use: https://www.unicode.org/copyright.html */\n")
-    g.write("#ifndef _ICU_DATA_H\n")
-    g.write("#define _ICU_DATA_H\n")
-    g.write('#include "unicode/utypes.h"\n')
-    g.write('#include "unicode/udata.h"\n')
-    g.write('#include "unicode/uversion.h"\n')
+        with open(source[0].srcnode().abspath, "rb") as f:
+            buf = f.read()
 
-    f = open(source[0].srcnode().abspath, "rb")
-    buf = f.read()
+        g.write('extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = ' + str(len(buf)) + ";\n")
+        g.write('extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {\n')
+        for i in range(len(buf)):
+            g.write("\t" + str(buf[i]) + ",\n")
 
-    g.write('extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = ' + str(len(buf)) + ";\n")
-    g.write('extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {\n')
-    for i in range(len(buf)):
-        g.write("\t" + str(buf[i]) + ",\n")
-
-    g.write("};\n")
-    g.write("#endif")
+        g.write("};\n")
+        g.write("#endif")
 
 
 # Thirdparty source files
@@ -39,7 +38,13 @@ freetype_enabled = "freetype" in env.module_list
 msdfgen_enabled = "msdfgen" in env.module_list
 
 if "svg" in env.module_list:
-    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/thorvg/inc", "#thirdparty/thorvg/src/lib"])
+    env_text_server_adv.Prepend(
+        CPPPATH=[
+            "#thirdparty/thorvg/inc",
+            "#thirdparty/thorvg/src/common",
+            "#thirdparty/thorvg/src/renderer",
+        ]
+    )
     # Enable ThorVG static object linking.
     env_text_server_adv.Append(CPPDEFINES=["TVG_STATIC"])
 
@@ -112,6 +117,7 @@ if env["builtin_harfbuzz"]:
         "src/hb-subset-cff1.cc",
         "src/hb-subset-cff2.cc",
         "src/hb-subset-input.cc",
+        "src/hb-subset-instancer-iup.cc",
         "src/hb-subset-instancer-solver.cc",
         "src/hb-subset-plan.cc",
         "src/hb-subset-repacker.cc",
@@ -395,6 +401,8 @@ if env["builtin_icu4c"]:
         "common/uloc.cpp",
         "common/uloc_keytype.cpp",
         "common/uloc_tag.cpp",
+        "common/ulocale.cpp",
+        "common/ulocbuilder.cpp",
         "common/umapfile.cpp",
         "common/umath.cpp",
         "common/umutablecptrie.cpp",
@@ -460,7 +468,7 @@ if env["builtin_icu4c"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    icu_data_name = "icudt73l.dat"
+    icu_data_name = "icudt74l.dat"
 
     if env.editor_build:
         env_icu.Depends("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name)
@@ -524,6 +532,7 @@ module_obj = []
 
 if env["builtin_msdfgen"] and msdfgen_enabled:
     # Treat msdfgen headers as system headers to avoid raising warnings. Not supported on MSVC.
+    env_text_server_adv.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     if not env.msvc:
         env_text_server_adv.Append(CPPFLAGS=["-isystem", Dir("#thirdparty/msdfgen").path])
     else:

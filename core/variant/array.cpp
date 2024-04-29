@@ -81,6 +81,22 @@ void Array::_unref() const {
 	_p = nullptr;
 }
 
+Array::Iterator Array::begin() {
+	return Iterator(_p->array.ptrw(), _p->read_only);
+}
+
+Array::Iterator Array::end() {
+	return Iterator(_p->array.ptrw() + _p->array.size(), _p->read_only);
+}
+
+Array::ConstIterator Array::begin() const {
+	return ConstIterator(_p->array.ptr(), _p->read_only);
+}
+
+Array::ConstIterator Array::end() const {
+	return ConstIterator(_p->array.ptr() + _p->array.size(), _p->read_only);
+}
+
 Variant &Array::operator[](int p_idx) {
 	if (unlikely(_p->read_only)) {
 		*_p->read_only = _p->array[p_idx];
@@ -137,7 +153,7 @@ bool Array::recursive_equal(const Array &p_array, int recursion_count) const {
 	}
 	recursion_count++;
 	for (int i = 0; i < size; i++) {
-		if (!a1[i].hash_compare(a2[i], recursion_count)) {
+		if (!a1[i].hash_compare(a2[i], recursion_count, false)) {
 			return false;
 		}
 	}
@@ -316,17 +332,17 @@ void Array::erase(const Variant &p_value) {
 }
 
 Variant Array::front() const {
-	ERR_FAIL_COND_V_MSG(_p->array.size() == 0, Variant(), "Can't take value from empty array.");
+	ERR_FAIL_COND_V_MSG(_p->array.is_empty(), Variant(), "Can't take value from empty array.");
 	return operator[](0);
 }
 
 Variant Array::back() const {
-	ERR_FAIL_COND_V_MSG(_p->array.size() == 0, Variant(), "Can't take value from empty array.");
+	ERR_FAIL_COND_V_MSG(_p->array.is_empty(), Variant(), "Can't take value from empty array.");
 	return operator[](_p->array.size() - 1);
 }
 
 Variant Array::pick_random() const {
-	ERR_FAIL_COND_V_MSG(_p->array.size() == 0, Variant(), "Can't take value from empty array.");
+	ERR_FAIL_COND_V_MSG(_p->array.is_empty(), Variant(), "Can't take value from empty array.");
 	return operator[](Math::rand() % _p->array.size());
 }
 

@@ -62,13 +62,19 @@
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Default text [Color] of the [LinkButton].
 		</theme_item>
+		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Text [Color] used when the [LinkButton] is disabled.
+		</theme_item>
 		<theme_item name="font_focus_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			Text [Color] used when the [LinkButton] is focused. Only replaces the normal text color of the button. Disabled, hovered, and pressed states take precedence over this color.
 		</theme_item>
 		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			Text [Color] used when the [LinkButton] is being hovered.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_hover_pressed_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Text [Color] used when the [LinkButton] is being hovered and pressed.
+		</theme_item>
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the [LinkButton].
 		</theme_item>
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
@@ -88,7 +94,7 @@
 			Font size of the [LinkButton]'s text.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
-			[StyleBox] used when the [LinkButton] is focused. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+			[StyleBox] used when the [LinkButton] is focused. The [theme_item focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
 		</theme_item>
 	</theme_items>
 </class>

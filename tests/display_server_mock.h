@@ -64,13 +64,8 @@ private:
 	}
 
 	void _dispatch_input_event(const Ref<InputEvent> &p_event) {
-		Variant ev = p_event;
-		Variant *evp = &ev;
-		Variant ret;
-		Callable::CallError ce;
-
 		if (input_event_callback.is_valid()) {
-			input_event_callback.callp((const Variant **)&evp, 1, ret, ce);
+			input_event_callback.call(p_event);
 		}
 	}
 
@@ -93,10 +88,7 @@ private:
 	void _send_window_event(WindowEvent p_event) {
 		if (!event_callback.is_null()) {
 			Variant event = int(p_event);
-			Variant *eventp = &event;
-			Variant ret;
-			Callable::CallError ce;
-			event_callback.callp((const Variant **)&eventp, 1, ret, ce);
+			event_callback.call(event);
 		}
 	}
 

@@ -33,9 +33,9 @@
 
 #include "servers/display_server.h"
 
-#if defined(VULKAN_ENABLED)
-class VulkanContextAndroid;
-class RenderingDeviceVulkan;
+#if defined(RD_ENABLED)
+class RenderingContextDriver;
+class RenderingDevice;
 #endif
 
 class DisplayServerAndroid : public DisplayServer {
@@ -72,10 +72,11 @@ class DisplayServerAndroid : public DisplayServer {
 
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 
-#if defined(VULKAN_ENABLED)
-	VulkanContextAndroid *context_vulkan = nullptr;
-	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#if defined(RD_ENABLED)
+	RenderingContextDriver *rendering_context = nullptr;
+	RenderingDevice *rendering_device = nullptr;
 #endif
+	NativeMenu *native_menu = nullptr;
 
 	ObjectID window_attached_instance_id;
 
@@ -83,6 +84,8 @@ class DisplayServerAndroid : public DisplayServer {
 	Callable input_event_callback;
 	Callable input_text_callback;
 	Callable rect_changed_callback;
+
+	Callable system_theme_changed;
 
 	void _window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred = false) const;
 
@@ -102,6 +105,12 @@ public:
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
+
+	void emit_system_theme_changed();
+
+	virtual bool is_dark_mode_supported() const override;
+	virtual bool is_dark_mode() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;

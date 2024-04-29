@@ -29,8 +29,10 @@
 /**************************************************************************/
 
 #include "editor_plugin.h"
+#include "editor_plugin.compat.inc"
 
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_dock_manager.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_interface.h"
@@ -38,9 +40,10 @@
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_title_bar.h"
+#include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/editor_import_plugin.h"
-#include "editor/import/resource_importer_scene.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
@@ -77,24 +80,24 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 	EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_remove(p_name);
 }
 
-Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
+Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_NULL_V(p_control, nullptr);
-	return EditorNode::get_singleton()->add_bottom_panel_item(p_title, p_control);
+	return EditorNode::get_bottom_panel()->add_item(p_title, p_control, p_shortcut);
 }
 
-void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control) {
+void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_NULL(p_control);
-	EditorNode::get_singleton()->add_control_to_dock(EditorNode::DockSlot(p_slot), p_control);
+	EditorDockManager::get_singleton()->add_dock(p_control, String(), EditorDockManager::DockSlot(p_slot), p_shortcut);
 }
 
 void EditorPlugin::remove_control_from_docks(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
-	EditorNode::get_singleton()->remove_control_from_dock(p_control);
+	EditorDockManager::get_singleton()->remove_dock(p_control);
 }
 
 void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
-	EditorNode::get_singleton()->remove_bottom_panel_item(p_control);
+	EditorNode::get_bottom_panel()->remove_item(p_control);
 }
 
 void EditorPlugin::add_control_to_container(CustomControlContainer p_location, Control *p_control) {
@@ -248,6 +251,10 @@ void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {
 	emit_signal(SNAME("resource_saved"), p_resource);
 }
 
+void EditorPlugin::notify_scene_saved(const String &p_scene_filepath) {
+	emit_signal(SNAME("scene_saved"), p_scene_filepath);
+}
+
 bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	bool success = false;
 	GDVIRTUAL_CALL(_forward_canvas_gui_input, p_event, success);
@@ -335,6 +342,10 @@ bool EditorPlugin::handles(Object *p_object) const {
 	return success;
 }
 
+bool EditorPlugin::can_auto_hide() const {
+	return true;
+}
+
 Dictionary EditorPlugin::get_state() const {
 	Dictionary state;
 	GDVIRTUAL_CALL(_get_state, state);
@@ -398,13 +409,13 @@ void EditorPlugin::remove_translation_parser_plugin(const Ref<EditorTranslationP
 void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin> &p_importer, bool p_first_priority) {
 	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceFormatImporter::get_singleton()->add_importer(p_importer, p_first_priority);
-	EditorFileSystem::get_singleton()->call_deferred(SNAME("scan"));
+	callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan).call_deferred();
 }
 
 void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
 	ERR_FAIL_COND(!p_importer.is_valid());
 	ResourceFormatImporter::get_singleton()->remove_importer(p_importer);
-	EditorFileSystem::get_singleton()->call_deferred(SNAME("scan"));
+	callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan).call_deferred();
 }
 
 void EditorPlugin::add_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
@@ -439,12 +450,12 @@ void EditorPlugin::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_p
 
 void EditorPlugin::add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority) {
 	ERR_FAIL_COND(!p_importer.is_valid());
-	ResourceImporterScene::add_importer(p_importer, p_first_priority);
+	ResourceImporterScene::add_scene_importer(p_importer, p_first_priority);
 }
 
 void EditorPlugin::remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer) {
 	ERR_FAIL_COND(!p_importer.is_valid());
-	ResourceImporterScene::remove_importer(p_importer);
+	ResourceImporterScene::remove_scene_importer(p_importer);
 }
 
 void EditorPlugin::add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority) {
@@ -496,11 +507,11 @@ void EditorPlugin::queue_save_layout() {
 }
 
 void EditorPlugin::make_bottom_panel_item_visible(Control *p_item) {
-	EditorNode::get_singleton()->make_bottom_panel_item_visible(p_item);
+	EditorNode::get_bottom_panel()->make_item_visible(p_item);
 }
 
 void EditorPlugin::hide_bottom_panel() {
-	EditorNode::get_singleton()->hide_bottom_panel();
+	EditorNode::get_bottom_panel()->hide_bottom_panel();
 }
 
 EditorInterface *EditorPlugin::get_editor_interface() {
@@ -549,8 +560,8 @@ void EditorPlugin::_notification(int p_what) {
 
 void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_control_to_container", "container", "control"), &EditorPlugin::add_control_to_container);
-	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title"), &EditorPlugin::add_control_to_bottom_panel);
-	ClassDB::bind_method(D_METHOD("add_control_to_dock", "slot", "control"), &EditorPlugin::add_control_to_dock);
+	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title", "shortcut"), &EditorPlugin::add_control_to_bottom_panel, DEFVAL(Ref<Shortcut>()));
+	ClassDB::bind_method(D_METHOD("add_control_to_dock", "slot", "control", "shortcut"), &EditorPlugin::add_control_to_dock, DEFVAL(Ref<Shortcut>()));
 	ClassDB::bind_method(D_METHOD("remove_control_from_docks", "control"), &EditorPlugin::remove_control_from_docks);
 	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control"), &EditorPlugin::remove_control_from_bottom_panel);
 	ClassDB::bind_method(D_METHOD("remove_control_from_container", "container", "control"), &EditorPlugin::remove_control_from_container);
@@ -627,6 +638,7 @@ void EditorPlugin::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("main_screen_changed", PropertyInfo(Variant::STRING, "screen_name")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 
 	BIND_ENUM_CONSTANT(CONTAINER_TOOLBAR);

@@ -32,11 +32,10 @@
 
 #include "core/core_string_names.h"
 #include "core/io/marshalls.h"
-#include "core/object/message_queue.h"
 #include "scene/3d/light_3d.h"
-#include "scene/resources/mesh_library.h"
+#include "scene/resources/3d/mesh_library.h"
+#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/physics_material.h"
-#include "scene/resources/primitive_meshes.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
 #include "servers/navigation_server_3d.h"
@@ -196,7 +195,7 @@ real_t GridMap::get_collision_priority() const {
 
 void GridMap::set_physics_material(Ref<PhysicsMaterial> p_material) {
 	physics_material = p_material;
-	_recreate_octant_data();
+	_update_physics_bodies_characteristics();
 }
 
 Ref<PhysicsMaterial> GridMap::get_physics_material() const {
@@ -371,8 +370,8 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(g->static_body, collision_mask);
 		PhysicsServer3D::get_singleton()->body_set_collision_priority(g->static_body, collision_priority);
 		if (physics_material.is_valid()) {
-			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, physics_material->get_friction());
-			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->get_bounce());
+			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, physics_material->computed_friction());
+			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
 		}
 		SceneTree *st = SceneTree::get_singleton();
 
@@ -749,6 +748,19 @@ void GridMap::_update_physics_bodies_collision_properties() {
 	}
 }
 
+void GridMap::_update_physics_bodies_characteristics() {
+	real_t friction = 1.0;
+	real_t bounce = 0.0;
+	if (physics_material.is_valid()) {
+		friction = physics_material->computed_friction();
+		bounce = physics_material->computed_bounce();
+	}
+	for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
+		PhysicsServer3D::get_singleton()->body_set_param(E.value->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, friction);
+		PhysicsServer3D::get_singleton()->body_set_param(E.value->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, bounce);
+	}
+}
+
 void GridMap::_octant_enter_world(const OctantKey &p_key) {
 	ERR_FAIL_COND(!octant_map.has(p_key));
 	Octant &g = *octant_map[p_key];
@@ -975,7 +987,7 @@ void GridMap::_queue_octants_dirty() {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_call(this, "_update_octants_callback");
+	callable_mp(this, &GridMap::_update_octants_callback).call_deferred();
 	awaiting_update = true;
 }
 
@@ -1082,7 +1094,6 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("local_to_map", "local_position"), &GridMap::local_to_map);
 	ClassDB::bind_method(D_METHOD("map_to_local", "map_position"), &GridMap::map_to_local);
 
-	ClassDB::bind_method(D_METHOD("_update_octants_callback"), &GridMap::_update_octants_callback);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &GridMap::resource_changed);
 #endif

@@ -9,8 +9,8 @@
 	</description>
 	<tutorials>
 		<link title="Inputs documentation index">$DOCS_URL/tutorials/inputs/index.html</link>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<methods>
 		<method name="action_press">
@@ -67,7 +67,7 @@
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
 			<description>
-				Returns a value between 0 and 1 representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis as the keyboard, the value returned will be 0 or 1.
+				Returns a value between 0 and 1 representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis such as the keyboard, the value returned will be 0 or 1.
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
@@ -118,7 +118,7 @@
 			<return type="String" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns a SDL2-compatible device GUID on platforms that use gamepad remapping, e.g. [code]030000004c050000c405000000010000[/code]. Returns [code]"Default Gamepad"[/code] otherwise. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names and mappings based on this GUID.
+				Returns an SDL2-compatible device GUID on platforms that use gamepad remapping, e.g. [code]030000004c050000c405000000010000[/code]. Returns [code]"Default Gamepad"[/code] otherwise. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names and mappings based on this GUID.
 			</description>
 		</method>
 		<method name="get_joy_info" qualifiers="const">
@@ -154,6 +154,12 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns the strength of the joypad vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
+			</description>
+		</method>
+		<method name="get_last_mouse_screen_velocity">
+			<return type="Vector2" />
+			<description>
+				Returns the last mouse velocity in screen coordinates. To provide a precise and jitter-free velocity, mouse velocity is only calculated every 0.1s. Therefore, mouse velocity will lag mouse movements.
 			</description>
 		</method>
 		<method name="get_last_mouse_velocity">
@@ -198,6 +204,7 @@
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 				[b]Note:[/b] Returning [code]true[/code] does not imply that the action is [i]still[/i] pressed. An action can be pressed and released again rapidly, and [code]true[/code] will still be returned so as not to miss input.
 				[b]Note:[/b] Due to keyboard ghosting, [method is_action_just_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
+				[b]Note:[/b] During input handling (e.g. [method Node._input]), use [method InputEvent.is_action_pressed] instead to query the action state of the current event.
 			</description>
 		</method>
 		<method name="is_action_just_released" qualifiers="const">
@@ -208,6 +215,7 @@
 				Returns [code]true[/code] when the user [i]stops[/i] pressing the action event in the current frame or physics tick. It will only return [code]true[/code] on the frame or tick that the user releases the button.
 				[b]Note:[/b] Returning [code]true[/code] does not imply that the action is [i]still[/i] not pressed. An action can be released and pressed again rapidly, and [code]true[/code] will still be returned so as not to miss input.
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
+				[b]Note:[/b] During input handling (e.g. [method Node._input]), use [method InputEvent.is_action_released] instead to query the action state of the current event.
 			</description>
 		</method>
 		<method name="is_action_pressed" qualifiers="const">
@@ -226,7 +234,7 @@
 				Returns [code]true[/code] if any action, key, joypad button, or mouse button is being pressed. This will also return [code]true[/code] if any action is simulated via code by calling [method action_press].
 			</description>
 		</method>
-		<method name="is_joy_button_pressed" qualifiers="const">
+		<method name="is_joy_button_pressed" qualifiers="const" keywords="is_gamepad_button_pressed, is_controller_button_pressed">
 			<return type="bool" />
 			<param index="0" name="device" type="int" />
 			<param index="1" name="button" type="int" enum="JoyButton" />
@@ -234,7 +242,7 @@
 				Returns [code]true[/code] if you are pressing the joypad button (see [enum JoyButton]).
 			</description>
 		</method>
-		<method name="is_joy_known">
+		<method name="is_joy_known" keywords="is_gamepad_known, is_controller_known">
 			<return type="bool" />
 			<param index="0" name="device" type="int" />
 			<description>
@@ -293,6 +301,7 @@
 				Input.ParseInputEvent(cancelEvent);
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Calling this function has no influence on the operating system. So for example sending an [InputEventMouseMotion] will not move the OS mouse cursor to the specified position (use [method warp_mouse] instead) and sending [kbd]Alt/Cmd + Tab[/kbd] as [InputEventKey] won't toggle between active windows.
 			</description>
 		</method>
 		<method name="remove_joy_mapping">
@@ -317,7 +326,7 @@
 			<param index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Sets a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor. See [enum CursorShape] for the list of shapes.
-				[param image]'s size must be lower than or equal to 256×256. To avoid rendering issues, sizes lower than or equal to 128×128 are recommended.
+				[param image] can be either [Texture2D] or [Image] and its size must be lower than or equal to 256×256. To avoid rendering issues, sizes lower than or equal to 128×128 are recommended.
 				[param hotspot] must be within [param image]'s size.
 				[b]Note:[/b] [AnimatedTexture]s aren't supported as custom mouse cursors. If using an [AnimatedTexture], only the first frame will be displayed.
 				[b]Note:[/b] The [b]Lossless[/b], [b]Lossy[/b] or [b]Uncompressed[/b] compression modes are recommended. The [b]Video RAM[/b] compression mode can be used, but it will be decompressed on the CPU, which means loading times are slowed down and no memory is saved compared to lossless modes.
@@ -375,6 +384,7 @@
 			<description>
 				Starts to vibrate the joypad. Joypads usually come with two rumble motors, a strong and a weak one. [param weak_magnitude] is the strength of the weak motor (between 0 and 1) and [param strong_magnitude] is the strength of the strong motor (between 0 and 1). [param duration] is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely). The vibration can be stopped early by calling [method stop_joy_vibration].
 				[b]Note:[/b] Not every hardware is compatible with long effect durations; it is recommended to restart an effect if it has to be played for more than a few seconds.
+				[b]Note:[/b] For macOS, vibration is only supported in macOS 11 and later.
 			</description>
 		</method>
 		<method name="stop_joy_vibration">
@@ -406,6 +416,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="emulate_mouse_from_touch" type="bool" setter="set_emulate_mouse_from_touch" getter="is_emulating_mouse_from_touch">
+			If [code]true[/code], sends mouse input events when tapping or swiping on the touchscreen. See also [member ProjectSettings.input_devices/pointing/emulate_mouse_from_touch].
+		</member>
+		<member name="emulate_touch_from_mouse" type="bool" setter="set_emulate_touch_from_mouse" getter="is_emulating_touch_from_mouse">
+			If [code]true[/code], sends touch input events when clicking or dragging the mouse. See also [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
+		</member>
 		<member name="mouse_mode" type="int" setter="set_mouse_mode" getter="get_mouse_mode" enum="Input.MouseMode">
 			Controls the mouse mode. See [enum MouseMode] for more information.
 		</member>
@@ -454,10 +470,10 @@
 			Cross cursor. Typically appears over regions in which a drawing operation can be performed or for selections.
 		</constant>
 		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
-			Wait cursor. Indicates that the application is busy performing an operation. This cursor shape denotes that the application isn't usable during the operation (e.g. something is blocking its main thread).
+			Wait cursor. Indicates that the application is busy performing an operation, and that it cannot be used during the operation (e.g. something is blocking its main thread).
 		</constant>
 		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
-			Busy cursor. Indicates that the application is busy performing an operation. This cursor shape denotes that the application is still usable during the operation.
+			Busy cursor. Indicates that the application is busy performing an operation, and that it is still usable during the operation.
 		</constant>
 		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
 			Drag cursor. Usually displayed when dragging something.

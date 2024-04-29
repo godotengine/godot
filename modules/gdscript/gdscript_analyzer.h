@@ -62,7 +62,7 @@ class GDScriptAnalyzer {
 	void decide_suite_type(GDScriptParser::Node *p_suite, GDScriptParser::Node *p_statement);
 
 	void resolve_annotation(GDScriptParser::AnnotationNode *p_annotation);
-	void resolve_class_member(GDScriptParser::ClassNode *p_class, StringName p_name, const GDScriptParser::Node *p_source = nullptr);
+	void resolve_class_member(GDScriptParser::ClassNode *p_class, const StringName &p_name, const GDScriptParser::Node *p_source = nullptr);
 	void resolve_class_member(GDScriptParser::ClassNode *p_class, int p_index, const GDScriptParser::Node *p_source = nullptr);
 	void resolve_class_interface(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source = nullptr);
 	void resolve_class_interface(GDScriptParser::ClassNode *p_class, bool p_recursive);
@@ -147,6 +147,7 @@ public:
 
 	Variant make_variable_default_value(GDScriptParser::VariableNode *p_variable);
 	const HashMap<String, Ref<GDScriptParserRef>> &get_depended_parsers();
+	static bool check_type_compatibility(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false, const GDScriptParser::Node *p_source_node = nullptr);
 
 	GDScriptAnalyzer(GDScriptParser *p_parser);
 };

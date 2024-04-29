@@ -32,8 +32,8 @@
 
 #include "core/io/dir_access.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/gui/editor_validation_panel.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
@@ -110,7 +110,7 @@ void DirectoryCreateDialog::ok_pressed() {
 	err = da->make_dir_recursive(path);
 
 	if (err == OK) {
-		emit_signal(SNAME("dir_created"));
+		emit_signal(SNAME("dir_created"), base_dir.path_join(path));
 	} else {
 		EditorNode::get_singleton()->show_warning(TTR("Could not create folder."));
 	}
@@ -131,7 +131,7 @@ void DirectoryCreateDialog::config(const String &p_base_dir) {
 }
 
 void DirectoryCreateDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("dir_created"));
+	ADD_SIGNAL(MethodInfo("dir_created", PropertyInfo(Variant::STRING, "path")));
 }
 
 DirectoryCreateDialog::DirectoryCreateDialog() {

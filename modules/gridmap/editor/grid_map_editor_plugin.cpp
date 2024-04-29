@@ -36,11 +36,11 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
@@ -1291,14 +1291,14 @@ GridMapEditor::GridMapEditor() {
 	search_box->connect("gui_input", callable_mp(this, &GridMapEditor::_sbox_input));
 
 	mode_thumbnail = memnew(Button);
-	mode_thumbnail->set_flat(true);
+	mode_thumbnail->set_theme_type_variation("FlatButton");
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
 	hb->add_child(mode_thumbnail);
 	mode_thumbnail->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_THUMBNAIL));
 
 	mode_list = memnew(Button);
-	mode_list->set_flat(true);
+	mode_list->set_theme_type_variation("FlatButton");
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(false);
 	hb->add_child(mode_list);
@@ -1316,6 +1316,7 @@ GridMapEditor::GridMapEditor() {
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
 
 	mesh_library_palette = memnew(ItemList);
+	mesh_library_palette->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(mesh_library_palette);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
 	mesh_library_palette->connect("gui_input", callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
@@ -1412,6 +1413,7 @@ GridMapEditor::GridMapEditor() {
 		inner_mat.instantiate();
 		inner_mat->set_albedo(Color(0.7, 0.7, 1.0, 0.2));
 		inner_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		inner_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 		inner_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 
 		d[RS::ARRAY_VERTEX] = triangles;
@@ -1424,11 +1426,13 @@ GridMapEditor::GridMapEditor() {
 
 		outer_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		outer_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		outer_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
 		selection_floor_mat.instantiate();
 		selection_floor_mat->set_albedo(Color(0.80, 0.80, 1.0, 1));
 		selection_floor_mat->set_on_top_of_alpha();
 		selection_floor_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		selection_floor_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
 		d[RS::ARRAY_VERTEX] = lines;
 		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(selection_mesh, RS::PRIMITIVE_LINES, d);
@@ -1457,6 +1461,7 @@ GridMapEditor::GridMapEditor() {
 	indicator_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	indicator_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	indicator_mat->set_albedo(Color(0.8, 0.5, 0.1));
 }
 
@@ -1496,6 +1501,9 @@ GridMapEditor::~GridMapEditor() {
 void GridMapEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/grid_map")) {
+				break;
+			}
 			switch ((int)EDITOR_GET("editors/grid_map/editor_side")) {
 				case 0: { // Left.
 					Node3DEditor::get_singleton()->move_control_to_left_panel(grid_map_editor);

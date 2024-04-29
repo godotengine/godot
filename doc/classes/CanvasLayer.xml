@@ -12,7 +12,7 @@
 	<tutorials>
 		<link title="Viewport and canvas transforms">$DOCS_URL/tutorials/2d/2d_transforms.html</link>
 		<link title="Canvas layers">$DOCS_URL/tutorials/2d/canvas_layers.html</link>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
 	</tutorials>
 	<methods>
 		<method name="get_canvas" qualifiers="const">
@@ -53,6 +53,7 @@
 		</member>
 		<member name="layer" type="int" setter="set_layer" getter="get_layer" default="1">
 			Layer index for draw order. Lower values are drawn behind higher values.
+			[b]Note:[/b] If multiple CanvasLayers have the same layer index, [CanvasItem] children of one CanvasLayer are drawn behind the [CanvasItem] children of the other CanvasLayer. Which CanvasLayer is drawn in front is non-deterministic.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The layer's base offset.

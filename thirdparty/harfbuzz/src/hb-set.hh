@@ -35,6 +35,8 @@
 template <typename impl_t>
 struct hb_sparseset_t
 {
+  static constexpr bool realloc_move = true;
+
   hb_object_header_t header;
   impl_t s;
 
@@ -42,10 +44,10 @@ struct hb_sparseset_t
   ~hb_sparseset_t () { fini (); }
 
   hb_sparseset_t (const hb_sparseset_t& other) : hb_sparseset_t () { set (other); }
-  hb_sparseset_t (hb_sparseset_t&& other) : hb_sparseset_t () { s = std::move (other.s); }
+  hb_sparseset_t (hb_sparseset_t&& other)  noexcept : hb_sparseset_t () { s = std::move (other.s); }
   hb_sparseset_t& operator = (const hb_sparseset_t& other) { set (other); return *this; }
-  hb_sparseset_t& operator = (hb_sparseset_t&& other) { s = std::move (other.s); return *this; }
-  friend void swap (hb_sparseset_t& a, hb_sparseset_t& b) { hb_swap (a.s, b.s); }
+  hb_sparseset_t& operator = (hb_sparseset_t&& other)  noexcept { s = std::move (other.s); return *this; }
+  friend void swap (hb_sparseset_t& a, hb_sparseset_t& b)  noexcept { hb_swap (a.s, b.s); }
 
   hb_sparseset_t (std::initializer_list<hb_codepoint_t> lst) : hb_sparseset_t ()
   {
@@ -164,7 +166,7 @@ struct hb_set_t : hb_sparseset_t<hb_bit_set_invertible_t>
   ~hb_set_t () = default;
   hb_set_t () : sparseset () {};
   hb_set_t (const hb_set_t &o) : sparseset ((sparseset &) o) {};
-  hb_set_t (hb_set_t&& o) : sparseset (std::move ((sparseset &) o)) {}
+  hb_set_t (hb_set_t&& o)  noexcept : sparseset (std::move ((sparseset &) o)) {}
   hb_set_t& operator = (const hb_set_t&) = default;
   hb_set_t& operator = (hb_set_t&&) = default;
   hb_set_t (std::initializer_list<hb_codepoint_t> lst) : sparseset (lst) {}

@@ -181,6 +181,7 @@ private:
 
 		int tab_size = 4;
 		int gutter_count = 0;
+		bool indent_wrapped_lines = false;
 
 		void _calculate_line_height();
 		void _calculate_max_line_width();
@@ -188,6 +189,9 @@ private:
 	public:
 		void set_tab_size(int p_tab_size);
 		int get_tab_size() const;
+		void set_indent_wrapped_lines(bool p_enabled);
+		bool is_indent_wrapped_lines() const;
+
 		void set_font(const Ref<Font> &p_font);
 		void set_font_size(int p_font_size);
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
@@ -292,6 +296,10 @@ private:
 
 	void _clear();
 	void _update_caches();
+
+	void _close_ime_window();
+	void _update_ime_window_position();
+	void _update_ime_text();
 
 	// User control.
 	bool overtype_mode = false;
@@ -500,8 +508,8 @@ private:
 	double _get_visible_lines_offset() const;
 	double _get_v_scroll_offset() const;
 
-	void _scroll_up(real_t p_delta);
-	void _scroll_down(real_t p_delta);
+	void _scroll_up(real_t p_delta, bool p_animate);
+	void _scroll_down(real_t p_delta, bool p_animate);
 
 	void _scroll_lines_up();
 	void _scroll_lines_down();
@@ -696,6 +704,8 @@ public:
 	/* Text */
 	// Text properties.
 	bool has_ime_text() const;
+	void cancel_ime();
+	void apply_ime();
 
 	void set_editable(const bool p_editable);
 	bool is_editable() const;
@@ -713,6 +723,9 @@ public:
 
 	void set_tab_size(const int p_size);
 	int get_tab_size() const;
+
+	void set_indent_wrapped_lines(bool p_enabled);
+	bool is_indent_wrapped_lines() const;
 
 	// User controls
 	void set_overtype_mode_enabled(const bool p_enabled);
@@ -877,6 +890,7 @@ public:
 	void select_all();
 	void select_word_under_caret(int p_caret = -1);
 	void add_selection_for_next_occurrence();
+	void skip_selection_for_next_occurrence();
 	void select(int p_from_line, int p_from_column, int p_to_line, int p_to_column, int p_caret = 0);
 
 	bool has_selection(int p_caret = -1) const;

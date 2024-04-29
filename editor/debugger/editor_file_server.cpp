@@ -98,7 +98,7 @@ void EditorFileServer::_scan_files_changed(EditorFileSystemDirectory *efd, const
 	}
 }
 
-static void _add_custom_file(const String f, HashMap<String, uint64_t> &files_to_send, HashMap<String, uint64_t> &cached_files) {
+static void _add_custom_file(const String &f, HashMap<String, uint64_t> &files_to_send, HashMap<String, uint64_t> &cached_files) {
 	if (!FileAccess::exists(f)) {
 		return;
 	}

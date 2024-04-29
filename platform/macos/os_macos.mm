@@ -70,7 +70,7 @@ void OS_MacOS::initialize() {
 String OS_MacOS::get_processor_name() const {
 	char buffer[256];
 	size_t buffer_len = 256;
-	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, nullptr, 0) == 0) {
 		return String::utf8(buffer, buffer_len);
 	}
 	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
@@ -139,7 +139,7 @@ void OS_MacOS::finalize() {
 }
 
 void OS_MacOS::initialize_joypads() {
-	joypad_macos = memnew(JoypadMacOS(Input::get_singleton()));
+	joypad_macos = memnew(JoypadMacOS());
 }
 
 void OS_MacOS::set_main_loop(MainLoop *p_main_loop) {
@@ -217,7 +217,7 @@ _FORCE_INLINE_ String OS_MacOS::get_framework_executable(const String &p_path) {
 	return p_path;
 }
 
-Error OS_MacOS::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_MacOS::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path, bool p_generate_temp_files) {
 	String path = get_framework_executable(p_path);
 
 	if (!FileAccess::exists(path)) {
@@ -229,6 +229,8 @@ Error OS_MacOS::open_dynamic_library(const String p_path, void *&p_library_handl
 		// Load .dylib or framework from a standard macOS location.
 		path = get_framework_executable(get_executable_path().get_base_dir().path_join("../Frameworks").path_join(p_path.get_file()));
 	}
+
+	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
@@ -351,11 +353,14 @@ Error OS_MacOS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
 	return OK;
 }
 
-Error OS_MacOS::shell_open(String p_uri) {
+Error OS_MacOS::shell_open(const String &p_uri) {
 	NSString *string = [NSString stringWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *uri = [[NSURL alloc] initWithString:string];
-	// Escape special characters in filenames
 	if (!uri || !uri.scheme || [uri.scheme isEqual:@"file"]) {
+		// No scheme set, assume "file://" and escape special characters.
+		if (!p_uri.begins_with("file://")) {
+			string = [NSString stringWithUTF8String:("file://" + p_uri).utf8().get_data()];
+		}
 		uri = [[NSURL alloc] initWithString:[string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]];
 	}
 	[[NSWorkspace sharedWorkspace] openURL:uri];
@@ -596,7 +601,9 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 		for (const String &arg : p_arguments) {
 			[arguments addObject:[NSString stringWithUTF8String:arg.utf8().get_data()]];
 		}
+#if defined(__x86_64__)
 		if (@available(macOS 10.15, *)) {
+#endif
 			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
 			[configuration setArguments:arguments];
 			[configuration setCreatesNewApplicationInstance:YES];
@@ -625,6 +632,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 			}
 
 			return err;
+#if defined(__x86_64__)
 		} else {
 			Error err = ERR_TIMEOUT;
 			NSError *error = nullptr;
@@ -640,6 +648,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 			}
 			return err;
 		}
+#endif
 	} else {
 		return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
 	}
@@ -753,21 +762,25 @@ void OS_MacOS::run() {
 		return;
 	}
 
-	main_loop->initialize();
+	@autoreleasepool {
+		main_loop->initialize();
+	}
 
 	bool quit = false;
 	while (!quit) {
-		@try {
-			if (DisplayServer::get_singleton()) {
-				DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
-			}
-			joypad_macos->process_joypads();
+		@autoreleasepool {
+			@try {
+				if (DisplayServer::get_singleton()) {
+					DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
+				}
+				joypad_macos->start_processing();
 
-			if (Main::iteration()) {
-				quit = true;
+				if (Main::iteration()) {
+					quit = true;
+				}
+			} @catch (NSException *exception) {
+				ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 			}
-		} @catch (NSException *exception) {
-			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 		}
 	}
 
@@ -819,8 +832,9 @@ OS_MacOS::OS_MacOS() {
 	[NSApp finishLaunching];
 
 	id delegate = [[GodotApplicationDelegate alloc] init];
-	ERR_FAIL_COND(!delegate);
+	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
+	[NSApp registerUserInterfaceItemSearchHandler:delegate];
 
 	pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
 	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);

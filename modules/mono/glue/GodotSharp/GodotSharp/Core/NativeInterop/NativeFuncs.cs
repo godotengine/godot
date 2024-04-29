@@ -1,9 +1,11 @@
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+#pragma warning disable IDE1006 // Naming rule violation
+// ReSharper disable InconsistentNaming
+
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Godot.SourceGenerators.Internal;
 
-// ReSharper disable InconsistentNaming
 
 namespace Godot.NativeInterop
 {
@@ -16,7 +18,7 @@ namespace Godot.NativeInterop
     [GenerateUnmanagedCallbacks(typeof(UnmanagedCallbacks))]
     public static unsafe partial class NativeFuncs
     {
-        private static bool initialized = false;
+        private static bool initialized;
 
         // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Global
         public static void Initialize(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
@@ -41,6 +43,9 @@ namespace Godot.NativeInterop
 
         public static partial IntPtr godotsharp_method_bind_get_method(in godot_string_name p_classname,
             in godot_string_name p_methodname);
+
+        public static partial IntPtr godotsharp_method_bind_get_method_with_compatibility(
+            in godot_string_name p_classname, in godot_string_name p_methodname, ulong p_hash);
 
         public static partial delegate* unmanaged<IntPtr> godotsharp_get_class_constructor(
             in godot_string_name p_classname);

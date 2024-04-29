@@ -43,6 +43,17 @@ class EditorPluginSettings : public VBoxContainer {
 		BUTTON_PLUGIN_EDIT
 	};
 
+	enum {
+		COLUMN_PADDING_LEFT,
+		COLUMN_STATUS,
+		COLUMN_NAME,
+		COLUMN_VERSION,
+		COLUMN_AUTHOR,
+		COLUMN_EDIT,
+		COLUMN_PADDING_RIGHT,
+		COLUMN_MAX,
+	};
+
 	PluginConfigDialog *plugin_config_dialog = nullptr;
 	Tree *plugin_list = nullptr;
 	bool updating = false;

@@ -4,6 +4,7 @@
 		Exporter for Windows.
 	</brief_description>
 	<description>
+		The Windows exporter customizes how a Windows build is handled. In the editor's "Export" window, it is created when adding a new "Windows" preset.
 	</description>
 	<tutorials>
 		<link title="Exporting for Windows">$DOCS_URL/tutorials/export/exporting_for_windows.html</link>
@@ -18,8 +19,14 @@
 		<member name="application/copyright" type="String" setter="" getter="">
 			Copyright notice for the bundle visible to the user. Optional. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
 		</member>
+		<member name="application/d3d12_agility_sdk_multiarch" type="bool" setter="" getter="">
+			If [code]true[/code], and [member application/export_d3d12] is set, the Agility SDK DLLs will be stored in arch-specific subdirectories.
+		</member>
 		<member name="application/export_angle" type="int" setter="" getter="">
 			If set to [code]1[/code], ANGLE libraries are exported with the exported application. If set to [code]0[/code], ANGLE libraries are exported only if [member ProjectSettings.rendering/gl_compatibility/driver] is set to [code]"opengl3_angle"[/code].
+		</member>
+		<member name="application/export_d3d12" type="int" setter="" getter="">
+			If set to [code]1[/code], Direct3D 12 runtime (DXIL, Agility SDK, PIX) libraries are exported with the exported application. If set to [code]0[/code], Direct3D 12 libraries are exported only if [member ProjectSettings.rendering/rendering_device/driver] is set to [code]"d3d12"[/code].
 		</member>
 		<member name="application/file_description" type="String" setter="" getter="">
 			File description to be presented to users. Required. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
@@ -123,17 +130,11 @@
 			- [code]{exe_name}[/code] - Name of application executable.
 			- [code]{cmd_args}[/code] - Array of the command line argument for the application.
 		</member>
-		<member name="texture_format/bptc" type="bool" setter="" getter="">
-			If [code]true[/code], project textures are exported in the BPTC format.
+		<member name="texture_format/etc2_astc" type="bool" setter="" getter="">
+			If [code]true[/code], project textures are exported in the ETC2/ASTC format.
 		</member>
-		<member name="texture_format/etc" type="bool" setter="" getter="">
-			If [code]true[/code], project textures are exported in the ETC format.
-		</member>
-		<member name="texture_format/etc2" type="bool" setter="" getter="">
-			If [code]true[/code], project textures are exported in the ETC2 format.
-		</member>
-		<member name="texture_format/s3tc" type="bool" setter="" getter="">
-			If [code]true[/code], project textures are exported in the S3TC format.
+		<member name="texture_format/s3tc_bptc" type="bool" setter="" getter="">
+			If [code]true[/code], project textures are exported in the S3TC/BPTC format.
 		</member>
 	</members>
 </class>

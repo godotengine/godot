@@ -608,11 +608,11 @@ static void _generate_contacts_from_supports(const Vector3 *p_points_A, int p_po
 	}
 
 	GenerateContactsFunc contacts_func = generate_contacts_func_table[version_A][version_B];
-	ERR_FAIL_COND(!contacts_func);
+	ERR_FAIL_NULL(contacts_func);
 	contacts_func(points_A, pointcount_A, points_B, pointcount_B, p_callback);
 }
 
-template <class ShapeA, class ShapeB, bool withMargin = false>
+template <typename ShapeA, typename ShapeB, bool withMargin = false>
 class SeparatorAxisTest {
 	const ShapeA *shape_A = nullptr;
 	const ShapeB *shape_B = nullptr;
@@ -1962,7 +1962,7 @@ static void _collision_cylinder_face(const GodotShape3D *p_a, const Transform3D 
 
 	// Points of B, cylinder lateral surface.
 	for (int i = 0; i < 3; i++) {
-		const Vector3 &point = vertex[i];
+		const Vector3 point = vertex[i] - p_transform_a.origin;
 		Vector3 axis = Plane(cyl_axis).project(point).normalized();
 		if (axis.dot(normal) < 0.0) {
 			axis *= -1.0;
@@ -2409,7 +2409,7 @@ bool sat_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D 
 	} else {
 		collision_func = collision_table[type_A - 2][type_B - 2];
 	}
-	ERR_FAIL_COND_V(!collision_func, false);
+	ERR_FAIL_NULL_V(collision_func, false);
 
 	collision_func(A, *transform_A, B, *transform_B, &callback, margin_A, margin_B);
 

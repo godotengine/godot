@@ -9,6 +9,7 @@
 		[b]Note:[/b] Like GLTFDocument itself, all GLTFDocumentExtension classes must be stateless in order to function properly. If you need to store data, use the [code]set_additional_data[/code] and [code]get_additional_data[/code] methods in [GLTFState] or [GLTFNode].
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
 		<method name="_convert_scene_node" qualifiers="virtual">
@@ -29,7 +30,7 @@
 			<param index="3" name="node" type="Node" />
 			<description>
 				Part of the export process. This method is run after [method _get_saveable_image_formats] and before [method _export_post]. If this [GLTFDocumentExtension] is used for exporting images, this runs after [method _serialize_texture_json].
-				This method can be used to modify the final JSON of each node.
+				This method can be used to modify the final JSON of each node. Data should be primarily stored in [param gltf_node] prior to serializing the JSON, but the original Godot [param node] is also provided if available. The node may be null if not available, such as when exporting GLTF data not generated from a Godot scene.
 			</description>
 		</method>
 		<method name="_export_post" qualifiers="virtual">
@@ -65,6 +66,7 @@
 			<description>
 				Part of the import process. This method is run after [method _import_post_parse] and before [method _import_node].
 				Runs when generating a Godot scene node from a GLTFNode. The returned node will be added to the scene tree. Multiple nodes can be generated in this step if they are added as a child of the returned node.
+				[b]Note:[/b] The [param scene_parent] parameter may be null if this is the single root node.
 			</description>
 		</method>
 		<method name="_get_image_file_extension" qualifiers="virtual">
@@ -112,7 +114,7 @@
 			<param index="0" name="state" type="GLTFState" />
 			<description>
 				Part of the import process. This method is run after [method _parse_node_extensions] and before [method _generate_scene_node].
-				This method can be used to modify any of the data imported so far, including any scene nodes, before running the final per-node import step.
+				This method can be used to modify any of the data imported so far after parsing, before generating the nodes and then running the final per-node import step.
 			</description>
 		</method>
 		<method name="_import_preflight" qualifiers="virtual">

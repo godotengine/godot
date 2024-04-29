@@ -34,6 +34,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
@@ -72,4 +74,4 @@ jobs:
         run: |
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help
-          ${{ matrix.bin }} --test
+          ${{ matrix.bin }} --test --force-colors

@@ -35,9 +35,9 @@
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
@@ -97,10 +97,12 @@ void EditorLog::_update_theme() {
 	log->add_theme_constant_override("text_highlight_v_padding", 0);
 
 	const int font_size = get_theme_font_size(SNAME("output_source_size"), EditorStringName(EditorFonts));
+	log->begin_bulk_theme_override();
 	log->add_theme_font_size_override("normal_font_size", font_size);
 	log->add_theme_font_size_override("bold_font_size", font_size);
 	log->add_theme_font_size_override("italics_font_size", font_size);
 	log->add_theme_font_size_override("mono_font_size", font_size);
+	log->end_bulk_theme_override();
 
 	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_editor_theme_icon(SNAME("Popup")));
 	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_editor_theme_icon(SNAME("StatusError")));
@@ -188,6 +190,10 @@ void EditorLog::_load_state() {
 	show_search_button->set_pressed(show_search);
 
 	is_loading_state = false;
+}
+
+void EditorLog::_meta_clicked(const String &p_meta) {
+	OS::get_singleton()->shell_open(p_meta);
 }
 
 void EditorLog::_clear_request() {
@@ -405,6 +411,7 @@ EditorLog::EditorLog() {
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
 	log->set_deselect_on_focus_loss_enabled(false);
+	log->connect("meta_clicked", callable_mp(this, &EditorLog::_meta_clicked));
 	vb_left->add_child(log);
 
 	// Search box
@@ -426,21 +433,23 @@ EditorLog::EditorLog() {
 
 	// Clear.
 	clear_button = memnew(Button);
-	clear_button->set_flat(true);
+	clear_button->set_theme_type_variation("FlatButton");
 	clear_button->set_focus_mode(FOCUS_NONE);
-	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::K));
-	clear_button->set_shortcut_context(this);
+	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::K));
 	clear_button->connect("pressed", callable_mp(this, &EditorLog::_clear_request));
 	hb_tools->add_child(clear_button);
 
 	// Copy.
 	copy_button = memnew(Button);
-	copy_button->set_flat(true);
+	copy_button->set_theme_type_variation("FlatButton");
 	copy_button->set_focus_mode(FOCUS_NONE);
 	copy_button->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KeyModifierMask::CMD_OR_CTRL | Key::C));
 	copy_button->set_shortcut_context(this);
 	copy_button->connect("pressed", callable_mp(this, &EditorLog::_copy_request));
 	hb_tools->add_child(copy_button);
+
+	// Separate toggle buttons from normal buttons.
+	vb_right->add_child(memnew(HSeparator));
 
 	// A second hbox to make a 2x2 grid of buttons.
 	HBoxContainer *hb_tools2 = memnew(HBoxContainer);
@@ -449,7 +458,7 @@ EditorLog::EditorLog() {
 
 	// Collapse.
 	collapse_button = memnew(Button);
-	collapse_button->set_flat(true);
+	collapse_button->set_theme_type_variation("FlatButton");
 	collapse_button->set_focus_mode(FOCUS_NONE);
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
 	collapse_button->set_toggle_mode(true);
@@ -459,7 +468,7 @@ EditorLog::EditorLog() {
 
 	// Show Search.
 	show_search_button = memnew(Button);
-	show_search_button->set_flat(true);
+	show_search_button->set_theme_type_variation("FlatButton");
 	show_search_button->set_focus_mode(FOCUS_NONE);
 	show_search_button->set_toggle_mode(true);
 	show_search_button->set_pressed(true);

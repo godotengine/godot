@@ -34,6 +34,7 @@
 
 #if defined(EGL_STATIC)
 #define KHRONOS_STATIC 1
+#define GLAD_EGL_VERSION_1_5 true
 extern "C" EGLAPI void EGLAPIENTRY eglSetBlobCacheFuncsANDROID(EGLDisplay dpy, EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get);
 #undef KHRONOS_STATIC
 #endif
@@ -52,9 +53,13 @@ int EGLManager::_get_gldisplay_id(void *p_display) {
 	GLDisplay new_gldisplay;
 	new_gldisplay.display = p_display;
 
-	Vector<EGLAttrib> attribs = _get_platform_display_attributes();
-
-	new_gldisplay.egl_display = eglGetPlatformDisplay(_get_platform_extension_enum(), new_gldisplay.display, (attribs.size() > 0) ? attribs.ptr() : nullptr);
+	if (GLAD_EGL_VERSION_1_5) {
+		Vector<EGLAttrib> attribs = _get_platform_display_attributes();
+		new_gldisplay.egl_display = eglGetPlatformDisplay(_get_platform_extension_enum(), new_gldisplay.display, (attribs.size() > 0) ? attribs.ptr() : nullptr);
+	} else {
+		NativeDisplayType *native_display_type = (NativeDisplayType *)new_gldisplay.display;
+		new_gldisplay.egl_display = eglGetDisplay(*native_display_type);
+	}
 	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, -1);
 
 	ERR_FAIL_COND_V_MSG(new_gldisplay.egl_display == EGL_NO_DISPLAY, -1, "Can't create an EGL display.");
@@ -168,6 +173,15 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 	return OK;
 }
 
+Error EGLManager::open_display(void *p_display) {
+	int gldisplay_id = _get_gldisplay_id(p_display);
+	if (gldisplay_id < 0) {
+		return ERR_CANT_CREATE;
+	} else {
+		return OK;
+	}
+}
+
 int EGLManager::display_get_native_visual_id(void *p_display) {
 	int gldisplay_id = _get_gldisplay_id(p_display);
 	ERR_FAIL_COND_V(gldisplay_id < 0, ERR_CANT_CREATE);
@@ -198,7 +212,12 @@ Error EGLManager::window_create(DisplayServer::WindowID p_window_id, void *p_dis
 	GLWindow &glwindow = windows[p_window_id];
 	glwindow.gldisplay_id = gldisplay_id;
 
-	glwindow.egl_surface = eglCreatePlatformWindowSurface(gldisplay.egl_display, gldisplay.egl_config, p_native_window, nullptr);
+	if (GLAD_EGL_VERSION_1_5) {
+		glwindow.egl_surface = eglCreatePlatformWindowSurface(gldisplay.egl_display, gldisplay.egl_config, p_native_window, nullptr);
+	} else {
+		EGLNativeWindowType *native_window_type = (EGLNativeWindowType *)p_native_window;
+		glwindow.egl_surface = eglCreateWindowSurface(gldisplay.egl_display, gldisplay.egl_config, *native_window_type, nullptr);
+	}
 
 	if (glwindow.egl_surface == EGL_NO_SURFACE) {
 		return ERR_CANT_CREATE;
@@ -241,21 +260,6 @@ void EGLManager::release_current() {
 	eglMakeCurrent(current_display.egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
 
-void EGLManager::make_current() {
-	if (!current_window) {
-		return;
-	}
-
-	if (!current_window->initialized) {
-		WARN_PRINT("Current OpenGL window is uninitialized!");
-		return;
-	}
-
-	GLDisplay &current_display = displays[current_window->gldisplay_id];
-
-	eglMakeCurrent(current_display.egl_display, current_window->egl_surface, current_window->egl_surface, current_display.egl_context);
-}
-
 void EGLManager::swap_buffers() {
 	if (!current_window) {
 		return;
@@ -290,12 +294,6 @@ void EGLManager::window_make_current(DisplayServer::WindowID p_window_id) {
 }
 
 void EGLManager::set_use_vsync(bool p_use) {
-	// Force vsync in the editor for now, as a safety measure.
-	bool is_editor = Engine::get_singleton()->is_editor_hint();
-	if (is_editor) {
-		p_use = true;
-	}
-
 	// We need an active window to get a display to set the vsync.
 	if (!current_window) {
 		return;
@@ -351,7 +349,7 @@ Error EGLManager::initialize() {
 	ERR_FAIL_COND_V_MSG(!version, ERR_UNAVAILABLE, "Can't load EGL.");
 	print_verbose(vformat("Loaded EGL %d.%d", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version)));
 
-	ERR_FAIL_COND_V_MSG(!GLAD_EGL_VERSION_1_5, ERR_UNAVAILABLE, "EGL version is too old!");
+	ERR_FAIL_COND_V_MSG(!GLAD_EGL_VERSION_1_4, ERR_UNAVAILABLE, "EGL version is too old!");
 
 	eglTerminate(tmp_display);
 #endif

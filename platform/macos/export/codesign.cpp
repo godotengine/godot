@@ -32,8 +32,8 @@
 
 #include "lipo.h"
 #include "macho.h"
-#include "plist.h"
 
+#include "core/io/plist.h"
 #include "core/os/os.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"

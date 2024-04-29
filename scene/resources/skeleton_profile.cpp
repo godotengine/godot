@@ -68,7 +68,7 @@ bool SkeletonProfile::_set(const StringName &p_path, const Variant &p_value) {
 		} else if (what == "group") {
 			set_group(which, p_value);
 		} else if (what == "require") {
-			set_require(which, p_value);
+			set_required(which, p_value);
 		} else {
 			return false;
 		}
@@ -113,7 +113,7 @@ bool SkeletonProfile::_get(const StringName &p_path, Variant &r_ret) const {
 		} else if (what == "group") {
 			r_ret = get_group(which);
 		} else if (what == "require") {
-			r_ret = is_require(which);
+			r_ret = is_required(which);
 		} else {
 			return false;
 		}
@@ -180,7 +180,7 @@ StringName SkeletonProfile::get_root_bone() {
 	return root_bone;
 }
 
-void SkeletonProfile::set_root_bone(StringName p_bone_name) {
+void SkeletonProfile::set_root_bone(const StringName &p_bone_name) {
 	if (is_read_only) {
 		return;
 	}
@@ -191,7 +191,7 @@ StringName SkeletonProfile::get_scale_base_bone() {
 	return scale_base_bone;
 }
 
-void SkeletonProfile::set_scale_base_bone(StringName p_bone_name) {
+void SkeletonProfile::set_scale_base_bone(const StringName &p_bone_name) {
 	if (is_read_only) {
 		return;
 	}
@@ -217,7 +217,7 @@ StringName SkeletonProfile::get_group_name(int p_group_idx) const {
 	return groups[p_group_idx].group_name;
 }
 
-void SkeletonProfile::set_group_name(int p_group_idx, const StringName p_group_name) {
+void SkeletonProfile::set_group_name(int p_group_idx, const StringName &p_group_name) {
 	if (is_read_only) {
 		return;
 	}
@@ -254,7 +254,7 @@ void SkeletonProfile::set_bone_size(int p_size) {
 	notify_property_list_changed();
 }
 
-int SkeletonProfile::find_bone(StringName p_bone_name) const {
+int SkeletonProfile::find_bone(const StringName &p_bone_name) const {
 	if (p_bone_name == StringName()) {
 		return -1;
 	}
@@ -271,7 +271,7 @@ StringName SkeletonProfile::get_bone_name(int p_bone_idx) const {
 	return bones[p_bone_idx].bone_name;
 }
 
-void SkeletonProfile::set_bone_name(int p_bone_idx, const StringName p_bone_name) {
+void SkeletonProfile::set_bone_name(int p_bone_idx, const StringName &p_bone_name) {
 	if (is_read_only) {
 		return;
 	}
@@ -285,7 +285,7 @@ StringName SkeletonProfile::get_bone_parent(int p_bone_idx) const {
 	return bones[p_bone_idx].bone_parent;
 }
 
-void SkeletonProfile::set_bone_parent(int p_bone_idx, const StringName p_bone_parent) {
+void SkeletonProfile::set_bone_parent(int p_bone_idx, const StringName &p_bone_parent) {
 	if (is_read_only) {
 		return;
 	}
@@ -299,7 +299,7 @@ SkeletonProfile::TailDirection SkeletonProfile::get_tail_direction(int p_bone_id
 	return bones[p_bone_idx].tail_direction;
 }
 
-void SkeletonProfile::set_tail_direction(int p_bone_idx, const TailDirection p_tail_direction) {
+void SkeletonProfile::set_tail_direction(int p_bone_idx, TailDirection p_tail_direction) {
 	if (is_read_only) {
 		return;
 	}
@@ -314,7 +314,7 @@ StringName SkeletonProfile::get_bone_tail(int p_bone_idx) const {
 	return bones[p_bone_idx].bone_tail;
 }
 
-void SkeletonProfile::set_bone_tail(int p_bone_idx, const StringName p_bone_tail) {
+void SkeletonProfile::set_bone_tail(int p_bone_idx, const StringName &p_bone_tail) {
 	if (is_read_only) {
 		return;
 	}
@@ -328,7 +328,7 @@ Transform3D SkeletonProfile::get_reference_pose(int p_bone_idx) const {
 	return bones[p_bone_idx].reference_pose;
 }
 
-void SkeletonProfile::set_reference_pose(int p_bone_idx, const Transform3D p_reference_pose) {
+void SkeletonProfile::set_reference_pose(int p_bone_idx, const Transform3D &p_reference_pose) {
 	if (is_read_only) {
 		return;
 	}
@@ -342,7 +342,7 @@ Vector2 SkeletonProfile::get_handle_offset(int p_bone_idx) const {
 	return bones[p_bone_idx].handle_offset;
 }
 
-void SkeletonProfile::set_handle_offset(int p_bone_idx, const Vector2 p_handle_offset) {
+void SkeletonProfile::set_handle_offset(int p_bone_idx, const Vector2 &p_handle_offset) {
 	if (is_read_only) {
 		return;
 	}
@@ -356,7 +356,7 @@ StringName SkeletonProfile::get_group(int p_bone_idx) const {
 	return bones[p_bone_idx].group;
 }
 
-void SkeletonProfile::set_group(int p_bone_idx, const StringName p_group) {
+void SkeletonProfile::set_group(int p_bone_idx, const StringName &p_group) {
 	if (is_read_only) {
 		return;
 	}
@@ -365,21 +365,21 @@ void SkeletonProfile::set_group(int p_bone_idx, const StringName p_group) {
 	emit_signal("profile_updated");
 }
 
-bool SkeletonProfile::is_require(int p_bone_idx) const {
+bool SkeletonProfile::is_required(int p_bone_idx) const {
 	ERR_FAIL_INDEX_V(p_bone_idx, bones.size(), false);
-	return bones[p_bone_idx].require;
+	return bones[p_bone_idx].required;
 }
 
-void SkeletonProfile::set_require(int p_bone_idx, const bool p_require) {
+void SkeletonProfile::set_required(int p_bone_idx, bool p_required) {
 	if (is_read_only) {
 		return;
 	}
 	ERR_FAIL_INDEX(p_bone_idx, bones.size());
-	bones.write[p_bone_idx].require = p_require;
+	bones.write[p_bone_idx].required = p_required;
 	emit_signal("profile_updated");
 }
 
-bool SkeletonProfile::has_bone(StringName p_bone_name) {
+bool SkeletonProfile::has_bone(const StringName &p_bone_name) {
 	bool is_found = false;
 	for (int i = 0; i < bones.size(); i++) {
 		if (bones[i].bone_name == p_bone_name) {
@@ -432,6 +432,9 @@ void SkeletonProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_group", "bone_idx"), &SkeletonProfile::get_group);
 	ClassDB::bind_method(D_METHOD("set_group", "bone_idx", "group"), &SkeletonProfile::set_group);
 
+	ClassDB::bind_method(D_METHOD("is_required", "bone_idx"), &SkeletonProfile::is_required);
+	ClassDB::bind_method(D_METHOD("set_required", "bone_idx", "required"), &SkeletonProfile::set_required);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "root_bone", PROPERTY_HINT_ENUM_SUGGESTION, ""), "set_root_bone", "get_root_bone");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "scale_base_bone", PROPERTY_HINT_ENUM_SUGGESTION, ""), "set_scale_base_bone", "get_scale_base_bone");
 
@@ -478,14 +481,14 @@ SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 	bones.write[1].reference_pose = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0);
 	bones.write[1].handle_offset = Vector2(0.5, 0.5);
 	bones.write[1].group = "Body";
-	bones.write[1].require = true;
+	bones.write[1].required = true;
 
 	bones.write[2].bone_name = "Spine";
 	bones.write[2].bone_parent = "Hips";
 	bones.write[2].reference_pose = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0);
 	bones.write[2].handle_offset = Vector2(0.5, 0.43);
 	bones.write[2].group = "Body";
-	bones.write[2].require = true;
+	bones.write[2].required = true;
 
 	bones.write[3].bone_name = "Chest";
 	bones.write[3].bone_parent = "Spine";
@@ -506,7 +509,7 @@ SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 	bones.write[5].reference_pose = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0);
 	bones.write[5].handle_offset = Vector2(0.5, 0.23);
 	bones.write[5].group = "Body";
-	bones.write[5].require = false;
+	bones.write[5].required = false;
 
 	bones.write[6].bone_name = "Head";
 	bones.write[6].bone_parent = "Neck";
@@ -514,7 +517,7 @@ SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 	bones.write[6].reference_pose = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0);
 	bones.write[6].handle_offset = Vector2(0.5, 0.18);
 	bones.write[6].group = "Body";
-	bones.write[6].require = true;
+	bones.write[6].required = true;
 
 	bones.write[7].bone_name = "LeftEye";
 	bones.write[7].bone_parent = "Head";
@@ -539,21 +542,21 @@ SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 	bones.write[10].reference_pose = Transform3D(0, 1, 0, 0, 0, 1, 1, 0, 0, 0.05, 0.1, 0);
 	bones.write[10].handle_offset = Vector2(0.55, 0.235);
 	bones.write[10].group = "Body";
-	bones.write[10].require = true;
+	bones.write[10].required = true;
 
 	bones.write[11].bone_name = "LeftUpperArm";
 	bones.write[11].bone_parent = "LeftShoulder";
 	bones.write[11].reference_pose = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.05, 0);
 	bones.write[11].handle_offset = Vector2(0.6, 0.24);
 	bones.write[11].group = "Body";
-	bones.write[11].require = true;
+	bones.write[11].required = true;
 
 	bones.write[12].bone_name = "LeftLowerArm";
 	bones.write[12].bone_parent = "LeftUpperArm";
 	bones.write[12].reference_pose = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0.25, 0);
 	bones.write[12].handle_offset = Vector2(0.7, 0.24);
 	bones.write[12].group = "Body";
-	bones.write[12].require = true;
+	bones.write[12].required = true;
 
 	bones.write[13].bone_name = "LeftHand";
 	bones.write[13].bone_parent = "LeftLowerArm";
@@ -562,7 +565,7 @@ SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 	bones.write[13].reference_pose = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0.25, 0);
 	bones.write[13].handle_offset = Vector2(0.82, 0.235);
 	bones.write[13].group = "Body";
-	bones.write[13].require = true;
+	bones.write[13].required = true;
 
 	bones.write[14].bone_name = "LeftThumbMetacarpal";
 	bones.write[14].bone_parent = "LeftHand";
@@ -659,21 +662,21 @@ SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 	bones.write[29].reference_pose = Transform3D(0, -1, 0, 0, 0, 1, -1, 0, 0, -0.05, 0.1, 0);
 	bones.write[29].handle_offset = Vector2(0.45, 0.235);
 	bones.write[29].group = "Body";
-	bones.write[29].require = true;
+	bones.write[29].required = true;
 
 	bones.write[30].bone_name = "RightUpperArm";
 	bones.write[30].bone_parent = "RightShoulder";
 	bones.write[30].reference_pose = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.05, 0);
 	bones.write[30].handle_offset = Vector2(0.4, 0.24);
 	bones.write[30].group = "Body";
-	bones.write[30].require = true;
+	bones.write[30].required = true;
 
 	bones.write[31].bone_name = "RightLowerArm";
 	bones.write[31].bone_parent = "RightUpperArm";
 	bones.write[31].reference_pose = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0.25, 0);
 	bones.write[31].handle_offset = Vector2(0.3, 0.24);
 	bones.write[31].group = "Body";
-	bones.write[31].require = true;
+	bones.write[31].required = true;
 
 	bones.write[32].bone_name = "RightHand";
 	bones.write[32].bone_parent = "RightLowerArm";
@@ -682,7 +685,7 @@ SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 	bones.write[32].reference_pose = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0.25, 0);
 	bones.write[32].handle_offset = Vector2(0.18, 0.235);
 	bones.write[32].group = "Body";
-	bones.write[32].require = true;
+	bones.write[32].required = true;
 
 	bones.write[33].bone_name = "RightThumbMetacarpal";
 	bones.write[33].bone_parent = "RightHand";
@@ -779,21 +782,21 @@ SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 	bones.write[48].reference_pose = Transform3D(-1, 0, 0, 0, -1, 0, 0, 0, 1, 0.1, 0, 0);
 	bones.write[48].handle_offset = Vector2(0.549, 0.49);
 	bones.write[48].group = "Body";
-	bones.write[48].require = true;
+	bones.write[48].required = true;
 
 	bones.write[49].bone_name = "LeftLowerLeg";
 	bones.write[49].bone_parent = "LeftUpperLeg";
 	bones.write[49].reference_pose = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.375, 0);
 	bones.write[49].handle_offset = Vector2(0.548, 0.683);
 	bones.write[49].group = "Body";
-	bones.write[49].require = true;
+	bones.write[49].required = true;
 
 	bones.write[50].bone_name = "LeftFoot";
 	bones.write[50].bone_parent = "LeftLowerLeg";
 	bones.write[50].reference_pose = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0.375, 0);
 	bones.write[50].handle_offset = Vector2(0.545, 0.9);
 	bones.write[50].group = "Body";
-	bones.write[50].require = true;
+	bones.write[50].required = true;
 
 	bones.write[51].bone_name = "LeftToes";
 	bones.write[51].bone_parent = "LeftFoot";
@@ -806,21 +809,21 @@ SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 	bones.write[52].reference_pose = Transform3D(-1, 0, 0, 0, -1, 0, 0, 0, 1, -0.1, 0, 0);
 	bones.write[52].handle_offset = Vector2(0.451, 0.49);
 	bones.write[52].group = "Body";
-	bones.write[52].require = true;
+	bones.write[52].required = true;
 
 	bones.write[53].bone_name = "RightLowerLeg";
 	bones.write[53].bone_parent = "RightUpperLeg";
 	bones.write[53].reference_pose = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.375, 0);
 	bones.write[53].handle_offset = Vector2(0.452, 0.683);
 	bones.write[53].group = "Body";
-	bones.write[53].require = true;
+	bones.write[53].required = true;
 
 	bones.write[54].bone_name = "RightFoot";
 	bones.write[54].bone_parent = "RightLowerLeg";
 	bones.write[54].reference_pose = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0.375, 0);
 	bones.write[54].handle_offset = Vector2(0.455, 0.9);
 	bones.write[54].group = "Body";
-	bones.write[54].require = true;
+	bones.write[54].required = true;
 
 	bones.write[55].bone_name = "RightToes";
 	bones.write[55].bone_parent = "RightFoot";

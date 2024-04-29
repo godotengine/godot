@@ -79,16 +79,6 @@ void VisibleOnScreenNotifier3D::_notification(int p_what) {
 	}
 }
 
-PackedStringArray VisibleOnScreenNotifier3D::get_configuration_warnings() const {
-	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
-
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("VisibleOnScreenNotifier3D nodes are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
-	}
-
-	return warnings;
-}
-
 void VisibleOnScreenNotifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_aabb", "rect"), &VisibleOnScreenNotifier3D::set_aabb);
 	ClassDB::bind_method(D_METHOD("is_on_screen"), &VisibleOnScreenNotifier3D::is_on_screen);
@@ -138,6 +128,10 @@ void VisibleOnScreenEnabler3D::set_enable_node_path(NodePath p_path) {
 		return;
 	}
 	enable_node_path = p_path;
+	if (enable_node_path.is_empty()) {
+		node_id = ObjectID();
+		return;
+	}
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
 		node_id = ObjectID();
 		Node *node = get_node(enable_node_path);
@@ -177,8 +171,11 @@ void VisibleOnScreenEnabler3D::_notification(int p_what) {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				return;
 			}
-
 			node_id = ObjectID();
+			if (enable_node_path.is_empty()) {
+				return;
+			}
+
 			Node *node = get_node(enable_node_path);
 			if (node) {
 				node_id = node->get_instance_id();

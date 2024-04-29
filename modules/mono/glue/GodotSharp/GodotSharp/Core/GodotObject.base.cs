@@ -1,19 +1,22 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Godot.Bridge;
 using Godot.NativeInterop;
+
+#nullable enable
 
 namespace Godot
 {
     public partial class GodotObject : IDisposable
     {
-        private bool _disposed = false;
-        private static readonly Type CachedType = typeof(GodotObject);
+        private bool _disposed;
+        private static readonly Type _cachedType = typeof(GodotObject);
 
         internal IntPtr NativePtr;
         private bool _memoryOwn;
 
-        private WeakReference<GodotObject> _weakReferenceToSelf;
+        private WeakReference<GodotObject>? _weakReferenceToSelf;
 
         /// <summary>
         /// Constructs a new <see cref="GodotObject"/>.
@@ -22,11 +25,11 @@ namespace Godot
         {
             unsafe
             {
-                _ConstructAndInitialize(NativeCtor, NativeName, CachedType, refCounted: false);
+                ConstructAndInitialize(NativeCtor, NativeName, _cachedType, refCounted: false);
             }
         }
 
-        internal unsafe void _ConstructAndInitialize(
+        internal unsafe void ConstructAndInitialize(
             delegate* unmanaged<IntPtr> nativeCtor,
             StringName nativeName,
             Type cachedType,
@@ -35,6 +38,8 @@ namespace Godot
         {
             if (NativePtr == IntPtr.Zero)
             {
+                Debug.Assert(nativeCtor != null);
+
                 NativePtr = nativeCtor();
 
                 InteropUtils.TieManagedToUnmanaged(this, NativePtr,
@@ -59,7 +64,7 @@ namespace Godot
         /// </summary>
         public IntPtr NativeInstance => NativePtr;
 
-        internal static IntPtr GetPtr(GodotObject instance)
+        internal static IntPtr GetPtr(GodotObject? instance)
         {
             if (instance == null)
                 return IntPtr.Zero;
@@ -105,7 +110,7 @@ namespace Godot
 
                 if (gcHandleToFree != IntPtr.Zero)
                 {
-                    object target = GCHandle.FromIntPtr(gcHandleToFree).Target;
+                    object? target = GCHandle.FromIntPtr(gcHandleToFree).Target;
                     // The GC handle may have been replaced in another thread. Release it only if
                     // it's associated to this managed instance, or if the target is no longer alive.
                     if (target != this && target != null)
@@ -176,18 +181,14 @@ namespace Godot
 
         internal static Type InternalGetClassNativeBase(Type t)
         {
-            do
-            {
-                var assemblyName = t.Assembly.GetName();
+            var name = t.Assembly.GetName().Name;
 
-                if (assemblyName.Name == "GodotSharp")
-                    return t;
+            if (name == "GodotSharp" || name == "GodotSharpEditor")
+                return t;
 
-                if (assemblyName.Name == "GodotSharpEditor")
-                    return t;
-            } while ((t = t.BaseType) != null);
+            Debug.Assert(t.BaseType is not null, "Script types must derive from a native Godot type.");
 
-            return null;
+            return InternalGetClassNativeBase(t.BaseType);
         }
 
         // ReSharper disable once VirtualMemberNeverOverridden.Global
@@ -240,6 +241,18 @@ namespace Godot
             var typeSelf = (godot_string_name)type.NativeValue;
             var methodSelf = (godot_string_name)method.NativeValue;
             IntPtr methodBind = NativeFuncs.godotsharp_method_bind_get_method(typeSelf, methodSelf);
+
+            if (methodBind == IntPtr.Zero)
+                throw new NativeMethodBindNotFoundException(type + "." + method);
+
+            return methodBind;
+        }
+
+        internal static IntPtr ClassDB_get_method_with_compatibility(StringName type, StringName method, ulong hash)
+        {
+            var typeSelf = (godot_string_name)type.NativeValue;
+            var methodSelf = (godot_string_name)method.NativeValue;
+            IntPtr methodBind = NativeFuncs.godotsharp_method_bind_get_method_with_compatibility(typeSelf, methodSelf, hash);
 
             if (methodBind == IntPtr.Zero)
                 throw new NativeMethodBindNotFoundException(type + "." + method);

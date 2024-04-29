@@ -99,6 +99,20 @@ public:
 #endif // TOOLS_ENABLED
 
 	EXBIND1RC(bool, has_method, const StringName &)
+	EXBIND1RC(bool, has_static_method, const StringName &)
+
+	GDVIRTUAL1RC(Variant, _get_script_method_argument_count, const StringName &)
+	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		Variant ret;
+		if (GDVIRTUAL_CALL(_get_script_method_argument_count, p_method, ret) && ret.get_type() == Variant::INT) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret.operator int();
+		}
+		// Fallback to default.
+		return Script::get_script_method_argument_count(p_method, r_is_valid);
+	}
 
 	GDVIRTUAL1RC(Dictionary, _get_method_info, const StringName &)
 	virtual MethodInfo get_method_info(const StringName &p_method) const override {
@@ -109,6 +123,12 @@ public:
 
 	EXBIND0RC(bool, is_tool)
 	EXBIND0RC(bool, is_valid)
+
+	virtual bool is_abstract() const override {
+		bool abst;
+		return GDVIRTUAL_CALL(_is_abstract, abst) && abst;
+	}
+	GDVIRTUAL0RC(bool, _is_abstract)
 
 	EXBIND0RC(ScriptLanguage *, get_language)
 	EXBIND1RC(bool, has_script_signal, const StringName &)
@@ -222,13 +242,23 @@ public:
 			p_words->push_back(ret[i]);
 		}
 	}
-	EXBIND1RC(bool, is_control_flow_keyword, String)
+	EXBIND1RC(bool, is_control_flow_keyword, const String &)
 
 	GDVIRTUAL0RC(Vector<String>, _get_comment_delimiters)
 
 	virtual void get_comment_delimiters(List<String> *p_words) const override {
 		Vector<String> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_comment_delimiters, ret);
+		for (int i = 0; i < ret.size(); i++) {
+			p_words->push_back(ret[i]);
+		}
+	}
+
+	GDVIRTUAL0RC(Vector<String>, _get_doc_comment_delimiters)
+
+	virtual void get_doc_comment_delimiters(List<String> *p_words) const override {
+		Vector<String> ret;
+		GDVIRTUAL_CALL(_get_doc_comment_delimiters, ret);
 		for (int i = 0; i < ret.size(); i++) {
 			p_words->push_back(ret[i]);
 		}
@@ -248,7 +278,7 @@ public:
 
 	GDVIRTUAL1RC(TypedArray<Dictionary>, _get_built_in_templates, StringName)
 
-	virtual Vector<ScriptTemplate> get_built_in_templates(StringName p_object) override {
+	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_built_in_templates, p_object, ret);
 		Vector<ScriptTemplate> stret;
@@ -289,13 +319,16 @@ public:
 		}
 		if (r_errors != nullptr && ret.has("errors")) {
 			Array errors = ret["errors"];
-			for (int i = 0; i < errors.size(); i++) {
-				Dictionary err = errors[i];
+			for (const Variant &error : errors) {
+				Dictionary err = error;
 				ERR_CONTINUE(!err.has("line"));
 				ERR_CONTINUE(!err.has("column"));
 				ERR_CONTINUE(!err.has("message"));
 
 				ScriptError serr;
+				if (err.has("path")) {
+					serr.path = err["path"];
+				}
 				serr.line = err["line"];
 				serr.column = err["column"];
 				serr.message = err["message"];
@@ -306,8 +339,8 @@ public:
 		if (r_warnings != nullptr && ret.has("warnings")) {
 			ERR_FAIL_COND_V(!ret.has("warnings"), false);
 			Array warnings = ret["warnings"];
-			for (int i = 0; i < warnings.size(); i++) {
-				Dictionary warn = warnings[i];
+			for (const Variant &warning : warnings) {
+				Dictionary warn = warning;
 				ERR_CONTINUE(!warn.has("start_line"));
 				ERR_CONTINUE(!warn.has("end_line"));
 				ERR_CONTINUE(!warn.has("leftmost_column"));
@@ -344,15 +377,19 @@ public:
 		GDVIRTUAL_REQUIRED_CALL(_create_script, ret);
 		return Object::cast_to<Script>(ret);
 	}
+#ifndef DISABLE_DEPRECATED
 	EXBIND0RC(bool, has_named_classes)
+#endif
 	EXBIND0RC(bool, supports_builtin_mode)
 	EXBIND0RC(bool, supports_documentation)
 	EXBIND0RC(bool, can_inherit_from_file)
 
 	EXBIND2RC(int, find_function, const String &, const String &)
 	EXBIND3RC(String, make_function, const String &, const String &, const PackedStringArray &)
+	EXBIND0RC(bool, can_make_function)
 	EXBIND3R(Error, open_in_external_editor, const Ref<Script> &, int, int)
 	EXBIND0R(bool, overrides_external_editor)
+	EXBIND0RC(ScriptNameCasing, preferred_file_name_casing)
 
 	GDVIRTUAL3RC(Dictionary, _complete_code, const String &, const String &, Object *)
 
@@ -365,8 +402,8 @@ public:
 
 		if (r_options != nullptr && ret.has("options")) {
 			Array options = ret["options"];
-			for (int i = 0; i < options.size(); i++) {
-				Dictionary op = options[i];
+			for (const Variant &var : options) {
+				Dictionary op = var;
 				CodeCompletionOption option;
 				ERR_CONTINUE(!op.has("kind"));
 				option.kind = CodeCompletionKind(int(op["kind"]));
@@ -465,8 +502,8 @@ public:
 		}
 		if (p_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
-				p_values->push_back(values[i]);
+			for (const Variant &value : values) {
+				p_values->push_back(value);
 			}
 		}
 	}
@@ -485,8 +522,8 @@ public:
 		}
 		if (p_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
-				p_values->push_back(values[i]);
+			for (const Variant &value : values) {
+				p_values->push_back(value);
 			}
 		}
 	}
@@ -512,8 +549,8 @@ public:
 		}
 		if (p_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
-			for (int i = 0; i < values.size(); i++) {
-				p_values->push_back(values[i]);
+			for (const Variant &value : values) {
+				p_values->push_back(value);
 			}
 		}
 	}
@@ -525,9 +562,9 @@ public:
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_debug_get_current_stack_info, ret);
 		Vector<StackInfo> sret;
-		for (int i = 0; i < ret.size(); i++) {
+		for (const Variant &var : ret) {
 			StackInfo si;
-			Dictionary d = ret[i];
+			Dictionary d = var;
 			ERR_CONTINUE(!d.has("file"));
 			ERR_CONTINUE(!d.has("func"));
 			ERR_CONTINUE(!d.has("line"));
@@ -540,6 +577,7 @@ public:
 	}
 
 	EXBIND0(reload_all_scripts)
+	EXBIND2(reload_scripts, const Array &, bool)
 	EXBIND2(reload_tool_script, const Ref<Script> &, bool)
 	/* LOADER FUNCTIONS */
 
@@ -557,8 +595,8 @@ public:
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_public_functions, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			MethodInfo mi = MethodInfo::from_dict(ret[i]);
+		for (const Variant &var : ret) {
+			MethodInfo mi = MethodInfo::from_dict(var);
 			p_functions->push_back(mi);
 		}
 	}
@@ -577,14 +615,15 @@ public:
 	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_public_annotations, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			MethodInfo mi = MethodInfo::from_dict(ret[i]);
+		for (const Variant &var : ret) {
+			MethodInfo mi = MethodInfo::from_dict(var);
 			p_annotations->push_back(mi);
 		}
 	}
 
 	EXBIND0(profiling_start)
 	EXBIND0(profiling_stop)
+	EXBIND1(profiling_set_save_native_calls, bool)
 
 	GDVIRTUAL2R(int, _profiling_get_accumulated_data, GDExtensionPtr<ScriptLanguageExtensionProfilingInfo>, int)
 
@@ -630,11 +669,17 @@ VARIANT_ENUM_CAST(ScriptLanguageExtension::CodeCompletionLocation)
 
 class ScriptInstanceExtension : public ScriptInstance {
 public:
-	const GDExtensionScriptInstanceInfo2 *native_info;
+	const GDExtensionScriptInstanceInfo3 *native_info;
+
+#ifndef DISABLE_DEPRECATED
 	bool free_native_info = false;
-	struct {
-		GDExtensionClassNotification notification_func;
-	} deprecated_native_info;
+	struct DeprecatedNativeInfo {
+		GDExtensionScriptInstanceNotification notification_func = nullptr;
+		GDExtensionScriptInstanceFreePropertyList free_property_list_func = nullptr;
+		GDExtensionScriptInstanceFreeMethodList free_method_list_func = nullptr;
+	};
+	DeprecatedNativeInfo *deprecated_native_info = nullptr;
+#endif // DISABLE_DEPRECATED
 
 	GDExtensionScriptInstanceDataPtr instance = nullptr;
 
@@ -662,9 +707,18 @@ public:
 			const GDExtensionPropertyInfo *pinfo = native_info->get_property_list_func(instance, &pcount);
 
 #ifdef TOOLS_ENABLED
-			Ref<Script> script = get_script();
-			if (script.is_valid() && pcount > 0) {
-				p_list->push_back(script->get_class_category());
+			if (pcount > 0) {
+				if (native_info->get_class_category_func) {
+					GDExtensionPropertyInfo gdext_class_category;
+					if (native_info->get_class_category_func(instance, &gdext_class_category)) {
+						p_list->push_back(PropertyInfo(gdext_class_category));
+					}
+				} else {
+					Ref<Script> script = get_script();
+					if (script.is_valid()) {
+						p_list->push_back(script->get_class_category());
+					}
+				}
 			}
 #endif // TOOLS_ENABLED
 
@@ -672,7 +726,11 @@ public:
 				p_list->push_back(PropertyInfo(pinfo[i]));
 			}
 			if (native_info->free_property_list_func) {
-				native_info->free_property_list_func(instance, pinfo);
+				native_info->free_property_list_func(instance, pinfo, pcount);
+#ifndef DISABLE_DEPRECATED
+			} else if (deprecated_native_info && deprecated_native_info->free_property_list_func) {
+				deprecated_native_info->free_property_list_func(instance, pinfo);
+#endif // DISABLE_DEPRECATED
 			}
 		}
 	}
@@ -747,7 +805,11 @@ public:
 				p_list->push_back(MethodInfo(minfo[i]));
 			}
 			if (native_info->free_method_list_func) {
-				native_info->free_method_list_func(instance, minfo);
+				native_info->free_method_list_func(instance, minfo, mcount);
+#ifndef DISABLE_DEPRECATED
+			} else if (deprecated_native_info && deprecated_native_info->free_method_list_func) {
+				deprecated_native_info->free_method_list_func(instance, minfo);
+#endif // DISABLE_DEPRECATED
 			}
 		}
 	}
@@ -756,6 +818,19 @@ public:
 			return native_info->has_method_func(instance, (GDExtensionStringNamePtr)&p_method);
 		}
 		return false;
+	}
+
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		if (native_info->get_method_argument_count_func) {
+			GDExtensionBool is_valid = 0;
+			GDExtensionInt ret = native_info->get_method_argument_count_func(instance, (GDExtensionStringNamePtr)&p_method, &is_valid);
+			if (r_is_valid) {
+				*r_is_valid = is_valid != 0;
+			}
+			return ret;
+		}
+		// Fallback to default.
+		return ScriptInstance::get_method_argument_count(p_method, r_is_valid);
 	}
 
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
@@ -774,8 +849,8 @@ public:
 		if (native_info->notification_func) {
 			native_info->notification_func(instance, p_notification, p_reversed);
 #ifndef DISABLE_DEPRECATED
-		} else if (deprecated_native_info.notification_func) {
-			deprecated_native_info.notification_func(instance, p_notification);
+		} else if (deprecated_native_info && deprecated_native_info->notification_func) {
+			deprecated_native_info->notification_func(instance, p_notification);
 #endif // DISABLE_DEPRECATED
 		}
 	}
@@ -845,15 +920,19 @@ public:
 			return reinterpret_cast<ScriptLanguage *>(lang);
 		}
 		return nullptr;
-		;
 	}
 	virtual ~ScriptInstanceExtension() {
 		if (native_info->free_func) {
 			native_info->free_func(instance);
 		}
+#ifndef DISABLE_DEPRECATED
 		if (free_native_info) {
-			memfree(const_cast<GDExtensionScriptInstanceInfo2 *>(native_info));
+			memfree(const_cast<GDExtensionScriptInstanceInfo3 *>(native_info));
 		}
+		if (deprecated_native_info) {
+			memfree(deprecated_native_info);
+		}
+#endif // DISABLE_DEPRECATED
 	}
 
 #if defined(__GNUC__) && !defined(__clang__)

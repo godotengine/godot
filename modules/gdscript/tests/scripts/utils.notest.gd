@@ -17,27 +17,70 @@ static func get_type(property: Dictionary, is_return: bool = false) -> String:
 		TYPE_OBJECT:
 			if not str(property.class_name).is_empty():
 				return property.class_name
-	return variant_get_type_name(property.type)
+	return type_string(property.type)
 
 
-static func get_property_signature(property: Dictionary, is_static: bool = false) -> String:
+static func get_property_signature(property: Dictionary, base: Object = null, is_static: bool = false) -> String:
+	if property.usage & PROPERTY_USAGE_CATEGORY:
+		return '@export_category("%s")' % str(property.name).c_escape()
+	if property.usage & PROPERTY_USAGE_GROUP:
+		return '@export_group("%s")' % str(property.name).c_escape()
+	if property.usage & PROPERTY_USAGE_SUBGROUP:
+		return '@export_subgroup("%s")' % str(property.name).c_escape()
+
 	var result: String = ""
 	if not (property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE):
 		printerr("Missing `PROPERTY_USAGE_SCRIPT_VARIABLE` flag.")
-	if property.usage & PROPERTY_USAGE_DEFAULT:
-		result += "@export "
 	if is_static:
 		result += "static "
 	result += "var " + property.name + ": " + get_type(property)
+	if is_instance_valid(base):
+		result += " = " + var_to_str(base.get(property.name))
 	return result
 
 
-static func get_property_additional_info(property: Dictionary) -> String:
-	return 'hint=%s hint_string="%s" usage=%s' % [
+static func get_human_readable_hint_string(property: Dictionary) -> String:
+	if property.type >= TYPE_ARRAY and property.hint == PROPERTY_HINT_TYPE_STRING:
+		var type_hint_prefixes: String = ""
+		var hint_string: String = property.hint_string
+
+		while true:
+			if not hint_string.contains(":"):
+				push_error("Invalid PROPERTY_HINT_TYPE_STRING format.")
+			var elem_type_hint: String = hint_string.get_slice(":", 0)
+			hint_string = hint_string.substr(elem_type_hint.length() + 1)
+
+			var elem_type: int
+			var elem_hint: int
+
+			if elem_type_hint.is_valid_int():
+				elem_type = elem_type_hint.to_int()
+				type_hint_prefixes += type_string(elem_type) + ":"
+			else:
+				if elem_type_hint.count("/") != 1:
+					push_error("Invalid PROPERTY_HINT_TYPE_STRING format.")
+				elem_type = elem_type_hint.get_slice("/", 0).to_int()
+				elem_hint = elem_type_hint.get_slice("/", 1).to_int()
+				type_hint_prefixes += "%s/%s:" % [
+				type_string(elem_type),
+				get_property_hint_name(elem_hint).trim_prefix("PROPERTY_HINT_"),
+				]
+
+			if elem_type < TYPE_ARRAY:
+				break
+
+		return type_hint_prefixes + hint_string
+
+	return property.hint_string
+
+
+static func print_property_extended_info(property: Dictionary, base: Object = null, is_static: bool = false) -> void:
+	print(get_property_signature(property, base, is_static))
+	print('  hint=%s hint_string="%s" usage=%s' % [
 		get_property_hint_name(property.hint).trim_prefix("PROPERTY_HINT_"),
-		str(property.hint_string).c_escape(),
+		get_human_readable_hint_string(property),
 		get_property_usage_string(property.usage).replace("PROPERTY_USAGE_", ""),
-	]
+	])
 
 
 static func get_method_signature(method: Dictionary, is_signal: bool = false) -> String:
@@ -64,88 +107,6 @@ static func get_method_signature(method: Dictionary, is_signal: bool = false) ->
 	else:
 		result += " -> " + get_type(method.return, true)
 	return result
-
-
-static func variant_get_type_name(type: Variant.Type) -> String:
-	match type:
-		TYPE_NIL:
-			return "Nil" # `Nil` in core, `null` in GDScript.
-		TYPE_BOOL:
-			return "bool"
-		TYPE_INT:
-			return "int"
-		TYPE_FLOAT:
-			return "float"
-		TYPE_STRING:
-			return "String"
-		TYPE_VECTOR2:
-			return "Vector2"
-		TYPE_VECTOR2I:
-			return "Vector2i"
-		TYPE_RECT2:
-			return "Rect2"
-		TYPE_RECT2I:
-			return "Rect2i"
-		TYPE_VECTOR3:
-			return "Vector3"
-		TYPE_VECTOR3I:
-			return "Vector3i"
-		TYPE_TRANSFORM2D:
-			return "Transform2D"
-		TYPE_VECTOR4:
-			return "Vector4"
-		TYPE_VECTOR4I:
-			return "Vector4i"
-		TYPE_PLANE:
-			return "Plane"
-		TYPE_QUATERNION:
-			return "Quaternion"
-		TYPE_AABB:
-			return "AABB"
-		TYPE_BASIS:
-			return "Basis"
-		TYPE_TRANSFORM3D:
-			return "Transform3D"
-		TYPE_PROJECTION:
-			return "Projection"
-		TYPE_COLOR:
-			return "Color"
-		TYPE_STRING_NAME:
-			return "StringName"
-		TYPE_NODE_PATH:
-			return "NodePath"
-		TYPE_RID:
-			return "RID"
-		TYPE_OBJECT:
-			return "Object"
-		TYPE_CALLABLE:
-			return "Callable"
-		TYPE_SIGNAL:
-			return "Signal"
-		TYPE_DICTIONARY:
-			return "Dictionary"
-		TYPE_ARRAY:
-			return "Array"
-		TYPE_PACKED_BYTE_ARRAY:
-			return "PackedByteArray"
-		TYPE_PACKED_INT32_ARRAY:
-			return "PackedInt32Array"
-		TYPE_PACKED_INT64_ARRAY:
-			return "PackedInt64Array"
-		TYPE_PACKED_FLOAT32_ARRAY:
-			return "PackedFloat32Array"
-		TYPE_PACKED_FLOAT64_ARRAY:
-			return "PackedFloat64Array"
-		TYPE_PACKED_STRING_ARRAY:
-			return "PackedStringArray"
-		TYPE_PACKED_VECTOR2_ARRAY:
-			return "PackedVector2Array"
-		TYPE_PACKED_VECTOR3_ARRAY:
-			return "PackedVector3Array"
-		TYPE_PACKED_COLOR_ARRAY:
-			return "PackedColorArray"
-	push_error("Argument `type` is invalid. Use `TYPE_*` constants.")
-	return "<invalid type>"
 
 
 static func get_property_hint_name(hint: PropertyHint) -> String:
@@ -235,7 +196,6 @@ static func get_property_usage_string(usage: int) -> String:
 		return "PROPERTY_USAGE_NONE"
 
 	const FLAGS: Array[Array] = [
-		[PROPERTY_USAGE_DEFAULT, "PROPERTY_USAGE_DEFAULT"],
 		[PROPERTY_USAGE_STORAGE, "PROPERTY_USAGE_STORAGE"],
 		[PROPERTY_USAGE_EDITOR, "PROPERTY_USAGE_EDITOR"],
 		[PROPERTY_USAGE_INTERNAL, "PROPERTY_USAGE_INTERNAL"],
@@ -268,6 +228,10 @@ static func get_property_usage_string(usage: int) -> String:
 	]
 
 	var result: String = ""
+
+	if (usage & PROPERTY_USAGE_DEFAULT) == PROPERTY_USAGE_DEFAULT:
+		result += "PROPERTY_USAGE_DEFAULT|"
+		usage &= ~PROPERTY_USAGE_DEFAULT
 
 	for flag in FLAGS:
 		if usage & flag[0]:

@@ -76,6 +76,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		String name;
 		String description;
 		int api_level = 0;
+		String architecture;
 	};
 
 	struct APKExportData {
@@ -90,6 +91,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 #endif // DISABLE_DEPRECATED
 	String last_plugin_names;
 	uint64_t last_gradle_build_time = 0;
+	String last_gradle_build_dir;
 
 	Vector<Device> devices;
 	SafeFlag devices_changed;
@@ -97,8 +99,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 #ifndef ANDROID_ENABLED
 	Thread check_for_changes_thread;
 	SafeFlag quit_request;
+	SafeFlag has_runnable_preset;
 
 	static void _check_for_changes_poll_thread(void *ud);
+	void _update_preset_status();
 #endif
 
 	String get_project_name(const String &p_name) const;
@@ -162,6 +166,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet);
 
+	static String _get_keystore_path(const Ref<EditorExportPreset> &p_preset, bool p_debug);
+
 	static String _parse_string(const uint8_t *p_bytes, bool p_utf8);
 
 	void _fix_resources(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &r_manifest);
@@ -173,10 +179,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	String load_splash_refs(Ref<Image> &splash_image, Ref<Image> &splash_bg_color_image);
 
 	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background);
-
-	void store_image(const LauncherIcon launcher_icon, const Vector<uint8_t> &data);
-
-	void store_image(const String &export_path, const Vector<uint8_t> &data);
 
 	void _copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
 			const String &processed_splash_config_xml,
@@ -190,13 +192,17 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static bool _uses_vulkan();
 
+protected:
+	void _notification(int p_what);
+
 public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 
-public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
+
+	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 
 	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
 
@@ -218,6 +224,8 @@ public:
 
 	virtual String get_option_tooltip(int p_index) const override;
 
+	virtual String get_device_architecture(int p_index) const override;
+
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) override;
 
 	virtual Ref<Texture2D> get_run_icon() const override;
@@ -226,8 +234,11 @@ public:
 
 	static String get_apksigner_path(int p_target_sdk = -1, bool p_check_executes = false);
 
+	static String get_java_path();
+
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
+	static bool has_valid_username_and_password(const Ref<EditorExportPreset> &p_preset, String &r_error);
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 
@@ -245,9 +256,9 @@ public:
 
 	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &export_path, EditorProgress &ep);
 
-	void _clear_assets_directory();
+	void _clear_assets_directory(const Ref<EditorExportPreset> &p_preset);
 
-	void _remove_copied_libs();
+	void _remove_copied_libs(String p_gdextension_libs_path);
 
 	static String join_list(const List<String> &p_parts, const String &p_separator);
 	static String join_abis(const Vector<ABI> &p_parts, const String &p_separator, bool p_use_arch);

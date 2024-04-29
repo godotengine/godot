@@ -132,8 +132,8 @@ protected:
 
 	HashSet<String> get_features(const Ref<EditorExportPreset> &p_preset, bool p_debug) const;
 
-	bool exists_export_template(String template_file_name, String *err) const;
-	String find_export_template(String template_file_name, String *err = nullptr) const;
+	bool exists_export_template(const String &template_file_name, String *err) const;
+	String find_export_template(const String &template_file_name, String *err = nullptr) const;
 	void gen_export_flags(Vector<String> &r_flags, int p_flags);
 	void gen_debug_flags(Vector<String> &r_flags, int p_flags);
 
@@ -227,6 +227,7 @@ public:
 	virtual Ref<ImageTexture> get_option_icon(int p_index) const;
 	virtual String get_option_label(int p_device) const { return ""; }
 	virtual String get_option_tooltip(int p_device) const { return ""; }
+	virtual String get_device_architecture(int p_device) const { return ""; }
 
 	enum DebugFlags {
 		DEBUG_FLAG_DUMB_CLIENT = 1,

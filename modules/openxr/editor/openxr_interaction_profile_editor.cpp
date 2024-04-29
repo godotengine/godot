@@ -45,7 +45,6 @@
 void OpenXRInteractionProfileEditorBase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_add_binding", "action", "path"), &OpenXRInteractionProfileEditorBase::_add_binding);
 	ClassDB::bind_method(D_METHOD("_remove_binding", "action", "path"), &OpenXRInteractionProfileEditorBase::_remove_binding);
-	ClassDB::bind_method(D_METHOD("_update_interaction_profile"), &OpenXRInteractionProfileEditorBase::_update_interaction_profile);
 }
 
 void OpenXRInteractionProfileEditorBase::_notification(int p_what) {
@@ -63,7 +62,7 @@ void OpenXRInteractionProfileEditorBase::_notification(int p_what) {
 void OpenXRInteractionProfileEditorBase::_do_update_interaction_profile() {
 	if (!is_dirty) {
 		is_dirty = true;
-		call_deferred("_update_interaction_profile");
+		callable_mp(this, &OpenXRInteractionProfileEditorBase::_update_interaction_profile).call_deferred();
 	}
 }
 

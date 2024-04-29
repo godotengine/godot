@@ -14,7 +14,7 @@ controller_databases = [
 gensource = env.CommandNoCache(
     "default_controller_mappings.gen.cpp",
     controller_databases,
-    env.Run(input_builders.make_default_controller_mappings, "Generating default controller mappings."),
+    env.Run(input_builders.make_default_controller_mappings),
 )
 
 env.add_source_files(env.core_sources, "*.cpp")

@@ -34,13 +34,16 @@
 #include "core/input/input.h"
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
 #include "servers/audio_server.h"
@@ -84,9 +87,9 @@ void EditorAudioBus::_notification(int p_what) {
 
 			disabled_vu = get_editor_theme_icon(SNAME("BusVuFrozen"));
 
-			Color solo_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1.0, 0.89, 0.22) : Color(1.0, 0.92, 0.44);
-			Color mute_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1.0, 0.16, 0.16) : Color(1.0, 0.44, 0.44);
-			Color bypass_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(0.44, 0.87, 1.0);
+			Color solo_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.89, 0.22) : Color(1.0, 0.92, 0.44);
+			Color mute_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.16, 0.16) : Color(1.0, 0.44, 0.44);
+			Color bypass_color = EditorThemeManager::is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(0.44, 0.87, 1.0);
 
 			solo->set_icon(get_editor_theme_icon(SNAME("AudioBusSolo")));
 			solo->add_theme_color_override("icon_pressed_color", solo_color);
@@ -327,7 +330,7 @@ void EditorAudioBus::_volume_changed(float p_normalized) {
 
 	updating_bus = true;
 
-	const float p_db = this->_normalized_volume_to_scaled_db(p_normalized);
+	const float p_db = _normalized_volume_to_scaled_db(p_normalized);
 
 	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 		// Snap the value when holding Ctrl for easier editing.
@@ -803,21 +806,21 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vb->add_child(hbc);
 	solo = memnew(Button);
-	solo->set_flat(true);
+	solo->set_theme_type_variation("FlatButton");
 	solo->set_toggle_mode(true);
 	solo->set_tooltip_text(TTR("Solo"));
 	solo->set_focus_mode(FOCUS_NONE);
 	solo->connect("pressed", callable_mp(this, &EditorAudioBus::_solo_toggled));
 	hbc->add_child(solo);
 	mute = memnew(Button);
-	mute->set_flat(true);
+	mute->set_theme_type_variation("FlatButton");
 	mute->set_toggle_mode(true);
 	mute->set_tooltip_text(TTR("Mute"));
 	mute->set_focus_mode(FOCUS_NONE);
 	mute->connect("pressed", callable_mp(this, &EditorAudioBus::_mute_toggled));
 	hbc->add_child(mute);
 	bypass = memnew(Button);
-	bypass->set_flat(true);
+	bypass->set_theme_type_variation("FlatButton");
 	bypass->set_toggle_mode(true);
 	bypass->set_tooltip_text(TTR("Bypass"));
 	bypass->set_focus_mode(FOCUS_NONE);
@@ -828,10 +831,12 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	Ref<StyleBoxEmpty> sbempty = memnew(StyleBoxEmpty);
 	for (int i = 0; i < hbc->get_child_count(); i++) {
 		Control *child = Object::cast_to<Control>(hbc->get_child(i));
+		child->begin_bulk_theme_override();
 		child->add_theme_style_override("normal", sbempty);
 		child->add_theme_style_override("hover", sbempty);
 		child->add_theme_style_override("focus", sbempty);
 		child->add_theme_style_override("pressed", sbempty);
+		child->end_bulk_theme_override();
 	}
 
 	HSeparator *separator = memnew(HSeparator);
@@ -910,6 +915,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	vb->add_child(effects);
 	effects->connect("item_edited", callable_mp(this, &EditorAudioBus::_effect_edited));
 	effects->connect("cell_selected", callable_mp(this, &EditorAudioBus::_effect_selected));
+	effects->connect("focus_exited", callable_mp(effects, &Tree::deselect_all));
 	effects->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	SET_DRAG_FORWARDING_GCD(effects, EditorAudioBus);
 	effects->connect("item_mouse_selected", callable_mp(this, &EditorAudioBus::_effect_rmb));
@@ -919,6 +925,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effects->connect("gui_input", callable_mp(this, &EditorAudioBus::_effects_gui_input));
 
 	send = memnew(OptionButton);
+	send->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	send->set_clip_text(true);
 	send->connect("item_selected", callable_mp(this, &EditorAudioBus::_send_selected));
 	vb->add_child(send);
@@ -1036,7 +1043,7 @@ void EditorAudioBuses::_rebuild_buses() {
 
 EditorAudioBuses *EditorAudioBuses::register_editor() {
 	EditorAudioBuses *audio_buses = memnew(EditorAudioBuses);
-	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Audio"), audio_buses);
+	EditorNode::get_bottom_panel()->add_item(TTR("Audio"), audio_buses, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTR("Toggle Audio Bottom Panel"), KeyModifierMask::ALT | Key::A));
 	return audio_buses;
 }
 
@@ -1145,6 +1152,7 @@ void EditorAudioBuses::_duplicate_bus(int p_which) {
 		ur->add_do_method(AudioServer::get_singleton(), "add_bus_effect", add_at_pos, AudioServer::get_singleton()->get_bus_effect(p_which, i));
 		ur->add_do_method(AudioServer::get_singleton(), "set_bus_effect_enabled", add_at_pos, i, AudioServer::get_singleton()->is_bus_effect_enabled(p_which, i));
 	}
+	ur->add_do_method(this, "_update_bus", add_at_pos);
 	ur->add_undo_method(AudioServer::get_singleton(), "remove_bus", add_at_pos);
 	ur->commit_action();
 }
@@ -1190,7 +1198,7 @@ void EditorAudioBuses::_server_save() {
 }
 
 void EditorAudioBuses::_select_layout() {
-	FileSystemDock::get_singleton()->select_file(edited_path);
+	FileSystemDock::get_singleton()->navigate_to_path(edited_path);
 }
 
 void EditorAudioBuses::_save_as_layout() {
@@ -1220,7 +1228,10 @@ void EditorAudioBuses::_load_layout() {
 void EditorAudioBuses::_load_default_layout() {
 	String layout_path = GLOBAL_GET("audio/buses/default_bus_layout");
 
-	Ref<AudioBusLayout> state = ResourceLoader::load(layout_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
+	Ref<AudioBusLayout> state;
+	if (ResourceLoader::exists(layout_path)) {
+		state = ResourceLoader::load(layout_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
+	}
 	if (state.is_null()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("There is no '%s' file."), layout_path));
 		return;
@@ -1231,7 +1242,7 @@ void EditorAudioBuses::_load_default_layout() {
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
 	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-	call_deferred(SNAME("_select_layout"));
+	callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 }
 
 void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
@@ -1247,7 +1258,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		AudioServer::get_singleton()->set_bus_layout(state);
 		_rebuild_buses();
 		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-		call_deferred(SNAME("_select_layout"));
+		callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 
 	} else if (file_dialog->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 		if (new_layout) {
@@ -1267,14 +1278,13 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
 		_rebuild_buses();
 		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-		call_deferred(SNAME("_select_layout"));
+		callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 	}
 }
 
 void EditorAudioBuses::_bind_methods() {
 	ClassDB::bind_method("_update_bus", &EditorAudioBuses::_update_bus);
 	ClassDB::bind_method("_update_sends", &EditorAudioBuses::_update_sends);
-	ClassDB::bind_method("_select_layout", &EditorAudioBuses::_select_layout);
 }
 
 EditorAudioBuses::EditorAudioBuses() {
@@ -1354,7 +1364,7 @@ EditorAudioBuses::EditorAudioBuses() {
 }
 
 void EditorAudioBuses::open_layout(const String &p_path) {
-	EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+	EditorNode::get_bottom_panel()->make_item_visible(this);
 
 	Ref<AudioBusLayout> state = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 	if (state.is_null()) {
@@ -1367,7 +1377,7 @@ void EditorAudioBuses::open_layout(const String &p_path) {
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
 	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-	call_deferred(SNAME("_select_layout"));
+	callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 }
 
 void AudioBusesEditorPlugin::edit(Object *p_node) {

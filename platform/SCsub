@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import methods
+
 Import("env")
 
 env.platform_sources = []
@@ -18,12 +20,7 @@ reg_apis_inc += "\n"
 reg_apis += "}\n\n"
 unreg_apis += "}\n"
 
-# NOTE: It is safe to generate this file here, since this is still execute serially
-with open("register_platform_apis.gen.cpp", "w", encoding="utf-8") as f:
-    f.write(reg_apis_inc)
-    f.write(reg_apis)
-    f.write(unreg_apis)
-
+methods.write_file_if_needed("register_platform_apis.gen.cpp", reg_apis_inc + reg_apis + unreg_apis)
 env.add_source_files(env.platform_sources, "register_platform_apis.gen.cpp")
 
 lib = env.add_library("platform", env.platform_sources)

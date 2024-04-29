@@ -97,7 +97,6 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	int max_locals = 0;
 	int current_line = 0;
 	int instr_args_max = 0;
-	int ptrcall_max = 0;
 
 #ifdef DEBUG_ENABLED
 	List<int> temp_stack;
@@ -122,7 +121,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	RBMap<MethodBind *, int> method_bind_map;
 	RBMap<GDScriptFunction *, int> lambdas_map;
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	// Keep method and property names for pointer and validated operations.
 	// Used when disassembling the bytecode.
 	Vector<String> operator_names;
@@ -346,12 +345,6 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return pos;
 	}
 
-	void alloc_ptrcall(int p_params) {
-		if (p_params >= ptrcall_max) {
-			ptrcall_max = p_params;
-		}
-	}
-
 	CallTarget get_call_target(const Address &p_target, Variant::Type p_type = Variant::NIL);
 
 	int address_of(const Address &p_address) {
@@ -519,7 +512,7 @@ public:
 	virtual void write_call_builtin_type_static(const Address &p_target, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
-	virtual void write_call_ptrcall(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_method_bind_validated(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_self_async(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;

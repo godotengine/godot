@@ -57,7 +57,7 @@ protected:
 		MTFlag() :
 				mt{} {}
 	};
-	template <class T>
+	template <typename T>
 	union MTNumeric {
 		SafeNumeric<T> mt;
 		T st;
@@ -66,7 +66,9 @@ protected:
 	};
 
 public:
-	enum ProcessMode {
+	// N.B. Any enum stored as a bitfield should be specified as UNSIGNED to work around
+	// some compilers trying to store it as signed, and requiring 1 more bit than necessary.
+	enum ProcessMode : unsigned int {
 		PROCESS_MODE_INHERIT, // same as parent node
 		PROCESS_MODE_PAUSABLE, // process only if not paused
 		PROCESS_MODE_WHEN_PAUSED, // process only if paused
@@ -84,6 +86,12 @@ public:
 		FLAG_PROCESS_THREAD_MESSAGES = 1,
 		FLAG_PROCESS_THREAD_MESSAGES_PHYSICS = 2,
 		FLAG_PROCESS_THREAD_MESSAGES_ALL = 3,
+	};
+
+	enum PhysicsInterpolationMode : unsigned int {
+		PHYSICS_INTERPOLATION_MODE_INHERIT,
+		PHYSICS_INTERPOLATION_MODE_ON,
+		PHYSICS_INTERPOLATION_MODE_OFF,
 	};
 
 	enum DuplicateFlags {
@@ -106,6 +114,12 @@ public:
 		INTERNAL_MODE_DISABLED,
 		INTERNAL_MODE_FRONT,
 		INTERNAL_MODE_BACK,
+	};
+
+	enum AutoTranslateMode {
+		AUTO_TRANSLATE_MODE_INHERIT,
+		AUTO_TRANSLATE_MODE_ALWAYS,
+		AUTO_TRANSLATE_MODE_DISABLED,
 	};
 
 	struct Comparator {
@@ -164,9 +178,7 @@ private:
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
 		SceneTree *tree = nullptr;
-		bool inside_tree = false;
-		bool ready_notified = false; // This is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification.
-		bool ready_first = true;
+
 #ifdef TOOLS_ENABLED
 		NodePath import_path; // Path used when imported, used by scene editors to keep tracking.
 #endif
@@ -178,7 +190,6 @@ private:
 		List<Node *>::Element *OW = nullptr; // Owned element.
 		List<Node *> owned;
 
-		ProcessMode process_mode = PROCESS_MODE_INHERIT;
 		Node *process_owner = nullptr;
 		ProcessThreadGroup process_thread_group = PROCESS_THREAD_GROUP_INHERIT;
 		Node *process_thread_group_owner = nullptr;
@@ -190,26 +201,43 @@ private:
 		Variant rpc_config;
 
 		// Variables used to properly sort the node when processing, ignored otherwise.
-		// TODO: Should move all the stuff below to bits.
-		bool physics_process = false;
-		bool process = false;
 		int process_priority = 0;
 		int physics_process_priority = 0;
 
-		bool physics_process_internal = false;
-		bool process_internal = false;
+		// Keep bitpacked values together to get better packing.
+		ProcessMode process_mode : 3;
+		PhysicsInterpolationMode physics_interpolation_mode : 2;
 
-		bool input = false;
-		bool shortcut_input = false;
-		bool unhandled_input = false;
-		bool unhandled_key_input = false;
+		bool physics_process : 1;
+		bool process : 1;
 
-		bool parent_owned = false;
-		bool in_constructor = true;
-		bool use_placeholder = false;
+		bool physics_process_internal : 1;
+		bool process_internal : 1;
 
-		bool display_folded = false;
-		bool editable_instance = false;
+		bool input : 1;
+		bool shortcut_input : 1;
+		bool unhandled_input : 1;
+		bool unhandled_key_input : 1;
+
+		// Physics interpolation can be turned on and off on a per node basis.
+		// This only takes effect when the SceneTree (or project setting) physics interpolation
+		// is switched on.
+		bool physics_interpolated : 1;
+
+		bool parent_owned : 1;
+		bool in_constructor : 1;
+		bool use_placeholder : 1;
+
+		bool display_folded : 1;
+		bool editable_instance : 1;
+
+		bool inside_tree : 1;
+		bool ready_notified : 1;
+		bool ready_first : 1;
+
+		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
+		mutable bool is_auto_translating = true;
+		mutable bool is_auto_translate_dirty = true;
 
 		mutable NodePath *path_cache = nullptr;
 
@@ -217,8 +245,8 @@ private:
 
 	Ref<MultiplayerAPI> multiplayer;
 
-	void _print_tree_pretty(const String &prefix, const bool last);
-	void _print_tree(const Node *p_node);
+	String _get_tree_string_pretty(const String &p_prefix, bool p_last);
+	String _get_tree_string(const Node *p_node);
 
 	Node *_get_child_by_name(const StringName &p_name) const;
 
@@ -233,10 +261,12 @@ private:
 	void _propagate_ready();
 	void _propagate_exit_tree();
 	void _propagate_after_exit_tree();
+	void _propagate_physics_interpolated(bool p_interpolated);
 	void _propagate_process_owner(Node *p_owner, int p_pause_notification, int p_enabled_notification);
 	void _propagate_groups_dirty();
 	Array _get_node_and_resource(const NodePath &p_path);
 
+	void _duplicate_properties_node(const Node *p_root, const Node *p_original, Node *p_copy) const;
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
 	Node *_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap = nullptr) const;
 
@@ -285,6 +315,8 @@ protected:
 
 	void _notification(int p_notification);
 
+	virtual void _physics_interpolated_changed();
+
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
@@ -329,7 +361,7 @@ protected:
 
 public:
 	enum {
-		// you can make your own, but don't use the same numbers as other notifications in other nodes
+		// You can make your own, but don't use the same numbers as other notifications in other nodes.
 		NOTIFICATION_ENTER_TREE = 10,
 		NOTIFICATION_EXIT_TREE = 11,
 		NOTIFICATION_MOVED_IN_PARENT = 12,
@@ -350,9 +382,8 @@ public:
 		NOTIFICATION_POST_ENTER_TREE = 27,
 		NOTIFICATION_DISABLED = 28,
 		NOTIFICATION_ENABLED = 29,
-		NOTIFICATION_NODE_RECACHE_REQUESTED = 30,
-		//keep these linked to node
-
+		NOTIFICATION_RESET_PHYSICS_INTERPOLATION = 2001, // A GodotSpace Odyssey.
+		// Keep these linked to Node.
 		NOTIFICATION_WM_MOUSE_ENTER = 1002,
 		NOTIFICATION_WM_MOUSE_EXIT = 1003,
 		NOTIFICATION_WM_WINDOW_FOCUS_IN = 1004,
@@ -411,7 +442,7 @@ public:
 	Window *get_last_exclusive_window() const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
-		ERR_FAIL_COND_V(!data.tree, nullptr);
+		ERR_FAIL_NULL_V(data.tree, nullptr);
 		return data.tree;
 	}
 
@@ -476,6 +507,8 @@ public:
 
 	void print_tree();
 	void print_tree_pretty();
+	String get_tree_string();
+	String get_tree_string_pretty();
 
 	void set_scene_file_path(const String &p_scene_file_path);
 	String get_scene_file_path() const;
@@ -504,6 +537,7 @@ public:
 	void propagate_call(const StringName &p_method, const Array &p_args = Array(), const bool p_parent_first = false);
 
 	/* PROCESSING */
+
 	void set_physics_process(bool p_process);
 	double get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
@@ -557,7 +591,9 @@ public:
 	_FORCE_INLINE_ bool is_readable_from_caller_thread() const {
 		if (current_process_thread_group == nullptr) {
 			// No thread processing.
-			return is_current_thread_safe_for_nodes();
+			// Only accessible if node is outside the scene tree
+			// or access will happen from a node-safe thread.
+			return !data.inside_tree || is_current_thread_safe_for_nodes();
 		} else {
 			// Thread processing.
 			return true;
@@ -599,6 +635,13 @@ public:
 	ProcessMode get_process_mode() const;
 	bool can_process() const;
 	bool can_process_notification(int p_what) const;
+
+	void set_physics_interpolation_mode(PhysicsInterpolationMode p_mode);
+	PhysicsInterpolationMode get_physics_interpolation_mode() const { return data.physics_interpolation_mode; }
+	_FORCE_INLINE_ bool is_physics_interpolated() const { return data.physics_interpolated; }
+	_FORCE_INLINE_ bool is_physics_interpolated_and_enabled() const { return is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && is_physics_interpolated(); }
+	void reset_physics_interpolation();
+
 	bool is_enabled() const;
 	bool is_ready() const;
 
@@ -611,6 +654,8 @@ public:
 
 #ifdef TOOLS_ENABLED
 	String validate_child_name(Node *p_child);
+	String prevalidate_child_name(Node *p_child, StringName p_name);
+	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
 	static String adjust_name_casing(const String &p_name);
 
@@ -626,19 +671,17 @@ public:
 
 	bool is_owned_by_parent() const;
 
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-
 	void clear_internal_tree_resource_paths();
 
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 
 	virtual PackedStringArray get_configuration_warnings() const;
-	String get_configuration_warnings_as_string() const;
 
 	void update_configuration_warnings();
 
 	void set_display_folded(bool p_folded);
 	bool is_displayed_folded() const;
+
 	/* NETWORK */
 
 	virtual void set_multiplayer_authority(int p_peer_id, bool p_recursive = true);
@@ -657,6 +700,17 @@ public:
 	Error rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 
 	Ref<MultiplayerAPI> get_multiplayer() const;
+
+	/* INTERNATIONALIZATION */
+
+	void set_auto_translate_mode(AutoTranslateMode p_mode);
+	AutoTranslateMode get_auto_translate_mode() const;
+	bool can_auto_translate() const;
+
+	_FORCE_INLINE_ String atr(const String p_message, const StringName p_context = "") const { return can_auto_translate() ? tr(p_message, p_context) : p_message; }
+	_FORCE_INLINE_ String atr_n(const String p_message, const StringName &p_message_plural, int p_n, const StringName p_context = "") const { return can_auto_translate() ? tr_n(p_message, p_message_plural, p_n, p_context) : p_message; }
+
+	/* THREADING */
 
 	void call_deferred_thread_groupp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
 	template <typename... VarArgs>
@@ -719,6 +773,8 @@ VARIANT_ENUM_CAST(Node::ProcessMode);
 VARIANT_ENUM_CAST(Node::ProcessThreadGroup);
 VARIANT_BITFIELD_CAST(Node::ProcessThreadMessages);
 VARIANT_ENUM_CAST(Node::InternalMode);
+VARIANT_ENUM_CAST(Node::PhysicsInterpolationMode);
+VARIANT_ENUM_CAST(Node::AutoTranslateMode);
 
 typedef HashSet<Node *, Node::Comparator> NodeSet;
 

@@ -89,13 +89,35 @@ Basis Basis::orthogonalized() const {
 	return c;
 }
 
+// Returns true if the basis vectors are orthogonal (perpendicular), so it has no skew or shear, and can be decomposed into rotation and scale.
+// See https://en.wikipedia.org/wiki/Orthogonal_basis
 bool Basis::is_orthogonal() const {
-	Basis identity;
-	Basis m = (*this) * transposed();
-
-	return m.is_equal_approx(identity);
+	const Vector3 x = get_column(0);
+	const Vector3 y = get_column(1);
+	const Vector3 z = get_column(2);
+	return Math::is_zero_approx(x.dot(y)) && Math::is_zero_approx(x.dot(z)) && Math::is_zero_approx(y.dot(z));
 }
 
+// Returns true if the basis vectors are orthonormal (orthogonal and normalized), so it has no scale, skew, or shear.
+// See https://en.wikipedia.org/wiki/Orthonormal_basis
+bool Basis::is_orthonormal() const {
+	const Vector3 x = get_column(0);
+	const Vector3 y = get_column(1);
+	const Vector3 z = get_column(2);
+	return Math::is_equal_approx(x.length_squared(), 1) && Math::is_equal_approx(y.length_squared(), 1) && Math::is_equal_approx(z.length_squared(), 1) && Math::is_zero_approx(x.dot(y)) && Math::is_zero_approx(x.dot(z)) && Math::is_zero_approx(y.dot(z));
+}
+
+// Returns true if the basis is conformal (orthogonal, uniform scale, preserves angles and distance ratios).
+// See https://en.wikipedia.org/wiki/Conformal_linear_transformation
+bool Basis::is_conformal() const {
+	const Vector3 x = get_column(0);
+	const Vector3 y = get_column(1);
+	const Vector3 z = get_column(2);
+	const real_t x_len_sq = x.length_squared();
+	return Math::is_equal_approx(x_len_sq, y.length_squared()) && Math::is_equal_approx(x_len_sq, z.length_squared()) && Math::is_zero_approx(x.dot(y)) && Math::is_zero_approx(x.dot(z)) && Math::is_zero_approx(y.dot(z));
+}
+
+// Returns true if the basis only has diagonal elements, so it may only have scale or flip, but no rotation, skew, or shear.
 bool Basis::is_diagonal() const {
 	return (
 			Math::is_zero_approx(rows[0][1]) && Math::is_zero_approx(rows[0][2]) &&
@@ -103,8 +125,9 @@ bool Basis::is_diagonal() const {
 			Math::is_zero_approx(rows[2][0]) && Math::is_zero_approx(rows[2][1]));
 }
 
+// Returns true if the basis is a pure rotation matrix, so it has no scale, skew, shear, or flip.
 bool Basis::is_rotation() const {
-	return Math::is_equal_approx(determinant(), 1, (real_t)UNIT_EPSILON) && is_orthogonal();
+	return is_conformal() && Math::is_equal_approx(determinant(), 1, (real_t)UNIT_EPSILON);
 }
 
 #ifdef MATH_CHECKS
@@ -255,7 +278,7 @@ Basis Basis::scaled_orthogonal(const Vector3 &p_scale) const {
 	return m;
 }
 
-float Basis::get_uniform_scale() const {
+real_t Basis::get_uniform_scale() const {
 	return (rows[0].length() + rows[1].length() + rows[2].length()) / 3.0f;
 }
 
@@ -662,7 +685,7 @@ void Basis::set_euler(const Vector3 &p_euler, EulerOrder p_order) {
 			*this = zmat * ymat * xmat;
 		} break;
 		default: {
-			ERR_FAIL_MSG("Invalid order parameter for set_euler(vec3,order)");
+			ERR_FAIL_MSG("Invalid Euler order parameter.");
 		}
 	}
 }
@@ -699,7 +722,7 @@ Basis::operator String() const {
 
 Quaternion Basis::get_quaternion() const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_rotation(), Quaternion(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quaternion() or call orthonormalized() if the Basis contains linearly independent vectors.");
+	ERR_FAIL_COND_V_MSG(!is_rotation(), Quaternion(), "Basis " + operator String() + " must be normalized in order to be casted to a Quaternion. Use get_rotation_quaternion() or call orthonormalized() if the Basis contains linearly independent vectors.");
 #endif
 	/* Allow getting a quaternion from an unnormalized transform */
 	Basis m = *this;
@@ -826,7 +849,7 @@ void Basis::set_quaternion(const Quaternion &p_quaternion) {
 void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_angle) {
 // Rotation matrix from axis and angle, see https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_angle
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 must be normalized.");
+	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 " + p_axis.operator String() + " must be normalized.");
 #endif
 	Vector3 axis_sq(p_axis.x * p_axis.x, p_axis.y * p_axis.y, p_axis.z * p_axis.z);
 	real_t cosine = Math::cos(p_angle);
@@ -884,7 +907,7 @@ void Basis::_set_diagonal(const Vector3 &p_diag) {
 	rows[2][2] = p_diag.z;
 }
 
-Basis Basis::lerp(const Basis &p_to, const real_t &p_weight) const {
+Basis Basis::lerp(const Basis &p_to, real_t p_weight) const {
 	Basis b;
 	b.rows[0] = rows[0].lerp(p_to.rows[0], p_weight);
 	b.rows[1] = rows[1].lerp(p_to.rows[1], p_weight);
@@ -893,7 +916,7 @@ Basis Basis::lerp(const Basis &p_to, const real_t &p_weight) const {
 	return b;
 }
 
-Basis Basis::slerp(const Basis &p_to, const real_t &p_weight) const {
+Basis Basis::slerp(const Basis &p_to, real_t p_weight) const {
 	//consider scale
 	Quaternion from(*this);
 	Quaternion to(p_to);

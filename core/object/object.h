@@ -49,7 +49,7 @@ class TypedArray;
 
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
-	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_less][,hide_slider][,radians][,degrees][,exp][,suffix:<keyword>] range.
+	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_less][,hide_slider][,radians_as_degrees][,degrees][,exp][,suffix:<keyword>] range.
 	PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_ENUM_SUGGESTION, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_EXP_EASING, /// exponential easing function (Math::ease) use "attenuation" hint string to revert (flip h), "positive_only" to exclude in-out and out-in. (ie: "attenuation,positive_only")
@@ -72,12 +72,12 @@ enum PropertyHint {
 	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
 	PROPERTY_HINT_OBJECT_ID,
 	PROPERTY_HINT_TYPE_STRING, ///< a type string, the hint is the base type to choose
-	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, ///< so something else can provide this (used in scripts)
+	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, // Deprecated.
 	PROPERTY_HINT_OBJECT_TOO_BIG, ///< object is too big to send
 	PROPERTY_HINT_NODE_PATH_VALID_TYPES,
 	PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
 	PROPERTY_HINT_GLOBAL_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
-	PROPERTY_HINT_INT_IS_OBJECTID,
+	PROPERTY_HINT_INT_IS_OBJECTID, // Deprecated.
 	PROPERTY_HINT_INT_IS_POINTER,
 	PROPERTY_HINT_ARRAY_TYPE,
 	PROPERTY_HINT_LOCALE_ID,
@@ -105,7 +105,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_SCRIPT_VARIABLE = 1 << 12,
 	PROPERTY_USAGE_STORE_IF_NULL = 1 << 13,
 	PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED = 1 << 14,
-	PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE = 1 << 15,
+	PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE = 1 << 15, // Deprecated.
 	PROPERTY_USAGE_CLASS_IS_ENUM = 1 << 16,
 	PROPERTY_USAGE_NIL_IS_VARIANT = 1 << 17,
 	PROPERTY_USAGE_ARRAY = 1 << 18, // Used in the inspector to group properties as elements of an array.
@@ -115,7 +115,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT = 1 << 22,
 	PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT = 1 << 23,
 	PROPERTY_USAGE_KEYING_INCREMENTS = 1 << 24, // Used in inspector to increment property when keyed in animation player.
-	PROPERTY_USAGE_DEFERRED_SET_RESOURCE = 1 << 25, // when loading, the resource for this property can be set at the end of loading.
+	PROPERTY_USAGE_DEFERRED_SET_RESOURCE = 1 << 25, // Deprecated.
 	PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT = 1 << 26, // For Object properties, instantiate them when creating in editor.
 	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 27, //for project or editor settings, show when basic settings are selected.
 	PROPERTY_USAGE_READ_ONLY = 1 << 28, // Mark a property as read-only in the inspector.
@@ -165,7 +165,7 @@ struct PropertyInfo {
 
 	PropertyInfo() {}
 
-	PropertyInfo(const Variant::Type p_type, const String p_name, const PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", const uint32_t p_usage = PROPERTY_USAGE_DEFAULT, const StringName &p_class_name = StringName()) :
+	PropertyInfo(const Variant::Type p_type, const String &p_name, const PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", const uint32_t p_usage = PROPERTY_USAGE_DEFAULT, const StringName &p_class_name = StringName()) :
 			type(p_type),
 			name(p_name),
 			hint(p_hint),
@@ -235,7 +235,7 @@ struct MethodInfo {
 		return arguments_metadata.size() > p_arg ? arguments_metadata[p_arg] : 0;
 	}
 
-	inline bool operator==(const MethodInfo &p_method) const { return id == p_method.id; }
+	inline bool operator==(const MethodInfo &p_method) const { return id == p_method.id && name == p_method.name; }
 	inline bool operator<(const MethodInfo &p_method) const { return id == p_method.id ? (name < p_method.name) : (id < p_method.id); }
 
 	operator Dictionary() const;
@@ -313,9 +313,14 @@ struct ObjectGDExtension {
 	StringName parent_class_name;
 	StringName class_name;
 	bool editor_class = false;
+	bool reloadable = false;
 	bool is_virtual = false;
 	bool is_abstract = false;
 	bool is_exposed = true;
+#ifdef TOOLS_ENABLED
+	bool is_runtime = false;
+	bool is_placeholder = false;
+#endif
 	GDExtensionClassSet set;
 	GDExtensionClassGet get;
 	GDExtensionClassGetPropertyList get_property_list;
@@ -349,6 +354,13 @@ struct ObjectGDExtension {
 	GDExtensionClassGetVirtual get_virtual;
 	GDExtensionClassGetVirtualCallData get_virtual_call_data;
 	GDExtensionClassCallVirtualWithData call_virtual_with_data;
+	GDExtensionClassRecreateInstance recreate_instance;
+
+#ifdef TOOLS_ENABLED
+	void *tracking_userdata = nullptr;
+	void (*track_instance)(void *p_userdata, void *p_instance) = nullptr;
+	void (*untrack_instance)(void *p_userdata, void *p_instance) = nullptr;
+#endif
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call<false>(__VA_ARGS__)
@@ -607,6 +619,7 @@ private:
 
 		MethodInfo user;
 		HashMap<Callable, Slot, HashableHasher<Callable>> slot_map;
+		bool removable = false;
 	};
 
 	HashMap<StringName, SignalData> signal_map;
@@ -635,6 +648,7 @@ private:
 
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
+	void _remove_user_signal(const StringName &p_name);
 	Error _emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	TypedArray<Dictionary> _get_signal_list() const;
 	TypedArray<Dictionary> _get_signal_connection_list(const StringName &p_signal) const;
@@ -643,13 +657,14 @@ private:
 	Variant _get_bind(const StringName &p_name) const;
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
 	Variant _get_indexed_bind(const NodePath &p_name) const;
+	int _get_method_argument_count_bind(const StringName &p_name) const;
 
 	_FORCE_INLINE_ void _construct_object(bool p_reference);
 
 	friend class RefCounted;
 	bool type_is_reference = false;
 
-	std::mutex _instance_binding_mutex;
+	BinaryMutex _instance_binding_mutex;
 	struct InstanceBinding {
 		void *binding = nullptr;
 		void *token = nullptr;
@@ -691,7 +706,11 @@ protected:
 	virtual void _notificationv(int p_notification, bool p_reversed) {}
 
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#else
 	static void _bind_compatibility_methods() {}
+#endif
 	bool _set(const StringName &p_name, const Variant &p_property) { return false; };
 	bool _get(const StringName &p_name, Variant &r_property) const { return false; };
 	void _get_property_list(List<PropertyInfo> *p_list) const {};
@@ -748,8 +767,19 @@ protected:
 	void _clear_internal_resource_paths(const Variant &p_var);
 
 	friend class ClassDB;
+	friend class PlaceholderExtensionInstance;
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
+
+#ifdef TOOLS_ENABLED
+	struct VirtualMethodTracker {
+		void **method;
+		bool *initialized;
+		VirtualMethodTracker *next;
+	};
+
+	mutable VirtualMethodTracker *virtual_method_list = nullptr;
+#endif
 
 public: // Should be protected, but bug in clang++.
 	static void initialize_class();
@@ -770,19 +800,22 @@ public:
 	void detach_from_objectdb();
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
 
-	template <class T>
+	template <typename T>
 	static T *cast_to(Object *p_object) {
-		return dynamic_cast<T *>(p_object);
+		return p_object ? dynamic_cast<T *>(p_object) : nullptr;
 	}
 
-	template <class T>
+	template <typename T>
 	static const T *cast_to(const Object *p_object) {
-		return dynamic_cast<const T *>(p_object);
+		return p_object ? dynamic_cast<const T *>(p_object) : nullptr;
 	}
 
 	enum {
 		NOTIFICATION_POSTINITIALIZE = 0,
-		NOTIFICATION_PREDELETE = 1
+		NOTIFICATION_PREDELETE = 1,
+		NOTIFICATION_EXTENSION_RELOADED = 2,
+		// Internal notification to send after NOTIFICATION_PREDELETE, not bound to scripting.
+		NOTIFICATION_PREDELETE_CLEANUP = 3,
 	};
 
 	/* TYPE API */
@@ -836,6 +869,7 @@ public:
 	Variant property_get_revert(const StringName &p_name) const;
 
 	bool has_method(const StringName &p_method) const;
+	int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
 	void get_method_list(List<MethodInfo> *p_list) const;
 	Variant callv(const StringName &p_method, const Array &p_args);
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -929,8 +963,6 @@ public:
 	Variant::Type get_static_property_type(const StringName &p_property, bool *r_valid = nullptr) const;
 	Variant::Type get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid = nullptr) const;
 
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
-
 	// Translate message (internationalization).
 	String tr(const StringName &p_message, const StringName &p_context = "") const;
 	String tr_n(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
@@ -942,6 +974,7 @@ public:
 	_FORCE_INLINE_ bool can_translate_messages() const { return _can_translate; }
 
 #ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 	void editor_set_section_unfold(const String &p_section, bool p_unfolded);
 	bool editor_is_section_unfolded(const String &p_section);
 	const HashSet<String> &editor_get_section_folding() const { return editor_section_folding; }
@@ -954,6 +987,13 @@ public:
 	// Used on creation by binding only.
 	void set_instance_binding(void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks);
 	bool has_instance_binding(void *p_token);
+	void free_instance_binding(void *p_token);
+
+#ifdef TOOLS_ENABLED
+	void clear_internal_extension();
+	void reset_internal_extension(ObjectGDExtension *p_extension);
+	bool is_extension_placeholder() const { return _extension && _extension->is_placeholder; }
+#endif
 
 	void clear_internal_resource_paths();
 

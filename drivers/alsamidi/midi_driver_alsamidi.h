@@ -58,7 +58,7 @@ class MIDIDriverALSAMidi : public MIDIDriver {
 				rawmidi_ptr{ midi_in } {}
 
 		// Read in and parse available data, forwarding any complete messages through the driver.
-		int read_in(MIDIDriverALSAMidi &driver, uint64_t timestamp);
+		int read_in(MIDIDriverALSAMidi &driver, uint64_t timestamp, int device_index);
 
 		snd_rawmidi_t *rawmidi_ptr = nullptr;
 
@@ -68,7 +68,7 @@ class MIDIDriverALSAMidi : public MIDIDriver {
 		size_t expected_data = 0;
 		size_t received_data = 0;
 		bool skipping_sys_ex = false;
-		void parse_byte(uint8_t byte, MIDIDriverALSAMidi &driver, uint64_t timestamp);
+		void parse_byte(uint8_t byte, MIDIDriverALSAMidi &driver, uint64_t timestamp, int device_index);
 	};
 
 	Vector<InputConnection> connected_inputs;

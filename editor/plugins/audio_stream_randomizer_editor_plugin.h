@@ -38,7 +38,7 @@ class AudioStreamRandomizerEditorPlugin : public EditorPlugin {
 	GDCLASS(AudioStreamRandomizerEditorPlugin, EditorPlugin);
 
 private:
-	void _move_stream_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos);
+	void _move_stream_array_element(Object *p_undo_redo, Object *p_edited, const String &p_array_prefix, int p_from_index, int p_to_pos);
 
 public:
 	virtual String get_name() const override { return "AudioStreamRandomizer"; }

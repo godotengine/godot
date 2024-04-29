@@ -32,6 +32,41 @@
 
 #include "core/extension/gdextension_compat_hashes.h"
 #include "core/io/file_access.h"
+#include "core/object/script_language.h"
+
+GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(const Ref<GDExtension> &p_extension) {
+	if (level >= 0) { // Already initialized up to some level.
+		int32_t minimum_level = p_extension->get_minimum_library_initialization_level();
+		if (minimum_level < MIN(level, GDExtension::INITIALIZATION_LEVEL_SCENE)) {
+			return LOAD_STATUS_NEEDS_RESTART;
+		}
+		// Initialize up to current level.
+		for (int32_t i = minimum_level; i <= level; i++) {
+			p_extension->initialize_library(GDExtension::InitializationLevel(i));
+		}
+	}
+
+	for (const KeyValue<String, String> &kv : p_extension->class_icon_paths) {
+		gdextension_class_icon_paths[kv.key] = kv.value;
+	}
+
+	return LOAD_STATUS_OK;
+}
+
+GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(const Ref<GDExtension> &p_extension) {
+	if (level >= 0) { // Already initialized up to some level.
+		// Deinitialize down from current level.
+		for (int32_t i = level; i >= GDExtension::INITIALIZATION_LEVEL_CORE; i--) {
+			p_extension->deinitialize_library(GDExtension::InitializationLevel(i));
+		}
+	}
+
+	for (const KeyValue<String, String> &kv : p_extension->class_icon_paths) {
+		gdextension_class_icon_paths.erase(kv.key);
+	}
+
+	return LOAD_STATUS_OK;
+}
 
 GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &p_path) {
 	if (gdextension_map.has(p_path)) {
@@ -42,19 +77,9 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &
 		return LOAD_STATUS_FAILED;
 	}
 
-	if (level >= 0) { // Already initialized up to some level.
-		int32_t minimum_level = extension->get_minimum_library_initialization_level();
-		if (minimum_level < MIN(level, GDExtension::INITIALIZATION_LEVEL_SCENE)) {
-			return LOAD_STATUS_NEEDS_RESTART;
-		}
-		// Initialize up to current level.
-		for (int32_t i = minimum_level; i <= level; i++) {
-			extension->initialize_library(GDExtension::InitializationLevel(i));
-		}
-	}
-
-	for (const KeyValue<String, String> &kv : extension->class_icon_paths) {
-		gdextension_class_icon_paths[kv.key] = kv.value;
+	LoadStatus status = _load_extension_internal(extension);
+	if (status != LOAD_STATUS_OK) {
+		return status;
 	}
 
 	gdextension_map[p_path] = extension;
@@ -62,8 +87,52 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String &p_path) {
-	return LOAD_STATUS_OK; //TODO
+#ifndef TOOLS_ENABLED
+	ERR_FAIL_V_MSG(LOAD_STATUS_FAILED, "GDExtensions can only be reloaded in an editor build.");
+#else
+	ERR_FAIL_COND_V_MSG(!Engine::get_singleton()->is_extension_reloading_enabled(), LOAD_STATUS_FAILED, "GDExtension reloading is disabled.");
+
+	if (!gdextension_map.has(p_path)) {
+		return LOAD_STATUS_NOT_LOADED;
+	}
+
+	Ref<GDExtension> extension = gdextension_map[p_path];
+	ERR_FAIL_COND_V_MSG(!extension->is_reloadable(), LOAD_STATUS_FAILED, vformat("This GDExtension is not marked as 'reloadable' or doesn't support reloading: %s.", p_path));
+
+	LoadStatus status;
+
+	extension->prepare_reload();
+
+	// Unload library if it's open. It may not be open if the developer made a
+	// change that broke loading in a previous hot-reload attempt.
+	if (extension->is_library_open()) {
+		status = _unload_extension_internal(extension);
+		if (status != LOAD_STATUS_OK) {
+			// We need to clear these no matter what.
+			extension->clear_instance_bindings();
+			return status;
+		}
+
+		extension->clear_instance_bindings();
+		extension->close_library();
+	}
+
+	Error err = GDExtensionResourceLoader::load_gdextension_resource(p_path, extension);
+	if (err != OK) {
+		return LOAD_STATUS_FAILED;
+	}
+
+	status = _load_extension_internal(extension);
+	if (status != LOAD_STATUS_OK) {
+		return status;
+	}
+
+	extension->finish_reload();
+
+	return LOAD_STATUS_OK;
+#endif
 }
+
 GDExtensionManager::LoadStatus GDExtensionManager::unload_extension(const String &p_path) {
 	if (!gdextension_map.has(p_path)) {
 		return LOAD_STATUS_NOT_LOADED;
@@ -71,19 +140,9 @@ GDExtensionManager::LoadStatus GDExtensionManager::unload_extension(const String
 
 	Ref<GDExtension> extension = gdextension_map[p_path];
 
-	if (level >= 0) { // Already initialized up to some level.
-		int32_t minimum_level = extension->get_minimum_library_initialization_level();
-		if (minimum_level < MIN(level, GDExtension::INITIALIZATION_LEVEL_SCENE)) {
-			return LOAD_STATUS_NEEDS_RESTART;
-		}
-		// Deinitialize down to current level.
-		for (int32_t i = level; i >= minimum_level; i--) {
-			extension->deinitialize_library(GDExtension::InitializationLevel(i));
-		}
-	}
-
-	for (const KeyValue<String, String> &kv : extension->class_icon_paths) {
-		gdextension_class_icon_paths.erase(kv.key);
+	LoadStatus status = _unload_extension_internal(extension);
+	if (status != LOAD_STATUS_OK) {
+		return status;
 	}
 
 	gdextension_map.erase(p_path);
@@ -136,6 +195,36 @@ void GDExtensionManager::deinitialize_extensions(GDExtension::InitializationLeve
 	level = int32_t(p_level) - 1;
 }
 
+#ifdef TOOLS_ENABLED
+void GDExtensionManager::track_instance_binding(void *p_token, Object *p_object) {
+	for (KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
+		if (E.value.ptr() == p_token) {
+			if (E.value->is_reloadable()) {
+				E.value->track_instance_binding(p_object);
+				return;
+			}
+		}
+	}
+}
+
+void GDExtensionManager::untrack_instance_binding(void *p_token, Object *p_object) {
+	for (KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
+		if (E.value.ptr() == p_token) {
+			if (E.value->is_reloadable()) {
+				E.value->untrack_instance_binding(p_object);
+				return;
+			}
+		}
+	}
+}
+
+void GDExtensionManager::_reload_all_scripts() {
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		ScriptServer::get_language(i)->reload_all_scripts();
+	}
+}
+#endif // TOOLS_ENABLED
+
 void GDExtensionManager::load_extensions() {
 	Ref<FileAccess> f = FileAccess::open(GDExtension::get_extension_list_config_file(), FileAccess::READ);
 	while (f.is_valid() && !f->eof_reached()) {
@@ -149,9 +238,33 @@ void GDExtensionManager::load_extensions() {
 	OS::get_singleton()->load_platform_gdextensions();
 }
 
+void GDExtensionManager::reload_extensions() {
+#ifdef TOOLS_ENABLED
+	bool reloaded = false;
+	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
+		if (!E.value->is_reloadable()) {
+			continue;
+		}
+
+		if (E.value->has_library_changed()) {
+			reloaded = true;
+			reload_extension(E.value->get_path());
+		}
+	}
+
+	if (reloaded) {
+		emit_signal("extensions_reloaded");
+
+		// Reload all scripts to clear out old references.
+		callable_mp_static(&GDExtensionManager::_reload_all_scripts).call_deferred();
+	}
+#endif
+}
+
 GDExtensionManager *GDExtensionManager::get_singleton() {
 	return singleton;
 }
+
 void GDExtensionManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_extension", "path"), &GDExtensionManager::load_extension);
 	ClassDB::bind_method(D_METHOD("reload_extension", "path"), &GDExtensionManager::reload_extension);
@@ -166,6 +279,8 @@ void GDExtensionManager::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOAD_STATUS_ALREADY_LOADED);
 	BIND_ENUM_CONSTANT(LOAD_STATUS_NOT_LOADED);
 	BIND_ENUM_CONSTANT(LOAD_STATUS_NEEDS_RESTART);
+
+	ADD_SIGNAL(MethodInfo("extensions_reloaded"));
 }
 
 GDExtensionManager *GDExtensionManager::singleton = nullptr;
@@ -176,5 +291,11 @@ GDExtensionManager::GDExtensionManager() {
 
 #ifndef DISABLE_DEPRECATED
 	GDExtensionCompatHashes::initialize();
+#endif
+}
+
+GDExtensionManager::~GDExtensionManager() {
+#ifndef DISABLE_DEPRECATED
+	GDExtensionCompatHashes::finalize();
 #endif
 }

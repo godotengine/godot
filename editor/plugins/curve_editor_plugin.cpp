@@ -36,11 +36,11 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/popup_menu.h"
@@ -118,8 +118,13 @@ void CurveEdit::_notification(int p_what) {
 				queue_redraw();
 			}
 		} break;
-		case NOTIFICATION_THEME_CHANGED:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				break;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
 			float gizmo_scale = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
 			point_radius = Math::round(BASE_POINT_RADIUS * get_theme_default_base_scale() * gizmo_scale);
 			hover_radius = Math::round(BASE_HOVER_RADIUS * get_theme_default_base_scale() * gizmo_scale);
@@ -140,6 +145,9 @@ void CurveEdit::_notification(int p_what) {
 
 void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+	if (curve.is_null()) {
+		return;
+	}
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {

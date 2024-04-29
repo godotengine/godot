@@ -51,6 +51,7 @@ private:
 	float range = INFINITY;
 	float inner_cone_angle = 0.0f;
 	float outer_cone_angle = Math_TAU / 8.0f;
+	Dictionary additional_data;
 
 public:
 	Color get_color();
@@ -76,6 +77,9 @@ public:
 
 	static Ref<GLTFLight> from_dictionary(const Dictionary p_dictionary);
 	Dictionary to_dictionary() const;
+
+	Variant get_additional_data(const StringName &p_extension_name);
+	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 };
 
 #endif // GLTF_LIGHT_H

@@ -98,7 +98,7 @@ public:
 
 	// This is the mask that will be used to extract the command.
 	enum {
-		CMD_MASK = 7, // 0x7 -> 0b00001111
+		CMD_MASK = 7, // 0x7 -> 0b00000111
 	};
 
 private:
@@ -200,9 +200,6 @@ public:
 
 	void set_max_delta_packet_size(int p_size);
 	int get_max_delta_packet_size() const;
-
-	Ref<SceneCacheInterface> get_path_cache() { return cache; }
-	Ref<SceneReplicationInterface> get_replicator() { return replicator; }
 
 	SceneMultiplayer();
 	~SceneMultiplayer();

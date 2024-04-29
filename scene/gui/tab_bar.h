@@ -32,6 +32,7 @@
 #define TAB_BAR_H
 
 #include "scene/gui/control.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/text_line.h"
 
 class TabBar : public Control {
@@ -55,7 +56,6 @@ public:
 private:
 	struct Tab {
 		String text;
-		String xl_text;
 
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
@@ -78,7 +78,12 @@ private:
 		Tab() {
 			text_buf.instantiate();
 		}
+
+		Tab(bool p_dummy) {}
 	};
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
 	int offset = 0;
 	int max_drawn_tab = 0;
@@ -86,14 +91,16 @@ private:
 	bool buttons_visible = false;
 	bool missing_right = false;
 	Vector<Tab> tabs;
-	int current = 0;
-	int previous = 0;
+	int current = -1;
+	int previous = -1;
 	AlignmentMode tab_alignment = ALIGNMENT_LEFT;
 	bool clip_tabs = true;
 	int rb_hover = -1;
 	bool rb_pressing = false;
+	bool tab_style_v_flip = false;
 
 	bool select_with_rmb = false;
+	bool deselect_enabled = false;
 
 	int cb_hover = -1;
 	bool cb_pressing = false;
@@ -107,6 +114,13 @@ private:
 	bool scroll_to_selected = true;
 	int tabs_rearrange_group = -1;
 
+	bool initialized = false;
+	int queued_current = -1;
+
+	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
+	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 20;
+	float gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
+
 	struct ThemeCache {
 		int h_separation = 0;
 		int icon_max_width = 0;
@@ -115,6 +129,7 @@ private:
 		Ref<StyleBox> tab_hovered_style;
 		Ref<StyleBox> tab_selected_style;
 		Ref<StyleBox> tab_disabled_style;
+		Ref<StyleBox> tab_focus_style;
 
 		Ref<Texture2D> increment_icon;
 		Ref<Texture2D> increment_hl_icon;
@@ -141,29 +156,37 @@ private:
 	int get_tab_width(int p_idx) const;
 	Size2 _get_tab_icon_size(int p_idx) const;
 	void _ensure_no_over_offset();
+	bool _can_deselect() const;
 
 	void _update_hover();
-	void _update_cache();
+	void _update_cache(bool p_update_hover = true);
 
 	void _on_mouse_exited();
 
 	void _shape(int p_tab);
-	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x);
+	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x, bool p_focus);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list, tabs.size()); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	void _notification(int p_what);
 	static void _bind_methods();
 
 	Variant get_drag_data(const Point2 &p_point) override;
 	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	void drop_data(const Point2 &p_point, const Variant &p_data) override;
+	void _move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
 
 public:
+	Variant _handle_get_drag_data(const String &p_type, const Point2 &p_point);
+	bool _handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const;
+	void _handle_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data, const Callable &p_move_tab_callback, const Callable &p_move_tab_from_other_callback);
+
 	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
 
 	void set_tab_title(int p_tab, const String &p_title);
@@ -201,6 +224,8 @@ public:
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
 
+	void set_tab_style_v_flip(bool p_tab_style_v_flip);
+
 	void move_tab(int p_from, int p_to);
 
 	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy);
@@ -213,6 +238,9 @@ public:
 	int get_current_tab() const;
 	int get_previous_tab() const;
 	int get_hovered_tab() const;
+
+	bool select_previous_available();
+	bool select_next_available();
 
 	int get_tab_offset() const;
 	bool get_offset_buttons_visible() const;
@@ -234,6 +262,9 @@ public:
 
 	void set_select_with_rmb(bool p_enabled);
 	bool get_select_with_rmb() const;
+
+	void set_deselect_enabled(bool p_enabled);
+	bool get_deselect_enabled() const;
 
 	void ensure_tab_visible(int p_idx);
 

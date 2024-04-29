@@ -43,14 +43,10 @@ struct EnableIf<false, T> {
 };
 
 template <typename, typename>
-struct TypesAreSame {
-	static bool const value = false;
-};
+inline constexpr bool types_are_same_v = false;
 
-template <typename A>
-struct TypesAreSame<A, A> {
-	static bool const value = true;
-};
+template <typename T>
+inline constexpr bool types_are_same_v<T, T> = true;
 
 template <typename B, typename D>
 struct TypeInherits {
@@ -60,7 +56,7 @@ struct TypeInherits {
 	static char (&test(...))[2];
 
 	static bool const value = sizeof(test(get_d())) == sizeof(char) &&
-			!TypesAreSame<B volatile const, void volatile const>::value;
+			!types_are_same_v<B volatile const, void volatile const>;
 };
 
 namespace GodotTypeInfo {
@@ -84,7 +80,7 @@ enum Metadata {
 // If 'T' is a class that inherits 'Object', make sure it can see the actual class declaration
 // instead of a forward declaration. You can always forward declare 'T' in a header file, and then
 // include the actual declaration of 'T' in the source file where 'GetTypeInfo<T>' is instantiated.
-template <class T, typename = void>
+template <typename T, typename = void>
 struct GetTypeInfo;
 
 #define MAKE_TYPE_INFO(m_type, m_var_type)                                            \
@@ -282,21 +278,25 @@ inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 	return GetTypeInfo<T>::get_class_info().class_name;
 }
 
-template <class T>
+template <typename T>
 class BitField {
 	int64_t value = 0;
 
 public:
-	_FORCE_INLINE_ void set_flag(T p_flag) { value |= (int64_t)p_flag; }
+	_FORCE_INLINE_ BitField<T> &set_flag(T p_flag) {
+		value |= (int64_t)p_flag;
+		return *this;
+	}
 	_FORCE_INLINE_ bool has_flag(T p_flag) const { return value & (int64_t)p_flag; }
 	_FORCE_INLINE_ bool is_empty() const { return value == 0; }
 	_FORCE_INLINE_ void clear_flag(T p_flag) { value &= ~(int64_t)p_flag; }
 	_FORCE_INLINE_ void clear() { value = 0; }
-	_FORCE_INLINE_ BitField() = default;
-	_FORCE_INLINE_ BitField(int64_t p_value) { value = p_value; }
-	_FORCE_INLINE_ BitField(T p_value) { value = (int64_t)p_value; }
+	_FORCE_INLINE_ constexpr BitField() = default;
+	_FORCE_INLINE_ constexpr BitField(int64_t p_value) { value = p_value; }
+	_FORCE_INLINE_ constexpr BitField(T p_value) { value = (int64_t)p_value; }
 	_FORCE_INLINE_ operator int64_t() const { return value; }
 	_FORCE_INLINE_ operator Variant() const { return value; }
+	_FORCE_INLINE_ BitField<T> operator^(const BitField<T> &p_b) const { return BitField<T>(value ^ p_b.value); }
 };
 
 #define TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_impl)                                                                                            \

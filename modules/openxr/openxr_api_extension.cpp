@@ -30,6 +30,8 @@
 
 #include "openxr_api_extension.h"
 
+#include "extensions/openxr_extension_wrapper_extension.h"
+
 void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance"), &OpenXRAPIExtension::get_instance);
 	ClassDB::bind_method(D_METHOD("get_system_id"), &OpenXRAPIExtension::get_system_id);
@@ -48,6 +50,18 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_play_space"), &OpenXRAPIExtension::get_play_space);
 	ClassDB::bind_method(D_METHOD("get_next_frame_time"), &OpenXRAPIExtension::get_next_frame_time);
 	ClassDB::bind_method(D_METHOD("can_render"), &OpenXRAPIExtension::can_render);
+
+	ClassDB::bind_method(D_METHOD("get_hand_tracker", "hand_index"), &OpenXRAPIExtension::get_hand_tracker);
+
+	ClassDB::bind_method(D_METHOD("register_composition_layer_provider", "extension"), &OpenXRAPIExtension::register_composition_layer_provider);
+	ClassDB::bind_method(D_METHOD("unregister_composition_layer_provider", "extension"), &OpenXRAPIExtension::unregister_composition_layer_provider);
+
+	ClassDB::bind_method(D_METHOD("set_emulate_environment_blend_mode_alpha_blend", "enabled"), &OpenXRAPIExtension::set_emulate_environment_blend_mode_alpha_blend);
+	ClassDB::bind_method(D_METHOD("is_environment_blend_mode_alpha_supported"), &OpenXRAPIExtension::is_environment_blend_mode_alpha_blend_supported);
+
+	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE);
+	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL);
+	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING);
 }
 
 uint64_t OpenXRAPIExtension::get_instance() {
@@ -124,6 +138,31 @@ int64_t OpenXRAPIExtension::get_next_frame_time() {
 bool OpenXRAPIExtension::can_render() {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
 	return OpenXRAPI::get_singleton()->can_render();
+}
+
+uint64_t OpenXRAPIExtension::get_hand_tracker(int p_hand_index) {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	return (uint64_t)OpenXRAPI::get_singleton()->get_hand_tracker(p_hand_index);
+}
+
+void OpenXRAPIExtension::register_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->register_composition_layer_provider(p_extension);
+}
+
+void OpenXRAPIExtension::unregister_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->unregister_composition_layer_provider(p_extension);
+}
+
+void OpenXRAPIExtension::set_emulate_environment_blend_mode_alpha_blend(bool p_enabled) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->set_emulate_environment_blend_mode_alpha_blend(p_enabled);
+}
+
+OpenXRAPIExtension::OpenXRAlphaBlendModeSupport OpenXRAPIExtension::is_environment_blend_mode_alpha_blend_supported() {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE);
+	return (OpenXRAPIExtension::OpenXRAlphaBlendModeSupport)OpenXRAPI::get_singleton()->is_environment_blend_mode_alpha_blend_supported();
 }
 
 OpenXRAPIExtension::OpenXRAPIExtension() {

@@ -776,6 +776,9 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("joint_make_groove", "joint", "groove1_a", "groove2_a", "anchor_b", "body_a", "body_b"), &PhysicsServer2D::joint_make_groove, DEFVAL(RID()), DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("joint_make_damped_spring", "joint", "anchor_a", "anchor_b", "body_a", "body_b"), &PhysicsServer2D::joint_make_damped_spring, DEFVAL(RID()));
 
+	ClassDB::bind_method(D_METHOD("pin_joint_set_flag", "joint", "flag", "enabled"), &PhysicsServer2D::pin_joint_set_flag);
+	ClassDB::bind_method(D_METHOD("pin_joint_get_flag", "joint", "flag"), &PhysicsServer2D::pin_joint_get_flag);
+
 	ClassDB::bind_method(D_METHOD("pin_joint_set_param", "joint", "param", "value"), &PhysicsServer2D::pin_joint_set_param);
 	ClassDB::bind_method(D_METHOD("pin_joint_get_param", "joint", "param"), &PhysicsServer2D::pin_joint_get_param);
 
@@ -863,6 +866,12 @@ void PhysicsServer2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(JOINT_PARAM_MAX_FORCE);
 
 	BIND_ENUM_CONSTANT(PIN_JOINT_SOFTNESS);
+	BIND_ENUM_CONSTANT(PIN_JOINT_LIMIT_UPPER);
+	BIND_ENUM_CONSTANT(PIN_JOINT_LIMIT_LOWER);
+	BIND_ENUM_CONSTANT(PIN_JOINT_MOTOR_TARGET_VELOCITY);
+
+	BIND_ENUM_CONSTANT(PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED);
+	BIND_ENUM_CONSTANT(PIN_JOINT_FLAG_MOTOR_ENABLED);
 
 	BIND_ENUM_CONSTANT(DAMPED_SPRING_REST_LENGTH);
 	BIND_ENUM_CONSTANT(DAMPED_SPRING_STIFFNESS);

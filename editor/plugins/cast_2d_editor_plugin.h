@@ -44,6 +44,7 @@ class Cast2DEditor : public Control {
 
 	bool pressed = false;
 	Point2 original_target_position;
+	Vector2 original_mouse_pos;
 
 protected:
 	void _notification(int p_what);

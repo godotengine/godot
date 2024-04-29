@@ -14,4 +14,5 @@ func test():
 func do_add_node():
 	var node = Node.new()
 	node.name = "Node"
+	@warning_ignore("unsafe_call_argument")
 	add_child(node)

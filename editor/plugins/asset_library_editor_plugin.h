@@ -60,9 +60,9 @@ class EditorAssetLibraryItem : public PanelContainer {
 	LinkButton *title = nullptr;
 	LinkButton *category = nullptr;
 	LinkButton *author = nullptr;
-	TextureRect *stars[5];
 	Label *price = nullptr;
 
+	String title_text;
 	int asset_id = 0;
 	int category_id = 0;
 	int author_id = 0;
@@ -80,7 +80,9 @@ protected:
 public:
 	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost);
 
-	EditorAssetLibraryItem();
+	void clamp_width(int p_max_width);
+
+	EditorAssetLibraryItem(bool p_clickable = false);
 };
 
 class EditorAssetLibraryItemDescription : public ConfirmationDialog {
@@ -88,6 +90,7 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 
 	EditorAssetLibraryItem *item = nullptr;
 	RichTextLabel *description = nullptr;
+	VBoxContainer *previews_vbox = nullptr;
 	ScrollContainer *previews = nullptr;
 	HBoxContainer *preview_hb = nullptr;
 	PanelContainer *previews_bg = nullptr;
@@ -189,10 +192,14 @@ class EditorAssetLibrary : public PanelContainer {
 	PanelContainer *library_scroll_bg = nullptr;
 	ScrollContainer *library_scroll = nullptr;
 	VBoxContainer *library_vb = nullptr;
-	Label *library_info = nullptr;
-	VBoxContainer *library_error = nullptr;
-	Label *library_error_label = nullptr;
-	Button *library_error_retry = nullptr;
+	VBoxContainer *library_message_box = nullptr;
+	Label *library_message = nullptr;
+	Button *library_message_button = nullptr;
+	Callable library_message_action;
+
+	void _set_library_message(const String &p_message);
+	void _set_library_message_with_action(const String &p_message, const String &p_action_text, const Callable &p_action);
+
 	LineEdit *filter = nullptr;
 	Timer *filter_debounce_timer = nullptr;
 	OptionButton *categories = nullptr;
@@ -211,11 +218,14 @@ class EditorAssetLibrary : public PanelContainer {
 
 	HTTPRequest *request = nullptr;
 
-	bool templates_only;
-	bool initial_loading;
+	bool templates_only = false;
+	bool initial_loading = true;
+	bool loading_blocked = false;
+
+	void _force_online_mode();
 
 	enum Support {
-		SUPPORT_OFFICIAL,
+		SUPPORT_FEATURED,
 		SUPPORT_COMMUNITY,
 		SUPPORT_TESTING,
 		SUPPORT_MAX
@@ -253,14 +263,15 @@ class EditorAssetLibrary : public PanelContainer {
 		String image_url;
 		HTTPRequest *request = nullptr;
 		ObjectID target;
+		int asset_id = -1;
 	};
 
 	int last_queue_id;
 	HashMap<int, ImageQueue> image_queue;
 
-	void _image_update(bool use_cache, bool final, const PackedByteArray &p_data, int p_queue_id);
+	void _image_update(bool p_use_cache, bool p_final, const PackedByteArray &p_data, int p_queue_id);
 	void _image_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, int p_queue_id);
-	void _request_image(ObjectID p_for, String p_image_url, ImageType p_type, int p_image_index);
+	void _request_image(ObjectID p_for, int p_asset_id, String p_image_url, ImageType p_type, int p_image_index);
 	void _update_image_queue();
 
 	HBoxContainer *_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items);
@@ -284,7 +295,7 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _install_asset();
 
-	void _select_author(int p_id);
+	void _select_author(const String &p_author);
 	void _select_category(int p_id);
 	void _select_asset(int p_id);
 
@@ -304,6 +315,8 @@ class EditorAssetLibrary : public PanelContainer {
 	void _support_toggled(int p_support);
 
 	void _install_external_asset(String p_zip_path, String p_title);
+
+	int asset_items_column_width = 0;
 
 	void _update_asset_items_columns();
 

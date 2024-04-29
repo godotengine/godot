@@ -63,6 +63,13 @@ Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
+Files: ./modules/lightmapper_rd/lm_compute.glsl
+Comment: Joint Non-Local Means (JNLM) denoiser
+Copyright: 2020, Manuel Prandini
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
+License: Expat
+
 Files: ./platform/android/java/lib/aidl/com/android/*
  ./platform/android/java/lib/res/layout/status_bar_ongoing_event_progress_bar.xml
  ./platform/android/java/lib/src/com/google/android/*
@@ -83,6 +90,11 @@ Comment: Robert Penner's Easing Functions
 Copyright: 2001, Robert Penner
  2014-present, Godot Engine contributors
  2007-2014, Juan Linietsky, Ariel Manzur
+License: Expat
+
+Files: ./servers/physics_2d/godot_joints_2d.cpp
+Comment: Chipmunk2D Joint Constraints
+Copyright: 2007, Scott Lembcke
 License: Expat
 
 Files: ./servers/physics_3d/collision_solver_3d_sat.cpp
@@ -141,6 +153,11 @@ Comment: AMD FidelityFX Super Resolution
 Copyright: 2021, Advanced Micro Devices, Inc.
 License: Expat
 
+Files: ./thirdparty/amd-fsr2/
+Comment: AMD FidelityFX Super Resolution 2
+Copyright: 2022-2023, Advanced Micro Devices, Inc.
+License: Expat
+
 Files: ./thirdparty/angle/
 Comment: ANGLE
 Copyright: 2018, The ANGLE Project Authors.
@@ -148,7 +165,7 @@ License: BSD-3-clause
 
 Files: ./thirdparty/astcenc/
 Comment: Arm ASTC Encoder
-Copyright: 2011-2023, Arm Limited
+Copyright: 2011-2024, Arm Limited
 License: Apache-2.0
 
 Files: ./thirdparty/basis_universal/
@@ -166,10 +183,25 @@ Comment: CA certificates
 Copyright: Mozilla Contributors
 License: MPL-2.0
 
+Files: ./thirdparty/clipper2/
+Comment: Clipper2
+Copyright: 2010-2023, Angus Johnson
+License: BSL-1.0
+
 Files: ./thirdparty/cvtt/
 Comment: Convection Texture Tools Stand-Alone Kernels
 Copyright: 2018, Eric Lasota
  2018, Microsoft Corp.
+License: Expat
+
+Files: ./thirdparty/d3d12ma/
+Comment: D3D12 Memory Allocator
+Copyright: 2019-2022 Advanced Micro Devices, Inc.
+License: Expat
+
+Files: ./thirdparty/directx_headers/
+Comment: DirectX Headers
+Copyright: Microsoft Corporation
 License: Expat
 
 Files: ./thirdparty/doctest/
@@ -274,8 +306,8 @@ License: BSD-3-clause
 
 Files: ./thirdparty/libpng/
 Comment: libpng
-Copyright: 1995-2019, The PNG Reference Library Authors.
- 2018-2019, Cosmin Truta.
+Copyright: 1995-2024, The PNG Reference Library Authors.
+ 2018-2024, Cosmin Truta.
  2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
  1996-1997, Andreas Dilger.
  1995-1996, Guy Eric Schalnat, Group 42, Inc.
@@ -303,8 +335,13 @@ License: Apache-2.0
 
 Files: ./thirdparty/meshoptimizer/
 Comment: meshoptimizer
-Copyright: 2016-2022, Arseny Kapoulkine
+Copyright: 2016-2023, Arseny Kapoulkine
 License: Expat
+
+Files: ./thirdparty/mingw-std-threads/
+Comment: mingw-std-threads
+Copyright: 2016, Mega Limited
+License: BSD-2-clause
 
 Files: ./thirdparty/minimp3/
 Comment: MiniMP3
@@ -313,7 +350,7 @@ License: CC0-1.0
 
 Files: ./thirdparty/miniupnpc/
 Comment: MiniUPnP Project
-Copyright: 2005-2023, Thomas Bernard
+Copyright: 2005-2024, Thomas Bernard
 License: BSD-3-clause
 
 Files: ./thirdparty/minizip/
@@ -360,8 +397,8 @@ License: Expat
 
 Files: ./thirdparty/noise/FastNoiseLite.h
 Comment: FastNoise Lite
-Copyright: 2020, Jordan Peck and contributors
-License: MIT
+Copyright: 2023, Jordan Peck and contributors
+License: Expat
 
 Files: ./thirdparty/misc/pcg.cpp
  ./thirdparty/misc/pcg.h
@@ -406,17 +443,12 @@ License: BSD-2-clause
 Files: ./thirdparty/msdfgen/
 Comment: Multi-channel signed distance field generator
 Copyright: 2016-2022, Viktor Chlumsky
-License: MIT
+License: Expat
 
 Files: ./thirdparty/nvapi/nvapi_minimal.h
 Comment: Stripped down version of "nvapi.h" from the NVIDIA NVAPI SDK
 Copyright: 2019-2022, NVIDIA Corporation
 License: Expat
-
-Files: ./thirdparty/oidn/
-Comment: Intel Open Image Denoise
-Copyright: 2009-2019, Intel Corporation
-License: Apache-2.0
 
 Files: ./thirdparty/openxr/
 Comment: OpenXR Loader
@@ -425,8 +457,8 @@ License: Apache-2.0
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2022, University of Cambridge
- 2009-2022, Zoltan Herczeg
+Copyright: 1997-2024, University of Cambridge
+ 2009-2024, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/recastnavigation/
@@ -451,7 +483,7 @@ License: Expat
 
 Files: ./thirdparty/thorvg/
 Comment: ThorVG
-Copyright: 2020-2022, Samsung Electronics Co., Ltd.
+Copyright: 2020-2024, The ThorVG Project
 License: Expat
 
 Files: ./thirdparty/tinyexr/
@@ -459,6 +491,11 @@ Comment: TinyEXR
 Copyright: 2014-2021, Syoyo Fujita
   2002, Industrial Light & Magic, a division of Lucas Digital Ltd. LLC
 License: BSD-3-clause
+
+Files: ./thirdparty/ufbx/
+Comment: ufbx
+Copyright: 2020, Samuli Raivio
+License: Expat
 
 Files: ./thirdparty/vhacd/
 Comment: V-HACD
@@ -468,20 +505,39 @@ License: BSD-3-clause
 
 Files: ./thirdparty/volk/
 Comment: volk
-Copyright: 2018-2023, Arseny Kapoulkine
+Copyright: 2018-2024, Arseny Kapoulkine
 License: Expat
 
 Files: ./thirdparty/vulkan/
 Comment: Vulkan Headers
-Copyright: 2014-2023, The Khronos Group Inc.
+Copyright: 2014-2024, The Khronos Group Inc.
   2014-2023, Valve Corporation
   2014-2023, LunarG, Inc.
-  2015-2023, Google Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/vulkan/vk_mem_alloc.h
 Comment: Vulkan Memory Allocator
-Copyright: 2017-2021, Advanced Micro Devices, Inc.
+Copyright: 2017-2024, Advanced Micro Devices, Inc.
+License: Expat
+
+Files: ./thirdparty/wayland/
+Comment: Wayland core protocol
+Copyright: 2008-2012, Kristian Høgsberg
+  2010-2012, Intel Corporation
+  2011, Benjamin Franzke
+  2012, Collabora, Ltd.
+License: Expat
+
+Files: ./thirdparty/wayland-protocols/
+Comment: Wayland protocols that add functionality not available in the core protocol
+Copyright: 2008-2013, Kristian Høgsberg
+  2010-2013, Intel Corporation
+  2013,      Rafael Antognolli
+  2013,      Jasper St. Pierre
+  2014,      Jonas Ådahl
+  2014,      Jason Ekstrand
+  2014-2015, Collabora, Ltd.
+  2015,      Red Hat Inc.
 License: Expat
 
 Files: ./thirdparty/wslay/
@@ -498,7 +554,7 @@ License: Expat
 
 Files: ./thirdparty/zlib/
 Comment: zlib
-Copyright: 1995-2023, Jean-loup Gailly and Mark Adler
+Copyright: 1995-2024, Jean-loup Gailly and Mark Adler
 License: Zlib
 
 Files: ./thirdparty/zstd/

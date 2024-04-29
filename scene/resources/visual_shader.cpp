@@ -246,6 +246,20 @@ void VisualShaderNode::set_input_port_connected(int p_port, bool p_connected) {
 	connected_input_ports[p_port] = p_connected;
 }
 
+bool VisualShaderNode::is_any_port_connected() const {
+	for (const KeyValue<int, bool> &E : connected_input_ports) {
+		if (E.value) {
+			return true;
+		}
+	}
+	for (const KeyValue<int, int> &E : connected_output_ports) {
+		if (E.value > 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool VisualShaderNode::is_generate_input_var(int p_port) const {
 	return true;
 }
@@ -334,12 +348,20 @@ void VisualShaderNode::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
 }
 
-bool VisualShaderNode::is_closable() const {
+bool VisualShaderNode::is_deletable() const {
 	return closable;
 }
 
-void VisualShaderNode::set_closable(bool p_closable) {
+void VisualShaderNode::set_deletable(bool p_closable) {
 	closable = p_closable;
+}
+
+void VisualShaderNode::set_frame(int p_node) {
+	linked_parent_graph_frame = p_node;
+}
+
+int VisualShaderNode::get_frame() const {
+	return linked_parent_graph_frame;
 }
 
 Vector<VisualShader::DefaultTextureParam> VisualShaderNode::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
@@ -389,6 +411,11 @@ String VisualShaderNode::get_warning(Shader::Mode p_mode, VisualShader::Type p_t
 	return String();
 }
 
+VisualShaderNode::Category VisualShaderNode::get_category() const {
+	WARN_PRINT(get_caption() + " is missing a category.");
+	return CATEGORY_NONE;
+}
+
 bool VisualShaderNode::is_input_port_default(int p_port, Shader::Mode p_mode) const {
 	return false;
 }
@@ -414,9 +441,13 @@ void VisualShaderNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_input_values", "values"), &VisualShaderNode::set_default_input_values);
 	ClassDB::bind_method(D_METHOD("get_default_input_values"), &VisualShaderNode::get_default_input_values);
 
+	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &VisualShaderNode::set_frame);
+	ClassDB::bind_method(D_METHOD("get_frame"), &VisualShaderNode::get_frame);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_port_for_preview"), "set_output_port_for_preview", "get_output_port_for_preview");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_default_input_values", "get_default_input_values");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "expanded_output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_output_ports_expanded", "_get_output_ports_expanded");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "linked_parent_graph_frame", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_frame", "get_frame");
 
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR);
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR_INT);
@@ -435,7 +466,61 @@ VisualShaderNode::VisualShaderNode() {
 
 /////////////////////////////////////////////////////////
 
+void VisualShaderNodeCustom::update_property_default_values() {
+	int prop_count;
+	if (GDVIRTUAL_CALL(_get_property_count, prop_count)) {
+		for (int i = 0; i < prop_count; i++) {
+			int selected = 0;
+			if (GDVIRTUAL_CALL(_get_property_default_index, i, selected)) {
+				dp_selected_cache[i] = selected;
+			}
+		}
+	}
+}
+
+void VisualShaderNodeCustom::update_input_port_default_values() {
+	int input_port_count;
+	if (GDVIRTUAL_CALL(_get_input_port_count, input_port_count)) {
+		for (int i = 0; i < input_port_count; i++) {
+			Variant value;
+			if (GDVIRTUAL_CALL(_get_input_port_default_value, i, value)) {
+				default_input_values[i] = value;
+			}
+		}
+	}
+}
+
 void VisualShaderNodeCustom::update_ports() {
+	{
+		dp_props.clear();
+		int prop_count;
+		if (GDVIRTUAL_CALL(_get_property_count, prop_count)) {
+			for (int i = 0; i < prop_count; i++) {
+				DropDownListProperty prop;
+				if (!GDVIRTUAL_CALL(_get_property_name, i, prop.name)) {
+					prop.name = "prop";
+				}
+				if (!GDVIRTUAL_CALL(_get_property_options, i, prop.options)) {
+					prop.options.push_back("Default");
+				}
+				dp_props.push_back(prop);
+			}
+		}
+	}
+
+	{
+		Vector<String> vprops = properties.split(";", false);
+		for (int i = 0; i < vprops.size(); i++) {
+			Vector<String> arr = vprops[i].split(",", false);
+			ERR_FAIL_COND(arr.size() != 2);
+			ERR_FAIL_COND(!arr[0].is_valid_int());
+			ERR_FAIL_COND(!arr[1].is_valid_int());
+			int index = arr[0].to_int();
+			int selected = arr[1].to_int();
+			dp_selected_cache[index] = selected;
+		}
+	}
+
 	{
 		input_ports.clear();
 		int input_port_count;
@@ -475,6 +560,15 @@ void VisualShaderNodeCustom::update_ports() {
 
 				output_ports.push_back(port);
 			}
+		}
+	}
+}
+
+void VisualShaderNodeCustom::update_properties() {
+	properties = "";
+	for (const KeyValue<int, int> &p : dp_selected_cache) {
+		if (p.value != 0) {
+			properties += itos(p.key) + "," + itos(p.value) + ";";
 		}
 	}
 }
@@ -635,6 +729,14 @@ void VisualShaderNodeCustom::_set_initialized(bool p_enabled) {
 	is_initialized = p_enabled;
 }
 
+void VisualShaderNodeCustom::_set_properties(const String &p_properties) {
+	properties = p_properties;
+}
+
+String VisualShaderNodeCustom::_get_properties() const {
+	return properties;
+}
+
 String VisualShaderNodeCustom::_get_name() const {
 	String ret;
 	GDVIRTUAL_CALL(_get_name, ret);
@@ -665,6 +767,21 @@ bool VisualShaderNodeCustom::_is_highend() const {
 	return ret;
 }
 
+void VisualShaderNodeCustom::_set_option_index(int p_option, int p_value) {
+	dp_selected_cache[p_option] = p_value;
+	update_properties();
+	update_ports();
+	update_input_port_default_values();
+	emit_changed();
+}
+
+int VisualShaderNodeCustom::get_option_index(int p_option) const {
+	if (!dp_selected_cache.has(p_option)) {
+		return 0;
+	}
+	return dp_selected_cache[p_option];
+}
+
 void VisualShaderNodeCustom::_bind_methods() {
 	GDVIRTUAL_BIND(_get_name);
 	GDVIRTUAL_BIND(_get_description);
@@ -673,10 +790,15 @@ void VisualShaderNodeCustom::_bind_methods() {
 	GDVIRTUAL_BIND(_get_input_port_count);
 	GDVIRTUAL_BIND(_get_input_port_type, "port");
 	GDVIRTUAL_BIND(_get_input_port_name, "port");
+	GDVIRTUAL_BIND(_get_input_port_default_value, "port");
 	GDVIRTUAL_BIND(_get_default_input_port, "type");
 	GDVIRTUAL_BIND(_get_output_port_count);
 	GDVIRTUAL_BIND(_get_output_port_type, "port");
 	GDVIRTUAL_BIND(_get_output_port_name, "port");
+	GDVIRTUAL_BIND(_get_property_count);
+	GDVIRTUAL_BIND(_get_property_name, "index");
+	GDVIRTUAL_BIND(_get_property_default_index, "index");
+	GDVIRTUAL_BIND(_get_property_options, "index");
 	GDVIRTUAL_BIND(_get_code, "input_vars", "output_vars", "mode", "type");
 	GDVIRTUAL_BIND(_get_func_code, "mode", "type");
 	GDVIRTUAL_BIND(_get_global_code, "mode");
@@ -686,8 +808,14 @@ void VisualShaderNodeCustom::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_initialized", "enabled"), &VisualShaderNodeCustom::_set_initialized);
 	ClassDB::bind_method(D_METHOD("_is_initialized"), &VisualShaderNodeCustom::_is_initialized);
 	ClassDB::bind_method(D_METHOD("_set_input_port_default_value", "port", "value"), &VisualShaderNodeCustom::_set_input_port_default_value);
+	ClassDB::bind_method(D_METHOD("_set_option_index", "option", "value"), &VisualShaderNodeCustom::_set_option_index);
+	ClassDB::bind_method(D_METHOD("_set_properties", "properties"), &VisualShaderNodeCustom::_set_properties);
+	ClassDB::bind_method(D_METHOD("_get_properties"), &VisualShaderNodeCustom::_get_properties);
+
+	ClassDB::bind_method(D_METHOD("get_option_index", "option"), &VisualShaderNodeCustom::get_option_index);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "initialized", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_initialized", "_is_initialized");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "properties", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_properties", "_get_properties");
 }
 
 VisualShaderNodeCustom::VisualShaderNodeCustom() {
@@ -821,6 +949,9 @@ Vector2 VisualShader::get_node_position(Type p_type, int p_id) const {
 Ref<VisualShaderNode> VisualShader::get_node(Type p_type, int p_id) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, Ref<VisualShaderNode>());
 	const Graph *g = &graph[p_type];
+	if (!g->nodes.has(p_id)) {
+		return Ref<VisualShaderNode>();
+	}
 	ERR_FAIL_COND_V(!g->nodes.has(p_id), Ref<VisualShaderNode>());
 	return g->nodes[p_id].node;
 }
@@ -865,14 +996,15 @@ void VisualShader::remove_node(Type p_type, int p_id) {
 
 	for (List<Connection>::Element *E = g->connections.front(); E;) {
 		List<Connection>::Element *N = E->next();
-		if (E->get().from_node == p_id || E->get().to_node == p_id) {
-			g->connections.erase(E);
-			if (E->get().from_node == p_id) {
-				g->nodes[E->get().to_node].prev_connected_nodes.erase(p_id);
-				g->nodes[E->get().to_node].node->set_input_port_connected(E->get().to_port, false);
-			} else if (E->get().to_node == p_id) {
-				g->nodes[E->get().from_node].next_connected_nodes.erase(p_id);
+		const VisualShader::Connection &connection = E->get();
+		if (connection.from_node == p_id || connection.to_node == p_id) {
+			if (connection.from_node == p_id) {
+				g->nodes[connection.to_node].prev_connected_nodes.erase(p_id);
+				g->nodes[connection.to_node].node->set_input_port_connected(connection.to_port, false);
+			} else if (connection.to_node == p_id) {
+				g->nodes[connection.from_node].next_connected_nodes.erase(p_id);
 			}
+			g->connections.erase(E);
 		}
 		E = N;
 	}
@@ -1015,6 +1147,36 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 
 bool VisualShader::is_port_types_compatible(int p_a, int p_b) const {
 	return MAX(0, p_a - (int)VisualShaderNode::PORT_TYPE_BOOLEAN) == (MAX(0, p_b - (int)VisualShaderNode::PORT_TYPE_BOOLEAN));
+}
+
+void VisualShader::attach_node_to_frame(Type p_type, int p_node, int p_frame) {
+	ERR_FAIL_INDEX(p_type, TYPE_MAX);
+	ERR_FAIL_COND(p_frame < 0);
+	Graph *g = &graph[p_type];
+
+	ERR_FAIL_COND(!g->nodes.has(p_node));
+
+	g->nodes[p_node].node->set_frame(p_frame);
+
+	Ref<VisualShaderNodeFrame> vsnode_frame = g->nodes[p_frame].node;
+	if (vsnode_frame.is_valid()) {
+		vsnode_frame->add_attached_node(p_node);
+	}
+}
+
+void VisualShader::detach_node_from_frame(Type p_type, int p_node) {
+	ERR_FAIL_INDEX(p_type, TYPE_MAX);
+	Graph *g = &graph[p_type];
+
+	ERR_FAIL_COND(!g->nodes.has(p_node));
+
+	int parent_frame_id = g->nodes[p_node].node->get_frame();
+	Ref<VisualShaderNodeFrame> vsnode_frame = g->nodes[parent_frame_id].node;
+	if (vsnode_frame.is_valid()) {
+		vsnode_frame->remove_attached_node(p_node);
+	}
+
+	g->nodes[p_node].node->set_frame(-1);
 }
 
 void VisualShader::connect_nodes_forced(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
@@ -2357,9 +2519,6 @@ void VisualShader::_update_shader() const {
 					global_code += "vec4 ";
 					break;
 				case VaryingType::VARYING_TYPE_BOOLEAN:
-					if (E.value.mode == VaryingMode::VARYING_MODE_VERTEX_TO_FRAG_LIGHT) {
-						global_code += "flat ";
-					}
 					global_code += "bool ";
 					break;
 				case VaryingType::VARYING_TYPE_TRANSFORM:
@@ -2477,7 +2636,7 @@ void VisualShader::_update_shader() const {
 
 		if (varying_setters.has(i)) {
 			for (int &E : varying_setters[i]) {
-				err = _write_node(Type(i), nullptr, nullptr, nullptr, func_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
+				err = _write_node(Type(i), &global_code, nullptr, nullptr, func_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
 				ERR_FAIL_COND(err != OK);
 			}
 		}
@@ -2683,6 +2842,9 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &VisualShader::set_graph_offset);
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &VisualShader::get_graph_offset);
 
+	ClassDB::bind_method(D_METHOD("attach_node_to_frame", "type", "id", "frame"), &VisualShader::attach_node_to_frame);
+	ClassDB::bind_method(D_METHOD("detach_node_from_frame", "type", "id"), &VisualShader::detach_node_from_frame);
+
 	ClassDB::bind_method(D_METHOD("add_varying", "name", "mode", "type"), &VisualShader::add_varying);
 	ClassDB::bind_method(D_METHOD("remove_varying", "name"), &VisualShader::remove_varying);
 	ClassDB::bind_method(D_METHOD("has_varying", "name"), &VisualShader::has_varying);
@@ -2857,6 +3019,8 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "screen_matrix", "SCREEN_MATRIX" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_BOOLEAN, "at_light_pass", "AT_LIGHT_PASS" },
+	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_4D, "custom0", "CUSTOM0" },
+	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_4D, "custom1", "CUSTOM1" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_4D, "instance_custom", "INSTANCE_CUSTOM" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "instance_id", "INSTANCE_ID" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "vertex_id", "VERTEX_ID" },
@@ -3044,7 +3208,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "uv2", "UV" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "color", "vec4(1.0)" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "1.0" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "screen_uv", "SCREEN_UV" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "screen_uv", "UV" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "viewport_size", "vec2(1.0)" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
@@ -3071,7 +3235,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "uv", "UV" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "color", "vec3(1.0)" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "1.0" },
-	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "screen_uv", "SCREEN_UV" },
+	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "screen_uv", "UV" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
 	// Canvas Item, Light
@@ -3081,7 +3245,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "normal", "vec3(0.0, 0.0, 1.0)" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "color", "vec4(1.0)" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "1.0" },
-	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "screen_uv", "SCREEN_UV" },
+	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "screen_uv", "UV" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
 	// Particles
@@ -3094,7 +3258,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
 
 	// Sky
 
-	{ Shader::MODE_SKY, VisualShader::TYPE_SKY, VisualShaderNode::PORT_TYPE_VECTOR_2D, "screen_uv", "SCREEN_UV" },
+	{ Shader::MODE_SKY, VisualShader::TYPE_SKY, VisualShaderNode::PORT_TYPE_VECTOR_2D, "screen_uv", "UV" },
 	{ Shader::MODE_SKY, VisualShader::TYPE_SKY, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
 	// Fog
@@ -3480,6 +3644,10 @@ String VisualShaderNodeParameterRef::get_output_port_name(int p_port) const {
 			break;
 	}
 	return "";
+}
+
+bool VisualShaderNodeParameterRef::is_shader_valid() const {
+	return shader_rid.is_valid();
 }
 
 void VisualShaderNodeParameterRef::set_shader_rid(const RID &p_shader_rid) {
@@ -4038,42 +4206,131 @@ VisualShaderNodeResizableBase::VisualShaderNodeResizableBase() {
 	set_allow_v_resize(true);
 }
 
-////////////// Comment
+////////////// Frame
 
-String VisualShaderNodeComment::get_caption() const {
+String VisualShaderNodeFrame::get_caption() const {
 	return title;
 }
 
-int VisualShaderNodeComment::get_input_port_count() const {
+int VisualShaderNodeFrame::get_input_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeComment::PortType VisualShaderNodeComment::get_input_port_type(int p_port) const {
+VisualShaderNodeFrame::PortType VisualShaderNodeFrame::get_input_port_type(int p_port) const {
 	return PortType::PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeComment::get_input_port_name(int p_port) const {
+String VisualShaderNodeFrame::get_input_port_name(int p_port) const {
 	return String();
 }
 
-int VisualShaderNodeComment::get_output_port_count() const {
+int VisualShaderNodeFrame::get_output_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeComment::PortType VisualShaderNodeComment::get_output_port_type(int p_port) const {
+VisualShaderNodeFrame::PortType VisualShaderNodeFrame::get_output_port_type(int p_port) const {
 	return PortType::PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeComment::get_output_port_name(int p_port) const {
+String VisualShaderNodeFrame::get_output_port_name(int p_port) const {
 	return String();
 }
 
-void VisualShaderNodeComment::set_title(const String &p_title) {
+void VisualShaderNodeFrame::set_title(const String &p_title) {
 	title = p_title;
 }
 
-String VisualShaderNodeComment::get_title() const {
+String VisualShaderNodeFrame::get_title() const {
 	return title;
+}
+
+void VisualShaderNodeFrame::set_tint_color_enabled(bool p_enabled) {
+	tint_color_enabled = p_enabled;
+}
+
+bool VisualShaderNodeFrame::is_tint_color_enabled() const {
+	return tint_color_enabled;
+}
+
+void VisualShaderNodeFrame::set_tint_color(const Color &p_color) {
+	tint_color = p_color;
+}
+
+Color VisualShaderNodeFrame::get_tint_color() const {
+	return tint_color;
+}
+
+void VisualShaderNodeFrame::set_autoshrink_enabled(bool p_enable) {
+	autoshrink = p_enable;
+}
+
+bool VisualShaderNodeFrame::is_autoshrink_enabled() const {
+	return autoshrink;
+}
+
+String VisualShaderNodeFrame::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return String();
+}
+
+void VisualShaderNodeFrame::add_attached_node(int p_node) {
+	attached_nodes.insert(p_node);
+}
+
+void VisualShaderNodeFrame::remove_attached_node(int p_node) {
+	attached_nodes.erase(p_node);
+}
+
+void VisualShaderNodeFrame::set_attached_nodes(const PackedInt32Array &p_attached_nodes) {
+	attached_nodes.clear();
+	for (const int &node_id : p_attached_nodes) {
+		attached_nodes.insert(node_id);
+	}
+}
+
+PackedInt32Array VisualShaderNodeFrame::get_attached_nodes() const {
+	PackedInt32Array attached_nodes_arr;
+	for (const int &node_id : attached_nodes) {
+		attached_nodes_arr.push_back(node_id);
+	}
+	return attached_nodes_arr;
+}
+
+void VisualShaderNodeFrame::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_title", "title"), &VisualShaderNodeFrame::set_title);
+	ClassDB::bind_method(D_METHOD("get_title"), &VisualShaderNodeFrame::get_title);
+
+	ClassDB::bind_method(D_METHOD("set_tint_color_enabled", "enable"), &VisualShaderNodeFrame::set_tint_color_enabled);
+	ClassDB::bind_method(D_METHOD("is_tint_color_enabled"), &VisualShaderNodeFrame::is_tint_color_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_tint_color", "color"), &VisualShaderNodeFrame::set_tint_color);
+	ClassDB::bind_method(D_METHOD("get_tint_color"), &VisualShaderNodeFrame::get_tint_color);
+
+	ClassDB::bind_method(D_METHOD("set_autoshrink_enabled", "enable"), &VisualShaderNodeFrame::set_autoshrink_enabled);
+	ClassDB::bind_method(D_METHOD("is_autoshrink_enabled"), &VisualShaderNodeFrame::is_autoshrink_enabled);
+
+	ClassDB::bind_method(D_METHOD("add_attached_node", "node"), &VisualShaderNodeFrame::add_attached_node);
+	ClassDB::bind_method(D_METHOD("remove_attached_node", "node"), &VisualShaderNodeFrame::remove_attached_node);
+	ClassDB::bind_method(D_METHOD("set_attached_nodes", "attached_nodes"), &VisualShaderNodeFrame::set_attached_nodes);
+	ClassDB::bind_method(D_METHOD("get_attached_nodes"), &VisualShaderNodeFrame::get_attached_nodes);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tint_color_enabled"), "set_tint_color_enabled", "is_tint_color_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_color"), "set_tint_color", "get_tint_color");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoshrink"), "set_autoshrink_enabled", "is_autoshrink_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "attached_nodes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_attached_nodes", "get_attached_nodes");
+}
+
+VisualShaderNodeFrame::VisualShaderNodeFrame() {
+}
+
+////////////// Comment (Deprecated)
+
+#ifndef DISABLE_DEPRECATED
+void VisualShaderNodeComment::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_description", "description"), &VisualShaderNodeComment::set_description);
+	ClassDB::bind_method(D_METHOD("get_description"), &VisualShaderNodeComment::get_description);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "set_description", "get_description");
 }
 
 void VisualShaderNodeComment::set_description(const String &p_description) {
@@ -4083,24 +4340,7 @@ void VisualShaderNodeComment::set_description(const String &p_description) {
 String VisualShaderNodeComment::get_description() const {
 	return description;
 }
-
-String VisualShaderNodeComment::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return String();
-}
-
-void VisualShaderNodeComment::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_title", "title"), &VisualShaderNodeComment::set_title);
-	ClassDB::bind_method(D_METHOD("get_title"), &VisualShaderNodeComment::get_title);
-
-	ClassDB::bind_method(D_METHOD("set_description", "description"), &VisualShaderNodeComment::set_description);
-	ClassDB::bind_method(D_METHOD("get_description"), &VisualShaderNodeComment::get_description);
-
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "set_description", "get_description");
-}
-
-VisualShaderNodeComment::VisualShaderNodeComment() {
-}
+#endif
 
 ////////////// GroupBase
 
@@ -4590,68 +4830,61 @@ String VisualShaderNodeExpression::get_expression() const {
 	return expression;
 }
 
+bool VisualShaderNodeExpression::_is_valid_identifier_char(char32_t p_c) const {
+	return p_c == '_' || (p_c >= 'A' && p_c <= 'Z') || (p_c >= 'a' && p_c <= 'z') || (p_c >= '0' && p_c <= '9');
+}
+
+String VisualShaderNodeExpression::_replace_port_names(const Vector<Pair<String, String>> &p_pairs, const String &p_expression) const {
+	String _expression = p_expression;
+
+	for (const Pair<String, String> &pair : p_pairs) {
+		String from = pair.first;
+		String to = pair.second;
+		int search_idx = 0;
+		int len = from.length();
+
+		while (true) {
+			int index = _expression.find(from, search_idx);
+			if (index == -1) {
+				break;
+			}
+
+			int left_index = index - 1;
+			int right_index = index + len;
+			bool left_correct = left_index <= 0 || !_is_valid_identifier_char(_expression[left_index]);
+			bool right_correct = right_index >= _expression.length() || !_is_valid_identifier_char(_expression[right_index]);
+
+			if (left_correct && right_correct) {
+				_expression = _expression.erase(index, len);
+				_expression = _expression.insert(index, to);
+
+				search_idx = index + to.length();
+			} else {
+				search_idx = index + len;
+			}
+		}
+	}
+
+	return _expression;
+}
+
 String VisualShaderNodeExpression::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String _expression = expression;
 
 	_expression = _expression.insert(0, "\n");
 	_expression = _expression.replace("\n", "\n		");
 
-	static Vector<String> pre_symbols;
-	if (pre_symbols.is_empty()) {
-		pre_symbols.push_back("	");
-		pre_symbols.push_back(",");
-		pre_symbols.push_back(";");
-		pre_symbols.push_back("{");
-		pre_symbols.push_back("[");
-		pre_symbols.push_back("]");
-		pre_symbols.push_back("(");
-		pre_symbols.push_back(" ");
-		pre_symbols.push_back("-");
-		pre_symbols.push_back("*");
-		pre_symbols.push_back("/");
-		pre_symbols.push_back("+");
-		pre_symbols.push_back("=");
-		pre_symbols.push_back("&");
-		pre_symbols.push_back("|");
-		pre_symbols.push_back("!");
-	}
-
-	static Vector<String> post_symbols;
-	if (post_symbols.is_empty()) {
-		post_symbols.push_back("	");
-		post_symbols.push_back("\n");
-		post_symbols.push_back(",");
-		post_symbols.push_back(";");
-		post_symbols.push_back("}");
-		post_symbols.push_back("[");
-		post_symbols.push_back("]");
-		post_symbols.push_back(")");
-		post_symbols.push_back(" ");
-		post_symbols.push_back(".");
-		post_symbols.push_back("-");
-		post_symbols.push_back("*");
-		post_symbols.push_back("/");
-		post_symbols.push_back("+");
-		post_symbols.push_back("=");
-		post_symbols.push_back("&");
-		post_symbols.push_back("|");
-		post_symbols.push_back("!");
-	}
-
+	Vector<Pair<String, String>> input_port_names;
 	for (int i = 0; i < get_input_port_count(); i++) {
-		for (int j = 0; j < pre_symbols.size(); j++) {
-			for (int k = 0; k < post_symbols.size(); k++) {
-				_expression = _expression.replace(pre_symbols[j] + get_input_port_name(i) + post_symbols[k], pre_symbols[j] + p_input_vars[i] + post_symbols[k]);
-			}
-		}
+		input_port_names.push_back(Pair<String, String>(get_input_port_name(i), p_input_vars[i]));
 	}
+	_expression = _replace_port_names(input_port_names, _expression);
+
+	Vector<Pair<String, String>> output_port_names;
 	for (int i = 0; i < get_output_port_count(); i++) {
-		for (int j = 0; j < pre_symbols.size(); j++) {
-			for (int k = 0; k < post_symbols.size(); k++) {
-				_expression = _expression.replace(pre_symbols[j] + get_output_port_name(i) + post_symbols[k], pre_symbols[j] + p_output_vars[i] + post_symbols[k]);
-			}
-		}
+		output_port_names.push_back(Pair<String, String>(get_output_port_name(i), p_output_vars[i]));
 	}
+	_expression = _replace_port_names(output_port_names, _expression);
 
 	String output_initializer;
 

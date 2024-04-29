@@ -9,7 +9,7 @@
 		[b]Performance:[/b] [LightmapGI] provides the best possible run-time performance for global illumination. It is suitable for low-end hardware including integrated graphics and mobile devices.
 		[b]Note:[/b] Due to how lightmaps work, most properties only have a visible effect once lightmaps are baked again.
 		[b]Note:[/b] Lightmap baking on [CSGShape3D]s and [PrimitiveMesh]es is not supported, as these cannot store UV2 data required for baking.
-		[b]Note:[/b] If no custom lightmappers are installed, [LightmapGI] can only be baked when using the Vulkan backend (Forward+ or Mobile), not OpenGL.
+		[b]Note:[/b] If no custom lightmappers are installed, [LightmapGI] can only be baked from devices that support the Forward+ or Mobile rendering backends.
 	</description>
 	<tutorials>
 		<link title="Using Lightmap global illumination">$DOCS_URL/tutorials/3d/global_illumination/using_lightmap_gi.html</link>
@@ -18,14 +18,21 @@
 		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0005">
 			The bias to use when computing shadows. Increasing [member bias] can fix shadow acne on the resulting baked lightmap, but can introduce peter-panning (shadows not connecting to their casters). Real-time [Light3D] shadows are not affected by this [member bias] property.
 		</member>
+		<member name="bounce_indirect_energy" type="float" setter="set_bounce_indirect_energy" getter="get_bounce_indirect_energy" default="1.0">
+			The energy multiplier for each bounce. Higher values will make indirect lighting brighter. A value of [code]1.0[/code] represents physically accurate behavior, but higher values can be used to make indirect lighting propagate more visibly when using a low number of bounces. This can be used to speed up bake times by lowering the number of [member bounces] then increasing [member bounce_indirect_energy].
+			[b]Note:[/b] [member bounce_indirect_energy] only has an effect if [member bounces] is set to a value greater than or equal to [code]1[/code].
+		</member>
 		<member name="bounces" type="int" setter="set_bounces" getter="get_bounces" default="3">
 			Number of light bounces that are taken into account during baking. Higher values result in brighter, more realistic lighting, at the cost of longer bake times. If set to [code]0[/code], only environment lighting, direct light and emissive lighting is baked.
 		</member>
 		<member name="camera_attributes" type="CameraAttributes" setter="set_camera_attributes" getter="get_camera_attributes">
 			The [CameraAttributes] resource that specifies exposure levels to bake at. Auto-exposure and non exposure properties will be ignored. Exposure settings should be used to reduce the dynamic range present when baking. If exposure is too high, the [LightmapGI] will have banding artifacts or may have over-exposure artifacts.
 		</member>
+		<member name="denoiser_strength" type="float" setter="set_denoiser_strength" getter="get_denoiser_strength" default="0.1">
+			The strength of denoising step applied to the generated lightmaps. Only effective if [member use_denoiser] is [code]true[/code] and [member ProjectSettings.rendering/lightmapping/denoising/denoiser] is set to JNLM.
+		</member>
 		<member name="directional" type="bool" setter="set_directional" getter="is_directional" default="false">
-			If [code]true[/code], bakes lightmaps to contain directional information as spherical harmonics. This results in more realistic lighting appearance, especially with normal mapped materials and for lights that have their direct light baked ([member Light3D.light_bake_mode] set to [constant Light3D.BAKE_STATIC]). The directional information is also used to provide rough reflections for static and dynamic objects. This has a small run-time performance cost as the shader has to perform more work to interpret the direction information from the lightmap. Directional lightmaps also take longer to bake and result in larger file sizes.
+			If [code]true[/code], bakes lightmaps to contain directional information as spherical harmonics. This results in more realistic lighting appearance, especially with normal mapped materials and for lights that have their direct light baked ([member Light3D.light_bake_mode] set to [constant Light3D.BAKE_STATIC] and with [member Light3D.editor_only] set to [code]false[/code]). The directional information is also used to provide rough reflections for static and dynamic objects. This has a small run-time performance cost as the shader has to perform more work to interpret the direction information from the lightmap. Directional lightmaps also take longer to bake and result in larger file sizes.
 			[b]Note:[/b] The property's name has no relationship with [DirectionalLight3D]. [member directional] works with all light types.
 		</member>
 		<member name="environment_custom_color" type="Color" setter="set_environment_custom_color" getter="get_environment_custom_color">
@@ -58,9 +65,15 @@
 			The quality preset to use when baking lightmaps. This affects bake times, but output file sizes remain mostly identical across quality levels.
 			To further speed up bake times, decrease [member bounces], disable [member use_denoiser] and increase the lightmap texel size on 3D scenes in the Import doc.
 		</member>
+		<member name="texel_scale" type="float" setter="set_texel_scale" getter="get_texel_scale" default="1.0">
+			Scales the lightmap texel density of all meshes for the current bake. This is a multiplier that builds upon the existing lightmap texel size defined in each imported 3D scene, along with the per-mesh density multiplier (which is designed to be used when the same mesh is used at different scales). Lower values will result in faster bake times.
+		</member>
 		<member name="use_denoiser" type="bool" setter="set_use_denoiser" getter="is_using_denoiser" default="true">
-			If [code]true[/code], uses a CPU-based denoising algorithm on the generated lightmap. This eliminates most noise within the generated lightmap at the cost of longer bake times. File sizes are generally not impacted significantly by the use of a denoiser, although lossless compression may do a better job at compressing a denoised image.
-			[b]Note:[/b] The built-in denoiser (OpenImageDenoise) may crash when denoising lightmaps in large scenes. If you encounter a crash at the end of lightmap baking, try disabling [member use_denoiser].
+			If [code]true[/code], uses a GPU-based denoising algorithm on the generated lightmap. This eliminates most noise within the generated lightmap at the cost of longer bake times. File sizes are generally not impacted significantly by the use of a denoiser, although lossless compression may do a better job at compressing a denoised image.
+		</member>
+		<member name="use_texture_for_bounces" type="bool" setter="set_use_texture_for_bounces" getter="is_using_texture_for_bounces" default="true">
+			If [code]true[/code], a texture with the lighting information will be generated to speed up the generation of indirect lighting at the cost of some accuracy. The geometry might exhibit extra light leak artifacts when using low resolution lightmaps or UVs that stretch the lightmap significantly across surfaces. Leave [member use_texture_for_bounces] at its default value of [code]true[/code] if unsure.
+			[b]Note:[/b] [member use_texture_for_bounces] only has an effect if [member bounces] is set to a value greater than or equal to [code]1[/code].
 		</member>
 	</members>
 	<constants>

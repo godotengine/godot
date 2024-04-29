@@ -101,11 +101,9 @@ public:
 	struct WhileNode;
 
 	class DataType {
-	private:
-		// Private access so we can control memory management.
-		DataType *container_element_type = nullptr;
-
 	public:
+		Vector<DataType> container_element_types;
+
 		enum Kind {
 			BUILTIN,
 			NATIVE,
@@ -149,26 +147,42 @@ public:
 		_FORCE_INLINE_ bool is_hard_type() const { return type_source > INFERRED; }
 
 		String to_string() const;
+		_FORCE_INLINE_ String to_string_strict() const { return is_hard_type() ? to_string() : "Variant"; }
 		PropertyInfo to_property_info(const String &p_name) const;
 
-		_FORCE_INLINE_ void set_container_element_type(const DataType &p_type) {
-			container_element_type = memnew(DataType(p_type));
+		_FORCE_INLINE_ static DataType get_variant_type() { // Default DataType for container elements.
+			DataType datatype;
+			datatype.kind = VARIANT;
+			datatype.type_source = INFERRED;
+			return datatype;
 		}
 
-		_FORCE_INLINE_ DataType get_container_element_type() const {
-			ERR_FAIL_COND_V(container_element_type == nullptr, DataType());
-			return *container_element_type;
+		_FORCE_INLINE_ void set_container_element_type(int p_index, const DataType &p_type) {
+			ERR_FAIL_COND(p_index < 0);
+			while (p_index >= container_element_types.size()) {
+				container_element_types.push_back(get_variant_type());
+			}
+			container_element_types.write[p_index] = DataType(p_type);
 		}
 
-		_FORCE_INLINE_ bool has_container_element_type() const {
-			return container_element_type != nullptr;
+		_FORCE_INLINE_ DataType get_container_element_type(int p_index) const {
+			ERR_FAIL_INDEX_V(p_index, container_element_types.size(), get_variant_type());
+			return container_element_types[p_index];
 		}
 
-		_FORCE_INLINE_ void unset_container_element_type() {
-			if (container_element_type) {
-				memdelete(container_element_type);
-			};
-			container_element_type = nullptr;
+		_FORCE_INLINE_ DataType get_container_element_type_or_variant(int p_index) const {
+			if (p_index < 0 || p_index >= container_element_types.size()) {
+				return get_variant_type();
+			}
+			return container_element_types[p_index];
+		}
+
+		_FORCE_INLINE_ bool has_container_element_type(int p_index) const {
+			return p_index >= 0 && p_index < container_element_types.size();
+		}
+
+		_FORCE_INLINE_ bool has_container_element_types() const {
+			return !container_element_types.is_empty();
 		}
 
 		bool is_typed_container_type() const;
@@ -177,11 +191,11 @@ public:
 
 		bool operator==(const DataType &p_other) const {
 			if (type_source == UNDETECTED || p_other.type_source == UNDETECTED) {
-				return true; // Can be consireded equal for parsing purposes.
+				return true; // Can be considered equal for parsing purposes.
 			}
 
 			if (type_source == INFERRED || p_other.type_source == INFERRED) {
-				return true; // Can be consireded equal for parsing purposes.
+				return true; // Can be considered equal for parsing purposes.
 			}
 
 			if (kind != p_other.kind) {
@@ -209,7 +223,7 @@ public:
 		}
 
 		bool operator!=(const DataType &p_other) const {
-			return !(this->operator==(p_other));
+			return !(*this == p_other);
 		}
 
 		void operator=(const DataType &p_other) {
@@ -228,10 +242,7 @@ public:
 			class_type = p_other.class_type;
 			method_info = p_other.method_info;
 			enum_values = p_other.enum_values;
-			unset_container_element_type();
-			if (p_other.has_container_element_type()) {
-				set_container_element_type(p_other.get_container_element_type());
-			}
+			container_element_types = p_other.container_element_types;
 		}
 
 		DataType() = default;
@@ -240,9 +251,7 @@ public:
 			*this = p_other;
 		}
 
-		~DataType() {
-			unset_container_element_type();
-		}
+		~DataType() {}
 	};
 
 	struct ParserError {
@@ -265,13 +274,17 @@ public:
 		String description;
 		Vector<Pair<String, String>> tutorials;
 		bool is_deprecated = false;
+		String deprecated_message;
 		bool is_experimental = false;
+		String experimental_message;
 	};
 
 	struct MemberDocData {
 		String description;
 		bool is_deprecated = false;
+		String deprecated_message;
 		bool is_experimental = false;
+		String experimental_message;
 	};
 #endif // TOOLS_ENABLED
 
@@ -325,9 +338,6 @@ public:
 		int leftmost_column = 0, rightmost_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
-#ifdef DEBUG_ENABLED
-		Vector<GDScriptWarning::Code> ignored_warnings;
-#endif
 
 		DataType datatype;
 
@@ -362,7 +372,7 @@ public:
 		bool is_resolved = false;
 		bool is_applied = false;
 
-		bool apply(GDScriptParser *p_this, Node *p_target);
+		bool apply(GDScriptParser *p_this, Node *p_target, ClassNode *p_class);
 		bool applies_to(uint32_t p_target_kinds) const;
 
 		AnnotationNode() {
@@ -488,6 +498,7 @@ public:
 		Vector<ExpressionNode *> arguments;
 		StringName function_name;
 		bool is_super = false;
+		bool is_static = false;
 
 		CallNode() {
 			type = CALL;
@@ -764,7 +775,7 @@ public:
 		bool has_function(const StringName &p_name) const {
 			return has_member(p_name) && members[members_indices[p_name]].type == Member::FUNCTION;
 		}
-		template <class T>
+		template <typename T>
 		void add_member(T *p_member_node) {
 			members_indices[p_member_node->identifier->name] = members.size();
 			members.push_back(Member(p_member_node));
@@ -837,7 +848,7 @@ public:
 		HashMap<StringName, int> parameters_indices;
 		TypeNode *return_type = nullptr;
 		SuiteNode *body = nullptr;
-		bool is_static = false;
+		bool is_static = false; // For lambdas it's determined in the analyzer.
 		bool is_coroutine = false;
 		Variant rpc_config;
 		MethodInfo info;
@@ -887,9 +898,10 @@ public:
 
 		union {
 			ParameterNode *parameter_source = nullptr;
-			ConstantNode *constant_source;
-			VariableNode *variable_source;
 			IdentifierNode *bind_source;
+			VariableNode *variable_source;
+			ConstantNode *constant_source;
+			SignalNode *signal_source;
 		};
 		FunctionNode *source_function = nullptr;
 
@@ -948,6 +960,7 @@ public:
 		Vector<PatternNode *> patterns;
 		SuiteNode *block = nullptr;
 		bool has_wildcard = false;
+		SuiteNode *guard_body = nullptr;
 
 		MatchBranchNode() {
 			type = MATCH_BRANCH;
@@ -1036,6 +1049,8 @@ public:
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
+
+		int usages = 0;
 
 		SignalNode() {
 			type = SIGNAL;
@@ -1153,7 +1168,7 @@ public:
 
 		bool has_local(const StringName &p_name) const;
 		const Local &get_local(const StringName &p_name) const;
-		template <class T>
+		template <typename T>
 		void add_local(T *p_local, FunctionNode *p_source_function) {
 			locals_indices[p_local->identifier->name] = locals.size();
 			locals.push_back(Local(p_local, p_source_function));
@@ -1181,7 +1196,11 @@ public:
 
 	struct TypeNode : public Node {
 		Vector<IdentifierNode *> type_chain;
-		TypeNode *container_type = nullptr;
+		Vector<TypeNode *> container_types;
+
+		TypeNode *get_container_type_or_null(int p_index) const {
+			return p_index >= 0 && p_index < container_types.size() ? container_types[p_index] : nullptr;
+		}
 
 		TypeNode() {
 			type = TYPE;
@@ -1316,13 +1335,21 @@ private:
 	List<ParserError> errors;
 
 #ifdef DEBUG_ENABLED
+	struct PendingWarning {
+		const Node *source = nullptr;
+		GDScriptWarning::Code code = GDScriptWarning::WARNING_MAX;
+		bool treated_as_error = false;
+		Vector<String> symbols;
+	};
+
 	bool is_ignoring_warnings = false;
 	List<GDScriptWarning> warnings;
-	HashSet<GDScriptWarning::Code> ignored_warnings;
+	List<PendingWarning> pending_warnings;
+	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
 	HashSet<int> unsafe_lines;
 #endif
 
-	GDScriptTokenizer tokenizer;
+	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
 	GDScriptTokenizer::Token current;
 
@@ -1338,7 +1365,7 @@ private:
 	bool in_lambda = false;
 	bool lambda_ended = false; // Marker for when a lambda ends, to apply an end of statement if needed.
 
-	typedef bool (GDScriptParser::*AnnotationAction)(const AnnotationNode *p_annotation, Node *p_target);
+	typedef bool (GDScriptParser::*AnnotationAction)(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	struct AnnotationInfo {
 		enum TargetKind {
 			NONE = 0,
@@ -1350,13 +1377,13 @@ private:
 			FUNCTION = 1 << 5,
 			STATEMENT = 1 << 6,
 			STANDALONE = 1 << 7,
-			CLASS_LEVEL = CLASS | VARIABLE | FUNCTION,
+			CLASS_LEVEL = CLASS | VARIABLE | CONSTANT | SIGNAL | FUNCTION,
 		};
 		uint32_t target_kind = 0; // Flags.
 		AnnotationAction apply = nullptr;
 		MethodInfo info;
 	};
-	HashMap<StringName, AnnotationInfo> valid_annotations;
+	static HashMap<StringName, AnnotationInfo> valid_annotations;
 	List<AnnotationNode *> annotation_stack;
 
 	typedef ExpressionNode *(GDScriptParser::*ParseFunction)(ExpressionNode *p_previous_operand, bool p_can_assign);
@@ -1400,7 +1427,7 @@ private:
 	void reset_extents(Node *p_node, GDScriptTokenizer::Token p_token);
 	void reset_extents(Node *p_node, Node *p_from);
 
-	template <class T>
+	template <typename T>
 	T *alloc_node() {
 		T *node = memnew(T);
 
@@ -1420,6 +1447,7 @@ private:
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
 		push_warning(p_source, p_code, Vector<String>{ p_symbols... });
 	}
+	void apply_pending_warnings();
 #endif
 
 	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = false);
@@ -1446,7 +1474,7 @@ private:
 	void parse_class_name();
 	void parse_extends();
 	void parse_class_body(bool p_is_multiline);
-	template <class T>
+	template <typename T>
 	void parse_class_member(T *(GDScriptParser::*p_parse_function)(bool), AnnotationInfo::TargetKind p_target, const String &p_member_kind, bool p_is_static = false);
 	SignalNode *parse_signal(bool p_is_static);
 	EnumNode *parse_enum(bool p_is_static);
@@ -1456,19 +1484,20 @@ private:
 	SuiteNode *parse_suite(const String &p_context, SuiteNode *p_suite = nullptr, bool p_for_lambda = false);
 	// Annotations
 	AnnotationNode *parse_annotation(uint32_t p_valid_targets);
-	bool register_annotation(const MethodInfo &p_info, uint32_t p_target_kinds, AnnotationAction p_apply, const Vector<Variant> &p_default_arguments = Vector<Variant>(), bool p_is_vararg = false);
+	static bool register_annotation(const MethodInfo &p_info, uint32_t p_target_kinds, AnnotationAction p_apply, const Vector<Variant> &p_default_arguments = Vector<Variant>(), bool p_is_vararg = false);
 	bool validate_annotation_arguments(AnnotationNode *p_annotation);
 	void clear_unused_annotations();
-	bool tool_annotation(const AnnotationNode *p_annotation, Node *p_target);
-	bool icon_annotation(const AnnotationNode *p_annotation, Node *p_target);
-	bool onready_annotation(const AnnotationNode *p_annotation, Node *p_target);
+	bool tool_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool icon_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool onready_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
-	bool export_annotations(const AnnotationNode *p_annotation, Node *p_target);
+	bool export_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool export_custom_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyUsageFlags t_usage>
-	bool export_group_annotations(const AnnotationNode *p_annotation, Node *p_target);
-	bool warning_annotations(const AnnotationNode *p_annotation, Node *p_target);
-	bool rpc_annotation(const AnnotationNode *p_annotation, Node *p_target);
-	bool static_unload_annotation(const AnnotationNode *p_annotation, Node *p_target);
+	bool export_group_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool warning_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool rpc_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool static_unload_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	// Statements.
 	Node *parse_statement();
 	VariableNode *parse_variable(bool p_is_static);
@@ -1526,11 +1555,12 @@ private:
 
 public:
 	Error parse(const String &p_source_code, const String &p_script_path, bool p_for_completion);
+	Error parse_binary(const Vector<uint8_t> &p_binary, const String &p_script_path);
 	ClassNode *get_tree() const { return head; }
 	bool is_tool() const { return _is_tool; }
 	ClassNode *find_class(const String &p_qualified_name) const;
 	bool has_class(const GDScriptParser::ClassNode *p_class) const;
-	static Variant::Type get_builtin_type(const StringName &p_type);
+	static Variant::Type get_builtin_type(const StringName &p_type); // Excluding `Variant::NIL` and `Variant::OBJECT`.
 
 	CompletionContext get_completion_context() const { return completion_context; }
 	CompletionCall get_completion_call() const { return completion_call; }

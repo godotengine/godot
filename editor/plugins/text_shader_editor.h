@@ -32,6 +32,7 @@
 #define TEXT_SHADER_EDITOR_H
 
 #include "editor/code_editor.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
@@ -120,6 +121,7 @@ class TextShaderEditor : public MarginContainer {
 		EDIT_UNINDENT,
 		EDIT_DELETE_LINE,
 		EDIT_DUPLICATE_SELECTION,
+		EDIT_DUPLICATE_LINES,
 		EDIT_TOGGLE_WORD_WRAP,
 		EDIT_TOGGLE_COMMENT,
 		EDIT_COMPLETE,
@@ -147,7 +149,7 @@ class TextShaderEditor : public MarginContainer {
 	ConfirmationDialog *erase_tab_confirm = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
 
-	ShaderTextEditor *shader_editor = nullptr;
+	ShaderTextEditor *code_editor = nullptr;
 	bool compilation_success = true;
 
 	void _menu_option(int p_option);
@@ -155,6 +157,7 @@ class TextShaderEditor : public MarginContainer {
 	mutable Ref<ShaderInclude> shader_inc;
 
 	void _editor_settings_changed();
+	void _apply_editor_settings();
 	void _project_settings_changed();
 
 	void _check_for_external_edit();
@@ -162,7 +165,7 @@ class TextShaderEditor : public MarginContainer {
 	void _reload_shader_include_from_disk();
 	void _reload();
 	void _show_warnings_panel(bool p_show);
-	void _warning_clicked(Variant p_line);
+	void _warning_clicked(const Variant &p_line);
 	void _update_warnings(bool p_validate);
 
 	void _script_validated(bool p_valid) {
@@ -196,6 +199,7 @@ public:
 	void validate_script();
 	bool is_unsaved() const;
 	void tag_saved_version();
+	ShaderTextEditor *get_code_editor() { return code_editor; }
 
 	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
 

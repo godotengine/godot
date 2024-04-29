@@ -50,9 +50,9 @@ public:
 		UNASSIGNED_VARIABLE_OP_ASSIGN, // Variable never assigned but used in an assignment operation (+=, *=, etc).
 		UNUSED_VARIABLE, // Local variable is declared but never used.
 		UNUSED_LOCAL_CONSTANT, // Local constant is declared but never used.
-		UNUSED_PRIVATE_CLASS_VARIABLE, // Class variable is declared private ("_" prefix) but never used in the file.
+		UNUSED_PRIVATE_CLASS_VARIABLE, // Class variable is declared private ("_" prefix) but never used in the class.
 		UNUSED_PARAMETER, // Function parameter is never used.
-		UNUSED_SIGNAL, // Signal is defined but never emitted.
+		UNUSED_SIGNAL, // Signal is defined but never explicitly used in the class.
 		SHADOWED_VARIABLE, // Variable name shadowed by other variable in same class.
 		SHADOWED_VARIABLE_BASE_CLASS, // Variable name shadowed by other variable in some base class.
 		SHADOWED_GLOBAL_IDENTIFIER, // A global class or function has the same name as variable.
@@ -61,13 +61,11 @@ public:
 		STANDALONE_EXPRESSION, // Expression not assigned to a variable.
 		STANDALONE_TERNARY, // Return value of ternary expression is discarded.
 		INCOMPATIBLE_TERNARY, // Possible values of a ternary if are not mutually compatible.
-		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name.
-		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name.
-		FUNCTION_USED_AS_PROPERTY, // Property not found, but there's a function with the same name.
-		UNTYPED_DECLARATION, // Variable/parameter/function has no static type, explicitly specified or inferred (`:=`).
+		UNTYPED_DECLARATION, // Variable/parameter/function has no static type, explicitly specified or implicitly inferred.
+		INFERRED_DECLARATION, // Variable/constant/parameter has an implicitly inferred static type.
 		UNSAFE_PROPERTY_ACCESS, // Property not found in the detected type (but can be in subtypes).
 		UNSAFE_METHOD_ACCESS, // Function not found in the detected type (but can be in subtypes).
-		UNSAFE_CAST, // Cast used in an unknown type.
+		UNSAFE_CAST, // Casting a `Variant` value to non-`Variant`.
 		UNSAFE_CALL_ARGUMENT, // Function call argument is of a supertype of the required type.
 		UNSAFE_VOID_RETURN, // Function returns void but returned a call to a function that can't be type checked.
 		RETURN_VALUE_DISCARDED, // Function call returns something but the value isn't used.
@@ -80,6 +78,7 @@ public:
 		NARROWING_CONVERSION, // Float value into an integer slot, precision is lost.
 		INT_AS_ENUM_WITHOUT_CAST, // An integer value was used as an enum value without casting.
 		INT_AS_ENUM_WITHOUT_MATCH, // An integer value was used as an enum value without matching enum member.
+		ENUM_VARIABLE_WITHOUT_DEFAULT, // A variable with an enum type does not have a default value. The default will be set to `0` instead of the first enum value.
 		EMPTY_FILE, // A script file is empty.
 		DEPRECATED_KEYWORD, // The keyword is deprecated and should be replaced.
 		RENAMED_IN_GODOT_4_HINT, // A variable or function that could not be found has been renamed in Godot 4.
@@ -90,6 +89,11 @@ public:
 		NATIVE_METHOD_OVERRIDE, // The script method overrides a native one, this may not work as intended.
 		GET_NODE_DEFAULT_WITHOUT_ONREADY, // A class variable uses `get_node()` (or the `$` notation) as its default value, but does not use the @onready annotation.
 		ONREADY_WITH_EXPORT, // The `@onready` annotation will set the value after `@export` which is likely not intended.
+#ifndef DISABLE_DEPRECATED
+		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name.
+		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name.
+		FUNCTION_USED_AS_PROPERTY, // Property not found, but there's a function with the same name.
+#endif
 		WARNING_MAX,
 	};
 
@@ -109,10 +113,8 @@ public:
 		WARN, // STANDALONE_EXPRESSION
 		WARN, // STANDALONE_TERNARY
 		WARN, // INCOMPATIBLE_TERNARY
-		WARN, // PROPERTY_USED_AS_FUNCTION
-		WARN, // CONSTANT_USED_AS_FUNCTION
-		WARN, // FUNCTION_USED_AS_PROPERTY
 		IGNORE, // UNTYPED_DECLARATION // Static typing is optional, we don't want to spam warnings.
+		IGNORE, // INFERRED_DECLARATION // Static typing is optional, we don't want to spam warnings.
 		IGNORE, // UNSAFE_PROPERTY_ACCESS // Too common in untyped scenarios.
 		IGNORE, // UNSAFE_METHOD_ACCESS // Too common in untyped scenarios.
 		IGNORE, // UNSAFE_CAST // Too common in untyped scenarios.
@@ -128,6 +130,7 @@ public:
 		WARN, // NARROWING_CONVERSION
 		WARN, // INT_AS_ENUM_WITHOUT_CAST
 		WARN, // INT_AS_ENUM_WITHOUT_MATCH
+		WARN, // ENUM_VARIABLE_WITHOUT_DEFAULT
 		WARN, // EMPTY_FILE
 		WARN, // DEPRECATED_KEYWORD
 		WARN, // RENAMED_IN_GODOT_4_HINT
@@ -138,6 +141,11 @@ public:
 		ERROR, // NATIVE_METHOD_OVERRIDE // May not work as expected.
 		ERROR, // GET_NODE_DEFAULT_WITHOUT_ONREADY // May not work as expected.
 		ERROR, // ONREADY_WITH_EXPORT // May not work as expected.
+#ifndef DISABLE_DEPRECATED
+		WARN, // PROPERTY_USED_AS_FUNCTION
+		WARN, // CONSTANT_USED_AS_FUNCTION
+		WARN, // FUNCTION_USED_AS_PROPERTY
+#endif
 	};
 
 	static_assert((sizeof(default_warning_levels) / sizeof(default_warning_levels[0])) == WARNING_MAX, "Amount of default levels does not match the amount of warnings.");

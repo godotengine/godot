@@ -113,7 +113,6 @@ int TPpContext::TokenStream::getToken(TParseContextBase& parseContext, TPpToken 
     int atom = stream[currentPos++].get(*ppToken);
     ppToken->loc = parseContext.getCurrentLoc();
 
-#ifndef GLSLANG_WEB
     // Check for ##, unless the current # is the last character
     if (atom == '#') {
         if (peekToken('#')) {
@@ -123,7 +122,6 @@ int TPpContext::TokenStream::getToken(TParseContextBase& parseContext, TPpToken 
             atom = PpAtomPaste;
         }
     }
-#endif
 
     return atom;
 }

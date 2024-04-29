@@ -108,7 +108,7 @@ void DebugEffects::_create_frustum_arrays() {
 
 		// Create our index_array
 		PackedByteArray data;
-		data.resize(6 * 2 * 3 * 4);
+		data.resize(6 * 2 * 3 * 2);
 		{
 			uint8_t *w = data.ptrw();
 			uint16_t *p16 = (uint16_t *)w;
@@ -142,7 +142,7 @@ void DebugEffects::_create_frustum_arrays() {
 
 		// Create our lines_array
 		PackedByteArray data;
-		data.resize(12 * 2 * 4);
+		data.resize(12 * 2 * 2);
 		{
 			uint8_t *w = data.ptrw();
 			uint16_t *p16 = (uint16_t *)w;
@@ -282,7 +282,7 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 		// And draw our frustum.
 		RD::FramebufferFormatID fb_format_id = RD::get_singleton()->framebuffer_get_format(p_dest_fb);
 
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, rect);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 0.0, 0, rect);
 
 		RID pipeline = shadow_frustum.pipelines[SFP_TRANSPARENT].get_render_pipeline(frustum.vertex_format, fb_format_id);
 		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, pipeline);
@@ -326,7 +326,7 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 			rect.size.x *= atlas_rect_norm.size.x;
 			rect.size.y *= atlas_rect_norm.size.y;
 
-			draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, rect);
+			draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 0.0, 0, rect);
 
 			pipeline = shadow_frustum.pipelines[SFP_TRANSPARENT].get_render_pipeline(frustum.vertex_format, fb_format_id);
 			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, pipeline);
@@ -340,25 +340,38 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 	}
 }
 
-void DebugEffects::draw_motion_vectors(RID p_velocity, RID p_dest_fb, Size2i p_velocity_size) {
+void DebugEffects::draw_motion_vectors(RID p_velocity, RID p_depth, RID p_dest_fb, const Projection &p_current_projection, const Transform3D &p_current_transform, const Projection &p_previous_projection, const Transform3D &p_previous_transform, Size2i p_resolution) {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	ERR_FAIL_NULL(material_storage);
 
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 	RD::Uniform u_source_velocity(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_velocity }));
+	RD::Uniform u_source_depth(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, Vector<RID>({ default_sampler, p_depth }));
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, motion_vectors.pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_fb), false, RD::get_singleton()->draw_list_get_current_pass()));
 
-	motion_vectors.push_constant.velocity_resolution[0] = p_velocity_size.width;
-	motion_vectors.push_constant.velocity_resolution[1] = p_velocity_size.height;
+	Projection reprojection = p_previous_projection.flipped_y() * p_previous_transform.affine_inverse() * p_current_transform * p_current_projection.flipped_y().inverse();
+	RendererRD::MaterialStorage::store_camera(reprojection, motion_vectors.push_constant.reprojection_matrix);
+
+	motion_vectors.push_constant.resolution[0] = p_resolution.width;
+	motion_vectors.push_constant.resolution[1] = p_resolution.height;
+	motion_vectors.push_constant.force_derive_from_depth = false;
 
 	RID shader = motion_vectors.shader.version_get_shader(motion_vectors.shader_version, 0);
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_velocity), 0);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_velocity, u_source_depth), 0);
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &motion_vectors.push_constant, sizeof(MotionVectorsPushConstant));
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
+
+#ifdef DRAW_DERIVATION_FROM_DEPTH_ON_TOP
+	motion_vectors.push_constant.force_derive_from_depth = true;
+
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &motion_vectors.push_constant, sizeof(MotionVectorsPushConstant));
+	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
+#endif
+
 	RD::get_singleton()->draw_list_end();
 }

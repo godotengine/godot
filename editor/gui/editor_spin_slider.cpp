@@ -33,11 +33,11 @@
 #include "core/input/input.h"
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/themes/editor_scale.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
-	if (grabber->is_visible()) {
+	if (!read_only && grabber->is_visible()) {
 		Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
 		return TS->format_number(rtos(get_value())) + "\n\n" + vformat(TTR("Hold %s to round to integers.\nHold Shift for more precise changes."), find_keycode_name(key));
 	}
@@ -68,31 +68,19 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					}
 					return;
 				} else {
-					grabbing_spinner_attempt = true;
-					grabbing_spinner_dist_cache = 0;
-					pre_grab_value = get_value();
-					grabbing_spinner = false;
-					grabbing_spinner_mouse_pos = get_global_mouse_position();
-					emit_signal("grabbed");
+					_grab_start();
 				}
 			} else {
-				if (grabbing_spinner_attempt) {
-					if (grabbing_spinner) {
-						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-						Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
-						queue_redraw();
-						emit_signal("ungrabbed");
-					} else {
-						_focus_entered();
-					}
-
-					grabbing_spinner = false;
-					grabbing_spinner_attempt = false;
-				}
+				_grab_end();
+			}
+		} else if (mb->get_button_index() == MouseButton::RIGHT) {
+			if (mb->is_pressed() && is_grabbing()) {
+				_grab_end();
+				set_value(pre_grab_value);
 			}
 		} else if (mb->get_button_index() == MouseButton::WHEEL_UP || mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 			if (grabber->is_visible()) {
-				call_deferred(SNAME("queue_redraw"));
+				callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw).call_deferred();
 			}
 		}
 	}
@@ -142,8 +130,47 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed() && k->is_action("ui_accept", true)) {
-		_focus_entered();
+	if (k.is_valid() && k->is_pressed()) {
+		if (k->is_action("ui_accept", true)) {
+			_focus_entered();
+		} else if (is_grabbing()) {
+			if (k->is_action("ui_cancel", true)) {
+				_grab_end();
+				set_value(pre_grab_value);
+			}
+			accept_event();
+		}
+	}
+}
+
+void EditorSpinSlider::_grab_start() {
+	grabbing_spinner_attempt = true;
+	grabbing_spinner_dist_cache = 0;
+	pre_grab_value = get_value();
+	grabbing_spinner = false;
+	grabbing_spinner_mouse_pos = get_global_mouse_position();
+	emit_signal("grabbed");
+}
+
+void EditorSpinSlider::_grab_end() {
+	if (grabbing_spinner_attempt) {
+		if (grabbing_spinner) {
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+			Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
+			queue_redraw();
+			grabbing_spinner = false;
+			emit_signal("ungrabbed");
+		} else {
+			_focus_entered();
+		}
+
+		grabbing_spinner_attempt = false;
+	}
+
+	if (grabbing_grabber) {
+		grabbing_grabber = false;
+		mousewheel_over_grabber = false;
+		emit_signal("ungrabbed");
 	}
 }
 
@@ -173,14 +200,23 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
 			grabbing_grabber = true;
+			pre_grab_value = get_value();
 			if (!mousewheel_over_grabber) {
 				grabbing_ratio = get_as_ratio();
 				grabbing_from = grabber->get_transform().xform(mb->get_position()).x;
 			}
+			grab_focus();
 			emit_signal("grabbed");
 		} else {
 			grabbing_grabber = false;
 			mousewheel_over_grabber = false;
+			emit_signal("ungrabbed");
+		}
+	} else if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT) {
+		if (mb->is_pressed() && grabbing_grabber) {
+			grabbing_grabber = false;
+			mousewheel_over_grabber = false;
+			set_value(pre_grab_value);
 			emit_signal("ungrabbed");
 		}
 	}
@@ -202,50 +238,35 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed() && !is_read_only()) {
-		double step = get_step();
-		double real_step = step;
-		if (step < 1) {
-			double divisor = 1.0 / get_step();
-
-			if (trunc(divisor) == divisor) {
-				step = 1.0;
-			}
-		}
-
-		if (k->is_command_or_control_pressed()) {
-			step *= 100.0;
-		} else if (k->is_shift_pressed()) {
-			step *= 10.0;
-		} else if (k->is_alt_pressed()) {
-			step *= 0.1;
-		}
-
 		Key code = k->get_keycode();
+
 		switch (code) {
-			case Key::UP: {
-				_evaluate_input_text();
-
-				double last_value = get_value();
-				set_value(last_value + step);
-				double new_value = get_value();
-
-				if (new_value < CLAMP(last_value + step, get_min(), get_max())) {
-					set_value(last_value + real_step);
-				}
-
-				value_input_dirty = true;
-				set_process_internal(true);
-			} break;
+			case Key::UP:
 			case Key::DOWN: {
+				double step = get_step();
+				if (step < 1) {
+					double divisor = 1.0 / step;
+
+					if (trunc(divisor) == divisor) {
+						step = 1.0;
+					}
+				}
+
+				if (k->is_command_or_control_pressed()) {
+					step *= 100.0;
+				} else if (k->is_shift_pressed()) {
+					step *= 10.0;
+				} else if (k->is_alt_pressed()) {
+					step *= 0.1;
+				}
+
 				_evaluate_input_text();
 
 				double last_value = get_value();
-				set_value(last_value - step);
-				double new_value = get_value();
-
-				if (new_value > CLAMP(last_value - step, get_min(), get_max())) {
-					set_value(last_value - real_step);
+				if (code == Key::DOWN) {
+					step *= -1;
 				}
+				set_value(last_value + step);
 
 				value_input_dirty = true;
 				set_process_internal(true);
@@ -399,13 +420,9 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 			grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
 
-			bool display_grabber = (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
+			bool display_grabber = !read_only && (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
 			if (grabber->is_visible() != display_grabber) {
-				if (display_grabber) {
-					grabber->show();
-				} else {
-					grabber->hide();
-				}
+				grabber->set_visible(display_grabber);
 			}
 
 			if (display_grabber) {
@@ -534,17 +551,24 @@ String EditorSpinSlider::get_suffix() const {
 }
 
 void EditorSpinSlider::_evaluate_input_text() {
-	// Replace comma with dot to support it as decimal separator (GH-6028).
-	// This prevents using functions like `pow()`, but using functions
-	// in EditorSpinSlider is a barely known (and barely used) feature.
-	// Instead, we'd rather support German/French keyboard layouts out of the box.
-	const String text = TS->parse_number(value_input->get_text().replace(",", "."));
-
 	Ref<Expression> expr;
 	expr.instantiate();
+
+	// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
+	String text = value_input->get_text().replace(",", ".");
+	text = text.replace(";", ",");
+	text = TS->parse_number(text);
+
 	Error err = expr->parse(text);
 	if (err != OK) {
-		return;
+		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
+		text = value_input->get_text();
+		text = TS->parse_number(text);
+
+		err = expr->parse(text);
+		if (err != OK) {
+			return;
+		}
 	}
 
 	Variant v = expr->execute(Array(), nullptr, false, true);
@@ -639,11 +663,11 @@ void EditorSpinSlider::_focus_entered() {
 	_ensure_input_popup();
 	value_input->set_text(get_text_value());
 	value_input_popup->set_size(get_size());
-	value_input_popup->call_deferred(SNAME("show"));
-	value_input->call_deferred(SNAME("grab_focus"));
-	value_input->call_deferred(SNAME("select_all"));
 	value_input->set_focus_next(find_next_valid_focus()->get_path());
 	value_input->set_focus_previous(find_prev_valid_focus()->get_path());
+	callable_mp((CanvasItem *)value_input_popup, &CanvasItem::show).call_deferred();
+	callable_mp((Control *)value_input, &Control::grab_focus).call_deferred();
+	callable_mp(value_input, &LineEdit ::select_all).call_deferred();
 	emit_signal("value_focus_entered");
 }
 

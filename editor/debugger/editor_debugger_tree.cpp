@@ -56,6 +56,8 @@ EditorDebuggerTree::EditorDebuggerTree() {
 void EditorDebuggerTree::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
+			set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
 			connect("cell_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selected));
 			connect("item_collapsed", callable_mp(this, &EditorDebuggerTree::_scene_tree_folded));
 			connect("item_mouse_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
@@ -253,7 +255,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	}
 	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree
 	if (scroll_item) {
-		call_deferred(SNAME("scroll_to_item"), scroll_item);
+		callable_mp((Tree *)this, &Tree::scroll_to_item).call_deferred(scroll_item, false);
 	}
 	last_filter = filter;
 	updating_scene_tree = false;

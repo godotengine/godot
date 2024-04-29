@@ -38,7 +38,9 @@
 // Interface for OpenXR extensions that provide a composition layer.
 class OpenXRCompositionLayerProvider {
 public:
-	virtual XrCompositionLayerBaseHeader *get_composition_layer() = 0;
+	virtual int get_composition_layer_count() = 0;
+	virtual XrCompositionLayerBaseHeader *get_composition_layer(int p_index) = 0;
+	virtual int get_composition_layer_order(int p_index) = 0;
 
 	virtual ~OpenXRCompositionLayerProvider() {}
 };

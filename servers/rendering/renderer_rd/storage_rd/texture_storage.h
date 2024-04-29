@@ -172,7 +172,7 @@ private:
 		void cleanup();
 	};
 
-	//textures can be created from threads, so this RID_Owner is thread safe
+	// Textures can be created from threads, so this RID_Owner is thread safe.
 	mutable RID_Owner<Texture, true> texture_owner;
 	Texture *get_texture(RID p_rid) { return texture_owner.get_or_null(p_rid); };
 
@@ -331,9 +331,10 @@ private:
 		uint32_t view_count;
 		RID color;
 		Vector<RID> color_slices;
-		RID color_multisample; // Needed when MSAA is enabled.
+		RID color_multisample; // Needed when 2D MSAA is enabled.
 
-		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
+		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED; // 2D MSAA mode
+		bool msaa_needs_resolve = false; // 2D MSAA needs resolved
 
 		//used for retrieving from CPU
 		RD::DataFormat color_format = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
@@ -718,6 +719,9 @@ public:
 	virtual void render_target_set_as_unused(RID p_render_target) override;
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override;
 	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override;
+	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) override;
+	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const override;
+	virtual void render_target_do_msaa_resolve(RID p_render_target) override;
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr) override;
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
 

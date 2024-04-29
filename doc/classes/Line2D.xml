@@ -9,8 +9,8 @@
 		[b]Note:[/b] [Line2D] is drawn using a 2D mesh.
 	</description>
 	<tutorials>
-		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
-		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/2787</link>
+		<link title="2.5D Game Demo">https://godotengine.org/asset-library/asset/2783</link>
 	</tutorials>
 	<methods>
 		<method name="add_point">
@@ -92,7 +92,7 @@
 			Determines the miter limit of the polyline. Normally, when [member joint_mode] is set to [constant LINE_JOINT_SHARP], sharp angles fall back to using the logic of [constant LINE_JOINT_BEVEL] joints to prevent very long miters. Higher values of this property mean that the fallback to a bevel joint will happen at sharper angles.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
-			The texture used for the polyline. Uses [code]texture_mode[/code] for drawing style.
+			The texture used for the polyline. Uses [member texture_mode] for drawing style.
 		</member>
 		<member name="texture_mode" type="int" setter="set_texture_mode" getter="get_texture_mode" enum="Line2D.LineTextureMode" default="0">
 			The style to render the [member texture] of the polyline. Use [enum LineTextureMode] constants.

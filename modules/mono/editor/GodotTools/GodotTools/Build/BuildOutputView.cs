@@ -1,425 +1,148 @@
 using Godot;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using GodotTools.Internals;
-using File = GodotTools.Utils.File;
-using Path = System.IO.Path;
+using static GodotTools.Internals.Globals;
 
 namespace GodotTools.Build
 {
-    public partial class BuildOutputView : VBoxContainer, ISerializationListener
+    public partial class BuildOutputView : HBoxContainer
     {
-        [Serializable]
-        private partial class BuildIssue : RefCounted // TODO Remove RefCounted once we have proper serialization
+#nullable disable
+        private RichTextLabel _log;
+
+        private Button _clearButton;
+        private Button _copyButton;
+#nullable enable
+
+        public void Append(string text)
         {
-            public bool Warning { get; set; }
-            public string File { get; set; }
-            public int Line { get; set; }
-            public int Column { get; set; }
-            public string Code { get; set; }
-            public string Message { get; set; }
-            public string ProjectFile { get; set; }
+            _log.AddText(text);
         }
 
-        [Signal]
-        public delegate void BuildStateChangedEventHandler();
-
-        public bool HasBuildExited { get; private set; } = false;
-
-        public BuildResult? BuildResult { get; private set; } = null;
-
-        public int ErrorCount { get; private set; } = 0;
-
-        public int WarningCount { get; private set; } = 0;
-
-        public bool ErrorsVisible { get; set; } = true;
-        public bool WarningsVisible { get; set; } = true;
-
-        public Texture2D BuildStateIcon
+        public void Clear()
         {
-            get
-            {
-                if (!HasBuildExited)
-                    return GetThemeIcon("Stop", "EditorIcons");
-
-                if (BuildResult == Build.BuildResult.Error)
-                    return GetThemeIcon("Error", "EditorIcons");
-
-                if (WarningCount > 1)
-                    return GetThemeIcon("Warning", "EditorIcons");
-
-                return null;
-            }
+            _log.Clear();
         }
 
-        public bool LogVisible
+        private void CopyRequested()
         {
-            set => _buildLog.Visible = value;
-        }
+            string text = _log.GetSelectedText();
 
-        // TODO Use List once we have proper serialization.
-        private Godot.Collections.Array<BuildIssue> _issues = new();
-        private ItemList _issuesList;
-        private PopupMenu _issuesListContextMenu;
-        private TextEdit _buildLog;
-        private BuildInfo _buildInfo;
+            if (string.IsNullOrEmpty(text))
+                text = _log.GetParsedText();
 
-        private readonly object _pendingBuildLogTextLock = new object();
-        [NotNull] private string _pendingBuildLogText = string.Empty;
-
-        private void LoadIssuesFromFile(string csvFile)
-        {
-            using var file = FileAccess.Open(csvFile, FileAccess.ModeFlags.Read);
-
-            if (file == null)
-                return;
-
-            while (!file.EofReached())
-            {
-                string[] csvColumns = file.GetCsvLine();
-
-                if (csvColumns.Length == 1 && string.IsNullOrEmpty(csvColumns[0]))
-                    return;
-
-                if (csvColumns.Length != 7)
-                {
-                    GD.PushError($"Expected 7 columns, got {csvColumns.Length}");
-                    continue;
-                }
-
-                var issue = new BuildIssue
-                {
-                    Warning = csvColumns[0] == "warning",
-                    File = csvColumns[1],
-                    Line = int.Parse(csvColumns[2]),
-                    Column = int.Parse(csvColumns[3]),
-                    Code = csvColumns[4],
-                    Message = csvColumns[5],
-                    ProjectFile = csvColumns[6]
-                };
-
-                if (issue.Warning)
-                    WarningCount += 1;
-                else
-                    ErrorCount += 1;
-
-                _issues.Add(issue);
-            }
-        }
-
-        private void IssueActivated(long idx)
-        {
-            if (idx < 0 || idx >= _issuesList.ItemCount)
-                throw new ArgumentOutOfRangeException(nameof(idx), "Item list index out of range.");
-
-            // Get correct issue idx from issue list
-            int issueIndex = (int)_issuesList.GetItemMetadata((int)idx);
-
-            if (issueIndex < 0 || issueIndex >= _issues.Count)
-                throw new InvalidOperationException("Issue index out of range.");
-
-            BuildIssue issue = _issues[issueIndex];
-
-            if (string.IsNullOrEmpty(issue.ProjectFile) && string.IsNullOrEmpty(issue.File))
-                return;
-
-            string projectDir = !string.IsNullOrEmpty(issue.ProjectFile) ?
-                issue.ProjectFile.GetBaseDir() :
-                _buildInfo.Solution.GetBaseDir();
-
-            string file = Path.Combine(projectDir.SimplifyGodotPath(), issue.File.SimplifyGodotPath());
-
-            if (!File.Exists(file))
-                return;
-
-            file = ProjectSettings.LocalizePath(file);
-
-            if (file.StartsWith("res://"))
-            {
-                var script = (Script)ResourceLoader.Load(file, typeHint: Internal.CSharpLanguageType);
-
-                // Godot's ScriptEditor.Edit is 0-based but the issue lines are 1-based.
-                if (script != null && Internal.ScriptEditorEdit(script, issue.Line - 1, issue.Column - 1))
-                    Internal.EditorNodeShowScriptScreen();
-            }
-        }
-
-        public void UpdateIssuesList()
-        {
-            _issuesList.Clear();
-
-            using (var warningIcon = GetThemeIcon("Warning", "EditorIcons"))
-            using (var errorIcon = GetThemeIcon("Error", "EditorIcons"))
-            {
-                for (int i = 0; i < _issues.Count; i++)
-                {
-                    BuildIssue issue = _issues[i];
-
-                    if (!(issue.Warning ? WarningsVisible : ErrorsVisible))
-                        continue;
-
-                    string tooltip = string.Empty;
-                    tooltip += $"Message: {issue.Message}";
-
-                    if (!string.IsNullOrEmpty(issue.Code))
-                        tooltip += $"\nCode: {issue.Code}";
-
-                    tooltip += $"\nType: {(issue.Warning ? "warning" : "error")}";
-
-                    string text = string.Empty;
-
-                    if (!string.IsNullOrEmpty(issue.File))
-                    {
-                        text += $"{issue.File}({issue.Line},{issue.Column}): ";
-
-                        tooltip += $"\nFile: {issue.File}";
-                        tooltip += $"\nLine: {issue.Line}";
-                        tooltip += $"\nColumn: {issue.Column}";
-                    }
-
-                    if (!string.IsNullOrEmpty(issue.ProjectFile))
-                        tooltip += $"\nProject: {issue.ProjectFile}";
-
-                    text += issue.Message;
-
-                    int lineBreakIdx = text.IndexOf("\n", StringComparison.Ordinal);
-                    string itemText = lineBreakIdx == -1 ? text : text.Substring(0, lineBreakIdx);
-                    _issuesList.AddItem(itemText, issue.Warning ? warningIcon : errorIcon);
-
-                    int index = _issuesList.ItemCount - 1;
-                    _issuesList.SetItemTooltip(index, tooltip);
-                    _issuesList.SetItemMetadata(index, i);
-                }
-            }
-        }
-
-        private void BuildLaunchFailed(BuildInfo buildInfo, string cause)
-        {
-            HasBuildExited = true;
-            BuildResult = Build.BuildResult.Error;
-
-            _issuesList.Clear();
-
-            var issue = new BuildIssue { Message = cause, Warning = false };
-
-            ErrorCount += 1;
-            _issues.Add(issue);
-
-            UpdateIssuesList();
-
-            EmitSignal(nameof(BuildStateChanged));
-        }
-
-        private void BuildStarted(BuildInfo buildInfo)
-        {
-            _buildInfo = buildInfo;
-            HasBuildExited = false;
-
-            _issues.Clear();
-            WarningCount = 0;
-            ErrorCount = 0;
-            _buildLog.Text = string.Empty;
-
-            UpdateIssuesList();
-
-            EmitSignal(nameof(BuildStateChanged));
-        }
-
-        private void BuildFinished(BuildResult result)
-        {
-            HasBuildExited = true;
-            BuildResult = result;
-
-            LoadIssuesFromFile(Path.Combine(_buildInfo.LogsDirPath, BuildManager.MsBuildIssuesFileName));
-
-            UpdateIssuesList();
-
-            EmitSignal(nameof(BuildStateChanged));
-        }
-
-        private void UpdateBuildLogText()
-        {
-            lock (_pendingBuildLogTextLock)
-            {
-                _buildLog.Text += _pendingBuildLogText;
-                _pendingBuildLogText = string.Empty;
-                ScrollToLastNonEmptyLogLine();
-            }
-        }
-
-        private void StdOutputReceived(string text)
-        {
-            lock (_pendingBuildLogTextLock)
-            {
-                if (_pendingBuildLogText.Length == 0)
-                    CallDeferred(nameof(UpdateBuildLogText));
-                _pendingBuildLogText += text + "\n";
-            }
-        }
-
-        private void StdErrorReceived(string text)
-        {
-            lock (_pendingBuildLogTextLock)
-            {
-                if (_pendingBuildLogText.Length == 0)
-                    CallDeferred(nameof(UpdateBuildLogText));
-                _pendingBuildLogText += text + "\n";
-            }
-        }
-
-        private void ScrollToLastNonEmptyLogLine()
-        {
-            int line;
-            for (line = _buildLog.GetLineCount(); line > 0; line--)
-            {
-                string lineText = _buildLog.GetLine(line);
-
-                if (!string.IsNullOrEmpty(lineText) || !string.IsNullOrEmpty(lineText?.Trim()))
-                    break;
-            }
-
-            _buildLog.SetCaretLine(line);
-        }
-
-        public void RestartBuild()
-        {
-            if (!HasBuildExited)
-                throw new InvalidOperationException("Build already started.");
-
-            BuildManager.RestartBuild(this);
-        }
-
-        public void StopBuild()
-        {
-            if (!HasBuildExited)
-                throw new InvalidOperationException("Build is not in progress.");
-
-            BuildManager.StopBuild(this);
-        }
-
-        private enum IssuesContextMenuOption
-        {
-            Copy
-        }
-
-        private void IssuesListContextOptionPressed(long id)
-        {
-            switch ((IssuesContextMenuOption)id)
-            {
-                case IssuesContextMenuOption.Copy:
-                {
-                    // We don't allow multi-selection but just in case that changes later...
-                    string text = null;
-
-                    foreach (int issueIndex in _issuesList.GetSelectedItems())
-                    {
-                        if (text != null)
-                            text += "\n";
-                        text += _issuesList.GetItemText(issueIndex);
-                    }
-
-                    if (text != null)
-                        DisplayServer.ClipboardSet(text);
-                    break;
-                }
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(id), id, "Invalid issue context menu option");
-            }
-        }
-
-        private void IssuesListClicked(long index, Vector2 atPosition, long mouseButtonIndex)
-        {
-            if (mouseButtonIndex != (long)MouseButton.Right)
-            {
-                return;
-            }
-
-            _ = index; // Unused
-
-            _issuesListContextMenu.Clear();
-            _issuesListContextMenu.Size = new Vector2I(1, 1);
-
-            if (_issuesList.IsAnythingSelected())
-            {
-                // Add menu entries for the selected item
-                _issuesListContextMenu.AddIconItem(GetThemeIcon("ActionCopy", "EditorIcons"),
-                    label: "Copy Error".TTR(), (int)IssuesContextMenuOption.Copy);
-            }
-
-            if (_issuesListContextMenu.ItemCount > 0)
-            {
-                _issuesListContextMenu.Position = (Vector2I)(_issuesList.GlobalPosition + atPosition);
-                _issuesListContextMenu.Popup();
-            }
+            if (!string.IsNullOrEmpty(text))
+                DisplayServer.ClipboardSet(text);
         }
 
         public override void _Ready()
         {
-            base._Ready();
+            Name = "Output".TTR();
 
-            SizeFlagsVertical = SizeFlags.ExpandFill;
+            var vbLeft = new VBoxContainer
+            {
+                CustomMinimumSize = new Vector2(0, 180 * EditorScale),
+                SizeFlagsVertical = SizeFlags.ExpandFill,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            };
+            AddChild(vbLeft);
 
-            var hsc = new HSplitContainer
+            // Log - Rich Text Label.
+            _log = new RichTextLabel
+            {
+                BbcodeEnabled = true,
+                ScrollFollowing = true,
+                SelectionEnabled = true,
+                ContextMenuEnabled = true,
+                FocusMode = FocusModeEnum.Click,
+                SizeFlagsVertical = SizeFlags.ExpandFill,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                DeselectOnFocusLossEnabled = false,
+
+            };
+            vbLeft.AddChild(_log);
+
+            var vbRight = new VBoxContainer();
+            AddChild(vbRight);
+
+            // Tools grid
+            var hbTools = new HBoxContainer
             {
                 SizeFlagsHorizontal = SizeFlags.ExpandFill,
-                SizeFlagsVertical = SizeFlags.ExpandFill
             };
-            AddChild(hsc);
+            vbRight.AddChild(hbTools);
 
-            _issuesList = new ItemList
+            // Clear.
+            _clearButton = new Button
             {
-                SizeFlagsVertical = SizeFlags.ExpandFill,
-                SizeFlagsHorizontal = SizeFlags.ExpandFill // Avoid being squashed by the build log
+                ThemeTypeVariation = "FlatButton",
+                FocusMode = FocusModeEnum.None,
+                Shortcut = EditorDefShortcut("editor/clear_output", "Clear Output".TTR(), (Key)KeyModifierMask.MaskCmdOrCtrl | (Key)KeyModifierMask.MaskShift | Key.K),
             };
-            _issuesList.ItemActivated += IssueActivated;
-            _issuesList.AllowRmbSelect = true;
-            _issuesList.ItemClicked += IssuesListClicked;
-            hsc.AddChild(_issuesList);
+            _clearButton.Pressed += Clear;
+            hbTools.AddChild(_clearButton);
 
-            _issuesListContextMenu = new PopupMenu();
-            _issuesListContextMenu.IdPressed += IssuesListContextOptionPressed;
-            _issuesList.AddChild(_issuesListContextMenu);
-
-            _buildLog = new TextEdit
+            // Copy.
+            _copyButton = new Button
             {
-                Editable = false,
-                SizeFlagsVertical = SizeFlags.ExpandFill,
-                SizeFlagsHorizontal = SizeFlags.ExpandFill // Avoid being squashed by the issues list
+                ThemeTypeVariation = "FlatButton",
+                FocusMode = FocusModeEnum.None,
+                Shortcut = EditorDefShortcut("editor/copy_output", "Copy Selection".TTR(), (Key)KeyModifierMask.MaskCmdOrCtrl | Key.C),
+                ShortcutContext = this,
             };
-            hsc.AddChild(_buildLog);
+            _copyButton.Pressed += CopyRequested;
+            hbTools.AddChild(_copyButton);
 
-            AddBuildEventListeners();
+            UpdateTheme();
         }
 
-        private void AddBuildEventListeners()
+        public override void _Notification(int what)
         {
-            BuildManager.BuildLaunchFailed += BuildLaunchFailed;
-            BuildManager.BuildStarted += BuildStarted;
-            BuildManager.BuildFinished += BuildFinished;
-            // StdOutput/Error can be received from different threads, so we need to use CallDeferred
-            BuildManager.StdOutputReceived += StdOutputReceived;
-            BuildManager.StdErrorReceived += StdErrorReceived;
+            base._Notification(what);
+
+            if (what == NotificationThemeChanged)
+            {
+                UpdateTheme();
+            }
         }
 
-        public void OnBeforeSerialize()
+        private void UpdateTheme()
         {
-            // In case it didn't update yet. We don't want to have to serialize any pending output.
-            UpdateBuildLogText();
+            // Nodes will be null until _Ready is called.
+            if (_log == null)
+                return;
 
-            // NOTE:
-            // Currently, GodotTools is loaded in its own load context. This load context is not reloaded, but the script still are.
-            // Until that changes, we need workarounds like this one because events keep strong references to disposed objects.
-            BuildManager.BuildLaunchFailed -= BuildLaunchFailed;
-            BuildManager.BuildStarted -= BuildStarted;
-            BuildManager.BuildFinished -= BuildFinished;
-            // StdOutput/Error can be received from different threads, so we need to use CallDeferred
-            BuildManager.StdOutputReceived -= StdOutputReceived;
-            BuildManager.StdErrorReceived -= StdErrorReceived;
-        }
+            var normalFont = GetThemeFont("output_source", "EditorFonts");
+            if (normalFont != null)
+                _log.AddThemeFontOverride("normal_font", normalFont);
 
-        public void OnAfterDeserialize()
-        {
-            AddBuildEventListeners(); // Re-add them
+            var boldFont = GetThemeFont("output_source_bold", "EditorFonts");
+            if (boldFont != null)
+                _log.AddThemeFontOverride("bold_font", boldFont);
+
+            var italicsFont = GetThemeFont("output_source_italic", "EditorFonts");
+            if (italicsFont != null)
+                _log.AddThemeFontOverride("italics_font", italicsFont);
+
+            var boldItalicsFont = GetThemeFont("output_source_bold_italic", "EditorFonts");
+            if (boldItalicsFont != null)
+                _log.AddThemeFontOverride("bold_italics_font", boldItalicsFont);
+
+            var monoFont = GetThemeFont("output_source_mono", "EditorFonts");
+            if (monoFont != null)
+                _log.AddThemeFontOverride("mono_font", monoFont);
+
+            // Disable padding for highlighted background/foreground to prevent highlights from overlapping on close lines.
+            // This also better matches terminal output, which does not use any form of padding.
+            _log.AddThemeConstantOverride("text_highlight_h_padding", 0);
+            _log.AddThemeConstantOverride("text_highlight_v_padding", 0);
+
+            int font_size = GetThemeFontSize("output_source_size", "EditorFonts");
+            _log.AddThemeFontSizeOverride("normal_font_size", font_size);
+            _log.AddThemeFontSizeOverride("bold_font_size", font_size);
+            _log.AddThemeFontSizeOverride("italics_font_size", font_size);
+            _log.AddThemeFontSizeOverride("mono_font_size", font_size);
+
+            _clearButton.Icon = GetThemeIcon("Clear", "EditorIcons");
+            _copyButton.Icon = GetThemeIcon("ActionCopy", "EditorIcons");
         }
     }
 }

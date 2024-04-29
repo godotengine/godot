@@ -37,31 +37,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-//
-// Do not edit the .y file, only edit the .m4 file.
-// The .y bison file is not a source file, it is a derivative of the .m4 file.
-// The m4 file needs to be processed by m4 to generate the .y bison file.
-//
-// Code sandwiched between a pair:
-//
-//    GLSLANG_WEB_EXCLUDE_ON
-//      ...
-//      ...
-//      ...
-//    GLSLANG_WEB_EXCLUDE_OFF
-//
-// Will be excluded from the grammar when m4 is executed as:
-//
-//    m4 -P -DGLSLANG_WEB
-//
-// It will be included when m4 is executed as:
-//
-//    m4 -P
-//
-
-
-
-
 /**
  * This is bison grammar and productions for parsing all versions of the
  * GLSL shading languages.
@@ -129,18 +104,11 @@ using namespace glslang;
             glslang::TArraySizes* arraySizes;
             glslang::TIdentifierList* identifierList;
         };
-        glslang::TArraySizes* typeParameters;
+        glslang::TTypeParameters* typeParameters;
     } interm;
 }
 
 %{
-
-/* windows only pragma */
-#ifdef _MSC_VER
-    #pragma warning(disable : 4065)
-    #pragma warning(disable : 4127)
-    #pragma warning(disable : 4244)
-#endif
 
 #define parseContext (*pParseContext)
 #define yyerror(context, msg) context->parserError(msg)
@@ -177,8 +145,6 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> ITEXTURE2D ITEXTURE3D ITEXTURECUBE ITEXTURE2DARRAY
 %token <lex> UTEXTURE2D UTEXTURE3D UTEXTURECUBE UTEXTURE2DARRAY
 
-
-
 %token <lex> ATTRIBUTE VARYING
 %token <lex> FLOAT16_T FLOAT32_T DOUBLE FLOAT64_T
 %token <lex> INT64_T UINT64_T INT32_T UINT32_T INT16_T UINT16_T INT8_T UINT8_T
@@ -211,6 +177,7 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> ACCSTRUCTEXT
 %token <lex> RAYQUERYEXT
 %token <lex> FCOOPMATNV ICOOPMATNV UCOOPMATNV
+%token <lex> COOPMAT
 %token <lex> HITOBJECTNV HITOBJECTATTRNV
 
 // combined image/sampler
@@ -281,8 +248,6 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> SPIRV_TYPE SPIRV_STORAGE_CLASS SPIRV_BY_REFERENCE SPIRV_LITERAL
 %token <lex> ATTACHMENTEXT IATTACHMENTEXT UATTACHMENTEXT
 
-
-
 %token <lex> LEFT_OP RIGHT_OP
 %token <lex> INC_OP DEC_OP LE_OP GE_OP EQ_OP NE_OP
 %token <lex> AND_OP OR_OP XOR_OP MUL_ASSIGN DIV_ASSIGN ADD_ASSIGN
@@ -308,7 +273,6 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> UNIFORM SHARED BUFFER TILEIMAGEEXT
 %token <lex> FLAT SMOOTH LAYOUT
 
-
 %token <lex> DOUBLECONSTANT INT16CONSTANT UINT16CONSTANT FLOAT16CONSTANT INT32CONSTANT UINT32CONSTANT
 %token <lex> INT64CONSTANT UINT64CONSTANT
 %token <lex> SUBROUTINE DEMOTE
@@ -319,7 +283,6 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> SUBGROUPCOHERENT NONPRIVATE SHADERCALLCOHERENT
 %token <lex> NOPERSPECTIVE EXPLICITINTERPAMD PERVERTEXEXT PERVERTEXNV PERPRIMITIVENV PERVIEWNV PERTASKNV PERPRIMITIVEEXT TASKPAYLOADWORKGROUPEXT
 %token <lex> PRECISE
-
 
 %type <interm> assignment_operator unary_operator
 %type <interm.intermTypedNode> variable_identifier primary_expression postfix_expression
@@ -366,7 +329,6 @@ extern int yylex(YYSTYPE*, TParseContext&);
 
 %type <interm.identifierList> identifier_list
 
-
 %type <interm.type> precise_qualifier non_uniform_qualifier
 %type <interm.typeList> type_name_list
 %type <interm.attributes> attribute attribute_list single_attribute
@@ -385,7 +347,6 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %type <interm.spirvTypeParams> spirv_type_parameter_list spirv_type_parameter
 %type <interm.spirvInst> spirv_instruction_qualifier
 %type <interm.spirvInst> spirv_instruction_qualifier_list spirv_instruction_qualifier_id
-
 
 %start translation_unit
 %%
@@ -418,7 +379,6 @@ primary_expression
     | BOOLCONSTANT {
         $$ = parseContext.intermediate.addConstantUnion($1.b, $1.loc, true);
     }
-
     | STRING_LITERAL {
         $$ = parseContext.intermediate.addConstantUnion($1.string, $1.loc, true);
     }
@@ -456,7 +416,6 @@ primary_expression
         parseContext.float16Check($1.loc, "half float literal");
         $$ = parseContext.intermediate.addConstantUnion($1.d, EbtFloat16, $1.loc, true);
     }
-
     ;
 
 postfix_expression
@@ -526,18 +485,41 @@ function_call_header_no_parameters
 
 function_call_header_with_parameters
     : function_call_header assignment_expression {
-        TParameter param = { 0, new TType };
-        param.type->shallowCopy($2->getType());
-        $1.function->addParameter(param);
-        $$.function = $1.function;
-        $$.intermNode = $2;
+        if (parseContext.spvVersion.vulkan > 0
+            && parseContext.spvVersion.vulkanRelaxed
+            && $2->getType().containsOpaque())
+        {
+            $$.intermNode = parseContext.vkRelaxedRemapFunctionArgument($$.loc, $1.function, $2);
+            $$.function = $1.function;
+        }
+        else
+        {
+            TParameter param = { 0, new TType };
+            param.type->shallowCopy($2->getType());
+
+            $1.function->addParameter(param);
+            $$.function = $1.function;
+            $$.intermNode = $2;
+        }
     }
     | function_call_header_with_parameters COMMA assignment_expression {
-        TParameter param = { 0, new TType };
-        param.type->shallowCopy($3->getType());
-        $1.function->addParameter(param);
-        $$.function = $1.function;
-        $$.intermNode = parseContext.intermediate.growAggregate($1.intermNode, $3, $2.loc);
+        if (parseContext.spvVersion.vulkan > 0
+            && parseContext.spvVersion.vulkanRelaxed
+            && $3->getType().containsOpaque())
+        {
+            TIntermNode* remappedNode = parseContext.vkRelaxedRemapFunctionArgument($2.loc, $1.function, $3);
+            $$.intermNode = parseContext.intermediate.mergeAggregate($1.intermNode, remappedNode, $2.loc);
+            $$.function = $1.function;
+        }
+        else
+        {
+            TParameter param = { 0, new TType };
+            param.type->shallowCopy($3->getType());
+
+            $1.function->addParameter(param);
+            $$.function = $1.function;
+            $$.intermNode = parseContext.intermediate.growAggregate($1.intermNode, $3, $2.loc);
+        }
     }
     ;
 
@@ -582,13 +564,11 @@ function_identifier
             $$.function = new TFunction(empty, TType(EbtVoid), EOpNull);
         }
     }
-
     | non_uniform_qualifier {
         // Constructor
         $$.intermNode = 0;
         $$.function = parseContext.handleConstructorCall($1.loc, $1);
     }
-
     ;
 
 unary_expression
@@ -898,7 +878,6 @@ declaration
         $$ = 0;
         // TODO: 4.0 functionality: subroutines: make the identifier a user type for this signature
     }
-
     | spirv_instruction_qualifier function_prototype SEMICOLON {
         parseContext.requireExtensions($2.loc, 1, &E_GL_EXT_spirv_intrinsics, "SPIR-V instruction qualifier");
         $2.function->setSpirvInstruction(*$1); // Attach SPIR-V intruction qualifier
@@ -911,7 +890,6 @@ declaration
         parseContext.requireExtensions($2.loc, 1, &E_GL_EXT_spirv_intrinsics, "SPIR-V execution mode qualifier");
         $$ = 0;
     }
-
     | init_declarator_list SEMICOLON {
         if ($1.intermNode && $1.intermNode->getAsAggregate())
             $1.intermNode->getAsAggregate()->setOperator(EOpSequence);
@@ -979,24 +957,25 @@ identifier_list
 function_prototype
     : function_declarator RIGHT_PAREN  {
         $$.function = $1;
+        if (parseContext.compileOnly) $$.function->setExport();
         $$.loc = $2.loc;
     }
     | function_declarator RIGHT_PAREN attribute {
         $$.function = $1;
+        if (parseContext.compileOnly) $$.function->setExport();
         $$.loc = $2.loc;
-        parseContext.requireExtensions($2.loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
         parseContext.handleFunctionAttributes($2.loc, *$3);
     }
     | attribute function_declarator RIGHT_PAREN {
         $$.function = $2;
+        if (parseContext.compileOnly) $$.function->setExport();
         $$.loc = $3.loc;
-        parseContext.requireExtensions($3.loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
         parseContext.handleFunctionAttributes($3.loc, *$1);
     }
     | attribute function_declarator RIGHT_PAREN attribute {
         $$.function = $2;
+        if (parseContext.compileOnly) $$.function->setExport();
         $$.loc = $3.loc;
-        parseContext.requireExtensions($3.loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
         parseContext.handleFunctionAttributes($3.loc, *$1);
         parseContext.handleFunctionAttributes($3.loc, *$4);
     }
@@ -1017,7 +996,12 @@ function_header_with_parameters
         // Add the parameter
         $$ = $1;
         if ($2.param.type->getBasicType() != EbtVoid)
-            $1->addParameter($2.param);
+        {
+            if (!(parseContext.spvVersion.vulkan > 0 && parseContext.spvVersion.vulkanRelaxed))
+                $1->addParameter($2.param);
+            else
+                parseContext.vkRelaxedRemapFunctionParameter($1, $2.param);
+        }
         else
             delete $2.param.type;
     }
@@ -1035,7 +1019,10 @@ function_header_with_parameters
         } else {
             // Add the parameter
             $$ = $1;
-            $1->addParameter($3.param);
+            if (!(parseContext.spvVersion.vulkan > 0 && parseContext.spvVersion.vulkanRelaxed))
+                $1->addParameter($3.param);
+            else
+                parseContext.vkRelaxedRemapFunctionParameter($1, $3.param);
         }
     }
     ;
@@ -1108,7 +1095,7 @@ parameter_declaration
         $$ = $2;
         if ($1.qualifier.precision != EpqNone)
             $$.param.type->getQualifier().precision = $1.qualifier.precision;
-        parseContext.precisionQualifierCheck($$.loc, $$.param.type->getBasicType(), $$.param.type->getQualifier());
+        parseContext.precisionQualifierCheck($$.loc, $$.param.type->getBasicType(), $$.param.type->getQualifier(), $$.param.type->isCoopMat());
 
         parseContext.checkNoShaderLayouts($1.loc, $1.shaderQualifiers);
         parseContext.parameterTypeCheck($2.loc, $1.qualifier.storage, *$$.param.type);
@@ -1120,7 +1107,7 @@ parameter_declaration
 
         parseContext.parameterTypeCheck($1.loc, EvqIn, *$1.param.type);
         parseContext.paramCheckFixStorage($1.loc, EvqTemporary, *$$.param.type);
-        parseContext.precisionQualifierCheck($$.loc, $$.param.type->getBasicType(), $$.param.type->getQualifier());
+        parseContext.precisionQualifierCheck($$.loc, $$.param.type->getBasicType(), $$.param.type->getQualifier(), $$.param.type->isCoopMat());
     }
     //
     // Without name
@@ -1129,7 +1116,7 @@ parameter_declaration
         $$ = $2;
         if ($1.qualifier.precision != EpqNone)
             $$.param.type->getQualifier().precision = $1.qualifier.precision;
-        parseContext.precisionQualifierCheck($1.loc, $$.param.type->getBasicType(), $$.param.type->getQualifier());
+        parseContext.precisionQualifierCheck($1.loc, $$.param.type->getBasicType(), $$.param.type->getQualifier(), $$.param.type->isCoopMat());
 
         parseContext.checkNoShaderLayouts($1.loc, $1.shaderQualifiers);
         parseContext.parameterTypeCheck($2.loc, $1.qualifier.storage, *$$.param.type);
@@ -1140,7 +1127,7 @@ parameter_declaration
 
         parseContext.parameterTypeCheck($1.loc, EvqIn, *$1.param.type);
         parseContext.paramCheckFixStorage($1.loc, EvqTemporary, *$$.param.type);
-        parseContext.precisionQualifierCheck($$.loc, $$.param.type->getBasicType(), $$.param.type->getQualifier());
+        parseContext.precisionQualifierCheck($$.loc, $$.param.type->getBasicType(), $$.param.type->getQualifier(), $$.param.type->isCoopMat());
     }
     ;
 
@@ -1181,9 +1168,7 @@ single_declaration
     : fully_specified_type {
         $$.type = $1;
         $$.intermNode = 0;
-
         parseContext.declareTypeDefaults($$.loc, $$.type);
-
     }
     | fully_specified_type IDENTIFIER {
         $$.type = $1;
@@ -1217,7 +1202,7 @@ fully_specified_type
             parseContext.profileRequires($1.loc, ENoProfile, 120, E_GL_3DL_array_objects, "arrayed type");
             parseContext.profileRequires($1.loc, EEsProfile, 300, 0, "arrayed type");
         }
-        parseContext.precisionQualifierCheck($$.loc, $$.basicType, $$.qualifier);
+        parseContext.precisionQualifierCheck($$.loc, $$.basicType, $$.qualifier, $$.isCoopmat());
     }
     | type_qualifier type_specifier  {
         parseContext.globalQualifierFixCheck($1.loc, $1.qualifier, false, &$2);
@@ -1234,7 +1219,7 @@ fully_specified_type
         parseContext.checkNoShaderLayouts($2.loc, $1.shaderQualifiers);
         $2.shaderQualifiers.merge($1.shaderQualifiers);
         parseContext.mergeQualifiers($2.loc, $2.qualifier, $1.qualifier, true);
-        parseContext.precisionQualifierCheck($2.loc, $2.basicType, $2.qualifier);
+        parseContext.precisionQualifierCheck($2.loc, $2.basicType, $2.qualifier, $2.isCoopmat());
 
         $$ = $2;
 
@@ -1269,7 +1254,6 @@ interpolation_qualifier
         $$.init($1.loc);
         $$.qualifier.flat = true;
     }
-
     | NOPERSPECTIVE {
         parseContext.globalCheck($1.loc, "noperspective");
         parseContext.profileRequires($1.loc, EEsProfile, 0, E_GL_NV_shader_noperspective_interpolation, "noperspective");
@@ -1334,7 +1318,6 @@ interpolation_qualifier
         $$.init($1.loc);
         $$.qualifier.perTaskNV = true;
     }
-
     ;
 
 layout_qualifier
@@ -1369,7 +1352,6 @@ layout_qualifier_id
     }
     ;
 
-
 precise_qualifier
     : PRECISE {
         parseContext.profileRequires($$.loc, ECoreProfile | ECompatibilityProfile, 400, E_GL_ARB_gpu_shader5, "precise");
@@ -1378,7 +1360,6 @@ precise_qualifier
         $$.qualifier.noContraction = true;
     }
     ;
-
 
 type_qualifier
     : single_type_qualifier {
@@ -1413,7 +1394,6 @@ single_type_qualifier
         // allow inheritance of storage qualifier from block declaration
         $$ = $1;
     }
-
     | precise_qualifier {
         // allow inheritance of storage qualifier from block declaration
         $$ = $1;
@@ -1440,7 +1420,6 @@ single_type_qualifier
         $$.init($1.loc);
         $$.qualifier.setSpirvLiteral();
     }
-
     ;
 
 storage_qualifier
@@ -1495,7 +1474,6 @@ storage_qualifier
         $$.init($1.loc);
         $$.qualifier.storage = EvqBuffer;
     }
-
     | ATTRIBUTE {
         parseContext.requireStage($1.loc, EShLangVertex, "attribute");
         parseContext.checkDeprecated($1.loc, ECoreProfile, 130, "attribute");
@@ -1688,9 +1666,7 @@ storage_qualifier
         $$.init($1.loc);
         $$.qualifier.storage = EvqtaskPayloadSharedEXT;
     }
-
     ;
-
 
 non_uniform_qualifier
     : NONUNIFORM {
@@ -1710,12 +1686,13 @@ type_name_list
     }
     ;
 
-
 type_specifier
     : type_specifier_nonarray type_parameter_specifier_opt {
         $$ = $1;
         $$.qualifier.precision = parseContext.getDefaultPrecision($$);
         $$.typeParameters = $2;
+        parseContext.coopMatTypeParametersCheck($1.loc, $$);
+
     }
     | type_specifier_nonarray type_parameter_specifier_opt array_specifier {
         parseContext.arrayOfArrayVersionCheck($3.loc, $3.arraySizes);
@@ -1723,6 +1700,7 @@ type_specifier
         $$.qualifier.precision = parseContext.getDefaultPrecision($$);
         $$.typeParameters = $2;
         $$.arraySizes = $3.arraySizes;
+        parseContext.coopMatTypeParametersCheck($1.loc, $$);
     }
     ;
 
@@ -1769,19 +1747,25 @@ type_parameter_specifier
     ;
 
 type_parameter_specifier_list
-    : unary_expression {
-        $$ = new TArraySizes;
+    : type_specifier {
+        $$ = new TTypeParameters;
+        $$->arraySizes = new TArraySizes;
+        $$->basicType = $1.basicType;
+    }
+    | unary_expression {
+        $$ = new TTypeParameters;
+        $$->arraySizes = new TArraySizes;
 
         TArraySize size;
-        parseContext.arraySizeCheck($1->getLoc(), $1, size, "type parameter");
-        $$->addInnerSize(size);
+        parseContext.arraySizeCheck($1->getLoc(), $1, size, "type parameter", true);
+        $$->arraySizes->addInnerSize(size);
     }
     | type_parameter_specifier_list COMMA unary_expression {
         $$ = $1;
 
         TArraySize size;
-        parseContext.arraySizeCheck($3->getLoc(), $3, size, "type parameter");
-        $$->addInnerSize(size);
+        parseContext.arraySizeCheck($3->getLoc(), $3, size, "type parameter", true);
+        $$->arraySizes->addInnerSize(size);
     }
     ;
 
@@ -1930,7 +1914,6 @@ type_specifier_nonarray
         $$.basicType = EbtFloat;
         $$.setMatrix(4, 4);
     }
-
     | DOUBLE {
         parseContext.requireProfile($1.loc, ECoreProfile | ECompatibilityProfile, "double");
         if (! parseContext.symbolTable.atBuiltInLevel())
@@ -2549,7 +2532,6 @@ type_specifier_nonarray
         $$.basicType = EbtSampler;
         $$.sampler.set(EbtFloat, Esd1D);
     }
-
     | SAMPLER2D {
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtSampler;
@@ -2585,7 +2567,6 @@ type_specifier_nonarray
         $$.basicType = EbtSampler;
         $$.sampler.set(EbtFloat, Esd2D, true, true);
     }
-
     | SAMPLER1DSHADOW {
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtSampler;
@@ -2694,7 +2675,6 @@ type_specifier_nonarray
         $$.basicType = EbtSampler;
         $$.sampler.set(EbtInt, Esd1D);
     }
-
     | ISAMPLER2D {
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtSampler;
@@ -2730,7 +2710,6 @@ type_specifier_nonarray
         $$.basicType = EbtSampler;
         $$.sampler.set(EbtUint, EsdCube);
     }
-
     | ISAMPLER1DARRAY {
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtSampler;
@@ -2771,7 +2750,6 @@ type_specifier_nonarray
         $$.basicType = EbtSampler;
         $$.sampler.setTexture(EbtUint, EsdCube, true);
     }
-
     | USAMPLER2DARRAY {
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtSampler;
@@ -2847,7 +2825,6 @@ type_specifier_nonarray
         $$.basicType = EbtSampler;
         $$.sampler.setPureSampler(true);
     }
-
     | SAMPLER2DRECT {
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtSampler;
@@ -3521,22 +3498,32 @@ type_specifier_nonarray
         $$.sampler.setSubpass(EbtUint, true);
     }
     | FCOOPMATNV {
-        parseContext.fcoopmatCheck($1.loc, "fcoopmatNV", parseContext.symbolTable.atBuiltInLevel());
+        parseContext.fcoopmatCheckNV($1.loc, "fcoopmatNV", parseContext.symbolTable.atBuiltInLevel());
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtFloat;
-        $$.coopmat = true;
+        $$.coopmatNV = true;
+        $$.coopmatKHR = false;
     }
     | ICOOPMATNV {
-        parseContext.intcoopmatCheck($1.loc, "icoopmatNV", parseContext.symbolTable.atBuiltInLevel());
+        parseContext.intcoopmatCheckNV($1.loc, "icoopmatNV", parseContext.symbolTable.atBuiltInLevel());
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtInt;
-        $$.coopmat = true;
+        $$.coopmatNV = true;
+        $$.coopmatKHR = false;
     }
     | UCOOPMATNV {
-        parseContext.intcoopmatCheck($1.loc, "ucoopmatNV", parseContext.symbolTable.atBuiltInLevel());
+        parseContext.intcoopmatCheckNV($1.loc, "ucoopmatNV", parseContext.symbolTable.atBuiltInLevel());
         $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
         $$.basicType = EbtUint;
-        $$.coopmat = true;
+        $$.coopmatNV = true;
+        $$.coopmatKHR = false;
+    }
+    | COOPMAT {
+        parseContext.coopmatCheck($1.loc, "coopmat", parseContext.symbolTable.atBuiltInLevel());
+        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
+        $$.basicType = EbtCoopmat;
+        $$.coopmatNV = false;
+        $$.coopmatKHR = true;
     }
     | spirv_type_specifier {
         parseContext.requireExtensions($1.loc, 1, &E_GL_EXT_spirv_intrinsics, "SPIR-V type specifier");
@@ -3546,7 +3533,6 @@ type_specifier_nonarray
        $$.init($1.loc, parseContext.symbolTable.atGlobalLevel());
        $$.basicType = EbtHitObjectNV;
 	}
-
     | struct_specifier {
         $$ = $1;
         $$.qualifier.storage = parseContext.symbolTable.atGlobalLevel() ? EvqGlobal : EvqTemporary;
@@ -3587,11 +3573,17 @@ precision_qualifier
 
 struct_specifier
     : STRUCT IDENTIFIER LEFT_BRACE { parseContext.nestedStructCheck($1.loc); } struct_declaration_list RIGHT_BRACE {
+
         TType* structure = new TType($5, *$2.string);
         parseContext.structArrayCheck($2.loc, *structure);
+
         TVariable* userTypeDef = new TVariable($2.string, *structure, true);
         if (! parseContext.symbolTable.insert(*userTypeDef))
             parseContext.error($2.loc, "redefinition", $2.string->c_str(), "struct");
+        else if (parseContext.spvVersion.vulkanRelaxed
+                 && structure->containsOpaque())
+            parseContext.relaxedSymbols.push_back(structure->getTypeName());
+
         $$.init($1.loc);
         $$.basicType = EbtStruct;
         $$.userDef = structure;
@@ -3634,7 +3626,7 @@ struct_declaration
         $$ = $2;
 
         parseContext.voidErrorCheck($1.loc, (*$2)[0].type->getFieldName(), $1.basicType);
-        parseContext.precisionQualifierCheck($1.loc, $1.basicType, $1.qualifier);
+        parseContext.precisionQualifierCheck($1.loc, $1.basicType, $1.qualifier, $1.isCoopmat());
 
         for (unsigned int i = 0; i < $$->size(); ++i) {
             TType type($1);
@@ -3658,7 +3650,7 @@ struct_declaration
         parseContext.memberQualifierCheck($1);
         parseContext.voidErrorCheck($2.loc, (*$3)[0].type->getFieldName(), $2.basicType);
         parseContext.mergeQualifiers($2.loc, $2.qualifier, $1.qualifier, true);
-        parseContext.precisionQualifierCheck($2.loc, $2.basicType, $2.qualifier);
+        parseContext.precisionQualifierCheck($2.loc, $2.basicType, $2.qualifier, $2.isCoopmat());
 
         for (unsigned int i = 0; i < $$->size(); ++i) {
             TType type($2);
@@ -3701,7 +3693,6 @@ initializer
     : assignment_expression {
         $$ = $1;
     }
-
     | LEFT_BRACE initializer_list RIGHT_BRACE {
         const char* initFeature = "{ } style initializers";
         parseContext.requireProfile($1.loc, ~EEsProfile, initFeature);
@@ -3720,9 +3711,7 @@ initializer
         parseContext.profileRequires($1.loc, ~EEsProfile, 0, E_GL_EXT_null_initializer, initFeature);
         $$ = parseContext.intermediate.makeAggregate($1.loc);
     }
-
     ;
-
 
 initializer_list
     : initializer {
@@ -3732,7 +3721,6 @@ initializer_list
         $$ = parseContext.intermediate.growAggregate($1, $3);
     }
     ;
-
 
 declaration_statement
     : declaration { $$ = $1; }
@@ -3753,11 +3741,8 @@ simple_statement
     | case_label            { $$ = $1; }
     | iteration_statement   { $$ = $1; }
     | jump_statement        { $$ = $1; }
-
     | demote_statement      { $$ = $1; }
-
     ;
-
 
 demote_statement
     : DEMOTE SEMICOLON {
@@ -3766,7 +3751,6 @@ demote_statement
         $$ = parseContext.intermediate.addBranch(EOpDemote, $1.loc);
     }
     ;
-
 
 compound_statement
     : LEFT_BRACE RIGHT_BRACE { $$ = 0; }
@@ -3850,13 +3834,11 @@ selection_statement
     : selection_statement_nonattributed {
         $$ = $1;
     }
-
     | attribute selection_statement_nonattributed {
         parseContext.requireExtensions($2->getLoc(), 1, &E_GL_EXT_control_flow_attributes, "attribute");
         parseContext.handleSelectionAttributes(*$1, $2);
         $$ = $2;
     }
-
 
 selection_statement_nonattributed
     : IF LEFT_PAREN expression RIGHT_PAREN selection_rest_statement {
@@ -3898,13 +3880,11 @@ switch_statement
     : switch_statement_nonattributed {
         $$ = $1;
     }
-
     | attribute switch_statement_nonattributed {
         parseContext.requireExtensions($2->getLoc(), 1, &E_GL_EXT_control_flow_attributes, "attribute");
         parseContext.handleSwitchAttributes(*$1, $2);
         $$ = $2;
     }
-
 
 switch_statement_nonattributed
     : SWITCH LEFT_PAREN expression RIGHT_PAREN {
@@ -3963,13 +3943,11 @@ iteration_statement
     : iteration_statement_nonattributed {
         $$ = $1;
     }
-
     | attribute iteration_statement_nonattributed {
         parseContext.requireExtensions($2->getLoc(), 1, &E_GL_EXT_control_flow_attributes, "attribute");
         parseContext.handleLoopAttributes(*$1, $2);
         $$ = $2;
     }
-
 
 iteration_statement_nonattributed
     : WHILE LEFT_PAREN {
@@ -4083,7 +4061,6 @@ jump_statement
         parseContext.requireStage($1.loc, EShLangFragment, "terminateInvocation");
         $$ = parseContext.intermediate.addBranch(EOpTerminateInvocation, $1.loc);
     }
-
     | TERMINATE_RAY SEMICOLON {
         parseContext.requireStage($1.loc, EShLangAnyHit, "terminateRayEXT");
         $$ = parseContext.intermediate.addBranch(EOpTerminateRayKHR, $1.loc);
@@ -4092,7 +4069,6 @@ jump_statement
         parseContext.requireStage($1.loc, EShLangAnyHit, "ignoreIntersectionEXT");
         $$ = parseContext.intermediate.addBranch(EOpIgnoreIntersectionKHR, $1.loc);
     }
-
     ;
 
 // Grammar Note:  No 'goto'.  Gotos are not supported.
@@ -4117,13 +4093,11 @@ external_declaration
     | declaration {
         $$ = $1;
     }
-
     | SEMICOLON {
         parseContext.requireProfile($1.loc, ~EEsProfile, "extraneous semicolon");
         parseContext.profileRequires($1.loc, ~EEsProfile, 460, nullptr, "extraneous semicolon");
         $$ = nullptr;
     }
-
     ;
 
 function_definition
@@ -4145,6 +4119,7 @@ function_definition
             parseContext.error($1.loc, "function does not return a value:", "", $1.function->getName().c_str());
         parseContext.symbolTable.pop(&parseContext.defaultPrecision[0]);
         $$ = parseContext.intermediate.growAggregate($1.intermNode, $3);
+        $$->getAsAggregate()->setLinkType($1.function->getLinkType());
         parseContext.intermediate.setAggregateOperator($$, EOpFunction, $1.function->getType(), $1.loc);
         $$->getAsAggregate()->setName($1.function->getMangledName().c_str());
 
@@ -4167,7 +4142,6 @@ function_definition
     }
     ;
 
-
 attribute
     : LEFT_BRACKET LEFT_BRACKET attribute_list RIGHT_BRACKET RIGHT_BRACKET {
         $$ = $3;
@@ -4188,8 +4162,6 @@ single_attribute
     | IDENTIFIER LEFT_PAREN constant_expression RIGHT_PAREN {
         $$ = parseContext.makeAttributes(*$1.string, $3);
     }
-
-
 
 spirv_requirements_list
     : spirv_requirements_parameter {
@@ -4439,6 +4411,9 @@ spirv_type_parameter
     : constant_expression {
         $$ = parseContext.makeSpirvTypeParameters($1->getLoc(), $1->getAsConstantUnion());
     }
+    | type_specifier_nonarray {
+        $$ = parseContext.makeSpirvTypeParameters($1.loc, $1);
+    }
 
 spirv_instruction_qualifier
     : SPIRV_INSTRUCTION LEFT_PAREN spirv_instruction_qualifier_list RIGHT_PAREN {
@@ -4464,6 +4439,5 @@ spirv_instruction_qualifier_id
     | IDENTIFIER EQUAL INTCONSTANT {
         $$ = parseContext.makeSpirvInstruction($2.loc, *$1.string, $3.i);
     }
-
 
 %%

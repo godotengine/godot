@@ -105,6 +105,10 @@ Error OS_Web::execute(const String &p_path, const List<String> &p_arguments, Str
 	return create_process(p_path, p_arguments);
 }
 
+Dictionary OS_Web::execute_with_pipe(const String &p_path, const List<String> &p_arguments) {
+	ERR_FAIL_V_MSG(Dictionary(), "OS::execute_with_pipe is not available on the Web platform.");
+}
+
 Error OS_Web::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 	Array args;
 	for (const String &E : p_arguments) {
@@ -128,8 +132,16 @@ bool OS_Web::is_process_running(const ProcessID &p_pid) const {
 	return false;
 }
 
+int OS_Web::get_process_exit_code(const ProcessID &p_pid) const {
+	return -1;
+}
+
 int OS_Web::get_processor_count() const {
 	return godot_js_os_hw_concurrency_get();
+}
+
+String OS_Web::get_unique_id() const {
+	ERR_FAIL_V_MSG("", "OS::get_unique_id() is not available on the Web platform.");
 }
 
 bool OS_Web::_check_internal_feature_support(const String &p_feature) {
@@ -146,7 +158,7 @@ String OS_Web::get_executable_path() const {
 	return OS::get_executable_path();
 }
 
-Error OS_Web::shell_open(String p_uri) {
+Error OS_Web::shell_open(const String &p_uri) {
 	// Open URI in a new tab, browser will deal with it by protocol.
 	godot_js_os_shell_open(p_uri.utf8().get_data());
 	return OK;
@@ -154,6 +166,12 @@ Error OS_Web::shell_open(String p_uri) {
 
 String OS_Web::get_name() const {
 	return "Web";
+}
+
+void OS_Web::add_frame_delay(bool p_can_draw) {
+#ifndef PROXY_TO_PTHREAD_ENABLED
+	OS::add_frame_delay(p_can_draw);
+#endif
 }
 
 void OS_Web::vibrate_handheld(int p_duration_ms) {
@@ -229,7 +247,7 @@ bool OS_Web::is_userfs_persistent() const {
 	return idb_available;
 }
 
-Error OS_Web::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_Web::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path, bool p_generate_temp_files) {
 	String path = p_path.get_file();
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));

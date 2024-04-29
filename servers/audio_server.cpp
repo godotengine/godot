@@ -122,8 +122,10 @@ int AudioDriver::_get_configured_mix_rate() {
 
 	// In the case of invalid mix rate, let's default to a sensible value..
 	if (mix_rate <= 0) {
+#ifndef WEB_ENABLED
 		WARN_PRINT(vformat("Invalid mix rate of %d, consider reassigning setting \'%s\'. \nDefaulting mix rate to value %d.",
 				mix_rate, audio_driver_setting, AudioDriverManager::DEFAULT_MIX_RATE));
+#endif
 		mix_rate = AudioDriverManager::DEFAULT_MIX_RATE;
 	}
 
@@ -199,8 +201,8 @@ int AudioDriverManager::get_driver_count() {
 
 void AudioDriverManager::initialize(int p_driver) {
 	GLOBAL_DEF_RST("audio/driver/enable_input", false);
-	GLOBAL_DEF_RST("audio/driver/mix_rate", DEFAULT_MIX_RATE);
-	GLOBAL_DEF_RST("audio/driver/mix_rate.web", 0); // Safer default output_latency for web (use browser default).
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/mix_rate", PROPERTY_HINT_RANGE, "11025,192000,1,or_greater,suffix:Hz"), DEFAULT_MIX_RATE);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/mix_rate.web", PROPERTY_HINT_RANGE, "0,192000,1,or_greater,suffix:Hz"), 0); // Safer default output_latency for web (use browser default).
 
 	int failed_driver = -1;
 
@@ -271,26 +273,40 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 
 		//master master, send to output
 		int cs = master->channels.size();
+
+		// Take away 1 from the stride, as we are manually incrementing by 1 for stereo.
+		uintptr_t stride_minus_one = (cs * 2) - 1;
+
 		for (int k = 0; k < cs; k++) {
+			// The destination start for data will be the same in all cases.
+			int32_t *dest = &p_buffer[from_buf * (cs * 2) + (k * 2)];
+
 			if (master->channels[k].active) {
 				const AudioFrame *buf = master->channels[k].buffer.ptr();
 
 				for (int j = 0; j < to_copy; j++) {
-					float l = CLAMP(buf[from + j].l, -1.0, 1.0);
+					float l = CLAMP(buf[from + j].left, -1.0, 1.0);
 					int32_t vl = l * ((1 << 20) - 1);
 					int32_t vl2 = (vl < 0 ? -1 : 1) * (ABS(vl) << 11);
-					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 0] = vl2;
+					*dest = vl2;
+					dest++;
 
-					float r = CLAMP(buf[from + j].r, -1.0, 1.0);
+					float r = CLAMP(buf[from + j].right, -1.0, 1.0);
 					int32_t vr = r * ((1 << 20) - 1);
 					int32_t vr2 = (vr < 0 ? -1 : 1) * (ABS(vr) << 11);
-					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 1] = vr2;
+					*dest = vr2;
+					dest += stride_minus_one;
 				}
 
 			} else {
+				// Bizarrely, profiling indicates that detecting the common case of cs == 1,
+				// k == 0, and using memset is SLOWER than setting them individually.
+				// Perhaps it gets optimized to a faster instruction than memset.
 				for (int j = 0; j < to_copy; j++) {
-					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 0] = 0;
-					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 1] = 0;
+					*dest = 0;
+					dest++;
+					*dest = 0;
+					dest += stride_minus_one;
 				}
 			}
 		}
@@ -300,7 +316,7 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 	}
 
 #ifdef DEBUG_ENABLED
-	prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks;
+	prof_time.add(OS::get_singleton()->get_ticks_usec() - prof_ticks);
 #endif
 }
 
@@ -389,7 +405,7 @@ void AudioServer::_mix_step() {
 		}
 
 		AudioStreamPlaybackBusDetails *ptr = playback->bus_details.load();
-		ERR_FAIL_COND(ptr == nullptr);
+		ERR_FAIL_NULL(ptr);
 		// By putting null into the bus details pointers, we're taking ownership of their memory for the duration of this mix.
 		AudioStreamPlaybackBusDetails bus_details = *ptr;
 
@@ -572,22 +588,22 @@ void AudioServer::_mix_step() {
 			for (uint32_t j = 0; j < buffer_size; j++) {
 				buf[j] *= volume;
 
-				float l = ABS(buf[j].l);
-				if (l > peak.l) {
-					peak.l = l;
+				float l = ABS(buf[j].left);
+				if (l > peak.left) {
+					peak.left = l;
 				}
-				float r = ABS(buf[j].r);
-				if (r > peak.r) {
-					peak.r = r;
+				float r = ABS(buf[j].right);
+				if (r > peak.right) {
+					peak.right = r;
 				}
 			}
 
-			bus->channels.write[k].peak_volume = AudioFrame(Math::linear_to_db(peak.l + AUDIO_PEAK_OFFSET), Math::linear_to_db(peak.r + AUDIO_PEAK_OFFSET));
+			bus->channels.write[k].peak_volume = AudioFrame(Math::linear_to_db(peak.left + AUDIO_PEAK_OFFSET), Math::linear_to_db(peak.right + AUDIO_PEAK_OFFSET));
 
 			if (!bus->channels[k].used) {
 				//see if any audio is contained, because channel was not used
 
-				if (MAX(peak.r, peak.l) > Math::db_to_linear(channel_disable_threshold_db)) {
+				if (MAX(peak.right, peak.left) > Math::db_to_linear(channel_disable_threshold_db)) {
 					bus->channels.write[k].last_mix_with_audio = mix_frames;
 				} else if (mix_frames - bus->channels[k].last_mix_with_audio > channel_disable_frames) {
 					bus->channels.write[k].active = false;
@@ -620,10 +636,10 @@ void AudioServer::_mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_sou
 		filter.set_stages(1);
 		filter.set_gain(p_highshelf_gain);
 
-		ERR_FAIL_COND(p_processor_l == nullptr);
-		ERR_FAIL_COND(p_processor_r == nullptr);
+		ERR_FAIL_NULL(p_processor_l);
+		ERR_FAIL_NULL(p_processor_r);
 
-		bool is_just_started = p_vol_start.l == 0 && p_vol_start.r == 0;
+		bool is_just_started = p_vol_start.left == 0 && p_vol_start.right == 0;
 		p_processor_l->set_filter(&filter, /* clear_history= */ is_just_started);
 		p_processor_l->update_coeffs(buffer_size);
 		p_processor_r->set_filter(&filter, /* clear_history= */ is_just_started);
@@ -634,8 +650,8 @@ void AudioServer::_mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_sou
 			float lerp_param = (float)frame_idx / buffer_size;
 			AudioFrame vol = p_vol_final * lerp_param + (1 - lerp_param) * p_vol_start;
 			AudioFrame mixed = vol * p_source_buf[frame_idx];
-			p_processor_l->process_one_interp(mixed.l);
-			p_processor_r->process_one_interp(mixed.r);
+			p_processor_l->process_one_interp(mixed.left);
+			p_processor_r->process_one_interp(mixed.right);
 			p_out_buf[frame_idx] += mixed;
 		}
 
@@ -1091,14 +1107,14 @@ float AudioServer::get_bus_peak_volume_left_db(int p_bus, int p_channel) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
 	ERR_FAIL_INDEX_V(p_channel, buses[p_bus]->channels.size(), 0);
 
-	return buses[p_bus]->channels[p_channel].peak_volume.l;
+	return buses[p_bus]->channels[p_channel].peak_volume.left;
 }
 
 float AudioServer::get_bus_peak_volume_right_db(int p_bus, int p_channel) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
 	ERR_FAIL_INDEX_V(p_channel, buses[p_bus]->channels.size(), 0);
 
-	return buses[p_bus]->channels[p_channel].peak_volume.r;
+	return buses[p_bus]->channels[p_channel].peak_volume.right;
 }
 
 bool AudioServer::is_bus_channel_active(int p_bus, int p_channel) const {
@@ -1118,7 +1134,7 @@ float AudioServer::get_playback_speed_scale() const {
 	return playback_speed_scale;
 }
 
-void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time, float p_pitch_scale) {
+void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time, float p_pitch_scale) {
 	ERR_FAIL_COND(p_playback.is_null());
 
 	HashMap<StringName, Vector<AudioFrame>> map;
@@ -1127,7 +1143,7 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, Str
 	start_playback_stream(p_playback, map, p_start_time, p_pitch_scale);
 }
 
-void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, HashMap<StringName, Vector<AudioFrame>> p_bus_volumes, float p_start_time, float p_pitch_scale, float p_highshelf_gain, float p_attenuation_cutoff_hz) {
+void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time, float p_pitch_scale, float p_highshelf_gain, float p_attenuation_cutoff_hz) {
 	ERR_FAIL_COND(p_playback.is_null());
 
 	AudioStreamPlaybackListNode *playback_node = new AudioStreamPlaybackListNode();
@@ -1147,6 +1163,7 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, Has
 		for (int channel_idx = 0; channel_idx < MAX_CHANNELS_PER_BUS; channel_idx++) {
 			new_bus_details->volume[idx][channel_idx] = pair.value[channel_idx];
 		}
+		idx++;
 	}
 	playback_node->bus_details = new_bus_details;
 	playback_node->prev_bus_details = new AudioStreamPlaybackBusDetails();
@@ -1185,7 +1202,7 @@ void AudioServer::stop_playback_stream(Ref<AudioStreamPlayback> p_playback) {
 	} while (!playback_node->state.compare_exchange_strong(old_state, new_state));
 }
 
-void AudioServer::set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volumes) {
+void AudioServer::set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volumes) {
 	ERR_FAIL_COND(p_volumes.size() != MAX_CHANNELS_PER_BUS);
 
 	HashMap<StringName, Vector<AudioFrame>> map;
@@ -1194,7 +1211,7 @@ void AudioServer::set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback
 	set_playback_bus_volumes_linear(p_playback, map);
 }
 
-void AudioServer::set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, HashMap<StringName, Vector<AudioFrame>> p_bus_volumes) {
+void AudioServer::set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes) {
 	ERR_FAIL_COND(p_bus_volumes.size() > MAX_BUSES_PER_PLAYBACK);
 
 	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
@@ -1383,7 +1400,7 @@ void AudioServer::update() {
 		// Driver time includes server time + effects times
 		// Server time includes effects times
 		uint64_t driver_time = AudioDriver::get_singleton()->get_profiling_time();
-		uint64_t server_time = prof_time;
+		uint64_t server_time = prof_time.get();
 
 		// Subtract the server time from the driver time
 		if (driver_time > server_time) {
@@ -1442,7 +1459,7 @@ void AudioServer::update() {
 	}
 
 	AudioDriver::get_singleton()->reset_profiling_time();
-	prof_time = 0;
+	prof_time.set(0);
 #endif
 
 	for (CallbackItem *ci : update_callback_list) {
@@ -1572,7 +1589,7 @@ void AudioServer::remove_listener_changed_callback(AudioCallback p_callback, voi
 }
 
 void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
-	ERR_FAIL_COND(p_bus_layout.is_null() || p_bus_layout->buses.size() == 0);
+	ERR_FAIL_COND(p_bus_layout.is_null() || p_bus_layout->buses.is_empty());
 
 	lock();
 	for (int i = 0; i < buses.size(); i++) {
@@ -1674,6 +1691,19 @@ void AudioServer::set_input_device(const String &p_name) {
 void AudioServer::set_enable_tagging_used_audio_streams(bool p_enable) {
 	tag_used_audio_streams = p_enable;
 }
+
+#ifdef TOOLS_ENABLED
+void AudioServer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if ((p_idx == 0 && pf == "get_bus_index") || (p_idx == 1 && pf == "set_bus_send")) {
+		for (const AudioServer::Bus *E : buses) {
+			r_options->push_back(String(E->name).quote());
+		}
+	}
+
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
 
 void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bus_count", "amount"), &AudioServer::set_bus_count);

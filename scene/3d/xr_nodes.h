@@ -50,8 +50,8 @@ protected:
 
 	void _bind_tracker();
 	void _unbind_tracker();
-	void _changed_tracker(const StringName p_tracker_name, int p_tracker_type);
-	void _removed_tracker(const StringName p_tracker_name, int p_tracker_type);
+	void _changed_tracker(const StringName &p_tracker_name, int p_tracker_type);
+	void _removed_tracker(const StringName &p_tracker_name, int p_tracker_type);
 	void _pose_changed(const Ref<XRPose> &p_pose);
 
 public:
@@ -87,8 +87,8 @@ protected:
 
 	virtual void _bind_tracker();
 	virtual void _unbind_tracker();
-	void _changed_tracker(const StringName p_tracker_name, int p_tracker_type);
-	void _removed_tracker(const StringName p_tracker_name, int p_tracker_type);
+	void _changed_tracker(const StringName &p_tracker_name, int p_tracker_type);
+	void _removed_tracker(const StringName &p_tracker_name, int p_tracker_type);
 
 	void _pose_changed(const Ref<XRPose> &p_pose);
 	void _pose_lost_tracking(const Ref<XRPose> &p_pose);
@@ -96,10 +96,10 @@ protected:
 
 public:
 	void _validate_property(PropertyInfo &p_property) const;
-	void set_tracker(const StringName p_tracker_name);
+	void set_tracker(const StringName &p_tracker_name);
 	StringName get_tracker() const;
 
-	void set_pose_name(const StringName p_pose);
+	void set_pose_name(const StringName &p_pose);
 	StringName get_pose_name() const;
 
 	bool get_is_active() const;
@@ -135,6 +135,7 @@ protected:
 	void _button_released(const String &p_name);
 	void _input_float_changed(const String &p_name, float p_value);
 	void _input_vector2_changed(const String &p_name, Vector2 p_value);
+	void _profile_changed(const String &p_role);
 
 public:
 	bool is_button_pressed(const StringName &p_name) const;
