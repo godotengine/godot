@@ -51,15 +51,13 @@ class AudioDriverWASAPI : public AudioDriver {
 		IAudioCaptureClient *capture_client = nullptr; // Input
 		SafeFlag active;
 
-		WORD format_tag = 0;
-		WORD bits_per_sample = 0;
 		unsigned int channels = 0;
 		unsigned int frame_size = 0;
 
-		String device_name = "Default"; // Output OR Input
-		String new_device = "Default"; // Output OR Input
+		BufferFormat buffer_format = NO_BUFFER;
 
-		AudioDeviceWASAPI() {}
+		String device_name = "Default";
+		String new_device = "Default";
 	};
 
 	AudioDeviceWASAPI audio_input;
@@ -68,9 +66,6 @@ class AudioDriverWASAPI : public AudioDriver {
 	Mutex mutex;
 	Thread thread;
 
-	Vector<int32_t> samples_in;
-
-	unsigned int channels = 0;
 	int mix_rate = 0;
 	int buffer_frames = 0;
 	int target_latency_ms = 0;
@@ -79,8 +74,6 @@ class AudioDriverWASAPI : public AudioDriver {
 
 	SafeFlag exit_thread;
 
-	static _FORCE_INLINE_ void write_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i, int32_t sample);
-	static _FORCE_INLINE_ int32_t read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
 	static void thread_func(void *p_udata);
 
 	Error init_output_device(bool p_reinit = false);
@@ -101,12 +94,14 @@ public:
 	virtual Error init() override;
 	virtual void start() override;
 	virtual int get_mix_rate() const override;
-	virtual SpeakerMode get_speaker_mode() const override;
 	virtual float get_latency() override;
 
 	virtual void lock() override;
 	virtual void unlock() override;
 	virtual void finish() override;
+
+	virtual int get_output_channels() const override;
+	virtual BufferFormat get_output_buffer_format() const override;
 
 	virtual PackedStringArray get_output_device_list() override;
 	virtual String get_output_device() override;
@@ -115,11 +110,12 @@ public:
 	virtual Error input_start() override;
 	virtual Error input_stop() override;
 
+	virtual int get_input_channels() const override;
+	virtual BufferFormat get_input_buffer_format() const override;
+
 	virtual PackedStringArray get_input_device_list() override;
 	virtual String get_input_device() override;
 	virtual void set_input_device(const String &p_name) override;
-
-	AudioDriverWASAPI();
 };
 
 #endif // WASAPI_ENABLED

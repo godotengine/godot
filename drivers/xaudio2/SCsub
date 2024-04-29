@@ -4,4 +4,8 @@ Import("env")
 
 env.add_source_files(env.drivers_sources, "*.cpp")
 env.Append(CPPDEFINES=["XAUDIO2_ENABLED"])
-env.Append(LINKFLAGS=["xaudio2_8.lib"])
+
+if env.msvc:
+    env.Append(LINKFLAGS=["xaudio2_8.lib"])
+else:
+    env.Append(LIBS=["xaudio2_8"])

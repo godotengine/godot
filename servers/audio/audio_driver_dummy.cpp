@@ -38,14 +38,10 @@ AudioDriverDummy *AudioDriverDummy::singleton = nullptr;
 Error AudioDriverDummy::init() {
 	active.clear();
 	exit_thread.clear();
-	samples_in = nullptr;
 
 	if (mix_rate == -1) {
 		mix_rate = _get_configured_mix_rate();
 	}
-
-	channels = get_channels();
-	samples_in = memnew_arr(int32_t, (size_t)buffer_frames * channels);
 
 	if (use_threads) {
 		thread.start(AudioDriverDummy::thread_func, this);
@@ -64,7 +60,7 @@ void AudioDriverDummy::thread_func(void *p_udata) {
 			ad->lock();
 			ad->start_counting_ticks();
 
-			ad->audio_server_process(ad->buffer_frames, ad->samples_in);
+			ad->audio_server_process(ad->buffer_frames, nullptr);
 
 			ad->stop_counting_ticks();
 			ad->unlock();
@@ -82,8 +78,12 @@ int AudioDriverDummy::get_mix_rate() const {
 	return mix_rate;
 }
 
-AudioDriver::SpeakerMode AudioDriverDummy::get_speaker_mode() const {
-	return speaker_mode;
+int AudioDriverDummy::get_output_channels() const {
+	return channels;
+}
+
+AudioDriver::BufferFormat AudioDriverDummy::get_output_buffer_format() const {
+	return buffer_format;
 }
 
 void AudioDriverDummy::lock() {
@@ -98,39 +98,25 @@ void AudioDriverDummy::set_use_threads(bool p_use_threads) {
 	use_threads = p_use_threads;
 }
 
-void AudioDriverDummy::set_speaker_mode(SpeakerMode p_mode) {
-	speaker_mode = p_mode;
-}
-
 void AudioDriverDummy::set_mix_rate(int p_rate) {
 	mix_rate = p_rate;
 }
 
-uint32_t AudioDriverDummy::get_channels() const {
-	static const int channels_for_mode[4] = { 2, 4, 8, 16 };
-	return channels_for_mode[speaker_mode];
+void AudioDriverDummy::set_output_channels(int p_channels) {
+	channels = p_channels;
+}
+
+void AudioDriverDummy::set_output_buffer_format(BufferFormat p_buffer_format) {
+	buffer_format = p_buffer_format;
 }
 
 void AudioDriverDummy::mix_audio(int p_frames, int32_t *p_buffer) {
 	ERR_FAIL_COND(!active.is_set()); // If not active, should not mix.
 	ERR_FAIL_COND(use_threads == true); // If using threads, this will not work well.
 
-	uint32_t todo = p_frames;
-	while (todo) {
-		uint32_t to_mix = MIN(buffer_frames, todo);
-		lock();
-		audio_server_process(to_mix, samples_in);
-		unlock();
-
-		uint32_t total_samples = to_mix * channels;
-
-		for (uint32_t i = 0; i < total_samples; i++) {
-			p_buffer[i] = samples_in[i];
-		}
-
-		todo -= to_mix;
-		p_buffer += total_samples;
-	}
+	lock();
+	audio_server_process(p_frames, p_buffer);
+	unlock();
 }
 
 void AudioDriverDummy::finish() {
@@ -140,12 +126,4 @@ void AudioDriverDummy::finish() {
 			thread.wait_to_finish();
 		}
 	}
-
-	if (samples_in) {
-		memdelete_arr(samples_in);
-	}
-}
-
-AudioDriverDummy::AudioDriverDummy() {
-	singleton = this;
 }

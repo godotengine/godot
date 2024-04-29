@@ -56,15 +56,17 @@ class AudioDriver {
 	SafeNumeric<uint64_t> prof_time;
 #endif
 
+	_FORCE_INLINE_ static float _read_sample(const void *p_buffer, int p_idx);
+
 protected:
-	Vector<int32_t> input_buffer;
+	Vector<AudioFrame> input_buffer;
 	unsigned int input_position = 0;
 	unsigned int input_size = 0;
 
-	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
+	void audio_server_process(int p_frames, void *p_buffer, bool p_active = true, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
-	void input_buffer_init(int driver_buffer_frames);
-	void input_buffer_write(int32_t sample);
+	void input_buffer_init(int p_frames);
+	void input_process(int p_frames, const void *p_buffer);
 
 	int _get_configured_mix_rate();
 
@@ -76,19 +78,26 @@ protected:
 	_FORCE_INLINE_ void stop_counting_ticks() {}
 #endif
 
-public:
-	double get_time_since_last_mix(); //useful for video -> audio sync
-	double get_time_to_next_mix();
+	_FORCE_INLINE_ static bool are_output_channels_recommended(int p_channels) { return p_channels >= 1 && p_channels <= 8; }
+	_FORCE_INLINE_ static bool are_input_channels_recommended(int p_channels) { return p_channels >= 1 && p_channels <= 2; }
 
-	enum SpeakerMode {
-		SPEAKER_MODE_STEREO,
-		SPEAKER_SURROUND_31,
-		SPEAKER_SURROUND_51,
-		SPEAKER_SURROUND_71,
+public:
+	enum BufferFormat {
+		NO_BUFFER,
+		BUFFER_FORMAT_INTEGER_8,
+		BUFFER_FORMAT_INTEGER_16,
+		BUFFER_FORMAT_INTEGER_24,
+		BUFFER_FORMAT_INTEGER_32,
+		BUFFER_FORMAT_FLOAT,
 	};
 
-	static AudioDriver *get_singleton();
-	void set_singleton();
+	static int get_size_of_sample(BufferFormat p_format);
+
+	double get_time_since_last_mix(); // Useful for video -> audio sync.
+	double get_time_to_next_mix();
+
+	static AudioDriver *get_singleton() { return singleton; }
+	void set_singleton() { singleton = this; }
 
 	// Virtual API to implement.
 
@@ -97,19 +106,24 @@ public:
 	virtual Error init() = 0;
 	virtual void start() = 0;
 	virtual int get_mix_rate() const = 0;
-	virtual SpeakerMode get_speaker_mode() const = 0;
 	virtual float get_latency() { return 0; }
 
 	virtual void lock() = 0;
 	virtual void unlock() = 0;
 	virtual void finish() = 0;
 
+	virtual int get_output_channels() const = 0;
+	virtual BufferFormat get_output_buffer_format() const = 0;
+
 	virtual PackedStringArray get_output_device_list();
-	virtual String get_output_device();
+	virtual String get_output_device() { return "Default"; }
 	virtual void set_output_device(const String &p_name) {}
 
 	virtual Error input_start() { return FAILED; }
 	virtual Error input_stop() { return FAILED; }
+
+	virtual int get_input_channels() const { return 0; }
+	virtual BufferFormat get_input_buffer_format() const { return NO_BUFFER; }
 
 	virtual PackedStringArray get_input_device_list();
 	virtual String get_input_device() { return "Default"; }
@@ -117,10 +131,7 @@ public:
 
 	//
 
-	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
-	int get_total_channels_by_speaker_mode(SpeakerMode) const;
-
-	Vector<int32_t> get_input_buffer() { return input_buffer; }
+	Vector<AudioFrame> get_input_buffer() { return input_buffer; }
 	unsigned int get_input_position() { return input_position; }
 	unsigned int get_input_size() { return input_size; }
 
@@ -129,7 +140,6 @@ public:
 	void reset_profiling_time() { prof_time.set(0); }
 #endif
 
-	AudioDriver() {}
 	virtual ~AudioDriver() {}
 };
 
@@ -157,8 +167,9 @@ class AudioBusLayout;
 class AudioServer : public Object {
 	GDCLASS(AudioServer, Object);
 
+	static void _bind_methods();
+
 public:
-	//re-expose this here, as AudioDriver is not exposed to script
 	enum SpeakerMode {
 		SPEAKER_MODE_STEREO,
 		SPEAKER_SURROUND_31,
@@ -266,10 +277,10 @@ private:
 	SafeList<AudioStreamPlaybackListNode *> playback_list;
 	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard;
 
-	// TODO document if this is necessary.
+	// TODO: Document if this is necessary.
 	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard_frame_old;
 
-	Vector<Vector<AudioFrame>> temp_buffer; //temp_buffer for each level
+	Vector<Vector<AudioFrame>> temp_buffer; // `temp_buffer` for each level.
 	Vector<AudioFrame> mix_buffer;
 	Vector<Bus *> buses;
 	HashMap<StringName, Bus *> bus_map;
@@ -295,13 +306,15 @@ private:
 	SafeList<CallbackItem *> mix_callback_list;
 	SafeList<CallbackItem *> listener_changed_callback_list;
 
-	friend class AudioDriver;
-	void _driver_process(int p_frames, int32_t *p_buffer);
+	_FORCE_INLINE_ static void _write_sample(void *p_buffer, int p_idx, float p_sample);
 
-protected:
-	static void _bind_methods();
+	friend class AudioDriver;
+	void _driver_process(int p_frames, void *p_buffer, bool p_active);
 
 public:
+	static SpeakerMode get_speaker_mode_by_total_channels(int p_channels);
+	static int get_total_channels_by_speaker_mode(SpeakerMode p_mode);
+
 	_FORCE_INLINE_ int get_channel_count() const {
 		switch (get_speaker_mode()) {
 			case SPEAKER_MODE_STEREO:
@@ -393,26 +406,21 @@ public:
 
 	void notify_listener_changed();
 
-	virtual void init();
-	virtual void finish();
-	virtual void update();
-	virtual void load_default_bus_layout();
+	void init();
+	void finish();
+	void update();
+	void load_default_bus_layout();
 
 	/* MISC config */
 
-	virtual void lock();
-	virtual void unlock();
+	void lock();
+	void unlock();
 
-	virtual SpeakerMode get_speaker_mode() const;
-	virtual float get_mix_rate() const;
-
-	virtual float read_output_peak_db() const;
-
-	static AudioServer *get_singleton();
-
-	virtual double get_output_latency() const;
-	virtual double get_time_to_next_mix() const;
-	virtual double get_time_since_last_mix() const;
+	SpeakerMode get_speaker_mode() const;
+	float get_mix_rate() const;
+	double get_output_latency() const;
+	double get_time_to_next_mix() const;
+	double get_time_since_last_mix() const;
 
 	void add_listener_changed_callback(AudioCallback p_callback, void *p_userdata);
 	void remove_listener_changed_callback(AudioCallback p_callback, void *p_userdata);
@@ -440,8 +448,10 @@ public:
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
 
-	AudioServer();
-	virtual ~AudioServer();
+	static AudioServer *get_singleton() { return singleton; }
+
+	AudioServer() { singleton = this; }
+	~AudioServer() { singleton = nullptr; }
 };
 
 VARIANT_ENUM_CAST(AudioServer::SpeakerMode)
@@ -480,7 +490,5 @@ protected:
 public:
 	AudioBusLayout();
 };
-
-typedef AudioServer AS;
 
 #endif // AUDIO_SERVER_H

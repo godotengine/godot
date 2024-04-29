@@ -47,12 +47,20 @@ class AudioDriverOpenSL : public AudioDriver {
 
 	bool pause = false;
 
-	uint32_t buffer_size = 0;
-	int16_t *buffers[BUFFER_COUNT] = {};
-	int32_t *mixdown_buffer = nullptr;
+	uint32_t output_buffer_frames = 0;
+	LocalVector<int8_t> buffers[BUFFER_COUNT];
 	int last_free = 0;
 
-	Vector<int16_t> rec_buffer;
+	int mix_rate = 0;
+
+	unsigned int output_channels = 0;
+	unsigned int input_channels = 0;
+
+	BufferFormat output_buffer_format = NO_BUFFER;
+	BufferFormat input_buffer_format = NO_BUFFER;
+
+	uint32_t input_buffer_frames = 0;
+	LocalVector<int8_t> input_buffer;
 
 	SLPlayItf playItf;
 	SLRecordItf recordItf;
@@ -94,18 +102,21 @@ public:
 	virtual Error init() override;
 	virtual void start() override;
 	virtual int get_mix_rate() const override;
-	virtual SpeakerMode get_speaker_mode() const override;
 
 	virtual void lock() override;
 	virtual void unlock() override;
 	virtual void finish() override;
 
+	virtual int get_output_channels() const override;
+	virtual BufferFormat get_output_buffer_format() const override;
+
 	virtual Error input_start() override;
 	virtual Error input_stop() override;
 
-	void set_pause(bool p_pause);
+	virtual int get_input_channels() const override;
+	virtual BufferFormat get_input_buffer_format() const override;
 
-	AudioDriverOpenSL();
+	void set_pause(bool p_pause);
 };
 
 #endif // AUDIO_DRIVER_OPENSL_H

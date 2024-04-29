@@ -47,6 +47,8 @@ extern void godot_audio_resume();
 extern int godot_audio_input_start();
 extern void godot_audio_input_stop();
 
+extern int godot_audio_get_input_channels();
+
 // Worklet
 typedef int32_t GodotAudioState[4];
 extern int godot_audio_worklet_create(int p_channels);

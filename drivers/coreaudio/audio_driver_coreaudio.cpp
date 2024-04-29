@@ -42,12 +42,12 @@
 OSStatus AudioDriverCoreAudio::input_device_address_cb(AudioObjectID inObjectID,
 		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 		void *inClientData) {
-	AudioDriverCoreAudio *driver = static_cast<AudioDriverCoreAudio *>(inClientData);
+	AudioDriverCoreAudio *ad = static_cast<AudioDriverCoreAudio *>(inClientData);
 
 	// If our selected input device is the Default, call set_input_device to update the
-	// kAudioOutputUnitProperty_CurrentDevice property
-	if (driver->input_device_name == "Default") {
-		driver->set_input_device("Default");
+	// kAudioOutputUnitProperty_CurrentDevice property.
+	if (ad->input_device_name == "Default") {
+		ad->set_input_device("Default");
 	}
 
 	return noErr;
@@ -56,12 +56,12 @@ OSStatus AudioDriverCoreAudio::input_device_address_cb(AudioObjectID inObjectID,
 OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID,
 		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 		void *inClientData) {
-	AudioDriverCoreAudio *driver = static_cast<AudioDriverCoreAudio *>(inClientData);
+	AudioDriverCoreAudio *ad = static_cast<AudioDriverCoreAudio *>(inClientData);
 
 	// If our selected output device is the Default call set_output_device to update the
-	// kAudioOutputUnitProperty_CurrentDevice property
-	if (driver->output_device_name == "Default") {
-		driver->set_output_device("Default");
+	// kAudioOutputUnitProperty_CurrentDevice property.
+	if (ad->output_device_name == "Default") {
+		ad->set_output_device("Default");
 	}
 
 	return noErr;
@@ -102,29 +102,25 @@ Error AudioDriverCoreAudio::init() {
 	result = AudioUnitGetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kOutputBus, &strdesc, &size);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	switch (strdesc.mChannelsPerFrame) {
-		case 2: // Stereo
-		case 4: // Surround 3.1
-		case 6: // Surround 5.1
-		case 8: // Surround 7.1
-			channels = strdesc.mChannelsPerFrame;
-			break;
+	mix_rate = _get_configured_mix_rate();
 
-		default:
-			// Unknown number of channels, default to stereo
-			channels = 2;
-			break;
+	if (are_output_channels_recommended(strdesc.mChannelsPerFrame)) {
+		output_channels = strdesc.mChannelsPerFrame;
+	} else {
+		WARN_PRINT("CoreAudio: Unsupported number of output channels: " + itos(strdesc.mChannelsPerFrame));
+		output_channels = 2;
 	}
 
-	mix_rate = _get_configured_mix_rate();
+	// TODO: `output_buffer_format` is hardcoded.
+	output_buffer_format = BUFFER_FORMAT_INTEGER_16;
 
 	memset(&strdesc, 0, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
 	strdesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
-	strdesc.mChannelsPerFrame = channels;
+	strdesc.mChannelsPerFrame = output_channels;
 	strdesc.mSampleRate = mix_rate;
 	strdesc.mFramesPerPacket = 1;
-	strdesc.mBitsPerChannel = 16;
+	strdesc.mBitsPerChannel = get_size_of_sample(output_buffer_format) * 8;
 	strdesc.mBytesPerFrame = strdesc.mBitsPerChannel * strdesc.mChannelsPerFrame / 8;
 	strdesc.mBytesPerPacket = strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
 
@@ -140,11 +136,7 @@ Error AudioDriverCoreAudio::init() {
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 #endif
 
-	unsigned int buffer_size = buffer_frames * channels;
-	samples_in.resize(buffer_size);
-	input_buf.resize(buffer_size);
-
-	print_verbose("CoreAudio: detected " + itos(channels) + " channels");
+	print_verbose("CoreAudio: detected " + itos(output_channels) + " channels");
 	print_verbose("CoreAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	AURenderCallbackStruct callback;
@@ -173,7 +165,7 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 	if (!ad->active || !ad->try_lock()) {
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 			AudioBuffer *abuf = &ioData->mBuffers[i];
-			memset(abuf->mData, 0, abuf->mDataByteSize);
+			ad->audio_server_process(inNumberFrames, abuf->mData, false);
 		}
 		return 0;
 	}
@@ -182,20 +174,7 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 
 	for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 		AudioBuffer *abuf = &ioData->mBuffers[i];
-		unsigned int frames_left = inNumberFrames;
-		int16_t *out = (int16_t *)abuf->mData;
-
-		while (frames_left) {
-			unsigned int frames = MIN(frames_left, ad->buffer_frames);
-			ad->audio_server_process(frames, ad->samples_in.ptrw());
-
-			for (unsigned int j = 0; j < frames * ad->channels; j++) {
-				out[j] = ad->samples_in[j] >> 16;
-			}
-
-			frames_left -= frames;
-			out += frames * ad->channels;
-		}
+		ad->audio_server_process(inNumberFrames, abuf->mData);
 	}
 
 	ad->stop_counting_ticks();
@@ -219,21 +198,13 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 
 	AudioBufferList bufferList;
 	bufferList.mNumberBuffers = 1;
-	bufferList.mBuffers[0].mData = ad->input_buf.ptrw();
-	bufferList.mBuffers[0].mNumberChannels = ad->capture_channels;
-	bufferList.mBuffers[0].mDataByteSize = ad->input_buf.size() * sizeof(int16_t);
+	bufferList.mBuffers[0].mData = ad->input_buffer.ptr();
+	bufferList.mBuffers[0].mNumberChannels = ad->input_channels;
+	bufferList.mBuffers[0].mDataByteSize = ad->input_buffer.size();
 
 	OSStatus result = AudioUnitRender(ad->input_unit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &bufferList);
 	if (result == noErr) {
-		for (unsigned int i = 0; i < inNumberFrames * ad->capture_channels; i++) {
-			int32_t sample = ad->input_buf[i] << 16;
-			ad->input_buffer_write(sample);
-
-			if (ad->capture_channels == 1) {
-				// In case input device is single channel convert it to Stereo
-				ad->input_buffer_write(sample);
-			}
-		}
+		ad->input_process(inNumberFrames, ad->input_buffer.ptr());
 	} else {
 		ERR_PRINT("AudioUnitRender failed, code: " + itos(result));
 	}
@@ -270,8 +241,12 @@ int AudioDriverCoreAudio::get_mix_rate() const {
 	return mix_rate;
 }
 
-AudioDriver::SpeakerMode AudioDriverCoreAudio::get_speaker_mode() const {
-	return get_speaker_mode_by_total_channels(channels);
+int AudioDriverCoreAudio::get_output_channels() const {
+	return output_channels;
+}
+
+AudioDriver::BufferFormat AudioDriverCoreAudio::get_output_buffer_format() const {
+	return output_buffer_format;
 }
 
 void AudioDriverCoreAudio::lock() {
@@ -390,35 +365,30 @@ Error AudioDriverCoreAudio::init_input_device() {
 	result = AudioUnitGetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, &size);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	switch (strdesc.mChannelsPerFrame) {
-		case 1: // Mono
-			capture_channels = 1;
-			break;
-
-		case 2: // Stereo
-			capture_channels = 2;
-			break;
-
-		default:
-			// Unknown number of channels, default to stereo
-			capture_channels = 2;
-			break;
+	if (are_input_channels_recommended(strdesc.mChannelsPerFrame)) {
+		input_channels = strdesc.mChannelsPerFrame;
+	} else {
+		WARN_PRINT("CoreAudio: Unsupported number of input channels: " + itos(strdesc.mChannelsPerFrame));
+		input_channels = 2;
 	}
 
-	mix_rate = _get_configured_mix_rate();
+	// TODO: `input_buffer_format` is hardcoded.
+	input_buffer_format = BUFFER_FORMAT_INTEGER_16;
 
 	memset(&strdesc, 0, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
 	strdesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
-	strdesc.mChannelsPerFrame = capture_channels;
+	strdesc.mChannelsPerFrame = input_channels;
 	strdesc.mSampleRate = mix_rate;
 	strdesc.mFramesPerPacket = 1;
-	strdesc.mBitsPerChannel = 16;
+	strdesc.mBitsPerChannel = get_size_of_sample(input_buffer_format) * 8;
 	strdesc.mBytesPerFrame = strdesc.mBitsPerChannel * strdesc.mChannelsPerFrame / 8;
 	strdesc.mBytesPerPacket = strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
 
 	result = AudioUnitSetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	input_buffer.resize(buffer_frames * input_channels * get_size_of_sample(input_buffer_format));
 
 	AURenderCallbackStruct callback;
 	memset(&callback, 0, sizeof(AURenderCallbackStruct));
@@ -493,6 +463,14 @@ Error AudioDriverCoreAudio::input_stop() {
 	return OK;
 }
 
+int AudioDriverCoreAudio::get_input_channels() const {
+	return input_channels;
+}
+
+AudioDriver::BufferFormat AudioDriverCoreAudio::get_input_buffer_format() const {
+	return input_buffer_format;
+}
+
 #ifdef MACOS_ENABLED
 
 PackedStringArray AudioDriverCoreAudio::_get_device_list(bool input) {
@@ -542,7 +520,7 @@ PackedStringArray AudioDriverCoreAudio::_get_device_list(bool input) {
 			char *buffer = (char *)memalloc(maxSize);
 			ERR_FAIL_NULL_V_MSG(buffer, list, "Out of memory.");
 			if (CFStringGetCString(cfname, buffer, maxSize, kCFStringEncodingUTF8)) {
-				// Append the ID to the name in case we have devices with duplicate name
+				// Append the ID to the name in case we have devices with duplicate name.
 				list.push_back(String::utf8(buffer) + " (" + itos(audioDevices[i]) + ")");
 			}
 
@@ -616,7 +594,7 @@ void AudioDriverCoreAudio::_set_device(const String &output_device, bool input) 
 	}
 
 	if (!found) {
-		// If we haven't found the desired device get the system default one
+		// If we haven't found the desired device get the system default one.
 		UInt32 size = sizeof(AudioDeviceID);
 		UInt32 elem = input ? kAudioHardwarePropertyDefaultInputDevice : kAudioHardwarePropertyDefaultOutputDevice;
 		AudioObjectPropertyAddress property = { elem, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
@@ -670,9 +648,5 @@ void AudioDriverCoreAudio::set_input_device(const String &p_name) {
 }
 
 #endif
-
-AudioDriverCoreAudio::AudioDriverCoreAudio() {
-	samples_in.clear();
-}
 
 #endif // COREAUDIO_ENABLED

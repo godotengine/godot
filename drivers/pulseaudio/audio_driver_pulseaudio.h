@@ -52,8 +52,8 @@ class AudioDriverPulseAudio : public AudioDriver {
 	pa_context *pa_ctx = nullptr;
 	pa_stream *pa_str = nullptr;
 	pa_stream *pa_rec_str = nullptr;
-	pa_channel_map pa_map = {};
-	pa_channel_map pa_rec_map = {};
+	pa_channel_map pa_map = { 0, {} };
+	pa_channel_map pa_rec_map = { 0, {} };
 
 	String output_device_name = "Default";
 	String new_output_device = "Default";
@@ -63,17 +63,15 @@ class AudioDriverPulseAudio : public AudioDriver {
 	String new_input_device;
 	String default_input_device;
 
-	Vector<int32_t> samples_in;
-	Vector<int16_t> samples_out;
-
 	unsigned int mix_rate = 0;
 	unsigned int buffer_frames = 0;
-	unsigned int pa_buffer_size = 0;
-	int channels = 0;
 	int pa_ready = 0;
 	int pa_status = 0;
 	PackedStringArray pa_devices;
 	PackedStringArray pa_rec_devices;
+
+	BufferFormat output_buffer_format = NO_BUFFER;
+	BufferFormat input_buffer_format = NO_BUFFER;
 
 	SafeFlag active;
 	SafeFlag exit_thread;
@@ -93,7 +91,7 @@ class AudioDriverPulseAudio : public AudioDriver {
 	Error init_input_device();
 	void finish_input_device();
 
-	Error detect_channels(bool capture = false);
+	Error detect_channels(bool p_input);
 
 	static void thread_func(void *p_udata);
 
@@ -105,12 +103,14 @@ public:
 	virtual Error init() override;
 	virtual void start() override;
 	virtual int get_mix_rate() const override;
-	virtual SpeakerMode get_speaker_mode() const override;
 	virtual float get_latency() override;
 
 	virtual void lock() override;
 	virtual void unlock() override;
 	virtual void finish() override;
+
+	virtual int get_output_channels() const override;
+	virtual BufferFormat get_output_buffer_format() const override;
 
 	virtual PackedStringArray get_output_device_list() override;
 	virtual String get_output_device() override;
@@ -119,12 +119,12 @@ public:
 	virtual Error input_start() override;
 	virtual Error input_stop() override;
 
+	virtual int get_input_channels() const override;
+	virtual BufferFormat get_input_buffer_format() const override;
+
 	virtual PackedStringArray get_input_device_list() override;
 	virtual String get_input_device() override;
 	virtual void set_input_device(const String &p_name) override;
-
-	AudioDriverPulseAudio();
-	~AudioDriverPulseAudio() {}
 };
 
 #endif // PULSEAUDIO_ENABLED

@@ -37,23 +37,27 @@ Error AudioDriverXAudio2::init() {
 	active.clear();
 	exit_thread.clear();
 	pcm_open = false;
-	samples_in = nullptr;
 
-	mix_rate = _get_configured_mix_rate();
+	// TODO: `wave_format.nChannels` and `buffer_format` are hardcoded.
+	buffer_format = BUFFER_FORMAT_INTEGER_16;
 
-	// FIXME: speaker_mode seems unused in the Xaudio2 driver so far
-	speaker_mode = SPEAKER_MODE_STEREO;
-	channels = 2;
+	wave_format.nChannels = 2;
+	wave_format.cbSize = 0;
+	wave_format.nSamplesPerSec = _get_configured_mix_rate();
+	wave_format.wFormatTag = WAVE_FORMAT_PCM;
+	wave_format.wBitsPerSample = get_size_of_sample(buffer_format) * 8;
+	wave_format.nBlockAlign = wave_format.nChannels * wave_format.wBitsPerSample / 8;
+	wave_format.nAvgBytesPerSec = wave_format.nSamplesPerSec * wave_format.nBlockAlign;
 
 	int latency = Engine::get_singleton()->get_audio_output_latency();
-	buffer_size = closest_power_of_2(latency * mix_rate / 1000);
+	buffer_frames = MIN(latency * wave_format.nSamplesPerSec / 1000, XAUDIO2_MAX_BUFFER_BYTES / (wave_format.nChannels * get_size_of_sample(buffer_format)));
 
-	samples_in = memnew_arr(int32_t, buffer_size * channels);
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {
-		samples_out[i] = memnew_arr(int16_t, buffer_size * channels);
-		xaudio_buffer[i].AudioBytes = buffer_size * channels * sizeof(int16_t);
-		xaudio_buffer[i].pAudioData = (const BYTE *)(samples_out[i]);
-		xaudio_buffer[i].Flags = 0;
+		memset(&xaudio_buffer[i], 0, sizeof(xaudio_buffer[i]));
+		xaudio_buffer[i].AudioBytes = (uint32_t)buffer_frames * wave_format.nChannels * get_size_of_sample(buffer_format);
+
+		samples_out[i].resize(xaudio_buffer[i].AudioBytes);
+		xaudio_buffer[i].pAudioData = (const BYTE *)samples_out[i].ptr();
 	}
 
 	HRESULT hr;
@@ -62,14 +66,6 @@ Error AudioDriverXAudio2::init() {
 
 	hr = xaudio->CreateMasteringVoice(&mastering_voice);
 	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_UNAVAILABLE, "Error creating XAudio2 mastering voice.");
-
-	wave_format.nChannels = channels;
-	wave_format.cbSize = 0;
-	wave_format.nSamplesPerSec = mix_rate;
-	wave_format.wFormatTag = WAVE_FORMAT_PCM;
-	wave_format.wBitsPerSample = 16;
-	wave_format.nBlockAlign = channels * wave_format.wBitsPerSample >> 3;
-	wave_format.nAvgBytesPerSec = mix_rate * wave_format.nBlockAlign;
 
 	hr = xaudio->CreateSourceVoice(&source_voice, &wave_format, 0, XAUDIO2_MAX_FREQ_RATIO, &voice_callback);
 	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_UNAVAILABLE, "Error creating XAudio2 source voice. Error code: " + itos(hr) + ".");
@@ -82,37 +78,25 @@ Error AudioDriverXAudio2::init() {
 void AudioDriverXAudio2::thread_func(void *p_udata) {
 	AudioDriverXAudio2 *ad = static_cast<AudioDriverXAudio2 *>(p_udata);
 
+	while (!ad->exit_thread.is_set() && !ad->active.is_set()) {
+		OS::get_singleton()->delay_usec(1000);
+	}
+
 	while (!ad->exit_thread.is_set()) {
-		if (!ad->active.is_set()) {
-			for (int i = 0; i < AUDIO_BUFFERS; i++) {
-				ad->xaudio_buffer[i].Flags = XAUDIO2_END_OF_STREAM;
-			}
+		ad->lock();
+		ad->start_counting_ticks();
 
-		} else {
-			ad->lock();
-			ad->start_counting_ticks();
+		ad->audio_server_process(ad->buffer_frames, ad->samples_out[ad->current_buffer].ptr());
 
-			ad->audio_server_process(ad->buffer_size, ad->samples_in);
+		ad->stop_counting_ticks();
+		ad->unlock();
 
-			ad->stop_counting_ticks();
-			ad->unlock();
+		ad->source_voice->SubmitSourceBuffer(&ad->xaudio_buffer[ad->current_buffer]);
+		ad->current_buffer = (ad->current_buffer + 1) % AUDIO_BUFFERS;
 
-			for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
-				ad->samples_out[ad->current_buffer][i] = ad->samples_in[i] >> 16;
-			}
-
-			ad->xaudio_buffer[ad->current_buffer].Flags = 0;
-			ad->xaudio_buffer[ad->current_buffer].AudioBytes = ad->buffer_size * ad->channels * sizeof(int16_t);
-			ad->xaudio_buffer[ad->current_buffer].pAudioData = (const BYTE *)(ad->samples_out[ad->current_buffer]);
-			ad->xaudio_buffer[ad->current_buffer].PlayBegin = 0;
-			ad->source_voice->SubmitSourceBuffer(&(ad->xaudio_buffer[ad->current_buffer]));
-
-			ad->current_buffer = (ad->current_buffer + 1) % AUDIO_BUFFERS;
-
-			XAUDIO2_VOICE_STATE state;
-			while (ad->source_voice->GetState(&state), state.BuffersQueued > AUDIO_BUFFERS - 1) {
-				WaitForSingleObject(ad->voice_callback.buffer_end_event, INFINITE);
-			}
+		XAUDIO2_VOICE_STATE state;
+		while (ad->source_voice->GetState(&state), state.BuffersQueued > AUDIO_BUFFERS - 1) {
+			WaitForSingleObject(ad->voice_callback.buffer_end_event, INFINITE);
 		}
 	}
 }
@@ -124,21 +108,25 @@ void AudioDriverXAudio2::start() {
 }
 
 int AudioDriverXAudio2::get_mix_rate() const {
-	return mix_rate;
-}
-
-AudioDriver::SpeakerMode AudioDriverXAudio2::get_speaker_mode() const {
-	return speaker_mode;
+	return wave_format.nSamplesPerSec;
 }
 
 float AudioDriverXAudio2::get_latency() {
 	XAUDIO2_PERFORMANCE_DATA perf_data;
 	xaudio->GetPerformanceData(&perf_data);
 	if (perf_data.CurrentLatencyInSamples) {
-		return (float)(perf_data.CurrentLatencyInSamples / ((float)mix_rate));
+		return (float)perf_data.CurrentLatencyInSamples / wave_format.nSamplesPerSec;
 	} else {
 		return 0;
 	}
+}
+
+int AudioDriverXAudio2::get_output_channels() const {
+	return wave_format.nChannels;
+}
+
+AudioDriver::BufferFormat AudioDriverXAudio2::get_output_buffer_format() const {
+	return buffer_format;
 }
 
 void AudioDriverXAudio2::lock() {
@@ -160,21 +148,5 @@ void AudioDriverXAudio2::finish() {
 		source_voice->DestroyVoice();
 	}
 
-	if (samples_in) {
-		memdelete_arr(samples_in);
-	}
-	if (samples_out[0]) {
-		for (int i = 0; i < AUDIO_BUFFERS; i++) {
-			memdelete_arr(samples_out[i]);
-		}
-	}
-
 	mastering_voice->DestroyVoice();
-}
-
-AudioDriverXAudio2::AudioDriverXAudio2() {
-	for (int i = 0; i < AUDIO_BUFFERS; i++) {
-		xaudio_buffer[i] = { 0 };
-		samples_out[i] = 0;
-	}
 }

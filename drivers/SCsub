@@ -9,15 +9,19 @@ SConscript("unix/SCsub")
 SConscript("windows/SCsub")
 
 # Sounds drivers
-SConscript("alsa/SCsub")
-SConscript("coreaudio/SCsub")
-SConscript("pulseaudio/SCsub")
+if env["platform"] in ["ios", "macos"]:
+    SConscript("coreaudio/SCsub")
+
+if env["platform"] == "linuxbsd":
+    if env["alsa"]:
+        SConscript("alsa/SCsub")
+    if env["pulseaudio"]:
+        SConscript("pulseaudio/SCsub")
+
 if env["platform"] == "windows":
+    if env["xaudio2"]:
+        SConscript("xaudio2/SCsub")
     SConscript("wasapi/SCsub")
-    if not env.msvc:
-        SConscript("backtrace/SCsub")
-if env["xaudio2"]:
-    SConscript("xaudio2/SCsub")
 
 # Midi drivers
 SConscript("alsamidi/SCsub")
@@ -36,6 +40,8 @@ if env["opengl3"]:
 
 # Core dependencies
 SConscript("png/SCsub")
+if env["platform"] == "windows" and not env.msvc:
+    SConscript("backtrace/SCsub")
 
 env.add_source_files(env.drivers_sources, "*.cpp")
 
