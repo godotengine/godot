@@ -142,7 +142,7 @@ int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &
 
 	for (int i = 0; i < amount; i++) {
 		// when using intersect_ray, we need to search all collisions and override the previous found collision if a nearer one is found
-		if(p_parameters.find_closest) {
+		if (p_parameters.find_closest) {
 			idx = 0;
 		}
 
@@ -199,7 +199,7 @@ int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &
 
 			// this is extra handling in case of using intersect_ray
 			// (this works because then idx is always 0)
-			if(p_parameters.find_closest && (distance >= r_result[idx].distance)) {
+			if (p_parameters.find_closest && (distance >= r_result[idx].distance)) {
 				continue;
 			}
 
@@ -220,7 +220,7 @@ int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &
 	}
 	// index is always incremented after a collision is found
 	// except when the intersect_ray function is used (then idx may be 0 if no collision is found in the last iteration)
-	if(p_parameters.find_closest) {
+	if (p_parameters.find_closest) {
 		idx = 1;
 	}
 	return idx;
