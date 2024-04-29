@@ -15,59 +15,61 @@ class ANSI(Enum):
     internal value, or an empty string in a non-colorized scope.
     """
 
-    GRAY = "\x1b[0;30m"
-    RED = "\x1b[0;31m"
-    GREEN = "\x1b[0;32m"
-    YELLOW = "\x1b[0;33m"
-    BLUE = "\x1b[0;34m"
-    PURPLE = "\x1b[0;35m"
-    CYAN = "\x1b[0;36m"
-    WHITE = "\x1b[0;37m"
-
-    BOLD_GRAY = "\x1b[1;90m"
-    BOLD_RED = "\x1b[1;91m"
-    BOLD_GREEN = "\x1b[1;92m"
-    BOLD_YELLOW = "\x1b[1;93m"
-    BOLD_BLUE = "\x1b[1;94m"
-    BOLD_PURPLE = "\x1b[1;95m"
-    BOLD_CYAN = "\x1b[1;96m"
-    BOLD_WHITE = "\x1b[1;97m"
-
     RESET = "\x1b[0m"
 
-    def __str__(self):
+    BOLD = "\x1b[1m"
+    ITALIC = "\x1b[3m"
+    UNDERLINE = "\x1b[4m"
+    STRIKETHROUGH = "\x1b[9m"
+    REGULAR = "\x1b[22;23;24;29m"
+
+    BLACK = "\x1b[30m"
+    RED = "\x1b[31m"
+    GREEN = "\x1b[32m"
+    YELLOW = "\x1b[33m"
+    BLUE = "\x1b[34m"
+    MAGENTA = "\x1b[35m"
+    CYAN = "\x1b[36m"
+    WHITE = "\x1b[37m"
+
+    PURPLE = "\x1b[38;5;93m"
+    PINK = "\x1b[38;5;206m"
+    ORANGE = "\x1b[38;5;214m"
+    GRAY = "\x1b[38;5;244m"
+
+    def __str__(self) -> str:
         global _colorize
-        return self.value if _colorize else ""
+        return str(self.value) if _colorize else ""
 
 
 def no_verbose(env):
-    colors = [ANSI.BLUE, ANSI.BOLD_BLUE, ANSI.RESET]
+    colors = [ANSI.BLUE, ANSI.BOLD, ANSI.REGULAR, ANSI.RESET]
 
     # There is a space before "..." to ensure that source file names can be
     # Ctrl + clicked in the VS Code terminal.
-    compile_source_message = "{0}Compiling {1}$SOURCE{0} ...{2}".format(*colors)
-    java_compile_source_message = "{0}Compiling {1}$SOURCE{0} ...{2}".format(*colors)
-    compile_shared_source_message = "{0}Compiling shared {1}$SOURCE{0} ...{2}".format(*colors)
-    link_program_message = "{0}Linking Program {1}$TARGET{0} ...{2}".format(*colors)
-    link_library_message = "{0}Linking Static Library {1}$TARGET{0} ...{2}".format(*colors)
-    ranlib_library_message = "{0}Ranlib Library {1}$TARGET{0} ...{2}".format(*colors)
-    link_shared_library_message = "{0}Linking Shared Library {1}$TARGET{0} ...{2}".format(*colors)
-    java_library_message = "{0}Creating Java Archive {1}$TARGET{0} ...{2}".format(*colors)
-    compiled_resource_message = "{0}Creating Compiled Resource {1}$TARGET{0} ...{2}".format(*colors)
-    generated_file_message = "{0}Generating {1}$TARGET{0} ...{2}".format(*colors)
+    compile_source_message = "{}Compiling {}$SOURCE{} ...{}".format(*colors)
+    java_compile_source_message = "{}Compiling {}$SOURCE{} ...{}".format(*colors)
+    compile_shared_source_message = "{}Compiling shared {}$SOURCE{} ...{}".format(*colors)
+    link_program_message = "{}Linking Program {}$TARGET{} ...{}".format(*colors)
+    link_library_message = "{}Linking Static Library {}$TARGET{} ...{}".format(*colors)
+    ranlib_library_message = "{}Ranlib Library {}$TARGET{} ...{}".format(*colors)
+    link_shared_library_message = "{}Linking Shared Library {}$TARGET{} ...{}".format(*colors)
+    java_library_message = "{}Creating Java Archive {}$TARGET{} ...{}".format(*colors)
+    compiled_resource_message = "{}Creating Compiled Resource {}$TARGET{} ...{}".format(*colors)
+    generated_file_message = "{}Generating {}$TARGET{} ...{}".format(*colors)
 
-    env.Append(CXXCOMSTR=compile_source_message)
-    env.Append(CCCOMSTR=compile_source_message)
-    env.Append(SHCCCOMSTR=compile_shared_source_message)
-    env.Append(SHCXXCOMSTR=compile_shared_source_message)
-    env.Append(ARCOMSTR=link_library_message)
-    env.Append(RANLIBCOMSTR=ranlib_library_message)
-    env.Append(SHLINKCOMSTR=link_shared_library_message)
-    env.Append(LINKCOMSTR=link_program_message)
-    env.Append(JARCOMSTR=java_library_message)
-    env.Append(JAVACCOMSTR=java_compile_source_message)
-    env.Append(RCCOMSTR=compiled_resource_message)
-    env.Append(GENCOMSTR=generated_file_message)
+    env["CXXCOMSTR"] = compile_source_message
+    env["CCCOMSTR"] = compile_source_message
+    env["SHCCCOMSTR"] = compile_shared_source_message
+    env["SHCXXCOMSTR"] = compile_shared_source_message
+    env["ARCOMSTR"] = link_library_message
+    env["RANLIBCOMSTR"] = ranlib_library_message
+    env["SHLINKCOMSTR"] = link_shared_library_message
+    env["LINKCOMSTR"] = link_program_message
+    env["JARCOMSTR"] = java_library_message
+    env["JAVACCOMSTR"] = java_compile_source_message
+    env["RCCOMSTR"] = compiled_resource_message
+    env["GENCOMSTR"] = generated_file_message
 
 
 def disable_warnings(self):
