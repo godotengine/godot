@@ -1153,7 +1153,7 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 									for (int pattern_layer = 0; pattern_layer < selection_pattern->get_number_of_layers(); pattern_layer++) {
 										
 										TileMapLayer *current_layer = layers[pattern_layer];
-										drag_modified_layers.resize(layers.size());
+										drag_modified_layers.resize(selection_pattern.size());
 										HashMap<Vector2i, TileMapCell> selected_pattern_layer = to_draw_multilayer[pattern_layer];
 										HashMap<Vector2i, TileMapCell> &layer_to_write = drag_modified_layers.write[pattern_layer];
 
