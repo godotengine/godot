@@ -2892,7 +2892,7 @@ String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) con
 	return "";
 }
 
-void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
+void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<String> *r_dependencies, bool p_add_types) {
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_MSG(file.is_null(), "Cannot open file '" + p_path + "'.");
 
@@ -2906,8 +2906,13 @@ void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<S
 		return;
 	}
 
+	GDScriptAnalyzer analyzer(&parser);
+	if (OK != analyzer.analyze()) {
+		return;
+	}
+
 	for (const String &E : parser.get_dependencies()) {
-		p_dependencies->push_back(E);
+		r_dependencies->push_back(E);
 	}
 }
 
