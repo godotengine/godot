@@ -115,6 +115,19 @@ int GodotPhysicsDirectSpaceState2D::intersect_point(const PointParameters &p_par
 }
 
 bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
+	RayParameters params(p_parameters);
+	params.find_closest = true;
+	int result = intersect_ray_multiple(params, &r_result, 1);
+	return result == 1;
+}
+
+int GodotPhysicsDirectSpaceState2D::intersect_ray_multiple(const RayParameters &p_parameters, RayResult *r_result, int p_result_max) {
+	if (p_result_max <= 0) {
+		return 0;
+	}
+
+	ERR_FAIL_COND_V(p_parameters.find_closest && p_result_max != 1, 0);
+
 	ERR_FAIL_COND_V(space->locked, false);
 
 	Vector2 begin, end;
@@ -125,15 +138,18 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 
 	int amount = space->broadphase->cull_segment(begin, end, space->intersection_query_results, GodotSpace2D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
-	//todo, create another array that references results, compute AABBs and check closest point to ray origin, sort, and stop evaluating results when beyond first collision
-
-	bool collided = false;
-	Vector2 res_point, res_normal;
-	int res_shape = -1;
-	const GodotCollisionObject2D *res_obj = nullptr;
-	real_t min_d = 1e10;
+	int idx = 0;
 
 	for (int i = 0; i < amount; i++) {
+		// when using intersect_ray, we need to search all collisions and override the previous found collision if a nearer one is found
+		if(p_parameters.find_closest) {
+			idx = 0;
+		}
+
+		if (idx >= p_result_max) {
+			break;
+		}
+
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
 			continue;
 		}
@@ -157,51 +173,57 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 		if (shape->contains_point(local_from)) {
 			if (p_parameters.hit_from_inside) {
 				// Hit shape at starting point.
-				min_d = 0;
-				res_point = begin;
-				res_normal = Vector2();
-				res_shape = shape_idx;
-				res_obj = col_obj;
-				collided = true;
-				break;
-			} else {
-				// Ignore shape when starting inside.
-				continue;
+				r_result[idx].collider_id = col_obj->get_instance_id();
+				if (r_result[idx].collider_id.is_valid()) {
+					r_result[idx].collider = ObjectDB::get_instance(r_result[idx].collider_id);
+				} else {
+					r_result[idx].collider = nullptr;
+				}
+				r_result[idx].position = begin;
+				r_result[idx].normal = Vector2();
+				r_result[idx].shape = shape_idx;
+				r_result[idx].rid = col_obj->get_self();
+				r_result[idx].distance = 0.0;
+				idx += 1;
 			}
+			// Ignore shape when starting inside.
+			continue;
 		}
 
 		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal)) {
 			Transform2D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point = xform.xform(shape_point);
 
-			real_t ld = normal.dot(shape_point);
+			// since both vectors are on the ray and normal is normalized, we can calculate the distance like this
+			real_t distance = normal.dot(shape_point);
 
-			if (ld < min_d) {
-				min_d = ld;
-				res_point = shape_point;
-				res_normal = inv_xform.basis_xform_inv(shape_normal).normalized();
-				res_shape = shape_idx;
-				res_obj = col_obj;
-				collided = true;
+			// this is extra handling in case of using intersect_ray
+			// (this works because then idx is always 0)
+			if(p_parameters.find_closest && (distance >= r_result[idx].distance)) {
+				continue;
 			}
+
+			r_result[idx].position = shape_point;
+			r_result[idx].shape = shape_idx;
+			r_result[idx].normal = inv_xform.basis_xform_inv(shape_normal).normalized();
+			r_result[idx].distance = distance;
+			r_result[idx].rid = col_obj->get_self();
+			r_result[idx].collider_id = col_obj->get_instance_id();
+			if (r_result[idx].collider_id.is_valid()) {
+				r_result[idx].collider = ObjectDB::get_instance(r_result[idx].collider_id);
+			} else {
+				r_result[idx].collider = nullptr;
+			}
+			idx += 1;
+			continue;
 		}
 	}
-
-	if (!collided) {
-		return false;
+	// index is always incremented after a collision is found
+	// except when the intersect_ray function is used (then idx may be 0 if no collision is found in the last iteration)
+	if(p_parameters.find_closest) {
+		idx = 1;
 	}
-	ERR_FAIL_NULL_V(res_obj, false); // Shouldn't happen but silences warning.
-
-	r_result.collider_id = res_obj->get_instance_id();
-	if (r_result.collider_id.is_valid()) {
-		r_result.collider = ObjectDB::get_instance(r_result.collider_id);
-	}
-	r_result.normal = res_normal;
-	r_result.position = res_point;
-	r_result.rid = res_obj->get_self();
-	r_result.shape = res_shape;
-
-	return true;
+	return idx;
 }
 
 int GodotPhysicsDirectSpaceState2D::intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) {
