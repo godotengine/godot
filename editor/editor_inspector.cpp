@@ -3379,7 +3379,12 @@ void EditorInspector::update_tree() {
 				if (use_doc_hints) {
 					// `|` separators used in `EditorHelpBit`.
 					if (theme_item_name.is_empty()) {
-						if (p.usage & PROPERTY_USAGE_INTERNAL) {
+						if (p.name.contains("shader_parameter/")) {
+							ShaderMaterial *shader_material = Object::cast_to<ShaderMaterial>(object);
+							if (shader_material) {
+								ep->set_tooltip_text("property|" + shader_material->get_shader()->get_path() + "|" + property_prefix + p.name);
+							}
+						} else if (p.usage & PROPERTY_USAGE_INTERNAL) {
 							ep->set_tooltip_text("internal_property|" + classname + "|" + property_prefix + p.name);
 						} else {
 							ep->set_tooltip_text("property|" + classname + "|" + property_prefix + p.name);
