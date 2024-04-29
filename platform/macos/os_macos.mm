@@ -710,6 +710,11 @@ bool OS_MacOS::is_disable_crash_handler() const {
 	return crash_handler.is_disabled();
 }
 
+void OS_MacOS::decode_trace(const String &p_trace) const {
+	CrashHandler::TraceData td = crash_handler.decode_trace(p_trace);
+	crash_handler.print_trace(td);
+}
+
 Error OS_MacOS::move_to_trash(const String &p_path) {
 	NSFileManager *fm = [NSFileManager defaultManager];
 	NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];

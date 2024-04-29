@@ -252,6 +252,7 @@ public:
 
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
+	virtual void decode_trace(const String &p_trace) const {}
 	virtual void initialize_debugging() {}
 
 	virtual uint64_t get_static_memory_usage() const;

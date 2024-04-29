@@ -96,6 +96,12 @@ int trace_callback(void *data, uintptr_t pc) {
 	return 0;
 }
 
+int64_t get_load_address(const String &p_path) {
+	MODULEINFO mi;
+	GetModuleInformation(GetCurrentProcess(), GetModuleHandle(NULL), &mi, sizeof(mi));
+	return reinterpret_cast<int64_t>(mi.lpBaseOfDll);
+}
+
 int64_t get_image_base(const String &p_path) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	if (f.is_null()) {
@@ -158,9 +164,7 @@ extern void CrashHandlerException(int signal) {
 	String _execpath = OS::get_singleton()->get_executable_path();
 
 	// Load process and image info to determine ASLR addresses offset.
-	MODULEINFO mi;
-	GetModuleInformation(GetCurrentProcess(), GetModuleHandle(NULL), &mi, sizeof(mi));
-	int64_t image_mem_base = reinterpret_cast<int64_t>(mi.lpBaseOfDll);
+	int64_t image_mem_base = get_load_address(_execpath);
 	int64_t image_file_base = get_image_base(_execpath);
 	data.offset = image_mem_base - image_file_base;
 

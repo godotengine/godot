@@ -620,6 +620,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("-s, --script <script>", "Run a script.\n");
 	print_help_option("--main-loop <main_loop_name>", "Run a MainLoop specified by its global class name.\n");
 	print_help_option("--check-only", "Only parse for errors and quit (use with --script).\n");
+	print_help_option("--decode-trace <trace>", "Decodes and print crash report trace.\n");
 #ifdef TOOLS_ENABLED
 	print_help_option("--import", "Starts the editor, waits for any resources to be imported, and then quits.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--export-release <preset> <path>", "Export the project in release mode using the given preset and output path. The preset name should match one defined in \"export_presets.cfg\".\n", CLI_OPTION_AVAILABILITY_EDITOR);
@@ -1052,9 +1053,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			exit_err = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
 
+		} else if (arg == "--decode-trace") {
+			if (N) {
+				const String &trace = N->get();
+				OS::get_singleton()->decode_trace(trace);
+				exit_err = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
+			} else {
+				OS::get_singleton()->print("Missing decode-trace argument, aborting.\n");
+			}
+			goto error;
+
 		} else if (arg == "-v" || arg == "--verbose") { // verbose output
 
 			OS::get_singleton()->_verbose_stdout = true;
+
 		} else if (arg == "-q" || arg == "--quiet") { // quieter output
 
 			quiet_stdout = true;
