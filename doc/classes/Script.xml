@@ -127,4 +127,19 @@
 			The script source code or an empty string if source code is not available. When set, does not reload the class implementation automatically.
 		</member>
 	</members>
+	<signals>
+		<signal name="reloaded">
+			<description>
+				Emitted when the script reloads successfully after [method reload].
+				[b]Note:[/b] You can use this signal in tool scripts to react when the editor synchronizes script changes.
+				[b]Warning:[/b] Currently, the C# module reloads the entire assembly. This signal will be emitted for all instances of [CSharpScript]. Also, the state doesn't persist after reloading, using it directly in C# can cause errors. You have to connect from another language module, such as GDScript.
+				[codeblock]
+				@export var script: CSharpScript
+
+				func _ready():
+				    script.reloaded.connect(print.bind("C# reloaded!"))
+				[/codeblock]
+			</description>
+		</signal>
+	</signals>
 </class>

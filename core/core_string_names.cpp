@@ -37,6 +37,7 @@ CoreStringNames::CoreStringNames() :
 		changed(StaticCString::create("changed")),
 		script(StaticCString::create("script")),
 		script_changed(StaticCString::create("script_changed")),
+		reloaded(StaticCString::create("reloaded")),
 		_iter_init(StaticCString::create("_iter_init")),
 		_iter_next(StaticCString::create("_iter_next")),
 		_iter_get(StaticCString::create("_iter_get")),

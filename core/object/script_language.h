@@ -145,6 +145,8 @@ public:
 	virtual void set_source_code(const String &p_code) = 0;
 	virtual Error reload(bool p_keep_state = false) = 0;
 
+	void emit_reloaded();
+
 #ifdef TOOLS_ENABLED
 	virtual Vector<DocData::ClassDoc> get_documentation() const = 0;
 	virtual String get_class_icon_path() const = 0;
