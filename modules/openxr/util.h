@@ -34,23 +34,21 @@
 #define UNPACK(...) __VA_ARGS__
 
 #define INIT_XR_FUNC_V(openxr_api, name)                                                                              \
-	if constexpr (true) {                                                                                             \
+	do {                                                                                                              \
 		XrResult get_instance_proc_addr_result;                                                                       \
 		get_instance_proc_addr_result = openxr_api->get_instance_proc_addr(#name, (PFN_xrVoidFunction *)&name##_ptr); \
 		ERR_FAIL_COND_V(XR_FAILED(get_instance_proc_addr_result), false);                                             \
-	} else                                                                                                            \
-		((void)0)
+	} while (0)
 
 #define EXT_INIT_XR_FUNC_V(name) INIT_XR_FUNC_V(OpenXRAPI::get_singleton(), name)
 #define OPENXR_API_INIT_XR_FUNC_V(name) INIT_XR_FUNC_V(this, name)
 
 #define INIT_XR_FUNC(openxr_api, name)                                                                                \
-	if constexpr (true) {                                                                                             \
+	do {                                                                                                              \
 		XrResult get_instance_proc_addr_result;                                                                       \
 		get_instance_proc_addr_result = openxr_api->get_instance_proc_addr(#name, (PFN_xrVoidFunction *)&name##_ptr); \
 		ERR_FAIL_COND(XR_FAILED(get_instance_proc_addr_result));                                                      \
-	} else                                                                                                            \
-		((void)0)
+	} while (0)
 
 #define EXT_INIT_XR_FUNC(name) INIT_XR_FUNC(OpenXRAPI::get_singleton(), name)
 #define OPENXR_API_INIT_XR_FUNC(name) INIT_XR_FUNC(this, name)
@@ -61,18 +59,16 @@
 #define EXT_TRY_INIT_XR_FUNC(name) TRY_INIT_XR_FUNC(OpenXRAPI::get_singleton(), name)
 #define OPENXR_TRY_API_INIT_XR_FUNC(name) TRY_INIT_XR_FUNC(this, name)
 #define GDEXTENSION_INIT_XR_FUNC(name)                                                              \
-	if constexpr (true) {                                                                           \
+	do {                                                                                            \
 		name##_ptr = reinterpret_cast<PFN_##name>(get_openxr_api()->get_instance_proc_addr(#name)); \
-		ERR_FAIL_NULL(name##_ptr);                                                                  \
-	} else                                                                                          \
-		((void)0)
+		ERR_FAIL_COND(name##_ptr == nullptr);                                                       \
+	} while (0)
 
 #define GDEXTENSION_INIT_XR_FUNC_V(name)                                                            \
-	if constexpr (true) {                                                                           \
+	do {                                                                                            \
 		name##_ptr = reinterpret_cast<PFN_##name>(get_openxr_api()->get_instance_proc_addr(#name)); \
-		ERR_FAIL_NULL_V(name##_ptr, false);                                                         \
-	} else                                                                                          \
-		((void)0)
+		ERR_FAIL_COND_V(name##_ptr == nullptr, false);                                              \
+	} while (0)
 
 #define EXT_PROTO_XRRESULT_FUNC1(func_name, arg1_type, arg1)                    \
 	PFN_##func_name func_name##_ptr = nullptr;                                  \

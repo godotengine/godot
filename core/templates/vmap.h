@@ -34,7 +34,7 @@
 #include "core/templates/cowdata.h"
 #include "core/typedefs.h"
 
-template <typename T, typename V>
+template <class T, class V>
 class VMap {
 public:
 	struct Pair {

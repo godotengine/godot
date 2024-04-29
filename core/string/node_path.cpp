@@ -92,14 +92,6 @@ StringName NodePath::get_subname(int p_idx) const {
 	return data->subpath[p_idx];
 }
 
-int NodePath::get_total_name_count() const {
-	if (!data) {
-		return 0;
-	}
-
-	return data->path.size() + data->subpath.size();
-}
-
 void NodePath::unref() {
 	if (data && data->refcount.unref()) {
 		memdelete(data);
@@ -237,27 +229,6 @@ StringName NodePath::get_concatenated_subnames() const {
 	return data->concatenated_subpath;
 }
 
-NodePath NodePath::slice(int p_begin, int p_end) const {
-	const int name_count = get_name_count();
-	const int total_count = get_total_name_count();
-
-	int begin = CLAMP(p_begin, -total_count, total_count);
-	if (begin < 0) {
-		begin += total_count;
-	}
-	int end = CLAMP(p_end, -total_count, total_count);
-	if (end < 0) {
-		end += total_count;
-	}
-	const int sub_begin = MAX(begin - name_count - 1, 0);
-	const int sub_end = MAX(end - name_count, 0);
-
-	const Vector<StringName> names = get_names().slice(begin, end);
-	const Vector<StringName> sub_names = get_subnames().slice(sub_begin, sub_end);
-	const bool absolute = is_absolute() && (begin == 0);
-	return NodePath(names, sub_names, absolute);
-}
-
 NodePath NodePath::rel_path_to(const NodePath &p_np) const {
 	ERR_FAIL_COND_V(!is_absolute(), NodePath());
 	ERR_FAIL_COND_V(!p_np.is_absolute(), NodePath());
@@ -360,7 +331,7 @@ NodePath NodePath::simplified() const {
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
-	if (p_path.size() == 0 && !p_absolute) {
+	if (p_path.size() == 0) {
 		return;
 	}
 
@@ -372,7 +343,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p_subpath, bool p_absolute) {
-	if (p_path.size() == 0 && p_subpath.size() == 0 && !p_absolute) {
+	if (p_path.size() == 0 && p_subpath.size() == 0) {
 		return;
 	}
 

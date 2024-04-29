@@ -79,14 +79,14 @@ private:
 		Ref<Texture2D> grabber_icon_v;
 	} theme_cache;
 
+	Control *_getch(int p_idx) const;
+
 	Ref<Texture2D> _get_grabber_icon() const;
 	void _compute_middle_sep(bool p_clamp);
 	void _resort();
 
 protected:
 	bool is_fixed = false;
-
-	Control *get_containable_child(int p_idx) const;
 
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;

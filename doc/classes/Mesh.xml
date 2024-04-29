@@ -7,10 +7,10 @@
 		Mesh is a type of [Resource] that contains vertex array-based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials.
 	</description>
 	<tutorials>
-		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/2742</link>
-		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
-		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
-		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/123</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="_get_aabb" qualifiers="virtual const">
@@ -162,14 +162,14 @@
 		<method name="get_surface_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the number of surfaces that the [Mesh] holds. This is equivalent to [method MeshInstance3D.get_surface_override_material_count].
+				Returns the number of surfaces that the [Mesh] holds.
 			</description>
 		</method>
 		<method name="surface_get_arrays" qualifiers="const">
 			<return type="Array" />
 			<param index="0" name="surf_idx" type="int" />
 			<description>
-				Returns the arrays for the vertices, normals, UVs, etc. that make up the requested surface (see [method ArrayMesh.add_surface_from_arrays]).
+				Returns the arrays for the vertices, normals, uvs, etc. that make up the requested surface (see [method ArrayMesh.add_surface_from_arrays]).
 			</description>
 		</method>
 		<method name="surface_get_blend_shape_arrays" qualifiers="const">
@@ -184,7 +184,6 @@
 			<param index="0" name="surf_idx" type="int" />
 			<description>
 				Returns a [Material] in a given surface. Surface is rendered using this material.
-				[b]Note:[/b] This returns the material within the [Mesh] resource, not the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties. To get the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties, use [method MeshInstance3D.get_surface_override_material] instead.
 			</description>
 		</method>
 		<method name="surface_set_material">
@@ -193,7 +192,6 @@
 			<param index="1" name="material" type="Material" />
 			<description>
 				Sets a [Material] for a given surface. Surface will be rendered using this material.
-				[b]Note:[/b] This assigns the material within the [Mesh] resource, not the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties. To set the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties, use [method MeshInstance3D.set_surface_override_material] instead.
 			</description>
 		</method>
 	</methods>
@@ -237,16 +235,16 @@
 			[PackedVector2Array] for second UV coordinates.
 		</constant>
 		<constant name="ARRAY_CUSTOM0" value="6" enum="ArrayType">
-			Contains custom color channel 0. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+			Contains custom color channel 0. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_CUSTOM1" value="7" enum="ArrayType">
-			Contains custom color channel 1. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+			Contains custom color channel 1. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_CUSTOM2" value="8" enum="ArrayType">
-			Contains custom color channel 2. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM2_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+			Contains custom color channel 2. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM2_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_CUSTOM3" value="9" enum="ArrayType">
-			Contains custom color channel 3. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM3_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+			Contains custom color channel 3. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM3_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_BONES" value="10" enum="ArrayType">
 			[PackedFloat32Array] or [PackedInt32Array] of bone indices. Contains either 4 or 8 numbers per vertex depending on the presence of the [constant ARRAY_FLAG_USE_8_BONE_WEIGHTS] flag.
@@ -365,9 +363,6 @@
 		</constant>
 		<constant name="ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY" value="268435456" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark that the mesh intentionally contains no vertex array.
-		</constant>
-		<constant name="ARRAY_FLAG_COMPRESS_ATTRIBUTES" value="536870912" enum="ArrayFormat" is_bitfield="true">
-			Flag used to mark that a mesh is using compressed attributes (vertices, normals, tangents, UVs). When this form of compression is enabled, vertex positions will be packed into an RGBA16UNORM attribute and scaled in the vertex shader. The normal and tangent will be packed into an RG16UNORM representing an axis, and a 16-bit float stored in the A-channel of the vertex. UVs will use 16-bit normalized floats instead of full 32-bit signed floats. When using this compression mode you must use either vertices, normals, and tangents or only vertices. You cannot use normals without tangents. Importers will automatically enable this compression if they can.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
 			Blend shapes are normalized.

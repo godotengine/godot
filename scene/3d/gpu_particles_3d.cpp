@@ -61,8 +61,6 @@ void GPUParticles3D::set_emitting(bool p_emitting) {
 		} else {
 			set_process_internal(false);
 		}
-	} else {
-		set_process_internal(true);
 	}
 
 	emitting = p_emitting;
@@ -81,19 +79,19 @@ void GPUParticles3D::set_lifetime(double p_lifetime) {
 	RS::get_singleton()->particles_set_lifetime(particles, lifetime);
 }
 
-void GPUParticles3D::set_interp_to_end(float p_interp) {
-	interp_to_end_factor = CLAMP(p_interp, 0.0, 1.0);
-	RS::get_singleton()->particles_set_interp_to_end(particles, interp_to_end_factor);
-}
-
 void GPUParticles3D::set_one_shot(bool p_one_shot) {
 	one_shot = p_one_shot;
 	RS::get_singleton()->particles_set_one_shot(particles, one_shot);
 
 	if (is_emitting()) {
+		set_process_internal(true);
 		if (!one_shot) {
 			RenderingServer::get_singleton()->particles_restart(particles);
 		}
+	}
+
+	if (!one_shot) {
+		set_process_internal(false);
 	}
 }
 
@@ -154,10 +152,6 @@ int GPUParticles3D::get_amount() const {
 
 double GPUParticles3D::get_lifetime() const {
 	return lifetime;
-}
-
-float GPUParticles3D::get_interp_to_end() const {
-	return interp_to_end_factor;
 }
 
 bool GPUParticles3D::get_one_shot() const {
@@ -407,7 +401,9 @@ void GPUParticles3D::restart() {
 	time = 0;
 	emission_time = lifetime * (1 - explosiveness_ratio);
 	active_time = lifetime * (2 - explosiveness_ratio);
-	set_process_internal(true);
+	if (one_shot) {
+		set_process_internal(true);
+	}
 }
 
 AABB GPUParticles3D::capture_aabb() const {
@@ -460,14 +456,6 @@ void GPUParticles3D::_notification(int p_what) {
 		// Use internal process when emitting and one_shot is on so that when
 		// the shot ends the editor can properly update.
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			const Vector3 velocity = (get_global_position() - previous_position) / get_process_delta_time();
-
-			if (velocity != previous_velocity) {
-				RS::get_singleton()->particles_set_emitter_velocity(particles, velocity);
-				previous_velocity = velocity;
-			}
-			previous_position = get_global_position();
-
 			if (one_shot) {
 				time += get_process_delta_time();
 				if (time > emission_time) {
@@ -489,7 +477,6 @@ void GPUParticles3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			set_process_internal(false);
 			if (sub_emitter != NodePath()) {
 				_attach_sub_emitter();
 			}
@@ -498,8 +485,6 @@ void GPUParticles3D::_notification(int p_what) {
 			} else {
 				RS::get_singleton()->particles_set_speed_scale(particles, 0);
 			}
-			previous_position = get_global_transform().origin;
-			set_process_internal(true);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -656,15 +641,6 @@ void GPUParticles3D::convert_from_particles(Node *p_particles) {
 #undef CONVERT_PARAM
 }
 
-void GPUParticles3D::set_amount_ratio(float p_ratio) {
-	amount_ratio = p_ratio;
-	RS::get_singleton()->particles_set_amount_ratio(particles, p_ratio);
-}
-
-float GPUParticles3D::get_amount_ratio() const {
-	return amount_ratio;
-}
-
 void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &GPUParticles3D::set_emitting);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &GPUParticles3D::set_amount);
@@ -681,7 +657,6 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_material", "material"), &GPUParticles3D::set_process_material);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &GPUParticles3D::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles3D::set_collision_base_size);
-	ClassDB::bind_method(D_METHOD("set_interp_to_end", "interp"), &GPUParticles3D::set_interp_to_end);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles3D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles3D::get_amount);
@@ -698,7 +673,6 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_process_material"), &GPUParticles3D::get_process_material);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &GPUParticles3D::get_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_collision_base_size"), &GPUParticles3D::get_collision_base_size);
-	ClassDB::bind_method(D_METHOD("get_interp_to_end"), &GPUParticles3D::get_interp_to_end);
 
 	ClassDB::bind_method(D_METHOD("set_draw_order", "order"), &GPUParticles3D::set_draw_order);
 
@@ -732,19 +706,14 @@ void GPUParticles3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &GPUParticles3D::convert_from_particles);
 
-	ClassDB::bind_method(D_METHOD("set_amount_ratio", "ratio"), &GPUParticles3D::set_amount_ratio);
-	ClassDB::bind_method(D_METHOD("get_amount_ratio"), &GPUParticles3D::get_amount_ratio);
-
 	ADD_SIGNAL(MethodInfo("finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "amount_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001"), "set_amount_ratio", "get_amount_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles3D"), "set_sub_emitter", "get_sub_emitter");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,exp,suffix:s"), "set_lifetime", "get_lifetime");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "interp_to_end", PROPERTY_HINT_RANGE, "0.00,1.0,0.01"), "set_interp_to_end", "get_interp_to_end");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,600.0,0.01,exp,suffix:s"), "set_pre_process_time", "get_pre_process_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_speed_scale", "get_speed_scale");
@@ -764,7 +733,7 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled"), "set_trail_enabled", "is_trail_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_lifetime", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater,suffix:s"), "set_trail_lifetime", "get_trail_lifetime");
 	ADD_GROUP("Process Material", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticleProcessMaterial,ShaderMaterial"), "set_process_material", "get_process_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticleProcessMaterial"), "set_process_material", "get_process_material");
 	ADD_GROUP("Draw Passes", "draw_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_passes", PROPERTY_HINT_RANGE, "0," + itos(MAX_DRAW_PASSES) + ",1"), "set_draw_passes", "get_draw_passes");
 	for (int i = 0; i < MAX_DRAW_PASSES; i++) {
@@ -798,7 +767,6 @@ GPUParticles3D::GPUParticles3D() {
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
 	set_one_shot(false);
-	set_amount_ratio(1.0);
 	set_amount(8);
 	set_lifetime(1);
 	set_fixed_fps(30);

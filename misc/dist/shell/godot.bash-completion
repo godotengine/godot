@@ -54,7 +54,6 @@ _complete_godot_options() {
 --text-driver
 --tablet-driver
 --headless
---log-file
 --write-movie
 --fullscreen
 --maximized

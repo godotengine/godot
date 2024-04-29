@@ -310,7 +310,7 @@ extern int ZEXPORT unzGetCurrentFileInfo(unzFile file,
   Get Info about the current file
   if pfile_info!=NULL, the *pfile_info structure will contain some info about
         the current file
-  if szFileName!=NULL, the filename string will be copied in szFileName
+  if szFileName!=NULL, the filemane string will be copied in szFileName
             (fileNameBufferSize is the size of the buffer)
   if extraField!=NULL, the extra field information will be copied in extraField
             (extraFieldBufferSize is the size of the buffer).

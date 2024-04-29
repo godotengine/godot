@@ -131,7 +131,6 @@ struct InstanceRecord
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
-		  hb_barrier () &&
 		  c->check_array (coordinatesZ.arrayZ, axis_count));
   }
 
@@ -278,10 +277,8 @@ struct fvar
   {
     TRACE_SANITIZE (this);
     return_trace (version.sanitize (c) &&
-		  hb_barrier () &&
 		  likely (version.major == 1) &&
 		  c->check_struct (this) &&
-		  hb_barrier () &&
 		  axisSize == 20 && /* Assumed in our code. */
 		  instanceSize >= axisCount * 4 + 4 &&
 		  get_axes ().sanitize (c) &&

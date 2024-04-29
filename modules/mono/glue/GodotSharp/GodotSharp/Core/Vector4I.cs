@@ -1,9 +1,5 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.InteropServices;
-
-#nullable enable
 
 namespace Godot
 {
@@ -150,29 +146,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the squared distance between this vector and <paramref name="to"/>.
-        /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
-        /// you need to compare vectors or need the squared distance for some formula.
-        /// </summary>
-        /// <param name="to">The other vector to use.</param>
-        /// <returns>The squared distance between the two vectors.</returns>
-        public readonly int DistanceSquaredTo(Vector4I to)
-        {
-            return (to - this).LengthSquared();
-        }
-
-        /// <summary>
-        /// Returns the distance between this vector and <paramref name="to"/>.
-        /// </summary>
-        /// <seealso cref="DistanceSquaredTo(Vector4I)"/>
-        /// <param name="to">The other vector to use.</param>
-        /// <returns>The distance between the two vectors.</returns>
-        public readonly real_t DistanceTo(Vector4I to)
-        {
-            return (to - this).Length();
-        }
-
-        /// <summary>
         /// Returns the length (magnitude) of this vector.
         /// </summary>
         /// <seealso cref="LengthSquared"/>
@@ -255,8 +228,8 @@ namespace Godot
         }
 
         // Constants
-        private static readonly Vector4I _minValue = new Vector4I(int.MinValue, int.MinValue, int.MinValue, int.MinValue);
-        private static readonly Vector4I _maxValue = new Vector4I(int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue);
+        private static readonly Vector4I _min = new Vector4I(int.MinValue, int.MinValue, int.MinValue, int.MinValue);
+        private static readonly Vector4I _max = new Vector4I(int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue);
 
         private static readonly Vector4I _zero = new Vector4I(0, 0, 0, 0);
         private static readonly Vector4I _one = new Vector4I(1, 1, 1, 1);
@@ -265,12 +238,12 @@ namespace Godot
         /// Min vector, a vector with all components equal to <see cref="int.MinValue"/>. Can be used as a negative integer equivalent of <see cref="Vector4.Inf"/>.
         /// </summary>
         /// <value>Equivalent to <c>new Vector4I(int.MinValue, int.MinValue, int.MinValue, int.MinValue)</c>.</value>
-        public static Vector4I MinValue { get { return _minValue; } }
+        public static Vector4I Min { get { return _min; } }
         /// <summary>
         /// Max vector, a vector with all components equal to <see cref="int.MaxValue"/>. Can be used as an integer equivalent of <see cref="Vector4.Inf"/>.
         /// </summary>
         /// <value>Equivalent to <c>new Vector4I(int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue)</c>.</value>
-        public static Vector4I MaxValue { get { return _maxValue; } }
+        public static Vector4I Max { get { return _max; } }
 
         /// <summary>
         /// Zero vector, a vector with all components set to <c>0</c>.
@@ -638,7 +611,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override readonly bool Equals([NotNullWhen(true)] object? obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Vector4I other && Equals(other);
         }
@@ -659,22 +632,25 @@ namespace Godot
         /// <returns>A hash code for this vector.</returns>
         public override readonly int GetHashCode()
         {
-            return HashCode.Combine(X, Y, Z, W);
+            return Y.GetHashCode() ^ X.GetHashCode() ^ Z.GetHashCode() ^ W.GetHashCode();
         }
 
         /// <summary>
         /// Converts this <see cref="Vector4I"/> to a string.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public override readonly string ToString() => ToString(null);
+        public override readonly string ToString()
+        {
+            return $"({X}, {Y}, {Z}, {W})";
+        }
 
         /// <summary>
         /// Converts this <see cref="Vector4I"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string format)
         {
-            return $"({X.ToString(format, CultureInfo.InvariantCulture)}, {Y.ToString(format, CultureInfo.InvariantCulture)}, {Z.ToString(format, CultureInfo.InvariantCulture)}, {W.ToString(format, CultureInfo.InvariantCulture)})";
+            return $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)}), {W.ToString(format)})";
         }
     }
 }

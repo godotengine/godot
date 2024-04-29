@@ -21,12 +21,12 @@ namespace embree
     struct Intersect1Epilog1
     {
       RayHit& ray;
-      RayQueryContext* context;
+      IntersectContext* context;
       const unsigned int geomID;
       const unsigned int primID;
 
       __forceinline Intersect1Epilog1(RayHit& ray,
-                                      RayQueryContext* context,
+                                      IntersectContext* context,
                                       const unsigned int geomID,
                                       const unsigned int primID)
         : ray(ray), context(context), geomID(geomID), primID(primID) {}
@@ -64,9 +64,6 @@ namespace embree
         ray.primID = primID;
         ray.geomID = geomID;
         instance_id_stack::copy_UU(context->user->instID, ray.instID);
-#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
-        instance_id_stack::copy_UU(context->user->instPrimID, ray.instPrimID);
-#endif
         return true;
       }
     };
@@ -75,12 +72,12 @@ namespace embree
     struct Occluded1Epilog1
     {
       Ray& ray;
-      RayQueryContext* context;
+      IntersectContext* context;
       const unsigned int geomID;
       const unsigned int primID;
 
       __forceinline Occluded1Epilog1(Ray& ray,
-                                     RayQueryContext* context,
+                                     IntersectContext* context,
                                      const unsigned int geomID,
                                      const unsigned int primID)
         : ray(ray), context(context), geomID(geomID), primID(primID) {}
@@ -120,12 +117,12 @@ namespace embree
     {
       RayHitK<K>& ray;
       size_t k;
-      RayQueryContext* context;
+      IntersectContext* context;
       const unsigned int geomID;
       const unsigned int primID;
 
       __forceinline Intersect1KEpilog1(RayHitK<K>& ray, size_t k,
-                                       RayQueryContext* context,
+                                       IntersectContext* context,
                                        const unsigned int geomID,
                                        const unsigned int primID)
         : ray(ray), k(k), context(context), geomID(geomID), primID(primID) {}
@@ -166,9 +163,6 @@ namespace embree
         ray.primID[k] = primID;
         ray.geomID[k] = geomID;
         instance_id_stack::copy_UV<K>(context->user->instID, ray.instID, k);
-#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
-        instance_id_stack::copy_UV<K>(context->user->instPrimID, ray.instPrimID, k);
-#endif
         return true;
       }
     };
@@ -178,12 +172,12 @@ namespace embree
     {
       RayK<K>& ray;
       size_t k;
-      RayQueryContext* context;
+      IntersectContext* context;
       const unsigned int geomID;
       const unsigned int primID;
 
       __forceinline Occluded1KEpilog1(RayK<K>& ray, size_t k,
-                                      RayQueryContext* context,
+                                      IntersectContext* context,
                                       const unsigned int geomID,
                                       const unsigned int primID)
         : ray(ray), k(k), context(context), geomID(geomID), primID(primID) {}
@@ -221,12 +215,12 @@ namespace embree
     struct Intersect1EpilogM
     {
       RayHit& ray;
-      RayQueryContext* context;
+      IntersectContext* context;
       const vuint<M>& geomIDs;
       const vuint<M>& primIDs;
 
       __forceinline Intersect1EpilogM(RayHit& ray,
-                                      RayQueryContext* context,
+                                      IntersectContext* context,
                                       const vuint<M>& geomIDs,
                                       const vuint<M>& primIDs)
         : ray(ray), context(context), geomIDs(geomIDs), primIDs(primIDs) {}
@@ -293,9 +287,6 @@ namespace embree
         ray.primID = primIDs[i];
         ray.geomID = geomID;
         instance_id_stack::copy_UU(context->user->instID, ray.instID);
-#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
-        instance_id_stack::copy_UU(context->user->instPrimID, ray.instPrimID);
-#endif
         return true;
 
       }
@@ -305,12 +296,12 @@ namespace embree
     struct Occluded1EpilogM
     {
       Ray& ray;
-      RayQueryContext* context;
+      IntersectContext* context;
       const vuint<M>& geomIDs;
       const vuint<M>& primIDs;
 
       __forceinline Occluded1EpilogM(Ray& ray,
-                                     RayQueryContext* context,
+                                     IntersectContext* context,
                                      const vuint<M>& geomIDs,
                                      const vuint<M>& primIDs)
         : ray(ray), context(context), geomIDs(geomIDs), primIDs(primIDs) {}
@@ -372,12 +363,12 @@ namespace embree
     struct Intersect1EpilogMU
     {
       RayHit& ray;
-      RayQueryContext* context;
+      IntersectContext* context;
       const unsigned int geomID;
       const unsigned int primID;
 
       __forceinline Intersect1EpilogMU(RayHit& ray,
-                                       RayQueryContext* context,
+                                       IntersectContext* context,
                                        const unsigned int geomID,
                                        const unsigned int primID)
         : ray(ray), context(context), geomID(geomID), primID(primID) {}
@@ -433,9 +424,6 @@ namespace embree
         ray.primID = primID;
         ray.geomID = geomID;
         instance_id_stack::copy_UU(context->user->instID, ray.instID);
-#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
-        instance_id_stack::copy_UU(context->user->instPrimID, ray.instPrimID);
-#endif
         return true;
       }
     };
@@ -444,12 +432,12 @@ namespace embree
     struct Occluded1EpilogMU
     {
       Ray& ray;
-      RayQueryContext* context;
+      IntersectContext* context;
       const unsigned int geomID;
       const unsigned int primID;
 
       __forceinline Occluded1EpilogMU(Ray& ray,
-                                      RayQueryContext* context,
+                                      IntersectContext* context,
                                       const unsigned int geomID,
                                       const unsigned int primID)
         : ray(ray), context(context), geomID(geomID), primID(primID) {}
@@ -489,13 +477,13 @@ namespace embree
     struct IntersectKEpilogM
     {
       RayHitK<K>& ray;
-      RayQueryContext* context;
+      IntersectContext* context;
       const vuint<M>& geomIDs;
       const vuint<M>& primIDs;
       const size_t i;
 
       __forceinline IntersectKEpilogM(RayHitK<K>& ray,
-                                      RayQueryContext* context,
+                                      IntersectContext* context,
                                      const vuint<M>& geomIDs,
                                      const vuint<M>& primIDs,
                                      size_t i)
@@ -546,9 +534,6 @@ namespace embree
         vuint<K>::store(valid,&ray.primID,primID);
         vuint<K>::store(valid,&ray.geomID,geomID);
         instance_id_stack::copy_UV<K>(context->user->instID, ray.instID, valid);
-#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
-        instance_id_stack::copy_UV<K>(context->user->instPrimID, ray.instPrimID, valid);
-#endif
         return valid;
       }
     };
@@ -558,14 +543,14 @@ namespace embree
     {
       vbool<K>& valid0;
       RayK<K>& ray;
-      RayQueryContext* context;
+      IntersectContext* context;
       const vuint<M>& geomIDs;
       const vuint<M>& primIDs;
       const size_t i;
 
       __forceinline OccludedKEpilogM(vbool<K>& valid0,
                                      RayK<K>& ray,
-                                     RayQueryContext* context,
+                                     IntersectContext* context,
                                      const vuint<M>& geomIDs,
                                      const vuint<M>& primIDs,
                                      size_t i)
@@ -613,12 +598,12 @@ namespace embree
     struct IntersectKEpilogMU
     {
       RayHitK<K>& ray;
-      RayQueryContext* context;
+      IntersectContext* context;
       const unsigned int geomID;
       const unsigned int primID;
 
       __forceinline IntersectKEpilogMU(RayHitK<K>& ray,
-                                       RayQueryContext* context,
+                                       IntersectContext* context,
                                        const unsigned int geomID,
                                        const unsigned int primID)
         : ray(ray), context(context), geomID(geomID), primID(primID) {}
@@ -664,9 +649,6 @@ namespace embree
         vuint<K>::store(valid,&ray.primID,primID);
         vuint<K>::store(valid,&ray.geomID,geomID);
         instance_id_stack::copy_UV<K>(context->user->instID, ray.instID, valid);
-#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
-        instance_id_stack::copy_UV<K>(context->user->instPrimID, ray.instPrimID, valid);
-#endif
         return valid;
       }
     };
@@ -676,13 +658,13 @@ namespace embree
     {
       vbool<K>& valid0;
       RayK<K>& ray;
-      RayQueryContext* context;
+      IntersectContext* context;
       const unsigned int geomID;
       const unsigned int primID;
 
       __forceinline OccludedKEpilogMU(vbool<K>& valid0,
                                       RayK<K>& ray,
-                                      RayQueryContext* context,
+                                      IntersectContext* context,
                                       const unsigned int geomID,
                                       const unsigned int primID)
         : valid0(valid0), ray(ray), context(context), geomID(geomID), primID(primID) {}
@@ -727,12 +709,12 @@ namespace embree
     {
       RayHitK<K>& ray;
       size_t k;
-      RayQueryContext* context;
+      IntersectContext* context;
       const vuint<M>& geomIDs;
       const vuint<M>& primIDs;
 
       __forceinline Intersect1KEpilogM(RayHitK<K>& ray, size_t k,
-                                       RayQueryContext* context,
+                                       IntersectContext* context,
                                        const vuint<M>& geomIDs,
                                        const vuint<M>& primIDs)
         : ray(ray), k(k), context(context), geomIDs(geomIDs), primIDs(primIDs) {}
@@ -801,9 +783,6 @@ namespace embree
         ray.primID[k] = primIDs[i];
         ray.geomID[k] = geomID;
         instance_id_stack::copy_UV<K>(context->user->instID, ray.instID, k);
-#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
-        instance_id_stack::copy_UV<K>(context->user->instPrimID, ray.instPrimID, k);
-#endif
         return true;
       }
     };
@@ -813,12 +792,12 @@ namespace embree
     {
       RayK<K>& ray;
       size_t k;
-      RayQueryContext* context;
+      IntersectContext* context;
       const vuint<M>& geomIDs;
       const vuint<M>& primIDs;
 
       __forceinline Occluded1KEpilogM(RayK<K>& ray, size_t k,
-                                      RayQueryContext* context,
+                                      IntersectContext* context,
                                       const vuint<M>& geomIDs,
                                       const vuint<M>& primIDs)
         : ray(ray), k(k), context(context), geomIDs(geomIDs), primIDs(primIDs) {}
@@ -881,12 +860,12 @@ namespace embree
     {
       RayHitK<K>& ray;
       size_t k;
-      RayQueryContext* context;
+      IntersectContext* context;
       const unsigned int geomID;
       const unsigned int primID;
 
       __forceinline Intersect1KEpilogMU(RayHitK<K>& ray, size_t k,
-                                        RayQueryContext* context,
+                                        IntersectContext* context,
                                         const unsigned int geomID,
                                         const unsigned int primID)
         : ray(ray), k(k), context(context), geomID(geomID), primID(primID) {}
@@ -944,9 +923,6 @@ namespace embree
         ray.primID[k] = primID;
         ray.geomID[k] = geomID;
         instance_id_stack::copy_UV<K>(context->user->instID, ray.instID, k);
-#if defined(RTC_GEOMETRY_INSTANCE_ARRAY)
-        instance_id_stack::copy_UV<K>(context->user->instPrimID, ray.instPrimID, k);
-#endif
         return true;
       }
     };
@@ -956,12 +932,12 @@ namespace embree
     {
       RayK<K>& ray;
       size_t k;
-      RayQueryContext* context;
+      IntersectContext* context;
       const unsigned int geomID;
       const unsigned int primID;
 
       __forceinline Occluded1KEpilogMU(RayK<K>& ray, size_t k,
-                                       RayQueryContext* context,
+                                       IntersectContext* context,
                                        const unsigned int geomID,
                                        const unsigned int primID)
         : ray(ray), k(k), context(context), geomID(geomID), primID(primID) {}

@@ -2,7 +2,19 @@
  *  FIPS-46-3 compliant Triple-DES implementation
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may
+ *  not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 /*
  *  DES, on which TDES is based, was originally designed by Horst Feistel
@@ -630,6 +642,7 @@ int mbedtls_des_crypt_cbc(mbedtls_des_context *ctx,
                           const unsigned char *input,
                           unsigned char *output)
 {
+    int i;
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char temp[8];
 
@@ -639,7 +652,9 @@ int mbedtls_des_crypt_cbc(mbedtls_des_context *ctx,
 
     if (mode == MBEDTLS_DES_ENCRYPT) {
         while (length > 0) {
-            mbedtls_xor(output, input, iv, 8);
+            for (i = 0; i < 8; i++) {
+                output[i] = (unsigned char) (input[i] ^ iv[i]);
+            }
 
             ret = mbedtls_des_crypt_ecb(ctx, output, output);
             if (ret != 0) {
@@ -659,7 +674,9 @@ int mbedtls_des_crypt_cbc(mbedtls_des_context *ctx,
                 goto exit;
             }
 
-            mbedtls_xor(output, output, iv, 8);
+            for (i = 0; i < 8; i++) {
+                output[i] = (unsigned char) (output[i] ^ iv[i]);
+            }
 
             memcpy(iv, temp, 8);
 
@@ -728,6 +745,7 @@ int mbedtls_des3_crypt_cbc(mbedtls_des3_context *ctx,
                            const unsigned char *input,
                            unsigned char *output)
 {
+    int i;
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     unsigned char temp[8];
 
@@ -737,7 +755,9 @@ int mbedtls_des3_crypt_cbc(mbedtls_des3_context *ctx,
 
     if (mode == MBEDTLS_DES_ENCRYPT) {
         while (length > 0) {
-            mbedtls_xor(output, input, iv, 8);
+            for (i = 0; i < 8; i++) {
+                output[i] = (unsigned char) (input[i] ^ iv[i]);
+            }
 
             ret = mbedtls_des3_crypt_ecb(ctx, output, output);
             if (ret != 0) {
@@ -757,7 +777,9 @@ int mbedtls_des3_crypt_cbc(mbedtls_des3_context *ctx,
                 goto exit;
             }
 
-            mbedtls_xor(output, output, iv, 8);
+            for (i = 0; i < 8; i++) {
+                output[i] = (unsigned char) (output[i] ^ iv[i]);
+            }
 
             memcpy(iv, temp, 8);
 

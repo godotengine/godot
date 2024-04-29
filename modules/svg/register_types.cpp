@@ -34,12 +34,6 @@
 
 #include <thorvg.h>
 
-#ifdef THREADS_ENABLED
-#define TVG_THREADS 1
-#else
-#define TVG_THREADS 0
-#endif
-
 static Ref<ImageLoaderSVG> image_loader_svg;
 
 void initialize_svg_module(ModuleInitializationLevel p_level) {
@@ -48,8 +42,7 @@ void initialize_svg_module(ModuleInitializationLevel p_level) {
 	}
 
 	tvg::CanvasEngine tvgEngine = tvg::CanvasEngine::Sw;
-
-	if (tvg::Initializer::init(tvgEngine, TVG_THREADS) != tvg::Result::Success) {
+	if (tvg::Initializer::init(tvgEngine, 1) != tvg::Result::Success) {
 		return;
 	}
 

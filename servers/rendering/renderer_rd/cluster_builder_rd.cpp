@@ -62,17 +62,15 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 			defines = "\n#define USE_ATTACHMENT\n";
 		}
 
-		RD::PipelineRasterizationState rasterization_state;
-		rasterization_state.enable_depth_clamp = true;
 		Vector<String> versions;
 		versions.push_back("");
 		cluster_render.cluster_render_shader.initialize(versions, defines);
 		cluster_render.shader_version = cluster_render.cluster_render_shader.version_create();
 		cluster_render.shader = cluster_render.cluster_render_shader.version_get_shader(cluster_render.shader_version, 0);
-		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
 		RD::PipelineMultisampleState ms;
 		ms.sample_count = RD::TEXTURE_SAMPLES_4;
-		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, ms, RD::PipelineDepthStencilState(), blend_state, 0);
+		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), ms, RD::PipelineDepthStencilState(), blend_state, 0);
 	}
 	{
 		Vector<String> versions;
@@ -268,8 +266,8 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 
 	screen_size = p_screen_size;
 
-	cluster_screen_size.width = Math::division_round_up((uint32_t)p_screen_size.width, cluster_size);
-	cluster_screen_size.height = Math::division_round_up((uint32_t)p_screen_size.height, cluster_size);
+	cluster_screen_size.width = (p_screen_size.width - 1) / cluster_size + 1;
+	cluster_screen_size.height = (p_screen_size.height - 1) / cluster_size + 1;
 
 	max_elements_by_type = p_max_elements;
 	if (max_elements_by_type % 32) { // Needs to be aligned to 32.
@@ -422,11 +420,11 @@ void ClusterBuilderRD::bake_cluster() {
 	RD::get_singleton()->draw_command_begin_label("Bake Light Cluster");
 
 	// Clear cluster buffer.
-	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size);
+	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 
 	if (render_element_count > 0) {
 		// Clear render buffer.
-		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size);
+		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size, RD::BARRIER_MASK_RASTER);
 
 		{ // Fill state uniform.
 
@@ -441,18 +439,18 @@ void ClusterBuilderRD::bake_cluster() {
 			state.cluster_depth_offset = (render_element_max / 32);
 			state.cluster_data_size = state.cluster_depth_offset + render_element_max;
 
-			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state);
+			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 		}
 
 		// Update instances.
 
-		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements);
+		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 
 		RENDER_TIMESTAMP("Render 3D Cluster Elements");
 
 		// Render elements.
 		{
-			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD);
+			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
 			ClusterBuilderSharedDataRD::ClusterRender::PushConstant push_constant = {};
 
 			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shared->cluster_render.shader_pipelines[use_msaa ? ClusterBuilderSharedDataRD::ClusterRender::PIPELINE_MSAA : ClusterBuilderSharedDataRD::ClusterRender::PIPELINE_NORMAL]);
@@ -490,7 +488,7 @@ void ClusterBuilderRD::bake_cluster() {
 				RD::get_singleton()->draw_list_draw(draw_list, true, instances);
 				i += instances;
 			}
-			RD::get_singleton()->draw_list_end();
+			RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_COMPUTE);
 		}
 		// Store elements.
 		RENDER_TIMESTAMP("Pack 3D Cluster Elements");
@@ -505,8 +503,7 @@ void ClusterBuilderRD::bake_cluster() {
 			push_constant.max_render_element_count_div_32 = render_element_max / 32;
 			push_constant.cluster_screen_size[0] = cluster_screen_size.x;
 			push_constant.cluster_screen_size[1] = cluster_screen_size.y;
-
-			push_constant.render_element_count_div_32 = Math::division_round_up(render_element_count, 32U);
+			push_constant.render_element_count_div_32 = render_element_count > 0 ? (render_element_count - 1) / 32 + 1 : 0;
 			push_constant.max_cluster_element_count_div_32 = max_elements_by_type / 32;
 			push_constant.pad1 = 0;
 			push_constant.pad2 = 0;
@@ -515,8 +512,10 @@ void ClusterBuilderRD::bake_cluster() {
 
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cluster_screen_size.x, cluster_screen_size.y, 1);
 
-			RD::get_singleton()->compute_list_end();
+			RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 		}
+	} else {
+		RD::get_singleton()->barrier(RD::BARRIER_MASK_TRANSFER, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 	}
 	RENDER_TIMESTAMP("< Bake 3D Cluster");
 	RD::get_singleton()->draw_command_end_label();

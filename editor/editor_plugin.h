@@ -67,40 +67,6 @@ class EditorPlugin : public Node {
 	void _editor_project_settings_changed();
 #endif
 
-public:
-	enum CustomControlContainer {
-		CONTAINER_TOOLBAR,
-		CONTAINER_SPATIAL_EDITOR_MENU,
-		CONTAINER_SPATIAL_EDITOR_SIDE_LEFT,
-		CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT,
-		CONTAINER_SPATIAL_EDITOR_BOTTOM,
-		CONTAINER_CANVAS_EDITOR_MENU,
-		CONTAINER_CANVAS_EDITOR_SIDE_LEFT,
-		CONTAINER_CANVAS_EDITOR_SIDE_RIGHT,
-		CONTAINER_CANVAS_EDITOR_BOTTOM,
-		CONTAINER_INSPECTOR_BOTTOM,
-		CONTAINER_PROJECT_SETTING_TAB_LEFT,
-		CONTAINER_PROJECT_SETTING_TAB_RIGHT,
-	};
-
-	enum DockSlot {
-		DOCK_SLOT_LEFT_UL,
-		DOCK_SLOT_LEFT_BL,
-		DOCK_SLOT_LEFT_UR,
-		DOCK_SLOT_LEFT_BR,
-		DOCK_SLOT_RIGHT_UL,
-		DOCK_SLOT_RIGHT_BL,
-		DOCK_SLOT_RIGHT_UR,
-		DOCK_SLOT_RIGHT_BR,
-		DOCK_SLOT_MAX
-	};
-
-	enum AfterGUIInput {
-		AFTER_GUI_INPUT_PASS,
-		AFTER_GUI_INPUT_STOP,
-		AFTER_GUI_INPUT_CUSTOM,
-	};
-
 protected:
 	void _notification(int p_what);
 
@@ -135,19 +101,46 @@ protected:
 	GDVIRTUAL0(_enable_plugin)
 	GDVIRTUAL0(_disable_plugin)
 
-#ifndef DISABLE_DEPRECATED
-	Button *_add_control_to_bottom_panel_compat_88081(Control *p_control, const String &p_title);
-	void _add_control_to_dock_compat_88081(DockSlot p_slot, Control *p_control);
-	static void _bind_compatibility_methods();
-#endif
-
 public:
+	enum CustomControlContainer {
+		CONTAINER_TOOLBAR,
+		CONTAINER_SPATIAL_EDITOR_MENU,
+		CONTAINER_SPATIAL_EDITOR_SIDE_LEFT,
+		CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT,
+		CONTAINER_SPATIAL_EDITOR_BOTTOM,
+		CONTAINER_CANVAS_EDITOR_MENU,
+		CONTAINER_CANVAS_EDITOR_SIDE_LEFT,
+		CONTAINER_CANVAS_EDITOR_SIDE_RIGHT,
+		CONTAINER_CANVAS_EDITOR_BOTTOM,
+		CONTAINER_INSPECTOR_BOTTOM,
+		CONTAINER_PROJECT_SETTING_TAB_LEFT,
+		CONTAINER_PROJECT_SETTING_TAB_RIGHT,
+	};
+
+	enum DockSlot {
+		DOCK_SLOT_LEFT_UL,
+		DOCK_SLOT_LEFT_BL,
+		DOCK_SLOT_LEFT_UR,
+		DOCK_SLOT_LEFT_BR,
+		DOCK_SLOT_RIGHT_UL,
+		DOCK_SLOT_RIGHT_BL,
+		DOCK_SLOT_RIGHT_UR,
+		DOCK_SLOT_RIGHT_BR,
+		DOCK_SLOT_MAX
+	};
+
+	enum AfterGUIInput {
+		AFTER_GUI_INPUT_PASS,
+		AFTER_GUI_INPUT_STOP,
+		AFTER_GUI_INPUT_CUSTOM
+	};
+
 	//TODO: send a resource for editing to the editor node?
 
 	void add_control_to_container(CustomControlContainer p_location, Control *p_control);
 	void remove_control_from_container(CustomControlContainer p_location, Control *p_control);
-	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut = nullptr);
-	void add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut = nullptr);
+	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title);
+	void add_control_to_dock(DockSlot p_slot, Control *p_control);
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
 
@@ -167,7 +160,6 @@ public:
 	void notify_scene_changed(const Node *scn_root);
 	void notify_scene_closed(const String &scene_filepath);
 	void notify_resource_saved(const Ref<Resource> &p_resource);
-	void notify_scene_saved(const String &p_scene_filepath);
 
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay);
@@ -186,7 +178,6 @@ public:
 	virtual void selected_notify() {} //notify that it was raised by the user, not the editor
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;
-	virtual bool can_auto_hide() const;
 	virtual Dictionary get_state() const; //save editor state so it can't be reloaded when reloading scene
 	virtual void set_state(const Dictionary &p_state); //restore editor state (likely was saved with the scene)
 	virtual void clear(); // clear any temporary data in the editor, reset it (likely new scene or load another scene)
@@ -264,7 +255,7 @@ class EditorPlugins {
 	static EditorPluginCreateFunc creation_funcs[MAX_CREATE_FUNCS];
 	static int creation_func_count;
 
-	template <typename T>
+	template <class T>
 	static EditorPlugin *creator() {
 		return memnew(T);
 	}
@@ -276,7 +267,7 @@ public:
 		return creation_funcs[p_idx]();
 	}
 
-	template <typename T>
+	template <class T>
 	static void add_by_type() {
 		add_create_func(creator<T>);
 	}

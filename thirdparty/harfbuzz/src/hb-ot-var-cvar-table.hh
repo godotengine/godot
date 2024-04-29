@@ -45,8 +45,7 @@ struct cvar
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
-		  hb_barrier () &&
-		  likely (version.major == 1) &&
+		  version.sanitize (c) && likely (version.major == 1) &&
 		  tupleVariationData.sanitize (c));
   }
 
@@ -55,14 +54,14 @@ struct cvar
 
   bool decompile_tuple_variations (unsigned axis_count,
                                    unsigned point_count,
-                                   hb_blob_t *blob,
                                    bool is_gvar,
                                    const hb_map_t *axes_old_index_tag_map,
                                    TupleVariationData::tuple_variations_t& tuple_variations /* OUT */) const
   {
     hb_vector_t<unsigned> shared_indices;
     TupleVariationData::tuple_iterator_t iterator;
-    hb_bytes_t var_data_bytes = blob->as_bytes ().sub_array (4);
+    unsigned var_data_length = tupleVariationData.get_size (axis_count);
+    hb_bytes_t var_data_bytes = hb_bytes_t (reinterpret_cast<const char*> (get_tuple_var_data ()), var_data_length);
     if (!TupleVariationData::get_tuple_iterator (var_data_bytes, axis_count, this,
                                                  shared_indices, &iterator))
       return false;
@@ -132,7 +131,6 @@ struct cvar
                   TupleVariationData::tuple_variations_t& tuple_variations) const
   {
     TRACE_SERIALIZE (this);
-    if (!tuple_variations) return_trace (false);
     if (unlikely (!c->embed (version))) return_trace (false);
 
     return_trace (tupleVariationData.serialize (c, false, tuple_variations));
@@ -144,6 +142,19 @@ struct cvar
     if (c->plan->all_axes_pinned)
       return_trace (false);
 
+    /* subset() for cvar is called by partial instancing only, we always pass
+     * through cvar table in other cases */
+    if (!c->plan->normalized_coords)
+    {
+      unsigned axis_count = c->plan->source->table.fvar->get_axis_count ();
+      unsigned total_size = min_size + tupleVariationData.get_size (axis_count);
+      char *out = c->serializer->allocate_size<char> (total_size);
+      if (unlikely (!out)) return_trace (false);
+
+      hb_memcpy (out, this, total_size);
+      return_trace (true);
+    }
+
     OT::TupleVariationData::tuple_variations_t tuple_variations;
     unsigned axis_count = c->plan->axes_old_index_tag_map.get_population ();
 
@@ -152,17 +163,13 @@ struct cvar
     unsigned point_count = hb_blob_get_length (cvt_blob) / FWORD::static_size;
     hb_blob_destroy (cvt_blob);
 
-    if (!decompile_tuple_variations (axis_count, point_count,
-                                     c->source_blob, false,
+    if (!decompile_tuple_variations (axis_count, point_count, false,
                                      &(c->plan->axes_old_index_tag_map),
                                      tuple_variations))
       return_trace (false);
 
-    if (!tuple_variations.instantiate (c->plan->axes_location, c->plan->axes_triple_distances))
-      return_trace (false);
-
-    if (!tuple_variations.compile_bytes (c->plan->axes_index_map, c->plan->axes_old_index_tag_map,
-                                         false /* do not use shared points */))
+    tuple_variations.instantiate (c->plan->axes_location, c->plan->axes_triple_distances);
+    if (!tuple_variations.compile_bytes (c->plan->axes_index_map, c->plan->axes_old_index_tag_map))
       return_trace (false);
 
     return_trace (serialize (c->serializer, tuple_variations));

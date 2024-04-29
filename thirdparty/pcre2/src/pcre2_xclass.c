@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2023 University of Cambridge
+          New API code Copyright (c) 2016-2022 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -133,7 +133,6 @@ while ((t = *data++) != XCL_END)
 #ifdef SUPPORT_UNICODE
   else  /* XCL_PROP & XCL_NOTPROP */
     {
-    int chartype;
     const ucd_record *prop = GET_UCD(c);
     BOOL isprop = t == XCL_PROP;
     BOOL ok;
@@ -145,9 +144,8 @@ while ((t = *data++) != XCL_END)
       break;
 
       case PT_LAMP:
-      chartype = prop->chartype;
-      if ((chartype == ucp_Lu || chartype == ucp_Ll ||
-           chartype == ucp_Lt) == isprop) return !negated;
+      if ((prop->chartype == ucp_Lu || prop->chartype == ucp_Ll ||
+           prop->chartype == ucp_Lt) == isprop) return !negated;
       break;
 
       case PT_GC:
@@ -170,9 +168,8 @@ while ((t = *data++) != XCL_END)
       break;
 
       case PT_ALNUM:
-      chartype = prop->chartype;
-      if ((PRIV(ucp_gentype)[chartype] == ucp_L ||
-           PRIV(ucp_gentype)[chartype] == ucp_N) == isprop)
+      if ((PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
+           PRIV(ucp_gentype)[prop->chartype] == ucp_N) == isprop)
         return !negated;
       break;
 
@@ -197,10 +194,9 @@ while ((t = *data++) != XCL_END)
       break;
 
       case PT_WORD:
-      chartype = prop->chartype;
-      if ((PRIV(ucp_gentype)[chartype] == ucp_L ||
-           PRIV(ucp_gentype)[chartype] == ucp_N ||
-           chartype == ucp_Mn || chartype == ucp_Pc) == isprop)
+      if ((PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
+           PRIV(ucp_gentype)[prop->chartype] == ucp_N || c == CHAR_UNDERSCORE)
+             == isprop)
         return !negated;
       break;
 
@@ -242,10 +238,9 @@ while ((t = *data++) != XCL_END)
       */
 
       case PT_PXGRAPH:
-      chartype = prop->chartype;
-      if ((PRIV(ucp_gentype)[chartype] != ucp_Z &&
-            (PRIV(ucp_gentype)[chartype] != ucp_C ||
-              (chartype == ucp_Cf &&
+      if ((PRIV(ucp_gentype)[prop->chartype] != ucp_Z &&
+            (PRIV(ucp_gentype)[prop->chartype] != ucp_C ||
+              (prop->chartype == ucp_Cf &&
                 c != 0x061c && c != 0x180e && (c < 0x2066 || c > 0x2069))
          )) == isprop)
         return !negated;
@@ -255,11 +250,10 @@ while ((t = *data++) != XCL_END)
       not Zl and not Zp, and U+180E. */
 
       case PT_PXPRINT:
-      chartype = prop->chartype;
-      if ((chartype != ucp_Zl &&
-           chartype != ucp_Zp &&
-            (PRIV(ucp_gentype)[chartype] != ucp_C ||
-              (chartype == ucp_Cf &&
+      if ((prop->chartype != ucp_Zl &&
+           prop->chartype != ucp_Zp &&
+            (PRIV(ucp_gentype)[prop->chartype] != ucp_C ||
+              (prop->chartype == ucp_Cf &&
                 c != 0x061c && (c < 0x2066 || c > 0x2069))
          )) == isprop)
         return !negated;
@@ -270,21 +264,8 @@ while ((t = *data++) != XCL_END)
       compatibility (these are $+<=>^`|~). */
 
       case PT_PXPUNCT:
-      chartype = prop->chartype;
-      if ((PRIV(ucp_gentype)[chartype] == ucp_P ||
-            (c < 128 && PRIV(ucp_gentype)[chartype] == ucp_S)) == isprop)
-        return !negated;
-      break;
-
-      /* Perl has two sets of hex digits */
-
-      case PT_PXXDIGIT:
-      if (((c >= CHAR_0 && c <= CHAR_9) ||
-           (c >= CHAR_A && c <= CHAR_F) ||
-           (c >= CHAR_a && c <= CHAR_f) ||
-           (c >= 0xff10 && c <= 0xff19) ||  /* Fullwidth digits */
-           (c >= 0xff21 && c <= 0xff26) ||  /* Fullwidth letters */
-           (c >= 0xff41 && c <= 0xff46)) == isprop)
+      if ((PRIV(ucp_gentype)[prop->chartype] == ucp_P ||
+            (c < 128 && PRIV(ucp_gentype)[prop->chartype] == ucp_S)) == isprop)
         return !negated;
       break;
 

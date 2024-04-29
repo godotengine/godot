@@ -32,7 +32,7 @@
 
 #include "editor/editor_settings.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/physics/vehicle_body_3d.h"
+#include "scene/3d/vehicle_body_3d.h"
 
 VehicleWheel3DGizmoPlugin::VehicleWheel3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");

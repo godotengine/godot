@@ -37,6 +37,8 @@
 // propagate the 'noContraction' qualifier.
 //
 
+#ifndef GLSLANG_WEB
+
 #include "propagateNoContraction.h"
 
 #include <cstdlib>
@@ -863,4 +865,6 @@ void PropagateNoContraction(const glslang::TIntermediate& intermediate)
         precise_object_accesschains.erase(precise_object_accesschain);
     }
 }
-}
+};
+
+#endif // GLSLANG_WEB

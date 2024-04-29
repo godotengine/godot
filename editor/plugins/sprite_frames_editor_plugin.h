@@ -49,15 +49,12 @@
 class OptionButton;
 class EditorFileDialog;
 
-class ClipboardSpriteFrames : public Resource {
-	GDCLASS(ClipboardSpriteFrames, Resource);
+class EditorSpriteFramesFrame : public Resource {
+	GDCLASS(EditorSpriteFramesFrame, Resource);
 
 public:
-	struct Frame {
-		Ref<Texture2D> texture;
-		float duration;
-	};
-	Vector<Frame> frames;
+	Ref<Texture2D> texture;
+	float duration;
 };
 
 class SpriteFramesEditor : public HSplitContainer {
@@ -118,7 +115,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	SpinBox *frame_duration = nullptr;
 	ItemList *frame_list = nullptr;
 	bool loading_scene;
-	Vector<int> selection;
+	int sel;
 
 	Button *add_anim = nullptr;
 	Button *delete_anim = nullptr;
@@ -167,8 +164,6 @@ class SpriteFramesEditor : public HSplitContainer {
 	bool frames_need_sort = false;
 	int last_frame_selected = 0;
 
-	Size2i previous_texture_size;
-
 	float scale_ratio;
 	int thumbnail_default_size;
 	float thumbnail_zoom;
@@ -187,9 +182,6 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _file_load_request(const Vector<String> &p_path, int p_at_pos = -1);
 	void _copy_pressed();
 	void _paste_pressed();
-	void _paste_frame_array(const Ref<ClipboardSpriteFrames> &p_clipboard_frames);
-	void _paste_texture(const Ref<Texture2D> &p_texture);
-
 	void _empty_pressed();
 	void _empty2_pressed();
 	void _delete_pressed();
@@ -197,7 +189,6 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _down_pressed();
 	void _frame_duration_changed(double p_value);
 	void _update_library(bool p_skip_selector = false);
-	void _update_library_impl();
 
 	void _update_stop_icon();
 	void _play_pressed();
@@ -217,14 +208,11 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_speed_changed(double p_value);
 
 	void _frame_list_gui_input(const Ref<InputEvent> &p_event);
-	void _frame_list_item_selected(int p_index, bool p_selected);
+	void _frame_list_item_selected(int p_index);
 
 	void _zoom_in();
 	void _zoom_out();
 	void _zoom_reset();
-
-	bool animations_dirty = false;
-	bool pending_update = false;
 
 	bool updating;
 	bool updating_split_settings = false; // Skip SpinBox/Range callback when setting value by code.
@@ -253,6 +241,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _update_show_settings();
 
 	void _edit();
+	void _regist_scene_undo(EditorUndoRedoManager *undo_redo);
 	void _fetch_sprite_node();
 	void _remove_sprite_node();
 
@@ -269,8 +258,6 @@ protected:
 
 public:
 	void edit(Ref<SpriteFrames> p_frames);
-	bool is_editing() const;
-
 	SpriteFramesEditor();
 };
 

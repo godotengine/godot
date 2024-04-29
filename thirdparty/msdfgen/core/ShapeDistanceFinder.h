@@ -2,7 +2,7 @@
 #pragma once
 
 #include <vector>
-#include "Vector2.hpp"
+#include "Vector2.h"
 #include "edge-selectors.h"
 #include "contour-combiners.h"
 

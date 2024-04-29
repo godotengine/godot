@@ -71,7 +71,7 @@ class EditorExportPlugin : public RefCounted {
 		skipped = false;
 	}
 
-	_FORCE_INLINE_ void _export_end_clear() {
+	_FORCE_INLINE_ void _export_end() {
 		ios_frameworks.clear();
 		ios_embedded_frameworks.clear();
 		ios_bundle_files.clear();
@@ -108,7 +108,6 @@ protected:
 
 	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features);
 	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags);
-	virtual void _export_end();
 
 	static void _bind_methods();
 
@@ -128,7 +127,6 @@ protected:
 
 	GDVIRTUAL2RC(PackedStringArray, _get_export_features, const Ref<EditorExportPlatform> &, bool);
 	GDVIRTUAL1RC(TypedArray<Dictionary>, _get_export_options, const Ref<EditorExportPlatform> &);
-	GDVIRTUAL1RC(Dictionary, _get_export_options_overrides, const Ref<EditorExportPlatform> &);
 	GDVIRTUAL1RC(bool, _should_update_export_options, const Ref<EditorExportPlatform> &);
 	GDVIRTUAL2RC(String, _get_export_option_warning, const Ref<EditorExportPlatform> &, String);
 
@@ -156,7 +154,6 @@ protected:
 
 	virtual PackedStringArray _get_export_features(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual void _get_export_options(const Ref<EditorExportPlatform> &p_export_platform, List<EditorExportPlatform::ExportOption> *r_options) const;
-	virtual Dictionary _get_export_options_overrides(const Ref<EditorExportPlatform> &p_export_platform) const;
 	virtual bool _should_update_export_options(const Ref<EditorExportPlatform> &p_export_platform) const;
 	virtual String _get_export_option_warning(const Ref<EditorExportPlatform> &p_export_platform, const String &p_option_name) const;
 

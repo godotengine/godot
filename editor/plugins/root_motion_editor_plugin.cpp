@@ -29,11 +29,9 @@
 /**************************************************************************/
 
 #include "root_motion_editor_plugin.h"
-
 #include "editor/editor_node.h"
-#include "editor/themes/editor_scale.h"
-#include "scene/3d/skeleton_3d.h"
-#include "scene/animation/animation_mixer.h"
+#include "scene/animation/animation_player.h"
+#include "scene/animation/animation_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
@@ -52,26 +50,31 @@ void EditorPropertyRootMotion::_confirmed() {
 }
 
 void EditorPropertyRootMotion::_node_assign() {
-	AnimationMixer *mixer = Object::cast_to<AnimationMixer>(get_edited_object());
-	if (!mixer) {
-		EditorNode::get_singleton()->show_warning(TTR("Path to AnimationMixer is invalid"));
+	AnimationTree *atree = Object::cast_to<AnimationTree>(get_edited_object());
+	if (!atree->has_node(atree->get_animation_player())) {
+		EditorNode::get_singleton()->show_warning(TTR("AnimationTree has no path set to an AnimationPlayer"));
+		return;
+	}
+	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(atree->get_node(atree->get_animation_player()));
+	if (!player) {
+		EditorNode::get_singleton()->show_warning(TTR("Path to AnimationPlayer is invalid"));
 		return;
 	}
 
-	Node *base = mixer->get_node(mixer->get_root_node());
+	Node *base = player->get_node(player->get_root());
 
 	if (!base) {
-		EditorNode::get_singleton()->show_warning(TTR("AnimationMixer has no valid root node path, so unable to retrieve track names."));
+		EditorNode::get_singleton()->show_warning(TTR("Animation player has no valid root node path, so unable to retrieve track names."));
 		return;
 	}
 
 	HashSet<String> paths;
 	{
 		List<StringName> animations;
-		mixer->get_animation_list(&animations);
+		player->get_animation_list(&animations);
 
 		for (const StringName &E : animations) {
-			Ref<Animation> anim = mixer->get_animation(E);
+			Ref<Animation> anim = player->get_animation(E);
 			for (int i = 0; i < anim->get_track_count(); i++) {
 				String pathname = anim->track_get_path(i).get_concatenated_names();
 				if (!paths.has(pathname)) {
@@ -129,7 +132,7 @@ void EditorPropertyRootMotion::_node_assign() {
 		if (skeleton) {
 			HashMap<int, TreeItem *> items;
 			items.insert(-1, ti);
-			Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("Bone"));
+			Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("BoneAttachment3D"));
 			Vector<int> bones_to_process = skeleton->get_parentless_bones();
 			while (bones_to_process.size() > 0) {
 				int current_bone_idx = bones_to_process[0];
@@ -157,7 +160,7 @@ void EditorPropertyRootMotion::_node_assign() {
 	}
 
 	filters->ensure_cursor_is_visible();
-	filter_dialog->popup_centered(Size2(500, 500) * EDSCALE);
+	filter_dialog->popup_centered_ratio();
 }
 
 void EditorPropertyRootMotion::_node_clear() {
@@ -216,7 +219,6 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 
 	filters = memnew(Tree);
 	filter_dialog->add_child(filters);
-	filters->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	filters->set_v_size_flags(SIZE_EXPAND_FILL);
 	filters->set_hide_root(true);
 	filters->connect("item_activated", callable_mp(this, &EditorPropertyRootMotion::_confirmed));
@@ -230,7 +232,7 @@ bool EditorInspectorRootMotionPlugin::can_handle(Object *p_object) {
 }
 
 bool EditorInspectorRootMotionPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
-	if (p_path == "root_motion_track" && p_object->is_class("AnimationMixer") && p_type == Variant::NODE_PATH) {
+	if (p_path == "root_motion_track" && p_object->is_class("AnimationTree") && p_type == Variant::NODE_PATH) {
 		EditorPropertyRootMotion *editor = memnew(EditorPropertyRootMotion);
 		add_property_editor(p_path, editor);
 		return true;

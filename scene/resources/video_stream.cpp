@@ -119,7 +119,9 @@ Ref<Texture2D> VideoStreamPlayback::get_texture() const {
 }
 
 void VideoStreamPlayback::update(double p_delta) {
-	GDVIRTUAL_REQUIRED_CALL(_update, p_delta);
+	if (!GDVIRTUAL_CALL(_update, p_delta)) {
+		ERR_FAIL_MSG("VideoStreamPlayback::update unimplemented");
+	}
 }
 
 void VideoStreamPlayback::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
@@ -170,7 +172,6 @@ Ref<VideoStreamPlayback> VideoStream::instantiate_playback() {
 
 void VideoStream::set_file(const String &p_file) {
 	file = p_file;
-	emit_changed();
 }
 
 String VideoStream::get_file() {

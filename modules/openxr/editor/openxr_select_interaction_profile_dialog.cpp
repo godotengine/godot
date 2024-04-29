@@ -77,7 +77,7 @@ void OpenXRSelectInteractionProfileDialog::open(PackedStringArray p_do_not_inclu
 	// in with the new
 	PackedStringArray interaction_profiles = OpenXRInteractionProfileMetadata::get_singleton()->get_interaction_profile_paths();
 	for (int i = 0; i < interaction_profiles.size(); i++) {
-		const String &path = interaction_profiles[i];
+		String path = interaction_profiles[i];
 		if (!p_do_not_include.has(path)) {
 			Button *ip_button = memnew(Button);
 			ip_button->set_flat(true);
@@ -111,7 +111,7 @@ void OpenXRSelectInteractionProfileDialog::ok_pressed() {
 }
 
 OpenXRSelectInteractionProfileDialog::OpenXRSelectInteractionProfileDialog() {
-	set_title(TTR("Select an interaction profile"));
+	set_title("Select an interaction profile");
 
 	scroll = memnew(ScrollContainer);
 	scroll->set_custom_minimum_size(Size2(600.0, 400.0));

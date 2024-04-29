@@ -67,8 +67,8 @@ public:
 	virtual void close();
 
 	virtual Error set_broadcasting_enabled(bool p_enabled);
-	virtual Error join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name);
-	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name);
+	virtual Error join_multicast_group(const IPAddress &p_multi_address, String p_if_name);
+	virtual Error leave_multicast_group(const IPAddress &p_multi_address, String p_if_name);
 
 	NetSocketAndroid() {}
 	~NetSocketAndroid();

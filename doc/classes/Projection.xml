@@ -4,7 +4,7 @@
 		A 4×4 matrix for 3D projective transformations.
 	</brief_description>
 	<description>
-		A 4×4 matrix used for 3D projective transformations. It can represent transformations such as translation, rotation, scaling, shearing, and perspective division. It consists of four [Vector4] columns.
+		A 4x4 matrix used for 3D projective transformations. It can represent transformations such as translation, rotation, scaling, shearing, and perspective division. It consists of four [Vector4] columns.
 		For purely linear transformations (translation, rotation, and scale), it is recommended to use [Transform3D], as it is more performant and requires less memory.
 		Used internally as [Camera3D]'s projection matrix.
 	</description>

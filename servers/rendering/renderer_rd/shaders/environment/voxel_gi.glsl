@@ -492,7 +492,7 @@ void main() {
 
 		ivec3 pos = params.x_dir * (params.rect_pos.x + pos_xy.x) + params.y_dir * (params.rect_pos.y + pos_xy.y) + abs(params.z_dir) * int(z);
 
-		vec3 normal = normalize(imageLoad(source_normal, uv_xy).xyz * 2.0 - 1.0);
+		vec3 normal = imageLoad(source_normal, uv_xy).xyz * 2.0 - 1.0;
 		normal = vec3(params.x_dir) * normal.x * mix(1.0, -1.0, params.flip_x) + vec3(params.y_dir) * normal.y * mix(1.0, -1.0, params.flip_y) - vec3(params.z_dir) * normal.z;
 
 		vec4 albedo = imageLoad(source_albedo, uv_xy);

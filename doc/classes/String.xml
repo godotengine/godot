@@ -41,7 +41,7 @@
 		</constructor>
 	</constructors>
 	<methods>
-		<method name="begins_with" qualifiers="const" keywords="starts_with">
+		<method name="begins_with" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
@@ -96,14 +96,13 @@
 				[gdscript]
 				"move_local_x".capitalize()   # Returns "Move Local X"
 				"sceneFile_path".capitalize() # Returns "Scene File Path"
-				"2D, FPS, PNG".capitalize()   # Returns "2d, Fps, Png"
 				[/gdscript]
 				[csharp]
 				"move_local_x".Capitalize();   // Returns "Move Local X"
 				"sceneFile_path".Capitalize(); // Returns "Scene File Path"
-				"2D, FPS, PNG".Capitalize();   // Returns "2d, Fps, Png"
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] This method not the same as the default appearance of properties in the Inspector dock, as it does not capitalize acronyms ([code]"2D"[/code], [code]"FPS"[/code], [code]"PNG"[/code], etc.) as you may expect.
 			</description>
 		</method>
 		<method name="casecmp_to" qualifiers="const">
@@ -112,7 +111,7 @@
 			<description>
 				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" and "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order.
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to], [method filecasecmp_to], and [method naturalcasecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to], [method naturalcasecmp_to], and [method naturalnocasecmp_to].
 			</description>
 		</method>
 		<method name="chr" qualifiers="static">
@@ -126,7 +125,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="contains" qualifiers="const" keywords="includes, has">
+		<method name="contains" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="what" type="String" />
 			<description>
@@ -184,22 +183,6 @@
 				Returns a string with [param chars] characters erased starting from [param position]. If [param chars] goes beyond the string's length given the specified [param position], fewer characters will be erased from the returned string. Returns an empty string if either [param position] or [param chars] is negative. Returns the original string unmodified if [param chars] is [code]0[/code].
 			</description>
 		</method>
-		<method name="filecasecmp_to" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="to" type="String" />
-			<description>
-				Like [method naturalcasecmp_to] but prioritises strings that begin with periods ([code].[/code]) and underscores ([code]_[/code]) before any other character. Useful when sorting folders or file names.
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method filenocasecmp_to], [method naturalcasecmp_to], and [method casecmp_to].
-			</description>
-		</method>
-		<method name="filenocasecmp_to" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="to" type="String" />
-			<description>
-				Like [method naturalnocasecmp_to] but prioritises strings that begin with periods ([code].[/code]) and underscores ([code]_[/code]) before any other character. Useful when sorting folders or file names.
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method filecasecmp_to], [method naturalnocasecmp_to], and [method nocasecmp_to].
-			</description>
-		</method>
 		<method name="find" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="what" type="String" />
@@ -255,13 +238,6 @@
 				print("User {id} is {name}.".format([["id", 42], ["name", "Godot"]]))
 				[/codeblock]
 				See also the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format string[/url] tutorial.
-				[b]Note:[/b] The replacement of placeholders is not done all at once, instead each placeholder is replaced in the order they are passed, this means that if one of the replacement strings contains a key it will also be replaced. This can be very powerful, but can also cause unexpected results if you are not careful. If you do not need to perform replacement in the replacement strings, make sure your replacements do not contain placeholders to ensure reliable results.
-				[codeblock]
-				print("{0} {1}".format(["{1}", "x"]))                       # Prints "x x".
-				print("{0} {1}".format(["x", "{0}"]))                       # Prints "x {0}".
-				print("{foo} {bar}".format({"foo": "{bar}", "bar": "baz"})) # Prints "baz baz".
-				print("{foo} {bar}".format({"bar": "baz", "foo": "{bar}"})) # Prints "{bar} baz".
-				[/codeblock]
 				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
 			</description>
 		</method>
@@ -342,7 +318,7 @@
 			<return type="int" />
 			<description>
 				Returns the 32-bit hash value representing the string's contents.
-				[b]Note:[/b] Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the contrary, strings with different hash values are guaranteed to be different.
+				[b]Note:[/b] Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, strings with different hash values are guaranteed to be different.
 			</description>
 		</method>
 		<method name="hex_decode" qualifiers="const">
@@ -554,7 +530,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="length" qualifiers="const" keywords="size">
+		<method name="length" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of characters in the string. Empty strings ([code]""[/code]) always return [code]0[/code]. See also [method is_empty].
@@ -609,7 +585,7 @@
 				Performs a [b]case-sensitive[/b], [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order.
 				When used for sorting, natural order comparison orders sequences of numbers by the combined value of each digit as is often expected, instead of the single digit's value. A sorted sequence of numbered strings will be [code]["1", "2", "3", ...][/code], not [code]["1", "10", "2", "3", ...][/code].
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalnocasecmp_to], [method filecasecmp_to], and [method nocasecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalnocasecmp_to], [method nocasecmp_to], and [method casecmp_to].
 			</description>
 		</method>
 		<method name="naturalnocasecmp_to" qualifiers="const">
@@ -619,7 +595,7 @@
 				Performs a [b]case-insensitive[/b], [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters are converted to uppercase for the comparison.
 				When used for sorting, natural order comparison orders sequences of numbers by the combined value of each digit as is often expected, instead of the single digit's value. A sorted sequence of numbered strings will be [code]["1", "2", "3", ...][/code], not [code]["1", "10", "2", "3", ...][/code].
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalcasecmp_to], [method filenocasecmp_to], and [method casecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalcasecmp_to], [method nocasecmp_to], and [method casecmp_to].
 			</description>
 		</method>
 		<method name="nocasecmp_to" qualifiers="const">
@@ -628,7 +604,7 @@
 			<description>
 				Performs a [b]case-insensitive[/b] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters are converted to uppercase for the comparison.
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to], [method filenocasecmp_to], and [method naturalnocasecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to], [method naturalcasecmp_to], and [method naturalnocasecmp_to].
 			</description>
 		</method>
 		<method name="num" qualifiers="static">
@@ -674,8 +650,8 @@
 				[codeblocks]
 				[gdscript]
 				var n = -5.2e8
-				print(n)                        # Prints -520000000
-				print(String.num_scientific(n)) # Prints -5.2e+08
+				print(n)                       # Prints -520000000
+				print(String.NumScientific(n)) # Prints -5.2e+08
 				[/gdscript]
 				[csharp]
 				// This method is not implemented in C#.
@@ -936,7 +912,7 @@
 		<method name="to_ascii_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to an [url=https://en.wikipedia.org/wiki/ASCII]ASCII[/url]/Latin-1 encoded [PackedByteArray]. This method is slightly faster than [method to_utf8_buffer], but replaces all unsupported characters with spaces. This is the inverse of [method PackedByteArray.get_string_from_ascii].
+				Converts the string to an [url=https://en.wikipedia.org/wiki/ASCII]ASCII[/url]/Latin-1 encoded [PackedByteArray]. This method is slightly faster than [method to_utf8_buffer], but replaces all unsupported characters with spaces.
 			</description>
 		</method>
 		<method name="to_camel_case" qualifiers="const">
@@ -973,7 +949,7 @@
 		<method name="to_lower" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the string converted to [code]lowercase[/code].
+				Returns the string converted to lowercase.
 			</description>
 		</method>
 		<method name="to_pascal_case" qualifiers="const">
@@ -986,49 +962,36 @@
 			<return type="String" />
 			<description>
 				Returns the string converted to [code]snake_case[/code].
-				[b]Note:[/b] Numbers followed by a [i]single[/i] letter are not separated in the conversion to keep some words (such as "2D") together.
-				[codeblocks]
-				[gdscript]
-				"Node2D".to_snake_case()               # Returns "node_2d"
-				"2nd place".to_snake_case()            # Returns "2_nd_place"
-				"Texture3DAssetFolder".to_snake_case() # Returns "texture_3d_asset_folder"
-				[/gdscript]
-				[csharp]
-				"Node2D".ToSnakeCase();               // Returns "node_2d"
-				"2nd place".ToSnakeCase();            // Returns "2_nd_place"
-				"Texture3DAssetFolder".ToSnakeCase(); // Returns "texture_3d_asset_folder"
-				[/csharp]
-				[/codeblocks]
 			</description>
 		</method>
 		<method name="to_upper" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the string converted to [code]UPPERCASE[/code].
+				Returns the string converted to uppercase.
 			</description>
 		</method>
 		<method name="to_utf8_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-8]UTF-8[/url] encoded [PackedByteArray]. This method is slightly slower than [method to_ascii_buffer], but supports all UTF-8 characters. For most cases, prefer using this method. This is the inverse of [method PackedByteArray.get_string_from_utf8].
+				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-8]UTF-8[/url] encoded [PackedByteArray]. This method is slightly slower than [method to_ascii_buffer], but supports all UTF-8 characters. For most cases, prefer using this method.
 			</description>
 		</method>
 		<method name="to_utf16_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-16]UTF-16[/url] encoded [PackedByteArray]. This is the inverse of [method PackedByteArray.get_string_from_utf16].
+				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-16]UTF-16[/url] encoded [PackedByteArray].
 			</description>
 		</method>
 		<method name="to_utf32_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-32]UTF-32[/url] encoded [PackedByteArray]. This is the inverse of [method PackedByteArray.get_string_from_utf32].
+				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-32]UTF-32[/url] encoded [PackedByteArray].
 			</description>
 		</method>
 		<method name="to_wchar_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/Wide_character]wide character[/url] ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded [PackedByteArray]. This is the inverse of [method PackedByteArray.get_string_from_wchar].
+				Converts the string to a [url=https://en.wikipedia.org/wiki/Wide_character]wide character[/url] ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded [PackedByteArray].
 			</description>
 		</method>
 		<method name="trim_prefix" qualifiers="const">

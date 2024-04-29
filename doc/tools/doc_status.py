@@ -279,18 +279,13 @@ class ClassStatus:
 
             elif tag.tag in ["methods", "signals", "operators", "constructors"]:
                 for sub_tag in list(tag):
-                    is_deprecated = "deprecated" in sub_tag.attrib
-                    is_experimental = "experimental" in sub_tag.attrib
                     descr = sub_tag.find("description")
-                    has_descr = (descr is not None) and (descr.text is not None) and len(descr.text.strip()) > 0
-                    status.progresses[tag.tag].increment(is_deprecated or is_experimental or has_descr)
+                    increment = (descr is not None) and (descr.text is not None) and len(descr.text.strip()) > 0
+                    status.progresses[tag.tag].increment(increment)
             elif tag.tag in ["constants", "members", "theme_items"]:
                 for sub_tag in list(tag):
                     if not sub_tag.text is None:
-                        is_deprecated = "deprecated" in sub_tag.attrib
-                        is_experimental = "experimental" in sub_tag.attrib
-                        has_descr = len(sub_tag.text.strip()) > 0
-                        status.progresses[tag.tag].increment(is_deprecated or is_experimental or has_descr)
+                        status.progresses[tag.tag].increment(len(sub_tag.text.strip()) > 0)
 
             elif tag.tag in ["tutorials"]:
                 pass  # Ignore those tags for now

@@ -36,7 +36,7 @@
 #include "core/math/bvh.h"
 
 class GodotBroadPhase3DBVH : public GodotBroadPhase3D {
-	template <typename T>
+	template <class T>
 	class UserPairTestFunction {
 	public:
 		static bool user_pair_check(const T *p_a, const T *p_b) {
@@ -45,7 +45,7 @@ class GodotBroadPhase3DBVH : public GodotBroadPhase3D {
 		}
 	};
 
-	template <typename T>
+	template <class T>
 	class UserCullTestFunction {
 	public:
 		static bool user_cull_check(const T *p_a, const T *p_b) {

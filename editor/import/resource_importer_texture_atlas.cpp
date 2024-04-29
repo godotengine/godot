@@ -31,7 +31,6 @@
 #include "resource_importer_texture_atlas.h"
 
 #include "atlas_import_failed.xpm"
-#include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
@@ -193,7 +192,7 @@ static void _plot_triangle(Vector2i *p_vertices, const Vector2i &p_offset, bool 
 }
 
 Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file, const HashMap<String, HashMap<StringName, Variant>> &p_source_file_options, const HashMap<String, String> &p_base_paths) {
-	ERR_FAIL_COND_V(p_source_file_options.is_empty(), ERR_BUG); //should never happen
+	ERR_FAIL_COND_V(p_source_file_options.size() == 0, ERR_BUG); //should never happen
 
 	Vector<EditorAtlasPacker::Chart> charts;
 	Vector<PackData> pack_data_files;
@@ -277,15 +276,9 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		idx++;
 	}
 
-	const int max_width = (int)GLOBAL_GET("editor/import/atlas_max_width");
-
 	//pack the charts
 	int atlas_width, atlas_height;
-	EditorAtlasPacker::chart_pack(charts, atlas_width, atlas_height, max_width);
-
-	if (atlas_height > max_width * 2) {
-		WARN_PRINT(vformat(TTR("%s: Atlas texture significantly larger on one axis (%d), consider changing the `editor/import/atlas_max_width` Project Setting to allow a wider texture, making the result more even in size."), p_group_file, atlas_height));
-	}
+	EditorAtlasPacker::chart_pack(charts, atlas_width, atlas_height);
 
 	//blit the atlas
 	Ref<Image> new_atlas = Image::create_empty(atlas_width, atlas_height, false, Image::FORMAT_RGBA8);

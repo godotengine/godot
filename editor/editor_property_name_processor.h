@@ -42,13 +42,8 @@ class EditorPropertyNameProcessor : public Node {
 	HashMap<String, String> capitalize_string_remaps;
 	LocalVector<String> stop_words; // Exceptions that shouldn't be capitalized.
 
-	HashMap<String, HashMap<String, StringName>> translation_contexts;
-
 	// Capitalizes property path segments.
 	String _capitalize_name(const String &p_name) const;
-
-	// Returns the translation context for the given name.
-	StringName _get_context(const String &p_name, const String &p_property, const StringName &p_class) const;
 
 public:
 	// Matches `interface/inspector/capitalize_properties` editor setting.
@@ -67,8 +62,7 @@ public:
 	static bool is_localization_available();
 
 	// Turns property path segment into the given style.
-	// `p_class` and `p_property` are only used for `STYLE_LOCALIZED`, associating the name with a translation context.
-	String process_name(const String &p_name, Style p_style, const String &p_property = "", const StringName &p_class = "") const;
+	String process_name(const String &p_name, Style p_style) const;
 
 	// Translate plain text group names.
 	String translate_group_name(const String &p_name) const;

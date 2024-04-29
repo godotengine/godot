@@ -32,10 +32,9 @@
 
 #include "editor/editor_data.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
 #include "editor/multi_node_edit.h"
-#include "editor/themes/editor_scale.h"
-#include "scene/gui/margin_container.h"
 
 Size2 EditorObjectSelector::get_minimum_size() const {
 	Ref<Font> font = get_theme_font(SNAME("font"));
@@ -239,7 +238,7 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	current_object_label = memnew(Label);
 	current_object_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	current_object_label->set_h_size_flags(SIZE_EXPAND_FILL);
-	current_object_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	current_object_label->set_auto_translate(false);
 	main_hb->add_child(current_object_label);
 
 	sub_objects_icon = memnew(TextureRect);
@@ -248,7 +247,7 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	main_hb->add_child(sub_objects_icon);
 
 	sub_objects_menu = memnew(PopupMenu);
-	sub_objects_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	sub_objects_menu->set_auto_translate(false);
 	add_child(sub_objects_menu);
 	sub_objects_menu->connect("about_to_popup", callable_mp(this, &EditorObjectSelector::_about_to_show));
 	sub_objects_menu->connect("id_pressed", callable_mp(this, &EditorObjectSelector::_id_pressed));

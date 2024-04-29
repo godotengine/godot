@@ -38,8 +38,6 @@
 #include "core/os/thread_safe.h"
 #include "core/variant/native_ptr.h"
 
-class OpenXRExtensionWrapperExtension;
-
 class OpenXRAPIExtension : public RefCounted {
 	GDCLASS(OpenXRAPIExtension, RefCounted);
 
@@ -72,23 +70,7 @@ public:
 	int64_t get_next_frame_time();
 	bool can_render();
 
-	uint64_t get_hand_tracker(int p_hand_index);
-
-	void register_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension);
-	void unregister_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension);
-
-	enum OpenXRAlphaBlendModeSupport {
-		OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE = 0,
-		OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL = 1,
-		OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING = 2,
-	};
-
-	void set_emulate_environment_blend_mode_alpha_blend(bool p_enabled);
-	OpenXRAlphaBlendModeSupport is_environment_blend_mode_alpha_blend_supported();
-
 	OpenXRAPIExtension();
 };
-
-VARIANT_ENUM_CAST(OpenXRAPIExtension::OpenXRAlphaBlendModeSupport);
 
 #endif // OPENXR_API_EXTENSION_H

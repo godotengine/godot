@@ -134,7 +134,7 @@ void refit_branch(uint32_t p_node_id) {
 			TLeaf &leaf = _node_get_leaf(tnode);
 			if (leaf.is_dirty()) {
 				leaf.set_dirty(false);
-				refit_upward(rp.node_id);
+				refit_upward(p_node_id);
 			}
 		}
 	} // while more nodes to pop

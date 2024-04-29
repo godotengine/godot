@@ -36,9 +36,9 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
-#include "editor/themes/editor_scale.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED
@@ -79,7 +79,6 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_dir_path);
 	if (export_as_zip) {
 		if (tmp_app_dir.is_null()) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not create and open the directory: \"%s\""), tmp_dir_path));
 			return ERR_CANT_CREATE;
 		}
 		if (DirAccess::exists(tmp_dir_path)) {
@@ -94,18 +93,19 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 	// Export project.
 	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, path, p_flags);
 	if (err != OK) {
-		// Message is supplied by the subroutine method.
 		return err;
 	}
 
 	// Save console wrapper.
-	int con_scr = p_preset->get("debug/export_console_wrapper");
-	if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
-		String scr_path = path.get_basename() + ".sh";
-		err = _export_debug_script(p_preset, pkg_name, path.get_file(), scr_path);
-		FileAccess::set_unix_permissions(scr_path, 0755);
-		if (err != OK) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Console Export"), TTR("Could not create console wrapper."));
+	if (err == OK) {
+		int con_scr = p_preset->get("debug/export_console_wrapper");
+		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
+			String scr_path = path.get_basename() + ".sh";
+			err = _export_debug_script(p_preset, pkg_name, path.get_file(), scr_path);
+			FileAccess::set_unix_permissions(scr_path, 0755);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Console Export"), TTR("Could not create console wrapper."));
+			}
 		}
 	}
 
@@ -146,19 +146,12 @@ List<String> EditorExportPlatformLinuxBSD::get_binary_extensions(const Ref<Edito
 }
 
 bool EditorExportPlatformLinuxBSD::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
-	if (p_preset == nullptr) {
-		return true;
-	}
-
-	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
-
-	// Hide SSH options.
-	bool ssh = p_preset->get("ssh_remote_deploy/enabled");
-	if (!ssh && p_option != "ssh_remote_deploy/enabled" && p_option.begins_with("ssh_remote_deploy/")) {
-		return false;
-	}
-	if (p_option == "dotnet/embed_build_outputs") {
-		return advanced_options_enabled;
+	if (p_preset) {
+		// Hide SSH options.
+		bool ssh = p_preset->get("ssh_remote_deploy/enabled");
+		if (!ssh && p_option != "ssh_remote_deploy/enabled" && p_option.begins_with("ssh_remote_deploy/")) {
+			return false;
+		}
 	}
 	return true;
 }

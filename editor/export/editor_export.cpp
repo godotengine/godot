@@ -47,7 +47,6 @@ void EditorExport::_save() {
 		config->set_value(section, "name", preset->get_name());
 		config->set_value(section, "platform", preset->get_platform()->get_name());
 		config->set_value(section, "runnable", preset->is_runnable());
-		config->set_value(section, "advanced_options", preset->are_advanced_options_enabled());
 		config->set_value(section, "dedicated_server", preset->is_dedicated_server());
 		config->set_value(section, "custom_features", preset->get_custom_features());
 
@@ -86,7 +85,6 @@ void EditorExport::_save() {
 		config->set_value(section, "encryption_exclude_filters", preset->get_enc_ex_filter());
 		config->set_value(section, "encrypt_pck", preset->get_enc_pck());
 		config->set_value(section, "encrypt_directory", preset->get_enc_directory());
-		config->set_value(section, "script_export_mode", preset->get_script_export_mode());
 		credentials->set_value(section, "script_encryption_key", preset->get_script_encryption_key());
 
 		String option_section = "preset." + itos(i) + ".options";
@@ -112,13 +110,8 @@ void EditorExport::save_presets() {
 	save_timer->start();
 }
 
-void EditorExport::emit_presets_runnable_changed() {
-	emit_signal(_export_presets_runnable_updated);
-}
-
 void EditorExport::_bind_methods() {
-	ADD_SIGNAL(MethodInfo(_export_presets_updated));
-	ADD_SIGNAL(MethodInfo(_export_presets_runnable_updated));
+	ADD_SIGNAL(MethodInfo("export_presets_updated"));
 }
 
 void EditorExport::add_export_platform(const Ref<EditorExportPlatform> &p_platform) {
@@ -142,7 +135,6 @@ void EditorExport::add_export_preset(const Ref<EditorExportPreset> &p_preset, in
 	} else {
 		export_presets.insert(p_at_pos, p_preset);
 	}
-	emit_presets_runnable_changed();
 }
 
 int EditorExport::get_export_preset_count() const {
@@ -157,7 +149,6 @@ Ref<EditorExportPreset> EditorExport::get_export_preset(int p_idx) {
 void EditorExport::remove_export_preset(int p_idx) {
 	export_presets.remove_at(p_idx);
 	save_presets();
-	emit_presets_runnable_changed();
 }
 
 void EditorExport::add_export_plugin(const Ref<EditorExportPlugin> &p_plugin) {
@@ -219,12 +210,6 @@ void EditorExport::load_config() {
 		}
 
 		String platform = config->get_value(section, "platform");
-#ifndef DISABLE_DEPRECATED
-		// Compatibility with Linux platform before 4.3.
-		if (platform == "Linux/X11") {
-			platform = "Linux";
-		}
-#endif
 
 		Ref<EditorExportPreset> preset;
 
@@ -241,7 +226,6 @@ void EditorExport::load_config() {
 		}
 
 		preset->set_name(config->get_value(section, "name"));
-		preset->set_advanced_options_enabled(config->get_value(section, "advanced_options", false));
 		preset->set_runnable(config->get_value(section, "runnable"));
 		preset->set_dedicated_server(config->get_value(section, "dedicated_server", false));
 
@@ -285,7 +269,6 @@ void EditorExport::load_config() {
 		preset->set_include_filter(config->get_value(section, "include_filter"));
 		preset->set_exclude_filter(config->get_value(section, "exclude_filter"));
 		preset->set_export_path(config->get_value(section, "export_path", ""));
-		preset->set_script_export_mode(config->get_value(section, "script_export_mode", EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED));
 
 		if (config->has_section_key(section, "encrypt_pck")) {
 			preset->set_enc_pck(config->get_value(section, "encrypt_pck"));
@@ -364,7 +347,6 @@ void EditorExport::update_export_presets() {
 		if (platform_options.has(preset->get_platform()->get_name())) {
 			export_presets_updated = true;
 
-			bool update_value_overrides = false;
 			List<EditorExportPlatform::ExportOption> options = platform_options[preset->get_platform()->get_name()];
 
 			// Clear the preset properties prior to reloading, keep the values to preserve options from plugins that may be currently disabled.
@@ -378,13 +360,6 @@ void EditorExport::update_export_presets() {
 					preset->values[option_name] = E.default_value;
 				}
 				preset->update_visibility[option_name] = E.update_visibility;
-				if (E.update_visibility) {
-					update_value_overrides = true;
-				}
-			}
-
-			if (update_value_overrides) {
-				preset->update_value_overrides();
 			}
 		}
 	}
@@ -405,10 +380,6 @@ bool EditorExport::poll_export_platforms() {
 	return changed;
 }
 
-void EditorExport::connect_presets_runnable_updated(const Callable &p_target) {
-	connect(_export_presets_runnable_updated, p_target);
-}
-
 EditorExport::EditorExport() {
 	save_timer = memnew(Timer);
 	add_child(save_timer);
@@ -417,7 +388,6 @@ EditorExport::EditorExport() {
 	save_timer->connect("timeout", callable_mp(this, &EditorExport::_save));
 
 	_export_presets_updated = "export_presets_updated";
-	_export_presets_runnable_updated = "export_presets_runnable_updated";
 
 	singleton = this;
 	set_process(true);

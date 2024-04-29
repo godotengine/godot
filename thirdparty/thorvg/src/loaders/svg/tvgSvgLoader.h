@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #include "tvgTaskScheduler.h"
 #include "tvgSvgLoaderCommon.h"
 
-class SvgLoader : public ImageLoader, public Task
+class SvgLoader : public LoadModule, public Task
 {
 public:
     string filePath;
@@ -35,20 +35,21 @@ public:
     uint32_t size = 0;
 
     SvgLoaderData loaderData;
-    Scene* root = nullptr;
+    unique_ptr<Scene> root;
 
     bool copy = false;
 
     SvgLoader();
     ~SvgLoader();
 
+    using LoadModule::open;
     bool open(const string& path) override;
     bool open(const char* data, uint32_t size, bool copy) override;
     bool resize(Paint* paint, float w, float h) override;
     bool read() override;
     bool close() override;
 
-    Paint* paint() override;
+    unique_ptr<Paint> paint() override;
 
 private:
     SvgViewFlag viewFlag = SvgViewFlag::None;
@@ -60,7 +61,7 @@ private:
     float vh = 0;
 
     bool header();
-    void clear(bool all = true);
+    void clear();
     void run(unsigned tid) override;
 };
 

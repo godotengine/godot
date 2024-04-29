@@ -96,8 +96,8 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 		//vol modifier
 
 		AudioFrame vol_modifier = AudioFrame(base->wet, base->wet) * Math::db_to_linear(v.level);
-		vol_modifier.left *= CLAMP(1.0 - v.pan, 0, 1);
-		vol_modifier.right *= CLAMP(1.0 + v.pan, 0, 1);
+		vol_modifier.l *= CLAMP(1.0 - v.pan, 0, 1);
+		vol_modifier.r *= CLAMP(1.0 + v.pan, 0, 1);
 
 		for (int i = 0; i < p_frame_count; i++) {
 			/** COMPUTE WAVEFORM **/

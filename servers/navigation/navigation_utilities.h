@@ -66,8 +66,6 @@ struct PathQueryParameters {
 	Vector3 target_position;
 	uint32_t navigation_layers = 1;
 	BitField<PathMetadataFlags> metadata_flags = PATH_INCLUDE_ALL;
-	bool simplify_path = false;
-	real_t simplify_epsilon = 0.0;
 };
 
 struct PathQueryResult {

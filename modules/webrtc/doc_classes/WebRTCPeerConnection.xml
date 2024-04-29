@@ -76,7 +76,7 @@
 		<method name="get_signaling_state" qualifiers="const">
 			<return type="int" enum="WebRTCPeerConnection.SignalingState" />
 			<description>
-				Returns the signaling state on the local end of the connection while connecting or reconnecting to another peer.
+				Returns the [enum SignalingState] on the local end of the connection while connecting or reconnecting to another peer.
 			</description>
 		</method>
 		<method name="initialize">

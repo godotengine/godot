@@ -3,7 +3,7 @@
 
 #include "thread.h"
 #include "sysinfo.h"
-#include "estring.h"
+#include "string.h"
 
 #include <iostream>
 #if defined(__ARM_NEON)

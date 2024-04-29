@@ -2,7 +2,19 @@
  *  X.509 Certificate Revocation List (CRL) parsing
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may
+ *  not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 /*
  *  The ITU-T X.509 standard defines a certificate format for PKI.
@@ -20,7 +32,6 @@
 #if defined(MBEDTLS_X509_CRL_PARSE_C)
 
 #include "mbedtls/x509_crl.h"
-#include "x509_internal.h"
 #include "mbedtls/error.h"
 #include "mbedtls/oid.h"
 #include "mbedtls/platform_util.h"
@@ -368,7 +379,7 @@ int mbedtls_x509_crl_parse_der(mbedtls_x509_crl *chain,
     }
 
     end = p + len;
-    crl->tbs.len = (size_t) (end - crl->tbs.p);
+    crl->tbs.len = end - crl->tbs.p;
 
     /*
      * Version  ::=  INTEGER  OPTIONAL {  v1(0), v2(1)  }
@@ -412,7 +423,7 @@ int mbedtls_x509_crl_parse_der(mbedtls_x509_crl *chain,
         return ret;
     }
 
-    crl->issuer_raw.len = (size_t) (p - crl->issuer_raw.p);
+    crl->issuer_raw.len = p - crl->issuer_raw.p;
 
     /*
      * thisUpdate          Time
@@ -576,13 +587,13 @@ int mbedtls_x509_crl_parse_file(mbedtls_x509_crl *chain, const char *path)
 
     ret = mbedtls_x509_crl_parse(chain, buf, n);
 
-    mbedtls_zeroize_and_free(buf, n);
+    mbedtls_platform_zeroize(buf, n);
+    mbedtls_free(buf);
 
     return ret;
 }
 #endif /* MBEDTLS_FS_IO */
 
-#if !defined(MBEDTLS_X509_REMOVE_INFO)
 /*
  * Return an informational string about the certificate.
  */
@@ -661,7 +672,6 @@ int mbedtls_x509_crl_info(char *buf, size_t size, const char *prefix,
 
     return (int) (size - n);
 }
-#endif /* MBEDTLS_X509_REMOVE_INFO */
 
 /*
  * Initialize a CRL chain
@@ -678,28 +688,47 @@ void mbedtls_x509_crl_free(mbedtls_x509_crl *crl)
 {
     mbedtls_x509_crl *crl_cur = crl;
     mbedtls_x509_crl *crl_prv;
+    mbedtls_x509_name *name_cur;
+    mbedtls_x509_name *name_prv;
     mbedtls_x509_crl_entry *entry_cur;
     mbedtls_x509_crl_entry *entry_prv;
 
-    while (crl_cur != NULL) {
+    if (crl == NULL) {
+        return;
+    }
+
+    do {
 #if defined(MBEDTLS_X509_RSASSA_PSS_SUPPORT)
         mbedtls_free(crl_cur->sig_opts);
 #endif
 
-        mbedtls_asn1_free_named_data_list_shallow(crl_cur->issuer.next);
+        name_cur = crl_cur->issuer.next;
+        while (name_cur != NULL) {
+            name_prv = name_cur;
+            name_cur = name_cur->next;
+            mbedtls_platform_zeroize(name_prv, sizeof(mbedtls_x509_name));
+            mbedtls_free(name_prv);
+        }
 
         entry_cur = crl_cur->entry.next;
         while (entry_cur != NULL) {
             entry_prv = entry_cur;
             entry_cur = entry_cur->next;
-            mbedtls_zeroize_and_free(entry_prv,
+            mbedtls_platform_zeroize(entry_prv,
                                      sizeof(mbedtls_x509_crl_entry));
+            mbedtls_free(entry_prv);
         }
 
         if (crl_cur->raw.p != NULL) {
-            mbedtls_zeroize_and_free(crl_cur->raw.p, crl_cur->raw.len);
+            mbedtls_platform_zeroize(crl_cur->raw.p, crl_cur->raw.len);
+            mbedtls_free(crl_cur->raw.p);
         }
 
+        crl_cur = crl_cur->next;
+    } while (crl_cur != NULL);
+
+    crl_cur = crl;
+    do {
         crl_prv = crl_cur;
         crl_cur = crl_cur->next;
 
@@ -707,7 +736,7 @@ void mbedtls_x509_crl_free(mbedtls_x509_crl *crl)
         if (crl_prv != crl) {
             mbedtls_free(crl_prv);
         }
-    }
+    } while (crl_cur != NULL);
 }
 
 #endif /* MBEDTLS_X509_CRL_PARSE_C */

@@ -99,11 +99,9 @@ private:
 
 	OptionButton *key_mode = nullptr;
 
-	HBoxContainer *location_container = nullptr;
-	OptionButton *key_location = nullptr;
-
 	void _set_event(const Ref<InputEvent> &p_event, const Ref<InputEvent> &p_original_event, bool p_update_input_list_selection = true);
 	void _on_listen_input_changed(const Ref<InputEvent> &p_event);
+	void _on_listen_focus_changed();
 
 	void _search_term_updated(const String &p_term);
 	void _update_input_list();
@@ -112,7 +110,6 @@ private:
 	void _mod_toggled(bool p_checked, int p_index);
 	void _autoremap_command_or_control_toggled(bool p_checked);
 	void _key_mode_selected(int p_mode);
-	void _key_location_selected(int p_location);
 
 	void _device_selection_changed(int p_option_button_index);
 	void _set_current_device(int p_device);
@@ -123,8 +120,7 @@ protected:
 
 public:
 	// Pass an existing event to configure it. Alternatively, pass no event to start with a blank configuration.
-	// An action name can be passed for descriptive purposes.
-	void popup_and_configure(const Ref<InputEvent> &p_event = Ref<InputEvent>(), const String &p_current_action_name = "");
+	void popup_and_configure(const Ref<InputEvent> &p_event = Ref<InputEvent>());
 	Ref<InputEvent> get_event() const;
 
 	void set_allowed_input_types(int p_type_masks);

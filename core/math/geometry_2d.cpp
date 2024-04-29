@@ -37,7 +37,7 @@
 
 #define SCALE_FACTOR 100000.0 // Based on CMP_EPSILON.
 
-Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(const Vector<Point2> &polygon) {
+Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(Vector<Point2> polygon) {
 	Vector<Vector<Vector2>> decomp;
 	List<TPPLPoly> in_poly, out_poly;
 
@@ -93,7 +93,7 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	// For example, it will prioritize a 1024x1024 atlas (works everywhere) instead of a
 	// 256x8192 atlas (won't work anywhere).
 
-	ERR_FAIL_COND(p_rects.is_empty());
+	ERR_FAIL_COND(p_rects.size() == 0);
 	for (int i = 0; i < p_rects.size(); i++) {
 		ERR_FAIL_COND(p_rects[i].width <= 0);
 		ERR_FAIL_COND(p_rects[i].height <= 0);

@@ -20,7 +20,6 @@
 #include "../geometry/subdivpatch1_intersector.h"
 #include "../geometry/object_intersector.h"
 #include "../geometry/instance_intersector.h"
-#include "../geometry/instance_array_intersector.h"
 #include "../geometry/subgrid_intersector.h"
 #include "../geometry/subgrid_mb_intersector.h"
 #include "../geometry/curve_intersector_virtual.h"
@@ -42,7 +41,7 @@ namespace embree
                                                                                                 Precalculations& pre,
                                                                                                 RayHitK<K>& ray,
                                                                                                 const TravRayK<K, robust>& tray,
-                                                                                                RayQueryContext* context)
+                                                                                                IntersectContext* context)
     {
       /* stack state */
       StackItemT<NodeRef> stack[stackSizeSingle];  // stack of nodes
@@ -106,7 +105,7 @@ namespace embree
     void BVHNIntersectorKHybrid<N, K, types, robust, PrimitiveIntersectorK, single>::intersect(vint<K>* __restrict__ valid_i,
                                                                                                Accel::Intersectors* __restrict__ This,
                                                                                                RayHitK<K>& __restrict__ ray,
-                                                                                               RayQueryContext* __restrict__ context)
+                                                                                               IntersectContext* __restrict__ context)
     {
       BVH* __restrict__ bvh = (BVH*)This->ptr;
       
@@ -374,7 +373,7 @@ namespace embree
     void BVHNIntersectorKHybrid<N, K, types, robust, PrimitiveIntersectorK, single>::intersectCoherent(vint<K>* __restrict__ valid_i,
                                                                                                        Accel::Intersectors* __restrict__ This,
                                                                                                        RayHitK<K>& __restrict__ ray,
-                                                                                                       RayQueryContext* context)
+                                                                                                       IntersectContext* context)
     {
       BVH* __restrict__ bvh = (BVH*)This->ptr;
       
@@ -540,7 +539,7 @@ namespace embree
                                                                                                Precalculations& pre,
                                                                                                RayK<K>& ray,
                                                                                                const TravRayK<K, robust>& tray,
-                                                                                               RayQueryContext* context)
+                                                                                               IntersectContext* context)
       {
         /* stack state */
         NodeRef stack[stackSizeSingle];  // stack of nodes that still need to get traversed
@@ -600,7 +599,7 @@ namespace embree
     void BVHNIntersectorKHybrid<N, K, types, robust, PrimitiveIntersectorK, single>::occluded(vint<K>* __restrict__ valid_i,
                                                                                               Accel::Intersectors* __restrict__ This,
                                                                                               RayK<K>& __restrict__ ray,
-                                                                                              RayQueryContext* context)
+                                                                                              IntersectContext* context)
     {
       BVH* __restrict__ bvh = (BVH*)This->ptr;
       
@@ -785,7 +784,7 @@ namespace embree
     void BVHNIntersectorKHybrid<N, K, types, robust, PrimitiveIntersectorK, single>::occludedCoherent(vint<K>* __restrict__ valid_i,
                                                                                                       Accel::Intersectors* __restrict__ This,
                                                                                                       RayK<K>& __restrict__ ray,
-                                                                                                      RayQueryContext* context)
+                                                                                                      IntersectContext* context)
     {
       BVH* __restrict__ bvh = (BVH*)This->ptr;
       
@@ -862,7 +861,7 @@ namespace embree
 #if defined(__AVX__)
             //STAT3(normal.trav_hit_boxes[popcnt(m_frustum_node)], 1, 1, 1);
 #endif
-            //size_t num_child_hits = 0;
+            size_t num_child_hits = 0;
             do {
               const size_t i = bscf(m_frustum_node);
               vfloat<K> lnearP;
@@ -876,7 +875,7 @@ namespace embree
                 assert(child != BVH::emptyNode);
                 BVHN<N>::prefetch(child);
                 if (likely(cur != BVH::emptyNode)) {
-                  //num_child_hits++;
+                  num_child_hits++;
                   stackPtr->ptr  = cur;
                   stackPtr->mask = m_active;
                   stackPtr++;

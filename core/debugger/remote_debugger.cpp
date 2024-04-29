@@ -36,7 +36,6 @@
 #include "core/debugger/engine_profiler.h"
 #include "core/debugger/script_debugger.h"
 #include "core/input/input.h"
-#include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 
@@ -92,7 +91,7 @@ public:
 	}
 };
 
-Error RemoteDebugger::_put_msg(const String &p_message, const Array &p_data) {
+Error RemoteDebugger::_put_msg(String p_message, Array p_data) {
 	Array msg;
 	msg.push_back(p_message);
 	msg.push_back(Thread::get_caller_id());
@@ -436,7 +435,9 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		messages.insert(Thread::get_caller_id(), List<Message>());
 	}
 
+	mutex.lock();
 	while (is_peer_connected()) {
+		mutex.unlock();
 		flush_output();
 
 		_poll_messages();
@@ -514,9 +515,8 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				_send_stack_vars(globals, globals_vals, 2);
 
 			} else if (command == "reload_scripts") {
-				script_paths_to_reload = data;
-			} else if (command == "reload_all_scripts") {
 				reload_all_scripts = true;
+
 			} else if (command == "breakpoint") {
 				ERR_FAIL_COND(data.size() < 3);
 				bool set = data[2];
@@ -527,7 +527,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				}
 
 			} else if (command == "set_skip_breakpoints") {
-				ERR_FAIL_COND(data.is_empty());
+				ERR_FAIL_COND(data.size() < 1);
 				script_debugger->set_skip_breakpoints(data[0]);
 			} else {
 				bool captured = false;
@@ -591,36 +591,19 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 	}
 
 	// Reload scripts during idle poll only.
-	if (p_is_idle) {
-		if (reload_all_scripts) {
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->reload_all_scripts();
-			}
-			reload_all_scripts = false;
-		} else if (!script_paths_to_reload.is_empty()) {
-			Array scripts_to_reload;
-			for (int i = 0; i < script_paths_to_reload.size(); ++i) {
-				String path = script_paths_to_reload[i];
-				Error err = OK;
-				Ref<Script> script = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
-				ERR_CONTINUE_MSG(err != OK, vformat("Could not reload script '%s': %s", path, error_names[err]));
-				ERR_CONTINUE_MSG(script.is_null(), vformat("Could not reload script '%s': Not a script!", path, error_names[err]));
-				scripts_to_reload.push_back(script);
-			}
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->reload_scripts(scripts_to_reload, true);
-			}
+	if (p_is_idle && reload_all_scripts) {
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			ScriptServer::get_language(i)->reload_all_scripts();
 		}
-		script_paths_to_reload.clear();
+		reload_all_scripts = false;
 	}
 }
 
 Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bool &r_captured) {
 	r_captured = true;
 	if (p_cmd == "reload_scripts") {
-		script_paths_to_reload = p_data;
-	} else if (p_cmd == "reload_all_scripts") {
 		reload_all_scripts = true;
+
 	} else if (p_cmd == "breakpoint") {
 		ERR_FAIL_COND_V(p_data.size() < 3, ERR_INVALID_DATA);
 		bool set = p_data[2];
@@ -631,7 +614,7 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 		}
 
 	} else if (p_cmd == "set_skip_breakpoints") {
-		ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
 		script_debugger->set_skip_breakpoints(p_data[0]);
 	} else if (p_cmd == "break") {
 		script_debugger->debug(script_debugger->get_break_language());
@@ -643,7 +626,7 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 
 Error RemoteDebugger::_profiler_capture(const String &p_cmd, const Array &p_data, bool &r_captured) {
 	r_captured = false;
-	ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
 	ERR_FAIL_COND_V(p_data[0].get_type() != Variant::BOOL, ERR_INVALID_DATA);
 	ERR_FAIL_COND_V(!has_profiler(p_cmd), ERR_UNAVAILABLE);
 	Array opts;
@@ -665,7 +648,7 @@ RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
 	// Performance Profiler
 	Object *perf = Engine::get_singleton()->get_singleton_object("Performance");
 	if (perf) {
-		performance_profiler.instantiate(perf);
+		performance_profiler = Ref<PerformanceProfiler>(memnew(PerformanceProfiler(perf)));
 		performance_profiler->bind("performance");
 		profiler_enable("performance", true);
 	}

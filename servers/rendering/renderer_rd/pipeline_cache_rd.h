@@ -38,7 +38,7 @@ class PipelineCacheRD {
 	SpinLock spin_lock;
 
 	RID shader;
-	uint64_t input_mask;
+	uint32_t input_mask;
 
 	RD::RenderPrimitive render_primitive;
 	RD::PipelineRasterizationState rasterization_state;
@@ -91,7 +91,7 @@ public:
 		return result;
 	}
 
-	_FORCE_INLINE_ uint64_t get_vertex_input_mask() {
+	_FORCE_INLINE_ uint32_t get_vertex_input_mask() {
 		if (input_mask == 0) {
 			ERR_FAIL_COND_V(shader.is_null(), 0);
 			input_mask = RD::get_singleton()->shader_get_vertex_input_attribute_mask(shader);

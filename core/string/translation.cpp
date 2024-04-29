@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "translation.h"
-#include "translation.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
@@ -156,11 +155,11 @@ int Translation::get_message_count() const {
 void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &Translation::set_locale);
 	ClassDB::bind_method(D_METHOD("get_locale"), &Translation::get_locale);
-	ClassDB::bind_method(D_METHOD("add_message", "src_message", "xlated_message", "context"), &Translation::add_message, DEFVAL(StringName()));
-	ClassDB::bind_method(D_METHOD("add_plural_message", "src_message", "xlated_messages", "context"), &Translation::add_plural_message, DEFVAL(StringName()));
-	ClassDB::bind_method(D_METHOD("get_message", "src_message", "context"), &Translation::get_message, DEFVAL(StringName()));
-	ClassDB::bind_method(D_METHOD("get_plural_message", "src_message", "src_plural_message", "n", "context"), &Translation::get_plural_message, DEFVAL(StringName()));
-	ClassDB::bind_method(D_METHOD("erase_message", "src_message", "context"), &Translation::erase_message, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("add_message", "src_message", "xlated_message", "context"), &Translation::add_message, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("add_plural_message", "src_message", "xlated_messages", "context"), &Translation::add_plural_message, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_message", "src_message", "context"), &Translation::get_message, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_plural_message", "src_message", "src_plural_message", "n", "context"), &Translation::get_plural_message, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("erase_message", "src_message", "context"), &Translation::erase_message, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_message_list"), &Translation::_get_message_list);
 	ClassDB::bind_method(D_METHOD("get_translated_message_list"), &Translation::get_translated_message_list);
 	ClassDB::bind_method(D_METHOD("get_message_count"), &Translation::get_message_count);
@@ -519,17 +518,13 @@ String TranslationServer::get_country_name(const String &p_country) const {
 }
 
 void TranslationServer::set_locale(const String &p_locale) {
-	String new_locale = standardize_locale(p_locale);
-	if (locale == new_locale) {
-		return;
-	}
-
-	locale = new_locale;
-	ResourceLoader::reload_translation_remaps();
+	locale = standardize_locale(p_locale);
 
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
+
+	ResourceLoader::reload_translation_remaps();
 }
 
 String TranslationServer::get_locale() const {
@@ -772,20 +767,6 @@ StringName TranslationServer::tool_translate_plural(const StringName &p_message,
 	return p_message_plural;
 }
 
-void TranslationServer::set_property_translation(const Ref<Translation> &p_translation) {
-	property_translation = p_translation;
-}
-
-StringName TranslationServer::property_translate(const StringName &p_message, const StringName &p_context) const {
-	if (property_translation.is_valid()) {
-		StringName r = property_translation->get_message(p_message, p_context);
-		if (r) {
-			return r;
-		}
-	}
-	return p_message;
-}
-
 void TranslationServer::set_doc_translation(const Ref<Translation> &p_translation) {
 	doc_translation = p_translation;
 }
@@ -814,32 +795,18 @@ StringName TranslationServer::doc_translate_plural(const StringName &p_message, 
 	return p_message_plural;
 }
 
-void TranslationServer::set_extractable_translation(const Ref<Translation> &p_translation) {
-	extractable_translation = p_translation;
+void TranslationServer::set_property_translation(const Ref<Translation> &p_translation) {
+	property_translation = p_translation;
 }
 
-StringName TranslationServer::extractable_translate(const StringName &p_message, const StringName &p_context) const {
-	if (extractable_translation.is_valid()) {
-		StringName r = extractable_translation->get_message(p_message, p_context);
+StringName TranslationServer::property_translate(const StringName &p_message) const {
+	if (property_translation.is_valid()) {
+		StringName r = property_translation->get_message(p_message);
 		if (r) {
 			return r;
 		}
 	}
 	return p_message;
-}
-
-StringName TranslationServer::extractable_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
-	if (extractable_translation.is_valid()) {
-		StringName r = extractable_translation->get_plural_message(p_message, p_message_plural, p_n, p_context);
-		if (r) {
-			return r;
-		}
-	}
-
-	if (p_n == 1) {
-		return p_message;
-	}
-	return p_message_plural;
 }
 
 bool TranslationServer::is_pseudolocalization_enabled() const {
@@ -849,11 +816,10 @@ bool TranslationServer::is_pseudolocalization_enabled() const {
 void TranslationServer::set_pseudolocalization_enabled(bool p_enabled) {
 	pseudolocalization_enabled = p_enabled;
 
-	ResourceLoader::reload_translation_remaps();
-
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
+	ResourceLoader::reload_translation_remaps();
 }
 
 void TranslationServer::set_editor_pseudolocalization(bool p_enabled) {
@@ -870,11 +836,10 @@ void TranslationServer::reload_pseudolocalization() {
 	pseudolocalization_suffix = GLOBAL_GET("internationalization/pseudolocalization/suffix");
 	pseudolocalization_skip_placeholders_enabled = GLOBAL_GET("internationalization/pseudolocalization/skip_placeholders");
 
-	ResourceLoader::reload_translation_remaps();
-
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
+	ResourceLoader::reload_translation_remaps();
 }
 
 StringName TranslationServer::pseudolocalize(const StringName &p_message) const {
@@ -910,7 +875,7 @@ StringName TranslationServer::tool_pseudolocalize(const StringName &p_message) c
 
 String TranslationServer::get_override_string(String &p_message) const {
 	String res;
-	for (int i = 0; i < p_message.length(); i++) {
+	for (int i = 0; i < p_message.size(); i++) {
 		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
 			res += p_message[i];
 			res += p_message[i + 1];
@@ -924,7 +889,7 @@ String TranslationServer::get_override_string(String &p_message) const {
 
 String TranslationServer::double_vowels(String &p_message) const {
 	String res;
-	for (int i = 0; i < p_message.length(); i++) {
+	for (int i = 0; i < p_message.size(); i++) {
 		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
 			res += p_message[i];
 			res += p_message[i + 1];
@@ -942,7 +907,7 @@ String TranslationServer::double_vowels(String &p_message) const {
 
 String TranslationServer::replace_with_accented_string(String &p_message) const {
 	String res;
-	for (int i = 0; i < p_message.length(); i++) {
+	for (int i = 0; i < p_message.size(); i++) {
 		if (pseudolocalization_skip_placeholders_enabled && is_placeholder(p_message, i)) {
 			res += p_message[i];
 			res += p_message[i + 1];
@@ -965,7 +930,7 @@ String TranslationServer::wrap_with_fakebidi_characters(String &p_message) const
 	char32_t fakebidisuffix = U'\u202c';
 	res += fakebidiprefix;
 	// The fake bidi unicode gets popped at every newline so pushing it back at every newline.
-	for (int i = 0; i < p_message.length(); i++) {
+	for (int i = 0; i < p_message.size(); i++) {
 		if (p_message[i] == '\n') {
 			res += fakebidisuffix;
 			res += p_message[i];
@@ -1007,33 +972,10 @@ const char32_t *TranslationServer::get_accented_version(char32_t p_character) co
 }
 
 bool TranslationServer::is_placeholder(String &p_message, int p_index) const {
-	return p_index < p_message.length() - 1 && p_message[p_index] == '%' &&
+	return p_index < p_message.size() - 1 && p_message[p_index] == '%' &&
 			(p_message[p_index + 1] == 's' || p_message[p_index + 1] == 'c' || p_message[p_index + 1] == 'd' ||
 					p_message[p_index + 1] == 'o' || p_message[p_index + 1] == 'x' || p_message[p_index + 1] == 'X' || p_message[p_index + 1] == 'f');
 }
-
-#ifdef TOOLS_ENABLED
-void TranslationServer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	const String pf = p_function;
-	if (p_idx == 0) {
-		HashMap<String, String> *target_hash_map = nullptr;
-		if (pf == "get_language_name") {
-			target_hash_map = &language_map;
-		} else if (pf == "get_script_name") {
-			target_hash_map = &script_map;
-		} else if (pf == "get_country_name") {
-			target_hash_map = &country_name_map;
-		}
-
-		if (target_hash_map) {
-			for (const KeyValue<String, String> &E : *target_hash_map) {
-				r_options->push_back(E.key.quote());
-			}
-		}
-	}
-	Object::get_argument_options(p_function, p_idx, r_options);
-}
-#endif // TOOLS_ENABLED
 
 void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &TranslationServer::set_locale);
@@ -1054,8 +996,8 @@ void TranslationServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_locale_name", "locale"), &TranslationServer::get_locale_name);
 
-	ClassDB::bind_method(D_METHOD("translate", "message", "context"), &TranslationServer::translate, DEFVAL(StringName()));
-	ClassDB::bind_method(D_METHOD("translate_plural", "message", "plural_message", "n", "context"), &TranslationServer::translate_plural, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("translate", "message", "context"), &TranslationServer::translate, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("translate_plural", "message", "plural_message", "n", "context"), &TranslationServer::translate_plural, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("add_translation", "translation"), &TranslationServer::add_translation);
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationServer::remove_translation);

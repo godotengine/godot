@@ -39,8 +39,8 @@ void AudioEffectStereoEnhanceInstance::process(const AudioFrame *p_src_frames, A
 	unsigned int delay_frames = (base->time_pullout / 1000.0) * AudioServer::get_singleton()->get_mix_rate();
 
 	for (int i = 0; i < p_frame_count; i++) {
-		float l = p_src_frames[i].left;
-		float r = p_src_frames[i].right;
+		float l = p_src_frames[i].l;
+		float r = p_src_frames[i].r;
 
 		float center = (l + r) / 2.0f;
 
@@ -65,8 +65,8 @@ void AudioEffectStereoEnhanceInstance::process(const AudioFrame *p_src_frames, A
 			r = delay_ringbuff[(ringbuff_pos - delay_frames) & ringbuff_mask];
 		}
 
-		p_dst_frames[i].left = l;
-		p_dst_frames[i].right = r;
+		p_dst_frames[i].l = l;
+		p_dst_frames[i].r = r;
 		ringbuff_pos++;
 	}
 }

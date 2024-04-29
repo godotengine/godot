@@ -43,7 +43,6 @@ public:
 
 	virtual int get_slider_count() const { return 3; };
 	virtual float get_slider_step() const = 0;
-	virtual float get_spinbox_arrow_step() const { return get_slider_step(); };
 	virtual String get_slider_label(int idx) const = 0;
 	virtual float get_slider_max(int idx) const = 0;
 	virtual float get_slider_value(int idx) const = 0;
@@ -110,8 +109,7 @@ public:
 
 	virtual String get_name() const override { return "RAW"; }
 
-	virtual float get_slider_step() const override { return 0.001; }
-	virtual float get_spinbox_arrow_step() const override { return 0.01; }
+	virtual float get_slider_step() const override { return 0.01; }
 	virtual String get_slider_label(int idx) const override;
 	virtual float get_slider_max(int idx) const override;
 	virtual float get_slider_value(int idx) const override;

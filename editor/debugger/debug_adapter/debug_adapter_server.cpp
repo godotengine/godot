@@ -62,12 +62,9 @@ void DebugAdapterServer::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("network/debug_adapter")) {
-				break;
-			}
 			protocol._request_timeout = EDITOR_GET("network/debug_adapter/request_timeout");
 			protocol._sync_breakpoints = EDITOR_GET("network/debug_adapter/sync_breakpoints");
-			int port = _EDITOR_GET("network/debug_adapter/remote_port");
+			int port = (int)_EDITOR_GET("network/debug_adapter/remote_port");
 			if (port != remote_port) {
 				stop();
 				start();

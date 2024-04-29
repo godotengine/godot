@@ -61,20 +61,20 @@ void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFra
 						allpass[0][2].update(
 								allpass[0][3].update(
 										allpass[0][4].update(
-												allpass[0][5].update(p_src_frames[i].left + h.left * base->feedback))))));
-		h.left = y;
+												allpass[0][5].update(p_src_frames[i].l + h.l * base->feedback))))));
+		h.l = y;
 
-		p_dst_frames[i].left = p_src_frames[i].left + y * base->depth;
+		p_dst_frames[i].l = p_src_frames[i].l + y * base->depth;
 
 		y = allpass[1][0].update(
 				allpass[1][1].update(
 						allpass[1][2].update(
 								allpass[1][3].update(
 										allpass[1][4].update(
-												allpass[1][5].update(p_src_frames[i].right + h.right * base->feedback))))));
-		h.right = y;
+												allpass[1][5].update(p_src_frames[i].r + h.r * base->feedback))))));
+		h.r = y;
 
-		p_dst_frames[i].right = p_src_frames[i].right + y * base->depth;
+		p_dst_frames[i].r = p_src_frames[i].r + y * base->depth;
 	}
 }
 

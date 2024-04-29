@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../math/emath.h"
+#include "../math/math.h"
 
 /* include SSE wrapper classes */
 #if defined(__SSE__) || defined(__ARM_NEON)

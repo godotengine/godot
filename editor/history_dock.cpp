@@ -31,7 +31,6 @@
 #include "history_dock.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/check_box.h"
@@ -220,11 +219,6 @@ void HistoryDock::_notification(int p_notification) {
 	}
 }
 
-void HistoryDock::save_options() {
-	EditorSettings::get_singleton()->set_project_metadata("history", "include_scene", current_scene_checkbox->is_pressed());
-	EditorSettings::get_singleton()->set_project_metadata("history", "include_global", global_history_checkbox->is_pressed());
-}
-
 HistoryDock::HistoryDock() {
 	set_name("History");
 
@@ -235,31 +229,25 @@ HistoryDock::HistoryDock() {
 	HBoxContainer *mode_hb = memnew(HBoxContainer);
 	add_child(mode_hb);
 
-	bool include_scene = EditorSettings::get_singleton()->get_project_metadata("history", "include_scene", true);
-	bool include_global = EditorSettings::get_singleton()->get_project_metadata("history", "include_global", true);
-
 	current_scene_checkbox = memnew(CheckBox);
 	mode_hb->add_child(current_scene_checkbox);
 	current_scene_checkbox->set_flat(true);
-	current_scene_checkbox->set_pressed(include_scene);
+	current_scene_checkbox->set_pressed(true);
 	current_scene_checkbox->set_text(TTR("Scene"));
 	current_scene_checkbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	current_scene_checkbox->set_clip_text(true);
 	current_scene_checkbox->connect("toggled", callable_mp(this, &HistoryDock::refresh_history).unbind(1));
-	current_scene_checkbox->connect("toggled", callable_mp(this, &HistoryDock::save_options).unbind(1));
 
 	global_history_checkbox = memnew(CheckBox);
 	mode_hb->add_child(global_history_checkbox);
 	global_history_checkbox->set_flat(true);
-	global_history_checkbox->set_pressed(include_global);
+	global_history_checkbox->set_pressed(true);
 	global_history_checkbox->set_text(TTR("Global"));
 	global_history_checkbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	global_history_checkbox->set_clip_text(true);
 	global_history_checkbox->connect("toggled", callable_mp(this, &HistoryDock::refresh_history).unbind(1));
-	global_history_checkbox->connect("toggled", callable_mp(this, &HistoryDock::save_options).unbind(1));
 
 	action_list = memnew(ItemList);
-	action_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(action_list);
 	action_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	action_list->connect("item_selected", callable_mp(this, &HistoryDock::seek_history));

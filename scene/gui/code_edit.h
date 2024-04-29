@@ -222,7 +222,6 @@ private:
 
 	void _update_scroll_selected_line(float p_mouse_y);
 	void _filter_code_completion_candidates_impl();
-	bool _should_reset_selected_option_for_new_options(const Vector<ScriptLanguage::CodeCompletionOption> &p_new_options);
 
 	/* Line length guidelines */
 	TypedArray<int> line_length_guideline_columns;
@@ -305,7 +304,6 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	String _get_text_for_symbol_lookup_bind_compat_73196();
-	void _add_code_completion_option_compat_84906(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL, int p_location = LOCATION_OTHER);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -463,7 +461,7 @@ public:
 
 	void request_code_completion(bool p_force = false);
 
-	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant(), int p_location = LOCATION_OTHER);
+	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL, int p_location = LOCATION_OTHER);
 	void update_code_completion_options(bool p_forced = false);
 
 	TypedArray<Dictionary> get_code_completion_options() const;
@@ -487,9 +485,6 @@ public:
 	String get_text_with_cursor_char(int p_line, int p_column) const;
 
 	void set_symbol_lookup_word_as_valid(bool p_valid);
-
-	/* Text manipulation */
-	void duplicate_lines();
 
 	CodeEdit();
 	~CodeEdit();

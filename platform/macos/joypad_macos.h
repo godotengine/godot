@@ -28,62 +28,93 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef JOYPAD_MACOS_H
+#define JOYPAD_MACOS_H
+
 #include "core/input/input.h"
 
-#define Key _QKey
-#import <CoreHaptics/CoreHaptics.h>
-#import <GameController/GameController.h>
-#undef Key
+#import <ForceFeedback/ForceFeedback.h>
+#import <ForceFeedback/ForceFeedbackConstants.h>
+#import <IOKit/hid/IOHIDLib.h>
+#import <Kernel/IOKit/hidsystem/IOHIDUsageTables.h>
 
-@interface JoypadMacOSObserver : NSObject
+struct rec_element {
+	IOHIDElementRef ref;
+	IOHIDElementCookie cookie;
 
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
+	uint32_t usage = 0;
 
-@end
+	int min = 0;
+	int max = 0;
 
-API_AVAILABLE(macosx(11))
-@interface RumbleMotor : NSObject
-@property(strong, nonatomic) CHHapticEngine *engine;
-@property(strong, nonatomic) id<CHHapticPatternPlayer> player;
-@end
+	struct Comparator {
+		bool operator()(const rec_element p_a, const rec_element p_b) const { return p_a.usage < p_b.usage; }
+	};
+};
 
-API_AVAILABLE(macosx(11))
-@interface RumbleContext : NSObject
-// High frequency motor, it's usually the right engine.
-@property(strong, nonatomic) RumbleMotor *weak_motor;
-// Low frequency motor, it's usually the left engine.
-@property(strong, nonatomic) RumbleMotor *strong_motor;
-@end
+struct joypad {
+	IOHIDDeviceRef device_ref = nullptr;
 
-// Controller support for macOS begins with macOS 10.9+,
-// however haptics (vibrations) are only supported in macOS 11+.
-@interface Joypad : NSObject
+	Vector<rec_element> axis_elements;
+	Vector<rec_element> button_elements;
+	Vector<rec_element> hat_elements;
 
-@property(assign, nonatomic) BOOL force_feedback;
-@property(assign, nonatomic) NSInteger ff_effect_timestamp;
-@property(strong, nonatomic) GCController *controller;
-@property(strong, nonatomic) RumbleContext *rumble_context API_AVAILABLE(macosx(11));
+	int id = 0;
+	bool offset_hat = false;
 
-- (instancetype)init;
-- (instancetype)init:(GCController *)controller;
+	io_service_t ffservice = 0; // Interface for force feedback, 0 = no ff.
+	FFCONSTANTFORCE ff_constant_force;
+	FFDeviceObjectReference ff_device = nullptr;
+	FFEffectObjectReference ff_object = nullptr;
+	uint64_t ff_timestamp = 0;
+	LONG *ff_directions = nullptr;
+	FFEFFECT ff_effect;
+	DWORD *ff_axes = nullptr;
 
-@end
+	void add_hid_elements(CFArrayRef p_array);
+	void add_hid_element(IOHIDElementRef p_element);
+
+	bool has_element(IOHIDElementCookie p_cookie, Vector<rec_element> *p_list) const;
+	bool config_force_feedback(io_service_t p_service);
+	bool check_ff_features();
+
+	int get_hid_element_state(rec_element *p_element) const;
+
+	void free();
+	joypad();
+};
 
 class JoypadMacOS {
+	enum {
+		JOYPADS_MAX = 16,
+	};
+
 private:
-	JoypadMacOSObserver *observer;
+	Input *input = nullptr;
+	IOHIDManagerRef hid_manager;
+
+	Vector<joypad> device_list;
+
+	bool have_device(IOHIDDeviceRef p_device) const;
+	bool configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy);
+
+	int get_joy_index(int p_id) const;
+	int get_joy_ref(IOHIDDeviceRef p_device) const;
+
+	void poll_joypads() const;
+	void config_hid_manager(CFArrayRef p_matching_array) const;
+
+	void joypad_vibration_start(int p_id, float p_magnitude, float p_duration, uint64_t p_timestamp);
+	void joypad_vibration_stop(int p_id, uint64_t p_timestamp);
 
 public:
-	JoypadMacOS();
-	~JoypadMacOS();
-
-	API_AVAILABLE(macosx(11))
-	void joypad_vibration_start(Joypad *p_joypad, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
-	API_AVAILABLE(macosx(11))
-	void joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp);
-
-	void start_processing();
 	void process_joypads();
+
+	void _device_added(IOReturn p_res, IOHIDDeviceRef p_device);
+	void _device_removed(IOReturn p_res, IOHIDDeviceRef p_device);
+
+	JoypadMacOS(Input *in);
+	~JoypadMacOS();
 };
+
+#endif // JOYPAD_MACOS_H

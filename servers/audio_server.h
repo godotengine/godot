@@ -52,8 +52,8 @@ class AudioDriver {
 	uint64_t _last_mix_frames = 0;
 
 #ifdef DEBUG_ENABLED
-	SafeNumeric<uint64_t> prof_ticks;
-	SafeNumeric<uint64_t> prof_time;
+	uint64_t prof_ticks = 0;
+	uint64_t prof_time = 0;
 #endif
 
 protected:
@@ -69,8 +69,8 @@ protected:
 	int _get_configured_mix_rate();
 
 #ifdef DEBUG_ENABLED
-	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks.set(OS::get_singleton()->get_ticks_usec()); }
-	_FORCE_INLINE_ void stop_counting_ticks() { prof_time.add(OS::get_singleton()->get_ticks_usec() - prof_ticks.get()); }
+	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks = OS::get_singleton()->get_ticks_usec(); }
+	_FORCE_INLINE_ void stop_counting_ticks() { prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks; }
 #else
 	_FORCE_INLINE_ void start_counting_ticks() {}
 	_FORCE_INLINE_ void stop_counting_ticks() {}
@@ -125,8 +125,8 @@ public:
 	unsigned int get_input_size() { return input_size; }
 
 #ifdef DEBUG_ENABLED
-	uint64_t get_profiling_time() const { return prof_time.get(); }
-	void reset_profiling_time() { prof_time.set(0); }
+	uint64_t get_profiling_time() const { return prof_time; }
+	void reset_profiling_time() { prof_time = 0; }
 #endif
 
 	AudioDriver() {}
@@ -183,7 +183,7 @@ private:
 	uint64_t mix_count = 0;
 	uint64_t mix_frames = 0;
 #ifdef DEBUG_ENABLED
-	SafeNumeric<uint64_t> prof_time;
+	uint64_t prof_time = 0;
 #endif
 
 	float channel_disable_threshold_db = 0.0f;
@@ -372,13 +372,13 @@ public:
 	float get_playback_speed_scale() const;
 
 	// Convenience method.
-	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time = 0, float p_pitch_scale = 1);
+	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time = 0, float p_pitch_scale = 1);
 	// Expose all parameters.
-	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time = 0, float p_pitch_scale = 1, float p_highshelf_gain = 0, float p_attenuation_cutoff_hz = 0);
+	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, HashMap<StringName, Vector<AudioFrame>> p_bus_volumes, float p_start_time = 0, float p_pitch_scale = 1, float p_highshelf_gain = 0, float p_attenuation_cutoff_hz = 0);
 	void stop_playback_stream(Ref<AudioStreamPlayback> p_playback);
 
-	void set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volumes);
-	void set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes);
+	void set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, StringName p_bus, Vector<AudioFrame> p_volumes);
+	void set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, HashMap<StringName, Vector<AudioFrame>> p_bus_volumes);
 	void set_playback_all_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, Vector<AudioFrame> p_volumes);
 	void set_playback_pitch_scale(Ref<AudioStreamPlayback> p_playback, float p_pitch_scale);
 	void set_playback_paused(Ref<AudioStreamPlayback> p_playback, bool p_paused);
@@ -435,10 +435,6 @@ public:
 	void set_input_device(const String &p_name);
 
 	void set_enable_tagging_used_audio_streams(bool p_enable);
-
-#ifdef TOOLS_ENABLED
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
 
 	AudioServer();
 	virtual ~AudioServer();

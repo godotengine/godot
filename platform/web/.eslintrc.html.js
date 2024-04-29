@@ -15,7 +15,5 @@ module.exports = {
 		"Godot": true,
 		"Engine": true,
 		"$GODOT_CONFIG": true,
-		"$GODOT_THREADS_ENABLED": true,
-		"___GODOT_THREADS_ENABLED___": true,
 	},
 };

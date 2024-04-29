@@ -73,7 +73,7 @@ public:
 	String get_id_path(ID p_id) const;
 	void remove_id(ID p_id);
 
-	Error load_from_cache(bool p_reset);
+	Error load_from_cache();
 	Error save_to_cache();
 	Error update_cache();
 

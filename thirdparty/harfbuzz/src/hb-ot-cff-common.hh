@@ -41,21 +41,10 @@ using namespace OT;
 using objidx_t = hb_serialize_context_t::objidx_t;
 using whence_t = hb_serialize_context_t::whence_t;
 
-/* CFF offsets can technically be negative */
-template<typename Type, typename ...Ts>
-static inline const Type& StructAtOffsetOrNull (const void *P, int offset, hb_sanitize_context_t &sc, Ts&&... ds)
-{
-  if (!offset) return Null (Type);
-
-  const char *p = (const char *) P + offset;
-  if (!sc.check_point (p)) return Null (Type);
-
-  const Type &obj = *reinterpret_cast<const Type *> (p);
-  if (!obj.sanitize (&sc, std::forward<Ts> (ds)...)) return Null (Type);
-
-  return obj;
-}
-
+/* utility macro */
+template<typename Type>
+static inline const Type& StructAtOffsetOrNull (const void *P, unsigned int offset)
+{ return offset ? StructAtOffset<Type> (P, offset) : Null (Type); }
 
 struct code_pair_t
 {
@@ -89,8 +78,7 @@ struct CFFIndex
 	    hb_requires (hb_is_iterable (Iterable))>
   bool serialize (hb_serialize_context_t *c,
 		  const Iterable &iterable,
-		  const unsigned *p_data_size = nullptr,
-                  unsigned min_off_size = 0)
+		  const unsigned *p_data_size = nullptr)
   {
     TRACE_SERIALIZE (this);
     unsigned data_size;
@@ -100,7 +88,7 @@ struct CFFIndex
       total_size (iterable, &data_size);
 
     auto it = hb_iter (iterable);
-    if (unlikely (!serialize_header (c, +it, data_size, min_off_size))) return_trace (false);
+    if (unlikely (!serialize_header (c, +it, data_size))) return_trace (false);
     unsigned char *ret = c->allocate_size<unsigned char> (data_size, false);
     if (unlikely (!ret)) return_trace (false);
     for (const auto &_ : +it)
@@ -123,13 +111,11 @@ struct CFFIndex
 	    hb_requires (hb_is_iterator (Iterator))>
   bool serialize_header (hb_serialize_context_t *c,
 			 Iterator it,
-			 unsigned data_size,
-                         unsigned min_off_size = 0)
+			 unsigned data_size)
   {
     TRACE_SERIALIZE (this);
 
     unsigned off_size = (hb_bit_storage (data_size + 1) + 7) / 8;
-    off_size = hb_max(min_off_size, off_size);
 
     /* serialize CFFIndex header */
     if (unlikely (!c->extend_min (this))) return_trace (false);
@@ -209,7 +195,7 @@ struct CFFIndex
 
   template <typename Iterable,
 	    hb_requires (hb_is_iterable (Iterable))>
-  static unsigned total_size (const Iterable &iterable, unsigned *data_size = nullptr, unsigned min_off_size = 0)
+  static unsigned total_size (const Iterable &iterable, unsigned *data_size = nullptr)
   {
     auto it = + hb_iter (iterable);
     if (!it)
@@ -225,7 +211,6 @@ struct CFFIndex
     if (data_size) *data_size = total;
 
     unsigned off_size = (hb_bit_storage (total + 1) + 7) / 8;
-    off_size = hb_max(min_off_size, off_size);
 
     return min_size + HBUINT8::static_size + (hb_len (it) + 1) * off_size + total;
   }
@@ -289,10 +274,8 @@ struct CFFIndex
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
-			  hb_barrier () &&
 			  (count == 0 || /* empty INDEX */
 			   (count < count + 1u &&
-			    hb_barrier () &&
 			    c->check_struct (&offSize) && offSize >= 1 && offSize <= 4 &&
 			    c->check_array (offsets, offSize, count + 1u) &&
 			    c->check_array ((const HBUINT8*) data_base (), 1, offset_at (count))))));
@@ -429,7 +412,6 @@ struct FDSelect0 {
     TRACE_SANITIZE (this);
     if (unlikely (!(c->check_struct (this))))
       return_trace (false);
-    hb_barrier ();
     if (unlikely (!c->check_array (fds, c->get_num_glyphs ())))
       return_trace (false);
 
@@ -456,9 +438,7 @@ struct FDSelect3_4_Range
   bool sanitize (hb_sanitize_context_t *c, const void * /*nullptr*/, unsigned int fdcount) const
   {
     TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this) &&
-		  hb_barrier () &&
-		  first < c->get_num_glyphs () && (fd < fdcount));
+    return_trace (first < c->get_num_glyphs () && (fd < fdcount));
   }
 
   GID_TYPE    first;
@@ -476,20 +456,15 @@ struct FDSelect3_4
   bool sanitize (hb_sanitize_context_t *c, unsigned int fdcount) const
   {
     TRACE_SANITIZE (this);
-    if (unlikely (!(c->check_struct (this) &&
-		    ranges.sanitize (c, nullptr, fdcount) &&
-		    hb_barrier () &&
-		    (nRanges () != 0) &&
-		    ranges[0].first == 0)))
+    if (unlikely (!c->check_struct (this) || !ranges.sanitize (c, nullptr, fdcount) ||
+		  (nRanges () == 0) || ranges[0].first != 0))
       return_trace (false);
 
     for (unsigned int i = 1; i < nRanges (); i++)
       if (unlikely (ranges[i - 1].first >= ranges[i].first))
 	return_trace (false);
 
-    if (unlikely (!(sentinel().sanitize (c) &&
-		   hb_barrier () &&
-		   (sentinel() == c->get_num_glyphs ()))))
+    if (unlikely (!sentinel().sanitize (c) || (sentinel() != c->get_num_glyphs ())))
       return_trace (false);
 
     return_trace (true);
@@ -584,7 +559,6 @@ struct FDSelect
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
-    hb_barrier ();
 
     switch (format)
     {

@@ -248,7 +248,7 @@ static _FORCE_INLINE_ uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev 
 	return ((p_prev << 5) + p_prev) + hash_one_uint64(u.i);
 }
 
-template <typename T>
+template <class T>
 static _FORCE_INLINE_ uint32_t hash_make_uint32_t(T p_in) {
 	union {
 		T t;
@@ -281,7 +281,7 @@ static _FORCE_INLINE_ uint64_t hash_djb2_one_64(uint64_t p_in, uint64_t p_prev =
 	return ((p_prev << 5) + p_prev) ^ p_in;
 }
 
-template <typename T>
+template <class T>
 static _FORCE_INLINE_ uint64_t hash_make_uint64_t(T p_in) {
 	union {
 		T t;
@@ -293,15 +293,15 @@ static _FORCE_INLINE_ uint64_t hash_make_uint64_t(T p_in) {
 	return _u._u64;
 }
 
-template <typename T>
+template <class T>
 class Ref;
 
 struct HashMapHasherDefault {
 	// Generic hash function for any type.
-	template <typename T>
+	template <class T>
 	static _FORCE_INLINE_ uint32_t hash(const T *p_pointer) { return hash_one_uint64((uint64_t)p_pointer); }
 
-	template <typename T>
+	template <class T>
 	static _FORCE_INLINE_ uint32_t hash(const Ref<T> &p_ref) { return hash_one_uint64((uint64_t)p_ref.operator->()); }
 
 	static _FORCE_INLINE_ uint32_t hash(const String &p_string) { return p_string.hash(); }
@@ -310,7 +310,7 @@ struct HashMapHasherDefault {
 	static _FORCE_INLINE_ uint32_t hash(const char16_t p_uchar) { return hash_fmix32(p_uchar); }
 	static _FORCE_INLINE_ uint32_t hash(const char32_t p_uchar) { return hash_fmix32(p_uchar); }
 	static _FORCE_INLINE_ uint32_t hash(const RID &p_rid) { return hash_one_uint64(p_rid.get_id()); }
-	static _FORCE_INLINE_ uint32_t hash(const CharString &p_char_string) { return hash_djb2(p_char_string.get_data()); }
+	static _FORCE_INLINE_ uint32_t hash(const CharString &p_char_string) { return hash_djb2(p_char_string.ptr()); }
 	static _FORCE_INLINE_ uint32_t hash(const StringName &p_string_name) { return p_string_name.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const NodePath &p_path) { return p_path.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const ObjectID &p_id) { return hash_one_uint64(p_id); }
@@ -387,7 +387,7 @@ struct HashMapHasherDefault {
 };
 
 // TODO: Fold this into HashMapHasherDefault once C++20 concepts are allowed
-template <typename T>
+template <class T>
 struct HashableHasher {
 	static _FORCE_INLINE_ uint32_t hash(const T &hashable) { return hashable.hash(); }
 };
@@ -429,7 +429,7 @@ struct HashMapComparatorDefault<Vector3> {
 
 constexpr uint32_t HASH_TABLE_SIZE_MAX = 29;
 
-inline constexpr uint32_t hash_table_size_primes[HASH_TABLE_SIZE_MAX] = {
+const uint32_t hash_table_size_primes[HASH_TABLE_SIZE_MAX] = {
 	5,
 	13,
 	23,
@@ -462,7 +462,7 @@ inline constexpr uint32_t hash_table_size_primes[HASH_TABLE_SIZE_MAX] = {
 };
 
 // Computed with elem_i = UINT64_C (0 x FFFFFFFF FFFFFFFF ) / d_i + 1, where d_i is the i-th element of the above array.
-inline constexpr uint64_t hash_table_size_primes_inv[HASH_TABLE_SIZE_MAX] = {
+const uint64_t hash_table_size_primes_inv[HASH_TABLE_SIZE_MAX] = {
 	3689348814741910324,
 	1418980313362273202,
 	802032351030850071,

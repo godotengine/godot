@@ -33,9 +33,7 @@
 
 #if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
-class Dictionary;
-
-Dictionary detect_wgl();
+int detect_wgl_version();
 
 #endif // WINDOWS_ENABLED && GLES3_ENABLED
 

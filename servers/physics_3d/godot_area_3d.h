@@ -204,7 +204,7 @@ void GodotArea3D::add_body_to_query(GodotBody3D *p_body, uint32_t p_body_shape, 
 void GodotArea3D::remove_body_from_query(GodotBody3D *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
 	BodyKey bk(p_body, p_body_shape, p_area_shape);
 	monitored_bodies[bk].dec();
-	if (get_space() && !monitor_query_list.in_list()) {
+	if (!monitor_query_list.in_list()) {
 		_queue_monitor_update();
 	}
 }
@@ -220,7 +220,7 @@ void GodotArea3D::add_area_to_query(GodotArea3D *p_area, uint32_t p_area_shape, 
 void GodotArea3D::remove_area_from_query(GodotArea3D *p_area, uint32_t p_area_shape, uint32_t p_self_shape) {
 	BodyKey bk(p_area, p_area_shape, p_self_shape);
 	monitored_areas[bk].dec();
-	if (get_space() && !monitor_query_list.in_list()) {
+	if (!monitor_query_list.in_list()) {
 		_queue_monitor_update();
 	}
 }

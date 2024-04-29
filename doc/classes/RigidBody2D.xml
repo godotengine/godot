@@ -11,15 +11,15 @@
 		[b]Note:[/b] Changing the 2D transform or [member linear_velocity] of a [RigidBody2D] very often may lead to some unpredictable behaviors. If you need to directly affect the body, prefer [method _integrate_forces] as it allows you to directly access the physics state.
 	</description>
 	<tutorials>
-		<link title="2D Physics Platformer Demo">https://godotengine.org/asset-library/asset/2725</link>
-		<link title="Instancing Demo">https://godotengine.org/asset-library/asset/2716</link>
+		<link title="2D Physics Platformer Demo">https://godotengine.org/asset-library/asset/119</link>
+		<link title="Instancing Demo">https://godotengine.org/asset-library/asset/148</link>
 	</tutorials>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="state" type="PhysicsDirectBodyState2D" />
 			<description>
-				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default, it is called before the standard force integration, but the [member custom_integrator] property allows you to disable the standard force integration and do fully custom force integration for a body.
+				Allows you to read and safely modify the simulation state for the object. Use this instead of [method Node._physics_process] if you need to directly change the body's [code]position[/code] or other physics properties. By default, it works in addition to the usual physics behavior, but [member custom_integrator] allows you to disable the default behavior and write custom force integration for a body.
 			</description>
 		</method>
 		<method name="add_constant_central_force">
@@ -159,8 +159,7 @@
 			Continuous collision detection tries to predict where a moving body will collide instead of moving it and correcting its movement after collision. Continuous collision detection is slower, but more precise and misses fewer collisions with small, fast-moving objects. Raycasting and shapecasting methods are available. See [enum CCDMode] for details.
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" default="false">
-			If [code]true[/code], the standard force integration (like gravity or damping) will be disabled for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] method, if that virtual method is overridden.
-			Setting this property will call the method [method PhysicsServer2D.body_set_omit_force_integration] internally.
+			If [code]true[/code], internal force integration is disabled for this body. Aside from collision response, the body will only move as determined by the [method _integrate_forces] function.
 		</member>
 		<member name="freeze" type="bool" setter="set_freeze_enabled" getter="is_freeze_enabled" default="false">
 			If [code]true[/code], the body is frozen. Gravity and forces are not applied anymore.

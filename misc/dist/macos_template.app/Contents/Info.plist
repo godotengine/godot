@@ -58,6 +58,5 @@ $usage_descriptions
 	</dict>
 	<key>NSHighResolutionCapable</key>
 $highres
-$additional_plist_content
 </dict>
 </plist>

@@ -41,7 +41,7 @@ real_t Quaternion::angle_to(const Quaternion &p_to) const {
 
 Vector3 Quaternion::get_euler(EulerOrder p_order) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector3(0, 0, 0), "The quaternion " + operator String() + " must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Vector3(0, 0, 0), "The quaternion must be normalized.");
 #endif
 	return Basis(*this).get_euler(p_order);
 }
@@ -88,7 +88,7 @@ bool Quaternion::is_normalized() const {
 
 Quaternion Quaternion::inverse() const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The quaternion " + operator String() + " must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The quaternion must be normalized.");
 #endif
 	return Quaternion(-x, -y, -z, w);
 }
@@ -110,10 +110,10 @@ Quaternion Quaternion::exp() const {
 	return Quaternion(src_v, theta);
 }
 
-Quaternion Quaternion::slerp(const Quaternion &p_to, real_t p_weight) const {
+Quaternion Quaternion::slerp(const Quaternion &p_to, const real_t &p_weight) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion " + operator String() + " must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quaternion(), "The end quaternion " + p_to.operator String() + " must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
 	Quaternion to1;
 	real_t omega, cosom, sinom, scale0, scale1;
@@ -151,10 +151,10 @@ Quaternion Quaternion::slerp(const Quaternion &p_to, real_t p_weight) const {
 			scale0 * w + scale1 * to1.w);
 }
 
-Quaternion Quaternion::slerpni(const Quaternion &p_to, real_t p_weight) const {
+Quaternion Quaternion::slerpni(const Quaternion &p_to, const real_t &p_weight) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion " + operator String() + " must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quaternion(), "The end quaternion " + p_to.operator String() + " must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_to.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
 	const Quaternion &from = *this;
 
@@ -175,10 +175,10 @@ Quaternion Quaternion::slerpni(const Quaternion &p_to, real_t p_weight) const {
 			invFactor * from.w + newFactor * p_to.w);
 }
 
-Quaternion Quaternion::spherical_cubic_interpolate(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, real_t p_weight) const {
+Quaternion Quaternion::spherical_cubic_interpolate(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion " + operator String() + " must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion " + p_b.operator String() + " must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
 	Quaternion from_q = *this;
 	Quaternion pre_q = p_pre_a;
@@ -225,11 +225,11 @@ Quaternion Quaternion::spherical_cubic_interpolate(const Quaternion &p_b, const 
 	return q1.slerp(q2, p_weight);
 }
 
-Quaternion Quaternion::spherical_cubic_interpolate_in_time(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, real_t p_weight,
-		real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t) const {
+Quaternion Quaternion::spherical_cubic_interpolate_in_time(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight,
+		const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion " + operator String() + " must be normalized.");
-	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion " + p_b.operator String() + " must be normalized.");
+	ERR_FAIL_COND_V_MSG(!is_normalized(), Quaternion(), "The start quaternion must be normalized.");
+	ERR_FAIL_COND_V_MSG(!p_b.is_normalized(), Quaternion(), "The end quaternion must be normalized.");
 #endif
 	Quaternion from_q = *this;
 	Quaternion pre_q = p_pre_a;
@@ -294,7 +294,7 @@ real_t Quaternion::get_angle() const {
 
 Quaternion::Quaternion(const Vector3 &p_axis, real_t p_angle) {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 " + p_axis.operator String() + " must be normalized.");
+	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 must be normalized.");
 #endif
 	real_t d = p_axis.length();
 	if (d == 0) {

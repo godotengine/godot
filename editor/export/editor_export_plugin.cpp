@@ -285,19 +285,11 @@ String EditorExportPlugin::_get_export_option_warning(const Ref<EditorExportPlat
 	return ret;
 }
 
-Dictionary EditorExportPlugin::_get_export_options_overrides(const Ref<EditorExportPlatform> &p_platform) const {
-	Dictionary ret;
-	GDVIRTUAL_CALL(_get_export_options_overrides, p_platform, ret);
-	return ret;
-}
-
 void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) {
 }
 
 void EditorExportPlugin::_export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags) {
 }
-
-void EditorExportPlugin::_export_end() {}
 
 void EditorExportPlugin::skip() {
 	skipped = true;
@@ -333,7 +325,6 @@ void EditorExportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_end_customize_resources);
 
 	GDVIRTUAL_BIND(_get_export_options, "platform");
-	GDVIRTUAL_BIND(_get_export_options_overrides, "platform");
 	GDVIRTUAL_BIND(_should_update_export_options, "platform");
 	GDVIRTUAL_BIND(_get_export_option_warning, "platform", "option");
 

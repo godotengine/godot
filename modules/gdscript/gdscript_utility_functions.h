@@ -46,7 +46,7 @@ public:
 	static Variant::Type get_function_return_type(const StringName &p_function);
 	static StringName get_function_return_class(const StringName &p_function);
 	static Variant::Type get_function_argument_type(const StringName &p_function, int p_arg);
-	static int get_function_argument_count(const StringName &p_function);
+	static int get_function_argument_count(const StringName &p_function, int p_arg);
 	static bool is_function_vararg(const StringName &p_function);
 	static bool is_function_constant(const StringName &p_function);
 

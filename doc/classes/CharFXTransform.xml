@@ -11,7 +11,7 @@
 		<link title="RichTextEffect test project (third-party)">https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
 	<members>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0, 0, 0, 1)" keywords="colour">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0, 0, 0, 1)">
 			The color the character will be drawn with.
 		</member>
 		<member name="elapsed_time" type="float" setter="set_elapsed_time" getter="get_elapsed_time" default="0.0">
@@ -48,9 +48,6 @@
 		</member>
 		<member name="relative_index" type="int" setter="set_relative_index" getter="get_relative_index" default="0">
 			The character offset of the glyph, relative to the current [RichTextEffect] custom block. Setting this property won't affect drawing.
-		</member>
-		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
-			The current transform of the current glyph. It can be overridden (for example, by driving the position and rotation from a curve). You can also alter the existing value to apply transforms on top of other effects.
 		</member>
 		<member name="visible" type="bool" setter="set_visibility" getter="is_visible" default="true">
 			If [code]true[/code], the character will be drawn. If [code]false[/code], the character will be hidden. Characters around hidden characters will reflow to take the space of hidden characters. If this is not desired, set their [member color] to [code]Color(1, 1, 1, 0)[/code] instead.

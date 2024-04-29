@@ -153,10 +153,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="enabled_features" type="String" setter="" getter="get_enabled_features">
-			A comma-separated list of features that were successfully enabled by [method XRInterface.initialize] when setting up the WebXR session.
-			This may include features requested by setting [member required_features] and [member optional_features].
-		</member>
 		<member name="optional_features" type="String" setter="set_optional_features" getter="get_optional_features">
 			A comma-seperated list of optional features used by [method XRInterface.initialize] when setting up the WebXR session.
 			If a user's browser or device doesn't support one of the given features, initialization will continue, but you won't be able to use the requested feature.

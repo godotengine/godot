@@ -101,6 +101,7 @@ Error GLTFDocumentExtension::parse_texture_json(Ref<GLTFState> p_state, const Di
 Node3D *GLTFDocumentExtension::generate_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_parent) {
 	ERR_FAIL_NULL_V(p_state, nullptr);
 	ERR_FAIL_NULL_V(p_gltf_node, nullptr);
+	ERR_FAIL_NULL_V(p_scene_parent, nullptr);
 	Node3D *ret_node = nullptr;
 	GDVIRTUAL_CALL(_generate_scene_node, p_state, p_gltf_node, p_scene_parent, ret_node);
 	return ret_node;
@@ -185,6 +186,7 @@ Error GLTFDocumentExtension::serialize_texture_json(Ref<GLTFState> p_state, Dict
 Error GLTFDocumentExtension::export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_dict, Node *p_node) {
 	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(p_gltf_node, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(p_node, ERR_INVALID_PARAMETER);
 	Error err = OK;
 	GDVIRTUAL_CALL(_export_node, p_state, p_gltf_node, r_dict, p_node, err);
 	return err;

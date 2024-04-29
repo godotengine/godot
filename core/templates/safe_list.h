@@ -48,7 +48,7 @@
 
 // This is used in very specific areas of the engine where it's critical that these guarantees are held.
 
-template <typename T, typename A = DefaultAllocator>
+template <class T, class A = DefaultAllocator>
 class SafeList {
 	struct SafeListNode {
 		std::atomic<SafeListNode *> next = nullptr;

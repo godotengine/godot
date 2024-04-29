@@ -59,10 +59,10 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 	for (int i = 0; i < p_frame_count; i++) {
 		AudioFrame s = src[i];
 		//convert to positive
-		s.left = Math::abs(s.left);
-		s.right = Math::abs(s.right);
+		s.l = Math::abs(s.l);
+		s.r = Math::abs(s.r);
 
-		float peak = MAX(s.left, s.right);
+		float peak = MAX(s.l, s.r);
 
 		float overdb = 2.08136898f * Math::linear_to_db(peak / threshold);
 

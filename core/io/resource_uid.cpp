@@ -35,8 +35,6 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 
-// These constants are off by 1, causing the 'z' and '9' characters never to be used.
-// This cannot be fixed without breaking compatibility; see GH-83843.
 static constexpr uint32_t char_count = ('z' - 'a');
 static constexpr uint32_t base = char_count + ('9' - '0');
 
@@ -169,16 +167,14 @@ Error ResourceUID::save_to_cache() {
 	return OK;
 }
 
-Error ResourceUID::load_from_cache(bool p_reset) {
+Error ResourceUID::load_from_cache() {
 	Ref<FileAccess> f = FileAccess::open(get_cache_file(), FileAccess::READ);
 	if (f.is_null()) {
 		return ERR_CANT_OPEN;
 	}
 
 	MutexLock l(mutex);
-	if (p_reset) {
-		unique_ids.clear();
-	}
+	unique_ids.clear();
 
 	uint32_t entry_count = f->get_32();
 	for (uint32_t i = 0; i < entry_count; i++) {

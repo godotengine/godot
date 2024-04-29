@@ -32,7 +32,6 @@
 
 void PlaceholderTexture2D::set_size(Size2 p_size) {
 	size = p_size;
-	emit_changed();
 }
 
 int PlaceholderTexture2D::get_width() const {
@@ -78,7 +77,6 @@ PlaceholderTexture2D::~PlaceholderTexture2D() {
 
 void PlaceholderTexture3D::set_size(const Vector3i &p_size) {
 	size = p_size;
-	emit_changed();
 }
 
 Vector3i PlaceholderTexture3D::get_size() const {
@@ -135,7 +133,6 @@ PlaceholderTexture3D::~PlaceholderTexture3D() {
 
 void PlaceholderTextureLayered::set_size(const Size2i &p_size) {
 	size = p_size;
-	emit_changed();
 }
 
 Size2i PlaceholderTextureLayered::get_size() const {

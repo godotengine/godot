@@ -2,10 +2,9 @@
   <PropertyGroup>
     <ProjectGuid>{92600954-25F0-4291-8E11-1FEE9FC4BE20}</ProjectGuid>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>9</LangVersion>
-    <Nullable>enable</Nullable>
+    <LangVersion>7.2</LangVersion>
     <PackageId>GodotTools.IdeMessaging</PackageId>
-    <Version>1.1.2</Version>
+    <Version>1.1.1</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>Godot Engine contributors</Authors>
     <Company />

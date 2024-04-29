@@ -3,7 +3,6 @@
 Import("env")
 
 import core_builders
-import methods
 
 env.core_sources = []
 
@@ -36,12 +35,10 @@ if "SCRIPT_AES256_ENCRYPTION_KEY" in os.environ:
         )
         Exit(255)
 
+# NOTE: It is safe to generate this file here, since this is still executed serially
+with open("script_encryption_key.gen.cpp", "w") as f:
+    f.write('#include "core/config/project_settings.h"\nuint8_t script_encryption_key[32]={' + txt + "};\n")
 
-script_encryption_key_contents = (
-    '#include "core/config/project_settings.h"\nuint8_t script_encryption_key[32]={' + txt + "};\n"
-)
-
-methods.write_file_if_needed("script_encryption_key.gen.cpp", script_encryption_key_contents)
 
 # Add required thirdparty code.
 
@@ -91,24 +88,6 @@ if env["brotli"] and env["builtin_brotli"]:
         env_thirdparty.Append(CPPDEFINES=["BROTLI_BUILD_PORTABLE"])
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_brotli_sources)
-
-# Clipper2 Thirdparty source files used for polygon and polyline boolean operations.
-if env["builtin_clipper2"]:
-    thirdparty_clipper_dir = "#thirdparty/clipper2/"
-    thirdparty_clipper_sources = [
-        "src/clipper.engine.cpp",
-        "src/clipper.offset.cpp",
-        "src/clipper.rectclip.cpp",
-    ]
-    thirdparty_clipper_sources = [thirdparty_clipper_dir + file for file in thirdparty_clipper_sources]
-
-    env_thirdparty.Prepend(CPPPATH=[thirdparty_clipper_dir + "include"])
-    env.Prepend(CPPPATH=[thirdparty_clipper_dir + "include"])
-
-    env_thirdparty.Append(CPPDEFINES=["CLIPPER2_ENABLED"])
-    env.Append(CPPDEFINES=["CLIPPER2_ENABLED"])
-
-    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_clipper_sources)
 
 # Zlib library, can be unbundled
 if env["builtin_zlib"]:
@@ -205,23 +184,27 @@ env.Depends(
 env.CommandNoCache(
     "#core/io/certs_compressed.gen.h",
     "#thirdparty/certs/ca-certificates.crt",
-    env.Run(core_builders.make_certs_header),
+    env.Run(core_builders.make_certs_header, "Building ca-certificates header."),
 )
 
 # Authors
 env.Depends("#core/authors.gen.h", "../AUTHORS.md")
-env.CommandNoCache("#core/authors.gen.h", "../AUTHORS.md", env.Run(core_builders.make_authors_header))
+env.CommandNoCache(
+    "#core/authors.gen.h", "../AUTHORS.md", env.Run(core_builders.make_authors_header, "Generating authors header.")
+)
 
 # Donors
 env.Depends("#core/donors.gen.h", "../DONORS.md")
-env.CommandNoCache("#core/donors.gen.h", "../DONORS.md", env.Run(core_builders.make_donors_header))
+env.CommandNoCache(
+    "#core/donors.gen.h", "../DONORS.md", env.Run(core_builders.make_donors_header, "Generating donors header.")
+)
 
 # License
 env.Depends("#core/license.gen.h", ["../COPYRIGHT.txt", "../LICENSE.txt"])
 env.CommandNoCache(
     "#core/license.gen.h",
     ["../COPYRIGHT.txt", "../LICENSE.txt"],
-    env.Run(core_builders.make_license_header),
+    env.Run(core_builders.make_license_header, "Generating license header."),
 )
 
 # Chain load SCsubs

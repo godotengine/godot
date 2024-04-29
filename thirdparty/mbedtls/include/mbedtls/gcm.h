@@ -13,20 +13,31 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may
+ *  not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 #ifndef MBEDTLS_GCM_H
 #define MBEDTLS_GCM_H
-#include "mbedtls/private_access.h"
 
-#include "mbedtls/build_info.h"
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "mbedtls/config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
 
 #include "mbedtls/cipher.h"
-
-#if defined(MBEDTLS_BLOCK_CIPHER_C)
-#include "mbedtls/block_cipher.h"
-#endif
 
 #include <stdint.h>
 
@@ -35,10 +46,13 @@
 
 /** Authenticated decryption failed. */
 #define MBEDTLS_ERR_GCM_AUTH_FAILED                       -0x0012
+
+/* MBEDTLS_ERR_GCM_HW_ACCEL_FAILED is deprecated and should not be used. */
+/** GCM hardware accelerator failed. */
+#define MBEDTLS_ERR_GCM_HW_ACCEL_FAILED                   -0x0013
+
 /** Bad input parameters to function. */
 #define MBEDTLS_ERR_GCM_BAD_INPUT                         -0x0014
-/** An output buffer is too small. */
-#define MBEDTLS_ERR_GCM_BUFFER_TOO_SMALL                  -0x0016
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,31 +60,21 @@ extern "C" {
 
 #if !defined(MBEDTLS_GCM_ALT)
 
-#if defined(MBEDTLS_GCM_LARGE_TABLE)
-#define MBEDTLS_GCM_HTABLE_SIZE 256
-#else
-#define MBEDTLS_GCM_HTABLE_SIZE 16
-#endif
-
 /**
  * \brief          The GCM context structure.
  */
 typedef struct mbedtls_gcm_context {
-#if defined(MBEDTLS_BLOCK_CIPHER_C)
-    mbedtls_block_cipher_context_t MBEDTLS_PRIVATE(block_cipher_ctx);  /*!< The cipher context used. */
-#else
-    mbedtls_cipher_context_t MBEDTLS_PRIVATE(cipher_ctx);    /*!< The cipher context used. */
-#endif
-    uint64_t MBEDTLS_PRIVATE(H)[MBEDTLS_GCM_HTABLE_SIZE][2]; /*!< Precalculated HTable. */
-    uint64_t MBEDTLS_PRIVATE(len);                           /*!< The total length of the encrypted data. */
-    uint64_t MBEDTLS_PRIVATE(add_len);                       /*!< The total length of the additional data. */
-    unsigned char MBEDTLS_PRIVATE(base_ectr)[16];            /*!< The first ECTR for tag. */
-    unsigned char MBEDTLS_PRIVATE(y)[16];                    /*!< The Y working value. */
-    unsigned char MBEDTLS_PRIVATE(buf)[16];                  /*!< The buf working value. */
-    unsigned char MBEDTLS_PRIVATE(mode);                     /*!< The operation to perform:
-                                                              #MBEDTLS_GCM_ENCRYPT or
-                                                              #MBEDTLS_GCM_DECRYPT. */
-    unsigned char MBEDTLS_PRIVATE(acceleration);             /*!< The acceleration to use. */
+    mbedtls_cipher_context_t cipher_ctx;  /*!< The cipher context used. */
+    uint64_t HL[16];                      /*!< Precalculated HTable low. */
+    uint64_t HH[16];                      /*!< Precalculated HTable high. */
+    uint64_t len;                         /*!< The total length of the encrypted data. */
+    uint64_t add_len;                     /*!< The total length of the additional data. */
+    unsigned char base_ectr[16];          /*!< The first ECTR for tag. */
+    unsigned char y[16];                  /*!< The Y working value. */
+    unsigned char buf[16];                /*!< The buf working value. */
+    int mode;                             /*!< The operation to perform:
+                                           #MBEDTLS_GCM_ENCRYPT or
+                                           #MBEDTLS_GCM_DECRYPT. */
 }
 mbedtls_gcm_context;
 
@@ -229,27 +233,6 @@ int mbedtls_gcm_auth_decrypt(mbedtls_gcm_context *ctx,
  * \param iv        The initialization vector. This must be a readable buffer of
  *                  at least \p iv_len Bytes.
  * \param iv_len    The length of the IV.
- *
- * \return          \c 0 on success.
- */
-int mbedtls_gcm_starts(mbedtls_gcm_context *ctx,
-                       int mode,
-                       const unsigned char *iv,
-                       size_t iv_len);
-
-/**
- * \brief           This function feeds an input buffer as associated data
- *                  (authenticated but not encrypted data) in a GCM
- *                  encryption or decryption operation.
- *
- *                  Call this function after mbedtls_gcm_starts() to pass
- *                  the associated data. If the associated data is empty,
- *                  you do not need to call this function. You may not
- *                  call this function after calling mbedtls_cipher_update().
- *
- * \param ctx       The GCM context. This must have been started with
- *                  mbedtls_gcm_starts() and must not have yet received
- *                  any input with mbedtls_gcm_update().
  * \param add       The buffer holding the additional data, or \c NULL
  *                  if \p add_len is \c 0.
  * \param add_len   The length of the additional data. If \c 0,
@@ -257,65 +240,42 @@ int mbedtls_gcm_starts(mbedtls_gcm_context *ctx,
  *
  * \return          \c 0 on success.
  */
-int mbedtls_gcm_update_ad(mbedtls_gcm_context *ctx,
-                          const unsigned char *add,
-                          size_t add_len);
+int mbedtls_gcm_starts(mbedtls_gcm_context *ctx,
+                       int mode,
+                       const unsigned char *iv,
+                       size_t iv_len,
+                       const unsigned char *add,
+                       size_t add_len);
 
 /**
  * \brief           This function feeds an input buffer into an ongoing GCM
  *                  encryption or decryption operation.
  *
- *                  You may call this function zero, one or more times
- *                  to pass successive parts of the input: the plaintext to
- *                  encrypt, or the ciphertext (not including the tag) to
- *                  decrypt. After the last part of the input, call
- *                  mbedtls_gcm_finish().
- *
- *                  This function may produce output in one of the following
- *                  ways:
- *                  - Immediate output: the output length is always equal
- *                    to the input length.
- *                  - Buffered output: the output consists of a whole number
- *                    of 16-byte blocks. If the total input length so far
- *                    (not including associated data) is 16 \* *B* + *A*
- *                    with *A* < 16 then the total output length is 16 \* *B*.
- *
- *                  In particular:
- *                  - It is always correct to call this function with
- *                    \p output_size >= \p input_length + 15.
- *                  - If \p input_length is a multiple of 16 for all the calls
- *                    to this function during an operation, then it is
- *                    correct to use \p output_size = \p input_length.
+ *    `             The function expects input to be a multiple of 16
+ *                  Bytes. Only the last call before calling
+ *                  mbedtls_gcm_finish() can be less than 16 Bytes.
  *
  * \note            For decryption, the output buffer cannot be the same as
  *                  input buffer. If the buffers overlap, the output buffer
  *                  must trail at least 8 Bytes behind the input buffer.
  *
- * \param ctx           The GCM context. This must be initialized.
- * \param input         The buffer holding the input data. If \p input_length
- *                      is greater than zero, this must be a readable buffer
- *                      of at least \p input_length bytes.
- * \param input_length  The length of the input data in bytes.
- * \param output        The buffer for the output data. If \p output_size
- *                      is greater than zero, this must be a writable buffer of
- *                      of at least \p output_size bytes.
- * \param output_size   The size of the output buffer in bytes.
- *                      See the function description regarding the output size.
- * \param output_length On success, \p *output_length contains the actual
- *                      length of the output written in \p output.
- *                      On failure, the content of \p *output_length is
- *                      unspecified.
+ * \param ctx       The GCM context. This must be initialized.
+ * \param length    The length of the input data. This must be a multiple of
+ *                  16 except in the last call before mbedtls_gcm_finish().
+ * \param input     The buffer holding the input data. If \p length is greater
+ *                  than zero, this must be a readable buffer of at least that
+ *                  size in Bytes.
+ * \param output    The buffer for holding the output data. If \p length is
+ *                  greater than zero, this must be a writable buffer of at
+ *                  least that size in Bytes.
  *
  * \return         \c 0 on success.
- * \return         #MBEDTLS_ERR_GCM_BAD_INPUT on failure:
- *                 total input length too long,
- *                 unsupported input/output buffer overlap detected,
- *                 or \p output_size too small.
+ * \return         #MBEDTLS_ERR_GCM_BAD_INPUT on failure.
  */
 int mbedtls_gcm_update(mbedtls_gcm_context *ctx,
-                       const unsigned char *input, size_t input_length,
-                       unsigned char *output, size_t output_size,
-                       size_t *output_length);
+                       size_t length,
+                       const unsigned char *input,
+                       unsigned char *output);
 
 /**
  * \brief           This function finishes the GCM operation and generates
@@ -329,31 +289,13 @@ int mbedtls_gcm_update(mbedtls_gcm_context *ctx,
  *                  buffer of at least \p tag_len Bytes.
  * \param tag_len   The length of the tag to generate. This must be at least
  *                  four.
- * \param output    The buffer for the final output.
- *                  If \p output_size is nonzero, this must be a writable
- *                  buffer of at least \p output_size bytes.
- * \param output_size  The size of the \p output buffer in bytes.
- *                  This must be large enough for the output that
- *                  mbedtls_gcm_update() has not produced. In particular:
- *                  - If mbedtls_gcm_update() produces immediate output,
- *                    or if the total input size is a multiple of \c 16,
- *                    then mbedtls_gcm_finish() never produces any output,
- *                    so \p output_size can be \c 0.
- *                  - \p output_size never needs to be more than \c 15.
- * \param output_length On success, \p *output_length contains the actual
- *                      length of the output written in \p output.
- *                      On failure, the content of \p *output_length is
- *                      unspecified.
  *
  * \return          \c 0 on success.
- * \return          #MBEDTLS_ERR_GCM_BAD_INPUT on failure:
- *                  invalid value of \p tag_len,
- *                  or \p output_size too small.
+ * \return          #MBEDTLS_ERR_GCM_BAD_INPUT on failure.
  */
 int mbedtls_gcm_finish(mbedtls_gcm_context *ctx,
-                       unsigned char *output, size_t output_size,
-                       size_t *output_length,
-                       unsigned char *tag, size_t tag_len);
+                       unsigned char *tag,
+                       size_t tag_len);
 
 /**
  * \brief           This function clears a GCM context and the underlying

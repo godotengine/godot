@@ -119,22 +119,6 @@ BitField<NavigationPathQueryParameters3D::PathMetadataFlags> NavigationPathQuery
 	return (int64_t)parameters.metadata_flags;
 }
 
-void NavigationPathQueryParameters3D::set_simplify_path(bool p_enabled) {
-	parameters.simplify_path = p_enabled;
-}
-
-bool NavigationPathQueryParameters3D::get_simplify_path() const {
-	return parameters.simplify_path;
-}
-
-void NavigationPathQueryParameters3D::set_simplify_epsilon(real_t p_epsilon) {
-	parameters.simplify_epsilon = MAX(0.0, p_epsilon);
-}
-
-real_t NavigationPathQueryParameters3D::get_simplify_epsilon() const {
-	return parameters.simplify_epsilon;
-}
-
 void NavigationPathQueryParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pathfinding_algorithm", "pathfinding_algorithm"), &NavigationPathQueryParameters3D::set_pathfinding_algorithm);
 	ClassDB::bind_method(D_METHOD("get_pathfinding_algorithm"), &NavigationPathQueryParameters3D::get_pathfinding_algorithm);
@@ -157,12 +141,6 @@ void NavigationPathQueryParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_metadata_flags", "flags"), &NavigationPathQueryParameters3D::set_metadata_flags);
 	ClassDB::bind_method(D_METHOD("get_metadata_flags"), &NavigationPathQueryParameters3D::get_metadata_flags);
 
-	ClassDB::bind_method(D_METHOD("set_simplify_path", "enabled"), &NavigationPathQueryParameters3D::set_simplify_path);
-	ClassDB::bind_method(D_METHOD("get_simplify_path"), &NavigationPathQueryParameters3D::get_simplify_path);
-
-	ClassDB::bind_method(D_METHOD("set_simplify_epsilon", "epsilon"), &NavigationPathQueryParameters3D::set_simplify_epsilon);
-	ClassDB::bind_method(D_METHOD("get_simplify_epsilon"), &NavigationPathQueryParameters3D::get_simplify_epsilon);
-
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "map"), "set_map", "get_map");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "start_position"), "set_start_position", "get_start_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_position"), "set_target_position", "get_target_position");
@@ -170,8 +148,6 @@ void NavigationPathQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pathfinding_algorithm", PROPERTY_HINT_ENUM, "AStar"), "set_pathfinding_algorithm", "get_pathfinding_algorithm");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_postprocessing", PROPERTY_HINT_ENUM, "Corridorfunnel,Edgecentered"), "set_path_postprocessing", "get_path_postprocessing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "metadata_flags", PROPERTY_HINT_FLAGS, "Include Types,Include RIDs,Include Owners"), "set_metadata_flags", "get_metadata_flags");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "simplify_path"), "set_simplify_path", "get_simplify_path");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "simplify_epsilon"), "set_simplify_epsilon", "get_simplify_epsilon");
 
 	BIND_ENUM_CONSTANT(PATHFINDING_ALGORITHM_ASTAR);
 

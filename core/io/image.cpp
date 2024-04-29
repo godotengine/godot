@@ -509,7 +509,6 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 }
 
 void Image::convert(Format p_new_format) {
-	ERR_FAIL_INDEX_MSG(p_new_format, FORMAT_MAX, "The Image format specified (" + itos(p_new_format) + ") is out of range. See Image's Format enum.");
 	if (data.size() == 0) {
 		return;
 	}
@@ -679,7 +678,7 @@ static double _bicubic_interp_kernel(double x) {
 	return bc;
 }
 
-template <int CC, typename T>
+template <int CC, class T>
 static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 	// get source image size
 	int width = p_src_width;
@@ -766,7 +765,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 	}
 }
 
-template <int CC, typename T>
+template <int CC, class T>
 static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 	enum {
 		FRAC_BITS = 8,
@@ -856,7 +855,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 	}
 }
 
-template <int CC, typename T>
+template <int CC, class T>
 static void _scale_nearest(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 	for (uint32_t i = 0; i < p_dst_height; i++) {
 		uint32_t src_yofs = i * p_src_height / p_dst_height;
@@ -883,7 +882,7 @@ static float _lanczos(float p_x) {
 	return Math::abs(p_x) >= LANCZOS_TYPE ? 0 : Math::sincn(p_x) * Math::sincn(p_x / LANCZOS_TYPE);
 }
 
-template <int CC, typename T>
+template <int CC, class T>
 static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 	int32_t src_width = p_src_width;
 	int32_t src_height = p_src_height;
@@ -1029,7 +1028,7 @@ void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 }
 
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
-	ERR_FAIL_COND_MSG(data.is_empty(), "Cannot resize image before creating it, use set_data() first.");
+	ERR_FAIL_COND_MSG(data.size() == 0, "Cannot resize image before creating it, use set_data() first.");
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
 
 	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
@@ -1665,7 +1664,7 @@ bool Image::_can_modify(Format p_format) const {
 	return p_format <= FORMAT_RGBE9995;
 }
 
-template <typename Component, int CC, bool renormalize,
+template <class Component, int CC, bool renormalize,
 		void (*average_func)(Component &, const Component &, const Component &, const Component &, const Component &),
 		void (*renormalize_func)(Component *)>
 static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint32_t p_width, uint32_t p_height) {
@@ -1700,7 +1699,7 @@ static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint3
 }
 
 void Image::shrink_x2() {
-	ERR_FAIL_COND(data.is_empty());
+	ERR_FAIL_COND(data.size() == 0);
 
 	if (mipmaps) {
 		//just use the lower mipmap as base and copy all
@@ -1710,7 +1709,7 @@ void Image::shrink_x2() {
 
 		int new_size = data.size() - ofs;
 		new_img.resize(new_size);
-		ERR_FAIL_COND(new_img.is_empty());
+		ERR_FAIL_COND(new_img.size() == 0);
 
 		{
 			uint8_t *w = new_img.ptrw();
@@ -1729,8 +1728,8 @@ void Image::shrink_x2() {
 		ERR_FAIL_COND(!_can_modify(format));
 		int ps = get_format_pixel_size(format);
 		new_img.resize((width / 2) * (height / 2) * ps);
-		ERR_FAIL_COND(new_img.is_empty());
-		ERR_FAIL_COND(data.is_empty());
+		ERR_FAIL_COND(new_img.size() == 0);
+		ERR_FAIL_COND(data.size() == 0);
 
 		{
 			uint8_t *w = new_img.ptrw();
@@ -1931,7 +1930,8 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 }
 
 Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, const Ref<Image> &p_normal_map) {
-	LocalVector<double> normal_sat_vec; //summed area table
+	Vector<double> normal_sat_vec; //summed area table
+	double *normal_sat = nullptr; //summed area table for normal map
 	int normal_w = 0, normal_h = 0;
 
 	ERR_FAIL_COND_V_MSG(p_normal_map.is_null() || p_normal_map->is_empty(), ERR_INVALID_PARAMETER, "Must provide a valid normal map for roughness mipmaps");
@@ -1945,7 +1945,8 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 	normal_h = nm->get_height();
 
 	normal_sat_vec.resize(normal_w * normal_h * 3);
-	double *normal_sat = normal_sat_vec.ptr();
+
+	normal_sat = normal_sat_vec.ptrw();
 
 	//create summed area table
 
@@ -2020,26 +2021,24 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 					avg[2] += normal_sat[tofs + 2];
 				}
 
-				if (from_y > 0 && to_x > 0) {
+				if (from_y > 0) {
 					uint32_t tofs = ((from_y - 1) * normal_w + to_x) * 3;
 					avg[0] -= normal_sat[tofs + 0];
 					avg[1] -= normal_sat[tofs + 1];
 					avg[2] -= normal_sat[tofs + 2];
 				}
 
-				if (from_x > 0 && to_y > 0) {
+				if (from_x > 0) {
 					uint32_t tofs = (to_y * normal_w + (from_x - 1)) * 3;
 					avg[0] -= normal_sat[tofs + 0];
 					avg[1] -= normal_sat[tofs + 1];
 					avg[2] -= normal_sat[tofs + 2];
 				}
 
-				if (to_y > 0 && to_x > 0) {
-					uint32_t tofs = (to_y * normal_w + to_x) * 3;
-					avg[0] += normal_sat[tofs + 0];
-					avg[1] += normal_sat[tofs + 1];
-					avg[2] += normal_sat[tofs + 2];
-				}
+				uint32_t tofs = (to_y * normal_w + to_x) * 3;
+				avg[0] += normal_sat[tofs + 0];
+				avg[1] += normal_sat[tofs + 1];
+				avg[2] += normal_sat[tofs + 2];
 
 				double div = double(size_x * size_y);
 				Vector3 vec(avg[0] / div, avg[1] / div, avg[2] / div);
@@ -2781,7 +2780,7 @@ void Image::_get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2
 }
 
 void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blit_rect an image: invalid source Image object.");
+	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	ERR_FAIL_COND(dsize == 0);
@@ -2823,8 +2822,8 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const P
 }
 
 void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blit_rect_mask an image: invalid source Image object.");
-	ERR_FAIL_COND_MSG(p_mask.is_null(), "Cannot blit_rect_mask an image: invalid mask Image object.");
+	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
+	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	int maskdsize = p_mask->data.size();
@@ -2873,7 +2872,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 }
 
 void Image::blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blend_rect an image: invalid source Image object.");
+	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	ERR_FAIL_COND(dsize == 0);
@@ -2908,8 +2907,8 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const 
 }
 
 void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blend_rect_mask an image: invalid source Image object.");
-	ERR_FAIL_COND_MSG(p_mask.is_null(), "Cannot blend_rect_mask an image: invalid mask Image object.");
+	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
+	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	int maskdsize = p_mask->data.size();
@@ -3013,7 +3012,6 @@ void Image::fill_rect(const Rect2i &p_rect, const Color &p_color) {
 }
 
 ImageMemLoadFunc Image::_png_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_png_mem_unpacker_func = nullptr;
 ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
@@ -3300,18 +3298,6 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 	_set_color_at_ofs(data.ptrw(), ofs, p_color);
 }
 
-const uint8_t *Image::ptr() const {
-	return data.ptr();
-}
-
-uint8_t *Image::ptrw() {
-	return data.ptrw();
-}
-
-int64_t Image::data_size() const {
-	return data.size();
-}
-
 void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot adjust_bcs in compressed or custom image formats.");
 
@@ -3335,7 +3321,7 @@ void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation)
 }
 
 Image::UsedChannels Image::detect_used_channels(CompressSource p_source) const {
-	ERR_FAIL_COND_V(data.is_empty(), USED_CHANNELS_RGBA);
+	ERR_FAIL_COND_V(data.size() == 0, USED_CHANNELS_RGBA);
 	ERR_FAIL_COND_V(is_compressed(), USED_CHANNELS_RGBA);
 	bool r = false, g = false, b = false, a = false, c = false;
 
@@ -3787,7 +3773,7 @@ void Image::fix_alpha_edges() {
 			}
 
 			int closest_dist = max_dist;
-			uint8_t closest_color[3] = { 0 };
+			uint8_t closest_color[3];
 
 			int from_x = MAX(0, j - max_radius);
 			int to_x = MIN(width - 1, j + max_radius);
@@ -3890,7 +3876,7 @@ Error Image::load_ktx_from_buffer(const Vector<uint8_t> &p_array) {
 
 void Image::convert_rg_to_ra_rgba8() {
 	ERR_FAIL_COND(format != FORMAT_RGBA8);
-	ERR_FAIL_COND(data.is_empty());
+	ERR_FAIL_COND(!data.size());
 
 	int s = data.size();
 	uint8_t *w = data.ptrw();
@@ -3903,7 +3889,7 @@ void Image::convert_rg_to_ra_rgba8() {
 
 void Image::convert_ra_rgba8_to_rg() {
 	ERR_FAIL_COND(format != FORMAT_RGBA8);
-	ERR_FAIL_COND(data.is_empty());
+	ERR_FAIL_COND(!data.size());
 
 	int s = data.size();
 	uint8_t *w = data.ptrw();
@@ -3916,7 +3902,7 @@ void Image::convert_ra_rgba8_to_rg() {
 
 void Image::convert_rgba8_to_bgra8() {
 	ERR_FAIL_COND(format != FORMAT_RGBA8);
-	ERR_FAIL_COND(data.is_empty());
+	ERR_FAIL_COND(!data.size());
 
 	int s = data.size();
 	uint8_t *w = data.ptrw();
@@ -4114,7 +4100,7 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 			continue;
 		}
 
-		image_metric_max = i;
+		image_metric_max = MAX(image_metric_max, i);
 
 		double x = i * hist[i];
 

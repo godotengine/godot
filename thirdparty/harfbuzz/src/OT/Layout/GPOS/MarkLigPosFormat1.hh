@@ -169,7 +169,7 @@ struct MarkLigPosFormat1_2
   {
     TRACE_SUBSET (this);
     const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
-    const hb_map_t &glyph_map = c->plan->glyph_map_gsub;
+    const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto *out = c->serializer->start_embed (*this);
     if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
@@ -195,24 +195,23 @@ struct MarkLigPosFormat1_2
     if (!out->markCoverage.serialize_serialize (c->serializer, new_mark_coverage))
       return_trace (false);
 
-    if (unlikely (!out->markArray.serialize_subset (c, markArray, this,
-						    (this+markCoverage).iter (),
-						    &klass_mapping)))
-      return_trace (false);
+    out->markArray.serialize_subset (c, markArray, this,
+                                     (this+markCoverage).iter (),
+                                     &klass_mapping);
 
     auto new_ligature_coverage =
     + hb_iter (this + ligatureCoverage)
-    | hb_take ((this + ligatureArray).len)
+    | hb_filter (glyphset)
     | hb_map_retains_sorting (glyph_map)
-    | hb_filter ([] (hb_codepoint_t glyph) { return glyph != HB_MAP_VALUE_INVALID; })
     ;
 
     if (!out->ligatureCoverage.serialize_serialize (c->serializer, new_ligature_coverage))
       return_trace (false);
 
-    return_trace (out->ligatureArray.serialize_subset (c, ligatureArray, this,
-						       hb_iter (this+ligatureCoverage),
-						       classCount, &klass_mapping));
+    out->ligatureArray.serialize_subset (c, ligatureArray, this,
+                                         hb_iter (this+ligatureCoverage), classCount, &klass_mapping);
+
+    return_trace (true);
   }
 
 };

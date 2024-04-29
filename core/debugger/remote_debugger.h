@@ -74,7 +74,6 @@ private:
 	int warn_count = 0;
 	int last_reset = 0;
 	bool reload_all_scripts = false;
-	Array script_paths_to_reload;
 
 	// Make handlers and send_message thread safe.
 	Mutex mutex;
@@ -98,7 +97,7 @@ private:
 	static void _err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, bool p_editor_notify, ErrorHandlerType p_type);
 
 	ErrorMessage _create_overflow_error(const String &p_what, const String &p_descr);
-	Error _put_msg(const String &p_message, const Array &p_data);
+	Error _put_msg(String p_message, Array p_data);
 
 	bool is_peer_connected() { return peer->is_peer_connected(); }
 	void flush_output();

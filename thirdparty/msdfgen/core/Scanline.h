@@ -2,7 +2,6 @@
 #pragma once
 
 #include <vector>
-#include "base.h"
 
 namespace msdfgen {
 

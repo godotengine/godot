@@ -197,10 +197,9 @@ struct MarkBasePosFormat1_2
     if (!out->markCoverage.serialize_serialize (c->serializer, new_coverage.iter ()))
       return_trace (false);
 
-    if (unlikely (!out->markArray.serialize_subset (c, markArray, this,
-						    (this+markCoverage).iter (),
-						    &klass_mapping)))
-      return_trace (false);
+    out->markArray.serialize_subset (c, markArray, this,
+                                     (this+markCoverage).iter (),
+                                     &klass_mapping);
 
     unsigned basecount = (this+baseArray).rows;
     auto base_iter =
@@ -229,9 +228,11 @@ struct MarkBasePosFormat1_2
       ;
     }
 
-    return_trace (out->baseArray.serialize_subset (c, baseArray, this,
-						   base_iter.len (),
-						   base_indexes.iter ()));
+    out->baseArray.serialize_subset (c, baseArray, this,
+                                     base_iter.len (),
+                                     base_indexes.iter ());
+
+    return_trace (true);
   }
 };
 

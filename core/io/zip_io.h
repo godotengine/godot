@@ -42,7 +42,7 @@
 // Get the current file info and safely convert the full filepath to a String.
 int godot_unzip_get_current_file_info(unzFile p_zip_file, unz_file_info64 &r_file_info, String &r_filepath);
 // Try to locate the file in the archive specified by the filepath (works with large paths and Unicode).
-int godot_unzip_locate_file(unzFile p_zip_file, const String &p_filepath, bool p_case_sensitive = true);
+int godot_unzip_locate_file(unzFile p_zip_file, String p_filepath, bool p_case_sensitive = true);
 
 //
 

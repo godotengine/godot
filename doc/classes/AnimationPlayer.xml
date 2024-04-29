@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationPlayer" inherits="AnimationMixer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationPlayer" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node used for animation playback.
 	</brief_description>
@@ -12,22 +12,54 @@
 	<tutorials>
 		<link title="2D Sprite animation">$DOCS_URL/tutorials/2d/2d_sprite_animation.html</link>
 		<link title="Animation documentation index">$DOCS_URL/tutorials/animation/index.html</link>
-		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
+		<method name="_post_process_key_value" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="animation" type="Animation" />
+			<param index="1" name="track" type="int" />
+			<param index="2" name="value" type="Variant" />
+			<param index="3" name="object" type="Object" />
+			<param index="4" name="object_idx" type="int" />
+			<description>
+				A virtual function for processing after key getting during playback.
+			</description>
+		</method>
+		<method name="add_animation_library">
+			<return type="int" enum="Error" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="library" type="AnimationLibrary" />
+			<description>
+				Adds [param library] to the animation player, under the key [param name].
+			</description>
+		</method>
+		<method name="advance">
+			<return type="void" />
+			<param index="0" name="delta" type="float" />
+			<description>
+				Shifts position in the animation timeline and immediately updates the animation. [param delta] is the time in seconds to shift. Events between the current frame and [param delta] are handled.
+			</description>
+		</method>
 		<method name="animation_get_next" qualifiers="const">
 			<return type="StringName" />
-			<param index="0" name="animation_from" type="StringName" />
+			<param index="0" name="anim_from" type="StringName" />
 			<description>
-				Returns the key of the animation which is queued to play after the [param animation_from] animation.
+				Returns the key of the animation which is queued to play after the [param anim_from] animation.
 			</description>
 		</method>
 		<method name="animation_set_next">
 			<return type="void" />
-			<param index="0" name="animation_from" type="StringName" />
-			<param index="1" name="animation_to" type="StringName" />
+			<param index="0" name="anim_from" type="StringName" />
+			<param index="1" name="anim_to" type="StringName" />
 			<description>
-				Triggers the [param animation_to] animation when the [param animation_from] animation completes.
+				Triggers the [param anim_to] animation when the [param anim_from] animation completes.
+			</description>
+		</method>
+		<method name="clear_caches">
+			<return type="void" />
+			<description>
+				[AnimationPlayer] caches animated nodes. It may not notice if a node disappears; [method clear_caches] forces it to update the cache again.
 			</description>
 		</method>
 		<method name="clear_queue">
@@ -36,18 +68,53 @@
 				Clears all queued, unplayed animations.
 			</description>
 		</method>
-		<method name="get_blend_time" qualifiers="const">
-			<return type="float" />
-			<param index="0" name="animation_from" type="StringName" />
-			<param index="1" name="animation_to" type="StringName" />
+		<method name="find_animation" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="animation" type="Animation" />
 			<description>
-				Returns the blend time (in seconds) between two animations, referenced by their keys.
+				Returns the key of [param animation] or an empty [StringName] if not found.
 			</description>
 		</method>
-		<method name="get_method_call_mode" qualifiers="const" deprecated="Use [member AnimationMixer.callback_mode_method] instead.">
-			<return type="int" enum="AnimationPlayer.AnimationMethodCallMode" />
+		<method name="find_animation_library" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="animation" type="Animation" />
 			<description>
-				Returns the call mode used for "Call Method" tracks.
+				Returns the key for the [AnimationLibrary] that contains [param animation] or an empty [StringName] if not found.
+			</description>
+		</method>
+		<method name="get_animation" qualifiers="const">
+			<return type="Animation" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the [Animation] with the key [param name]. If the animation does not exist, [code]null[/code] is returned and an error is logged.
+			</description>
+		</method>
+		<method name="get_animation_library" qualifiers="const">
+			<return type="AnimationLibrary" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the first [AnimationLibrary] with key [param name] or [code]null[/code] if not found.
+				To get the [AnimationPlayer]'s global animation library, use [code]get_animation_library("")[/code].
+			</description>
+		</method>
+		<method name="get_animation_library_list" qualifiers="const">
+			<return type="StringName[]" />
+			<description>
+				Returns the list of stored library keys.
+			</description>
+		</method>
+		<method name="get_animation_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the list of stored animation keys.
+			</description>
+		</method>
+		<method name="get_blend_time" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="anim_from" type="StringName" />
+			<param index="1" name="anim_to" type="StringName" />
+			<description>
+				Returns the blend time (in seconds) between two animations, referenced by their keys.
 			</description>
 		</method>
 		<method name="get_playing_speed" qualifiers="const">
@@ -57,22 +124,24 @@
 				Returns a negative value if the current animation is playing backwards.
 			</description>
 		</method>
-		<method name="get_process_callback" qualifiers="const" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
-			<return type="int" enum="AnimationPlayer.AnimationProcessCallback" />
-			<description>
-				Returns the process notification in which to update animations.
-			</description>
-		</method>
 		<method name="get_queue">
 			<return type="PackedStringArray" />
 			<description>
 				Returns a list of the animation keys that are currently queued to play.
 			</description>
 		</method>
-		<method name="get_root" qualifiers="const" deprecated="Use [member AnimationMixer.root_node] instead.">
-			<return type="NodePath" />
+		<method name="has_animation" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns the node which node path references will travel from.
+				Returns [code]true[/code] if the [AnimationPlayer] stores an [Animation] with key [param name].
+			</description>
+		</method>
+		<method name="has_animation_library" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the [AnimationPlayer] stores an [AnimationLibrary] with key [param name].
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -90,7 +159,7 @@
 		</method>
 		<method name="play">
 			<return type="void" />
-			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="0" name="name" type="StringName" default="&quot;&quot;" />
 			<param index="1" name="custom_blend" type="float" default="-1" />
 			<param index="2" name="custom_speed" type="float" default="1.0" />
 			<param index="3" name="from_end" type="bool" default="false" />
@@ -103,31 +172,11 @@
 		</method>
 		<method name="play_backwards">
 			<return type="void" />
-			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="0" name="name" type="StringName" default="&quot;&quot;" />
 			<param index="1" name="custom_blend" type="float" default="-1" />
 			<description>
 				Plays the animation with key [param name] in reverse.
 				This method is a shorthand for [method play] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], so see its description for more information.
-			</description>
-		</method>
-		<method name="play_with_capture">
-			<return type="void" />
-			<param index="0" name="name" type="StringName" />
-			<param index="1" name="duration" type="float" default="-1.0" />
-			<param index="2" name="custom_blend" type="float" default="-1" />
-			<param index="3" name="custom_speed" type="float" default="1.0" />
-			<param index="4" name="from_end" type="bool" default="false" />
-			<param index="5" name="trans_type" type="int" enum="Tween.TransitionType" default="0" />
-			<param index="6" name="ease_type" type="int" enum="Tween.EaseType" default="0" />
-			<description>
-				See [method AnimationMixer.capture]. It is almost the same as the following:
-				[codeblock]
-				capture(name, duration, trans_type, ease_type)
-				play(name, custom_blend, custom_speed, from_end)
-				[/codeblock]
-				If name is blank, it specifies [member assigned_animation].
-				If [param duration] is a negative value, the duration is set to the interval between the current position and the first key, when [param from_end] is [code]true[/code], uses the interval between the current position and the last key instead.
-				[b]Note:[/b] The [param duration] takes [member speed_scale] into account, but [param custom_speed] does not, because the capture cache is interpolated with the blend result and the result may contain multiple animations.
 			</description>
 		</method>
 		<method name="queue">
@@ -138,45 +187,37 @@
 				[b]Note:[/b] If a looped animation is currently playing, the queued animation will never play unless the looped animation is stopped somehow.
 			</description>
 		</method>
+		<method name="remove_animation_library">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes the [AnimationLibrary] associated with the key [param name].
+			</description>
+		</method>
+		<method name="rename_animation_library">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="newname" type="StringName" />
+			<description>
+				Moves the [AnimationLibrary] associated with the key [param name] to the key [param newname].
+			</description>
+		</method>
 		<method name="seek">
 			<return type="void" />
 			<param index="0" name="seconds" type="float" />
 			<param index="1" name="update" type="bool" default="false" />
-			<param index="2" name="update_only" type="bool" default="false" />
 			<description>
 				Seeks the animation to the [param seconds] point in time (in seconds). If [param update] is [code]true[/code], the animation updates too, otherwise it updates at process time. Events between the current frame and [param seconds] are skipped.
-				If [param update_only] is [code]true[/code], the method / audio / animation playback tracks will not be processed.
-				[b]Note:[/b] Seeking to the end of the animation doesn't emit [signal AnimationMixer.animation_finished]. If you want to skip animation and emit the signal, use [method AnimationMixer.advance].
+				[b]Note:[/b] Seeking to the end of the animation doesn't emit [signal animation_finished]. If you want to skip animation and emit the signal, use [method advance].
 			</description>
 		</method>
 		<method name="set_blend_time">
 			<return type="void" />
-			<param index="0" name="animation_from" type="StringName" />
-			<param index="1" name="animation_to" type="StringName" />
+			<param index="0" name="anim_from" type="StringName" />
+			<param index="1" name="anim_to" type="StringName" />
 			<param index="2" name="sec" type="float" />
 			<description>
 				Specifies a blend time (in seconds) between two animations, referenced by their keys.
-			</description>
-		</method>
-		<method name="set_method_call_mode" deprecated="Use [member AnimationMixer.callback_mode_method] instead.">
-			<return type="void" />
-			<param index="0" name="mode" type="int" enum="AnimationPlayer.AnimationMethodCallMode" />
-			<description>
-				Sets the call mode used for "Call Method" tracks.
-			</description>
-		</method>
-		<method name="set_process_callback" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
-			<return type="void" />
-			<param index="0" name="mode" type="int" enum="AnimationPlayer.AnimationProcessCallback" />
-			<description>
-				Sets the process notification in which to update animations.
-			</description>
-		</method>
-		<method name="set_root" deprecated="Use [member AnimationMixer.root_node] instead.">
-			<return type="void" />
-			<param index="0" name="path" type="NodePath" />
-			<description>
-				Sets the node which node path references will travel from.
 			</description>
 		</method>
 		<method name="stop">
@@ -193,6 +234,10 @@
 		<member name="assigned_animation" type="String" setter="set_assigned_animation" getter="get_assigned_animation">
 			If playing, the current animation's key, otherwise, the animation last played. When set, this changes the animation, but will not play it unless already playing. See also [member current_animation].
 		</member>
+		<member name="audio_max_polyphony" type="int" setter="set_audio_max_polyphony" getter="get_audio_max_polyphony" default="32">
+			The number of possible simultaneous sounds for each of the assigned AudioStreamPlayers.
+			For example, if this value is [code]32[/code] and the animation has two audio tracks, the two [AudioStreamPlayer]s assigned can play simultaneously up to [code]32[/code] voices each.
+		</member>
 		<member name="autoplay" type="String" setter="set_autoplay" getter="get_autoplay" default="&quot;&quot;">
 			The key of the animation to play when the scene loads.
 		</member>
@@ -206,12 +251,28 @@
 		<member name="current_animation_position" type="float" setter="" getter="get_current_animation_position">
 			The position (in seconds) of the currently playing animation.
 		</member>
+		<member name="method_call_mode" type="int" setter="set_method_call_mode" getter="get_method_call_mode" enum="AnimationPlayer.AnimationMethodCallMode" default="0">
+			The call mode to use for Call Method tracks.
+		</member>
 		<member name="movie_quit_on_finish" type="bool" setter="set_movie_quit_on_finish_enabled" getter="is_movie_quit_on_finish_enabled" default="false">
 			If [code]true[/code] and the engine is running in Movie Maker mode (see [MovieWriter]), exits the engine with [method SceneTree.quit] as soon as an animation is done playing in this [AnimationPlayer]. A message is printed when the engine quits for this reason.
-			[b]Note:[/b] This obeys the same logic as the [signal AnimationMixer.animation_finished] signal, so it will not quit the engine if the animation is set to be looping.
+			[b]Note:[/b] This obeys the same logic as the [signal animation_finished] signal, so it will not quit the engine if the animation is set to be looping.
+		</member>
+		<member name="playback_active" type="bool" setter="set_active" getter="is_active">
+			If [code]true[/code], updates animations in response to process-related notifications.
 		</member>
 		<member name="playback_default_blend_time" type="float" setter="set_default_blend_time" getter="get_default_blend_time" default="0.0">
 			The default time in which to blend animations. Ranges from 0 to 4096 with 0.01 precision.
+		</member>
+		<member name="playback_process_mode" type="int" setter="set_process_callback" getter="get_process_callback" enum="AnimationPlayer.AnimationProcessCallback" default="1">
+			The process notification in which to update animations.
+		</member>
+		<member name="reset_on_save" type="bool" setter="set_reset_on_save_enabled" getter="is_reset_on_save_enabled" default="true">
+			This is used by the editor. If set to [code]true[/code], the scene will be saved with the effects of the reset animation (the animation with the key [code]"RESET"[/code]) applied as if it had been seeked to time 0, with the editor keeping the values that the scene had before saving.
+			This makes it more convenient to preview and edit animations in the editor, as changes to the scene will not be saved as long as they are set in the reset animation.
+		</member>
+		<member name="root_node" type="NodePath" setter="set_root" getter="get_root" default="NodePath(&quot;..&quot;)">
+			The node from which node path references will travel.
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			The speed scaling ratio. For example, if this value is [code]1[/code], then the animation plays at normal speed. If it's [code]0.5[/code], then it plays at half speed. If it's [code]2[/code], then it plays at double speed.
@@ -223,27 +284,54 @@
 			<param index="0" name="old_name" type="StringName" />
 			<param index="1" name="new_name" type="StringName" />
 			<description>
-				Emitted when a queued animation plays after the previous animation finished. See also [method AnimationPlayer.queue].
-				[b]Note:[/b] The signal is not emitted when the animation is changed via [method AnimationPlayer.play] or by an [AnimationTree].
+				Emitted when a queued animation plays after the previous animation finished. See [method queue].
+				[b]Note:[/b] The signal is not emitted when the animation is changed via [method play] or by an [AnimationTree].
 			</description>
 		</signal>
-		<signal name="current_animation_changed">
-			<param index="0" name="name" type="String" />
+		<signal name="animation_finished">
+			<param index="0" name="anim_name" type="StringName" />
 			<description>
-				Emitted when [member current_animation] changes.
+				Notifies when an animation finished playing.
+				[b]Note:[/b] This signal is not emitted if an animation is looping.
+			</description>
+		</signal>
+		<signal name="animation_libraries_updated">
+			<description>
+				Notifies when the animation libraries have changed.
+			</description>
+		</signal>
+		<signal name="animation_list_changed">
+			<description>
+				Notifies when an animation list is changed.
+			</description>
+		</signal>
+		<signal name="animation_started">
+			<param index="0" name="anim_name" type="StringName" />
+			<description>
+				Notifies when an animation starts playing.
+			</description>
+		</signal>
+		<signal name="caches_cleared">
+			<description>
+				Notifies when the caches have been cleared, either automatically, or manually via [method clear_caches].
 			</description>
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].">
+		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback">
+			Process animation during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]). This is especially useful when animating physics bodies.
 		</constant>
-		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_IDLE].">
+		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback">
+			Process animation during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
 		</constant>
-		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL].">
+		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback">
+			Do not process animation. Use [method advance] to process the animation manually.
 		</constant>
-		<constant name="ANIMATION_METHOD_CALL_DEFERRED" value="0" enum="AnimationMethodCallMode" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_DEFERRED].">
+		<constant name="ANIMATION_METHOD_CALL_DEFERRED" value="0" enum="AnimationMethodCallMode">
+			Batch method calls during the animation process, then do the calls after events are processed. This avoids bugs involving deleting nodes or modifying the AnimationPlayer while playing.
 		</constant>
-		<constant name="ANIMATION_METHOD_CALL_IMMEDIATE" value="1" enum="AnimationMethodCallMode" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_IMMEDIATE].">
+		<constant name="ANIMATION_METHOD_CALL_IMMEDIATE" value="1" enum="AnimationMethodCallMode">
+			Make method calls immediately when reached in the animation.
 		</constant>
 	</constants>
 </class>

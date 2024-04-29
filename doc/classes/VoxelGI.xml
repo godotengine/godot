@@ -12,7 +12,7 @@
 	</description>
 	<tutorials>
 		<link title="Using Voxel global illumination">$DOCS_URL/tutorials/3d/global_illumination/using_voxel_gi.html</link>
-		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="bake">

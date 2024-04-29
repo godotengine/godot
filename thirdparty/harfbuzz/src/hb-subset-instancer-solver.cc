@@ -168,14 +168,12 @@ _solve (Triple tent, Triple axisLimit, bool negative = false)
    *                           |
    *                      crossing
    */
-  if (gain >= outGain)
+  if (gain > outGain)
   {
-    // Note that this is the branch taken if both gain and outGain are 0.
-
     // Crossing point on the axis.
     float crossing = peak + (1 - gain) * (upper - peak);
 
-    Triple loc{hb_max (lower, axisDef), peak, crossing};
+    Triple loc{axisDef, peak, crossing};
     float scalar = 1.f;
 
     // The part before the crossing point.
@@ -255,11 +253,8 @@ _solve (Triple tent, Triple axisLimit, bool negative = false)
      *              axisDef      axisMax
      */
     float newUpper = peak + (1 - gain) * (upper - peak);
-    assert (axisMax <= newUpper);  // Because outGain > gain
-    /* Disabled because ots doesn't like us:
-     * https://github.com/fonttools/fonttools/issues/3350 */
-    
-    if (false && (newUpper <= axisDef + (axisMax - axisDef) * 2))
+    assert (axisMax <= newUpper);  // Because outGain >= gain
+    if (newUpper <= axisDef + (axisMax - axisDef) * 2)
     {
       upper = newUpper;
       if (!negative && axisDef + (axisMax - axisDef) * MAX_F2DOT14 < upper)

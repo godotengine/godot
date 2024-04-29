@@ -31,14 +31,11 @@
 #ifndef GODOT_JS_H
 #define GODOT_JS_H
 
-#define WASM_EXPORT __attribute__((visibility("default")))
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stddef.h>
-#include <stdint.h>
 
 // Config
 extern void godot_js_config_locale_get(char *p_ptr, int p_ptr_max);
@@ -64,18 +61,13 @@ extern void godot_js_input_touch_cb(void (*p_callback)(int p_type, int p_count),
 extern void godot_js_input_key_cb(void (*p_callback)(int p_type, int p_repeat, int p_modifiers), char r_code[32], char r_key[32]);
 extern void godot_js_input_vibrate_handheld(int p_duration_ms);
 
-extern void godot_js_set_ime_active(int p_active);
-extern void godot_js_set_ime_position(int p_x, int p_y);
-extern void godot_js_set_ime_cb(void (*p_input)(int p_type, const char *p_text), void (*p_callback)(int p_type, int p_repeat, int p_modifiers), char r_code[32], char r_key[32]);
-extern int godot_js_is_ime_focused();
-
 // Input gamepad
 extern void godot_js_input_gamepad_cb(void (*p_on_change)(int p_index, int p_connected, const char *p_id, const char *p_guid));
 extern int godot_js_input_gamepad_sample();
 extern int godot_js_input_gamepad_sample_count();
 extern int godot_js_input_gamepad_sample_get(int p_idx, float r_btns[16], int32_t *r_btns_num, float r_axes[10], int32_t *r_axes_num, int32_t *r_standard);
 extern void godot_js_input_paste_cb(void (*p_callback)(const char *p_text));
-extern void godot_js_input_drop_files_cb(void (*p_callback)(const char **p_filev, int p_filec));
+extern void godot_js_input_drop_files_cb(void (*p_callback)(char **p_filev, int p_filec));
 
 // TTS
 extern int godot_js_tts_is_speaking();

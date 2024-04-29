@@ -51,20 +51,20 @@ void AudioEffectReverbInstance::process(const AudioFrame *p_src_frames, AudioFra
 		int to_mix = MIN(todo, Reverb::INPUT_BUFFER_MAX_SIZE);
 
 		for (int j = 0; j < to_mix; j++) {
-			tmp_src[j] = p_src_frames[offset + j].left;
+			tmp_src[j] = p_src_frames[offset + j].l;
 		}
 
 		reverb[0].process(tmp_src, tmp_dst, to_mix);
 
 		for (int j = 0; j < to_mix; j++) {
-			p_dst_frames[offset + j].left = tmp_dst[j];
-			tmp_src[j] = p_src_frames[offset + j].right;
+			p_dst_frames[offset + j].l = tmp_dst[j];
+			tmp_src[j] = p_src_frames[offset + j].r;
 		}
 
 		reverb[1].process(tmp_src, tmp_dst, to_mix);
 
 		for (int j = 0; j < to_mix; j++) {
-			p_dst_frames[offset + j].right = tmp_dst[j];
+			p_dst_frames[offset + j].r = tmp_dst[j];
 		}
 
 		offset += to_mix;

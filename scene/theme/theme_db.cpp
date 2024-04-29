@@ -38,6 +38,7 @@
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/theme.h"
 #include "scene/theme/default_theme.h"
 #include "servers/text_server.h"
 
@@ -49,8 +50,8 @@ void ThemeDB::initialize_theme() {
 	// Allow creating the default theme at a different scale to suit higher/lower base resolutions.
 	float default_theme_scale = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/theme/default_theme_scale", PROPERTY_HINT_RANGE, "0.5,8,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), 1.0);
 
-	String project_theme_path = GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), "");
-	String project_font_path = GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.otf,*.ttf,*.woff,*.woff2,*.fnt,*.font,*.pfb,*.pfm", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), "");
+	String project_theme_path = GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), "");
+	String project_font_path = GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.otf,*.ttf,*.woff,*.woff2,*.fnt,*.font,*.pfb,*.pfm", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), "");
 
 	TextServer::FontAntialiasing font_antialiasing = (TextServer::FontAntialiasing)(int)GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), 1);
 	TextServer::Hinting font_hinting = (TextServer::Hinting)(int)GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), TextServer::HINTING_LIGHT);
@@ -327,24 +328,21 @@ ThemeContext *ThemeDB::get_nearest_theme_context(Node *p_for_node) const {
 
 // Theme item binding.
 
-void ThemeDB::bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter) {
+void ThemeDB::bind_class_item(const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter) {
 	ERR_FAIL_COND_MSG(theme_item_binds[p_class_name].has(p_prop_name), vformat("Failed to bind theme item '%s' in class '%s': already bound", p_prop_name, p_class_name));
 
 	ThemeItemBind bind;
-	bind.data_type = p_data_type;
 	bind.class_name = p_class_name;
 	bind.item_name = p_item_name;
 	bind.setter = p_setter;
 
 	theme_item_binds[p_class_name][p_prop_name] = bind;
-	theme_item_binds_list[p_class_name].push_back(bind);
 }
 
-void ThemeDB::bind_class_external_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, const StringName &p_type_name, ThemeItemSetter p_setter) {
+void ThemeDB::bind_class_external_item(const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, const StringName &p_type_name, ThemeItemSetter p_setter) {
 	ERR_FAIL_COND_MSG(theme_item_binds[p_class_name].has(p_prop_name), vformat("Failed to bind theme item '%s' in class '%s': already bound", p_prop_name, p_class_name));
 
 	ThemeItemBind bind;
-	bind.data_type = p_data_type;
 	bind.class_name = p_class_name;
 	bind.item_name = p_item_name;
 	bind.type_name = p_type_name;
@@ -352,7 +350,6 @@ void ThemeDB::bind_class_external_item(Theme::DataType p_data_type, const String
 	bind.setter = p_setter;
 
 	theme_item_binds[p_class_name][p_prop_name] = bind;
-	theme_item_binds_list[p_class_name].push_back(bind);
 }
 
 void ThemeDB::update_class_instance_items(Node *p_instance) {
@@ -370,45 +367,6 @@ void ThemeDB::update_class_instance_items(Node *p_instance) {
 		}
 
 		class_name = ClassDB::get_parent_class_nocheck(class_name);
-	}
-}
-
-void ThemeDB::get_class_items(const StringName &p_class_name, List<ThemeItemBind> *r_list, bool p_include_inherited, Theme::DataType p_filter_type) {
-	List<StringName> class_hierarchy;
-	StringName class_name = p_class_name;
-	while (class_name != StringName()) {
-		class_hierarchy.push_front(class_name); // Put parent classes in front.
-		class_name = ClassDB::get_parent_class_nocheck(class_name);
-	}
-
-	HashSet<StringName> inherited_props;
-	for (const StringName &theme_type : class_hierarchy) {
-		HashMap<StringName, List<ThemeItemBind>>::Iterator E = theme_item_binds_list.find(theme_type);
-		if (E) {
-			for (const ThemeItemBind &F : E->value) {
-				if (p_filter_type != Theme::DATA_TYPE_MAX && F.data_type != p_filter_type) {
-					continue;
-				}
-				if (inherited_props.has(F.item_name)) {
-					continue; // Skip inherited properties.
-				}
-				if (F.external || F.class_name != p_class_name) {
-					inherited_props.insert(F.item_name);
-
-					if (!p_include_inherited) {
-						continue; // Track properties defined in parent classes, and skip them.
-					}
-				}
-
-				r_list->push_back(F);
-			}
-		}
-	}
-}
-
-void ThemeDB::_sort_theme_items() {
-	for (KeyValue<StringName, List<ThemeDB::ThemeItemBind>> &E : theme_item_binds_list) {
-		E.value.sort_custom<ThemeItemBind::SortByType>();
 	}
 }
 
@@ -449,9 +407,6 @@ ThemeDB *ThemeDB::get_singleton() {
 
 ThemeDB::ThemeDB() {
 	singleton = this;
-	if (MessageQueue::get_singleton()) { // May not exist in tests etc.
-		callable_mp(this, &ThemeDB::_sort_theme_items).call_deferred();
-	}
 }
 
 ThemeDB::~ThemeDB() {

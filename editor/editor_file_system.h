@@ -68,6 +68,14 @@ class EditorFileSystemDirectory : public Object {
 		String script_class_icon_path;
 	};
 
+	struct FileInfoSort {
+		bool operator()(const FileInfo *p_a, const FileInfo *p_b) const {
+			return p_a->file < p_b->file;
+		}
+	};
+
+	void sort_files();
+
 	Vector<FileInfo *> files;
 
 	static void _bind_methods();
@@ -157,7 +165,7 @@ class EditorFileSystem : public Node {
 		EditorFileSystemDirectory::FileInfo *new_file = nullptr;
 	};
 
-	bool use_threads = false;
+	bool use_threads = true;
 	Thread thread;
 	static void _thread_func(void *_userdata);
 
@@ -213,7 +221,7 @@ class EditorFileSystem : public Node {
 
 	void _scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress);
 
-	void _delete_internal_files(const String &p_file);
+	void _delete_internal_files(String p_file);
 
 	HashSet<String> textfile_extensions;
 	HashSet<String> valid_extensions;
@@ -223,7 +231,7 @@ class EditorFileSystem : public Node {
 
 	Thread thread_sources;
 	bool scanning_changes = false;
-	SafeFlag scanning_changes_done;
+	bool scanning_changes_done = false;
 
 	static void _thread_func_sources(void *_userdata);
 
@@ -259,14 +267,6 @@ class EditorFileSystem : public Node {
 	void _update_script_classes();
 	void _update_pending_script_classes();
 
-	Mutex update_scene_mutex;
-	HashSet<String> update_scene_paths;
-	void _queue_update_scene_groups(const String &p_path);
-	void _update_scene_groups();
-	void _update_pending_scene_groups();
-	HashSet<StringName> _get_scene_groups(const String &p_path);
-	void _get_all_scenes(EditorFileSystemDirectory *p_dir, HashSet<String> &r_list);
-
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
 
 	static Error _resource_import(const String &p_path);
@@ -290,7 +290,7 @@ class EditorFileSystem : public Node {
 	static ResourceUID::ID _resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate);
 
 	bool _scan_extensions();
-	bool _scan_import_support(const Vector<String> &reimports);
+	bool _scan_import_support(Vector<String> reimports);
 
 	Vector<Ref<EditorFileSystemImportFormatSupportQuery>> import_support_queries;
 
@@ -304,7 +304,6 @@ public:
 	EditorFileSystemDirectory *get_filesystem();
 	bool is_scanning() const;
 	bool is_importing() const { return importing; }
-	bool doing_first_scan() const { return first_scan; }
 	float get_scanning_progress() const;
 	void scan();
 	void scan_changes();

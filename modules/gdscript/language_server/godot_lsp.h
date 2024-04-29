@@ -200,7 +200,7 @@ struct LocationLink {
 
 	/**
 	 * The range that should be selected and revealed when this link is being followed, e.g the name of a function.
-	 * Must be contained by the `targetRange`. See also `DocumentSymbol#range`
+	 * Must be contained by the the `targetRange`. See also `DocumentSymbol#range`
 	 */
 	Range targetSelectionRange;
 };
@@ -1428,17 +1428,6 @@ struct CompletionParams : public TextDocumentPositionParams {
 	void load(const Dictionary &p_params) {
 		TextDocumentPositionParams::load(p_params);
 		context.load(p_params["context"]);
-	}
-
-	Dictionary to_json() {
-		Dictionary ctx;
-		ctx["triggerCharacter"] = context.triggerCharacter;
-		ctx["triggerKind"] = context.triggerKind;
-
-		Dictionary dict;
-		dict = TextDocumentPositionParams::to_json();
-		dict["context"] = ctx;
-		return dict;
 	}
 };
 

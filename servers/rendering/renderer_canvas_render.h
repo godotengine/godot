@@ -31,7 +31,6 @@
 #ifndef RENDERER_CANVAS_RENDER_H
 #define RENDERER_CANVAS_RENDER_H
 
-#include "servers/rendering/rendering_method.h"
 #include "servers/rendering_server.h"
 
 class RendererCanvasRender {
@@ -51,12 +50,9 @@ public:
 	};
 
 	struct Light {
-		bool enabled : 1;
-		bool on_interpolate_transform_list : 1;
-		bool interpolated : 1;
+		bool enabled;
 		Color color;
-		Transform2D xform_curr;
-		Transform2D xform_prev;
+		Transform2D xform;
 		float height;
 		float energy;
 		float scale;
@@ -100,8 +96,6 @@ public:
 		Light() {
 			version = 0;
 			enabled = true;
-			on_interpolate_transform_list = false;
-			interpolated = true;
 			color = Color(1, 1, 1);
 			shadow_color = Color(0, 0, 0, 0);
 			height = 0;
@@ -312,17 +306,11 @@ public:
 			Rect2 rect;
 		};
 
-		// For interpolation we store the current local xform,
-		// and the previous xform from the previous tick.
-		Transform2D xform_curr;
-		Transform2D xform_prev;
-
-		bool clip : 1;
-		bool visible : 1;
-		bool behind : 1;
-		bool update_when_visible : 1;
-		bool on_interpolate_transform_list : 1;
-		bool interpolated : 1;
+		Transform2D xform;
+		bool clip;
+		bool visible;
+		bool behind;
+		bool update_when_visible;
 
 		struct CanvasGroup {
 			RS::CanvasGroupMode mode;
@@ -361,9 +349,6 @@ public:
 		ViewportRender *vp_render = nullptr;
 		bool distance_field;
 		bool light_masked;
-		bool repeat_source;
-		Point2 repeat_size;
-		int repeat_times = 1;
 
 		Rect2 global_rect_cache;
 
@@ -373,11 +358,8 @@ public:
 		Command *last_command = nullptr;
 		Vector<CommandBlock> blocks;
 		uint32_t current_block;
-#ifdef DEBUG_ENABLED
-		mutable double debug_redraw_time = 0;
-#endif
 
-		template <typename T>
+		template <class T>
 		T *alloc_command() {
 			T *command = nullptr;
 			if (commands == nullptr) {
@@ -482,9 +464,6 @@ public:
 			z_final = 0;
 			texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 			texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
-			repeat_source = false;
-			on_interpolate_transform_list = false;
-			interpolated = true;
 		}
 		virtual ~Item() {
 			clear();
@@ -497,18 +476,15 @@ public:
 		}
 	};
 
-	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info = nullptr) = 0;
+	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) = 0;
 
 	struct LightOccluderInstance {
-		bool enabled : 1;
-		bool on_interpolate_transform_list : 1;
-		bool interpolated : 1;
+		bool enabled;
 		RID canvas;
 		RID polygon;
 		RID occluder;
 		Rect2 aabb_cache;
-		Transform2D xform_curr;
-		Transform2D xform_prev;
+		Transform2D xform;
 		Transform2D xform_cache;
 		int light_mask;
 		bool sdf_collision;
@@ -518,8 +494,6 @@ public:
 
 		LightOccluderInstance() {
 			enabled = true;
-			on_interpolate_transform_list = false;
-			interpolated = false;
 			sdf_collision = false;
 			next = nullptr;
 			light_mask = 1;
@@ -542,8 +516,6 @@ public:
 
 	virtual bool free(RID p_rid) = 0;
 	virtual void update() = 0;
-
-	virtual void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) = 0;
 
 	RendererCanvasRender() { singleton = this; }
 	virtual ~RendererCanvasRender() {}

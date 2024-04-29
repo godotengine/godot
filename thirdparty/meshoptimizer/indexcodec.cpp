@@ -13,7 +13,7 @@ namespace meshopt
 const unsigned char kIndexHeader = 0xe0;
 const unsigned char kSequenceHeader = 0xd0;
 
-static int gEncodeIndexVersion = 1;
+static int gEncodeIndexVersion = 0;
 
 typedef unsigned int VertexFifo[16];
 typedef unsigned int EdgeFifo[16][2];

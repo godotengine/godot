@@ -169,7 +169,7 @@ void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 
 	r_img->set_data(width, height, mipmaps, target_format, dest_data);
 
-	print_verbose(vformat("astcenc: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
+	print_verbose(vformat("astcenc: Encoding took %s ms.", rtos(OS::get_singleton()->get_ticks_msec() - start_time)));
 }
 
 void _decompress_astc(Image *r_img) {
@@ -286,5 +286,5 @@ void _decompress_astc(Image *r_img) {
 
 	r_img->set_data(width, height, mipmaps, target_format, dest_data);
 
-	print_verbose(vformat("astcenc: Decompression took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
+	print_verbose(vformat("astcenc: Decompression took %s ms.", rtos(OS::get_singleton()->get_ticks_msec() - start_time)));
 }

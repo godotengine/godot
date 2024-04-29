@@ -58,14 +58,7 @@ Error ZIPReader::close() {
 PackedStringArray ZIPReader::get_files() {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedStringArray(), "ZIPReader must be opened before use.");
 
-	unz_global_info gi;
-	int err = unzGetGlobalInfo(uzf, &gi);
-	ERR_FAIL_COND_V(err != UNZ_OK, PackedStringArray());
-	if (gi.number_entry == 0) {
-		return PackedStringArray();
-	}
-
-	err = unzGoToFirstFile(uzf);
+	int err = unzGoToFirstFile(uzf);
 	ERR_FAIL_COND_V(err != UNZ_OK, PackedStringArray());
 
 	List<String> s;

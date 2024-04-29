@@ -34,7 +34,6 @@
 
 #include "core/os/os.h"
 #include "core/string/print_string.h"
-
 #include <share.h> // _SH_DENYNO
 #include <shlwapi.h>
 #define WIN32_LEAN_AND_MEAN
@@ -47,7 +46,7 @@
 #include <wchar.h>
 
 #ifdef _MSC_VER
-#define S_ISREG(m) ((m) & _S_IFREG)
+#define S_ISREG(m) ((m)&_S_IFREG)
 #endif
 
 void FileAccessWindows::check_errors() const {
@@ -60,12 +59,12 @@ void FileAccessWindows::check_errors() const {
 
 bool FileAccessWindows::is_path_invalid(const String &p_path) {
 	// Check for invalid operating system file.
-	String fname = p_path.get_file().to_lower();
-
+	String fname = p_path;
 	int dot = fname.find(".");
 	if (dot != -1) {
 		fname = fname.substr(0, dot);
 	}
+	fname = fname.to_lower();
 	return invalid_files.has(fname);
 }
 
@@ -284,72 +283,6 @@ uint8_t FileAccessWindows::get_8() const {
 	return b;
 }
 
-uint16_t FileAccessWindows::get_16() const {
-	ERR_FAIL_NULL_V(f, 0);
-
-	if (flags == READ_WRITE || flags == WRITE_READ) {
-		if (prev_op == WRITE) {
-			fflush(f);
-		}
-		prev_op = READ;
-	}
-
-	uint16_t b = 0;
-	if (fread(&b, 1, 2, f) != 2) {
-		check_errors();
-	}
-
-	if (big_endian) {
-		b = BSWAP16(b);
-	}
-
-	return b;
-}
-
-uint32_t FileAccessWindows::get_32() const {
-	ERR_FAIL_NULL_V(f, 0);
-
-	if (flags == READ_WRITE || flags == WRITE_READ) {
-		if (prev_op == WRITE) {
-			fflush(f);
-		}
-		prev_op = READ;
-	}
-
-	uint32_t b = 0;
-	if (fread(&b, 1, 4, f) != 4) {
-		check_errors();
-	}
-
-	if (big_endian) {
-		b = BSWAP32(b);
-	}
-
-	return b;
-}
-
-uint64_t FileAccessWindows::get_64() const {
-	ERR_FAIL_NULL_V(f, 0);
-
-	if (flags == READ_WRITE || flags == WRITE_READ) {
-		if (prev_op == WRITE) {
-			fflush(f);
-		}
-		prev_op = READ;
-	}
-
-	uint64_t b = 0;
-	if (fread(&b, 1, 8, f) != 8) {
-		check_errors();
-	}
-
-	if (big_endian) {
-		b = BSWAP64(b);
-	}
-
-	return b;
-}
-
 uint64_t FileAccessWindows::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_NULL_V(f, -1);
@@ -390,63 +323,6 @@ void FileAccessWindows::store_8(uint8_t p_dest) {
 		prev_op = WRITE;
 	}
 	fwrite(&p_dest, 1, 1, f);
-}
-
-void FileAccessWindows::store_16(uint16_t p_dest) {
-	ERR_FAIL_NULL(f);
-
-	if (flags == READ_WRITE || flags == WRITE_READ) {
-		if (prev_op == READ) {
-			if (last_error != ERR_FILE_EOF) {
-				fseek(f, 0, SEEK_CUR);
-			}
-		}
-		prev_op = WRITE;
-	}
-
-	if (big_endian) {
-		p_dest = BSWAP16(p_dest);
-	}
-
-	fwrite(&p_dest, 1, 2, f);
-}
-
-void FileAccessWindows::store_32(uint32_t p_dest) {
-	ERR_FAIL_NULL(f);
-
-	if (flags == READ_WRITE || flags == WRITE_READ) {
-		if (prev_op == READ) {
-			if (last_error != ERR_FILE_EOF) {
-				fseek(f, 0, SEEK_CUR);
-			}
-		}
-		prev_op = WRITE;
-	}
-
-	if (big_endian) {
-		p_dest = BSWAP32(p_dest);
-	}
-
-	fwrite(&p_dest, 1, 4, f);
-}
-
-void FileAccessWindows::store_64(uint64_t p_dest) {
-	ERR_FAIL_NULL(f);
-
-	if (flags == READ_WRITE || flags == WRITE_READ) {
-		if (prev_op == READ) {
-			if (last_error != ERR_FILE_EOF) {
-				fseek(f, 0, SEEK_CUR);
-			}
-		}
-		prev_op = WRITE;
-	}
-
-	if (big_endian) {
-		p_dest = BSWAP64(p_dest);
-	}
-
-	fwrite(&p_dest, 1, 8, f);
 }
 
 void FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {

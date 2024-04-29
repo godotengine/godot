@@ -5,7 +5,6 @@
 
 #include "../common/builder.h"
 #include "../../common/algorithms/parallel_reduce.h"
-#include "../../common/algorithms/parallel_sort.h"
 
 namespace embree
 {
@@ -102,7 +101,7 @@ namespace embree
         }
       };
 
-#if defined (__AVX2__) || defined(__SYCL_DEVICE_ONLY__)
+#if defined (__AVX2__)
 
       /*! for AVX2 there is a fast scalar bitInterleave */
       struct MortonCodeGenerator

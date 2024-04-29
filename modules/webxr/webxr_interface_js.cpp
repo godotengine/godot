@@ -41,7 +41,6 @@
 #include "scene/main/window.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/rendering_server_globals.h"
-#include "servers/xr/xr_hand_tracker.h"
 
 #include <emscripten.h>
 #include <stdlib.h>
@@ -50,23 +49,22 @@ void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	Ref<WebXRInterfaceJS> interface = xr_server->find_interface("WebXR");
+	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
 	String session_mode = String(p_session_mode);
 	interface->emit_signal(SNAME("session_supported"), session_mode, p_supported ? true : false);
 }
 
-void _emwebxr_on_session_started(char *p_reference_space_type, char *p_enabled_features) {
+void _emwebxr_on_session_started(char *p_reference_space_type) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	Ref<WebXRInterfaceJS> interface = xr_server->find_interface("WebXR");
+	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
 	String reference_space_type = String(p_reference_space_type);
-	interface->_set_reference_space_type(reference_space_type);
-	interface->_set_enabled_features(p_enabled_features);
+	static_cast<WebXRInterfaceJS *>(interface.ptr())->_set_reference_space_type(reference_space_type);
 	interface->emit_signal(SNAME("session_started"));
 }
 
@@ -74,7 +72,7 @@ void _emwebxr_on_session_ended() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	Ref<WebXRInterfaceJS> interface = xr_server->find_interface("WebXR");
+	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
 	interface->uninitialize();
@@ -85,7 +83,7 @@ void _emwebxr_on_session_failed(char *p_message) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	Ref<WebXRInterfaceJS> interface = xr_server->find_interface("WebXR");
+	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
 	interface->uninitialize();
@@ -98,17 +96,17 @@ extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_input_event(int p_event_type, i
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	Ref<WebXRInterfaceJS> interface = xr_server->find_interface("WebXR");
+	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
-	interface->_on_input_event(p_event_type, p_input_source_id);
+	((WebXRInterfaceJS *)interface.ptr())->_on_input_event(p_event_type, p_input_source_id);
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void _emwebxr_on_simple_event(char *p_signal_name) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	Ref<WebXRInterfaceJS> interface = xr_server->find_interface("WebXR");
+	Ref<XRInterface> interface = xr_server->find_interface("WebXR");
 	ERR_FAIL_COND(interface.is_null());
 
 	StringName signal_name = StringName(p_signal_name);
@@ -151,12 +149,12 @@ String WebXRInterfaceJS::get_requested_reference_space_types() const {
 	return requested_reference_space_types;
 }
 
-String WebXRInterfaceJS::get_reference_space_type() const {
-	return reference_space_type;
+void WebXRInterfaceJS::_set_reference_space_type(String p_reference_space_type) {
+	reference_space_type = p_reference_space_type;
 }
 
-String WebXRInterfaceJS::get_enabled_features() const {
-	return enabled_features;
+String WebXRInterfaceJS::get_reference_space_type() const {
+	return reference_space_type;
 }
 
 bool WebXRInterfaceJS::is_input_source_active(int p_input_source_id) const {
@@ -258,9 +256,7 @@ bool WebXRInterfaceJS::initialize() {
 			return false;
 		}
 
-		enabled_features.clear();
-
-		// We must create a tracker for our head.
+		// we must create a tracker for our head
 		head_transform.basis = Basis();
 		head_transform.origin = Vector3();
 		head_tracker.instantiate();
@@ -269,7 +265,7 @@ bool WebXRInterfaceJS::initialize() {
 		head_tracker->set_tracker_desc("Players head");
 		xr_server->add_tracker(head_tracker);
 
-		// Make this our primary interface.
+		// make this our primary interface
 		xr_server->set_primary_interface(this);
 
 		// Clear render_targetsize to make sure it gets reset to the new size.
@@ -305,14 +301,6 @@ void WebXRInterfaceJS::uninitialize() {
 				head_tracker.unref();
 			}
 
-			for (int i = 0; i < HAND_MAX; i++) {
-				if (hand_trackers[i].is_valid()) {
-					xr_server->remove_hand_tracker(i == 0 ? "/user/left" : "/user/right");
-
-					hand_trackers[i].unref();
-				}
-			}
-
 			if (xr_server->get_primary_interface() == this) {
 				// no longer our primary interface
 				xr_server->set_primary_interface(nullptr);
@@ -321,7 +309,7 @@ void WebXRInterfaceJS::uninitialize() {
 
 		godot_webxr_uninitialize();
 
-		GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+		GLES3::TextureStorage *texture_storage = dynamic_cast<GLES3::TextureStorage *>(RSG::texture_storage);
 		if (texture_storage != nullptr) {
 			for (KeyValue<unsigned int, RID> &E : texture_cache) {
 				// Forcibly mark as not part of a render target so we can free it.
@@ -333,8 +321,7 @@ void WebXRInterfaceJS::uninitialize() {
 		}
 
 		texture_cache.clear();
-		reference_space_type.clear();
-		enabled_features.clear();
+		reference_space_type = "";
 		initialized = false;
 	};
 };
@@ -451,8 +438,13 @@ Projection WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, double p_a
 }
 
 bool WebXRInterfaceJS::pre_draw_viewport(RID p_render_target) {
-	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+	GLES3::TextureStorage *texture_storage = dynamic_cast<GLES3::TextureStorage *>(RSG::texture_storage);
 	if (texture_storage == nullptr) {
+		return false;
+	}
+
+	GLES3::RenderTarget *rt = texture_storage->get_render_target(p_render_target);
+	if (rt == nullptr) {
 		return false;
 	}
 
@@ -468,9 +460,23 @@ bool WebXRInterfaceJS::pre_draw_viewport(RID p_render_target) {
 	//
 	// See: https://immersive-web.github.io/layers/#xropaquetextures
 	//
-	// So, even if the color and depth textures have the same GLuint as the last
-	// frame, we need to re-attach them again.
-	texture_storage->render_target_set_reattach_textures(p_render_target, true);
+	// This is why we're doing this sort of silly check: if the color and depth
+	// textures are the same this frame as last frame, we need to attach them
+	// again, despite the fact that the GLuint for them hasn't changed.
+	if (rt->overridden.is_overridden && rt->overridden.color == color_texture && rt->overridden.depth == depth_texture) {
+		GLES3::Config *config = GLES3::Config::get_singleton();
+		bool use_multiview = rt->view_count > 1 && config->multiview_supported;
+
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
+		if (use_multiview) {
+			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->color, 0, 0, rt->view_count);
+			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, rt->depth, 0, 0, rt->view_count);
+		} else {
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, texture_storage->system_fbo);
+	}
 
 	return true;
 }
@@ -478,12 +484,7 @@ bool WebXRInterfaceJS::pre_draw_viewport(RID p_render_target) {
 Vector<BlitToScreen> WebXRInterfaceJS::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	Vector<BlitToScreen> blit_to_screen;
 
-	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
-	if (texture_storage == nullptr) {
-		return blit_to_screen;
-	}
-
-	texture_storage->render_target_set_reattach_textures(p_render_target, false);
+	// We don't need to do anything here.
 
 	return blit_to_screen;
 };
@@ -512,7 +513,7 @@ RID WebXRInterfaceJS::_get_texture(unsigned int p_texture_id) {
 		return cache->get();
 	}
 
-	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+	GLES3::TextureStorage *texture_storage = dynamic_cast<GLES3::TextureStorage *>(RSG::texture_storage);
 	if (texture_storage == nullptr) {
 		return RID();
 	}
@@ -585,9 +586,6 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 	float buttons[10];
 	int axes_count;
 	float axes[10];
-	int has_hand_data;
-	float hand_joints[WEBXR_HAND_JOINT_MAX * 16];
-	float hand_radii[WEBXR_HAND_JOINT_MAX];
 
 	input_source.active = godot_webxr_update_input_source(
 			p_input_source_id,
@@ -600,10 +598,7 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 			&button_count,
 			buttons,
 			&axes_count,
-			axes,
-			&has_hand_data,
-			hand_joints,
-			hand_radii);
+			axes);
 
 	if (!input_source.active) {
 		if (input_source.tracker.is_valid()) {
@@ -694,62 +689,11 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 					event->set_index(touch_index);
 					event->set_position(position);
 					event->set_relative(delta);
-					event->set_relative_screen_position(delta);
 					Input::get_singleton()->parse_input_event(event);
 				}
 			}
 
 			touches[touch_index].position = position;
-		}
-	}
-
-	if (p_input_source_id < 2) {
-		Ref<XRHandTracker> hand_tracker = hand_trackers[p_input_source_id];
-		if (has_hand_data) {
-			// Transform orientations to match Godot Humanoid skeleton.
-			const Basis bone_adjustment(
-					Vector3(-1.0, 0.0, 0.0),
-					Vector3(0.0, 0.0, -1.0),
-					Vector3(0.0, -1.0, 0.0));
-
-			if (unlikely(hand_tracker.is_null())) {
-				hand_tracker.instantiate();
-				hand_tracker->set_hand(p_input_source_id == 0 ? XRHandTracker::HAND_LEFT : XRHandTracker::HAND_RIGHT);
-
-				// These flags always apply, since WebXR doesn't give us enough insight to be more fine grained.
-				BitField<XRHandTracker::HandJointFlags> joint_flags(XRHandTracker::HAND_JOINT_FLAG_POSITION_VALID | XRHandTracker::HAND_JOINT_FLAG_ORIENTATION_VALID | XRHandTracker::HAND_JOINT_FLAG_POSITION_TRACKED | XRHandTracker::HAND_JOINT_FLAG_ORIENTATION_TRACKED);
-				for (int godot_joint = 0; godot_joint < XRHandTracker::HAND_JOINT_MAX; godot_joint++) {
-					hand_tracker->set_hand_joint_flags((XRHandTracker::HandJoint)godot_joint, joint_flags);
-				}
-
-				hand_trackers[p_input_source_id] = hand_tracker;
-				xr_server->add_hand_tracker(p_input_source_id == 0 ? "/user/left" : "/user/right", hand_tracker);
-			}
-
-			hand_tracker->set_has_tracking_data(true);
-			for (int webxr_joint = 0; webxr_joint < WEBXR_HAND_JOINT_MAX; webxr_joint++) {
-				XRHandTracker::HandJoint godot_joint = (XRHandTracker::HandJoint)(webxr_joint + 1);
-
-				Transform3D joint_transform = _js_matrix_to_transform(hand_joints + (16 * webxr_joint));
-				joint_transform.basis *= bone_adjustment;
-				hand_tracker->set_hand_joint_transform(godot_joint, joint_transform);
-
-				hand_tracker->set_hand_joint_radius(godot_joint, hand_radii[webxr_joint]);
-			}
-
-			// WebXR doesn't have a palm joint, so we calculate it by finding the middle of the middle finger metacarpal bone.
-			{
-				// 10 is the WebXR middle finger metacarpal joint, and 12 is the offset to the transform origin.
-				const float *start_pos = hand_joints + (10 * 16) + 12;
-				// 11 is the WebXR middle finger phalanx proximal joint, and 12 is the offset to the transform origin.
-				const float *end_pos = hand_joints + (11 * 16) + 12;
-				Transform3D palm_transform;
-				palm_transform.origin = (Vector3(start_pos[0], start_pos[1], start_pos[2]) + Vector3(end_pos[0], end_pos[1], end_pos[2])) / 2.0;
-				hand_tracker->set_hand_joint_transform(XRHandTracker::HAND_JOINT_PALM, palm_transform);
-			}
-
-		} else if (hand_tracker.is_valid()) {
-			hand_tracker->set_has_tracking_data(false);
 		}
 	}
 }

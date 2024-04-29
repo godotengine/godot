@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Godot.NativeInterop;
@@ -24,6 +25,7 @@ public partial class VariantUtils
         // ReSharper disable once StaticMemberInGenericType
         internal static unsafe delegate*<in godot_variant, T> FromVariantCb;
 
+        [SuppressMessage("ReSharper", "RedundantNameQualifier")]
         static GenericConversion()
         {
             RuntimeHelpers.RunClassConstructor(typeof(T).TypeHandle);
@@ -31,6 +33,7 @@ public partial class VariantUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [SuppressMessage("ReSharper", "RedundantNameQualifier")]
     public static godot_variant CreateFrom<[MustBeVariant] T>(in T from)
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -221,6 +224,7 @@ public partial class VariantUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    [SuppressMessage("ReSharper", "RedundantNameQualifier")]
     public static T ConvertTo<[MustBeVariant] T>(in godot_variant variant)
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

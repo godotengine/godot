@@ -35,7 +35,7 @@
 
 #include "core/object/class_db.h"
 
-template <typename T>
+template <class T>
 struct VariantDestruct {};
 
 #define MAKE_PTRDESTRUCT(m_type)                               \

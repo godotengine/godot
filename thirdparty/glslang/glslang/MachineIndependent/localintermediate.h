@@ -43,12 +43,11 @@
 #include "../Public/ShaderLang.h"
 #include "Versions.h"
 
-#include <algorithm>
-#include <array>
-#include <functional>
-#include <set>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <set>
+#include <array>
 
 class TInfoSink;
 
@@ -148,6 +147,7 @@ struct TOffsetRange {
     TRange offset;
 };
 
+#ifndef GLSLANG_WEB
 // Things that need to be tracked per xfb buffer.
 struct TXfbBuffer {
     TXfbBuffer() : stride(TQualifier::layoutXfbStrideEnd), implicitStride(0), contains64BitType(false),
@@ -159,6 +159,7 @@ struct TXfbBuffer {
     bool contains32BitType;
     bool contains16BitType;
 };
+#endif
 
 // Track a set of strings describing how the module was processed.
 // This includes command line options, transforms, etc., ideally inclusive enough
@@ -310,7 +311,9 @@ public:
         atomicCounterBlockName(""),
         globalUniformBlockSet(TQualifier::layoutSetEnd),
         globalUniformBlockBinding(TQualifier::layoutBindingEnd),
-        atomicCounterBlockSet(TQualifier::layoutSetEnd),
+        atomicCounterBlockSet(TQualifier::layoutSetEnd)
+#ifndef GLSLANG_WEB
+        ,
         implicitThisName("@this"), implicitCounterName("@count"),
         source(EShSourceNone),
         useVulkanMemoryModel(false),
@@ -349,6 +352,7 @@ public:
         spirvRequirement(nullptr),
         spirvExecutionMode(nullptr),
         uniformLocationBase(0)
+#endif
     {
         localSize[0] = 1;
         localSize[1] = 1;
@@ -359,8 +363,10 @@ public:
         localSizeSpecId[0] = TQualifier::layoutNotSet;
         localSizeSpecId[1] = TQualifier::layoutNotSet;
         localSizeSpecId[2] = TQualifier::layoutNotSet;
+#ifndef GLSLANG_WEB
         xfbBuffers.resize(TQualifier::layoutXfbBufferEnd);
         shiftBinding.fill(0);
+#endif
     }
 
     void setVersion(int v)
@@ -528,8 +534,6 @@ public:
     TOperator mapTypeToConstructorOp(const TType&) const;
     TIntermAggregate* growAggregate(TIntermNode* left, TIntermNode* right);
     TIntermAggregate* growAggregate(TIntermNode* left, TIntermNode* right, const TSourceLoc&);
-    TIntermAggregate* mergeAggregate(TIntermNode* left, TIntermNode* right);
-    TIntermAggregate* mergeAggregate(TIntermNode* left, TIntermNode* right, const TSourceLoc&);
     TIntermAggregate* makeAggregate(TIntermNode* node);
     TIntermAggregate* makeAggregate(TIntermNode* node, const TSourceLoc&);
     TIntermAggregate* makeAggregate(const TSourceLoc&);
@@ -575,8 +579,7 @@ public:
     TIntermTyped* foldSwizzle(TIntermTyped* node, TSwizzleSelectors<TVectorSelector>& fields, const TSourceLoc&);
 
     // Tree ops
-    static const TIntermTyped* traverseLValueBase(const TIntermTyped*, bool swizzleOkay, bool bufferReferenceOk = false,
-                                                  std::function<bool(const TIntermNode&)> proc = {});
+    static const TIntermTyped* findLValueBase(const TIntermTyped*, bool swizzleOkay , bool BufferReferenceOk = false);
 
     // Linkage related
     void addSymbolLinkageNodes(TIntermAggregate*& linkage, EShLanguage, TSymbolTable&);
@@ -633,6 +636,38 @@ public:
                localSizeSpecId[1] != TQualifier::layoutNotSet ||
                localSizeSpecId[2] != TQualifier::layoutNotSet;
     }
+#ifdef GLSLANG_WEB
+    void output(TInfoSink&, bool tree) { }
+
+    bool isEsProfile() const { return false; }
+    bool getXfbMode() const { return false; }
+    bool isMultiStream() const { return false; }
+    TLayoutGeometry getOutputPrimitive() const { return ElgNone; }
+    bool getNonCoherentColorAttachmentReadEXT() const { return false; }
+    bool getNonCoherentDepthAttachmentReadEXT() const { return false; }
+    bool getNonCoherentStencilAttachmentReadEXT() const { return false; }
+    bool getPostDepthCoverage() const { return false; }
+    bool getEarlyFragmentTests() const { return false; }
+    TLayoutDepth getDepth() const { return EldNone; }
+    bool getPixelCenterInteger() const { return false; }
+    void setOriginUpperLeft() { }
+    bool getOriginUpperLeft() const { return true; }
+    TInterlockOrdering getInterlockOrdering() const { return EioNone; }
+
+    bool getAutoMapBindings() const { return false; }
+    bool getAutoMapLocations() const { return false; }
+    int getNumPushConstants() const { return 0; }
+    void addShaderRecordCount() { }
+    void addTaskNVCount() { }
+    void addTaskPayloadEXTCount() { }
+    void setUseVulkanMemoryModel() { }
+    bool usingVulkanMemoryModel() const { return false; }
+    bool usingPhysicalStorageBuffer() const { return false; }
+    bool usingVariablePointers() const { return false; }
+    unsigned getXfbStride(int buffer) const { return 0; }
+    bool hasLayoutDerivativeModeNone() const { return false; }
+    ComputeDerivativeMode getLayoutDerivativeModeNone() const { return LayoutDerivativeNone; }
+#else
     void output(TInfoSink&, bool tree);
 
     bool isEsProfile() const { return profile == EEsProfile; }
@@ -971,6 +1006,7 @@ public:
     void insertSpirvExecutionModeId(int executionMode, const TIntermAggregate* args);
     bool hasSpirvExecutionMode() const { return spirvExecutionMode != nullptr; }
     const TSpirvExecutionMode& getSpirvExecutionMode() const { return *spirvExecutionMode; }
+#endif // GLSLANG_WEB
 
     void addBlockStorageOverride(const char* nameStr, TBlockStorageClass backing)
     {
@@ -1077,6 +1113,12 @@ public:
     void setUniqueId(unsigned long long id) { uniqueId = id; }
 
     // Certain explicit conversions are allowed conditionally
+#ifdef GLSLANG_WEB
+    bool getArithemeticInt8Enabled() const { return false; }
+    bool getArithemeticInt16Enabled() const { return false; }
+    bool getArithemeticFloat16Enabled() const { return false; }
+    void updateNumericFeature(TNumericFeatures::feature f, bool on) { }
+#else
     bool getArithemeticInt8Enabled() const {
         return numericFeatures.contains(TNumericFeatures::shader_explicit_arithmetic_types) ||
                numericFeatures.contains(TNumericFeatures::shader_explicit_arithmetic_types_int8);
@@ -1094,6 +1136,7 @@ public:
     }
     void updateNumericFeature(TNumericFeatures::feature f, bool on)
         { on ? numericFeatures.insert(f) : numericFeatures.erase(f); }
+#endif
 
 protected:
     TIntermSymbol* addSymbol(long long Id, const TString&, const TType&, const TConstUnionArray&, TIntermTyped* subtree, const TSourceLoc&);
@@ -1165,6 +1208,7 @@ protected:
     unsigned int globalUniformBlockBinding;
     unsigned int atomicCounterBlockSet;
 
+#ifndef GLSLANG_WEB
 public:
     const char* const implicitThisName;
     const char* const implicitCounterName;
@@ -1235,6 +1279,7 @@ protected:
     std::unordered_map<std::string, int> uniformLocationOverrides;
     int uniformLocationBase;
     TNumericFeatures numericFeatures;
+#endif
     std::unordered_map<std::string, TBlockStorageClass> blockBackingOverrides;
 
     std::unordered_set<int> usedConstantId; // specialization constant ids used

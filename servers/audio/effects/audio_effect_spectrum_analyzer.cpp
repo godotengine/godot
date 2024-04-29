@@ -115,9 +115,9 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 		float *fftw = temporal_fft.ptrw();
 		for (int i = 0; i < to_fill; i++) { //left and right buffers
 			float window = -0.5 * Math::cos(to_fill_step * (double)temporal_fft_pos) + 0.5;
-			fftw[temporal_fft_pos * 2] = window * p_src_frames->left;
+			fftw[temporal_fft_pos * 2] = window * p_src_frames->l;
 			fftw[temporal_fft_pos * 2 + 1] = 0;
-			fftw[(temporal_fft_pos + fft_size * 2) * 2] = window * p_src_frames->right;
+			fftw[(temporal_fft_pos + fft_size * 2) * 2] = window * p_src_frames->r;
 			fftw[(temporal_fft_pos + fft_size * 2) * 2 + 1] = 0;
 			++p_src_frames;
 			++temporal_fft_pos;
@@ -135,8 +135,8 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 
 			for (int i = 0; i < fft_size; i++) {
 				//abs(vec)/fft_size normalizes each frequency
-				hw[i].left = Vector2(fftw[i * 2], fftw[i * 2 + 1]).length() / float(fft_size);
-				hw[i].right = Vector2(fftw[fft_size * 4 + i * 2], fftw[fft_size * 4 + i * 2 + 1]).length() / float(fft_size);
+				hw[i].l = Vector2(fftw[i * 2], fftw[i * 2 + 1]).length() / float(fft_size);
+				hw[i].r = Vector2(fftw[fft_size * 4 + i * 2], fftw[fft_size * 4 + i * 2 + 1]).length() / float(fft_size);
 			}
 
 			fft_pos = next; //swap
@@ -199,8 +199,8 @@ Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(f
 		Vector2 max;
 
 		for (int i = begin_pos; i <= end_pos; i++) {
-			max.x = MAX(max.x, r[i].left);
-			max.y = MAX(max.y, r[i].right);
+			max.x = MAX(max.x, r[i].l);
+			max.y = MAX(max.y, r[i].r);
 		}
 
 		return max;

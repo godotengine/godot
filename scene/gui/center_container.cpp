@@ -47,7 +47,8 @@ Size2 CenterContainer::get_minimum_size() const {
 			continue;
 		}
 		Size2 minsize = c->get_combined_minimum_size();
-		ms = ms.max(minsize);
+		ms.width = MAX(ms.width, minsize.width);
+		ms.height = MAX(ms.height, minsize.height);
 	}
 
 	return ms;

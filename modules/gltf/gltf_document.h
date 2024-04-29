@@ -32,23 +32,19 @@
 #define GLTF_DOCUMENT_H
 
 #include "extensions/gltf_document_extension.h"
-#include "extensions/gltf_spec_gloss.h"
-#include "gltf_defines.h"
-#include "gltf_state.h"
-
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/multimesh_instance_3d.h"
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
-#ifdef MODULE_CSG_ENABLED
-#include "modules/csg/csg_shape.h"
-#endif // MODULE_CSG_ENABLED
-#ifdef MODULE_GRIDMAP_ENABLED
-#include "modules/gridmap/grid_map.h"
-#endif // MODULE_GRIDMAP_ENABLED
 
 class GLTFDocument : public Resource {
 	GDCLASS(GLTFDocument, Resource);
+	static Vector<Ref<GLTFDocumentExtension>> all_document_extensions;
+	Vector<Ref<GLTFDocumentExtension>> document_extensions;
+
+private:
+	const float BAKE_FPS = 30.0f;
+	String _image_format = "PNG";
+	float _lossy_quality = 0.75f;
+	Ref<GLTFDocumentExtension> _image_save_extension;
 
 public:
 	const int32_t JOINT_GROUP_SIZE = 4;
@@ -56,6 +52,13 @@ public:
 	enum {
 		ARRAY_BUFFER = 34962,
 		ELEMENT_ARRAY_BUFFER = 34963,
+
+		TYPE_BYTE = 5120,
+		TYPE_UNSIGNED_BYTE = 5121,
+		TYPE_SHORT = 5122,
+		TYPE_UNSIGNED_SHORT = 5123,
+		TYPE_UNSIGNED_INT = 5125,
+		TYPE_FLOAT = 5126,
 
 		COMPONENT_TYPE_BYTE = 5120,
 		COMPONENT_TYPE_UNSIGNED_BYTE = 5121,
@@ -68,52 +71,30 @@ public:
 		TEXTURE_TYPE_GENERIC = 0,
 		TEXTURE_TYPE_NORMAL = 1,
 	};
-	enum RootNodeMode {
-		ROOT_NODE_MODE_SINGLE_ROOT,
-		ROOT_NODE_MODE_KEEP_ROOT,
-		ROOT_NODE_MODE_MULTI_ROOT,
-	};
-
-private:
-	const float BAKE_FPS = 30.0f;
-	int _naming_version = 1;
-	String _image_format = "PNG";
-	float _lossy_quality = 0.75f;
-	Ref<GLTFDocumentExtension> _image_save_extension;
-	RootNodeMode _root_node_mode = RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT;
 
 protected:
 	static void _bind_methods();
-	String _gen_unique_name(Ref<GLTFState> p_state, const String &p_name);
-	static Vector<Ref<GLTFDocumentExtension>> all_document_extensions;
-	Vector<Ref<GLTFDocumentExtension>> document_extensions;
 
 public:
 	static void register_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension, bool p_first_priority = false);
 	static void unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension);
 	static void unregister_all_gltf_document_extensions();
-	static Vector<Ref<GLTFDocumentExtension>> get_all_gltf_document_extensions();
 
-	void set_naming_version(int p_version);
-	int get_naming_version() const;
 	void set_image_format(const String &p_image_format);
 	String get_image_format() const;
 	void set_lossy_quality(float p_lossy_quality);
 	float get_lossy_quality() const;
-	void set_root_node_mode(RootNodeMode p_root_node_mode);
-	RootNodeMode get_root_node_mode() const;
-	static String _gen_unique_name_static(HashSet<String> &r_unique_names, const String &p_name);
 
 private:
 	void _build_parent_hierachy(Ref<GLTFState> p_state);
 	double _filter_number(double p_float);
-	void _round_min_max_components(Vector<double> &r_type_min, Vector<double> &r_type_max);
 	String _get_component_type_name(const uint32_t p_component);
 	int _get_component_type_size(const int p_component_type);
 	Error _parse_scenes(Ref<GLTFState> p_state);
 	Error _parse_nodes(Ref<GLTFState> p_state);
 	String _get_type_name(const GLTFType p_component);
 	String _get_accessor_type_name(const GLTFType p_type);
+	String _gen_unique_name(Ref<GLTFState> p_state, const String &p_name);
 	String _sanitize_animation_name(const String &p_name);
 	String _gen_unique_animation_name(Ref<GLTFState> p_state, const String &p_name);
 	String _sanitize_bone_name(const String &p_name);
@@ -148,24 +129,19 @@ private:
 			const bool p_for_vertex);
 	Vector<float> _decode_accessor_as_floats(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex,
-			const Vector<int> &p_packed_vertex_ids = Vector<int>());
+			const bool p_for_vertex);
 	Vector<int> _decode_accessor_as_ints(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex,
-			const Vector<int> &p_packed_vertex_ids = Vector<int>());
+			const bool p_for_vertex);
 	Vector<Vector2> _decode_accessor_as_vec2(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex,
-			const Vector<int> &p_packed_vertex_ids = Vector<int>());
+			const bool p_for_vertex);
 	Vector<Vector3> _decode_accessor_as_vec3(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex,
-			const Vector<int> &p_packed_vertex_ids = Vector<int>());
+			const bool p_for_vertex);
 	Vector<Color> _decode_accessor_as_color(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
-			const bool p_for_vertex,
-			const Vector<int> &p_packed_vertex_ids = Vector<int>());
+			const bool p_for_vertex);
 	Vector<Quaternion> _decode_accessor_as_quaternion(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
 			const bool p_for_vertex);
@@ -196,7 +172,24 @@ private:
 			const Color &p_diffuse,
 			Color &r_base_color,
 			float &r_metallic);
+	GLTFNodeIndex _find_highest_node(Ref<GLTFState> p_state,
+			const Vector<GLTFNodeIndex> &p_subset);
+	void _recurse_children(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index,
+			RBSet<GLTFNodeIndex> &p_all_skin_nodes, HashSet<GLTFNodeIndex> &p_child_visited_set);
+	bool _capture_nodes_in_skin(Ref<GLTFState> p_state, Ref<GLTFSkin> p_skin,
+			const GLTFNodeIndex p_node_index);
+	void _capture_nodes_for_multirooted_skin(Ref<GLTFState> p_state, Ref<GLTFSkin> p_skin);
+	Error _expand_skin(Ref<GLTFState> p_state, Ref<GLTFSkin> p_skin);
+	Error _verify_skin(Ref<GLTFState> p_state, Ref<GLTFSkin> p_skin);
 	Error _parse_skins(Ref<GLTFState> p_state);
+	Error _determine_skeletons(Ref<GLTFState> p_state);
+	Error _reparent_non_joint_skeleton_subtrees(
+			Ref<GLTFState> p_state, Ref<GLTFSkeleton> p_skeleton,
+			const Vector<GLTFNodeIndex> &p_non_joints);
+	Error _determine_skeleton_roots(Ref<GLTFState> p_state,
+			const GLTFSkeletonIndex p_skel_i);
+	Error _create_skeletons(Ref<GLTFState> p_state);
+	Error _map_skin_joints_indices_to_skeleton_bone_indices(Ref<GLTFState> p_state);
 	Error _serialize_skins(Ref<GLTFState> p_state);
 	Error _create_skins(Ref<GLTFState> p_state);
 	bool _skins_are_same(const Ref<Skin> p_skin_a, const Ref<Skin> p_skin_b);
@@ -215,7 +208,7 @@ private:
 	Light3D *_generate_light(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
 	Node3D *_generate_spatial(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
 	void _assign_node_names(Ref<GLTFState> p_state);
-	template <typename T>
+	template <class T>
 	T _interpolate_track(const Vector<real_t> &p_times, const Vector<T> &p_values,
 			const float p_time,
 			const GLTFAnimation::Interpolation p_interp);
@@ -253,7 +246,6 @@ private:
 	GLTFAccessorIndex _encode_accessor_as_vec3(Ref<GLTFState> p_state,
 			const Vector<Vector3> p_attribs,
 			const bool p_for_vertex);
-	GLTFAccessorIndex _encode_sparse_accessor_as_vec3(Ref<GLTFState> p_state, const Vector<Vector3> p_attribs, const Vector<Vector3> p_reference_attribs, const float p_reference_multiplier, const bool p_for_vertex, const GLTFAccessorIndex p_reference_accessor);
 	GLTFAccessorIndex _encode_accessor_as_color(Ref<GLTFState> p_state,
 			const Vector<Color> p_attribs,
 			const bool p_for_vertex);
@@ -262,8 +254,7 @@ private:
 
 	GLTFAccessorIndex _encode_accessor_as_ints(Ref<GLTFState> p_state,
 			const Vector<int32_t> p_attribs,
-			const bool p_for_vertex,
-			const bool p_for_indices);
+			const bool p_for_vertex);
 	GLTFAccessorIndex _encode_accessor_as_xform(Ref<GLTFState> p_state,
 			const Vector<Transform3D> p_attribs,
 			const bool p_for_vertex);
@@ -271,8 +262,7 @@ private:
 			const int p_count, const GLTFType p_type,
 			const int p_component_type, const bool p_normalized,
 			const int p_byte_offset, const bool p_for_vertex,
-			GLTFBufferViewIndex &r_accessor, const bool p_for_indices = false);
-
+			GLTFBufferViewIndex &r_accessor);
 	Error _encode_accessors(Ref<GLTFState> p_state);
 	Error _encode_buffer_views(Ref<GLTFState> p_state);
 	Error _serialize_materials(Ref<GLTFState> p_state);
@@ -311,19 +301,20 @@ private:
 	static float get_max_component(const Color &p_color);
 
 public:
-	virtual Error append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags = 0, String p_base_path = String());
-	virtual Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags = 0);
-	virtual Error append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags = 0);
+	Error append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags = 0, String p_base_path = String());
+	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags = 0);
+	Error append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags = 0);
 
-	virtual Node *generate_scene(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true);
-	virtual PackedByteArray generate_buffer(Ref<GLTFState> p_state);
-	virtual Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path);
+public:
+	Node *generate_scene(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true);
+	PackedByteArray generate_buffer(Ref<GLTFState> p_state);
+	Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path);
 
 public:
 	Error _parse_gltf_state(Ref<GLTFState> p_state, const String &p_search_path);
 	Error _parse_asset_header(Ref<GLTFState> p_state);
 	Error _parse_gltf_extensions(Ref<GLTFState> p_state);
-	void _process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene_root);
+	void _process_mesh_instances(Ref<GLTFState> p_state);
 	Node *_generate_scene_node_tree(Ref<GLTFState> p_state);
 	void _generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
 	void _generate_skeleton_bone_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
@@ -387,7 +378,5 @@ public:
 	Error _serialize(Ref<GLTFState> p_state);
 	Error _parse(Ref<GLTFState> p_state, String p_path, Ref<FileAccess> p_file);
 };
-
-VARIANT_ENUM_CAST(GLTFDocument::RootNodeMode);
 
 #endif // GLTF_DOCUMENT_H

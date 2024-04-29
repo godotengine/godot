@@ -32,7 +32,6 @@
 #define AUDIO_DRIVER_WEB_H
 
 #include "godot_audio.h"
-#include "godot_js.h"
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
@@ -56,8 +55,8 @@ private:
 	int mix_rate = 0;
 	int channel_count = 0;
 
-	WASM_EXPORT static void _state_change_callback(int p_state);
-	WASM_EXPORT static void _latency_update_callback(float p_latency);
+	static void _state_change_callback(int p_state);
+	static void _latency_update_callback(float p_latency);
 
 	static AudioDriverWeb *singleton;
 
@@ -90,7 +89,6 @@ public:
 	AudioDriverWeb() {}
 };
 
-#ifdef THREADS_ENABLED
 class AudioDriverWorklet : public AudioDriverWeb {
 private:
 	enum {
@@ -120,55 +118,5 @@ public:
 	virtual void lock() override;
 	virtual void unlock() override;
 };
-
-#else
-
-class AudioDriverWorklet : public AudioDriverWeb {
-private:
-	static void _process_callback(int p_pos, int p_samples);
-	static void _capture_callback(int p_pos, int p_samples);
-
-	static AudioDriverWorklet *singleton;
-
-protected:
-	virtual Error create(int &p_buffer_size, int p_output_channels) override;
-	virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
-
-public:
-	virtual const char *get_name() const override {
-		return "AudioWorklet";
-	}
-
-	virtual void lock() override {}
-	virtual void unlock() override {}
-
-	static AudioDriverWorklet *get_singleton() { return singleton; }
-
-	AudioDriverWorklet() { singleton = this; }
-};
-
-class AudioDriverScriptProcessor : public AudioDriverWeb {
-private:
-	static void _process_callback();
-
-	static AudioDriverScriptProcessor *singleton;
-
-protected:
-	virtual Error create(int &p_buffer_size, int p_output_channels) override;
-	virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
-	virtual void finish_driver() override;
-
-public:
-	virtual const char *get_name() const override { return "ScriptProcessor"; }
-
-	virtual void lock() override {}
-	virtual void unlock() override {}
-
-	static AudioDriverScriptProcessor *get_singleton() { return singleton; }
-
-	AudioDriverScriptProcessor() { singleton = this; }
-};
-
-#endif // THREADS_ENABLED
 
 #endif // AUDIO_DRIVER_WEB_H

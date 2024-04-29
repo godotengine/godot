@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include "base.h"
-
 namespace msdfgen {
 
 // ax^2 + bx + c = 0

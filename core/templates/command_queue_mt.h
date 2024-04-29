@@ -31,7 +31,6 @@
 #ifndef COMMAND_QUEUE_MT_H
 #define COMMAND_QUEUE_MT_H
 
-#include "core/object/worker_thread_pool.h"
 #include "core/os/memory.h"
 #include "core/os/mutex.h"
 #include "core/os/semaphore.h"
@@ -207,64 +206,63 @@
 
 #define ARG(N) p##N
 #define PARAM(N) P##N p##N
-#define TYPE_PARAM(N) typename P##N
+#define TYPE_PARAM(N) class P##N
 #define PARAM_DECL(N) typename GetSimpleTypeT<P##N>::type_t p##N
 
-#define DECL_CMD(N)                                                          \
-	template <typename T, typename M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)> \
-	struct Command##N : public CommandBase {                                 \
-		T *instance;                                                         \
-		M method;                                                            \
-		SEMIC_SEP_LIST(PARAM_DECL, N);                                       \
-		virtual void call() override {                                       \
-			(instance->*method)(COMMA_SEP_LIST(ARG, N));                     \
-		}                                                                    \
+#define DECL_CMD(N)                                                    \
+	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)> \
+	struct Command##N : public CommandBase {                           \
+		T *instance;                                                   \
+		M method;                                                      \
+		SEMIC_SEP_LIST(PARAM_DECL, N);                                 \
+		virtual void call() override {                                 \
+			(instance->*method)(COMMA_SEP_LIST(ARG, N));               \
+		}                                                              \
 	};
 
-#define DECL_CMD_RET(N)                                                                  \
-	template <typename T, typename M, COMMA_SEP_LIST(TYPE_PARAM, N) COMMA(N) typename R> \
-	struct CommandRet##N : public SyncCommand {                                          \
-		R *ret;                                                                          \
-		T *instance;                                                                     \
-		M method;                                                                        \
-		SEMIC_SEP_LIST(PARAM_DECL, N);                                                   \
-		virtual void call() override {                                                   \
-			*ret = (instance->*method)(COMMA_SEP_LIST(ARG, N));                          \
-		}                                                                                \
+#define DECL_CMD_RET(N)                                                         \
+	template <class T, class M, COMMA_SEP_LIST(TYPE_PARAM, N) COMMA(N) class R> \
+	struct CommandRet##N : public SyncCommand {                                 \
+		R *ret;                                                                 \
+		T *instance;                                                            \
+		M method;                                                               \
+		SEMIC_SEP_LIST(PARAM_DECL, N);                                          \
+		virtual void call() override {                                          \
+			*ret = (instance->*method)(COMMA_SEP_LIST(ARG, N));                 \
+		}                                                                       \
 	};
 
-#define DECL_CMD_SYNC(N)                                                     \
-	template <typename T, typename M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)> \
-	struct CommandSync##N : public SyncCommand {                             \
-		T *instance;                                                         \
-		M method;                                                            \
-		SEMIC_SEP_LIST(PARAM_DECL, N);                                       \
-		virtual void call() override {                                       \
-			(instance->*method)(COMMA_SEP_LIST(ARG, N));                     \
-		}                                                                    \
+#define DECL_CMD_SYNC(N)                                               \
+	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)> \
+	struct CommandSync##N : public SyncCommand {                       \
+		T *instance;                                                   \
+		M method;                                                      \
+		SEMIC_SEP_LIST(PARAM_DECL, N);                                 \
+		virtual void call() override {                                 \
+			(instance->*method)(COMMA_SEP_LIST(ARG, N));               \
+		}                                                              \
 	};
 
 #define TYPE_ARG(N) P##N
 #define CMD_TYPE(N) Command##N<T, M COMMA(N) COMMA_SEP_LIST(TYPE_ARG, N)>
 #define CMD_ASSIGN_PARAM(N) cmd->p##N = p##N
 
-#define DECL_PUSH(N)                                                            \
-	template <typename T, typename M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>    \
-	void push(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) {    \
-		CMD_TYPE(N) *cmd = allocate_and_lock<CMD_TYPE(N)>();                    \
-		cmd->instance = p_instance;                                             \
-		cmd->method = p_method;                                                 \
-		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                    \
-		if (pump_task_id != WorkerThreadPool::INVALID_TASK_ID) {                \
-			WorkerThreadPool::get_singleton()->notify_yield_over(pump_task_id); \
-		}                                                                       \
-		unlock();                                                               \
+#define DECL_PUSH(N)                                                         \
+	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>       \
+	void push(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) { \
+		CMD_TYPE(N) *cmd = allocate_and_lock<CMD_TYPE(N)>();                 \
+		cmd->instance = p_instance;                                          \
+		cmd->method = p_method;                                              \
+		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                 \
+		unlock();                                                            \
+		if (sync)                                                            \
+			sync->post();                                                    \
 	}
 
 #define CMD_RET_TYPE(N) CommandRet##N<T, M, COMMA_SEP_LIST(TYPE_ARG, N) COMMA(N) R>
 
 #define DECL_PUSH_AND_RET(N)                                                                   \
-	template <typename T, typename M, COMMA_SEP_LIST(TYPE_PARAM, N) COMMA(N) typename R>       \
+	template <class T, class M, COMMA_SEP_LIST(TYPE_PARAM, N) COMMA(N) class R>                \
 	void push_and_ret(T *p_instance, M p_method, COMMA_SEP_LIST(PARAM, N) COMMA(N) R *r_ret) { \
 		SyncSemaphore *ss = _alloc_sync_sem();                                                 \
 		CMD_RET_TYPE(N) *cmd = allocate_and_lock<CMD_RET_TYPE(N)>();                           \
@@ -273,10 +271,9 @@
 		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                                   \
 		cmd->ret = r_ret;                                                                      \
 		cmd->sync_sem = ss;                                                                    \
-		if (pump_task_id != WorkerThreadPool::INVALID_TASK_ID) {                               \
-			WorkerThreadPool::get_singleton()->notify_yield_over(pump_task_id);                \
-		}                                                                                      \
 		unlock();                                                                              \
+		if (sync)                                                                              \
+			sync->post();                                                                      \
 		ss->sem.wait();                                                                        \
 		ss->in_use = false;                                                                    \
 	}
@@ -284,7 +281,7 @@
 #define CMD_SYNC_TYPE(N) CommandSync##N<T, M COMMA(N) COMMA_SEP_LIST(TYPE_ARG, N)>
 
 #define DECL_PUSH_AND_SYNC(N)                                                         \
-	template <typename T, typename M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>          \
+	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>                \
 	void push_and_sync(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) { \
 		SyncSemaphore *ss = _alloc_sync_sem();                                        \
 		CMD_SYNC_TYPE(N) *cmd = allocate_and_lock<CMD_SYNC_TYPE(N)>();                \
@@ -292,10 +289,9 @@
 		cmd->method = p_method;                                                       \
 		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                          \
 		cmd->sync_sem = ss;                                                           \
-		if (pump_task_id != WorkerThreadPool::INVALID_TASK_ID) {                      \
-			WorkerThreadPool::get_singleton()->notify_yield_over(pump_task_id);       \
-		}                                                                             \
 		unlock();                                                                     \
+		if (sync)                                                                     \
+			sync->post();                                                             \
 		ss->sem.wait();                                                               \
 		ss->in_use = false;                                                           \
 	}
@@ -310,15 +306,15 @@ class CommandQueueMT {
 
 	struct CommandBase {
 		virtual void call() = 0;
-		virtual SyncSemaphore *get_sync_semaphore() { return nullptr; }
-		virtual ~CommandBase() = default; // Won't be called.
+		virtual void post() {}
+		virtual ~CommandBase() {}
 	};
 
 	struct SyncCommand : public CommandBase {
 		SyncSemaphore *sync_sem = nullptr;
 
-		virtual SyncSemaphore *get_sync_semaphore() override {
-			return sync_sem;
+		virtual void post() override {
+			sync_sem->sem.post();
 		}
 	};
 
@@ -343,10 +339,9 @@ class CommandQueueMT {
 	LocalVector<uint8_t> command_mem;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
 	Mutex mutex;
-	WorkerThreadPool::TaskID pump_task_id = WorkerThreadPool::INVALID_TASK_ID;
-	uint64_t flush_read_ptr = 0;
+	Semaphore *sync = nullptr;
 
-	template <typename T>
+	template <class T>
 	T *allocate() {
 		// alloc size is size+T+safeguard
 		uint32_t alloc_size = ((sizeof(T) + 8 - 1) & ~(8 - 1));
@@ -357,7 +352,7 @@ class CommandQueueMT {
 		return cmd;
 	}
 
-	template <typename T>
+	template <class T>
 	T *allocate_and_lock() {
 		lock();
 		T *ret = allocate<T>();
@@ -367,40 +362,31 @@ class CommandQueueMT {
 	void _flush() {
 		lock();
 
-		if (unlikely(flush_read_ptr)) {
-			// Re-entrant call.
-			unlock();
-			return;
+		uint64_t read_ptr = 0;
+		uint64_t limit = command_mem.size();
+
+		while (read_ptr < limit) {
+			uint64_t size = *(uint64_t *)&command_mem[read_ptr];
+			read_ptr += 8;
+			CommandBase *cmd = reinterpret_cast<CommandBase *>(&command_mem[read_ptr]);
+
+			cmd->call(); //execute the function
+			cmd->post(); //release in case it needs sync/ret
+			cmd->~CommandBase(); //should be done, so erase the command
+
+			read_ptr += size;
 		}
-
-		WorkerThreadPool::thread_enter_command_queue_mt_flush(this);
-		while (flush_read_ptr < command_mem.size()) {
-			uint64_t size = *(uint64_t *)&command_mem[flush_read_ptr];
-			flush_read_ptr += 8;
-			CommandBase *cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
-
-			SyncSemaphore *sync_sem = cmd->get_sync_semaphore();
-			cmd->call();
-			if (sync_sem) {
-				sync_sem->sem.post(); // Release in case it needs sync/ret.
-			}
-
-			flush_read_ptr += size;
-		}
-		WorkerThreadPool::thread_exit_command_queue_mt_flush();
 
 		command_mem.clear();
-		flush_read_ptr = 0;
 		unlock();
 	}
 
+	void lock();
+	void unlock();
 	void wait_for_flush();
 	SyncSemaphore *_alloc_sync_sem();
 
 public:
-	void lock();
-	void unlock();
-
 	/* NORMAL PUSH COMMANDS */
 	DECL_PUSH(0)
 	SPACE_SEP_LIST(DECL_PUSH, 15)
@@ -423,16 +409,12 @@ public:
 	}
 
 	void wait_and_flush() {
-		ERR_FAIL_COND(pump_task_id == WorkerThreadPool::INVALID_TASK_ID);
-		WorkerThreadPool::get_singleton()->wait_for_task_completion(pump_task_id);
+		ERR_FAIL_NULL(sync);
+		sync->wait();
 		_flush();
 	}
 
-	void set_pump_task_id(WorkerThreadPool::TaskID p_task_id) {
-		pump_task_id = p_task_id;
-	}
-
-	CommandQueueMT();
+	CommandQueueMT(bool p_sync);
 	~CommandQueueMT();
 };
 

@@ -155,37 +155,17 @@ TEST_CASE("[Curve2D] Sampling") {
 
 	SUBCASE("sample_baked_with_rotation") {
 		const real_t pi = 3.14159;
-		const real_t half_pi = pi * 0.5;
-		Ref<Curve2D> rot_curve = memnew(Curve2D);
-		Transform2D t;
-
-		rot_curve->clear_points();
-		rot_curve->add_point(Vector2());
-		rot_curve->add_point(Vector2(50, 0));
-		t = rot_curve->sample_baked_with_rotation(25);
-		CHECK(t.get_origin() == Vector2(25, 0));
-		CHECK(Math::is_equal_approx(t.get_rotation(), 0));
-
-		rot_curve->clear_points();
-		rot_curve->add_point(Vector2());
-		rot_curve->add_point(Vector2(0, 50));
-		t = rot_curve->sample_baked_with_rotation(25);
-		CHECK(t.get_origin() == Vector2(0, 25));
-		CHECK(Math::is_equal_approx(t.get_rotation(), half_pi));
-
-		rot_curve->clear_points();
-		rot_curve->add_point(Vector2());
-		rot_curve->add_point(Vector2(-50, 0));
-		t = rot_curve->sample_baked_with_rotation(25);
-		CHECK(t.get_origin() == Vector2(-25, 0));
+		Transform2D t = curve->sample_baked_with_rotation(curve->get_closest_offset(Vector2(0, 0)));
+		CHECK(t.get_origin() == Vector2(0, 0));
 		CHECK(Math::is_equal_approx(t.get_rotation(), pi));
 
-		rot_curve->clear_points();
-		rot_curve->add_point(Vector2());
-		rot_curve->add_point(Vector2(0, -50));
-		t = rot_curve->sample_baked_with_rotation(25);
-		CHECK(t.get_origin() == Vector2(0, -25));
-		CHECK(Math::is_equal_approx(t.get_rotation(), -half_pi));
+		t = curve->sample_baked_with_rotation(curve->get_closest_offset(Vector2(0, 25)));
+		CHECK(t.get_origin() == Vector2(0, 25));
+		CHECK(Math::is_equal_approx(t.get_rotation(), pi));
+
+		t = curve->sample_baked_with_rotation(curve->get_closest_offset(Vector2(0, 50)));
+		CHECK(t.get_origin() == Vector2(0, 50));
+		CHECK(Math::is_equal_approx(t.get_rotation(), pi));
 	}
 
 	SUBCASE("get_closest_point") {

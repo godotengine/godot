@@ -348,7 +348,7 @@ PackedVector2Array NavigationObstacle3DEditor::_get_polygon() {
 	return PackedVector2Array(obstacle_node->call("get_polygon"));
 }
 
-void NavigationObstacle3DEditor::_set_polygon(const PackedVector2Array &p_poly) {
+void NavigationObstacle3DEditor::_set_polygon(PackedVector2Array p_poly) {
 	ERR_FAIL_NULL_MSG(obstacle_node, "Edited object is not valid.");
 	obstacle_node->call("set_polygon", p_poly);
 }
@@ -503,11 +503,7 @@ void NavigationObstacle3DEditor::edit(Node *p_node) {
 		wip.clear();
 		wip_active = false;
 		edited_point = -1;
-		if (point_lines_meshinstance->get_parent()) {
-			point_lines_meshinstance->reparent(p_node, false);
-		} else {
-			p_node->add_child(point_lines_meshinstance);
-		}
+		p_node->add_child(point_lines_meshinstance);
 		_polygon_draw();
 
 	} else {
@@ -527,13 +523,13 @@ NavigationObstacle3DEditor::NavigationObstacle3DEditor() {
 	obstacle_node = nullptr;
 
 	button_create = memnew(Button);
-	button_create->set_theme_type_variation("FlatButton");
+	button_create->set_flat(true);
 	add_child(button_create);
 	button_create->connect("pressed", callable_mp(this, &NavigationObstacle3DEditor::_menu_option).bind(MODE_CREATE));
 	button_create->set_toggle_mode(true);
 
 	button_edit = memnew(Button);
-	button_edit->set_theme_type_variation("FlatButton");
+	button_edit->set_flat(true);
 	add_child(button_edit);
 	button_edit->connect("pressed", callable_mp(this, &NavigationObstacle3DEditor::_menu_option).bind(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
@@ -550,7 +546,6 @@ NavigationObstacle3DEditor::NavigationObstacle3DEditor() {
 	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	line_material->set_albedo(Color(1, 1, 1));
 
 	handle_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
@@ -559,7 +554,6 @@ NavigationObstacle3DEditor::NavigationObstacle3DEditor() {
 	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	handle_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	Ref<Texture2D> handle = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Editor3DHandle"), EditorStringName(EditorIcons));
 	handle_material->set_point_size(handle->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle);

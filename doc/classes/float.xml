@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="float" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A built-in type for floating-point numbers.
+		A built-in type for floating point numbers.
 	</brief_description>
 	<description>
 		The [float] built-in type is a 64-bit double-precision floating-point number, equivalent to [code]double[/code] in C++. This type has 14 reliable decimal digits of precision. The maximum value of [float] is approximately [code]1.79769e308[/code], and the minimum is approximately [code]-1.79769e308[/code].
-		Many methods and properties in the engine use 32-bit single-precision floating-point numbers instead, equivalent to [code skip-lint]float[/code] in C++, which have 6 reliable decimal digits of precision. For data structures such as [Vector2] and [Vector3], Godot uses 32-bit floating-point numbers by default, but it can be changed to use 64-bit doubles if Godot is compiled with the [code]precision=double[/code] option.
+		Many methods and properties in the engine use 32-bit single-precision floating-point numbers instead, equivalent to [code]float[/code] in C++, which have 6 reliable decimal digits of precision. For data structures such as [Vector2] and [Vector3], Godot uses 32-bit floating-point numbers by default, but it can be changed to use 64-bit doubles if Godot is compiled with the [code]precision=double[/code] option.
 		Math done using the [float] type is not guaranteed to be exact and will often result in small errors. You should usually use the [method @GlobalScope.is_equal_approx] and [method @GlobalScope.is_zero_approx] methods instead of [code]==[/code] to compare [float] values for equality.
 	</description>
 	<tutorials>

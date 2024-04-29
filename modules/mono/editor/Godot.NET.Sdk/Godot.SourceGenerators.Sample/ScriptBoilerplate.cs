@@ -26,7 +26,7 @@ namespace Godot.SourceGenerators.Sample
         }
     }
 
-    public partial struct OuterClass
+    partial struct OuterClass
     {
         public partial class NesterClass : RefCounted
         {

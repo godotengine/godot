@@ -62,8 +62,6 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_finish = p_env->GetMethodID(godot_class, "forceQuit", "(I)Z");
 	_set_keep_screen_on = p_env->GetMethodID(godot_class, "setKeepScreenOn", "(Z)V");
 	_alert = p_env->GetMethodID(godot_class, "alert", "(Ljava/lang/String;Ljava/lang/String;)V");
-	_is_dark_mode_supported = p_env->GetMethodID(godot_class, "isDarkModeSupported", "()Z");
-	_is_dark_mode = p_env->GetMethodID(godot_class, "isDarkMode", "()Z");
 	_get_clipboard = p_env->GetMethodID(godot_class, "getClipboard", "()Ljava/lang/String;");
 	_set_clipboard = p_env->GetMethodID(godot_class, "setClipboard", "(Ljava/lang/String;)V");
 	_has_clipboard = p_env->GetMethodID(godot_class, "hasClipboard", "()Z");
@@ -78,11 +76,10 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
 	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)I");
 	_get_render_view = p_env->GetMethodID(godot_class, "getRenderView", "()Lorg/godotengine/godot/GodotRenderView;");
-	_begin_benchmark_measure = p_env->GetMethodID(godot_class, "nativeBeginBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
-	_end_benchmark_measure = p_env->GetMethodID(godot_class, "nativeEndBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
+	_begin_benchmark_measure = p_env->GetMethodID(godot_class, "nativeBeginBenchmarkMeasure", "(Ljava/lang/String;)V");
+	_end_benchmark_measure = p_env->GetMethodID(godot_class, "nativeEndBenchmarkMeasure", "(Ljava/lang/String;)V");
 	_dump_benchmark = p_env->GetMethodID(godot_class, "nativeDumpBenchmark", "(Ljava/lang/String;)V");
 	_get_gdextension_list_config_file = p_env->GetMethodID(godot_class, "getGDExtensionConfigFiles", "()[Ljava/lang/String;");
-	_has_feature = p_env->GetMethodID(godot_class, "hasFeature", "(Ljava/lang/String;)Z");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -172,26 +169,6 @@ void GodotJavaWrapper::alert(const String &p_message, const String &p_title) {
 		jstring jStrMessage = env->NewStringUTF(p_message.utf8().get_data());
 		jstring jStrTitle = env->NewStringUTF(p_title.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _alert, jStrMessage, jStrTitle);
-	}
-}
-
-bool GodotJavaWrapper::is_dark_mode_supported() {
-	if (_is_dark_mode_supported) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL_V(env, false);
-		return env->CallBooleanMethod(godot_instance, _is_dark_mode_supported);
-	} else {
-		return false;
-	}
-}
-
-bool GodotJavaWrapper::is_dark_mode() {
-	if (_is_dark_mode) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL_V(env, false);
-		return env->CallBooleanMethod(godot_instance, _is_dark_mode);
-	} else {
-		return false;
 	}
 }
 
@@ -334,7 +311,7 @@ void GodotJavaWrapper::vibrate(int p_duration_ms) {
 	}
 }
 
-int GodotJavaWrapper::create_new_godot_instance(const List<String> &args) {
+int GodotJavaWrapper::create_new_godot_instance(List<String> args) {
 	if (_create_new_godot_instance) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, 0);
@@ -348,23 +325,21 @@ int GodotJavaWrapper::create_new_godot_instance(const List<String> &args) {
 	}
 }
 
-void GodotJavaWrapper::begin_benchmark_measure(const String &p_context, const String &p_label) {
+void GodotJavaWrapper::begin_benchmark_measure(const String &p_label) {
 	if (_begin_benchmark_measure) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL(env);
-		jstring j_context = env->NewStringUTF(p_context.utf8().get_data());
 		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
-		env->CallVoidMethod(godot_instance, _begin_benchmark_measure, j_context, j_label);
+		env->CallVoidMethod(godot_instance, _begin_benchmark_measure, j_label);
 	}
 }
 
-void GodotJavaWrapper::end_benchmark_measure(const String &p_context, const String &p_label) {
+void GodotJavaWrapper::end_benchmark_measure(const String &p_label) {
 	if (_end_benchmark_measure) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL(env);
-		jstring j_context = env->NewStringUTF(p_context.utf8().get_data());
 		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
-		env->CallVoidMethod(godot_instance, _end_benchmark_measure, j_context, j_label);
+		env->CallVoidMethod(godot_instance, _end_benchmark_measure, j_label);
 	}
 }
 
@@ -374,17 +349,5 @@ void GodotJavaWrapper::dump_benchmark(const String &benchmark_file) {
 		ERR_FAIL_NULL(env);
 		jstring j_benchmark_file = env->NewStringUTF(benchmark_file.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _dump_benchmark, j_benchmark_file);
-	}
-}
-
-bool GodotJavaWrapper::has_feature(const String &p_feature) const {
-	if (_has_feature) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL_V(env, false);
-
-		jstring j_feature = env->NewStringUTF(p_feature.utf8().get_data());
-		return env->CallBooleanMethod(godot_instance, _has_feature, j_feature);
-	} else {
-		return false;
 	}
 }

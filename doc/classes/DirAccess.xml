@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DirAccess" inherits="RefCounted" keywords="directory, path, folder" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="DirAccess" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides methods for managing directories and their content.
 	</brief_description>
@@ -71,7 +71,6 @@
 			<description>
 				Changes the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
 				Returns one of the [enum Error] code constants ([constant OK] on success).
-				[b]Note:[/b] The new directory must be within the same scope, e.g. when you had opened a directory inside [code]res://[/code], you can't change it to [code]user://[/code] directory. If you need to open a directory in another access scope, use [method open] to create a new instance instead.
 			</description>
 		</method>
 		<method name="copy">
@@ -202,14 +201,6 @@
 			<return type="int" />
 			<description>
 				Returns the available space on the current directory's disk, in bytes. Returns [code]0[/code] if the platform-specific method to query the available space fails.
-			</description>
-		</method>
-		<method name="is_case_sensitive" qualifiers="const">
-			<return type="bool" />
-			<param index="0" name="path" type="String" />
-			<description>
-				Returns [code]true[/code] if the file system or directory use case sensitive file names.
-				[b]Note:[/b] This method is implemented on macOS, Linux (for EXT4 and F2FS filesystems only) and Windows. On other platforms, it always returns [code]true[/code].
 			</description>
 		</method>
 		<method name="list_dir_begin">

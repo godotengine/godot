@@ -1,8 +1,5 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
-
-#nullable enable
 
 namespace Godot
 {
@@ -13,11 +10,11 @@ namespace Godot
     /// Comparing them is much faster than with regular strings, because only the pointers are compared,
     /// not the whole strings.
     /// </summary>
-    public sealed class StringName : IDisposable, IEquatable<StringName?>
+    public sealed class StringName : IDisposable, IEquatable<StringName>
     {
         internal godot_string_name.movable NativeValue;
 
-        private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private WeakReference<IDisposable> _weakReferenceToSelf;
 
         ~StringName()
         {
@@ -84,8 +81,7 @@ namespace Godot
         /// Converts a <see cref="StringName"/> to a string.
         /// </summary>
         /// <param name="from">The <see cref="StringName"/> to convert.</param>
-        [return: NotNullIfNotNull("from")]
-        public static implicit operator string?(StringName? from) => from?.ToString();
+        public static implicit operator string(StringName from) => from?.ToString();
 
         /// <summary>
         /// Converts this <see cref="StringName"/> to a string.
@@ -108,43 +104,43 @@ namespace Godot
         /// <returns>If the <see cref="StringName"/> is empty.</returns>
         public bool IsEmpty => NativeValue.DangerousSelfRef.IsEmpty;
 
-        public static bool operator ==(StringName? left, StringName? right)
+        public static bool operator ==(StringName left, StringName right)
         {
             if (left is null)
                 return right is null;
             return left.Equals(right);
         }
 
-        public static bool operator !=(StringName? left, StringName? right)
+        public static bool operator !=(StringName left, StringName right)
         {
             return !(left == right);
         }
 
-        public bool Equals([NotNullWhen(true)] StringName? other)
+        public bool Equals(StringName other)
         {
             if (other is null)
                 return false;
             return NativeValue.DangerousSelfRef == other.NativeValue.DangerousSelfRef;
         }
 
-        public static bool operator ==(StringName? left, in godot_string_name right)
+        public static bool operator ==(StringName left, in godot_string_name right)
         {
             if (left is null)
                 return right.IsEmpty;
             return left.Equals(right);
         }
 
-        public static bool operator !=(StringName? left, in godot_string_name right)
+        public static bool operator !=(StringName left, in godot_string_name right)
         {
             return !(left == right);
         }
 
-        public static bool operator ==(in godot_string_name left, StringName? right)
+        public static bool operator ==(in godot_string_name left, StringName right)
         {
             return right == left;
         }
 
-        public static bool operator !=(in godot_string_name left, StringName? right)
+        public static bool operator !=(in godot_string_name left, StringName right)
         {
             return !(right == left);
         }
@@ -154,7 +150,7 @@ namespace Godot
             return NativeValue.DangerousSelfRef == other;
         }
 
-        public override bool Equals([NotNullWhen(true)] object? obj)
+        public override bool Equals(object obj)
         {
             return ReferenceEquals(this, obj) || (obj is StringName other && Equals(other));
         }

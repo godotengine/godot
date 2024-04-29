@@ -39,7 +39,6 @@ struct CoverageFormat1 : public OT::Layout::Common::CoverageFormat1_3<SmallTypes
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     constexpr unsigned min_size = OT::Layout::Common::CoverageFormat1_3<SmallTypes>::min_size;
     if (vertex_len < min_size) return false;
-    hb_barrier ();
     return vertex_len >= min_size + glyphArray.get_size () - glyphArray.len.get_size ();
   }
 };
@@ -51,7 +50,6 @@ struct CoverageFormat2 : public OT::Layout::Common::CoverageFormat2_4<SmallTypes
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     constexpr unsigned min_size = OT::Layout::Common::CoverageFormat2_4<SmallTypes>::min_size;
     if (vertex_len < min_size) return false;
-    hb_barrier ();
     return vertex_len >= min_size + rangeRecord.get_size () - rangeRecord.len.get_size ();
   }
 };
@@ -140,7 +138,6 @@ struct Coverage : public OT::Layout::Common::Coverage
   {
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < OT::Layout::Common::Coverage::min_size) return false;
-    hb_barrier ();
     switch (u.format)
     {
     case 1: return ((CoverageFormat1*)this)->sanitize (vertex);

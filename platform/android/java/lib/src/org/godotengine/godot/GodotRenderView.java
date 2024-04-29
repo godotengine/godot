@@ -47,12 +47,7 @@ public interface GodotRenderView {
 	void queueOnRenderThread(Runnable event);
 
 	void onActivityPaused();
-
-	void onActivityStopped();
-
 	void onActivityResumed();
-
-	void onActivityStarted();
 
 	void onBackPressed();
 

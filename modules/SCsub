@@ -7,9 +7,6 @@ Import("env")
 
 env_modules = env.Clone()
 
-# Allow modules to detect if they are being built as a module.
-env_modules.Append(CPPDEFINES=["GODOT_MODULE"])
-
 Export("env_modules")
 
 # Header with MODULE_*_ENABLED defines.
@@ -17,7 +14,12 @@ env.Depends("modules_enabled.gen.h", Value(env.module_list))
 env.CommandNoCache(
     "modules_enabled.gen.h",
     Value(env.module_list),
-    env.Run(modules_builders.generate_modules_enabled),
+    env.Run(
+        modules_builders.generate_modules_enabled,
+        "Generating enabled modules header.",
+        # NOTE: No need to run in subprocess since this is still executed serially.
+        subprocess=False,
+    ),
 )
 
 
@@ -51,7 +53,12 @@ if env["tests"]:
     env.CommandNoCache(
         "modules_tests.gen.h",
         test_headers,
-        env.Run(modules_builders.generate_modules_tests),
+        env.Run(
+            modules_builders.generate_modules_tests,
+            "Generating modules tests header.",
+            # NOTE: No need to run in subprocess since this is still executed serially.
+            subprocess=False,
+        ),
     )
 
 # libmodules.a with only register_module_types.

@@ -38,7 +38,7 @@
 
 using namespace godot;
 
-#elif defined(GODOT_MODULE)
+#else
 // Headers for building as built-in module.
 
 #include "core/error/error_macros.h"

@@ -72,7 +72,6 @@ class EditorResourcePicker : public HBoxContainer {
 		OBJ_MENU_MAKE_UNIQUE,
 		OBJ_MENU_MAKE_UNIQUE_RECURSIVE,
 		OBJ_MENU_SAVE,
-		OBJ_MENU_SAVE_AS,
 		OBJ_MENU_COPY,
 		OBJ_MENU_PASTE,
 		OBJ_MENU_SHOW_IN_FILE_SYSTEM,
@@ -99,7 +98,7 @@ class EditorResourcePicker : public HBoxContainer {
 	String _get_resource_type(const Ref<Resource> &p_resource) const;
 	void _get_allowed_types(bool p_with_convert, HashSet<StringName> *p_vector) const;
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
-	bool _is_type_valid(const String &p_type_name, const HashSet<StringName> &p_allowed_types) const;
+	bool _is_type_valid(const String p_type_name, HashSet<StringName> p_allowed_types) const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -146,8 +145,8 @@ class EditorScriptPicker : public EditorResourcePicker {
 	GDCLASS(EditorScriptPicker, EditorResourcePicker);
 
 	enum ExtraMenuOption {
-		OBJ_MENU_NEW_SCRIPT = 50,
-		OBJ_MENU_EXTEND_SCRIPT = 51
+		OBJ_MENU_NEW_SCRIPT = 10,
+		OBJ_MENU_EXTEND_SCRIPT = 11
 	};
 
 	Node *script_owner = nullptr;
@@ -169,7 +168,7 @@ class EditorShaderPicker : public EditorResourcePicker {
 	GDCLASS(EditorShaderPicker, EditorResourcePicker);
 
 	enum ExtraMenuOption {
-		OBJ_MENU_NEW_SHADER = 50,
+		OBJ_MENU_NEW_SHADER = 10,
 	};
 
 	ShaderMaterial *edited_material = nullptr;

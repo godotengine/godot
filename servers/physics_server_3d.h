@@ -31,8 +31,6 @@
 #ifndef PHYSICS_SERVER_3D_H
 #define PHYSICS_SERVER_3D_H
 
-#ifndef _3D_DISABLED
-
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/object/gdvirtual.gen.inc"
@@ -152,11 +150,11 @@ public:
 	struct RayResult {
 		Vector3 position;
 		Vector3 normal;
+		int face_index = -1;
 		RID rid;
 		ObjectID collider_id;
 		Object *collider = nullptr;
 		int shape = 0;
-		int face_index = -1;
 	};
 
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) = 0;
@@ -689,7 +687,7 @@ public:
 	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) = 0;
 	virtual real_t hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const = 0;
 
-	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_enabled) = 0;
+	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_value) = 0;
 	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const = 0;
 
 	enum SliderJointParam {
@@ -1056,7 +1054,5 @@ VARIANT_ENUM_CAST(PhysicsServer3D::G6DOFJointAxisParam);
 VARIANT_ENUM_CAST(PhysicsServer3D::G6DOFJointAxisFlag);
 VARIANT_ENUM_CAST(PhysicsServer3D::AreaBodyStatus);
 VARIANT_ENUM_CAST(PhysicsServer3D::ProcessInfo);
-
-#endif // _3D_DISABLED
 
 #endif // PHYSICS_SERVER_3D_H

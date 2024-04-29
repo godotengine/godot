@@ -109,7 +109,6 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 	static GUID IID_XOneSWirelessGamepad = { MAKELONG(0x045E, 0x02EA), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 	static GUID IID_XOneSBluetoothGamepad = { MAKELONG(0x045E, 0x02E0), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 	static GUID IID_XOneEliteWirelessGamepad = { MAKELONG(0x045E, 0x02E3), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
-	static GUID IID_XOneElite2WirelessGamepad = { MAKELONG(0x045E, 0x0B22), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 
 	if (memcmp(p_guid, &IID_ValveStreamingGamepad, sizeof(*p_guid)) == 0 ||
 			memcmp(p_guid, &IID_X360WiredGamepad, sizeof(*p_guid)) == 0 ||
@@ -121,8 +120,7 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 			memcmp(p_guid, &IID_XOneNewWirelessGamepad, sizeof(*p_guid)) == 0 ||
 			memcmp(p_guid, &IID_XOneSWirelessGamepad, sizeof(*p_guid)) == 0 ||
 			memcmp(p_guid, &IID_XOneSBluetoothGamepad, sizeof(*p_guid)) == 0 ||
-			memcmp(p_guid, &IID_XOneEliteWirelessGamepad, sizeof(*p_guid)) == 0 ||
-			memcmp(p_guid, &IID_XOneElite2WirelessGamepad, sizeof(*p_guid)) == 0)
+			memcmp(p_guid, &IID_XOneEliteWirelessGamepad, sizeof(*p_guid)) == 0)
 		return true;
 
 	PRAWINPUTDEVICELIST dev_list = nullptr;

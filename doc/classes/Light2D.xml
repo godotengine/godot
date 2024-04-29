@@ -28,7 +28,7 @@
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="Light2D.BlendMode" default="0">
 			The Light2D's blend mode. See [enum BlendMode] constants for values.
 		</member>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
 			The Light2D's [Color].
 		</member>
 		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" default="false">

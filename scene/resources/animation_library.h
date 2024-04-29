@@ -44,7 +44,7 @@ class AnimationLibrary : public Resource {
 
 	void _animation_changed(const StringName &p_name);
 
-	friend class AnimationMixer; // For faster access.
+	friend class AnimationPlayer; //for faster access
 	HashMap<StringName, Ref<Animation>> animations;
 
 protected:
@@ -61,10 +61,6 @@ public:
 	bool has_animation(const StringName &p_name) const;
 	Ref<Animation> get_animation(const StringName &p_name) const;
 	void get_animation_list(List<StringName> *p_animations) const;
-
-#ifdef TOOLS_ENABLED
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
 
 	AnimationLibrary();
 };

@@ -600,7 +600,7 @@ ssize_t WSLPeer::_wsl_send_callback(wslay_event_context_ptr ctx, const uint8_t *
 }
 
 int WSLPeer::_wsl_genmask_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, void *user_data) {
-	ERR_FAIL_NULL_V(_static_rng, WSLAY_ERR_CALLBACK_FAILURE);
+	ERR_FAIL_COND_V(!_static_rng, WSLAY_ERR_CALLBACK_FAILURE);
 	Error err = _static_rng->get_random_bytes(buf, len);
 	ERR_FAIL_COND_V(err != OK, WSLAY_ERR_CALLBACK_FAILURE);
 	return 0;
@@ -676,7 +676,7 @@ void WSLPeer::poll() {
 	}
 
 	if (ready_state == STATE_OPEN || ready_state == STATE_CLOSING) {
-		ERR_FAIL_NULL(wsl_ctx);
+		ERR_FAIL_COND(!wsl_ctx);
 		int err = 0;
 		if ((err = wslay_event_recv(wsl_ctx)) != 0 || (err = wslay_event_send(wsl_ctx)) != 0) {
 			// Error close.

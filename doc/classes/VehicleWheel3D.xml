@@ -8,7 +8,7 @@
 		[b]Note:[/b] This class has known issues and isn't designed to provide realistic 3D vehicle physics. If you want advanced vehicle physics, you may need to write your own physics integration using another [PhysicsBody3D] class.
 	</description>
 	<tutorials>
-		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/2752</link>
+		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
 	</tutorials>
 	<methods>
 		<method name="get_contact_body" qualifiers="const">
@@ -81,7 +81,7 @@
 			This is the distance in meters the wheel is lowered from its origin point. Don't set this to 0.0 and move the wheel into position, instead move the origin point of your wheel (the gizmo in Godot) to the position the wheel will take when bottoming out, then use the rest length to move the wheel down to the position it should be in when the car is in rest.
 		</member>
 		<member name="wheel_roll_influence" type="float" setter="set_roll_influence" getter="get_roll_influence" default="0.1">
-			This value affects the roll of your vehicle. If set to 1.0 for all wheels, your vehicle will resist body roll, while a value of 0.0 will be prone to rolling over.
+			This value affects the roll of your vehicle. If set to 1.0 for all wheels, your vehicle will be prone to rolling over, while a value of 0.0 will resist body roll.
 		</member>
 	</members>
 </class>

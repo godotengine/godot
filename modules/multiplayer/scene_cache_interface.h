@@ -43,26 +43,27 @@ private:
 	SceneMultiplayer *multiplayer = nullptr;
 
 	//path sent caches
-	struct NodeCache {
-		int cache_id;
-		HashMap<int, int> recv_ids; // peer id, remote cache id
-		HashMap<int, bool> confirmed_peers; // peer id, confirmed
+	struct PathSentCache {
+		HashMap<int, bool> confirmed_peers;
+		int id;
 	};
 
-	struct PeerInfo {
-		HashMap<int, ObjectID> recv_nodes; // remote cache id, ObjectID
-		HashSet<ObjectID> sent_nodes;
+	//path get caches
+	struct PathGetCache {
+		struct NodeInfo {
+			NodePath path;
+			ObjectID instance;
+		};
+
+		HashMap<int, NodeInfo> nodes;
 	};
 
-	HashMap<ObjectID, NodeCache> nodes_cache;
-	HashMap<int, PeerInfo> peers_info;
+	HashMap<NodePath, PathSentCache> path_send_cache;
+	HashMap<int, PathGetCache> path_get_cache;
 	int last_send_cache_id = 1;
 
-	void _remove_node_cache(ObjectID p_oid);
-	NodeCache &_track(Node *p_node);
-
 protected:
-	Error _send_confirm_path(Node *p_node, NodeCache &p_cache, const List<int> &p_peers);
+	Error _send_confirm_path(Node *p_node, NodePath p_path, PathSentCache *psc, const List<int> &p_peers);
 
 public:
 	void clear();
@@ -74,7 +75,7 @@ public:
 	bool send_object_cache(Object *p_obj, int p_target, int &p_id);
 	int make_object_cache(Object *p_obj);
 	Object *get_cached_object(int p_from, uint32_t p_cache_id);
-	bool is_cache_confirmed(Node *p_path, int p_peer);
+	bool is_cache_confirmed(NodePath p_path, int p_peer);
 
 	SceneCacheInterface(SceneMultiplayer *p_multiplayer) { multiplayer = p_multiplayer; }
 };

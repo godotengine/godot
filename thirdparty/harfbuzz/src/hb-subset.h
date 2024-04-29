@@ -73,11 +73,6 @@ typedef struct hb_subset_plan_t hb_subset_plan_t;
  * OS/2 will not be recalculated.
  * @HB_SUBSET_FLAGS_NO_LAYOUT_CLOSURE: If set don't perform glyph closure on layout
  * substitution rules (GSUB). Since: 7.2.0.
- * @HB_SUBSET_FLAGS_IFTB_REQUIREMENTS: If set enforce requirements on the output subset
- * to allow it to be used with incremental font transfer IFTB patches. Primarily,
- * this forces all outline data to use long (32 bit) offsets. Since: EXPERIMENTAL
- * @HB_SUBSET_FLAGS_OPTIMIZE_IUP_DELTAS: If set perform IUP delta optimization on the
- * remaining gvar table's deltas. Since: EXPERIMENTAL
  *
  * List of boolean properties that can be configured on the subset input.
  *
@@ -95,10 +90,6 @@ typedef enum { /*< flags >*/
   HB_SUBSET_FLAGS_GLYPH_NAMES =		     0x00000080u,
   HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES =  0x00000100u,
   HB_SUBSET_FLAGS_NO_LAYOUT_CLOSURE =        0x00000200u,
-#ifdef HB_EXPERIMENTAL_API
-  HB_SUBSET_FLAGS_IFTB_REQUIREMENTS       =  0x00000400u,
-  HB_SUBSET_FLAGS_OPTIMIZE_IUP_DELTAS	  =  0x00000800u,
-#endif
 } hb_subset_flags_t;
 
 /**
@@ -174,10 +165,6 @@ hb_subset_input_set_flags (hb_subset_input_t *input,
 			   unsigned value);
 
 HB_EXTERN hb_bool_t
-hb_subset_input_pin_all_axes_to_default (hb_subset_input_t  *input,
-					 hb_face_t          *face);
-
-HB_EXTERN hb_bool_t
 hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
 				     hb_face_t          *face,
 				     hb_tag_t            axis_tag);
@@ -190,19 +177,11 @@ hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
 
 #ifdef HB_EXPERIMENTAL_API
 HB_EXTERN hb_bool_t
-hb_subset_input_get_axis_range (hb_subset_input_t  *input,
-				hb_tag_t            axis_tag,
-				float              *axis_min_value,
-				float              *axis_max_value,
-				float              *axis_def_value);
-
-HB_EXTERN hb_bool_t
 hb_subset_input_set_axis_range (hb_subset_input_t  *input,
 				hb_face_t          *face,
 				hb_tag_t            axis_tag,
 				float               axis_min_value,
-				float               axis_max_value,
-				float               axis_def_value);
+				float               axis_max_value);
 
 HB_EXTERN hb_bool_t
 hb_subset_input_override_name_table (hb_subset_input_t  *input,

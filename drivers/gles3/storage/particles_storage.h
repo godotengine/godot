@@ -128,7 +128,7 @@ private:
 		float delta;
 
 		float particle_size;
-		float amount_ratio;
+		float pad0;
 		float pad1;
 		float pad2;
 
@@ -138,8 +138,6 @@ private:
 		uint32_t frame;
 
 		float emission_transform[16];
-		float emitter_velocity[3];
-		float interp_to_end;
 
 		Attractor attractors[MAX_ATTRACTORS];
 		Collider colliders[MAX_COLLIDERS];
@@ -151,7 +149,6 @@ private:
 		double inactive_time = 0.0;
 		bool emitting = false;
 		bool one_shot = false;
-		float amount_ratio = 1.0;
 		int amount = 0;
 		double lifetime = 1.0;
 		double pre_process_time = 0.0;
@@ -212,7 +209,7 @@ private:
 		uint32_t userdata_count = 0;
 
 		bool dirty = false;
-		SelfList<Particles> update_list;
+		Particles *update_list = nullptr;
 
 		double phase = 0.0;
 		double prev_phase = 0.0;
@@ -232,8 +229,6 @@ private:
 		bool clear = true;
 
 		Transform3D emission_transform;
-		Vector3 emitter_velocity;
-		float interp_to_end = 0.0;
 
 		HashSet<RID> collisions;
 
@@ -242,8 +237,7 @@ private:
 		double trail_length = 1.0;
 		bool trails_enabled = false;
 
-		Particles() :
-				update_list(this) {
+		Particles() {
 		}
 	};
 
@@ -265,7 +259,7 @@ private:
 		RID copy_shader_version;
 	} particles_shader;
 
-	SelfList<Particles>::List particle_update_list;
+	Particles *particle_update_list = nullptr;
 
 	mutable RID_Owner<Particles, true> particles_owner;
 
@@ -319,7 +313,6 @@ public:
 	virtual void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) override;
 	virtual void particles_set_emitting(RID p_particles, bool p_emitting) override;
 	virtual void particles_set_amount(RID p_particles, int p_amount) override;
-	virtual void particles_set_amount_ratio(RID p_particles, float p_amount_ratio) override;
 	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) override;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) override;
 	virtual void particles_set_pre_process_time(RID p_particles, double p_time) override;
@@ -354,8 +347,6 @@ public:
 	virtual AABB particles_get_aabb(RID p_particles) const override;
 
 	virtual void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) override;
-	virtual void particles_set_emitter_velocity(RID p_particles, const Vector3 &p_velocity) override;
-	virtual void particles_set_interp_to_end(RID p_particles, float p_interp) override;
 
 	virtual bool particles_get_emitting(RID p_particles) override;
 	virtual int particles_get_draw_passes(RID p_particles) const override;

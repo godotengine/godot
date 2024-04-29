@@ -44,8 +44,7 @@
 #define PACK_FORMAT_VERSION 2
 
 enum PackFlags {
-	PACK_DIR_ENCRYPTED = 1 << 0,
-	PACK_REL_FILEBASE = 1 << 1,
+	PACK_DIR_ENCRYPTED = 1 << 0
 };
 
 enum PackFileFlags {
@@ -223,7 +222,7 @@ class DirAccessPack : public DirAccess {
 	List<String> list_files;
 	bool cdir = false;
 
-	PackedData::PackedDir *_find_dir(const String &p_dir);
+	PackedData::PackedDir *_find_dir(String p_dir);
 
 public:
 	virtual Error list_dir_begin() override;

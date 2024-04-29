@@ -72,10 +72,8 @@ private:
 	} shadow_frustum;
 
 	struct MotionVectorsPushConstant {
-		float reprojection_matrix[16];
-		float resolution[2];
-		uint32_t force_derive_from_depth;
-		float pad;
+		float velocity_resolution[2];
+		float pad[2];
 	};
 
 	struct {
@@ -93,7 +91,7 @@ public:
 	~DebugEffects();
 
 	void draw_shadow_frustum(RID p_light, const Projection &p_cam_projection, const Transform3D &p_cam_transform, RID p_dest_fb, const Rect2 p_rect);
-	void draw_motion_vectors(RID p_velocity, RID p_depth, RID p_dest_fb, const Projection &p_current_projection, const Transform3D &p_current_transform, const Projection &p_previous_projection, const Transform3D &p_previous_transform, Size2i p_resolution);
+	void draw_motion_vectors(RID p_velocity, RID p_dest_fb, Size2i p_velocity_size);
 };
 
 } // namespace RendererRD

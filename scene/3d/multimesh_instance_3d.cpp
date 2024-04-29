@@ -49,26 +49,6 @@ Ref<MultiMesh> MultiMeshInstance3D::get_multimesh() const {
 	return multimesh;
 }
 
-Array MultiMeshInstance3D::get_meshes() const {
-	if (multimesh.is_null() || multimesh->get_mesh().is_null() || multimesh->get_transform_format() != MultiMesh::TransformFormat::TRANSFORM_3D) {
-		return Array();
-	}
-
-	int count = multimesh->get_visible_instance_count();
-	if (count == -1) {
-		count = multimesh->get_instance_count();
-	}
-
-	Ref<Mesh> mesh = multimesh->get_mesh();
-
-	Array results;
-	for (int i = 0; i < count; i++) {
-		results.push_back(multimesh->get_instance_transform(i));
-		results.push_back(mesh);
-	}
-	return results;
-}
-
 AABB MultiMeshInstance3D::get_aabb() const {
 	if (multimesh.is_null()) {
 		return AABB();

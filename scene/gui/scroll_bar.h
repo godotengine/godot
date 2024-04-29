@@ -63,6 +63,7 @@ class ScrollBar : public Range {
 	double get_grabber_size() const;
 	double get_grabber_min_size() const;
 	double get_area_size() const;
+	double get_area_offset() const;
 	double get_grabber_offset() const;
 
 	static void set_can_focus_by_default(bool p_can_focus);

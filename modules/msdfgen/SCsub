@@ -20,6 +20,8 @@ if env["builtin_msdfgen"]:
         "core/Projection.cpp",
         "core/Scanline.cpp",
         "core/Shape.cpp",
+        "core/SignedDistance.cpp",
+        "core/Vector2.cpp",
         "core/contour-combiners.cpp",
         "core/edge-coloring.cpp",
         "core/edge-segments.cpp",
@@ -34,7 +36,6 @@ if env["builtin_msdfgen"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_msdfgen.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env_msdfgen.Prepend(CPPPATH=["#thirdparty/freetype/include", "#thirdparty/msdfgen", "#thirdparty/nanosvg"])
 
     lib = env_msdfgen.add_library("msdfgen_builtin", thirdparty_sources)

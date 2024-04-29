@@ -1,10 +1,6 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using Godot.NativeInterop;
-
-#nullable enable
 
 namespace Godot
 {
@@ -38,9 +34,7 @@ namespace Godot
         public float B;
 
         /// <summary>
-        /// The color's alpha component, typically on the range of 0 to 1.
-		/// A value of 0 means that the color is fully transparent.
-		/// A value of 1 means that the color is fully opaque.
+        /// The color's alpha (transparency) component, typically on the range of 0 to 1.
         /// </summary>
         public float A;
 
@@ -336,7 +330,7 @@ namespace Godot
         /// by the specified ratio (on the range of 0 to 1).
         /// </summary>
         /// <param name="amount">The ratio to lighten by.</param>
-        /// <returns>The lightened color.</returns>
+        /// <returns>The darkened color.</returns>
         public readonly Color Lightened(float amount)
         {
             Color res = this;
@@ -536,11 +530,7 @@ namespace Godot
         /// <param name="r">The color's red component, typically on the range of 0 to 1.</param>
         /// <param name="g">The color's green component, typically on the range of 0 to 1.</param>
         /// <param name="b">The color's blue component, typically on the range of 0 to 1.</param>
-        /// <param name="a">
-		/// The color's alpha value, typically on the range of 0 to 1.
-		/// A value of 0 means that the color is fully transparent.
-		/// A value of 1 means that the color is fully opaque.
-		/// </param>
+        /// <param name="a">The color's alpha (transparency) value, typically on the range of 0 to 1. Default: 1.</param>
         public Color(float r, float g, float b, float a = 1.0f)
         {
             R = r;
@@ -553,11 +543,7 @@ namespace Godot
         /// Constructs a <see cref="Color"/> from an existing color and an alpha value.
         /// </summary>
         /// <param name="c">The color to construct from. Only its RGB values are used.</param>
-        /// <param name="a">
-		/// The color's alpha value, typically on the range of 0 to 1.
-		/// A value of 0 means that the color is fully transparent.
-		/// A value of 1 means that the color is fully opaque.
-		/// </param>
+        /// <param name="a">The color's alpha (transparency) value, typically on the range of 0 to 1. Default: 1.</param>
         public Color(Color c, float a = 1.0f)
         {
             R = c.R;
@@ -787,14 +773,14 @@ namespace Godot
 
         private static bool FindNamedColor(string name, out Color color)
         {
-            name = name.Replace(" ", string.Empty, StringComparison.Ordinal);
-            name = name.Replace("-", string.Empty, StringComparison.Ordinal);
-            name = name.Replace("_", string.Empty, StringComparison.Ordinal);
-            name = name.Replace("'", string.Empty, StringComparison.Ordinal);
-            name = name.Replace(".", string.Empty, StringComparison.Ordinal);
+            name = name.Replace(" ", string.Empty);
+            name = name.Replace("-", string.Empty);
+            name = name.Replace("_", string.Empty);
+            name = name.Replace("'", string.Empty);
+            name = name.Replace(".", string.Empty);
             name = name.ToUpperInvariant();
 
-            return Colors.NamedColors.TryGetValue(name, out color);
+            return Colors.namedColors.TryGetValue(name, out color);
         }
 
         /// <summary>
@@ -1288,7 +1274,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The other object to compare.</param>
         /// <returns>Whether or not the color and the other object are equal.</returns>
-        public override readonly bool Equals([NotNullWhen(true)] object? obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Color other && Equals(other);
         }
@@ -1322,22 +1308,25 @@ namespace Godot
         /// <returns>A hash code for this color.</returns>
         public override readonly int GetHashCode()
         {
-            return HashCode.Combine(R, G, B, A);
+            return R.GetHashCode() ^ G.GetHashCode() ^ B.GetHashCode() ^ A.GetHashCode();
         }
 
         /// <summary>
         /// Converts this <see cref="Color"/> to a string.
         /// </summary>
         /// <returns>A string representation of this color.</returns>
-        public override readonly string ToString() => ToString(null);
+        public override readonly string ToString()
+        {
+            return $"({R}, {G}, {B}, {A})";
+        }
 
         /// <summary>
         /// Converts this <see cref="Color"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this color.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string format)
         {
-            return $"({R.ToString(format, CultureInfo.InvariantCulture)}, {G.ToString(format, CultureInfo.InvariantCulture)}, {B.ToString(format, CultureInfo.InvariantCulture)}, {A.ToString(format, CultureInfo.InvariantCulture)})";
+            return $"({R.ToString(format)}, {G.ToString(format)}, {B.ToString(format)}, {A.ToString(format)})";
         }
     }
 }

@@ -53,12 +53,9 @@ void StaticRaycasterEmbree::free() {
 }
 
 bool StaticRaycasterEmbree::intersect(Ray &r_ray) {
-	RTCRayQueryContext context;
-	rtcInitRayQueryContext(&context);
-	RTCIntersectArguments args;
-	rtcInitIntersectArguments(&args);
-	args.context = &context;
-	rtcIntersect1(embree_scene, (RTCRayHit *)&r_ray, &args);
+	RTCIntersectContext context;
+	rtcInitIntersectContext(&context);
+	rtcIntersect1(embree_scene, &context, (RTCRayHit *)&r_ray);
 	return r_ray.geomID != RTC_INVALID_GEOMETRY_ID;
 }
 

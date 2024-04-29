@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <cstdlib>
 #include "BitmapRef.hpp"
 
 #ifndef MSDFGEN_PUBLIC

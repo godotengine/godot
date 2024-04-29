@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2024 Arm Limited
+// Copyright 2011-2023 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -873,7 +873,7 @@ void compute_ideal_weights_for_decimation(
 	}
 
 	// Otherwise compute an estimate and perform single refinement iteration
-	ASTCENC_ALIGNAS float infilled_weights[BLOCK_MAX_TEXELS];
+	alignas(ASTCENC_VECALIGN) float infilled_weights[BLOCK_MAX_TEXELS];
 
 	// Compute an initial average for each decimated weight
 	bool constant_wes = ei.is_constant_weight_error_scale;
@@ -1023,7 +1023,7 @@ void compute_quantized_weights_for_decimation(
 	// safe data in compute_ideal_weights_for_decimation and arrays are always 64 elements
 	if (get_quant_level(quant_level) <= 16)
 	{
-		vint4 tab0 = vint4::load(qat.quant_to_unquant);
+		vint4 tab0(reinterpret_cast<const int*>(qat.quant_to_unquant));
 		vint tab0p;
 		vtable_prepare(tab0, tab0p);
 
@@ -1056,8 +1056,8 @@ void compute_quantized_weights_for_decimation(
 	}
 	else
 	{
-		vint4 tab0 = vint4::load(qat.quant_to_unquant +  0);
-		vint4 tab1 = vint4::load(qat.quant_to_unquant + 16);
+		vint4 tab0(reinterpret_cast<const int*>(qat.quant_to_unquant));
+		vint4 tab1(reinterpret_cast<const int*>(qat.quant_to_unquant + 16));
 		vint tab0p, tab1p;
 		vtable_prepare(tab0, tab1, tab0p, tab1p);
 
@@ -1171,7 +1171,7 @@ void recompute_ideal_colors_1plane(
 	promise(total_texel_count > 0);
 	promise(partition_count > 0);
 
-	ASTCENC_ALIGNAS float dec_weight[BLOCK_MAX_WEIGHTS];
+	alignas(ASTCENC_VECALIGN) float dec_weight[BLOCK_MAX_WEIGHTS];
 	for (unsigned int i = 0; i < weight_count; i += ASTCENC_SIMD_WIDTH)
 	{
 		vint unquant_value(dec_weights_uquant + i);
@@ -1179,7 +1179,7 @@ void recompute_ideal_colors_1plane(
 		storea(unquant_valuef, dec_weight + i);
 	}
 
-	ASTCENC_ALIGNAS float undec_weight[BLOCK_MAX_TEXELS];
+	alignas(ASTCENC_VECALIGN) float undec_weight[BLOCK_MAX_TEXELS];
 	float* undec_weight_ref;
 	if (di.max_texel_weight_count == 1)
 	{
@@ -1394,8 +1394,8 @@ void recompute_ideal_colors_2planes(
 	promise(total_texel_count > 0);
 	promise(weight_count > 0);
 
-	ASTCENC_ALIGNAS float dec_weight_plane1[BLOCK_MAX_WEIGHTS_2PLANE];
-	ASTCENC_ALIGNAS float dec_weight_plane2[BLOCK_MAX_WEIGHTS_2PLANE];
+	alignas(ASTCENC_VECALIGN) float dec_weight_plane1[BLOCK_MAX_WEIGHTS_2PLANE];
+	alignas(ASTCENC_VECALIGN) float dec_weight_plane2[BLOCK_MAX_WEIGHTS_2PLANE];
 
 	assert(weight_count <= BLOCK_MAX_WEIGHTS_2PLANE);
 
@@ -1410,8 +1410,8 @@ void recompute_ideal_colors_2planes(
 		storea(unquant_value2f, dec_weight_plane2 + i);
 	}
 
-	ASTCENC_ALIGNAS float undec_weight_plane1[BLOCK_MAX_TEXELS];
-	ASTCENC_ALIGNAS float undec_weight_plane2[BLOCK_MAX_TEXELS];
+	alignas(ASTCENC_VECALIGN) float undec_weight_plane1[BLOCK_MAX_TEXELS];
+	alignas(ASTCENC_VECALIGN) float undec_weight_plane2[BLOCK_MAX_TEXELS];
 
 	float* undec_weight_plane1_ref;
 	float* undec_weight_plane2_ref;

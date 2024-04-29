@@ -82,10 +82,10 @@ static const float earth_gravity = 9.80665;
 		layer = [GodotMetalLayer layer];
 #endif
 	} else if ([driverName isEqualToString:@"opengl3"]) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in iOS 12.0
+		if (@available(iOS 13, *)) {
+			NSLog(@"OpenGL ES is deprecated on iOS 13");
+		}
 		layer = [GodotOpenGLLayer layer];
-#pragma clang diagnostic pop
 	} else {
 		return nil;
 	}
@@ -163,23 +163,6 @@ static const float earth_gravity = 9.80665;
 			[self.motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXMagneticNorthZVertical];
 		} else {
 			self.motionManager = nil;
-		}
-	}
-}
-
-- (void)system_theme_changed {
-	DisplayServerIOS *ds = (DisplayServerIOS *)DisplayServer::get_singleton();
-	if (ds) {
-		ds->emit_system_theme_changed();
-	}
-}
-
-- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
-	if (@available(iOS 13.0, *)) {
-		[super traitCollectionDidChange:previousTraitCollection];
-
-		if ([UITraitCollection currentTraitCollection].userInterfaceStyle != previousTraitCollection.userInterfaceStyle) {
-			[self system_theme_changed];
 		}
 	}
 }

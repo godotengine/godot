@@ -70,8 +70,14 @@ CommandQueueMT::SyncSemaphore *CommandQueueMT::_alloc_sync_sem() {
 	return &sync_sems[idx];
 }
 
-CommandQueueMT::CommandQueueMT() {
+CommandQueueMT::CommandQueueMT(bool p_sync) {
+	if (p_sync) {
+		sync = memnew(Semaphore);
+	}
 }
 
 CommandQueueMT::~CommandQueueMT() {
+	if (sync) {
+		memdelete(sync);
+	}
 }

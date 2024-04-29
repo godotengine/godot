@@ -31,7 +31,7 @@
 #include "editor_resource_tooltip_plugins.h"
 
 #include "editor/editor_resource_preview.h"
-#include "editor/themes/editor_scale.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"

@@ -123,7 +123,7 @@ void GodotWorldBoundaryShape2D::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(arr.size() != 2);
 	normal = arr[0];
 	d = arr[1];
-	configure(Rect2(Vector2(-1e15, -1e15), Vector2(1e15 * 2, 1e15 * 2)));
+	configure(Rect2(Vector2(-1e4, -1e4), Vector2(1e4 * 2, 1e4 * 2)));
 }
 
 Variant GodotWorldBoundaryShape2D::get_data() const {
@@ -373,7 +373,8 @@ void GodotCapsuleShape2D::get_supports(const Vector2 &p_normal, Vector2 *r_suppo
 	if (h > 0 && Math::abs(n.x) > segment_is_valid_support_threshold) {
 		// make it flat
 		n.y = 0.0;
-		n.x = SIGN(n.x) * radius;
+		n.normalize();
+		n *= radius;
 
 		r_amount = 2;
 		r_supports[0] = n;
@@ -584,7 +585,7 @@ void GodotConvexPolygonShape2D::set_data(const Variant &p_data) {
 
 	if (p_data.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
 		Vector<Vector2> arr = p_data;
-		ERR_FAIL_COND(arr.is_empty());
+		ERR_FAIL_COND(arr.size() == 0);
 		point_count = arr.size();
 		points = memnew_arr(Point, point_count);
 		const Vector2 *r = arr.ptr();

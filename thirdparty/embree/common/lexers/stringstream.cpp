@@ -41,9 +41,7 @@ namespace embree
       int c = cin->get();
       // -- GODOT start --
       // if (!isValidChar(c)) throw std::runtime_error("invalid character "+std::string(1,c)+" in input");
-      if (!isValidChar(c)) {
-        abort();
-      }
+      if (!isValidChar(c)) abort();
       // -- GODOT end --
       str.push_back((char)c);
     }

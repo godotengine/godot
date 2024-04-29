@@ -53,6 +53,13 @@
 #include <dlfcn.h>
 #endif
 
+// TODO mobile
+#if 0
+#ifdef IOS_ENABLED
+#include "support/ios_support.h"
+#endif
+#endif
+
 GDMono *GDMono::singleton = nullptr;
 
 namespace {
@@ -315,7 +322,7 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 
 #if defined(WINDOWS_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dll");
-#elif defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+#elif defined(MACOS_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dylib");
 #elif defined(UNIX_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".so");
@@ -323,32 +330,27 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 #error "Platform not supported (yet?)"
 #endif
 
-	Error err = OS::get_singleton()->open_dynamic_library(native_aot_so_path, r_aot_dll_handle);
+	if (FileAccess::exists(native_aot_so_path)) {
+		Error err = OS::get_singleton()->open_dynamic_library(native_aot_so_path, r_aot_dll_handle);
 
-	if (err != OK) {
-		return nullptr;
+		if (err != OK) {
+			return nullptr;
+		}
+
+		void *lib = r_aot_dll_handle;
+
+		void *symbol = nullptr;
+
+		err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "godotsharp_game_main_init", symbol);
+		ERR_FAIL_COND_V(err != OK, nullptr);
+		return (godot_plugins_initialize_fn)symbol;
 	}
 
-	void *lib = r_aot_dll_handle;
-
-	void *symbol = nullptr;
-
-	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "godotsharp_game_main_init", symbol);
-	ERR_FAIL_COND_V(err != OK, nullptr);
-	return (godot_plugins_initialize_fn)symbol;
+	return nullptr;
 }
 #endif
 
 } // namespace
-
-bool GDMono::should_initialize() {
-#ifdef TOOLS_ENABLED
-	// The editor always needs to initialize the .NET module for now.
-	return true;
-#else
-	return OS::get_singleton()->has_feature("dotnet");
-#endif
-}
 
 static bool _on_core_api_assembly_loaded() {
 	if (!GDMonoCache::godot_api_cache_updated) {
@@ -374,13 +376,11 @@ void GDMono::initialize() {
 
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
-#if !defined(IOS_ENABLED)
 	// Check that the .NET assemblies directory exists before trying to use it.
 	if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir())) {
 		OS::get_singleton()->alert(vformat(RTR("Unable to find the .NET assemblies directory.\nMake sure the '%s' directory exists and contains the .NET assemblies."), GodotSharpDirs::get_api_assemblies_dir()), RTR(".NET assemblies not found"));
 		ERR_FAIL_MSG(".NET: Assemblies not found");
 	}
-#endif
 
 	if (!load_hostfxr(hostfxr_dll_handle)) {
 #if !defined(TOOLS_ENABLED)
@@ -388,7 +388,6 @@ void GDMono::initialize() {
 
 		if (godot_plugins_initialize != nullptr) {
 			is_native_aot = true;
-			runtime_initialized = true;
 		} else {
 			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 		}
@@ -438,15 +437,11 @@ void GDMono::initialize() {
 
 	_on_core_api_assembly_loaded();
 
-#ifdef TOOLS_ENABLED
-	_try_load_project_assembly();
-#endif
-
 	initialized = true;
 }
 
 #ifdef TOOLS_ENABLED
-void GDMono::_try_load_project_assembly() {
+void GDMono::initialize_load_assemblies() {
 	if (Engine::get_singleton()->is_project_manager_hint()) {
 		return;
 	}
@@ -549,6 +544,12 @@ GDMono::GDMono() {
 
 GDMono::~GDMono() {
 	finalizing_scripts_domain = true;
+
+	if (is_runtime_initialized()) {
+		if (GDMonoCache::godot_api_cache_updated) {
+			GDMonoCache::managed_callbacks.DisposablesTracker_OnGodotShuttingDown();
+		}
+	}
 
 	if (hostfxr_dll_handle) {
 		OS::get_singleton()->close_dynamic_library(hostfxr_dll_handle);

@@ -4,4 +4,4 @@ Import("env")
 
 env.add_source_files(env.drivers_sources, "*.cpp")
 
-env["check_c_headers"] = {"mntent.h": "HAVE_MNTENT"}
+env["check_c_headers"] = [["mntent.h", "HAVE_MNTENT"]]

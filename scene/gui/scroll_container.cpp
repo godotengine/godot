@@ -56,7 +56,8 @@ Size2 ScrollContainer::get_minimum_size() const {
 
 		Size2 child_min_size = c->get_combined_minimum_size();
 
-		largest_child_min_size = largest_child_min_size.max(child_min_size);
+		largest_child_min_size.x = MAX(largest_child_min_size.x, child_min_size.x);
+		largest_child_min_size.y = MAX(largest_child_min_size.y, child_min_size.y);
 	}
 
 	if (horizontal_scroll_mode == SCROLL_MODE_DISABLED) {
@@ -345,7 +346,7 @@ void ScrollContainer::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_updating_scrollbars = true;
-			callable_mp(this, &ScrollContainer::_update_scrollbar_position).call_deferred();
+			call_deferred(SNAME("_update_scrollbar_position"));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -572,6 +573,8 @@ VScrollBar *ScrollContainer::get_v_scroll_bar() {
 }
 
 void ScrollContainer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_update_scrollbar_position"), &ScrollContainer::_update_scrollbar_position);
+
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &ScrollContainer::get_h_scroll);
 

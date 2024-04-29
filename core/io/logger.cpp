@@ -230,7 +230,7 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	}
 }
 
-CompositeLogger::CompositeLogger(const Vector<Logger *> &p_loggers) :
+CompositeLogger::CompositeLogger(Vector<Logger *> p_loggers) :
 		loggers(p_loggers) {
 }
 

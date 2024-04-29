@@ -189,7 +189,8 @@ bool GodotCollisionSolver2D::solve_concave(const GodotShape2D *p_shape_A, const 
 	Transform2D rel_transform = p_transform_A;
 	rel_transform.columns[2] -= p_transform_B.get_origin();
 
-	// Quickly compute a local Rect2.
+	//quickly compute a local Rect2
+
 	Rect2 local_aabb;
 	for (int i = 0; i < 2; i++) {
 		Vector2 axis(p_transform_B.columns[i]);
@@ -203,12 +204,6 @@ bool GodotCollisionSolver2D::solve_concave(const GodotShape2D *p_shape_A, const 
 
 		local_aabb.position[i] = smin;
 		local_aabb.size[i] = smax - smin;
-	}
-	// In case of motion, expand the Rect2 in the motion direction.
-	if (p_motion_A != Vector2()) {
-		Rect2 moved_aabb = local_aabb;
-		moved_aabb.position += p_motion_A;
-		local_aabb = local_aabb.merge(moved_aabb);
 	}
 
 	concave_B->cull(local_aabb, concave_callback, &cinfo);

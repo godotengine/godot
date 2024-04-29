@@ -41,8 +41,7 @@ class EditorExport : public Node {
 	Vector<Ref<EditorExportPreset>> export_presets;
 	Vector<Ref<EditorExportPlugin>> export_plugins;
 
-	static inline StringName _export_presets_updated;
-	static inline StringName _export_presets_runnable_updated;
+	StringName _export_presets_updated;
 
 	Timer *save_timer = nullptr;
 	bool block_save = false;
@@ -55,7 +54,6 @@ class EditorExport : public Node {
 protected:
 	friend class EditorExportPreset;
 	void save_presets();
-	void emit_presets_runnable_changed();
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -79,7 +77,6 @@ public:
 	void load_config();
 	void update_export_presets();
 	bool poll_export_platforms();
-	void connect_presets_runnable_updated(const Callable &p_target);
 
 	EditorExport();
 	~EditorExport();

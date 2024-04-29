@@ -17,7 +17,7 @@ namespace embree
 #endif
   }
 
-  void Stat::print(embree_ostream cout)
+  void Stat::print(std::ostream& cout)
   {
     Counters& cntrs = instance.cntrs;
     Counters::Data& data = instance.cntrs.code;

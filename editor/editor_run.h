@@ -47,6 +47,8 @@ private:
 	Status status;
 	String running_scene;
 
+	Vector<String> _split_cmdline_args(const String &arg_string);
+
 public:
 	Status get_status() const;
 	String get_running_scene() const;

@@ -55,14 +55,12 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/world_2d.h"
+#include "scene/resources/world_3d.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
-#ifndef _3D_DISABLED
-#include "scene/resources/3d/world_3d.h"
 #include "servers/physics_server_3d.h"
-#endif // _3D_DISABLED
 #include "window.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -120,6 +118,7 @@ void SceneTreeTimer::release_connections() {
 SceneTreeTimer::SceneTreeTimer() {}
 
 void SceneTree::tree_changed() {
+	tree_version++;
 	emit_signal(tree_changed_name);
 }
 
@@ -152,6 +151,7 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 
 	ERR_FAIL_COND_V_MSG(E->value.nodes.has(p_node), &E->value, "Already in group: " + p_group + ".");
 	E->value.nodes.push_back(p_node);
+	//E->value.last_tree_version=0;
 	E->value.changed = true;
 	return &E->value;
 }
@@ -449,31 +449,9 @@ void SceneTree::initialize() {
 	root->_set_tree(this);
 }
 
-void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
-	// We never want interpolation in the editor.
-	if (Engine::get_singleton()->is_editor_hint()) {
-		p_enabled = false;
-	}
-
-	if (p_enabled == _physics_interpolation_enabled) {
-		return;
-	}
-
-	_physics_interpolation_enabled = p_enabled;
-	RenderingServer::get_singleton()->set_physics_interpolation_enabled(p_enabled);
-}
-
-bool SceneTree::is_physics_interpolation_enabled() const {
-	return _physics_interpolation_enabled;
-}
-
-void SceneTree::iteration_prepare() {
-	if (_physics_interpolation_enabled) {
-		RenderingServer::get_singleton()->tick();
-	}
-}
-
 bool SceneTree::physics_process(double p_time) {
+	root_lock++;
+
 	current_frame++;
 
 	flush_transform_notifications();
@@ -497,6 +475,7 @@ bool SceneTree::physics_process(double p_time) {
 	process_tweens(p_time, true);
 
 	flush_transform_notifications();
+	root_lock--;
 
 	_flush_delete_queue();
 	_call_idle_callbacks();
@@ -505,6 +484,8 @@ bool SceneTree::physics_process(double p_time) {
 }
 
 bool SceneTree::process(double p_time) {
+	root_lock++;
+
 	if (MainLoop::process(p_time)) {
 		_quit = true;
 	}
@@ -530,11 +511,9 @@ bool SceneTree::process(double p_time) {
 	MessageQueue::get_singleton()->flush(); //small little hack
 	flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
 
-	_flush_delete_queue();
+	root_lock--;
 
-	if (unlikely(pending_new_scene)) {
-		_flush_scene_change();
-	}
+	_flush_delete_queue();
 
 	process_timers(p_time, false); //go through timers
 
@@ -570,6 +549,10 @@ bool SceneTree::process(double p_time) {
 	}
 #endif // _3D_DISABLED
 #endif // TOOLS_ENABLED
+
+	if (unlikely(pending_new_scene)) {
+		_flush_scene_change();
+	}
 
 	return _quit;
 }
@@ -806,7 +789,6 @@ Ref<Material> SceneTree::get_debug_paths_material() {
 	_debug_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	_debug_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	_debug_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	_debug_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	_debug_material->set_albedo(get_debug_paths_color());
 
 	debug_paths_material = _debug_material;
@@ -826,7 +808,6 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	line_material->set_albedo(get_debug_collisions_color());
 
 	collision_material = line_material;
@@ -848,7 +829,6 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	mat->set_albedo(get_debug_collision_contact_color());
 
 	Vector3 diamond[6] = {
@@ -901,9 +881,7 @@ void SceneTree::set_pause(bool p_enabled) {
 		return;
 	}
 	paused = p_enabled;
-#ifndef _3D_DISABLED
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
-#endif // _3D_DISABLED
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled);
 	if (get_root()) {
 		get_root()->_propagate_pause_notification(p_enabled);
@@ -1321,16 +1299,6 @@ bool SceneTree::has_group(const StringName &p_identifier) const {
 	return group_map.has(p_identifier);
 }
 
-int SceneTree::get_node_count_in_group(const StringName &p_group) const {
-	_THREAD_SAFE_METHOD_
-	HashMap<StringName, Group>::ConstIterator E = group_map.find(p_group);
-	if (!E) {
-		return 0;
-	}
-
-	return E->value.nodes.size();
-}
-
 Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
 	_THREAD_SAFE_METHOD_
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
@@ -1515,18 +1483,15 @@ TypedArray<Tween> SceneTree::get_processed_tweens() {
 
 Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
 	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), Ref<MultiplayerAPI>(), "Multiplayer can only be manipulated from the main thread.");
-	if (p_for_path.is_empty()) {
-		return multiplayer;
-	}
-
-	const Vector<StringName> tnames = p_for_path.get_names();
-	const StringName *nptr = tnames.ptr();
+	Ref<MultiplayerAPI> out = multiplayer;
 	for (const KeyValue<NodePath, Ref<MultiplayerAPI>> &E : custom_multiplayers) {
 		const Vector<StringName> snames = E.key.get_names();
+		const Vector<StringName> tnames = p_for_path.get_names();
 		if (tnames.size() < snames.size()) {
 			continue;
 		}
 		const StringName *sptr = snames.ptr();
+		const StringName *nptr = tnames.ptr();
 		bool valid = true;
 		for (int i = 0; i < snames.size(); i++) {
 			if (sptr[i] != nptr[i]) {
@@ -1535,11 +1500,11 @@ Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const
 			}
 		}
 		if (valid) {
-			return E.value;
+			out = E.value;
+			break;
 		}
 	}
-
-	return multiplayer;
+	return out;
 }
 
 void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path) {
@@ -1554,30 +1519,10 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePat
 	} else {
 		if (custom_multiplayers.has(p_root_path)) {
 			custom_multiplayers[p_root_path]->object_configuration_remove(nullptr, p_root_path);
-		} else if (p_multiplayer.is_valid()) {
-			const Vector<StringName> tnames = p_root_path.get_names();
-			const StringName *nptr = tnames.ptr();
-			for (const KeyValue<NodePath, Ref<MultiplayerAPI>> &E : custom_multiplayers) {
-				const Vector<StringName> snames = E.key.get_names();
-				if (tnames.size() < snames.size()) {
-					continue;
-				}
-				const StringName *sptr = snames.ptr();
-				bool valid = true;
-				for (int i = 0; i < snames.size(); i++) {
-					if (sptr[i] != nptr[i]) {
-						valid = false;
-						break;
-					}
-				}
-				ERR_FAIL_COND_MSG(valid, "Multiplayer is already configured for a parent of this path: '" + p_root_path + "' in '" + E.key + "'.");
-			}
 		}
 		if (p_multiplayer.is_valid()) {
 			custom_multiplayers[p_root_path] = p_multiplayer;
 			p_multiplayer->object_configuration_add(nullptr, p_root_path);
-		} else {
-			custom_multiplayers.erase(p_root_path);
 		}
 	}
 }
@@ -1621,9 +1566,6 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);
 	ClassDB::bind_method(D_METHOD("quit", "exit_code"), &SceneTree::quit, DEFVAL(EXIT_SUCCESS));
 
-	ClassDB::bind_method(D_METHOD("set_physics_interpolation_enabled", "enabled"), &SceneTree::set_physics_interpolation_enabled);
-	ClassDB::bind_method(D_METHOD("is_physics_interpolation_enabled"), &SceneTree::is_physics_interpolation_enabled);
-
 	ClassDB::bind_method(D_METHOD("queue_delete", "obj"), &SceneTree::queue_delete);
 
 	MethodInfo mi;
@@ -1649,7 +1591,6 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_nodes_in_group", "group"), &SceneTree::_get_nodes_in_group);
 	ClassDB::bind_method(D_METHOD("get_first_node_in_group", "group"), &SceneTree::get_first_node_in_group);
-	ClassDB::bind_method(D_METHOD("get_node_count_in_group", "group"), &SceneTree::get_node_count_in_group);
 
 	ClassDB::bind_method(D_METHOD("set_current_scene", "child_node"), &SceneTree::set_current_scene);
 	ClassDB::bind_method(D_METHOD("get_current_scene"), &SceneTree::get_current_scene);
@@ -1675,7 +1616,6 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_current_scene", "get_current_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "", "get_root");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multiplayer_poll"), "set_multiplayer_poll_enabled", "is_multiplayer_poll_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_interpolation"), "set_physics_interpolation_enabled", "is_physics_interpolation_enabled");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("tree_process_mode_changed")); //editor only signal, but due to API hash it can't be removed in run-time
@@ -1709,24 +1649,36 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 	idle_callbacks[idle_callback_count++] = p_callback;
 }
 
-#ifdef TOOLS_ENABLED
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	const String pf = p_function;
-	bool add_options = false;
-	if (p_idx == 0) {
-		add_options = pf == "get_nodes_in_group" || pf == "has_group" || pf == "get_first_node_in_group" || pf == "set_group" || pf == "notify_group" || pf == "call_group" || pf == "add_to_group";
-	} else if (p_idx == 1) {
-		add_options = pf == "set_group_flags" || pf == "call_group_flags" || pf == "notify_group_flags";
-	}
-	if (add_options) {
-		HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
-		for (const KeyValue<StringName, String> &E : global_groups) {
-			r_options->push_back(E.key.operator String().quote());
+	if (p_function == "change_scene_to_file") {
+		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		List<String> directories;
+		directories.push_back(dir_access->get_current_dir());
+
+		while (!directories.is_empty()) {
+			dir_access->change_dir(directories.back()->get());
+			directories.pop_back();
+
+			dir_access->list_dir_begin();
+			String filename = dir_access->get_next();
+
+			while (!filename.is_empty()) {
+				if (filename == "." || filename == "..") {
+					filename = dir_access->get_next();
+					continue;
+				}
+
+				if (dir_access->dir_exists(filename)) {
+					directories.push_back(dir_access->get_current_dir().path_join(filename));
+				} else if (filename.ends_with(".tscn") || filename.ends_with(".scn")) {
+					r_options->push_back("\"" + dir_access->get_current_dir().path_join(filename) + "\"");
+				}
+
+				filename = dir_access->get_next();
+			}
 		}
 	}
-	MainLoop::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
 
 void SceneTree::set_disable_node_threading(bool p_disable) {
 	node_threading_disabled = p_disable;
@@ -1752,7 +1704,6 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_min_size(Size2i(64, 64)); // Define a very small minimum window size to prevent bugs such as GH-37242.
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
-	root->set_auto_translate_mode(GLOBAL_GET("internationalization/rendering/root_node_auto_translate") ? Node::AUTO_TRANSLATE_MODE_ALWAYS : Node::AUTO_TRANSLATE_MODE_DISABLED);
 	root->set_name("root");
 	root->set_title(GLOBAL_GET("application/config/name"));
 
@@ -1766,8 +1717,6 @@ SceneTree::SceneTree() {
 	}
 	root->set_as_audio_listener_3d(true);
 #endif // _3D_DISABLED
-
-	set_physics_interpolation_enabled(GLOBAL_DEF("physics/common/physics_interpolation", false));
 
 	// Initialize network state.
 	set_multiplayer(MultiplayerAPI::create_default_interface());
@@ -1802,7 +1751,7 @@ SceneTree::SceneTree() {
 	float mesh_lod_threshold = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/mesh_lod/lod_change/threshold_pixels", PROPERTY_HINT_RANGE, "0,1024,0.1"), 1.0);
 	root->set_mesh_lod_threshold(mesh_lod_threshold);
 
-	bool snap_2d_transforms = GLOBAL_DEF_BASIC("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
+	bool snap_2d_transforms = GLOBAL_DEF("rendering/2d/snap/snap_2d_transforms_to_pixel", false);
 	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
 
 	bool snap_2d_vertices = GLOBAL_DEF("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
@@ -1872,7 +1821,7 @@ SceneTree::SceneTree() {
 					ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
 				} else {
 					// File was erased, notify user.
-					ERR_PRINT("Default Environment as specified in the project setting \"rendering/environment/defaults/default_environment\" could not be loaded.");
+					ERR_PRINT(RTR("Default Environment as specified in the project setting \"rendering/environment/defaults/default_environment\" could not be loaded."));
 				}
 			}
 		}

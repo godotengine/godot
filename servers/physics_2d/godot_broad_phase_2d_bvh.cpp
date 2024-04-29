@@ -58,7 +58,7 @@ void GodotBroadPhase2DBVH::remove(ID p_id) {
 GodotCollisionObject2D *GodotBroadPhase2DBVH::get_object(ID p_id) const {
 	ERR_FAIL_COND_V(!p_id, nullptr);
 	GodotCollisionObject2D *it = bvh.get(p_id - 1);
-	ERR_FAIL_NULL_V(it, nullptr);
+	ERR_FAIL_COND_V(!it, nullptr);
 	return it;
 }
 

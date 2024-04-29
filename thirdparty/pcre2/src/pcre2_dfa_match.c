@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2023 University of Cambridge
+          New API code Copyright (c) 2016-2022 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -168,7 +168,7 @@ static const uint8_t coptable[] = {
   0,                             /* KetRmax                                */
   0,                             /* KetRmin                                */
   0,                             /* KetRpos                                */
-  0, 0,                          /* Reverse, Vreverse                      */
+  0,                             /* Reverse                                */
   0,                             /* Assert                                 */
   0,                             /* Assert not                             */
   0,                             /* Assert behind                          */
@@ -187,8 +187,7 @@ static const uint8_t coptable[] = {
   0, 0, 0, 0,                    /* SKIP, SKIP_ARG, THEN, THEN_ARG         */
   0, 0,                          /* COMMIT, COMMIT_ARG                     */
   0, 0, 0,                       /* FAIL, ACCEPT, ASSERT_ACCEPT            */
-  0, 0, 0,                       /* CLOSE, SKIPZERO, DEFINE                */
-  0, 0                           /* \B and \b in UCP mode                  */
+  0, 0, 0                        /* CLOSE, SKIPZERO, DEFINE                */
 };
 
 /* This table identifies those opcodes that inspect a character. It is used to
@@ -246,7 +245,7 @@ static const uint8_t poptable[] = {
   0,                             /* KetRmax                                */
   0,                             /* KetRmin                                */
   0,                             /* KetRpos                                */
-  0, 0,                          /* Reverse, Vreverse                      */
+  0,                             /* Reverse                                */
   0,                             /* Assert                                 */
   0,                             /* Assert not                             */
   0,                             /* Assert behind                          */
@@ -265,8 +264,7 @@ static const uint8_t poptable[] = {
   0, 0, 0, 0,                    /* SKIP, SKIP_ARG, THEN, THEN_ARG         */
   0, 0,                          /* COMMIT, COMMIT_ARG                     */
   0, 0, 0,                       /* FAIL, ACCEPT, ASSERT_ACCEPT            */
-  0, 0, 0,                       /* CLOSE, SKIPZERO, DEFINE                */
-  1, 1                           /* \B and \b in UCP mode                  */
+  0, 0, 0                        /* CLOSE, SKIPZERO, DEFINE                */
 };
 
 /* These 2 tables allow for compact code for testing for \D, \d, \S, \s, \W,
@@ -428,7 +426,7 @@ overflow. */
 
 else
   {
-  uint32_t newsize = (rws->size >= UINT32_MAX/(sizeof(int)*2))? UINT32_MAX/sizeof(int) : rws->size * 2;
+  uint32_t newsize = (rws->size >= UINT32_MAX/2)? UINT32_MAX/2 : rws->size * 2;
   uint32_t newsizeK = newsize/(1024/sizeof(int));
 
   if (newsizeK + mb->heap_used > mb->heap_limit)
@@ -591,7 +589,7 @@ if (*this_start_code == OP_ASSERTBACK || *this_start_code == OP_ASSERTBACK_NOT)
   end_code = this_start_code;
   do
     {
-    size_t back = (size_t)GET2(end_code, 2+LINK_SIZE);
+    size_t back = (size_t)GET(end_code, 2+LINK_SIZE);
     if (back > max_back) max_back = back;
     end_code += GET(end_code, 1);
     }
@@ -635,8 +633,8 @@ if (*this_start_code == OP_ASSERTBACK || *this_start_code == OP_ASSERTBACK_NOT)
   end_code = this_start_code;
   do
     {
-    uint32_t revlen = (end_code[1+LINK_SIZE] == OP_REVERSE)? 1 + IMM2_SIZE : 0;
-    size_t back = (revlen == 0)? 0 : (size_t)GET2(end_code, 2+LINK_SIZE);
+    uint32_t revlen = (end_code[1+LINK_SIZE] == OP_REVERSE)? 1 + LINK_SIZE : 0;
+    size_t back = (revlen == 0)? 0 : (size_t)GET(end_code, 2+LINK_SIZE);
     if (back <= gone_back)
       {
       int bstate = (int)(end_code - start_code + 1 + LINK_SIZE + revlen);
@@ -1102,8 +1100,6 @@ for (;;)
       /*-----------------------------------------------------------------*/
       case OP_WORD_BOUNDARY:
       case OP_NOT_WORD_BOUNDARY:
-      case OP_NOT_UCP_WORD_BOUNDARY:
-      case OP_UCP_WORD_BOUNDARY:
         {
         int left_word, right_word;
 
@@ -1116,13 +1112,13 @@ for (;;)
 #endif
           GETCHARTEST(d, temp);
 #ifdef SUPPORT_UNICODE
-          if (codevalue == OP_UCP_WORD_BOUNDARY ||
-              codevalue == OP_NOT_UCP_WORD_BOUNDARY)
+          if ((mb->poptions & PCRE2_UCP) != 0)
             {
-            int chartype = UCD_CHARTYPE(d);
-            int category = PRIV(ucp_gentype)[chartype];
-            left_word = (category == ucp_L || category == ucp_N ||
-              chartype == ucp_Mn || chartype == ucp_Pc);
+            if (d == '_') left_word = TRUE; else
+              {
+              uint32_t cat = UCD_CATEGORY(d);
+              left_word = (cat == ucp_L || cat == ucp_N);
+              }
             }
           else
 #endif
@@ -1141,13 +1137,13 @@ for (;;)
             mb->last_used_ptr = temp;
             }
 #ifdef SUPPORT_UNICODE
-          if (codevalue == OP_UCP_WORD_BOUNDARY ||
-              codevalue == OP_NOT_UCP_WORD_BOUNDARY)
+          if ((mb->poptions & PCRE2_UCP) != 0)
             {
-            int chartype = UCD_CHARTYPE(c);
-            int category = PRIV(ucp_gentype)[chartype];
-            right_word = (category == ucp_L || category == ucp_N ||
-              chartype == ucp_Mn || chartype == ucp_Pc);
+            if (c == '_') right_word = TRUE; else
+              {
+              uint32_t cat = UCD_CATEGORY(c);
+              right_word = (cat == ucp_L || cat == ucp_N);
+              }
             }
           else
 #endif
@@ -1155,9 +1151,7 @@ for (;;)
           }
         else right_word = FALSE;
 
-        if ((left_word == right_word) ==
-            (codevalue == OP_NOT_WORD_BOUNDARY ||
-             codevalue == OP_NOT_UCP_WORD_BOUNDARY))
+        if ((left_word == right_word) == (codevalue == OP_NOT_WORD_BOUNDARY))
           { ADD_ACTIVE(state_offset + 1, 0); }
         }
       break;
@@ -1174,7 +1168,6 @@ for (;;)
       if (clen > 0)
         {
         BOOL OK;
-        int chartype;
         const uint32_t *cp;
         const ucd_record * prop = GET_UCD(c);
         switch(code[1])
@@ -1184,9 +1177,8 @@ for (;;)
           break;
 
           case PT_LAMP:
-          chartype = prop->chartype;
-          OK = chartype == ucp_Lu || chartype == ucp_Ll ||
-               chartype == ucp_Lt;
+          OK = prop->chartype == ucp_Lu || prop->chartype == ucp_Ll ||
+               prop->chartype == ucp_Lt;
           break;
 
           case PT_GC:
@@ -1209,9 +1201,8 @@ for (;;)
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
-          chartype = prop->chartype;
-          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
-               PRIV(ucp_gentype)[chartype] == ucp_N;
+          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
+               PRIV(ucp_gentype)[prop->chartype] == ucp_N;
           break;
 
           /* Perl space used to exclude VT, but from Perl 5.18 it is included,
@@ -1234,20 +1225,12 @@ for (;;)
           break;
 
           case PT_WORD:
-          chartype = prop->chartype;
-          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
-               PRIV(ucp_gentype)[chartype] == ucp_N ||
-               chartype == ucp_Mn || chartype == ucp_Pc;
+          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
+               PRIV(ucp_gentype)[prop->chartype] == ucp_N ||
+               c == CHAR_UNDERSCORE;
           break;
 
           case PT_CLIST:
-#if PCRE2_CODE_UNIT_WIDTH == 32
-          if (c > MAX_UTF_CODE_POINT)
-            {
-            OK = FALSE;
-            break;
-            }
-#endif
           cp = PRIV(ucd_caseless_sets) + code[2];
           for (;;)
             {
@@ -1457,7 +1440,6 @@ for (;;)
       if (clen > 0)
         {
         BOOL OK;
-        int chartype;
         const uint32_t *cp;
         const ucd_record * prop = GET_UCD(c);
         switch(code[2])
@@ -1467,8 +1449,8 @@ for (;;)
           break;
 
           case PT_LAMP:
-          chartype = prop->chartype;
-          OK = chartype == ucp_Lu || chartype == ucp_Ll || chartype == ucp_Lt;
+          OK = prop->chartype == ucp_Lu || prop->chartype == ucp_Ll ||
+            prop->chartype == ucp_Lt;
           break;
 
           case PT_GC:
@@ -1491,9 +1473,8 @@ for (;;)
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
-          chartype = prop->chartype;
-          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
-               PRIV(ucp_gentype)[chartype] == ucp_N;
+          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
+               PRIV(ucp_gentype)[prop->chartype] == ucp_N;
           break;
 
           /* Perl space used to exclude VT, but from Perl 5.18 it is included,
@@ -1516,20 +1497,12 @@ for (;;)
           break;
 
           case PT_WORD:
-          chartype = prop->chartype;
-          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
-               PRIV(ucp_gentype)[chartype] == ucp_N ||
-               chartype == ucp_Mn || chartype == ucp_Pc;
+          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
+               PRIV(ucp_gentype)[prop->chartype] == ucp_N ||
+               c == CHAR_UNDERSCORE;
           break;
 
           case PT_CLIST:
-#if PCRE2_CODE_UNIT_WIDTH == 32
-          if (c > MAX_UTF_CODE_POINT)
-            {
-            OK = FALSE;
-            break;
-            }
-#endif
           cp = PRIV(ucd_caseless_sets) + code[3];
           for (;;)
             {
@@ -1722,7 +1695,6 @@ for (;;)
       if (clen > 0)
         {
         BOOL OK;
-        int chartype;
         const uint32_t *cp;
         const ucd_record * prop = GET_UCD(c);
         switch(code[2])
@@ -1732,8 +1704,8 @@ for (;;)
           break;
 
           case PT_LAMP:
-          chartype = prop->chartype;
-          OK = chartype == ucp_Lu || chartype == ucp_Ll || chartype == ucp_Lt;
+          OK = prop->chartype == ucp_Lu || prop->chartype == ucp_Ll ||
+            prop->chartype == ucp_Lt;
           break;
 
           case PT_GC:
@@ -1756,9 +1728,8 @@ for (;;)
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
-          chartype = prop->chartype;
-          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
-               PRIV(ucp_gentype)[chartype] == ucp_N;
+          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
+               PRIV(ucp_gentype)[prop->chartype] == ucp_N;
           break;
 
           /* Perl space used to exclude VT, but from Perl 5.18 it is included,
@@ -1781,20 +1752,12 @@ for (;;)
           break;
 
           case PT_WORD:
-          chartype = prop->chartype;
-          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
-               PRIV(ucp_gentype)[chartype] == ucp_N ||
-               chartype == ucp_Mn || chartype == ucp_Pc;
+          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
+               PRIV(ucp_gentype)[prop->chartype] == ucp_N ||
+               c == CHAR_UNDERSCORE;
           break;
 
           case PT_CLIST:
-#if PCRE2_CODE_UNIT_WIDTH == 32
-          if (c > MAX_UTF_CODE_POINT)
-            {
-            OK = FALSE;
-            break;
-            }
-#endif
           cp = PRIV(ucd_caseless_sets) + code[3];
           for (;;)
             {
@@ -2012,7 +1975,6 @@ for (;;)
       if (clen > 0)
         {
         BOOL OK;
-        int chartype;
         const uint32_t *cp;
         const ucd_record * prop = GET_UCD(c);
         switch(code[1 + IMM2_SIZE + 1])
@@ -2022,8 +1984,8 @@ for (;;)
           break;
 
           case PT_LAMP:
-          chartype = prop->chartype;
-          OK = chartype == ucp_Lu || chartype == ucp_Ll || chartype == ucp_Lt;
+          OK = prop->chartype == ucp_Lu || prop->chartype == ucp_Ll ||
+            prop->chartype == ucp_Lt;
           break;
 
           case PT_GC:
@@ -2047,9 +2009,8 @@ for (;;)
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
-          chartype = prop->chartype;
-          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
-               PRIV(ucp_gentype)[chartype] == ucp_N;
+          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
+               PRIV(ucp_gentype)[prop->chartype] == ucp_N;
           break;
 
           /* Perl space used to exclude VT, but from Perl 5.18 it is included,
@@ -2072,20 +2033,12 @@ for (;;)
           break;
 
           case PT_WORD:
-          chartype = prop->chartype;
-          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
-               PRIV(ucp_gentype)[chartype] == ucp_N ||
-               chartype == ucp_Mn || chartype == ucp_Pc;
+          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
+               PRIV(ucp_gentype)[prop->chartype] == ucp_N ||
+               c == CHAR_UNDERSCORE;
           break;
 
           case PT_CLIST:
-#if PCRE2_CODE_UNIT_WIDTH == 32
-          if (c > MAX_UTF_CODE_POINT)
-            {
-            OK = FALSE;
-            break;
-            }
-#endif
           cp = PRIV(ucd_caseless_sets) + code[1 + IMM2_SIZE + 2];
           for (;;)
             {
@@ -2941,6 +2894,7 @@ for (;;)
         int *local_workspace;
         PCRE2_SIZE *local_offsets;
         RWS_anchor *rws = (RWS_anchor *)RWS;
+        dfa_recursion_info *ri;
         PCRE2_SPTR callpat = start_code + GET(code, 1);
         uint32_t recno = (callpat == mb->start_code)? 0 :
           GET2(callpat, 1 + LINK_SIZE);
@@ -2957,24 +2911,18 @@ for (;;)
         rws->free -= RWS_RSIZE + RWS_OVEC_RSIZE;
 
         /* Check for repeating a recursion without advancing the subject
-        pointer or last used character. This should catch convoluted mutual
-        recursions. (Some simple cases are caught at compile time.) */
+        pointer. This should catch convoluted mutual recursions. (Some simple
+        cases are caught at compile time.) */
 
-        for (dfa_recursion_info *ri = mb->recursive;
-             ri != NULL;
-             ri = ri->prevrec)
-          {
-          if (recno == ri->group_num && ptr == ri->subject_position &&
-              mb->last_used_ptr == ri->last_used_ptr)
+        for (ri = mb->recursive; ri != NULL; ri = ri->prevrec)
+          if (recno == ri->group_num && ptr == ri->subject_position)
             return PCRE2_ERROR_RECURSELOOP;
-          }
 
         /* Remember this recursion and where we started it so as to
         catch infinite loops. */
 
         new_recursive.group_num = recno;
         new_recursive.subject_position = ptr;
-        new_recursive.last_used_ptr = mb->last_used_ptr;
         new_recursive.prevrec = mb->recursive;
         mb->recursive = &new_recursive;
 
@@ -3476,7 +3424,7 @@ anchored = (options & (PCRE2_ANCHORED|PCRE2_DFA_RESTART)) != 0 ||
 where to start. */
 
 startline = (re->flags & PCRE2_STARTLINE) != 0;
-firstline = !anchored && (re->overall_options & PCRE2_FIRSTLINE) != 0;
+firstline = (re->overall_options & PCRE2_FIRSTLINE) != 0;
 bumpalong_limit = end_subject;
 
 /* Initialize and set up the fixed fields in the callout block, with a pointer
@@ -4046,9 +3994,8 @@ for (;;)
       match_data->ovector[0] = (PCRE2_SIZE)(start_match - subject);
       match_data->ovector[1] = (PCRE2_SIZE)(end_subject - subject);
       }
-    match_data->subject_length = length;
     match_data->leftchar = (PCRE2_SIZE)(mb->start_used_ptr - subject);
-    match_data->rightchar = (PCRE2_SIZE)(mb->last_used_ptr - subject);
+    match_data->rightchar = (PCRE2_SIZE)( mb->last_used_ptr - subject);
     match_data->startchar = (PCRE2_SIZE)(start_match - subject);
     match_data->rc = rc;
 

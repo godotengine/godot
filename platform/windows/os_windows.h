@@ -46,8 +46,10 @@
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
 
-#if defined(RD_ENABLED)
-#include "servers/rendering/rendering_device.h"
+#if defined(VULKAN_ENABLED)
+#include "vulkan_context_win.h"
+
+#include "drivers/vulkan/rendering_device_vulkan.h"
 #endif
 
 #include <io.h>
@@ -69,7 +71,7 @@
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
 #endif
 
-template <typename T>
+template <class T>
 class ComAutoreleaseRef {
 public:
 	T *reference = nullptr;
@@ -127,9 +129,6 @@ class OS_Windows : public OS {
 	bool dwrite_init = false;
 	bool dwrite2_init = false;
 
-	HashMap<void *, String> temp_libraries;
-
-	void _remove_temp_library(void *p_library_handle);
 	String _get_default_fontname(const String &p_font_name) const;
 	DWRITE_FONT_WEIGHT _weight_to_dw(int p_weight) const;
 	DWRITE_FONT_STRETCH _stretch_to_dw(int p_stretch) const;
@@ -150,20 +149,17 @@ protected:
 	struct ProcessInfo {
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
-		mutable bool is_running = true;
-		mutable int exit_code = -1;
 	};
 	HashMap<ProcessID, ProcessInfo> *process_map = nullptr;
-	Mutex process_map_mutex;
 
 public:
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
-	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr, bool p_generate_temp_files = false) override;
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;
-	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional = false) override;
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
 
 	virtual MainLoop *get_main_loop() const override;
 
@@ -187,12 +183,10 @@ public:
 	virtual Dictionary get_memory_info() const override;
 
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
-	virtual Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments) override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error kill(const ProcessID &p_pid) override;
 	virtual int get_process_id() const override;
 	virtual bool is_process_running(const ProcessID &p_pid) const override;
-	virtual int get_process_exit_code(const ProcessID &p_pid) const override;
 
 	virtual bool has_environment(const String &p_var) const override;
 	virtual String get_environment(const String &p_var) const override;
@@ -221,7 +215,7 @@ public:
 
 	virtual String get_unique_id() const override;
 
-	virtual Error shell_open(const String &p_uri) override;
+	virtual Error shell_open(String p_uri) override;
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder) override;
 
 	void run();

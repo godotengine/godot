@@ -47,7 +47,6 @@ public:
 	virtual void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) override {}
 	virtual void particles_set_emitting(RID p_particles, bool p_emitting) override {}
 	virtual void particles_set_amount(RID p_particles, int p_amount) override {}
-	virtual void particles_set_amount_ratio(RID p_particles, float p_amount_ratio) override {}
 	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) override {}
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) override {}
 	virtual void particles_set_pre_process_time(RID p_particles, double p_time) override {}
@@ -82,8 +81,6 @@ public:
 	virtual AABB particles_get_aabb(RID p_particles) const override { return AABB(); }
 
 	virtual void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) override {}
-	virtual void particles_set_emitter_velocity(RID p_particles, const Vector3 &p_velocity) override {}
-	virtual void particles_set_interp_to_end(RID p_particles, float p_interp) override {}
 
 	virtual bool particles_get_emitting(RID p_particles) override { return false; }
 	virtual int particles_get_draw_passes(RID p_particles) const override { return 0; }

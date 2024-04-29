@@ -35,9 +35,9 @@
 #include "core/object/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/editor_scale.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/project_settings_editor.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
 
 void PluginConfigDialog::_clear_fields() {
@@ -60,13 +60,9 @@ void PluginConfigDialog::_on_confirmed() {
 	}
 
 	int lang_idx = script_option_edit->get_selected();
-	ScriptLanguage *language = ScriptServer::get_language(lang_idx);
-	if (language == nullptr) {
-		return;
-	}
-	String ext = language->get_extension();
+	String ext = ScriptServer::get_language(lang_idx)->get_extension();
 	String script_name = script_edit->get_text().is_empty() ? _get_subfolder() : script_edit->get_text();
-	if (script_name.get_extension() != ext) {
+	if (script_name.get_extension().is_empty()) {
 		script_name += "." + ext;
 	}
 	String script_path = path.path_join(script_name);
@@ -83,11 +79,11 @@ void PluginConfigDialog::_on_confirmed() {
 	if (!_edit_mode) {
 		String class_name = script_name.get_basename();
 		String template_content = "";
-		Vector<ScriptLanguage::ScriptTemplate> templates = language->get_built_in_templates("EditorPlugin");
+		Vector<ScriptLanguage::ScriptTemplate> templates = ScriptServer::get_language(lang_idx)->get_built_in_templates("EditorPlugin");
 		if (!templates.is_empty()) {
 			template_content = templates[0].content;
 		}
-		Ref<Script> scr = language->make_template(template_content, class_name, "EditorPlugin");
+		Ref<Script> scr = ScriptServer::get_language(lang_idx)->make_template(template_content, class_name, "EditorPlugin");
 		scr->set_path(script_path, true);
 		ResourceSaver::save(scr);
 
@@ -104,11 +100,7 @@ void PluginConfigDialog::_on_canceled() {
 
 void PluginConfigDialog::_on_required_text_changed() {
 	int lang_idx = script_option_edit->get_selected();
-	ScriptLanguage *language = ScriptServer::get_language(lang_idx);
-	if (language == nullptr) {
-		return;
-	}
-	String ext = language->get_extension();
+	String ext = ScriptServer::get_language(lang_idx)->get_extension();
 
 	if (name_edit->get_text().is_empty()) {
 		validation_panel->set_message(MSG_ID_PLUGIN, TTR("Plugin name cannot be blank."), EditorValidationPanel::MSG_ERROR);
@@ -127,15 +119,6 @@ void PluginConfigDialog::_on_required_text_changed() {
 		}
 	} else {
 		validation_panel->set_message(MSG_ID_SUBFOLDER, "", EditorValidationPanel::MSG_OK);
-	}
-	if (active_edit->is_visible()) {
-		if (language->get_name() == "C#") {
-			active_edit->set_pressed(false);
-			active_edit->set_disabled(true);
-			validation_panel->set_message(MSG_ID_ACTIVE, TTR("C# doesn't support activating the plugin on creation because the project must be built first."), EditorValidationPanel::MSG_WARNING);
-		} else {
-			active_edit->set_disabled(false);
-		}
 	}
 }
 
@@ -163,30 +146,33 @@ void PluginConfigDialog::_notification(int p_what) {
 }
 
 void PluginConfigDialog::config(const String &p_config_path) {
-	if (!p_config_path.is_empty()) {
+	if (p_config_path.length()) {
 		Ref<ConfigFile> cf = memnew(ConfigFile);
 		Error err = cf->load(p_config_path);
 		ERR_FAIL_COND_MSG(err != OK, "Cannot load config file from path '" + p_config_path + "'.");
 
 		name_edit->set_text(cf->get_value("plugin", "name", ""));
-		subfolder_edit->set_text(p_config_path.get_base_dir().get_file());
+		subfolder_edit->set_text(p_config_path.get_base_dir().get_basename().get_file());
 		desc_edit->set_text(cf->get_value("plugin", "description", ""));
 		author_edit->set_text(cf->get_value("plugin", "author", ""));
 		version_edit->set_text(cf->get_value("plugin", "version", ""));
 		script_edit->set_text(cf->get_value("plugin", "script", ""));
 
 		_edit_mode = true;
+		active_edit->hide();
+		Object::cast_to<Label>(active_edit->get_parent()->get_child(active_edit->get_index() - 1))->hide();
+		subfolder_edit->hide();
+		Object::cast_to<Label>(subfolder_edit->get_parent()->get_child(subfolder_edit->get_index() - 1))->hide();
 		set_title(TTR("Edit a Plugin"));
 	} else {
 		_clear_fields();
 		_edit_mode = false;
+		active_edit->show();
+		Object::cast_to<Label>(active_edit->get_parent()->get_child(active_edit->get_index() - 1))->show();
+		subfolder_edit->show();
+		Object::cast_to<Label>(subfolder_edit->get_parent()->get_child(subfolder_edit->get_index() - 1))->show();
 		set_title(TTR("Create a Plugin"));
 	}
-
-	for (Control *control : plugin_edit_hidden_controls) {
-		control->set_visible(!_edit_mode);
-	}
-
 	validation_panel->update();
 
 	get_ok_button()->set_disabled(!_edit_mode);
@@ -228,14 +214,12 @@ PluginConfigDialog::PluginConfigDialog() {
 	subfolder_lb->set_text(TTR("Subfolder:"));
 	subfolder_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(subfolder_lb);
-	plugin_edit_hidden_controls.push_back(subfolder_lb);
 
 	subfolder_edit = memnew(LineEdit);
 	subfolder_edit->set_placeholder("\"my_plugin\" -> res://addons/my_plugin");
 	subfolder_edit->set_tooltip_text(TTR("Optional. The folder name should generally use `snake_case` naming (avoid spaces and special characters).\nIf left empty, the folder will be named after the plugin name converted to `snake_case`."));
 	subfolder_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(subfolder_edit);
-	plugin_edit_hidden_controls.push_back(subfolder_edit);
 
 	// Description
 	Label *desc_lb = memnew(Label);
@@ -307,16 +291,15 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(script_edit);
 
 	// Activate now checkbox
+	// TODO Make this option work better with languages like C#. Right now, it does not work because the C# project must be compiled first.
 	Label *active_lb = memnew(Label);
 	active_lb->set_text(TTR("Activate now?"));
 	active_lb->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	grid->add_child(active_lb);
-	plugin_edit_hidden_controls.push_back(active_lb);
 
 	active_edit = memnew(CheckBox);
 	active_edit->set_pressed(true);
 	grid->add_child(active_edit);
-	plugin_edit_hidden_controls.push_back(active_edit);
 
 	Control *spacing = memnew(Control);
 	vbox->add_child(spacing);
@@ -327,7 +310,6 @@ PluginConfigDialog::PluginConfigDialog() {
 	validation_panel->add_line(MSG_ID_PLUGIN, TTR("Plugin name is valid."));
 	validation_panel->add_line(MSG_ID_SCRIPT, TTR("Script extension is valid."));
 	validation_panel->add_line(MSG_ID_SUBFOLDER, TTR("Subfolder name is valid."));
-	validation_panel->add_line(MSG_ID_ACTIVE, "");
 	validation_panel->set_update_callback(callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	validation_panel->set_accept_button(get_ok_button());
 

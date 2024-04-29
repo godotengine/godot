@@ -12,7 +12,6 @@
 		<method name="_create_mesh_array" qualifiers="virtual const">
 			<return type="Array" />
 			<description>
-				Override this method to customize how this primitive mesh should be generated. Should return an [Array] where each element is another Array of values required for the mesh (see the [enum Mesh.ArrayType] constants).
 			</description>
 		</method>
 		<method name="get_mesh_arrays" qualifiers="const">
@@ -31,12 +30,6 @@
 				arrMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, c.GetMeshArrays());
 				[/csharp]
 				[/codeblocks]
-			</description>
-		</method>
-		<method name="request_update">
-			<return type="void" />
-			<description>
-				Request an update of this primitive mesh based on its properties.
 			</description>
 		</method>
 	</methods>

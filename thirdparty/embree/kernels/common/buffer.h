@@ -13,8 +13,8 @@ namespace embree
   {
   public:
     /*! Buffer construction */
-    //Buffer() 
-    //: device(nullptr), ptr(nullptr), numBytes(0), shared(false) {}
+    Buffer() 
+      : device(nullptr), ptr(nullptr), numBytes(0), shared(false) {}
 
     /*! Buffer construction */
     Buffer(Device* device, size_t numBytes_in, void* ptr_in = nullptr)
@@ -77,17 +77,19 @@ namespace embree
     /*! allocated buffer */
     void alloc()
     {
-      device->memoryMonitor(this->bytes(), false);
+      if (device)
+        device->memoryMonitor(this->bytes(), false);
       size_t b = (this->bytes()+15) & ssize_t(-16);
-      ptr = (char*)device->malloc(b,16);
+      ptr = (char*)alignedMalloc(b,16);
     }
     
     /*! frees the buffer */
     void free()
     {
       if (shared) return;
-      device->free(ptr); 
-      device->memoryMonitor(-ssize_t(this->bytes()), true);
+      alignedFree(ptr); 
+      if (device)
+        device->memoryMonitor(-ssize_t(this->bytes()), true);
       ptr = nullptr;
     }
     
@@ -244,24 +246,6 @@ namespace embree
   public:
     typedef Vec3fa value_type;
 
-#if defined(EMBREE_SYCL_SUPPORT) && defined(__SYCL_DEVICE_ONLY__)
-
-     /*! access to the ith element of the buffer */
-    __forceinline const Vec3fa operator [](size_t i) const
-    {
-      assert(i<num);
-      return Vec3fa::loadu(ptr_ofs + i*stride);
-    }
-    
-    /*! writes the i'th element */
-    __forceinline void store(size_t i, const Vec3fa& v)
-    {
-      assert(i<num);
-      Vec3fa::storeu(ptr_ofs + i*stride, v);
-    }
-    
-#else
-
     /*! access to the ith element of the buffer */
     __forceinline const Vec3fa operator [](size_t i) const
     {
@@ -275,6 +259,5 @@ namespace embree
       assert(i<num);
       vfloat4::storeu((float*)(ptr_ofs + i*stride), (vfloat4)v);
     }
-#endif
   };
 }

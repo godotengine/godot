@@ -21,12 +21,6 @@ func test():
 		var elem := e
 		prints(var_to_str(e), var_to_str(elem))
 
-	# GH-82021
-	print("Test implicitly typed array literal.")
-	for e: float in [100, 200, 300]:
-		var elem := e
-		prints(var_to_str(e), var_to_str(elem))
-
 	print("Test String-keys dictionary.")
 	var d1 := {a = 1, b = 2, c = 3}
 	for k: StringName in d1:

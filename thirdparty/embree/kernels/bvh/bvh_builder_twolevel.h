@@ -7,6 +7,7 @@
 
 #include "bvh_builder_twolevel_internal.h"
 #include "bvh.h"
+#include "../common/primref.h"
 #include "../builders/priminfo.h"
 #include "../builders/primrefgen.h"
 

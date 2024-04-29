@@ -152,7 +152,7 @@ String realpath(const String &p_path) {
 	}
 
 	return result.simplify_path();
-#elif defined(UNIX_ENABLED)
+#elif UNIX_ENABLED
 	char *resolved_path = ::realpath(p_path.utf8().get_data(), nullptr);
 
 	if (!resolved_path) {

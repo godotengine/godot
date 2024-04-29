@@ -77,46 +77,36 @@ String Gizmo3DHelper::box_get_handle_name(int p_id) const {
 }
 
 void Gizmo3DHelper::box_set_handle(const Vector3 p_segment[2], int p_id, Vector3 &r_box_size, Vector3 &r_box_position) {
-	int axis = p_id / 2;
-	int sign = p_id % 2 * -2 + 1;
-
-	Vector3 initial_size = initial_value;
-	float neg_end = initial_size[axis] * -0.5;
-	float pos_end = initial_size[axis] * 0.5;
-
-	Vector3 axis_segment[2] = { Vector3(), Vector3() };
-	axis_segment[0][axis] = 4096.0;
-	axis_segment[1][axis] = -4096.0;
+	Vector3 axis;
+	axis[p_id / 2] = 1.0;
 	Vector3 ra, rb;
-	Geometry3D::get_closest_points_between_segments(axis_segment[0], axis_segment[1], p_segment[0], p_segment[1], ra, rb);
+	int sign = p_id % 2 * -2 + 1;
+	Vector3 initial_size = initial_value;
 
-	// Calculate new size.
-	r_box_size = initial_size;
-	if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
-		r_box_size[axis] = ra[axis] * sign * 2;
-	} else {
-		r_box_size[axis] = sign > 0 ? ra[axis] - neg_end : pos_end - ra[axis];
+	Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096 * sign, p_segment[0], p_segment[1], ra, rb);
+	if (ra[p_id / 2] == 0) {
+		// Point before half of the shape. Needs to be calculated in opposite direction.
+		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096 * -sign, p_segment[0], p_segment[1], ra, rb);
 	}
 
-	// Snap to grid.
+	float d = ra[p_id / 2] * sign;
+
+	Vector3 he = r_box_size;
+	he[p_id / 2] = d * 2;
 	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-		r_box_size[axis] = Math::snapped(r_box_size[axis], Node3DEditor::get_singleton()->get_translate_snap());
+		he[p_id / 2] = Math::snapped(he[p_id / 2], Node3DEditor::get_singleton()->get_translate_snap());
 	}
-	r_box_size[axis] = MAX(r_box_size[axis], 0.001);
 
-	// Adjust position.
 	if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
+		he[p_id / 2] = MAX(he[p_id / 2], 0.001);
+		r_box_size = he;
 		r_box_position = initial_transform.get_origin();
 	} else {
-		if (sign > 0) {
-			pos_end = neg_end + r_box_size[axis];
-		} else {
-			neg_end = pos_end - r_box_size[axis];
-		}
-
-		Vector3 offset;
-		offset[axis] = (pos_end + neg_end) * 0.5;
-		r_box_position = initial_transform.xform(offset);
+		he[p_id / 2] = MAX(he[p_id / 2], -initial_size[p_id / 2] + 0.002);
+		r_box_size = (initial_size + (he - initial_size) * 0.5).abs();
+		Vector3 pos = initial_transform.affine_inverse().xform(initial_transform.get_origin());
+		pos += (r_box_size - initial_size) * 0.5 * sign;
+		r_box_position = initial_transform.xform(pos);
 	}
 }
 

@@ -46,13 +46,12 @@ class SpinBox : public Range {
 	void _range_click_timeout();
 	void _release_mouse();
 
-	void _update_text(bool p_keep_line_edit = false);
+	void _update_text();
 	void _text_submitted(const String &p_string);
 	void _text_changed(const String &p_string);
 
 	String prefix;
 	String suffix;
-	String last_updated_text;
 	double custom_arrow_step = 0.0;
 
 	void _line_edit_input(const Ref<InputEvent> &p_event);

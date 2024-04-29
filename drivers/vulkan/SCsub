@@ -17,11 +17,8 @@ if env["platform"] == "android":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_ANDROID_KHR"])
 elif env["platform"] == "ios":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_IOS_MVK"])
-elif env["platform"] == "linuxbsd":
-    if env["x11"]:
-        env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_XLIB_KHR"])
-    if env["wayland"]:
-        env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_WAYLAND_KHR"])
+elif env["platform"] == "linuxbsd" and env["x11"]:
+    env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_XLIB_KHR"])
 elif env["platform"] == "macos":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_MACOS_MVK"])
 elif env["platform"] == "windows":

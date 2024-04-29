@@ -127,7 +127,7 @@ open class GodotEditor : GodotActivity() {
 	 */
 	protected open fun checkForProjectPermissionsToEnable() {
 		// Check for RECORD_AUDIO permission
-		val audioInputEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("audio/driver/enable_input"))
+		val audioInputEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("audio/driver/enable_input"));
 		if (audioInputEnabled) {
 			PermissionsUtil.requestPermission(Manifest.permission.RECORD_AUDIO, this)
 		}
@@ -225,9 +225,16 @@ open class GodotEditor : GodotActivity() {
 		val runningProcesses = activityManager.runningAppProcesses
 		for (runningProcess in runningProcesses) {
 			if (runningProcess.processName.endsWith(processNameSuffix)) {
-				// Killing process directly
-				Log.v(TAG, "Killing Godot process ${runningProcess.processName}")
-				Process.killProcess(runningProcess.pid)
+				if (targetClass == null) {
+					// Killing process directly
+					Log.v(TAG, "Killing Godot process ${runningProcess.processName}")
+					Process.killProcess(runningProcess.pid)
+				} else {
+					// Activity is running; sending a request for self termination.
+					Log.v(TAG, "Sending force quit request to $targetClass running on process ${runningProcess.processName}")
+					val forceQuitIntent = Intent(this, targetClass).putExtra(EXTRA_FORCE_QUIT, true)
+					startActivity(forceQuitIntent)
+				}
 				return true
 			}
 		}

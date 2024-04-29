@@ -39,19 +39,14 @@
 
 class ConditionVariable;
 
-template <int Tag>
-class SafeBinaryMutex;
-
 class ResourceFormatLoader : public RefCounted {
 	GDCLASS(ResourceFormatLoader, RefCounted);
 
 public:
 	enum CacheMode {
-		CACHE_MODE_IGNORE,
-		CACHE_MODE_REUSE,
-		CACHE_MODE_REPLACE,
-		CACHE_MODE_IGNORE_DEEP,
-		CACHE_MODE_REPLACE_DEEP,
+		CACHE_MODE_IGNORE, // Resource and subresources do not use path cache, no path is set into resource.
+		CACHE_MODE_REUSE, // Resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available.
+		CACHE_MODE_REPLACE, // Resource and subresource use path cache, but replace existing loaded resources when available with information from disk.
 	};
 
 protected:
@@ -160,7 +155,7 @@ private:
 
 	static ResourceLoadedCallback _loaded_callback;
 
-	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(const String &path);
+	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
 
 	struct ThreadLoadTask {
 		WorkerThreadPool::TaskID task_id = 0; // Used if run on a worker thread from the pool.
@@ -172,8 +167,7 @@ private:
 		String remapped_path;
 		String dependent_path;
 		String type_hint;
-		float progress = 0.0f;
-		float max_reported_progress = 0.0f;
+		float progress = 0.0;
 		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
 		ResourceFormatLoader::CacheMode cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE;
 		Error error = OK;
@@ -236,11 +230,7 @@ public:
 	// Loaders can safely use this regardless which thread they are running on.
 	static void notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type) {
 		if (dep_err_notify) {
-			if (Thread::get_caller_id() == Thread::get_main_id()) {
-				dep_err_notify(p_path, p_dependency, p_type);
-			} else {
-				callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type).call_deferred();
-			}
+			callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type).call_deferred();
 		}
 	}
 	static void set_dependency_error_notify_func(DependencyErrorNotify p_err_notify) {
@@ -265,7 +255,7 @@ public:
 	static void set_load_callback(ResourceLoadedCallback p_callback);
 	static ResourceLoaderImport import;
 
-	static bool add_custom_resource_format_loader(const String &script_path);
+	static bool add_custom_resource_format_loader(String script_path);
 	static void add_custom_loaders();
 	static void remove_custom_loaders();
 

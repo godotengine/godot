@@ -312,39 +312,13 @@ def generate_sdk_package_versions():
     )
 
     # We write in ../SdkPackageVersions.props.
-    with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w", encoding="utf-8", newline="\n") as f:
+    with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w") as f:
         f.write(props)
-
-    # Also write the versioned docs URL to a constant for the Source Generators.
-
-    constants = """namespace Godot.SourceGenerators
-{{
-// TODO: This is currently disabled because of https://github.com/dotnet/roslyn/issues/52904
-#pragma warning disable IDE0040 // Add accessibility modifiers.
-    partial class Common
-    {{
-        public const string VersionDocsUrl = "https://docs.godotengine.org/en/{docs_branch}";
-    }}
-}}
-""".format(
-        **version_info
-    )
-
-    generators_dir = os.path.join(
-        dirname(script_path),
-        "editor",
-        "Godot.NET.Sdk",
-        "Godot.SourceGenerators",
-        "Generated",
-    )
-    os.makedirs(generators_dir, exist_ok=True)
-
-    with open(os.path.join(generators_dir, "Common.Constants.cs"), "w", encoding="utf-8", newline="\n") as f:
-        f.write(constants)
+        f.close()
 
 
 def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local, precision):
-    # Generate SdkPackageVersions.props and VersionDocsUrl constant
+    # Generate SdkPackageVersions.props
     generate_sdk_package_versions()
 
     # Godot API

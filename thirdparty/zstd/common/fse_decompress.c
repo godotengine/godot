@@ -22,7 +22,8 @@
 #define FSE_STATIC_LINKING_ONLY
 #include "fse.h"
 #include "error_private.h"
-#include "zstd_deps.h"  /* ZSTD_memcpy */
+#define ZSTD_DEPS_NEED_MALLOC
+#include "zstd_deps.h"
 #include "bits.h"       /* ZSTD_highbit32 */
 
 
@@ -83,7 +84,7 @@ static size_t FSE_buildDTable_internal(FSE_DTable* dt, const short* normalizedCo
                     symbolNext[s] = 1;
                 } else {
                     if (normalizedCounter[s] >= largeLimit) DTableH.fastMode=0;
-                    symbolNext[s] = (U16)normalizedCounter[s];
+                    symbolNext[s] = normalizedCounter[s];
         }   }   }
         ZSTD_memcpy(dt, &DTableH, sizeof(DTableH));
     }
@@ -98,7 +99,8 @@ static size_t FSE_buildDTable_internal(FSE_DTable* dt, const short* normalizedCo
          * all symbols have counts <= 8. We ensure we have 8 bytes at the end of
          * our buffer to handle the over-write.
          */
-        {   U64 const add = 0x0101010101010101ull;
+        {
+            U64 const add = 0x0101010101010101ull;
             size_t pos = 0;
             U64 sv = 0;
             U32 s;
@@ -109,8 +111,9 @@ static size_t FSE_buildDTable_internal(FSE_DTable* dt, const short* normalizedCo
                 for (i = 8; i < n; i += 8) {
                     MEM_write64(spread + pos + i, sv);
                 }
-                pos += (size_t)n;
-        }   }
+                pos += n;
+            }
+        }
         /* Now we spread those positions across the table.
          * The benefit of doing it in two stages is that we avoid the
          * variable size inner loop, which caused lots of branch misses.
@@ -229,12 +232,12 @@ FORCE_INLINE_TEMPLATE size_t FSE_decompress_usingDTable_generic(
             break;
     }   }
 
-    assert(op >= ostart);
-    return (size_t)(op-ostart);
+    return op-ostart;
 }
 
 typedef struct {
     short ncount[FSE_MAX_SYMBOL_VALUE + 1];
+    FSE_DTable dtable[1]; /* Dynamically sized */
 } FSE_DecompressWksp;
 
 
@@ -249,18 +252,13 @@ FORCE_INLINE_TEMPLATE size_t FSE_decompress_wksp_body(
     unsigned tableLog;
     unsigned maxSymbolValue = FSE_MAX_SYMBOL_VALUE;
     FSE_DecompressWksp* const wksp = (FSE_DecompressWksp*)workSpace;
-    size_t const dtablePos = sizeof(FSE_DecompressWksp) / sizeof(FSE_DTable);
-    FSE_DTable* const dtable = (FSE_DTable*)workSpace + dtablePos;
 
-    FSE_STATIC_ASSERT((FSE_MAX_SYMBOL_VALUE + 1) % 2 == 0);
+    DEBUG_STATIC_ASSERT((FSE_MAX_SYMBOL_VALUE + 1) % 2 == 0);
     if (wkspSize < sizeof(*wksp)) return ERROR(GENERIC);
 
-    /* correct offset to dtable depends on this property */
-    FSE_STATIC_ASSERT(sizeof(FSE_DecompressWksp) % sizeof(FSE_DTable) == 0);
-
     /* normal FSE decoding mode */
-    {   size_t const NCountLength =
-            FSE_readNCount_bmi2(wksp->ncount, &maxSymbolValue, &tableLog, istart, cSrcSize, bmi2);
+    {
+        size_t const NCountLength = FSE_readNCount_bmi2(wksp->ncount, &maxSymbolValue, &tableLog, istart, cSrcSize, bmi2);
         if (FSE_isError(NCountLength)) return NCountLength;
         if (tableLog > maxLog) return ERROR(tableLog_tooLarge);
         assert(NCountLength <= cSrcSize);
@@ -273,16 +271,16 @@ FORCE_INLINE_TEMPLATE size_t FSE_decompress_wksp_body(
     workSpace = (BYTE*)workSpace + sizeof(*wksp) + FSE_DTABLE_SIZE(tableLog);
     wkspSize -= sizeof(*wksp) + FSE_DTABLE_SIZE(tableLog);
 
-    CHECK_F( FSE_buildDTable_internal(dtable, wksp->ncount, maxSymbolValue, tableLog, workSpace, wkspSize) );
+    CHECK_F( FSE_buildDTable_internal(wksp->dtable, wksp->ncount, maxSymbolValue, tableLog, workSpace, wkspSize) );
 
     {
-        const void* ptr = dtable;
+        const void* ptr = wksp->dtable;
         const FSE_DTableHeader* DTableH = (const FSE_DTableHeader*)ptr;
         const U32 fastMode = DTableH->fastMode;
 
         /* select fast mode (static) */
-        if (fastMode) return FSE_decompress_usingDTable_generic(dst, dstCapacity, ip, cSrcSize, dtable, 1);
-        return FSE_decompress_usingDTable_generic(dst, dstCapacity, ip, cSrcSize, dtable, 0);
+        if (fastMode) return FSE_decompress_usingDTable_generic(dst, dstCapacity, ip, cSrcSize, wksp->dtable, 1);
+        return FSE_decompress_usingDTable_generic(dst, dstCapacity, ip, cSrcSize, wksp->dtable, 0);
     }
 }
 

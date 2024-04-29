@@ -30,8 +30,6 @@
 
 #include "dir_access_macos.h"
 
-#include "core/config/project_settings.h"
-
 #if defined(UNIX_ENABLED)
 
 #include <errno.h>
@@ -41,10 +39,9 @@
 
 String DirAccessMacOS::fix_unicode_name(const char *p_name) const {
 	String fname;
-	if (p_name != nullptr) {
-		NSString *nsstr = [[NSString stringWithUTF8String:p_name] precomposedStringWithCanonicalMapping];
-		fname.parse_utf8([nsstr UTF8String]);
-	}
+	NSString *nsstr = [[NSString stringWithUTF8String:p_name] precomposedStringWithCanonicalMapping];
+
+	fname.parse_utf8([nsstr UTF8String]);
 
 	return fname;
 }
@@ -79,21 +76,6 @@ bool DirAccessMacOS::is_hidden(const String &p_name) {
 		return DirAccessUnix::is_hidden(p_name);
 	}
 	return [hidden boolValue];
-}
-
-bool DirAccessMacOS::is_case_sensitive(const String &p_path) const {
-	String f = p_path;
-	if (!f.is_absolute_path()) {
-		f = get_current_dir().path_join(f);
-	}
-	f = fix_path(f);
-
-	NSURL *url = [NSURL fileURLWithPath:@(f.utf8().get_data())];
-	NSNumber *cs = nil;
-	if (![url getResourceValue:&cs forKey:NSURLVolumeSupportsCaseSensitiveNamesKey error:nil]) {
-		return false;
-	}
-	return [cs boolValue];
 }
 
 #endif // UNIX_ENABLED

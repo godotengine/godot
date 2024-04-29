@@ -458,7 +458,7 @@ int enet_host_dtls_client_setup(ENetHost *host, const char *p_for_hostname, void
 }
 
 void enet_host_refuse_new_connections(ENetHost *host, int p_refuse) {
-	ERR_FAIL_NULL(host->socket);
+	ERR_FAIL_COND(!host->socket);
 	((ENetGodotSocket *)host->socket)->set_refuse_new_connections(p_refuse);
 }
 
@@ -484,7 +484,7 @@ void enet_socket_destroy(ENetSocket socket) {
 }
 
 int enet_socket_send(ENetSocket socket, const ENetAddress *address, const ENetBuffer *buffers, size_t bufferCount) {
-	ERR_FAIL_NULL_V(address, -1);
+	ERR_FAIL_COND_V(address == nullptr, -1);
 
 	ENetGodotSocket *sock = (ENetGodotSocket *)socket;
 	IPAddress dest;

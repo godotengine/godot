@@ -1,9 +1,6 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
-
-#nullable enable
 
 namespace Godot
 {
@@ -212,7 +209,7 @@ namespace Godot
 
         private void Rotate(Quaternion quaternion)
         {
-            this = new Basis(quaternion) * this;
+            this *= new Basis(quaternion);
         }
 
         private void SetDiagonal(Vector3 diagonal)
@@ -242,7 +239,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the basis's rotation in the form of Euler angles.
-        /// The Euler order depends on the <paramref name="order"/> parameter,
+        /// The Euler order depends on the [param order] parameter,
         /// by default it uses the YXZ convention: when decomposing,
         /// first Z, then X, and Y last. The returned vector contains
         /// the rotation angles in the format (X angle, Y angle, Z angle).
@@ -1040,11 +1037,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Vector3 transformed (multiplied) by the inverse basis matrix,
-        /// under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection
-        /// is fine, scaling/skew is not).
-        /// <c>vector * basis</c> is equivalent to <c>basis.Transposed() * vector</c>. See <see cref="Transposed"/>.
-        /// For transforming by inverse of a non-orthonormal basis (e.g. with scaling) <c>basis.Inverse() * vector</c> can be used instead. See <see cref="Inverse"/>.
+        /// Returns a Vector3 transformed (multiplied) by the transposed basis matrix.
+        ///
+        /// Note: This results in a multiplication by the inverse of the
+        /// basis matrix only if it represents a rotation-reflection.
         /// </summary>
         /// <param name="vector">A Vector3 to inversely transform.</param>
         /// <param name="basis">The basis matrix transformation to apply.</param>
@@ -1093,7 +1089,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the basis matrix and the object are exactly equal.</returns>
-        public override readonly bool Equals([NotNullWhen(true)] object? obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Basis other && Equals(other);
         }
@@ -1127,20 +1123,23 @@ namespace Godot
         /// <returns>A hash code for this basis.</returns>
         public override readonly int GetHashCode()
         {
-            return HashCode.Combine(Row0, Row1, Row2);
+            return Row0.GetHashCode() ^ Row1.GetHashCode() ^ Row2.GetHashCode();
         }
 
         /// <summary>
         /// Converts this <see cref="Basis"/> to a string.
         /// </summary>
         /// <returns>A string representation of this basis.</returns>
-        public override readonly string ToString() => ToString(null);
+        public override readonly string ToString()
+        {
+            return $"[X: {X}, Y: {Y}, Z: {Z}]";
+        }
 
         /// <summary>
         /// Converts this <see cref="Basis"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this basis.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string format)
         {
             return $"[X: {X.ToString(format)}, Y: {Y.ToString(format)}, Z: {Z.ToString(format)}]";
         }

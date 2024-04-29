@@ -5,7 +5,7 @@ Import("env")
 import editor.template_builders as build_template_cs
 
 env["BUILDERS"]["MakeCSharpTemplateBuilder"] = Builder(
-    action=env.Run(build_template_cs.make_templates),
+    action=env.Run(build_template_cs.make_templates, "Generating C# templates header."),
     suffix=".h",
     src_suffix=".cs",
 )

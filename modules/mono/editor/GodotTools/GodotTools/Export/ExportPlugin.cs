@@ -1,18 +1,18 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using GodotTools.Build;
+using GodotTools.Core;
 using GodotTools.Internals;
+using static GodotTools.Internals.Globals;
 using Directory = GodotTools.Utils.Directory;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
 using Path = System.IO.Path;
-using System.Globalization;
 
 namespace GodotTools.Export
 {
@@ -21,19 +21,6 @@ namespace GodotTools.Export
         public override string _GetName() => "C#";
 
         private List<string> _tempFolders = new List<string>();
-
-        private static bool ProjectContainsDotNet()
-        {
-            return File.Exists(GodotSharpDirs.ProjectSlnPath);
-        }
-
-        public override string[] _GetExportFeatures(EditorExportPlatform platform, bool debug)
-        {
-            if (!ProjectContainsDotNet())
-                return Array.Empty<string>();
-
-            return new string[] { "dotnet" };
-        }
 
         public override Godot.Collections.Array<Godot.Collections.Dictionary> _GetExportOptions(EditorExportPlatform platform)
         {
@@ -75,7 +62,7 @@ namespace GodotTools.Export
             };
         }
 
-        private string? _maybeLastExportError;
+        private string _maybeLastExportError;
 
         // With this method we can override how a file is exported in the PCK
         public override void _ExportFile(string path, string type, string[] features)
@@ -90,14 +77,7 @@ namespace GodotTools.Export
                     $"Resource of type {Internal.CSharpLanguageType} has an invalid file extension: {path}",
                     nameof(path));
 
-            if (!ProjectContainsDotNet())
-            {
-                _maybeLastExportError = $"This project contains C# files but no solution file was found at the following path: {GodotSharpDirs.ProjectSlnPath}\n" +
-                    "A solution file is required for projects with C# files. Please ensure that the solution file exists in the specified location and try again.";
-                throw new InvalidOperationException($"{path} is a C# file but no solution file exists.");
-            }
-
-            // TODO: What if the source file is not part of the game's C# project?
+            // TODO What if the source file is not part of the game's C# project
 
             bool includeScriptsContent = (bool)GetOption("dotnet/include_scripts_content");
 
@@ -109,7 +89,7 @@ namespace GodotTools.Export
                 // Because of this, we add a file which contains a line break.
                 AddFile(path, System.Text.Encoding.UTF8.GetBytes("\n"), remap: false);
 
-                // Tell the Godot exporter that we already took care of the file.
+                // Tell the Godot exporter that we already took care of the file
                 Skip();
             }
         }
@@ -139,269 +119,123 @@ namespace GodotTools.Export
 
         private void _ExportBeginImpl(string[] features, bool isDebug, string path, long flags)
         {
-            _ = flags; // Unused.
+            _ = flags; // Unused
 
-            if (!ProjectContainsDotNet())
+            if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return;
 
-            if (!DeterminePlatformFromFeatures(features, out string? platform))
+            if (!DeterminePlatformFromFeatures(features, out string platform))
                 throw new NotSupportedException("Target platform not supported.");
 
-            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
+            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android }
                     .Contains(platform))
             {
                 throw new NotImplementedException("Target platform not yet implemented.");
             }
 
-            PublishConfig publishConfig = new()
-            {
-                BuildConfig = isDebug ? "ExportDebug" : "ExportRelease",
-                IncludeDebugSymbols = (bool)GetOption("dotnet/include_debug_symbols"),
-                RidOS = DetermineRuntimeIdentifierOS(platform),
-                Archs = new List<string>(),
-                UseTempDir = platform != OS.Platforms.iOS, // xcode project links directly to files in the publish dir, so use one that sticks around.
-                BundleOutputs = true,
-            };
+            string buildConfig = isDebug ? "ExportDebug" : "ExportRelease";
 
+            bool includeDebugSymbols = (bool)GetOption("dotnet/include_debug_symbols");
+
+            var archs = new List<string>();
             if (features.Contains("x86_64"))
             {
-                publishConfig.Archs.Add("x86_64");
+                archs.Add("x86_64");
             }
-
             if (features.Contains("x86_32"))
             {
-                publishConfig.Archs.Add("x86_32");
+                archs.Add("x86_32");
             }
-
             if (features.Contains("arm64"))
             {
-                publishConfig.Archs.Add("arm64");
+                archs.Add("arm64");
             }
-
             if (features.Contains("arm32"))
             {
-                publishConfig.Archs.Add("arm32");
+                archs.Add("arm32");
             }
-
             if (features.Contains("universal"))
             {
                 if (platform == OS.Platforms.MacOS)
                 {
-                    publishConfig.Archs.Add("x86_64");
-                    publishConfig.Archs.Add("arm64");
+                    archs.Add("x86_64");
+                    archs.Add("arm64");
                 }
             }
 
-            var targets = new List<PublishConfig> { publishConfig };
+            bool embedBuildResults = (bool)GetOption("dotnet/embed_build_outputs") || features.Contains("android");
 
-            if (platform == OS.Platforms.iOS)
+            foreach (var arch in archs)
             {
-                targets.Add(new PublishConfig
+                string ridOS = DetermineRuntimeIdentifierOS(platform);
+                string ridArch = DetermineRuntimeIdentifierArch(arch);
+                string runtimeIdentifier = $"{ridOS}-{ridArch}";
+                string projectDataDirName = $"data_{GodotSharpDirs.CSharpProjectName}_{platform}_{arch}";
+                if (platform == OS.Platforms.MacOS)
                 {
-                    BuildConfig = publishConfig.BuildConfig,
-                    Archs = new List<string> { "arm64", "x86_64" },
-                    BundleOutputs = false,
-                    IncludeDebugSymbols = publishConfig.IncludeDebugSymbols,
-                    RidOS = OS.DotNetOS.iOSSimulator,
-                    UseTempDir = false,
-                });
-            }
+                    projectDataDirName = Path.Combine("Contents", "Resources", projectDataDirName);
+                }
 
-            List<string> outputPaths = new();
+                // Create temporary publish output directory
 
-            bool embedBuildResults = ((bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android) && platform != OS.Platforms.MacOS;
+                string publishOutputTempDir = Path.Combine(Path.GetTempPath(), "godot-publish-dotnet",
+                    $"{System.Environment.ProcessId}-{buildConfig}-{runtimeIdentifier}");
 
-            foreach (PublishConfig config in targets)
-            {
-                string ridOS = config.RidOS;
-                string buildConfig = config.BuildConfig;
-                bool includeDebugSymbols = config.IncludeDebugSymbols;
+                _tempFolders.Add(publishOutputTempDir);
 
-                foreach (string arch in config.Archs)
+                if (!Directory.Exists(publishOutputTempDir))
+                    Directory.CreateDirectory(publishOutputTempDir);
+
+                // Execute dotnet publish
+
+                if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
+                        runtimeIdentifier, publishOutputTempDir, includeDebugSymbols))
                 {
-                    string ridArch = DetermineRuntimeIdentifierArch(arch);
-                    string runtimeIdentifier = $"{ridOS}-{ridArch}";
-                    string projectDataDirName = $"data_{GodotSharpDirs.CSharpProjectName}_{platform}_{arch}";
-                    if (platform == OS.Platforms.MacOS)
-                    {
-                        projectDataDirName = Path.Combine("Contents", "Resources", projectDataDirName);
-                    }
+                    throw new InvalidOperationException("Failed to build project.");
+                }
 
-                    // Create temporary publish output directory.
-                    string publishOutputDir;
+                string soExt = ridOS switch
+                {
+                    OS.DotNetOS.Win or OS.DotNetOS.Win10 => "dll",
+                    OS.DotNetOS.OSX or OS.DotNetOS.iOS => "dylib",
+                    _ => "so"
+                };
 
-                    if (config.UseTempDir)
+                if (!File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpDirs.ProjectAssemblyName}.dll"))
+                    // NativeAOT shared library output
+                    && !File.Exists(Path.Combine(publishOutputTempDir, $"{GodotSharpDirs.ProjectAssemblyName}.{soExt}")))
+                {
+                    throw new NotSupportedException(
+                        "Publish succeeded but project assembly not found in the output directory");
+                }
+
+                var manifest = new StringBuilder();
+
+                // Add to the exported project shared object list or packed resources.
+                foreach (string file in Directory.GetFiles(publishOutputTempDir, "*", SearchOption.AllDirectories))
+                {
+                    if (embedBuildResults)
                     {
-                        publishOutputDir = Path.Combine(Path.GetTempPath(), "godot-publish-dotnet",
-                            $"{System.Environment.ProcessId}-{buildConfig}-{runtimeIdentifier}");
-                        _tempFolders.Add(publishOutputDir);
+                        var filePath = SanitizeSlashes(Path.GetRelativePath(publishOutputTempDir, file));
+                        var fileData = File.ReadAllBytes(file);
+                        var hash = Convert.ToBase64String(SHA512.HashData(fileData));
+
+                        manifest.Append($"{filePath}\t{hash}\n");
+
+                        AddFile($"res://.godot/mono/publish/{arch}/{filePath}", fileData, false);
                     }
                     else
                     {
-                        publishOutputDir = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, "godot-publish-dotnet",
-                            $"{buildConfig}-{runtimeIdentifier}");
-
-                    }
-
-                    outputPaths.Add(publishOutputDir);
-
-                    if (!Directory.Exists(publishOutputDir))
-                        Directory.CreateDirectory(publishOutputDir);
-
-                    // Execute dotnet publish.
-                    if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
-                            runtimeIdentifier, publishOutputDir, includeDebugSymbols))
-                    {
-                        throw new InvalidOperationException("Failed to build project.");
-                    }
-
-                    string soExt = ridOS switch
-                    {
-                        OS.DotNetOS.Win or OS.DotNetOS.Win10 => "dll",
-                        OS.DotNetOS.OSX or OS.DotNetOS.iOS or OS.DotNetOS.iOSSimulator => "dylib",
-                        _ => "so"
-                    };
-
-                    string assemblyPath = Path.Combine(publishOutputDir, $"{GodotSharpDirs.ProjectAssemblyName}.dll");
-                    string nativeAotPath = Path.Combine(publishOutputDir,
-                        $"{GodotSharpDirs.ProjectAssemblyName}.{soExt}");
-
-                    if (!File.Exists(assemblyPath) && !File.Exists(nativeAotPath))
-                    {
-                        throw new NotSupportedException(
-                            $"Publish succeeded but project assembly not found at '{assemblyPath}' or '{nativeAotPath}'.");
-                    }
-
-                    // For ios simulator builds, skip packaging the build outputs.
-                    if (!config.BundleOutputs)
-                        continue;
-
-                    var manifest = new StringBuilder();
-
-                    // Add to the exported project shared object list or packed resources.
-                    RecursePublishContents(publishOutputDir,
-                        filterDir: dir =>
-                        {
-                            if (platform == OS.Platforms.iOS)
-                            {
-                                // Exclude dsym folders.
-                                return !dir.EndsWith(".dsym", StringComparison.OrdinalIgnoreCase);
-                            }
-
-                            return true;
-                        },
-                        filterFile: file =>
-                        {
-                            if (platform == OS.Platforms.iOS)
-                            {
-                                // Exclude the dylib artifact, since it's included separately as an xcframework.
-                                return Path.GetFileName(file) != $"{GodotSharpDirs.ProjectAssemblyName}.dylib";
-                            }
-
-                            return true;
-                        },
-                        recurseDir: dir =>
-                        {
-                            if (platform == OS.Platforms.iOS)
-                            {
-                                // Don't recurse into dsym folders.
-                                return !dir.EndsWith(".dsym", StringComparison.OrdinalIgnoreCase);
-                            }
-
-                            return true;
-                        },
-                        addEntry: (path, isFile) =>
-                        {
-                            // We get called back for both directories and files, but we only package files for now.
-                            if (isFile)
-                            {
-                                if (embedBuildResults)
-                                {
-                                    string filePath = SanitizeSlashes(Path.GetRelativePath(publishOutputDir, path));
-                                    byte[] fileData = File.ReadAllBytes(path);
-                                    string hash = Convert.ToBase64String(SHA512.HashData(fileData));
-
-                                    manifest.Append(CultureInfo.InvariantCulture, $"{filePath}\t{hash}\n");
-
-                                    AddFile($"res://.godot/mono/publish/{arch}/{filePath}", fileData, false);
-                                }
-                                else
-                                {
-                                    if (platform == OS.Platforms.iOS && path.EndsWith(".dat", StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        AddIosBundleFile(path);
-                                    }
-                                    else
-                                    {
-                                        AddSharedObject(path, tags: null,
-                                            Path.Join(projectDataDirName,
-                                                Path.GetRelativePath(publishOutputDir,
-                                                    Path.GetDirectoryName(path)!)));
-                                    }
-                                }
-                            }
-                        });
-
-                    if (embedBuildResults)
-                    {
-                        byte[] fileData = Encoding.Default.GetBytes(manifest.ToString());
-                        AddFile($"res://.godot/mono/publish/{arch}/.dotnet-publish-manifest", fileData, false);
+                        AddSharedObject(file, tags: null,
+                            Path.Join(projectDataDirName,
+                                Path.GetRelativePath(publishOutputTempDir, Path.GetDirectoryName(file))));
                     }
                 }
-            }
 
-            if (platform == OS.Platforms.iOS)
-            {
-                if (outputPaths.Count > 2)
+                if (embedBuildResults)
                 {
-                    // lipo the simulator binaries together
-                    // TODO: Move this to the native lipo implementation we have in the macos export plugin.
-                    var lipoArgs = new List<string>();
-                    lipoArgs.Add("-create");
-                    lipoArgs.AddRange(outputPaths.Skip(1).Select(x => Path.Combine(x, $"{GodotSharpDirs.ProjectAssemblyName}.dylib")));
-                    lipoArgs.Add("-output");
-                    lipoArgs.Add(Path.Combine(outputPaths[1], $"{GodotSharpDirs.ProjectAssemblyName}.dylib"));
-
-                    int lipoExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("lipo"), lipoArgs);
-                    if (lipoExitCode != 0)
-                        throw new InvalidOperationException($"Command 'lipo' exited with code: {lipoExitCode}.");
-
-                    outputPaths.RemoveRange(2, outputPaths.Count - 2);
-                }
-
-                var xcFrameworkPath = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig,
-                    $"{GodotSharpDirs.ProjectAssemblyName}_aot.xcframework");
-                if (!BuildManager.GenerateXCFrameworkBlocking(outputPaths,
-                        Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig, xcFrameworkPath)))
-                {
-                    throw new InvalidOperationException("Failed to generate xcframework.");
-                }
-
-                AddIosEmbeddedFramework(xcFrameworkPath);
-            }
-        }
-
-        private static void RecursePublishContents(string path, Func<string, bool> filterDir,
-            Func<string, bool> filterFile, Func<string, bool> recurseDir,
-            Action<string, bool> addEntry)
-        {
-            foreach (string file in Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly))
-            {
-                if (filterFile(file))
-                {
-                    addEntry(file, true);
-                }
-            }
-
-            foreach (string dir in Directory.GetDirectories(path, "*", SearchOption.TopDirectoryOnly))
-            {
-                if (filterDir(dir))
-                {
-                    addEntry(dir, false);
-                    if (recurseDir(dir))
-                    {
-                        RecursePublishContents(dir, filterDir, filterFile, recurseDir, addEntry);
-                    }
+                    var fileData = Encoding.Default.GetBytes(manifest.ToString());
+                    AddFile($"res://.godot/mono/publish/{arch}/.dotnet-publish-manifest", fileData, false);
                 }
             }
         }
@@ -459,7 +293,7 @@ namespace GodotTools.Export
             }
         }
 
-        private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, [NotNullWhen(true)] out string? platform)
+        private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, out string platform)
         {
             foreach (var feature in features)
             {
@@ -469,16 +303,6 @@ namespace GodotTools.Export
 
             platform = null;
             return false;
-        }
-
-        private struct PublishConfig
-        {
-            public bool UseTempDir;
-            public bool BundleOutputs;
-            public string RidOS;
-            public List<string> Archs;
-            public string BuildConfig;
-            public bool IncludeDebugSymbols;
         }
     }
 }

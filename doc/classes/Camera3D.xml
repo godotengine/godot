@@ -7,7 +7,7 @@
 		[Camera3D] is a special node that displays what is visible from its current location. Cameras register themselves in the nearest [Viewport] node (when ascending the tree). Only one camera can be active per viewport. If no viewport is available ascending the tree, the camera will register in the global viewport. In other words, a camera just provides 3D display capabilities to a [Viewport], and, without one, a scene registered in that [Viewport] (or higher viewports) can't be displayed.
 	</description>
 	<tutorials>
-		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="clear_current">
@@ -159,9 +159,6 @@
 		<member name="attributes" type="CameraAttributes" setter="set_attributes" getter="get_attributes">
 			The [CameraAttributes] to use for this camera.
 		</member>
-		<member name="compositor" type="Compositor" setter="set_compositor" getter="get_compositor">
-			The [Compositor] to use for this camera.
-		</member>
 		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="1048575">
 			The culling mask that describes which [member VisualInstance3D.layers] are rendered by this camera. By default, all 20 user-visible layers are rendered.
 			[b]Note:[/b] Since the [member cull_mask] allows for 32 layers to be stored in total, there are an additional 12 layers that are only used internally by the engine and aren't exposed in the editor. Setting [member cull_mask] using a script allows you to toggle those reserved layers, which can be useful for editor plugins.
@@ -182,7 +179,7 @@
 			The distance to the far culling boundary for this camera relative to its local Z axis. Higher values allow the camera to see further away, while decreasing [member far] can improve performance if it results in objects being partially or fully culled.
 		</member>
 		<member name="fov" type="float" setter="set_fov" getter="get_fov" default="75.0">
-			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [member fov] sets the other axis' field of view angle.
+			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [code]fov[/code] sets the other axis' field of view angle.
 			For reference, the default vertical field of view value ([code]75.0[/code]) is equivalent to a horizontal FOV of:
 			- ~91.31 degrees in a 4:3 viewport
 			- ~101.67 degrees in a 16:10 viewport

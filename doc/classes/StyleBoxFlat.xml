@@ -7,13 +7,13 @@
 		By configuring various properties of this style box, you can achieve many common looks without the need of a texture. This includes optionally rounded borders, antialiasing, shadows, and skew.
 		Setting corner radius to high values is allowed. As soon as corners overlap, the stylebox will switch to a relative system.
 		[b]Example:[/b]
-		[codeblock lang=text]
+		[codeblock]
 		height = 30
 		corner_radius_top_left = 50
 		corner_radius_bottom_left = 100
 		[/codeblock]
 		The relative system now would take the 1:2 ratio of the two left corners to calculate the actual corner width. Both corners added will [b]never[/b] be more than the height. Result:
-		[codeblock lang=text]
+		[codeblock]
 		corner_radius_top_left: 10
 		corner_radius_bottom_left: 20
 		[/codeblock]

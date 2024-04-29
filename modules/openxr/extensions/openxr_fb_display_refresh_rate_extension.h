@@ -51,7 +51,6 @@ public:
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void on_instance_destroyed() override;
-	virtual bool on_event_polled(const XrEventDataBuffer &event) override;
 
 	float get_refresh_rate() const;
 	void set_refresh_rate(float p_refresh_rate);

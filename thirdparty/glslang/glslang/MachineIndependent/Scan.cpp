@@ -324,9 +324,11 @@ struct str_hash
 // A single global usable by all threads, by all versions, by all languages.
 // After a single process-level initialization, this is read only and thread safe
 std::unordered_map<const char*, int, str_hash, str_eq>* KeywordMap = nullptr;
+#ifndef GLSLANG_WEB
 std::unordered_set<const char*, str_hash, str_eq>* ReservedSet = nullptr;
+#endif
 
-}
+};
 
 namespace glslang {
 
@@ -407,6 +409,7 @@ void TScanContext::fillInKeywordMap()
     (*KeywordMap)["uvec3"] =                   UVEC3;
     (*KeywordMap)["uvec4"] =                   UVEC4;
 
+#ifndef GLSLANG_WEB
     (*KeywordMap)["nonuniformEXT"] =           NONUNIFORM;
     (*KeywordMap)["demote"] =                  DEMOTE;
     (*KeywordMap)["attribute"] =               ATTRIBUTE;
@@ -596,6 +599,7 @@ void TScanContext::fillInKeywordMap()
     (*KeywordMap)["spirv_storage_class"] =     SPIRV_STORAGE_CLASS;
     (*KeywordMap)["spirv_by_reference"] =      SPIRV_BY_REFERENCE;
     (*KeywordMap)["spirv_literal"] =           SPIRV_LITERAL;
+#endif
 
     (*KeywordMap)["sampler2D"] =               SAMPLER2D;
     (*KeywordMap)["samplerCube"] =             SAMPLERCUBE;
@@ -629,6 +633,7 @@ void TScanContext::fillInKeywordMap()
     (*KeywordMap)["sampler"] =                 SAMPLER;
     (*KeywordMap)["samplerShadow"] =           SAMPLERSHADOW;
 
+#ifndef GLSLANG_WEB
     (*KeywordMap)["textureCubeArray"] =        TEXTURECUBEARRAY;
     (*KeywordMap)["itextureCubeArray"] =       ITEXTURECUBEARRAY;
     (*KeywordMap)["utextureCubeArray"] =       UTEXTURECUBEARRAY;
@@ -765,8 +770,6 @@ void TScanContext::fillInKeywordMap()
     (*KeywordMap)["icoopmatNV"] =              ICOOPMATNV;
     (*KeywordMap)["ucoopmatNV"] =              UCOOPMATNV;
 
-    (*KeywordMap)["coopmat"] =                 COOPMAT;
-
     (*KeywordMap)["hitObjectNV"] =             HITOBJECTNV;
     (*KeywordMap)["hitObjectAttributeNV"] =    HITOBJECTATTRNV;
 
@@ -809,14 +812,17 @@ void TScanContext::fillInKeywordMap()
     ReservedSet->insert("cast");
     ReservedSet->insert("namespace");
     ReservedSet->insert("using");
+#endif
 }
 
 void TScanContext::deleteKeywordMap()
 {
     delete KeywordMap;
     KeywordMap = nullptr;
+#ifndef GLSLANG_WEB
     delete ReservedSet;
     ReservedSet = nullptr;
+#endif
 }
 
 // Called by yylex to get the next token.
@@ -897,12 +903,14 @@ int TScanContext::tokenize(TPpContext* pp, TParserToken& token)
         case PpAtomConstInt:           parserToken->sType.lex.i    = ppToken.ival;       return INTCONSTANT;
         case PpAtomConstUint:          parserToken->sType.lex.i    = ppToken.ival;       return UINTCONSTANT;
         case PpAtomConstFloat:         parserToken->sType.lex.d    = ppToken.dval;       return FLOATCONSTANT;
+#ifndef GLSLANG_WEB
         case PpAtomConstInt16:         parserToken->sType.lex.i    = ppToken.ival;       return INT16CONSTANT;
         case PpAtomConstUint16:        parserToken->sType.lex.i    = ppToken.ival;       return UINT16CONSTANT;
         case PpAtomConstInt64:         parserToken->sType.lex.i64  = ppToken.i64val;     return INT64CONSTANT;
         case PpAtomConstUint64:        parserToken->sType.lex.i64  = ppToken.i64val;     return UINT64CONSTANT;
         case PpAtomConstDouble:        parserToken->sType.lex.d    = ppToken.dval;       return DOUBLECONSTANT;
         case PpAtomConstFloat16:       parserToken->sType.lex.d    = ppToken.dval;       return FLOAT16CONSTANT;
+#endif
         case PpAtomIdentifier:
         {
             int token = tokenizeIdentifier();
@@ -924,8 +932,10 @@ int TScanContext::tokenize(TPpContext* pp, TParserToken& token)
 
 int TScanContext::tokenizeIdentifier()
 {
+#ifndef GLSLANG_WEB
     if (ReservedSet->find(tokenText) != ReservedSet->end())
         return reservedWord();
+#endif
 
     auto it = KeywordMap->find(tokenText);
     if (it == KeywordMap->end()) {
@@ -1048,6 +1058,7 @@ int TScanContext::tokenizeIdentifier()
         return identifierOrReserved(reserved);
     }
 
+#ifndef GLSLANG_WEB
     case NOPERSPECTIVE:
         if (parseContext.extensionTurnedOn(E_GL_NV_shader_noperspective_interpolation))
             return keyword;
@@ -1073,18 +1084,12 @@ int TScanContext::tokenizeIdentifier()
             parseContext.extensionTurnedOn(E_GL_NV_ray_tracing))
             return keyword;
         return identifierOrType();
-    case ACCSTRUCTEXT:
-        if (parseContext.symbolTable.atBuiltInLevel() ||
-            parseContext.extensionTurnedOn(E_GL_EXT_ray_tracing) ||
-            parseContext.extensionTurnedOn(E_GL_EXT_ray_query) ||
-            parseContext.extensionTurnedOn(E_GL_NV_displacement_micromap))
-            return keyword;
-        return identifierOrType();
     case PAYLOADEXT:
     case PAYLOADINEXT:
     case HITATTREXT:
     case CALLDATAEXT:
     case CALLDATAINEXT:
+    case ACCSTRUCTEXT:
         if (parseContext.symbolTable.atBuiltInLevel() ||
             parseContext.extensionTurnedOn(E_GL_EXT_ray_tracing) ||
             parseContext.extensionTurnedOn(E_GL_EXT_ray_query))
@@ -1140,7 +1145,7 @@ int TScanContext::tokenizeIdentifier()
 
     case SUBROUTINE:
         return es30ReservedFromGLSL(400);
-
+#endif
     case SHARED:
         if ((parseContext.isEsProfile() && parseContext.version < 300) ||
             (!parseContext.isEsProfile() && parseContext.version < 140))
@@ -1175,6 +1180,7 @@ int TScanContext::tokenizeIdentifier()
     case MAT4X4:
         return matNxM();
 
+#ifndef GLSLANG_WEB
     case DMAT2:
     case DMAT3:
     case DMAT4:
@@ -1479,6 +1485,7 @@ int TScanContext::tokenizeIdentifier()
             return keyword;
         else
             return identifierOrType();
+#endif
 
     case UINT:
     case UVEC2:
@@ -1496,12 +1503,6 @@ int TScanContext::tokenizeIdentifier()
     case USAMPLERCUBE:
     case USAMPLER2DARRAY:
         afterType = true;
-        if (keyword == SAMPLER2DARRAY || keyword == SAMPLER2DARRAYSHADOW) {
-            if (!parseContext.isEsProfile() &&
-                (parseContext.extensionTurnedOn(E_GL_EXT_texture_array) || parseContext.symbolTable.atBuiltInLevel())) {
-                return keyword;
-            }
-        }
         return nonreservedKeyword(300, 130);
 
     case SAMPLER3D:
@@ -1539,18 +1540,13 @@ int TScanContext::tokenizeIdentifier()
         else
             return identifierOrType();
 
+#ifndef GLSLANG_WEB
     case ISAMPLER1D:
     case ISAMPLER1DARRAY:
     case SAMPLER1DARRAYSHADOW:
     case USAMPLER1D:
     case USAMPLER1DARRAY:
         afterType = true;
-        if (keyword == SAMPLER1DARRAYSHADOW) {
-            if (!parseContext.isEsProfile() &&
-                (parseContext.extensionTurnedOn(E_GL_EXT_texture_array) || parseContext.symbolTable.atBuiltInLevel())) {
-                return keyword;
-            }
-        }
         return es30ReservedFromGLSL(130);
     case ISAMPLER2DRECT:
     case USAMPLER2DRECT:
@@ -1620,9 +1616,7 @@ int TScanContext::tokenizeIdentifier()
         if (parseContext.isEsProfile() && parseContext.version == 300)
             reservedWord();
         else if ((parseContext.isEsProfile() && parseContext.version < 300) ||
-                 ((!parseContext.isEsProfile() && parseContext.version < 130) &&
-                   !parseContext.symbolTable.atBuiltInLevel() &&
-                   !parseContext.extensionTurnedOn(E_GL_EXT_texture_array)))
+                 (!parseContext.isEsProfile() && parseContext.version < 130))
             return identifierOrType();
         return keyword;
 
@@ -1787,13 +1781,6 @@ int TScanContext::tokenizeIdentifier()
             return keyword;
         return identifierOrType();
 
-    case COOPMAT:
-        afterType = true;
-        if (parseContext.symbolTable.atBuiltInLevel() ||
-            parseContext.extensionTurnedOn(E_GL_KHR_cooperative_matrix))
-            return keyword;
-        return identifierOrType();
-
     case DEMOTE:
         if (parseContext.extensionTurnedOn(E_GL_EXT_demote_to_helper_invocation))
             return keyword;
@@ -1828,6 +1815,7 @@ int TScanContext::tokenizeIdentifier()
                  && parseContext.extensionTurnedOn(E_GL_NV_shader_invocation_reorder)))
             return keyword;
         return identifierOrType();
+#endif
 
     default:
         parseContext.infoSink.info.message(EPrefixInternalError, "Unknown glslang keyword", loc);

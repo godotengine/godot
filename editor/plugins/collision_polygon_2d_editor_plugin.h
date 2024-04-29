@@ -32,7 +32,7 @@
 #define COLLISION_POLYGON_2D_EDITOR_PLUGIN_H
 
 #include "editor/plugins/abstract_polygon_2d_editor.h"
-#include "scene/2d/physics/collision_polygon_2d.h"
+#include "scene/2d/collision_polygon_2d.h"
 
 class CollisionPolygon2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(CollisionPolygon2DEditor, AbstractPolygon2DEditor);

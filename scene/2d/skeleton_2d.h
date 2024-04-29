@@ -32,7 +32,7 @@
 #define SKELETON_2D_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
+#include "scene/resources/skeleton_modification_2d.h"
 
 class Skeleton2D;
 

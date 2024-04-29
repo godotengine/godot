@@ -119,15 +119,6 @@ namespace embree
       p3 = vertex(i+3,itime);
     }
 
-    /*! gathers the curve normals starting with i'th vertex */
-    __forceinline void gather_normals(Vec3fa& n0, Vec3fa& n1, Vec3fa& n2, Vec3fa& n3, size_t i) const
-    {
-      n0 = normal(i+0);
-      n1 = normal(i+1);
-      n2 = normal(i+2);
-      n3 = normal(i+3);
-    }
-
     /*! gathers the curve starting with i'th vertex */
     __forceinline void gather(Vec3ff& p0, Vec3ff& p1, Vec3ff& p2, Vec3ff& p3, Vec3fa& n0, Vec3fa& n1, Vec3fa& n2, Vec3fa& n3, size_t i) const
     {
@@ -187,13 +178,6 @@ namespace embree
     }
 
     /*! loads curve vertices for specified time */
-    __forceinline void gather_safe(Vec3ff& p0, Vec3ff& p1, Vec3ff& p2, Vec3ff& p3, size_t i, float time) const
-    {
-      if (hasMotionBlur()) gather(p0,p1,p2,p3,i,time);
-      else                 gather(p0,p1,p2,p3,i);
-    }
-    
-    /*! loads curve vertices for specified time */
     __forceinline void gather(Vec3ff& p0, Vec3ff& p1, Vec3ff& p2, Vec3ff& p3, Vec3fa& n0, Vec3fa& n1, Vec3fa& n2, Vec3fa& n3, size_t i, float time) const
     {
       float ftime;
@@ -215,15 +199,8 @@ namespace embree
       n3 = madd(Vec3ff(t0),an3,t1*bn3);
     }
 
-    /*! loads curve vertices for specified time for mblur and non-mblur case */
-    __forceinline void gather_safe(Vec3ff& p0, Vec3ff& p1, Vec3ff& p2, Vec3ff& p3, Vec3fa& n0, Vec3fa& n1, Vec3fa& n2, Vec3fa& n3, size_t i, float time) const
-    {
-      if (hasMotionBlur()) gather(p0,p1,p2,p3,n0,n1,n2,n3,i,time);
-      else                 gather(p0,p1,p2,p3,n0,n1,n2,n3,i);
-    }
-
     template<typename SourceCurve3ff, typename SourceCurve3fa, typename TensorLinearCubicBezierSurface3fa>
-    __forceinline TensorLinearCubicBezierSurface3fa getNormalOrientedCurve(RayQueryContext* context, const Vec3fa& ray_org, const unsigned int primID, const size_t itime) const
+    __forceinline TensorLinearCubicBezierSurface3fa getNormalOrientedCurve(IntersectContext* context, const Vec3fa& ray_org, const unsigned int primID, const size_t itime) const
     {
       Vec3ff v0,v1,v2,v3; Vec3fa n0,n1,n2,n3;
       unsigned int vertexID = curve(primID);
@@ -235,26 +212,13 @@ namespace embree
     }
 
     template<typename SourceCurve3ff, typename SourceCurve3fa, typename TensorLinearCubicBezierSurface3fa>
-    __forceinline TensorLinearCubicBezierSurface3fa getNormalOrientedCurve(RayQueryContext* context, const Vec3fa& ray_org, const unsigned int primID, const float time) const
+    __forceinline TensorLinearCubicBezierSurface3fa getNormalOrientedCurve(IntersectContext* context, const Vec3fa& ray_org, const unsigned int primID, const float time) const
     {
       float ftime;
       const size_t itime = timeSegment(time, ftime);
       const TensorLinearCubicBezierSurface3fa curve0 = getNormalOrientedCurve<SourceCurve3ff, SourceCurve3fa, TensorLinearCubicBezierSurface3fa>(context,ray_org,primID,itime+0);
       const TensorLinearCubicBezierSurface3fa curve1 = getNormalOrientedCurve<SourceCurve3ff, SourceCurve3fa, TensorLinearCubicBezierSurface3fa>(context,ray_org,primID,itime+1);
       return clerp(curve0,curve1,ftime);
-    }
-
-    template<typename SourceCurve3ff, typename SourceCurve3fa, typename TensorLinearCubicBezierSurface3fa>
-    __forceinline TensorLinearCubicBezierSurface3fa getNormalOrientedCurveSafe(RayQueryContext* context, const Vec3fa& ray_org, const unsigned int primID, const float time) const
-    {
-      float ftime = 0.0f;
-      const size_t itime = hasMotionBlur() ? timeSegment(time, ftime) : 0;
-      const TensorLinearCubicBezierSurface3fa curve0 = getNormalOrientedCurve<SourceCurve3ff, SourceCurve3fa, TensorLinearCubicBezierSurface3fa>(context,ray_org,primID,itime+0);
-      if (hasMotionBlur()) {
-        const TensorLinearCubicBezierSurface3fa curve1 = getNormalOrientedCurve<SourceCurve3ff, SourceCurve3fa, TensorLinearCubicBezierSurface3fa>(context,ray_org,primID,itime+1);
-        return clerp(curve0,curve1,ftime);
-      }
-      return curve0;
     }
 
     /*! gathers the hermite curve starting with i'th vertex */
@@ -291,13 +255,6 @@ namespace embree
       t1 = madd(Vec3ff(f0),at1,f1*bt1);
     }
 
-    /*! loads curve vertices for specified time for mblur and non-mblur geometry */
-    __forceinline void gather_hermite_safe(Vec3ff& p0, Vec3ff& t0, Vec3ff& p1, Vec3ff& t1, size_t i, float time) const
-    {
-      if (hasMotionBlur()) gather_hermite(p0,t0,p1,t1,i,time);
-      else                 gather_hermite(p0,t0,p1,t1,i);
-    }
-
     /*! gathers the hermite curve starting with i'th vertex */
     __forceinline void gather_hermite(Vec3ff& p0, Vec3ff& t0, Vec3fa& n0, Vec3fa& dn0, Vec3ff& p1, Vec3ff& t1, Vec3fa& n1, Vec3fa& dn1, size_t i) const
     {
@@ -325,7 +282,7 @@ namespace embree
     }
 
     /*! loads curve vertices for specified time */
-    __forceinline void gather_hermite(Vec3ff& p0, Vec3ff& t0, Vec3fa& n0, Vec3fa& dn0, Vec3ff& p1, Vec3ff& t1, Vec3fa& n1, Vec3fa& dn1, size_t i, float time) const
+    __forceinline void gather_hermite(Vec3ff& p0, Vec3fa& t0, Vec3fa& n0, Vec3fa& dn0, Vec3ff& p1, Vec3fa& t1, Vec3fa& n1, Vec3fa& dn1, size_t i, float time) const
     {
       float ftime;
       const size_t itime = timeSegment(time, ftime);
@@ -344,15 +301,8 @@ namespace embree
       dn1= madd(Vec3ff(f0),adn1,f1*bdn1);
     }
 
-    /*! loads curve vertices for specified time */
-    __forceinline void gather_hermite_safe(Vec3ff& p0, Vec3ff& t0, Vec3fa& n0, Vec3fa& dn0, Vec3ff& p1, Vec3ff& t1, Vec3fa& n1, Vec3fa& dn1, size_t i, float time) const
-    {
-      if (hasMotionBlur()) gather_hermite(p0,t0,n0,dn0,p1,t1,n1,dn1,i,time);
-      else                 gather_hermite(p0,t0,n0,dn0,p1,t1,n1,dn1,i);
-    }
-
     template<typename SourceCurve3ff, typename SourceCurve3fa, typename TensorLinearCubicBezierSurface3fa>
-      __forceinline TensorLinearCubicBezierSurface3fa getNormalOrientedHermiteCurve(RayQueryContext* context, const Vec3fa& ray_org, const unsigned int primID, const size_t itime) const
+      __forceinline TensorLinearCubicBezierSurface3fa getNormalOrientedHermiteCurve(IntersectContext* context, const Vec3fa& ray_org, const unsigned int primID, const size_t itime) const
     {
       Vec3ff v0,t0,v1,t1; Vec3fa n0,dn0,n1,dn1;
       unsigned int vertexID = curve(primID);
@@ -365,7 +315,7 @@ namespace embree
     }
 
     template<typename SourceCurve3ff, typename SourceCurve3fa, typename TensorLinearCubicBezierSurface3fa>
-    __forceinline TensorLinearCubicBezierSurface3fa getNormalOrientedHermiteCurve(RayQueryContext* context, const Vec3fa& ray_org, const unsigned int primID, const float time) const
+    __forceinline TensorLinearCubicBezierSurface3fa getNormalOrientedHermiteCurve(IntersectContext* context, const Vec3fa& ray_org, const unsigned int primID, const float time) const
     {
       float ftime;
       const size_t itime = timeSegment(time, ftime);
@@ -374,24 +324,6 @@ namespace embree
       return clerp(curve0,curve1,ftime);
     }
 
-    template<typename SourceCurve3ff, typename SourceCurve3fa, typename TensorLinearCubicBezierSurface3fa>
-    __forceinline TensorLinearCubicBezierSurface3fa getNormalOrientedHermiteCurveSafe(RayQueryContext* context, const Vec3fa& ray_org, const unsigned int primID, const float time) const
-    {
-      float ftime = 0.0f;
-      const size_t itime = hasMotionBlur() ? timeSegment(time, ftime) : 0;
-      const TensorLinearCubicBezierSurface3fa curve0 = getNormalOrientedHermiteCurve<SourceCurve3ff, SourceCurve3fa, TensorLinearCubicBezierSurface3fa>(context, ray_org, primID,itime+0);
-      if (hasMotionBlur()) {
-        const TensorLinearCubicBezierSurface3fa curve1 = getNormalOrientedHermiteCurve<SourceCurve3ff, SourceCurve3fa, TensorLinearCubicBezierSurface3fa>(context, ray_org, primID,itime+1);
-        return clerp(curve0,curve1,ftime);
-      }
-      return curve0;
-    }
-
-    /* returns the projected area */
-    __forceinline float projectedPrimitiveArea(const size_t i) const {
-      return 1.0f;
-    }
-  
   private:
     void resizeBuffers(unsigned int numSteps);
 
@@ -401,12 +333,12 @@ namespace embree
     BufferView<Vec3fa> normals0;            //!< fast access to first normal buffer
     BufferView<Vec3ff> tangents0;           //!< fast access to first tangent buffer
     BufferView<Vec3fa> dnormals0;           //!< fast access to first normal derivative buffer
-    Device::vector<BufferView<Vec3ff>> vertices = device;    //!< vertex array for each timestep
-    Device::vector<BufferView<Vec3fa>> normals = device;     //!< normal array for each timestep
-    Device::vector<BufferView<Vec3ff>> tangents = device;    //!< tangent array for each timestep
-    Device::vector<BufferView<Vec3fa>> dnormals = device;    //!< normal derivative array for each timestep
+    vector<BufferView<Vec3ff>> vertices;    //!< vertex array for each timestep
+    vector<BufferView<Vec3fa>> normals;     //!< normal array for each timestep
+    vector<BufferView<Vec3ff>> tangents;    //!< tangent array for each timestep
+    vector<BufferView<Vec3fa>> dnormals;    //!< normal derivative array for each timestep
     BufferView<char> flags;                 //!< start, end flag per segment
-    Device::vector<BufferView<char>> vertexAttribs = device; //!< user buffers
+    vector<BufferView<char>> vertexAttribs; //!< user buffers
     int tessellationRate;                   //!< tessellation rate for flat curve
     float maxRadiusScale = 1.0;             //!< maximal min-width scaling of curve radii
   };
@@ -554,7 +486,7 @@ namespace embree
         src    = vertices[bufferSlot].getPtr();
         stride = vertices[bufferSlot].getStride();
       }
-
+      
       for (unsigned int i=0; i<valueCount; i+=N)
       {
         size_t ofs = i*sizeof(float);

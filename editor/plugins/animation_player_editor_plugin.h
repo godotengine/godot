@@ -47,12 +47,8 @@ class ImageTexture;
 class AnimationPlayerEditor : public VBoxContainer {
 	GDCLASS(AnimationPlayerEditor, VBoxContainer);
 
-	friend AnimationPlayerEditorPlugin;
-
 	AnimationPlayerEditorPlugin *plugin = nullptr;
-	AnimationMixer *original_node = nullptr; // For pinned mark in SceneTree.
-	AnimationPlayer *player = nullptr; // For AnimationPlayerEditor, could be dummy.
-	bool is_dummy = false;
+	AnimationPlayer *player = nullptr;
 
 	enum {
 		TOOL_NEW_ANIM,
@@ -111,9 +107,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Ref<Texture2D> autoplay_icon;
 	Ref<Texture2D> reset_icon;
 	Ref<ImageTexture> autoplay_reset_icon;
-
-	bool last_active = false;
-	float timeline_position = 0;
+	bool last_active;
+	float timeline_position;
 
 	EditorFileDialog *file = nullptr;
 	ConfirmationDialog *delete_dialog = nullptr;
@@ -128,27 +123,29 @@ class AnimationPlayerEditor : public VBoxContainer {
 	} blend_editor;
 
 	ConfirmationDialog *name_dialog = nullptr;
-	AcceptDialog *error_dialog = nullptr;
+	ConfirmationDialog *error_dialog = nullptr;
 	int name_dialog_op = TOOL_NEW_ANIM;
 
-	bool updating = false;
-	bool updating_blends = false;
+	bool updating;
+	bool updating_blends;
 
 	AnimationTrackEditor *track_editor = nullptr;
 	static AnimationPlayerEditor *singleton;
+
+	bool hack_disable_onion_skinning = true; // Temporary hack for GH-53870.
 
 	// Onion skinning.
 	struct {
 		// Settings.
 		bool enabled = false;
-		bool past = true;
+		bool past = false;
 		bool future = false;
-		uint32_t steps = 1;
+		int steps = 0;
 		bool differences_only = false;
 		bool force_white_modulate = false;
 		bool include_gizmos = false;
 
-		uint32_t get_capture_count() const {
+		int get_needed_capture_count() const {
 			// 'Differences only' needs a capture of the present.
 			return (past && future ? 2 * steps : steps) + (differences_only ? 1 : 0);
 		}
@@ -157,23 +154,14 @@ class AnimationPlayerEditor : public VBoxContainer {
 		int64_t last_frame = 0;
 		int can_overlay = 0;
 		Size2 capture_size;
-		LocalVector<RID> captures;
-		LocalVector<bool> captures_valid;
+		Vector<RID> captures;
+		Vector<bool> captures_valid;
 		struct {
 			RID canvas;
 			RID canvas_item;
 			Ref<ShaderMaterial> material;
 			Ref<Shader> shader;
 		} capture;
-
-		// Cross-call state.
-		struct {
-			double anim_player_position = 0.0;
-			Ref<AnimatedValuesBackup> anim_values_backup;
-			Rect2 screen_rect;
-			Dictionary canvas_edit_state;
-			Dictionary spatial_edit_state;
-		} temp;
 	} onion;
 
 	void _select_anim_by_name(const String &p_anim);
@@ -191,19 +179,16 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _animation_remove();
 	void _animation_remove_confirmed();
+	void _animation_blend();
 	void _animation_edit();
 	void _animation_duplicate();
 	Ref<Animation> _animation_clone(const Ref<Animation> p_anim);
 	void _animation_resource_edit();
 	void _scale_changed(const String &p_scale);
-	void _seek_value_changed(float p_value, bool p_timeline_only = false);
+	void _seek_value_changed(float p_value, bool p_set = false, bool p_timeline_only = false);
 	void _blend_editor_next_changed(const int p_idx);
 
-	void _edit_animation_blend();
-	void _update_animation_blend();
-
 	void _list_changed();
-	void _current_animation_changed(const String &p_name);
 	void _update_animation();
 	void _update_player();
 	void _update_animation_list_icons();
@@ -213,7 +198,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_player_changed(Object *p_pl);
 	void _animation_libraries_updated();
 
-	void _animation_key_editor_seek(float p_pos, bool p_timeline_only = false);
+	void _animation_key_editor_seek(float p_pos, bool p_drag, bool p_timeline_only = false);
 	void _animation_key_editor_anim_len_changed(float p_len);
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;
@@ -225,10 +210,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _allocate_onion_layers();
 	void _free_onion_layers();
 	void _prepare_onion_layers_1();
-	void _prepare_onion_layers_2_prolog();
-	void _prepare_onion_layers_2_step_prepare(int p_step_offset, uint32_t p_capture_idx);
-	void _prepare_onion_layers_2_step_capture(int p_step_offset, uint32_t p_capture_idx);
-	void _prepare_onion_layers_2_epilog();
+	void _prepare_onion_layers_1_deferred();
+	void _prepare_onion_layers_2();
 	void _start_onion_skinning();
 	void _stop_onion_skinning();
 
@@ -236,8 +219,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _pin_pressed();
 	String _get_current() const;
-
-	void _ensure_dummy_player();
 
 	~AnimationPlayerEditor();
 
@@ -247,24 +228,19 @@ protected:
 	static void _bind_methods();
 
 public:
-	AnimationMixer *get_editing_node() const;
 	AnimationPlayer *get_player() const;
-	AnimationMixer *fetch_mixer_for_library() const;
 
 	static AnimationPlayerEditor *get_singleton() { return singleton; }
 
 	bool is_pinned() const { return pin->is_pressed(); }
-	void unpin() {
-		pin->set_pressed(false);
-		_pin_pressed();
-	}
+	void unpin() { pin->set_pressed(false); }
 	AnimationTrackEditor *get_track_editor() { return track_editor; }
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);
 
 	void ensure_visibility();
 
-	void edit(AnimationMixer *p_node, AnimationPlayer *p_player, bool p_is_dummy);
+	void edit(AnimationPlayer *p_player);
 	void forward_force_draw_over_viewport(Control *p_overlay);
 
 	AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plugin);
@@ -273,15 +249,7 @@ public:
 class AnimationPlayerEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationPlayerEditorPlugin, EditorPlugin);
 
-	friend AnimationPlayerEditor;
-
 	AnimationPlayerEditor *anim_editor = nullptr;
-	AnimationPlayer *player = nullptr;
-	AnimationPlayer *dummy_player = nullptr;
-	ObjectID last_mixer;
-
-	void _update_dummy_player(AnimationMixer *p_mixer);
-	void _clear_dummy_player();
 
 protected:
 	void _notification(int p_what);

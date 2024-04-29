@@ -14,12 +14,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_edited_object">
-			<return type="Object" />
-			<description>
-				Returns the object currently selected in this inspector.
-			</description>
-		</method>
 		<method name="get_selected_path" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -28,7 +22,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="follow_focus" type="bool" setter="set_follow_focus" getter="is_following_focus" overrides="ScrollContainer" default="true" />
 		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" overrides="ScrollContainer" enum="ScrollContainer.ScrollMode" default="0" />
 	</members>
 	<signals>

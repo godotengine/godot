@@ -8,9 +8,9 @@
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
-		<link title="Audio Device Changer Demo">https://godotengine.org/asset-library/asset/2758</link>
-		<link title="Audio Microphone Record Demo">https://godotengine.org/asset-library/asset/2760</link>
-		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>
+		<link title="Audio Device Changer Demo">https://godotengine.org/asset-library/asset/525</link>
+		<link title="Audio Mic Record Demo">https://godotengine.org/asset-library/asset/527</link>
+		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
 	</tutorials>
 	<methods>
 		<method name="add_bus">
@@ -281,8 +281,6 @@
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				If set to [code]true[/code], all instances of [AudioStreamPlayback] will call [method AudioStreamPlayback._tag_used_streams] every mix step.
-				[b]Note:[/b] This is enabled by default in the editor, as it is used by editor plugins for the audio stream previews.
 			</description>
 		</method>
 		<method name="swap_bus_effects">
@@ -313,7 +311,7 @@
 			Name of the current device for audio output (see [method get_output_device_list]). On systems with multiple audio outputs (such as analog, USB and HDMI audio), this can be used to select the audio output device. The value [code]"Default"[/code] will play audio on the system-wide default audio output. If an invalid device name is set, the value will be reverted back to [code]"Default"[/code].
 		</member>
 		<member name="playback_speed_scale" type="float" setter="set_playback_speed_scale" getter="get_playback_speed_scale" default="1.0">
-			Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played at half its speed). See also [member Engine.time_scale] to affect the general simulation speed, which is independent from [member AudioServer.playback_speed_scale].
+			Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played at half its speed).
 		</member>
 	</members>
 	<signals>

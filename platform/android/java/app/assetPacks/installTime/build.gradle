@@ -1,6 +1,4 @@
-plugins {
-    id 'com.android.asset-pack'
-}
+apply plugin: 'com.android.asset-pack'
 
 assetPack {
     packName = "installTime" // Directory name for the asset pack

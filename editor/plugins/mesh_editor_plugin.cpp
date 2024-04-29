@@ -31,7 +31,7 @@
 #include "mesh_editor_plugin.h"
 
 #include "core/config/project_settings.h"
-#include "editor/themes/editor_scale.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/main/viewport.h"
 

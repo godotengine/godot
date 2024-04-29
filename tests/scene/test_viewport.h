@@ -31,13 +31,13 @@
 #ifndef TEST_VIEWPORT_H
 #define TEST_VIEWPORT_H
 
-#include "scene/2d/physics/area_2d.h"
-#include "scene/2d/physics/collision_shape_2d.h"
+#include "scene/2d/area_2d.h"
+#include "scene/2d/collision_shape_2d.h"
 #include "scene/gui/control.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
-#include "scene/resources/2d/rectangle_shape_2d.h"
+#include "scene/resources/rectangle_shape_2d.h"
 
 #include "tests/test_macros.h"
 
@@ -50,39 +50,17 @@ protected:
 	void _notification(int p_what) {
 		switch (p_what) {
 			case NOTIFICATION_MOUSE_ENTER: {
-				if (mouse_over) {
-					invalid_order = true;
-				}
 				mouse_over = true;
 			} break;
 
 			case NOTIFICATION_MOUSE_EXIT: {
-				if (!mouse_over) {
-					invalid_order = true;
-				}
 				mouse_over = false;
-			} break;
-
-			case NOTIFICATION_MOUSE_ENTER_SELF: {
-				if (mouse_over_self) {
-					invalid_order = true;
-				}
-				mouse_over_self = true;
-			} break;
-
-			case NOTIFICATION_MOUSE_EXIT_SELF: {
-				if (!mouse_over_self) {
-					invalid_order = true;
-				}
-				mouse_over_self = false;
 			} break;
 		}
 	}
 
 public:
 	bool mouse_over = false;
-	bool mouse_over_self = false;
-	bool invalid_order = false;
 };
 
 // `NotificationControlViewport`-derived class that additionally
@@ -141,15 +119,12 @@ public:
 
 TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 	DragStart *node_a = memnew(DragStart);
-	NotificationControlViewport *node_b = memnew(NotificationControlViewport);
+	Control *node_b = memnew(Control);
 	Node2D *node_c = memnew(Node2D);
 	DragTarget *node_d = memnew(DragTarget);
-	NotificationControlViewport *node_e = memnew(NotificationControlViewport);
+	Control *node_e = memnew(Control);
 	Node *node_f = memnew(Node);
-	NotificationControlViewport *node_g = memnew(NotificationControlViewport);
-	NotificationControlViewport *node_h = memnew(NotificationControlViewport);
-	NotificationControlViewport *node_i = memnew(NotificationControlViewport);
-	NotificationControlViewport *node_j = memnew(NotificationControlViewport);
+	Control *node_g = memnew(Control);
 
 	node_a->set_name(SNAME("NodeA"));
 	node_b->set_name(SNAME("NodeB"));
@@ -158,9 +133,6 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 	node_e->set_name(SNAME("NodeE"));
 	node_f->set_name(SNAME("NodeF"));
 	node_g->set_name(SNAME("NodeG"));
-	node_h->set_name(SNAME("NodeH"));
-	node_i->set_name(SNAME("NodeI"));
-	node_j->set_name(SNAME("NodeJ"));
 
 	node_a->set_position(Point2i(0, 0));
 	node_b->set_position(Point2i(10, 10));
@@ -168,25 +140,16 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 	node_d->set_position(Point2i(10, 10));
 	node_e->set_position(Point2i(10, 100));
 	node_g->set_position(Point2i(10, 100));
-	node_h->set_position(Point2i(10, 120));
-	node_i->set_position(Point2i(2, 0));
-	node_j->set_position(Point2i(2, 0));
 	node_a->set_size(Point2i(30, 30));
 	node_b->set_size(Point2i(30, 30));
 	node_d->set_size(Point2i(30, 30));
 	node_e->set_size(Point2i(10, 10));
 	node_g->set_size(Point2i(10, 10));
-	node_h->set_size(Point2i(10, 10));
-	node_i->set_size(Point2i(10, 10));
-	node_j->set_size(Point2i(10, 10));
 	node_a->set_focus_mode(Control::FOCUS_CLICK);
 	node_b->set_focus_mode(Control::FOCUS_CLICK);
 	node_d->set_focus_mode(Control::FOCUS_CLICK);
 	node_e->set_focus_mode(Control::FOCUS_CLICK);
 	node_g->set_focus_mode(Control::FOCUS_CLICK);
-	node_h->set_focus_mode(Control::FOCUS_CLICK);
-	node_i->set_focus_mode(Control::FOCUS_CLICK);
-	node_j->set_focus_mode(Control::FOCUS_CLICK);
 	Window *root = SceneTree::get_singleton()->get_root();
 	DisplayServerMock *DS = (DisplayServerMock *)(DisplayServer::get_singleton());
 
@@ -199,9 +162,6 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 	//   - e (Control)
 	//     - f (Node)
 	//       - g (Control)
-	//   - h (Control)
-	//     - i (Control)
-	//       - j (Control)
 	root->add_child(node_a);
 	root->add_child(node_b);
 	node_b->add_child(node_c);
@@ -209,17 +169,12 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 	root->add_child(node_e);
 	node_e->add_child(node_f);
 	node_f->add_child(node_g);
-	root->add_child(node_h);
-	node_h->add_child(node_i);
-	node_i->add_child(node_j);
 
 	Point2i on_a = Point2i(5, 5);
 	Point2i on_b = Point2i(15, 15);
 	Point2i on_d = Point2i(25, 25);
 	Point2i on_e = Point2i(15, 105);
 	Point2i on_g = Point2i(15, 105);
-	Point2i on_i = Point2i(13, 125);
-	Point2i on_j = Point2i(15, 125);
 	Point2i on_background = Point2i(500, 500);
 	Point2i on_outside = Point2i(-1, -1);
 
@@ -464,612 +419,26 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 	SUBCASE("[Viewport][GuiInputEvent] Mouse Motion") {
 		// FIXME: Tooltips are not yet tested. They likely require an internal clock.
 
-		SUBCASE("[Viewport][GuiInputEvent] Mouse Motion changes the Control that it is over.") {
+		SUBCASE("[Viewport][GuiInputEvent] Mouse Motion changes the Control, that it is over.") {
 			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
 			CHECK_FALSE(node_a->mouse_over);
-			CHECK_FALSE(node_a->mouse_over_self);
 
 			// Move over Control.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_a, MouseButtonMask::NONE, Key::NONE);
 			CHECK(node_a->mouse_over);
-			CHECK(node_a->mouse_over_self);
 
 			// No change.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_a + Point2i(1, 1), MouseButtonMask::NONE, Key::NONE);
 			CHECK(node_a->mouse_over);
-			CHECK(node_a->mouse_over_self);
 
 			// Move over other Control.
 			SEND_GUI_MOUSE_MOTION_EVENT(on_d, MouseButtonMask::NONE, Key::NONE);
 			CHECK_FALSE(node_a->mouse_over);
-			CHECK_FALSE(node_a->mouse_over_self);
 			CHECK(node_d->mouse_over);
-			CHECK(node_d->mouse_over_self);
 
-			// Move to background.
+			// Move to background
 			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
 			CHECK_FALSE(node_d->mouse_over);
-			CHECK_FALSE(node_d->mouse_over_self);
-
-			CHECK_FALSE(node_a->invalid_order);
-			CHECK_FALSE(node_d->invalid_order);
-		}
-
-		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification propagation.") {
-			node_d->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_g->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-
-			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_b->mouse_over);
-			CHECK_FALSE(node_b->mouse_over_self);
-			CHECK_FALSE(node_d->mouse_over);
-			CHECK_FALSE(node_d->mouse_over_self);
-
-			// Move to Control node_d. node_b receives mouse over since it is only separated by a CanvasItem.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_d, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_b->mouse_over);
-			CHECK_FALSE(node_b->mouse_over_self);
-			CHECK(node_d->mouse_over);
-			CHECK(node_d->mouse_over_self);
-
-			// Move to background.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_b->mouse_over);
-			CHECK_FALSE(node_b->mouse_over_self);
-			CHECK_FALSE(node_d->mouse_over);
-			CHECK_FALSE(node_d->mouse_over_self);
-
-			CHECK_FALSE(node_e->mouse_over);
-			CHECK_FALSE(node_e->mouse_over_self);
-			CHECK_FALSE(node_g->mouse_over);
-			CHECK_FALSE(node_g->mouse_over_self);
-
-			// Move to Control node_g. node_g receives mouse over but node_e does not since it is separated by a non-CanvasItem.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_g, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_e->mouse_over);
-			CHECK_FALSE(node_e->mouse_over_self);
-			CHECK(node_g->mouse_over);
-			CHECK(node_g->mouse_over_self);
-
-			// Move to background.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_e->mouse_over);
-			CHECK_FALSE(node_e->mouse_over_self);
-			CHECK_FALSE(node_g->mouse_over);
-			CHECK_FALSE(node_g->mouse_over_self);
-
-			CHECK_FALSE(node_b->invalid_order);
-			CHECK_FALSE(node_d->invalid_order);
-			CHECK_FALSE(node_e->invalid_order);
-			CHECK_FALSE(node_g->invalid_order);
-
-			node_d->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			node_g->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-		}
-
-		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification propagation when moving into child.") {
-			SIGNAL_WATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_WATCH(node_i, SNAME("mouse_exited"));
-			Array signal_args;
-			signal_args.push_back(Array());
-
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-
-			// Move to background.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK_FALSE(node_j->mouse_over);
-			CHECK_FALSE(node_j->mouse_over_self);
-
-			// Move to Control node_i.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_i->mouse_over);
-			CHECK(node_i->mouse_over_self);
-			CHECK_FALSE(node_j->mouse_over);
-			CHECK_FALSE(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Move to child Control node_j. node_i should not receive any new Mouse Enter signals.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Move to parent Control node_i. node_i should not receive any new Mouse Enter signals.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_i, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_i->mouse_over);
-			CHECK(node_i->mouse_over_self);
-			CHECK_FALSE(node_j->mouse_over);
-			CHECK_FALSE(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Move to background.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK_FALSE(node_j->mouse_over);
-			CHECK_FALSE(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK(SNAME("mouse_exited"), signal_args);
-
-			CHECK_FALSE(node_i->invalid_order);
-			CHECK_FALSE(node_j->invalid_order);
-
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_exited"));
-		}
-
-		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification propagation with top level.") {
-			node_c->set_as_top_level(true);
-			node_i->set_as_top_level(true);
-			node_c->set_position(node_b->get_global_position());
-			node_i->set_position(node_h->get_global_position());
-			node_d->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-
-			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_b->mouse_over);
-			CHECK_FALSE(node_b->mouse_over_self);
-			CHECK_FALSE(node_d->mouse_over);
-			CHECK_FALSE(node_d->mouse_over_self);
-
-			// Move to Control node_d. node_b does not receive mouse over since node_c is top level.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_d, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_b->mouse_over);
-			CHECK_FALSE(node_b->mouse_over_self);
-			CHECK(node_d->mouse_over);
-			CHECK(node_d->mouse_over_self);
-
-			// Move to background.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_b->mouse_over);
-			CHECK_FALSE(node_b->mouse_over_self);
-			CHECK_FALSE(node_d->mouse_over);
-			CHECK_FALSE(node_d->mouse_over_self);
-
-			CHECK_FALSE(node_g->mouse_over);
-			CHECK_FALSE(node_g->mouse_over_self);
-			CHECK_FALSE(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK_FALSE(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-
-			// Move to Control node_j. node_h does not receive mouse over since node_i is top level.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-
-			// Move to background.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK_FALSE(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK_FALSE(node_j->mouse_over);
-			CHECK_FALSE(node_j->mouse_over_self);
-
-			CHECK_FALSE(node_b->invalid_order);
-			CHECK_FALSE(node_d->invalid_order);
-			CHECK_FALSE(node_e->invalid_order);
-			CHECK_FALSE(node_h->invalid_order);
-			CHECK_FALSE(node_i->invalid_order);
-			CHECK_FALSE(node_j->invalid_order);
-
-			node_c->set_as_top_level(false);
-			node_i->set_as_top_level(false);
-			node_c->set_position(Point2i(0, 0));
-			node_i->set_position(Point2i(0, 0));
-			node_d->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-		}
-
-		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification propagation with mouse filter stop.") {
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-
-			// Move to background.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK_FALSE(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK_FALSE(node_j->mouse_over);
-			CHECK_FALSE(node_j->mouse_over_self);
-
-			// Move to Control node_j. node_h does not receive mouse over since node_i is MOUSE_FILTER_STOP.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-
-			// Move to background.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK_FALSE(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK_FALSE(node_j->mouse_over);
-			CHECK_FALSE(node_j->mouse_over_self);
-
-			CHECK_FALSE(node_h->invalid_order);
-			CHECK_FALSE(node_i->invalid_order);
-			CHECK_FALSE(node_j->invalid_order);
-
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-		}
-
-		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification propagation with mouse filter ignore.") {
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-
-			// Move to background.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK_FALSE(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK_FALSE(node_j->mouse_over);
-			CHECK_FALSE(node_j->mouse_over_self);
-
-			// Move to Control node_j. node_i does not receive mouse over since node_i is MOUSE_FILTER_IGNORE.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK_FALSE(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-
-			// Move to background.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
-			CHECK_FALSE(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK_FALSE(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK_FALSE(node_j->mouse_over);
-			CHECK_FALSE(node_j->mouse_over_self);
-
-			CHECK_FALSE(node_h->invalid_order);
-			CHECK_FALSE(node_i->invalid_order);
-			CHECK_FALSE(node_j->invalid_order);
-
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-		}
-
-		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when changing top level.") {
-			SIGNAL_WATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_WATCH(node_i, SNAME("mouse_exited"));
-			Array signal_args;
-			signal_args.push_back(Array());
-
-			node_d->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-
-			// Move to Control node_d.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_d, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_b->mouse_over);
-			CHECK_FALSE(node_b->mouse_over_self);
-			CHECK(node_d->mouse_over);
-			CHECK(node_d->mouse_over_self);
-
-			// Change node_c to be top level. node_b should receive Mouse Exit.
-			node_c->set_as_top_level(true);
-			CHECK_FALSE(node_b->mouse_over);
-			CHECK_FALSE(node_b->mouse_over_self);
-			CHECK(node_d->mouse_over);
-			CHECK(node_d->mouse_over_self);
-
-			// Change node_c to be not top level. node_b should receive Mouse Enter.
-			node_c->set_as_top_level(false);
-			CHECK(node_b->mouse_over);
-			CHECK_FALSE(node_b->mouse_over_self);
-			CHECK(node_d->mouse_over);
-			CHECK(node_d->mouse_over_self);
-
-			// Move to Control node_j.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Change node_i to top level. node_h should receive Mouse Exit. node_i should not receive any new signals.
-			node_i->set_as_top_level(true);
-			CHECK_FALSE(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Change node_i to not top level. node_h should receive Mouse Enter. node_i should not receive any new signals.
-			node_i->set_as_top_level(false);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			CHECK_FALSE(node_b->invalid_order);
-			CHECK_FALSE(node_d->invalid_order);
-			CHECK_FALSE(node_e->invalid_order);
-			CHECK_FALSE(node_h->invalid_order);
-			CHECK_FALSE(node_i->invalid_order);
-			CHECK_FALSE(node_j->invalid_order);
-
-			node_d->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_exited"));
-		}
-
-		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when changing the mouse filter to stop.") {
-			SIGNAL_WATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_WATCH(node_i, SNAME("mouse_exited"));
-			Array signal_args;
-			signal_args.push_back(Array());
-
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-
-			// Move to Control node_j.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Change node_i to MOUSE_FILTER_STOP. node_h should receive Mouse Exit. node_i should not receive any new signals.
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			CHECK_FALSE(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Change node_i to MOUSE_FILTER_PASS. node_h should receive Mouse Enter. node_i should not receive any new signals.
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			CHECK_FALSE(node_h->invalid_order);
-			CHECK_FALSE(node_i->invalid_order);
-			CHECK_FALSE(node_j->invalid_order);
-
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_exited"));
-		}
-
-		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when changing the mouse filter to ignore.") {
-			SIGNAL_WATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_WATCH(node_i, SNAME("mouse_exited"));
-			Array signal_args;
-			signal_args.push_back(Array());
-
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-
-			// Move to Control node_j.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Change node_i to MOUSE_FILTER_IGNORE. node_i should receive Mouse Exit.
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK_FALSE(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK(SNAME("mouse_exited"), signal_args);
-
-			// Change node_i to MOUSE_FILTER_PASS. node_i should receive Mouse Enter.
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Change node_j to MOUSE_FILTER_IGNORE. After updating the mouse motion, node_i should now have mouse_over_self.
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK(node_i->mouse_over_self);
-			CHECK_FALSE(node_j->mouse_over);
-			CHECK_FALSE(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Change node_j to MOUSE_FILTER_PASS. After updating the mouse motion, node_j should now have mouse_over_self.
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			CHECK_FALSE(node_h->invalid_order);
-			CHECK_FALSE(node_i->invalid_order);
-			CHECK_FALSE(node_j->invalid_order);
-
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_entered"));
-			SIGNAL_UNWATCH(node_i, SNAME("mouse_exited"));
-		}
-
-		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when removing the hovered Control.") {
-			SIGNAL_WATCH(node_h, SNAME("mouse_entered"));
-			SIGNAL_WATCH(node_h, SNAME("mouse_exited"));
-			Array signal_args;
-			signal_args.push_back(Array());
-
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-
-			// Move to Control node_j.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Remove node_i from the tree. node_i and node_j should receive Mouse Exit. node_h should not receive any new signals.
-			node_h->remove_child(node_i);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK_FALSE(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK_FALSE(node_j->mouse_over);
-			CHECK_FALSE(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Add node_i to the tree and update the mouse. node_i and node_j should receive Mouse Enter. node_h should not receive any new signals.
-			node_h->add_child(node_i);
-			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			CHECK_FALSE(node_h->invalid_order);
-			CHECK_FALSE(node_i->invalid_order);
-			CHECK_FALSE(node_j->invalid_order);
-
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-
-			SIGNAL_UNWATCH(node_h, SNAME("mouse_entered"));
-			SIGNAL_UNWATCH(node_h, SNAME("mouse_exited"));
-		}
-
-		SUBCASE("[Viewport][GuiInputEvent] Mouse Enter/Exit notification when hiding the hovered Control.") {
-			SIGNAL_WATCH(node_h, SNAME("mouse_entered"));
-			SIGNAL_WATCH(node_h, SNAME("mouse_exited"));
-			Array signal_args;
-			signal_args.push_back(Array());
-
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-
-			// Move to Control node_j.
-			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK(SNAME("mouse_entered"), signal_args);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Hide node_i. node_i and node_j should receive Mouse Exit. node_h should not receive any new signals.
-			node_i->hide();
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK_FALSE(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK_FALSE(node_j->mouse_over);
-			CHECK_FALSE(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			// Show node_i and update the mouse. node_i and node_j should receive Mouse Enter. node_h should not receive any new signals.
-			node_i->show();
-			SEND_GUI_MOUSE_MOTION_EVENT(on_j, MouseButtonMask::NONE, Key::NONE);
-			CHECK(node_h->mouse_over);
-			CHECK_FALSE(node_h->mouse_over_self);
-			CHECK(node_i->mouse_over);
-			CHECK_FALSE(node_i->mouse_over_self);
-			CHECK(node_j->mouse_over);
-			CHECK(node_j->mouse_over_self);
-			SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
-			SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
-
-			CHECK_FALSE(node_h->invalid_order);
-			CHECK_FALSE(node_i->invalid_order);
-			CHECK_FALSE(node_j->invalid_order);
-
-			node_i->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-			node_j->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-
-			SIGNAL_UNWATCH(node_h, SNAME("mouse_entered"));
-			SIGNAL_UNWATCH(node_h, SNAME("mouse_exited"));
 		}
 
 		SUBCASE("[Viewport][GuiInputEvent] Window Mouse Enter/Exit signals.") {
@@ -1341,9 +710,6 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 		}
 	}
 
-	memdelete(node_j);
-	memdelete(node_i);
-	memdelete(node_h);
 	memdelete(node_g);
 	memdelete(node_f);
 	memdelete(node_e);

@@ -46,7 +46,9 @@ private:
 	mutable RID_PtrOwner<DummyTexture> texture_owner;
 
 public:
-	static TextureStorage *get_singleton() { return singleton; }
+	static TextureStorage *get_singleton() {
+		return singleton;
+	};
 
 	TextureStorage();
 	~TextureStorage();
@@ -71,21 +73,21 @@ public:
 
 	virtual RID texture_allocate() override {
 		DummyTexture *texture = memnew(DummyTexture);
-		ERR_FAIL_NULL_V(texture, RID());
+		ERR_FAIL_COND_V(!texture, RID());
 		return texture_owner.make_rid(texture);
 	};
 
 	virtual void texture_free(RID p_rid) override {
 		// delete the texture
 		DummyTexture *texture = texture_owner.get_or_null(p_rid);
-		ERR_FAIL_NULL(texture);
+		ERR_FAIL_COND(!texture);
 		texture_owner.free(p_rid);
 		memdelete(texture);
 	};
 
 	virtual void texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) override {
 		DummyTexture *t = texture_owner.get_or_null(p_texture);
-		ERR_FAIL_NULL(t);
+		ERR_FAIL_COND(!t);
 		t->image = p_image->duplicate();
 	};
 	virtual void texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) override{};
@@ -103,7 +105,7 @@ public:
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const override {
 		DummyTexture *t = texture_owner.get_or_null(p_texture);
-		ERR_FAIL_NULL_V(t, Ref<Image>());
+		ERR_FAIL_COND_V(!t, Ref<Image>());
 		return t->image;
 	};
 	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override { return Ref<Image>(); };
@@ -175,9 +177,6 @@ public:
 	virtual void render_target_set_as_unused(RID p_render_target) override {}
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override {}
 	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override { return RS::VIEWPORT_MSAA_DISABLED; }
-	virtual void render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) override {}
-	virtual bool render_target_get_msaa_needs_resolve(RID p_render_target) const override { return false; }
-	virtual void render_target_do_msaa_resolve(RID p_render_target) override {}
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override {}
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override { return false; }
 

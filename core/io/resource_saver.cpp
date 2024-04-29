@@ -120,8 +120,9 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 
 		String local_path = ProjectSettings::get_singleton()->localize_path(path);
 
+		Ref<Resource> rwcopy = p_resource;
 		if (p_flags & FLAG_CHANGE_PATH) {
-			p_resource->set_path(local_path);
+			rwcopy->set_path(local_path);
 		}
 
 		err = saver[i]->save(p_resource, path, p_flags);
@@ -138,7 +139,7 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 #endif
 
 			if (p_flags & FLAG_CHANGE_PATH) {
-				p_resource->set_path(old_path);
+				rwcopy->set_path(old_path);
 			}
 
 			if (save_callback && path.begins_with("res://")) {
@@ -215,7 +216,7 @@ void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_form
 	--saver_count;
 }
 
-Ref<ResourceFormatSaver> ResourceSaver::_find_custom_resource_format_saver(const String &path) {
+Ref<ResourceFormatSaver> ResourceSaver::_find_custom_resource_format_saver(String path) {
 	for (int i = 0; i < saver_count; ++i) {
 		if (saver[i]->get_script_instance() && saver[i]->get_script_instance()->get_script()->get_path() == path) {
 			return saver[i];
@@ -224,7 +225,7 @@ Ref<ResourceFormatSaver> ResourceSaver::_find_custom_resource_format_saver(const
 	return Ref<ResourceFormatSaver>();
 }
 
-bool ResourceSaver::add_custom_resource_format_saver(const String &script_path) {
+bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
 	if (_find_custom_resource_format_saver(script_path).is_valid()) {
 		return false;
 	}
@@ -236,10 +237,11 @@ bool ResourceSaver::add_custom_resource_format_saver(const String &script_path) 
 	Ref<Script> s = res;
 	StringName ibt = s->get_instance_base_type();
 	bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatSaver");
-	ERR_FAIL_COND_V_MSG(!valid_type, false, vformat("Failed to add a custom resource saver, script '%s' does not inherit 'ResourceFormatSaver'.", script_path));
+	ERR_FAIL_COND_V_MSG(!valid_type, false, "Script does not inherit a CustomResourceSaver: " + script_path + ".");
 
 	Object *obj = ClassDB::instantiate(ibt);
-	ERR_FAIL_NULL_V_MSG(obj, false, vformat("Failed to add a custom resource saver, cannot instantiate '%s'.", ibt));
+
+	ERR_FAIL_NULL_V_MSG(obj, false, "Cannot instance script as custom resource saver, expected 'ResourceFormatSaver' inheritance, got: " + String(ibt) + ".");
 
 	Ref<ResourceFormatSaver> crl = Object::cast_to<ResourceFormatSaver>(obj);
 	crl->set_script(s);

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../sys/platform.h"
-#include "../math/emath.h"
+#include "../math/math.h"
 
 namespace embree
 {

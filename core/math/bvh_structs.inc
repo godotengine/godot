@@ -83,7 +83,7 @@ public:
 
 	void clear() {
 		num_items = 0;
-		set_dirty(false);
+		set_dirty(true);
 	}
 	bool is_full() const { return num_items >= MAX_ITEMS; }
 

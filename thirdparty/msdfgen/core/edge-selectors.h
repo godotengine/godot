@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "Vector2.hpp"
-#include "SignedDistance.hpp"
+#include "Vector2.h"
+#include "SignedDistance.h"
 #include "edge-segments.h"
 
 namespace msdfgen {

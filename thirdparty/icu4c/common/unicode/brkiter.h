@@ -649,7 +649,6 @@ private:
     /** @internal (private) */
     char actualLocale[ULOC_FULLNAME_CAPACITY];
     char validLocale[ULOC_FULLNAME_CAPACITY];
-    char requestLocale[ULOC_FULLNAME_CAPACITY];
 };
 
 #ifndef U_HIDE_DEPRECATED_API

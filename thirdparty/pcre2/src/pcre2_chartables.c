@@ -5,8 +5,7 @@
 /* This file was automatically written by the pcre2_dftables auxiliary
 program. It contains character tables that are used when no external
 tables are passed to PCRE2 by the application that calls it. The tables
-are used only for characters whose code values are less than 256, and
-only relevant if not in UCP mode. */
+are used only for characters whose code values are less than 256. */
 
 /* This set of tables was written in the C locale. */
 
@@ -18,6 +17,13 @@ these tables in the "C" locale by default. This happens automatically if
 PCRE2 is configured with --enable-rebuild-chartables. However, you can run
 pcre2_dftables manually with the -L option to build tables using the LC_ALL
 locale. */
+
+/* The following #include is present because without it gcc 4.x may remove
+the array definition from the final binary if PCRE2 is built into a static
+library and dead code stripping is activated. This leads to link errors.
+Pulling in the header ensures that the array gets flagged as "someone
+outside this compilation unit might reference this" and so it will always
+be supplied to the linker. */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -157,7 +163,7 @@ graph, print, punct, and cntrl. Other classes are built from combinations. */
   0x02   letter
   0x04   lower case letter
   0x08   decimal digit
-  0x10   word (alphanumeric or '_')
+  0x10   alphanumeric or '_'
 */
 
   0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, /*   0-  7 */

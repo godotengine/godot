@@ -168,7 +168,7 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
   protected:
   const int     *coords;
   unsigned int  num_coords;
-  const	 CFF2ItemVariationStore *varStore;
+  const	 CFF2VariationStore *varStore;
   unsigned int  region_count;
   unsigned int  ivs;
   hb_vector_t<float>  scalars;

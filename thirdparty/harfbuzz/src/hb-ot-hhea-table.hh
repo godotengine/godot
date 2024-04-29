@@ -50,9 +50,7 @@ struct _hea
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this) &&
-		  hb_barrier () &&
-		  likely (version.major == 1));
+    return_trace (c->check_struct (this) && likely (version.major == 1));
   }
 
   public:

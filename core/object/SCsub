@@ -3,8 +3,9 @@
 Import("env")
 
 import make_virtuals
+from platform_methods import run_in_subprocess
 
-env.CommandNoCache(["gdvirtual.gen.inc"], "make_virtuals.py", env.Run(make_virtuals.run))
+env.CommandNoCache(["gdvirtual.gen.inc"], "make_virtuals.py", run_in_subprocess(make_virtuals.run))
 
 env_object = env.Clone()
 

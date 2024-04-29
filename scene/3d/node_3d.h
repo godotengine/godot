@@ -32,7 +32,7 @@
 #define NODE_3D_H
 
 #include "scene/main/node.h"
-#include "scene/resources/3d/world_3d.h"
+#include "scene/resources/world_3d.h"
 
 class Node3DGizmo : public RefCounted {
 	GDCLASS(Node3DGizmo, RefCounted);
@@ -227,7 +227,6 @@ public:
 	void clear_gizmos();
 
 	void set_as_top_level(bool p_enabled);
-	void set_as_top_level_keep_local(bool p_enabled);
 	bool is_set_as_top_level() const;
 
 	void set_disable_scale(bool p_enabled);

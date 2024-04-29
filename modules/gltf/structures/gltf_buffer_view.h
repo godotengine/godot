@@ -45,40 +45,26 @@ private:
 	int byte_length = 0;
 	int byte_stride = -1;
 	bool indices = false;
-	bool vertex_attributes = false;
 
 protected:
 	static void _bind_methods();
 
-#ifndef DISABLE_DEPRECATED
-	GLTFBufferIndex _get_buffer_bind_compat_86907();
-	int _get_byte_offset_bind_compat_86907();
-	int _get_byte_length_bind_compat_86907();
-	int _get_byte_stride_bind_compat_86907();
-	bool _get_indices_bind_compat_86907();
-	static void _bind_compatibility_methods();
-#endif // DISABLE_DEPRECATED
-
 public:
-	GLTFBufferIndex get_buffer() const;
+	GLTFBufferIndex get_buffer();
 	void set_buffer(GLTFBufferIndex p_buffer);
 
-	int get_byte_offset() const;
+	int get_byte_offset();
 	void set_byte_offset(int p_byte_offset);
 
-	int get_byte_length() const;
+	int get_byte_length();
 	void set_byte_length(int p_byte_length);
 
-	int get_byte_stride() const;
+	int get_byte_stride();
 	void set_byte_stride(int p_byte_stride);
 
-	bool get_indices() const;
+	bool get_indices();
 	void set_indices(bool p_indices);
-
-	bool get_vertex_attributes() const;
-	void set_vertex_attributes(bool p_attributes);
-
-	Vector<uint8_t> load_buffer_view_data(const Ref<GLTFState> p_state) const;
+	// matrices need to be transformed to this
 };
 
 #endif // GLTF_BUFFER_VIEW_H

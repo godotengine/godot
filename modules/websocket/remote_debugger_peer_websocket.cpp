@@ -91,7 +91,7 @@ bool RemoteDebuggerPeerWebSocket::has_message() {
 }
 
 Array RemoteDebuggerPeerWebSocket::get_message() {
-	ERR_FAIL_COND_V(in_queue.is_empty(), Array());
+	ERR_FAIL_COND_V(in_queue.size() < 1, Array());
 	Array msg = in_queue[0];
 	in_queue.pop_front();
 	return msg;

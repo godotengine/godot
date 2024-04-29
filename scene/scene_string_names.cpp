@@ -63,7 +63,7 @@ SceneStringNames::SceneStringNames() {
 	RESET = StaticCString::create("RESET");
 
 	pose_updated = StaticCString::create("pose_updated");
-	skeleton_updated = StaticCString::create("skeleton_updated");
+	bone_pose_changed = StaticCString::create("bone_pose_changed");
 	bone_enabled_changed = StaticCString::create("bone_enabled_changed");
 	show_rest_only_changed = StaticCString::create("show_rest_only_changed");
 

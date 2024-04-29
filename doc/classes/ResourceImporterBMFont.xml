@@ -18,8 +18,5 @@
 		<member name="fallbacks" type="Array" setter="" getter="" default="[]">
 			List of font fallbacks to use if a glyph isn't found in this bitmap font. Fonts at the beginning of the array are attempted first.
 		</member>
-		<member name="scaling_mode" type="int" setter="" getter="" default="2">
-			Font scaling mode.
-		</member>
 	</members>
 </class>

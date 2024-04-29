@@ -19,7 +19,7 @@ public:
     void addEdge(EdgeHolder &&edge);
 #endif
     /// Creates a new edge in the contour and returns its reference.
-    EdgeHolder &addEdge();
+    EdgeHolder & addEdge();
     /// Adjusts the bounding box to fit the contour.
     void bound(double &l, double &b, double &r, double &t) const;
     /// Adjusts the bounding box to fit the contour border's mitered corners.

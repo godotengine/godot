@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "Vector2.hpp"
+#include "Vector2.h"
 
 namespace msdfgen {
 

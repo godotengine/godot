@@ -68,6 +68,7 @@ private:
 	Callable pan_callback;
 	Callable zoom_callback;
 
+	void callback_helper(Callable p_callback, Vector<Variant> p_args);
 	ControlScheme control_scheme = SCROLL_ZOOMS;
 
 public:

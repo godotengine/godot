@@ -4,12 +4,7 @@
 #pragma once
 
 #include "../sys/alloc.h"
-#include "emath.h"
-
-#if defined(EMBREE_SYCL_SUPPORT) && defined(__SYCL_DEVICE_ONLY__)
-#  include "vec3fa_sycl.h"
-#else
-
+#include "math.h"
 #include "../simd/sse.h"
 
 namespace embree
@@ -446,6 +441,7 @@ namespace embree
     //__forceinline Vec3fx& operator =( const Vec3<float>& other ) { m128  = _mm_set_ps(0, other.z, other.y, other.x); return *this; }
 
     __forceinline Vec3fx            ( const Vec3fx& other ) { m128 = other.m128; }
+
     __forceinline Vec3fx& operator =( const Vec3fx& other ) { m128 = other.m128; return *this; }
 
     __forceinline explicit Vec3fx( const float a ) : m128(_mm_set1_ps(a)) {}
@@ -787,5 +783,3 @@ namespace embree
   
   typedef Vec3fx Vec3ff;
 }
-
-#endif

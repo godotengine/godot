@@ -210,20 +210,19 @@ void GodotCollisionObject3D::_update_shapes_with_motion(const Vector3 &p_motion)
 }
 
 void GodotCollisionObject3D::_set_space(GodotSpace3D *p_space) {
-	GodotSpace3D *old_space = space;
-	space = p_space;
-
-	if (old_space) {
-		old_space->remove_object(this);
+	if (space) {
+		space->remove_object(this);
 
 		for (int i = 0; i < shapes.size(); i++) {
 			Shape &s = shapes.write[i];
 			if (s.bpid) {
-				old_space->get_broadphase()->remove(s.bpid);
+				space->get_broadphase()->remove(s.bpid);
 				s.bpid = 0;
 			}
 		}
 	}
+
+	space = p_space;
 
 	if (space) {
 		space->add_object(this);

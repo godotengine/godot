@@ -36,11 +36,10 @@
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/export/editor_export.h"
 #include "editor/progress_dialog.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
@@ -147,9 +146,6 @@ void ExportTemplateManager::_download_template(const String &p_url, bool p_skip_
 
 	install_options_vb->hide();
 	download_progress_hb->show();
-	download_progress_bar->show();
-	download_progress_bar->set_indeterminate(true);
-
 	_set_current_progress_status(TTR("Starting the download..."));
 
 	download_templates->set_download_file(EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_templates.tpz"));
@@ -163,7 +159,6 @@ void ExportTemplateManager::_download_template(const String &p_url, bool p_skip_
 	Error err = download_templates->request(p_url);
 	if (err != OK) {
 		_set_current_progress_status(TTR("Error requesting URL:") + " " + p_url, true);
-		download_progress_hb->hide();
 		return;
 	}
 
@@ -362,10 +357,10 @@ bool ExportTemplateManager::_humanize_http_status(HTTPRequest *p_request, String
 }
 
 void ExportTemplateManager::_set_current_progress_status(const String &p_status, bool p_error) {
+	download_progress_bar->hide();
 	download_progress_label->set_text(p_status);
 
 	if (p_error) {
-		download_progress_bar->hide();
 		download_progress_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 	} else {
 		download_progress_label->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Label")));
@@ -374,7 +369,6 @@ void ExportTemplateManager::_set_current_progress_status(const String &p_status,
 
 void ExportTemplateManager::_set_current_progress_value(float p_value, const String &p_status) {
 	download_progress_bar->show();
-	download_progress_bar->set_indeterminate(false);
 	download_progress_bar->set_value(p_value);
 	download_progress_label->set_text(p_status);
 }
@@ -470,13 +464,6 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 		if (ret != UNZ_OK) {
 			break;
-		}
-
-		if (String::utf8(fname).ends_with("/")) {
-			// File is a directory, ignore it.
-			// Directories will be created when extracting each file.
-			ret = unzGoToNextFile(pkg);
-			continue;
 		}
 
 		String file_path(String::utf8(fname).simplify_path());
@@ -639,9 +626,7 @@ void ExportTemplateManager::_open_template_folder(const String &p_version) {
 
 void ExportTemplateManager::popup_manager() {
 	_update_template_status();
-	if (downloads_available) {
-		_refresh_mirrors();
-	}
+	_refresh_mirrors();
 	popup_centered(Size2(720, 280) * EDSCALE);
 }
 
@@ -658,78 +643,39 @@ void ExportTemplateManager::_hide_dialog() {
 	hide();
 }
 
-String ExportTemplateManager::get_android_build_directory(const Ref<EditorExportPreset> &p_preset) {
-	if (p_preset.is_valid()) {
-		String gradle_build_dir = p_preset->get("gradle_build/gradle_build_directory");
-		if (!gradle_build_dir.is_empty()) {
-			return gradle_build_dir.path_join("build");
-		}
-	}
-	return "res://android/build";
-}
-
-String ExportTemplateManager::get_android_source_zip(const Ref<EditorExportPreset> &p_preset) {
-	if (p_preset.is_valid()) {
-		String android_source_zip = p_preset->get("gradle_build/android_source_template");
-		if (!android_source_zip.is_empty()) {
-			return android_source_zip;
-		}
-	}
-
+bool ExportTemplateManager::can_install_android_template() {
 	const String templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(VERSION_FULL_CONFIG);
-	return templates_dir.path_join("android_source.zip");
+	return FileAccess::exists(templates_dir.path_join("android_source.zip"));
 }
 
-String ExportTemplateManager::get_android_template_identifier(const Ref<EditorExportPreset> &p_preset) {
-	// The template identifier is the Godot version for the default template, and the full path plus md5 hash for custom templates.
-	if (p_preset.is_valid()) {
-		String android_source_zip = p_preset->get("gradle_build/android_source_template");
-		if (!android_source_zip.is_empty()) {
-			return android_source_zip + String(" [") + FileAccess::get_md5(android_source_zip) + String("]");
-		}
-	}
-	return VERSION_FULL_CONFIG;
-}
-
-bool ExportTemplateManager::is_android_template_installed(const Ref<EditorExportPreset> &p_preset) {
-	return DirAccess::exists(get_android_build_directory(p_preset));
-}
-
-bool ExportTemplateManager::can_install_android_template(const Ref<EditorExportPreset> &p_preset) {
-	return FileAccess::exists(get_android_source_zip(p_preset));
-}
-
-Error ExportTemplateManager::install_android_template(const Ref<EditorExportPreset> &p_preset) {
-	const String source_zip = get_android_source_zip(p_preset);
+Error ExportTemplateManager::install_android_template() {
+	const String &templates_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(VERSION_FULL_CONFIG);
+	const String &source_zip = templates_path.path_join("android_source.zip");
 	ERR_FAIL_COND_V(!FileAccess::exists(source_zip), ERR_CANT_OPEN);
-	return install_android_template_from_file(source_zip, p_preset);
+	return install_android_template_from_file(source_zip);
 }
-
-Error ExportTemplateManager::install_android_template_from_file(const String &p_file, const Ref<EditorExportPreset> &p_preset) {
+Error ExportTemplateManager::install_android_template_from_file(const String &p_file) {
 	// To support custom Android builds, we install the Java source code and buildsystem
 	// from android_source.zip to the project's res://android folder.
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	ERR_FAIL_COND_V(da.is_null(), ERR_CANT_CREATE);
 
-	String build_dir = get_android_build_directory(p_preset);
-	String parent_dir = build_dir.get_base_dir();
-
-	// Make parent of the build dir (if it does not exist).
-	da->make_dir_recursive(parent_dir);
+	// Make res://android dir (if it does not exist).
+	da->make_dir("android");
 	{
-		// Add identifier, to ensure building won't work if the current template doesn't match.
-		Ref<FileAccess> f = FileAccess::open(parent_dir.path_join(".build_version"), FileAccess::WRITE);
+		// Add version, to ensure building won't work if template and Godot version don't match.
+		Ref<FileAccess> f = FileAccess::open("res://android/.build_version", FileAccess::WRITE);
 		ERR_FAIL_COND_V(f.is_null(), ERR_CANT_CREATE);
-		f->store_line(get_android_template_identifier(p_preset));
+		f->store_line(VERSION_FULL_CONFIG);
 	}
 
 	// Create the android build directory.
-	Error err = da->make_dir_recursive(build_dir);
+	Error err = da->make_dir_recursive("android/build");
 	ERR_FAIL_COND_V(err != OK, err);
 	{
 		// Add an empty .gdignore file to avoid scan.
-		Ref<FileAccess> f = FileAccess::open(build_dir.path_join(".gdignore"), FileAccess::WRITE);
+		Ref<FileAccess> f = FileAccess::open("res://android/build/.gdignore", FileAccess::WRITE);
 		ERR_FAIL_COND_V(f.is_null(), ERR_CANT_CREATE);
 		f->store_line("");
 	}
@@ -740,7 +686,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 	zlib_filefunc_def io = zipio_create_io(&io_fa);
 
 	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
-	ERR_FAIL_NULL_V_MSG(pkg, ERR_CANT_OPEN, "Android sources not in ZIP format.");
+	ERR_FAIL_COND_V_MSG(!pkg, ERR_CANT_OPEN, "Android sources not in ZIP format.");
 
 	int ret = unzGoToFirstFile(pkg);
 	int total_files = 0;
@@ -777,11 +723,11 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 			unzCloseCurrentFile(pkg);
 
 			if (!dirs_tested.has(base_dir)) {
-				da->make_dir_recursive(build_dir.path_join(base_dir));
+				da->make_dir_recursive(String("android/build").path_join(base_dir));
 				dirs_tested.insert(base_dir);
 			}
 
-			String to_write = build_dir.path_join(path);
+			String to_write = String("res://android/build").path_join(path);
 			Ref<FileAccess> f = FileAccess::open(to_write, FileAccess::WRITE);
 			if (f.is_valid()) {
 				f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
@@ -812,7 +758,7 @@ void ExportTemplateManager::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			current_value->add_theme_font_override("font", get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
 			current_missing_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			current_installed_label->add_theme_color_override("font_color", get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+			current_installed_label->add_theme_color_override("font_color", get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
 
 			mirror_options_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 		} break;
@@ -899,11 +845,7 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	current_missing_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	current_missing_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-	if (downloads_available) {
-		current_missing_label->set_text(TTR("Export templates are missing. Download them or install from a file."));
-	} else {
-		current_missing_label->set_text(TTR("Export templates are missing. Install them from a file."));
-	}
+	current_missing_label->set_text(TTR("Export templates are missing. Download them or install from a file."));
 	current_hb->add_child(current_missing_label);
 
 	// Status: Current version is installed.
@@ -956,13 +898,8 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	mirrors_list = memnew(OptionButton);
 	mirrors_list->set_custom_minimum_size(Size2(280, 0) * EDSCALE);
-	if (downloads_available) {
-		mirrors_list->add_item(TTR("Best available mirror"), 0);
-	} else {
-		mirrors_list->add_item(TTR("(no templates for development builds)"), 0);
-		mirrors_list->set_disabled(true);
-	}
 	download_install_hb->add_child(mirrors_list);
+	mirrors_list->add_item(TTR("Best available mirror"), 0);
 
 	request_mirrors = memnew(HTTPRequest);
 	mirrors_list->add_child(request_mirrors);
@@ -971,7 +908,6 @@ ExportTemplateManager::ExportTemplateManager() {
 	mirror_options_button = memnew(MenuButton);
 	mirror_options_button->get_popup()->add_item(TTR("Open in Web Browser"), VISIT_WEB_MIRROR);
 	mirror_options_button->get_popup()->add_item(TTR("Copy Mirror URL"), COPY_MIRROR_URL);
-	mirror_options_button->set_disabled(!downloads_available);
 	download_install_hb->add_child(mirror_options_button);
 	mirror_options_button->get_popup()->connect("id_pressed", callable_mp(this, &ExportTemplateManager::_mirror_options_button_cbk));
 
@@ -1012,7 +948,6 @@ ExportTemplateManager::ExportTemplateManager() {
 	download_progress_bar->set_max(1);
 	download_progress_bar->set_value(0);
 	download_progress_bar->set_step(0.01);
-	download_progress_bar->set_editor_preview_indeterminate(true);
 	download_progress_hb->add_child(download_progress_bar);
 
 	download_progress_label = memnew(Label);
@@ -1040,7 +975,6 @@ ExportTemplateManager::ExportTemplateManager() {
 	installed_versions_hb->add_child(installed_label);
 
 	installed_table = memnew(Tree);
-	installed_table->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	installed_table->set_hide_root(true);
 	installed_table->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	installed_table->set_v_size_flags(Control::SIZE_EXPAND_FILL);

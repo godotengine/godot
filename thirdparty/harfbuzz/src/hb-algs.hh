@@ -367,10 +367,6 @@ struct
 	    hb_enable_if (std::is_integral<T>::value && sizeof (T) > sizeof (uint32_t))> constexpr auto
   impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, (uint32_t) (v ^ (v >> 32)) * 2654435761u /* Knuth's multiplicative hash */)
 
-  template <typename T,
-	    hb_enable_if (std::is_floating_point<T>::value)> constexpr auto
-  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, fasthash32 (std::addressof (v), sizeof (T), 0xf437ffe6))
-
   template <typename T> constexpr auto
   impl (const T& v, hb_priority<0>) const HB_RETURN (uint32_t, std::hash<hb_decay<decltype (hb_deref (v))>>{} (hb_deref (v)))
 
@@ -671,7 +667,7 @@ struct hb_pair_t
     return 0;
   }
 
-  friend void swap (hb_pair_t& a, hb_pair_t& b) noexcept
+  friend void swap (hb_pair_t& a, hb_pair_t& b)
   {
     hb_swap (a.first, b.first);
     hb_swap (a.second, b.second);
@@ -1051,18 +1047,6 @@ _hb_cmp_method (const void *pkey, const void *pval, Ts... ds)
   const V& val = * (const V*) pval;
 
   return val.cmp (key, ds...);
-}
-
-template <typename K, typename V>
-static int
-_hb_cmp_operator (const void *pkey, const void *pval)
-{
-  const K& key = * (const K*) pkey;
-  const V& val = * (const V*) pval;
-
-  if (key < val) return -1;
-  if (key > val) return  1;
-  return 0;
 }
 
 template <typename V, typename K, typename ...Ts>

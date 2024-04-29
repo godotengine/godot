@@ -49,7 +49,6 @@ protected:
 	virtual String get_drive(int p_drive) override;
 
 	virtual bool is_hidden(const String &p_name) override;
-	virtual bool is_case_sensitive(const String &p_path) const override;
 };
 
 #endif // UNIX ENABLED

@@ -40,7 +40,7 @@
 #include <type_traits>
 #include <typeinfo>
 
-template <typename T, bool thread_safe = false, uint32_t DEFAULT_PAGE_SIZE = 4096>
+template <class T, bool thread_safe = false>
 class PagedAllocator {
 	T **page_pool = nullptr;
 	T ***available_pool = nullptr;
@@ -53,8 +53,12 @@ class PagedAllocator {
 	SpinLock spin_lock;
 
 public:
-	template <typename... Args>
-	T *alloc(Args &&...p_args) {
+	enum {
+		DEFAULT_PAGE_SIZE = 4096
+	};
+
+	template <class... Args>
+	T *alloc(const Args &&...p_args) {
 		if (thread_safe) {
 			spin_lock.lock();
 		}
@@ -95,13 +99,9 @@ public:
 		}
 	}
 
-	template <typename... Args>
-	T *new_allocation(Args &&...p_args) { return alloc(p_args...); }
-	void delete_allocation(T *p_mem) { free(p_mem); }
-
 private:
 	void _reset(bool p_allow_unfreed) {
-		if (!p_allow_unfreed || !std::is_trivially_destructible_v<T>) {
+		if (!p_allow_unfreed || !std::is_trivially_destructible<T>::value) {
 			ERR_FAIL_COND(allocs_available < pages_allocated * page_size);
 		}
 		if (pages_allocated) {
@@ -144,7 +144,7 @@ public:
 		if (thread_safe) {
 			spin_lock.lock();
 		}
-		ERR_FAIL_COND(page_pool != nullptr); // Safety check.
+		ERR_FAIL_COND(page_pool != nullptr); //sanity check
 		ERR_FAIL_COND(p_page_size == 0);
 		page_size = nearest_power_of_2_templated(p_page_size);
 		page_mask = page_size - 1;

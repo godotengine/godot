@@ -54,8 +54,8 @@ struct top_dict_values_t : dict_values_t<OPSTR>
   }
   void fini () { dict_values_t<OPSTR>::fini (); }
 
-  int  charStringsOffset;
-  int  FDArrayOffset;
+  unsigned int  charStringsOffset;
+  unsigned int  FDArrayOffset;
 };
 
 struct dict_opset_t : opset_t<number_t>
@@ -157,11 +157,11 @@ struct top_dict_opset_t : dict_opset_t
   {
     switch (op) {
       case OpCode_CharStrings:
-	dictval.charStringsOffset = env.argStack.pop_int ();
+	dictval.charStringsOffset = env.argStack.pop_uint ();
 	env.clear_args ();
 	break;
       case OpCode_FDArray:
-	dictval.FDArrayOffset = env.argStack.pop_int ();
+	dictval.FDArrayOffset = env.argStack.pop_uint ();
 	env.clear_args ();
 	break;
       case OpCode_FontMatrix:

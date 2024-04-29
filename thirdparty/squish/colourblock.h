@@ -36,7 +36,6 @@ void WriteColourBlock4( Vec3::Arg start, Vec3::Arg end, u8 const* indices, void*
 
 void DecompressColour( u8* rgba, void const* block, bool isDxt1 );
 // -- GODOT start --
-void DecompressColourBc4( u8* rgba, void const* block );
 void DecompressColourBc5( u8* rgba, void const* block );
 // -- GODOT end --
 

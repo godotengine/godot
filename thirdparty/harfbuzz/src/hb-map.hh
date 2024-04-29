@@ -42,37 +42,13 @@ template <typename K, typename V,
 	  bool minus_one = false>
 struct hb_hashmap_t
 {
-  static constexpr bool realloc_move = true;
-
   hb_hashmap_t ()  { init (); }
   ~hb_hashmap_t () { fini (); }
 
-  hb_hashmap_t (const hb_hashmap_t& o) : hb_hashmap_t ()
-  {
-    if (unlikely (!o.mask)) return;
-
-    if (item_t::is_trivial)
-    {
-      items = (item_t *) hb_malloc (sizeof (item_t) * (o.mask + 1));
-      if (unlikely (!items))
-      {
-	successful = false;
-	return;
-      }
-      population = o.population;
-      occupancy = o.occupancy;
-      mask = o.mask;
-      prime = o.prime;
-      max_chain_length = o.max_chain_length;
-      memcpy (items, o.items, sizeof (item_t) * (mask + 1));
-      return;
-    }
-
-    alloc (o.population); hb_copy (o, *this);
-  }
-  hb_hashmap_t (hb_hashmap_t&& o)  noexcept : hb_hashmap_t () { hb_swap (*this, o); }
+  hb_hashmap_t (const hb_hashmap_t& o) : hb_hashmap_t () { alloc (o.population); hb_copy (o, *this); }
+  hb_hashmap_t (hb_hashmap_t&& o) : hb_hashmap_t () { hb_swap (*this, o); }
   hb_hashmap_t& operator= (const hb_hashmap_t& o)  { reset (); alloc (o.population); hb_copy (o, *this); return *this; }
-  hb_hashmap_t& operator= (hb_hashmap_t&& o)   noexcept { hb_swap (*this, o); return *this; }
+  hb_hashmap_t& operator= (hb_hashmap_t&& o)  { hb_swap (*this, o); return *this; }
 
   hb_hashmap_t (std::initializer_list<hb_pair_t<K, V>> lst) : hb_hashmap_t ()
   {
@@ -128,32 +104,35 @@ struct hb_hashmap_t
     hb_pair_t<const K &, V &> get_pair_ref() { return hb_pair_t<const K &, V &> (key, value); }
 
     uint32_t total_hash () const
-    { return (hash * 31u) + hb_hash (value); }
+    { return (hash * 31) + hb_hash (value); }
 
-    static constexpr bool is_trivial = hb_is_trivially_constructible(K) &&
-				       hb_is_trivially_destructible(K) &&
-				       hb_is_trivially_constructible(V) &&
-				       hb_is_trivially_destructible(V);
+    static constexpr bool is_trivial = std::is_trivially_constructible<K>::value &&
+				       std::is_trivially_destructible<K>::value &&
+				       std::is_trivially_constructible<V>::value &&
+				       std::is_trivially_destructible<V>::value;
   };
 
   hb_object_header_t header;
-  bool successful; /* Allocations successful */
-  unsigned short max_chain_length;
-  unsigned int population; /* Not including tombstones. */
+  unsigned int successful : 1; /* Allocations successful */
+  unsigned int population : 31; /* Not including tombstones. */
   unsigned int occupancy; /* Including tombstones. */
   unsigned int mask;
   unsigned int prime;
+  unsigned int max_chain_length;
   item_t *items;
 
-  friend void swap (hb_hashmap_t& a, hb_hashmap_t& b) noexcept
+  friend void swap (hb_hashmap_t& a, hb_hashmap_t& b)
   {
     if (unlikely (!a.successful || !b.successful))
       return;
-    hb_swap (a.max_chain_length, b.max_chain_length);
-    hb_swap (a.population, b.population);
+    unsigned tmp = a.population;
+    a.population = b.population;
+    b.population = tmp;
+    //hb_swap (a.population, b.population);
     hb_swap (a.occupancy, b.occupancy);
     hb_swap (a.mask, b.mask);
     hb_swap (a.prime, b.prime);
+    hb_swap (a.max_chain_length, b.max_chain_length);
     hb_swap (a.items, b.items);
   }
   void init ()
@@ -161,10 +140,10 @@ struct hb_hashmap_t
     hb_object_init (this);
 
     successful = true;
-    max_chain_length = 0;
     population = occupancy = 0;
     mask = 0;
     prime = 0;
+    max_chain_length = 0;
     items = nullptr;
   }
   void fini ()
@@ -230,10 +209,9 @@ struct hb_hashmap_t
 		       old_items[i].hash,
 		       std::move (old_items[i].value));
       }
-    }
-    if (!item_t::is_trivial)
-      for (unsigned int i = 0; i < old_size; i++)
+      if (!item_t::is_trivial)
 	old_items[i].~item_t ();
+    }
 
     hb_free (old_items);
 
@@ -297,11 +275,6 @@ struct hb_hashmap_t
   {
     uint32_t hash = hb_hash (key);
     return set_with_hash (std::move (key), hash, std::forward<VV> (value), overwrite);
-  }
-  bool add (const K &key)
-  {
-    uint32_t hash = hb_hash (key);
-    return set_with_hash (key, hash, item_t::default_value ());
   }
 
   const V& get_with_hash (const K &key, uint32_t hash) const
@@ -420,37 +393,37 @@ struct hb_hashmap_t
 
   auto iter_items () const HB_AUTO_RETURN
   (
-    + hb_iter (items, this->size ())
+    + hb_iter (items, size ())
     | hb_filter (&item_t::is_real)
   )
   auto iter_ref () const HB_AUTO_RETURN
   (
-    + this->iter_items ()
+    + iter_items ()
     | hb_map (&item_t::get_pair_ref)
   )
   auto iter () const HB_AUTO_RETURN
   (
-    + this->iter_items ()
+    + iter_items ()
     | hb_map (&item_t::get_pair)
   )
   auto keys_ref () const HB_AUTO_RETURN
   (
-    + this->iter_items ()
+    + iter_items ()
     | hb_map (&item_t::get_key)
   )
   auto keys () const HB_AUTO_RETURN
   (
-    + this->keys_ref ()
+    + keys_ref ()
     | hb_map (hb_ridentity)
   )
   auto values_ref () const HB_AUTO_RETURN
   (
-    + this->iter_items ()
+    + iter_items ()
     | hb_map (&item_t::get_value)
   )
   auto values () const HB_AUTO_RETURN
   (
-    + this->values_ref ()
+    + values_ref ()
     | hb_map (hb_ridentity)
   )
 
@@ -555,7 +528,7 @@ struct hb_map_t : hb_hashmap_t<hb_codepoint_t,
   ~hb_map_t () = default;
   hb_map_t () : hashmap () {}
   hb_map_t (const hb_map_t &o) : hashmap ((hashmap &) o) {}
-  hb_map_t (hb_map_t &&o)  noexcept : hashmap (std::move ((hashmap &) o)) {}
+  hb_map_t (hb_map_t &&o) : hashmap (std::move ((hashmap &) o)) {}
   hb_map_t& operator= (const hb_map_t&) = default;
   hb_map_t& operator= (hb_map_t&&) = default;
   hb_map_t (std::initializer_list<hb_codepoint_pair_t> lst) : hashmap (lst) {}

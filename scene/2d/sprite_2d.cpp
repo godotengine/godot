@@ -99,7 +99,7 @@ void Sprite2D::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_c
 	}
 
 	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-		dest_offset = dest_offset.round();
+		dest_offset = dest_offset.floor();
 	}
 
 	r_dst_rect = Rect2(dest_offset, frame_size);
@@ -155,10 +155,6 @@ Ref<Texture2D> Sprite2D::get_texture() const {
 }
 
 void Sprite2D::set_centered(bool p_center) {
-	if (centered == p_center) {
-		return;
-	}
-
 	centered = p_center;
 	queue_redraw();
 	item_rect_changed();
@@ -169,10 +165,6 @@ bool Sprite2D::is_centered() const {
 }
 
 void Sprite2D::set_offset(const Point2 &p_offset) {
-	if (offset == p_offset) {
-		return;
-	}
-
 	offset = p_offset;
 	queue_redraw();
 	item_rect_changed();
@@ -183,10 +175,6 @@ Point2 Sprite2D::get_offset() const {
 }
 
 void Sprite2D::set_flip_h(bool p_flip) {
-	if (hflip == p_flip) {
-		return;
-	}
-
 	hflip = p_flip;
 	queue_redraw();
 }
@@ -196,10 +184,6 @@ bool Sprite2D::is_flipped_h() const {
 }
 
 void Sprite2D::set_flip_v(bool p_flip) {
-	if (vflip == p_flip) {
-		return;
-	}
-
 	vflip = p_flip;
 	queue_redraw();
 }
@@ -209,7 +193,7 @@ bool Sprite2D::is_flipped_v() const {
 }
 
 void Sprite2D::set_region_enabled(bool p_region_enabled) {
-	if (region_enabled == p_region_enabled) {
+	if (p_region_enabled == region_enabled) {
 		return;
 	}
 
@@ -239,10 +223,6 @@ Rect2 Sprite2D::get_region_rect() const {
 }
 
 void Sprite2D::set_region_filter_clip_enabled(bool p_region_filter_clip_enabled) {
-	if (region_filter_clip_enabled == p_region_filter_clip_enabled) {
-		return;
-	}
-
 	region_filter_clip_enabled = p_region_filter_clip_enabled;
 	queue_redraw();
 }
@@ -254,12 +234,12 @@ bool Sprite2D::is_region_filter_clip_enabled() const {
 void Sprite2D::set_frame(int p_frame) {
 	ERR_FAIL_INDEX(p_frame, vframes * hframes);
 
-	if (frame == p_frame) {
-		return;
+	if (frame != p_frame) {
+		item_rect_changed();
 	}
 
 	frame = p_frame;
-	item_rect_changed();
+
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
@@ -280,15 +260,7 @@ Vector2i Sprite2D::get_frame_coords() const {
 
 void Sprite2D::set_vframes(int p_amount) {
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of vframes cannot be smaller than 1.");
-
-	if (vframes == p_amount) {
-		return;
-	}
-
 	vframes = p_amount;
-	if (frame >= vframes * hframes) {
-		frame = 0;
-	}
 	queue_redraw();
 	item_rect_changed();
 	notify_property_list_changed();
@@ -300,26 +272,7 @@ int Sprite2D::get_vframes() const {
 
 void Sprite2D::set_hframes(int p_amount) {
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of hframes cannot be smaller than 1.");
-
-	if (hframes == p_amount) {
-		return;
-	}
-
-	if (vframes > 1) {
-		// Adjust the frame to fit new sheet dimensions.
-		int original_column = frame % hframes;
-		if (original_column >= p_amount) {
-			// Frame's column was dropped, reset.
-			frame = 0;
-		} else {
-			int original_row = frame / hframes;
-			frame = original_row * p_amount + original_column;
-		}
-	}
 	hframes = p_amount;
-	if (frame >= vframes * hframes) {
-		frame = 0;
-	}
 	queue_redraw();
 	item_rect_changed();
 	notify_property_list_changed();
@@ -374,7 +327,8 @@ bool Sprite2D::is_pixel_opaque(const Point2 &p_point) const {
 			q.y = texture->get_size().height - q.y - 1;
 		}
 	} else {
-		q = q.min(texture->get_size() - Vector2(1, 1));
+		q.x = MIN(q.x, texture->get_size().width - 1);
+		q.y = MIN(q.y, texture->get_size().height - 1);
 	}
 
 	return texture->is_pixel_opaque((int)q.x, (int)q.y);
@@ -401,7 +355,7 @@ Rect2 Sprite2D::get_rect() const {
 	}
 
 	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-		ofs = ofs.round();
+		ofs = ofs.floor();
 	}
 
 	if (s == Size2(0, 0)) {

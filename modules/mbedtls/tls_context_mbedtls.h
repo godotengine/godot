@@ -36,6 +36,7 @@
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 
+#include <mbedtls/config.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/debug.h>
 #include <mbedtls/entropy.h>

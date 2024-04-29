@@ -393,7 +393,7 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 		return;
 	}
 
-#define vert(m_idx) Vector3(((m_idx) & 4) >> 2, ((m_idx) & 2) >> 1, (m_idx) & 1)
+#define vert(m_idx) Vector3(((m_idx)&4) >> 2, ((m_idx)&2) >> 1, (m_idx)&1)
 
 	static const uint8_t indices[6][4] = {
 		{ 7, 6, 4, 5 },
@@ -449,7 +449,7 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 	}
 }
 
-Vector<Face3> Geometry3D::wrap_geometry(const Vector<Face3> &p_array, real_t *p_error) {
+Vector<Face3> Geometry3D::wrap_geometry(Vector<Face3> p_array, real_t *p_error) {
 	int face_count = p_array.size();
 	const Face3 *faces = p_array.ptr();
 	constexpr double min_size = 1.0;

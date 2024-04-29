@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2024 Arm Limited
+// Copyright 2011-2023 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -60,8 +60,8 @@ static const uint8_t steps_for_quant_level[12] {
 	2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32
 };
 
-ASTCENC_ALIGNAS static float sin_table[SINCOS_STEPS][ANGULAR_STEPS];
-ASTCENC_ALIGNAS static float cos_table[SINCOS_STEPS][ANGULAR_STEPS];
+alignas(ASTCENC_VECALIGN) static float sin_table[SINCOS_STEPS][ANGULAR_STEPS];
+alignas(ASTCENC_VECALIGN) static float cos_table[SINCOS_STEPS][ANGULAR_STEPS];
 
 #if defined(ASTCENC_DIAGNOSTICS)
 	static bool print_once { true };
@@ -99,7 +99,7 @@ static void compute_angular_offsets(
 	promise(weight_count > 0);
 	promise(max_angular_steps > 0);
 
-	ASTCENC_ALIGNAS int isamplev[BLOCK_MAX_WEIGHTS];
+	alignas(ASTCENC_VECALIGN) int isamplev[BLOCK_MAX_WEIGHTS];
 
 	// Precompute isample; arrays are always allocated 64 elements long
 	for (unsigned int i = 0; i < weight_count; i += ASTCENC_SIMD_WIDTH)
@@ -242,16 +242,16 @@ static void compute_angular_endpoints_for_quant_levels(
 	unsigned int max_quant_steps = steps_for_quant_level[max_quant_level];
 	unsigned int max_angular_steps = steps_for_quant_level[max_quant_level];
 
-	ASTCENC_ALIGNAS float angular_offsets[ANGULAR_STEPS];
+	alignas(ASTCENC_VECALIGN) float angular_offsets[ANGULAR_STEPS];
 
 	compute_angular_offsets(weight_count, dec_weight_ideal_value,
 	                        max_angular_steps, angular_offsets);
 
-	ASTCENC_ALIGNAS float lowest_weight[ANGULAR_STEPS];
-	ASTCENC_ALIGNAS int32_t weight_span[ANGULAR_STEPS];
-	ASTCENC_ALIGNAS float error[ANGULAR_STEPS];
-	ASTCENC_ALIGNAS float cut_low_weight_error[ANGULAR_STEPS];
-	ASTCENC_ALIGNAS float cut_high_weight_error[ANGULAR_STEPS];
+	alignas(ASTCENC_VECALIGN) float lowest_weight[ANGULAR_STEPS];
+	alignas(ASTCENC_VECALIGN) int32_t weight_span[ANGULAR_STEPS];
+	alignas(ASTCENC_VECALIGN) float error[ANGULAR_STEPS];
+	alignas(ASTCENC_VECALIGN) float cut_low_weight_error[ANGULAR_STEPS];
+	alignas(ASTCENC_VECALIGN) float cut_high_weight_error[ANGULAR_STEPS];
 
 	compute_lowest_and_highest_weight(weight_count, dec_weight_ideal_value,
 	                                  max_angular_steps, max_quant_steps,

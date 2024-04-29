@@ -282,67 +282,41 @@ TEST_CASE("[Geometry2D] Closest point to uncapped segment") {
 
 TEST_CASE("[Geometry2D] Closest points between segments") {
 	Vector2 c1, c2;
-	// Basis Path Testing suite
-	SUBCASE("[Geometry2D] Both segments degenerate to a point") {
-		Geometry2D::get_closest_points_between_segments(Vector2(0, 0), Vector2(0, 0), Vector2(0, 0), Vector2(0, 0), c1, c2);
-		CHECK(c1.is_equal_approx(Vector2(0, 0)));
-		CHECK(c2.is_equal_approx(Vector2(0, 0)));
-	}
+	Geometry2D::get_closest_points_between_segments(Vector2(2, 2), Vector2(3, 3), Vector2(4, 4), Vector2(4, 5), c1, c2);
+	CHECK(c1.is_equal_approx(Vector2(3, 3)));
+	CHECK(c2.is_equal_approx(Vector2(4, 4)));
 
-	SUBCASE("[Geometry2D] Closest point on second segment trajectory is above [0,1]") {
-		Geometry2D::get_closest_points_between_segments(Vector2(50, -25), Vector2(50, -10), Vector2(-50, 10), Vector2(-40, 10), c1, c2);
-		CHECK(c1.is_equal_approx(Vector2(50, -10)));
-		CHECK(c2.is_equal_approx(Vector2(-40, 10)));
-	}
+	Geometry2D::get_closest_points_between_segments(Vector2(0, 1), Vector2(-2, -1), Vector2(0, 0), Vector2(2, -2), c1, c2);
+	CHECK(c1.is_equal_approx(Vector2(-0.5, 0.5)));
+	CHECK(c2.is_equal_approx(Vector2(0, 0)));
 
-	SUBCASE("[Geometry2D] Parallel segments") {
-		Geometry2D::get_closest_points_between_segments(Vector2(2, 1), Vector2(4, 3), Vector2(2, 3), Vector2(4, 5), c1, c2);
-		CHECK(c1.is_equal_approx(Vector2(3, 2)));
-		CHECK(c2.is_equal_approx(Vector2(2, 3)));
-	}
+	Geometry2D::get_closest_points_between_segments(Vector2(-1, 1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, -1), c1, c2);
+	CHECK(c1.is_equal_approx(Vector2(0, 0)));
+	CHECK(c2.is_equal_approx(Vector2(0, 0)));
 
-	SUBCASE("[Geometry2D] Closest point on second segment trajectory is within [0,1]") {
-		Geometry2D::get_closest_points_between_segments(Vector2(2, 4), Vector2(2, 3), Vector2(1, 1), Vector2(4, 4), c1, c2);
-		CHECK(c1.is_equal_approx(Vector2(2, 3)));
-		CHECK(c2.is_equal_approx(Vector2(2.5, 2.5)));
-	}
+	Geometry2D::get_closest_points_between_segments(Vector2(-3, 4), Vector2(-3, 4), Vector2(-4, 3), Vector2(-2, 3), c1, c2);
+	CHECK_MESSAGE(
+			c1.is_equal_approx(Vector2(-3, 4)),
+			"1st line segment is only a point, this point should be the closest point to the 2nd line segment.");
+	CHECK_MESSAGE(
+			c2.is_equal_approx(Vector2(-3, 3)),
+			"1st line segment is only a point, this should not matter when determining the closest point on the 2nd line segment.");
 
-	SUBCASE("[Geometry2D] Closest point on second segment trajectory is below [0,1]") {
-		Geometry2D::get_closest_points_between_segments(Vector2(-20, -20), Vector2(-10, -40), Vector2(10, 25), Vector2(25, 40), c1, c2);
-		CHECK(c1.is_equal_approx(Vector2(-20, -20)));
-		CHECK(c2.is_equal_approx(Vector2(10, 25)));
-	}
+	Geometry2D::get_closest_points_between_segments(Vector2(-4, 3), Vector2(-2, 3), Vector2(-3, 4), Vector2(-3, 4), c1, c2);
+	CHECK_MESSAGE(
+			c1.is_equal_approx(Vector2(-3, 3)),
+			"2nd line segment is only a point, this should not matter when determining the closest point on the 1st line segment.");
+	CHECK_MESSAGE(
+			c2.is_equal_approx(Vector2(-3, 4)),
+			"2nd line segment is only a point, this point should be the closest point to the 1st line segment.");
 
-	SUBCASE("[Geometry2D] Second segment degenerates to a point") {
-		Geometry2D::get_closest_points_between_segments(Vector2(1, 2), Vector2(2, 1), Vector2(3, 3), Vector2(3, 3), c1, c2);
-		CHECK(c1.is_equal_approx(Vector2(1.5, 1.5)));
-		CHECK(c2.is_equal_approx(Vector2(3, 3)));
-	}
-
-	SUBCASE("[Geometry2D] First segment degenerates to a point") {
-		Geometry2D::get_closest_points_between_segments(Vector2(1, 1), Vector2(1, 1), Vector2(2, 2), Vector2(4, 4), c1, c2);
-		CHECK(c1.is_equal_approx(Vector2(1, 1)));
-		CHECK(c2.is_equal_approx(Vector2(2, 2)));
-	}
-	// End Basis Path Testing suite
-
-	SUBCASE("[Geometry2D] Segments are equal vectors") {
-		Geometry2D::get_closest_points_between_segments(Vector2(2, 2), Vector2(3, 3), Vector2(4, 4), Vector2(4, 5), c1, c2);
-		CHECK(c1.is_equal_approx(Vector2(3, 3)));
-		CHECK(c2.is_equal_approx(Vector2(4, 4)));
-	}
-
-	SUBCASE("[Geometry2D] Standard case") {
-		Geometry2D::get_closest_points_between_segments(Vector2(0, 1), Vector2(-2, -1), Vector2(0, 0), Vector2(2, -2), c1, c2);
-		CHECK(c1.is_equal_approx(Vector2(-0.5, 0.5)));
-		CHECK(c2.is_equal_approx(Vector2(0, 0)));
-	}
-
-	SUBCASE("[Geometry2D] Segments intersect") {
-		Geometry2D::get_closest_points_between_segments(Vector2(-1, 1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, -1), c1, c2);
-		CHECK(c1.is_equal_approx(Vector2(0, 0)));
-		CHECK(c2.is_equal_approx(Vector2(0, 0)));
-	}
+	Geometry2D::get_closest_points_between_segments(Vector2(5, -4), Vector2(5, -4), Vector2(-2, 1), Vector2(-2, 1), c1, c2);
+	CHECK_MESSAGE(
+			c1.is_equal_approx(Vector2(5, -4)),
+			"Both line segments are only a point. On the 1st line segment, that point should be the closest point to the 2nd line segment.");
+	CHECK_MESSAGE(
+			c2.is_equal_approx(Vector2(-2, 1)),
+			"Both line segments are only a point. On the 2nd line segment, that point should be the closest point to the 1st line segment.");
 }
 
 TEST_CASE("[Geometry2D] Make atlas") {

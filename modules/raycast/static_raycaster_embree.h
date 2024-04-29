@@ -35,7 +35,7 @@
 
 #include "core/math/static_raycaster.h"
 
-#include <embree4/rtcore.h>
+#include <embree3/rtcore.h>
 
 class StaticRaycasterEmbree : public StaticRaycaster {
 	GDCLASS(StaticRaycasterEmbree, StaticRaycaster);

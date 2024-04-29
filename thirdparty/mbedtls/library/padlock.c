@@ -2,7 +2,19 @@
  *  VIA PadLock support functions
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may
+ *  not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 /*
  *  This implementation is based on the VIA PadLock Programming Guide:
@@ -15,11 +27,17 @@
 
 #if defined(MBEDTLS_PADLOCK_C)
 
-#include "padlock.h"
+#include "mbedtls/padlock.h"
 
 #include <string.h>
 
-#if defined(MBEDTLS_VIA_PADLOCK_HAVE_CODE)
+/* *INDENT-OFF* */
+#ifndef asm
+#define asm __asm
+#endif
+/* *INDENT-ON* */
+
+#if defined(MBEDTLS_HAVE_X86)
 
 /*
  * PadLock detection routine
@@ -65,12 +83,7 @@ int mbedtls_padlock_xcryptecb(mbedtls_aes_context *ctx,
     uint32_t *ctrl;
     unsigned char buf[256];
 
-    rk = ctx->buf + ctx->rk_offset;
-
-    if (((long) rk & 15) != 0) {
-        return MBEDTLS_ERR_PADLOCK_DATA_MISALIGNED;
-    }
-
+    rk  = ctx->rk;
     blk = MBEDTLS_PADLOCK_ALIGN16(buf);
     memcpy(blk, input, 16);
 
@@ -96,7 +109,6 @@ int mbedtls_padlock_xcryptecb(mbedtls_aes_context *ctx,
     return 0;
 }
 
-#if defined(MBEDTLS_CIPHER_MODE_CBC)
 /*
  * PadLock AES-CBC buffer en(de)cryption
  */
@@ -114,14 +126,12 @@ int mbedtls_padlock_xcryptcbc(mbedtls_aes_context *ctx,
     uint32_t *ctrl;
     unsigned char buf[256];
 
-    rk = ctx->buf + ctx->rk_offset;
-
     if (((long) input  & 15) != 0 ||
-        ((long) output & 15) != 0 ||
-        ((long) rk & 15) != 0) {
+        ((long) output & 15) != 0) {
         return MBEDTLS_ERR_PADLOCK_DATA_MISALIGNED;
     }
 
+    rk = ctx->rk;
     iw = MBEDTLS_PADLOCK_ALIGN16(buf);
     memcpy(iw, iv, 16);
 
@@ -150,8 +160,7 @@ int mbedtls_padlock_xcryptcbc(mbedtls_aes_context *ctx,
 
     return 0;
 }
-#endif /* MBEDTLS_CIPHER_MODE_CBC */
 
-#endif /* MBEDTLS_VIA_PADLOCK_HAVE_CODE */
+#endif /* MBEDTLS_HAVE_X86 */
 
 #endif /* MBEDTLS_PADLOCK_C */

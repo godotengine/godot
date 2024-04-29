@@ -7,7 +7,7 @@
     <Authors>Godot Engine contributors</Authors>
 
     <PackageId>Godot.NET.Sdk</PackageId>
-    <Version>4.3.0</Version>
+    <Version>4.2.0</Version>
     <PackageVersion>$(PackageVersion_Godot_NET_Sdk)</PackageVersion>
     <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/editor/Godot.NET.Sdk</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
@@ -29,7 +29,5 @@
     <None Include="$(GodotSdkPackageVersionsFilePath)" Pack="true" PackagePath="Sdk">
       <Link>Sdk\SdkPackageVersions.props</Link>
     </None>
-    <None Include="Sdk\iOSNativeAOT.props" Pack="true" PackagePath="Sdk" />
-    <None Include="Sdk\iOSNativeAOT.targets" Pack="true" PackagePath="Sdk" />
   </ItemGroup>
 </Project>

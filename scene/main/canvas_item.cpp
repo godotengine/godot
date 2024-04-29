@@ -30,6 +30,7 @@
 
 #include "canvas_item.h"
 
+#include "core/object/message_queue.h"
 #include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
@@ -39,9 +40,6 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
-
-#define ERR_DRAW_GUARD \
-	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside this node's `_draw()`, functions connected to its `draw` signal, or when it receives NOTIFICATION_DRAW.")
 
 #ifdef TOOLS_ENABLED
 bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
@@ -275,9 +273,10 @@ void CanvasItem::_exit_canvas() {
 }
 
 void CanvasItem::_notification(int p_what) {
+	ERR_MAIN_THREAD_GUARD;
+
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			ERR_MAIN_THREAD_GUARD;
 			ERR_FAIL_COND(!is_inside_tree());
 
 			Node *parent = get_parent();
@@ -317,7 +316,6 @@ void CanvasItem::_notification(int p_what) {
 				}
 			}
 
-			_set_global_invalid(true);
 			_enter_canvas();
 
 			RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree()); // The visibility of the parent may change.
@@ -336,23 +334,8 @@ void CanvasItem::_notification(int p_what) {
 				get_parent()->connect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::canvas_parent_mark_dirty).bind(get_parent()), CONNECT_REFERENCE_COUNTED);
 			}
 
-			// If using physics interpolation, reset for this node only,
-			// as a helper, as in most cases, users will want items reset when
-			// adding to the tree.
-			// In cases where they move immediately after adding,
-			// there will be little cost in having two resets as these are cheap,
-			// and it is worth it for convenience.
-			// Do not propagate to children, as each child of an added branch
-			// receives its own NOTIFICATION_ENTER_TREE, and this would
-			// cause unnecessary duplicate resets.
-			if (is_physics_interpolated_and_enabled()) {
-				notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
-			}
-
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			ERR_MAIN_THREAD_GUARD;
-
 			if (xform_change.in_list()) {
 				get_tree()->xform_change_list.remove(&xform_change);
 			}
@@ -373,27 +356,15 @@ void CanvasItem::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			if (is_visible_in_tree() && is_physics_interpolated()) {
-				RenderingServer::get_singleton()->canvas_item_reset_physics_interpolation(canvas_item);
-			}
-		} break;
-
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			ERR_MAIN_THREAD_GUARD;
-
 			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 		} break;
 		case NOTIFICATION_WORLD_2D_CHANGED: {
-			ERR_MAIN_THREAD_GUARD;
-
 			_exit_canvas();
 			_enter_canvas();
 		} break;
 		case NOTIFICATION_PARENTED: {
 			// The node is not inside the tree during this notification.
-			ERR_MAIN_THREAD_GUARD;
-
 			_notify_transform();
 		} break;
 	}
@@ -429,7 +400,7 @@ void CanvasItem::queue_redraw() {
 
 	pending_update = true;
 
-	callable_mp(this, &CanvasItem::_redraw_callback).call_deferred();
+	MessageQueue::get_singleton()->push_callable(callable_mp(this, &CanvasItem::_redraw_callback));
 }
 
 void CanvasItem::move_to_front() {
@@ -484,10 +455,6 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 	_enter_canvas();
 
 	_notify_transform();
-
-	if (get_viewport()) {
-		get_viewport()->canvas_item_top_level_changed();
-	}
 }
 
 void CanvasItem::_top_level_changed() {
@@ -610,7 +577,7 @@ bool CanvasItem::is_y_sort_enabled() const {
 
 void CanvasItem::draw_dashed_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width, real_t p_dash, bool p_aligned) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_dash <= 0.0);
 
 	float length = (p_to - p_from).length();
@@ -646,14 +613,14 @@ void CanvasItem::draw_dashed_line(const Point2 &p_from, const Point2 &p_to, cons
 
 void CanvasItem::draw_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width, bool p_antialiased) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RenderingServer::get_singleton()->canvas_item_add_line(canvas_item, p_from, p_to, p_color, p_width, p_antialiased);
 }
 
 void CanvasItem::draw_polyline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width, bool p_antialiased) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Vector<Color> colors = { p_color };
 	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, colors, p_width, p_antialiased);
@@ -661,7 +628,7 @@ void CanvasItem::draw_polyline(const Vector<Point2> &p_points, const Color &p_co
 
 void CanvasItem::draw_polyline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, real_t p_width, bool p_antialiased) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, p_points, p_colors, p_width, p_antialiased);
 }
@@ -684,7 +651,7 @@ void CanvasItem::draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_sta
 
 void CanvasItem::draw_multiline(const Vector<Point2> &p_points, const Color &p_color, real_t p_width) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Vector<Color> colors = { p_color };
 	RenderingServer::get_singleton()->canvas_item_add_multiline(canvas_item, p_points, colors, p_width);
@@ -692,14 +659,14 @@ void CanvasItem::draw_multiline(const Vector<Point2> &p_points, const Color &p_c
 
 void CanvasItem::draw_multiline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, real_t p_width) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RenderingServer::get_singleton()->canvas_item_add_multiline(canvas_item, p_points, p_colors, p_width);
 }
 
 void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled, real_t p_width) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Rect2 rect = p_rect.abs();
 
@@ -728,14 +695,14 @@ void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_fil
 
 void CanvasItem::draw_circle(const Point2 &p_pos, real_t p_radius, const Color &p_color) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RenderingServer::get_singleton()->canvas_item_add_circle(canvas_item, p_pos, p_radius, p_color);
 }
 
 void CanvasItem::draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_pos, const Color &p_modulate) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	ERR_FAIL_COND(p_texture.is_null());
 
@@ -744,7 +711,7 @@ void CanvasItem::draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_p
 
 void CanvasItem::draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	ERR_FAIL_COND(p_texture.is_null());
 	p_texture->draw_rect(canvas_item, p_rect, p_tile, p_modulate, p_transpose);
@@ -752,28 +719,28 @@ void CanvasItem::draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 
 
 void CanvasItem::draw_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_texture.is_null());
 	p_texture->draw_rect_region(canvas_item, p_rect, p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
 void CanvasItem::draw_msdf_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, double p_outline, double p_pixel_range, double p_scale) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_texture.is_null());
 	RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(canvas_item, p_rect, p_texture->get_rid(), p_src_rect, p_modulate, p_outline, p_pixel_range, p_scale);
 }
 
 void CanvasItem::draw_lcd_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_texture.is_null());
 	RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(canvas_item, p_rect, p_texture->get_rid(), p_src_rect, p_modulate);
 }
 
 void CanvasItem::draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p_rect) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	ERR_FAIL_COND(p_style_box.is_null());
 
@@ -782,7 +749,7 @@ void CanvasItem::draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p
 
 void CanvasItem::draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RenderingServer::get_singleton()->canvas_item_add_primitive(canvas_item, p_points, p_colors, p_uvs, rid);
@@ -790,7 +757,7 @@ void CanvasItem::draw_primitive(const Vector<Point2> &p_points, const Vector<Col
 
 void CanvasItem::draw_set_transform(const Point2 &p_offset, real_t p_rot, const Size2 &p_scale) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Transform2D xform(p_rot, p_offset);
 	xform.scale_basis(p_scale);
@@ -799,27 +766,27 @@ void CanvasItem::draw_set_transform(const Point2 &p_offset, real_t p_rot, const 
 
 void CanvasItem::draw_set_transform_matrix(const Transform2D &p_matrix) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(canvas_item, p_matrix);
 }
 void CanvasItem::draw_animation_slice(double p_animation_length, double p_slice_begin, double p_slice_end, double p_offset) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RenderingServer::get_singleton()->canvas_item_add_animation_slice(canvas_item, p_animation_length, p_slice_begin, p_slice_end, p_offset);
 }
 
 void CanvasItem::draw_end_animation() {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RenderingServer::get_singleton()->canvas_item_add_animation_slice(canvas_item, 1, 0, 2, 0);
 }
 
 void CanvasItem::draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 
@@ -828,7 +795,7 @@ void CanvasItem::draw_polygon(const Vector<Point2> &p_points, const Vector<Color
 
 void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	Vector<Color> colors = { p_color };
 	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
@@ -852,7 +819,7 @@ void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Tex
 
 void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_font.is_null());
 
 	p_font->draw_string(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_modulate, p_jst_flags, p_direction, p_orientation);
@@ -860,7 +827,7 @@ void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const
 
 void CanvasItem::draw_multiline_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_font.is_null());
 
 	p_font->draw_multiline_string(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_max_lines, p_modulate, p_brk_flags, p_jst_flags, p_direction, p_orientation);
@@ -868,7 +835,7 @@ void CanvasItem::draw_multiline_string(const Ref<Font> &p_font, const Point2 &p_
 
 void CanvasItem::draw_string_outline(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_font.is_null());
 
 	p_font->draw_string_outline(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_size, p_modulate, p_jst_flags, p_direction, p_orientation);
@@ -876,7 +843,7 @@ void CanvasItem::draw_string_outline(const Ref<Font> &p_font, const Point2 &p_po
 
 void CanvasItem::draw_multiline_string_outline(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, int p_size, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_font.is_null());
 
 	p_font->draw_multiline_string_outline(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_max_lines, p_size, p_modulate, p_brk_flags, p_jst_flags, p_direction, p_orientation);
@@ -884,7 +851,7 @@ void CanvasItem::draw_multiline_string_outline(const Ref<Font> &p_font, const Po
 
 void CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, int p_font_size, const Color &p_modulate) const {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_char.length() != 1);
 	ERR_FAIL_COND(p_font.is_null());
 
@@ -893,7 +860,7 @@ void CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const S
 
 void CanvasItem::draw_char_outline(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, int p_font_size, int p_size, const Color &p_modulate) const {
 	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
+	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_char.length() != 1);
 	ERR_FAIL_COND(p_font.is_null());
 
@@ -926,7 +893,7 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 					get_tree()->xform_change_list.add(&p_node->xform_change);
 				} else {
 					// Should be rare, but still needs to be handled.
-					callable_mp(p_node, &CanvasItem::_notify_transform_deferred).call_deferred();
+					MessageQueue::get_singleton()->push_callable(callable_mp(p_node, &CanvasItem::_notify_transform_deferred));
 				}
 			}
 		}
@@ -938,10 +905,6 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 		}
 		_notify_transform(ci);
 	}
-}
-
-void CanvasItem::_physics_interpolated_changed() {
-	RenderingServer::get_singleton()->canvas_item_set_interpolated(canvas_item, is_physics_interpolated());
 }
 
 Rect2 CanvasItem::get_viewport_rect() const {
@@ -1195,7 +1158,6 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_mouse_position"), &CanvasItem::get_local_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_global_mouse_position"), &CanvasItem::get_global_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasItem::get_canvas);
-	ClassDB::bind_method(D_METHOD("get_canvas_layer_node"), &CanvasItem::get_canvas_layer_node);
 	ClassDB::bind_method(D_METHOD("get_world_2d"), &CanvasItem::get_world_2d);
 	//ClassDB::bind_method(D_METHOD("get_viewport"),&CanvasItem::get_viewport);
 
@@ -1352,11 +1314,6 @@ int CanvasItem::get_canvas_layer() const {
 	}
 }
 
-CanvasLayer *CanvasItem::get_canvas_layer_node() const {
-	ERR_READ_THREAD_GUARD_V(nullptr);
-	return canvas_layer;
-}
-
 void CanvasItem::set_visibility_layer(uint32_t p_visibility_layer) {
 	ERR_THREAD_GUARD;
 	visibility_layer = p_visibility_layer;
@@ -1379,7 +1336,7 @@ void CanvasItem::set_visibility_layer_bit(uint32_t p_visibility_layer, bool p_en
 }
 
 bool CanvasItem::get_visibility_layer_bit(uint32_t p_visibility_layer) const {
-	ERR_READ_THREAD_GUARD_V(false);
+	ERR_READ_THREAD_GUARD_V(0);
 	ERR_FAIL_UNSIGNED_INDEX_V(p_visibility_layer, 32, false);
 	return (visibility_layer & (1 << p_visibility_layer));
 }
@@ -1401,17 +1358,14 @@ void CanvasItem::_refresh_texture_filter_cache() const {
 	}
 }
 
-void CanvasItem::_update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter) {
-	RS::get_singleton()->canvas_item_set_default_texture_filter(get_canvas_item(), p_texture_filter);
-	queue_redraw();
-}
-
 void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 	if (!is_inside_tree()) {
 		return;
 	}
 	_refresh_texture_filter_cache();
-	_update_self_texture_filter(texture_filter_cache);
+
+	RS::get_singleton()->canvas_item_set_default_texture_filter(get_canvas_item(), texture_filter_cache);
+	queue_redraw();
 
 	if (p_propagate) {
 		for (CanvasItem *E : children_items) {
@@ -1455,18 +1409,14 @@ void CanvasItem::_refresh_texture_repeat_cache() const {
 	}
 }
 
-void CanvasItem::_update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat) {
-	RS::get_singleton()->canvas_item_set_default_texture_repeat(get_canvas_item(), p_texture_repeat);
-	queue_redraw();
-}
-
 void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 	if (!is_inside_tree()) {
 		return;
 	}
 	_refresh_texture_repeat_cache();
-	_update_self_texture_repeat(texture_repeat_cache);
 
+	RS::get_singleton()->canvas_item_set_default_texture_repeat(get_canvas_item(), texture_repeat_cache);
+	queue_redraw();
 	if (p_propagate) {
 		for (CanvasItem *E : children_items) {
 			if (!E->top_level && E->texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
@@ -1539,9 +1489,6 @@ CanvasItem::~CanvasItem() {
 
 void CanvasTexture::set_diffuse_texture(const Ref<Texture2D> &p_diffuse) {
 	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_diffuse.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
-	if (diffuse_texture == p_diffuse) {
-		return;
-	}
 	diffuse_texture = p_diffuse;
 
 	RID tex_rid = diffuse_texture.is_valid() ? diffuse_texture->get_rid() : RID();
@@ -1554,13 +1501,9 @@ Ref<Texture2D> CanvasTexture::get_diffuse_texture() const {
 
 void CanvasTexture::set_normal_texture(const Ref<Texture2D> &p_normal) {
 	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_normal.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
-	if (normal_texture == p_normal) {
-		return;
-	}
 	normal_texture = p_normal;
 	RID tex_rid = normal_texture.is_valid() ? normal_texture->get_rid() : RID();
 	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_NORMAL, tex_rid);
-	emit_changed();
 }
 Ref<Texture2D> CanvasTexture::get_normal_texture() const {
 	return normal_texture;
@@ -1568,13 +1511,9 @@ Ref<Texture2D> CanvasTexture::get_normal_texture() const {
 
 void CanvasTexture::set_specular_texture(const Ref<Texture2D> &p_specular) {
 	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_specular.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
-	if (specular_texture == p_specular) {
-		return;
-	}
 	specular_texture = p_specular;
 	RID tex_rid = specular_texture.is_valid() ? specular_texture->get_rid() : RID();
 	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RS::CANVAS_TEXTURE_CHANNEL_SPECULAR, tex_rid);
-	emit_changed();
 }
 
 Ref<Texture2D> CanvasTexture::get_specular_texture() const {
@@ -1582,12 +1521,8 @@ Ref<Texture2D> CanvasTexture::get_specular_texture() const {
 }
 
 void CanvasTexture::set_specular_color(const Color &p_color) {
-	if (specular == p_color) {
-		return;
-	}
 	specular = p_color;
 	RS::get_singleton()->canvas_texture_set_shading_parameters(canvas_texture, specular, shininess);
-	emit_changed();
 }
 
 Color CanvasTexture::get_specular_color() const {
@@ -1595,12 +1530,8 @@ Color CanvasTexture::get_specular_color() const {
 }
 
 void CanvasTexture::set_specular_shininess(real_t p_shininess) {
-	if (shininess == p_shininess) {
-		return;
-	}
 	shininess = p_shininess;
 	RS::get_singleton()->canvas_texture_set_shading_parameters(canvas_texture, specular, shininess);
-	emit_changed();
 }
 
 real_t CanvasTexture::get_specular_shininess() const {
@@ -1608,24 +1539,16 @@ real_t CanvasTexture::get_specular_shininess() const {
 }
 
 void CanvasTexture::set_texture_filter(CanvasItem::TextureFilter p_filter) {
-	if (texture_filter == p_filter) {
-		return;
-	}
 	texture_filter = p_filter;
 	RS::get_singleton()->canvas_texture_set_texture_filter(canvas_texture, RS::CanvasItemTextureFilter(p_filter));
-	emit_changed();
 }
 CanvasItem::TextureFilter CanvasTexture::get_texture_filter() const {
 	return texture_filter;
 }
 
 void CanvasTexture::set_texture_repeat(CanvasItem::TextureRepeat p_repeat) {
-	if (texture_repeat == p_repeat) {
-		return;
-	}
 	texture_repeat = p_repeat;
 	RS::get_singleton()->canvas_texture_set_texture_repeat(canvas_texture, RS::CanvasItemTextureRepeat(p_repeat));
-	emit_changed();
 }
 CanvasItem::TextureRepeat CanvasTexture::get_texture_repeat() const {
 	return texture_repeat;

@@ -48,7 +48,6 @@
 #include "hb-ot-cff2-table.hh"
 #include "hb-ot-vorg-table.hh"
 #include "hb-ot-name-table.hh"
-#include "hb-ot-layout-base-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
 #include "hb-ot-var-avar-table.hh"
@@ -56,7 +55,6 @@
 #include "hb-ot-var-fvar-table.hh"
 #include "hb-ot-var-gvar-table.hh"
 #include "hb-ot-var-hvar-table.hh"
-#include "hb-ot-var-mvar-table.hh"
 #include "hb-ot-math-table.hh"
 #include "hb-ot-stat-table.hh"
 #include "hb-repacker.hh"
@@ -461,10 +459,7 @@ _dependencies_satisfied (hb_subset_plan_t *plan, hb_tag_t tag,
   case HB_OT_TAG_hmtx:
   case HB_OT_TAG_vmtx:
   case HB_OT_TAG_maxp:
-  case HB_OT_TAG_OS2:
     return !plan->normalized_coords || !pending_subset_tags.has (HB_OT_TAG_glyf);
-  case HB_OT_TAG_GPOS:
-    return plan->all_axes_pinned || !pending_subset_tags.has (HB_OT_TAG_GDEF);
   default:
     return true;
   }
@@ -504,7 +499,6 @@ _subset_table (hb_subset_plan_t *plan,
   case HB_OT_TAG_CBLC: return _subset<const OT::CBLC> (plan, buf);
   case HB_OT_TAG_CBDT: return true; /* skip CBDT, handled by CBLC */
   case HB_OT_TAG_MATH: return _subset<const OT::MATH> (plan, buf);
-  case HB_OT_TAG_BASE: return _subset<const OT::BASE> (plan, buf);
 
 #ifndef HB_NO_SUBSET_CFF
   case HB_OT_TAG_CFF1: return _subset<const OT::cff1> (plan, buf);
@@ -520,22 +514,12 @@ _subset_table (hb_subset_plan_t *plan,
   case HB_OT_TAG_HVAR: return _subset<const OT::HVAR> (plan, buf);
   case HB_OT_TAG_VVAR: return _subset<const OT::VVAR> (plan, buf);
 #endif
-
-#ifndef HB_NO_VAR
   case HB_OT_TAG_fvar:
     if (plan->user_axes_location.is_empty ()) return _passthrough (plan, tag);
     return _subset<const OT::fvar> (plan, buf);
   case HB_OT_TAG_avar:
     if (plan->user_axes_location.is_empty ()) return _passthrough (plan, tag);
     return _subset<const OT::avar> (plan, buf);
-  case HB_OT_TAG_cvar:
-    if (plan->user_axes_location.is_empty ()) return _passthrough (plan, tag);
-    return _subset<const OT::cvar> (plan, buf);
-  case HB_OT_TAG_MVAR:
-    if (plan->user_axes_location.is_empty ()) return _passthrough (plan, tag);
-    return _subset<const OT::MVAR> (plan, buf);
-#endif
-
   case HB_OT_TAG_STAT:
     if (!plan->user_axes_location.is_empty ()) return _subset<const OT::STAT> (plan, buf);
     else return _passthrough (plan, tag);
@@ -550,7 +534,6 @@ _subset_table (hb_subset_plan_t *plan,
     }
 #endif
     return _passthrough (plan, tag);
-
   default:
     if (plan->flags & HB_SUBSET_FLAGS_PASSTHROUGH_UNRECOGNIZED)
       return _passthrough (plan, tag);

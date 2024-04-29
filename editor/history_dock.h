@@ -53,7 +53,6 @@ class HistoryDock : public VBoxContainer {
 	void refresh_history();
 	void on_version_changed();
 	void refresh_version();
-	void save_options();
 
 protected:
 	void _notification(int p_notification);

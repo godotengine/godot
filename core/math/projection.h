@@ -34,7 +34,7 @@
 #include "core/math/vector3.h"
 #include "core/math/vector4.h"
 
-template <typename T>
+template <class T>
 class Vector;
 
 struct AABB;
@@ -55,21 +55,21 @@ struct _NO_DISCARD_ Projection {
 
 	Vector4 columns[4];
 
-	_FORCE_INLINE_ const Vector4 &operator[](int p_axis) const {
+	_FORCE_INLINE_ const Vector4 &operator[](const int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 4);
 		return columns[p_axis];
 	}
 
-	_FORCE_INLINE_ Vector4 &operator[](int p_axis) {
+	_FORCE_INLINE_ Vector4 &operator[](const int p_axis) {
 		DEV_ASSERT((unsigned int)p_axis < 4);
 		return columns[p_axis];
 	}
 
-	real_t determinant() const;
+	float determinant() const;
 	void set_identity();
 	void set_zero();
 	void set_light_bias();
-	void set_depth_correction(bool p_flip_y = true, bool p_reverse_z = true, bool p_remap_z = true);
+	void set_depth_correction(bool p_flip_y = true);
 
 	void set_light_atlas_rect(const Rect2 &p_rect);
 	void set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov = false);
@@ -148,7 +148,7 @@ struct _NO_DISCARD_ Projection {
 		return !(*this == p_cam);
 	}
 
-	real_t get_lod_multiplier() const;
+	float get_lod_multiplier() const;
 
 	Projection();
 	Projection(const Vector4 &p_x, const Vector4 &p_y, const Vector4 &p_z, const Vector4 &p_w);

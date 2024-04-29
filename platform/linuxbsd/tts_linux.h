@@ -72,8 +72,8 @@ class TTS_Linux : public Object {
 
 protected:
 	void _load_voices();
-	void _speech_event(int p_msg_id, int p_type);
-	void _speech_index_mark(int p_msg_id, int p_type, const String &p_index_mark);
+	void _speech_event(size_t p_msg_id, size_t p_client_id, int p_type);
+	void _speech_index_mark(size_t p_msg_id, size_t p_client_id, int p_type, const String &p_index_mark);
 
 public:
 	static TTS_Linux *get_singleton();

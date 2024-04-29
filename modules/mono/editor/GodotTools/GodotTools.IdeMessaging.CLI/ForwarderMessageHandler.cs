@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -29,7 +28,7 @@ namespace GodotTools.IdeMessaging.CLI
             {
                 await outputWriter.WriteLineAsync("======= Request =======");
                 await outputWriter.WriteLineAsync(id);
-                await outputWriter.WriteLineAsync(content.Body.Count(c => c == '\n').ToString(CultureInfo.InvariantCulture));
+                await outputWriter.WriteLineAsync(content.Body.Count(c => c == '\n').ToString());
                 await outputWriter.WriteLineAsync(content.Body);
                 await outputWriter.WriteLineAsync("=======================");
                 await outputWriter.FlushAsync();
@@ -42,7 +41,7 @@ namespace GodotTools.IdeMessaging.CLI
             {
                 await outputWriter.WriteLineAsync("======= Response =======");
                 await outputWriter.WriteLineAsync(id);
-                await outputWriter.WriteLineAsync(content.Body.Count(c => c == '\n').ToString(CultureInfo.InvariantCulture));
+                await outputWriter.WriteLineAsync(content.Body.Count(c => c == '\n').ToString());
                 await outputWriter.WriteLineAsync(content.Body);
                 await outputWriter.WriteLineAsync("========================");
                 await outputWriter.FlushAsync();

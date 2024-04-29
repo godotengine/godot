@@ -100,7 +100,7 @@
 }
 
 - (void)sendEvent:(NSEvent *)event {
-	if ([event type] == NSEventTypeSystemDefined && [event subtype] == 8) {
+	if ([event type] == NSSystemDefined && [event subtype] == 8) {
 		int keyCode = (([event data1] & 0xFFFF0000) >> 16);
 		int keyFlags = ([event data1] & 0x0000FFFF);
 		int keyState = (((keyFlags & 0xFF00) >> 8)) == 0xA;

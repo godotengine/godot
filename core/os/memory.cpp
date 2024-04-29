@@ -72,23 +72,23 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 	bool prepad = p_pad_align;
 #endif
 
-	void *mem = malloc(p_bytes + (prepad ? DATA_OFFSET : 0));
+	void *mem = malloc(p_bytes + (prepad ? PAD_ALIGN : 0));
 
 	ERR_FAIL_NULL_V(mem, nullptr);
 
 	alloc_count.increment();
 
 	if (prepad) {
-		uint8_t *s8 = (uint8_t *)mem;
-
-		uint64_t *s = (uint64_t *)(s8 + SIZE_OFFSET);
+		uint64_t *s = (uint64_t *)mem;
 		*s = p_bytes;
+
+		uint8_t *s8 = (uint8_t *)mem;
 
 #ifdef DEBUG_ENABLED
 		uint64_t new_mem_usage = mem_usage.add(p_bytes);
 		max_usage.exchange_if_greater(new_mem_usage);
 #endif
-		return s8 + DATA_OFFSET;
+		return s8 + PAD_ALIGN;
 	} else {
 		return mem;
 	}
@@ -108,8 +108,8 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 #endif
 
 	if (prepad) {
-		mem -= DATA_OFFSET;
-		uint64_t *s = (uint64_t *)(mem + SIZE_OFFSET);
+		mem -= PAD_ALIGN;
+		uint64_t *s = (uint64_t *)mem;
 
 #ifdef DEBUG_ENABLED
 		if (p_bytes > *s) {
@@ -126,14 +126,14 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 		} else {
 			*s = p_bytes;
 
-			mem = (uint8_t *)realloc(mem, p_bytes + DATA_OFFSET);
+			mem = (uint8_t *)realloc(mem, p_bytes + PAD_ALIGN);
 			ERR_FAIL_NULL_V(mem, nullptr);
 
-			s = (uint64_t *)(mem + SIZE_OFFSET);
+			s = (uint64_t *)mem;
 
 			*s = p_bytes;
 
-			return mem + DATA_OFFSET;
+			return mem + PAD_ALIGN;
 		}
 	} else {
 		mem = (uint8_t *)realloc(mem, p_bytes);
@@ -158,10 +158,10 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 	alloc_count.decrement();
 
 	if (prepad) {
-		mem -= DATA_OFFSET;
+		mem -= PAD_ALIGN;
 
 #ifdef DEBUG_ENABLED
-		uint64_t *s = (uint64_t *)(mem + SIZE_OFFSET);
+		uint64_t *s = (uint64_t *)mem;
 		mem_usage.sub(*s);
 #endif
 

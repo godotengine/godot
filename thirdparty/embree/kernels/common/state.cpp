@@ -192,17 +192,10 @@ namespace embree
   const char* symbols[3] = { "=", ",", "|" };
 
   bool State::parseFile(const FileName& fileName)
-  { 
-    Ref<Stream<int> > file;
-    // -- GODOT start --
-    // try {
-      file = new FileStream(fileName);
-    // }
-    // catch (std::runtime_error& e) {
-    //   (void) e;
-    //   return false;
-    // }
-    // -- GODOT end --
+  {
+    FILE* f = fopen(fileName.c_str(),"r");
+    if (!f) return false;
+    Ref<Stream<int> > file = new FileStream(f,fileName);
     
     std::vector<std::string> syms;
     for (size_t i=0; i<sizeof(symbols)/sizeof(void*); i++) 
@@ -400,7 +393,7 @@ namespace embree
         grid_accel = cin->get().Identifier();
       else if (tok == Token::Id("grid_accel_mb") && cin->trySymbol("="))
         grid_accel_mb = cin->get().Identifier();
-
+      
       else if (tok == Token::Id("verbose") && cin->trySymbol("="))
         verbose = cin->get().Int();
       else if (tok == Token::Id("benchmark") && cin->trySymbol("="))
@@ -426,7 +419,7 @@ namespace embree
           } while (cin->trySymbol("|"));
         }
       }
-
+      
       else if (tok == Token::Id("max_spatial_split_replications") && cin->trySymbol("="))
         max_spatial_split_replications = cin->get().Float();
 

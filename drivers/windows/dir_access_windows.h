@@ -54,7 +54,7 @@ class DirAccessWindows : public DirAccess {
 	bool _cishidden = false;
 
 protected:
-	virtual String fix_path(const String &p_path) const override;
+	virtual String fix_path(String p_path) const override;
 
 public:
 	virtual Error list_dir_begin() override; ///< This starts dir listing
@@ -84,7 +84,6 @@ public:
 	uint64_t get_space_left() override;
 
 	virtual String get_filesystem_type() const override;
-	virtual bool is_case_sensitive(const String &p_path) const override;
 
 	DirAccessWindows();
 	~DirAccessWindows();

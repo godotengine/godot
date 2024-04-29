@@ -338,7 +338,7 @@ receiveDevicesFromMiniSSDPD(int s, int * error)
 #ifdef DEBUG
 		printf("   usnsize=%u\n", usnsize);
 #endif /* DEBUG */
-		tmp = (struct UPNPDev *)malloc(sizeof(struct UPNPDev)+urlsize+stsize+usnsize+3);
+		tmp = (struct UPNPDev *)malloc(sizeof(struct UPNPDev)+urlsize+stsize+usnsize);
 		if(tmp == NULL) {
 			if (error)
 				*error = MINISSDPC_MEMORY_ERROR;

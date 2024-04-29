@@ -17,7 +17,7 @@
     <Authors>Godot Engine contributors</Authors>
 
     <PackageId>GodotSharp</PackageId>
-    <Version>4.3.0</Version>
+    <Version>4.2.0</Version>
     <PackageVersion>$(PackageVersion_GodotSharp)</PackageVersion>
     <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/glue/GodotSharp/GodotSharp</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
@@ -77,7 +77,6 @@
     <Compile Include="Core\Color.cs" />
     <Compile Include="Core\Colors.cs" />
     <Compile Include="Core\DebuggingUtils.cs" />
-    <Compile Include="Core\DebugView.cs" />
     <Compile Include="Core\DelegateUtils.cs" />
     <Compile Include="Core\Dictionary.cs" />
     <Compile Include="Core\Dispatcher.cs" />
@@ -143,5 +142,5 @@
   We can't use wildcards as there may be undesired old files still hanging around.
   Fortunately code completion, go to definition and such still work.
   -->
-  <Import Condition=" '$(GodotSkipGenerated)' == '' " Project="Generated\GeneratedIncludes.props" />
+  <Import Project="Generated\GeneratedIncludes.props" />
 </Project>

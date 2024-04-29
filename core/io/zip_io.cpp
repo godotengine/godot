@@ -53,7 +53,7 @@ int godot_unzip_get_current_file_info(unzFile p_zip_file, unz_file_info64 &r_fil
 	return err;
 }
 
-int godot_unzip_locate_file(unzFile p_zip_file, const String &p_filepath, bool p_case_sensitive) {
+int godot_unzip_locate_file(unzFile p_zip_file, String p_filepath, bool p_case_sensitive) {
 	int err = unzGoToFirstFile(p_zip_file);
 	while (err == UNZ_OK) {
 		unz_file_info64 current_file_info;

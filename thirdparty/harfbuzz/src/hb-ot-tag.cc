@@ -547,7 +547,7 @@ hb_ot_tag_to_language (hb_tag_t tag)
       buf[3] = '-';
       str += 4;
     }
-    snprintf (str, 16, "x-hbot-%08" PRIx32, tag);
+    snprintf (str, 16, "x-hbot-%08x", tag);
     return hb_language_from_string (&*buf, -1);
   }
 }

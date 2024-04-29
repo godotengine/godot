@@ -23,23 +23,17 @@ namespace embree
 
       __forceinline void finalize() {}
 
-      __forceinline Vec2f uv(const size_t i) const {
+      __forceinline Vec2f uv(const size_t i) const
+      {
         return Vec2f(vu[i], vv[i]);
       }
-      __forceinline Vec2vf<M> uv() const {
-        return Vec2vf<M>(vu, vv);
-      }
-      __forceinline float t(const size_t i) const {
+      __forceinline float t(const size_t i) const
+      {
         return vt[i];
       }
-      __forceinline vfloat<M> t() const {
-        return vt;
-      }
-      __forceinline Vec3fa Ng(const size_t i) const {
+      __forceinline Vec3fa Ng(const size_t i) const
+      {
         return Vec3fa(vNg.x[i], vNg.y[i], vNg.z[i]);
-      }
-      __forceinline Vec3vf<M> Ng() const { 
-        return vNg;
       }
 
      public:
@@ -49,45 +43,16 @@ namespace embree
       Vec3vf<M> vNg;
     };
 
-    template<>
-    struct DiscIntersectorHitM<1>
-    {
-      __forceinline DiscIntersectorHitM() {}
-
-      __forceinline DiscIntersectorHitM(const float& u, const float& v, const float& t, const Vec3fa& Ng)
-          : vu(u), vv(v), vt(t), vNg(Ng) {}
-
-      __forceinline void finalize() {}
-
-      __forceinline Vec2f uv() const {
-        return Vec2f(vu, vv);
-      }
-
-      __forceinline float t() const {
-        return vt;
-      }
-
-      __forceinline Vec3fa Ng() const { 
-        return vNg;
-      }
-
-     public:
-      float vu;
-      float vv;
-      float vt;
-      Vec3fa vNg;
-    };
-
     template<int M>
     struct DiscIntersector1
     {
       typedef CurvePrecalculations1 Precalculations;
 
-      template<typename Ray, typename Epilog>
+      template<typename Epilog>
       static __forceinline bool intersect(
           const vbool<M>& valid_i,
           Ray& ray,
-          RayQueryContext* context,
+          IntersectContext* context,
           const Points* geom,
           const Precalculations& pre,
           const Vec4vf<M>& v0i,
@@ -132,10 +97,10 @@ namespace embree
         return epilog(valid, hit);
       }
 
-      template<typename Ray, typename Epilog>
+      template<typename Epilog>
       static __forceinline bool intersect(const vbool<M>& valid_i,
                                           Ray& ray,
-                                          RayQueryContext* context,
+                                          IntersectContext* context,
                                           const Points* geom,
                                           const Precalculations& pre,
                                           const Vec4vf<M>& v0i,
@@ -180,7 +145,7 @@ namespace embree
       static __forceinline bool intersect(const vbool<M>& valid_i,
                                           RayK<K>& ray,
                                           size_t k,
-                                          RayQueryContext* context,
+                                          IntersectContext* context,
                                           const Points* geom,
                                           const Precalculations& pre,
                                           const Vec4vf<M>& v0i,
@@ -229,7 +194,7 @@ namespace embree
       static __forceinline bool intersect(const vbool<M>& valid_i,
                                           RayK<K>& ray,
                                           size_t k,
-                                          RayQueryContext* context,
+                                          IntersectContext* context,
                                           const Points* geom,
                                           const Precalculations& pre,
                                           const Vec4vf<M>& v0i,

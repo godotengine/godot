@@ -401,7 +401,6 @@ static inline VkFormat vkGetFormatFromOpenGLFormat( const GLenum format, const G
 	return VK_FORMAT_UNDEFINED;
 }
 
-#if defined(NEED_VK_GET_FORMAT_FROM_OPENGL_TYPE)
 static inline VkFormat vkGetFormatFromOpenGLType( const GLenum type, const GLuint numComponents, const GLboolean normalized )
 {
 	switch ( type )
@@ -567,7 +566,6 @@ static inline VkFormat vkGetFormatFromOpenGLType( const GLenum type, const GLuin
 
 	return VK_FORMAT_UNDEFINED;
 }
-#endif
 
 static inline VkFormat vkGetFormatFromOpenGLInternalFormat( const GLenum internalFormat )
 {
@@ -825,7 +823,6 @@ static inline VkFormat vkGetFormatFromOpenGLInternalFormat( const GLenum interna
 	}
 }
 
-#if defined(NEED_VK_GET_FORMAT_SIZE)
 static inline void vkGetFormatSize( const VkFormat format, ktxFormatSize * pFormatSize )
 {
 	pFormatSize->minBlocksX = pFormatSize->minBlocksY = 1;
@@ -1387,6 +1384,5 @@ static inline void vkGetFormatSize( const VkFormat format, ktxFormatSize * pForm
 			break;
 	}
 }
-#endif
 
 #endif // !VK_FORMAT_H

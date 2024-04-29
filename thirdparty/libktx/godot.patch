@@ -1,0 +1,45 @@
+--- thirdparty/libktx/lib/gl_format.h
++++ thirdparty/libktx/lib/gl_format.h
+@@ -92,7 +92,9 @@
+ #include "vkformat_enum.h"
+ 
+ #if defined(_WIN32) && !defined(__MINGW32__)
++#ifndef NOMINMAX
+ #define NOMINMAX
++#endif
+ #ifndef __cplusplus
+ #undef inline
+ #define inline __inline
+--- thirdparty/libktx/lib/basis_transcode.cpp
++++ thirdparty/libktx/lib/basis_transcode.cpp
+@@ -29,9 +29,9 @@
+ #include "vkformat_enum.h"
+ #include "vk_format.h"
+ #include "basis_sgd.h"
+-#include "basisu/transcoder/basisu_file_headers.h"
+-#include "basisu/transcoder/basisu_transcoder.h"
+-#include "basisu/transcoder/basisu_transcoder_internal.h"
++#include "transcoder/basisu_file_headers.h"
++#include "transcoder/basisu_transcoder.h"
++#include "transcoder/basisu_transcoder_internal.h"
+ 
+ #undef DECLARE_PRIVATE
+ #undef DECLARE_PROTECTED
+--- thirdparty/libktx/lib/dfdutils/vk2dfd.inl
++++ thirdparty/libktx/lib/dfdutils/vk2dfd.inl
+@@ -298,6 +298,7 @@
+ case VK_FORMAT_ASTC_10x10_SFLOAT_BLOCK_EXT: return createDFDCompressed(c_ASTC, 10, 10, 1, s_SFLOAT);
+ case VK_FORMAT_ASTC_12x10_SFLOAT_BLOCK_EXT: return createDFDCompressed(c_ASTC, 12, 10, 1, s_SFLOAT);
+ case VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK_EXT: return createDFDCompressed(c_ASTC, 12, 12, 1, s_SFLOAT);
++#if 0
+ case VK_FORMAT_ASTC_3x3x3_UNORM_BLOCK_EXT: return createDFDCompressed(c_ASTC, 3, 3, 3, s_UNORM);
+ case VK_FORMAT_ASTC_3x3x3_SRGB_BLOCK_EXT: return createDFDCompressed(c_ASTC, 3, 3, 3, s_SRGB);
+ case VK_FORMAT_ASTC_3x3x3_SFLOAT_BLOCK_EXT: return createDFDCompressed(c_ASTC, 3, 3, 3, s_SFLOAT);
+@@ -328,6 +329,7 @@
+ case VK_FORMAT_ASTC_6x6x6_UNORM_BLOCK_EXT: return createDFDCompressed(c_ASTC, 6, 6, 6, s_UNORM);
+ case VK_FORMAT_ASTC_6x6x6_SRGB_BLOCK_EXT: return createDFDCompressed(c_ASTC, 6, 6, 6, s_SRGB);
+ case VK_FORMAT_ASTC_6x6x6_SFLOAT_BLOCK_EXT: return createDFDCompressed(c_ASTC, 6, 6, 6, s_SFLOAT);
++#endif
+ case VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT: {
+     int channels[] = {2,1,0,3}; int bits[] = {4,4,4,4};
+     return createDFDPacked(0, 4, bits, channels, s_UNORM);

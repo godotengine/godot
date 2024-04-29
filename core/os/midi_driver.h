@@ -51,7 +51,7 @@ public:
 
 	virtual PackedStringArray get_connected_inputs();
 
-	static void receive_input_packet(int device_index, uint64_t timestamp, uint8_t *data, uint32_t length);
+	static void receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_t length);
 
 	MIDIDriver();
 	virtual ~MIDIDriver() {}

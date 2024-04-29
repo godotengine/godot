@@ -2,7 +2,7 @@ namespace Godot.Bridge;
 
 public static class AlcReloadCfg
 {
-    private static bool _configured;
+    private static bool _configured = false;
 
     public static void Configure(bool alcReloadEnabled)
     {
@@ -14,5 +14,5 @@ public static class AlcReloadCfg
         IsAlcReloadingEnabled = alcReloadEnabled;
     }
 
-    internal static bool IsAlcReloadingEnabled;
+    internal static bool IsAlcReloadingEnabled = false;
 }

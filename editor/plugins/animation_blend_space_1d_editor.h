@@ -34,16 +34,15 @@
 #include "editor/editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "scene/animation/animation_blend_space_1d.h"
+#include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/tree.h"
 
-class Button;
 class CheckBox;
-class LineEdit;
 class OptionButton;
 class PanelContainer;
-class SpinBox;
-class VSeparator;
 
 class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendSpace1DEditor, AnimationTreeNodeEditorPlugin);

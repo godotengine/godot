@@ -38,7 +38,6 @@
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_file.h"
 
-class CodeTextEditor;
 class EditorFileDialog;
 class EditorHelpSearch;
 class FindReplaceBar;
@@ -78,7 +77,6 @@ class EditorStandardSyntaxHighlighter : public EditorSyntaxHighlighter {
 
 private:
 	Ref<CodeHighlighter> highlighter;
-	ScriptLanguage *script_language = nullptr; // See GH-89610.
 
 public:
 	virtual void _update_cache() override;
@@ -87,8 +85,6 @@ public:
 	virtual String _get_name() const override { return TTR("Standard"); }
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const override;
-
-	void _set_script_language(ScriptLanguage *p_script_language) { script_language = p_script_language; }
 
 	EditorStandardSyntaxHighlighter() { highlighter.instantiate(); }
 };
@@ -182,7 +178,7 @@ public:
 	virtual PackedInt32Array get_breakpoints() = 0;
 	virtual void set_breakpoint(int p_line, bool p_enabled) = 0;
 	virtual void clear_breakpoints() = 0;
-	virtual void add_callback(const String &p_function, const PackedStringArray &p_args) = 0;
+	virtual void add_callback(const String &p_function, PackedStringArray p_args) = 0;
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
 	virtual bool can_lose_focus_on_node_selection() { return true; }
@@ -196,7 +192,6 @@ public:
 	virtual void set_find_replace_bar(FindReplaceBar *p_bar) = 0;
 
 	virtual Control *get_base_editor() const = 0;
-	virtual CodeTextEditor *get_code_editor() const = 0;
 
 	virtual void validate() = 0;
 
@@ -208,10 +203,6 @@ typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Resource> &p_resou
 class EditorScriptCodeCompletionCache;
 class FindInFilesDialog;
 class FindInFilesPanel;
-
-#ifdef MINGW_ENABLED
-#undef FILE_OPEN
-#endif
 
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
@@ -311,8 +302,6 @@ class ScriptEditor : public PanelContainer {
 
 	String current_theme;
 
-	float zoom_factor = 1.0f;
-
 	TextureRect *script_icon = nullptr;
 	Label *script_name_label = nullptr;
 
@@ -365,11 +354,11 @@ class ScriptEditor : public PanelContainer {
 
 	bool _test_script_times_on_disk(Ref<Resource> p_for_script = Ref<Resource>());
 
-	void _add_recent_script(const String &p_path);
+	void _add_recent_script(String p_path);
 	void _update_recent_scripts();
 	void _open_recent_script(int p_idx);
 
-	void _show_error_dialog(const String &p_path);
+	void _show_error_dialog(String p_path);
 
 	void _close_tab(int p_idx, bool p_save = true, bool p_history_back = true);
 	void _update_find_replace_bar();
@@ -389,8 +378,7 @@ class ScriptEditor : public PanelContainer {
 
 	bool pending_auto_reload;
 	bool auto_reload_running_scripts;
-	bool reload_all_scripts = false;
-	Vector<String> script_paths_to_reload;
+	void _trigger_live_script_reload();
 	void _live_auto_reload_running_scripts();
 
 	void _update_selected_editor_menu();
@@ -404,12 +392,10 @@ class ScriptEditor : public PanelContainer {
 	void _add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args);
 	void _res_saved_callback(const Ref<Resource> &p_res);
 	void _scene_saved_callback(const String &p_path);
-	void _mark_built_in_scripts_as_saved(const String &p_parent_path);
 
 	bool open_textfile_after_create = true;
 	bool trim_trailing_whitespace_on_save;
 	bool convert_indent_on_save;
-	bool external_editor_active;
 
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(Ref<RefCounted> p_script, int p_line);
@@ -428,7 +414,6 @@ class ScriptEditor : public PanelContainer {
 	void _save_editor_state(ScriptEditorBase *p_editor);
 	void _save_layout();
 	void _editor_settings_changed();
-	void _apply_editor_settings();
 	void _filesystem_changed();
 	void _files_moved(const String &p_old_file, const String &p_new_file);
 	void _file_removed(const String &p_file);
@@ -466,7 +451,7 @@ class ScriptEditor : public PanelContainer {
 	void _script_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
 	void _make_script_list_context_menu();
 
-	void _help_search(const String &p_text);
+	void _help_search(String p_text);
 
 	void _history_forward();
 	void _history_back();
@@ -485,7 +470,7 @@ class ScriptEditor : public PanelContainer {
 
 	void _script_changed();
 	int file_dialog_option;
-	void _file_dialog_action(const String &p_file);
+	void _file_dialog_action(String p_file);
 
 	Ref<Script> _get_current_script();
 	TypedArray<Script> _get_open_scripts() const;
@@ -494,14 +479,11 @@ class ScriptEditor : public PanelContainer {
 	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error) const;
 	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
 
-	void _on_find_in_files_requested(const String &text);
-	void _on_replace_in_files_requested(const String &text);
-	void _on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end);
+	void _on_find_in_files_requested(String text);
+	void _on_replace_in_files_requested(String text);
+	void _on_find_in_files_result_selected(String fpath, int line_number, int begin, int end);
 	void _start_find_in_files(bool with_replace);
-	void _on_find_in_files_modified_files(const PackedStringArray &paths);
-	void _on_find_in_files_close_button_clicked();
-
-	void _set_zoom_factor(float p_zoom_factor);
+	void _on_find_in_files_modified_files(PackedStringArray paths);
 
 	void _window_changed(bool p_visible);
 
@@ -556,9 +538,6 @@ public:
 	void clear_docs_from_script(const Ref<Script> &p_script);
 	void update_docs_from_script(const Ref<Script> &p_script);
 
-	void trigger_live_script_reload(const String &p_script_path);
-	void trigger_live_script_reload_all();
-
 	bool can_take_away_focus() const;
 
 	VSplitContainer *get_left_list_split() { return list_split; }
@@ -584,7 +563,7 @@ class ScriptEditorPlugin : public EditorPlugin {
 
 	void _focus_another_editor();
 
-	void _save_last_editor(const String &p_editor);
+	void _save_last_editor(String p_editor);
 	void _window_visibility_changed(bool p_visible);
 
 protected:

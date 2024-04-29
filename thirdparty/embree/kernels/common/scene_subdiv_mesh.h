@@ -9,13 +9,11 @@
 #include "../subdiv/tessellation_cache.h"
 #include "../subdiv/catmullclark_coefficients.h"
 #include "../subdiv/patch.h"
+#include "../../common/algorithms/parallel_map.h"
+#include "../../common/algorithms/parallel_set.h"
 
 namespace embree
 {
-  struct HoleSet;
-  struct VertexCreaseMap;
-  struct EdgeCreaseMap;
-
   class SubdivMesh : public Geometry
   {
     ALIGNED_CLASS_(16);
@@ -51,7 +49,6 @@ namespace embree
 
     /*! subdiv mesh construction */
     SubdivMesh(Device* device);
-    ~SubdivMesh();
 
   public:
     void setMask (unsigned mask);
@@ -275,7 +272,7 @@ namespace embree
     mvector<uint32_t> halfEdgeFace;
 
     /*! set with all holes */
-    std::unique_ptr<HoleSet> holeSet;
+    parallel_set<uint32_t> holeSet;
 
     /*! fast lookup table to detect invalid faces */
     mvector<char> invalid_face;
@@ -302,10 +299,10 @@ namespace embree
   private:
 
     /*! map with all vertex creases */
-    std::unique_ptr<VertexCreaseMap> vertexCreaseMap;
+    parallel_map<uint32_t,float> vertexCreaseMap;
     
     /*! map with all edge creases */
-    std::unique_ptr<EdgeCreaseMap> edgeCreaseMap;
+    parallel_map<uint64_t,float> edgeCreaseMap;
 
   protected:
     

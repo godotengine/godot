@@ -32,6 +32,8 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef GLSLANG_WEB
+
 #include "Logger.h"
 
 #include <algorithm>
@@ -66,3 +68,5 @@ std::string SpvBuildLogger::getAllMessages() const {
 }
 
 } // end spv namespace
+
+#endif

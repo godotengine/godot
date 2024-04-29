@@ -85,27 +85,18 @@ extern int g_debuglevel; /* the variable is only declared,
                             It's useful when enabling very verbose levels
                             on selective conditions (such as position in src) */
 
-#  define RAWLOG(l, ...)                   \
-    do {                                   \
-        if (l<=g_debuglevel) {             \
-            ZSTD_DEBUG_PRINT(__VA_ARGS__); \
-        }                                  \
-    } while (0)
-
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-#define LINE_AS_STRING TOSTRING(__LINE__)
-
-#  define DEBUGLOG(l, ...)                               \
-    do {                                                 \
-        if (l<=g_debuglevel) {                           \
-            ZSTD_DEBUG_PRINT(__FILE__ ":" LINE_AS_STRING ": " __VA_ARGS__); \
-            ZSTD_DEBUG_PRINT(" \n");                     \
-        }                                                \
-    } while (0)
+#  define RAWLOG(l, ...) {                                       \
+                if (l<=g_debuglevel) {                           \
+                    ZSTD_DEBUG_PRINT(__VA_ARGS__);               \
+            }   }
+#  define DEBUGLOG(l, ...) {                                     \
+                if (l<=g_debuglevel) {                           \
+                    ZSTD_DEBUG_PRINT(__FILE__ ": " __VA_ARGS__); \
+                    ZSTD_DEBUG_PRINT(" \n");                     \
+            }   }
 #else
-#  define RAWLOG(l, ...)   do { } while (0)    /* disabled */
-#  define DEBUGLOG(l, ...) do { } while (0)    /* disabled */
+#  define RAWLOG(l, ...)      {}    /* disabled */
+#  define DEBUGLOG(l, ...)    {}    /* disabled */
 #endif
 
 

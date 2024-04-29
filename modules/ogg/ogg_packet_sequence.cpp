@@ -216,20 +216,6 @@ bool OggPacketSequencePlayback::seek_page(int64_t p_granule_pos) {
 	return true;
 }
 
-int64_t OggPacketSequencePlayback::get_page_number() const {
-	return page_cursor;
-}
-
-bool OggPacketSequencePlayback::set_page_number(int64_t p_page_number) {
-	if (p_page_number >= 0 && p_page_number < ogg_packet_sequence->page_data.size()) {
-		page_cursor = p_page_number;
-		packet_cursor = 0;
-		packetno = 0;
-		return true;
-	}
-	return false;
-}
-
 OggPacketSequencePlayback::OggPacketSequencePlayback() {
 	packet = new ogg_packet();
 }

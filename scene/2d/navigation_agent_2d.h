@@ -63,8 +63,6 @@ class NavigationAgent2D : public Node {
 	real_t time_horizon_obstacles = 0.0;
 	real_t max_speed = 100.0;
 	real_t path_max_distance = 100.0;
-	bool simplify_path = false;
-	real_t simplify_epsilon = 0.0;
 
 	Vector2 target_position;
 
@@ -90,7 +88,6 @@ class NavigationAgent2D : public Node {
 
 	bool target_reached = false;
 	bool navigation_finished = true;
-	bool last_waypoint_reached = false;
 	// No initialized on purpose
 	uint32_t update_frame_id = 0;
 
@@ -181,12 +178,6 @@ public:
 	void set_target_position(Vector2 p_position);
 	Vector2 get_target_position() const;
 
-	void set_simplify_path(bool p_enabled);
-	bool get_simplify_path() const;
-
-	void set_simplify_epsilon(real_t p_epsilon);
-	real_t get_simplify_epsilon() const;
-
 	Vector2 get_next_path_position();
 
 	Ref<NavigationPathQueryResult2D> get_current_navigation_result() const { return navigation_result; }
@@ -241,21 +232,9 @@ public:
 	float get_debug_path_custom_line_width() const;
 
 private:
-	bool _is_target_reachable() const;
-	Vector2 _get_final_position() const;
-
-	void _update_navigation();
-	void _advance_waypoints(const Vector2 &p_origin);
+	void update_navigation();
 	void _request_repath();
-
-	bool _is_last_waypoint() const;
-	void _move_to_next_waypoint();
-	bool _is_within_waypoint_distance(const Vector2 &p_origin) const;
-	bool _is_within_target_distance(const Vector2 &p_origin) const;
-
-	void _trigger_waypoint_reached();
-	void _transition_to_navigation_finished();
-	void _transition_to_target_reached();
+	void _check_distance_to_target();
 
 #ifdef DEBUG_ENABLED
 	void _navigation_debug_changed();

@@ -36,7 +36,6 @@ class SayNothing extends Say:
 		print("howdy, see above")
 
 	func say(name):
-		@warning_ignore("unsafe_call_argument")
 		super(name + " super'd")
 		print(prefix, " say nothing... or not? ", name)
 

@@ -23,7 +23,6 @@ func test() -> void:
 	typed = variant()
 	inferred = variant()
 
-	@warning_ignore("unsafe_call_argument") # TODO: Hard vs Weak vs Unknown.
 	param_weak(typed)
 	param_typed(typed)
 	param_inferred(typed)

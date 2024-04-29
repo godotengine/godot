@@ -63,11 +63,9 @@ public:
 	};
 
 	enum CacheMode {
-		CACHE_MODE_IGNORE,
-		CACHE_MODE_REUSE,
-		CACHE_MODE_REPLACE,
-		CACHE_MODE_IGNORE_DEEP,
-		CACHE_MODE_REPLACE_DEEP,
+		CACHE_MODE_IGNORE, // Resource and subresources do not use path cache, no path is set into resource.
+		CACHE_MODE_REUSE, // Resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available.
+		CACHE_MODE_REPLACE, // Resource and subresource use path cache, but replace existing loaded resources when available with information from disk.
 	};
 
 	static ResourceLoader *get_singleton() { return singleton; }
@@ -131,7 +129,6 @@ public:
 	enum RenderingDriver {
 		RENDERING_DRIVER_VULKAN,
 		RENDERING_DRIVER_OPENGL3,
-		RENDERING_DRIVER_D3D12,
 	};
 
 	virtual PackedStringArray get_connected_midi_inputs();
@@ -156,15 +153,13 @@ public:
 	String get_executable_path() const;
 	String read_string_from_stdin();
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
-	Dictionary execute_with_pipe(const String &p_path, const Vector<String> &p_arguments);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
-	Error shell_open(const String &p_uri);
-	Error shell_show_in_file_manager(const String &p_path, bool p_open_folder = true);
+	Error shell_open(String p_uri);
+	Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
 
 	bool is_process_running(int p_pid) const;
-	int get_process_exit_code(int p_pid) const;
 	int get_process_id() const;
 
 	void set_restart_on_exit(bool p_restart, const Vector<String> &p_restart_arguments = Vector<String>());
@@ -341,7 +336,6 @@ public:
 	Vector<Vector3> segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const TypedArray<Plane> &p_planes);
 
 	Vector<Vector3> clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane);
-	Vector<int32_t> tetrahedralize_delaunay(const Vector<Vector3> &p_points);
 
 	Geometry3D() { singleton = this; }
 };
@@ -439,19 +433,17 @@ public:
 	bool can_instantiate(const StringName &p_class) const;
 	Variant instantiate(const StringName &p_class) const;
 
-	bool class_has_signal(const StringName &p_class, const StringName &p_signal) const;
-	Dictionary class_get_signal(const StringName &p_class, const StringName &p_signal) const;
-	TypedArray<Dictionary> class_get_signal_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	bool class_has_signal(StringName p_class, StringName p_signal) const;
+	Dictionary class_get_signal(StringName p_class, StringName p_signal) const;
+	TypedArray<Dictionary> class_get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
 
-	TypedArray<Dictionary> class_get_property_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_property_list(StringName p_class, bool p_no_inheritance = false) const;
 	Variant class_get_property(Object *p_object, const StringName &p_property) const;
 	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
-	bool class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
+	bool class_has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false) const;
 
-	int class_get_method_argument_count(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
-
-	TypedArray<Dictionary> class_get_method_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_method_list(StringName p_class, bool p_no_inheritance = false) const;
 
 	PackedStringArray class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	bool class_has_integer_constant(const StringName &p_class, const StringName &p_name) const;
@@ -462,11 +454,7 @@ public:
 	PackedStringArray class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 	StringName class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
-	bool is_class_enabled(const StringName &p_class) const;
-
-#ifdef TOOLS_ENABLED
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
+	bool is_class_enabled(StringName p_class) const;
 
 	ClassDB() {}
 	~ClassDB() {}
@@ -537,10 +525,6 @@ public:
 
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
-
-#ifdef TOOLS_ENABLED
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
 
 	Engine() { singleton = this; }
 };

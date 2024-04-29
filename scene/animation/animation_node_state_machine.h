@@ -57,7 +57,6 @@ private:
 	StringName advance_condition_name;
 	float xfade_time = 0.0;
 	Ref<Curve> xfade_curve;
-	bool break_loop_at_end = false;
 	bool reset = true;
 	int priority = 1;
 	String advance_expression;
@@ -85,9 +84,6 @@ public:
 
 	void set_xfade_time(float p_xfade);
 	float get_xfade_time() const;
-
-	void set_break_loop_at_end(bool p_enable);
-	bool is_loop_broken_at_end() const;
 
 	void set_reset(bool p_reset);
 	bool is_reset() const;
@@ -214,14 +210,10 @@ public:
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
 
-	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 	virtual String get_caption() const override;
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;
-
-#ifdef TOOLS_ENABLED
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
 
 	AnimationNodeStateMachine();
 };
@@ -250,7 +242,6 @@ class AnimationNodeStateMachinePlayback : public Resource {
 		Ref<Curve> curve;
 		AnimationNodeStateMachineTransition::SwitchMode switch_mode;
 		bool is_reset;
-		bool break_loop_at_end;
 	};
 
 	struct ChildStateMachineInfo {
@@ -262,14 +253,18 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	Ref<AnimationNodeStateMachineTransition> default_transition;
 	String base_path;
 
-	AnimationNode::NodeTimeInfo current_nti;
+	double len_fade_from = 0.0;
+	double pos_fade_from = 0.0;
+
+	double len_current = 0.0;
+	double pos_current = 0.0;
+
 	StringName current;
 	Ref<Curve> current_curve;
 
 	Ref<AnimationNodeStateMachineTransition> group_start_transition;
 	Ref<AnimationNodeStateMachineTransition> group_end_transition;
 
-	AnimationNode::NodeTimeInfo fadeing_from_nti;
 	StringName fading_from;
 	float fading_time = 0.0;
 	float fading_pos = 0.0;
@@ -302,8 +297,8 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	bool _travel_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, const String &p_path, bool p_is_allow_transition_to_self, bool p_is_parent_same_state, bool p_test_only);
 	void _start_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, const String &p_path, bool p_test_only);
 
-	AnimationNode::NodeTimeInfo process(const String &p_base_path, AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only);
-	AnimationNode::NodeTimeInfo _process(const String &p_base_path, AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only);
+	double process(const String &p_base_path, AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only);
+	double _process(const String &p_base_path, AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only);
 
 	bool _check_advance_condition(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition) const;
 	bool _transition_to_next_recursive(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_test_only);

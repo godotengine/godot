@@ -221,9 +221,9 @@ void meshopt_optimizeVertexCacheTable(unsigned int* destination, const unsigned 
 		triangle_scores[i] = vertex_scores[a] + vertex_scores[b] + vertex_scores[c];
 	}
 
-	unsigned int cache_holder[2 * (kCacheSizeMax + 4)];
+	unsigned int cache_holder[2 * (kCacheSizeMax + 3)];
 	unsigned int* cache = cache_holder;
-	unsigned int* cache_new = cache_holder + kCacheSizeMax + 4;
+	unsigned int* cache_new = cache_holder + kCacheSizeMax + 3;
 	size_t cache_count = 0;
 
 	unsigned int current_triangle = 0;
@@ -260,8 +260,10 @@ void meshopt_optimizeVertexCacheTable(unsigned int* destination, const unsigned 
 		{
 			unsigned int index = cache[i];
 
-			cache_new[cache_write] = index;
-			cache_write += (index != a && index != b && index != c);
+			if (index != a && index != b && index != c)
+			{
+				cache_new[cache_write++] = index;
+			}
 		}
 
 		unsigned int* cache_temp = cache;
@@ -303,10 +305,6 @@ void meshopt_optimizeVertexCacheTable(unsigned int* destination, const unsigned 
 		{
 			unsigned int index = cache[i];
 
-			// no need to update scores if we are never going to use this vertex
-			if (adjacency.counts[index] == 0)
-				continue;
-
 			int cache_position = i >= cache_size ? -1 : int(i);
 
 			// update vertex score
@@ -327,8 +325,11 @@ void meshopt_optimizeVertexCacheTable(unsigned int* destination, const unsigned 
 				float tri_score = triangle_scores[tri] + score_diff;
 				assert(tri_score > 0);
 
-				best_triangle = best_score < tri_score ? tri : best_triangle;
-				best_score = best_score < tri_score ? tri_score : best_score;
+				if (best_score < tri_score)
+				{
+					best_triangle = tri;
+					best_score = tri_score;
+				}
 
 				triangle_scores[tri] = tri_score;
 			}

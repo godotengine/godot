@@ -2,17 +2,26 @@
  *  RFC 1521 base64 encoding/decoding
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may
+ *  not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
-
-#include <limits.h>
 
 #include "common.h"
 
 #if defined(MBEDTLS_BASE64_C)
 
 #include "mbedtls/base64.h"
-#include "base64_internal.h"
 #include "constant_time_internal.h"
 
 #include <stdint.h>
@@ -22,38 +31,7 @@
 #include "mbedtls/platform.h"
 #endif /* MBEDTLS_SELF_TEST */
 
-MBEDTLS_STATIC_TESTABLE
-unsigned char mbedtls_ct_base64_enc_char(unsigned char value)
-{
-    unsigned char digit = 0;
-    /* For each range of values, if value is in that range, mask digit with
-     * the corresponding value. Since value can only be in a single range,
-     * only at most one masking will change digit. */
-    digit |= mbedtls_ct_uchar_in_range_if(0, 25, value, 'A' + value);
-    digit |= mbedtls_ct_uchar_in_range_if(26, 51, value, 'a' + value - 26);
-    digit |= mbedtls_ct_uchar_in_range_if(52, 61, value, '0' + value - 52);
-    digit |= mbedtls_ct_uchar_in_range_if(62, 62, value, '+');
-    digit |= mbedtls_ct_uchar_in_range_if(63, 63, value, '/');
-    return digit;
-}
-
-MBEDTLS_STATIC_TESTABLE
-signed char mbedtls_ct_base64_dec_value(unsigned char c)
-{
-    unsigned char val = 0;
-    /* For each range of digits, if c is in that range, mask val with
-     * the corresponding value. Since c can only be in a single range,
-     * only at most one masking will change val. Set val to one plus
-     * the desired value so that it stays 0 if c is in none of the ranges. */
-    val |= mbedtls_ct_uchar_in_range_if('A', 'Z', c, c - 'A' +  0 + 1);
-    val |= mbedtls_ct_uchar_in_range_if('a', 'z', c, c - 'a' + 26 + 1);
-    val |= mbedtls_ct_uchar_in_range_if('0', '9', c, c - '0' + 52 + 1);
-    val |= mbedtls_ct_uchar_in_range_if('+', '+', c, c - '+' + 62 + 1);
-    val |= mbedtls_ct_uchar_in_range_if('/', '/', c, c - '/' + 63 + 1);
-    /* At this point, val is 0 if c is an invalid digit and v+1 if c is
-     * a digit with the value v. */
-    return val - 1;
-}
+#define BASE64_SIZE_T_MAX   ((size_t) -1)   /* SIZE_T_MAX is not standard */
 
 /*
  * Encode a buffer into base64 format
@@ -72,8 +50,8 @@ int mbedtls_base64_encode(unsigned char *dst, size_t dlen, size_t *olen,
 
     n = slen / 3 + (slen % 3 != 0);
 
-    if (n > (SIZE_MAX - 1) / 4) {
-        *olen = SIZE_MAX;
+    if (n > (BASE64_SIZE_T_MAX - 1) / 4) {
+        *olen = BASE64_SIZE_T_MAX;
         return MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL;
     }
 
@@ -116,7 +94,7 @@ int mbedtls_base64_encode(unsigned char *dst, size_t dlen, size_t *olen,
         *p++ = '=';
     }
 
-    *olen = (size_t) (p - dst);
+    *olen = p - dst;
     *p = 0;
 
     return 0;
@@ -225,7 +203,7 @@ int mbedtls_base64_decode(unsigned char *dst, size_t dlen, size_t *olen,
         }
     }
 
-    *olen = (size_t) (p - dst);
+    *olen = p - dst;
 
     return 0;
 }

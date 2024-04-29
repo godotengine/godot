@@ -74,7 +74,8 @@ Size2 GraphElement::get_minimum_size() const {
 
 		Size2i size = child->get_combined_minimum_size();
 
-		minsize = minsize.max(size);
+		minsize.width = MAX(minsize.width, size.width);
+		minsize.height = MAX(minsize.height, size.height);
 	}
 
 	return minsize;
@@ -149,7 +150,7 @@ void GraphElement::gui_input(const Ref<InputEvent> &p_ev) {
 
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
-		ERR_FAIL_NULL_MSG(get_parent_control(), "GraphElement must be the child of a GraphEdit node.");
+		ERR_FAIL_COND_MSG(get_parent_control() == nullptr, "GraphElement must be the child of a GraphEdit node.");
 
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			Vector2 mpos = mb->get_position();
@@ -166,11 +167,7 @@ void GraphElement::gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-			if (resizing) {
-				resizing = false;
-				emit_signal(SNAME("resize_end"), get_size());
-				return;
-			}
+			resizing = false;
 		}
 	}
 
@@ -236,16 +233,13 @@ void GraphElement::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selectable"), "set_selectable", "is_selectable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selected"), "set_selected", "is_selected");
 
+	ADD_SIGNAL(MethodInfo("position_offset_changed"));
 	ADD_SIGNAL(MethodInfo("node_selected"));
 	ADD_SIGNAL(MethodInfo("node_deselected"));
-
-	ADD_SIGNAL(MethodInfo("raise_request"));
-	ADD_SIGNAL(MethodInfo("delete_request"));
-	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_size")));
-	ADD_SIGNAL(MethodInfo("resize_end", PropertyInfo(Variant::VECTOR2, "new_size")));
-
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
-	ADD_SIGNAL(MethodInfo("position_offset_changed"));
+	ADD_SIGNAL(MethodInfo("raise_request"));
+	ADD_SIGNAL(MethodInfo("close_request"));
+	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphElement, resizer);
 }

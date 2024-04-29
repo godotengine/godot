@@ -1,7 +1,6 @@
 # meta-description: Basic editor script template
-
 @tool
-extends _BASE_
+extends EditorScript
 
 
 # Called when the script is executed (using File -> Run in Script Editor).

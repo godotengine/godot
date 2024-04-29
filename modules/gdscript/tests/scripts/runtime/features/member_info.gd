@@ -23,7 +23,6 @@ var test_var_hard_int: int
 var test_var_hard_variant_type: Variant.Type
 @export var test_var_hard_variant_type_exported: Variant.Type
 var test_var_hard_node_process_mode: Node.ProcessMode
-@warning_ignore("enum_variable_without_default")
 var test_var_hard_my_enum: MyEnum
 var test_var_hard_array: Array
 var test_var_hard_array_int: Array[int]
@@ -57,21 +56,11 @@ signal test_signal_6(a: Resource, b: Array[Resource])
 signal test_signal_7(a: TestMemberInfo, b: Array[TestMemberInfo])
 signal test_signal_8(a: MyClass, b: Array[MyClass])
 
-func no_exec():
-	test_signal_1.emit()
-	test_signal_2.emit()
-	test_signal_3.emit()
-	test_signal_4.emit()
-	test_signal_5.emit()
-	test_signal_6.emit()
-	test_signal_7.emit()
-	test_signal_8.emit()
-
 func test():
 	var script: Script = get_script()
 	for property in script.get_property_list():
 		if str(property.name).begins_with("test_"):
-			print(Utils.get_property_signature(property, null, true))
+			print(Utils.get_property_signature(property, true))
 	for property in get_property_list():
 		if str(property.name).begins_with("test_"):
 			print(Utils.get_property_signature(property))

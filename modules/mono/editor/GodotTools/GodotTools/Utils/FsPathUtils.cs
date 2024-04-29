@@ -30,7 +30,8 @@ namespace GodotTools.Utils
             return childPathNorm.PathStartsWithAlreadyNorm(parentPathNorm);
         }
 
-        public static string? LocalizePathWithCaseChecked(string path)
+        [return: MaybeNull]
+        public static string LocalizePathWithCaseChecked(string path)
         {
             string pathNorm = path.NormalizePath() + Path.DirectorySeparatorChar;
             string resourcePathNorm = ResourcePath.NormalizePath() + Path.DirectorySeparatorChar;

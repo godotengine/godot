@@ -34,7 +34,6 @@
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_tokenizer.h"
-#include "gdscript_tokenizer_buffer.h"
 #include "gdscript_utility_functions.h"
 
 #ifdef TOOLS_ENABLED
@@ -82,41 +81,23 @@ Ref<GDScriptEditorTranslationParserPlugin> gdscript_translation_parser_plugin;
 class EditorExportGDScript : public EditorExportPlugin {
 	GDCLASS(EditorExportGDScript, EditorExportPlugin);
 
-	static constexpr int DEFAULT_SCRIPT_MODE = EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
-	int script_mode = DEFAULT_SCRIPT_MODE;
-
-protected:
-	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags) override {
-		script_mode = DEFAULT_SCRIPT_MODE;
+public:
+	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) override {
+		String script_key;
 
 		const Ref<EditorExportPreset> &preset = get_export_preset();
+
 		if (preset.is_valid()) {
-			script_mode = preset->get_script_export_mode();
+			script_key = preset->get_script_encryption_key().to_lower();
 		}
+
+		if (!p_path.ends_with(".gd")) {
+			return;
+		}
+
+		return;
 	}
 
-	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) override {
-		if (p_path.get_extension() != "gd" || script_mode == EditorExportPreset::MODE_SCRIPT_TEXT) {
-			return;
-		}
-
-		Vector<uint8_t> file = FileAccess::get_file_as_bytes(p_path);
-		if (file.is_empty()) {
-			return;
-		}
-
-		String source;
-		source.parse_utf8(reinterpret_cast<const char *>(file.ptr()), file.size());
-		GDScriptTokenizerBuffer::CompressMode compress_mode = script_mode == EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED ? GDScriptTokenizerBuffer::COMPRESS_ZSTD : GDScriptTokenizerBuffer::COMPRESS_NONE;
-		file = GDScriptTokenizerBuffer::parse_code_string(source, compress_mode);
-		if (file.is_empty()) {
-			return;
-		}
-
-		add_file(p_path.get_basename() + ".gdc", file, true);
-	}
-
-public:
 	virtual String get_name() const override { return "GDScript"; }
 };
 
@@ -204,10 +185,6 @@ void test_tokenizer() {
 	GDScriptTests::test(GDScriptTests::TestType::TEST_TOKENIZER);
 }
 
-void test_tokenizer_buffer() {
-	GDScriptTests::test(GDScriptTests::TestType::TEST_TOKENIZER_BUFFER);
-}
-
 void test_parser() {
 	GDScriptTests::test(GDScriptTests::TestType::TEST_PARSER);
 }
@@ -221,7 +198,6 @@ void test_bytecode() {
 }
 
 REGISTER_TEST_COMMAND("gdscript-tokenizer", &test_tokenizer);
-REGISTER_TEST_COMMAND("gdscript-tokenizer-buffer", &test_tokenizer_buffer);
 REGISTER_TEST_COMMAND("gdscript-parser", &test_parser);
 REGISTER_TEST_COMMAND("gdscript-compiler", &test_compiler);
 REGISTER_TEST_COMMAND("gdscript-bytecode", &test_bytecode);

@@ -67,8 +67,6 @@ public:
 	NavigationLink3D();
 	~NavigationLink3D();
 
-	RID get_rid() const;
-
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const { return enabled; }
 

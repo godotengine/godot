@@ -48,13 +48,8 @@ void initialize_vorbis_module(ModuleInitializationLevel p_level) {
 		ResourceFormatImporter::get_singleton()->add_importer(ogg_vorbis_importer);
 	}
 
-	ClassDB::APIType prev_api = ClassDB::get_current_api();
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
-
 	// Required to document import options in the class reference.
 	GDREGISTER_CLASS(ResourceImporterOggVorbis);
-
-	ClassDB::set_current_api(prev_api);
 #endif
 
 	GDREGISTER_CLASS(AudioStreamOggVorbis);

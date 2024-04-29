@@ -140,7 +140,7 @@ void TextEditor::enable_editor(Control *p_shortcut_context) {
 	}
 }
 
-void TextEditor::add_callback(const String &p_function, const PackedStringArray &p_args) {
+void TextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
 }
 
 void TextEditor::set_debugger_active(bool p_active) {
@@ -148,10 +148,6 @@ void TextEditor::set_debugger_active(bool p_active) {
 
 Control *TextEditor::get_base_editor() const {
 	return code_editor->get_text_editor();
-}
-
-CodeTextEditor *TextEditor::get_code_editor() const {
-	return code_editor;
 }
 
 PackedInt32Array TextEditor::get_breakpoints() {
@@ -352,32 +348,31 @@ void TextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
 
 void TextEditor::_edit_option(int p_op) {
 	CodeEdit *tx = code_editor->get_text_editor();
-	tx->apply_ime();
 
 	switch (p_op) {
 		case EDIT_UNDO: {
 			tx->undo();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_REDO: {
 			tx->redo();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_CUT: {
 			tx->cut();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_COPY: {
 			tx->copy();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_PASTE: {
 			tx->paste();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_SELECT_ALL: {
 			tx->select_all();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
+			tx->call_deferred(SNAME("grab_focus"));
 		} break;
 		case EDIT_MOVE_LINE_UP: {
 			code_editor->move_lines_up();
@@ -396,9 +391,6 @@ void TextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_DUPLICATE_SELECTION: {
 			code_editor->duplicate_selection();
-		} break;
-		case EDIT_DUPLICATE_LINES: {
-			code_editor->get_text_editor()->duplicate_lines();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
 			int previous_line = -1;
@@ -423,11 +415,11 @@ void TextEditor::_edit_option(int p_op) {
 			trim_trailing_whitespace();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_SPACES: {
-			code_editor->set_indent_using_spaces(true);
+			tx->set_indent_using_spaces(true);
 			convert_indent();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_TABS: {
-			code_editor->set_indent_using_spaces(false);
+			tx->set_indent_using_spaces(false);
 			convert_indent();
 		} break;
 		case EDIT_TO_UPPERCASE: {
@@ -506,8 +498,6 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::RIGHT) {
 			CodeEdit *tx = code_editor->get_text_editor();
-
-			tx->apply_ime();
 
 			Point2i pos = tx->get_line_column_at_pos(mb->get_global_position() - tx->get_global_position());
 			int row = pos.y;
@@ -619,6 +609,21 @@ TextEditor::TextEditor() {
 
 	edit_hb = memnew(HBoxContainer);
 
+	search_menu = memnew(MenuButton);
+	search_menu->set_shortcut_context(this);
+	edit_hb->add_child(search_menu);
+	search_menu->set_text(TTR("Search"));
+	search_menu->set_switch_on_hover(true);
+	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
+
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
+	search_menu->get_popup()->add_separator();
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
+
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_shortcut_context(this);
 	edit_hb->add_child(edit_menu);
@@ -646,7 +651,6 @@ TextEditor::TextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unfold_all_lines"), EDIT_UNFOLD_ALL_LINES);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_lines"), EDIT_DUPLICATE_LINES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_word_wrap"), EDIT_TOGGLE_WORD_WRAP);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
@@ -654,14 +658,18 @@ TextEditor::TextEditor() {
 
 	edit_menu->get_popup()->add_separator();
 	PopupMenu *convert_case = memnew(PopupMenu);
-	edit_menu->get_popup()->add_submenu_node_item(TTR("Convert Case"), convert_case);
+	convert_case->set_name("convert_case");
+	edit_menu->get_popup()->add_child(convert_case);
+	edit_menu->get_popup()->add_submenu_item(TTR("Convert Case"), "convert_case");
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Uppercase")), EDIT_TO_UPPERCASE);
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase")), EDIT_TO_LOWERCASE);
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize")), EDIT_CAPITALIZE);
 	convert_case->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
 
 	highlighter_menu = memnew(PopupMenu);
-	edit_menu->get_popup()->add_submenu_node_item(TTR("Syntax Highlighter"), highlighter_menu);
+	highlighter_menu->set_name("highlighter_menu");
+	edit_menu->get_popup()->add_child(highlighter_menu);
+	edit_menu->get_popup()->add_submenu_item(TTR("Syntax Highlighter"), "highlighter_menu");
 	highlighter_menu->connect("id_pressed", callable_mp(this, &TextEditor::_change_syntax_highlighter));
 
 	Ref<EditorPlainTextSyntaxHighlighter> plain_highlighter;
@@ -672,21 +680,6 @@ TextEditor::TextEditor() {
 	highlighter.instantiate();
 	add_syntax_highlighter(highlighter);
 	set_syntax_highlighter(plain_highlighter);
-
-	search_menu = memnew(MenuButton);
-	search_menu->set_shortcut_context(this);
-	edit_hb->add_child(search_menu);
-	search_menu->set_text(TTR("Search"));
-	search_menu->set_switch_on_hover(true);
-	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
-
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
-	search_menu->get_popup()->add_separator();
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
 
 	MenuButton *goto_menu = memnew(MenuButton);
 	goto_menu->set_shortcut_context(this);
@@ -699,7 +692,9 @@ TextEditor::TextEditor() {
 	goto_menu->get_popup()->add_separator();
 
 	bookmarks_menu = memnew(PopupMenu);
-	goto_menu->get_popup()->add_submenu_node_item(TTR("Bookmarks"), bookmarks_menu);
+	bookmarks_menu->set_name("Bookmarks");
+	goto_menu->get_popup()->add_child(bookmarks_menu);
+	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
 	_update_bookmark_list();
 	bookmarks_menu->connect("about_to_popup", callable_mp(this, &TextEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &TextEditor::_bookmark_item_pressed));
@@ -713,5 +708,5 @@ TextEditor::~TextEditor() {
 }
 
 void TextEditor::validate() {
-	code_editor->validate_script();
+	this->code_editor->validate_script();
 }

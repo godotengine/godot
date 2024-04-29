@@ -40,8 +40,6 @@
 #include "scene/gui/line_edit.h"
 #include "scene/main/timer.h"
 
-class MenuButton;
-
 class GotoLineDialog : public ConfirmationDialog {
 	GDCLASS(GotoLineDialog, ConfirmationDialog);
 
@@ -96,10 +94,10 @@ class FindReplaceBar : public HBoxContainer {
 
 	void _get_search_from(int &r_line, int &r_col, bool p_is_searching_next = false);
 	void _update_results_count();
-	void _update_matches_display();
+	void _update_matches_label();
 
-	void _show_search(bool p_with_replace, bool p_show_only);
-	void _hide_bar(bool p_force_focus = false);
+	void _show_search(bool p_focus_replace = false, bool p_show_only = false);
+	void _hide_bar();
 
 	void _editor_text_changed();
 	void _search_options_changed(bool p_pressed);
@@ -110,9 +108,6 @@ class FindReplaceBar : public HBoxContainer {
 protected:
 	void _notification(int p_what);
 	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
-	void _focus_lost();
-
-	void _update_flags(bool p_direction_backwards);
 
 	bool _search(uint32_t p_flags, int p_from_line, int p_from_col);
 
@@ -158,9 +153,7 @@ class CodeTextEditor : public VBoxContainer {
 	Button *error_button = nullptr;
 	Button *warning_button = nullptr;
 
-	MenuButton *zoom_button = nullptr;
 	Label *line_and_col_txt = nullptr;
-	Label *indentation_txt = nullptr;
 
 	Label *info = nullptr;
 	Timer *idle = nullptr;
@@ -168,32 +161,35 @@ class CodeTextEditor : public VBoxContainer {
 	Timer *code_complete_timer = nullptr;
 	int code_complete_timer_line = 0;
 
-	float zoom_factor = 1.0f;
+	Timer *font_resize_timer = nullptr;
+	int font_resize_val;
+	real_t font_size;
 
 	Label *error = nullptr;
 	int error_line;
 	int error_column;
 
+	void _on_settings_change();
+	void _apply_settings_change();
+
 	void _update_text_editor_theme();
-	void _update_font_ligatures();
 	void _complete_request();
 	Ref<Texture2D> _get_completion_icon(const ScriptLanguage::CodeCompletionOption &p_option);
+	void _font_resize_timeout();
+	bool _add_font_size(int p_delta);
 
 	virtual void input(const Ref<InputEvent> &event) override;
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
+	void _zoom_in();
+	void _zoom_out();
+	void _zoom_changed();
+	void _reset_zoom();
 
 	Color completion_font_color;
 	Color completion_string_color;
-	Color completion_string_name_color;
-	Color completion_node_path_color;
 	Color completion_comment_color;
-	Color completion_doc_comment_color;
 	CodeTextEditorCodeCompleteFunc code_complete_func;
 	void *code_complete_ud = nullptr;
-
-	void _zoom_in();
-	void _zoom_out();
-	void _zoom_to(float p_zoom_factor);
 
 	void _error_button_pressed();
 	void _warning_button_pressed();
@@ -201,7 +197,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _set_show_warnings_panel(bool p_show);
 	void _error_pressed(const Ref<InputEvent> &p_event);
 
-	void _zoom_popup_id_pressed(int p_idx);
+	void _update_status_bar_theme();
 
 	void _toggle_scripts_pressed();
 
@@ -233,8 +229,6 @@ public:
 		CAPITALIZE,
 	};
 	void convert_case(CaseStyle p_case);
-
-	void set_indent_using_spaces(bool p_use_spaces);
 
 	void move_lines_up();
 	void move_lines_down();
@@ -274,9 +268,6 @@ public:
 	void goto_next_bookmark();
 	void goto_prev_bookmark();
 	void remove_all_bookmarks();
-
-	void set_zoom_factor(float p_zoom_factor);
-	float get_zoom_factor();
 
 	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud);
 

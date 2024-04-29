@@ -92,30 +92,12 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 
 	@Override
 	public void onActivityPaused() {
-		queueOnVkThread(() -> {
-			GodotLib.focusout();
-			// Pause the renderer
-			mRenderer.onVkPause();
-		});
-	}
-
-	@Override
-	public void onActivityStopped() {
-		pauseRenderThread();
-	}
-
-	@Override
-	public void onActivityStarted() {
-		resumeRenderThread();
+		onPause();
 	}
 
 	@Override
 	public void onActivityResumed() {
-		queueOnVkThread(() -> {
-			// Resume the renderer
-			mRenderer.onVkResume();
-			GodotLib.focusin();
-		});
+		onResume();
 	}
 
 	@Override
@@ -228,5 +210,27 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 			return getPointerIcon();
 		}
 		return super.onResolvePointerIcon(me, pointerIndex);
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		queueOnVkThread(() -> {
+			// Resume the renderer
+			mRenderer.onVkResume();
+			GodotLib.focusin();
+		});
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+
+		queueOnVkThread(() -> {
+			GodotLib.focusout();
+			// Pause the renderer
+			mRenderer.onVkPause();
+		});
 	}
 }

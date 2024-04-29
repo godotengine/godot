@@ -167,7 +167,7 @@ class GodotProcessor extends AudioWorkletProcessor {
 				GodotProcessor.write_input(this.input_buffer, input);
 				this.input.write(this.input_buffer);
 			} else {
-				// this.port.postMessage('Input buffer is full! Skipping input frame.'); // Uncomment this line to debug input buffer.
+				this.port.postMessage('Input buffer is full! Skipping input frame.');
 			}
 		}
 		const process_output = GodotProcessor.array_has_data(outputs);
@@ -184,7 +184,7 @@ class GodotProcessor extends AudioWorkletProcessor {
 					this.port.postMessage({ 'cmd': 'read', 'data': chunk });
 				}
 			} else {
-				// this.port.postMessage('Output buffer has not enough frames! Skipping output frame.'); // Uncomment this line to debug output buffer.
+				this.port.postMessage('Output buffer has not enough frames! Skipping output frame.');
 			}
 		}
 		this.process_notify();

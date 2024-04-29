@@ -34,11 +34,11 @@
 #include "run_icon_svg.gen.h"
 
 #include "core/config/project_settings.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/import/resource_importer_texture_settings.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For mono and svg.
@@ -112,7 +112,7 @@ Error EditorExportPlatformWeb::_write_or_error(const uint8_t *p_content, int p_s
 	return OK;
 }
 
-void EditorExportPlatformWeb::_replace_strings(const HashMap<String, String> &p_replaces, Vector<uint8_t> &r_template) {
+void EditorExportPlatformWeb::_replace_strings(HashMap<String, String> p_replaces, Vector<uint8_t> &r_template) {
 	String str_template = String::utf8(reinterpret_cast<const char *>(r_template.ptr()), r_template.size());
 	String out;
 	Vector<String> lines = str_template.split("\n");
@@ -150,7 +150,6 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	config["executable"] = p_name;
 	config["args"] = args;
 	config["fileSizes"] = p_file_sizes;
-	config["ensureCrossOriginIsolationHeaders"] = (bool)p_preset->get("progressive_web_app/ensure_cross_origin_isolation_headers");
 
 	String head_include;
 	if (p_preset->get("html/export_icon")) {
@@ -170,13 +169,6 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	replaces["$GODOT_PROJECT_NAME"] = GLOBAL_GET("application/config/name");
 	replaces["$GODOT_HEAD_INCLUDE"] = head_include + custom_head_include;
 	replaces["$GODOT_CONFIG"] = str_config;
-
-	if (p_preset->get("variant/thread_support")) {
-		replaces["$GODOT_THREADS_ENABLED"] = "true";
-	} else {
-		replaces["$GODOT_THREADS_ENABLED"] = "false";
-	}
-
 	_replace_strings(replaces, p_html);
 }
 
@@ -223,12 +215,10 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	const String dir = p_path.get_base_dir();
 	const String name = p_path.get_file().get_basename();
 	bool extensions = (bool)p_preset->get("variant/extensions_support");
-	bool ensure_crossorigin_isolation_headers = (bool)p_preset->get("progressive_web_app/ensure_cross_origin_isolation_headers");
 	HashMap<String, String> replaces;
-	replaces["___GODOT_VERSION___"] = String::num_int64(OS::get_singleton()->get_unix_time()) + "|" + String::num_int64(OS::get_singleton()->get_ticks_usec());
-	replaces["___GODOT_NAME___"] = proj_name.substr(0, 16);
-	replaces["___GODOT_OFFLINE_PAGE___"] = name + ".offline.html";
-	replaces["___GODOT_ENSURE_CROSSORIGIN_ISOLATION_HEADERS___"] = ensure_crossorigin_isolation_headers ? "true" : "false";
+	replaces["@GODOT_VERSION@"] = String::num_int64(OS::get_singleton()->get_unix_time()) + "|" + String::num_int64(OS::get_singleton()->get_ticks_usec());
+	replaces["@GODOT_NAME@"] = proj_name.substr(0, 16);
+	replaces["@GODOT_OFFLINE_PAGE@"] = name + ".offline.html";
 
 	// Files cached during worker install.
 	Array cache_files;
@@ -241,7 +231,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	}
 	cache_files.push_back(name + ".worker.js");
 	cache_files.push_back(name + ".audio.worklet.js");
-	replaces["___GODOT_CACHE___"] = Variant(cache_files).to_json_string();
+	replaces["@GODOT_CACHE@"] = Variant(cache_files).to_json_string();
 
 	// Heavy files that are cached on demand.
 	Array opt_cache_files;
@@ -253,7 +243,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 			opt_cache_files.push_back(p_shared_objects[i].path.get_file());
 		}
 	}
-	replaces["___GODOT_OPT_CACHE___"] = Variant(opt_cache_files).to_json_string();
+	replaces["@GODOT_OPT_CACHE@"] = Variant(opt_cache_files).to_json_string();
 
 	const String sw_path = dir.path_join(name + ".service.worker.js");
 	Vector<uint8_t> sw;
@@ -269,7 +259,6 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	_replace_strings(replaces, sw);
 	Error err = _write_or_error(sw.ptr(), sw.size(), dir.path_join(name + ".service.worker.js"));
 	if (err != OK) {
-		// Message is supplied by the subroutine method.
 		return err;
 	}
 
@@ -302,19 +291,16 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	const String icon144_path = p_preset->get("progressive_web_app/icon_144x144");
 	err = _add_manifest_icon(p_path, icon144_path, 144, icons_arr);
 	if (err != OK) {
-		// Message is supplied by the subroutine method.
 		return err;
 	}
 	const String icon180_path = p_preset->get("progressive_web_app/icon_180x180");
 	err = _add_manifest_icon(p_path, icon180_path, 180, icons_arr);
 	if (err != OK) {
-		// Message is supplied by the subroutine method.
 		return err;
 	}
 	const String icon512_path = p_preset->get("progressive_web_app/icon_512x512");
 	err = _add_manifest_icon(p_path, icon512_path, 512, icons_arr);
 	if (err != OK) {
-		// Message is supplied by the subroutine method.
 		return err;
 	}
 	manifest["icons"] = icons_arr;
@@ -322,7 +308,6 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	CharString cs = Variant(manifest).to_json_string().utf8();
 	err = _write_or_error((const uint8_t *)cs.get_data(), cs.length(), dir.path_join(name + ".manifest.json"));
 	if (err != OK) {
-		// Message is supplied by the subroutine method.
 		return err;
 	}
 
@@ -345,7 +330,6 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/extensions_support"), false)); // Export type.
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/thread_support"), true)); // Thread support (i.e. run with or without COEP/COOP headers).
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 
@@ -356,7 +340,6 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/focus_canvas_on_start"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/experimental_virtual_keyboard"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/enabled"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "progressive_web_app/ensure_cross_origin_isolation_headers"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/offline_page", PROPERTY_HINT_FILE, "*.html"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "progressive_web_app/display", PROPERTY_HINT_ENUM, "Fullscreen,Standalone,Minimal UI,Browser"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "progressive_web_app/orientation", PROPERTY_HINT_ENUM, "Any,Landscape,Portrait"), 0));
@@ -389,11 +372,10 @@ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExp
 	String err;
 	bool valid = false;
 	bool extensions = (bool)p_preset->get("variant/extensions_support");
-	bool thread_support = (bool)p_preset->get("variant/thread_support");
 
 	// Look for export templates (first official, and if defined custom templates).
-	bool dvalid = exists_export_template(_get_template_name(extensions, thread_support, true), &err);
-	bool rvalid = exists_export_template(_get_template_name(extensions, thread_support, false), &err);
+	bool dvalid = exists_export_template(_get_template_name(extensions, true), &err);
+	bool rvalid = exists_export_template(_get_template_name(extensions, false), &err);
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -457,18 +439,16 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	const String base_path = p_path.get_basename();
 	const String base_name = p_path.get_file().get_basename();
 
-	if (!DirAccess::exists(base_dir)) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Target folder does not exist or is inaccessible: \"%s\""), base_dir));
-		return ERR_FILE_BAD_PATH;
-	}
-
 	// Find the correct template
 	String template_path = p_debug ? custom_debug : custom_release;
 	template_path = template_path.strip_edges();
 	if (template_path.is_empty()) {
 		bool extensions = (bool)p_preset->get("variant/extensions_support");
-		bool thread_support = (bool)p_preset->get("variant/thread_support");
-		template_path = find_export_template(_get_template_name(extensions, thread_support, p_debug));
+		template_path = find_export_template(_get_template_name(extensions, p_debug));
+	}
+
+	if (!DirAccess::exists(base_dir)) {
+		return ERR_FILE_BAD_PATH;
 	}
 
 	if (!template_path.is_empty() && !FileAccess::exists(template_path)) {
@@ -500,7 +480,6 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	// Extract templates.
 	error = _extract_template(template_path, base_dir, base_name, pwa);
 	if (error) {
-		// Message is supplied by the subroutine method.
 		return error;
 	}
 
@@ -531,7 +510,6 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	_fix_html(html, p_preset, base_name, p_debug, p_flags, shared_objects, file_sizes);
 	Error err = _write_or_error(html.ptr(), html.size(), p_path);
 	if (err != OK) {
-		// Message is supplied by the subroutine method.
 		return err;
 	}
 	html.resize(0);
@@ -565,7 +543,6 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	if (pwa) {
 		err = _build_pwa(p_preset, p_path, shared_objects);
 		if (err != OK) {
-			// Message is supplied by the subroutine method.
 			return err;
 		}
 	}
@@ -588,6 +565,7 @@ bool EditorExportPlatformWeb::poll_export() {
 	menu_options = preset.is_valid();
 	if (server->is_listening()) {
 		if (menu_options == 0) {
+			MutexLock lock(server_lock);
 			server->stop();
 		} else {
 			menu_options += 1;
@@ -606,6 +584,7 @@ int EditorExportPlatformWeb::get_options_count() const {
 
 Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) {
 	if (p_option == 1) {
+		MutexLock lock(server_lock);
 		server->stop();
 		return OK;
 	}
@@ -655,8 +634,12 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 	const String tls_cert = EDITOR_GET("export/web/tls_certificate");
 
 	// Restart server.
-	server->stop();
-	err = server->listen(bind_port, bind_ip, use_tls, tls_key, tls_cert);
+	{
+		MutexLock lock(server_lock);
+
+		server->stop();
+		err = server->listen(bind_port, bind_ip, use_tls, tls_key, tls_cert);
+	}
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), vformat(TTR("Error starting HTTP server: %d."), err));
 		return err;
@@ -672,9 +655,21 @@ Ref<Texture2D> EditorExportPlatformWeb::get_run_icon() const {
 	return run_icon;
 }
 
+void EditorExportPlatformWeb::_server_thread_poll(void *data) {
+	EditorExportPlatformWeb *ej = static_cast<EditorExportPlatformWeb *>(data);
+	while (!ej->server_quit) {
+		OS::get_singleton()->delay_usec(6900);
+		{
+			MutexLock lock(ej->server_lock);
+			ej->server->poll();
+		}
+	}
+}
+
 EditorExportPlatformWeb::EditorExportPlatformWeb() {
 	if (EditorNode::get_singleton()) {
 		server.instantiate();
+		server_thread.start(_server_thread_poll, this);
 
 #ifdef MODULE_SVG_ENABLED
 		Ref<Image> img = memnew(Image);
@@ -697,4 +692,11 @@ EditorExportPlatformWeb::EditorExportPlatformWeb() {
 }
 
 EditorExportPlatformWeb::~EditorExportPlatformWeb() {
+	if (server.is_valid()) {
+		server->stop();
+	}
+	server_quit = true;
+	if (server_thread.is_started()) {
+		server_thread.wait_to_finish();
+	}
 }

@@ -251,7 +251,6 @@ NodePath MultiplayerSpawner::get_spawn_path() const {
 void MultiplayerSpawner::set_spawn_path(const NodePath &p_path) {
 	spawn_path = p_path;
 	_update_spawn_node();
-	update_configuration_warnings();
 }
 
 void MultiplayerSpawner::_track(Node *p_node, const Variant &p_argument, int p_scene_id) {
@@ -269,7 +268,7 @@ void MultiplayerSpawner::_spawn_notify(ObjectID p_id) {
 
 void MultiplayerSpawner::_node_exit(ObjectID p_id) {
 	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(p_id));
-	ERR_FAIL_NULL(node);
+	ERR_FAIL_COND(!node);
 	if (tracked_nodes.has(p_id)) {
 		tracked_nodes.erase(p_id);
 		get_multiplayer()->object_configuration_remove(node, this);
@@ -324,10 +323,10 @@ Node *MultiplayerSpawner::spawn(const Variant &p_data) {
 	ERR_FAIL_COND_V_MSG(!spawn_function.is_valid(), nullptr, "Custom spawn requires the 'spawn_function' property to be a valid callable.");
 
 	Node *parent = get_spawn_node();
-	ERR_FAIL_NULL_V_MSG(parent, nullptr, "Cannot find spawn node.");
+	ERR_FAIL_COND_V_MSG(!parent, nullptr, "Cannot find spawn node.");
 
 	Node *node = instantiate_custom(p_data);
-	ERR_FAIL_NULL_V_MSG(node, nullptr, "The 'spawn_function' callable must return a valid node.");
+	ERR_FAIL_COND_V_MSG(!node, nullptr, "The 'spawn_function' callable must return a valid node.");
 
 	_track(node, p_data);
 	parent->add_child(node, true);

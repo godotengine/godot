@@ -7,7 +7,7 @@
 		A node that displays a 2D texture. The texture displayed can be a region from a larger atlas texture, or a frame from a sprite sheet animation.
 	</description>
 	<tutorials>
-		<link title="Instancing Demo">https://godotengine.org/asset-library/asset/2716</link>
+		<link title="Instancing Demo">https://godotengine.org/asset-library/asset/148</link>
 	</tutorials>
 	<methods>
 		<method name="get_rect" qualifiers="const">
@@ -44,7 +44,7 @@
 			<return type="bool" />
 			<param index="0" name="pos" type="Vector2" />
 			<description>
-				Returns [code]true[/code], if the pixel at the given position is opaque and [code]false[/code] in other case. The position is in local coordinates.
+				Returns [code]true[/code], if the pixel at the given position is opaque and [code]false[/code] in other case.
 				[b]Note:[/b] It also returns [code]false[/code], if the sprite's texture is [code]null[/code] or if the given position is invalid.
 			</description>
 		</method>
@@ -52,7 +52,6 @@
 	<members>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
 			If [code]true[/code], texture is centered.
-			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when centered. This is caused by their position being between pixels. To prevent this, set this property to [code]false[/code], or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
 		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
 			If [code]true[/code], texture is flipped horizontally.
@@ -61,13 +60,13 @@
 			If [code]true[/code], texture is flipped vertically.
 		</member>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
-			Current frame to display from sprite sheet. [member hframes] or [member vframes] must be greater than 1. This property is automatically adjusted when [member hframes] or [member vframes] are changed to keep pointing to the same visual frame (same column and row). If that's impossible, this value is reset to [code]0[/code].
+			Current frame to display from sprite sheet. [member hframes] or [member vframes] must be greater than 1.
 		</member>
 		<member name="frame_coords" type="Vector2i" setter="set_frame_coords" getter="get_frame_coords" default="Vector2i(0, 0)">
 			Coordinates of the frame to display from sprite sheet. This is as an alias for the [member frame] property. [member hframes] or [member vframes] must be greater than 1.
 		</member>
 		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" default="1">
-			The number of columns in the sprite sheet. When this property is changed, [member frame] is adjusted so that the same visual frame is maintained (same row and column). If that's impossible, [member frame] is reset to [code]0[/code].
+			The number of columns in the sprite sheet.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The texture's drawing offset.
@@ -85,7 +84,7 @@
 			[Texture2D] object to draw.
 		</member>
 		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes" default="1">
-			The number of rows in the sprite sheet. When this property is changed, [member frame] is adjusted so that the same visual frame is maintained (same row and column). If that's impossible, [member frame] is reset to [code]0[/code].
+			The number of rows in the sprite sheet.
 		</member>
 	</members>
 	<signals>

@@ -137,9 +137,7 @@ void Decompress( u8* rgba, void const* block, int flags )
     // decompress colour
     // -- GODOT start --
     //DecompressColour( rgba, colourBlock, ( flags & kDxt1 ) != 0 );
-    if(( flags & ( kBc4 ) ) != 0)
-        DecompressColourBc4( rgba, colourBlock);
-    else if(( flags & ( kBc5 ) ) != 0)
+    if(( flags & ( kBc5 ) ) != 0)
         DecompressColourBc5( rgba, colourBlock);
     else
         DecompressColour( rgba, colourBlock, ( flags & kDxt1 ) != 0 );

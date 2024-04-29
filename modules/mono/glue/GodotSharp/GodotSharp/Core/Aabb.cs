@@ -1,8 +1,5 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-
-#nullable enable
 
 namespace Godot
 {
@@ -98,11 +95,11 @@ namespace Godot
             Vector3 dstMax = with._position + with._size;
 
             return srcMin.X <= dstMin.X &&
-                   srcMax.X >= dstMax.X &&
+                   srcMax.X > dstMax.X &&
                    srcMin.Y <= dstMin.Y &&
-                   srcMax.Y >= dstMax.Y &&
+                   srcMax.Y > dstMax.Y &&
                    srcMin.Z <= dstMin.Z &&
-                   srcMax.Z >= dstMax.Z;
+                   srcMax.Z > dstMax.Z;
         }
 
         /// <summary>
@@ -692,7 +689,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the AABB and the object are equal.</returns>
-        public override readonly bool Equals([NotNullWhen(true)] object? obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Aabb other && Equals(other);
         }
@@ -726,20 +723,23 @@ namespace Godot
         /// <returns>A hash code for this AABB.</returns>
         public override readonly int GetHashCode()
         {
-            return HashCode.Combine(_position, _size);
+            return _position.GetHashCode() ^ _size.GetHashCode();
         }
 
         /// <summary>
         /// Converts this <see cref="Aabb"/> to a string.
         /// </summary>
         /// <returns>A string representation of this AABB.</returns>
-        public override readonly string ToString() => ToString(null);
+        public override readonly string ToString()
+        {
+            return $"{_position}, {_size}";
+        }
 
         /// <summary>
         /// Converts this <see cref="Aabb"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this AABB.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string format)
         {
             return $"{_position.ToString(format)}, {_size.ToString(format)}";
         }

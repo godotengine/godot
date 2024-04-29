@@ -292,9 +292,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				loop_end = file->get_32();
 			}
 		}
-		// Move to the start of the next chunk. Note that RIFF requires a padding byte for odd
-		// chunk sizes.
-		file->seek(file_pos + chunksize + (chunksize & 1));
+		file->seek(file_pos + chunksize);
 	}
 
 	// STEP 2, APPLY CONVERSIONS
@@ -328,7 +326,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			int ipos = 0;
 
 			for (int i = 0; i < new_data_frames; i++) {
-				// Cubic interpolation should be enough.
+				//simple cubic interpolation should be enough.
 
 				float mu = frac;
 
@@ -337,7 +335,15 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				float y2 = data[MIN(frames - 1, ipos + 1) * format_channels + c];
 				float y3 = data[MIN(frames - 1, ipos + 2) * format_channels + c];
 
-				new_data.write[i * format_channels + c] = Math::cubic_interpolate(y1, y2, y0, y3, mu);
+				float mu2 = mu * mu;
+				float a0 = y3 - y2 - y0 + y1;
+				float a1 = y0 - y1 - a0;
+				float a2 = y2 - y0;
+				float a3 = y1;
+
+				float res = (a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3);
+
+				new_data.write[i * format_channels + c] = res;
 
 				// update position and always keep fractional part within ]0...1]
 				// in order to avoid 32bit floating point precision errors

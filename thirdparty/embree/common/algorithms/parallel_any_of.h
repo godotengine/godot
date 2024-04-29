@@ -12,8 +12,7 @@ namespace embree
   template<typename Index, class UnaryPredicate>
     __forceinline bool parallel_any_of (Index first, Index last, UnaryPredicate pred)
   {
-    std::atomic_bool ret;
-    ret = false;
+    bool ret = false;
     
 #if defined(TASKING_TBB)
 #if TBB_INTERFACE_VERSION >= 12002

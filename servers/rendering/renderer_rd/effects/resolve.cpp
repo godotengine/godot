@@ -54,7 +54,7 @@ Resolve::~Resolve() {
 	resolve.shader.version_free(resolve.shader_version);
 }
 
-void Resolve::resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_voxel_gi, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_voxel_gi, Vector2i p_screen_size, int p_samples) {
+void Resolve::resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_voxel_gi, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_voxel_gi, Vector2i p_screen_size, int p_samples, uint32_t p_barrier) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -93,10 +93,10 @@ void Resolve::resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID 
 
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_screen_size.x, p_screen_size.y, 1);
 
-	RD::get_singleton()->compute_list_end();
+	RD::get_singleton()->compute_list_end(p_barrier);
 }
 
-void Resolve::resolve_depth(RID p_source_depth, RID p_dest_depth, Vector2i p_screen_size, int p_samples) {
+void Resolve::resolve_depth(RID p_source_depth, RID p_dest_depth, Vector2i p_screen_size, int p_samples, uint32_t p_barrier) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -126,5 +126,5 @@ void Resolve::resolve_depth(RID p_source_depth, RID p_dest_depth, Vector2i p_scr
 
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_screen_size.x, p_screen_size.y, 1);
 
-	RD::get_singleton()->compute_list_end();
+	RD::get_singleton()->compute_list_end(p_barrier);
 }

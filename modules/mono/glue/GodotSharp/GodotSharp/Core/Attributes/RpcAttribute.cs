@@ -19,7 +19,7 @@ namespace Godot
         /// <summary>
         /// If the method will also be called locally; otherwise, it is only called remotely.
         /// </summary>
-        public bool CallLocal { get; init; }
+        public bool CallLocal { get; init; } = false;
 
         /// <summary>
         /// Transfer mode for the annotated method.
@@ -29,7 +29,7 @@ namespace Godot
         /// <summary>
         /// Transfer channel for the annotated mode.
         /// </summary>
-        public int TransferChannel { get; init; }
+        public int TransferChannel { get; init; } = 0;
 
         /// <summary>
         /// Constructs a <see cref="RpcAttribute"/> instance.

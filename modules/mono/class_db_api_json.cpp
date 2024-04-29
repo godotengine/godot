@@ -47,7 +47,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 	for (const StringName &E : class_list) {
 		ClassDB::ClassInfo *t = ClassDB::classes.getptr(E);
-		ERR_FAIL_NULL(t);
+		ERR_FAIL_COND(!t);
 		if (t->api != p_api || !t->exposed) {
 			continue;
 		}

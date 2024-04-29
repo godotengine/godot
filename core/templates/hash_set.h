@@ -46,9 +46,9 @@
  *
  */
 
-template <typename TKey,
-		typename Hasher = HashMapHasherDefault,
-		typename Comparator = HashMapComparatorDefault<TKey>>
+template <class TKey,
+		class Hasher = HashMapHasherDefault,
+		class Comparator = HashMapComparatorDefault<TKey>>
 class HashSet {
 public:
 	static constexpr uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.

@@ -106,9 +106,7 @@ protected:
 
 	static void _bind_methods();
 
-#ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
 
 	virtual bool _can_do_next_pass() const override;
 	virtual bool _can_use_render_priority() const override;
@@ -327,7 +325,6 @@ private:
 		uint64_t emission_op : get_num_bits(EMISSION_OP_MAX - 1);
 		uint64_t distance_fade : get_num_bits(DISTANCE_FADE_MAX - 1);
 		// booleans
-		uint64_t invalid_key : 1;
 		uint64_t deep_parallax : 1;
 		uint64_t grow : 1;
 		uint64_t proximity_fade : 1;
@@ -684,7 +681,7 @@ public:
 	void set_texture(TextureParam p_param, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture(TextureParam p_param) const;
 	// Used only for shader material conversion
-	Ref<Texture2D> get_texture_by_name(const StringName &p_name) const;
+	Ref<Texture2D> get_texture_by_name(StringName p_name) const;
 
 	void set_texture_filter(TextureFilter p_filter);
 	TextureFilter get_texture_filter() const;

@@ -49,6 +49,10 @@ NoiseTexture3D::~NoiseTexture3D() {
 }
 
 void NoiseTexture3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_update_texture"), &NoiseTexture3D::_update_texture);
+	ClassDB::bind_method(D_METHOD("_generate_texture"), &NoiseTexture3D::_generate_texture);
+	ClassDB::bind_method(D_METHOD("_thread_done", "image"), &NoiseTexture3D::_thread_done);
+
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &NoiseTexture3D::set_width);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &NoiseTexture3D::set_height);
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &NoiseTexture3D::set_depth);
@@ -122,7 +126,7 @@ void NoiseTexture3D::_thread_done(const TypedArray<Image> &p_data) {
 
 void NoiseTexture3D::_thread_function(void *p_ud) {
 	NoiseTexture3D *tex = static_cast<NoiseTexture3D *>(p_ud);
-	callable_mp(tex, &NoiseTexture3D::_thread_done).call_deferred(tex->_generate_texture());
+	tex->call_deferred(SNAME("_thread_done"), tex->_generate_texture());
 }
 
 void NoiseTexture3D::_queue_update() {
@@ -131,7 +135,7 @@ void NoiseTexture3D::_queue_update() {
 	}
 
 	update_queued = true;
-	callable_mp(this, &NoiseTexture3D::_update_texture).call_deferred();
+	call_deferred(SNAME("_update_texture"));
 }
 
 TypedArray<Image> NoiseTexture3D::_generate_texture() {
@@ -141,8 +145,6 @@ TypedArray<Image> NoiseTexture3D::_generate_texture() {
 	if (ref_noise.is_null()) {
 		return TypedArray<Image>();
 	}
-
-	ERR_FAIL_COND_V_MSG((int64_t)width * height * depth > Image::MAX_PIXELS, TypedArray<Image>(), "The NoiseTexture3D is too big, consider lowering its width, height, or depth.");
 
 	Vector<Ref<Image>> images;
 

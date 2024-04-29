@@ -68,10 +68,6 @@ MethodBind *godotsharp_method_bind_get_method(const StringName *p_classname, con
 	return ClassDB::get_method(*p_classname, *p_methodname);
 }
 
-MethodBind *godotsharp_method_bind_get_method_with_compatibility(const StringName *p_classname, const StringName *p_methodname, uint64_t p_hash) {
-	return ClassDB::get_method_with_compatibility(*p_classname, *p_methodname, p_hash);
-}
-
 godotsharp_class_creation_func godotsharp_get_class_constructor(const StringName *p_classname) {
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(*p_classname);
 	if (class_info) {
@@ -239,7 +235,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_get_instance_binding_managed(Object
 	CRASH_COND(!p_unmanaged);
 #endif
 
-	void *data = CSharpLanguage::get_instance_binding_with_setup(p_unmanaged);
+	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
 	ERR_FAIL_NULL_V(data, { nullptr });
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
 	ERR_FAIL_COND_V(!script_binding.inited, { nullptr });
@@ -252,7 +248,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(Obj
 	CRASH_COND(!p_unmanaged);
 #endif
 
-	void *data = CSharpLanguage::get_instance_binding_with_setup(p_unmanaged);
+	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
 	ERR_FAIL_NULL_V(data, { nullptr });
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
 	ERR_FAIL_COND_V(!script_binding.inited, { nullptr });
@@ -316,7 +312,7 @@ void godotsharp_internal_new_csharp_script(Ref<CSharpScript> *r_dest) {
 }
 
 void godotsharp_internal_editor_file_system_update_file(const String *p_script_path) {
-#ifdef TOOLS_ENABLED
+#if TOOLS_ENABLED
 	// If the EditorFileSystem singleton is available, update the file;
 	// otherwise, the file will be updated when the singleton becomes available.
 	EditorFileSystem *efs = EditorFileSystem::get_singleton();
@@ -1420,7 +1416,6 @@ void godotsharp_object_to_string(Object *p_ptr, godot_string *r_str) {
 static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dotnet_module_is_initialized,
 	(void *)godotsharp_method_bind_get_method,
-	(void *)godotsharp_method_bind_get_method_with_compatibility,
 	(void *)godotsharp_get_class_constructor,
 	(void *)godotsharp_engine_get_singleton,
 	(void *)godotsharp_stack_info_vector_resize,

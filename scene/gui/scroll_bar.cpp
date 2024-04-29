@@ -468,6 +468,22 @@ double ScrollBar::get_area_size() const {
 	}
 }
 
+double ScrollBar::get_area_offset() const {
+	double ofs = 0.0;
+
+	if (orientation == VERTICAL) {
+		ofs += theme_cache.scroll_offset_style->get_margin(SIDE_TOP);
+		ofs += theme_cache.decrement_icon->get_height();
+	}
+
+	if (orientation == HORIZONTAL) {
+		ofs += theme_cache.scroll_offset_style->get_margin(SIDE_LEFT);
+		ofs += theme_cache.decrement_icon->get_width();
+	}
+
+	return ofs;
+}
+
 double ScrollBar::get_grabber_offset() const {
 	return (get_area_size()) * get_as_ratio();
 }
@@ -623,6 +639,7 @@ void ScrollBar::_bind_methods() {
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollBar, scroll_style, "scroll");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollBar, scroll_focus_style, "scroll_focus");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollBar, scroll_offset_style, "hscroll");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollBar, grabber_style, "grabber");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollBar, grabber_hl_style, "grabber_highlight");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollBar, grabber_pressed_style, "grabber_pressed");

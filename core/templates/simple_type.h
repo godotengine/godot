@@ -33,22 +33,22 @@
 
 /* Batch of specializations to obtain the actual simple type */
 
-template <typename T>
+template <class T>
 struct GetSimpleTypeT {
 	typedef T type_t;
 };
 
-template <typename T>
+template <class T>
 struct GetSimpleTypeT<T &> {
 	typedef T type_t;
 };
 
-template <typename T>
+template <class T>
 struct GetSimpleTypeT<T const> {
 	typedef T type_t;
 };
 
-template <typename T>
+template <class T>
 struct GetSimpleTypeT<T const &> {
 	typedef T type_t;
 };

@@ -17,15 +17,11 @@ namespace embree
   struct IntersectFunctionNArguments : public RTCIntersectFunctionNArguments
   {
     Geometry* geometry;
-    RTCScene forward_scene;
-    RTCIntersectArguments* args;
   };
 
   struct OccludedFunctionNArguments : public RTCOccludedFunctionNArguments
   {
     Geometry* geometry;
-    RTCScene forward_scene;
-    RTCIntersectArguments* args;
   };
 
   /*! Base class for set of acceleration structures. */
@@ -142,9 +138,10 @@ namespace embree
   public:
 
       /*! Intersects a single ray with the scene. */
-      __forceinline bool intersect (RayHit& ray, unsigned int geomID, unsigned int primID, RayQueryContext* context) 
+      __forceinline void intersect (RayHit& ray, unsigned int geomID, unsigned int primID, IntersectContext* context) 
       {
         assert(primID < size());
+        assert(intersectorN.intersect);
         
         int mask = -1;
         IntersectFunctionNArguments args;
@@ -156,26 +153,16 @@ namespace embree
         args.geomID = geomID;
         args.primID = primID;
         args.geometry = this;
-        args.forward_scene = nullptr;
-        args.args = context->args;
-
-        IntersectFuncN intersectFunc = nullptr;
-        intersectFunc = intersectorN.intersect;
         
-        if (context->getIntersectFunction())
-          intersectFunc = context->getIntersectFunction();
-
-        assert(intersectFunc);
-        intersectFunc(&args);
-
-        return mask != 0;
+        intersectorN.intersect(&args);
       }
 
       /*! Tests if single ray is occluded by the scene. */
-      __forceinline bool occluded (Ray& ray, unsigned int geomID, unsigned int primID, RayQueryContext* context)
+      __forceinline void occluded (Ray& ray, unsigned int geomID, unsigned int primID, IntersectContext* context)
       {
         assert(primID < size());
-
+        assert(intersectorN.occluded);
+        
         int mask = -1;
         OccludedFunctionNArguments args;
         args.valid = &mask;
@@ -186,100 +173,16 @@ namespace embree
         args.geomID = geomID;
         args.primID = primID;
         args.geometry = this;
-        args.forward_scene = nullptr;
-        args.args = context->args;
-
-        OccludedFuncN occludedFunc = nullptr;
-        occludedFunc = intersectorN.occluded;
-
-        if (context->getOccludedFunction())
-          occludedFunc = context->getOccludedFunction();
-
-        assert(occludedFunc);
-        occludedFunc(&args);
-
-        return mask != 0;
+        
+        intersectorN.occluded(&args);
       }
-
-      /*! Intersects a single ray with the scene. */
-    __forceinline bool intersect (RayHit& ray, unsigned int geomID, unsigned int primID, RayQueryContext* context, RTCScene& forward_scene) 
-    {
-        assert(primID < size());
-        
-        int mask = -1;
-        IntersectFunctionNArguments args;
-        args.valid = &mask;
-        args.geometryUserPtr = userPtr;
-        args.context = context->user;
-        args.rayhit = (RTCRayHitN*)&ray;
-        args.N = 1;
-        args.geomID = geomID;
-        args.primID = primID;
-        args.geometry = this;
-        args.forward_scene = nullptr;
-        args.args = nullptr;
-
-        typedef void (*RTCIntersectFunctionSYCL)(const void* args);
-        RTCIntersectFunctionSYCL intersectFunc = nullptr;
-        
-#if EMBREE_SYCL_GEOMETRY_CALLBACK
-        if (context->args->feature_mask & RTC_FEATURE_FLAG_USER_GEOMETRY_CALLBACK_IN_GEOMETRY)
-          intersectFunc = (RTCIntersectFunctionSYCL) intersectorN.intersect;
-#endif
-        
-        if (context->args->feature_mask & RTC_FEATURE_FLAG_USER_GEOMETRY_CALLBACK_IN_ARGUMENTS)
-          if (context->getIntersectFunction())
-            intersectFunc = (RTCIntersectFunctionSYCL) context->getIntersectFunction();
-
-        if (intersectFunc)
-          intersectFunc(&args);
-        
-        forward_scene = args.forward_scene;
-        return mask != 0;
-      }
-
-      /*! Tests if single ray is occluded by the scene. */
-    __forceinline bool occluded (Ray& ray, unsigned int geomID, unsigned int primID, RayQueryContext* context, RTCScene& forward_scene)
-      {
-        assert(primID < size());
-
-        int mask = -1;
-        OccludedFunctionNArguments args;
-        args.valid = &mask;
-        args.geometryUserPtr = userPtr;
-        args.context = context->user;
-        args.ray = (RTCRayN*)&ray;
-        args.N = 1;
-        args.geomID = geomID;
-        args.primID = primID;
-        args.geometry = this;
-        args.forward_scene = nullptr;
-        args.args = nullptr;
-
-        typedef void (*RTCOccludedFunctionSYCL)(const void* args);
-        RTCOccludedFunctionSYCL occludedFunc = nullptr;
-
-#if EMBREE_SYCL_GEOMETRY_CALLBACK
-        if (context->args->feature_mask & RTC_FEATURE_FLAG_USER_GEOMETRY_CALLBACK_IN_GEOMETRY)
-          occludedFunc = (RTCOccludedFunctionSYCL) intersectorN.occluded;
-#endif
-        
-        if (context->args->feature_mask & RTC_FEATURE_FLAG_USER_GEOMETRY_CALLBACK_IN_ARGUMENTS)
-          if (context->getOccludedFunction())
-            occludedFunc = (RTCOccludedFunctionSYCL) context->getOccludedFunction();
-
-        if (occludedFunc)
-          occludedFunc(&args);
-        
-        forward_scene = args.forward_scene;
-        return mask != 0;
-      }
-
+   
       /*! Intersects a packet of K rays with the scene. */
       template<int K>
-        __forceinline void intersect (const vbool<K>& valid, RayHitK<K>& ray, unsigned int geomID, unsigned int primID, RayQueryContext* context) 
+        __forceinline void intersect (const vbool<K>& valid, RayHitK<K>& ray, unsigned int geomID, unsigned int primID, IntersectContext* context) 
       {
         assert(primID < size());
+        assert(intersectorN.intersect);
         
         vint<K> mask = valid.mask32();
         IntersectFunctionNArguments args;
@@ -291,24 +194,16 @@ namespace embree
         args.geomID = geomID;
         args.primID = primID;
         args.geometry = this;
-        args.forward_scene = nullptr;
-        args.args = context->args;
-
-        IntersectFuncN intersectFunc = nullptr;
-        intersectFunc = intersectorN.intersect;
-        
-        if (context->getIntersectFunction())
-          intersectFunc = context->getIntersectFunction();
-
-        assert(intersectFunc);
-        intersectFunc(&args);
+         
+        intersectorN.intersect(&args);
       }
 
       /*! Tests if a packet of K rays is occluded by the scene. */
       template<int K>
-        __forceinline void occluded (const vbool<K>& valid, RayK<K>& ray, unsigned int geomID, unsigned int primID, RayQueryContext* context)
+        __forceinline void occluded (const vbool<K>& valid, RayK<K>& ray, unsigned int geomID, unsigned int primID, IntersectContext* context)
       {
         assert(primID < size());
+        assert(intersectorN.occluded);
         
         vint<K> mask = valid.mask32();
         OccludedFunctionNArguments args;
@@ -320,17 +215,8 @@ namespace embree
         args.geomID = geomID;
         args.primID = primID;
         args.geometry = this;
-        args.forward_scene = nullptr;
-        args.args = context->args;
-
-        OccludedFuncN occludedFunc = nullptr;
-        occludedFunc = intersectorN.occluded;
         
-        if (context->getOccludedFunction())
-          occludedFunc = context->getOccludedFunction();
-
-        assert(occludedFunc);
-        occludedFunc(&args);
+        intersectorN.occluded(&args);
       }
 
     public:

@@ -8,7 +8,6 @@
 		This class can also be used to store dynamically-generated PCM audio data. See also [AudioStreamGenerator] for procedural audio generation.
 	</description>
 	<tutorials>
-		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
 		<method name="save_to_wav">

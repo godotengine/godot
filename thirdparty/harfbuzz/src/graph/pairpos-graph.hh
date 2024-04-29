@@ -42,7 +42,6 @@ struct PairPosFormat1 : public OT::Layout::GPOS_impl::PairPosFormat1_3<SmallType
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     unsigned min_size = OT::Layout::GPOS_impl::PairPosFormat1_3<SmallTypes>::min_size;
     if (vertex_len < min_size) return false;
-    hb_barrier ();
 
     return vertex_len >=
         min_size + pairSet.get_size () - pairSet.len.get_size();
@@ -199,7 +198,6 @@ struct PairPosFormat2 : public OT::Layout::GPOS_impl::PairPosFormat2_4<SmallType
     size_t vertex_len = vertex.table_size ();
     unsigned min_size = OT::Layout::GPOS_impl::PairPosFormat2_4<SmallTypes>::min_size;
     if (vertex_len < min_size) return false;
-    hb_barrier ();
 
     const unsigned class1_count = class1Count;
     return vertex_len >=
@@ -247,8 +245,8 @@ struct PairPosFormat2 : public OT::Layout::GPOS_impl::PairPosFormat2_4<SmallType
     for (unsigned i = 0; i < class1_count; i++)
     {
       unsigned accumulated_delta = class1_record_size;
-      class_def_1_size = estimator.add_class_def_size (i);
-      coverage_size = estimator.coverage_size ();
+      coverage_size += estimator.incremental_coverage_size (i);
+      class_def_1_size += estimator.incremental_class_def_size (i);
       max_coverage_size = hb_max (max_coverage_size, coverage_size);
       max_class_def_1_size = hb_max (max_class_def_1_size, class_def_1_size);
 
@@ -280,10 +278,8 @@ struct PairPosFormat2 : public OT::Layout::GPOS_impl::PairPosFormat2_4<SmallType
         split_points.push (i);
         // split does not include i, so add the size for i when we reset the size counters.
         accumulated = base_size + accumulated_delta;
-
-        estimator.reset();
-        class_def_1_size = estimator.add_class_def_size(i);
-        coverage_size = estimator.coverage_size();
+        coverage_size = 4 + estimator.incremental_coverage_size (i);
+        class_def_1_size = 4 + estimator.incremental_class_def_size (i);
         visited.clear (); // node sharing isn't allowed between splits.
       }
     }
@@ -629,7 +625,6 @@ struct PairPos : public OT::Layout::GPOS_impl::PairPos
   {
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < u.format.get_size ()) return false;
-    hb_barrier ();
 
     switch (u.format) {
     case 1:

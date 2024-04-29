@@ -32,8 +32,8 @@
 #define TOUCH_SCREEN_BUTTON_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/2d/rectangle_shape_2d.h"
 #include "scene/resources/bit_map.h"
+#include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/texture.h"
 
 class TouchScreenButton : public Node2D {

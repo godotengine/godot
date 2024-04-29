@@ -56,7 +56,6 @@ struct SVGDocumentIndexEntry
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
-		  hb_barrier () &&
 		  svgDoc.sanitize (c, base, svgDocLength));
   }
 

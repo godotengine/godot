@@ -4,7 +4,7 @@ OUTPUTDIR = $(BASEDIR)/_build
 TOOLSDIR = $(BASEDIR)/tools
 JSDIR = "$(BASEDIR)/../platform/web"
 LANGARG ?= en
-TOOLSOPT ?=
+LANGCMD = -l $(LANGARG)
 
 .ONESHELL:
 
@@ -19,10 +19,7 @@ doxygen:
 rst:
 	rm -rf "$(OUTPUTDIR)/rst"
 	mkdir -p "$(OUTPUTDIR)/rst"
-	python3 "$(TOOLSDIR)/make_rst.py" -o "$(OUTPUTDIR)/rst" -l "$(LANGARG)" $(TOOLSOPT) $(CLASSES)
-
-xml-check:
-	python3 "$(TOOLSDIR)/make_rst.py" --dry-run -l "$(LANGARG)" $(TOOLSOPT) $(CLASSES)
+	python3 "$(TOOLSDIR)/make_rst.py" -o "$(OUTPUTDIR)/rst" "$(LANGCMD)" $(CLASSES)
 
 rstjs:
 	rm -rf "$(OUTPUTDIR)/rstjs"

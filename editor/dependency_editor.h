@@ -68,10 +68,6 @@ public:
 	DependencyEditor();
 };
 
-#ifdef MINGW_ENABLED
-#undef FILE_OPEN
-#endif
-
 class DependencyEditorOwners : public AcceptDialog {
 	GDCLASS(DependencyEditorOwners, AcceptDialog);
 

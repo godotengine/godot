@@ -14,7 +14,7 @@
 			In the scalar equation of the line [code]ax + by = d[/code], this is [code]d[/code], while the [code](a, b)[/code] coordinates are represented by the [member normal] property.
 		</member>
 		<member name="normal" type="Vector2" setter="set_normal" getter="get_normal" default="Vector2(0, -1)">
-			The line's normal, typically a unit vector. Its direction indicates the non-colliding half-plane. Can be of any length but zero. Defaults to [constant Vector2.UP].
+			The line's normal, typically a unit vector. Its direction indicates the non-colliding half-plane. Can be of any length but zero. Defaults to [code]Vector2.UP[/code].
 		</member>
 	</members>
 </class>

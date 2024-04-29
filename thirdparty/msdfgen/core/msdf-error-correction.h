@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "Vector2.hpp"
+#include "Vector2.h"
 #include "Projection.h"
 #include "Shape.h"
 #include "BitmapRef.hpp"

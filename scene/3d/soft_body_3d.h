@@ -44,7 +44,6 @@ class SoftBodyRenderingServerHandler : public PhysicsServer3DRenderingServerHand
 	int surface = 0;
 	Vector<uint8_t> buffer;
 	uint32_t stride = 0;
-	uint32_t normal_stride = 0;
 	uint32_t offset_vertices = 0;
 	uint32_t offset_normal = 0;
 

@@ -33,8 +33,7 @@
 #include "editor/editor_settings.h"
 #include "editor/plugins/gizmos/joint_3d_gizmo_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/physics/physical_bone_3d.h"
-#include "scene/3d/physics/physics_body_3d.h"
+#include "scene/3d/physics_body_3d.h"
 
 PhysicalBone3DGizmoPlugin::PhysicalBone3DGizmoPlugin() {
 	create_material("joint_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/joint"));
@@ -61,17 +60,17 @@ void PhysicalBone3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		return;
 	}
 
-	PhysicalBoneSimulator3D *sm(physical_bone->get_simulator());
-	if (!sm) {
+	Skeleton3D *sk(physical_bone->find_skeleton_parent());
+	if (!sk) {
 		return;
 	}
 
-	PhysicalBone3D *pb(sm->get_physical_bone(physical_bone->get_bone_id()));
+	PhysicalBone3D *pb(sk->get_physical_bone(physical_bone->get_bone_id()));
 	if (!pb) {
 		return;
 	}
 
-	PhysicalBone3D *pbp(sm->get_physical_bone_parent(physical_bone->get_bone_id()));
+	PhysicalBone3D *pbp(sk->get_physical_bone_parent(physical_bone->get_bone_id()));
 	if (!pbp) {
 		return;
 	}

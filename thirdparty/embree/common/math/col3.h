@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "emath.h"
+#include "math.h"
 
 namespace embree
 {

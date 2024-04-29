@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextEdit" inherits="Control" keywords="textarea" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TextEdit" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A multiline text editor.
 	</brief_description>
@@ -101,12 +101,6 @@
 				Adjust the viewport so the caret is visible.
 			</description>
 		</method>
-		<method name="apply_ime">
-			<return type="void" />
-			<description>
-				Applies text from the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME) to each caret and closes the IME if it is open.
-			</description>
-		</method>
 		<method name="backspace">
 			<return type="void" />
 			<param index="0" name="caret_index" type="int" default="-1" />
@@ -118,12 +112,6 @@
 			<return type="void" />
 			<description>
 				Starts a multipart edit. All edits will be treated as one action until [method end_complex_operation] is called.
-			</description>
-		</method>
-		<method name="cancel_ime">
-			<return type="void" />
-			<description>
-				Closes the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME) if it is open. Any text in the IME will be lost.
 			</description>
 		</method>
 		<method name="center_viewport_to_caret">
@@ -255,7 +243,7 @@
 			<return type="int" enum="TextEdit.GutterType" />
 			<param index="0" name="gutter" type="int" />
 			<description>
-				Returns the type of the gutter at the given index. Gutters can contain icons, text, or custom visuals. See [enum TextEdit.GutterType] for options.
+				Returns the type of the gutter at the given index.
 			</description>
 		</method>
 		<method name="get_gutter_width" qualifiers="const">
@@ -329,7 +317,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="gutter" type="int" />
 			<description>
-				Returns the icon currently in [param gutter] at [param line]. This only works when the gutter type is [constant GUTTER_TYPE_ICON] (see [method set_gutter_type]).
+				Returns the icon currently in [param gutter] at [param line].
 			</description>
 		</method>
 		<method name="get_line_gutter_item_color" qualifiers="const">
@@ -353,7 +341,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="gutter" type="int" />
 			<description>
-				Returns the text currently in [param gutter] at [param line]. This only works when the gutter type is [constant GUTTER_TYPE_STRING] (see [method set_gutter_type]).
+				Returns the text currently in [param gutter] at [param line].
 			</description>
 		</method>
 		<method name="get_line_height" qualifiers="const">
@@ -623,7 +611,7 @@
 		<method name="has_ime_text" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the user has text in the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME).
+				Returns if the user has IME text.
 			</description>
 		</method>
 		<method name="has_redo" qualifiers="const">
@@ -897,7 +885,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="draw_callback" type="Callable" />
 			<description>
-				Set a custom draw method for the gutter. The callback method must take the following args: [code]line: int, gutter: int, Area: Rect2[/code]. This only works when the gutter type is [constant GUTTER_TYPE_CUSTOM] (see [method set_gutter_type]).
+				Set a custom draw method for the gutter. The callback method must take the following args: [code]line: int, gutter: int, Area: Rect2[/code].
 			</description>
 		</method>
 		<method name="set_gutter_draw">
@@ -929,7 +917,7 @@
 			<param index="0" name="gutter" type="int" />
 			<param index="1" name="type" type="int" enum="TextEdit.GutterType" />
 			<description>
-				Sets the type of gutter. Gutters can contain icons, text, or custom visuals. See [enum TextEdit.GutterType] for options.
+				Sets the type of gutter.
 			</description>
 		</method>
 		<method name="set_gutter_width">
@@ -995,7 +983,7 @@
 			<param index="1" name="gutter" type="int" />
 			<param index="2" name="icon" type="Texture2D" />
 			<description>
-				Sets the icon for [param gutter] on [param line] to [param icon]. This only works when the gutter type is [constant GUTTER_TYPE_ICON] (see [method set_gutter_type]).
+				Sets the icon for [param gutter] on [param line] to [param icon].
 			</description>
 		</method>
 		<method name="set_line_gutter_item_color">
@@ -1022,7 +1010,7 @@
 			<param index="1" name="gutter" type="int" />
 			<param index="2" name="text" type="String" />
 			<description>
-				Sets the text for [param gutter] on [param line] to [param text]. This only works when the gutter type is [constant GUTTER_TYPE_STRING] (see [method set_gutter_type]).
+				Sets the text for [param gutter] on [param line] to [param text].
 			</description>
 		</method>
 		<method name="set_overtype_mode_enabled">
@@ -1068,12 +1056,6 @@
 			<param index="0" name="callback" type="Callable" />
 			<description>
 				Provide custom tooltip text. The callback method must take the following args: [code]hovered_word: String[/code].
-			</description>
-		</method>
-		<method name="skip_selection_for_next_occurrence">
-			<return type="void" />
-			<description>
-				Moves a selection and a caret for the next occurrence of the current selection. If there is no active selection, moves to the next occurrence of the word under caret.
 			</description>
 		</method>
 		<method name="start_action">
@@ -1124,7 +1106,7 @@
 		</member>
 		<member name="caret_move_on_right_click" type="bool" setter="set_move_caret_on_right_click_enabled" getter="is_move_caret_on_right_click_enabled" default="true">
 			If [code]true[/code], a right-click moves the caret at the mouse position before displaying the context menu.
-			If [code]false[/code], the context menu ignores mouse location.
+			If [code]false[/code], the context menu disregards mouse location.
 		</member>
 		<member name="caret_multiple" type="bool" setter="set_multiple_carets_enabled" getter="is_multiple_carets_enabled" default="true">
 			Sets if multiple carets are allowed.
@@ -1132,7 +1114,6 @@
 		<member name="caret_type" type="int" setter="set_caret_type" getter="get_caret_type" enum="TextEdit.CaretType" default="0">
 			Set the type of caret to draw.
 		</member>
-		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], a right-click displays the context menu.
 		</member>
@@ -1151,7 +1132,7 @@
 		<member name="draw_tabs" type="bool" setter="set_draw_tabs" getter="is_drawing_tabs" default="false">
 			If [code]true[/code], the "tab" character will have a visible representation.
 		</member>
-		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
@@ -1160,9 +1141,6 @@
 		</member>
 		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled" default="false">
 			If [code]true[/code], the line containing the cursor is highlighted.
-		</member>
-		<member name="indent_wrapped_lines" type="bool" setter="set_indent_wrapped_lines" getter="is_indent_wrapped_lines" default="false">
-			If [code]true[/code], all wrapped lines are indented to the same amount as the unwrapped line.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -1191,7 +1169,7 @@
 			Allow scrolling past the last line into "virtual" space.
 		</member>
 		<member name="scroll_smooth" type="bool" setter="set_smooth_scroll_enabled" getter="is_smooth_scroll_enabled" default="false">
-			Scroll smoothly over the text rather than jumping to the next location.
+			Scroll smoothly over the text rather then jumping to the next location.
 		</member>
 		<member name="scroll_v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed" default="80.0">
 			Sets the scroll speed with the minimap or when [member scroll_smooth] is enabled.
@@ -1413,13 +1391,13 @@
 			Line wrapping occurs at the control boundary, beyond what would normally be visible.
 		</constant>
 		<constant name="GUTTER_TYPE_STRING" value="0" enum="GutterType">
-			When a gutter is set to string using [method set_gutter_type], it is used to contain text set via the [method set_line_gutter_text] method.
+			Draw a string.
 		</constant>
 		<constant name="GUTTER_TYPE_ICON" value="1" enum="GutterType">
-			When a gutter is set to icon using [method set_gutter_type], it is used to contain an icon set via the [method set_line_gutter_icon] method.
+			Draw an icon.
 		</constant>
 		<constant name="GUTTER_TYPE_CUSTOM" value="2" enum="GutterType">
-			When a gutter is set to custom using [method set_gutter_type], it is used to contain custom visuals controlled by a callback method set via the [method set_gutter_custom_draw] method.
+			Custom draw.
 		</constant>
 	</constants>
 	<theme_items>
@@ -1438,7 +1416,7 @@
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Sets the font [Color].
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the [TextEdit].
 		</theme_item>
 		<theme_item name="font_placeholder_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.6)">
@@ -1485,12 +1463,12 @@
 			Sets a custom [Texture2D] for tab text characters.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
-			Sets the [StyleBox] when in focus. The [theme_item focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+			Sets the [StyleBox] when in focus. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
 		</theme_item>
 		<theme_item name="normal" data_type="style" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit].
 		</theme_item>
-		<theme_item name="read_only" data_type="style" type="StyleBox" keywords="enabled, disabled, editable">
+		<theme_item name="read_only" data_type="style" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit] when [member editable] is disabled.
 		</theme_item>
 	</theme_items>

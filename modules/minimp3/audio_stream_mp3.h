@@ -47,8 +47,6 @@ class AudioStreamPlaybackMP3 : public AudioStreamPlaybackResampled {
 	AudioFrame loop_fade[FADE_SIZE];
 	int loop_fade_remaining = FADE_SIZE;
 
-	bool looping_override = false;
-	bool looping = false;
 	mp3dec_ex_t *mp3d = nullptr;
 	uint32_t frames_mixed = 0;
 	bool active = false;
@@ -73,9 +71,6 @@ public:
 	virtual void seek(double p_time) override;
 
 	virtual void tag_used_streams() override;
-
-	virtual void set_parameter(const StringName &p_name, const Variant &p_value) override;
-	virtual Variant get_parameter(const StringName &p_name) const override;
 
 	AudioStreamPlaybackMP3() {}
 	~AudioStreamPlaybackMP3();
@@ -130,8 +125,6 @@ public:
 	virtual double get_length() const override;
 
 	virtual bool is_monophonic() const override;
-
-	virtual void get_parameter_list(List<Parameter> *r_parameters) override;
 
 	AudioStreamMP3();
 	virtual ~AudioStreamMP3();

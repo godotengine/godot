@@ -41,7 +41,6 @@ class KeyMappingIOS {
 public:
 	static void initialize();
 	static Key remap_key(CFIndex p_keycode);
-	static KeyLocation key_location(CFIndex p_keycode);
 };
 
 #endif // KEY_MAPPING_IOS_H

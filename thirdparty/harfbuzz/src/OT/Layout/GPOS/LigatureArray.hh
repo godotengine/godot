@@ -27,7 +27,6 @@ struct LigatureArray : List16OfOffset16To<LigatureAttach>
     auto *out = c->serializer->start_embed (this);
     if (unlikely (!c->serializer->extend_min (out)))  return_trace (false);
 
-    bool ret = false;
     for (const auto _ : + hb_zip (coverage, *this)
                   | hb_filter (glyphset, hb_first))
     {
@@ -39,13 +38,13 @@ struct LigatureArray : List16OfOffset16To<LigatureAttach>
           + hb_range (src.rows * class_count)
           | hb_filter ([=] (unsigned index) { return klass_mapping->has (index % class_count); })
           ;
-      ret |= matrix->serialize_subset (c,
-				       _.second,
-				       this,
-				       src.rows,
-				       indexes);
+      matrix->serialize_subset (c,
+                                _.second,
+                                this,
+                                src.rows,
+                                indexes);
     }
-    return_trace (ret);
+    return_trace (this->len);
   }
 };
 

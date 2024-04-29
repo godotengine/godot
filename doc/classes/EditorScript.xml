@@ -48,10 +48,11 @@
 				[b]Warning:[/b] The implementation of this method is currently disabled.
 			</description>
 		</method>
-		<method name="get_editor_interface" qualifiers="const" deprecated="[EditorInterface] is a global singleton and can be accessed directly by its name.">
+		<method name="get_editor_interface" qualifiers="const" is_deprecated="true">
 			<return type="EditorInterface" />
 			<description>
 				Returns the [EditorInterface] singleton instance.
+				[i]Deprecated.[/i] [EditorInterface] is a global singleton and can be accessed directly by its name.
 			</description>
 		</method>
 		<method name="get_scene" qualifiers="const">

@@ -228,16 +228,7 @@ TEST_CASE("[AABB] Merging") {
 TEST_CASE("[AABB] Encloses") {
 	const AABB aabb_big = AABB(Vector3(-1.5, 2, -2.5), Vector3(4, 5, 6));
 
-	CHECK_MESSAGE(
-			aabb_big.encloses(aabb_big),
-			"encloses() with itself should return the expected result.");
-
 	AABB aabb_small = AABB(Vector3(-1.5, 2, -2.5), Vector3(1, 1, 1));
-	CHECK_MESSAGE(
-			aabb_big.encloses(aabb_small),
-			"encloses() with fully contained AABB (touching the edge) should return the expected result.");
-
-	aabb_small = AABB(Vector3(1.5, 6, 2.5), Vector3(1, 1, 1));
 	CHECK_MESSAGE(
 			aabb_big.encloses(aabb_small),
 			"encloses() with fully contained AABB (touching the edge) should return the expected result.");

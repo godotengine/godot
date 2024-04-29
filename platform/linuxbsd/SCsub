@@ -2,6 +2,7 @@
 
 Import("env")
 
+from platform_methods import run_in_subprocess
 import platform_linuxbsd_builders
 
 common_linuxbsd = [
@@ -17,9 +18,6 @@ if env["use_sowrap"]:
 
 if env["x11"]:
     common_linuxbsd += SConscript("x11/SCsub")
-
-if env["wayland"]:
-    common_linuxbsd += SConscript("wayland/SCsub")
 
 if env["speechd"]:
     common_linuxbsd.append("tts_linux.cpp")
@@ -41,4 +39,4 @@ if env["dbus"]:
 prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_linuxbsd)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
-    env.AddPostAction(prog, env.Run(platform_linuxbsd_builders.make_debug_linuxbsd))
+    env.AddPostAction(prog, run_in_subprocess(platform_linuxbsd_builders.make_debug_linuxbsd))

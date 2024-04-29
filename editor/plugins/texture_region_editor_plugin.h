@@ -31,17 +31,18 @@
 #ifndef TEXTURE_REGION_EDITOR_PLUGIN_H
 #define TEXTURE_REGION_EDITOR_PLUGIN_H
 
+#include "canvas_item_editor_plugin.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
+#include "scene/2d/sprite_2d.h"
+#include "scene/3d/sprite_3d.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/nine_patch_rect.h"
+#include "scene/resources/style_box_texture.h"
 
 class AtlasTexture;
-class NinePatchRect;
 class OptionButton;
 class PanelContainer;
-class Sprite2D;
-class Sprite3D;
-class StyleBoxTexture;
 class ViewPanner;
 
 class TextureRegionEditor : public AcceptDialog {
@@ -75,8 +76,6 @@ class TextureRegionEditor : public AcceptDialog {
 
 	Vector2 draw_ofs;
 	float draw_zoom = 1.0;
-	float min_draw_zoom = 1.0;
-	float max_draw_zoom = 1.0;
 	bool updating_scroll = false;
 
 	SnapMode snap_mode = SNAP_NONE;
@@ -136,8 +135,6 @@ class TextureRegionEditor : public AcceptDialog {
 	void _clear_edited_object();
 
 	void _draw_margin_line(Vector2 p_from, Vector2 p_to);
-
-	void _set_grid_parameters_clamping(bool p_enabled);
 
 protected:
 	void _notification(int p_what);

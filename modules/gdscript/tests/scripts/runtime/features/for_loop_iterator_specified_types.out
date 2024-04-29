@@ -15,10 +15,6 @@ Test typed int array.
 10.0 10.0
 20.0 20.0
 30.0 30.0
-Test implicitly typed array literal.
-100.0 100.0
-200.0 200.0
-300.0 300.0
 Test String-keys dictionary.
 &"a" &"a"
 &"b" &"b"

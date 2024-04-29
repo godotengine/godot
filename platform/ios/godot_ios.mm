@@ -102,16 +102,15 @@ int ios_main(int argc, char **argv) {
 
 	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
 
-	if (err != OK) {
-		if (err == ERR_HELP) { // Returned by --help and --version, so success.
-			return EXIT_SUCCESS;
-		}
-		return EXIT_FAILURE;
+	if (err == ERR_HELP) { // Returned by --help and --version, so success.
+		return 0;
+	} else if (err != OK) {
+		return 255;
 	}
 
 	os->initialize_modules();
 
-	return os->get_exit_code();
+	return 0;
 }
 
 void ios_finish() {

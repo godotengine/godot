@@ -32,10 +32,9 @@
 #define PHYSICAL_BONE_3D_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
+#include "scene/3d/physics_body_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-
-class PhysicalBone3D;
 
 class PhysicalBone3DEditor : public Object {
 	GDCLASS(PhysicalBone3DEditor, Object);

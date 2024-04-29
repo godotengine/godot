@@ -240,8 +240,7 @@ struct CompositeGlyphRecord
     }
     if (is_anchored ()) tx = ty = 0;
 
-    /* set is_end_point flag to true, used by IUP delta optimization */
-    trans.init ((float) tx, (float) ty, true);
+    trans.init ((float) tx, (float) ty);
 
     {
       const F2DOT14 *points = (const F2DOT14 *) p;

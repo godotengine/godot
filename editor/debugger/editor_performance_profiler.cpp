@@ -31,14 +31,14 @@
 #include "editor_performance_profiler.h"
 
 #include "editor/editor_property_name_processor.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/themes/editor_scale.h"
-#include "editor/themes/editor_theme_manager.h"
 #include "main/performance.h"
 
 EditorPerformanceProfiler::Monitor::Monitor() {}
 
-EditorPerformanceProfiler::Monitor::Monitor(const String &p_name, const String &p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item) {
+EditorPerformanceProfiler::Monitor::Monitor(String p_name, String p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item) {
 	type = p_type;
 	item = p_item;
 	frame_index = p_frame_index;
@@ -84,7 +84,7 @@ String EditorPerformanceProfiler::_create_label(float p_value, Performance::Moni
 			return String::humanize_size(p_value);
 		}
 		case Performance::MONITOR_TYPE_TIME: {
-			return TS->format_number(rtos(p_value * 1000).pad_decimals(2)) + " " + TTR("ms");
+			return TS->format_number(rtos(p_value * 1000).pad_decimals(2)) + " " + RTR("ms");
 		}
 		default: {
 			return TS->format_number(rtos(p_value));
@@ -122,7 +122,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 	}
 	Size2i cell_size = Size2i(monitor_draw->get_size()) / Size2i(columns, rows);
 	float spacing = float(POINT_SEPARATION) / float(columns);
-	float value_multiplier = EditorThemeManager::is_dark_theme() ? 1.4f : 0.55f;
+	float value_multiplier = EditorSettings::get_singleton()->is_dark_theme() ? 1.4f : 0.55f;
 	float hue_shift = 1.0f / float(monitors.size());
 
 	for (int i = 0; i < active.size(); i++) {

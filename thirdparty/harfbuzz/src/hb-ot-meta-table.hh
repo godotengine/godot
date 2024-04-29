@@ -51,7 +51,6 @@ struct DataMap
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
-			  hb_barrier () &&
 			  dataZ.sanitize (c, base, dataLength)));
   }
 
@@ -102,7 +101,6 @@ struct meta
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
-			  hb_barrier () &&
 			  version == 1 &&
 			  dataMaps.sanitize (c, this)));
   }

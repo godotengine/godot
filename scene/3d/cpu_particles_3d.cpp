@@ -69,7 +69,7 @@ void CPUParticles3D::set_amount(int p_amount) {
 
 		for (int i = 0; i < p_amount; i++) {
 			w[i].active = false;
-			w[i].custom[3] = 1.0; // Make sure w component isn't garbage data and doesn't break shaders with CUSTOM.y/Custom.w
+			w[i].custom[3] = 0.0; // Make sure w component isn't garbage data
 		}
 	}
 
@@ -99,12 +99,6 @@ void CPUParticles3D::set_explosiveness_ratio(real_t p_ratio) {
 
 void CPUParticles3D::set_randomness_ratio(real_t p_ratio) {
 	randomness_ratio = p_ratio;
-}
-
-void CPUParticles3D::set_visibility_aabb(const AABB &p_aabb) {
-	RS::get_singleton()->multimesh_set_custom_aabb(multimesh, p_aabb);
-	visibility_aabb = p_aabb;
-	update_gizmos();
 }
 
 void CPUParticles3D::set_lifetime_randomness(double p_random) {
@@ -145,10 +139,6 @@ real_t CPUParticles3D::get_explosiveness_ratio() const {
 
 real_t CPUParticles3D::get_randomness_ratio() const {
 	return randomness_ratio;
-}
-
-AABB CPUParticles3D::get_visibility_aabb() const {
-	return visibility_aabb;
 }
 
 double CPUParticles3D::get_lifetime_randomness() const {
@@ -530,11 +520,6 @@ bool CPUParticles3D::get_split_scale() {
 	return split_scale;
 }
 
-AABB CPUParticles3D::capture_aabb() const {
-	RS::get_singleton()->multimesh_set_custom_aabb(multimesh, AABB());
-	return RS::get_singleton()->multimesh_get_aabb(multimesh);
-}
-
 void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
 		p_property.usage = PROPERTY_USAGE_NONE;
@@ -813,10 +798,9 @@ void CPUParticles3D::_particles_process(double p_delta) {
 			p.custom[0] = Math::deg_to_rad(base_angle); //angle
 			p.custom[1] = 0.0; //phase
 			p.custom[2] = tex_anim_offset * Math::lerp(parameters_min[PARAM_ANIM_OFFSET], parameters_max[PARAM_ANIM_OFFSET], p.anim_offset_rand); //animation offset (0-1)
-			p.custom[3] = (1.0 - Math::randf() * lifetime_randomness);
 			p.transform = Transform3D();
 			p.time = 0;
-			p.lifetime = lifetime * p.custom[3];
+			p.lifetime = lifetime * (1.0 - Math::randf() * lifetime_randomness);
 			p.base_color = Color(1, 1, 1, 1);
 
 			switch (emission_shape) {
@@ -881,9 +865,9 @@ void CPUParticles3D::_particles_process(double p_delta) {
 				case EMISSION_SHAPE_RING: {
 					real_t ring_random_angle = Math::randf() * Math_TAU;
 					real_t ring_random_radius = Math::randf() * (emission_ring_radius - emission_ring_inner_radius) + emission_ring_inner_radius;
-					Vector3 axis = emission_ring_axis == Vector3(0.0, 0.0, 0.0) ? Vector3(0.0, 0.0, 1.0) : emission_ring_axis.normalized();
+					Vector3 axis = emission_ring_axis.normalized();
 					Vector3 ortho_axis;
-					if (axis.abs() == Vector3(1.0, 0.0, 0.0)) {
+					if (axis == Vector3(1.0, 0.0, 0.0)) {
 						ortho_axis = Vector3(0.0, 1.0, 0.0).cross(axis);
 					} else {
 						ortho_axis = Vector3(1.0, 0.0, 0.0).cross(axis);
@@ -1357,7 +1341,6 @@ void CPUParticles3D::convert_from_particles(Node *p_particles) {
 	set_pre_process_time(gpu_particles->get_pre_process_time());
 	set_explosiveness_ratio(gpu_particles->get_explosiveness_ratio());
 	set_randomness_ratio(gpu_particles->get_randomness_ratio());
-	set_visibility_aabb(gpu_particles->get_visibility_aabb());
 	set_use_local_coordinates(gpu_particles->get_use_local_coordinates());
 	set_fixed_fps(gpu_particles->get_fixed_fps());
 	set_fractional_delta(gpu_particles->get_fractional_delta());
@@ -1437,7 +1420,6 @@ void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pre_process_time", "secs"), &CPUParticles3D::set_pre_process_time);
 	ClassDB::bind_method(D_METHOD("set_explosiveness_ratio", "ratio"), &CPUParticles3D::set_explosiveness_ratio);
 	ClassDB::bind_method(D_METHOD("set_randomness_ratio", "ratio"), &CPUParticles3D::set_randomness_ratio);
-	ClassDB::bind_method(D_METHOD("set_visibility_aabb", "aabb"), &CPUParticles3D::set_visibility_aabb);
 	ClassDB::bind_method(D_METHOD("set_lifetime_randomness", "random"), &CPUParticles3D::set_lifetime_randomness);
 	ClassDB::bind_method(D_METHOD("set_use_local_coordinates", "enable"), &CPUParticles3D::set_use_local_coordinates);
 	ClassDB::bind_method(D_METHOD("set_fixed_fps", "fps"), &CPUParticles3D::set_fixed_fps);
@@ -1451,7 +1433,6 @@ void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pre_process_time"), &CPUParticles3D::get_pre_process_time);
 	ClassDB::bind_method(D_METHOD("get_explosiveness_ratio"), &CPUParticles3D::get_explosiveness_ratio);
 	ClassDB::bind_method(D_METHOD("get_randomness_ratio"), &CPUParticles3D::get_randomness_ratio);
-	ClassDB::bind_method(D_METHOD("get_visibility_aabb"), &CPUParticles3D::get_visibility_aabb);
 	ClassDB::bind_method(D_METHOD("get_lifetime_randomness"), &CPUParticles3D::get_lifetime_randomness);
 	ClassDB::bind_method(D_METHOD("get_use_local_coordinates"), &CPUParticles3D::get_use_local_coordinates);
 	ClassDB::bind_method(D_METHOD("get_fixed_fps"), &CPUParticles3D::get_fixed_fps);
@@ -1480,7 +1461,6 @@ void CPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1,suffix:FPS"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
 	ADD_GROUP("Drawing", "");
-	ADD_PROPERTY(PropertyInfo(Variant::AABB, "visibility_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_visibility_aabb", "get_visibility_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,View Depth"), "set_draw_order", "get_draw_order");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");

@@ -37,7 +37,7 @@
 #include "scene/3d/lightmap_gi.h"
 
 LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/lightmap_lines", Color(0.5, 0.6, 1));
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/lightmap_lines", Color(0.5, 0.6, 1));
 
 	gizmo_color.a = 0.1;
 	create_material("lightmap_lines", gizmo_color);
@@ -47,7 +47,6 @@ LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
 	mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, false);
-	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
 	add_material("lightmap_probe_material", mat);
 

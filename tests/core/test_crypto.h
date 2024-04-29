@@ -39,13 +39,13 @@ namespace TestCrypto {
 class _MockCrypto : public Crypto {
 	virtual PackedByteArray generate_random_bytes(int p_bytes) { return PackedByteArray(); }
 	virtual Ref<CryptoKey> generate_rsa(int p_bytes) { return nullptr; }
-	virtual Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, const String &p_issuer_name, const String &p_not_before, const String &p_not_after) { return nullptr; }
+	virtual Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after) { return nullptr; }
 
-	virtual Vector<uint8_t> sign(HashingContext::HashType p_hash_type, const Vector<uint8_t> &p_hash, Ref<CryptoKey> p_key) { return Vector<uint8_t>(); }
-	virtual bool verify(HashingContext::HashType p_hash_type, const Vector<uint8_t> &p_hash, const Vector<uint8_t> &p_signature, Ref<CryptoKey> p_key) { return false; }
-	virtual Vector<uint8_t> encrypt(Ref<CryptoKey> p_key, const Vector<uint8_t> &p_plaintext) { return Vector<uint8_t>(); }
-	virtual Vector<uint8_t> decrypt(Ref<CryptoKey> p_key, const Vector<uint8_t> &p_ciphertext) { return Vector<uint8_t>(); }
-	virtual PackedByteArray hmac_digest(HashingContext::HashType p_hash_type, const PackedByteArray &p_key, const PackedByteArray &p_msg) { return PackedByteArray(); }
+	virtual Vector<uint8_t> sign(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Ref<CryptoKey> p_key) { return Vector<uint8_t>(); }
+	virtual bool verify(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Vector<uint8_t> p_signature, Ref<CryptoKey> p_key) { return false; }
+	virtual Vector<uint8_t> encrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_plaintext) { return Vector<uint8_t>(); }
+	virtual Vector<uint8_t> decrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_ciphertext) { return Vector<uint8_t>(); }
+	virtual PackedByteArray hmac_digest(HashingContext::HashType p_hash_type, PackedByteArray p_key, PackedByteArray p_msg) { return PackedByteArray(); }
 };
 
 PackedByteArray raw_to_pba(const uint8_t *arr, size_t len) {

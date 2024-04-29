@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2019-2024 Arm Limited
+// Copyright 2019-2022 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -239,14 +239,6 @@ struct vint8
 	{
 		__m128i a = _mm_set1_epi32(*p);
 		return vint8(_mm256_broadcastd_epi32(a));
-	}
-
-	/**
-	 * @brief Factory that returns a vector loaded from unaligned memory.
-	 */
-	static ASTCENC_SIMD_INLINE vint8 load(const uint8_t* p)
-	{
-		return vint8(_mm256_lddqu_si256(reinterpret_cast<const __m256i*>(p)));
 	}
 
 	/**
@@ -1008,7 +1000,7 @@ ASTCENC_SIMD_INLINE vint8 float_to_int(vfloat8 a)
  */
 ASTCENC_SIMD_INLINE vint8 float_to_int_rtn(vfloat8 a)
 {
-	a = a + vfloat8(0.5f);
+	a = round(a);
 	return vint8(_mm256_cvttps_epi32(a.m));
 }
 
@@ -1160,9 +1152,9 @@ ASTCENC_SIMD_INLINE vint8 interleave_rgba8(vint8 r, vint8 g, vint8 b, vint8 a)
  *
  * All masked lanes must be at the end of vector, after all non-masked lanes.
  */
-ASTCENC_SIMD_INLINE void store_lanes_masked(uint8_t* base, vint8 data, vmask8 mask)
+ASTCENC_SIMD_INLINE void store_lanes_masked(int* base, vint8 data, vmask8 mask)
 {
-	_mm256_maskstore_epi32(reinterpret_cast<int*>(base), _mm256_castps_si256(mask.m), data.m);
+	_mm256_maskstore_epi32(base, _mm256_castps_si256(mask.m), data.m);
 }
 
 /**
@@ -1170,7 +1162,7 @@ ASTCENC_SIMD_INLINE void store_lanes_masked(uint8_t* base, vint8 data, vmask8 ma
  */
 ASTCENC_SIMD_INLINE void print(vint8 a)
 {
-	alignas(32) int v[8];
+	alignas(ASTCENC_VECALIGN) int v[8];
 	storea(a, v);
 	printf("v8_i32:\n  %8d %8d %8d %8d %8d %8d %8d %8d\n",
 	       v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
@@ -1181,7 +1173,7 @@ ASTCENC_SIMD_INLINE void print(vint8 a)
  */
 ASTCENC_SIMD_INLINE void printx(vint8 a)
 {
-	alignas(32) int v[8];
+	alignas(ASTCENC_VECALIGN) int v[8];
 	storea(a, v);
 	printf("v8_i32:\n  %08x %08x %08x %08x %08x %08x %08x %08x\n",
 	       v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]);
@@ -1192,7 +1184,7 @@ ASTCENC_SIMD_INLINE void printx(vint8 a)
  */
 ASTCENC_SIMD_INLINE void print(vfloat8 a)
 {
-	alignas(32) float v[8];
+	alignas(ASTCENC_VECALIGN) float v[8];
 	storea(a, v);
 	printf("v8_f32:\n  %0.4f %0.4f %0.4f %0.4f %0.4f %0.4f %0.4f %0.4f\n",
 	       static_cast<double>(v[0]), static_cast<double>(v[1]),

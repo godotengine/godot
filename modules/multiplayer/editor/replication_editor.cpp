@@ -33,14 +33,13 @@
 #include "../multiplayer_synchronizer.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/inspector_dock.h"
 #include "editor/property_selector.h"
-#include "editor/themes/editor_scale.h"
-#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
@@ -113,9 +112,9 @@ void ReplicationEditor::_pick_node_filter_input(const Ref<InputEvent> &p_ie) {
 
 void ReplicationEditor::_pick_node_selected(NodePath p_path) {
 	Node *root = current->get_node(current->get_root_path());
-	ERR_FAIL_NULL(root);
+	ERR_FAIL_COND(!root);
 	Node *node = get_node(p_path);
-	ERR_FAIL_NULL(node);
+	ERR_FAIL_COND(!node);
 	NodePath path_to = root->get_path_to(node);
 	adding_node_path = path_to;
 	prop_selector->select_property_from_instance(node);
@@ -131,7 +130,7 @@ void ReplicationEditor::_pick_new_property() {
 		EditorNode::get_singleton()->show_warning(TTR("Not possible to add a new property to synchronize without a root."));
 		return;
 	}
-	pick_node->popup_scenetree_dialog(nullptr, current);
+	pick_node->popup_scenetree_dialog();
 	pick_node->get_filter_line_edit()->clear();
 	pick_node->get_filter_line_edit()->grab_focus();
 }
@@ -246,31 +245,25 @@ ReplicationEditor::ReplicationEditor() {
 	add_pick_button->connect("pressed", callable_mp(this, &ReplicationEditor::_pick_new_property));
 	add_pick_button->set_text(TTR("Add property to sync..."));
 	hb->add_child(add_pick_button);
-
 	VSeparator *vs = memnew(VSeparator);
 	vs->set_custom_minimum_size(Size2(30 * EDSCALE, 0));
 	hb->add_child(vs);
 	hb->add_child(memnew(Label(TTR("Path:"))));
-
 	np_line_edit = memnew(LineEdit);
 	np_line_edit->set_placeholder(":property");
 	np_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	np_line_edit->connect("text_submitted", callable_mp(this, &ReplicationEditor::_np_text_submitted));
 	hb->add_child(np_line_edit);
-
 	add_from_path_button = memnew(Button);
 	add_from_path_button->connect("pressed", callable_mp(this, &ReplicationEditor::_add_pressed));
 	add_from_path_button->set_text(TTR("Add from path"));
 	hb->add_child(add_from_path_button);
-
 	vs = memnew(VSeparator);
 	vs->set_custom_minimum_size(Size2(30 * EDSCALE, 0));
 	hb->add_child(vs);
-
 	pin = memnew(Button);
-	pin->set_theme_type_variation("FlatButton");
+	pin->set_flat(true);
 	pin->set_toggle_mode(true);
-	pin->set_tooltip_text(TTR("Pin replication editor"));
 	hb->add_child(pin);
 
 	tree = memnew(Tree);
@@ -293,7 +286,7 @@ ReplicationEditor::ReplicationEditor() {
 	vb->add_child(tree);
 
 	drop_label = memnew(Label);
-	drop_label->set_text(TTR("Add properties using the options above, or\ndrag them from the inspector and drop them here."));
+	drop_label->set_text(TTR("Add properties using the options above, or\ndrag them them from the inspector and drop them here."));
 	drop_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	drop_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	tree->add_child(drop_label);
@@ -364,13 +357,8 @@ void ReplicationEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 void ReplicationEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (!EditorThemeManager::is_generated_theme_outdated()) {
-				break;
-			}
-			[[fallthrough]];
-		}
-		case NOTIFICATION_ENTER_TREE: {
 			add_theme_style_override("panel", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("panel"), SNAME("Panel")));
 			add_pick_button->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
 			pin->set_icon(get_theme_icon(SNAME("Pin"), EditorStringName(EditorIcons)));
@@ -600,7 +588,7 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 	item->set_text_alignment(2, HORIZONTAL_ALIGNMENT_CENTER);
 	item->set_cell_mode(2, TreeItem::CELL_MODE_RANGE);
 	item->set_range_config(2, 0, 2, 1);
-	item->set_text(2, TTR("Never", "Replication Mode") + "," + TTR("Always", "Replication Mode") + "," + TTR("On Change", "Replication Mode"));
+	item->set_text(2, "Never,Always,On Change");
 	item->set_range(2, (int)p_mode);
 	item->set_editable(2, true);
 }

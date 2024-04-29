@@ -30,7 +30,6 @@
 
 #include "register_editor_types.h"
 
-#include "core/object/script_language.h"
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_feature_profile.h"
@@ -51,8 +50,6 @@
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_spin_slider.h"
-#include "editor/import/3d/resource_importer_obj.h"
-#include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_bitmask.h"
 #include "editor/import/resource_importer_bmfont.h"
@@ -61,6 +58,8 @@
 #include "editor/import/resource_importer_image.h"
 #include "editor/import/resource_importer_imagefont.h"
 #include "editor/import/resource_importer_layered_texture.h"
+#include "editor/import/resource_importer_obj.h"
+#include "editor/import/resource_importer_scene.h"
 #include "editor/import/resource_importer_shader_file.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
@@ -102,7 +101,6 @@
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/plugins/occluder_instance_3d_editor_plugin.h"
 #include "editor/plugins/packed_scene_editor_plugin.h"
-#include "editor/plugins/parallax_background_editor_plugin.h"
 #include "editor/plugins/path_2d_editor_plugin.h"
 #include "editor/plugins/path_3d_editor_plugin.h"
 #include "editor/plugins/physical_bone_3d_editor_plugin.h"
@@ -131,7 +129,7 @@
 #include "editor/register_exporters.h"
 
 void register_editor_types() {
-	OS::get_singleton()->benchmark_begin_measure("Editor", "Register Types");
+	OS::get_singleton()->benchmark_begin_measure("register_editor_types");
 
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
@@ -254,14 +252,13 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<NavigationLink2DEditorPlugin>();
 	EditorPlugins::add_by_type<NavigationObstacle2DEditorPlugin>();
 	EditorPlugins::add_by_type<NavigationPolygonEditorPlugin>();
-	EditorPlugins::add_by_type<ParallaxBackgroundEditorPlugin>();
 	EditorPlugins::add_by_type<Path2DEditorPlugin>();
 	EditorPlugins::add_by_type<Polygon2DEditorPlugin>();
 	EditorPlugins::add_by_type<Cast2DEditorPlugin>();
 	EditorPlugins::add_by_type<Skeleton2DEditorPlugin>();
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
-	EditorPlugins::add_by_type<TileSetEditorPlugin>();
 	EditorPlugins::add_by_type<TileMapEditorPlugin>();
+	EditorPlugins::add_by_type<TileSetEditorPlugin>();
 
 	// For correct doc generation.
 	GLOBAL_DEF("editor/run/main_run_args", "");
@@ -270,13 +267,10 @@ void register_editor_types() {
 
 	GLOBAL_DEF("editor/naming/default_signal_callback_name", "_on_{node_name}_{signal_name}");
 	GLOBAL_DEF("editor/naming/default_signal_callback_to_self_name", "_on_{signal_name}");
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/scene_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case,kebab-case"), EditorNode::SCENE_NAME_CASING_SNAKE_CASE);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/script_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case,kebab-case"), ScriptLanguage::SCRIPT_NAME_CASING_AUTO);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/scene_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"), EditorNode::SCENE_NAME_CASING_SNAKE_CASE);
 
 	GLOBAL_DEF("editor/import/reimport_missing_imported_files", true);
 	GLOBAL_DEF("editor/import/use_multiple_threads", true);
-
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/import/atlas_max_width", PROPERTY_HINT_RANGE, "128,8192,1,or_greater"), 2048);
 
 	GLOBAL_DEF("editor/export/convert_text_resources_to_binary", true);
 
@@ -284,19 +278,13 @@ void register_editor_types() {
 	GLOBAL_DEF("editor/version_control/autoload_on_startup", false);
 
 	EditorInterface::create();
-	Engine::Singleton ei_singleton = Engine::Singleton("EditorInterface", EditorInterface::get_singleton());
-	ei_singleton.editor_only = true;
-	Engine::get_singleton()->add_singleton(ei_singleton);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("EditorInterface", EditorInterface::get_singleton()));
 
-	// Required as GDExtensions can register docs at init time way before this
-	// class is actually instantiated.
-	EditorHelp::init_gdext_pointers();
-
-	OS::get_singleton()->benchmark_end_measure("Editor", "Register Types");
+	OS::get_singleton()->benchmark_end_measure("register_editor_types");
 }
 
 void unregister_editor_types() {
-	OS::get_singleton()->benchmark_begin_measure("Editor", "Unregister Types");
+	OS::get_singleton()->benchmark_begin_measure("unregister_editor_types");
 
 	EditorNode::cleanup();
 	EditorInterface::free();
@@ -306,5 +294,5 @@ void unregister_editor_types() {
 	}
 	EditorStringNames::free();
 
-	OS::get_singleton()->benchmark_end_measure("Editor", "Unregister Types");
+	OS::get_singleton()->benchmark_end_measure("unregister_editor_types");
 }

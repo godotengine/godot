@@ -32,7 +32,7 @@
 
 #include "editor/editor_settings.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/physics/ray_cast_3d.h"
+#include "scene/3d/ray_cast_3d.h"
 
 RayCast3DGizmoPlugin::RayCast3DGizmoPlugin() {
 	const Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");

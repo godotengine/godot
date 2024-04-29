@@ -74,7 +74,6 @@ private:
 	void _update_light_visibility();
 
 	virtual void owner_changed_notify() override;
-	virtual void _physics_interpolated_changed() override;
 
 protected:
 	_FORCE_INLINE_ RID _get_light() const { return canvas_light; }
@@ -147,9 +146,6 @@ private:
 	Vector2 texture_offset;
 
 protected:
-#ifndef DISABLE_DEPRECATED
-	bool _set(const StringName &p_name, const Variant &p_value);
-#endif // DISABLE_DEPRECATED
 	static void _bind_methods();
 
 public:

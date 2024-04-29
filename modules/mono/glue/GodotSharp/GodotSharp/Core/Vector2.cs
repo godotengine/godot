@@ -1,9 +1,5 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.InteropServices;
-
-#nullable enable
 
 namespace Godot
 {
@@ -493,10 +489,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a new vector resulting from projecting this vector onto the given vector <paramref name="onNormal"/>.
-        /// The resulting new vector is parallel to <paramref name="onNormal"/>.
-        /// See also <see cref="Slide(Vector2)"/>.
-        /// Note: If the vector <paramref name="onNormal"/> is a zero vector, the components of the resulting new vector will be <see cref="real_t.NaN"/>.
+        /// Returns this vector projected onto another vector <paramref name="onNormal"/>.
         /// </summary>
         /// <param name="onNormal">The vector to project onto.</param>
         /// <returns>The projected vector.</returns>
@@ -587,12 +580,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a new vector resulting from sliding this vector along a line with normal <paramref name="normal"/>.
-        /// The resulting new vector is perpendicular to <paramref name="normal"/>, and is equivalent to this vector minus its projection on <paramref name="normal"/>.
-        /// See also <see cref="Project(Vector2)"/>.
-        /// Note: The vector <paramref name="normal"/> must be normalized. See also <see cref="Normalized()"/>.
+        /// Returns this vector slid along a plane defined by the given <paramref name="normal"/>.
         /// </summary>
-        /// <param name="normal">The normal vector of the plane to slide on.</param>
+        /// <param name="normal">The normal vector defining the plane to slide on.</param>
         /// <returns>The slid vector.</returns>
         public readonly Vector2 Slide(Vector2 normal)
         {
@@ -964,7 +954,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override readonly bool Equals([NotNullWhen(true)] object? obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Vector2 other && Equals(other);
         }
@@ -1010,22 +1000,25 @@ namespace Godot
         /// <returns>A hash code for this vector.</returns>
         public override readonly int GetHashCode()
         {
-            return HashCode.Combine(X, Y);
+            return Y.GetHashCode() ^ X.GetHashCode();
         }
 
         /// <summary>
         /// Converts this <see cref="Vector2"/> to a string.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public override readonly string ToString() => ToString(null);
+        public override readonly string ToString()
+        {
+            return $"({X}, {Y})";
+        }
 
         /// <summary>
         /// Converts this <see cref="Vector2"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string format)
         {
-            return $"({X.ToString(format, CultureInfo.InvariantCulture)}, {Y.ToString(format, CultureInfo.InvariantCulture)})";
+            return $"({X.ToString(format)}, {Y.ToString(format)})";
         }
     }
 }

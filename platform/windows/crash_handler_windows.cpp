@@ -109,7 +109,7 @@ public:
 		ret.module_name = temp;
 		std::vector<char> img(ret.image_name.begin(), ret.image_name.end());
 		std::vector<char> mod(ret.module_name.begin(), ret.module_name.end());
-		SymLoadModule64(process, nullptr, &img[0], &mod[0], (DWORD64)ret.base_address, ret.load_size);
+		SymLoadModule64(process, 0, &img[0], &mod[0], (DWORD64)ret.base_address, ret.load_size);
 		return ret;
 	}
 };

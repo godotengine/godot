@@ -14,7 +14,3 @@ func test():
 
 	var TAU = "TAU"
 	print(TAU)
-
-	# New keyword for pattern guards.
-	var when = "when"
-	print(when)

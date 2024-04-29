@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, The Khronos Group Inc.
+// Copyright (c) 2017-2023, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -10,9 +10,9 @@
 #pragma once
 
 #include "extra_algorithms.h"
+#include "loader_interfaces.h"
 
 #include <openxr/openxr.h>
-#include <openxr/openxr_loader_negotiation.h>
 
 #include <array>
 #include <cmath>

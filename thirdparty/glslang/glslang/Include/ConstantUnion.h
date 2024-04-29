@@ -234,6 +234,7 @@ public:
 
             break;
 
+#ifndef GLSLANG_WEB
         case EbtInt16:
             if (constant.i16Const == i16Const)
                 return true;
@@ -264,6 +265,7 @@ public:
                 return true;
 
             break;
+#endif
         default:
             assert(false && "Default missing");
         }
@@ -345,6 +347,7 @@ public:
                 return true;
 
             return false;
+#ifndef GLSLANG_WEB
         case EbtInt8:
             if (i8Const > constant.i8Const)
                 return true;
@@ -375,6 +378,7 @@ public:
                 return true;
 
             return false;
+#endif
         default:
             assert(false && "Default missing");
             return false;
@@ -385,6 +389,7 @@ public:
     {
         assert(type == constant.type);
         switch (type) {
+#ifndef GLSLANG_WEB
         case EbtInt8:
             if (i8Const < constant.i8Const)
                 return true;
@@ -414,6 +419,7 @@ public:
                 return true;
 
             return false;
+#endif
         case EbtDouble:
             if (dConst < constant.dConst)
                 return true;
@@ -443,12 +449,14 @@ public:
         case EbtInt:    returnValue.setIConst(iConst + constant.iConst); break;
         case EbtUint:   returnValue.setUConst(uConst + constant.uConst); break;
         case EbtDouble: returnValue.setDConst(dConst + constant.dConst); break;
+#ifndef GLSLANG_WEB
         case EbtInt8:   returnValue.setI8Const(i8Const + constant.i8Const); break;
         case EbtInt16:  returnValue.setI16Const(i16Const + constant.i16Const); break;
         case EbtInt64:  returnValue.setI64Const(i64Const + constant.i64Const); break;
         case EbtUint8:  returnValue.setU8Const(u8Const + constant.u8Const); break;
         case EbtUint16: returnValue.setU16Const(u16Const + constant.u16Const); break;
         case EbtUint64: returnValue.setU64Const(u64Const + constant.u64Const); break;
+#endif
         default: assert(false && "Default missing");
         }
 
@@ -463,12 +471,14 @@ public:
         case EbtInt:    returnValue.setIConst(iConst - constant.iConst); break;
         case EbtUint:   returnValue.setUConst(uConst - constant.uConst); break;
         case EbtDouble: returnValue.setDConst(dConst - constant.dConst); break;
+#ifndef GLSLANG_WEB
         case EbtInt8:   returnValue.setI8Const(i8Const - constant.i8Const); break;
         case EbtInt16:  returnValue.setI16Const(i16Const - constant.i16Const); break;
         case EbtInt64:  returnValue.setI64Const(i64Const - constant.i64Const); break;
         case EbtUint8:  returnValue.setU8Const(u8Const - constant.u8Const); break;
         case EbtUint16: returnValue.setU16Const(u16Const - constant.u16Const); break;
         case EbtUint64: returnValue.setU64Const(u64Const - constant.u64Const); break;
+#endif
         default: assert(false && "Default missing");
         }
 
@@ -483,12 +493,14 @@ public:
         case EbtInt:    returnValue.setIConst(iConst * constant.iConst); break;
         case EbtUint:   returnValue.setUConst(uConst * constant.uConst); break;
         case EbtDouble: returnValue.setDConst(dConst * constant.dConst); break;
+#ifndef GLSLANG_WEB
         case EbtInt8:   returnValue.setI8Const(i8Const * constant.i8Const); break;
         case EbtInt16:  returnValue.setI16Const(i16Const * constant.i16Const); break;
         case EbtInt64:  returnValue.setI64Const(i64Const * constant.i64Const); break;
         case EbtUint8:  returnValue.setU8Const(u8Const * constant.u8Const); break;
         case EbtUint16: returnValue.setU16Const(u16Const * constant.u16Const); break;
         case EbtUint64: returnValue.setU64Const(u64Const * constant.u64Const); break;
+#endif
         default: assert(false && "Default missing");
         }
 
@@ -502,12 +514,14 @@ public:
         switch (type) {
         case EbtInt:    returnValue.setIConst(iConst % constant.iConst); break;
         case EbtUint:   returnValue.setUConst(uConst % constant.uConst); break;
+#ifndef GLSLANG_WEB
         case EbtInt8:   returnValue.setI8Const(i8Const % constant.i8Const); break;
-        case EbtInt16:  returnValue.setI16Const(i16Const % constant.i16Const); break;
+        case EbtInt16:  returnValue.setI8Const(i8Const % constant.i16Const); break;
         case EbtInt64:  returnValue.setI64Const(i64Const % constant.i64Const); break;
         case EbtUint8:  returnValue.setU8Const(u8Const % constant.u8Const); break;
         case EbtUint16: returnValue.setU16Const(u16Const % constant.u16Const); break;
         case EbtUint64: returnValue.setU64Const(u64Const % constant.u64Const); break;
+#endif
         default:     assert(false && "Default missing");
         }
 
@@ -518,6 +532,7 @@ public:
     {
         TConstUnion returnValue;
         switch (type) {
+#ifndef GLSLANG_WEB
         case EbtInt8:
             switch (constant.type) {
             case EbtInt8:   returnValue.setI8Const(i8Const >> constant.i8Const);  break;
@@ -570,16 +585,19 @@ public:
             default:       assert(false && "Default missing");
             }
             break;
+#endif
         case EbtInt:
             switch (constant.type) {
             case EbtInt:    returnValue.setIConst(iConst >> constant.iConst);   break;
             case EbtUint:   returnValue.setIConst(iConst >> constant.uConst);   break;
+#ifndef GLSLANG_WEB
             case EbtInt8:   returnValue.setIConst(iConst >> constant.i8Const);  break;
             case EbtUint8:  returnValue.setIConst(iConst >> constant.u8Const);  break;
             case EbtInt16:  returnValue.setIConst(iConst >> constant.i16Const); break;
             case EbtUint16: returnValue.setIConst(iConst >> constant.u16Const); break;
             case EbtInt64:  returnValue.setIConst(iConst >> constant.i64Const); break;
             case EbtUint64: returnValue.setIConst(iConst >> constant.u64Const); break;
+#endif
             default:       assert(false && "Default missing");
             }
             break;
@@ -587,15 +605,18 @@ public:
             switch (constant.type) {
             case EbtInt:    returnValue.setUConst(uConst >> constant.iConst);   break;
             case EbtUint:   returnValue.setUConst(uConst >> constant.uConst);   break;
+#ifndef GLSLANG_WEB
             case EbtInt8:   returnValue.setUConst(uConst >> constant.i8Const);  break;
             case EbtUint8:  returnValue.setUConst(uConst >> constant.u8Const);  break;
             case EbtInt16:  returnValue.setUConst(uConst >> constant.i16Const); break;
             case EbtUint16: returnValue.setUConst(uConst >> constant.u16Const); break;
             case EbtInt64:  returnValue.setUConst(uConst >> constant.i64Const); break;
             case EbtUint64: returnValue.setUConst(uConst >> constant.u64Const); break;
+#endif
             default:       assert(false && "Default missing");
             }
             break;
+#ifndef GLSLANG_WEB
          case EbtInt64:
             switch (constant.type) {
             case EbtInt8:   returnValue.setI64Const(i64Const >> constant.i8Const);  break;
@@ -622,6 +643,7 @@ public:
             default:       assert(false && "Default missing");
             }
             break;
+#endif
         default:     assert(false && "Default missing");
         }
 
@@ -632,6 +654,7 @@ public:
     {
         TConstUnion returnValue;
         switch (type) {
+#ifndef GLSLANG_WEB
         case EbtInt8:
             switch (constant.type) {
             case EbtInt8:   returnValue.setI8Const(i8Const << constant.i8Const);  break;
@@ -710,16 +733,19 @@ public:
             default:       assert(false && "Default missing");
             }
             break;
+#endif
         case EbtInt:
             switch (constant.type) {
             case EbtInt:    returnValue.setIConst(iConst << constant.iConst);   break;
             case EbtUint:   returnValue.setIConst(iConst << constant.uConst);   break;
+#ifndef GLSLANG_WEB
             case EbtInt8:   returnValue.setIConst(iConst << constant.i8Const);  break;
             case EbtUint8:  returnValue.setIConst(iConst << constant.u8Const);  break;
             case EbtInt16:  returnValue.setIConst(iConst << constant.i16Const); break;
             case EbtUint16: returnValue.setIConst(iConst << constant.u16Const); break;
             case EbtInt64:  returnValue.setIConst(iConst << constant.i64Const); break;
             case EbtUint64: returnValue.setIConst(iConst << constant.u64Const); break;
+#endif
             default:       assert(false && "Default missing");
             }
             break;
@@ -727,12 +753,14 @@ public:
             switch (constant.type) {
             case EbtInt:    returnValue.setUConst(uConst << constant.iConst);   break;
             case EbtUint:   returnValue.setUConst(uConst << constant.uConst);   break;
+#ifndef GLSLANG_WEB
             case EbtInt8:   returnValue.setUConst(uConst << constant.i8Const);  break;
             case EbtUint8:  returnValue.setUConst(uConst << constant.u8Const);  break;
             case EbtInt16:  returnValue.setUConst(uConst << constant.i16Const); break;
             case EbtUint16: returnValue.setUConst(uConst << constant.u16Const); break;
             case EbtInt64:  returnValue.setUConst(uConst << constant.i64Const); break;
             case EbtUint64: returnValue.setUConst(uConst << constant.u64Const); break;
+#endif
             default:       assert(false && "Default missing");
             }
             break;
@@ -749,12 +777,14 @@ public:
         switch (type) {
         case EbtInt:    returnValue.setIConst(iConst & constant.iConst); break;
         case EbtUint:   returnValue.setUConst(uConst & constant.uConst); break;
+#ifndef GLSLANG_WEB
         case EbtInt8:   returnValue.setI8Const(i8Const & constant.i8Const); break;
         case EbtUint8:  returnValue.setU8Const(u8Const & constant.u8Const); break;
         case EbtInt16:  returnValue.setI16Const(i16Const & constant.i16Const); break;
         case EbtUint16: returnValue.setU16Const(u16Const & constant.u16Const); break;
         case EbtInt64:  returnValue.setI64Const(i64Const & constant.i64Const); break;
         case EbtUint64: returnValue.setU64Const(u64Const & constant.u64Const); break;
+#endif
         default:     assert(false && "Default missing");
         }
 
@@ -768,12 +798,14 @@ public:
         switch (type) {
         case EbtInt:    returnValue.setIConst(iConst | constant.iConst); break;
         case EbtUint:   returnValue.setUConst(uConst | constant.uConst); break;
+#ifndef GLSLANG_WEB
         case EbtInt8:   returnValue.setI8Const(i8Const | constant.i8Const); break;
         case EbtUint8:  returnValue.setU8Const(u8Const | constant.u8Const); break;
         case EbtInt16:  returnValue.setI16Const(i16Const | constant.i16Const); break;
         case EbtUint16: returnValue.setU16Const(u16Const | constant.u16Const); break;
         case EbtInt64:  returnValue.setI64Const(i64Const | constant.i64Const); break;
         case EbtUint64: returnValue.setU64Const(u64Const | constant.u64Const); break;
+#endif
         default:     assert(false && "Default missing");
         }
 
@@ -787,12 +819,14 @@ public:
         switch (type) {
         case EbtInt:    returnValue.setIConst(iConst ^ constant.iConst); break;
         case EbtUint:   returnValue.setUConst(uConst ^ constant.uConst); break;
+#ifndef GLSLANG_WEB
         case EbtInt8:   returnValue.setI8Const(i8Const ^ constant.i8Const); break;
         case EbtUint8:  returnValue.setU8Const(u8Const ^ constant.u8Const); break;
         case EbtInt16:  returnValue.setI16Const(i16Const ^ constant.i16Const); break;
         case EbtUint16: returnValue.setU16Const(u16Const ^ constant.u16Const); break;
         case EbtInt64:  returnValue.setI64Const(i64Const ^ constant.i64Const); break;
         case EbtUint64: returnValue.setU64Const(u64Const ^ constant.u64Const); break;
+#endif
         default:     assert(false && "Default missing");
         }
 
@@ -805,12 +839,14 @@ public:
         switch (type) {
         case EbtInt:    returnValue.setIConst(~iConst); break;
         case EbtUint:   returnValue.setUConst(~uConst); break;
+#ifndef GLSLANG_WEB
         case EbtInt8:   returnValue.setI8Const(~i8Const); break;
         case EbtUint8:  returnValue.setU8Const(~u8Const); break;
         case EbtInt16:  returnValue.setI16Const(~i16Const); break;
         case EbtUint16: returnValue.setU16Const(~u16Const); break;
         case EbtInt64:  returnValue.setI64Const(~i64Const); break;
         case EbtUint64: returnValue.setU64Const(~u64Const); break;
+#endif
         default:     assert(false && "Default missing");
         }
 

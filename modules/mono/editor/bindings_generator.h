@@ -47,10 +47,7 @@ class BindingsGenerator {
 		String name;
 		String proxy_name;
 		int64_t value = 0;
-		const DocData::ConstantDoc *const_doc = nullptr;
-
-		bool is_deprecated = false;
-		String deprecation_message;
+		const DocData::ConstantDoc *const_doc;
 
 		ConstantInterface() {}
 
@@ -89,9 +86,6 @@ class BindingsGenerator {
 		StringName getter;
 
 		const DocData::PropertyDoc *prop_doc;
-
-		bool is_deprecated = false;
-		String deprecation_message;
 	};
 
 	struct TypeReference {
@@ -140,11 +134,6 @@ class BindingsGenerator {
 		String proxy_name;
 
 		/**
-		 * Hash of the ClassDB method
-		 */
-		uint64_t hash = 0;
-
-		/**
 		 * [TypeInterface::name] of the return type
 		 */
 		TypeReference return_type;
@@ -178,12 +167,6 @@ class BindingsGenerator {
 		 * Methods that are not meant to be exposed are those that begin with underscore and are not virtual.
 		 */
 		bool is_internal = false;
-
-		/**
-		 * Determines if the method is a compatibility method added to avoid breaking binary compatibility.
-		 * These methods will be generated but hidden and are considered deprecated.
-		 */
-		bool is_compat = false;
 
 		List<ArgumentInterface> arguments;
 
@@ -432,9 +415,6 @@ class BindingsGenerator {
 		String cs_managed_to_variant;
 
 		const DocData::ClassDoc *class_doc = nullptr;
-
-		bool is_deprecated = false;
-		String deprecation_message;
 
 		List<ConstantInterface> constants;
 		List<EnumInterface> enums;
@@ -774,17 +754,7 @@ class BindingsGenerator {
 		return p_type->name;
 	}
 
-	String bbcode_to_text(const String &p_bbcode, const TypeInterface *p_itype);
 	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal = false);
-
-	void _append_text_method(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_text_member(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_text_signal(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_text_enum(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_text_constant(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_text_constant_in_global_scope(StringBuilder &p_output, const String &p_target_cname, const String &p_link_target);
-	void _append_text_param(StringBuilder &p_output, const String &p_link_target);
-	void _append_text_undeclared(StringBuilder &p_output, const String &p_link_target);
 
 	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
 	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
@@ -816,9 +786,6 @@ class BindingsGenerator {
 	void _populate_builtin_type_interfaces();
 
 	void _populate_global_constants();
-
-	bool _method_has_conflicting_signature(const MethodInterface &p_imethod, const TypeInterface &p_itype);
-	bool _method_has_conflicting_signature(const MethodInterface &p_imethod_left, const MethodInterface &p_imethod_right);
 
 	Error _generate_cs_type(const TypeInterface &itype, const String &p_output_file);
 

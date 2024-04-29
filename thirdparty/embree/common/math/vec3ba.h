@@ -4,12 +4,7 @@
 #pragma once
 
 #include "../sys/alloc.h"
-#include "emath.h"
-
-#if defined(EMBREE_SYCL_SUPPORT) && defined(__SYCL_DEVICE_ONLY__)
-#  include "vec3ba_sycl.h"
-#else
-
+#include "math.h"
 #include "../simd/sse.h"
 
 namespace embree
@@ -123,5 +118,3 @@ namespace embree
     return cout << "(" << (a.x ? "1" : "0") << ", " << (a.y ? "1" : "0") << ", " << (a.z ? "1" : "0") << ")";
   }
 }
-
-#endif

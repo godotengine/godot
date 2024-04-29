@@ -275,7 +275,6 @@ struct Encoding
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
-    hb_barrier ();
 
     switch (table_format ())
     {
@@ -377,13 +376,13 @@ struct Charset1_2 {
   bool sanitize (hb_sanitize_context_t *c, unsigned int num_glyphs, unsigned *num_charset_entries) const
   {
     TRACE_SANITIZE (this);
+    if (unlikely (!c->check_struct (this)))
+      return_trace (false);
     num_glyphs--;
     unsigned i;
     for (i = 0; num_glyphs > 0; i++)
     {
-      if (unlikely (!(ranges[i].sanitize (c) &&
-		      hb_barrier () &&
-		      (num_glyphs >= ranges[i].nLeft + 1))))
+      if (unlikely (!ranges[i].sanitize (c) || (num_glyphs < ranges[i].nLeft + 1)))
 	return_trace (false);
       num_glyphs -= (ranges[i].nLeft + 1);
     }
@@ -616,7 +615,6 @@ struct Charset
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
-    hb_barrier ();
 
     switch (format)
     {
@@ -763,9 +761,9 @@ struct cff1_top_dict_values_t : top_dict_values_t<cff1_top_dict_val_t>
   unsigned int    ros_supplement;
   unsigned int    cidCount;
 
-  int             EncodingOffset;
-  int             CharsetOffset;
-  int             FDSelectOffset;
+  unsigned int    EncodingOffset;
+  unsigned int    CharsetOffset;
+  unsigned int    FDSelectOffset;
   table_info_t    privateDictInfo;
 };
 
@@ -821,24 +819,24 @@ struct cff1_top_dict_opset_t : top_dict_opset_t<cff1_top_dict_val_t>
 	break;
 
       case OpCode_Encoding:
-	dictval.EncodingOffset = env.argStack.pop_int ();
+	dictval.EncodingOffset = env.argStack.pop_uint ();
 	env.clear_args ();
 	if (unlikely (dictval.EncodingOffset == 0)) return;
 	break;
 
       case OpCode_charset:
-	dictval.CharsetOffset = env.argStack.pop_int ();
+	dictval.CharsetOffset = env.argStack.pop_uint ();
 	env.clear_args ();
 	if (unlikely (dictval.CharsetOffset == 0)) return;
 	break;
 
       case OpCode_FDSelect:
-	dictval.FDSelectOffset = env.argStack.pop_int ();
+	dictval.FDSelectOffset = env.argStack.pop_uint ();
 	env.clear_args ();
 	break;
 
       case OpCode_Private:
-	dictval.privateDictInfo.offset = env.argStack.pop_int ();
+	dictval.privateDictInfo.offset = env.argStack.pop_uint ();
 	dictval.privateDictInfo.size = env.argStack.pop_uint ();
 	env.clear_args ();
 	break;
@@ -913,7 +911,7 @@ struct cff1_private_dict_values_base_t : dict_values_t<VAL>
   }
   void fini () { dict_values_t<VAL>::fini (); }
 
-  int                 subrsOffset;
+  unsigned int      subrsOffset;
   const CFF1Subrs    *localSubrs;
 };
 
@@ -948,7 +946,7 @@ struct cff1_private_dict_opset_t : dict_opset_t
 	env.clear_args ();
 	break;
       case OpCode_Subrs:
-	dictval.subrsOffset = env.argStack.pop_int ();
+	dictval.subrsOffset = env.argStack.pop_uint ();
 	env.clear_args ();
 	break;
 
@@ -990,7 +988,7 @@ struct cff1_private_dict_opset_subset_t : dict_opset_t
 	break;
 
       case OpCode_Subrs:
-	dictval.subrsOffset = env.argStack.pop_int ();
+	dictval.subrsOffset = env.argStack.pop_uint ();
 	env.clear_args ();
 	break;
 
@@ -1057,7 +1055,6 @@ struct cff1
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
-		  hb_barrier () &&
 		  likely (version.major == 1));
   }
 
@@ -1088,17 +1085,14 @@ struct cff1
       nameIndex = &cff->nameIndex (cff);
       if ((nameIndex == &Null (CFF1NameIndex)) || !nameIndex->sanitize (&sc))
         goto fail;
-      hb_barrier ();
 
-      topDictIndex = &StructAtOffsetOrNull<CFF1TopDictIndex> (nameIndex, nameIndex->get_size (), sc);
-      if (topDictIndex == &Null (CFF1TopDictIndex) || (topDictIndex->count == 0))
+      topDictIndex = &StructAtOffset<CFF1TopDictIndex> (nameIndex, nameIndex->get_size ());
+      if ((topDictIndex == &Null (CFF1TopDictIndex)) || !topDictIndex->sanitize (&sc) || (topDictIndex->count == 0))
         goto fail;
-      hb_barrier ();
 
       { /* parse top dict */
 	const hb_ubytes_t topDictStr = (*topDictIndex)[0];
 	if (unlikely (!topDictStr.sanitize (&sc)))   goto fail;
-	hb_barrier ();
 	cff1_top_dict_interp_env_t env (topDictStr);
 	cff1_top_dict_interpreter_t top_interp (env);
 	if (unlikely (!top_interp.interpret (topDict)))   goto fail;
@@ -1108,17 +1102,17 @@ struct cff1
 	charset = &Null (Charset);
       else
       {
-	charset = &StructAtOffsetOrNull<Charset> (cff, topDict.CharsetOffset, sc, &num_charset_entries);
-	if (unlikely (charset == &Null (Charset)))   goto fail;
+	charset = &StructAtOffsetOrNull<Charset> (cff, topDict.CharsetOffset);
+	if (unlikely ((charset == &Null (Charset)) || !charset->sanitize (&sc, &num_charset_entries)))   goto fail;
       }
 
       fdCount = 1;
       if (is_CID ())
       {
-	fdArray = &StructAtOffsetOrNull<CFF1FDArray> (cff, topDict.FDArrayOffset, sc);
-	fdSelect = &StructAtOffsetOrNull<CFF1FDSelect> (cff, topDict.FDSelectOffset, sc, fdArray->count);
-	if (unlikely (fdArray == &Null (CFF1FDArray) ||
-		      fdSelect == &Null (CFF1FDSelect)))
+	fdArray = &StructAtOffsetOrNull<CFF1FDArray> (cff, topDict.FDArrayOffset);
+	fdSelect = &StructAtOffsetOrNull<CFF1FDSelect> (cff, topDict.FDSelectOffset);
+	if (unlikely ((fdArray == &Null (CFF1FDArray)) || !fdArray->sanitize (&sc) ||
+	    (fdSelect == &Null (CFF1FDSelect)) || !fdSelect->sanitize (&sc, fdArray->count)))
 	  goto fail;
 
 	fdCount = fdArray->count;
@@ -1138,18 +1132,22 @@ struct cff1
       {
 	if (!is_predef_encoding ())
 	{
-	  encoding = &StructAtOffsetOrNull<Encoding> (cff, topDict.EncodingOffset, sc);
-	  if (unlikely (encoding == &Null (Encoding)))   goto fail;
+	  encoding = &StructAtOffsetOrNull<Encoding> (cff, topDict.EncodingOffset);
+	  if (unlikely ((encoding == &Null (Encoding)) || !encoding->sanitize (&sc)))   goto fail;
 	}
       }
 
-      stringIndex = &StructAtOffsetOrNull<CFF1StringIndex> (topDictIndex, topDictIndex->get_size (), sc);
-      if (stringIndex == &Null (CFF1StringIndex))
+      stringIndex = &StructAtOffset<CFF1StringIndex> (topDictIndex, topDictIndex->get_size ());
+      if ((stringIndex == &Null (CFF1StringIndex)) || !stringIndex->sanitize (&sc))
         goto fail;
 
-      globalSubrs = &StructAtOffsetOrNull<CFF1Subrs> (stringIndex, stringIndex->get_size (), sc);
-      charStrings = &StructAtOffsetOrNull<CFF1CharStrings> (cff, topDict.charStringsOffset, sc);
-      if (charStrings == &Null (CFF1CharStrings))
+      globalSubrs = &StructAtOffset<CFF1Subrs> (stringIndex, stringIndex->get_size ());
+      if ((globalSubrs != &Null (CFF1Subrs)) && !globalSubrs->sanitize (&sc))
+        goto fail;
+
+      charStrings = &StructAtOffsetOrNull<CFF1CharStrings> (cff, topDict.charStringsOffset);
+
+      if ((charStrings == &Null (CFF1CharStrings)) || unlikely (!charStrings->sanitize (&sc)))
         goto fail;
 
       num_glyphs = charStrings->count;
@@ -1168,7 +1166,6 @@ struct cff1
 	{
 	  hb_ubytes_t fontDictStr = (*fdArray)[i];
 	  if (unlikely (!fontDictStr.sanitize (&sc)))   goto fail;
-	  hb_barrier ();
 	  cff1_font_dict_values_t *font;
 	  cff1_top_dict_interp_env_t env (fontDictStr);
 	  cff1_font_dict_interpreter_t font_interp (env);
@@ -1178,13 +1175,17 @@ struct cff1
 	  font->init ();
 	  if (unlikely (!font_interp.interpret (*font)))   goto fail;
 	  PRIVDICTVAL *priv = &privateDicts[i];
-	  const hb_ubytes_t privDictStr = StructAtOffsetOrNull<UnsizedByteStr> (cff, font->privateDictInfo.offset, sc, font->privateDictInfo.size).as_ubytes (font->privateDictInfo.size);
+	  const hb_ubytes_t privDictStr = StructAtOffset<UnsizedByteStr> (cff, font->privateDictInfo.offset).as_ubytes (font->privateDictInfo.size);
+	  if (unlikely (!privDictStr.sanitize (&sc)))   goto fail;
 	  num_interp_env_t env2 (privDictStr);
 	  dict_interpreter_t<PRIVOPSET, PRIVDICTVAL> priv_interp (env2);
 	  priv->init ();
 	  if (unlikely (!priv_interp.interpret (*priv)))   goto fail;
 
-	  priv->localSubrs = &StructAtOffsetOrNull<CFF1Subrs> (&privDictStr, priv->subrsOffset, sc);
+	  priv->localSubrs = &StructAtOffsetOrNull<CFF1Subrs> (&privDictStr, priv->subrsOffset);
+	  if (priv->localSubrs != &Null (CFF1Subrs) &&
+	      unlikely (!priv->localSubrs->sanitize (&sc)))
+	    goto fail;
 	}
       }
       else  /* non-CID */
@@ -1192,14 +1193,17 @@ struct cff1
 	cff1_top_dict_values_t *font = &topDict;
 	PRIVDICTVAL *priv = &privateDicts[0];
 
-	const hb_ubytes_t privDictStr = StructAtOffsetOrNull<UnsizedByteStr> (cff, font->privateDictInfo.offset, sc, font->privateDictInfo.size).as_ubytes (font->privateDictInfo.size);
+	const hb_ubytes_t privDictStr = StructAtOffset<UnsizedByteStr> (cff, font->privateDictInfo.offset).as_ubytes (font->privateDictInfo.size);
+	if (unlikely (!privDictStr.sanitize (&sc)))   goto fail;
 	num_interp_env_t env (privDictStr);
 	dict_interpreter_t<PRIVOPSET, PRIVDICTVAL> priv_interp (env);
 	priv->init ();
 	if (unlikely (!priv_interp.interpret (*priv)))   goto fail;
 
-	priv->localSubrs = &StructAtOffsetOrNull<CFF1Subrs> (&privDictStr, priv->subrsOffset, sc);
-	hb_barrier ();
+	priv->localSubrs = &StructAtOffsetOrNull<CFF1Subrs> (&privDictStr, priv->subrsOffset);
+	if (priv->localSubrs != &Null (CFF1Subrs) &&
+	    unlikely (!priv->localSubrs->sanitize (&sc)))
+	  goto fail;
       }
 
       return;
@@ -1416,7 +1420,7 @@ struct cff1
       hb_sorted_vector_t<gname_t> *names = glyph_names.get_acquire ();
       if (unlikely (!names))
       {
-	names = (hb_sorted_vector_t<gname_t> *) hb_calloc (1, sizeof (hb_sorted_vector_t<gname_t>));
+	names = (hb_sorted_vector_t<gname_t> *) hb_calloc (sizeof (hb_sorted_vector_t<gname_t>), 1);
 	if (likely (names))
 	{
 	  names->init ();

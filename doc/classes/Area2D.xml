@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Area2D" inherits="CollisionObject2D" keywords="trigger" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Area2D" inherits="CollisionObject2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A region of 2D space that detects other [CollisionObject2D]s entering or exiting it.
 	</brief_description>
 	<description>
 		[Area2D] is a region of 2D space defined by one or multiple [CollisionShape2D] or [CollisionPolygon2D] child nodes. It detects when other [CollisionObject2D]s enter or exit it, and it also keeps track of which collision objects haven't exited it yet (i.e. which one are overlapping it).
 		This node can also locally alter or override physics parameters (gravity, damping) and route audio to custom audio buses.
-		[b]Note:[/b] Areas and bodies created with [PhysicsServer2D] might not interact as expected with [Area2D]s, and might not emit signals or track objects correctly.
 	</description>
 	<tutorials>
 		<link title="Using Area2D">$DOCS_URL/tutorials/physics/using_area_2d.html</link>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
-		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/2728</link>
-		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/2727</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/121</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
 	</tutorials>
 	<methods>
 		<method name="get_overlapping_areas" qualifiers="const">

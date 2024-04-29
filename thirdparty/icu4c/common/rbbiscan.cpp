@@ -547,6 +547,8 @@ UBool RBBIRuleScanner::doParseActions(int32_t action)
             UnicodeString opt(fRB->fRules, fOptionStart, fScanIndex-fOptionStart);
             if (opt == UNICODE_STRING("chain", 5)) {
                 fRB->fChainRules = true;
+            } else if (opt == UNICODE_STRING("LBCMNoChain", 11)) {
+                fRB->fLBCMNoChain = true;
             } else if (opt == UNICODE_STRING("forward", 7)) {
                 fRB->fDefaultTree   = &fRB->fForwardTree;
             } else if (opt == UNICODE_STRING("reverse", 7)) {

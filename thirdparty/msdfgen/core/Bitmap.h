@@ -18,17 +18,17 @@ public:
     Bitmap(Bitmap<T, N> &&orig);
 #endif
     ~Bitmap();
-    Bitmap<T, N> &operator=(const BitmapConstRef<T, N> &orig);
-    Bitmap<T, N> &operator=(const Bitmap<T, N> &orig);
+    Bitmap<T, N> & operator=(const BitmapConstRef<T, N> &orig);
+    Bitmap<T, N> & operator=(const Bitmap<T, N> &orig);
 #ifdef MSDFGEN_USE_CPP11
-    Bitmap<T, N> &operator=(Bitmap<T, N> &&orig);
+    Bitmap<T, N> & operator=(Bitmap<T, N> &&orig);
 #endif
     /// Bitmap width in pixels.
     int width() const;
     /// Bitmap height in pixels.
     int height() const;
-    T *operator()(int x, int y);
-    const T *operator()(int x, int y) const;
+    T * operator()(int x, int y);
+    const T * operator()(int x, int y) const;
 #ifdef MSDFGEN_USE_CPP11
     explicit operator T *();
     explicit operator const T *() const;

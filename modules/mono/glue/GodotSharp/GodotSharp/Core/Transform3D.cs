@@ -1,9 +1,6 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
-
-#nullable enable
 
 namespace Godot
 {
@@ -108,7 +105,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the inverse of the transform, under the assumption that
-        /// the basis is invertible (must have non-zero determinant).
+        /// the transformation is composed of rotation, scaling, and translation.
         /// </summary>
         /// <seealso cref="Inverse"/>
         /// <returns>The inverse transformation matrix.</returns>
@@ -147,9 +144,8 @@ namespace Godot
 
         /// <summary>
         /// Returns the inverse of the transform, under the assumption that
-        /// the transformation basis is orthonormal (i.e. rotation/reflection
-        /// is fine, scaling/skew is not). Use <see cref="AffineInverse"/> for
-        /// non-orthonormal transforms (e.g. with scaling).
+        /// the transformation is composed of rotation and translation
+        /// (no scaling, use <see cref="AffineInverse"/> for transforms with scaling).
         /// </summary>
         /// <returns>The inverse matrix.</returns>
         public readonly Transform3D Inverse()
@@ -430,11 +426,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Vector3 transformed (multiplied) by the inverse transformation matrix,
-        /// under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection
-        /// is fine, scaling/skew is not).
-        /// <c>vector * transform</c> is equivalent to <c>transform.Inverse() * vector</c>. See <see cref="Inverse"/>.
-        /// For transforming by inverse of an affine transformation (e.g. with scaling) <c>transform.AffineInverse() * vector</c> can be used instead. See <see cref="AffineInverse"/>.
+        /// Returns a Vector3 transformed (multiplied) by the transposed transformation matrix.
+        ///
+        /// Note: This results in a multiplication by the inverse of the
+        /// transformation matrix only if it represents a rotation-reflection.
         /// </summary>
         /// <param name="vector">A Vector3 to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
@@ -487,11 +482,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns an AABB transformed (multiplied) by the inverse transformation matrix,
-        /// under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection
-        /// is fine, scaling/skew is not).
-        /// <c>aabb * transform</c> is equivalent to <c>transform.Inverse() * aabb</c>. See <see cref="Inverse"/>.
-        /// For transforming by inverse of an affine transformation (e.g. with scaling) <c>transform.AffineInverse() * aabb</c> can be used instead. See <see cref="AffineInverse"/>.
+        /// Returns an AABB transformed (multiplied) by the inverse transformation matrix.
         /// </summary>
         /// <param name="aabb">An AABB to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
@@ -532,7 +523,6 @@ namespace Godot
 
         /// <summary>
         /// Returns a Plane transformed (multiplied) by the inverse transformation matrix.
-        /// <c>plane * transform</c> is equivalent to <c>transform.AffineInverse() * plane</c>. See <see cref="AffineInverse"/>.
         /// </summary>
         /// <param name="plane">A Plane to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
@@ -578,11 +568,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the given Vector3[] transformed (multiplied) by the inverse transformation matrix,
-        /// under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection
-        /// is fine, scaling/skew is not).
-        /// <c>array * transform</c> is equivalent to <c>transform.Inverse() * array</c>. See <see cref="Inverse"/>.
-        /// For transforming by inverse of an affine transformation (e.g. with scaling) <c>transform.AffineInverse() * array</c> can be used instead. See <see cref="AffineInverse"/>.
+        /// Returns a copy of the given Vector3[] transformed (multiplied) by the inverse transformation matrix.
         /// </summary>
         /// <param name="array">A Vector3[] to inversely transform.</param>
         /// <param name="transform">The transformation to apply.</param>
@@ -633,7 +619,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the transform and the object are exactly equal.</returns>
-        public override readonly bool Equals([NotNullWhen(true)] object? obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Transform3D other && Equals(other);
         }
@@ -667,20 +653,23 @@ namespace Godot
         /// <returns>A hash code for this transform.</returns>
         public override readonly int GetHashCode()
         {
-            return HashCode.Combine(Basis, Origin);
+            return Basis.GetHashCode() ^ Origin.GetHashCode();
         }
 
         /// <summary>
         /// Converts this <see cref="Transform3D"/> to a string.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public override readonly string ToString() => ToString(null);
+        public override readonly string ToString()
+        {
+            return $"[X: {Basis.X}, Y: {Basis.Y}, Z: {Basis.Z}, O: {Origin}]";
+        }
 
         /// <summary>
         /// Converts this <see cref="Transform3D"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string format)
         {
             return $"[X: {Basis.X.ToString(format)}, Y: {Basis.Y.ToString(format)}, Z: {Basis.Z.ToString(format)}, O: {Origin.ToString(format)}]";
         }

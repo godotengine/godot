@@ -8,7 +8,6 @@
 		GLTFState can be populated by [GLTFDocument] reading a file or by converting a Godot scene. Then the data can either be used to create a Godot scene or save to a GLTF file. The code that converts to/from a Godot scene can be intercepted at arbitrary points by [GLTFDocumentExtension] classes. This allows for custom data to be stored in the GLTF file or for custom data to be converted to/from Godot nodes.
 	</description>
 	<tutorials>
-		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 		<link title="GLTF asset header schema">https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/asset.schema.json"</link>
 	</tutorials>
 	<methods>
@@ -18,14 +17,6 @@
 			<param index="1" name="required" type="bool" />
 			<description>
 				Appends an extension to the list of extensions used by this GLTF file during serialization. If [param required] is true, the extension will also be added to the list of required extensions. Do not run this in [method GLTFDocumentExtension._export_post], as that stage is too late to add extensions. The final list is sorted alphabetically.
-			</description>
-		</method>
-		<method name="append_data_to_buffers">
-			<return type="int" />
-			<param index="0" name="data" type="PackedByteArray" />
-			<param index="1" name="deduplication" type="bool" />
-			<description>
-				Appends the given byte array data to the buffers and creates a [GLTFBufferView] for it. The index of the destination [GLTFBufferView] is returned. If [param deduplication] is true, the buffers will first be searched for duplicate data, otherwise new bytes will always be appended.
 			</description>
 		</method>
 		<method name="get_accessors">
@@ -289,13 +280,8 @@
 			The file name associated with this GLTF data. If it ends with [code].gltf[/code], this is text-based GLTF, otherwise this is binary GLB. This will be set during import when appending from a file, and will be set during export when writing to a file. If writing to a buffer, this will be an empty string.
 		</member>
 		<member name="glb_data" type="PackedByteArray" setter="set_glb_data" getter="get_glb_data" default="PackedByteArray()">
-			The binary buffer attached to a .glb file.
-		</member>
-		<member name="import_as_skeleton_bones" type="bool" setter="set_import_as_skeleton_bones" getter="get_import_as_skeleton_bones" default="false">
-			True to force all GLTFNodes in the document to be bones of a single Skeleton3D godot node.
 		</member>
 		<member name="json" type="Dictionary" setter="set_json" getter="get_json" default="{}">
-			The original raw JSON document corresponding to this GLTFState.
 		</member>
 		<member name="major_version" type="int" setter="set_major_version" getter="get_major_version" default="0">
 		</member>

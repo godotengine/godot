@@ -42,12 +42,6 @@ def no_verbose(sys, env):
     java_library_message = "{}Creating Java Archive {}$TARGET{} ...{}".format(
         colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
     )
-    compiled_resource_message = "{}Creating Compiled Resource {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
-    )
-    generated_file_message = "{}Generating {}$TARGET{} ...{}".format(
-        colors["blue"], colors["bold_blue"], colors["blue"], colors["reset"]
-    )
 
     env.Append(CXXCOMSTR=[compile_source_message])
     env.Append(CCCOMSTR=[compile_source_message])
@@ -59,8 +53,6 @@ def no_verbose(sys, env):
     env.Append(LINKCOMSTR=[link_program_message])
     env.Append(JARCOMSTR=[java_library_message])
     env.Append(JAVACCOMSTR=[java_compile_source_message])
-    env.Append(RCCOMSTR=[compiled_resource_message])
-    env.Append(GENCOMSTR=[generated_file_message])
 
 
 def disable_warnings(self):
@@ -83,56 +75,56 @@ def disable_warnings(self):
 
 def make_icu_data(target, source, env):
     dst = target[0].srcnode().abspath
-    with open(dst, "w", encoding="utf-8", newline="\n") as g:
-        g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-        g.write("/* (C) 2016 and later: Unicode, Inc. and others. */\n")
-        g.write("/* License & terms of use: https://www.unicode.org/copyright.html */\n")
-        g.write("#ifndef _ICU_DATA_H\n")
-        g.write("#define _ICU_DATA_H\n")
-        g.write('#include "unicode/utypes.h"\n')
-        g.write('#include "unicode/udata.h"\n')
-        g.write('#include "unicode/uversion.h"\n')
+    g = open(dst, "w", encoding="utf-8")
 
-        with open(source[0].srcnode().abspath, "rb") as f:
-            buf = f.read()
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("/* (C) 2016 and later: Unicode, Inc. and others. */\n")
+    g.write("/* License & terms of use: https://www.unicode.org/copyright.html */\n")
+    g.write("#ifndef _ICU_DATA_H\n")
+    g.write("#define _ICU_DATA_H\n")
+    g.write('#include "unicode/utypes.h"\n')
+    g.write('#include "unicode/udata.h"\n')
+    g.write('#include "unicode/uversion.h"\n')
 
-        g.write('extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = ' + str(len(buf)) + ";\n")
-        g.write('extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {\n')
-        for i in range(len(buf)):
-            g.write("\t" + str(buf[i]) + ",\n")
+    f = open(source[0].srcnode().abspath, "rb")
+    buf = f.read()
 
-        g.write("};\n")
-        g.write("#endif")
+    g.write('extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = ' + str(len(buf)) + ";\n")
+    g.write('extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {\n')
+    for i in range(len(buf)):
+        g.write("\t" + str(buf[i]) + ",\n")
+
+    g.write("};\n")
+    g.write("#endif")
 
 
 def write_macos_plist(target, binary_name, identifier, name):
-    os.makedirs(f"{target}/Resource/", exist_ok=True)
-    with open(f"{target}/Resource/Info.plist", "w", encoding="utf-8", newline="\n") as f:
-        f.write(f'<?xml version="1.0" encoding="UTF-8"?>\n')
-        f.write(
-            f'<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n'
-        )
-        f.write(f'<plist version="1.0">\n')
-        f.write(f"<dict>\n")
-        f.write(f"\t<key>CFBundleExecutable</key>\n")
-        f.write(f"\t<string>{binary_name}</string>\n")
-        f.write(f"\t<key>CFBundleIdentifier</key>\n")
-        f.write(f"\t<string>{identifier}</string>\n")
-        f.write(f"\t<key>CFBundleInfoDictionaryVersion</key>\n")
-        f.write(f"\t<string>6.0</string>\n")
-        f.write(f"\t<key>CFBundleName</key>\n")
-        f.write(f"\t<string>{name}</string>\n")
-        f.write(f"\t<key>CFBundlePackageType</key>\n")
-        f.write(f"\t<string>FMWK</string>\n")
-        f.write(f"\t<key>CFBundleShortVersionString</key>\n")
-        f.write(f"\t<string>1.0.0</string>\n")
-        f.write(f"\t<key>CFBundleSupportedPlatforms</key>\n")
-        f.write(f"\t<array>\n")
-        f.write(f"\t\t<string>MacOSX</string>\n")
-        f.write(f"\t</array>\n")
-        f.write(f"\t<key>CFBundleVersion</key>\n")
-        f.write(f"\t<string>1.0.0</string>\n")
-        f.write(f"\t<key>LSMinimumSystemVersion</key>\n")
-        f.write(f"\t<string>10.14</string>\n")
-        f.write(f"</dict>\n")
-        f.write(f"</plist>\n")
+    os.makedirs(f"{target}/Resourece/", exist_ok=True)
+    f = open(f"{target}/Resourece/Info.plist", "w")
+
+    f.write(f'<?xml version="1.0" encoding="UTF-8"?>\n')
+    f.write(f'<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
+    f.write(f'<plist version="1.0">\n')
+    f.write(f"<dict>\n")
+    f.write(f"\t<key>CFBundleExecutable</key>\n")
+    f.write(f"\t<string>{binary_name}</string>\n")
+    f.write(f"\t<key>CFBundleIdentifier</key>\n")
+    f.write(f"\t<string>{identifier}</string>\n")
+    f.write(f"\t<key>CFBundleInfoDictionaryVersion</key>\n")
+    f.write(f"\t<string>6.0</string>\n")
+    f.write(f"\t<key>CFBundleName</key>\n")
+    f.write(f"\t<string>{name}</string>\n")
+    f.write(f"\t<key>CFBundlePackageType</key>\n")
+    f.write(f"\t<string>FMWK</string>\n")
+    f.write(f"\t<key>CFBundleShortVersionString</key>\n")
+    f.write(f"\t<string>1.0.0</string>\n")
+    f.write(f"\t<key>CFBundleSupportedPlatforms</key>\n")
+    f.write(f"\t<array>\n")
+    f.write(f"\t\t<string>MacOSX</string>\n")
+    f.write(f"\t</array>\n")
+    f.write(f"\t<key>CFBundleVersion</key>\n")
+    f.write(f"\t<string>1.0.0</string>\n")
+    f.write(f"\t<key>LSMinimumSystemVersion</key>\n")
+    f.write(f"\t<string>10.14</string>\n")
+    f.write(f"</dict>\n")
+    f.write(f"</plist>\n")

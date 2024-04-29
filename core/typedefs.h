@@ -92,8 +92,6 @@
 #undef Error
 #undef OK
 #undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
-#undef MemoryBarrier
-#undef MONO_FONT
 #endif
 
 // Make room for our constexpr's below by overriding potential system-specific macros.
@@ -132,7 +130,7 @@ constexpr auto CLAMP(const T m_a, const T2 m_min, const T3 m_max) {
 // Generic swap template.
 #ifndef SWAP
 #define SWAP(m_x, m_y) __swap_tmpl((m_x), (m_y))
-template <typename T>
+template <class T>
 inline void __swap_tmpl(T &x, T &y) {
 	T aux = x;
 	x = y;
@@ -186,7 +184,7 @@ static inline int get_shift_from_power_of_2(unsigned int p_bits) {
 	return -1;
 }
 
-template <typename T>
+template <class T>
 static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
 	--x;
 
@@ -234,10 +232,6 @@ constexpr T get_num_bits(T x) {
 #define BSWAP16(x) __builtin_bswap16(x)
 #define BSWAP32(x) __builtin_bswap32(x)
 #define BSWAP64(x) __builtin_bswap64(x)
-#elif defined(_MSC_VER)
-#define BSWAP16(x) _byteswap_ushort(x)
-#define BSWAP32(x) _byteswap_ulong(x)
-#define BSWAP64(x) _byteswap_uint64(x)
 #else
 static inline uint16_t BSWAP16(uint16_t x) {
 	return (x >> 8) | (x << 8);
@@ -256,7 +250,7 @@ static inline uint64_t BSWAP64(uint64_t x) {
 #endif
 
 // Generic comparator used in Map, List, etc.
-template <typename T>
+template <class T>
 struct Comparator {
 	_ALWAYS_INLINE_ bool operator()(const T &p_a, const T &p_b) const { return (p_a < p_b); }
 };

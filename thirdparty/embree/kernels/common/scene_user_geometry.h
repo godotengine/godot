@@ -21,8 +21,6 @@ namespace embree
     virtual void setOccludedFunctionN (RTCOccludedFunctionN occluded);
     virtual void build() {}
     virtual void addElementsToCount (GeometryCounts & counts) const;
-
-    __forceinline float projectedPrimitiveArea(const size_t i) const { return 0.0f; }
   };
 
   namespace isa
@@ -32,7 +30,7 @@ namespace embree
       UserGeometryISA (Device* device)
         : UserGeometry(device) {}
 
-      PrimInfo createPrimRefArray(PrimRef* prims, const range<size_t>& r, size_t k, unsigned int geomID) const
+      PrimInfo createPrimRefArray(mvector<PrimRef>& prims, const range<size_t>& r, size_t k, unsigned int geomID) const
       {
         PrimInfo pinfo(empty);
         for (size_t j=r.begin(); j<r.end(); j++)
@@ -59,24 +57,7 @@ namespace embree
         }
         return pinfo;
       }
-
-      PrimInfo createPrimRefArrayMB(PrimRef* prims, const BBox1f& time_range, const range<size_t>& r, size_t k, unsigned int geomID) const
-      {
-        PrimInfo pinfo(empty);
-        const BBox1f t0t1 = BBox1f::intersect(getTimeRange(), time_range);
-        if (t0t1.empty()) return pinfo;
-        
-        for (size_t j = r.begin(); j < r.end(); j++) {
-          LBBox3fa lbounds = empty;
-          if (!linearBounds(j, t0t1, lbounds))
-            continue;
-          const PrimRef prim(lbounds.bounds(), geomID, unsigned(j));
-          pinfo.add_center2(prim);
-          prims[k++] = prim;
-        }
-        return pinfo;
-      }
-
+      
       PrimInfoMB createPrimRefMBArray(mvector<PrimRefMB>& prims, const BBox1f& t0t1, const range<size_t>& r, size_t k, unsigned int geomID) const
       {
         PrimInfoMB pinfo(empty);

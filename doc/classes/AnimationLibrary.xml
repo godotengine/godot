@@ -54,6 +54,10 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="_data" type="Dictionary" setter="_set_data" getter="_get_data" default="{}">
+		</member>
+	</members>
 	<signals>
 		<signal name="animation_added">
 			<param index="0" name="name" type="StringName" />

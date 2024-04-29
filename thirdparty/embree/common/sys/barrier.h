@@ -34,7 +34,7 @@ namespace embree
     void* opaque;
   };
 
-  /*! fast active barrier using atomic counter */
+  /*! fast active barrier using atomitc counter */
   struct BarrierActive 
   {
   public:

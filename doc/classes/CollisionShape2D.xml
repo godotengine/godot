@@ -8,16 +8,16 @@
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
-		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/2728</link>
-		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/121</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
 	<members>
 		<member name="debug_color" type="Color" setter="set_debug_color" getter="get_debug_color" default="Color(0, 0, 0, 1)">
 			The collision shape debug color.
 			[b]Note:[/b] The default value is [member ProjectSettings.debug/shapes/collision/shape_color]. The [code]Color(0, 0, 0, 1)[/code] value documented here is a placeholder, and not the actual default debug color.
 		</member>
-		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false" keywords="enabled">
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
 			A disabled collision shape has no effect in the world. This property should be changed with [method Object.set_deferred].
 		</member>
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" default="false">

@@ -8,23 +8,21 @@
 		[codeblocks]
 		[gdscript]
 		# This creates an animation that makes the node "Enemy" move to the right by
-		# 100 pixels in 2.0 seconds.
+		# 100 pixels in 0.5 seconds.
 		var animation = Animation.new()
 		var track_index = animation.add_track(Animation.TYPE_VALUE)
 		animation.track_set_path(track_index, "Enemy:position:x")
 		animation.track_insert_key(track_index, 0.0, 0)
-		animation.track_insert_key(track_index, 2.0, 100)
-		animation.length = 2.0
+		animation.track_insert_key(track_index, 0.5, 100)
 		[/gdscript]
 		[csharp]
 		// This creates an animation that makes the node "Enemy" move to the right by
-		// 100 pixels in 2.0 seconds.
+		// 100 pixels in 0.5 seconds.
 		var animation = new Animation();
 		int trackIndex = animation.AddTrack(Animation.TrackType.Value);
 		animation.TrackSetPath(trackIndex, "Enemy:position:x");
 		animation.TrackInsertKey(trackIndex, 0.0f, 0);
-		animation.TrackInsertKey(trackIndex, 2.0f, 100);
-		animation.Length = 2.0f;
+		animation.TrackInsertKey(trackIndex, 0.5f, 100);
 		[/csharp]
 		[/codeblocks]
 		Animations are just data containers, and must be added to nodes such as an [AnimationPlayer] to be played back. Animation tracks have different types, each with its own set of dedicated methods. Check [enum TrackType] to see available types.
@@ -234,7 +232,6 @@
 			<return type="float" />
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time_sec" type="float" />
-			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated blend shape value at the given time (in seconds). The [param track_idx] must be the index of a blend shape track.
 			</description>
@@ -260,7 +257,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="to_animation" type="Animation" />
 			<description>
-				Adds a new track to [param to_animation] that is a copy of the given track from this animation.
+				Adds a new track that is a copy of the given track from [param to_animation].
 			</description>
 		</method>
 		<method name="find_track" qualifiers="const">
@@ -306,7 +303,6 @@
 			<return type="Vector3" />
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time_sec" type="float" />
-			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated position value at the given time (in seconds). The [param track_idx] must be the index of a 3D position track.
 			</description>
@@ -331,7 +327,6 @@
 			<return type="Quaternion" />
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time_sec" type="float" />
-			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated rotation value at the given time (in seconds). The [param track_idx] must be the index of a 3D rotation track.
 			</description>
@@ -349,7 +344,6 @@
 			<return type="Vector3" />
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time_sec" type="float" />
-			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated scale value at the given time (in seconds). The [param track_idx] must be the index of a 3D scale track.
 			</description>
@@ -359,10 +353,8 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time" type="float" />
 			<param index="2" name="find_mode" type="int" enum="Animation.FindMode" default="0" />
-			<param index="3" name="limit" type="bool" default="false" />
 			<description>
 				Finds the key index by time in a given track. Optionally, only find it if the approx/exact time is given.
-				If [param limit] is [code]true[/code], it does not return keys outside the animation range.
 			</description>
 		</method>
 		<method name="track_get_interpolation_loop_wrap" qualifiers="const">
@@ -580,7 +572,6 @@
 			<return type="Variant" />
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time_sec" type="float" />
-			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated value at the given time (in seconds). The [param track_idx] must be the index of a value track.
 			</description>
@@ -658,7 +649,7 @@
 			Update at the keyframes.
 		</constant>
 		<constant name="UPDATE_CAPTURE" value="2" enum="UpdateMode">
-			Same as [constant UPDATE_CONTINUOUS] but works as a flag to capture the value of the current object and perform interpolation in some methods. See also [method AnimationMixer.capture] and [method AnimationPlayer.play_with_capture].
+			Same as linear interpolation, but also interpolates from the current value (i.e. dynamically at runtime) if the first key isn't at 0 seconds.
 		</constant>
 		<constant name="LOOP_NONE" value="0" enum="LoopMode">
 			At both ends of the animation, the animation will stop playing.

@@ -109,7 +109,6 @@ void ImportDefaultsEditor::_save() {
 		} else {
 			ProjectSettings::get_singleton()->set("importer_defaults/" + settings->importer->get_importer_name(), Variant());
 		}
-		ProjectSettings::get_singleton()->save();
 	}
 }
 

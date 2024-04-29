@@ -34,7 +34,7 @@
 #ifdef GDEXTENSION
 #include <godot_cpp/core/class_db.hpp>
 using namespace godot;
-#elif defined(GODOT_MODULE)
+#else
 #include "modules/register_module_types.h"
 #endif
 

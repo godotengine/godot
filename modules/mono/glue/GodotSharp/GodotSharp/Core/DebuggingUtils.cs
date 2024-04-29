@@ -62,9 +62,8 @@ namespace Godot
             Trace.Listeners.Add(new GodotTraceListener());
         }
 
-#pragma warning disable IDE1006 // Naming rule violation
-        // ReSharper disable once InconsistentNaming
         [StructLayout(LayoutKind.Sequential)]
+        // ReSharper disable once InconsistentNaming
         internal ref struct godot_stack_info
         {
             public godot_string File;
@@ -72,8 +71,8 @@ namespace Godot
             public int Line;
         }
 
-        // ReSharper disable once InconsistentNaming
         [StructLayout(LayoutKind.Sequential)]
+        // ReSharper disable once InconsistentNaming
         internal ref struct godot_stack_info_vector
         {
             private IntPtr _writeProxy;
@@ -102,7 +101,6 @@ namespace Godot
                 _ptr = null;
             }
         }
-#pragma warning restore IDE1006
 
         internal static unsafe StackFrame? GetCurrentStackFrame(int skipFrames = 0)
         {

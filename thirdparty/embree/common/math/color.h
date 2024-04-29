@@ -3,10 +3,6 @@
 
 #pragma once
 
-#if defined(EMBREE_SYCL_SUPPORT) && defined(__SYCL_DEVICE_ONLY__)
-#  include "color_sycl.h"
-#else
-
 #include "constants.h"
 #include "col3.h"
 #include "col4.h"
@@ -67,10 +63,6 @@ namespace embree
       d.g = (unsigned char)(s[1]); 
       d.b = (unsigned char)(s[2]); 
       d.a = (unsigned char)(s[3]); 
-    }
-    __forceinline void set(float &f) const
-    {
-      f = 0.2126f*r+0.7125f*g+0.0722f*b; // sRGB luminance.
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -264,5 +256,3 @@ namespace embree
     return cout << "(" << a.r << ", " << a.g << ", " << a.b << ")";
   }
 }
-
-#endif

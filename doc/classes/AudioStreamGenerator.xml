@@ -6,8 +6,7 @@
 	<description>
 		[AudioStreamGenerator] is a type of audio stream that does not play back sounds on its own; instead, it expects a script to generate audio data for it. See also [AudioStreamGeneratorPlayback].
 		Here's a sample on how to use it to generate a sine wave:
-		[codeblocks]
-		[gdscript]
+		[codeblock]
 		var playback # Will hold the AudioStreamGeneratorPlayback.
 		@onready var sample_hz = $AudioStreamPlayer.stream.mix_rate
 		var pulse_hz = 440.0 # The frequency of the sound wave.
@@ -25,45 +24,13 @@
 		    for i in range(frames_available):
 		        playback.push_frame(Vector2.ONE * sin(phase * TAU))
 		        phase = fmod(phase + increment, 1.0)
-		[/gdscript]
-		[csharp]
-		[Export] public AudioStreamPlayer Player { get; set; }
-
-		private AudioStreamGeneratorPlayback _playback; // Will hold the AudioStreamGeneratorPlayback.
-		private float _sampleHz;
-		private float _pulseHz = 440.0f; // The frequency of the sound wave.
-
-		public override void _Ready()
-		{
-		    if (Player.Stream is AudioStreamGenerator generator) // Type as a generator to access MixRate.
-		    {
-		        _sampleHz = generator.MixRate;
-		        Player.Play();
-		        _playback = (AudioStreamGeneratorPlayback)Player.GetStreamPlayback();
-		        FillBuffer();
-		    }
-		}
-
-		public void FillBuffer()
-		{
-		    double phase = 0.0;
-		    float increment = _pulseHz / _sampleHz;
-		    int framesAvailable = _playback.GetFramesAvailable();
-
-		    for (int i = 0; i &lt; framesAvailable; i++)
-		    {
-		        _playback.PushFrame(Vector2.One * (float)Mathf.Sin(phase * Mathf.Tau));
-		        phase = Mathf.PosMod(phase + increment, 1.0);
-		    }
-		}
-		[/csharp]
-		[/codeblocks]
+		[/codeblock]
 		In the example above, the "AudioStreamPlayer" node must use an [AudioStreamGenerator] as its stream. The [code]fill_buffer[/code] function provides audio data for approximating a sine wave.
 		See also [AudioEffectSpectrumAnalyzer] for performing real-time audio spectrum analysis.
 		[b]Note:[/b] Due to performance constraints, this class is best used from C# or from a compiled language via GDExtension. If you still want to use this class from GDScript, consider using a lower [member mix_rate] such as 11,025 Hz or 22,050 Hz.
 	</description>
 	<tutorials>
-		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/2759</link>
+		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/526</link>
 	</tutorials>
 	<members>
 		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="0.5">

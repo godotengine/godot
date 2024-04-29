@@ -670,29 +670,10 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 4 + argc;
 			} break;
-
-			case OPCODE_CALL_METHOD_BIND_VALIDATED_RETURN: {
-				int instr_var_args = _code_ptr[++ip];
-				text += "call method-bind validated (return) ";
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
-				int argc = _code_ptr[ip + 1 + instr_var_args];
-				text += DADDR(2 + argc) + " = ";
-				text += DADDR(1 + argc) + ".";
-				text += method->get_name();
-				text += "(";
-				for (int i = 0; i < argc; i++) {
-					if (i > 0)
-						text += ", ";
-					text += DADDR(1 + i);
-				}
-				text += ")";
-				incr = 5 + argc;
-			} break;
-
-			case OPCODE_CALL_METHOD_BIND_VALIDATED_NO_RETURN: {
+			case OPCODE_CALL_PTRCALL_NO_RETURN: {
 				int instr_var_args = _code_ptr[++ip];
 
-				text += "call method-bind validated (no return) ";
+				text += "call-ptrcall (no return) ";
 
 				MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
 
@@ -712,6 +693,65 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr = 5 + argc;
 			} break;
+
+#define DISASSEMBLE_PTRCALL(m_type)                                            \
+	case OPCODE_CALL_PTRCALL_##m_type: {                                       \
+		int instr_var_args = _code_ptr[++ip];                                  \
+		text += "call-ptrcall (return ";                                       \
+		text += #m_type;                                                       \
+		text += ") ";                                                          \
+		MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]]; \
+		int argc = _code_ptr[ip + 1 + instr_var_args];                         \
+		text += DADDR(2 + argc) + " = ";                                       \
+		text += DADDR(1 + argc) + ".";                                         \
+		text += method->get_name();                                            \
+		text += "(";                                                           \
+		for (int i = 0; i < argc; i++) {                                       \
+			if (i > 0)                                                         \
+				text += ", ";                                                  \
+			text += DADDR(1 + i);                                              \
+		}                                                                      \
+		text += ")";                                                           \
+		incr = 5 + argc;                                                       \
+	} break
+
+				DISASSEMBLE_PTRCALL(BOOL);
+				DISASSEMBLE_PTRCALL(INT);
+				DISASSEMBLE_PTRCALL(FLOAT);
+				DISASSEMBLE_PTRCALL(STRING);
+				DISASSEMBLE_PTRCALL(VECTOR2);
+				DISASSEMBLE_PTRCALL(VECTOR2I);
+				DISASSEMBLE_PTRCALL(RECT2);
+				DISASSEMBLE_PTRCALL(RECT2I);
+				DISASSEMBLE_PTRCALL(VECTOR3);
+				DISASSEMBLE_PTRCALL(VECTOR3I);
+				DISASSEMBLE_PTRCALL(TRANSFORM2D);
+				DISASSEMBLE_PTRCALL(VECTOR4);
+				DISASSEMBLE_PTRCALL(VECTOR4I);
+				DISASSEMBLE_PTRCALL(PLANE);
+				DISASSEMBLE_PTRCALL(AABB);
+				DISASSEMBLE_PTRCALL(BASIS);
+				DISASSEMBLE_PTRCALL(TRANSFORM3D);
+				DISASSEMBLE_PTRCALL(PROJECTION);
+				DISASSEMBLE_PTRCALL(COLOR);
+				DISASSEMBLE_PTRCALL(STRING_NAME);
+				DISASSEMBLE_PTRCALL(NODE_PATH);
+				DISASSEMBLE_PTRCALL(RID);
+				DISASSEMBLE_PTRCALL(QUATERNION);
+				DISASSEMBLE_PTRCALL(OBJECT);
+				DISASSEMBLE_PTRCALL(CALLABLE);
+				DISASSEMBLE_PTRCALL(SIGNAL);
+				DISASSEMBLE_PTRCALL(DICTIONARY);
+				DISASSEMBLE_PTRCALL(ARRAY);
+				DISASSEMBLE_PTRCALL(PACKED_BYTE_ARRAY);
+				DISASSEMBLE_PTRCALL(PACKED_INT32_ARRAY);
+				DISASSEMBLE_PTRCALL(PACKED_INT64_ARRAY);
+				DISASSEMBLE_PTRCALL(PACKED_FLOAT32_ARRAY);
+				DISASSEMBLE_PTRCALL(PACKED_FLOAT64_ARRAY);
+				DISASSEMBLE_PTRCALL(PACKED_STRING_ARRAY);
+				DISASSEMBLE_PTRCALL(PACKED_VECTOR2_ARRAY);
+				DISASSEMBLE_PTRCALL(PACKED_VECTOR3_ARRAY);
+				DISASSEMBLE_PTRCALL(PACKED_COLOR_ARRAY);
 
 			case OPCODE_CALL_BUILTIN_TYPE_VALIDATED: {
 				int instr_var_args = _code_ptr[++ip];

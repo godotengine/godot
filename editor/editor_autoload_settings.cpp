@@ -33,12 +33,12 @@
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/project_settings_editor.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
@@ -57,7 +57,7 @@ void EditorAutoloadSettings::_notification(int p_what) {
 
 			for (const AutoloadInfo &info : autoload_cache) {
 				if (info.node && info.in_editor) {
-					callable_mp((Node *)get_tree()->get_root(), &Node::add_child).call_deferred(info.node, false, Node::INTERNAL_MODE_DISABLED);
+					get_tree()->get_root()->call_deferred(SNAME("add_child"), info.node);
 				}
 			}
 			browse_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
@@ -65,7 +65,6 @@ void EditorAutoloadSettings::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			browse_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
-			add_autoload->set_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -166,7 +165,7 @@ void EditorAutoloadSettings::_autoload_add() {
 		if (!fpath.ends_with("/")) {
 			fpath = fpath.get_base_dir();
 		}
-		dialog->config("Node", fpath.path_join(vformat("%s.gd", autoload_add_name->get_text())), false, false);
+		dialog->config("Node", fpath.path_join(vformat("%s.gd", autoload_add_name->get_text().to_snake_case())), false, false);
 		dialog->popup_centered();
 	} else {
 		if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_text())) {
@@ -340,7 +339,8 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 			undo_redo->add_do_property(ProjectSettings::get_singleton(), name, Variant());
 
 			undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, GLOBAL_GET(name));
-			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", name, order);
+			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_persisting", name, true);
+			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", order);
 
 			undo_redo->add_do_method(this, "update_autoload");
 			undo_redo->add_undo_method(this, "update_autoload");
@@ -382,17 +382,17 @@ void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
 	add_autoload->set_disabled(false);
 }
 
-void EditorAutoloadSettings::_autoload_text_submitted(const String &p_name) {
+void EditorAutoloadSettings::_autoload_text_submitted(const String p_name) {
 	if (!autoload_add_path->get_text().is_empty() && _autoload_name_is_valid(p_name, nullptr)) {
 		_autoload_add();
 	}
 }
 
-void EditorAutoloadSettings::_autoload_path_text_changed(const String &p_path) {
+void EditorAutoloadSettings::_autoload_path_text_changed(const String p_path) {
 	add_autoload->set_disabled(!_autoload_name_is_valid(autoload_add_name->get_text(), nullptr));
 }
 
-void EditorAutoloadSettings::_autoload_text_changed(const String &p_name) {
+void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
 	String error_string;
 	bool is_name_valid = _autoload_name_is_valid(p_name, &error_string);
 	add_autoload->set_disabled(!is_name_valid);
@@ -408,30 +408,31 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 		scn.instantiate();
 		scn->set_path(p_path);
 		scn->reload_from_file();
-		ERR_FAIL_COND_V_MSG(!scn.is_valid(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
+		ERR_FAIL_COND_V_MSG(!scn.is_valid(), nullptr, vformat("Can't autoload: %s.", p_path));
 
 		if (scn.is_valid()) {
 			n = scn->instantiate();
 		}
 	} else {
 		Ref<Resource> res = ResourceLoader::load(p_path);
-		ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
+		ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, vformat("Can't autoload: %s.", p_path));
 
 		Ref<Script> scr = res;
 		if (scr.is_valid()) {
 			StringName ibt = scr->get_instance_base_type();
 			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-			ERR_FAIL_COND_V_MSG(!valid_type, nullptr, vformat("Failed to create an autoload, script '%s' does not inherit from 'Node'.", p_path));
+			ERR_FAIL_COND_V_MSG(!valid_type, nullptr, vformat("Script does not inherit from Node: %s.", p_path));
 
 			Object *obj = ClassDB::instantiate(ibt);
-			ERR_FAIL_NULL_V_MSG(obj, nullptr, vformat("Failed to create an autoload, cannot instantiate '%s'.", ibt));
+
+			ERR_FAIL_NULL_V_MSG(obj, nullptr, vformat("Cannot instance script for Autoload, expected 'Node' inheritance, got: %s.", ibt));
 
 			n = Object::cast_to<Node>(obj);
 			n->set_script(scr);
 		}
 	}
 
-	ERR_FAIL_NULL_V_MSG(n, nullptr, vformat("Failed to create an autoload, path is not pointing to a scene or a script: %s.", p_path));
+	ERR_FAIL_NULL_V_MSG(n, nullptr, vformat("Path in Autoload not a node or script: %s.", p_path));
 
 	return n;
 }
@@ -534,7 +535,7 @@ void EditorAutoloadSettings::update_autoload() {
 		}
 		if (info.in_editor) {
 			ERR_CONTINUE(!info.node);
-			callable_mp((Node *)get_tree()->get_root(), &Node::remove_child).call_deferred(info.node);
+			get_tree()->get_root()->call_deferred(SNAME("remove_child"), info.node);
 		}
 
 		if (info.node) {
@@ -585,10 +586,6 @@ void EditorAutoloadSettings::_script_created(Ref<Script> p_script) {
 	autoload_add_path->set_text(p_script->get_path());
 	autoload_add_name->set_text(p_script->get_path().get_file().get_basename().to_pascal_case());
 	_autoload_add();
-}
-
-LineEdit *EditorAutoloadSettings::get_path_box() const {
-	return autoload_add_path;
 }
 
 Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control *p_control) {
@@ -799,7 +796,8 @@ void EditorAutoloadSettings::autoload_remove(const String &p_name) {
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, Variant());
 
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, GLOBAL_GET(name));
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", name, order);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_persisting", name, true);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", order);
 
 	undo_redo->add_do_method(this, "update_autoload");
 	undo_redo->add_undo_method(this, "update_autoload");

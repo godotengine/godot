@@ -214,7 +214,6 @@ struct JSTF
   {
     TRACE_SANITIZE (this);
     return_trace (version.sanitize (c) &&
-		  hb_barrier () &&
 		  likely (version.major == 1) &&
 		  scriptList.sanitize (c, this));
   }

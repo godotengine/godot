@@ -33,19 +33,15 @@
 #include "canvas_item_editor_plugin.h"
 #include "core/math/geometry_2d.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_zoom_widget.h"
 #include "editor/scene_tree_dock.h"
-#include "editor/themes/editor_scale.h"
+#include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
-#include "scene/2d/physics/collision_polygon_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/panel.h"
-#include "scene/gui/view_panner.h"
 #include "thirdparty/misc/clipper.hpp"
 
 void Sprite2DEditor::_node_removed(Node *p_node) {
@@ -131,56 +127,59 @@ void Sprite2DEditor::_menu_option(int p_option) {
 			debug_uv_dialog->set_ok_button_text(TTR("Create MeshInstance2D"));
 			debug_uv_dialog->set_title(TTR("MeshInstance2D Preview"));
 
-			_popup_debug_uv_dialog();
+			_update_mesh_data();
+			debug_uv_dialog->popup_centered();
+			debug_uv->queue_redraw();
+
 		} break;
 		case MENU_OPTION_CONVERT_TO_POLYGON_2D: {
 			debug_uv_dialog->set_ok_button_text(TTR("Create Polygon2D"));
 			debug_uv_dialog->set_title(TTR("Polygon2D Preview"));
 
-			_popup_debug_uv_dialog();
+			_update_mesh_data();
+			debug_uv_dialog->popup_centered();
+			debug_uv->queue_redraw();
 		} break;
 		case MENU_OPTION_CREATE_COLLISION_POLY_2D: {
 			debug_uv_dialog->set_ok_button_text(TTR("Create CollisionPolygon2D"));
 			debug_uv_dialog->set_title(TTR("CollisionPolygon2D Preview"));
 
-			_popup_debug_uv_dialog();
+			_update_mesh_data();
+			debug_uv_dialog->popup_centered();
+			debug_uv->queue_redraw();
+
 		} break;
 		case MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D: {
 			debug_uv_dialog->set_ok_button_text(TTR("Create LightOccluder2D"));
 			debug_uv_dialog->set_title(TTR("LightOccluder2D Preview"));
 
-			_popup_debug_uv_dialog();
+			_update_mesh_data();
+			debug_uv_dialog->popup_centered();
+			debug_uv->queue_redraw();
+
 		} break;
 	}
 }
 
-void Sprite2DEditor::_popup_debug_uv_dialog() {
-	String error_message;
+void Sprite2DEditor::_update_mesh_data() {
 	if (node->get_owner() != get_tree()->get_edited_scene_root()) {
-		error_message = TTR("Can't convert a sprite from a foreign scene.");
-	}
-	Ref<Texture2D> texture = node->get_texture();
-	if (texture.is_null()) {
-		error_message = TTR("Can't convert an empty sprite to mesh.");
+		err_dialog->set_text(TTR("Can't convert a Sprite2D from a foreign scene."));
+		err_dialog->popup_centered();
 	}
 
-	if (!error_message.is_empty()) {
-		err_dialog->set_text(error_message);
+	Ref<Texture2D> texture = node->get_texture();
+	if (texture.is_null()) {
+		err_dialog->set_text(TTR("Sprite2D is empty!"));
 		err_dialog->popup_centered();
 		return;
 	}
 
-	_update_mesh_data();
-	debug_uv_dialog->popup_centered();
-	get_tree()->connect("process_frame", callable_mp(this, &Sprite2DEditor::_center_view), CONNECT_ONE_SHOT);
-	debug_uv->set_texture_filter(node->get_texture_filter_in_tree());
-	debug_uv->queue_redraw();
-}
+	if (node->get_hframes() > 1 || node->get_vframes() > 1) {
+		err_dialog->set_text(TTR("Can't convert a sprite using animation frames to mesh."));
+		err_dialog->popup_centered();
+		return;
+	}
 
-void Sprite2DEditor::_update_mesh_data() {
-	ERR_FAIL_NULL(node);
-	Ref<Texture2D> texture = node->get_texture();
-	ERR_FAIL_COND(texture.is_null());
 	Ref<Image> image = texture->get_image();
 	ERR_FAIL_COND(image.is_null());
 
@@ -188,9 +187,12 @@ void Sprite2DEditor::_update_mesh_data() {
 		image->decompress();
 	}
 
-	Rect2 rect = node->is_region_enabled() ? node->get_region_rect() : Rect2(Point2(), image->get_size());
-	rect.size /= Vector2(node->get_hframes(), node->get_vframes());
-	rect.position += node->get_frame_coords() * rect.size;
+	Rect2 rect;
+	if (node->is_region_enabled()) {
+		rect = node->get_region_rect();
+	} else {
+		rect.size = image->get_size();
+	}
 
 	Ref<BitMap> bm;
 	bm.instantiate();
@@ -227,15 +229,18 @@ void Sprite2DEditor::_update_mesh_data() {
 
 			for (int i = 0; i < lines[j].size(); i++) {
 				Vector2 vtx = lines[j][i];
-				computed_uv.push_back((vtx + rect.position) / img_size);
+				computed_uv.push_back(vtx / img_size);
 
+				vtx -= rect.position; //offset by rect position
+
+				//flip if flipped
 				if (node->is_flipped_h()) {
-					vtx.x = rect.size.x - vtx.x;
+					vtx.x = rect.size.x - vtx.x - 1.0;
 				}
 				if (node->is_flipped_v()) {
-					vtx.y = rect.size.y - vtx.y;
+					vtx.y = rect.size.y - vtx.y - 1.0;
 				}
-				vtx += node->get_offset();
+
 				if (node->is_centered()) {
 					vtx -= rect.size / 2.0;
 				}
@@ -249,8 +254,8 @@ void Sprite2DEditor::_update_mesh_data() {
 				for (int k = 0; k < 3; k++) {
 					int idx = i + k;
 					int idxn = i + (k + 1) % 3;
-					uv_lines.push_back(lines[j][poly[idx]] + rect.position);
-					uv_lines.push_back(lines[j][poly[idxn]] + rect.position);
+					uv_lines.push_back(lines[j][poly[idx]]);
+					uv_lines.push_back(lines[j][poly[idxn]]);
 
 					computed_indices.push_back(poly[idx] + index_ofs);
 				}
@@ -273,18 +278,19 @@ void Sprite2DEditor::_update_mesh_data() {
 
 			for (int i = 0; i < lines[pi].size(); i++) {
 				Vector2 vtx = lines[pi][i];
-				ol.write[i] = vtx + rect.position;
 
+				ol.write[i] = vtx;
+
+				vtx -= rect.position; //offset by rect position
+
+				//flip if flipped
 				if (node->is_flipped_h()) {
-					vtx.x = rect.size.x - vtx.x;
+					vtx.x = rect.size.x - vtx.x - 1.0;
 				}
 				if (node->is_flipped_v()) {
-					vtx.y = rect.size.y - vtx.y;
+					vtx.y = rect.size.y - vtx.y - 1.0;
 				}
-				// Don't bake offset to Polygon2D which has offset property.
-				if (selected_menu_item != MENU_OPTION_CONVERT_TO_POLYGON_2D) {
-					vtx += node->get_offset();
-				}
+
 				if (node->is_centered()) {
 					vtx -= rect.size / 2.0;
 				}
@@ -339,7 +345,7 @@ void Sprite2DEditor::_convert_to_mesh_2d_node() {
 	mesh_instance->set_mesh(mesh);
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(TTR("Convert to MeshInstance2D"), UndoRedo::MERGE_DISABLE, node);
+	ur->create_action(TTR("Convert to MeshInstance2D"));
 	SceneTreeDock::get_singleton()->replace_node(node, mesh_instance);
 	ur->commit_action(false);
 }
@@ -394,7 +400,7 @@ void Sprite2DEditor::_convert_to_polygon_2d_node() {
 	polygon_2d_instance->set_polygons(polys);
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(TTR("Convert to Polygon2D"), UndoRedo::MERGE_DISABLE, node);
+	ur->create_action(TTR("Convert to Polygon2D"));
 	SceneTreeDock::get_singleton()->replace_node(node, polygon_2d_instance);
 	ur->commit_action(false);
 }
@@ -416,7 +422,7 @@ void Sprite2DEditor::_create_collision_polygon_2d_node() {
 		ur->create_action(TTR("Create CollisionPolygon2D Sibling"));
 		ur->add_do_method(this, "_add_as_sibling_or_child", node, collision_polygon_2d_instance);
 		ur->add_do_reference(collision_polygon_2d_instance);
-		ur->add_undo_method(node != get_tree()->get_edited_scene_root() ? node->get_parent() : get_tree()->get_edited_scene_root(), "remove_child", collision_polygon_2d_instance);
+		ur->add_undo_method(node != this->get_tree()->get_edited_scene_root() ? node->get_parent() : this->get_tree()->get_edited_scene_root(), "remove_child", collision_polygon_2d_instance);
 		ur->commit_action();
 	}
 }
@@ -449,36 +455,34 @@ void Sprite2DEditor::_create_light_occluder_2d_node() {
 		ur->create_action(TTR("Create LightOccluder2D Sibling"));
 		ur->add_do_method(this, "_add_as_sibling_or_child", node, light_occluder_2d_instance);
 		ur->add_do_reference(light_occluder_2d_instance);
-		ur->add_undo_method(node != get_tree()->get_edited_scene_root() ? node->get_parent() : get_tree()->get_edited_scene_root(), "remove_child", light_occluder_2d_instance);
+		ur->add_undo_method(node != this->get_tree()->get_edited_scene_root() ? node->get_parent() : this->get_tree()->get_edited_scene_root(), "remove_child", light_occluder_2d_instance);
 		ur->commit_action();
 	}
 }
 
 void Sprite2DEditor::_add_as_sibling_or_child(Node *p_own_node, Node *p_new_node) {
 	// Can't make sibling if own node is scene root
-	if (p_own_node != get_tree()->get_edited_scene_root()) {
+	if (p_own_node != this->get_tree()->get_edited_scene_root()) {
 		p_own_node->get_parent()->add_child(p_new_node, true);
 		Object::cast_to<Node2D>(p_new_node)->set_transform(Object::cast_to<Node2D>(p_own_node)->get_transform());
 	} else {
 		p_own_node->add_child(p_new_node, true);
 	}
 
-	p_new_node->set_owner(get_tree()->get_edited_scene_root());
-}
-
-void Sprite2DEditor::_debug_uv_input(const Ref<InputEvent> &p_input) {
-	if (panner->gui_input(p_input)) {
-		accept_event();
-	}
+	p_new_node->set_owner(this->get_tree()->get_edited_scene_root());
 }
 
 void Sprite2DEditor::_debug_uv_draw() {
-	debug_uv->draw_set_transform(-draw_offset * draw_zoom, 0, Vector2(draw_zoom, draw_zoom));
-
 	Ref<Texture2D> tex = node->get_texture();
 	ERR_FAIL_COND(!tex.is_valid());
 
-	debug_uv->draw_texture(tex, Point2());
+	Point2 draw_pos_offset = Point2(1.0, 1.0);
+	Size2 draw_size_offset = Size2(2.0, 2.0);
+
+	debug_uv->set_clip_contents(true);
+	debug_uv->draw_texture(tex, draw_pos_offset);
+	debug_uv->set_custom_minimum_size(tex->get_size() + draw_size_offset);
+	debug_uv->draw_set_transform(draw_pos_offset, 0, Size2(1.0, 1.0));
 
 	Color color = Color(1.0, 0.8, 0.7);
 
@@ -495,86 +499,8 @@ void Sprite2DEditor::_debug_uv_draw() {
 	}
 }
 
-void Sprite2DEditor::_center_view() {
-	Ref<Texture2D> tex = node->get_texture();
-	ERR_FAIL_COND(!tex.is_valid());
-	Vector2 zoom_factor = (debug_uv->get_size() - Vector2(1, 1) * 50 * EDSCALE) / tex->get_size();
-	zoom_widget->set_zoom(MIN(zoom_factor.x, zoom_factor.y));
-	// Recalculate scroll limits.
-	_update_zoom_and_pan(false);
-
-	Vector2 offset = (tex->get_size() - debug_uv->get_size() / zoom_widget->get_zoom()) / 2;
-	h_scroll->set_value_no_signal(offset.x);
-	v_scroll->set_value_no_signal(offset.y);
-	_update_zoom_and_pan(false);
-}
-
-void Sprite2DEditor::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
-	h_scroll->set_value_no_signal(h_scroll->get_value() - p_scroll_vec.x / draw_zoom);
-	v_scroll->set_value_no_signal(v_scroll->get_value() - p_scroll_vec.y / draw_zoom);
-	_update_zoom_and_pan(false);
-}
-
-void Sprite2DEditor::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
-	const real_t prev_zoom = draw_zoom;
-	zoom_widget->set_zoom(draw_zoom * p_zoom_factor);
-	draw_offset += p_origin / prev_zoom - p_origin / zoom_widget->get_zoom();
-	h_scroll->set_value_no_signal(draw_offset.x);
-	v_scroll->set_value_no_signal(draw_offset.y);
-	_update_zoom_and_pan(false);
-}
-
-void Sprite2DEditor::_update_zoom_and_pan(bool p_zoom_at_center) {
-	real_t previous_zoom = draw_zoom;
-	draw_zoom = zoom_widget->get_zoom();
-	draw_offset = Vector2(h_scroll->get_value(), v_scroll->get_value());
-	if (p_zoom_at_center) {
-		Vector2 center = debug_uv->get_size() / 2;
-		draw_offset += center / previous_zoom - center / draw_zoom;
-	}
-
-	Ref<Texture2D> tex = node->get_texture();
-	ERR_FAIL_COND(!tex.is_valid());
-
-	Point2 min_corner;
-	Point2 max_corner = tex->get_size();
-	Size2 page_size = debug_uv->get_size() / draw_zoom;
-	Vector2 margin = Vector2(50, 50) * EDSCALE / draw_zoom;
-	min_corner -= page_size - margin;
-	max_corner += page_size - margin;
-
-	h_scroll->set_block_signals(true);
-	h_scroll->set_min(min_corner.x);
-	h_scroll->set_max(max_corner.x);
-	h_scroll->set_page(page_size.x);
-	h_scroll->set_value(draw_offset.x);
-	h_scroll->set_block_signals(false);
-
-	v_scroll->set_block_signals(true);
-	v_scroll->set_min(min_corner.y);
-	v_scroll->set_max(max_corner.y);
-	v_scroll->set_page(page_size.y);
-	v_scroll->set_value(draw_offset.y);
-	v_scroll->set_block_signals(false);
-
-	debug_uv->queue_redraw();
-}
-
 void Sprite2DEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
-			v_scroll->set_anchors_and_offsets_preset(Control::PRESET_RIGHT_WIDE);
-			h_scroll->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_WIDE);
-			// Avoid scrollbar overlapping.
-			Size2 hmin = h_scroll->get_combined_minimum_size();
-			Size2 vmin = v_scroll->get_combined_minimum_size();
-			h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -vmin.width);
-			v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -hmin.height);
-			[[fallthrough]];
-		}
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-		} break;
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			options->set_icon(get_editor_theme_icon(SNAME("Sprite2D")));
@@ -612,29 +538,12 @@ Sprite2DEditor::Sprite2DEditor() {
 	debug_uv_dialog = memnew(ConfirmationDialog);
 	VBoxContainer *vb = memnew(VBoxContainer);
 	debug_uv_dialog->add_child(vb);
-	debug_uv = memnew(Panel);
-	debug_uv->connect("gui_input", callable_mp(this, &Sprite2DEditor::_debug_uv_input));
+	ScrollContainer *scroll = memnew(ScrollContainer);
+	scroll->set_custom_minimum_size(Size2(800, 500) * EDSCALE);
+	vb->add_margin_child(TTR("Preview:"), scroll, true);
+	debug_uv = memnew(Control);
 	debug_uv->connect("draw", callable_mp(this, &Sprite2DEditor::_debug_uv_draw));
-	debug_uv->set_custom_minimum_size(Size2(800, 500) * EDSCALE);
-	debug_uv->set_clip_contents(true);
-	vb->add_margin_child(TTR("Preview:"), debug_uv, true);
-
-	panner.instantiate();
-	panner->set_callbacks(callable_mp(this, &Sprite2DEditor::_pan_callback), callable_mp(this, &Sprite2DEditor::_zoom_callback));
-
-	zoom_widget = memnew(EditorZoomWidget);
-	debug_uv->add_child(zoom_widget);
-	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
-	zoom_widget->connect("zoom_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(true));
-	zoom_widget->set_shortcut_context(nullptr);
-
-	v_scroll = memnew(VScrollBar);
-	debug_uv->add_child(v_scroll);
-	v_scroll->connect("value_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
-	h_scroll = memnew(HScrollBar);
-	debug_uv->add_child(h_scroll);
-	h_scroll->connect("value_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
-
+	scroll->add_child(debug_uv);
 	debug_uv_dialog->connect("confirmed", callable_mp(this, &Sprite2DEditor::_create_node));
 
 	HBoxContainer *hb = memnew(HBoxContainer);

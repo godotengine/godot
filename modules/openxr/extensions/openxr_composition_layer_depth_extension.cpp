@@ -56,15 +56,8 @@ bool OpenXRCompositionLayerDepthExtension::is_available() {
 	return available;
 }
 
-int OpenXRCompositionLayerDepthExtension::get_composition_layer_count() {
-	return 0;
-}
-
-XrCompositionLayerBaseHeader *OpenXRCompositionLayerDepthExtension::get_composition_layer(int p_index) {
+XrCompositionLayerBaseHeader *OpenXRCompositionLayerDepthExtension::get_composition_layer() {
 	// Seems this is all done in our base layer... Just in case this changes...
-	return nullptr;
-}
 
-int OpenXRCompositionLayerDepthExtension::get_composition_layer_order(int p_index) {
-	return 0;
+	return nullptr;
 }

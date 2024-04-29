@@ -24,7 +24,7 @@ func test():
 	print(StringName("hello"))
 	print(NodePath("hello/world"))
 	var node := Node.new()
-	print(RID(node)) # TODO: Why is the constructor (or implicit cast) not documented?
+	print(RID(node))
 	print(node.get_name)
 	print(node.property_list_changed)
 	node.free()

@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisibleOnScreenNotifier2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A rectangular region of 2D space that detects whether it is visible on screen.
+		Detects when the node extents are visible on screen.
 	</brief_description>
 	<description>
-		[VisibleOnScreenEnabler2D] represents a rectangular region of 2D space. When any part of this region becomes visible on screen or in a viewport, it will emit a [signal screen_entered] signal, and likewise it will emit a [signal screen_exited] signal when no part of it remains visible.
-		If you want a node to be enabled automatically when this region is visible on screen, use [VisibleOnScreenEnabler2D].
-		[b]Note:[/b] [VisibleOnScreenNotifier2D] uses the render culling code to determine whether it's visible on screen, so it won't function unless [member CanvasItem.visible] is set to [code]true[/code].
+		The VisibleOnScreenNotifier2D detects when it is visible on the screen. It also notifies when its bounding rectangle enters or exits the screen or a viewport.
+		If you want nodes to be disabled automatically when they exit the screen, use [VisibleOnScreenEnabler2D] instead.
+		[b]Note:[/b] VisibleOnScreenNotifier2D uses the render culling code to determine whether it's visible on screen, which also means that its [member CanvasItem.visible] must be [code]true[/code] to work correctly.
 	</description>
 	<tutorials>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
 		<method name="is_on_screen" qualifiers="const">
 			<return type="bool" />
 			<description>
 				If [code]true[/code], the bounding rectangle is on the screen.
-				[b]Note:[/b] It takes one frame for the [VisibleOnScreenNotifier2D]'s visibility to be determined once added to the scene tree, so this method will always return [code]false[/code] right after it is instantiated, before the draw pass.
+				[b]Note:[/b] It takes one frame for the node's visibility to be assessed once added to the scene tree, so this method will return [code]false[/code] right after it is instantiated, even if it will be on screen in the draw pass.
 			</description>
 		</method>
 	</methods>

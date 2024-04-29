@@ -82,13 +82,13 @@ size_t MIDIDriverALSAMidi::msg_expected_data(uint8_t status_byte) {
 }
 
 void MIDIDriverALSAMidi::InputConnection::parse_byte(uint8_t byte, MIDIDriverALSAMidi &driver,
-		uint64_t timestamp, int device_index) {
+		uint64_t timestamp) {
 	switch (msg_category(byte)) {
 		case MessageCategory::RealTime:
 			// Real-Time messages are single byte messages that can
 			// occur at any point.
 			// We pass them straight through.
-			driver.receive_input_packet(device_index, timestamp, &byte, 1);
+			driver.receive_input_packet(timestamp, &byte, 1);
 			break;
 
 		case MessageCategory::Data:
@@ -100,7 +100,7 @@ void MIDIDriverALSAMidi::InputConnection::parse_byte(uint8_t byte, MIDIDriverALS
 
 				// Forward a complete message and reset relevant state.
 				if (received_data == expected_data) {
-					driver.receive_input_packet(device_index, timestamp, buffer, received_data + 1);
+					driver.receive_input_packet(timestamp, buffer, received_data + 1);
 					received_data = 0;
 
 					if (msg_category(buffer[0]) != MessageCategory::Voice) {
@@ -130,13 +130,13 @@ void MIDIDriverALSAMidi::InputConnection::parse_byte(uint8_t byte, MIDIDriverALS
 			expected_data = msg_expected_data(byte);
 			skipping_sys_ex = false;
 			if (expected_data == 0) {
-				driver.receive_input_packet(device_index, timestamp, &byte, 1);
+				driver.receive_input_packet(timestamp, &byte, 1);
 			}
 			break;
 	}
 }
 
-int MIDIDriverALSAMidi::InputConnection::read_in(MIDIDriverALSAMidi &driver, uint64_t timestamp, int device_index) {
+int MIDIDriverALSAMidi::InputConnection::read_in(MIDIDriverALSAMidi &driver, uint64_t timestamp) {
 	int ret;
 	do {
 		uint8_t byte = 0;
@@ -147,7 +147,7 @@ int MIDIDriverALSAMidi::InputConnection::read_in(MIDIDriverALSAMidi &driver, uin
 				ERR_PRINT("snd_rawmidi_read error: " + String(snd_strerror(ret)));
 			}
 		} else {
-			parse_byte(byte, driver, timestamp, device_index);
+			parse_byte(byte, driver, timestamp);
 		}
 	} while (ret > 0);
 
@@ -165,7 +165,7 @@ void MIDIDriverALSAMidi::thread_func(void *p_udata) {
 		size_t connection_count = md->connected_inputs.size();
 
 		for (size_t i = 0; i < connection_count; i++) {
-			connections[i].read_in(*md, timestamp, (int)i);
+			connections[i].read_in(*md, timestamp);
 		}
 
 		md->unlock();

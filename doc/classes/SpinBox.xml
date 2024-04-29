@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SpinBox" inherits="Range" keywords="number, numeric, input" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SpinBox" inherits="Range" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An input field for numbers.
 	</brief_description>
 	<description>
-		[SpinBox] is a numerical input text field. It allows entering integers and floating-point numbers.
+		[SpinBox] is a numerical input text field. It allows entering integers and floating point numbers.
 		[b]Example:[/b]
 		[codeblocks]
 		[gdscript]
@@ -24,7 +24,6 @@
 		[/codeblocks]
 		The above code will create a [SpinBox], disable context menu on it and set the text alignment to right.
 		See [Range] class for more options over the [SpinBox].
-		[b]Note:[/b] With the [SpinBox]'s context menu disabled, you can right-click the bottom half of the spinbox to set the value to its minimum, while right-clicking the top half sets the value to its maximum.
 		[b]Note:[/b] [SpinBox] relies on an underlying [LineEdit] node. To theme a [SpinBox]'s background, add theme items for [LineEdit] and customize them.
 		[b]Note:[/b] If you want to implement drag and drop for the underlying [LineEdit], you can use [method Control.set_drag_forwarding] on the node returned by [method get_line_edit].
 	</description>
@@ -50,13 +49,13 @@
 			Changes the alignment of the underlying [LineEdit].
 		</member>
 		<member name="custom_arrow_step" type="float" setter="set_custom_arrow_step" getter="get_custom_arrow_step" default="0.0">
-			If not [code]0[/code], [member Range.value] will always be rounded to a multiple of [member custom_arrow_step] when interacting with the arrow buttons of the [SpinBox].
+			If not [code]0[/code], [code]value[/code] will always be rounded to a multiple of [code]custom_arrow_step[/code] when interacting with the arrow buttons of the [SpinBox].
 		</member>
-		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
 			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.
 		</member>
 		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix" default="&quot;&quot;">
-			Adds the specified prefix string before the numerical value of the [SpinBox].
+			Adds the specified [code]prefix[/code] string before the numerical value of the [SpinBox].
 		</member>
 		<member name="select_all_on_focus" type="bool" setter="set_select_all_on_focus" getter="is_select_all_on_focus" default="false">
 			If [code]true[/code], the [SpinBox] will select the whole text when the [LineEdit] gains focus. Clicking the up and down arrows won't trigger this behavior.
@@ -64,7 +63,7 @@
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="1" />
 		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="1.0" />
 		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;">
-			Adds the specified suffix string after the numerical value of the [SpinBox].
+			Adds the specified [code]suffix[/code] string after the numerical value of the [SpinBox].
 		</member>
 		<member name="update_on_text_changed" type="bool" setter="set_update_on_text_changed" getter="get_update_on_text_changed" default="false">
 			Sets the value of the [Range] for this [SpinBox] when the [LineEdit] text is [i]changed[/i] instead of [i]submitted[/i]. See [signal LineEdit.text_changed] and [signal LineEdit.text_submitted].

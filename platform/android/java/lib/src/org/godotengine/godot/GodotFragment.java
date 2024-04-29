@@ -30,7 +30,6 @@
 
 package org.godotengine.godot;
 
-import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.utils.BenchmarkUtils;
 
 import android.app.Activity;
@@ -38,7 +37,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Messenger;
@@ -67,7 +65,6 @@ import com.google.android.vending.expansion.downloader.IStub;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * Base fragment for Android apps intending to use Godot for part of the app's UI.
@@ -125,7 +122,6 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	}
 	public ResultCallback resultCallback;
 
-	@Override
 	public Godot getGodot() {
 		return godot;
 	}
@@ -144,13 +140,6 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	public void onDetach() {
 		super.onDetach();
 		parentHost = null;
-	}
-
-	@CallSuper
-	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
-		godot.onConfigurationChanged(newConfig);
 	}
 
 	@CallSuper
@@ -180,7 +169,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@Override
 	public void onCreate(Bundle icicle) {
-		BenchmarkUtils.beginBenchmarkMeasure("Startup", "GodotFragment::onCreate");
+		BenchmarkUtils.beginBenchmarkMeasure("GodotFragment::onCreate");
 		super.onCreate(icicle);
 
 		final Activity activity = getActivity();
@@ -188,7 +177,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 		godot = new Godot(requireContext());
 		performEngineInitialization();
-		BenchmarkUtils.endBenchmarkMeasure("Startup", "GodotFragment::onCreate");
+		BenchmarkUtils.endBenchmarkMeasure("GodotFragment::onCreate");
 	}
 
 	private void performEngineInitialization() {
@@ -276,32 +265,6 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 		}
 
 		godot.onPause(this);
-	}
-
-	@Override
-	public void onStop() {
-		super.onStop();
-		if (!godot.isInitialized()) {
-			if (null != mDownloaderClientStub) {
-				mDownloaderClientStub.disconnect(getActivity());
-			}
-			return;
-		}
-
-		godot.onStop(this);
-	}
-
-	@Override
-	public void onStart() {
-		super.onStart();
-		if (!godot.isInitialized()) {
-			if (null != mDownloaderClientStub) {
-				mDownloaderClientStub.connect(getActivity());
-			}
-			return;
-		}
-
-		godot.onStart(this);
 	}
 
 	@Override
@@ -462,14 +425,5 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 			return parentHost.onNewGodotInstanceRequested(args);
 		}
 		return 0;
-	}
-
-	@Override
-	@CallSuper
-	public Set<GodotPlugin> getHostPlugins(Godot engine) {
-		if (parentHost != null) {
-			return parentHost.getHostPlugins(engine);
-		}
-		return Collections.emptySet();
 	}
 }

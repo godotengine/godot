@@ -50,8 +50,6 @@ class NavRegion : public NavBase {
 	/// Cache
 	LocalVector<gd::Polygon> polygons;
 
-	real_t surface_area = 0.0;
-
 public:
 	NavRegion() {
 		type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
@@ -94,10 +92,6 @@ public:
 	LocalVector<gd::Polygon> const &get_polygons() const {
 		return polygons;
 	}
-
-	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
-
-	real_t get_surface_area() const { return surface_area; };
 
 	bool sync();
 

@@ -79,7 +79,7 @@ Dictionary VoxelGIData::_get_data() const {
 	if (otsize != Vector3i()) {
 		Ref<Image> img = Image::create_from_data(otsize.x * otsize.y, otsize.z, false, Image::FORMAT_L8, get_distance_field());
 		Vector<uint8_t> df_png = img->save_png_to_buffer();
-		ERR_FAIL_COND_V(df_png.is_empty(), Dictionary());
+		ERR_FAIL_COND_V(df_png.size() == 0, Dictionary());
 		d["octree_df_png"] = df_png;
 	} else {
 		d["octree_df"] = Vector<uint8_t>();
@@ -294,7 +294,7 @@ VoxelGI::Subdiv VoxelGI::get_subdiv() const {
 
 void VoxelGI::set_size(const Vector3 &p_size) {
 	// Prevent very small size dimensions as these breaks baking if other size dimensions are set very high.
-	size = p_size.max(Vector3(1.0, 1.0, 1.0));
+	size = Vector3(MAX(1.0, p_size.x), MAX(1.0, p_size.y), MAX(1.0, p_size.z));
 	update_gizmos();
 }
 
@@ -314,21 +314,9 @@ Ref<CameraAttributes> VoxelGI::get_camera_attributes() const {
 	return camera_attributes;
 }
 
-static bool is_node_voxel_bakeable(Node3D *p_node) {
-	if (!p_node->is_visible_in_tree()) {
-		return false;
-	}
-
-	GeometryInstance3D *geometry = Object::cast_to<GeometryInstance3D>(p_node);
-	if (geometry != nullptr && geometry->get_gi_mode() != GeometryInstance3D::GI_MODE_STATIC) {
-		return false;
-	}
-	return true;
-}
-
 void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
-	if (mi && is_node_voxel_bakeable(mi)) {
+	if (mi && mi->get_gi_mode() == GeometryInstance3D::GI_MODE_STATIC && mi->is_visible_in_tree()) {
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid()) {
 			AABB aabb = mesh->get_aabb();
@@ -350,15 +338,8 @@ void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 
 	Node3D *s = Object::cast_to<Node3D>(p_at_node);
 	if (s) {
-		if (is_node_voxel_bakeable(s)) {
-			Array meshes;
-			MultiMeshInstance3D *multi_mesh = Object::cast_to<MultiMeshInstance3D>(p_at_node);
-			if (multi_mesh) {
-				meshes = multi_mesh->get_meshes();
-			} else {
-				meshes = p_at_node->call("get_meshes");
-			}
-
+		if (s->is_visible_in_tree()) {
+			Array meshes = p_at_node->call("get_meshes");
 			for (int i = 0; i < meshes.size(); i += 2) {
 				Transform3D mxf = meshes[i];
 				Ref<Mesh> mesh = meshes[i + 1];

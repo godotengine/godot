@@ -130,7 +130,6 @@ public:
 	bool is_history_unsaved(int p_idx);
 	bool has_undo();
 	bool has_redo();
-	bool has_history(int p_idx) const;
 
 	String get_current_action_name();
 	int get_current_action_history_id();

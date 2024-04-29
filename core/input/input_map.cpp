@@ -85,35 +85,6 @@ String InputMap::suggest_actions(const StringName &p_action) const {
 	return error_message;
 }
 
-#ifdef TOOLS_ENABLED
-void InputMap::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	const String pf = p_function;
-	bool first_argument_is_action = false;
-	if (p_idx == 0) {
-		first_argument_is_action = (pf == "has_action" || pf == "erase_action" ||
-				pf == "action_set_deadzone" || pf == "action_get_deadzone" ||
-				pf == "action_has_event" || pf == "action_add_event" || pf == "action_get_events" ||
-				pf == "action_erase_event" || pf == "action_erase_events");
-	}
-	if (first_argument_is_action || (p_idx == 1 && pf == "event_is_action")) {
-		// Cannot rely on `get_actions()`, otherwise the actions would be in the context of the Editor (no user-defined actions).
-		List<PropertyInfo> pinfo;
-		ProjectSettings::get_singleton()->get_property_list(&pinfo);
-
-		for (const PropertyInfo &pi : pinfo) {
-			if (!pi.name.begins_with("input/")) {
-				continue;
-			}
-
-			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
-			r_options->push_back(name.quote());
-		}
-	}
-
-	Object::get_argument_options(p_function, p_idx, r_options);
-}
-#endif
-
 void InputMap::add_action(const StringName &p_action, float p_deadzone) {
 	ERR_FAIL_COND_MSG(input_map.has(p_action), "InputMap already has action \"" + String(p_action) + "\".");
 	input_map[p_action] = Action();
@@ -156,21 +127,16 @@ List<StringName> InputMap::get_actions() const {
 	return actions;
 }
 
-List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match, bool *r_pressed, float *r_strength, float *r_raw_strength, int *r_event_index) const {
+List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
 	ERR_FAIL_COND_V(!p_event.is_valid(), nullptr);
 
-	int i = 0;
 	for (List<Ref<InputEvent>>::Element *E = p_action.inputs.front(); E; E = E->next()) {
 		int device = E->get()->get_device();
 		if (device == ALL_DEVICES || device == p_event->get_device()) {
 			if (E->get()->action_match(p_event, p_exact_match, p_action.deadzone, r_pressed, r_strength, r_raw_strength)) {
-				if (r_event_index) {
-					*r_event_index = i;
-				}
 				return E;
 			}
 		}
-		i++;
 	}
 
 	return nullptr;
@@ -213,7 +179,6 @@ void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEve
 	List<Ref<InputEvent>>::Element *E = _find_event(input_map[p_action], p_event, true);
 	if (E) {
 		input_map[p_action].inputs.erase(E);
-
 		if (Input::get_singleton()->is_action_pressed(p_action)) {
 			Input::get_singleton()->action_release(p_action);
 		}
@@ -251,13 +216,7 @@ bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName 
 	return event_get_action_status(p_event, p_action, p_exact_match);
 }
 
-int InputMap::event_get_index(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match) const {
-	int index = -1;
-	event_get_action_status(p_event, p_action, p_exact_match, nullptr, nullptr, nullptr, &index);
-	return index;
-}
-
-bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match, bool *r_pressed, float *r_strength, float *r_raw_strength, int *r_event_index) const {
+bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
 	HashMap<StringName, Action>::Iterator E = input_map.find(p_action);
 	ERR_FAIL_COND_V_MSG(!E, false, suggest_actions(p_action));
 
@@ -277,7 +236,7 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 		return input_event_action->get_action() == p_action;
 	}
 
-	List<Ref<InputEvent>>::Element *event = _find_event(E->value, p_event, p_exact_match, r_pressed, r_strength, r_raw_strength, r_event_index);
+	List<Ref<InputEvent>>::Element *event = _find_event(E->value, p_event, p_exact_match, r_pressed, r_strength, r_raw_strength);
 	return event != nullptr;
 }
 
@@ -383,7 +342,6 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
     { "ui_text_select_all",                            TTRC("Select All") },
     { "ui_text_select_word_under_caret",               TTRC("Select Word Under Caret") },
     { "ui_text_add_selection_for_next_occurrence",     TTRC("Add Selection for Next Occurrence") },
-    { "ui_text_skip_selection_for_next_occurrence",    TTRC("Skip Selection for Next Occurrence") },
     { "ui_text_clear_carets_and_selection",            TTRC("Clear Carets and Selection") },
     { "ui_text_toggle_insert_mode",                    TTRC("Toggle Insert Mode") },
     { "ui_text_submit",                                TTRC("Submit Text") },
@@ -723,10 +681,6 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_text_add_selection_for_next_occurrence", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(Key::D | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT));
-	default_builtin_cache.insert("ui_text_skip_selection_for_next_occurrence", inputs);
-
-	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::ESCAPE));
 	default_builtin_cache.insert("ui_text_clear_carets_and_selection", inputs);
 
@@ -788,7 +742,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 		String fullname = E.key;
 
 		Vector<String> split = fullname.split(".");
-		const String &name = split[0];
+		String name = split[0];
 		String override_for = split.size() > 1 ? split[1] : String();
 
 		if (!override_for.is_empty() && OS::get_singleton()->has_feature(override_for)) {
@@ -800,7 +754,7 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 		String fullname = E.key;
 
 		Vector<String> split = fullname.split(".");
-		const String &name = split[0];
+		String name = split[0];
 		String override_for = split.size() > 1 ? split[1] : String();
 
 		if (builtins_with_overrides.has(name) && override_for.is_empty()) {

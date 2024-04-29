@@ -60,10 +60,10 @@ String _remove_symlink(const String &dir) {
 	// Change directory to the external data directory.
 	chdir(dir.utf8().get_data());
 	// Get the actual directory without the potential symlink.
-	char dir_name_without_symlink[2048];
-	getcwd(dir_name_without_symlink, 2048);
+	char dir_name_wihout_symlink[2048];
+	getcwd(dir_name_wihout_symlink, 2048);
 	// Convert back to a String.
-	String dir_without_symlink(dir_name_without_symlink);
+	String dir_without_symlink(dir_name_wihout_symlink);
 	// Restore original current directory.
 	chdir(current_dir_name);
 	return dir_without_symlink;
@@ -162,7 +162,7 @@ Vector<String> OS_Android::get_granted_permissions() const {
 	return godot_java->get_granted_permissions();
 }
 
-Error OS_Android::open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path, bool p_generate_temp_files) {
+Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path;
 	bool so_file_exists = true;
 	if (!FileAccess::exists(path)) {
@@ -324,21 +324,15 @@ void OS_Android::main_loop_end() {
 
 void OS_Android::main_loop_focusout() {
 	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
-	}
 	audio_driver_android.set_pause(true);
 }
 
 void OS_Android::main_loop_focusin() {
 	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
-	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
-	}
 	audio_driver_android.set_pause(false);
 }
 
-Error OS_Android::shell_open(const String &p_uri) {
+Error OS_Android::shell_open(String p_uri) {
 	return godot_io_java->open_uri(p_uri);
 }
 
@@ -714,15 +708,15 @@ String OS_Android::get_config_path() const {
 	return get_user_data_dir().path_join("config");
 }
 
-void OS_Android::benchmark_begin_measure(const String &p_context, const String &p_what) {
+void OS_Android::benchmark_begin_measure(const String &p_what) {
 #ifdef TOOLS_ENABLED
-	godot_java->begin_benchmark_measure(p_context, p_what);
+	godot_java->begin_benchmark_measure(p_what);
 #endif
 }
 
-void OS_Android::benchmark_end_measure(const String &p_context, const String &p_what) {
+void OS_Android::benchmark_end_measure(const String &p_what) {
 #ifdef TOOLS_ENABLED
-	godot_java->end_benchmark_measure(p_context, p_what);
+	godot_java->end_benchmark_measure(p_what);
 #endif
 }
 
@@ -755,11 +749,6 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 		return true;
 	}
 #endif
-
-	if (godot_java->has_feature(p_feature)) {
-		return true;
-	}
-
 	return false;
 }
 

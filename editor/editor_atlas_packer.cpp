@@ -72,7 +72,8 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 				Vector2 vtx = chart.vertices[chart.faces[j].vertex[k]];
 				vtx -= aabb.position;
 				vtx /= divide_by;
-				vtx = vtx.min(Vector2(w - 1, h - 1));
+				vtx.x = MIN(vtx.x, w - 1);
+				vtx.y = MIN(vtx.y, h - 1);
 				v[k] = vtx;
 			}
 

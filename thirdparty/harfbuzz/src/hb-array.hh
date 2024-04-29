@@ -47,8 +47,6 @@ enum hb_not_found_t
 template <typename Type>
 struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
 {
-  static constexpr bool realloc_move = true;
-
   /*
    * Constructors.
    */

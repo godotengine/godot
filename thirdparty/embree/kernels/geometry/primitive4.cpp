@@ -15,7 +15,6 @@
 #include "subdivpatch1.h"
 #include "object.h"
 #include "instance.h"
-#include "instance_array.h"
 #include "subgrid.h"
 
 namespace embree
@@ -335,26 +334,6 @@ namespace embree
   }
 
   InstancePrimitive::Type InstancePrimitive::type;
-
-  /********************** InstanceArray4 **************************/
-
-  const char* InstanceArrayPrimitive::Type::name () const {
-    return "instance_array";
-  }
-
-  size_t InstanceArrayPrimitive::Type::sizeActive(const char* This) const {
-    return 1;
-  }
-
-  size_t InstanceArrayPrimitive::Type::sizeTotal(const char* This) const {
-    return 1;
-  }
-
-  size_t InstanceArrayPrimitive::Type::getBytes(const char* This) const {
-    return sizeof(InstanceArrayPrimitive);
-  }
-
-  InstanceArrayPrimitive::Type InstanceArrayPrimitive::type;
 
   /********************** SubGrid **************************/
 

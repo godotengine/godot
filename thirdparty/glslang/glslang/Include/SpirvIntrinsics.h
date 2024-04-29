@@ -35,11 +35,12 @@
 
 #pragma once
 
+#ifndef GLSLANG_WEB
+
 //
 // GL_EXT_spirv_intrinsics
 //
 #include "Common.h"
-#include <variant>
 
 namespace glslang {
 
@@ -97,27 +98,12 @@ struct TSpirvInstruction {
 struct TSpirvTypeParameter {
     POOL_ALLOCATOR_NEW_DELETE(GetThreadPoolAllocator())
 
-    TSpirvTypeParameter(const TIntermConstantUnion* arg) { value = arg; }
-    TSpirvTypeParameter(const TType* arg) { value = arg; }
+    TSpirvTypeParameter(const TIntermConstantUnion* arg) { constant = arg; }
 
-    const TIntermConstantUnion* getAsConstant() const
-    {
-        if (value.index() == 0)
-            return std::get<const TIntermConstantUnion*>(value);
-        return nullptr;
-    }
-    const TType* getAsType() const
-    {
-        if (value.index() == 1)
-            return std::get<const TType*>(value);
-        return nullptr;
-    }
-
-    bool operator==(const TSpirvTypeParameter& rhs) const;
+    bool operator==(const TSpirvTypeParameter& rhs) const { return constant == rhs.constant; }
     bool operator!=(const TSpirvTypeParameter& rhs) const { return !operator==(rhs); }
 
-    // Parameter value: constant expression or type specifier
-    std::variant<const TIntermConstantUnion*, const TType*> value;
+    const TIntermConstantUnion* constant;
 };
 
 typedef TVector<TSpirvTypeParameter> TSpirvTypeParameters;
@@ -138,3 +124,5 @@ struct TSpirvType {
 };
 
 } // end namespace glslang
+
+#endif // GLSLANG_WEB

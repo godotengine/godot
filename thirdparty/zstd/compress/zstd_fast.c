@@ -11,9 +11,7 @@
 #include "zstd_compress_internal.h"  /* ZSTD_hashPtr, ZSTD_count, ZSTD_storeSeq */
 #include "zstd_fast.h"
 
-static
-ZSTD_ALLOW_POINTER_OVERFLOW_ATTR
-void ZSTD_fillHashTableForCDict(ZSTD_matchState_t* ms,
+static void ZSTD_fillHashTableForCDict(ZSTD_matchState_t* ms,
                         const void* const end,
                         ZSTD_dictTableLoadMethod_e dtlm)
 {
@@ -48,9 +46,7 @@ void ZSTD_fillHashTableForCDict(ZSTD_matchState_t* ms,
                 }   }   }   }
 }
 
-static
-ZSTD_ALLOW_POINTER_OVERFLOW_ATTR
-void ZSTD_fillHashTableForCCtx(ZSTD_matchState_t* ms,
+static void ZSTD_fillHashTableForCCtx(ZSTD_matchState_t* ms,
                         const void* const end,
                         ZSTD_dictTableLoadMethod_e dtlm)
 {
@@ -143,9 +139,8 @@ void ZSTD_fillHashTable(ZSTD_matchState_t* ms,
  *
  * This is also the work we do at the beginning to enter the loop initially.
  */
-FORCE_INLINE_TEMPLATE
-ZSTD_ALLOW_POINTER_OVERFLOW_ATTR
-size_t ZSTD_compressBlock_fast_noDict_generic(
+FORCE_INLINE_TEMPLATE size_t
+ZSTD_compressBlock_fast_noDict_generic(
         ZSTD_matchState_t* ms, seqStore_t* seqStore, U32 rep[ZSTD_REP_NUM],
         void const* src, size_t srcSize,
         U32 const mls, U32 const hasStep)
@@ -461,7 +456,6 @@ size_t ZSTD_compressBlock_fast(
 }
 
 FORCE_INLINE_TEMPLATE
-ZSTD_ALLOW_POINTER_OVERFLOW_ATTR
 size_t ZSTD_compressBlock_fast_dictMatchState_generic(
         ZSTD_matchState_t* ms, seqStore_t* seqStore, U32 rep[ZSTD_REP_NUM],
         void const* src, size_t srcSize, U32 const mls, U32 const hasStep)
@@ -508,7 +502,7 @@ size_t ZSTD_compressBlock_fast_dictMatchState_generic(
 
     if (ms->prefetchCDictTables) {
         size_t const hashTableBytes = (((size_t)1) << dictCParams->hashLog) * sizeof(U32);
-        PREFETCH_AREA(dictHashTable, hashTableBytes);
+        PREFETCH_AREA(dictHashTable, hashTableBytes)
     }
 
     /* init */
@@ -687,9 +681,7 @@ size_t ZSTD_compressBlock_fast_dictMatchState(
 }
 
 
-static
-ZSTD_ALLOW_POINTER_OVERFLOW_ATTR
-size_t ZSTD_compressBlock_fast_extDict_generic(
+static size_t ZSTD_compressBlock_fast_extDict_generic(
         ZSTD_matchState_t* ms, seqStore_t* seqStore, U32 rep[ZSTD_REP_NUM],
         void const* src, size_t srcSize, U32 const mls, U32 const hasStep)
 {

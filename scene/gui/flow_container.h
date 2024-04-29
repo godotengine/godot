@@ -48,7 +48,6 @@ private:
 	int cached_line_count = 0;
 
 	bool vertical = false;
-	bool reverse_fill = false;
 	AlignmentMode alignment = ALIGNMENT_BEGIN;
 
 	struct ThemeCache {
@@ -73,9 +72,6 @@ public:
 
 	void set_vertical(bool p_vertical);
 	bool is_vertical() const;
-
-	void set_reverse_fill(bool p_reverse_fill);
-	bool is_reverse_fill() const;
 
 	virtual Size2 get_minimum_size() const override;
 

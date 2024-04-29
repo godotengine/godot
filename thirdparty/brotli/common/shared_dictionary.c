@@ -20,8 +20,6 @@
 extern "C" {
 #endif
 
-#if defined(BROTLI_EXPERIMENTAL)
-
 #define BROTLI_NUM_ENCODED_LENGTHS (SHARED_BROTLI_MAX_DICTIONARY_WORD_LENGTH \
     - SHARED_BROTLI_MIN_DICTIONARY_WORD_LENGTH + 1)
 
@@ -444,8 +442,6 @@ static BROTLI_BOOL DecodeSharedDictionary(
   return ParseDictionary(encoded, size, dict);
 }
 
-#endif  /* BROTLI_EXPERIMENTAL */
-
 void BrotliSharedDictionaryDestroyInstance(
     BrotliSharedDictionary* dict) {
   if (!dict) {
@@ -468,12 +464,9 @@ BROTLI_BOOL BrotliSharedDictionaryAttach(
   if (!dict) {
     return BROTLI_FALSE;
   }
-#if defined(BROTLI_EXPERIMENTAL)
   if (type == BROTLI_SHARED_DICTIONARY_SERIALIZED) {
     return DecodeSharedDictionary(data, data_size, dict);
-  }
-#endif  /* BROTLI_EXPERIMENTAL */
-  if (type == BROTLI_SHARED_DICTIONARY_RAW) {
+  } else if (type == BROTLI_SHARED_DICTIONARY_RAW) {
     if (dict->num_prefix >= SHARED_BROTLI_MAX_COMPOUND_DICTS) {
       return BROTLI_FALSE;
     }
@@ -481,8 +474,9 @@ BROTLI_BOOL BrotliSharedDictionaryAttach(
     dict->prefix[dict->num_prefix] = data;
     dict->num_prefix++;
     return BROTLI_TRUE;
+  } else {
+    return BROTLI_FALSE;
   }
-  return BROTLI_FALSE;
 }
 
 BrotliSharedDictionary* BrotliSharedDictionaryCreateInstance(

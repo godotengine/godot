@@ -39,7 +39,7 @@
 #include <android/log.h>
 #include <jni.h>
 
-// Class that makes functions in java/src/org/godotengine/godot/Godot.kt callable from C++
+// Class that makes functions in java/src/org/godotengine/godot/Godot.java callable from C++
 class GodotJavaWrapper {
 private:
 	jobject godot_instance;
@@ -53,8 +53,6 @@ private:
 	jmethodID _finish = nullptr;
 	jmethodID _set_keep_screen_on = nullptr;
 	jmethodID _alert = nullptr;
-	jmethodID _is_dark_mode_supported = nullptr;
-	jmethodID _is_dark_mode = nullptr;
 	jmethodID _get_clipboard = nullptr;
 	jmethodID _set_clipboard = nullptr;
 	jmethodID _has_clipboard = nullptr;
@@ -73,7 +71,6 @@ private:
 	jmethodID _begin_benchmark_measure = nullptr;
 	jmethodID _end_benchmark_measure = nullptr;
 	jmethodID _dump_benchmark = nullptr;
-	jmethodID _has_feature = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance);
@@ -89,8 +86,6 @@ public:
 	bool force_quit(JNIEnv *p_env = nullptr, int p_instance_id = 0);
 	void set_keep_screen_on(bool p_enabled);
 	void alert(const String &p_message, const String &p_title);
-	bool is_dark_mode_supported();
-	bool is_dark_mode();
 	bool has_get_clipboard();
 	String get_clipboard();
 	bool has_set_clipboard();
@@ -104,16 +99,13 @@ public:
 	void init_input_devices();
 	void vibrate(int p_duration_ms);
 	String get_input_fallback_mapping();
-	int create_new_godot_instance(const List<String> &args);
-	void begin_benchmark_measure(const String &p_context, const String &p_label);
-	void end_benchmark_measure(const String &p_context, const String &p_label);
+	int create_new_godot_instance(List<String> args);
+	void begin_benchmark_measure(const String &p_label);
+	void end_benchmark_measure(const String &p_label);
 	void dump_benchmark(const String &benchmark_file);
 
 	// Return the list of gdextensions config file.
 	Vector<String> get_gdextension_list_config_file() const;
-
-	// Return true if the given feature is supported.
-	bool has_feature(const String &p_feature) const;
 };
 
 #endif // JAVA_GODOT_WRAPPER_H

@@ -730,16 +730,6 @@ void _err_flush_stdout();
 	} else                                                                                        \
 		((void)0)
 
-/**
- * Warns about `m_msg` only when verbose mode is enabled.
- */
-#define WARN_VERBOSE(m_msg)               \
-	{                                     \
-		if (is_print_verbose_enabled()) { \
-			WARN_PRINT(m_msg);            \
-		}                                 \
-	}
-
 // Print deprecated warning message macros.
 
 /**
@@ -820,16 +810,6 @@ void _err_flush_stdout();
 		((void)0)
 #else
 #define DEV_ASSERT(m_cond)
-#endif
-
-#ifdef DEV_ENABLED
-#define DEV_CHECK_ONCE(m_cond)                                                   \
-	if (unlikely(!(m_cond))) {                                                   \
-		ERR_PRINT_ONCE("DEV_CHECK_ONCE failed  \"" _STR(m_cond) "\" is false."); \
-	} else                                                                       \
-		((void)0)
-#else
-#define DEV_CHECK_ONCE(m_cond)
 #endif
 
 #endif // ERROR_MACROS_H

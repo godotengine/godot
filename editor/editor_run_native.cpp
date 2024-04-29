@@ -31,10 +31,10 @@
 #include "editor_run_native.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
 
 void EditorRunNative::_notification(int p_what) {
@@ -79,11 +79,6 @@ void EditorRunNative::_notification(int p_what) {
 	}
 }
 
-void EditorRunNative::_confirm_run_native() {
-	run_confirmed = true;
-	resume_run_native();
-}
-
 Error EditorRunNative::start_run_native(int p_id) {
 	if (p_id < 0) {
 		return OK;
@@ -91,9 +86,9 @@ Error EditorRunNative::start_run_native(int p_id) {
 
 	int platform = p_id / 10000;
 	int idx = p_id % 10000;
-	resume_id = p_id;
 
 	if (!EditorNode::get_singleton()->ensure_main_scene(true)) {
+		resume_id = p_id;
 		return OK;
 	}
 
@@ -114,22 +109,6 @@ Error EditorRunNative::start_run_native(int p_id) {
 		EditorNode::get_singleton()->show_warning(TTR("No runnable export preset found for this platform.\nPlease add a runnable preset in the Export menu or define an existing preset as runnable."));
 		return ERR_UNAVAILABLE;
 	}
-
-	String architecture = eep->get_device_architecture(idx);
-	if (!run_confirmed && !architecture.is_empty()) {
-		String preset_arch = "architectures/" + architecture;
-		bool is_arch_enabled = preset->get(preset_arch);
-
-		if (!is_arch_enabled) {
-			String warning_message = vformat(TTR("Warning: The CPU architecture '%s' is not active in your export preset.\n\n"), Variant(architecture));
-			warning_message += TTR("Run 'Remote Debug' anyway?");
-
-			run_native_confirm->set_text(warning_message);
-			run_native_confirm->popup_centered();
-			return OK;
-		}
-	}
-	run_confirmed = false;
 
 	emit_signal(SNAME("native_run"), preset);
 
@@ -178,8 +157,6 @@ bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 
 EditorRunNative::EditorRunNative() {
 	remote_debug = memnew(MenuButton);
-	remote_debug->set_flat(false);
-	remote_debug->set_theme_type_variation("RunBarButton");
 	remote_debug->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::start_run_native));
 	remote_debug->set_tooltip_text(TTR("Remote Debug"));
 	remote_debug->set_disabled(true);
@@ -194,10 +171,6 @@ EditorRunNative::EditorRunNative() {
 
 	add_child(result_dialog);
 	result_dialog->hide();
-
-	run_native_confirm = memnew(ConfirmationDialog);
-	add_child(run_native_confirm);
-	run_native_confirm->connect("confirmed", callable_mp(this, &EditorRunNative::_confirm_run_native));
 
 	set_process(true);
 }

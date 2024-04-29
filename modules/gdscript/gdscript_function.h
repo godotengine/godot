@@ -45,9 +45,10 @@ class GDScriptInstance;
 class GDScript;
 
 class GDScriptDataType {
-public:
-	Vector<GDScriptDataType> container_element_types;
+private:
+	GDScriptDataType *container_element_type = nullptr;
 
+public:
 	enum Kind {
 		UNINITIALIZED,
 		BUILTIN,
@@ -75,20 +76,19 @@ public:
 			case BUILTIN: {
 				Variant::Type var_type = p_variant.get_type();
 				bool valid = builtin_type == var_type;
-				if (valid && builtin_type == Variant::ARRAY && has_container_element_type(0)) {
+				if (valid && builtin_type == Variant::ARRAY && has_container_element_type()) {
 					Array array = p_variant;
 					if (array.is_typed()) {
-						GDScriptDataType array_container_type = get_container_element_type(0);
 						Variant::Type array_builtin_type = (Variant::Type)array.get_typed_builtin();
 						StringName array_native_type = array.get_typed_class_name();
 						Ref<Script> array_script_type_ref = array.get_typed_script();
 
 						if (array_script_type_ref.is_valid()) {
-							valid = (array_container_type.kind == SCRIPT || array_container_type.kind == GDSCRIPT) && array_container_type.script_type == array_script_type_ref.ptr();
+							valid = (container_element_type->kind == SCRIPT || container_element_type->kind == GDSCRIPT) && container_element_type->script_type == array_script_type_ref.ptr();
 						} else if (array_native_type != StringName()) {
-							valid = array_container_type.kind == NATIVE && array_container_type.native_type == array_native_type;
+							valid = container_element_type->kind == NATIVE && container_element_type->native_type == array_native_type;
 						} else {
-							valid = array_container_type.kind == BUILTIN && array_container_type.builtin_type == array_builtin_type;
+							valid = container_element_type->kind == BUILTIN && container_element_type->builtin_type == array_builtin_type;
 						}
 					} else {
 						valid = false;
@@ -147,32 +147,24 @@ public:
 		return false;
 	}
 
-	void set_container_element_type(int p_index, const GDScriptDataType &p_element_type) {
-		ERR_FAIL_COND(p_index < 0);
-		while (p_index >= container_element_types.size()) {
-			container_element_types.push_back(GDScriptDataType());
+	void set_container_element_type(const GDScriptDataType &p_element_type) {
+		container_element_type = memnew(GDScriptDataType(p_element_type));
+	}
+
+	GDScriptDataType get_container_element_type() const {
+		ERR_FAIL_COND_V(container_element_type == nullptr, GDScriptDataType());
+		return *container_element_type;
+	}
+
+	bool has_container_element_type() const {
+		return container_element_type != nullptr;
+	}
+
+	void unset_container_element_type() {
+		if (container_element_type) {
+			memdelete(container_element_type);
 		}
-		container_element_types.write[p_index] = GDScriptDataType(p_element_type);
-	}
-
-	GDScriptDataType get_container_element_type(int p_index) const {
-		ERR_FAIL_INDEX_V(p_index, container_element_types.size(), GDScriptDataType());
-		return container_element_types[p_index];
-	}
-
-	GDScriptDataType get_container_element_type_or_variant(int p_index) const {
-		if (p_index < 0 || p_index >= container_element_types.size()) {
-			return GDScriptDataType();
-		}
-		return container_element_types[p_index];
-	}
-
-	bool has_container_element_type(int p_index) const {
-		return p_index >= 0 && p_index < container_element_types.size();
-	}
-
-	bool has_container_element_types() const {
-		return !container_element_types.is_empty();
+		container_element_type = nullptr;
 	}
 
 	GDScriptDataType() = default;
@@ -184,14 +176,19 @@ public:
 		native_type = p_other.native_type;
 		script_type = p_other.script_type;
 		script_type_ref = p_other.script_type_ref;
-		container_element_types = p_other.container_element_types;
+		unset_container_element_type();
+		if (p_other.has_container_element_type()) {
+			set_container_element_type(p_other.get_container_element_type());
+		}
 	}
 
 	GDScriptDataType(const GDScriptDataType &p_other) {
 		*this = p_other;
 	}
 
-	~GDScriptDataType() {}
+	~GDScriptDataType() {
+		unset_container_element_type();
+	}
 };
 
 class GDScriptFunction {
@@ -244,8 +241,45 @@ public:
 		OPCODE_CALL_METHOD_BIND_RET,
 		OPCODE_CALL_BUILTIN_STATIC,
 		OPCODE_CALL_NATIVE_STATIC,
-		OPCODE_CALL_METHOD_BIND_VALIDATED_RETURN,
-		OPCODE_CALL_METHOD_BIND_VALIDATED_NO_RETURN,
+		// ptrcall have one instruction per return type.
+		OPCODE_CALL_PTRCALL_NO_RETURN,
+		OPCODE_CALL_PTRCALL_BOOL,
+		OPCODE_CALL_PTRCALL_INT,
+		OPCODE_CALL_PTRCALL_FLOAT,
+		OPCODE_CALL_PTRCALL_STRING,
+		OPCODE_CALL_PTRCALL_VECTOR2,
+		OPCODE_CALL_PTRCALL_VECTOR2I,
+		OPCODE_CALL_PTRCALL_RECT2,
+		OPCODE_CALL_PTRCALL_RECT2I,
+		OPCODE_CALL_PTRCALL_VECTOR3,
+		OPCODE_CALL_PTRCALL_VECTOR3I,
+		OPCODE_CALL_PTRCALL_TRANSFORM2D,
+		OPCODE_CALL_PTRCALL_VECTOR4,
+		OPCODE_CALL_PTRCALL_VECTOR4I,
+		OPCODE_CALL_PTRCALL_PLANE,
+		OPCODE_CALL_PTRCALL_QUATERNION,
+		OPCODE_CALL_PTRCALL_AABB,
+		OPCODE_CALL_PTRCALL_BASIS,
+		OPCODE_CALL_PTRCALL_TRANSFORM3D,
+		OPCODE_CALL_PTRCALL_PROJECTION,
+		OPCODE_CALL_PTRCALL_COLOR,
+		OPCODE_CALL_PTRCALL_STRING_NAME,
+		OPCODE_CALL_PTRCALL_NODE_PATH,
+		OPCODE_CALL_PTRCALL_RID,
+		OPCODE_CALL_PTRCALL_OBJECT,
+		OPCODE_CALL_PTRCALL_CALLABLE,
+		OPCODE_CALL_PTRCALL_SIGNAL,
+		OPCODE_CALL_PTRCALL_DICTIONARY,
+		OPCODE_CALL_PTRCALL_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_BYTE_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_INT32_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_INT64_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_FLOAT32_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_FLOAT64_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_STRING_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_VECTOR2_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_VECTOR3_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_COLOR_ARRAY,
 		OPCODE_AWAIT,
 		OPCODE_AWAIT_RESUME,
 		OPCODE_CREATE_LAMBDA,
@@ -391,6 +425,7 @@ private:
 	int _argument_count = 0;
 	int _stack_size = 0;
 	int _instruction_args_size = 0;
+	int _ptrcall_args_size = 0;
 
 	SelfList<GDScriptFunction> function_list{ this };
 	mutable Variant nil;
@@ -474,13 +509,6 @@ private:
 		uint64_t last_frame_call_count = 0;
 		uint64_t last_frame_self_time = 0;
 		uint64_t last_frame_total_time = 0;
-		typedef struct NativeProfile {
-			uint64_t call_count;
-			uint64_t total_time;
-			String signature;
-		} NativeProfile;
-		HashMap<String, NativeProfile> native_calls;
-		HashMap<String, NativeProfile> last_native_calls;
 	} profile;
 #endif
 
@@ -511,7 +539,6 @@ public:
 	_FORCE_INLINE_ GDScript *get_script() const { return _script; }
 	_FORCE_INLINE_ bool is_static() const { return _static; }
 	_FORCE_INLINE_ MethodInfo get_method_info() const { return method_info; }
-	_FORCE_INLINE_ int get_argument_count() const { return _argument_count; }
 	_FORCE_INLINE_ Variant get_rpc_config() const { return rpc_config; }
 	_FORCE_INLINE_ int get_max_stack_size() const { return _stack_size; }
 
@@ -522,7 +549,6 @@ public:
 	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
 
 #ifdef DEBUG_ENABLED
-	void _profile_native_call(uint64_t p_t_taken, const String &p_function_name, const String &p_instance_class_name = String());
 	void disassemble(const Vector<String> &p_code_lines) const;
 #endif
 

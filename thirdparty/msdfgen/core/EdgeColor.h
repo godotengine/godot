@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include "base.h"
-
 namespace msdfgen {
 
 /// Edge color specifies which color channels an edge belongs to.

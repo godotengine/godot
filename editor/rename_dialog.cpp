@@ -35,11 +35,12 @@
 
 #include "core/string/print_string.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_themes.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "editor/themes/editor_scale.h"
 #include "modules/regex/regex.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
@@ -368,7 +369,7 @@ void RenameDialog::_post_popup() {
 	preview_node = nullptr;
 
 	Array selected_node_list = editor_selection->get_selected_nodes();
-	ERR_FAIL_COND(selected_node_list.is_empty());
+	ERR_FAIL_COND(selected_node_list.size() == 0);
 
 	preview_node = Object::cast_to<Node>(selected_node_list[0]);
 
@@ -380,7 +381,7 @@ void RenameDialog::_update_preview_int(int new_value) {
 	_update_preview();
 }
 
-void RenameDialog::_update_preview(const String &new_text) {
+void RenameDialog::_update_preview(String new_text) {
 	if (lock_preview_update || preview_node == nullptr) {
 		return;
 	}
@@ -599,7 +600,8 @@ void RenameDialog::rename() {
 				ERR_PRINT("Skipping missing node: " + to_rename[i].first.get_concatenated_subnames());
 				continue;
 			}
-			scene_tree_editor->rename_node(n, new_name);
+
+			scene_tree_editor->call("_rename_node", n, new_name);
 		}
 
 		undo_redo->commit_action();
@@ -636,7 +638,7 @@ bool RenameDialog::_is_main_field(LineEdit *line_edit) {
 			(line_edit == lne_search || line_edit == lne_replace || line_edit == lne_prefix || line_edit == lne_suffix);
 }
 
-void RenameDialog::_insert_text(const String &text) {
+void RenameDialog::_insert_text(String text) {
 	LineEdit *focus_owner = Object::cast_to<LineEdit>(get_viewport()->gui_get_focus_owner());
 
 	if (_is_main_field(focus_owner)) {

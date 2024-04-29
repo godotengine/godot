@@ -33,14 +33,6 @@
 
 #include "core/version_generated.gen.h"
 
-#include <stdint.h>
-
-// Copied from typedefs.h to stay lean.
-#ifndef _STR
-#define _STR(m_x) #m_x
-#define _MKSTR(m_x) _STR(m_x)
-#endif
-
 // Godot versions are of the form <major>.<minor> for the initial release,
 // and then <major>.<minor>.<patch> for subsequent bugfix releases where <patch> != 0
 // That's arbitrary, but we find it pretty and it's the current policy.
@@ -78,9 +70,5 @@
 
 // Git commit hash, generated at build time in `core/version_hash.gen.cpp`.
 extern const char *const VERSION_HASH;
-
-// Git commit date UNIX timestamp (in seconds), generated at build time in `core/version_hash.gen.cpp`.
-// Set to 0 if unknown.
-extern const uint64_t VERSION_TIMESTAMP;
 
 #endif // VERSION_H

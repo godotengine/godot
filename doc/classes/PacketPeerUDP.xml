@@ -19,7 +19,7 @@
 				Binds this [PacketPeerUDP] to the specified [param port] and [param bind_address] with a buffer size [param recv_buf_size], allowing it to receive incoming packets.
 				If [param bind_address] is set to [code]"*"[/code] (default), the peer will be bound on all available addresses (both IPv4 and IPv6).
 				If [param bind_address] is set to [code]"0.0.0.0"[/code] (for IPv4) or [code]"::"[/code] (for IPv6), the peer will be bound to all available addresses matching that IP type.
-				If [param bind_address] is set to any valid address (e.g. [code]"192.168.1.101"[/code], [code]"::1"[/code], etc.), the peer will only be bound to the interface with that address (or fail if no interface with the given address exists).
+				If [param bind_address] is set to any valid address (e.g. [code]"192.168.1.101"[/code], [code]"::1"[/code], etc), the peer will only be bound to the interface with that addresses (or fail if no interface with the given address exists).
 			</description>
 		</method>
 		<method name="close">
@@ -121,7 +121,7 @@
 				        return
 				[/gdscript]
 				[csharp]
-				var socket = new PacketPeerUdp();
+				var socket = new PacketPeerUDP();
 				// Server
 				socket.SetDestAddress("127.0.0.1", 789);
 				socket.PutPacket("Time to stop".ToAsciiBuffer());

@@ -35,7 +35,6 @@
 #include "core/io/translation_loader_po.h"
 #include "editor/doc_translations.gen.h"
 #include "editor/editor_translations.gen.h"
-#include "editor/extractable_translations.gen.h"
 #include "editor/property_translations.gen.h"
 
 Vector<String> get_editor_locales() {
@@ -78,32 +77,6 @@ void load_editor_translations(const String &p_locale) {
 	}
 }
 
-void load_property_translations(const String &p_locale) {
-	PropertyTranslationList *etl = _property_translations;
-	while (etl->data) {
-		if (etl->lang == p_locale) {
-			Vector<uint8_t> data;
-			data.resize(etl->uncomp_size);
-			int ret = Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
-			ERR_FAIL_COND_MSG(ret == -1, "Compressed file is corrupt.");
-
-			Ref<FileAccessMemory> fa;
-			fa.instantiate();
-			fa->open_custom(data.ptr(), data.size());
-
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
-
-			if (tr.is_valid()) {
-				tr->set_locale(etl->lang);
-				TranslationServer::get_singleton()->set_property_translation(tr);
-				break;
-			}
-		}
-
-		etl++;
-	}
-}
-
 void load_doc_translations(const String &p_locale) {
 	DocTranslationList *dtl = _doc_translations;
 	while (dtl->data) {
@@ -130,8 +103,8 @@ void load_doc_translations(const String &p_locale) {
 	}
 }
 
-void load_extractable_translations(const String &p_locale) {
-	ExtractableTranslationList *etl = _extractable_translations;
+void load_property_translations(const String &p_locale) {
+	PropertyTranslationList *etl = _property_translations;
 	while (etl->data) {
 		if (etl->lang == p_locale) {
 			Vector<uint8_t> data;
@@ -147,39 +120,11 @@ void load_extractable_translations(const String &p_locale) {
 
 			if (tr.is_valid()) {
 				tr->set_locale(etl->lang);
-				TranslationServer::get_singleton()->set_extractable_translation(tr);
+				TranslationServer::get_singleton()->set_property_translation(tr);
 				break;
 			}
 		}
 
 		etl++;
 	}
-}
-
-List<StringName> get_extractable_message_list() {
-	ExtractableTranslationList *etl = _extractable_translations;
-	List<StringName> msgids;
-	while (etl->data) {
-		if (!strcmp(etl->lang, "source")) {
-			Vector<uint8_t> data;
-			data.resize(etl->uncomp_size);
-			int ret = Compression::decompress(data.ptrw(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
-			ERR_FAIL_COND_V_MSG(ret == -1, msgids, "Compressed file is corrupt.");
-
-			Ref<FileAccessMemory> fa;
-			fa.instantiate();
-			fa->open_custom(data.ptr(), data.size());
-
-			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
-
-			if (tr.is_valid()) {
-				tr->get_message_list(&msgids);
-				break;
-			}
-		}
-
-		etl++;
-	}
-
-	return msgids;
 }

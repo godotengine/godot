@@ -118,7 +118,6 @@ protected:
 
 public:
 	LineEdit *get_search_box() const;
-	LineEdit *get_path_box() const;
 	InputEventConfigurationDialog *get_configuration_dialog();
 
 	// Dictionary represents an Action with "events" (Array) and "deadzone" (float) items. Pass with no param to update list from cached action map.

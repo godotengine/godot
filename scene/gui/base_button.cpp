@@ -380,7 +380,7 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 		queue_redraw();
 		accept_event();
 
-		if (shortcut_feedback && is_inside_tree()) {
+		if (shortcut_feedback) {
 			if (shortcut_feedback_timer == nullptr) {
 				shortcut_feedback_timer = memnew(Timer);
 				shortcut_feedback_timer->set_one_shot(true);

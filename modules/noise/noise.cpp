@@ -54,9 +54,6 @@ Vector<Ref<Image>> Noise::_get_seamless_image(int p_width, int p_height, int p_d
 
 Ref<Image> Noise::get_seamless_image(int p_width, int p_height, bool p_invert, bool p_in_3d_space, real_t p_blend_skirt, bool p_normalize) const {
 	Vector<Ref<Image>> images = _get_seamless_image(p_width, p_height, 1, p_invert, p_in_3d_space, p_blend_skirt, p_normalize);
-	if (images.size() == 0) {
-		return Ref<Image>();
-	}
 	return images[0];
 }
 
@@ -166,9 +163,6 @@ Vector<Ref<Image>> Noise::_get_image(int p_width, int p_height, int p_depth, boo
 
 Ref<Image> Noise::get_image(int p_width, int p_height, bool p_invert, bool p_in_3d_space, bool p_normalize) const {
 	Vector<Ref<Image>> images = _get_image(p_width, p_height, 1, p_invert, p_in_3d_space, p_normalize);
-	if (images.is_empty()) {
-		return Ref<Image>();
-	}
 	return images[0];
 }
 

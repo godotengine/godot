@@ -31,47 +31,33 @@
 #ifndef SEMAPHORE_H
 #define SEMAPHORE_H
 
-#include <cstdint>
-
-#ifdef THREADS_ENABLED
-
 #include "core/error/error_list.h"
 #include "core/typedefs.h"
 #ifdef DEBUG_ENABLED
 #include "core/error/error_macros.h"
 #endif
 
-#ifdef MINGW_ENABLED
-#define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.condition_variable.h"
-#include "thirdparty/mingw-std-threads/mingw.mutex.h"
-#define THREADING_NAMESPACE mingw_stdthread
-#else
 #include <condition_variable>
 #include <mutex>
-#define THREADING_NAMESPACE std
-#endif
 
 class Semaphore {
 private:
-	mutable THREADING_NAMESPACE::mutex mutex;
-	mutable THREADING_NAMESPACE::condition_variable condition;
+	mutable std::mutex mutex;
+	mutable std::condition_variable condition;
 	mutable uint32_t count = 0; // Initialized as locked.
 #ifdef DEBUG_ENABLED
 	mutable uint32_t awaiters = 0;
 #endif
 
 public:
-	_ALWAYS_INLINE_ void post(uint32_t p_count = 1) const {
+	_ALWAYS_INLINE_ void post() const {
 		std::lock_guard lock(mutex);
-		count += p_count;
-		for (uint32_t i = 0; i < p_count; ++i) {
-			condition.notify_one();
-		}
+		count++;
+		condition.notify_one();
 	}
 
 	_ALWAYS_INLINE_ void wait() const {
-		THREADING_NAMESPACE::unique_lock lock(mutex);
+		std::unique_lock lock(mutex);
 #ifdef DEBUG_ENABLED
 		++awaiters;
 #endif
@@ -130,23 +116,10 @@ public:
 					"A Semaphore object is being destroyed while one or more threads are still waiting on it.\n"
 					"Please call post() on it as necessary to prevent such a situation and so ensure correct cleanup.");
 			// And now, the hacky countermeasure (i.e., leak the condition variable).
-			new (&condition) THREADING_NAMESPACE::condition_variable();
+			new (&condition) std::condition_variable();
 		}
 	}
 #endif
 };
-
-#else // No threads.
-
-class Semaphore {
-public:
-	void post(uint32_t p_count = 1) const {}
-	void wait() const {}
-	bool try_wait() const {
-		return true;
-	}
-};
-
-#endif // THREADS_ENABLED
 
 #endif // SEMAPHORE_H

@@ -37,6 +37,7 @@
 #include "core/os/mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
+#include "scene/resources/packed_scene.h"
 
 class GDScriptAnalyzer;
 class GDScriptParser;
@@ -80,6 +81,8 @@ class GDScriptCache {
 	HashMap<String, Ref<GDScript>> full_gdscript_cache;
 	HashMap<String, Ref<GDScript>> static_gdscript_cache;
 	HashMap<String, HashSet<String>> dependencies;
+	HashMap<String, Ref<PackedScene>> packed_scene_cache;
+	HashMap<String, HashSet<String>> packed_scene_dependencies;
 
 	friend class GDScript;
 	friend class GDScriptParserRef;
@@ -96,13 +99,15 @@ public:
 	static void remove_script(const String &p_path);
 	static Ref<GDScriptParserRef> get_parser(const String &p_path, GDScriptParserRef::Status status, Error &r_error, const String &p_owner = String());
 	static String get_source_code(const String &p_path);
-	static Vector<uint8_t> get_binary_tokens(const String &p_path);
 	static Ref<GDScript> get_shallow_script(const String &p_path, Error &r_error, const String &p_owner = String());
 	static Ref<GDScript> get_full_script(const String &p_path, Error &r_error, const String &p_owner = String(), bool p_update_from_disk = false);
 	static Ref<GDScript> get_cached_script(const String &p_path);
 	static Error finish_compiling(const String &p_owner);
 	static void add_static_script(Ref<GDScript> p_script);
 	static void remove_static_script(const String &p_fqcn);
+
+	static Ref<PackedScene> get_packed_scene(const String &p_path, Error &r_error, const String &p_owner = "");
+	static void clear_unreferenced_packed_scenes();
 
 	static void clear();
 

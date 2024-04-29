@@ -208,15 +208,6 @@ XVisualInfo GLManager_X11::get_vi(Display *p_display, Error &r_error) {
 	return _displays[display_id].x_vi;
 }
 
-Error GLManager_X11::open_display(Display *p_display) {
-	int gldisplay_id = _find_or_create_display(p_display);
-	if (gldisplay_id < 0) {
-		return ERR_CANT_CREATE;
-	} else {
-		return OK;
-	}
-}
-
 Error GLManager_X11::window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height) {
 	// make sure vector is big enough...
 	// we can mirror the external vector, it is simpler
@@ -311,6 +302,20 @@ void GLManager_X11::window_make_current(DisplayServer::WindowID p_window_id) {
 	_internal_set_current_window(&win);
 }
 
+void GLManager_X11::make_current() {
+	if (!_current_window) {
+		return;
+	}
+	if (!_current_window->in_use) {
+		WARN_PRINT("current window not in use!");
+		return;
+	}
+	const GLDisplay &disp = get_current_display();
+	if (!glXMakeCurrent(_x_windisp.x11_display, _x_windisp.x11_window, disp.context->glx_context)) {
+		ERR_PRINT("glXMakeCurrent failed");
+	}
+}
+
 void GLManager_X11::swap_buffers() {
 	if (!_current_window) {
 		return;
@@ -342,6 +347,12 @@ Error GLManager_X11::initialize(Display *p_display) {
 }
 
 void GLManager_X11::set_use_vsync(bool p_use) {
+	// force vsync in the editor for now, as a safety measure
+	bool is_editor = Engine::get_singleton()->is_editor_hint();
+	if (is_editor) {
+		p_use = true;
+	}
+
 	// we need an active window to get a display to set the vsync
 	if (!_current_window) {
 		return;

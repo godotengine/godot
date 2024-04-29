@@ -1,8 +1,5 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-
-#nullable enable
 
 namespace Godot
 {
@@ -113,8 +110,8 @@ namespace Godot
         public readonly bool Encloses(Rect2I b)
         {
             return b._position.X >= _position.X && b._position.Y >= _position.Y &&
-               b._position.X + b._size.X <= _position.X + _size.X &&
-               b._position.Y + b._size.Y <= _position.Y + _size.Y;
+               b._position.X + b._size.X < _position.X + _size.X &&
+               b._position.Y + b._size.Y < _position.Y + _size.Y;
         }
 
         /// <summary>
@@ -401,7 +398,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The other object to compare.</param>
         /// <returns>Whether or not the rect and the other object are equal.</returns>
-        public override readonly bool Equals([NotNullWhen(true)] object? obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Rect2I other && Equals(other);
         }
@@ -422,20 +419,23 @@ namespace Godot
         /// <returns>A hash code for this rect.</returns>
         public override readonly int GetHashCode()
         {
-            return HashCode.Combine(_position, _size);
+            return _position.GetHashCode() ^ _size.GetHashCode();
         }
 
         /// <summary>
         /// Converts this <see cref="Rect2I"/> to a string.
         /// </summary>
         /// <returns>A string representation of this rect.</returns>
-        public override readonly string ToString() => ToString(null);
+        public override readonly string ToString()
+        {
+            return $"{_position}, {_size}";
+        }
 
         /// <summary>
         /// Converts this <see cref="Rect2I"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this rect.</returns>
-        public readonly string ToString(string? format)
+        public readonly string ToString(string format)
         {
             return $"{_position.ToString(format)}, {_size.ToString(format)}";
         }

@@ -46,14 +46,14 @@ void AudioEffectEQInstance::process(const AudioFrame *p_src_frames, AudioFrame *
 		AudioFrame dst = AudioFrame(0, 0);
 
 		for (int j = 0; j < band_count; j++) {
-			float l = src.left;
-			float r = src.right;
+			float l = src.l;
+			float r = src.r;
 
 			proc_l[j].process_one(l);
 			proc_r[j].process_one(r);
 
-			dst.left += l * bgain[j];
-			dst.right += r * bgain[j];
+			dst.l += l * bgain[j];
+			dst.r += r * bgain[j];
 		}
 
 		p_dst_frames[i] = dst;

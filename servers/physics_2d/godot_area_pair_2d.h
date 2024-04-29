@@ -43,7 +43,6 @@ class GodotAreaPair2D : public GodotConstraint2D {
 	bool colliding = false;
 	bool has_space_override = false;
 	bool process_collision = false;
-	bool body_has_attached_area = false;
 
 public:
 	virtual bool setup(real_t p_step) override;

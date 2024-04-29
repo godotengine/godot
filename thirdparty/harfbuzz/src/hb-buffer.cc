@@ -309,7 +309,6 @@ hb_buffer_t::clear ()
 
   deallocate_var_all ();
   serial = 0;
-  random_state = 1;
   scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
 }
 
@@ -1328,7 +1327,7 @@ hb_buffer_get_invisible_glyph (const hb_buffer_t *buffer)
  * Sets the #hb_codepoint_t that replaces characters not found in
  * the font during shaping.
  *
- * The not-found glyph defaults to zero, sometimes known as the
+ * The not-found glyph defaults to zero, sometimes knows as the
  * ".notdef" glyph.  This API allows for differentiating the two.
  *
  * Since: 3.1.0
@@ -1360,49 +1359,6 @@ hb_buffer_get_not_found_glyph (const hb_buffer_t *buffer)
   return buffer->not_found;
 }
 
-/**
- * hb_buffer_set_random_state:
- * @buffer: An #hb_buffer_t
- * @state: the new random state
- *
- * Sets the random state of the buffer. The state changes
- * every time a glyph uses randomness (eg. the `rand`
- * OpenType feature). This function together with
- * hb_buffer_get_random_state() allow for transferring
- * the current random state to a subsequent buffer, to
- * get better randomness distribution.
- *
- * Defaults to 1 and when buffer contents are cleared.
- * A value of 0 disables randomness during shaping.
- *
- * Since: 8.4.0
- **/
-void
-hb_buffer_set_random_state (hb_buffer_t    *buffer,
-			    unsigned        state)
-{
-  if (unlikely (hb_object_is_immutable (buffer)))
-    return;
-
-  buffer->random_state = state;
-}
-
-/**
- * hb_buffer_get_random_state:
- * @buffer: An #hb_buffer_t
- *
- * See hb_buffer_set_random_state().
- *
- * Return value:
- * The @buffer random state
- *
- * Since: 8.4.0
- **/
-unsigned
-hb_buffer_get_random_state (const hb_buffer_t *buffer)
-{
-  return buffer->random_state;
-}
 
 /**
  * hb_buffer_clear_contents:
@@ -2120,7 +2076,7 @@ hb_buffer_t::sort (unsigned int start, unsigned int end, int(*compar)(const hb_g
  * hb_buffer_diff:
  * @buffer: a buffer.
  * @reference: other buffer to compare to.
- * @dottedcircle_glyph: glyph id of U+25CC DOTTED CIRCLE, or (hb_codepoint_t) -1.
+ * @dottedcircle_glyph: glyph id of U+25CC DOTTED CIRCLE, or (hb_codepont_t) -1.
  * @position_fuzz: allowed absolute difference in position values.
  *
  * If dottedcircle_glyph is (hb_codepoint_t) -1 then #HB_BUFFER_DIFF_FLAG_DOTTED_CIRCLE_PRESENT

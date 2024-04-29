@@ -178,30 +178,6 @@
 				- [code]update_visibility[/code]: An optional boolean value. If set to [code]true[/code], the preset will emit [signal Object.property_list_changed] when the option is changed.
 			</description>
 		</method>
-		<method name="_get_export_options_overrides" qualifiers="virtual const">
-			<return type="Dictionary" />
-			<param index="0" name="platform" type="EditorExportPlatform" />
-			<description>
-				Return a [Dictionary] of override values for export options, that will be used instead of user-provided values. Overridden options will be hidden from the user interface.
-				[codeblock]
-				class MyExportPlugin extends EditorExportPlugin:
-				    func _get_name() -&gt; String:
-				        return "MyExportPlugin"
-
-				    func _supports_platform(platform) -&gt; bool:
-				        if platform is EditorExportPlatformPC:
-				            # Run on all desktop platforms including Windows, MacOS and Linux.
-				            return true
-				        return false
-
-				    func _get_export_options_overrides(platform) -&gt; Dictionary:
-				        # Override "Embed PCK" to always be enabled.
-				        return {
-				            "binary_format/embed_pck": true,
-				        }
-				[/codeblock]
-			</description>
-		</method>
 		<method name="_get_name" qualifiers="virtual const">
 			<return type="String" />
 			<description>
@@ -252,8 +228,8 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Adds a dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project and embeds it into resulting binary.
-				[b]Note:[/b] For static libraries (*.a) works in same way as [method add_ios_framework].
-				[b]Note:[/b] This method should not be used for System libraries as they are already present on the device.
+				[b]Note:[/b] For static libraries (*.a) works in same way as [code]add_ios_framework[/code].
+				This method should not be used for System libraries as they are already present on the device.
 			</description>
 		</method>
 		<method name="add_ios_framework">

@@ -78,15 +78,13 @@
 				us = u32lbl[0];
 			}
 
-			KeyLocation location = KeyMappingIOS::key_location(press.key.keyCode);
-
 			if (!u32text.is_empty() && !u32text.begins_with("UIKey")) {
 				for (int i = 0; i < u32text.length(); i++) {
 					const char32_t c = u32text[i];
-					DisplayServerIOS::get_singleton()->key(fix_keycode(us, key), c, fix_key_label(us, key), key, press.key.modifierFlags, true, location);
+					DisplayServerIOS::get_singleton()->key(fix_keycode(us, key), c, fix_key_label(us, key), key, press.key.modifierFlags, true);
 				}
 			} else {
-				DisplayServerIOS::get_singleton()->key(fix_keycode(us, key), 0, fix_key_label(us, key), key, press.key.modifierFlags, true, location);
+				DisplayServerIOS::get_singleton()->key(fix_keycode(us, key), 0, fix_key_label(us, key), key, press.key.modifierFlags, true);
 			}
 		}
 	}
@@ -112,9 +110,7 @@
 				us = u32lbl[0];
 			}
 
-			KeyLocation location = KeyMappingIOS::key_location(press.key.keyCode);
-
-			DisplayServerIOS::get_singleton()->key(fix_keycode(us, key), 0, fix_key_label(us, key), key, press.key.modifierFlags, false, location);
+			DisplayServerIOS::get_singleton()->key(fix_keycode(us, key), 0, fix_key_label(us, key), key, press.key.modifierFlags, false);
 		}
 	}
 }
@@ -165,7 +161,9 @@
 	[self observeKeyboard];
 	[self displayLoadingOverlay];
 
-	[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
+	if (@available(iOS 11.0, *)) {
+		[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
+	}
 }
 
 - (void)observeKeyboard {

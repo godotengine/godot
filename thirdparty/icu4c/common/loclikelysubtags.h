@@ -11,7 +11,6 @@
 #include "unicode/utypes.h"
 #include "unicode/bytestrie.h"
 #include "unicode/locid.h"
-#include "unicode/stringpiece.h"
 #include "unicode/uobject.h"
 #include "unicode/ures.h"
 #include "charstrmap.h"
@@ -48,9 +47,7 @@ public:
     static const XLikelySubtags *getSingleton(UErrorCode &errorCode);
 
     // VisibleForTesting
-    LSR makeMaximizedLsrFrom(const Locale &locale,
-                             bool returnInputIfUnmatch,
-                             UErrorCode &errorCode) const;
+    LSR makeMaximizedLsrFrom(const Locale &locale, UErrorCode &errorCode) const;
 
     /**
      * Tests whether lsr is "more likely" than other.
@@ -64,9 +61,13 @@ public:
      */
     int32_t compareLikely(const LSR &lsr, const LSR &other, int32_t likelyInfo) const;
 
-    LSR minimizeSubtags(StringPiece language, StringPiece script, StringPiece region,
-                        bool favorScript,
-                        UErrorCode &errorCode) const;
+    // TODO(ICU-20777): Switch Locale/uloc_ likely-subtags API from the old code
+    // in loclikely.cpp to this new code, including activating this
+    // minimizeSubtags() function. The LocaleMatcher does not minimize.
+#if 0
+    LSR minimizeSubtags(const char *languageIn, const char *scriptIn, const char *regionIn,
+                        ULocale.Minimize fieldToFavor, UErrorCode &errorCode) const;
+#endif
 
     // visible for LocaleDistance
     const LocaleDistanceData &getDistanceData() const { return distanceData; }
@@ -79,25 +80,16 @@ private:
     static void initLikelySubtags(UErrorCode &errorCode);
 
     LSR makeMaximizedLsr(const char *language, const char *script, const char *region,
-                         const char *variant,
-                         bool returnInputIfUnmatch,
-                         UErrorCode &errorCode) const;
+                         const char *variant, UErrorCode &errorCode) const;
 
     /**
      * Raw access to addLikelySubtags. Input must be in canonical format, eg "en", not "eng" or "EN".
      */
-    LSR maximize(const char *language, const char *script, const char *region,
-                 bool returnInputIfUnmatch,
-                 UErrorCode &errorCode) const;
-    LSR maximize(StringPiece language, StringPiece script, StringPiece region,
-                 bool returnInputIfUnmatch,
-                 UErrorCode &errorCode) const;
+    LSR maximize(const char *language, const char *script, const char *region) const;
 
     int32_t getLikelyIndex(const char *language, const char *script) const;
-    bool isMacroregion(StringPiece& region, UErrorCode &errorCode) const;
 
     static int32_t trieNext(BytesTrie &iter, const char *s, int32_t i);
-    static int32_t trieNext(BytesTrie &iter, StringPiece s, int32_t i);
 
     UResourceBundle *langInfoBundle;
     // We could store the strings by value, except that if there were few enough strings,

@@ -72,11 +72,6 @@ static uint64_t load_address() {
 }
 
 static void handle_crash(int sig) {
-	signal(SIGSEGV, SIG_DFL);
-	signal(SIGFPE, SIG_DFL);
-	signal(SIGILL, SIG_DFL);
-	signal(SIGTRAP, SIG_DFL);
-
 	if (OS::get_singleton() == nullptr) {
 		abort();
 	}
@@ -191,10 +186,9 @@ void CrashHandler::disable() {
 	}
 
 #ifdef CRASH_HANDLER_ENABLED
-	signal(SIGSEGV, SIG_DFL);
-	signal(SIGFPE, SIG_DFL);
-	signal(SIGILL, SIG_DFL);
-	signal(SIGTRAP, SIG_DFL);
+	signal(SIGSEGV, nullptr);
+	signal(SIGFPE, nullptr);
+	signal(SIGILL, nullptr);
 #endif
 
 	disabled = true;
@@ -205,6 +199,5 @@ void CrashHandler::initialize() {
 	signal(SIGSEGV, handle_crash);
 	signal(SIGFPE, handle_crash);
 	signal(SIGILL, handle_crash);
-	signal(SIGTRAP, handle_crash);
 #endif
 }

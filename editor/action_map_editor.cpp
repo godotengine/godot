@@ -30,13 +30,12 @@
 
 #include "editor/action_map_editor.h"
 
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
-#include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/scene_string_names.h"
 
@@ -169,7 +168,7 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			current_action_name = item->get_meta("__name");
 			current_action_event_index = -1;
 
-			event_config_dialog->popup_and_configure(Ref<InputEvent>(), current_action_name);
+			event_config_dialog->popup_and_configure();
 		} break;
 		case ActionMapEditor::BUTTON_EDIT_EVENT: {
 			// Action and Action name is located on the parent of the event.
@@ -180,7 +179,7 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 
 			Ref<InputEvent> ie = item->get_meta("__event");
 			if (ie.is_valid()) {
-				event_config_dialog->popup_and_configure(ie, current_action_name);
+				event_config_dialog->popup_and_configure(ie);
 			}
 		} break;
 		case ActionMapEditor::BUTTON_REMOVE_ACTION: {
@@ -358,7 +357,6 @@ void ActionMapEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
 			if (!actions_cache.is_empty()) {
 				update_action_list();
 			}
@@ -378,10 +376,6 @@ void ActionMapEditor::_bind_methods() {
 
 LineEdit *ActionMapEditor::get_search_box() const {
 	return action_list_search;
-}
-
-LineEdit *ActionMapEditor::get_path_box() const {
-	return add_edit;
 }
 
 InputEventConfigurationDialog *ActionMapEditor::get_configuration_dialog() {
@@ -538,7 +532,7 @@ ActionMapEditor::ActionMapEditor() {
 
 	action_list_search = memnew(LineEdit);
 	action_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	action_list_search->set_placeholder(TTR("Filter by Name"));
+	action_list_search->set_placeholder(TTR("Filter by name..."));
 	action_list_search->set_clear_button_enabled(true);
 	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
 	top_hbox->add_child(action_list_search);
@@ -575,8 +569,6 @@ ActionMapEditor::ActionMapEditor() {
 	add_hbox->add_child(add_button);
 	// Disable the button and set its tooltip.
 	_add_edit_text_changed(add_edit->get_text());
-
-	add_hbox->add_child(memnew(VSeparator));
 
 	show_builtin_actions_checkbutton = memnew(CheckButton);
 	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));

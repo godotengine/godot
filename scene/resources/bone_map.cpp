@@ -37,7 +37,7 @@ bool BoneMap::_set(const StringName &p_path, const Variant &p_value) {
 		set_skeleton_bone_name(which, p_value);
 		return true;
 	}
-	return false;
+	return true;
 }
 
 bool BoneMap::_get(const StringName &p_path, Variant &r_ret) const {
@@ -47,7 +47,7 @@ bool BoneMap::_get(const StringName &p_path, Variant &r_ret) const {
 		r_ret = get_skeleton_bone_name(which);
 		return true;
 	}
-	return false;
+	return true;
 }
 
 void BoneMap::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -77,22 +77,22 @@ void BoneMap::set_profile(const Ref<SkeletonProfile> &p_profile) {
 	notify_property_list_changed();
 }
 
-StringName BoneMap::get_skeleton_bone_name(const StringName &p_profile_bone_name) const {
+StringName BoneMap::get_skeleton_bone_name(StringName p_profile_bone_name) const {
 	ERR_FAIL_COND_V(!bone_map.has(p_profile_bone_name), StringName());
 	return bone_map.get(p_profile_bone_name);
 }
 
-void BoneMap::_set_skeleton_bone_name(const StringName &p_profile_bone_name, const StringName &p_skeleton_bone_name) {
+void BoneMap::_set_skeleton_bone_name(StringName p_profile_bone_name, const StringName p_skeleton_bone_name) {
 	ERR_FAIL_COND(!bone_map.has(p_profile_bone_name));
 	bone_map.insert(p_profile_bone_name, p_skeleton_bone_name);
 }
 
-void BoneMap::set_skeleton_bone_name(const StringName &p_profile_bone_name, const StringName &p_skeleton_bone_name) {
+void BoneMap::set_skeleton_bone_name(StringName p_profile_bone_name, const StringName p_skeleton_bone_name) {
 	_set_skeleton_bone_name(p_profile_bone_name, p_skeleton_bone_name);
 	emit_signal("bone_map_updated");
 }
 
-StringName BoneMap::find_profile_bone_name(const StringName &p_skeleton_bone_name) const {
+StringName BoneMap::find_profile_bone_name(StringName p_skeleton_bone_name) const {
 	StringName profile_bone_name;
 	HashMap<StringName, StringName>::ConstIterator E = bone_map.begin();
 	while (E) {
@@ -105,7 +105,7 @@ StringName BoneMap::find_profile_bone_name(const StringName &p_skeleton_bone_nam
 	return profile_bone_name;
 }
 
-int BoneMap::get_skeleton_bone_name_count(const StringName &p_skeleton_bone_name) const {
+int BoneMap::get_skeleton_bone_name_count(const StringName p_skeleton_bone_name) const {
 	int count = 0;
 	HashMap<StringName, StringName>::ConstIterator E = bone_map.begin();
 	while (E) {

@@ -54,12 +54,12 @@
 #define SAFE_NUMERIC_TYPE_PUN_GUARANTEES(m_type)                    \
 	static_assert(sizeof(SafeNumeric<m_type>) == sizeof(m_type));   \
 	static_assert(alignof(SafeNumeric<m_type>) == alignof(m_type)); \
-	static_assert(std::is_trivially_destructible_v<std::atomic<m_type>>);
+	static_assert(std::is_trivially_destructible<std::atomic<m_type>>::value);
 #define SAFE_FLAG_TYPE_PUN_GUARANTEES                \
 	static_assert(sizeof(SafeFlag) == sizeof(bool)); \
 	static_assert(alignof(SafeFlag) == alignof(bool));
 
-template <typename T>
+template <class T>
 class SafeNumeric {
 	std::atomic<T> value;
 
@@ -182,7 +182,7 @@ class SafeRefCount {
 	SafeNumeric<uint32_t> count;
 
 #ifdef DEV_ENABLED
-	_ALWAYS_INLINE_ void _check_unref_safety() {
+	_ALWAYS_INLINE_ void _check_unref_sanity() {
 		// This won't catch every misuse, but it's better than nothing.
 		CRASH_COND_MSG(count.get() == 0,
 				"Trying to unreference a SafeRefCount which is already zero is wrong and a symptom of it being misused.\n"
@@ -202,14 +202,14 @@ public:
 
 	_ALWAYS_INLINE_ bool unref() { // true if must be disposed of
 #ifdef DEV_ENABLED
-		_check_unref_safety();
+		_check_unref_sanity();
 #endif
 		return count.decrement() == 0;
 	}
 
 	_ALWAYS_INLINE_ uint32_t unrefval() { // 0 if must be disposed of
 #ifdef DEV_ENABLED
-		_check_unref_safety();
+		_check_unref_sanity();
 #endif
 		return count.decrement();
 	}

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Label" inherits="Control" keywords="text" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Label" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A control for displaying plain text.
 	</brief_description>
@@ -7,16 +7,9 @@
 		A control for displaying plain text. It gives you control over the horizontal and vertical alignment and can wrap the text inside the node's bounding rectangle. It doesn't support bold, italics, or other rich text formatting. For that, use [RichTextLabel] instead.
 	</description>
 	<tutorials>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
-		<method name="get_character_bounds" qualifiers="const">
-			<return type="Rect2" />
-			<param index="0" name="pos" type="int" />
-			<description>
-				Returns the bounding rectangle of the character at position [param pos]. If the character is a non-visual character or [param pos] is outside the valid range, an empty [Rect2] is returned. If the character is a part of a composite grapheme, the bounding rectangle of the whole grapheme is returned.
-			</description>
-		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -52,9 +45,6 @@
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text" default="false">
 			If [code]true[/code], the Label only shows the text that fits inside its bounding rectangle and will clip text horizontally.
 		</member>
-		<member name="ellipsis_char" type="String" setter="set_ellipsis_char" getter="get_ellipsis_char" default="&quot;…&quot;">
-			Ellipsis character used for text clipping.
-		</member>
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
 			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
 		</member>
@@ -68,7 +58,7 @@
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
 		<member name="lines_skipped" type="int" setter="set_lines_skipped" getter="get_lines_skipped" default="0">
-			The number of the lines ignored and not displayed from the start of the [member text] value.
+			The node ignores the first [code]lines_skipped[/code] lines before it starts to display text.
 		</member>
 		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible" default="-1">
 			Limits the lines of text the node shows on screen.
@@ -115,7 +105,7 @@
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Default text [Color] of the [Label].
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The color of text outline.
 		</theme_item>
 		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
@@ -127,7 +117,6 @@
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			Text outline size.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
-			[b]Note:[/b] Using a value that is larger than half the font size is not recommended, as the font outline may fail to be fully closed in this case.
 		</theme_item>
 		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
 			The horizontal offset of the text's shadow.

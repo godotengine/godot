@@ -430,7 +430,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 						path = remaps[path];
 					}
 
-					Ref<Resource> res = ResourceLoader::load(path, exttype, cache_mode_for_external);
+					Ref<Resource> res = ResourceLoader::load(path, exttype);
 
 					if (res.is_null()) {
 						WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
@@ -683,7 +683,7 @@ Error ResourceLoaderBinary::load() {
 		}
 
 		external_resources.write[i].path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
-		external_resources.write[i].load_token = ResourceLoader::_load_start(path, external_resources[i].type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, cache_mode_for_external);
+		external_resources.write[i].load_token = ResourceLoader::_load_start(path, external_resources[i].type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, ResourceFormatLoader::CACHE_MODE_REUSE);
 		if (!external_resources[i].load_token.is_valid()) {
 			if (!ResourceLoader::get_abort_on_missing_resources()) {
 				ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
@@ -772,12 +772,8 @@ Error ResourceLoaderBinary::load() {
 			}
 
 			res = Ref<Resource>(r);
-			if (!path.is_empty()) {
-				if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-					r->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE); // If got here because the resource with same path has different type, replace it.
-				} else {
-					r->set_path_cache(path);
-				}
+			if (!path.is_empty() && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+				r->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE); //if got here because the resource with same path has different type, replace it
 			}
 			r->set_scene_unique_id(id);
 		}
@@ -1189,22 +1185,7 @@ Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const Strin
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot open file '" + p_path + "'.");
 
 	ResourceLoaderBinary loader;
-	switch (p_cache_mode) {
-		case CACHE_MODE_IGNORE:
-		case CACHE_MODE_REUSE:
-		case CACHE_MODE_REPLACE:
-			loader.cache_mode = p_cache_mode;
-			loader.cache_mode_for_external = CACHE_MODE_REUSE;
-			break;
-		case CACHE_MODE_IGNORE_DEEP:
-			loader.cache_mode = CACHE_MODE_IGNORE;
-			loader.cache_mode_for_external = p_cache_mode;
-			break;
-		case CACHE_MODE_REPLACE_DEEP:
-			loader.cache_mode = CACHE_MODE_REPLACE;
-			loader.cache_mode_for_external = p_cache_mode;
-			break;
-	}
+	loader.cache_mode = p_cache_mode;
 	loader.use_sub_threads = p_use_sub_threads;
 	loader.progress = r_progress;
 	String path = !p_original_path.is_empty() ? p_original_path : p_path;
@@ -1471,10 +1452,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	fw.unref();
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (da->exists(p_path + ".depren")) {
-		da->remove(p_path);
-		da->rename(p_path + ".depren", p_path);
-	}
+	da->remove(p_path);
+	da->rename(p_path + ".depren", p_path);
 	return OK;
 }
 
@@ -1844,8 +1823,8 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			f->store_32(VARIANT_ARRAY);
 			Array a = p_property;
 			f->store_32(uint32_t(a.size()));
-			for (const Variant &var : a) {
-				write_variant(f, var, resource_map, external_resources, string_map);
+			for (int i = 0; i < a.size(); i++) {
+				write_variant(f, a[i], resource_map, external_resources, string_map);
 			}
 
 		} break;
@@ -2016,8 +1995,9 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 		case Variant::ARRAY: {
 			Array varray = p_variant;
-			_find_resources(varray.get_typed_script());
-			for (const Variant &v : varray) {
+			int len = varray.size();
+			for (int i = 0; i < len; i++) {
+				const Variant &v = varray.get(i);
 				_find_resources(v);
 			}
 

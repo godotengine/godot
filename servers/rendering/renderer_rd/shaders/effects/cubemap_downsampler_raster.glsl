@@ -33,7 +33,7 @@ layout(location = 0) out vec2 uv_interp;
 void main() {
 	vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
 	gl_Position = vec4(base_arr[gl_VertexIndex], 0.0, 1.0);
-	uv_interp = clamp(gl_Position.xy, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0 * float(params.face_size); // saturate(x) * 2.0
+	uv_interp = clamp(gl_Position.xy, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
 }
 
 /* clang-format off */

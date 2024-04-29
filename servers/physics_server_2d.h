@@ -553,22 +553,11 @@ public:
 	virtual void joint_make_damped_spring(RID p_joint, const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, RID p_body_a, RID p_body_b = RID()) = 0;
 
 	enum PinJointParam {
-		PIN_JOINT_SOFTNESS,
-		PIN_JOINT_LIMIT_UPPER,
-		PIN_JOINT_LIMIT_LOWER,
-		PIN_JOINT_MOTOR_TARGET_VELOCITY
+		PIN_JOINT_SOFTNESS
 	};
 
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) = 0;
 	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const = 0;
-
-	enum PinJointFlag {
-		PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED,
-		PIN_JOINT_FLAG_MOTOR_ENABLED
-	};
-
-	virtual void pin_joint_set_flag(RID p_joint, PinJointFlag p_flag, bool p_enabled) = 0;
-	virtual bool pin_joint_get_flag(RID p_joint, PinJointFlag p_flag) const = 0;
 
 	enum DampedSpringParam {
 		DAMPED_SPRING_REST_LENGTH,
@@ -841,7 +830,6 @@ VARIANT_ENUM_CAST(PhysicsServer2D::CCDMode);
 VARIANT_ENUM_CAST(PhysicsServer2D::JointParam);
 VARIANT_ENUM_CAST(PhysicsServer2D::JointType);
 VARIANT_ENUM_CAST(PhysicsServer2D::PinJointParam);
-VARIANT_ENUM_CAST(PhysicsServer2D::PinJointFlag);
 VARIANT_ENUM_CAST(PhysicsServer2D::DampedSpringParam);
 VARIANT_ENUM_CAST(PhysicsServer2D::AreaBodyStatus);
 VARIANT_ENUM_CAST(PhysicsServer2D::ProcessInfo);

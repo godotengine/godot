@@ -85,7 +85,6 @@ Marker3DGizmoPlugin::Marker3DGizmoPlugin() {
 	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 
 	Array d;

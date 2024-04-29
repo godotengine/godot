@@ -6346,7 +6346,6 @@ String get_sampler_hint(VisualShaderNodeTextureParameter::TextureType p_texture_
 		if (!repeat_code.is_empty()) {
 			if (!has_colon) {
 				code += " : ";
-				has_colon = true;
 			} else {
 				code += ", ";
 			}
@@ -6354,7 +6353,6 @@ String get_sampler_hint(VisualShaderNodeTextureParameter::TextureType p_texture_
 		}
 	}
 
-	// source
 	{
 		String source_code;
 

@@ -237,9 +237,7 @@
 			<return type="Rect2" />
 			<param index="0" name="right" type="Transform2D" />
 			<description>
-				Inversely transforms (multiplies) the [Rect2] by the given [Transform2D] transformation matrix, under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not).
-				[code]rect * transform[/code] is equivalent to [code]transform.inverse() * rect[/code]. See [method Transform2D.inverse].
-				For transforming by inverse of an affine transformation (e.g. with scaling) [code]transform.affine_inverse() * rect[/code] can be used instead. See [method Transform2D.affine_inverse].
+				Inversely transforms (multiplies) the [Rect2] by the given [Transform2D] transformation matrix.
 			</description>
 		</operator>
 		<operator name="operator ==">

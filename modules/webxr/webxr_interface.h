@@ -62,7 +62,6 @@ public:
 	virtual void set_requested_reference_space_types(String p_requested_reference_space_types) = 0;
 	virtual String get_requested_reference_space_types() const = 0;
 	virtual String get_reference_space_type() const = 0;
-	virtual String get_enabled_features() const = 0;
 	virtual bool is_input_source_active(int p_input_source_id) const = 0;
 	virtual Ref<XRPositionalTracker> get_input_source_tracker(int p_input_source_id) const = 0;
 	virtual TargetRayMode get_input_source_target_ray_mode(int p_input_source_id) const = 0;

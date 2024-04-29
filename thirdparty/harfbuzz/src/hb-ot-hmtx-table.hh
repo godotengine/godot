@@ -145,29 +145,6 @@ struct hmtxvmtx
         table->minTrailingBearing = min_rsb;
         table->maxExtent = max_extent;
       }
-
-      if (T::is_horizontal)
-      {
-        const auto &OS2 = *c->plan->source->table.OS2;
-        if (OS2.has_data () &&
-            table->ascender == OS2.sTypoAscender &&
-            table->descender == OS2.sTypoDescender &&
-            table->lineGap == OS2.sTypoLineGap)
-        {
-          table->ascender = static_cast<int> (roundf (OS2.sTypoAscender +
-                                                      MVAR.get_var (HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER,
-                                                                    c->plan->normalized_coords.arrayZ,
-                                                                    c->plan->normalized_coords.length)));
-          table->descender = static_cast<int> (roundf (OS2.sTypoDescender +
-                                                       MVAR.get_var (HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER,
-                                                                     c->plan->normalized_coords.arrayZ,
-                                                                     c->plan->normalized_coords.length)));
-          table->lineGap = static_cast<int> (roundf (OS2.sTypoLineGap +
-                                                     MVAR.get_var (HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP,
-                                                                   c->plan->normalized_coords.arrayZ,
-                                                                   c->plan->normalized_coords.length)));
-        }
-      }
     }
 #endif
 
@@ -397,7 +374,7 @@ struct hmtxvmtx
 
     unsigned get_advance_with_var_unscaled (hb_codepoint_t  glyph,
 					    hb_font_t      *font,
-					    ItemVariationStore::cache_t *store_cache = nullptr) const
+					    VariationStore::cache_t *store_cache = nullptr) const
     {
       unsigned int advance = get_advance_without_var_unscaled (glyph);
 

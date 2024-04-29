@@ -202,7 +202,7 @@
 		<method name="integrate_forces">
 			<return type="void" />
 			<description>
-				Updates the body's linear and angular velocity by applying gravity and damping for the equivalent of one physics tick.
+				Calls the built-in force integration code.
 			</description>
 		</method>
 		<method name="set_constant_force">

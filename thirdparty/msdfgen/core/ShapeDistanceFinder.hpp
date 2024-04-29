@@ -9,11 +9,7 @@ ShapeDistanceFinder<ContourCombiner>::ShapeDistanceFinder(const Shape &shape) : 
 template <class ContourCombiner>
 typename ShapeDistanceFinder<ContourCombiner>::DistanceType ShapeDistanceFinder<ContourCombiner>::distance(const Point2 &origin) {
     contourCombiner.reset(origin);
-#ifdef MSDFGEN_USE_CPP11
-    typename ContourCombiner::EdgeSelectorType::EdgeCache *edgeCache = shapeEdgeCache.data();
-#else
-    typename ContourCombiner::EdgeSelectorType::EdgeCache *edgeCache = shapeEdgeCache.empty() ? NULL : &shapeEdgeCache[0];
-#endif
+    typename ContourCombiner::EdgeSelectorType::EdgeCache *edgeCache = &shapeEdgeCache[0];
 
     for (std::vector<Contour>::const_iterator contour = shape.contours.begin(); contour != shape.contours.end(); ++contour) {
         if (!contour->edges.empty()) {

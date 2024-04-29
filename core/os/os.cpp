@@ -39,15 +39,7 @@
 #include "core/version_generated.gen.h"
 
 #include <stdarg.h>
-
-#ifdef MINGW_ENABLED
-#define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.thread.h"
-#define THREADING_NAMESPACE mingw_stdthread
-#else
 #include <thread>
-#define THREADING_NAMESPACE std
-#endif
 
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
@@ -298,7 +290,7 @@ String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
 }
 
-Error OS::shell_open(const String &p_uri) {
+Error OS::shell_open(String p_uri) {
 	return ERR_UNAVAILABLE;
 }
 
@@ -363,11 +355,11 @@ void OS::set_cmdline(const char *p_execpath, const List<String> &p_args, const L
 }
 
 String OS::get_unique_id() const {
-	return "";
+	ERR_FAIL_V("");
 }
 
 int OS::get_processor_count() const {
-	return THREADING_NAMESPACE::thread::hardware_concurrency();
+	return std::thread::hardware_concurrency();
 }
 
 String OS::get_processor_name() const {
@@ -498,18 +490,6 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 
-#if defined(IOS_SIMULATOR)
-	if (p_feature == "simulator") {
-		return true;
-	}
-#endif
-
-#ifdef THREADS_ENABLED
-	if (p_feature == "threads") {
-		return true;
-	}
-#endif
-
 	if (_check_internal_feature_support(p_feature)) {
 		return true;
 	}
@@ -632,22 +612,17 @@ String OS::get_benchmark_file() {
 	return benchmark_file;
 }
 
-void OS::benchmark_begin_measure(const String &p_context, const String &p_what) {
+void OS::benchmark_begin_measure(const String &p_what) {
 #ifdef TOOLS_ENABLED
-	Pair<String, String> mark_key(p_context, p_what);
-	ERR_FAIL_COND_MSG(benchmark_marks_from.has(mark_key), vformat("Benchmark key '%s:%s' already exists.", p_context, p_what));
-
-	benchmark_marks_from[mark_key] = OS::get_singleton()->get_ticks_usec();
+	start_benchmark_from[p_what] = OS::get_singleton()->get_ticks_usec();
 #endif
 }
-void OS::benchmark_end_measure(const String &p_context, const String &p_what) {
+void OS::benchmark_end_measure(const String &p_what) {
 #ifdef TOOLS_ENABLED
-	Pair<String, String> mark_key(p_context, p_what);
-	ERR_FAIL_COND_MSG(!benchmark_marks_from.has(mark_key), vformat("Benchmark key '%s:%s' doesn't exist.", p_context, p_what));
-
-	uint64_t total = OS::get_singleton()->get_ticks_usec() - benchmark_marks_from[mark_key];
+	uint64_t total = OS::get_singleton()->get_ticks_usec() - start_benchmark_from[p_what];
 	double total_f = double(total) / double(1000000);
-	benchmark_marks_final[mark_key] = total_f;
+
+	startup_benchmark_json[p_what] = total_f;
 #endif
 }
 
@@ -656,33 +631,19 @@ void OS::benchmark_dump() {
 	if (!use_benchmark) {
 		return;
 	}
-
 	if (!benchmark_file.is_empty()) {
 		Ref<FileAccess> f = FileAccess::open(benchmark_file, FileAccess::WRITE);
 		if (f.is_valid()) {
-			Dictionary benchmark_marks;
-			for (const KeyValue<Pair<String, String>, double> &E : benchmark_marks_final) {
-				const String mark_key = vformat("[%s] %s", E.key.first, E.key.second);
-				benchmark_marks[mark_key] = E.value;
-			}
-
 			Ref<JSON> json;
 			json.instantiate();
-			f->store_string(json->stringify(benchmark_marks, "\t", false, true));
+			f->store_string(json->stringify(startup_benchmark_json, "\t", false, true));
 		}
 	} else {
-		HashMap<String, String> results;
-		for (const KeyValue<Pair<String, String>, double> &E : benchmark_marks_final) {
-			if (E.key.first == "Startup" && !results.has(E.key.first)) {
-				results.insert(E.key.first, "", true); // Hack to make sure "Startup" always comes first.
-			}
-
-			results[E.key.first] += vformat("\t\t- %s: %.3f msec.\n", E.key.second, (E.value * 1000));
-		}
-
+		List<Variant> keys;
+		startup_benchmark_json.get_key_list(&keys);
 		print_line("BENCHMARK:");
-		for (const KeyValue<String, String> &E : results) {
-			print_line(vformat("\t[%s]\n%s", E.key, E.value));
+		for (const Variant &K : keys) {
+			print_line("\t-", K, ": ", startup_benchmark_json[K], +" sec.");
 		}
 	}
 #endif

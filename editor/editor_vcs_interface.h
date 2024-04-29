@@ -99,11 +99,11 @@ protected:
 
 	static void _bind_methods();
 
-	DiffLine _convert_diff_line(const Dictionary &p_diff_line);
-	DiffHunk _convert_diff_hunk(const Dictionary &p_diff_hunk);
-	DiffFile _convert_diff_file(const Dictionary &p_diff_file);
-	Commit _convert_commit(const Dictionary &p_commit);
-	StatusFile _convert_status_file(const Dictionary &p_status_file);
+	DiffLine _convert_diff_line(Dictionary p_diff_line);
+	DiffHunk _convert_diff_hunk(Dictionary p_diff_hunk);
+	DiffFile _convert_diff_file(Dictionary p_diff_file);
+	Commit _convert_commit(Dictionary p_commit);
+	StatusFile _convert_status_file(Dictionary p_status_file);
 
 	// Proxy endpoints for extensions to implement
 	GDVIRTUAL1R(bool, _initialize, String);
@@ -141,40 +141,40 @@ public:
 	static void create_vcs_metadata_files(VCSMetadata p_vcs_metadata_type, String &p_dir);
 
 	// Proxies to the editor for use
-	bool initialize(const String &p_project_path);
-	void set_credentials(const String &p_username, const String &p_password, const String &p_ssh_public_key_path, const String &p_ssh_private_key_path, const String &p_ssh_passphrase);
+	bool initialize(String p_project_path);
+	void set_credentials(String p_username, String p_password, String p_ssh_public_key_path, String p_ssh_private_key_path, String p_ssh_passphrase);
 	List<StatusFile> get_modified_files_data();
-	void stage_file(const String &p_file_path);
-	void unstage_file(const String &p_file_path);
-	void discard_file(const String &p_file_path);
-	void commit(const String &p_msg);
-	List<DiffFile> get_diff(const String &p_identifier, TreeArea p_area);
+	void stage_file(String p_file_path);
+	void unstage_file(String p_file_path);
+	void discard_file(String p_file_path);
+	void commit(String p_msg);
+	List<DiffFile> get_diff(String p_identifier, TreeArea p_area);
 	bool shut_down();
 	String get_vcs_name();
 	List<Commit> get_previous_commits(int p_max_commits);
 	List<String> get_branch_list();
 	List<String> get_remotes();
-	void create_branch(const String &p_branch_name);
-	void remove_branch(const String &p_branch_name);
-	void create_remote(const String &p_remote_name, const String &p_remote_url);
-	void remove_remote(const String &p_remote_name);
+	void create_branch(String p_branch_name);
+	void remove_branch(String p_branch_name);
+	void create_remote(String p_remote_name, String p_remote_url);
+	void remove_remote(String p_remote_name);
 	String get_current_branch_name();
-	bool checkout_branch(const String &p_branch_name);
-	void pull(const String &p_remote);
-	void push(const String &p_remote, bool p_force);
-	void fetch(const String &p_remote);
-	List<DiffHunk> get_line_diff(const String &p_file_path, const String &p_text);
+	bool checkout_branch(String p_branch_name);
+	void pull(String p_remote);
+	void push(String p_remote, bool p_force);
+	void fetch(String p_remote);
+	List<DiffHunk> get_line_diff(String p_file_path, String p_text);
 
 	// Helper functions to create and convert Dictionary into data structures
-	Dictionary create_diff_line(int p_new_line_no, int p_old_line_no, const String &p_content, const String &p_status);
+	Dictionary create_diff_line(int p_new_line_no, int p_old_line_no, String p_content, String p_status);
 	Dictionary create_diff_hunk(int p_old_start, int p_new_start, int p_old_lines, int p_new_lines);
-	Dictionary create_diff_file(const String &p_new_file, const String &p_old_file);
-	Dictionary create_commit(const String &p_msg, const String &p_author, const String &p_id, int64_t p_unix_timestamp, int64_t p_offset_minutes);
-	Dictionary create_status_file(const String &p_file_path, ChangeType p_change, TreeArea p_area);
+	Dictionary create_diff_file(String p_new_file, String p_old_file);
+	Dictionary create_commit(String p_msg, String p_author, String p_id, int64_t p_unix_timestamp, int64_t p_offset_minutes);
+	Dictionary create_status_file(String p_file_path, ChangeType p_change, TreeArea p_area);
 	Dictionary add_line_diffs_into_diff_hunk(Dictionary p_diff_hunk, TypedArray<Dictionary> p_line_diffs);
 	Dictionary add_diff_hunks_into_diff_file(Dictionary p_diff_file, TypedArray<Dictionary> p_diff_hunks);
 
-	void popup_error(const String &p_msg);
+	void popup_error(String p_msg);
 };
 
 VARIANT_ENUM_CAST(EditorVCSInterface::ChangeType);

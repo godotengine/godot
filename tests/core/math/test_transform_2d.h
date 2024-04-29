@@ -130,36 +130,6 @@ TEST_CASE("[Transform2D] Finite number checks") {
 			"Transform2D with three components infinite should not be finite.");
 }
 
-TEST_CASE("[Transform2D] Is conformal checks") {
-	CHECK_MESSAGE(
-			Transform2D().is_conformal(),
-			"Identity Transform2D should be conformal.");
-
-	CHECK_MESSAGE(
-			Transform2D(1.2, Vector2()).is_conformal(),
-			"Transform2D with only rotation should be conformal.");
-
-	CHECK_MESSAGE(
-			Transform2D(Vector2(1, 0), Vector2(0, -1), Vector2()).is_conformal(),
-			"Transform2D with only a flip should be conformal.");
-
-	CHECK_MESSAGE(
-			Transform2D(Vector2(1.2, 0), Vector2(0, 1.2), Vector2()).is_conformal(),
-			"Transform2D with only uniform scale should be conformal.");
-
-	CHECK_MESSAGE(
-			Transform2D(Vector2(1.2, 3.4), Vector2(3.4, -1.2), Vector2()).is_conformal(),
-			"Transform2D with a flip, rotation, and uniform scale should be conformal.");
-
-	CHECK_FALSE_MESSAGE(
-			Transform2D(Vector2(1.2, 0), Vector2(0, 3.4), Vector2()).is_conformal(),
-			"Transform2D with non-uniform scale should not be conformal.");
-
-	CHECK_FALSE_MESSAGE(
-			Transform2D(Vector2(Math_SQRT12, Math_SQRT12), Vector2(0, 1), Vector2()).is_conformal(),
-			"Transform2D with the X axis skewed 45 degrees should not be conformal.");
-}
-
 } // namespace TestTransform2D
 
 #endif // TEST_TRANSFORM_2D_H

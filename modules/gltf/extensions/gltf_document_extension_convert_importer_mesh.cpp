@@ -32,7 +32,7 @@
 
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/importer_mesh.h"
 
 void GLTFDocumentExtensionConvertImporterMesh::_bind_methods() {
 }

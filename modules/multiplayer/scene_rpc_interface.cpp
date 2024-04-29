@@ -116,9 +116,25 @@ const SceneRPCInterface::RPCConfigCache &SceneRPCInterface::_get_node_config(con
 	return rpc_cache[oid];
 }
 
+_FORCE_INLINE_ bool _can_call_mode(Node *p_node, MultiplayerAPI::RPCMode mode, int p_remote_id) {
+	switch (mode) {
+		case MultiplayerAPI::RPC_MODE_DISABLED: {
+			return false;
+		} break;
+		case MultiplayerAPI::RPC_MODE_ANY_PEER: {
+			return true;
+		} break;
+		case MultiplayerAPI::RPC_MODE_AUTHORITY: {
+			return !p_node->is_multiplayer_authority() && p_remote_id == p_node->get_multiplayer_authority();
+		} break;
+	}
+
+	return false;
+}
+
 String SceneRPCInterface::get_rpc_md5(const Object *p_obj) {
 	const Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_NULL_V(node, "");
+	ERR_FAIL_COND_V(!node, "");
 	const RPCConfigCache cache = _get_node_config(node);
 	String rpc_list;
 	for (const KeyValue<uint16_t, RPCConfig> &config : cache.configs) {
@@ -129,7 +145,7 @@ String SceneRPCInterface::get_rpc_md5(const Object *p_obj) {
 
 Node *SceneRPCInterface::_process_get_node(int p_from, const uint8_t *p_packet, uint32_t p_node_target, int p_packet_len) {
 	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
-	ERR_FAIL_NULL_V(root_node, nullptr);
+	ERR_FAIL_COND_V(!root_node, nullptr);
 	Node *node = nullptr;
 
 	if (p_node_target & 0x80000000) {
@@ -151,7 +167,7 @@ Node *SceneRPCInterface::_process_get_node(int p_from, const uint8_t *p_packet, 
 		return node;
 	} else {
 		// Use cached path.
-		return Object::cast_to<Node>(multiplayer_cache->get_cached_object(p_from, p_node_target));
+		return Object::cast_to<Node>(multiplayer->get_path_cache()->get_cached_object(p_from, p_node_target));
 	}
 }
 
@@ -209,7 +225,7 @@ void SceneRPCInterface::process_rpc(int p_from, const uint8_t *p_packet, int p_p
 	}
 
 	Node *node = _process_get_node(p_from, p_packet, node_target, p_packet_len);
-	ERR_FAIL_NULL_MSG(node, "Invalid packet received. Requested node was not found.");
+	ERR_FAIL_COND_MSG(node == nullptr, "Invalid packet received. Requested node was not found.");
 
 	uint16_t name_id = 0;
 	switch (name_id_compression) {
@@ -236,19 +252,7 @@ void SceneRPCInterface::_process_rpc(Node *p_node, const uint16_t p_rpc_method_i
 	ERR_FAIL_COND(!cache_config.configs.has(p_rpc_method_id));
 	const RPCConfig &config = cache_config.configs[p_rpc_method_id];
 
-	bool can_call = false;
-	switch (config.rpc_mode) {
-		case MultiplayerAPI::RPC_MODE_DISABLED: {
-			can_call = false;
-		} break;
-		case MultiplayerAPI::RPC_MODE_ANY_PEER: {
-			can_call = true;
-		} break;
-		case MultiplayerAPI::RPC_MODE_AUTHORITY: {
-			can_call = p_from == p_node->get_multiplayer_authority();
-		} break;
-	}
-
+	bool can_call = _can_call_mode(p_node, config.rpc_mode, p_from);
 	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(config.name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)config.rpc_mode) + ", authority is " + itos(p_node->get_multiplayer_authority()) + ".");
 
 	int argc = 0;
@@ -309,24 +313,25 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 
 	// See if all peers have cached path (if so, call can be fast) while building the RPC target list.
 	HashSet<int> targets;
+	Ref<SceneCacheInterface> cache = multiplayer->get_path_cache();
 	int psc_id = -1;
 	bool has_all_peers = true;
 	const ObjectID oid = p_node->get_instance_id();
 	if (p_to > 0) {
-		ERR_FAIL_COND_MSG(!multiplayer_replicator->is_rpc_visible(oid, p_to), "Attempt to call an RPC to a peer that cannot see this node. Peer ID: " + itos(p_to));
+		ERR_FAIL_COND_MSG(!multiplayer->get_replicator()->is_rpc_visible(oid, p_to), "Attempt to call an RPC to a peer that cannot see this node. Peer ID: " + itos(p_to));
 		targets.insert(p_to);
-		has_all_peers = multiplayer_cache->send_object_cache(p_node, p_to, psc_id);
+		has_all_peers = cache->send_object_cache(p_node, p_to, psc_id);
 	} else {
-		bool restricted = !multiplayer_replicator->is_rpc_visible(oid, 0);
+		bool restricted = !multiplayer->get_replicator()->is_rpc_visible(oid, 0);
 		for (const int &P : multiplayer->get_connected_peers()) {
 			if (p_to < 0 && P == -p_to) {
 				continue; // Excluded peer.
 			}
-			if (restricted && !multiplayer_replicator->is_rpc_visible(oid, P)) {
+			if (restricted && !multiplayer->get_replicator()->is_rpc_visible(oid, P)) {
 				continue; // Not visible to this peer.
 			}
 			targets.insert(P);
-			bool has_peer = multiplayer_cache->send_object_cache(p_node, P, psc_id);
+			bool has_peer = cache->send_object_cache(p_node, P, psc_id);
 			has_all_peers = has_all_peers && has_peer;
 		}
 	}
@@ -438,14 +443,15 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 		// Not all verified path, so send one by one.
 
 		// Append path at the end, since we will need it for some packets.
-		CharString pname = String(multiplayer->get_root_path().rel_path_to(p_node->get_path())).utf8();
+		NodePath from_path = multiplayer->get_root_path().rel_path_to(p_node->get_path());
+		CharString pname = String(from_path).utf8();
 		int path_len = encode_cstring(pname.get_data(), nullptr);
 		MAKE_ROOM(ofs + path_len);
 		encode_cstring(pname.get_data(), &(packet_cache.write[ofs]));
 
 		// Not all verified path, so check which needs the longer packet.
 		for (const int P : targets) {
-			bool confirmed = multiplayer_cache->is_cache_confirmed(p_node, P);
+			bool confirmed = multiplayer->get_path_cache()->is_cache_confirmed(from_path, P);
 			if (confirmed) {
 				// This one confirmed path, so use id.
 				encode_uint32(psc_id, &(packet_cache.write[1]));

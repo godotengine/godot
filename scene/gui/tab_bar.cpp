@@ -30,6 +30,7 @@
 
 #include "tab_bar.h"
 
+#include "core/object/message_queue.h"
 #include "core/string/translation.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
@@ -278,11 +279,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (found != -1) {
-				if (deselect_enabled && get_current_tab() == found) {
-					set_current_tab(-1);
-				} else {
-					set_current_tab(found);
-				}
+				set_current_tab(found);
 
 				if (mb->get_button_index() == MouseButton::RIGHT) {
 					// Right mouse button clicked.
@@ -293,37 +290,10 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 	}
-
-	if (p_event->is_pressed()) {
-		Input *input = Input::get_singleton();
-		Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
-		Ref<InputEventJoypadButton> joypadbutton_event = p_event;
-		bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
-		if (p_event->is_action("ui_right", true)) {
-			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_right", true)) {
-					return;
-				}
-				set_process_internal(true);
-			}
-			if (is_layout_rtl() ? select_previous_available() : select_next_available()) {
-				accept_event();
-			}
-		} else if (p_event->is_action("ui_left", true)) {
-			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_left", true)) {
-					return;
-				}
-				set_process_internal(true);
-			}
-			if (is_layout_rtl() ? select_next_available() : select_previous_available()) {
-				accept_event();
-			}
-		}
-	}
 }
 
 void TabBar::_shape(int p_tab) {
+	tabs.write[p_tab].xl_text = atr(tabs[p_tab].text);
 	tabs.write[p_tab].text_buf->clear();
 	tabs.write[p_tab].text_buf->set_width(-1);
 	if (tabs[p_tab].text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -332,39 +302,11 @@ void TabBar::_shape(int p_tab) {
 		tabs.write[p_tab].text_buf->set_direction((TextServer::Direction)tabs[p_tab].text_direction);
 	}
 
-	tabs.write[p_tab].text_buf->add_string(atr(tabs[p_tab].text), theme_cache.font, theme_cache.font_size, tabs[p_tab].language);
+	tabs.write[p_tab].text_buf->add_string(tabs[p_tab].xl_text, theme_cache.font, theme_cache.font_size, tabs[p_tab].language);
 }
 
 void TabBar::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			if (scroll_to_selected) {
-				ensure_tab_visible(current);
-			}
-		} break;
-
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			Input *input = Input::get_singleton();
-
-			if (input->is_action_just_released("ui_left") || input->is_action_just_released("ui_right")) {
-				gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
-				set_process_internal(false);
-				return;
-			}
-
-			gamepad_event_delay_ms -= get_process_delta_time();
-			if (gamepad_event_delay_ms <= 0) {
-				gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
-				if (input->is_action_pressed("ui_right")) {
-					is_layout_rtl() ? select_previous_available() : select_next_available();
-				}
-
-				if (input->is_action_pressed("ui_left")) {
-					is_layout_rtl() ? select_next_available() : select_previous_available();
-				}
-			}
-		} break;
-
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			queue_redraw();
 		} break;
@@ -376,7 +318,6 @@ void TabBar::_notification(int p_what) {
 			}
 
 			queue_redraw();
-			update_minimum_size();
 
 			[[fallthrough]];
 		}
@@ -438,7 +379,7 @@ void TabBar::_notification(int p_what) {
 						col = theme_cache.font_unselected_color;
 					}
 
-					_draw_tab(sb, col, i, rtl ? size.width - ofs - tabs[i].size_cache : ofs, false);
+					_draw_tab(sb, col, i, rtl ? size.width - ofs - tabs[i].size_cache : ofs);
 				}
 
 				ofs += tabs[i].size_cache;
@@ -449,7 +390,7 @@ void TabBar::_notification(int p_what) {
 				Ref<StyleBox> sb = tabs[current].disabled ? theme_cache.tab_disabled_style : theme_cache.tab_selected_style;
 				float x = rtl ? size.width - tabs[current].ofs_cache - tabs[current].size_cache : tabs[current].ofs_cache;
 
-				_draw_tab(sb, theme_cache.font_selected_color, current, x, has_focus());
+				_draw_tab(sb, theme_cache.font_selected_color, current, x);
 			}
 
 			if (buttons_visible) {
@@ -515,22 +456,12 @@ void TabBar::_notification(int p_what) {
 	}
 }
 
-void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x, bool p_focus) {
+void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x) {
 	RID ci = get_canvas_item();
 	bool rtl = is_layout_rtl();
 
 	Rect2 sb_rect = Rect2(p_x, 0, tabs[p_index].size_cache, get_size().height);
-	if (tab_style_v_flip) {
-		draw_set_transform(Point2(0.0, p_tab_style->get_draw_rect(sb_rect).size.y), 0.0, Size2(1.0, -1.0));
-	}
 	p_tab_style->draw(ci, sb_rect);
-	if (tab_style_v_flip) {
-		draw_set_transform(Point2(), 0.0, Size2(1.0, 1.0));
-	}
-	if (p_focus) {
-		Ref<StyleBox> focus_style = theme_cache.tab_focus_style;
-		focus_style->draw(ci, sb_rect);
-	}
 
 	p_x += rtl ? tabs[p_index].size_cache - p_tab_style->get_margin(SIDE_LEFT) : p_tab_style->get_margin(SIDE_LEFT);
 
@@ -582,8 +513,6 @@ void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_in
 		rb->draw(ci, Point2i(rb_rect.position.x + style->get_margin(SIDE_LEFT), rb_rect.position.y + style->get_margin(SIDE_TOP)));
 
 		p_x = rtl ? rb_rect.position.x : rb_rect.position.x + rb_rect.size.width;
-	} else {
-		tabs.write[p_index].rb_rect = Rect2();
 	}
 
 	// Draw and calculate rect of the close button.
@@ -621,29 +550,18 @@ void TabBar::set_tab_count(int p_count) {
 	if (p_count == 0) {
 		offset = 0;
 		max_drawn_tab = 0;
-		current = -1;
-		previous = -1;
+		current = 0;
+		previous = 0;
 	} else {
 		offset = MIN(offset, p_count - 1);
 		max_drawn_tab = MIN(max_drawn_tab, p_count - 1);
 		current = MIN(current, p_count - 1);
-		// Fix range if unable to deselect.
-		if (current == -1 && !_can_deselect()) {
-			current = 0;
-		}
 
 		_update_cache();
 		_ensure_no_over_offset();
 		if (scroll_to_selected) {
 			ensure_tab_visible(current);
 		}
-	}
-
-	if (!initialized) {
-		if (queued_current != current) {
-			current = queued_current;
-		}
-		initialized = true;
 	}
 
 	queue_redraw();
@@ -656,16 +574,7 @@ int TabBar::get_tab_count() const {
 }
 
 void TabBar::set_current_tab(int p_current) {
-	if (p_current == -1) {
-		// An index of -1 is only valid if deselecting is enabled or there are no valid tabs.
-		ERR_FAIL_COND_MSG(!_can_deselect(), "Cannot deselect tabs, deselection is not enabled.");
-	} else {
-		if (!initialized && p_current >= get_tab_count()) {
-			queued_current = p_current;
-			return;
-		}
-		ERR_FAIL_INDEX(p_current, get_tab_count());
-	}
+	ERR_FAIL_INDEX(p_current, get_tab_count());
 
 	previous = current;
 	current = p_current;
@@ -696,33 +605,6 @@ int TabBar::get_previous_tab() const {
 
 int TabBar::get_hovered_tab() const {
 	return hover;
-}
-
-bool TabBar::select_previous_available() {
-	const int offset_end = (get_current_tab() + 1);
-	for (int i = 1; i < offset_end; i++) {
-		int target_tab = get_current_tab() - i;
-		if (target_tab < 0) {
-			target_tab += get_tab_count();
-		}
-		if (!is_tab_disabled(target_tab) && !is_tab_hidden(target_tab)) {
-			set_current_tab(target_tab);
-			return true;
-		}
-	}
-	return false;
-}
-
-bool TabBar::select_next_available() {
-	const int offset_end = (get_tab_count() - get_current_tab());
-	for (int i = 1; i < offset_end; i++) {
-		int target_tab = (get_current_tab() + i) % get_tab_count();
-		if (!is_tab_disabled(target_tab) && !is_tab_hidden(target_tab)) {
-			set_current_tab(target_tab);
-			return true;
-		}
-	}
-	return false;
 }
 
 int TabBar::get_tab_offset() const {
@@ -888,6 +770,11 @@ bool TabBar::is_tab_hidden(int p_tab) const {
 
 void TabBar::set_tab_metadata(int p_tab, const Variant &p_metadata) {
 	ERR_FAIL_INDEX(p_tab, tabs.size());
+
+	if (tabs[p_tab].metadata == p_metadata) {
+		return;
+	}
+
 	tabs.write[p_tab].metadata = p_metadata;
 }
 
@@ -980,7 +867,7 @@ void TabBar::_update_hover() {
 	}
 }
 
-void TabBar::_update_cache(bool p_update_hover) {
+void TabBar::_update_cache() {
 	if (tabs.is_empty()) {
 		buttons_visible = false;
 		return;
@@ -1043,9 +930,7 @@ void TabBar::_update_cache(bool p_update_hover) {
 	buttons_visible = offset > 0 || missing_right;
 
 	if (tab_alignment == ALIGNMENT_LEFT) {
-		if (p_update_hover) {
-			_update_hover();
-		}
+		_update_hover();
 		return;
 	}
 
@@ -1063,9 +948,7 @@ void TabBar::_update_cache(bool p_update_hover) {
 		}
 	}
 
-	if (p_update_hover) {
-		_update_hover();
-	}
+	_update_hover();
 }
 
 void TabBar::_on_mouse_exited() {
@@ -1075,7 +958,7 @@ void TabBar::_on_mouse_exited() {
 	highlight_arrow = -1;
 	dragging_valid_tab = false;
 
-	_update_cache(false);
+	_update_cache();
 	queue_redraw();
 }
 
@@ -1094,13 +977,8 @@ void TabBar::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	queue_redraw();
 	update_minimum_size();
 
-	if (tabs.size() == 1) {
-		if (is_inside_tree()) {
-			set_current_tab(0);
-		} else {
-			current = 0;
-			previous = -1;
-		}
+	if (tabs.size() == 1 && is_inside_tree()) {
+		emit_signal(SNAME("tab_changed"), 0);
 	}
 }
 
@@ -1112,8 +990,8 @@ void TabBar::clear_tabs() {
 	tabs.clear();
 	offset = 0;
 	max_drawn_tab = 0;
-	current = -1;
-	previous = -1;
+	current = 0;
+	previous = 0;
 
 	queue_redraw();
 	update_minimum_size();
@@ -1124,43 +1002,17 @@ void TabBar::remove_tab(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, tabs.size());
 	tabs.remove_at(p_idx);
 
-	bool is_tab_changing = current == p_idx;
+	bool is_tab_changing = current == p_idx && !tabs.is_empty();
 
 	if (current >= p_idx && current > 0) {
 		current--;
-	}
-	if (previous >= p_idx && previous > 0) {
-		previous--;
 	}
 
 	if (tabs.is_empty()) {
 		offset = 0;
 		max_drawn_tab = 0;
-		current = -1;
-		previous = -1;
+		previous = 0;
 	} else {
-		if (current != -1) {
-			// Try to change to a valid tab if possible (without firing the `tab_selected` signal).
-			for (int i = current; i < tabs.size(); i++) {
-				if (!is_tab_disabled(i) && !is_tab_hidden(i)) {
-					current = i;
-					break;
-				}
-			}
-			// If nothing, try backwards.
-			if (is_tab_disabled(current) || is_tab_hidden(current)) {
-				for (int i = current - 1; i >= 0; i--) {
-					if (!is_tab_disabled(i) && !is_tab_hidden(i)) {
-						current = i;
-						break;
-					}
-				}
-			}
-			// If still no valid tab, deselect.
-			if (is_tab_disabled(current) || is_tab_hidden(current)) {
-				current = -1;
-			}
-		}
 		offset = MIN(offset, tabs.size() - 1);
 		max_drawn_tab = MIN(max_drawn_tab, tabs.size() - 1);
 
@@ -1184,26 +1036,7 @@ Variant TabBar::get_drag_data(const Point2 &p_point) {
 	if (!drag_to_rearrange_enabled) {
 		return Control::get_drag_data(p_point); // Allow stuff like TabContainer to override it.
 	}
-	return _handle_get_drag_data("tab_bar_tab", p_point);
-}
 
-bool TabBar::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (!drag_to_rearrange_enabled) {
-		return Control::can_drop_data(p_point, p_data); // Allow stuff like TabContainer to override it.
-	}
-	return _handle_can_drop_data("tab_bar_tab", p_point, p_data);
-}
-
-void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
-	if (!drag_to_rearrange_enabled) {
-		Control::drop_data(p_point, p_data); // Allow stuff like TabContainer to override it.
-		return;
-	}
-
-	_handle_drop_data("tab_bar_tab", p_point, p_data, callable_mp(this, &TabBar::move_tab), callable_mp(this, &TabBar::_move_tab_from));
-}
-
-Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_point) {
 	int tab_over = get_tab_idx_at_point(p_point);
 	if (tab_over < 0) {
 		return Variant();
@@ -1223,26 +1056,30 @@ Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_poin
 		drag_preview->add_child(tf);
 	}
 
-	Label *label = memnew(Label(get_tab_title(tab_over)));
+	Label *label = memnew(Label(tabs[tab_over].xl_text));
 	drag_preview->add_child(label);
 
 	set_drag_preview(drag_preview);
 
 	Dictionary drag_data;
-	drag_data["type"] = p_type;
-	drag_data["tab_index"] = tab_over;
+	drag_data["type"] = "tab_element";
+	drag_data["tab_element"] = tab_over;
 	drag_data["from_path"] = get_path();
 
 	return drag_data;
 }
 
-bool TabBar::_handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const {
+bool TabBar::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+	if (!drag_to_rearrange_enabled) {
+		return Control::can_drop_data(p_point, p_data); // Allow stuff like TabContainer to override it.
+	}
+
 	Dictionary d = p_data;
 	if (!d.has("type")) {
 		return false;
 	}
 
-	if (String(d["type"]) == p_type) {
+	if (String(d["type"]) == "tab_element") {
 		NodePath from_path = d["from_path"];
 		NodePath to_path = get_path();
 		if (from_path == to_path) {
@@ -1260,14 +1097,19 @@ bool TabBar::_handle_can_drop_data(const String &p_type, const Point2 &p_point, 
 	return false;
 }
 
-void TabBar::_handle_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data, const Callable &p_move_tab_callback, const Callable &p_move_tab_from_other_callback) {
+void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
+	if (!drag_to_rearrange_enabled) {
+		Control::drop_data(p_point, p_data); // Allow stuff like TabContainer to override it.
+		return;
+	}
+
 	Dictionary d = p_data;
 	if (!d.has("type")) {
 		return;
 	}
 
-	if (String(d["type"]) == p_type) {
-		int tab_from_id = d["tab_index"];
+	if (String(d["type"]) == "tab_element") {
+		int tab_from_id = d["tab_element"];
 		int hover_now = get_tab_idx_at_point(p_point);
 		NodePath from_path = d["from_path"];
 		NodePath to_path = get_path();
@@ -1292,7 +1134,7 @@ void TabBar::_handle_drop_data(const String &p_type, const Point2 &p_point, cons
 				hover_now = is_layout_rtl() ^ (p_point.x < x) ? 0 : get_tab_count() - 1;
 			}
 
-			p_move_tab_callback.call(tab_from_id, hover_now);
+			move_tab(tab_from_id, hover_now);
 			if (!is_tab_disabled(hover_now)) {
 				emit_signal(SNAME("active_tab_rearranged"), hover_now);
 				set_current_tab(hover_now);
@@ -1318,34 +1160,35 @@ void TabBar::_handle_drop_data(const String &p_type, const Point2 &p_point, cons
 					hover_now = tabs.is_empty() || (is_layout_rtl() ^ (p_point.x < get_tab_rect(0).position.x)) ? 0 : get_tab_count();
 				}
 
-				p_move_tab_from_other_callback.call(from_tabs, tab_from_id, hover_now);
+				Tab moving_tab = from_tabs->tabs[tab_from_id];
+				from_tabs->remove_tab(tab_from_id);
+				tabs.insert(hover_now, moving_tab);
+
+				if (tabs.size() > 1) {
+					if (current >= hover_now) {
+						current++;
+					}
+					if (previous >= hover_now) {
+						previous++;
+					}
+				}
+
+				if (!is_tab_disabled(hover_now)) {
+					set_current_tab(hover_now);
+				} else {
+					_update_cache();
+					queue_redraw();
+				}
+
+				update_minimum_size();
+
+				if (tabs.size() == 1) {
+					emit_signal(SNAME("tab_selected"), 0);
+					emit_signal(SNAME("tab_changed"), 0);
+				}
 			}
 		}
 	}
-}
-
-void TabBar::_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index) {
-	Tab moving_tab = p_from_tabbar->tabs[p_from_index];
-	p_from_tabbar->remove_tab(p_from_index);
-	tabs.insert(p_to_index, moving_tab);
-
-	if (tabs.size() > 1) {
-		if (current >= p_to_index) {
-			current++;
-		}
-		if (previous >= p_to_index) {
-			previous++;
-		}
-	}
-
-	if (!is_tab_disabled(p_to_index)) {
-		set_current_tab(p_to_index);
-	} else {
-		_update_cache();
-		queue_redraw();
-	}
-
-	update_minimum_size();
 }
 
 int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {
@@ -1403,10 +1246,6 @@ bool TabBar::get_clip_tabs() const {
 	return clip_tabs;
 }
 
-void TabBar::set_tab_style_v_flip(bool p_tab_style_v_flip) {
-	tab_style_v_flip = p_tab_style_v_flip;
-}
-
 void TabBar::move_tab(int p_from, int p_to) {
 	if (p_from == p_to) {
 		return;
@@ -1429,9 +1268,9 @@ void TabBar::move_tab(int p_from, int p_to) {
 
 	if (previous == p_from) {
 		previous = p_to;
-	} else if (previous > p_from && previous <= p_to) {
+	} else if (previous > p_from && previous >= p_to) {
 		previous--;
-	} else if (previous < p_from && previous >= p_to) {
+	} else if (previous < p_from && previous <= p_to) {
 		previous++;
 	}
 
@@ -1453,8 +1292,7 @@ int TabBar::get_tab_width(int p_idx) const {
 		style = theme_cache.tab_disabled_style;
 	} else if (current == p_idx) {
 		style = theme_cache.tab_selected_style;
-		// Use the unselected style's width if the hovered one is shorter, to avoid an infinite loop when switching tabs with the mouse.
-	} else if (hover == p_idx && theme_cache.tab_hovered_style->get_minimum_size().width >= theme_cache.tab_unselected_style->get_minimum_size().width) {
+	} else if (hover == p_idx) {
 		style = theme_cache.tab_hovered_style;
 	} else {
 		style = theme_cache.tab_unselected_style;
@@ -1547,21 +1385,8 @@ void TabBar::_ensure_no_over_offset() {
 	}
 }
 
-bool TabBar::_can_deselect() const {
-	if (deselect_enabled) {
-		return true;
-	}
-	// All tabs must be disabled or hidden.
-	for (const Tab &tab : tabs) {
-		if (!tab.disabled && !tab.hidden) {
-			return false;
-		}
-	}
-	return true;
-}
-
 void TabBar::ensure_tab_visible(int p_idx) {
-	if (p_idx == -1 || !is_inside_tree() || !buttons_visible) {
+	if (!is_inside_tree() || !buttons_visible) {
 		return;
 	}
 	ERR_FAIL_INDEX(p_idx, tabs.size());
@@ -1706,18 +1531,56 @@ bool TabBar::get_select_with_rmb() const {
 	return select_with_rmb;
 }
 
-void TabBar::set_deselect_enabled(bool p_enabled) {
-	if (deselect_enabled == p_enabled) {
-		return;
+bool TabBar::_set(const StringName &p_name, const Variant &p_value) {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("tab_") && components[0].trim_prefix("tab_").is_valid_int()) {
+		int tab_index = components[0].trim_prefix("tab_").to_int();
+		String property = components[1];
+		if (property == "title") {
+			set_tab_title(tab_index, p_value);
+			return true;
+		} else if (property == "icon") {
+			set_tab_icon(tab_index, p_value);
+			return true;
+		} else if (components[1] == "disabled") {
+			set_tab_disabled(tab_index, p_value);
+			return true;
+		}
 	}
-	deselect_enabled = p_enabled;
-	if (!deselect_enabled && current == -1 && !tabs.is_empty()) {
-		select_next_available();
-	}
+	return false;
 }
 
-bool TabBar::get_deselect_enabled() const {
-	return deselect_enabled;
+bool TabBar::_get(const StringName &p_name, Variant &r_ret) const {
+	Vector<String> components = String(p_name).split("/", true, 2);
+	if (components.size() >= 2 && components[0].begins_with("tab_") && components[0].trim_prefix("tab_").is_valid_int()) {
+		int tab_index = components[0].trim_prefix("tab_").to_int();
+		String property = components[1];
+		if (property == "title") {
+			r_ret = get_tab_title(tab_index);
+			return true;
+		} else if (property == "icon") {
+			r_ret = get_tab_icon(tab_index);
+			return true;
+		} else if (components[1] == "disabled") {
+			r_ret = is_tab_disabled(tab_index);
+			return true;
+		}
+	}
+	return false;
+}
+
+void TabBar::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (int i = 0; i < tabs.size(); i++) {
+		p_list->push_back(PropertyInfo(Variant::STRING, vformat("tab_%d/title", i)));
+
+		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("tab_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		pi.usage &= ~(get_tab_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+
+		pi = PropertyInfo(Variant::BOOL, vformat("tab_%d/disabled", i));
+		pi.usage &= ~(!is_tab_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
+		p_list->push_back(pi);
+	}
 }
 
 void TabBar::_bind_methods() {
@@ -1726,8 +1589,6 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabBar::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabBar::get_current_tab);
 	ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabBar::get_previous_tab);
-	ClassDB::bind_method(D_METHOD("select_previous_available"), &TabBar::select_previous_available);
-	ClassDB::bind_method(D_METHOD("select_next_available"), &TabBar::select_next_available);
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabBar::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabBar::get_tab_title);
 	ClassDB::bind_method(D_METHOD("set_tab_text_direction", "tab_idx", "direction"), &TabBar::set_tab_text_direction);
@@ -1772,8 +1633,6 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scroll_to_selected"), &TabBar::get_scroll_to_selected);
 	ClassDB::bind_method(D_METHOD("set_select_with_rmb", "enabled"), &TabBar::set_select_with_rmb);
 	ClassDB::bind_method(D_METHOD("get_select_with_rmb"), &TabBar::get_select_with_rmb);
-	ClassDB::bind_method(D_METHOD("set_deselect_enabled", "enabled"), &TabBar::set_deselect_enabled);
-	ClassDB::bind_method(D_METHOD("get_deselect_enabled"), &TabBar::get_deselect_enabled);
 	ClassDB::bind_method(D_METHOD("clear_tabs"), &TabBar::clear_tabs);
 
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
@@ -1785,7 +1644,7 @@ void TabBar::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tab_hovered", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("active_tab_rearranged", PropertyInfo(Variant::INT, "idx_to")));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
@@ -1795,7 +1654,6 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_to_selected"), "set_scroll_to_selected", "get_scroll_to_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_with_rmb"), "set_select_with_rmb", "get_select_with_rmb");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_enabled"), "set_deselect_enabled", "get_deselect_enabled");
 
 	ADD_ARRAY_COUNT("Tabs", "tab_count", "set_tab_count", "get_tab_count", "tab_");
 
@@ -1816,7 +1674,6 @@ void TabBar::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_hovered_style, "tab_hovered");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_selected_style, "tab_selected");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_disabled_style, "tab_disabled");
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_focus_style, "tab_focus");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, increment_icon, "increment");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, increment_hl_icon, "increment_highlight");
@@ -1838,19 +1695,9 @@ void TabBar::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, close_icon, "close");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, button_pressed_style, "button_pressed");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, button_hl_style, "button_highlight");
-
-	Tab defaults(true);
-
-	base_property_helper.set_prefix("tab_");
-	base_property_helper.register_property(PropertyInfo(Variant::STRING, "title"), defaults.text, &TabBar::set_tab_title, &TabBar::get_tab_title);
-	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &TabBar::set_tab_icon, &TabBar::get_tab_icon);
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &TabBar::set_tab_disabled, &TabBar::is_tab_disabled);
 }
 
 TabBar::TabBar() {
 	set_size(Size2(get_size().width, get_minimum_size().height));
-	set_focus_mode(FOCUS_ALL);
 	connect("mouse_exited", callable_mp(this, &TabBar::_on_mouse_exited));
-
-	property_helper.setup_for_instance(base_property_helper, this);
 }

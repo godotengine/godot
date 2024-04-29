@@ -48,7 +48,6 @@ private:
 	Ref<Mesh> mesh;
 	RID multimesh;
 	TransformFormat transform_format = TRANSFORM_2D;
-	AABB custom_aabb;
 	bool use_colors = false;
 	bool use_custom_data = false;
 	int instance_count = 0;
@@ -103,9 +102,6 @@ public:
 
 	void set_instance_custom_data(int p_instance, const Color &p_custom_data);
 	Color get_instance_custom_data(int p_instance) const;
-
-	void set_custom_aabb(const AABB &p_custom);
-	AABB get_custom_aabb() const;
 
 	virtual AABB get_aabb() const;
 

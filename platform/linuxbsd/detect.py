@@ -7,7 +7,7 @@ from platform_methods import detect_arch
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from SCons.Script.SConscript import SConsEnvironment
+    from SCons import Environment
 
 
 def get_name():
@@ -47,10 +47,8 @@ def get_opts():
         BoolVariable("fontconfig", "Use fontconfig for system fonts support", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
-        BoolVariable("wayland", "Enable Wayland display", True),
-        BoolVariable("libdecor", "Enable libdecor support", True),
         BoolVariable("touch", "Enable touch events", True),
-        BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", None),
+        BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
     ]
 
 
@@ -67,11 +65,10 @@ def get_doc_path():
 def get_flags():
     return [
         ("arch", detect_arch()),
-        ("supported", ["mono"]),
     ]
 
 
-def configure(env: "SConsEnvironment"):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64"]
     if env["arch"] not in supported_arches:
@@ -87,16 +84,6 @@ def configure(env: "SConsEnvironment"):
         # This is needed for our crash handler to work properly.
         # gdb works fine without it though, so maybe our crash handler could too.
         env.Append(LINKFLAGS=["-rdynamic"])
-
-    # Cross-compilation
-    # TODO: Support cross-compilation on architectures other than x86.
-    host_is_64_bit = sys.maxsize > 2**32
-    if host_is_64_bit and env["arch"] == "x86_32":
-        env.Append(CCFLAGS=["-m32"])
-        env.Append(LINKFLAGS=["-m32"])
-    elif not host_is_64_bit and env["arch"] == "x86_64":
-        env.Append(CCFLAGS=["-m64"])
-        env.Append(LINKFLAGS=["-m64"])
 
     # CPU architecture flags.
     if env["arch"] == "rv64":
@@ -119,7 +106,7 @@ def configure(env: "SConsEnvironment"):
         print("Using linker program: " + env["linker"])
         if env["linker"] == "mold" and using_gcc(env):  # GCC < 12.1 doesn't support -fuse-ld=mold.
             cc_version = get_compiler_version(env)
-            cc_semver = (cc_version["major"], cc_version["minor"])
+            cc_semver = (int(cc_version["major"]), int(cc_version["minor"]))
             if cc_semver < (12, 1):
                 found_wrapper = False
                 for path in ["/usr/libexec", "/usr/local/libexec", "/usr/lib", "/usr/local/lib"]:
@@ -206,11 +193,6 @@ def configure(env: "SConsEnvironment"):
 
     if env["use_sowrap"]:
         env.Append(CPPDEFINES=["SOWRAP_ENABLED"])
-
-    if env["wayland"]:
-        if os.system("wayland-scanner -v 2>/dev/null") != 0:
-            print("wayland-scanner not found. Disabling Wayland support.")
-            env["wayland"] = False
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
@@ -372,13 +354,9 @@ def configure(env: "SConsEnvironment"):
             env.ParseConfig("pkg-config xkbcommon --cflags --libs")
             env.Append(CPPDEFINES=["XKB_ENABLED"])
         else:
-            if env["wayland"]:
-                print("Error: libxkbcommon development libraries required by Wayland not found. Aborting.")
-                sys.exit(255)
-            else:
-                print(
-                    "Warning: libxkbcommon development libraries not found. Disabling dead key composition and key label support."
-                )
+            print(
+                "Warning: libxkbcommon development libraries not found. Disabling dead key composition and key label support."
+            )
     else:
         env.Append(CPPDEFINES=["XKB_ENABLED"])
 
@@ -445,35 +423,8 @@ def configure(env: "SConsEnvironment"):
             env.ParseConfig("pkg-config xi --cflags --libs")
         env.Append(CPPDEFINES=["X11_ENABLED"])
 
-    if env["wayland"]:
-        if not env["use_sowrap"]:
-            if os.system("pkg-config --exists libdecor-0"):
-                print("Warning: libdecor development libraries not found. Disabling client-side decorations.")
-                env["libdecor"] = False
-            else:
-                env.ParseConfig("pkg-config libdecor-0 --cflags --libs")
-            if os.system("pkg-config --exists wayland-client"):
-                print("Error: Wayland client library not found. Aborting.")
-                sys.exit(255)
-            env.ParseConfig("pkg-config wayland-client --cflags --libs")
-            if os.system("pkg-config --exists wayland-cursor"):
-                print("Error: Wayland cursor library not found. Aborting.")
-                sys.exit(255)
-            env.ParseConfig("pkg-config wayland-cursor --cflags --libs")
-            if os.system("pkg-config --exists wayland-egl"):
-                print("Error: Wayland EGL library not found. Aborting.")
-                sys.exit(255)
-            env.ParseConfig("pkg-config wayland-egl --cflags --libs")
-
-        if env["libdecor"]:
-            env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])
-
-        env.Prepend(CPPPATH=["#platform/linuxbsd", "#thirdparty/linuxbsd_headers/wayland/"])
-        env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
-        env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
-
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
         if not env["use_volk"]:
             env.ParseConfig("pkg-config vulkan --cflags --libs")
         if not env["builtin_glslang"]:
@@ -488,29 +439,52 @@ def configure(env: "SConsEnvironment"):
     if platform.system() == "Linux":
         env.Append(LIBS=["dl"])
 
-    if platform.libc_ver()[0] != "glibc":
+    if not env["execinfo"] and platform.libc_ver()[0] != "glibc":
         # The default crash handler depends on glibc, so if the host uses
         # a different libc (BSD libc, musl), fall back to libexecinfo.
-        if not "execinfo" in env:
-            print("Note: Using `execinfo=yes` for the crash handler as required on platforms where glibc is missing.")
-            env["execinfo"] = True
+        print("Note: Using `execinfo=yes` for the crash handler as required on platforms where glibc is missing.")
+        env["execinfo"] = True
 
-        if env["execinfo"]:
-            env.Append(LIBS=["execinfo"])
-            env.Append(CPPDEFINES=["CRASH_HANDLER_ENABLED"])
+    if env["execinfo"]:
+        env.Append(LIBS=["execinfo"])
+
+    if not env.editor_build:
+        import subprocess
+        import re
+
+        linker_version_str = subprocess.check_output(
+            [env.subst(env["LINK"]), "-Wl,--version"] + env.subst(env["LINKFLAGS"])
+        ).decode("utf-8")
+        gnu_ld_version = re.search("^GNU ld [^$]*(\d+\.\d+)$", linker_version_str, re.MULTILINE)
+        if not gnu_ld_version:
+            print(
+                "Warning: Creating export template binaries enabled for PCK embedding is currently only supported with GNU ld, not gold, LLD or mold."
+            )
         else:
-            print("Note: Using `execinfo=no` disables the crash handler on platforms where glibc is missing.")
-    else:
-        env.Append(CPPDEFINES=["CRASH_HANDLER_ENABLED"])
+            if float(gnu_ld_version.group(1)) >= 2.30:
+                env.Append(LINKFLAGS=["-T", "platform/linuxbsd/pck_embed.ld"])
+            else:
+                env.Append(LINKFLAGS=["-T", "platform/linuxbsd/pck_embed.legacy.ld"])
 
     if platform.system() == "FreeBSD":
         env.Append(LINKFLAGS=["-lkvm"])
+
+    ## Cross-compilation
+    # TODO: Support cross-compilation on architectures other than x86.
+    host_is_64_bit = sys.maxsize > 2**32
+    if host_is_64_bit and env["arch"] == "x86_32":
+        env.Append(CCFLAGS=["-m32"])
+        env.Append(LINKFLAGS=["-m32", "-L/usr/lib/i386-linux-gnu"])
+    elif not host_is_64_bit and env["arch"] == "x86_64":
+        env.Append(CCFLAGS=["-m64"])
+        env.Append(LINKFLAGS=["-m64", "-L/usr/lib/i686-linux-gnu"])
 
     # Link those statically for portability
     if env["use_static_cpp"]:
         env.Append(LINKFLAGS=["-static-libgcc", "-static-libstdc++"])
         if env["use_llvm"] and platform.system() != "FreeBSD":
             env["LINKCOM"] = env["LINKCOM"] + " -l:libatomic.a"
+
     else:
         if env["use_llvm"] and platform.system() != "FreeBSD":
             env.Append(LIBS=["atomic"])

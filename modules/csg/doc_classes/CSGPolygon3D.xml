@@ -39,7 +39,7 @@
 			When [member mode] is [constant MODE_PATH], the location of the [Path3D] object used to extrude the [member polygon].
 		</member>
 		<member name="path_rotation" type="int" setter="set_path_rotation" getter="get_path_rotation" enum="CSGPolygon3D.PathRotation">
-			When [member mode] is [constant MODE_PATH], the path rotation method used to rotate the [member polygon] as it is extruded.
+			When [member mode] is [constant MODE_PATH], the [enum PathRotation] method used to rotate the [member polygon] as it is extruded.
 		</member>
 		<member name="path_simplify_angle" type="float" setter="set_path_simplify_angle" getter="get_path_simplify_angle">
 			When [member mode] is [constant MODE_PATH], extrusions that are less than this angle, will be merged together to reduce polygon count.

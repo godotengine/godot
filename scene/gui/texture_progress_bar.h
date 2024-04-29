@@ -43,7 +43,6 @@ class TextureProgressBar : public Range {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	enum FillMode {

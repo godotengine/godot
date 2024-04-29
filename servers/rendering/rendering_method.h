@@ -33,14 +33,7 @@
 
 #include "servers/rendering/storage/render_scene_buffers.h"
 #include "servers/rendering_server.h"
-
-#ifdef _3D_DISABLED
-// RendererSceneCull::render_camera is empty when 3D is disabled, but
-// it and RenderingMethod::render_camera have a parameter for XRInterface.
-#define XRInterface RefCounted
-#else // 3D enabled
 #include "servers/xr/xr_interface.h"
-#endif // _3D_DISABLED
 
 class RenderingMethod {
 public:
@@ -54,7 +47,6 @@ public:
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers) = 0;
 	virtual void camera_set_environment(RID p_camera, RID p_env) = 0;
 	virtual void camera_set_camera_attributes(RID p_camera, RID p_attributes) = 0;
-	virtual void camera_set_compositor(RID p_camera, RID p_compositor) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 	virtual bool is_camera(RID p_camera) const = 0;
 
@@ -68,7 +60,6 @@ public:
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment) = 0;
 	virtual void scenario_set_camera_attributes(RID p_scenario, RID p_attributes) = 0;
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment) = 0;
-	virtual void scenario_set_compositor(RID p_scenario, RID p_compositor) = 0;
 	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_reflection_size, int p_reflection_count) = 0;
 	virtual bool is_scenario(RID p_scenario) const = 0;
 	virtual RID scenario_get_environment(RID p_scenario) = 0;
@@ -126,27 +117,6 @@ public:
 	virtual void sky_set_material(RID p_sky, RID p_material) = 0;
 	virtual Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) = 0;
 
-	/* COMPOSITOR EFFECT API */
-
-	virtual RID compositor_effect_allocate() = 0;
-	virtual void compositor_effect_initialize(RID p_rid) = 0;
-
-	virtual bool is_compositor_effect(RID p_compositor) const = 0;
-
-	virtual void compositor_effect_set_enabled(RID p_compositor, bool p_enabled) = 0;
-
-	virtual void compositor_effect_set_callback(RID p_compositor, RS::CompositorEffectCallbackType p_callback_type, const Callable &p_callback) = 0;
-	virtual void compositor_effect_set_flag(RID p_compositor, RS::CompositorEffectFlags p_flag, bool p_set) = 0;
-
-	/* COMPOSITOR API */
-
-	virtual RID compositor_allocate() = 0;
-	virtual void compositor_initialize(RID p_rid) = 0;
-
-	virtual bool is_compositor(RID p_compositor) const = 0;
-
-	virtual void compositor_set_compositor_effects(RID p_env, const TypedArray<RID> &p_effects) = 0;
-
 	/* ENVIRONMENT API */
 
 	virtual RID environment_allocate() = 0;
@@ -184,10 +154,9 @@ public:
 	virtual float environment_get_white(RID p_env) const = 0;
 
 	// Fog
-	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode = RS::EnvironmentFogMode::ENV_FOG_MODE_EXPONENTIAL) = 0;
+	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect) = 0;
 
 	virtual bool environment_get_fog_enabled(RID p_env) const = 0;
-	virtual RS::EnvironmentFogMode environment_get_fog_mode(RID p_env) const = 0;
 	virtual Color environment_get_fog_light_color(RID p_env) const = 0;
 	virtual float environment_get_fog_light_energy(RID p_env) const = 0;
 	virtual float environment_get_fog_sun_scatter(RID p_env) const = 0;
@@ -196,13 +165,6 @@ public:
 	virtual float environment_get_fog_height_density(RID p_env) const = 0;
 	virtual float environment_get_fog_aerial_perspective(RID p_env) const = 0;
 	virtual float environment_get_fog_sky_affect(RID p_env) const = 0;
-
-	// Depth Fog
-	virtual void environment_set_fog_depth(RID p_env, float p_curve, float p_begin, float p_end) = 0;
-
-	virtual float environment_get_fog_depth_curve(RID p_env) const = 0;
-	virtual float environment_get_fog_depth_begin(RID p_env) const = 0;
-	virtual float environment_get_fog_depth_end(RID p_env) const = 0;
 
 	// Volumetric Fog
 	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect) = 0;
@@ -339,7 +301,7 @@ public:
 		int info[RS::VIEWPORT_RENDER_INFO_TYPE_MAX][RS::VIEWPORT_RENDER_INFO_MAX] = {};
 	};
 
-	virtual void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderInfo *r_render_info = nullptr) = 0;
+	virtual void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, bool p_use_taa, float p_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderInfo *r_render_info = nullptr) = 0;
 
 	virtual void update() = 0;
 	virtual void render_probes() = 0;

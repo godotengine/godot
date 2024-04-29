@@ -32,14 +32,12 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
-#include "editor/editor_command_palette.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
-#include "editor/themes/editor_scale.h"
 
 void ResourcePreloaderEditor::_notification(int p_what) {
 	switch (p_what) {
@@ -52,7 +50,7 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 
 void ResourcePreloaderEditor::_files_load_request(const Vector<String> &p_paths) {
 	for (int i = 0; i < p_paths.size(); i++) {
-		const String &path = p_paths[i];
+		String path = p_paths[i];
 
 		Ref<Resource> resource;
 		resource = ResourceLoader::load(path);
@@ -369,7 +367,6 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 
 	tree = memnew(Tree);
 	tree->connect("button_clicked", callable_mp(this, &ResourcePreloaderEditor::_cell_button_pressed));
-	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(2);
 	tree->set_column_expand_ratio(0, 2);
 	tree->set_column_clip_content(0, true);
@@ -409,11 +406,11 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		//preloader_editor->show();
 		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(preloader_editor);
+		EditorNode::get_singleton()->make_bottom_panel_item_visible(preloader_editor);
 		//preloader_editor->set_process(true);
 	} else {
 		if (preloader_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
+			EditorNode::get_singleton()->hide_bottom_panel();
 		}
 		button->hide();
 		//preloader_editor->hide();
@@ -425,7 +422,7 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin() {
 	preloader_editor = memnew(ResourcePreloaderEditor);
 	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 
-	button = EditorNode::get_bottom_panel()->add_item("ResourcePreloader", preloader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_resource_preloader_bottom_panel", TTR("Toggle ResourcePreloader Bottom Panel")));
+	button = EditorNode::get_singleton()->add_bottom_panel_item("ResourcePreloader", preloader_editor);
 	button->hide();
 }
 

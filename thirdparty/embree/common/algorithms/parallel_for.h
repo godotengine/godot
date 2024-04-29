@@ -5,7 +5,7 @@
 
 #include "../tasking/taskscheduler.h"
 #include "../sys/array.h"
-#include "../math/emath.h"
+#include "../math/math.h"
 #include "../math/range.h"
 
 namespace embree
@@ -14,17 +14,17 @@ namespace embree
   template<typename Index, typename Func>
     __forceinline void parallel_for( const Index N, const Func& func)
   {
-#if defined(TASKING_INTERNAL) && !defined(TASKING_TBB)
+#if defined(TASKING_INTERNAL)
     if (N) {
-      TaskScheduler::TaskGroupContext context;
       TaskScheduler::spawn(Index(0),N,Index(1),[&] (const range<Index>& r) {
           assert(r.size() == 1);
           func(r.begin());
-        },&context);
-      TaskScheduler::wait();
-      if (context.cancellingException != nullptr) {
-        std::rethrow_exception(context.cancellingException);
-      }
+        });
+      if (!TaskScheduler::wait())
+        // -- GODOT start --
+        // throw std::runtime_error("task cancelled");
+        abort();
+        // -- GODOT end --
     }
 #elif defined(TASKING_TBB)
   #if TBB_INTERFACE_VERSION >= 12002
@@ -33,13 +33,19 @@ namespace embree
         func(i);
       },context);
     if (context.is_group_execution_cancelled())
-      throw std::runtime_error("task cancelled");
+      // -- GODOT start --
+      // throw std::runtime_error("task cancelled");
+      abort();
+      // -- GODOT end --
   #else
     tbb::parallel_for(Index(0),N,Index(1),[&](Index i) {
         func(i);
       });
     if (tbb::task::self().is_cancelled())
-      throw std::runtime_error("task cancelled");
+      // -- GODOT start --
+      // throw std::runtime_error("task cancelled");
+      abort();
+      // -- GODOT end --
   #endif
 
 #elif defined(TASKING_PPL)
@@ -56,13 +62,13 @@ namespace embree
     __forceinline void parallel_for( const Index first, const Index last, const Index minStepSize, const Func& func)
   {
     assert(first <= last);
-#if defined(TASKING_INTERNAL) && !defined(TASKING_TBB)
-    TaskScheduler::TaskGroupContext context;
-    TaskScheduler::spawn(first,last,minStepSize,func,&context);
-    TaskScheduler::wait();
-    if (context.cancellingException != nullptr) {
-      std::rethrow_exception(context.cancellingException);
-    }
+#if defined(TASKING_INTERNAL)
+    TaskScheduler::spawn(first,last,minStepSize,func);
+    if (!TaskScheduler::wait())
+      // -- GODOT start --
+      // throw std::runtime_error("task cancelled");
+      abort();
+      // -- GODOT end --
 
 #elif defined(TASKING_TBB)
   #if TBB_INTERFACE_VERSION >= 12002
@@ -71,13 +77,19 @@ namespace embree
         func(range<Index>(r.begin(),r.end()));
       },context);
     if (context.is_group_execution_cancelled())
-      throw std::runtime_error("task cancelled");
+      // -- GODOT start --
+      // throw std::runtime_error("task cancelled");
+      abort();
+      // -- GODOT end --
   #else
     tbb::parallel_for(tbb::blocked_range<Index>(first,last,minStepSize),[&](const tbb::blocked_range<Index>& r) {
         func(range<Index>(r.begin(),r.end()));
       });
     if (tbb::task::self().is_cancelled())
-      throw std::runtime_error("task cancelled");
+      // -- GODOT start --
+      // throw std::runtime_error("task cancelled");
+      abort();
+      // -- GODOT end --
   #endif
 
 #elif defined(TASKING_PPL)
@@ -109,13 +121,19 @@ namespace embree
           func(i);
         },tbb::simple_partitioner(),context);
       if (context.is_group_execution_cancelled())
-        throw std::runtime_error("task cancelled");
+        // -- GODOT start --
+        // throw std::runtime_error("task cancelled");
+        abort();
+        // -- GODOT end --
     #else
       tbb::parallel_for(Index(0),N,Index(1),[&](Index i) {
           func(i);
         },tbb::simple_partitioner());
       if (tbb::task::self().is_cancelled())
-        throw std::runtime_error("task cancelled");
+        // -- GODOT start --
+        // throw std::runtime_error("task cancelled");
+        abort();
+        // -- GODOT end --
     #endif
   }
 
@@ -130,13 +148,19 @@ namespace embree
           func(i);
         },ap,context);
       if (context.is_group_execution_cancelled())
-        throw std::runtime_error("task cancelled");
+        // -- GODOT start --
+        // throw std::runtime_error("task cancelled");
+        abort();
+        // -- GODOT end --
     #else
       tbb::parallel_for(Index(0),N,Index(1),[&](Index i) {
           func(i);
         },ap);
       if (tbb::task::self().is_cancelled())
-        throw std::runtime_error("task cancelled");
+        // -- GODOT start --
+        // throw std::runtime_error("task cancelled");
+        abort();
+        // -- GODOT end --
     #endif
   }
 

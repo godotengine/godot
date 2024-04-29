@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="texture_rd_rid" type="RID" setter="set_texture_rd_rid" getter="get_texture_rd_rid">
+		<member name="texture_rd_rid" type="RID" setter="set_texture_rd_rid" getter="get_texture_rd_rid" default="RID()">
 			The RID of the texture object created on the [RenderingDevice].
 		</member>
 	</members>

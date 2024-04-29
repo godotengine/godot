@@ -595,7 +595,7 @@ void GodotSoftBody3D::generate_bending_constraints(int p_distance) {
 		const uint32_t adj_size = n * n;
 		unsigned *adj = memnew_arr(unsigned, adj_size);
 
-#define IDX(_x_, _y_) ((_y_) * n + (_x_))
+#define IDX(_x_, _y_) ((_y_)*n + (_x_))
 		for (j = 0; j < n; ++j) {
 			for (i = 0; i < n; ++i) {
 				int idx_ij = j * n + i;
@@ -967,7 +967,7 @@ Vector3 GodotSoftBody3D::_compute_area_windforce(const GodotArea3D *p_area, cons
 void GodotSoftBody3D::predict_motion(real_t p_delta) {
 	const real_t inv_delta = 1.0 / p_delta;
 
-	ERR_FAIL_NULL(get_space());
+	ERR_FAIL_COND(!get_space());
 
 	bool gravity_done = false;
 	Vector3 gravity;
@@ -1010,7 +1010,7 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 	// Add default gravity and damping from space area.
 	if (!gravity_done) {
 		GodotArea3D *default_area = get_space()->get_default_area();
-		ERR_FAIL_NULL(default_area);
+		ERR_FAIL_COND(!default_area);
 
 		Vector3 default_gravity;
 		default_area->compute_gravity(get_transform().get_origin(), default_gravity);
@@ -1223,7 +1223,7 @@ void GodotSoftBody3D::destroy() {
 }
 
 void GodotSoftBodyShape3D::update_bounds() {
-	ERR_FAIL_NULL(soft_body);
+	ERR_FAIL_COND(!soft_body);
 
 	AABB collision_aabb = soft_body->get_bounds();
 	collision_aabb.grow_by(soft_body->get_collision_margin());

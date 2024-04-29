@@ -260,12 +260,6 @@ enum class KeyModifierMask {
 	GROUP_SWITCH = (1 << 30)
 };
 
-enum class KeyLocation {
-	UNSPECIFIED,
-	LEFT,
-	RIGHT
-};
-
 // To avoid having unnecessary operators, only define the ones that are needed.
 
 constexpr Key operator-(uint32_t a, Key b) {

@@ -3,6 +3,5 @@
     <ProjectGuid>{639E48BD-44E5-4091-8EDD-22D36DC0768D}</ProjectGuid>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>10</LangVersion>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 </Project>

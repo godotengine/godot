@@ -57,9 +57,6 @@ class NavigationObstacle3D : public Node3D {
 	Vector3 previous_velocity;
 	bool velocity_submitted = false;
 
-	bool affect_navigation_mesh = false;
-	bool carve_navigation_mesh = false;
-
 #ifdef DEBUG_ENABLED
 	RID fake_agent_radius_debug_instance;
 	Ref<ArrayMesh> fake_agent_radius_debug_mesh;
@@ -110,12 +107,6 @@ public:
 	Vector3 get_velocity() const { return velocity; };
 
 	void _avoidance_done(Vector3 p_new_velocity); // Dummy
-
-	void set_affect_navigation_mesh(bool p_enabled);
-	bool get_affect_navigation_mesh() const;
-
-	void set_carve_navigation_mesh(bool p_enabled);
-	bool get_carve_navigation_mesh() const;
 
 private:
 	void _update_map(RID p_map);

@@ -30,13 +30,16 @@ namespace Godot.SourceGenerators
                         {
                             if (x.cds.IsPartial())
                             {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out _))
+                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
                                 {
+                                    Common.ReportNonPartialGodotScriptOuterClass(context, typeMissingPartial!);
                                     return false;
                                 }
 
                                 return true;
                             }
+
+                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
                         .Select(x => x.symbol)
@@ -88,20 +91,16 @@ namespace Godot.SourceGenerators
             if (isInnerClass)
             {
                 var containingType = symbol.ContainingType;
-                AppendPartialContainingTypeDeclarations(containingType);
 
-                void AppendPartialContainingTypeDeclarations(INamedTypeSymbol? containingType)
+                while (containingType != null)
                 {
-                    if (containingType == null)
-                        return;
-
-                    AppendPartialContainingTypeDeclarations(containingType.ContainingType);
-
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
                     source.Append(containingType.NameWithTypeParameters());
                     source.Append("\n{\n");
+
+                    containingType = containingType.ContainingType;
                 }
             }
 
@@ -130,7 +129,7 @@ namespace Godot.SourceGenerators
                 .Append("    /// </summary>\n");
 
             source.Append(
-                $"    public new class PropertyName : {symbol.BaseType!.FullQualifiedNameIncludeGlobal()}.PropertyName {{\n");
+                $"    public new class PropertyName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.PropertyName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -213,40 +212,34 @@ namespace Godot.SourceGenerators
                 }
 
                 // Generate GetGodotClassPropertyValue
-                bool allPropertiesAreWriteOnly = godotClassFields.Length == 0 && godotClassProperties.All(pi => pi.PropertySymbol.IsWriteOnly);
 
-                if (!allPropertiesAreWriteOnly)
+                source.Append("    /// <inheritdoc/>\n");
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
+                source.Append("    protected override bool GetGodotClassPropertyValue(in godot_string_name name, ");
+                source.Append("out godot_variant value)\n    {\n");
+
+                isFirstEntry = true;
+                foreach (var property in godotClassProperties)
                 {
-                    source.Append("    /// <inheritdoc/>\n");
-                    source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
-                    source.Append("    protected override bool GetGodotClassPropertyValue(in godot_string_name name, ");
-                    source.Append("out godot_variant value)\n    {\n");
-
-                    isFirstEntry = true;
-                    foreach (var property in godotClassProperties)
-                    {
-                        if (property.PropertySymbol.IsWriteOnly)
-                            continue;
-
-                        GeneratePropertyGetter(property.PropertySymbol.Name,
-                            property.PropertySymbol.Type, property.Type, source, isFirstEntry);
-                        isFirstEntry = false;
-                    }
-
-                    foreach (var field in godotClassFields)
-                    {
-                        GeneratePropertyGetter(field.FieldSymbol.Name,
-                            field.FieldSymbol.Type, field.Type, source, isFirstEntry);
-                        isFirstEntry = false;
-                    }
-
-                    source.Append("        return base.GetGodotClassPropertyValue(name, out value);\n");
-
-                    source.Append("    }\n");
+                    GeneratePropertyGetter(property.PropertySymbol.Name,
+                        property.PropertySymbol.Type, property.Type, source, isFirstEntry);
+                    isFirstEntry = false;
                 }
+
+                foreach (var field in godotClassFields)
+                {
+                    GeneratePropertyGetter(field.FieldSymbol.Name,
+                        field.FieldSymbol.Type, field.Type, source, isFirstEntry);
+                    isFirstEntry = false;
+                }
+
+                source.Append("        return base.GetGodotClassPropertyValue(name, out value);\n");
+
+                source.Append("    }\n");
+
                 // Generate GetGodotPropertyList
 
-                const string DictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
+                const string dictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
 
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the property information for all the properties declared in this class.\n")
@@ -257,11 +250,11 @@ namespace Godot.SourceGenerators
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
                 source.Append("    internal new static ")
-                    .Append(DictionaryType)
+                    .Append(dictionaryType)
                     .Append(" GetGodotPropertyList()\n    {\n");
 
                 source.Append("        var properties = new ")
-                    .Append(DictionaryType)
+                    .Append(dictionaryType)
                     .Append("();\n");
 
                 // To retain the definition order (and display categories correctly), we want to
@@ -440,22 +433,14 @@ namespace Godot.SourceGenerators
                 if (propertySymbol.GetMethod == null)
                 {
                     // This should never happen, as we filtered WriteOnly properties, but just in case.
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        Common.ExportedPropertyIsWriteOnlyRule,
-                        propertySymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
-                        propertySymbol.ToDisplayString()
-                    ));
+                    Common.ReportExportedMemberIsWriteOnly(context, propertySymbol);
                     return null;
                 }
 
                 if (propertySymbol.SetMethod == null || propertySymbol.SetMethod.IsInitOnly)
                 {
                     // This should never happen, as we filtered ReadOnly properties, but just in case.
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        Common.ExportedMemberIsReadOnlyRule,
-                        propertySymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
-                        propertySymbol.ToDisplayString()
-                    ));
+                    Common.ReportExportedMemberIsReadOnly(context, propertySymbol);
                     return null;
                 }
             }

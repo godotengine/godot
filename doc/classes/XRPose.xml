@@ -50,7 +50,7 @@
 			Tracking information may be inaccurate or estimated. For example, with inside out tracking this would indicate a controller may be (partially) obscured.
 		</constant>
 		<constant name="XR_TRACKING_CONFIDENCE_HIGH" value="2" enum="TrackingConfidence">
-			Tracking information is considered accurate and up to date.
+			Tracking information is deemed accurate and up to date.
 		</constant>
 	</constants>
 </class>

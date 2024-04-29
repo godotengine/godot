@@ -88,7 +88,6 @@ typedef int(__cdecl *NvAPI_DRS_CreateApplication_t)(NvDRSSessionHandle, NvDRSPro
 typedef int(__cdecl *NvAPI_DRS_SaveSettings_t)(NvDRSSessionHandle);
 typedef int(__cdecl *NvAPI_DRS_SetSetting_t)(NvDRSSessionHandle, NvDRSProfileHandle, NVDRS_SETTING *);
 typedef int(__cdecl *NvAPI_DRS_FindProfileByName_t)(NvDRSSessionHandle, NvAPI_UnicodeString, NvDRSProfileHandle *);
-typedef int(__cdecl *NvAPI_DRS_FindApplicationByName_t)(NvDRSSessionHandle, NvAPI_UnicodeString, NvDRSProfileHandle *, NVDRS_APPLICATION *);
 NvAPI_GetErrorMessage_t NvAPI_GetErrorMessage__;
 
 static bool nvapi_err_check(const char *msg, int status) {
@@ -104,25 +103,25 @@ static bool nvapi_err_check(const char *msg, int status) {
 }
 
 // On windows we have to disable threaded optimization when using NVIDIA graphics cards
-// to avoid stuttering, see https://stackoverflow.com/questions/36959508/nvidia-graphics-driver-causing-noticeable-frame-stuttering/37632948
-// also see https://github.com/Ryujinx/Ryujinx/blob/master/src/Ryujinx.Common/GraphicsDriver/NVThreadedOptimization.cs
+// to avoid stuttering, see https://github.com/microsoft/vscode-cpptools/issues/6592
+// also see https://github.com/Ryujinx/Ryujinx/blob/master/Ryujinx.Common/GraphicsDriver/NVThreadedOptimization.cs
 void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
-	HMODULE nvapi = nullptr;
+	HMODULE nvapi = 0;
 #ifdef _WIN64
 	nvapi = LoadLibraryA("nvapi64.dll");
 #else
 	nvapi = LoadLibraryA("nvapi.dll");
 #endif
 
-	if (nvapi == nullptr) {
+	if (nvapi == NULL) {
 		return;
 	}
 
-	void *(__cdecl * NvAPI_QueryInterface)(unsigned int interface_id) = nullptr;
+	void *(__cdecl * NvAPI_QueryInterface)(unsigned int interface_id) = 0;
 
 	NvAPI_QueryInterface = (void *(__cdecl *)(unsigned int))(void *)GetProcAddress(nvapi, "nvapi_QueryInterface");
 
-	if (NvAPI_QueryInterface == nullptr) {
+	if (NvAPI_QueryInterface == NULL) {
 		print_verbose("Error getting NVAPI NvAPI_QueryInterface");
 		return;
 	}
@@ -139,7 +138,6 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	NvAPI_DRS_SaveSettings_t NvAPI_DRS_SaveSettings = (NvAPI_DRS_SaveSettings_t)NvAPI_QueryInterface(0xFCBC7E14);
 	NvAPI_DRS_SetSetting_t NvAPI_DRS_SetSetting = (NvAPI_DRS_SetSetting_t)NvAPI_QueryInterface(0x577DD202);
 	NvAPI_DRS_FindProfileByName_t NvAPI_DRS_FindProfileByName = (NvAPI_DRS_FindProfileByName_t)NvAPI_QueryInterface(0x7E4A9A0B);
-	NvAPI_DRS_FindApplicationByName_t NvAPI_DRS_FindApplicationByName = (NvAPI_DRS_FindApplicationByName_t)NvAPI_QueryInterface(0xEEE566B2);
 
 	if (!nvapi_err_check("NVAPI: Init failed", NvAPI_Initialize())) {
 		return;
@@ -148,10 +146,6 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	print_verbose("NVAPI: Init OK!");
 
 	NvDRSSessionHandle session_handle;
-
-	if (NvAPI_DRS_CreateSession == nullptr) {
-		return;
-	}
 
 	if (!nvapi_err_check("NVAPI: Error creating DRS session", NvAPI_DRS_CreateSession(&session_handle))) {
 		NvAPI_Unload();
@@ -176,11 +170,11 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 	Char16String app_executable_name_u16 = app_executable_name.utf16();
 	Char16String app_friendly_name_u16 = app_friendly_name.utf16();
 
-	NvDRSProfileHandle profile_handle = nullptr;
+	NvDRSProfileHandle profile_handle = 0;
 
-	int profile_status = NvAPI_DRS_FindProfileByName(session_handle, (NvU16 *)(app_profile_name_u16.ptrw()), &profile_handle);
+	int status = NvAPI_DRS_FindProfileByName(session_handle, (NvU16 *)(app_profile_name_u16.ptrw()), &profile_handle);
 
-	if (profile_status != 0) {
+	if (status != 0) {
 		print_verbose("NVAPI: Profile not found, creating....");
 
 		NVDRS_PROFILE profile_info;
@@ -193,17 +187,9 @@ void GLManagerNative_Windows::_nvapi_disable_threaded_optimization() {
 			NvAPI_Unload();
 			return;
 		}
-	}
 
-	NvDRSProfileHandle app_profile_handle = nullptr;
-	NVDRS_APPLICATION_V4 app;
-	app.version = NVDRS_APPLICATION_VER_V4;
-
-	int app_status = NvAPI_DRS_FindApplicationByName(session_handle, (NvU16 *)(app_executable_name_u16.ptrw()), &app_profile_handle, &app);
-
-	if (app_status != 0) {
-		print_verbose("NVAPI: Application not found, adding to profile...");
-
+		NVDRS_APPLICATION_V4 app;
+		app.version = NVDRS_APPLICATION_VER_V4;
 		app.isPredefined = 0;
 		app.isMetro = 1;
 		app.isCommandLine = 1;
@@ -362,14 +348,14 @@ Error GLManagerNative_Windows::_create_context(GLWindow &win, GLDisplay &gl_disp
 	if (wglCreateContextAttribsARB == nullptr) //OpenGL 3.0 is not supported
 	{
 		gd_wglDeleteContext(gl_display.hRC);
-		gl_display.hRC = nullptr;
+		gl_display.hRC = 0;
 		return ERR_CANT_CREATE;
 	}
 
-	HGLRC new_hRC = wglCreateContextAttribsARB(win.hDC, nullptr, attribs);
+	HGLRC new_hRC = wglCreateContextAttribsARB(win.hDC, 0, attribs);
 	if (!new_hRC) {
 		gd_wglDeleteContext(gl_display.hRC);
-		gl_display.hRC = nullptr;
+		gl_display.hRC = 0;
 		return ERR_CANT_CREATE;
 	}
 
@@ -384,7 +370,7 @@ Error GLManagerNative_Windows::_create_context(GLWindow &win, GLDisplay &gl_disp
 	{
 		ERR_PRINT("Could not attach OpenGL context to newly created window with replaced OpenGL context: " + format_error_message(GetLastError()));
 		gd_wglDeleteContext(gl_display.hRC);
-		gl_display.hRC = nullptr;
+		gl_display.hRC = 0;
 		return ERR_CANT_CREATE;
 	}
 
@@ -427,6 +413,10 @@ Error GLManagerNative_Windows::window_create(DisplayServer::WindowID p_window_id
 	return OK;
 }
 
+void GLManagerNative_Windows::_internal_set_current_window(GLWindow *p_win) {
+	_current_window = p_win;
+}
+
 void GLManagerNative_Windows::window_destroy(DisplayServer::WindowID p_window_id) {
 	GLWindow &win = get_window(p_window_id);
 	if (_current_window == &win) {
@@ -443,8 +433,6 @@ void GLManagerNative_Windows::release_current() {
 	if (!gd_wglMakeCurrent(_current_window->hDC, nullptr)) {
 		ERR_PRINT("Could not detach OpenGL context from window marked current: " + format_error_message(GetLastError()));
 	}
-
-	_current_window = nullptr;
 }
 
 void GLManagerNative_Windows::window_make_current(DisplayServer::WindowID p_window_id) {
@@ -465,7 +453,17 @@ void GLManagerNative_Windows::window_make_current(DisplayServer::WindowID p_wind
 		ERR_PRINT("Could not switch OpenGL context to other window: " + format_error_message(GetLastError()));
 	}
 
-	_current_window = &win;
+	_internal_set_current_window(&win);
+}
+
+void GLManagerNative_Windows::make_current() {
+	if (!_current_window) {
+		return;
+	}
+	const GLDisplay &disp = get_current_display();
+	if (!gd_wglMakeCurrent(_current_window->hDC, disp.hRC)) {
+		ERR_PRINT("Could not switch OpenGL context to window marked current: " + format_error_message(GetLastError()));
+	}
 }
 
 void GLManagerNative_Windows::swap_buffers() {
@@ -479,6 +477,7 @@ Error GLManagerNative_Windows::initialize() {
 
 void GLManagerNative_Windows::set_use_vsync(DisplayServer::WindowID p_window_id, bool p_use) {
 	GLWindow &win = get_window(p_window_id);
+	GLWindow *current = _current_window;
 
 	if (&win != _current_window) {
 		window_make_current(p_window_id);
@@ -492,6 +491,11 @@ void GLManagerNative_Windows::set_use_vsync(DisplayServer::WindowID p_window_id,
 		}
 	} else {
 		WARN_PRINT("Could not set V-Sync mode. V-Sync is not supported.");
+	}
+
+	if (current != _current_window) {
+		_current_window = current;
+		make_current();
 	}
 }
 

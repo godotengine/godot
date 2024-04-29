@@ -1,7 +1,6 @@
 # meta-description: Basic plugin template
-
 @tool
-extends _BASE_
+extends EditorPlugin
 
 
 func _enter_tree() -> void:

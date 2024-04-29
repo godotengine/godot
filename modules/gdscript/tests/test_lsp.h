@@ -76,7 +76,7 @@ namespace GDScriptTests {
 // LSP GDScript test scripts are located inside project of other GDScript tests:
 // Cannot reset `ProjectSettings` (singleton) -> Cannot load another workspace and resources in there.
 // -> Reuse GDScript test project. LSP specific scripts are then placed inside `lsp` folder.
-//    Access via `res://lsp/my_script.gd`.
+//    Access via `res://lsp/my_script.notest.gd`.
 const String root = "modules/gdscript/tests/scripts/";
 
 /*
@@ -394,7 +394,7 @@ func f():
 		Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
 
 		{
-			String path = "res://lsp/local_variables.gd";
+			String path = "res://lsp/local_variables.notest.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -413,7 +413,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for indented variables") {
-			String path = "res://lsp/indentation.gd";
+			String path = "res://lsp/indentation.notest.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -421,7 +421,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for scopes") {
-			String path = "res://lsp/scopes.gd";
+			String path = "res://lsp/scopes.notest.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -429,7 +429,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for lambda") {
-			String path = "res://lsp/lambdas.gd";
+			String path = "res://lsp/lambdas.notest.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -437,7 +437,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for inner class") {
-			String path = "res://lsp/class.gd";
+			String path = "res://lsp/class.notest.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -445,7 +445,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for inner class") {
-			String path = "res://lsp/enums.gd";
+			String path = "res://lsp/enums.notest.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -453,7 +453,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for shadowing & shadowed variables") {
-			String path = "res://lsp/shadowing_initializer.gd";
+			String path = "res://lsp/shadowing_initializer.notest.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -461,7 +461,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for properties and getter/setter") {
-			String path = "res://lsp/properties.gd";
+			String path = "res://lsp/properties.notest.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);

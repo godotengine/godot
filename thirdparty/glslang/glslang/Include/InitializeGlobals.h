@@ -37,7 +37,7 @@
 
 namespace glslang {
 
-inline bool InitializePoolIndex() { return true; } // DEPRECATED: No need to call
+bool InitializePoolIndex();
 
 } // end namespace glslang
 

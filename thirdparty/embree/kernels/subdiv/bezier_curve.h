@@ -185,10 +185,9 @@ namespace embree
       __forceinline CubicBezierCurve<float> xfm(const Vertex& dx) const {
         return CubicBezierCurve<float>(dot(v0,dx),dot(v1,dx),dot(v2,dx),dot(v3,dx));
       }
-
-      template<int W>
-      __forceinline CubicBezierCurve<vfloat<W>> vxfm(const Vertex& dx) const {
-        return CubicBezierCurve<vfloat<W>>(dot(v0,dx),dot(v1,dx),dot(v2,dx),dot(v3,dx));
+      
+      __forceinline CubicBezierCurve<vfloatx> vxfm(const Vertex& dx) const {
+        return CubicBezierCurve<vfloatx>(dot(v0,dx),dot(v1,dx),dot(v2,dx),dot(v3,dx));
       }
       
       __forceinline CubicBezierCurve<float> xfm(const Vertex& dx, const Vertex& p) const {
@@ -287,7 +286,7 @@ namespace embree
       {
         const float u0 = 0.0f, u1 = 1.0f;
         const float dscale = (u1-u0)*(1.0f/(3.0f*(VSIZEX-1)));
-        const vfloatx vu0 = lerp(u0,u1,vfloatx(StepTy())*(1.0f/(VSIZEX-1)));
+        const vfloatx vu0 = lerp(u0,u1,vfloatx(step)*(1.0f/(VSIZEX-1)));
         Vec2vfx P0, dP0du; evalN(vu0,P0,dP0du); dP0du = dP0du * Vec2vfx(dscale);
         const Vec2vfx P3 = shift_right_1(P0);
         const Vec2vfx dP3du = shift_right_1(dP0du); 
@@ -300,40 +299,13 @@ namespace embree
       {
         const float u0 = u.lower, u1 = u.upper;
         const float dscale = (u1-u0)*(1.0f/(3.0f*(VSIZEX-1)));
-        const vfloatx vu0 = lerp(u0,u1,vfloatx(StepTy())*(1.0f/(VSIZEX-1)));
+        const vfloatx vu0 = lerp(u0,u1,vfloatx(step)*(1.0f/(VSIZEX-1)));
         Vec2vfx P0, dP0du; evalN(vu0,P0,dP0du); dP0du = dP0du * Vec2vfx(dscale);
         const Vec2vfx P3 = shift_right_1(P0);
         const Vec2vfx dP3du = shift_right_1(dP0du); 
         const Vec2vfx P1 = P0 + dP0du; 
         const Vec2vfx P2 = P3 - dP3du;
         return CubicBezierCurve<Vec2vfx>(P0,P1,P2,P3);
-      }
-
-      template<int W>
-      __forceinline CubicBezierCurve<Vec2vf<W>> split(const BBox1f& u, int i, int N) const
-      {
-        const float u0 = u.lower, u1 = u.upper;
-        const float dscale = (u1-u0)*(1.0f/(3.0f*N));
-        const vfloat<W> vu0 = lerp(u0,u1,(vfloat<W>(i)+vfloat<W>(StepTy()))*(1.0f/N));
-        Vec2vf<W> P0, dP0du; evalN(vu0,P0,dP0du); dP0du = dP0du * Vec2vf<W>(dscale);
-        const Vec2vf<W> P3 = shift_right_1(P0);
-        const Vec2vf<W> dP3du = shift_right_1(dP0du); 
-        const Vec2vf<W> P1 = P0 + dP0du; 
-        const Vec2vf<W> P2 = P3 - dP3du;
-        return CubicBezierCurve<Vec2vf<W>>(P0,P1,P2,P3);
-      }
-
-       __forceinline CubicBezierCurve<Vec2f> split1(const BBox1f& u, int i, int N) const
-      {
-        const float u0 = u.lower, u1 = u.upper;
-        const float dscale = (u1-u0)*(1.0f/(3.0f*N));
-        const float vu0 = lerp(u0,u1,(float(i)+0)*(1.0f/N));
-        const float vu1 = lerp(u0,u1,(float(i)+1)*(1.0f/N));
-        Vec2fa P0, dP0du; eval(vu0,P0,dP0du); dP0du = dP0du * Vec2fa(dscale);
-        Vec2fa P3, dP3du; eval(vu1,P3,dP3du); dP3du = dP3du * Vec2fa(dscale);
-        const Vec2fa P1 = P0 + dP0du; 
-        const Vec2fa P2 = P3 - dP3du;
-        return CubicBezierCurve<Vec2f>(P0,P1,P2,P3);
       }
       
       __forceinline void eval(float t, Vertex& p, Vertex& dp) const
@@ -489,20 +461,20 @@ namespace embree
         return madd(b.x, Vec4vf<M>(v0), madd(b.y, Vec4vf<M>(v1), madd(b.z, Vec4vf<M>(v2), b.w * Vec4vf<M>(v3))));
       }
       
-      template<int M, typename Vec>
-      __forceinline void veval(const vfloat<M>& t, Vec& p, Vec& dp) const
+      template<int M>
+      __forceinline void veval(const vfloat<M>& t, Vec4vf<M>& p, Vec4vf<M>& dp) const
       {
-        const Vec p00 = v0;
-        const Vec p01 = v1;
-        const Vec p02 = v2;
-        const Vec p03 = v3;
+        const Vec4vf<M> p00 = v0;
+        const Vec4vf<M> p01 = v1;
+        const Vec4vf<M> p02 = v2;
+        const Vec4vf<M> p03 = v3;
         
-        const Vec p10 = lerp(p00,p01,t);
-        const Vec p11 = lerp(p01,p02,t);
-        const Vec p12 = lerp(p02,p03,t);
-        const Vec p20 = lerp(p10,p11,t);
-        const Vec p21 = lerp(p11,p12,t);
-        const Vec p30 = lerp(p20,p21,t);
+        const Vec4vf<M> p10 = lerp(p00,p01,t);
+        const Vec4vf<M> p11 = lerp(p01,p02,t);
+        const Vec4vf<M> p12 = lerp(p02,p03,t);
+        const Vec4vf<M> p20 = lerp(p10,p11,t);
+        const Vec4vf<M> p21 = lerp(p11,p12,t);
+        const Vec4vf<M> p30 = lerp(p20,p21,t);
         
         p = p30;
         dp = vfloat<M>(3.0f)*(p21-p20);
@@ -513,17 +485,10 @@ namespace embree
       {
         assert(size <= PrecomputedBezierBasis::N);
         assert(ofs <= size);
-#if defined(EMBREE_SYCL_SUPPORT) && defined(__SYCL_DEVICE_ONLY__)
-        assert(size > 0);
-        const vfloat<M> t = (vfloat<M>(step) + vfloat<M>(ofs+0))*rcp(float(size));
-        Vec p,dp; veval<M>(t,p,dp);
-        return p;
-#else
         return madd(vfloat<M>::loadu(&bezier_basis0.c0[size][ofs]), Vec(v0),
                     madd(vfloat<M>::loadu(&bezier_basis0.c1[size][ofs]), Vec(v1),
                          madd(vfloat<M>::loadu(&bezier_basis0.c2[size][ofs]), Vec(v2),
                               vfloat<M>::loadu(&bezier_basis0.c3[size][ofs]) * Vec(v3))));
-#endif
       }
       
       template<int M, typename Vec = Vec4vf<M>>
@@ -531,17 +496,10 @@ namespace embree
       {
         assert(size <= PrecomputedBezierBasis::N);
         assert(ofs <= size);
-#if defined(EMBREE_SYCL_SUPPORT) && defined(__SYCL_DEVICE_ONLY__)
-        assert(size > 0);
-        const vfloat<M> t = (vfloat<M>(step) + vfloat<M>(ofs+1))*rcp(float(size));
-        Vec p,dp; veval<M>(t,p,dp);
-        return p;
-#else
         return madd(vfloat<M>::loadu(&bezier_basis1.c0[size][ofs]), Vec(v0), 
                     madd(vfloat<M>::loadu(&bezier_basis1.c1[size][ofs]), Vec(v1),
                          madd(vfloat<M>::loadu(&bezier_basis1.c2[size][ofs]), Vec(v2),
                               vfloat<M>::loadu(&bezier_basis1.c3[size][ofs]) * Vec(v3))));
-#endif
       }
       
       template<int M, typename Vec = Vec4vf<M>>
@@ -549,17 +507,10 @@ namespace embree
       {
         assert(size <= PrecomputedBezierBasis::N);
         assert(ofs <= size);
-#if defined(EMBREE_SYCL_SUPPORT) && defined(__SYCL_DEVICE_ONLY__)
-        assert(size > 0);
-        const vfloat<M> t = (vfloat<M>(step) + vfloat<M>(ofs+0))*rcp(float(size));
-        Vec p,dp; veval<M>(t,p,dp);
-        return dp;
-#else
         return madd(vfloat<M>::loadu(&bezier_basis0.d0[size][ofs]), Vec(v0),
                     madd(vfloat<M>::loadu(&bezier_basis0.d1[size][ofs]), Vec(v1),
                          madd(vfloat<M>::loadu(&bezier_basis0.d2[size][ofs]), Vec(v2),
                               vfloat<M>::loadu(&bezier_basis0.d3[size][ofs]) * Vec(v3))));
-#endif
       }
       
       template<int M, typename Vec = Vec4vf<M>>
@@ -567,17 +518,10 @@ namespace embree
       {
         assert(size <= PrecomputedBezierBasis::N);
         assert(ofs <= size);
-#if defined(EMBREE_SYCL_SUPPORT) && defined(__SYCL_DEVICE_ONLY__)
-        assert(size > 0);
-        const vfloat<M> t = (vfloat<M>(step) + vfloat<M>(ofs+1))*rcp(float(size));
-        Vec p,dp; veval<M>(t,p,dp);
-        return dp;
-#else
         return madd(vfloat<M>::loadu(&bezier_basis1.d0[size][ofs]), Vec(v0),
                     madd(vfloat<M>::loadu(&bezier_basis1.d1[size][ofs]), Vec(v1),
                          madd(vfloat<M>::loadu(&bezier_basis1.d2[size][ofs]), Vec(v2),
                               vfloat<M>::loadu(&bezier_basis1.d3[size][ofs]) * Vec(v3))));
-#endif
       }
 
       /* calculates bounds of bezier curve geometry */
@@ -588,7 +532,7 @@ namespace embree
         Vec3vfx pl(pos_inf), pu(neg_inf);
         for (int i=0; i<=N; i+=VSIZEX)
         {
-          vintx vi = vintx(i)+vintx(StepTy());
+          vintx vi = vintx(i)+vintx(step);
           vboolx valid = vi <= vintx(N);
           const Vec3vfx p  = eval0<VSIZEX,Vec3vf<VSIZEX>>(i,N);
           const Vec3vfx dp = derivative0<VSIZEX,Vec3vf<VSIZEX>>(i,N);
@@ -610,7 +554,7 @@ namespace embree
         Vec4vfx pl(pos_inf), pu(neg_inf);
         for (int i=0; i<=N; i+=VSIZEX)
         {
-          vintx vi = vintx(i)+vintx(StepTy());
+          vintx vi = vintx(i)+vintx(step);
           vboolx valid = vi <= vintx(N);
           const Vec4vfx p  = eval0<VSIZEX>(i,N);
           const Vec4vfx dp = derivative0<VSIZEX>(i,N);
@@ -643,7 +587,7 @@ namespace embree
           Vec3vfx pl(pos_inf), pu(neg_inf); vfloatx ru(0.0f);
           for (int i=0; i<N; i+=VSIZEX)
           {
-            vboolx valid = vintx(i)+vintx(StepTy()) < vintx(N);
+            vboolx valid = vintx(i)+vintx(step) < vintx(N);
             const Vec4vfx pi = eval0<VSIZEX>(i,N);
             
             pl.x = select(valid,min(pl.x,pi.x),pl.x); // FIXME: use masked min
@@ -701,7 +645,6 @@ namespace embree
   typedef CubicBezierCurve<Vec2fa> CubicBezierCurve2fa;
   typedef CubicBezierCurve<Vec3fa> CubicBezierCurve3fa;
   typedef CubicBezierCurve<Vec3fa> BezierCurve3fa;
-  typedef CubicBezierCurve<Vec3ff> BezierCurve3ff;
   
   template<> __forceinline int CubicBezierCurve<float>::maxRoots() const
   {
@@ -717,9 +660,8 @@ namespace embree
     return numRoots(v0,v1) + numRoots(v1,v2) + numRoots(v2,v3);
   }
 
-  struct CurveGeometry; // FIXME: this code should move !
   template<typename CurveGeometry>
-  __forceinline CubicBezierCurve<Vec3ff> enlargeRadiusToMinWidth(const RayQueryContext* context, const CurveGeometry* geom, const Vec3fa& ray_org, const CubicBezierCurve<Vec3ff>& curve)
+  __forceinline CubicBezierCurve<Vec3ff> enlargeRadiusToMinWidth(const IntersectContext* context, const CurveGeometry* geom, const Vec3fa& ray_org, const CubicBezierCurve<Vec3ff>& curve)
   {
     return CubicBezierCurve<Vec3ff>(enlargeRadiusToMinWidth(context,geom,ray_org,curve.v0),
                                     enlargeRadiusToMinWidth(context,geom,ray_org,curve.v1),

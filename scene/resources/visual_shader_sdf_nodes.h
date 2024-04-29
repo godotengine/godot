@@ -49,8 +49,6 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
-
 	VisualShaderNodeSDFToScreenUV();
 };
 
@@ -71,8 +69,6 @@ public:
 	virtual bool is_input_port_default(int p_port, Shader::Mode p_mode) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
-
 	VisualShaderNodeScreenUVToSDF();
 };
 
@@ -91,8 +87,6 @@ public:
 	virtual String get_output_port_name(int p_port) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
-
-	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
 
 	VisualShaderNodeTextureSDF();
 };
@@ -113,8 +107,6 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
-
 	VisualShaderNodeTextureSDFNormal();
 };
 
@@ -133,8 +125,6 @@ public:
 	virtual String get_output_port_name(int p_port) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
-
-	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
 
 	VisualShaderNodeSDFRaymarch();
 };

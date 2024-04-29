@@ -90,7 +90,7 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 	ktx_stream.destruct = ktx_destruct;
 	ktx_stream.type = eStreamTypeCustom;
 	ktx_stream.data.custom_ptr.address = &f;
-	ktx_stream.data.custom_ptr.allocatorAddress = nullptr;
+	ktx_stream.data.custom_ptr.allocatorAddress = NULL;
 	ktx_stream.data.custom_ptr.size = 0;
 	ktx_stream.readpos = 0;
 	ktx_stream.closeOnDestruct = false;
@@ -287,7 +287,7 @@ static Ref<Image> load_from_file_access(Ref<FileAccess> f, Error *r_error) {
 							ktxfmt = KTX_TTF_BC7_RGBA;
 						} else if (RS::get_singleton()->has_os_feature("s3tc")) {
 							ktxfmt = KTX_TTF_BC1_RGB;
-						} else if (RS::get_singleton()->has_os_feature("etc2")) {
+						} else if (RS::get_singleton()->has_os_feature("etc")) {
 							ktxfmt = KTX_TTF_ETC1_RGB;
 						} else {
 							ktxfmt = KTX_TTF_RGBA32;

@@ -2,10 +2,12 @@
   <PropertyGroup>
     <ProjectGuid>{B06C2951-C8E3-4F28-80B2-717CF327EB19}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>10</LangVersion>
-    <Nullable>enable</Nullable>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GodotTools.IdeMessaging\GodotTools.IdeMessaging.csproj" />
   </ItemGroup>

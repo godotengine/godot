@@ -64,9 +64,6 @@ RichTextEffect::RichTextEffect() {
 }
 
 void CharFXTransform::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_transform"), &CharFXTransform::get_transform);
-	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &CharFXTransform::set_transform);
-
 	ClassDB::bind_method(D_METHOD("get_range"), &CharFXTransform::get_range);
 	ClassDB::bind_method(D_METHOD("set_range", "range"), &CharFXTransform::set_range);
 
@@ -103,7 +100,6 @@ void CharFXTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_font"), &CharFXTransform::get_font);
 	ClassDB::bind_method(D_METHOD("set_font", "font"), &CharFXTransform::set_font);
 
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "range"), "set_range", "get_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "elapsed_time"), "set_elapsed_time", "get_elapsed_time");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visibility", "is_visible");

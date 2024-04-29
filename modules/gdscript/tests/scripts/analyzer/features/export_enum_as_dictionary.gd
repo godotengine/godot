@@ -4,13 +4,14 @@ enum MyEnum {A, B, C}
 
 const Utils = preload("../../utils.notest.gd")
 
-@export var test_1 = MyEnum
-@export var test_2 = MyEnum.A
-@export var test_3 := MyEnum
-@export var test_4 := MyEnum.A
-@export var test_5: MyEnum
+@export var x1 = MyEnum
+@export var x2 = MyEnum.A
+@export var x3 := MyEnum
+@export var x4 := MyEnum.A
+@export var x5: MyEnum
 
 func test():
 	for property in get_property_list():
-		if str(property.name).begins_with("test_"):
-			Utils.print_property_extended_info(property)
+		if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			print(Utils.get_property_signature(property))
+			print("  ", Utils.get_property_additional_info(property))

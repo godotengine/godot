@@ -54,34 +54,10 @@
 // Godot is currently restricted to C++17 which doesn't allow this notation. Make sure critical fields are set.
 
 // forward declarations, we don't want to include these fully
+class OpenXRVulkanExtension;
 class OpenXRInterface;
 
 class OpenXRAPI {
-public:
-	class OpenXRSwapChainInfo {
-	private:
-		XrSwapchain swapchain = XR_NULL_HANDLE;
-		void *swapchain_graphics_data = nullptr;
-		uint32_t image_index = 0;
-		bool image_acquired = false;
-		bool skip_acquire_swapchain = false;
-
-		static Vector<OpenXRSwapChainInfo> free_queue;
-
-	public:
-		_FORCE_INLINE_ XrSwapchain get_swapchain() const { return swapchain; }
-		_FORCE_INLINE_ bool is_image_acquired() const { return image_acquired; }
-
-		bool create(XrSwapchainCreateFlags p_create_flags, XrSwapchainUsageFlags p_usage_flags, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size);
-		void queue_free();
-		static void free_queued();
-		void free();
-
-		bool acquire(XrBool32 &p_should_render);
-		bool release();
-		RID get_image();
-	};
-
 private:
 	// our singleton
 	static OpenXRAPI *singleton;
@@ -123,16 +99,13 @@ private:
 	// configuration
 	XrFormFactor form_factor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
 	XrViewConfigurationType view_configuration = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
-	XrReferenceSpaceType requested_reference_space = XR_REFERENCE_SPACE_TYPE_STAGE;
-	XrReferenceSpaceType reference_space = XR_REFERENCE_SPACE_TYPE_LOCAL;
+	XrReferenceSpaceType reference_space = XR_REFERENCE_SPACE_TYPE_STAGE;
 	bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
 
 	// blend mode
 	XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-	XrEnvironmentBlendMode requested_environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 	uint32_t num_supported_environment_blend_modes = 0;
 	XrEnvironmentBlendMode *supported_environment_blend_modes = nullptr;
-	bool emulate_environment_blend_mode_alpha_blend = false;
 
 	// state
 	XrInstance instance = XR_NULL_HANDLE;
@@ -143,7 +116,7 @@ private:
 	XrSession session = XR_NULL_HANDLE;
 	XrSessionState session_state = XR_SESSION_STATE_UNKNOWN;
 	bool running = false;
-	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, nullptr, 0, 0, false };
+	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, NULL, 0, 0, false };
 	double render_target_size_multiplier = 1.0;
 
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;
@@ -162,20 +135,19 @@ private:
 		OPENXR_SWAPCHAIN_MAX
 	};
 
-	int64_t color_swapchain_format = 0;
-	int64_t depth_swapchain_format = 0;
-	Size2i main_swapchain_size = { 0, 0 };
-	OpenXRSwapChainInfo main_swapchains[OPENXR_SWAPCHAIN_MAX];
+	struct OpenXRSwapChainInfo {
+		XrSwapchain swapchain = XR_NULL_HANDLE;
+		void *swapchain_graphics_data = nullptr;
+		uint32_t image_index = 0;
+		bool image_acquired = false;
+	};
+
+	OpenXRSwapChainInfo swapchains[OPENXR_SWAPCHAIN_MAX];
 
 	XrSpace play_space = XR_NULL_HANDLE;
 	XrSpace view_space = XR_NULL_HANDLE;
 	bool view_pose_valid = false;
 	XRPose::TrackingConfidence head_pose_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
-	bool has_xr_viewport = false;
-
-	bool emulating_local_floor = false;
-	bool should_reset_emulated_floor_height = false;
-	bool reset_emulated_floor_height();
 
 	bool load_layer_properties();
 	bool load_supported_extensions();
@@ -227,7 +199,6 @@ private:
 	EXT_PROTO_XRRESULT_FUNC3(xrGetActionStateVector2f, (XrSession), session, (const XrActionStateGetInfo *), getInfo, (XrActionStateVector2f *), state)
 	EXT_PROTO_XRRESULT_FUNC3(xrGetCurrentInteractionProfile, (XrSession), session, (XrPath), topLevelUserPath, (XrInteractionProfileState *), interactionProfile)
 	EXT_PROTO_XRRESULT_FUNC2(xrGetInstanceProperties, (XrInstance), instance, (XrInstanceProperties *), instanceProperties)
-	EXT_PROTO_XRRESULT_FUNC3(xrGetReferenceSpaceBoundsRect, (XrSession), session, (XrReferenceSpaceType), referenceSpaceType, (XrExtent2Df *), bounds)
 	EXT_PROTO_XRRESULT_FUNC3(xrGetSystem, (XrInstance), instance, (const XrSystemGetInfo *), getInfo, (XrSystemId *), systemId)
 	EXT_PROTO_XRRESULT_FUNC3(xrGetSystemProperties, (XrInstance), instance, (XrSystemId), systemId, (XrSystemProperties *), properties)
 	EXT_PROTO_XRRESULT_FUNC4(xrLocateSpace, (XrSpace), space, (XrSpace), baseSpace, (XrTime), time, (XrSpaceLocation *), location)
@@ -255,14 +226,16 @@ private:
 	bool create_session();
 	bool load_supported_reference_spaces();
 	bool is_reference_space_supported(XrReferenceSpaceType p_reference_space);
-	bool setup_play_space();
-	bool setup_view_space();
+	bool setup_spaces();
 	bool load_supported_swapchain_formats();
 	bool is_swapchain_format_supported(int64_t p_swapchain_format);
-	bool obtain_swapchain_formats();
-	bool create_main_swapchains(Size2i p_size);
-	void free_main_swapchains();
+	bool create_swapchains();
 	void destroy_session();
+
+	// swapchains
+	bool create_swapchain(XrSwapchainUsageFlags p_usage_flags, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, XrSwapchain &r_swapchain, void **r_swapchain_graphics_data);
+	bool acquire_image(OpenXRSwapChainInfo &p_swapchain);
+	bool release_image(OpenXRSwapChainInfo &p_swapchain);
 
 	// action map
 	struct Tracker { // Trackers represent tracked physical objects such as controllers, pucks, etc.
@@ -305,15 +278,6 @@ private:
 	RID get_interaction_profile_rid(XrPath p_path);
 	XrPath get_interaction_profile_path(RID p_interaction_profile);
 
-	struct OrderedCompositionLayer {
-		const XrCompositionLayerBaseHeader *composition_layer;
-		int sort_order;
-
-		_FORCE_INLINE_ bool operator()(const OrderedCompositionLayer &a, const OrderedCompositionLayer &b) const {
-			return a.sort_order < b.sort_order || (a.sort_order == b.sort_order && uint64_t(a.composition_layer) < uint64_t(b.composition_layer));
-		}
-	};
-
 	// state changes
 	bool poll_events();
 	bool on_state_idle();
@@ -332,7 +296,6 @@ public:
 	XrInstance get_instance() const { return instance; };
 	XrSystemId get_system_id() const { return system_id; };
 	XrSession get_session() const { return session; };
-	OpenXRGraphicsExtensionWrapper *get_graphics_extension() const { return graphics_extension; };
 	String get_runtime_name() const { return runtime_name; };
 	String get_runtime_version() const { return runtime_version; };
 
@@ -354,14 +317,12 @@ public:
 
 	XrResult try_get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
 	XrResult get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
-	String get_error_string(XrResult result) const;
+	String get_error_string(XrResult result);
 	String get_swapchain_format_name(int64_t p_swapchain_format) const;
 
-	OpenXRInterface *get_xr_interface() const { return xr_interface; }
 	void set_xr_interface(OpenXRInterface *p_xr_interface);
 	static void register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
 	static void unregister_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
-	static const Vector<OpenXRExtensionWrapper *> &get_registered_extension_wrappers();
 	static void register_extension_metadata();
 	static void cleanup_extension_wrappers();
 
@@ -371,8 +332,7 @@ public:
 	void set_view_configuration(XrViewConfigurationType p_view_configuration);
 	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
 
-	bool set_requested_reference_space(XrReferenceSpaceType p_requested_reference_space);
-	XrReferenceSpaceType get_requested_reference_space() const { return requested_reference_space; }
+	void set_reference_space(XrReferenceSpaceType p_reference_space);
 	XrReferenceSpaceType get_reference_space() const { return reference_space; }
 
 	void set_submit_depth_buffer(bool p_submit_depth_buffer);
@@ -388,8 +348,6 @@ public:
 	XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; }
 	bool can_render() { return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && view_pose_valid && frame_state.shouldRender; }
 
-	XrHandTrackerEXT get_hand_tracker(int p_hand_index);
-
 	Size2 get_recommended_target_size();
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	bool get_view_transform(uint32_t p_view, Transform3D &r_transform);
@@ -398,7 +356,6 @@ public:
 
 	void pre_render();
 	bool pre_draw_viewport(RID p_render_target);
-	XrSwapchain get_color_swapchain();
 	RID get_color_texture();
 	RID get_depth_texture();
 	void post_draw_viewport(RID p_render_target);
@@ -412,22 +369,6 @@ public:
 	// Render Target size multiplier
 	double get_render_target_size_multiplier() const;
 	void set_render_target_size_multiplier(double multiplier);
-
-	// Foveation settings
-	bool is_foveation_supported() const;
-
-	int get_foveation_level() const;
-	void set_foveation_level(int p_foveation_level);
-
-	bool get_foveation_dynamic() const;
-	void set_foveation_dynamic(bool p_foveation_dynamic);
-
-	// Play space.
-	Size2 get_play_space_bounds() const;
-
-	// swapchains
-	int64_t get_color_swapchain_format() const { return color_swapchain_format; }
-	int64_t get_depth_swapchain_format() const { return depth_swapchain_format; }
 
 	// action map
 	String get_default_action_map_resource_name();
@@ -466,16 +407,7 @@ public:
 	const XrEnvironmentBlendMode *get_supported_environment_blend_modes(uint32_t &count);
 	bool is_environment_blend_mode_supported(XrEnvironmentBlendMode p_blend_mode) const;
 	bool set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode);
-	XrEnvironmentBlendMode get_environment_blend_mode() const { return requested_environment_blend_mode; }
-
-	enum OpenXRAlphaBlendModeSupport {
-		OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE = 0,
-		OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL = 1,
-		OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING = 2,
-	};
-
-	void set_emulate_environment_blend_mode_alpha_blend(bool p_enabled);
-	OpenXRAlphaBlendModeSupport is_environment_blend_mode_alpha_blend_supported();
+	XrEnvironmentBlendMode get_environment_blend_mode() const { return environment_blend_mode; }
 
 	OpenXRAPI();
 	~OpenXRAPI();

@@ -33,17 +33,10 @@
 
 #include "core/typedefs.h"
 
-#ifdef MINGW_ENABLED
-#define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.shared_mutex.h"
-#define THREADING_NAMESPACE mingw_stdthread
-#else
 #include <shared_mutex>
-#define THREADING_NAMESPACE std
-#endif
 
 class RWLock {
-	mutable THREADING_NAMESPACE::shared_timed_mutex mutex;
+	mutable std::shared_timed_mutex mutex;
 
 public:
 	// Lock the RWLock, block if locked by someone else.

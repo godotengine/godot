@@ -30,10 +30,7 @@
 
 #include "marshalls.h"
 
-#include "core/core_string_names.h"
-#include "core/io/resource_loader.h"
 #include "core/object/ref_counted.h"
-#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
 
@@ -58,22 +55,9 @@ ObjectID EncodedObjectAsID::get_object_id() const {
 #define ERR_FAIL_ADD_OF(a, b, err) ERR_FAIL_COND_V(((int32_t)(b)) < 0 || ((int32_t)(a)) < 0 || ((int32_t)(a)) > INT_MAX - ((int32_t)(b)), err)
 #define ERR_FAIL_MUL_OF(a, b, err) ERR_FAIL_COND_V(((int32_t)(a)) < 0 || ((int32_t)(b)) <= 0 || ((int32_t)(a)) > INT_MAX / ((int32_t)(b)), err)
 
-// Byte 0: `Variant::Type`, byte 1: unused, bytes 2 and 3: additional data.
-#define HEADER_TYPE_MASK 0xFF
-
-// For `Variant::INT`, `Variant::FLOAT` and other math types.
-#define HEADER_DATA_FLAG_64 (1 << 16)
-
-// For `Variant::OBJECT`.
-#define HEADER_DATA_FLAG_OBJECT_AS_ID (1 << 16)
-
-// For `Variant::ARRAY`.
-// Occupies bits 16 and 17.
-#define HEADER_DATA_FIELD_TYPED_ARRAY_MASK (0b11 << 16)
-#define HEADER_DATA_FIELD_TYPED_ARRAY_NONE (0b00 << 16)
-#define HEADER_DATA_FIELD_TYPED_ARRAY_BUILTIN (0b01 << 16)
-#define HEADER_DATA_FIELD_TYPED_ARRAY_CLASS_NAME (0b10 << 16)
-#define HEADER_DATA_FIELD_TYPED_ARRAY_SCRIPT (0b11 << 16)
+#define ENCODE_MASK 0xFF
+#define ENCODE_FLAG_64 1 << 16
+#define ENCODE_FLAG_OBJECT_AS_ID 1 << 16
 
 static Error _decode_string(const uint8_t *&buf, int &len, int *r_len, String &r_string) {
 	ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
@@ -117,9 +101,9 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 	ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 
-	uint32_t header = decode_uint32(buf);
+	uint32_t type = decode_uint32(buf);
 
-	ERR_FAIL_COND_V((header & HEADER_TYPE_MASK) >= Variant::VARIANT_MAX, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V((type & ENCODE_MASK) >= Variant::VARIANT_MAX, ERR_INVALID_DATA);
 
 	buf += 4;
 	len -= 4;
@@ -130,7 +114,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 	// Note: We cannot use sizeof(real_t) for decoding, in case a different size is encoded.
 	// Decoding math types always checks for the encoded size, while encoding always uses compilation setting.
 	// This does lead to some code duplication for decoding, but compatibility is the priority.
-	switch (header & HEADER_TYPE_MASK) {
+	switch (type & ENCODE_MASK) {
 		case Variant::NIL: {
 			r_variant = Variant();
 		} break;
@@ -143,7 +127,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 		} break;
 		case Variant::INT: {
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
 				int64_t val = decode_uint64(buf);
 				r_variant = val;
@@ -162,7 +146,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 		} break;
 		case Variant::FLOAT: {
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double), ERR_INVALID_DATA);
 				double val = decode_double(buf);
 				r_variant = val;
@@ -192,7 +176,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		// math types
 		case Variant::VECTOR2: {
 			Vector2 val;
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 2, ERR_INVALID_DATA);
 				val.x = decode_double(&buf[0]);
 				val.y = decode_double(&buf[sizeof(double)]);
@@ -226,7 +210,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::RECT2: {
 			Rect2 val;
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 4, ERR_INVALID_DATA);
 				val.position.x = decode_double(&buf[0]);
 				val.position.y = decode_double(&buf[sizeof(double)]);
@@ -266,7 +250,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::VECTOR3: {
 			Vector3 val;
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 3, ERR_INVALID_DATA);
 				val.x = decode_double(&buf[0]);
 				val.y = decode_double(&buf[sizeof(double)]);
@@ -303,7 +287,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::VECTOR4: {
 			Vector4 val;
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 4, ERR_INVALID_DATA);
 				val.x = decode_double(&buf[0]);
 				val.y = decode_double(&buf[sizeof(double)]);
@@ -343,7 +327,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::TRANSFORM2D: {
 			Transform2D val;
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 6, ERR_INVALID_DATA);
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 2; j++) {
@@ -371,7 +355,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::PLANE: {
 			Plane val;
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 4, ERR_INVALID_DATA);
 				val.normal.x = decode_double(&buf[0]);
 				val.normal.y = decode_double(&buf[sizeof(double)]);
@@ -397,7 +381,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::QUATERNION: {
 			Quaternion val;
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 4, ERR_INVALID_DATA);
 				val.x = decode_double(&buf[0]);
 				val.y = decode_double(&buf[sizeof(double)]);
@@ -423,7 +407,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::AABB: {
 			AABB val;
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 6, ERR_INVALID_DATA);
 				val.position.x = decode_double(&buf[0]);
 				val.position.y = decode_double(&buf[sizeof(double)]);
@@ -453,7 +437,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::BASIS: {
 			Basis val;
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 9, ERR_INVALID_DATA);
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
@@ -481,7 +465,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::TRANSFORM3D: {
 			Transform3D val;
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 12, ERR_INVALID_DATA);
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
@@ -515,7 +499,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::PROJECTION: {
 			Projection val;
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_COND_V((size_t)len < sizeof(double) * 16, ERR_INVALID_DATA);
 				for (int i = 0; i < 4; i++) {
 					for (int j = 0; j < 4; j++) {
@@ -576,12 +560,12 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 				uint32_t namecount = strlen &= 0x7FFFFFFF;
 				uint32_t subnamecount = decode_uint32(buf + 4);
-				uint32_t np_flags = decode_uint32(buf + 8);
+				uint32_t flags = decode_uint32(buf + 8);
 
 				len -= 12;
 				buf += 12;
 
-				if (np_flags & 2) { // Obsolete format with property separate from subpath.
+				if (flags & 2) { // Obsolete format with property separate from subpath
 					subnamecount++;
 				}
 
@@ -605,7 +589,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					}
 				}
 
-				r_variant = NodePath(names, subnames, np_flags & 1);
+				r_variant = NodePath(names, subnames, flags & 1);
 
 			} else {
 				//old format, just a string
@@ -624,8 +608,8 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = RID::from_uint64(id);
 		} break;
 		case Variant::OBJECT: {
-			if (header & HEADER_DATA_FLAG_OBJECT_AS_ID) {
-				// This _is_ allowed.
+			if (type & ENCODE_FLAG_OBJECT_AS_ID) {
+				//this _is_ allowed
 				ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
 				ObjectID val = ObjectID(decode_uint64(buf));
 				if (r_len) {
@@ -641,6 +625,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 					r_variant = obj_as_id;
 				}
+
 			} else {
 				ERR_FAIL_COND_V(!p_allow_objects, ERR_UNAUTHORIZED);
 
@@ -653,22 +638,11 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				if (str.is_empty()) {
 					r_variant = (Object *)nullptr;
 				} else {
-					ERR_FAIL_COND_V(!ClassDB::can_instantiate(str), ERR_INVALID_DATA);
-
 					Object *obj = ClassDB::instantiate(str);
+
 					ERR_FAIL_NULL_V(obj, ERR_UNAVAILABLE);
-
-					// Avoid premature free `RefCounted`. This must be done before properties are initialized,
-					// since script functions (setters, implicit initializer) may be called. See GH-68666.
-					Variant variant;
-					if (Object::cast_to<RefCounted>(obj)) {
-						Ref<RefCounted> ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));
-						variant = ref;
-					} else {
-						variant = obj;
-					}
-
 					ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
+
 					int32_t count = decode_uint32(buf);
 					buf += 4;
 					len -= 4;
@@ -696,19 +670,15 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 							(*r_len) += used;
 						}
 
-						if (str == "script" && value.get_type() != Variant::NIL) {
-							ERR_FAIL_COND_V_MSG(value.get_type() != Variant::STRING, ERR_INVALID_DATA, "Invalid value for \"script\" property, expected script path as String.");
-							String path = value;
-							ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://") || !ResourceLoader::exists(path, "Script"), ERR_INVALID_DATA, "Invalid script path: '" + path + "'.");
-							Ref<Script> script = ResourceLoader::load(path, "Script");
-							ERR_FAIL_COND_V_MSG(script.is_null(), ERR_INVALID_DATA, "Can't load script at path: '" + path + "'.");
-							obj->set_script(script);
-						} else {
-							obj->set(str, value);
-						}
+						obj->set(str, value);
 					}
 
-					r_variant = variant;
+					if (Object::cast_to<RefCounted>(obj)) {
+						Ref<RefCounted> ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));
+						r_variant = ref;
+					} else {
+						r_variant = obj;
+					}
 				}
 			}
 
@@ -775,66 +745,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 		} break;
 		case Variant::ARRAY: {
-			Variant::Type builtin_type = Variant::VARIANT_MAX;
-			StringName class_name;
-			Ref<Script> script;
-
-			switch (header & HEADER_DATA_FIELD_TYPED_ARRAY_MASK) {
-				case HEADER_DATA_FIELD_TYPED_ARRAY_NONE:
-					break; // Untyped array.
-				case HEADER_DATA_FIELD_TYPED_ARRAY_BUILTIN: {
-					ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-
-					int32_t bt = decode_uint32(buf);
-					buf += 4;
-					len -= 4;
-					if (r_len) {
-						(*r_len) += 4;
-					}
-
-					ERR_FAIL_INDEX_V(bt, Variant::VARIANT_MAX, ERR_INVALID_DATA);
-					builtin_type = (Variant::Type)bt;
-					if (!p_allow_objects && builtin_type == Variant::OBJECT) {
-						class_name = EncodedObjectAsID::get_class_static();
-					}
-				} break;
-				case HEADER_DATA_FIELD_TYPED_ARRAY_CLASS_NAME: {
-					String str;
-					Error err = _decode_string(buf, len, r_len, str);
-					if (err) {
-						return err;
-					}
-
-					builtin_type = Variant::OBJECT;
-					if (p_allow_objects) {
-						class_name = str;
-					} else {
-						class_name = EncodedObjectAsID::get_class_static();
-					}
-				} break;
-				case HEADER_DATA_FIELD_TYPED_ARRAY_SCRIPT: {
-					String path;
-					Error err = _decode_string(buf, len, r_len, path);
-					if (err) {
-						return err;
-					}
-
-					builtin_type = Variant::OBJECT;
-					if (p_allow_objects) {
-						ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://") || !ResourceLoader::exists(path, "Script"), ERR_INVALID_DATA, "Invalid script path: '" + path + "'.");
-						script = ResourceLoader::load(path, "Script");
-						ERR_FAIL_COND_V_MSG(script.is_null(), ERR_INVALID_DATA, "Can't load script at path: '" + path + "'.");
-						class_name = script->get_instance_base_type();
-					} else {
-						class_name = EncodedObjectAsID::get_class_static();
-					}
-				} break;
-				default:
-					ERR_FAIL_V(ERR_INVALID_DATA); // Future proofing.
-			}
-
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
-
 			int32_t count = decode_uint32(buf);
 			//  bool shared = count&0x80000000;
 			count &= 0x7FFFFFFF;
@@ -847,9 +758,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 			Array varr;
-			if (builtin_type != Variant::VARIANT_MAX) {
-				varr.set_typed(builtin_type, class_name, script);
-			}
 
 			for (int i = 0; i < count; i++) {
 				int used = 0;
@@ -1026,7 +934,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			Vector<Vector2> varray;
 
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_MUL_OF(count, sizeof(double) * 2, ERR_INVALID_DATA);
 				ERR_FAIL_COND_V(count < 0 || count * sizeof(double) * 2 > (size_t)len, ERR_INVALID_DATA);
 
@@ -1086,7 +994,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			Vector<Vector3> varray;
 
-			if (header & HEADER_DATA_FLAG_64) {
+			if (type & ENCODE_FLAG_64) {
 				ERR_FAIL_MUL_OF(count, sizeof(double) * 3, ERR_INVALID_DATA);
 				ERR_FAIL_COND_V(count < 0 || count * sizeof(double) * 3 > (size_t)len, ERR_INVALID_DATA);
 
@@ -1212,20 +1120,20 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 	r_len = 0;
 
-	uint32_t header = p_variant.get_type();
+	uint32_t flags = 0;
 
 	switch (p_variant.get_type()) {
 		case Variant::INT: {
 			int64_t val = p_variant;
 			if (val > (int64_t)INT_MAX || val < (int64_t)INT_MIN) {
-				header |= HEADER_DATA_FLAG_64;
+				flags |= ENCODE_FLAG_64;
 			}
 		} break;
 		case Variant::FLOAT: {
 			double d = p_variant;
 			float f = d;
 			if (double(f) != d) {
-				header |= HEADER_DATA_FLAG_64;
+				flags |= ENCODE_FLAG_64;
 			}
 		} break;
 		case Variant::OBJECT: {
@@ -1241,37 +1149,22 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 			if (!p_full_objects) {
-				header |= HEADER_DATA_FLAG_OBJECT_AS_ID;
-			}
-		} break;
-		case Variant::ARRAY: {
-			Array array = p_variant;
-			if (array.is_typed()) {
-				Ref<Script> script = array.get_typed_script();
-				if (script.is_valid()) {
-					header |= HEADER_DATA_FIELD_TYPED_ARRAY_SCRIPT;
-				} else if (array.get_typed_class_name() != StringName()) {
-					header |= HEADER_DATA_FIELD_TYPED_ARRAY_CLASS_NAME;
-				} else {
-					header |= HEADER_DATA_FIELD_TYPED_ARRAY_BUILTIN;
-				}
+				flags |= ENCODE_FLAG_OBJECT_AS_ID;
 			}
 		} break;
 #ifdef REAL_T_IS_DOUBLE
 		case Variant::VECTOR2:
 		case Variant::VECTOR3:
-		case Variant::VECTOR4:
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
 		case Variant::TRANSFORM2D:
 		case Variant::TRANSFORM3D:
-		case Variant::PROJECTION:
 		case Variant::QUATERNION:
 		case Variant::PLANE:
 		case Variant::BASIS:
 		case Variant::RECT2:
 		case Variant::AABB: {
-			header |= HEADER_DATA_FLAG_64;
+			flags |= ENCODE_FLAG_64;
 		} break;
 #endif // REAL_T_IS_DOUBLE
 		default: {
@@ -1279,7 +1172,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 	}
 
 	if (buf) {
-		encode_uint32(header, buf);
+		encode_uint32(p_variant.get_type() | flags, buf);
 		buf += 4;
 	}
 	r_len += 4;
@@ -1297,7 +1190,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 		} break;
 		case Variant::INT: {
-			if (header & HEADER_DATA_FLAG_64) {
+			if (flags & ENCODE_FLAG_64) {
 				//64 bits
 				if (buf) {
 					encode_uint64(p_variant.operator int64_t(), buf);
@@ -1313,7 +1206,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 		} break;
 		case Variant::FLOAT: {
-			if (header & HEADER_DATA_FLAG_64) {
+			if (flags & ENCODE_FLAG_64) {
 				if (buf) {
 					encode_double(p_variant.operator double(), buf);
 				}
@@ -1597,8 +1490,6 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 					r_len += 4;
 
 				} else {
-					ERR_FAIL_COND_V(!ClassDB::can_instantiate(obj->get_class()), ERR_INVALID_PARAMETER);
-
 					_encode_string(obj->get_class(), buf, r_len);
 
 					List<PropertyInfo> props;
@@ -1626,21 +1517,8 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 						_encode_string(E.name, buf, r_len);
 
-						Variant value;
-
-						if (E.name == CoreStringNames::get_singleton()->_script) {
-							Ref<Script> script = obj->get_script();
-							if (script.is_valid()) {
-								String path = script->get_path();
-								ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://"), ERR_UNAVAILABLE, "Failed to encode a path to a custom script.");
-								value = path;
-							}
-						} else {
-							value = obj->get(E.name);
-						}
-
 						int len;
-						Error err = encode_variant(value, buf, len, p_full_objects, p_depth + 1);
+						Error err = encode_variant(obj->get(E.name), buf, len, p_full_objects, p_depth + 1);
 						ERR_FAIL_COND_V(err, err);
 						ERR_FAIL_COND_V(len % 4, ERR_BUG);
 						r_len += len;
@@ -1710,41 +1588,24 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 		} break;
 		case Variant::ARRAY: {
-			Array array = p_variant;
-
-			if (array.is_typed()) {
-				Variant variant = array.get_typed_script();
-				Ref<Script> script = variant;
-				if (script.is_valid()) {
-					String path = script->get_path();
-					ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://"), ERR_UNAVAILABLE, "Failed to encode a path to a custom script for an array type.");
-					_encode_string(path, buf, r_len);
-				} else if (array.get_typed_class_name() != StringName()) {
-					_encode_string(array.get_typed_class_name(), buf, r_len);
-				} else {
-					if (buf) {
-						encode_uint32(array.get_typed_builtin(), buf);
-						buf += 4;
-					}
-					r_len += 4;
-				}
-			}
+			Array v = p_variant;
 
 			if (buf) {
-				encode_uint32(uint32_t(array.size()), buf);
+				encode_uint32(uint32_t(v.size()), buf);
 				buf += 4;
 			}
+
 			r_len += 4;
 
-			for (const Variant &var : array) {
+			for (int i = 0; i < v.size(); i++) {
 				int len;
-				Error err = encode_variant(var, buf, len, p_full_objects, p_depth + 1);
+				Error err = encode_variant(v.get(i), buf, len, p_full_objects, p_depth + 1);
 				ERR_FAIL_COND_V(err, err);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
+				r_len += len;
 				if (buf) {
 					buf += len;
 				}
-				r_len += len;
 			}
 
 		} break;
@@ -1758,10 +1619,8 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				encode_uint32(datalen, buf);
 				buf += 4;
 				const uint8_t *r = data.ptr();
-				if (r) {
-					memcpy(buf, &r[0], datalen * datasize);
-					buf += datalen * datasize;
-				}
+				memcpy(buf, &r[0], datalen * datasize);
+				buf += datalen * datasize;
 			}
 
 			r_len += 4 + datalen * datasize;

@@ -51,8 +51,6 @@ private:
 		return memnew(DisplayServerHeadless());
 	}
 
-	NativeMenu *native_menu = nullptr;
-
 public:
 	bool has_feature(Feature p_feature) const override { return false; }
 	String get_name() const override { return "headless"; }
@@ -134,15 +132,8 @@ public:
 
 	void set_icon(const Ref<Image> &p_icon) override {}
 
-	DisplayServerHeadless() {
-		native_menu = memnew(NativeMenu);
-	}
-	~DisplayServerHeadless() {
-		if (native_menu) {
-			memdelete(native_menu);
-			native_menu = nullptr;
-		}
-	}
+	DisplayServerHeadless() {}
+	~DisplayServerHeadless() {}
 };
 
 #endif // DISPLAY_SERVER_HEADLESS_H

@@ -46,7 +46,8 @@ Size2 AspectRatioContainer::get_minimum_size() const {
 			continue;
 		}
 		Size2 minsize = c->get_combined_minimum_size();
-		ms = ms.max(minsize);
+		ms.width = MAX(ms.width, minsize.width);
+		ms.height = MAX(ms.height, minsize.height);
 	}
 	return ms;
 }
@@ -143,7 +144,8 @@ void AspectRatioContainer::_notification(int p_what) {
 					} break;
 				}
 				child_size *= scale_factor;
-				child_size = child_size.max(child_minsize);
+				child_size.x = MAX(child_size.x, child_minsize.x);
+				child_size.y = MAX(child_size.y, child_minsize.y);
 
 				float align_x = 0.5;
 				switch (alignment_horizontal) {

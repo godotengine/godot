@@ -56,6 +56,8 @@ protected:
 	void _task_step(const String &p_task, int p_step = -1);
 	void _end_task(const String &p_task);
 
+	static void _bind_methods();
+
 public:
 	void add_task(const String &p_task, const String &p_label, int p_steps);
 	void task_step(const String &p_task, int p_step = -1);
@@ -79,21 +81,20 @@ class ProgressDialog : public PopupPanel {
 	VBoxContainer *main = nullptr;
 	uint64_t last_progress_tick;
 
-	LocalVector<Window *> host_windows;
-
 	static ProgressDialog *singleton;
 	void _popup();
 
 	void _cancel_pressed();
 	bool canceled = false;
 
+protected:
+	static void _bind_methods();
+
 public:
 	static ProgressDialog *get_singleton() { return singleton; }
 	void add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel = false);
 	bool task_step(const String &p_task, const String &p_state, int p_step = -1, bool p_force_redraw = true);
 	void end_task(const String &p_task);
-
-	void add_host_window(Window *p_window);
 
 	ProgressDialog();
 };

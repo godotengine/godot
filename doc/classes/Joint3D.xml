@@ -7,7 +7,7 @@
 		Abstract base class for all joints in 3D physics. 3D joints bind together two physics bodies and apply a constraint.
 	</description>
 	<tutorials>
-		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/2752</link>
+		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
 	</tutorials>
 	<methods>
 		<method name="get_rid" qualifiers="const">

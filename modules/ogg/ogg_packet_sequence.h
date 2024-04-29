@@ -120,13 +120,6 @@ public:
 	// Returns true on success, false on failure.
 	bool seek_page(int64_t p_granule_pos);
 
-	// Gets the current page number.
-	int64_t get_page_number() const;
-
-	// Moves to a specific page in the stream.
-	// Returns true on success, false if the page number is out of bounds.
-	bool set_page_number(int64_t p_page_number);
-
 	OggPacketSequencePlayback();
 	virtual ~OggPacketSequencePlayback();
 };

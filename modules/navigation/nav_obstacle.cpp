@@ -149,8 +149,8 @@ void NavObstacle::set_vertices(const Vector<Vector3> &p_vertices) {
 
 bool NavObstacle::is_map_changed() {
 	if (map) {
-		bool is_changed = map->get_iteration_id() != last_map_iteration_id;
-		last_map_iteration_id = map->get_iteration_id();
+		bool is_changed = map->get_map_update_id() != map_update_id;
+		map_update_id = map->get_map_update_id();
 		return is_changed;
 	} else {
 		return false;

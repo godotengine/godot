@@ -167,7 +167,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 						// Next we apply some color scaling going from a variable value space to a 256 value space.
 						// This may be simplified some but left as is for legibility.
-						// float scaled_value = unscaled_value * byte_max_value / color_channel_maximum_value + rounding_offset;
+						// float scaled_value = unscaled_value * byte_max_value / color_channel_maxium_value + rounding_offset;
 						float f0 = b0 * 255.0f / static_cast<float>(p_header.bmp_bitfield.red_max) + 0.5f;
 						float f1 = b1 * 255.0f / static_cast<float>(p_header.bmp_bitfield.green_max) + 0.5f;
 						float f2 = b2 * 255.0f / static_cast<float>(p_header.bmp_bitfield.blue_max) + 0.5f;

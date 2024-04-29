@@ -31,11 +31,11 @@
 #include "control_editor_plugin.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/separator.h"
 
@@ -189,7 +189,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 		Vector<String> text_split = p_options[i].split(":");
 		int64_t current_val = text_split[1].to_int();
 
-		const String &option_name = text_split[0];
+		String option_name = text_split[0];
 		if (option_name.begins_with("Preset")) {
 			String preset_name = option_name.trim_prefix("Preset");
 			String humanized_name = preset_name.capitalize();
@@ -520,7 +520,7 @@ void ControlEditorPopupButton::_notification(int p_what) {
 }
 
 ControlEditorPopupButton::ControlEditorPopupButton() {
-	set_theme_type_variation("FlatButton");
+	set_flat(true);
 	set_toggle_mode(true);
 	set_focus_mode(FOCUS_NONE);
 
@@ -1000,7 +1000,7 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	keep_ratio_button->connect("pressed", callable_mp(this, &ControlEditorToolbar::_anchors_to_current_ratio));
 
 	anchor_mode_button = memnew(Button);
-	anchor_mode_button->set_theme_type_variation("FlatButton");
+	anchor_mode_button->set_flat(true);
 	anchor_mode_button->set_toggle_mode(true);
 	anchor_mode_button->set_tooltip_text(TTR("When active, moving Control nodes changes their anchors instead of their offsets."));
 	add_child(anchor_mode_button);

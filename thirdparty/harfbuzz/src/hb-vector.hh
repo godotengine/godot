@@ -37,8 +37,6 @@ template <typename Type,
 	  bool sorted=false>
 struct hb_vector_t
 {
-  static constexpr bool realloc_move = true;
-
   typedef Type item_t;
   static constexpr unsigned item_size = hb_static_size (Type);
   using array_t = typename std::conditional<sorted, hb_sorted_array_t<Type>, hb_array_t<Type>>::type;
@@ -78,7 +76,7 @@ struct hb_vector_t
     if (unlikely (in_error ())) return;
     copy_array (o);
   }
-  hb_vector_t (hb_vector_t &&o) noexcept
+  hb_vector_t (hb_vector_t &&o)
   {
     allocated = o.allocated;
     length = o.length;
@@ -104,7 +102,7 @@ struct hb_vector_t
 
   void fini ()
   {
-    /* We allow a hack to make the vector point to a foreign array
+    /* We allow a hack to make the vector point to a foriegn array
      * by the user. In that case length/arrayZ are non-zero but
      * allocated is zero. Don't free anything. */
     if (allocated)
@@ -122,7 +120,7 @@ struct hb_vector_t
     resize (0);
   }
 
-  friend void swap (hb_vector_t& a, hb_vector_t& b) noexcept
+  friend void swap (hb_vector_t& a, hb_vector_t& b)
   {
     hb_swap (a.allocated, b.allocated);
     hb_swap (a.length, b.length);
@@ -139,7 +137,7 @@ struct hb_vector_t
 
     return *this;
   }
-  hb_vector_t& operator = (hb_vector_t &&o) noexcept
+  hb_vector_t& operator = (hb_vector_t &&o)
   {
     hb_swap (*this, o);
     return *this;
@@ -210,7 +208,25 @@ struct hb_vector_t
       return std::addressof (Crap (Type));
     return std::addressof (arrayZ[length - 1]);
   }
-  template <typename... Args> Type *push (Args&&... args)
+  template <typename T,
+	    typename T2 = Type,
+	    hb_enable_if (!std::is_copy_constructible<T2>::value &&
+			  std::is_copy_assignable<T>::value)>
+  Type *push (T&& v)
+  {
+    Type *p = push ();
+    if (p == std::addressof (Crap (Type)))
+      // If push failed to allocate then don't copy v, since this may cause
+      // the created copy to leak memory since we won't have stored a
+      // reference to it.
+      return p;
+    *p = std::forward<T> (v);
+    return p;
+  }
+  template <typename T,
+	    typename T2 = Type,
+	    hb_enable_if (std::is_copy_constructible<T2>::value)>
+  Type *push (T&& v)
   {
     if (unlikely ((int) length >= allocated && !alloc (length + 1)))
       // If push failed to allocate then don't copy v, since this may cause
@@ -220,7 +236,7 @@ struct hb_vector_t
 
     /* Emplace. */
     Type *p = std::addressof (arrayZ[length++]);
-    return new (p) Type (std::forward<Args> (args)...);
+    return new (p) Type (std::forward<T> (v));
   }
 
   bool in_error () const { return allocated < 0; }
@@ -270,9 +286,10 @@ struct hb_vector_t
     }
     return new_array;
   }
-  /* Specialization for types that can be moved using realloc(). */
+  /* Specialization for hb_vector_t<hb_{vector,array}_t<U>> to speed up. */
   template <typename T = Type,
-	    hb_enable_if (T::realloc_move)>
+	    hb_enable_if (hb_is_same (T, hb_vector_t<typename T::item_t>) ||
+			  hb_is_same (T, hb_array_t <typename T::item_t>))>
   Type *
   realloc_vector (unsigned new_allocated, hb_priority<1>)
   {
@@ -461,7 +478,7 @@ struct hb_vector_t
   Type pop ()
   {
     if (!length) return Null (Type);
-    Type v (std::move (arrayZ[length - 1]));
+    Type v {std::move (arrayZ[length - 1])};
     arrayZ[length - 1].~Type ();
     length--;
     return v;

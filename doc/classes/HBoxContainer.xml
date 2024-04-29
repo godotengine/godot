@@ -9,4 +9,9 @@
 	<tutorials>
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
+	<theme_items>
+		<theme_item name="separation" data_type="constant" type="int" default="4">
+			The horizontal space between the [HBoxContainer]'s elements.
+		</theme_item>
+	</theme_items>
 </class>

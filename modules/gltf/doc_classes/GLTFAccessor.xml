@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFAccessor" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Represents a GLTF accessor.
 	</brief_description>
 	<description>
-		GLTFAccessor is a data structure representing GLTF a [code]accessor[/code] that would be found in the [code]"accessors"[/code] array. A buffer is a blob of binary data. A buffer view is a slice of a buffer. An accessor is a typed interpretation of the data in a buffer view.
-		Most custom data stored in GLTF does not need accessors, only buffer views (see [GLTFBufferView]). Accessors are for more advanced use cases such as interleaved mesh data encoded for the GPU.
 	</description>
 	<tutorials>
-		<link title="Buffers, BufferViews, and Accessors in Khronos glTF specification">https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_005_BuffersBufferViewsAccessors.md</link>
-		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<members>
 		<member name="buffer_view" type="int" setter="set_buffer_view" getter="get_buffer_view" default="-1">
-			The index of the buffer view this accessor is referencing. If [code]-1[/code], this accessor is not referencing any buffer view.
 		</member>
 		<member name="byte_offset" type="int" setter="set_byte_offset" getter="get_byte_offset" default="0">
 		</member>

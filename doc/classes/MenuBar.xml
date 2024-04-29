@@ -132,7 +132,7 @@
 		<theme_item name="font_hover_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the menu item is being hovered and pressed.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the menu item.
 		</theme_item>
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
@@ -151,35 +151,20 @@
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the menu item's text.
 		</theme_item>
-		<theme_item name="disabled" data_type="style" type="StyleBox" keywords="enabled">
+		<theme_item name="disabled" data_type="style" type="StyleBox">
 			[StyleBox] used when the menu item is disabled.
 		</theme_item>
-		<theme_item name="disabled_mirrored" data_type="style" type="StyleBox">
-			[StyleBox] used when the menu item is disabled (for right-to-left layouts).
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the menu item is focused. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
 		</theme_item>
 		<theme_item name="hover" data_type="style" type="StyleBox">
 			[StyleBox] used when the menu item is being hovered.
 		</theme_item>
-		<theme_item name="hover_mirrored" data_type="style" type="StyleBox">
-			[StyleBox] used when the menu item is being hovered (for right-to-left layouts).
-		</theme_item>
-		<theme_item name="hover_pressed" data_type="style" type="StyleBox">
-			[StyleBox] used when the menu item is being pressed and hovered at the same time.
-		</theme_item>
-		<theme_item name="hover_pressed_mirrored" data_type="style" type="StyleBox">
-			[StyleBox] used when the menu item is being pressed and hovered at the same time (for right-to-left layouts).
-		</theme_item>
 		<theme_item name="normal" data_type="style" type="StyleBox">
 			Default [StyleBox] for the menu item.
 		</theme_item>
-		<theme_item name="normal_mirrored" data_type="style" type="StyleBox">
-			Default [StyleBox] for the menu item (for right-to-left layouts).
-		</theme_item>
 		<theme_item name="pressed" data_type="style" type="StyleBox">
 			[StyleBox] used when the menu item is being pressed.
-		</theme_item>
-		<theme_item name="pressed_mirrored" data_type="style" type="StyleBox">
-			[StyleBox] used when the menu item is being pressed (for right-to-left layouts).
 		</theme_item>
 	</theme_items>
 </class>

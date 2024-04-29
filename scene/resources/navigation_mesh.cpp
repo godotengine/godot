@@ -127,7 +127,7 @@ NavigationMesh::SourceGeometryMode NavigationMesh::get_source_geometry_mode() co
 	return source_geometry_mode;
 }
 
-void NavigationMesh::set_source_group_name(const StringName &p_group_name) {
+void NavigationMesh::set_source_group_name(StringName p_group_name) {
 	source_group_name = p_group_name;
 }
 
@@ -151,15 +151,6 @@ void NavigationMesh::set_cell_height(float p_value) {
 
 float NavigationMesh::get_cell_height() const {
 	return cell_height;
-}
-
-void NavigationMesh::set_border_size(float p_value) {
-	ERR_FAIL_COND(p_value < 0);
-	border_size = p_value;
-}
-
-float NavigationMesh::get_border_size() const {
-	return border_size;
 }
 
 void NavigationMesh::set_agent_height(float p_value) {
@@ -473,9 +464,6 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cell_height", "cell_height"), &NavigationMesh::set_cell_height);
 	ClassDB::bind_method(D_METHOD("get_cell_height"), &NavigationMesh::get_cell_height);
 
-	ClassDB::bind_method(D_METHOD("set_border_size", "border_size"), &NavigationMesh::set_border_size);
-	ClassDB::bind_method(D_METHOD("get_border_size"), &NavigationMesh::get_border_size);
-
 	ClassDB::bind_method(D_METHOD("set_agent_height", "agent_height"), &NavigationMesh::set_agent_height);
 	ClassDB::bind_method(D_METHOD("get_agent_height"), &NavigationMesh::get_agent_height);
 
@@ -549,10 +537,9 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_source_geometry_mode", PROPERTY_HINT_ENUM, "Root Node Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "geometry_source_group_name"), "set_source_group_name", "get_source_group_name");
 	ADD_PROPERTY_DEFAULT("geometry_source_group_name", StringName("navigation_mesh_source_group"));
-	ADD_GROUP("Cells", "");
+	ADD_GROUP("Cells", "cell_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:m"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_height", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:m"), "set_cell_height", "get_cell_height");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "border_size", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:m"), "set_border_size", "get_border_size");
 	ADD_GROUP("Agents", "agent_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_height", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:m"), "set_agent_height", "get_agent_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_radius", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:m"), "set_agent_radius", "get_agent_radius");
@@ -625,3 +612,5 @@ bool NavigationMesh::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 #endif // DISABLE_DEPRECATED
+
+NavigationMesh::NavigationMesh() {}

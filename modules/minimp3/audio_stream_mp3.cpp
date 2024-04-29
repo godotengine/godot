@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#define MINIMP3_ONLY_MP3
 #define MINIMP3_FLOAT_OUTPUT
 #define MINIMP3_IMPLEMENTATION
 #define MINIMP3_NO_STDIO
@@ -46,9 +47,7 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int frames_mixed_this_step = p_frames;
 
 	int beat_length_frames = -1;
-	bool use_loop = looping_override ? looping : mp3_stream->loop;
-
-	bool beat_loop = use_loop && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
+	bool beat_loop = mp3_stream->has_loop() && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
 	if (beat_loop) {
 		beat_length_frames = mp3_stream->get_beat_count() * mp3_stream->sample_rate * 60 / mp3_stream->get_bpm();
 	}
@@ -84,7 +83,7 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 		else {
 			//EOF
-			if (use_loop) {
+			if (mp3_stream->loop) {
 				seek(mp3_stream->loop_offset);
 				loops++;
 			} else {
@@ -143,25 +142,6 @@ void AudioStreamPlaybackMP3::seek(double p_time) {
 
 void AudioStreamPlaybackMP3::tag_used_streams() {
 	mp3_stream->tag_used(get_playback_position());
-}
-
-void AudioStreamPlaybackMP3::set_parameter(const StringName &p_name, const Variant &p_value) {
-	if (p_name == SNAME("looping")) {
-		if (p_value == Variant()) {
-			looping_override = false;
-			looping = false;
-		} else {
-			looping_override = true;
-			looping = p_value;
-		}
-	}
-}
-
-Variant AudioStreamPlaybackMP3::get_parameter(const StringName &p_name) const {
-	if (looping_override && p_name == SNAME("looping")) {
-		return looping;
-	}
-	return Variant();
 }
 
 AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
@@ -251,10 +231,6 @@ double AudioStreamMP3::get_length() const {
 
 bool AudioStreamMP3::is_monophonic() const {
 	return false;
-}
-
-void AudioStreamMP3::get_parameter_list(List<Parameter> *r_parameters) {
-	r_parameters->push_back(Parameter(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CHECKABLE), Variant()));
 }
 
 void AudioStreamMP3::set_bpm(double p_bpm) {

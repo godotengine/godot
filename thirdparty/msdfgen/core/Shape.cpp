@@ -1,7 +1,7 @@
 
 #include "Shape.h"
 
-#include <cstdlib>
+#include <algorithm>
 #include "arithmetics.hpp"
 
 namespace msdfgen {
@@ -18,7 +18,7 @@ void Shape::addContour(Contour &&contour) {
 }
 #endif
 
-Contour &Shape::addContour() {
+Contour & Shape::addContour() {
     contours.resize(contours.size()+1);
     return contours.back();
 }
@@ -40,12 +40,15 @@ bool Shape::validate() const {
 }
 
 static void deconvergeEdge(EdgeHolder &edgeHolder, int param) {
-    switch (edgeHolder->type()) {
-        case (int) QuadraticSegment::EDGE_TYPE:
-            edgeHolder = static_cast<const QuadraticSegment *>(&*edgeHolder)->convertToCubic();
-            // fallthrough
-        case (int) CubicSegment::EDGE_TYPE:
-            static_cast<CubicSegment *>(&*edgeHolder)->deconverge(param, MSDFGEN_DECONVERGENCE_FACTOR);
+    {
+        const QuadraticSegment *quadraticSegment = dynamic_cast<const QuadraticSegment *>(&*edgeHolder);
+        if (quadraticSegment)
+            edgeHolder = quadraticSegment->convertToCubic();
+    }
+    {
+        CubicSegment *cubicSegment = dynamic_cast<CubicSegment *>(&*edgeHolder);
+        if (cubicSegment)
+            cubicSegment->deconverge(param, MSDFGEN_DECONVERGENCE_FACTOR);
     }
 }
 
@@ -159,18 +162,16 @@ void Shape::orientContours() {
                     }
                 }
             }
-            if (!intersections.empty()) {
-                qsort(&intersections[0], intersections.size(), sizeof(Intersection), &Intersection::compare);
-                // Disqualify multiple intersections
-                for (int j = 1; j < (int) intersections.size(); ++j)
-                    if (intersections[j].x == intersections[j-1].x)
-                        intersections[j].direction = intersections[j-1].direction = 0;
-                // Inspect scanline and deduce orientations of intersected contours
-                for (int j = 0; j < (int) intersections.size(); ++j)
-                    if (intersections[j].direction)
-                        orientations[intersections[j].contourIndex] += 2*((j&1)^(intersections[j].direction > 0))-1;
-                intersections.clear();
-            }
+            qsort(&intersections[0], intersections.size(), sizeof(Intersection), &Intersection::compare);
+            // Disqualify multiple intersections
+            for (int j = 1; j < (int) intersections.size(); ++j)
+                if (intersections[j].x == intersections[j-1].x)
+                    intersections[j].direction = intersections[j-1].direction = 0;
+            // Inspect scanline and deduce orientations of intersected contours
+            for (int j = 0; j < (int) intersections.size(); ++j)
+                if (intersections[j].direction)
+                    orientations[intersections[j].contourIndex] += 2*((j&1)^(intersections[j].direction > 0))-1;
+            intersections.clear();
         }
     }
     // Reverse contours that have the opposite orientation

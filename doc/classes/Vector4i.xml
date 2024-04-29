@@ -6,7 +6,7 @@
 	<description>
 		A 4-element structure that can be used to represent 4D grid coordinates or any other quadruplet of integers.
 		It uses integer coordinates and is therefore preferable to [Vector4] when exact precision is required. Note that the values are limited to 32 bits, and unlike [Vector4] this cannot be configured with an engine build option. Use [int] or [PackedInt64Array] if 64-bit values are needed.
-		[b]Note:[/b] In a boolean context, a Vector4i will evaluate to [code]false[/code] if it's equal to [code]Vector4i(0, 0, 0, 0)[/code]. Otherwise, a Vector4i will always evaluate to [code]true[/code].
+		[b]Note:[/b] In a boolean context, a Vector4i will evaluate to [code]false[/code] if it's equal to [code]Vector4i(0, 0, 0, 0)[/code]. Otherwise, a Vector3i will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -57,22 +57,7 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
-		<method name="distance_squared_to" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="to" type="Vector4i" />
-			<description>
-				Returns the squared distance between this vector and [param to].
-				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
-			</description>
-		</method>
-		<method name="distance_to" qualifiers="const">
-			<return type="float" />
-			<param index="0" name="to" type="Vector4i" />
-			<description>
-				Returns the distance between this vector and [param to].
-			</description>
-		</method>
-		<method name="length" qualifiers="const" keywords="size">
+		<method name="length" qualifiers="const">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.

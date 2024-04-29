@@ -40,8 +40,8 @@
 
 class CheckBox;
 
-class AudioStreamImportSettingsDialog : public ConfirmationDialog {
-	GDCLASS(AudioStreamImportSettingsDialog, ConfirmationDialog);
+class AudioStreamImportSettings : public ConfirmationDialog {
+	GDCLASS(AudioStreamImportSettings, ConfirmationDialog);
 
 	CheckBox *bpm_enabled = nullptr;
 	SpinBox *bpm_edit = nullptr;
@@ -81,7 +81,7 @@ class AudioStreamImportSettingsDialog : public ConfirmationDialog {
 
 	void _audio_changed();
 
-	static AudioStreamImportSettingsDialog *singleton;
+	static AudioStreamImportSettings *singleton;
 
 	void _settings_changed();
 
@@ -109,9 +109,9 @@ protected:
 public:
 	void edit(const String &p_path, const String &p_importer, const Ref<AudioStream> &p_stream);
 
-	static AudioStreamImportSettingsDialog *get_singleton() { return singleton; }
+	static AudioStreamImportSettings *get_singleton() { return singleton; }
 
-	AudioStreamImportSettingsDialog();
+	AudioStreamImportSettings();
 };
 
 #endif // AUDIO_STREAM_IMPORT_SETTINGS_H

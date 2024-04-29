@@ -31,12 +31,6 @@
 				Returns an array of nodes that were added as collision exceptions for this body.
 			</description>
 		</method>
-		<method name="get_gravity" qualifiers="const">
-			<return type="Vector3" />
-			<description>
-				Returns the gravity vector computed from all sources that can affect the body, including all gravity overrides from [Area3D] nodes and the global world gravity.
-			</description>
-		</method>
 		<method name="move_and_collide">
 			<return type="KinematicCollision3D" />
 			<param index="0" name="motion" type="Vector3" />
@@ -68,7 +62,7 @@
 				Locks or unlocks the specified linear or rotational [param axis] depending on the value of [param lock].
 			</description>
 		</method>
-		<method name="test_move" keywords="check, collision, sweep">
+		<method name="test_move">
 			<return type="bool" />
 			<param index="0" name="from" type="Transform3D" />
 			<param index="1" name="motion" type="Vector3" />

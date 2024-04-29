@@ -30,7 +30,7 @@
 
 #include "bit_map_editor_plugin.h"
 
-#include "editor/themes/editor_scale.h"
+#include "editor/editor_scale.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/image_texture.h"

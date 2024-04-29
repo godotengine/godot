@@ -137,7 +137,4 @@ uint32_t GI::voxel_gi_get_version(RID p_voxel_gi) const {
 	return 0;
 }
 
-void GI::sdfgi_reset() {
-}
-
 #endif // GLES3_ENABLED

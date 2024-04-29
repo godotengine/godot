@@ -103,7 +103,6 @@ struct head
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
-		  hb_barrier () &&
 		  version.major == 1 &&
 		  magicNumber == 0x5F0F3CF5u);
   }

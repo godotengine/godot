@@ -38,27 +38,15 @@
 class TabContainer : public Container {
 	GDCLASS(TabContainer, Container);
 
-public:
-	enum TabPosition {
-		POSITION_TOP,
-		POSITION_BOTTOM,
-		POSITION_MAX,
-	};
-
-private:
 	TabBar *tab_bar = nullptr;
 	bool tabs_visible = true;
 	bool all_tabs_in_front = false;
-	TabPosition tabs_position = POSITION_TOP;
 	bool menu_hovered = false;
 	mutable ObjectID popup_obj_id;
+	bool drag_to_rearrange_enabled = false;
 	bool use_hidden_tabs_for_min_size = false;
 	bool theme_changing = false;
 	Vector<Control *> children_removing;
-	bool drag_to_rearrange_enabled = false;
-	// Set the default setup current tab to be an invalid index.
-	int setup_current_tab = -2;
-	bool updating_visibility = false;
 
 	struct ThemeCache {
 		int side_margin = 0;
@@ -78,7 +66,6 @@ private:
 		Ref<StyleBox> tab_hovered_style;
 		Ref<StyleBox> tab_selected_style;
 		Ref<StyleBox> tab_disabled_style;
-		Ref<StyleBox> tab_focus_style;
 
 		Ref<Texture2D> increment_icon;
 		Ref<Texture2D> increment_hl_icon;
@@ -97,11 +84,10 @@ private:
 		int tab_font_size;
 	} theme_cache;
 
-	int _get_tab_height() const;
+	int _get_top_margin() const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
 	void _repaint();
-	void _refresh_tab_indices();
 	void _refresh_tab_names();
 	void _update_margins();
 	void _on_mouse_exited();
@@ -110,14 +96,10 @@ private:
 	void _on_tab_hovered(int p_tab);
 	void _on_tab_selected(int p_tab);
 	void _on_tab_button_pressed(int p_tab);
-	void _on_active_tab_rearranged(int p_tab);
-	void _on_tab_visibility_changed(Control *p_child);
 
 	Variant _get_drag_data_fw(const Point2 &p_point, Control *p_from_control);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const;
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control);
-	void _drag_move_tab(int p_from_index, int p_to_index);
-	void _drag_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -129,19 +111,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	TabBar *get_tab_bar() const;
-
 	int get_tab_idx_at_point(const Point2 &p_point) const;
 	int get_tab_idx_from_control(Control *p_child) const;
 
 	void set_tab_alignment(TabBar::AlignmentMode p_alignment);
 	TabBar::AlignmentMode get_tab_alignment() const;
-
-	void set_tabs_position(TabPosition p_tab_position);
-	TabPosition get_tabs_position() const;
-
-	void set_tab_focus_mode(FocusMode p_focus_mode);
-	FocusMode get_tab_focus_mode() const;
 
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
@@ -175,12 +149,6 @@ public:
 	int get_current_tab() const;
 	int get_previous_tab() const;
 
-	bool select_previous_available();
-	bool select_next_available();
-
-	void set_deselect_enabled(bool p_enabled);
-	bool get_deselect_enabled() const;
-
 	Control *get_tab_control(int p_idx) const;
 	Control *get_current_tab_control() const;
 
@@ -188,8 +156,6 @@ public:
 
 	void set_popup(Node *p_popup);
 	Popup *get_popup() const;
-
-	void move_tab_from_tab_container(TabContainer *p_from, int p_from_index, int p_to_index = -1);
 
 	void set_drag_to_rearrange_enabled(bool p_enabled);
 	bool get_drag_to_rearrange_enabled() const;
@@ -203,7 +169,5 @@ public:
 
 	TabContainer();
 };
-
-VARIANT_ENUM_CAST(TabContainer::TabPosition);
 
 #endif // TAB_CONTAINER_H

@@ -1,9 +1,9 @@
 
 /* png.h - header file for PNG reference library
  *
- * libpng version 1.6.43
+ * libpng version 1.6.40
  *
- * Copyright (c) 2018-2024 Cosmin Truta
+ * Copyright (c) 2018-2023 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -15,7 +15,7 @@
  *   libpng versions 0.89, June 1996, through 0.96, May 1997: Andreas Dilger
  *   libpng versions 0.97, January 1998, through 1.6.35, July 2018:
  *     Glenn Randers-Pehrson
- *   libpng versions 1.6.36, December 2018, through 1.6.43, February 2024:
+ *   libpng versions 1.6.36, December 2018, through 1.6.40, June 2023:
  *     Cosmin Truta
  *   See also "Contributing Authors", below.
  */
@@ -27,8 +27,8 @@
  * PNG Reference Library License version 2
  * ---------------------------------------
  *
- *  * Copyright (c) 1995-2024 The PNG Reference Library Authors.
- *  * Copyright (c) 2018-2024 Cosmin Truta.
+ *  * Copyright (c) 1995-2023 The PNG Reference Library Authors.
+ *  * Copyright (c) 2018-2023 Cosmin Truta.
  *  * Copyright (c) 2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
  *  * Copyright (c) 1996-1997 Andreas Dilger.
  *  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -239,7 +239,7 @@
  *    ...
  *    1.5.30                  15    10530  15.so.15.30[.0]
  *    ...
- *    1.6.43                  16    10643  16.so.16.43[.0]
+ *    1.6.40                  16    10640  16.so.16.40[.0]
  *
  *    Henceforth the source version will match the shared-library major and
  *    minor numbers; the shared-library major version number will be used for
@@ -254,6 +254,9 @@
  *    Binary incompatibility exists only when applications make direct access
  *    to the info_ptr or png_ptr members through png.h, and the compiled
  *    application is loaded with a different version of the library.
+ *
+ *    DLLNUM will change each time there are forward or backward changes
+ *    in binary compatibility (e.g., when a new feature is added).
  *
  * See libpng.txt or libpng.3 for more information.  The PNG specification
  * is available as a W3C Recommendation and as an ISO/IEC Standard; see
@@ -275,21 +278,19 @@
  */
 
 /* Version information for png.h - this should match the version in png.c */
-#define PNG_LIBPNG_VER_STRING "1.6.43"
-#define PNG_HEADER_VERSION_STRING " libpng version " PNG_LIBPNG_VER_STRING "\n"
+#define PNG_LIBPNG_VER_STRING "1.6.40"
+#define PNG_HEADER_VERSION_STRING " libpng version 1.6.40 - June 21, 2023\n"
 
-/* The versions of shared library builds should stay in sync, going forward */
-#define PNG_LIBPNG_VER_SHAREDLIB 16
-#define PNG_LIBPNG_VER_SONUM     PNG_LIBPNG_VER_SHAREDLIB /* [Deprecated] */
-#define PNG_LIBPNG_VER_DLLNUM    PNG_LIBPNG_VER_SHAREDLIB /* [Deprecated] */
+#define PNG_LIBPNG_VER_SONUM   16
+#define PNG_LIBPNG_VER_DLLNUM  16
 
 /* These should match the first 3 components of PNG_LIBPNG_VER_STRING: */
 #define PNG_LIBPNG_VER_MAJOR   1
 #define PNG_LIBPNG_VER_MINOR   6
-#define PNG_LIBPNG_VER_RELEASE 43
+#define PNG_LIBPNG_VER_RELEASE 40
 
 /* This should be zero for a public release, or non-zero for a
- * development version.
+ * development version.  [Deprecated]
  */
 #define PNG_LIBPNG_VER_BUILD  0
 
@@ -317,7 +318,7 @@
  * From version 1.0.1 it is:
  * XXYYZZ, where XX=major, YY=minor, ZZ=release
  */
-#define PNG_LIBPNG_VER 10643 /* 1.6.43 */
+#define PNG_LIBPNG_VER 10640 /* 1.6.40 */
 
 /* Library configuration: these options cannot be changed after
  * the library has been built.
@@ -427,7 +428,7 @@ extern "C" {
 /* This triggers a compiler error in png.c, if png.c and png.h
  * do not agree upon the version number.
  */
-typedef char* png_libpng_version_1_6_43;
+typedef char* png_libpng_version_1_6_40;
 
 /* Basic control structions.  Read libpng-manual.txt or libpng.3 for more info.
  *
@@ -848,7 +849,7 @@ PNG_FUNCTION(void, (PNGCAPI *png_longjmp_ptr), PNGARG((jmp_buf, int)), typedef);
 #define PNG_TRANSFORM_GRAY_TO_RGB   0x2000      /* read only */
 /* Added to libpng-1.5.4 */
 #define PNG_TRANSFORM_EXPAND_16     0x4000      /* read only */
-#if ~0U > 0xffffU /* or else this might break on a 16-bit machine */
+#if INT_MAX >= 0x8000 /* else this might break */
 #define PNG_TRANSFORM_SCALE_16      0x8000      /* read only */
 #endif
 
@@ -907,15 +908,15 @@ PNG_EXPORT(2, void, png_set_sig_bytes, (png_structrp png_ptr, int num_bytes));
 /* Check sig[start] through sig[start + num_to_check - 1] to see if it's a
  * PNG file.  Returns zero if the supplied bytes match the 8-byte PNG
  * signature, and non-zero otherwise.  Having num_to_check == 0 or
- * start > 7 will always fail (i.e. return non-zero).
+ * start > 7 will always fail (ie return non-zero).
  */
 PNG_EXPORT(3, int, png_sig_cmp, (png_const_bytep sig, size_t start,
     size_t num_to_check));
 
 /* Simple signature checking function.  This is the same as calling
- * png_check_sig(sig, n) := (png_sig_cmp(sig, 0, n) == 0).
+ * png_check_sig(sig, n) := !png_sig_cmp(sig, 0, n).
  */
-#define png_check_sig(sig, n) (png_sig_cmp((sig), 0, (n)) == 0) /* DEPRECATED */
+#define png_check_sig(sig, n) !png_sig_cmp((sig), 0, (n))
 
 /* Allocate and initialize png_ptr struct for reading, and any other memory. */
 PNG_EXPORTA(4, png_structp, png_create_read_struct,
@@ -1729,9 +1730,12 @@ PNG_EXPORT(97, void, png_free, (png_const_structrp png_ptr, png_voidp ptr));
 PNG_EXPORT(98, void, png_free_data, (png_const_structrp png_ptr,
     png_inforp info_ptr, png_uint_32 free_me, int num));
 
-/* Reassign the responsibility for freeing existing data, whether allocated
+/* Reassign responsibility for freeing existing data, whether allocated
  * by libpng or by the application; this works on the png_info structure passed
- * in, without changing the state for other png_info structures.
+ * in, it does not change the state for other png_info structures.
+ *
+ * It is unlikely that this function works correctly as of 1.6.0 and using it
+ * may result either in memory leaks or double free of allocated data.
  */
 PNG_EXPORT(99, void, png_data_freer, (png_const_structrp png_ptr,
     png_inforp info_ptr, int freer, png_uint_32 mask));
@@ -3203,18 +3207,11 @@ PNG_EXPORT(245, int, png_image_write_to_memory, (png_imagep image, void *memory,
 #ifdef PNG_MIPS_MSA_API_SUPPORTED
 #  define PNG_MIPS_MSA   6 /* HARDWARE: MIPS Msa SIMD instructions supported */
 #endif
-#ifdef PNG_DISABLE_ADLER32_CHECK_SUPPORTED
-#  define PNG_IGNORE_ADLER32 8 /* SOFTWARE: disable Adler32 check on IDAT */
-#endif
+#define PNG_IGNORE_ADLER32 8
 #ifdef PNG_POWERPC_VSX_API_SUPPORTED
-#  define PNG_POWERPC_VSX   10 /* HARDWARE: PowerPC VSX SIMD instructions
-                                * supported */
+#  define PNG_POWERPC_VSX   10 /* HARDWARE: PowerPC VSX SIMD instructions supported */
 #endif
-#ifdef PNG_MIPS_MMI_API_SUPPORTED
-#  define PNG_MIPS_MMI   12 /* HARDWARE: MIPS MMI SIMD instructions supported */
-#endif
-
-#define PNG_OPTION_NEXT  14 /* Next option - numbers must be even */
+#define PNG_OPTION_NEXT  12 /* Next option - numbers must be even */
 
 /* Return values: NOTE: there are four values and 'off' is *not* zero */
 #define PNG_OPTION_UNSET   0 /* Unset - defaults to off */

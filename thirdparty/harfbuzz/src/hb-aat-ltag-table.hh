@@ -46,9 +46,7 @@ struct FTStringRange
   bool sanitize (hb_sanitize_context_t *c, const void *base) const
   {
     TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this) &&
-		  hb_barrier () &&
-		  (base+tag).sanitize (c, length));
+    return_trace (c->check_struct (this) && (base+tag).sanitize (c, length));
   }
 
   protected:
@@ -75,7 +73,6 @@ struct ltag
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
-			  hb_barrier () &&
 			  version >= 1 &&
 			  tagRanges.sanitize (c, this)));
   }

@@ -70,6 +70,7 @@ public:
 class ProjectExportDialog : public ConfirmationDialog {
 	GDCLASS(ProjectExportDialog, ConfirmationDialog);
 
+private:
 	TabContainer *sections = nullptr;
 
 	MenuButton *add_preset = nullptr;
@@ -81,7 +82,6 @@ class ProjectExportDialog : public ConfirmationDialog {
 	EditorPropertyPath *export_path = nullptr;
 	EditorInspector *parameters = nullptr;
 	CheckButton *runnable = nullptr;
-	CheckButton *advanced_options = nullptr;
 
 	Button *button_export = nullptr;
 	bool updating = false;
@@ -118,9 +118,6 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	String default_filename;
 
-	bool exporting = false;
-
-	void _advanced_options_pressed();
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);
@@ -138,7 +135,6 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	void _export_type_changed(int p_which);
 	void _filter_changed(const String &p_filter);
-	String _get_resource_export_header(EditorExportPreset::ExportFilter p_filter) const;
 	void _fill_resource_tree();
 	void _setup_item_for_file_mode(TreeItem *p_item, EditorExportPreset::FileExportMode p_mode);
 	bool _fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, EditorExportPreset::ExportFilter p_export_filter);
@@ -154,13 +150,13 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	EditorFileDialog *export_pck_zip = nullptr;
 	EditorFileDialog *export_project = nullptr;
+	CheckBox *export_debug = nullptr;
+	CheckBox *export_pck_zip_debug = nullptr;
 
 	CheckButton *enc_pck = nullptr;
 	CheckButton *enc_directory = nullptr;
 	LineEdit *enc_in_filters = nullptr;
 	LineEdit *enc_ex_filters = nullptr;
-
-	OptionButton *script_mode = nullptr;
 
 	void _open_export_template_manager();
 
@@ -185,13 +181,12 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _script_encryption_key_changed(const String &p_key);
 	bool _validate_script_encryption_key(const String &p_key);
 
-	void _script_export_mode_changed(int p_mode);
-
 	void _open_key_help_link();
 
 	void _tab_changed(int);
 
 protected:
+	void _theme_changed();
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -202,8 +197,6 @@ public:
 	String get_export_path();
 
 	Ref<EditorExportPreset> get_current_preset() const;
-
-	bool is_exporting() const { return exporting; };
 
 	ProjectExportDialog();
 	~ProjectExportDialog();

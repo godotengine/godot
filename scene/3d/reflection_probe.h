@@ -63,7 +63,6 @@ private:
 	float mesh_lod_threshold = 1.0;
 
 	uint32_t cull_mask = (1 << 20) - 1;
-	uint32_t reflection_mask = (1 << 20) - 1;
 	UpdateMode update_mode = UPDATE_ONCE;
 
 protected:
@@ -114,13 +113,12 @@ public:
 	void set_cull_mask(uint32_t p_layers);
 	uint32_t get_cull_mask() const;
 
-	void set_reflection_mask(uint32_t p_layers);
-	uint32_t get_reflection_mask() const;
-
 	void set_update_mode(UpdateMode p_mode);
 	UpdateMode get_update_mode() const;
 
 	virtual AABB get_aabb() const override;
+
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	ReflectionProbe();
 	~ReflectionProbe();

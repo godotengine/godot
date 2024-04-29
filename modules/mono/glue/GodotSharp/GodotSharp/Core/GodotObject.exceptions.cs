@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Text;
 
 #nullable enable
@@ -74,7 +73,7 @@ namespace Godot
 
                     if (!string.IsNullOrEmpty(_nativeClassName))
                     {
-                        sb.Append(CultureInfo.InvariantCulture, $" (Method '{_nativeClassName}')");
+                        sb.Append($" (Method '{_nativeClassName}')");
                     }
 
                     return sb.ToString();
@@ -132,7 +131,7 @@ namespace Godot
 
                     if (!string.IsNullOrEmpty(_nativeMethodName))
                     {
-                        sb.Append(CultureInfo.InvariantCulture, $" (Method '{_nativeMethodName}')");
+                        sb.Append($" (Method '{_nativeMethodName}')");
                     }
 
                     return sb.ToString();

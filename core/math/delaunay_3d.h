@@ -233,7 +233,7 @@ public:
 				points[i] = (points[i] - rect.position) / rect.size;
 			}
 
-			const real_t delta_max = Math::sqrt(2.0) * 20.0;
+			float delta_max = Math::sqrt(2.0) * 20.0;
 			Vector3 center = Vector3(0.5, 0.5, 0.5);
 
 			// any simplex that contains everything is good
@@ -281,7 +281,9 @@ public:
 			}
 
 			Vector3i grid_pos = Vector3i(points[i] * ACCEL_GRID_SIZE);
-			grid_pos = grid_pos.clamp(Vector3i(), Vector3i(ACCEL_GRID_SIZE - 1, ACCEL_GRID_SIZE - 1, ACCEL_GRID_SIZE - 1));
+			grid_pos.x = CLAMP(grid_pos.x, 0, ACCEL_GRID_SIZE - 1);
+			grid_pos.y = CLAMP(grid_pos.y, 0, ACCEL_GRID_SIZE - 1);
+			grid_pos.z = CLAMP(grid_pos.z, 0, ACCEL_GRID_SIZE - 1);
 
 			for (List<Simplex *>::Element *E = acceleration_grid[grid_pos.x][grid_pos.y][grid_pos.z].front(); E;) {
 				List<Simplex *>::Element *N = E->next(); //may be deleted
@@ -332,12 +334,17 @@ public:
 					center.y = double(new_simplex->circum_center_y);
 					center.z = double(new_simplex->circum_center_z);
 
-					const real_t radius2 = Math::sqrt(double(new_simplex->circum_r2)) + 0.0001;
+					float radius2 = Math::sqrt(double(new_simplex->circum_r2));
+					radius2 += 0.0001; //
 					Vector3 extents = Vector3(radius2, radius2, radius2);
 					Vector3i from = Vector3i((center - extents) * ACCEL_GRID_SIZE);
 					Vector3i to = Vector3i((center + extents) * ACCEL_GRID_SIZE);
-					from = from.clamp(Vector3i(), Vector3i(ACCEL_GRID_SIZE - 1, ACCEL_GRID_SIZE - 1, ACCEL_GRID_SIZE - 1));
-					to = to.clamp(Vector3i(), Vector3i(ACCEL_GRID_SIZE - 1, ACCEL_GRID_SIZE - 1, ACCEL_GRID_SIZE - 1));
+					from.x = CLAMP(from.x, 0, ACCEL_GRID_SIZE - 1);
+					from.y = CLAMP(from.y, 0, ACCEL_GRID_SIZE - 1);
+					from.z = CLAMP(from.z, 0, ACCEL_GRID_SIZE - 1);
+					to.x = CLAMP(to.x, 0, ACCEL_GRID_SIZE - 1);
+					to.y = CLAMP(to.y, 0, ACCEL_GRID_SIZE - 1);
+					to.z = CLAMP(to.z, 0, ACCEL_GRID_SIZE - 1);
 
 					for (int32_t x = from.x; x <= to.x; x++) {
 						for (int32_t y = from.y; y <= to.y; y++) {

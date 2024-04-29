@@ -2,62 +2,6 @@
 
 Import("env")
 
-import os, json
-from platform_methods import architectures, lipo, get_build_version, detect_mvk
-import subprocess
-import shutil
-
-
-def generate_bundle(target, source, env):
-    bin_dir = Dir("#bin").abspath
-
-    # Template bundle.
-    app_prefix = "godot." + env["platform"]
-    rel_prefix = "libgodot." + env["platform"] + "." + "template_release"
-    dbg_prefix = "libgodot." + env["platform"] + "." + "template_debug"
-    if env.dev_build:
-        app_prefix += ".dev"
-        rel_prefix += ".dev"
-        dbg_prefix += ".dev"
-    if env["precision"] == "double":
-        app_prefix += ".double"
-        rel_prefix += ".double"
-        dbg_prefix += ".double"
-
-    # Lipo template libraries.
-    rel_target_bin = lipo(bin_dir + "/" + rel_prefix, env.extra_suffix + ".a")
-    dbg_target_bin = lipo(bin_dir + "/" + dbg_prefix, env.extra_suffix + ".a")
-    rel_target_bin_sim = lipo(bin_dir + "/" + rel_prefix, ".simulator" + env.extra_suffix + ".a")
-    dbg_target_bin_sim = lipo(bin_dir + "/" + dbg_prefix, ".simulator" + env.extra_suffix + ".a")
-
-    # Assemble Xcode project bundle.
-    app_dir = Dir("#bin/ios_xcode").abspath
-    templ = Dir("#misc/dist/ios_xcode").abspath
-    if os.path.exists(app_dir):
-        shutil.rmtree(app_dir)
-    shutil.copytree(templ, app_dir)
-    if rel_target_bin != "":
-        shutil.copy(rel_target_bin, app_dir + "/libgodot.ios.release.xcframework/ios-arm64/libgodot.a")
-    if dbg_target_bin != "":
-        shutil.copy(dbg_target_bin, app_dir + "/libgodot.ios.debug.xcframework/ios-arm64/libgodot.a")
-    if rel_target_bin_sim != "":
-        shutil.copy(
-            rel_target_bin_sim, app_dir + "/libgodot.ios.release.xcframework/ios-arm64_x86_64-simulator/libgodot.a"
-        )
-    if dbg_target_bin_sim != "":
-        shutil.copy(
-            dbg_target_bin_sim, app_dir + "/libgodot.ios.debug.xcframework/ios-arm64_x86_64-simulator/libgodot.a"
-        )
-    mvk_path = detect_mvk(env, "ios-arm64")
-    if mvk_path != "":
-        shutil.copytree(mvk_path, app_dir + "/MoltenVK.xcframework")
-
-    # ZIP Xcode project bundle.
-    zip_dir = Dir("#bin/" + (app_prefix + env.extra_suffix).replace(".", "_")).abspath
-    shutil.make_archive(zip_dir, "zip", root_dir=app_dir)
-    shutil.rmtree(app_dir)
-
-
 ios_lib = [
     "godot_ios.mm",
     "os_ios.mm",
@@ -65,7 +9,7 @@ ios_lib = [
     "app_delegate.mm",
     "view_controller.mm",
     "ios.mm",
-    "rendering_context_driver_vulkan_ios.mm",
+    "vulkan_context_ios.mm",
     "display_server_ios.mm",
     "joypad_ios.mm",
     "godot_view.mm",
@@ -76,7 +20,6 @@ ios_lib = [
     "device_metrics.m",
     "keyboard_input_view.mm",
     "key_mapping_ios.mm",
-    "ios_terminal_logger.mm",
 ]
 
 env_ios = env.Clone()
@@ -98,8 +41,3 @@ def combine_libs(target=None, source=None, env=None):
 
 
 combine_command = env_ios.Command("#bin/libgodot" + env_ios["LIBSUFFIX"], [ios_lib] + env_ios["LIBS"], combine_libs)
-
-if env["generate_bundle"]:
-    generate_bundle_command = env.Command("generate_bundle", [], generate_bundle)
-    command = env.AlwaysBuild(generate_bundle_command)
-    env.Depends(command, [combine_command])

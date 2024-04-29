@@ -33,6 +33,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
+#if !defined(GLSLANG_WEB)
+
 #include "../Include/Common.h"
 #include "reflection.h"
 #include "LiveTraverser.h"
@@ -1268,3 +1270,5 @@ void TReflection::dump()
 }
 
 } // end namespace glslang
+
+#endif // !GLSLANG_WEB

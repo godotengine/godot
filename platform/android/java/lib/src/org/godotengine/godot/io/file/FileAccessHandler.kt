@@ -56,9 +56,7 @@ class FileAccessHandler(val context: Context) {
 			}
 
 			return try {
-				path?.let {
-					DataAccess.fileExists(storageScope, context, it)
-				} ?: false
+				DataAccess.fileExists(storageScope, context, path!!)
 			} catch (e: SecurityException) {
 				false
 			}
@@ -71,22 +69,20 @@ class FileAccessHandler(val context: Context) {
 			}
 
 			return try {
-				path?.let {
-					DataAccess.removeFile(storageScope, context, it)
-				} ?: false
+				DataAccess.removeFile(storageScope, context, path!!)
 			} catch (e: Exception) {
 				false
 			}
 		}
 
-		internal fun renameFile(context: Context, storageScopeIdentifier: StorageScope.Identifier, from: String, to: String): Boolean {
+		internal fun renameFile(context: Context, storageScopeIdentifier: StorageScope.Identifier, from: String?, to: String?): Boolean {
 			val storageScope = storageScopeIdentifier.identifyStorageScope(from)
 			if (storageScope == StorageScope.UNKNOWN) {
 				return false
 			}
 
 			return try {
-				DataAccess.renameFile(storageScope, context, from, to)
+				DataAccess.renameFile(storageScope, context, from!!, to!!)
 			} catch (e: Exception) {
 				false
 			}
@@ -110,18 +106,16 @@ class FileAccessHandler(val context: Context) {
 			return INVALID_FILE_ID
 		}
 
-		return try {
-			path?.let {
-				val dataAccess = DataAccess.generateDataAccess(storageScope, context, it, accessFlag) ?: return INVALID_FILE_ID
+		try {
+			val dataAccess = DataAccess.generateDataAccess(storageScope, context, path!!, accessFlag) ?: return INVALID_FILE_ID
 
-				files.put(++lastFileId, dataAccess)
-				lastFileId
-			} ?: INVALID_FILE_ID
+			files.put(++lastFileId, dataAccess)
+			return lastFileId
 		} catch (e: FileNotFoundException) {
-			FILE_NOT_FOUND_ERROR_ID
+			return FILE_NOT_FOUND_ERROR_ID
 		} catch (e: Exception) {
 			Log.w(TAG, "Error while opening $path", e)
-			INVALID_FILE_ID
+			return INVALID_FILE_ID
 		}
 	}
 
@@ -182,9 +176,7 @@ class FileAccessHandler(val context: Context) {
 		}
 
 		return try {
-			filepath?.let {
-				DataAccess.fileLastModified(storageScope, context, it)
-			} ?: 0L
+			DataAccess.fileLastModified(storageScope, context, filepath!!)
 		} catch (e: SecurityException) {
 			0L
 		}

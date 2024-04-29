@@ -178,10 +178,12 @@ public class GodotIO {
 	}
 
 	public int[] getDisplaySafeArea() {
-		Rect rect = new Rect();
-		activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
+		DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
+		Display display = activity.getWindowManager().getDefaultDisplay();
+		Point size = new Point();
+		display.getRealSize(size);
 
-		int[] result = { rect.left, rect.top, rect.right, rect.bottom };
+		int[] result = { 0, 0, size.x, size.y };
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 			WindowInsets insets = activity.getWindow().getDecorView().getRootWindowInsets();
 			DisplayCutout cutout = insets.getDisplayCutout();

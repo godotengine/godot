@@ -36,10 +36,10 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
-#include "editor/themes/editor_scale.h"
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
@@ -86,7 +86,8 @@ bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 			}
 
 			for (int i = 0; i < files.size(); i++) {
-				String ftype = EditorFileSystem::get_singleton()->get_file_type(files[i]);
+				String file = files[i];
+				String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
 
 				if (!ClassDB::is_parent_class(ftype, "Texture2D")) {
 					return false;
@@ -117,11 +118,11 @@ void TileSetEditor::_load_texture_files(const Vector<String> &p_paths) {
 		// Actually create the new source.
 		Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
 		atlas_source->set_texture(texture);
-		atlas_source->set_texture_region_size(tile_set->get_tile_size());
 
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Add a new atlas source"));
 		undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
+		undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
 		undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
 		undo_redo->commit_action();
 
@@ -458,7 +459,7 @@ void TileSetEditor::_tab_changed(int p_tab_changed) {
 	patterns_item_list->set_visible(p_tab_changed == 1);
 }
 
-void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, const String &p_array_prefix, int p_from_index, int p_to_pos) {
+void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos) {
 	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo_man);
 
@@ -668,7 +669,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 	}
 }
 
-void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, const String &p_property, const Variant &p_new_value) {
+void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
 	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo_man);
 
@@ -841,8 +842,7 @@ TileSetEditor::TileSetEditor() {
 	split_container->add_child(split_container_left_side);
 
 	source_sort_button = memnew(MenuButton);
-	source_sort_button->set_flat(false);
-	source_sort_button->set_theme_type_variation("FlatButton");
+	source_sort_button->set_flat(true);
 	source_sort_button->set_tooltip_text(TTR("Sort Sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
@@ -854,7 +854,6 @@ TileSetEditor::TileSetEditor() {
 	p->set_item_checked(TilesEditorUtils::SOURCE_SORT_ID, true);
 
 	sources_list = memnew(ItemList);
-	sources_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -872,22 +871,20 @@ TileSetEditor::TileSetEditor() {
 	split_container_left_side->add_child(sources_bottom_actions);
 
 	sources_delete_button = memnew(Button);
-	sources_delete_button->set_theme_type_variation("FlatButton");
+	sources_delete_button->set_flat(true);
 	sources_delete_button->set_disabled(true);
 	sources_delete_button->connect("pressed", callable_mp(this, &TileSetEditor::_source_delete_pressed));
 	sources_bottom_actions->add_child(sources_delete_button);
 
 	sources_add_button = memnew(MenuButton);
-	sources_add_button->set_flat(false);
-	sources_add_button->set_theme_type_variation("FlatButton");
+	sources_add_button->set_flat(true);
 	sources_add_button->get_popup()->add_item(TTR("Atlas"));
 	sources_add_button->get_popup()->add_item(TTR("Scenes Collection"));
 	sources_add_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_source_add_id_pressed));
 	sources_bottom_actions->add_child(sources_add_button);
 
 	sources_advanced_menu_button = memnew(MenuButton);
-	sources_advanced_menu_button->set_flat(false);
-	sources_advanced_menu_button->set_theme_type_variation("FlatButton");
+	sources_advanced_menu_button->set_flat(true);
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Open Atlas Merging Tool"));
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Manage Tile Proxies"));
 	sources_advanced_menu_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));
@@ -934,7 +931,6 @@ TileSetEditor::TileSetEditor() {
 	//// Patterns ////
 	int thumbnail_size = 64;
 	patterns_item_list = memnew(ItemList);
-	patterns_item_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	patterns_item_list->set_max_columns(0);
 	patterns_item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	patterns_item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
@@ -988,7 +984,7 @@ void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 
 void TileSourceInspectorPlugin::_confirm_change_id() {
 	edited_source->set("id", id_input->get_value());
-	id_label->set_text(itos(edited_source->get("id"))); // Use get(), because the provided ID might've been invalid.
+	id_label->set_text(vformat(TTR("ID: %d"), edited_source->get("id"))); // Use get(), because the provided ID might've been invalid.
 }
 
 bool TileSourceInspectorPlugin::can_handle(Object *p_object) {
@@ -1002,22 +998,17 @@ bool TileSourceInspectorPlugin::parse_property(Object *p_object, const Variant::
 			return true;
 		}
 
-		EditorProperty *ep = memnew(EditorProperty);
-
 		HBoxContainer *hbox = memnew(HBoxContainer);
 		hbox->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 
-		id_label = memnew(Label(itos(value)));
-		id_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		id_label = memnew(Label(vformat(TTR("ID: %d"), value)));
 		hbox->add_child(id_label);
 
 		Button *button = memnew(Button(TTR("Edit")));
-		button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hbox->add_child(button);
 		button->connect("pressed", callable_mp(this, &TileSourceInspectorPlugin::_show_id_edit_dialog).bind(p_object));
 
-		ep->add_child(hbox);
-		add_property_editor(p_path, ep);
+		add_custom_control(hbox);
 		return true;
 	}
 	return false;

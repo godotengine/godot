@@ -305,11 +305,11 @@ public:
 		virtual ~DefaultQueryResult() {}
 	};
 
-	template <typename QueryResult>
+	template <class QueryResult>
 	_FORCE_INLINE_ void aabb_query(const AABB &p_aabb, QueryResult &r_result);
-	template <typename QueryResult>
+	template <class QueryResult>
 	_FORCE_INLINE_ void convex_query(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, QueryResult &r_result);
-	template <typename QueryResult>
+	template <class QueryResult>
 	_FORCE_INLINE_ void ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResult &r_result);
 
 	void set_index(uint32_t p_index);
@@ -318,7 +318,7 @@ public:
 	~DynamicBVH();
 };
 
-template <typename QueryResult>
+template <class QueryResult>
 void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 	if (!bvh_root) {
 		return;
@@ -328,8 +328,7 @@ void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 	volume.min = p_box.position;
 	volume.max = p_box.position + p_box.size;
 
-	const Node **alloca_stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
-	const Node **stack = alloca_stack;
+	const Node **stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
 	stack[0] = bvh_root;
 	int32_t depth = 1;
 	int32_t threshold = ALLOCA_STACK_SIZE - 2;
@@ -344,8 +343,7 @@ void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 				if (depth > threshold) {
 					if (aux_stack.is_empty()) {
 						aux_stack.resize(ALLOCA_STACK_SIZE * 2);
-						memcpy(aux_stack.ptr(), alloca_stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
-						alloca_stack = nullptr;
+						memcpy(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
 					} else {
 						aux_stack.resize(aux_stack.size() * 2);
 					}
@@ -363,7 +361,7 @@ void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 	} while (depth > 0);
 }
 
-template <typename QueryResult>
+template <class QueryResult>
 void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, QueryResult &r_result) {
 	if (!bvh_root) {
 		return;
@@ -376,13 +374,17 @@ void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Ve
 			volume.min = p_points[0];
 			volume.max = p_points[0];
 		} else {
-			volume.min = volume.min.min(p_points[i]);
-			volume.max = volume.max.max(p_points[i]);
+			volume.min.x = MIN(volume.min.x, p_points[i].x);
+			volume.min.y = MIN(volume.min.y, p_points[i].y);
+			volume.min.z = MIN(volume.min.z, p_points[i].z);
+
+			volume.max.x = MAX(volume.max.x, p_points[i].x);
+			volume.max.y = MAX(volume.max.y, p_points[i].y);
+			volume.max.z = MAX(volume.max.z, p_points[i].z);
 		}
 	}
 
-	const Node **alloca_stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
-	const Node **stack = alloca_stack;
+	const Node **stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
 	stack[0] = bvh_root;
 	int32_t depth = 1;
 	int32_t threshold = ALLOCA_STACK_SIZE - 2;
@@ -397,8 +399,7 @@ void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Ve
 				if (depth > threshold) {
 					if (aux_stack.is_empty()) {
 						aux_stack.resize(ALLOCA_STACK_SIZE * 2);
-						memcpy(aux_stack.ptr(), alloca_stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
-						alloca_stack = nullptr;
+						memcpy(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
 					} else {
 						aux_stack.resize(aux_stack.size() * 2);
 					}
@@ -415,7 +416,7 @@ void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Ve
 		}
 	} while (depth > 0);
 }
-template <typename QueryResult>
+template <class QueryResult>
 void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResult &r_result) {
 	if (!bvh_root) {
 		return;
@@ -435,8 +436,7 @@ void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResu
 
 	Vector3 bounds[2];
 
-	const Node **alloca_stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
-	const Node **stack = alloca_stack;
+	const Node **stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
 	stack[0] = bvh_root;
 	int32_t depth = 1;
 	int32_t threshold = ALLOCA_STACK_SIZE - 2;
@@ -456,8 +456,7 @@ void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResu
 				if (depth > threshold) {
 					if (aux_stack.is_empty()) {
 						aux_stack.resize(ALLOCA_STACK_SIZE * 2);
-						memcpy(aux_stack.ptr(), alloca_stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
-						alloca_stack = nullptr;
+						memcpy(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
 					} else {
 						aux_stack.resize(aux_stack.size() * 2);
 					}

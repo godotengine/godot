@@ -9,72 +9,20 @@
 
 namespace embree
 {
-#if defined(EMBREE_SYCL_SUPPORT)
-
-  /* enables SYCL USM allocation */
-  void enableUSMAllocEmbree(sycl::context* context, sycl::device* device);
-  void enableUSMAllocTutorial(sycl::context* context, sycl::device* device);
-
-  /* disables SYCL USM allocation */
-  void disableUSMAllocEmbree();
-  void disableUSMAllocTutorial();
-
-#endif
-  
-#define ALIGNED_STRUCT_(align)                                            \
-  void* operator new(size_t size) { return alignedMalloc(size,align); }   \
-  void operator delete(void* ptr) { alignedFree(ptr); }                   \
+#define ALIGNED_STRUCT_(align)                                           \
+  void* operator new(size_t size) { return alignedMalloc(size,align); } \
+  void operator delete(void* ptr) { alignedFree(ptr); }                 \
   void* operator new[](size_t size) { return alignedMalloc(size,align); } \
   void operator delete[](void* ptr) { alignedFree(ptr); }
-  
-#define ALIGNED_STRUCT_USM_(align)                                          \
-  void* operator new(size_t size) { return alignedUSMMalloc(size,align); }   \
-  void operator delete(void* ptr) { alignedUSMFree(ptr); }                   \
-  void* operator new[](size_t size) { return alignedUSMMalloc(size,align); } \
-  void operator delete[](void* ptr) { alignedUSMFree(ptr); }
-  
-#define ALIGNED_CLASS_(align)                                          \
- public:                                                               \
-    ALIGNED_STRUCT_(align)                                             \
- private:
 
-#define ALIGNED_CLASS_USM_(align)                                          \
+#define ALIGNED_CLASS_(align)                                           \
  public:                                                               \
-    ALIGNED_STRUCT_USM_(align)                                             \
+    ALIGNED_STRUCT_(align)                                              \
  private:
-
-  enum EmbreeUSMMode {
-    EMBREE_USM_SHARED = 0,
-    EMBREE_USM_SHARED_DEVICE_READ_WRITE = 0,
-    EMBREE_USM_SHARED_DEVICE_READ_ONLY = 1
-  };
   
   /*! aligned allocation */
   void* alignedMalloc(size_t size, size_t align);
   void alignedFree(void* ptr);
-
-  /*! aligned allocation using SYCL USM */
-  void* alignedUSMMalloc(size_t size, size_t align = 16, EmbreeUSMMode mode = EMBREE_USM_SHARED_DEVICE_READ_ONLY);
-  void alignedUSMFree(void* ptr);
-
-#if defined(EMBREE_SYCL_SUPPORT)
-  
-  /*! aligned allocation using SYCL USM */
-  void* alignedSYCLMalloc(sycl::context* context, sycl::device* device, size_t size, size_t align, EmbreeUSMMode mode);
-  void alignedSYCLFree(sycl::context* context, void* ptr);
-
-  // deleter functor to use as deleter in std unique or shared pointers that
-  // capture raw pointers created by sycl::malloc and it's variants
-  template<typename T>
-  struct sycl_deleter
-  {
-    void operator()(T const* ptr)
-    {
-      alignedUSMFree((void*)ptr);
-    }
-  };
-
-#endif
   
   /*! allocator that performs aligned allocations */
   template<typename T, size_t alignment>
@@ -145,37 +93,6 @@ namespace embree
       }
 
       bool hugepages;
-    };
-
-  /*! allocator that newer performs allocations */
-  template<typename T>
-    struct no_allocator
-    {
-      typedef T value_type;
-      typedef T* pointer;
-      typedef const T* const_pointer;
-      typedef T& reference;
-      typedef const T& const_reference;
-      typedef std::size_t size_type;
-      typedef std::ptrdiff_t difference_type;
-
-      __forceinline pointer allocate( size_type n ) {
-        // -- GODOT start --
-        // throw std::runtime_error("no allocation supported");
-        abort();
-        // -- GODOT end --
-      }
-
-      __forceinline void deallocate( pointer p, size_type n ) {
-      }
-
-      __forceinline void construct( pointer p, const_reference val ) {
-        new (p) T(val);
-      }
-
-      __forceinline void destroy( pointer p ) {
-        p->~T();
-      }
     };
 
   /*! allocator for IDs */

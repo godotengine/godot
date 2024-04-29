@@ -124,7 +124,7 @@ const GodotWebSocket = {
 			const ref = IDHandler.get(p_id);
 			if (ref && ref.readyState < ref.CLOSING) {
 				const code = p_code;
-				const reason = p_reason;
+				const reason = GodotRuntime.parseString(p_reason);
 				ref.close(code, reason);
 			}
 		},
@@ -144,7 +144,6 @@ const GodotWebSocket = {
 		},
 	},
 
-	godot_js_websocket_create__proxy: 'sync',
 	godot_js_websocket_create__sig: 'iiiiiiii',
 	godot_js_websocket_create: function (p_ref, p_url, p_proto, p_on_open, p_on_message, p_on_error, p_on_close) {
 		const on_open = GodotRuntime.get_func(p_on_open).bind(null, p_ref);
@@ -167,7 +166,6 @@ const GodotWebSocket = {
 		return GodotWebSocket.create(socket, on_open, on_message, on_error, on_close);
 	},
 
-	godot_js_websocket_send__proxy: 'sync',
 	godot_js_websocket_send__sig: 'iiiii',
 	godot_js_websocket_send: function (p_id, p_buf, p_buf_len, p_raw) {
 		const bytes_array = new Uint8Array(p_buf_len);
@@ -182,13 +180,11 @@ const GodotWebSocket = {
 		return GodotWebSocket.send(p_id, out);
 	},
 
-	godot_js_websocket_buffered_amount__proxy: 'sync',
 	godot_js_websocket_buffered_amount__sig: 'ii',
 	godot_js_websocket_buffered_amount: function (p_id) {
 		return GodotWebSocket.bufferedAmount(p_id);
 	},
 
-	godot_js_websocket_close__proxy: 'sync',
 	godot_js_websocket_close__sig: 'viii',
 	godot_js_websocket_close: function (p_id, p_code, p_reason) {
 		const code = p_code;
@@ -196,7 +192,6 @@ const GodotWebSocket = {
 		GodotWebSocket.close(p_id, code, reason);
 	},
 
-	godot_js_websocket_destroy__proxy: 'sync',
 	godot_js_websocket_destroy__sig: 'vi',
 	godot_js_websocket_destroy: function (p_id) {
 		GodotWebSocket.destroy(p_id);

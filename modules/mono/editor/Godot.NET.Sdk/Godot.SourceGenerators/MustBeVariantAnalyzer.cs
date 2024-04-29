@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -8,7 +9,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Godot.SourceGenerators
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public sealed class MustBeVariantAnalyzer : DiagnosticAnalyzer
+    public class MustBeVariantAnalyzer : DiagnosticAnalyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
             => ImmutableArray.Create(
@@ -33,7 +34,7 @@ namespace Godot.SourceGenerators
 
             // Method invocation or variable declaration that contained the type arguments
             var parentSyntax = context.Node.Parent;
-            Helper.ThrowIfNull(parentSyntax);
+            Debug.Assert(parentSyntax != null);
 
             var sm = context.SemanticModel;
 
@@ -48,10 +49,9 @@ namespace Godot.SourceGenerators
                     continue;
 
                 var typeSymbol = sm.GetSymbolInfo(typeSyntax).Symbol as ITypeSymbol;
-                Helper.ThrowIfNull(typeSymbol);
+                Debug.Assert(typeSymbol != null);
 
                 var parentSymbol = sm.GetSymbolInfo(parentSyntax).Symbol;
-                Helper.ThrowIfNull(parentSymbol);
 
                 if (!ShouldCheckTypeArgument(context, parentSyntax, parentSymbol, typeSyntax, typeSymbol, i))
                 {
@@ -62,24 +62,17 @@ namespace Godot.SourceGenerators
                 {
                     if (!typeParamSymbol.GetAttributes().Any(a => a.AttributeClass?.IsGodotMustBeVariantAttribute() ?? false))
                     {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            Common.GenericTypeParameterMustBeVariantAnnotatedRule,
-                            typeSyntax.GetLocation(),
-                            typeSymbol.ToDisplayString()
-                        ));
+                        Common.ReportGenericTypeParameterMustBeVariantAnnotated(context, typeSyntax, typeSymbol);
                     }
                     continue;
                 }
 
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(typeSymbol, typeCache);
 
-                if (marshalType is null)
+                if (marshalType == null)
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        Common.GenericTypeArgumentMustBeVariantRule,
-                        typeSyntax.GetLocation(),
-                        typeSymbol.ToDisplayString()
-                    ));
+                    Common.ReportGenericTypeArgumentMustBeVariant(context, typeSyntax, typeSymbol);
+                    continue;
                 }
             }
         }
@@ -113,45 +106,24 @@ namespace Godot.SourceGenerators
         /// <param name="parentSymbol">The symbol retrieved for the parent node syntax.</param>
         /// <param name="typeArgumentSyntax">The type node syntax of the argument type to check.</param>
         /// <param name="typeArgumentSymbol">The symbol retrieved for the type node syntax.</param>
-        /// <param name="typeArgumentIndex"></param>
         /// <returns><see langword="true"/> if the type must be variant and must be analyzed.</returns>
-        private bool ShouldCheckTypeArgument(
-            SyntaxNodeAnalysisContext context,
-            SyntaxNode parentSyntax,
-            ISymbol parentSymbol,
-            TypeSyntax typeArgumentSyntax,
-            ITypeSymbol typeArgumentSymbol,
-            int typeArgumentIndex)
+        private bool ShouldCheckTypeArgument(SyntaxNodeAnalysisContext context, SyntaxNode parentSyntax, ISymbol parentSymbol, TypeSyntax typeArgumentSyntax, ITypeSymbol typeArgumentSymbol, int typeArgumentIndex)
         {
-            ITypeParameterSymbol? typeParamSymbol = parentSymbol switch
+            var typeParamSymbol = parentSymbol switch
             {
-                IMethodSymbol methodSymbol when parentSyntax.Parent is AttributeSyntax &&
-                                                methodSymbol.ContainingType.TypeParameters.Length > 0
-                    => methodSymbol.ContainingType.TypeParameters[typeArgumentIndex],
-
-                IMethodSymbol { TypeParameters.Length: > 0 } methodSymbol
-                    => methodSymbol.TypeParameters[typeArgumentIndex],
-
-                INamedTypeSymbol { TypeParameters.Length: > 0 } typeSymbol
-                    => typeSymbol.TypeParameters[typeArgumentIndex],
-
-                _
-                    => null
+                IMethodSymbol methodSymbol => methodSymbol.TypeParameters[typeArgumentIndex],
+                INamedTypeSymbol typeSymbol => typeSymbol.TypeParameters[typeArgumentIndex],
+                _ => null,
             };
 
-            if (typeParamSymbol != null)
+            if (typeParamSymbol == null)
             {
-                return typeParamSymbol.GetAttributes()
-                    .Any(a => a.AttributeClass?.IsGodotMustBeVariantAttribute() ?? false);
+                Common.ReportTypeArgumentParentSymbolUnhandled(context, typeArgumentSyntax, parentSymbol);
+                return false;
             }
 
-            context.ReportDiagnostic(Diagnostic.Create(
-                Common.TypeArgumentParentSymbolUnhandledRule,
-                typeArgumentSyntax.GetLocation(),
-                parentSymbol.ToDisplayString()
-            ));
-
-            return false;
+            return typeParamSymbol.GetAttributes()
+                .Any(a => a.AttributeClass?.IsGodotMustBeVariantAttribute() ?? false);
         }
     }
 }

@@ -88,20 +88,14 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 		archs.insert("unknown_arch"); // Not archs specified, still try to match.
 	}
 
-	HashSet<String> libs_added;
-
 	for (const String &arch_tag : archs) {
 		PackedStringArray tags;
 		String library_path = GDExtension::find_extension_library(
-				p_path, config, [features_wo_arch, arch_tag](const String &p_feature) { return features_wo_arch.has(p_feature) || (p_feature == arch_tag); }, &tags);
-		if (libs_added.has(library_path)) {
-			continue; // Universal library, already added for another arch, do not duplicate.
-		}
+				p_path, config, [features_wo_arch, arch_tag](String p_feature) { return features_wo_arch.has(p_feature) || (p_feature == arch_tag); }, &tags);
 		if (!library_path.is_empty()) {
-			libs_added.insert(library_path);
 			add_shared_object(library_path, tags);
 
-			if (p_features.has("ios") && (library_path.ends_with(".a") || library_path.ends_with(".xcframework"))) {
+			if (p_features.has("iOS") && (library_path.ends_with(".a") || library_path.ends_with(".xcframework"))) {
 				String additional_code = "extern void register_dynamic_symbol(char *name, void *address);\n"
 										 "extern void add_ios_init_callback(void (*cb)());\n"
 										 "\n"

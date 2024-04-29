@@ -81,10 +81,6 @@ void TextLine::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 
-	ClassDB::bind_method(D_METHOD("set_ellipsis_char", "char"), &TextLine::set_ellipsis_char);
-	ClassDB::bind_method(D_METHOD("get_ellipsis_char"), &TextLine::get_ellipsis_char);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ellipsis_char"), "set_ellipsis_char", "get_ellipsis_char");
-
 	ClassDB::bind_method(D_METHOD("get_objects"), &TextLine::get_objects);
 	ClassDB::bind_method(D_METHOD("get_object_rect", "key"), &TextLine::get_object_rect);
 
@@ -141,10 +137,8 @@ void TextLine::_shape() {
 			if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
 				TS->shaped_text_fit_to_width(rid, width, flags);
 				overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
-				TS->shaped_text_set_custom_ellipsis(rid, (el_char.length() > 0) ? el_char[0] : 0x2026);
 				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
 			} else {
-				TS->shaped_text_set_custom_ellipsis(rid, (el_char.length() > 0) ? el_char[0] : 0x2026);
 				TS->shaped_text_overrun_trim_to_width(rid, width, overrun_flags);
 			}
 		} else if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
@@ -206,6 +200,9 @@ void TextLine::set_bidi_override(const Array &p_override) {
 bool TextLine::add_string(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language, const Variant &p_meta) {
 	ERR_FAIL_COND_V(p_font.is_null(), false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language, p_meta);
+	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
+		TS->shaped_text_set_spacing(rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
+	}
 	dirty = true;
 	return res;
 }
@@ -310,23 +307,6 @@ void TextLine::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior)
 
 TextServer::OverrunBehavior TextLine::get_text_overrun_behavior() const {
 	return overrun_behavior;
-}
-
-void TextLine::set_ellipsis_char(const String &p_char) {
-	String c = p_char;
-	if (c.length() > 1) {
-		WARN_PRINT("Ellipsis must be exactly one character long (" + itos(c.length()) + " characters given).");
-		c = c.left(1);
-	}
-	if (el_char == c) {
-		return;
-	}
-	el_char = c;
-	dirty = true;
-}
-
-String TextLine::get_ellipsis_char() const {
-	return el_char;
 }
 
 void TextLine::set_width(float p_width) {
@@ -474,6 +454,9 @@ TextLine::TextLine(const String &p_text, const Ref<Font> &p_font, int p_font_siz
 	rid = TS->create_shaped_text(p_direction, p_orientation);
 	if (p_font.is_valid()) {
 		TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language);
+		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
+			TS->shaped_text_set_spacing(rid, TextServer::SpacingType(i), p_font->get_spacing(TextServer::SpacingType(i)));
+		}
 	}
 }
 

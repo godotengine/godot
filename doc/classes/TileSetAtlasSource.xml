@@ -39,7 +39,7 @@
 		<method name="get_atlas_grid_size" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
-				Returns the atlas grid size, which depends on how many tiles can fit in the texture. It thus depends on the [member texture]'s size, the atlas [member margins], and the tiles' [member texture_region_size].
+				Returns the atlas grid size, which depends on how many tiles can fit in the texture. It thus depends on the Texture's size, the atlas [code]margins[/code] the tiles' [code]texture_region_size[/code].
 			</description>
 		</method>
 		<method name="get_next_alternative_tile_id" qualifiers="const">
@@ -90,7 +90,7 @@
 			<return type="int" enum="TileSetAtlasSource.TileAnimationMode" />
 			<param index="0" name="atlas_coords" type="Vector2i" />
 			<description>
-				Returns the tile animation mode of the tile at [param atlas_coords]. See also [method set_tile_animation_mode].
+				Returns the [enum TileAnimationMode] of the tile at [param atlas_coords]. See also [method set_tile_animation_mode].
 			</description>
 		</method>
 		<method name="get_tile_animation_separation" qualifiers="const">
@@ -239,7 +239,7 @@
 			<param index="0" name="atlas_coords" type="Vector2i" />
 			<param index="1" name="mode" type="int" enum="TileSetAtlasSource.TileAnimationMode" />
 			<description>
-				Sets the tile animation mode of the tile at [param atlas_coords] to [param mode]. See also [method get_tile_animation_mode].
+				Sets the [enum TileAnimationMode] of the tile at [param atlas_coords] to [param mode]. See also [method get_tile_animation_mode].
 			</description>
 		</method>
 		<method name="set_tile_animation_separation">

@@ -135,7 +135,7 @@ private:
 	GIMode gi_mode = GI_MODE_STATIC;
 	bool ignore_occlusion_culling = false;
 
-	const StringName *_instance_uniform_get_remap(const StringName &p_name) const;
+	const StringName *_instance_uniform_get_remap(const StringName p_name) const;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);

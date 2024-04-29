@@ -105,10 +105,7 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 				EditorNode::get_singleton()->show_warning(TTR("Lightmap data is not local to the scene."));
 			} break;
 			case LightmapGI::BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL: {
-				EditorNode::get_singleton()->show_warning(TTR("Maximum texture size is too small for the lightmap images.\nWhile this can be fixed by increasing the maximum texture size, it is recommended you split the scene into more objects instead."));
-			} break;
-			case LightmapGI::BAKE_ERROR_LIGHTMAP_TOO_SMALL: {
-				EditorNode::get_singleton()->show_warning(TTR("Failed creating lightmap images. Make sure all meshes selected to bake have `lightmap_size_hint` value set high enough, and `texel_scale` value of LightmapGI is not too low."));
+				EditorNode::get_singleton()->show_warning(TTR("Maximum texture size is too small for the lightmap images."));
 			} break;
 			default: {
 			} break;
@@ -171,7 +168,7 @@ void LightmapGIEditorPlugin::_bind_methods() {
 
 LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 	bake = memnew(Button);
-	bake->set_theme_type_variation("FlatButton");
+	bake->set_flat(true);
 	// TODO: Rework this as a dedicated toolbar control so we can hook into theme changes and update it
 	// when the editor theme updates.
 	bake->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));

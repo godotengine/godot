@@ -17,15 +17,15 @@ def test_gles3_builder(shader_files, builder, header_struct):
 
     builder(shader_files["path_input"], "drivers/gles3/shader_gles3.h", "GLES3", header_data=header)
 
-    with open(shader_files["path_expected_parts"], "r", encoding="utf-8") as f:
+    with open(shader_files["path_expected_parts"], "r") as f:
         expected_parts = json.load(f)
         assert expected_parts == header.__dict__
 
-    with open(shader_files["path_output"], "r", encoding="utf-8") as f:
+    with open(shader_files["path_output"], "r") as f:
         actual_output = f.read()
         assert actual_output
 
-    with open(shader_files["path_expected_full"], "r", encoding="utf-8") as f:
+    with open(shader_files["path_expected_full"], "r") as f:
         expected_output = f.read()
 
     assert actual_output == expected_output

@@ -35,7 +35,7 @@
 
 #include "scene/3d/path_3d.h"
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/concave_polygon_shape_3d.h"
 
 #include "thirdparty/misc/mikktspace.h"
 

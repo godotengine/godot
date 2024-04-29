@@ -24,27 +24,6 @@
 				Returns the script directly inherited by this script.
 			</description>
 		</method>
-		<method name="get_global_name" qualifiers="const">
-			<return type="StringName" />
-			<description>
-				Returns the class name associated with the script, if there is one. Returns an empty string otherwise.
-				To give the script a global name, you can use the [code]class_name[/code] keyword in GDScript and the [code][GlobalClass][/code] attribute in C#.
-				[codeblocks]
-				[gdscript]
-				class_name MyNode
-				extends Node
-				[/gdscript]
-				[csharp]
-				using Godot;
-
-				[GlobalClass]
-				public partial class MyNode : Node
-				{
-				}
-				[/csharp]
-				[/codeblocks]
-			</description>
-		</method>
 		<method name="get_instance_base_type" qualifiers="const">
 			<return type="StringName" />
 			<description>
@@ -100,12 +79,6 @@
 			<param index="0" name="base_object" type="Object" />
 			<description>
 				Returns [code]true[/code] if [param base_object] is an instance of this script.
-			</description>
-		</method>
-		<method name="is_abstract" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the script is an abstract script. An abstract script does not have a constructor and cannot be instantiated.
 			</description>
 		</method>
 		<method name="is_tool" qualifiers="const">

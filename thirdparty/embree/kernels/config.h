@@ -1,26 +1,22 @@
 // Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-#include "../include/embree4/rtcore_config.h"
-
-// #cmakedefine EMBREE_RAY_MASK
-// #cmakedefine EMBREE_STAT_COUNTERS
-// #cmakedefine EMBREE_BACKFACE_CULLING
-// #cmakedefine EMBREE_BACKFACE_CULLING_CURVES
-// #cmakedefine EMBREE_BACKFACE_CULLING_SPHERES
+/* #undef EMBREE_RAY_MASK */
+/* #undef EMBREE_STAT_COUNTERS */
+/* #undef EMBREE_BACKFACE_CULLING */
+/* #undef EMBREE_BACKFACE_CULLING_CURVES */
 #define EMBREE_FILTER_FUNCTION
-// #cmakedefine EMBREE_IGNORE_INVALID_RAYS
+/* #undef EMBREE_IGNORE_INVALID_RAYS */
 #define EMBREE_GEOMETRY_TRIANGLE
-// #cmakedefine EMBREE_GEOMETRY_QUAD
-// #cmakedefine EMBREE_GEOMETRY_CURVE
-// #cmakedefine EMBREE_GEOMETRY_SUBDIVISION
-// #cmakedefine EMBREE_GEOMETRY_USER
-// #cmakedefine EMBREE_GEOMETRY_INSTANCE
-// EMBREE_GEOMETRY_INSTANCE_ARRAY is defined in rtcore_config.h
-// #cmakedefine EMBREE_GEOMETRY_GRID
-// #cmakedefine EMBREE_GEOMETRY_POINT
+/* #undef EMBREE_GEOMETRY_QUAD */
+/* #undef EMBREE_GEOMETRY_CURVE */
+/* #undef EMBREE_GEOMETRY_SUBDIVISION */
+/* #undef EMBREE_GEOMETRY_USER */
+/* #undef EMBREE_GEOMETRY_INSTANCE */
+/* #undef EMBREE_GEOMETRY_GRID */
+/* #undef EMBREE_GEOMETRY_POINT */
 #define EMBREE_RAY_PACKETS
-// #cmakedefine EMBREE_COMPACT_POLYS
+/* #undef EMBREE_COMPACT_POLYS */
 
 #define EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR 2.0
 #define EMBREE_DISC_POINT_SELF_INTERSECTION_AVOIDANCE
@@ -73,18 +69,8 @@
   #define IF_ENABLED_INSTANCE(x)
 #endif
 
-#if defined(EMBREE_GEOMETRY_INSTANCE_ARRAY)
-  #define IF_ENABLED_INSTANCE_ARRAY(x) x
-#else
-  #define IF_ENABLED_INSTANCE_ARRAY(x)
-#endif
-
 #if defined(EMBREE_GEOMETRY_GRID)
   #define IF_ENABLED_GRIDS(x) x
 #else
   #define IF_ENABLED_GRIDS(x)
 #endif
-
-
-
-

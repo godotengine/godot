@@ -42,18 +42,9 @@
 #include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
 
-#ifdef MINGW_ENABLED
-#define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.thread.h"
-#define THREADING_NAMESPACE mingw_stdthread
-#else
 #include <thread>
-#define THREADING_NAMESPACE std
-#endif
 
 class String;
-
-#ifdef THREADS_ENABLED
 
 class Thread {
 public:
@@ -88,14 +79,14 @@ public:
 private:
 	friend class Main;
 
-	static PlatformFunctions platform_functions;
-
 	ID id = UNASSIGNED_ID;
 	static SafeNumeric<uint64_t> id_counter;
 	static thread_local ID caller_id;
-	THREADING_NAMESPACE::thread thread;
+	std::thread thread;
 
 	static void callback(ID p_caller_id, const Settings &p_settings, Thread::Callback p_callback, void *p_userdata);
+
+	static PlatformFunctions platform_functions;
 
 	static void make_main_thread() { caller_id = MAIN_ID; }
 	static void release_main_thread() { caller_id = UNASSIGNED_ID; }
@@ -126,64 +117,6 @@ public:
 	Thread();
 	~Thread();
 };
-
-#else // No threads.
-
-class Thread {
-public:
-	typedef void (*Callback)(void *p_userdata);
-
-	typedef uint64_t ID;
-
-	enum : ID {
-		UNASSIGNED_ID = 0,
-		MAIN_ID = 1
-	};
-
-	enum Priority {
-		PRIORITY_LOW,
-		PRIORITY_NORMAL,
-		PRIORITY_HIGH
-	};
-
-	struct Settings {
-		Priority priority;
-		Settings() { priority = PRIORITY_NORMAL; }
-	};
-
-	struct PlatformFunctions {
-		Error (*set_name)(const String &) = nullptr;
-		void (*set_priority)(Thread::Priority) = nullptr;
-		void (*init)() = nullptr;
-		void (*wrapper)(Thread::Callback, void *) = nullptr;
-		void (*term)() = nullptr;
-	};
-
-private:
-	friend class Main;
-
-	static PlatformFunctions platform_functions;
-
-	static void make_main_thread() {}
-	static void release_main_thread() {}
-
-public:
-	static void _set_platform_functions(const PlatformFunctions &p_functions);
-
-	_FORCE_INLINE_ ID get_id() const { return 0; }
-	_FORCE_INLINE_ static ID get_caller_id() { return MAIN_ID; }
-	_FORCE_INLINE_ static ID get_main_id() { return MAIN_ID; }
-
-	_FORCE_INLINE_ static bool is_main_thread() { return true; }
-
-	static Error set_name(const String &p_name) { return ERR_UNAVAILABLE; }
-
-	void start(Thread::Callback p_callback, void *p_user, const Settings &p_settings = Settings()) {}
-	bool is_started() const { return false; }
-	void wait_to_finish() {}
-};
-
-#endif // THREADS_ENABLED
 
 #endif // THREAD_H
 

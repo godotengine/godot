@@ -1,6 +1,20 @@
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may
+ *  not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
 /**
@@ -155,7 +169,7 @@
  *
  */
 typedef size_t mbedtls_mps_stored_size_t;
-#define MBEDTLS_MPS_STORED_SIZE_MAX  (SIZE_MAX)
+#define MBEDTLS_MPS_STORED_SIZE_MAX  ((mbedtls_mps_stored_size_t) -1)
 
 /** \brief The type of buffer sizes and offsets used in the MPS API
  *         and implementation.
@@ -169,7 +183,7 @@ typedef size_t mbedtls_mps_stored_size_t;
  *         so almost 10%.
  */
 typedef size_t mbedtls_mps_size_t;
-#define MBEDTLS_MPS_SIZE_MAX  (SIZE_MAX)
+#define MBEDTLS_MPS_SIZE_MAX  ((mbedtls_mps_size_t) -1)
 
 #if MBEDTLS_MPS_STORED_SIZE_MAX > MBEDTLS_MPS_SIZE_MAX
 #error "Misconfiguration of mbedtls_mps_size_t and mbedtls_mps_stored_size_t."

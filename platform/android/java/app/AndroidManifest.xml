@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    package="com.godot.game"
     android:versionCode="1"
     android:versionName="1.0"
     android:installLocation="auto" >
@@ -34,7 +35,7 @@
             android:name=".GodotApp"
             android:label="@string/godot_project_name_string"
             android:theme="@style/GodotAppSplashTheme"
-            android:launchMode="singleInstancePerTask"
+            android:launchMode="singleInstance"
             android:excludeFromRecents="false"
             android:exported="true"
             android:screenOrientation="landscape"

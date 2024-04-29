@@ -43,25 +43,6 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="set_custom_interpolator">
-			<return type="PropertyTweener" />
-			<param index="0" name="interpolator_method" type="Callable" />
-			<description>
-				Allows interpolating the value with a custom easing function. The provided [param interpolator_method] will be called with a value ranging from [code]0.0[/code] to [code]1.0[/code] and is expected to return a value within the same range (values outside the range can be used for overshoot). The return value of the method is then used for interpolation between initial and final value. Note that the parameter passed to the method is still subject to the tweener's own easing.
-				[b]Example:[/b]
-				[codeblock]
-				@export var curve: Curve
-
-				func _ready():
-				    var tween = create_tween()
-				    # Interpolate the value using a custom curve.
-				    tween.tween_property(self, "position:x", 300, 1).as_relative().set_custom_interpolator(tween_curve)
-
-				func tween_curve(v):
-				    return curve.sample_baked(v)
-				[/codeblock]
-			</description>
-		</method>
 		<method name="set_delay">
 			<return type="PropertyTweener" />
 			<param index="0" name="delay" type="float" />

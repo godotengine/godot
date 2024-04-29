@@ -354,7 +354,6 @@ TEST_CASE("[Vector2] Plane methods") {
 	const Vector2 vector_y = Vector2(0, 1);
 	const Vector2 vector_normal = Vector2(0.95879811270838721622267, 0.2840883296913739899919);
 	const Vector2 vector_non_normal = Vector2(5.4, 1.6);
-	const real_t p_d = 99.1;
 	CHECK_MESSAGE(
 			vector.bounce(vector_y) == Vector2(1.2, -3.4),
 			"Vector2 bounce on a plane with normal of the Y axis should.");
@@ -373,9 +372,6 @@ TEST_CASE("[Vector2] Plane methods") {
 	CHECK_MESSAGE(
 			vector.project(vector_normal).is_equal_approx(Vector2(2.0292559899117276166, 0.60126103404791929382)),
 			"Vector2 projected on a normal should return expected value.");
-	CHECK_MESSAGE(
-			vector_normal.plane_project(p_d, vector).is_equal_approx(Vector2(94.187635516479631, 30.951892004882851)),
-			"Vector2 plane_project should return expected value.");
 	CHECK_MESSAGE(
 			vector.slide(vector_y) == Vector2(1.2, 0),
 			"Vector2 slide on a plane with normal of the Y axis should set the Y to zero.");

@@ -32,8 +32,6 @@
 #define PARTICLE_PROCESS_MATERIAL_H
 
 #include "core/templates/rid.h"
-#include "core/templates/self_list.h"
-#include "scene/resources/curve_texture.h"
 #include "scene/resources/material.h"
 
 /*
@@ -63,9 +61,6 @@ public:
 		PARAM_TURB_INFLUENCE_OVER_LIFE,
 		PARAM_TURB_VEL_INFLUENCE,
 		PARAM_TURB_INIT_DISPLACEMENT,
-		PARAM_RADIAL_VELOCITY,
-		PARAM_DIRECTIONAL_VELOCITY,
-		PARAM_SCALE_OVER_VELOCITY,
 		PARAM_MAX
 	};
 
@@ -74,7 +69,6 @@ public:
 		PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY,
 		PARTICLE_FLAG_ROTATE_Y,
 		PARTICLE_FLAG_DISABLE_Z,
-		PARTICLE_FLAG_DAMPING_AS_FRICTION,
 		PARTICLE_FLAG_MAX
 	};
 
@@ -108,38 +102,35 @@ public:
 	};
 
 private:
-	struct MaterialKey {
-		// The bit size of the struct must be kept below or equal to 64 bits.
+	union MaterialKey {
+		// The bit size of the struct must be kept below or equal to 32 bits.
 		// Consider this when extending ParticleFlags, EmissionShape, or SubEmitterMode.
-		uint64_t texture_mask : PARAM_MAX;
-		uint64_t texture_color : 1;
-		uint64_t particle_flags : PARTICLE_FLAG_MAX;
-		uint64_t emission_shape : 3;
-		uint64_t invalid_key : 1;
-		uint64_t has_emission_color : 1;
-		uint64_t sub_emitter : 2;
-		uint64_t attractor_enabled : 1;
-		uint64_t collision_mode : 2;
-		uint64_t collision_scale : 1;
-		uint64_t turbulence_enabled : 1;
-		uint64_t limiter_curve : 1;
-		uint64_t alpha_curve : 1;
-		uint64_t emission_curve : 1;
-		uint64_t has_initial_ramp : 1;
-		uint64_t orbit_uses_curve_xyz : 1;
+		struct {
+			uint32_t texture_mask : 16;
+			uint32_t texture_color : 1;
+			uint32_t particle_flags : 4;
+			uint32_t emission_shape : 3;
+			uint32_t invalid_key : 1;
+			uint32_t has_emission_color : 1;
+			uint32_t sub_emitter : 2;
+			uint32_t attractor_enabled : 1;
+			uint32_t collision_mode : 2;
+			uint32_t collision_scale : 1;
+			uint32_t turbulence_enabled : 1;
+		};
 
-		MaterialKey() {
-			memset(this, 0, sizeof(MaterialKey));
-		}
+		uint64_t key = 0;
 
 		static uint32_t hash(const MaterialKey &p_key) {
-			return hash_djb2_buffer((const uint8_t *)&p_key, sizeof(MaterialKey));
+			return hash_murmur3_one_32(p_key.key);
 		}
+
 		bool operator==(const MaterialKey &p_key) const {
-			return memcmp(this, &p_key, sizeof(MaterialKey)) == 0;
+			return key == p_key.key;
 		}
+
 		bool operator<(const MaterialKey &p_key) const {
-			return memcmp(this, &p_key, sizeof(MaterialKey)) < 0;
+			return key < p_key.key;
 		}
 	};
 
@@ -149,12 +140,22 @@ private:
 	};
 
 	static HashMap<MaterialKey, ShaderData, MaterialKey> shader_map;
-	static RBSet<String> min_max_properties;
 
 	MaterialKey current_key;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
 		MaterialKey mk;
+		mk.key = 0;
+		for (int i = 0; i < PARAM_MAX; i++) {
+			if (tex_parameters[i].is_valid()) {
+				mk.texture_mask |= (1 << i);
+			}
+		}
+		for (int i = 0; i < PARTICLE_FLAG_MAX; i++) {
+			if (particle_flags[i]) {
+				mk.particle_flags |= (1 << i);
+			}
+		}
 
 		mk.texture_color = color_ramp.is_valid() ? 1 : 0;
 		mk.emission_shape = emission_shape;
@@ -164,23 +165,6 @@ private:
 		mk.attractor_enabled = attractor_interaction_enabled;
 		mk.collision_scale = collision_scale;
 		mk.turbulence_enabled = turbulence_enabled;
-		mk.limiter_curve = velocity_limit_curve.is_valid() ? 1 : 0;
-		mk.alpha_curve = alpha_curve.is_valid() ? 1 : 0;
-		mk.emission_curve = emission_curve.is_valid() ? 1 : 0;
-		mk.has_initial_ramp = color_initial_ramp.is_valid() ? 1 : 0;
-		CurveXYZTexture *texture = Object::cast_to<CurveXYZTexture>(tex_parameters[PARAM_ORBIT_VELOCITY].ptr());
-		mk.orbit_uses_curve_xyz = texture ? 1 : 0;
-
-		for (int i = 0; i < PARAM_MAX; i++) {
-			if (tex_parameters[i].is_valid()) {
-				mk.texture_mask |= ((uint64_t)1 << i);
-			}
-		}
-		for (int i = 0; i < PARTICLE_FLAG_MAX; i++) {
-			if (particle_flags[i]) {
-				mk.particle_flags |= ((uint64_t)1 << i);
-			}
-		}
 
 		return mk;
 	}
@@ -196,58 +180,43 @@ private:
 		StringName initial_angle_min;
 		StringName angular_velocity_min;
 		StringName orbit_velocity_min;
-		StringName radial_velocity_min;
 		StringName linear_accel_min;
 		StringName radial_accel_min;
 		StringName tangent_accel_min;
 		StringName damping_min;
 		StringName scale_min;
-		StringName scale_over_velocity_min;
 		StringName hue_variation_min;
 		StringName anim_speed_min;
 		StringName anim_offset_min;
-		StringName directional_velocity_min;
 
 		StringName initial_linear_velocity_max;
 		StringName initial_angle_max;
 		StringName angular_velocity_max;
 		StringName orbit_velocity_max;
-		StringName radial_velocity_max;
 		StringName linear_accel_max;
 		StringName radial_accel_max;
 		StringName tangent_accel_max;
 		StringName damping_max;
 		StringName scale_max;
-		StringName scale_over_velocity_max;
 		StringName hue_variation_max;
 		StringName anim_speed_max;
 		StringName anim_offset_max;
-		StringName directional_velocity_max;
 
 		StringName angle_texture;
 		StringName angular_velocity_texture;
 		StringName orbit_velocity_texture;
-		StringName radial_velocity_texture;
 		StringName linear_accel_texture;
 		StringName radial_accel_texture;
 		StringName tangent_accel_texture;
 		StringName damping_texture;
 		StringName scale_texture;
-		StringName scale_over_velocity_texture;
 		StringName hue_variation_texture;
 		StringName anim_speed_texture;
 		StringName anim_offset_texture;
-		StringName velocity_limiter_texture;
-		StringName directional_velocity_texture;
 
 		StringName color;
 		StringName color_ramp;
-		StringName alpha_ramp;
-		StringName emission_ramp;
 		StringName color_initial_ramp;
-
-		StringName velocity_limit_curve;
-		StringName velocity_pivot;
 
 		StringName emission_sphere_radius;
 		StringName emission_box_extents;
@@ -259,8 +228,6 @@ private:
 		StringName emission_ring_height;
 		StringName emission_ring_radius;
 		StringName emission_ring_inner_radius;
-		StringName emission_shape_offset;
-		StringName emission_shape_scale;
 
 		StringName turbulence_enabled;
 		StringName turbulence_noise_strength;
@@ -274,7 +241,6 @@ private:
 		StringName turbulence_initial_displacement_max;
 
 		StringName gravity;
-		StringName inherit_emitter_velocity_ratio;
 
 		StringName lifetime_randomness;
 
@@ -306,13 +272,7 @@ private:
 	Ref<Texture2D> tex_parameters[PARAM_MAX];
 	Color color;
 	Ref<Texture2D> color_ramp;
-	Ref<Texture2D> alpha_curve;
-	Ref<Texture2D> emission_curve;
 	Ref<Texture2D> color_initial_ramp;
-	Ref<Texture2D> velocity_limit_curve;
-
-	bool directional_velocity_global = false;
-	Vector3 velocity_pivot;
 
 	bool particle_flags[PARTICLE_FLAG_MAX];
 
@@ -327,8 +287,6 @@ private:
 	real_t emission_ring_radius = 0.0f;
 	real_t emission_ring_inner_radius = 0.0f;
 	int emission_point_count = 1;
-	Vector3 emission_shape_offset;
-	Vector3 emission_shape_scale;
 
 	bool anim_loop = false;
 
@@ -342,7 +300,6 @@ private:
 	Vector3 gravity;
 
 	double lifetime_randomness = 0.0;
-	double inherit_emitter_velocity_ratio = 0.0;
 
 	SubEmitterMode sub_emitter_mode;
 	double sub_emitter_frequency = 0.0;
@@ -362,8 +319,6 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
-	static bool has_min_max_property(const String &p_name);
-
 	void set_direction(Vector3 p_direction);
 	Vector3 get_direction() const;
 
@@ -372,12 +327,6 @@ public:
 
 	void set_flatness(float p_flatness);
 	float get_flatness() const;
-
-	void set_velocity_pivot(const Vector3 &p_pivot);
-	Vector3 get_velocity_pivot();
-
-	void set_param(Parameter p_param, const Vector2 &p_value);
-	Vector2 get_param(Parameter p_param) const;
 
 	void set_param_min(Parameter p_param, float p_value);
 	float get_param_min(Parameter p_param) const;
@@ -388,11 +337,6 @@ public:
 	void set_param_texture(Parameter p_param, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_param_texture(Parameter p_param) const;
 
-	void set_velocity_limit_curve(const Ref<Texture2D> &p_texture);
-	Ref<Texture2D> get_velocity_limit_curve() const;
-
-	void set_alpha_curve(const Ref<Texture2D> &p_texture);
-	Ref<Texture2D> get_alpha_curve() const;
 	void set_color(const Color &p_color);
 	Color get_color() const;
 
@@ -401,9 +345,6 @@ public:
 
 	void set_color_initial_ramp(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_color_initial_ramp() const;
-
-	void set_emission_curve(const Ref<Texture2D> &p_texture);
-	Ref<Texture2D> get_emission_curve() const;
 
 	void set_particle_flag(ParticleFlags p_particle_flag, bool p_enable);
 	bool get_particle_flag(ParticleFlags p_particle_flag) const;
@@ -450,9 +391,6 @@ public:
 	void set_lifetime_randomness(double p_lifetime);
 	double get_lifetime_randomness() const;
 
-	void set_inherit_velocity_ratio(double p_ratio);
-	double get_inherit_velocity_ratio();
-
 	void set_attractor_interaction_enabled(bool p_enable);
 	bool is_attractor_interaction_enabled() const;
 
@@ -486,12 +424,6 @@ public:
 
 	void set_sub_emitter_keep_velocity(bool p_enable);
 	bool get_sub_emitter_keep_velocity() const;
-
-	void set_emission_shape_offset(const Vector3 &p_emission_shape_offset);
-	Vector3 get_emission_shape_offset() const;
-
-	void set_emission_shape_scale(const Vector3 &p_emission_shape_scale);
-	Vector3 get_emission_shape_scale() const;
 
 	virtual RID get_shader_rid() const override;
 

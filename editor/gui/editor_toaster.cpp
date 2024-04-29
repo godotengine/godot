@@ -30,9 +30,9 @@
 
 #include "editor_toaster.h"
 
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
@@ -149,7 +149,7 @@ void EditorToaster::_notification(int p_what) {
 void EditorToaster::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
 	// This may be called from a thread. Since we will deal with non-thread-safe elements,
 	// we have to put it in the queue for safety.
-	callable_mp_static(&EditorToaster::_error_handler_impl).bind(String::utf8(p_file), p_line, String::utf8(p_error), String::utf8(p_errorexp), p_editor_notify, p_type).call_deferred();
+	callable_mp_static(&EditorToaster::_error_handler_impl).bind(p_file, p_line, p_error, p_errorexp, p_editor_notify, p_type).call_deferred();
 }
 
 void EditorToaster::_error_handler_impl(const String &p_file, int p_line, const String &p_error, const String &p_errorexp, bool p_editor_notify, int p_type) {
@@ -342,7 +342,7 @@ void EditorToaster::_repop_old() {
 	}
 }
 
-Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_time, const String &p_tooltip) {
+Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_time, String p_tooltip) {
 	// Create the panel according to the severity.
 	PanelContainer *panel = memnew(PanelContainer);
 	panel->set_tooltip_text(p_tooltip);
@@ -398,7 +398,7 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	return panel;
 }
 
-void EditorToaster::popup_str(const String &p_message, Severity p_severity, const String &p_tooltip) {
+void EditorToaster::popup_str(String p_message, Severity p_severity, String p_tooltip) {
 	if (is_processing_error) {
 		return;
 	}
@@ -406,11 +406,11 @@ void EditorToaster::popup_str(const String &p_message, Severity p_severity, cons
 	// Since "_popup_str" adds nodes to the tree, and since the "add_child" method is not
 	// thread-safe, it's better to defer the call to the next cycle to be thread-safe.
 	is_processing_error = true;
-	callable_mp(this, &EditorToaster::_popup_str).call_deferred(p_message, p_severity, p_tooltip);
+	call_deferred(SNAME("_popup_str"), p_message, p_severity, p_tooltip);
 	is_processing_error = false;
 }
 
-void EditorToaster::_popup_str(const String &p_message, Severity p_severity, const String &p_tooltip) {
+void EditorToaster::_popup_str(String p_message, Severity p_severity, String p_tooltip) {
 	is_processing_error = true;
 	// Check if we already have a popup with the given message.
 	Control *control = nullptr;
@@ -499,6 +499,11 @@ EditorToaster *EditorToaster::get_singleton() {
 	return singleton;
 }
 
+void EditorToaster::_bind_methods() {
+	// Binding method to make it defer-able.
+	ClassDB::bind_method(D_METHOD("_popup_str", "message", "severity", "tooltip"), &EditorToaster::_popup_str);
+}
+
 EditorToaster::EditorToaster() {
 	set_notify_transform(true);
 	set_process_internal(true);
@@ -543,7 +548,7 @@ EditorToaster::EditorToaster() {
 	main_button->set_tooltip_text(TTR("No notifications."));
 	main_button->set_modulate(Color(0.5, 0.5, 0.5));
 	main_button->set_disabled(true);
-	main_button->set_theme_type_variation("FlatMenuButton");
+	main_button->set_flat(true);
 	main_button->connect("pressed", callable_mp(this, &EditorToaster::_set_notifications_enabled).bind(true));
 	main_button->connect("pressed", callable_mp(this, &EditorToaster::_repop_old));
 	main_button->connect("draw", callable_mp(this, &EditorToaster::_draw_button));

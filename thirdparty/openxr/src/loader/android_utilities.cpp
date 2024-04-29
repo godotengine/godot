@@ -1,9 +1,9 @@
-// Copyright (c) 2020-2024, The Khronos Group Inc.
+// Copyright (c) 2020-2023, The Khronos Group Inc.
 // Copyright (c) 2020-2021, Collabora, Ltd.
 //
 // SPDX-License-Identifier:  Apache-2.0 OR MIT
 //
-// Initial Author: Rylie Pavlik <rylie.pavlik@collabora.com>
+// Initial Author: Ryan Pavlik <ryan.pavlik@collabora.com>
 
 #include "android_utilities.h"
 
@@ -245,38 +245,18 @@ static int populateFunctions(wrap::android::content::Context const &context, boo
     return 0;
 }
 
-// The current file relies on android-jni-wrappers and jnipp, which may throw on failure.
-// This is problematic when the loader is compiled with exception handling disabled - the consumers can reasonably
-// expect that the compilation with -fno-exceptions will succeed, but the compiler will not accept the code that
-// uses `try` & `catch` keywords. We cannot use the `exception_handling.hpp` here since we're not at an ABI boundary,
-// so we define helper macros here. This is fine for now since the only occurrence of exception-handling code is in this file.
-#ifdef XRLOADER_DISABLE_EXCEPTION_HANDLING
-
-#define ANDROID_UTILITIES_TRY
-#define ANDROID_UTILITIES_CATCH_FALLBACK(...)
-
-#else
-
-#define ANDROID_UTILITIES_TRY try
-#define ANDROID_UTILITIES_CATCH_FALLBACK(...) \
-    catch (const std::exception &e) {         \
-        __VA_ARGS__                           \
-    }
-
-#endif  // XRLOADER_DISABLE_EXCEPTION_HANDLING
-
 /// Get cursor for active runtime, parameterized by whether or not we use the system broker
 static bool getActiveRuntimeCursor(wrap::android::content::Context const &context, jni::Array<std::string> const &projection,
                                    bool systemBroker, Cursor &cursor) {
     auto uri = active_runtime::makeContentUri(systemBroker, XR_VERSION_MAJOR(XR_CURRENT_API_VERSION), ABI);
     ALOGI("getActiveRuntimeCursor: Querying URI: %s", uri.toString().c_str());
-
-    ANDROID_UTILITIES_TRY { cursor = context.getContentResolver().query(uri, projection); }
-    ANDROID_UTILITIES_CATCH_FALLBACK({
+    try {
+        cursor = context.getContentResolver().query(uri, projection);
+    } catch (const std::exception &e) {
         ALOGW("Exception when querying %s content resolver: %s", getBrokerTypeName(systemBroker), e.what());
         cursor = {};
         return false;
-    })
+    }
 
     if (cursor.isNull()) {
         ALOGW("Null cursor when querying %s content resolver.", getBrokerTypeName(systemBroker));

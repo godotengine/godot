@@ -62,7 +62,6 @@ public:
 	};
 
 	virtual void initialize();
-	virtual void iteration_prepare() {}
 	virtual bool physics_process(double p_time);
 	virtual bool process(double p_time);
 	virtual void finalize();

@@ -36,7 +36,7 @@
 #include <stdio.h>
 
 // For export templates, add a section; the exporter will patch it to enclose
-// the data appended to the executable (bundled PCK).
+// the data appended to the executable (bundled PCK)
 #ifndef TOOLS_ENABLED
 #if defined _MSC_VER
 #pragma section("pck", read)
@@ -45,7 +45,7 @@ __declspec(allocate("pck")) static char dummy[8] = { 0 };
 // Dummy function to prevent LTO from discarding "pck" section.
 extern "C" char *__cdecl pck_section_dummy_call() {
 	return &dummy[0];
-}
+};
 #if defined _AMD64_
 #pragma comment(linker, "/include:pck_section_dummy_call")
 #elif defined _X86_
@@ -171,15 +171,13 @@ int widechar_main(int argc, wchar_t **argv) {
 		delete[] argv_utf8;
 
 		if (err == ERR_HELP) { // Returned by --help and --version, so success.
-			return EXIT_SUCCESS;
+			return 0;
 		}
-		return EXIT_FAILURE;
+		return 255;
 	}
 
-	if (Main::start() == EXIT_SUCCESS) {
+	if (Main::start()) {
 		os.run();
-	} else {
-		os.set_exit_code(EXIT_FAILURE);
 	}
 	Main::cleanup();
 

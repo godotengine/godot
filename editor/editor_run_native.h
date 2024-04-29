@@ -41,15 +41,11 @@ class EditorRunNative : public HBoxContainer {
 
 	RichTextLabel *result_dialog_log = nullptr;
 	AcceptDialog *result_dialog = nullptr;
-	ConfirmationDialog *run_native_confirm = nullptr;
-	bool run_confirmed = false;
 
 	MenuButton *remote_debug = nullptr;
 	bool first = true;
 
 	int resume_id = -1;
-
-	void _confirm_run_native();
 
 protected:
 	static void _bind_methods();

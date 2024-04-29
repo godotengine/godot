@@ -44,11 +44,8 @@ public:
 	struct Singleton {
 		StringName name;
 		Object *ptr = nullptr;
-		StringName class_name; // Used for binding generation hinting.
-		// Singleton scope flags.
+		StringName class_name; //used for binding generation hinting
 		bool user_created = false;
-		bool editor_only = false;
-
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());
 	};
 
@@ -82,18 +79,11 @@ private:
 
 	bool editor_hint = false;
 	bool project_manager_hint = false;
-	bool extension_reloading = false;
-
-	bool _print_header = true;
 
 	static Engine *singleton;
 
 	String write_movie_path;
 	String shader_cache_path;
-
-	static constexpr int SERVER_SYNC_FRAME_COUNT_WARNING = 5;
-	int server_syncs = 0;
-	bool frame_server_synced = false;
 
 public:
 	static Engine *get_singleton();
@@ -129,8 +119,6 @@ public:
 
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
-	void print_header(const String &p_string) const;
-	void print_header_rich(const String &p_string) const;
 
 	void set_frame_delay(uint32_t p_msec);
 	uint32_t get_frame_delay() const;
@@ -141,7 +129,6 @@ public:
 	Object *get_singleton_object(const StringName &p_name) const;
 	void remove_singleton(const StringName &p_name);
 	bool is_singleton_user_created(const StringName &p_name) const;
-	bool is_singleton_editor_only(const StringName &p_name) const;
 
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) { editor_hint = p_enabled; }
@@ -149,18 +136,12 @@ public:
 
 	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) { project_manager_hint = p_enabled; }
 	_FORCE_INLINE_ bool is_project_manager_hint() const { return project_manager_hint; }
-
-	_FORCE_INLINE_ void set_extension_reloading_enabled(bool p_enabled) { extension_reloading = p_enabled; }
-	_FORCE_INLINE_ bool is_extension_reloading_enabled() const { return extension_reloading; }
 #else
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_editor_hint() const { return false; }
 
 	_FORCE_INLINE_ void set_project_manager_hint(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_project_manager_hint() const { return false; }
-
-	_FORCE_INLINE_ void set_extension_reloading_enabled(bool p_enabled) {}
-	_FORCE_INLINE_ bool is_extension_reloading_enabled() const { return false; }
 #endif
 
 	Dictionary get_version_info() const;
@@ -182,9 +163,6 @@ public:
 	bool is_validation_layers_enabled() const;
 	bool is_generate_spirv_debug_info_enabled() const;
 	int32_t get_gpu_index() const;
-
-	void increment_frames_drawn();
-	bool notify_frame_server_synced();
 
 	Engine();
 	virtual ~Engine() {}

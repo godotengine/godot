@@ -96,14 +96,6 @@
 				Returns the button index if there is a button with ID [param id] in column [param column], otherwise returns -1.
 			</description>
 		</method>
-		<method name="get_button_color" qualifiers="const">
-			<return type="Color" />
-			<param index="0" name="column" type="int" />
-			<param index="1" name="id" type="int" />
-			<description>
-				Returns the color of the button with ID [param id] in column [param column]. If the specified button does not exist, returns [constant Color.BLACK].
-			</description>
-		</method>
 		<method name="get_button_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="column" type="int" />
@@ -166,13 +158,6 @@
 			<param index="0" name="column" type="int" />
 			<description>
 				Returns the custom color of column [param column].
-			</description>
-		</method>
-		<method name="get_custom_draw_callback" qualifiers="const">
-			<return type="Callable" />
-			<param index="0" name="column" type="int" />
-			<description>
-				Returns the custom callback of column [param column].
 			</description>
 		</method>
 		<method name="get_custom_font" qualifiers="const">
@@ -438,12 +423,6 @@
 				Returns [code]true[/code] if the given [param column] is selected.
 			</description>
 		</method>
-		<method name="is_visible_in_tree" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if [member visible] is [code]true[/code] and all its ancestors are also visible.
-			</description>
-		</method>
 		<method name="move_after">
 			<return type="void" />
 			<param index="0" name="item" type="TreeItem" />
@@ -574,22 +553,13 @@
 				Sets the given column's custom color.
 			</description>
 		</method>
-		<method name="set_custom_draw" deprecated="Use [method TreeItem.set_custom_draw_callback] instead.">
+		<method name="set_custom_draw">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="object" type="Object" />
 			<param index="2" name="callback" type="StringName" />
 			<description>
-				Sets the given column's custom draw callback to the [param callback] method on [param object].
-				The method named [param callback] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
-			</description>
-		</method>
-		<method name="set_custom_draw_callback">
-			<return type="void" />
-			<param index="0" name="column" type="int" />
-			<param index="1" name="callback" type="Callable" />
-			<description>
-				Sets the given column's custom draw callback. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the custom callback.
+				Sets the given column's custom draw callback to [param callback] method on [param object].
 				The [param callback] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
 			</description>
 		</method>
@@ -784,7 +754,6 @@
 		<method name="uncollapse_tree">
 			<return type="void" />
 			<description>
-				Uncollapses all [TreeItem]s necessary to reveal this [TreeItem], i.e. all ancestor [TreeItem]s.
 			</description>
 		</method>
 	</methods>

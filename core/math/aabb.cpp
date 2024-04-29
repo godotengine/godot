@@ -125,8 +125,8 @@ bool AABB::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *
 #endif
 	Vector3 c1, c2;
 	Vector3 end = position + size;
-	real_t depth_near = -1e20;
-	real_t depth_far = 1e20;
+	real_t near = -1e20;
+	real_t far = 1e20;
 	int axis = 0;
 
 	for (int i = 0; i < 3; i++) {
@@ -141,14 +141,14 @@ bool AABB::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *
 			if (c1[i] > c2[i]) {
 				SWAP(c1, c2);
 			}
-			if (c1[i] > depth_near) {
-				depth_near = c1[i];
+			if (c1[i] > near) {
+				near = c1[i];
 				axis = i;
 			}
-			if (c2[i] < depth_far) {
-				depth_far = c2[i];
+			if (c2[i] < far) {
+				far = c2[i];
 			}
-			if ((depth_near > depth_far) || (depth_far < 0)) {
+			if ((near > far) || (far < 0)) {
 				return false;
 			}
 		}

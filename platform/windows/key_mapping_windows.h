@@ -47,7 +47,6 @@ public:
 	static unsigned int get_scancode(Key p_keycode);
 	static Key get_scansym(unsigned int p_code, bool p_extended);
 	static bool is_extended_key(unsigned int p_code);
-	static KeyLocation get_location(unsigned int p_code, bool p_extended);
 };
 
 #endif // KEY_MAPPING_WINDOWS_H

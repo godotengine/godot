@@ -316,15 +316,6 @@ public abstract class GodotPlugin {
 	}
 
 	/**
-	 * Returns whether the plugin supports the given feature tag.
-	 *
-	 * @see <a href="https://docs.godotengine.org/en/stable/tutorials/export/feature_tags.html">Feature tags</a>
-	 */
-	public boolean supportsFeature(String featureTag) {
-		return false;
-	}
-
-	/**
 	 * Runs the specified action on the UI thread. If the current thread is the UI
 	 * thread, then the action is executed immediately. If the current thread is
 	 * not the UI thread, the action is posted to the event queue of the UI thread.

@@ -33,7 +33,7 @@
 
 #include "core/templates/hashfuncs.h"
 #include "core/typedefs.h"
-template <typename F, typename S>
+template <class F, class S>
 struct Pair {
 	F first;
 	S second;
@@ -49,17 +49,17 @@ struct Pair {
 	}
 };
 
-template <typename F, typename S>
+template <class F, class S>
 bool operator==(const Pair<F, S> &pair, const Pair<F, S> &other) {
 	return (pair.first == other.first) && (pair.second == other.second);
 }
 
-template <typename F, typename S>
+template <class F, class S>
 bool operator!=(const Pair<F, S> &pair, const Pair<F, S> &other) {
 	return (pair.first != other.first) || (pair.second != other.second);
 }
 
-template <typename F, typename S>
+template <class F, class S>
 struct PairSort {
 	bool operator()(const Pair<F, S> &A, const Pair<F, S> &B) const {
 		if (A.first != B.first) {
@@ -69,7 +69,7 @@ struct PairSort {
 	}
 };
 
-template <typename F, typename S>
+template <class F, class S>
 struct PairHash {
 	static uint32_t hash(const Pair<F, S> &P) {
 		uint64_t h1 = HashMapHasherDefault::hash(P.first);
@@ -78,7 +78,7 @@ struct PairHash {
 	}
 };
 
-template <typename K, typename V>
+template <class K, class V>
 struct KeyValue {
 	const K key;
 	V value;
@@ -94,17 +94,17 @@ struct KeyValue {
 	}
 };
 
-template <typename K, typename V>
+template <class K, class V>
 bool operator==(const KeyValue<K, V> &pair, const KeyValue<K, V> &other) {
 	return (pair.key == other.key) && (pair.value == other.value);
 }
 
-template <typename K, typename V>
+template <class K, class V>
 bool operator!=(const KeyValue<K, V> &pair, const KeyValue<K, V> &other) {
 	return (pair.key != other.key) || (pair.value != other.value);
 }
 
-template <typename K, typename V>
+template <class K, class V>
 struct KeyValueSort {
 	bool operator()(const KeyValue<K, V> &A, const KeyValue<K, V> &B) const {
 		return A.key < B.key;

@@ -44,10 +44,11 @@
 //
 class TGenericLinker : public TLinker {
 public:
-    TGenericLinker(EShExecutable e) : TLinker(e, infoSink) {}
+    TGenericLinker(EShExecutable e, int dOptions) : TLinker(e, infoSink), debugOptions(dOptions) { }
     bool link(TCompilerList&, TUniformMap*) { return true; }
     void getAttributeBindings(ShBindingTable const **) const { }
     TInfoSink infoSink;
+    int debugOptions;
 };
 
 //
@@ -59,7 +60,10 @@ public:
     virtual int getLocation(const char*) { return 0; }
 };
 
-TShHandleBase* ConstructLinker(EShExecutable executable, int) { return new TGenericLinker(executable); }
+TShHandleBase* ConstructLinker(EShExecutable executable, int debugOptions)
+{
+    return new TGenericLinker(executable, debugOptions);
+}
 
 void DeleteLinker(TShHandleBase* linker)
 {

@@ -222,7 +222,7 @@ private:
 	void _item_menu_id_pressed(int p_option);
 	void _tab_changed(int p_tab);
 
-	void _put_msg(const String &p_message, const Array &p_data, uint64_t p_thread_id = Thread::MAIN_ID);
+	void _put_msg(String p_message, Array p_data, uint64_t p_thread_id = Thread::MAIN_ID);
 	void _export_csv();
 
 	void _clear_execution();
@@ -300,8 +300,7 @@ public:
 
 	void update_live_edit_root();
 
-	void reload_all_scripts();
-	void reload_scripts(const Vector<String> &p_script_paths);
+	void reload_scripts();
 
 	bool is_skip_breakpoints();
 

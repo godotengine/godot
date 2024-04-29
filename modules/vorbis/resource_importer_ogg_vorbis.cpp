@@ -90,14 +90,14 @@ bool ResourceImporterOggVorbis::has_advanced_options() const {
 void ResourceImporterOggVorbis::show_advanced_options(const String &p_path) {
 	Ref<AudioStreamOggVorbis> ogg_stream = load_from_file(p_path);
 	if (ogg_stream.is_valid()) {
-		AudioStreamImportSettingsDialog::get_singleton()->edit(p_path, "oggvorbisstr", ogg_stream);
+		AudioStreamImportSettings::get_singleton()->edit(p_path, "oggvorbisstr", ogg_stream);
 	}
 }
 #endif
 
 Error ResourceImporterOggVorbis::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	bool loop = p_options["loop"];
-	double loop_offset = p_options["loop_offset"];
+	float loop_offset = p_options["loop_offset"];
 	double bpm = p_options["bpm"];
 	int beat_count = p_options["beat_count"];
 	int bar_beats = p_options["bar_beats"];
@@ -184,7 +184,7 @@ Ref<AudioStreamOggVorbis> ResourceImporterOggVorbis::load_from_buffer(const Vect
 		ERR_FAIL_COND_V_MSG(err != 0, Ref<AudioStreamOggVorbis>(), "Ogg stream error " + itos(err));
 		int desync_iters = 0;
 
-		RBMap<uint64_t, Vector<Vector<uint8_t>>> sorted_packets;
+		Vector<Vector<uint8_t>> packet_data;
 		int64_t granule_pos = 0;
 
 		while (true) {
@@ -192,7 +192,6 @@ Ref<AudioStreamOggVorbis> ResourceImporterOggVorbis::load_from_buffer(const Vect
 			if (err == -1) {
 				// According to the docs this is usually recoverable, but don't sit here spinning forever.
 				desync_iters++;
-				WARN_PRINT_ONCE("Desync during ogg import.");
 				ERR_FAIL_COND_V_MSG(desync_iters > 100, Ref<AudioStreamOggVorbis>(), "Packet sync issue during Ogg import");
 				continue;
 			} else if (err == 0) {
@@ -208,26 +207,16 @@ Ref<AudioStreamOggVorbis> ResourceImporterOggVorbis::load_from_buffer(const Vect
 				}
 				break;
 			}
-			if (packet.granulepos > granule_pos) {
-				granule_pos = packet.granulepos;
-			}
+			granule_pos = packet.granulepos;
 
-			if (packet.bytes > 0) {
-				PackedByteArray data;
-				data.resize(packet.bytes);
-				memcpy(data.ptrw(), packet.packet, packet.bytes);
-				sorted_packets[granule_pos].push_back(data);
-				packet_count++;
-			}
+			PackedByteArray data;
+			data.resize(packet.bytes);
+			memcpy(data.ptrw(), packet.packet, packet.bytes);
+			packet_data.push_back(data);
+			packet_count++;
 		}
-		Vector<Vector<uint8_t>> packet_data;
-		for (const KeyValue<uint64_t, Vector<Vector<uint8_t>>> &pair : sorted_packets) {
-			for (const Vector<uint8_t> &packets : pair.value) {
-				packet_data.push_back(packets);
-			}
-		}
-		if (initialized_stream && packet_data.size() > 0) {
-			ogg_packet_sequence->push_page(ogg_page_granulepos(&page), packet_data);
+		if (initialized_stream) {
+			ogg_packet_sequence->push_page(granule_pos, packet_data);
 		}
 	}
 	if (initialized_stream) {

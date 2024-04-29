@@ -61,9 +61,6 @@
 		<theme_item name="separation" data_type="constant" type="int" default="12">
 			The space between sides of the container.
 		</theme_item>
-		<theme_item name="grabber" data_type="icon" type="Texture2D">
-			The icon used for the grabber drawn in the middle area.
-		</theme_item>
 		<theme_item name="h_grabber" data_type="icon" type="Texture2D">
 			The icon used for the grabber drawn in the middle area when [member vertical] is [code]false[/code].
 		</theme_item>

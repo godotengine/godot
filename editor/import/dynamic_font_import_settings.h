@@ -45,16 +45,16 @@
 #include "scene/resources/font.h"
 #include "servers/text_server.h"
 
-class DynamicFontImportSettingsDialog;
+class DynamicFontImportSettings;
 
 class DynamicFontImportSettingsData : public RefCounted {
 	GDCLASS(DynamicFontImportSettingsData, RefCounted)
-	friend class DynamicFontImportSettingsDialog;
+	friend class DynamicFontImportSettings;
 
 	HashMap<StringName, Variant> settings;
 	HashMap<StringName, Variant> defaults;
 	List<ResourceImporter::ImportOption> options;
-	DynamicFontImportSettingsDialog *owner = nullptr;
+	DynamicFontImportSettings *owner = nullptr;
 
 	HashSet<char32_t> selected_chars;
 	HashSet<int32_t> selected_glyphs;
@@ -73,8 +73,8 @@ class EditorFileDialog;
 class EditorInspector;
 class EditorLocaleDialog;
 
-class DynamicFontImportSettingsDialog : public ConfirmationDialog {
-	GDCLASS(DynamicFontImportSettingsDialog, ConfirmationDialog)
+class DynamicFontImportSettings : public ConfirmationDialog {
+	GDCLASS(DynamicFontImportSettings, ConfirmationDialog)
 	friend class DynamicFontImportSettingsData;
 
 	enum ItemButton {
@@ -82,7 +82,7 @@ class DynamicFontImportSettingsDialog : public ConfirmationDialog {
 		BUTTON_REMOVE_VAR,
 	};
 
-	static DynamicFontImportSettingsDialog *singleton;
+	static DynamicFontImportSettings *singleton;
 
 	String base_path;
 
@@ -172,9 +172,9 @@ protected:
 
 public:
 	void open_settings(const String &p_path);
-	static DynamicFontImportSettingsDialog *get_singleton();
+	static DynamicFontImportSettings *get_singleton();
 
-	DynamicFontImportSettingsDialog();
+	DynamicFontImportSettings();
 };
 
 #endif // DYNAMIC_FONT_IMPORT_SETTINGS_H

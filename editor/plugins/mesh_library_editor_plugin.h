@@ -32,12 +32,11 @@
 #define MESH_LIBRARY_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
-#include "scene/resources/3d/mesh_library.h"
+#include "scene/resources/mesh_library.h"
 
 class EditorFileDialog;
 class ConfirmationDialog;
 class MenuButton;
-class MeshInstance3D;
 
 class MeshLibraryEditor : public Control {
 	GDCLASS(MeshLibraryEditor, Control);
@@ -66,7 +65,6 @@ class MeshLibraryEditor : public Control {
 	void _menu_update_confirm(bool p_apply_xforms);
 
 	static void _import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms);
-	static void _import_scene_parse_node(Ref<MeshLibrary> p_library, HashMap<int, MeshInstance3D *> &p_mesh_instances, Node *p_node, bool p_merge, bool p_apply_xforms);
 
 protected:
 	static void _bind_methods();

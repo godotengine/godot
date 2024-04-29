@@ -87,12 +87,6 @@ TEST_CASE("[Vector2i] Length methods") {
 	CHECK_MESSAGE(
 			vector2.length() == doctest::Approx(36.05551275463989293119),
 			"Vector2i length should work as expected.");
-	CHECK_MESSAGE(
-			vector1.distance_squared_to(vector2) == 500,
-			"Vector2i distance_squared_to should work as expected and return exact result.");
-	CHECK_MESSAGE(
-			vector1.distance_to(vector2) == doctest::Approx(22.36067977499789696409),
-			"Vector2i distance_to should work as expected.");
 }
 
 TEST_CASE("[Vector2i] Operators") {

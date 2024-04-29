@@ -802,153 +802,6 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_selected_text(3) == "test");
 		}
 
-		SUBCASE("[TextEdit] skip selection for next occurrence") {
-			text_edit->set_text("\ntest   other_test\nrandom   test\nword test word nonrandom");
-			text_edit->set_caret_column(0);
-			text_edit->set_caret_line(1);
-
-			// Without selection on the current caret, the caret as 'jumped' to the next occurrence of the word under the caret.
-			text_edit->skip_selection_for_next_occurrence();
-			CHECK(text_edit->get_caret_count() == 1);
-			CHECK_FALSE(text_edit->has_selection(0));
-			CHECK(text_edit->get_caret_line(0) == 1);
-			CHECK(text_edit->get_caret_column(0) == 13);
-
-			// Repeating previous action.
-			// This time caret is in 'other_test' (other_|test)
-			// so the searched term will be 'other_test' or not just 'test'
-			// => no occurrence, as a side effect, the caret will move to start of the term.
-			text_edit->skip_selection_for_next_occurrence();
-			CHECK(text_edit->get_caret_count() == 1);
-			CHECK_FALSE(text_edit->has_selection(0));
-			CHECK(text_edit->get_caret_line(0) == 1);
-			CHECK(text_edit->get_caret_column(0) == 7);
-
-			// Repeating action again should do nothing now
-			text_edit->skip_selection_for_next_occurrence();
-			CHECK(text_edit->get_caret_count() == 1);
-			CHECK_FALSE(text_edit->has_selection(0));
-			CHECK(text_edit->get_caret_line(0) == 1);
-			CHECK(text_edit->get_caret_column(0) == 7);
-
-			// Moving back to the first 'test' occurrence.
-			text_edit->set_caret_column(0);
-			text_edit->set_caret_line(1);
-
-			// But this time, create a selection of it.
-			text_edit->add_selection_for_next_occurrence();
-			CHECK(text_edit->get_caret_count() == 1);
-			CHECK(text_edit->has_selection(0));
-			CHECK(text_edit->get_selected_text(0) == "test");
-			CHECK(text_edit->get_selection_from_line(0) == 1);
-			CHECK(text_edit->get_selection_from_column(0) == 0);
-			CHECK(text_edit->get_selection_to_line(0) == 1);
-			CHECK(text_edit->get_selection_to_column(0) == 4);
-			CHECK(text_edit->get_caret_line(0) == 1);
-			CHECK(text_edit->get_caret_column(0) == 4);
-
-			// Then, skipping it, but this time, selection has been made on the next occurrence.
-			text_edit->skip_selection_for_next_occurrence();
-			CHECK(text_edit->get_caret_count() == 1);
-			CHECK(text_edit->has_selection(0));
-			CHECK(text_edit->get_selected_text(0) == "test");
-			CHECK(text_edit->get_selection_from_line(0) == 1);
-			CHECK(text_edit->get_selection_from_column(0) == 13);
-			CHECK(text_edit->get_selection_to_line(0) == 1);
-			CHECK(text_edit->get_selection_to_column(0) == 17);
-			CHECK(text_edit->get_caret_line(0) == 1);
-			CHECK(text_edit->get_caret_column(0) == 17);
-
-			text_edit->skip_selection_for_next_occurrence();
-			CHECK(text_edit->get_caret_count() == 1);
-			CHECK(text_edit->has_selection(0));
-			CHECK(text_edit->get_selected_text(0) == "test");
-			CHECK(text_edit->get_selection_from_line(0) == 2);
-			CHECK(text_edit->get_selection_from_column(0) == 9);
-			CHECK(text_edit->get_selection_to_line(0) == 2);
-			CHECK(text_edit->get_selection_to_column(0) == 13);
-			CHECK(text_edit->get_caret_line(0) == 2);
-			CHECK(text_edit->get_caret_column(0) == 13);
-
-			text_edit->skip_selection_for_next_occurrence();
-			CHECK(text_edit->get_caret_count() == 1);
-			CHECK(text_edit->has_selection(0));
-			CHECK(text_edit->get_selected_text(0) == "test");
-			CHECK(text_edit->get_selection_from_line(0) == 3);
-			CHECK(text_edit->get_selection_from_column(0) == 5);
-			CHECK(text_edit->get_selection_to_line(0) == 3);
-			CHECK(text_edit->get_selection_to_column(0) == 9);
-			CHECK(text_edit->get_caret_line(0) == 3);
-			CHECK(text_edit->get_caret_column(0) == 9);
-
-			// Last skip, we are back to the first occurrence.
-			text_edit->skip_selection_for_next_occurrence();
-			CHECK(text_edit->has_selection(0));
-			CHECK(text_edit->get_selected_text(0) == "test");
-			CHECK(text_edit->get_selection_from_line(0) == 1);
-			CHECK(text_edit->get_selection_from_column(0) == 0);
-			CHECK(text_edit->get_selection_to_line(0) == 1);
-			CHECK(text_edit->get_selection_to_column(0) == 4);
-			CHECK(text_edit->get_caret_line(0) == 1);
-			CHECK(text_edit->get_caret_column(0) == 4);
-
-			// Adding first occurrence to selections/carets list
-			// and select occurrence on 'other_test'.
-			text_edit->add_selection_for_next_occurrence();
-			CHECK(text_edit->get_caret_count() == 2);
-			CHECK(text_edit->has_selection(0));
-			CHECK(text_edit->get_selected_text(0) == "test");
-
-			CHECK(text_edit->has_selection(1));
-			CHECK(text_edit->get_selected_text(1) == "test");
-			CHECK(text_edit->get_selection_from_line(1) == 1);
-			CHECK(text_edit->get_selection_from_column(1) == 13);
-			CHECK(text_edit->get_selection_to_line(1) == 1);
-			CHECK(text_edit->get_selection_to_column(1) == 17);
-			CHECK(text_edit->get_caret_line(1) == 1);
-			CHECK(text_edit->get_caret_column(1) == 17);
-
-			// We don't want this occurrence.
-			// Let's skip it.
-			text_edit->skip_selection_for_next_occurrence();
-			CHECK(text_edit->get_caret_count() == 2);
-			CHECK(text_edit->has_selection(0));
-			CHECK(text_edit->get_selected_text(0) == "test");
-
-			CHECK(text_edit->get_selected_text(1) == "test");
-			CHECK(text_edit->get_selection_from_line(1) == 2);
-			CHECK(text_edit->get_selection_from_column(1) == 9);
-			CHECK(text_edit->get_selection_to_line(1) == 2);
-			CHECK(text_edit->get_selection_to_column(1) == 13);
-			CHECK(text_edit->get_caret_line(1) == 2);
-			CHECK(text_edit->get_caret_column(1) == 13);
-
-			text_edit->skip_selection_for_next_occurrence();
-			CHECK(text_edit->get_caret_count() == 2);
-			CHECK(text_edit->has_selection(0));
-			CHECK(text_edit->get_selected_text(0) == "test");
-
-			CHECK(text_edit->get_selected_text(1) == "test");
-			CHECK(text_edit->get_selection_from_line(1) == 3);
-			CHECK(text_edit->get_selection_from_column(1) == 5);
-			CHECK(text_edit->get_selection_to_line(1) == 3);
-			CHECK(text_edit->get_selection_to_column(1) == 9);
-			CHECK(text_edit->get_caret_line(1) == 3);
-			CHECK(text_edit->get_caret_column(1) == 9);
-
-			// We are back the first occurrence.
-			text_edit->skip_selection_for_next_occurrence();
-			CHECK(text_edit->get_caret_count() == 1);
-			CHECK(text_edit->has_selection(0));
-			CHECK(text_edit->get_selected_text(0) == "test");
-			CHECK(text_edit->get_selection_from_line(0) == 1);
-			CHECK(text_edit->get_selection_from_column(0) == 0);
-			CHECK(text_edit->get_selection_to_line(0) == 1);
-			CHECK(text_edit->get_selection_to_column(0) == 4);
-			CHECK(text_edit->get_caret_line(0) == 1);
-			CHECK(text_edit->get_caret_column(0) == 4);
-		}
-
 		SUBCASE("[TextEdit] deselect on focus loss") {
 			text_edit->set_text("test");
 
@@ -3333,60 +3186,6 @@ TEST_CASE("[SceneTree][TextEdit] versioning") {
 	CHECK(text_edit->get_version() == 3); // Should this be cleared?
 	CHECK(text_edit->get_saved_version() == 0);
 
-	SUBCASE("[TextEdit] versioning selection") {
-		text_edit->set_text("Godot Engine\nWaiting for Godot\nTest Text for multi carat\nLine 4 Text");
-		text_edit->set_multiple_carets_enabled(true);
-
-		text_edit->remove_secondary_carets();
-		text_edit->deselect();
-		text_edit->set_caret_line(0);
-		text_edit->set_caret_column(0);
-
-		CHECK(text_edit->get_caret_count() == 1);
-
-		Array caret_index;
-		caret_index.push_back(0);
-
-		for (int i = 1; i < 4; i++) {
-			caret_index.push_back(text_edit->add_caret(i, 0));
-			CHECK((int)caret_index.back() >= 0);
-		}
-
-		CHECK(text_edit->get_caret_count() == 4);
-
-		for (int i = 0; i < 4; i++) {
-			text_edit->select(i, 0, i, 5, caret_index[i]);
-		}
-
-		CHECK(text_edit->get_caret_count() == 4);
-		for (int i = 0; i < 4; i++) {
-			CHECK(text_edit->has_selection(caret_index[i]));
-			CHECK(text_edit->get_selection_from_line(caret_index[i]) == i);
-			CHECK(text_edit->get_selection_from_column(caret_index[i]) == 0);
-			CHECK(text_edit->get_selection_to_line(caret_index[i]) == i);
-			CHECK(text_edit->get_selection_to_column(caret_index[i]) == 5);
-		}
-		text_edit->begin_complex_operation();
-		text_edit->deselect();
-		text_edit->set_text("New Line Text");
-		text_edit->select(0, 0, 0, 7, 0);
-		text_edit->end_complex_operation();
-
-		CHECK(text_edit->get_caret_count() == 1);
-		CHECK(text_edit->get_selected_text(0) == "New Lin");
-
-		text_edit->undo();
-
-		CHECK(text_edit->get_caret_count() == 4);
-		for (int i = 0; i < 4; i++) {
-			CHECK(text_edit->has_selection(caret_index[i]));
-			CHECK(text_edit->get_selection_from_line(caret_index[i]) == i);
-			CHECK(text_edit->get_selection_from_column(caret_index[i]) == 0);
-			CHECK(text_edit->get_selection_to_line(caret_index[i]) == i);
-			CHECK(text_edit->get_selection_to_column(caret_index[i]) == 5);
-		}
-	}
-
 	memdelete(text_edit);
 }
 
@@ -3394,7 +3193,7 @@ TEST_CASE("[SceneTree][TextEdit] search") {
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 
-	text_edit->set_text("hay needle, hay\nHAY NEEDLE, HAY\nwordword.word.word");
+	text_edit->set_text("hay needle, hay\nHAY NEEDLE, HAY");
 	int length = text_edit->get_line(1).length();
 
 	CHECK(text_edit->search("test", 0, 0, 0) == Point2i(-1, -1));
@@ -3425,11 +3224,6 @@ TEST_CASE("[SceneTree][TextEdit] search") {
 
 	CHECK(text_edit->search("need", TextEdit::SEARCH_WHOLE_WORDS | TextEdit::SEARCH_MATCH_CASE, 0, 0) == Point2i(-1, -1));
 	CHECK(text_edit->search("need", TextEdit::SEARCH_WHOLE_WORDS | TextEdit::SEARCH_MATCH_CASE | TextEdit::SEARCH_BACKWARDS, 0, 0) == Point2i(-1, -1));
-
-	CHECK(text_edit->search("word", TextEdit::SEARCH_WHOLE_WORDS, 2, 0) == Point2i(9, 2));
-	CHECK(text_edit->search("word", TextEdit::SEARCH_WHOLE_WORDS, 2, 10) == Point2i(14, 2));
-	CHECK(text_edit->search(".word", TextEdit::SEARCH_WHOLE_WORDS, 2, 0) == Point2i(8, 2));
-	CHECK(text_edit->search("word.", TextEdit::SEARCH_WHOLE_WORDS, 2, 0) == Point2i(9, 2));
 
 	ERR_PRINT_OFF;
 	CHECK(text_edit->search("", 0, 0, 0) == Point2i(-1, -1));
@@ -4114,8 +3908,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_h_scroll() == 0);
 
 	text_edit->set_h_scroll(10000000);
-	CHECK(text_edit->get_h_scroll() == 306);
-	CHECK(text_edit->get_h_scroll_bar()->get_combined_minimum_size().x == 8);
+	CHECK(text_edit->get_h_scroll() == 314);
 
 	text_edit->set_h_scroll(-100);
 	CHECK(text_edit->get_h_scroll() == 0);
@@ -4319,7 +4112,7 @@ TEST_CASE("[SceneTree][TextEdit] setter getters") {
 		CHECK_FALSE(text_edit->is_drawing_spaces());
 	}
 
-	SUBCASE("[TextEdit] draw minimap") {
+	SUBCASE("[TextEdit] draw minimao") {
 		text_edit->set_draw_minimap(true);
 		CHECK(text_edit->is_drawing_minimap());
 		text_edit->set_draw_minimap(false);

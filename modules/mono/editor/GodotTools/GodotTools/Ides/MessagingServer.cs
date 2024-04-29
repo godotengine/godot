@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -98,9 +97,9 @@ namespace GodotTools.Ides
                 foreach (var connection in Peers)
                     connection.Dispose();
                 Peers.Clear();
-                _listener.Stop();
+                _listener?.Stop();
 
-                _metaFile.Dispose();
+                _metaFile?.Dispose();
 
                 File.Delete(_metaFilePath);
             }
@@ -123,7 +122,7 @@ namespace GodotTools.Ides
             _listener = new TcpListener(new IPEndPoint(IPAddress.Loopback, port: 0));
             _listener.Start();
 
-            int port = ((IPEndPoint?)_listener.Server.LocalEndPoint)?.Port ?? 0;
+            int port = ((IPEndPoint)_listener.Server.LocalEndPoint).Port;
             using (var metaFileWriter = new StreamWriter(_metaFile, Encoding.UTF8))
             {
                 metaFileWriter.WriteLine(port);
@@ -236,7 +235,7 @@ namespace GodotTools.Ides
 
             public string GetHandshakeLine(string identity) => $"{_serverHandshakeBase},{identity}";
 
-            public bool IsValidPeerHandshake(string handshake, [NotNullWhen(true)] out string? identity, ILogger logger)
+            public bool IsValidPeerHandshake(string handshake, out string identity, ILogger logger)
             {
                 identity = null;
 
@@ -312,12 +311,12 @@ namespace GodotTools.Ides
                     [DebugPlayRequest.Id] = async (peer, content) =>
                     {
                         var request = JsonConvert.DeserializeObject<DebugPlayRequest>(content.Body);
-                        return await HandleDebugPlay(request!);
+                        return await HandleDebugPlay(request);
                     },
                     [StopPlayRequest.Id] = async (peer, content) =>
                     {
                         var request = JsonConvert.DeserializeObject<StopPlayRequest>(content.Body);
-                        return await HandleStopPlay(request!);
+                        return await HandleStopPlay(request);
                     },
                     [ReloadScriptsRequest.Id] = async (peer, content) =>
                     {
@@ -327,7 +326,7 @@ namespace GodotTools.Ides
                     [CodeCompletionRequest.Id] = async (peer, content) =>
                     {
                         var request = JsonConvert.DeserializeObject<CodeCompletionRequest>(content.Body);
-                        return await HandleCodeCompletionRequest(request!);
+                        return await HandleCodeCompletionRequest(request);
                     }
                 };
             }
@@ -384,7 +383,7 @@ namespace GodotTools.Ides
             {
                 // This is needed if the "resource path" part of the path is case insensitive.
                 // However, it doesn't fix resource loading if the rest of the path is also case insensitive.
-                string? scriptFileLocalized = FsPathUtils.LocalizePathWithCaseChecked(request.ScriptFile);
+                string scriptFileLocalized = FsPathUtils.LocalizePathWithCaseChecked(request.ScriptFile);
 
                 // The node API can only be called from the main thread.
                 await Godot.Engine.GetMainLoop().ToSignal(Godot.Engine.GetMainLoop(), "process_frame");

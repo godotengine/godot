@@ -134,7 +134,6 @@ struct TrackData
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
-			  hb_barrier () &&
 			  sizeTable.sanitize (c, base, nSizes) &&
 			  trackTable.sanitize (c, nTracks, base, nSizes)));
   }
@@ -204,7 +203,6 @@ struct trak
     TRACE_SANITIZE (this);
 
     return_trace (likely (c->check_struct (this) &&
-			  hb_barrier () &&
 			  version.major == 1 &&
 			  horizData.sanitize (c, this, this) &&
 			  vertData.sanitize (c, this, this)));

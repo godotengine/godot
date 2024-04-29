@@ -41,12 +41,7 @@
 #include <stdio.h>
 
 void Resource::emit_changed() {
-	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
-		// Let the connection happen on the main thread, later, since signals are not thread-safe.
-		call_deferred("emit_signal", CoreStringNames::get_singleton()->changed);
-	} else {
-		emit_signal(CoreStringNames::get_singleton()->changed);
-	}
+	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
 void Resource::_resource_path_changed() {
@@ -95,10 +90,6 @@ String Resource::get_path() const {
 	return path_cache;
 }
 
-void Resource::set_path_cache(const String &p_path) {
-	path_cache = p_path;
-}
-
 String Resource::generate_scene_unique_id() {
 	// Generate a unique enough hash, but still user-readable.
 	// If it's not unique it does not matter because the saver will try again.
@@ -130,16 +121,6 @@ String Resource::generate_scene_unique_id() {
 }
 
 void Resource::set_scene_unique_id(const String &p_id) {
-	bool is_valid = true;
-	for (int i = 0; i < p_id.length(); i++) {
-		if (!is_ascii_identifier_char(p_id[i])) {
-			is_valid = false;
-			scene_unique_id = Resource::generate_scene_unique_id();
-			break;
-		}
-	}
-
-	ERR_FAIL_COND_MSG(!is_valid, "The scene unique ID must contain only letters, numbers, and underscores.");
 	scene_unique_id = p_id;
 }
 
@@ -167,22 +148,12 @@ bool Resource::editor_can_reload_from_file() {
 }
 
 void Resource::connect_changed(const Callable &p_callable, uint32_t p_flags) {
-	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
-		// Let the check and connection happen on the main thread, later, since signals are not thread-safe.
-		callable_mp(this, &Resource::connect_changed).call_deferred(p_callable, p_flags);
-		return;
-	}
 	if (!is_connected(CoreStringNames::get_singleton()->changed, p_callable) || p_flags & CONNECT_REFERENCE_COUNTED) {
 		connect(CoreStringNames::get_singleton()->changed, p_callable, p_flags);
 	}
 }
 
 void Resource::disconnect_changed(const Callable &p_callable) {
-	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
-		// Let the check and disconnection happen on the main thread, later, since signals are not thread-safe.
-		callable_mp(this, &Resource::disconnect_changed).call_deferred(p_callable);
-		return;
-	}
 	if (is_connected(CoreStringNames::get_singleton()->changed, p_callable)) {
 		disconnect(CoreStringNames::get_singleton()->changed, p_callable);
 	}
@@ -214,7 +185,6 @@ Error Resource::copy_from(const Ref<Resource> &p_resource) {
 	}
 	return OK;
 }
-
 void Resource::reload_from_file() {
 	String path = get_path();
 	if (!path.is_resource_file()) {
@@ -230,58 +200,7 @@ void Resource::reload_from_file() {
 	copy_from(s);
 }
 
-void Resource::_dupe_sub_resources(Variant &r_variant, Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache) {
-	switch (r_variant.get_type()) {
-		case Variant::ARRAY: {
-			Array a = r_variant;
-			for (int i = 0; i < a.size(); i++) {
-				_dupe_sub_resources(a[i], p_for_scene, p_remap_cache);
-			}
-		} break;
-		case Variant::DICTIONARY: {
-			Dictionary d = r_variant;
-			List<Variant> keys;
-			d.get_key_list(&keys);
-			for (Variant &k : keys) {
-				if (k.get_type() == Variant::OBJECT) {
-					// Replace in dictionary key.
-					Ref<Resource> sr = k;
-					if (sr.is_valid() && sr->is_local_to_scene()) {
-						if (p_remap_cache.has(sr)) {
-							d[p_remap_cache[sr]] = d[k];
-							d.erase(k);
-						} else {
-							Ref<Resource> dupe = sr->duplicate_for_local_scene(p_for_scene, p_remap_cache);
-							d[dupe] = d[k];
-							d.erase(k);
-							p_remap_cache[sr] = dupe;
-						}
-					}
-				} else {
-					_dupe_sub_resources(k, p_for_scene, p_remap_cache);
-				}
-
-				_dupe_sub_resources(d[k], p_for_scene, p_remap_cache);
-			}
-		} break;
-		case Variant::OBJECT: {
-			Ref<Resource> sr = r_variant;
-			if (sr.is_valid() && sr->is_local_to_scene()) {
-				if (p_remap_cache.has(sr)) {
-					r_variant = p_remap_cache[sr];
-				} else {
-					Ref<Resource> dupe = sr->duplicate_for_local_scene(p_for_scene, p_remap_cache);
-					r_variant = dupe;
-					p_remap_cache[sr] = dupe;
-				}
-			}
-		} break;
-		default: {
-		}
-	}
-}
-
-Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache) {
+Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache) {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
@@ -294,9 +213,21 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
-		Variant p = get(E.name).duplicate(true);
-
-		_dupe_sub_resources(p, p_for_scene, p_remap_cache);
+		Variant p = get(E.name);
+		if (p.get_type() == Variant::OBJECT) {
+			Ref<Resource> sr = p;
+			if (sr.is_valid()) {
+				if (sr->is_local_to_scene()) {
+					if (remap_cache.has(sr)) {
+						p = remap_cache[sr];
+					} else {
+						Ref<Resource> dupe = sr->duplicate_for_local_scene(p_for_scene, remap_cache);
+						p = dupe;
+						remap_cache[sr] = dupe;
+					}
+				}
+			}
+		}
 
 		r->set(E.name, p);
 	}
@@ -304,35 +235,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref
 	return r;
 }
 
-void Resource::_find_sub_resources(const Variant &p_variant, HashSet<Ref<Resource>> &p_resources_found) {
-	switch (p_variant.get_type()) {
-		case Variant::ARRAY: {
-			Array a = p_variant;
-			for (int i = 0; i < a.size(); i++) {
-				_find_sub_resources(a[i], p_resources_found);
-			}
-		} break;
-		case Variant::DICTIONARY: {
-			Dictionary d = p_variant;
-			List<Variant> keys;
-			d.get_key_list(&keys);
-			for (const Variant &k : keys) {
-				_find_sub_resources(k, p_resources_found);
-				_find_sub_resources(d[k], p_resources_found);
-			}
-		} break;
-		case Variant::OBJECT: {
-			Ref<Resource> r = p_variant;
-			if (r.is_valid()) {
-				p_resources_found.insert(r);
-			}
-		} break;
-		default: {
-		}
-	}
-}
-
-void Resource::configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache) {
+void Resource::configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache) {
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
@@ -344,15 +247,14 @@ void Resource::configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource
 			continue;
 		}
 		Variant p = get(E.name);
-
-		HashSet<Ref<Resource>> sub_resources;
-		_find_sub_resources(p, sub_resources);
-
-		for (Ref<Resource> sr : sub_resources) {
-			if (sr->is_local_to_scene()) {
-				if (!p_remap_cache.has(sr)) {
-					sr->configure_for_local_scene(p_for_scene, p_remap_cache);
-					p_remap_cache[sr] = sr;
+		if (p.get_type() == Variant::OBJECT) {
+			Ref<Resource> sr = p;
+			if (sr.is_valid()) {
+				if (sr->is_local_to_scene()) {
+					if (!remap_cache.has(sr)) {
+						sr->configure_for_local_scene(p_for_scene, remap_cache);
+						remap_cache[sr] = sr;
+					}
 				}
 			}
 		}
@@ -424,7 +326,8 @@ RID Resource::get_rid() const {
 		}
 	}
 	if (_get_extension() && _get_extension()->get_rid) {
-		RID ret = RID::from_uint64(_get_extension()->get_rid(_get_extension_instance()));
+		RID ret;
+		ret.from_uint64(_get_extension()->get_rid(_get_extension_instance()));
 		if (ret.is_valid()) {
 			return ret;
 		}
@@ -435,7 +338,7 @@ RID Resource::get_rid() const {
 
 #ifdef TOOLS_ENABLED
 
-uint32_t Resource::hash_edited_version_for_preview() const {
+uint32_t Resource::hash_edited_version() const {
 	uint32_t hash = hash_murmur3_one_32(get_edited_version());
 
 	List<PropertyInfo> plist;
@@ -445,7 +348,7 @@ uint32_t Resource::hash_edited_version_for_preview() const {
 		if (E.usage & PROPERTY_USAGE_STORAGE && E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			Ref<Resource> res = get(E.name);
 			if (res.is_valid()) {
-				hash = hash_murmur3_one_32(res->hash_edited_version_for_preview(), hash);
+				hash = hash_murmur3_one_32(res->hash_edited_version(), hash);
 			}
 		}
 	}
@@ -476,8 +379,8 @@ Node *Resource::get_local_scene() const {
 }
 
 void Resource::setup_local_to_scene() {
+	// Can't use GDVIRTUAL in Resource, so this will have to be done with a signal
 	emit_signal(SNAME("setup_local_to_scene_requested"));
-	GDVIRTUAL_CALL(_setup_local_to_scene);
 }
 
 void Resource::reset_local_to_scene() {
@@ -542,10 +445,6 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_scene"), &Resource::get_local_scene);
 	ClassDB::bind_method(D_METHOD("setup_local_to_scene"), &Resource::setup_local_to_scene);
 
-	ClassDB::bind_static_method("Resource", D_METHOD("generate_scene_unique_id"), &Resource::generate_scene_unique_id);
-	ClassDB::bind_method(D_METHOD("set_scene_unique_id", "id"), &Resource::set_scene_unique_id);
-	ClassDB::bind_method(D_METHOD("get_scene_unique_id"), &Resource::get_scene_unique_id);
-
 	ClassDB::bind_method(D_METHOD("emit_changed"), &Resource::emit_changed);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "subresources"), &Resource::duplicate, DEFVAL(false));
@@ -556,13 +455,11 @@ void Resource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_scene_unique_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_unique_id", "get_scene_unique_id");
 
 	MethodInfo get_rid_bind("_get_rid");
 	get_rid_bind.return_val.type = Variant::RID;
 
 	::ClassDB::add_virtual_method(get_class_static(), get_rid_bind, true, Vector<String>(), true);
-	GDVIRTUAL_BIND(_setup_local_to_scene);
 }
 
 Resource::Resource() :
@@ -587,14 +484,12 @@ RWLock ResourceCache::path_cache_lock;
 #endif
 
 void ResourceCache::clear() {
-	if (!resources.is_empty()) {
+	if (resources.size()) {
+		ERR_PRINT("Resources still in use at exit (run with --verbose for details).");
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			ERR_PRINT(vformat("%d resources still in use at exit.", resources.size()));
 			for (const KeyValue<String, Resource *> &E : resources) {
 				print_line(vformat("Resource still in use: %s (%s)", E.key, E.value->get_class()));
 			}
-		} else {
-			ERR_PRINT(vformat("%d resources still in use at exit (run with --verbose for details).", resources.size()));
 		}
 	}
 

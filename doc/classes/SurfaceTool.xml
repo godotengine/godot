@@ -29,7 +29,7 @@
 	</description>
 	<tutorials>
 		<link title="Using the SurfaceTool">$DOCS_URL/tutorials/3d/procedural_geometry/surfacetool.html</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
 		<method name="add_index">
@@ -119,12 +119,13 @@
 				Removes the index array by expanding the vertex array.
 			</description>
 		</method>
-		<method name="generate_lod" deprecated="This method is unused internally, as it does not preserve normals or UVs. Consider using [method ImporterMesh.generate_lods] instead.">
+		<method name="generate_lod" is_deprecated="true">
 			<return type="PackedInt32Array" />
 			<param index="0" name="nd_threshold" type="float" />
 			<param index="1" name="target_index_count" type="int" default="3" />
 			<description>
-				Generates an LOD for a given [param nd_threshold] in linear units (square root of quadric error metric), using at most [param target_index_count] indices.
+				Generates a LOD for a given [param nd_threshold] in linear units (square root of quadric error metric), using at most [param target_index_count] indices.
+				[i]Deprecated.[/i] Unused internally and neglects to preserve normals or UVs. Consider using [method ImporterMesh.generate_lods] instead.
 			</description>
 		</method>
 		<method name="generate_normals">

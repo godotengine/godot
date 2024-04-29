@@ -26,6 +26,7 @@ public static class CustomGCHandle
     [MethodImpl(MethodImplOptions.NoInlining)]
     public static bool IsAlcBeingUnloaded(AssemblyLoadContext alc) => _alcsBeingUnloaded.TryGetValue(alc, out _);
 
+    // ReSharper disable once RedundantNameQualifier
     private static ConcurrentDictionary<
         AssemblyLoadContext,
         ConcurrentDictionary<GCHandle, object>

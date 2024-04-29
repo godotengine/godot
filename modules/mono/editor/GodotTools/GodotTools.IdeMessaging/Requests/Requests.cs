@@ -2,7 +2,6 @@
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-using System;
 using Newtonsoft.Json;
 
 namespace GodotTools.IdeMessaging.Requests
@@ -39,7 +38,7 @@ namespace GodotTools.IdeMessaging.Requests
         }
 
         public CompletionKind Kind { get; set; }
-        public string ScriptFile { get; set; } = string.Empty;
+        public string ScriptFile { get; set; }
 
         public new const string Id = "CodeCompletion";
 
@@ -51,8 +50,8 @@ namespace GodotTools.IdeMessaging.Requests
     public sealed class CodeCompletionResponse : Response
     {
         public CodeCompletionRequest.CompletionKind Kind;
-        public string ScriptFile { get; set; } = string.Empty;
-        public string[] Suggestions { get; set; } = Array.Empty<string>();
+        public string ScriptFile { get; set; }
+        public string[] Suggestions { get; set; }
     }
 
     public sealed class PlayRequest : Request
@@ -83,7 +82,7 @@ namespace GodotTools.IdeMessaging.Requests
 
     public sealed class DebugPlayRequest : Request
     {
-        public string DebuggerHost { get; set; } = string.Empty;
+        public string DebuggerHost { get; set; }
         public int DebuggerPort { get; set; }
         public bool? BuildBeforePlaying { get; set; }
 
@@ -100,7 +99,7 @@ namespace GodotTools.IdeMessaging.Requests
 
     public sealed class OpenFileRequest : Request
     {
-        public string File { get; set; } = string.Empty;
+        public string File { get; set; }
         public int? Line { get; set; }
         public int? Column { get; set; }
 

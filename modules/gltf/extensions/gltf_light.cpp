@@ -51,8 +51,6 @@ void GLTFLight::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_inner_cone_angle", "inner_cone_angle"), &GLTFLight::set_inner_cone_angle);
 	ClassDB::bind_method(D_METHOD("get_outer_cone_angle"), &GLTFLight::get_outer_cone_angle);
 	ClassDB::bind_method(D_METHOD("set_outer_cone_angle", "outer_cone_angle"), &GLTFLight::set_outer_cone_angle);
-	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFLight::get_additional_data);
-	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFLight::set_additional_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color"); // Color
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "intensity"), "set_intensity", "get_intensity"); // float
@@ -113,7 +111,7 @@ void GLTFLight::set_outer_cone_angle(float p_outer_cone_angle) {
 Ref<GLTFLight> GLTFLight::from_node(const Light3D *p_light) {
 	Ref<GLTFLight> l;
 	l.instantiate();
-	ERR_FAIL_NULL_V_MSG(p_light, l, "Tried to create a GLTFLight from a Light3D node, but the given node was null.");
+	ERR_FAIL_COND_V_MSG(!p_light, l, "Tried to create a GLTFLight from a Light3D node, but the given node was null.");
 	l->color = p_light->get_color();
 	if (cast_to<DirectionalLight3D>(p_light)) {
 		l->light_type = "directional";
@@ -221,12 +219,4 @@ Dictionary GLTFLight::to_dictionary() const {
 	d["intensity"] = intensity;
 	d["range"] = range;
 	return d;
-}
-
-Variant GLTFLight::get_additional_data(const StringName &p_extension_name) {
-	return additional_data[p_extension_name];
-}
-
-void GLTFLight::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
-	additional_data[p_extension_name] = p_additional_data;
 }

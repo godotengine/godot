@@ -105,7 +105,7 @@ bool GodotPinJoint2D::setup(real_t p_step) {
 	}
 
 	GodotSpace2D *space = A->get_space();
-	ERR_FAIL_NULL_V(space, false);
+	ERR_FAIL_COND_V(!space, false);
 
 	rA = A->get_transform().basis_xform(anchor_A);
 	rB = B ? B->get_transform().basis_xform(anchor_B) : anchor_B;
@@ -155,9 +155,6 @@ bool GodotPinJoint2D::setup(real_t p_step) {
 
 	bias = delta * -(get_bias() == 0 ? space->get_constraint_bias() : get_bias()) * (1.0 / p_step);
 
-	// Compute max impulse.
-	jn_max = get_max_force() * p_step;
-
 	return true;
 }
 
@@ -173,41 +170,12 @@ bool GodotPinJoint2D::pre_solve(real_t p_step) {
 	if (B && dynamic_B) {
 		B->apply_impulse(P, rB);
 	}
-	// Angle limits joint pre_solve step taken from https://github.com/slembcke/Chipmunk2D/blob/d0239ef4599b3688a5a336373f7d0a68426414ba/src/cpRotaryLimitJoint.c
-	real_t i_sum_local = A->get_inv_inertia();
-	if (B) {
-		i_sum_local += B->get_inv_inertia();
-	}
-	i_sum = 1.0 / (i_sum_local);
-	if (angular_limit_enabled && B) {
-		Vector2 diff_vector = B->get_transform().get_origin() - A->get_transform().get_origin();
-		diff_vector = diff_vector.rotated(-initial_angle);
-		real_t dist = diff_vector.angle();
-		real_t pdist = 0.0;
-		if (dist > angular_limit_upper) {
-			pdist = dist - angular_limit_upper;
-		} else if (dist < angular_limit_lower) {
-			pdist = dist - angular_limit_lower;
-		}
-		real_t error_bias = Math::pow(1.0 - 0.15, 60.0);
-		// Calculate bias velocity.
-		bias_velocity = -CLAMP((-1.0 - Math::pow(error_bias, p_step)) * pdist / p_step, -get_max_bias(), get_max_bias());
-		// If the bias velocity is 0, the joint is not at a limit.
-		if (bias_velocity >= -CMP_EPSILON && bias_velocity <= CMP_EPSILON) {
-			j_acc = 0;
-			is_joint_at_limit = false;
-		} else {
-			is_joint_at_limit = true;
-		}
-	} else {
-		bias_velocity = 0.0;
-	}
 
 	return true;
 }
 
 void GodotPinJoint2D::solve(real_t p_step) {
-	// Compute relative velocity.
+	// compute relative velocity
 	Vector2 vA = A->get_linear_velocity() - custom_cross(rA - A->get_center_of_mass(), A->get_angular_velocity());
 
 	Vector2 rel_vel;
@@ -215,33 +183,6 @@ void GodotPinJoint2D::solve(real_t p_step) {
 		rel_vel = B->get_linear_velocity() - custom_cross(rB - B->get_center_of_mass(), B->get_angular_velocity()) - vA;
 	} else {
 		rel_vel = -vA;
-	}
-	// Angle limits joint solve step taken from https://github.com/slembcke/Chipmunk2D/blob/d0239ef4599b3688a5a336373f7d0a68426414ba/src/cpRotaryLimitJoint.c
-	if ((angular_limit_enabled || motor_enabled) && B) {
-		// Compute relative rotational velocity.
-		real_t wr = B->get_angular_velocity() - A->get_angular_velocity();
-		// Motor solve part taken from https://github.com/slembcke/Chipmunk2D/blob/d0239ef4599b3688a5a336373f7d0a68426414ba/src/cpSimpleMotor.c
-		if (motor_enabled) {
-			wr -= motor_target_velocity;
-		}
-		real_t j_max = jn_max;
-
-		// Compute normal impulse.
-		real_t j = -(bias_velocity + wr) * i_sum;
-		real_t j_old = j_acc;
-		// Only enable the limits if we have to.
-		if (angular_limit_enabled && is_joint_at_limit) {
-			if (bias_velocity < 0.0) {
-				j_acc = CLAMP(j_old + j, 0.0, j_max);
-			} else {
-				j_acc = CLAMP(j_old + j, -j_max, 0.0);
-			}
-		} else {
-			j_acc = CLAMP(j_old + j, -j_max, j_max);
-		}
-		j = j_acc - j_old;
-		A->apply_torque_impulse(-j * A->get_inv_inertia());
-		B->apply_torque_impulse(j * B->get_inv_inertia());
 	}
 
 	Vector2 impulse = M.basis_xform(bias - rel_vel - Vector2(softness, softness) * P);
@@ -257,59 +198,14 @@ void GodotPinJoint2D::solve(real_t p_step) {
 }
 
 void GodotPinJoint2D::set_param(PhysicsServer2D::PinJointParam p_param, real_t p_value) {
-	switch (p_param) {
-		case PhysicsServer2D::PIN_JOINT_SOFTNESS: {
-			softness = p_value;
-		} break;
-		case PhysicsServer2D::PIN_JOINT_LIMIT_UPPER: {
-			angular_limit_upper = p_value;
-		} break;
-		case PhysicsServer2D::PIN_JOINT_LIMIT_LOWER: {
-			angular_limit_lower = p_value;
-		} break;
-		case PhysicsServer2D::PIN_JOINT_MOTOR_TARGET_VELOCITY: {
-			motor_target_velocity = p_value;
-		} break;
+	if (p_param == PhysicsServer2D::PIN_JOINT_SOFTNESS) {
+		softness = p_value;
 	}
 }
 
 real_t GodotPinJoint2D::get_param(PhysicsServer2D::PinJointParam p_param) const {
-	switch (p_param) {
-		case PhysicsServer2D::PIN_JOINT_SOFTNESS: {
-			return softness;
-		}
-		case PhysicsServer2D::PIN_JOINT_LIMIT_UPPER: {
-			return angular_limit_upper;
-		}
-		case PhysicsServer2D::PIN_JOINT_LIMIT_LOWER: {
-			return angular_limit_lower;
-		}
-		case PhysicsServer2D::PIN_JOINT_MOTOR_TARGET_VELOCITY: {
-			return motor_target_velocity;
-		}
-	}
-	ERR_FAIL_V(0);
-}
-
-void GodotPinJoint2D::set_flag(PhysicsServer2D::PinJointFlag p_flag, bool p_enabled) {
-	switch (p_flag) {
-		case PhysicsServer2D::PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED: {
-			angular_limit_enabled = p_enabled;
-		} break;
-		case PhysicsServer2D::PIN_JOINT_FLAG_MOTOR_ENABLED: {
-			motor_enabled = p_enabled;
-		} break;
-	}
-}
-
-bool GodotPinJoint2D::get_flag(PhysicsServer2D::PinJointFlag p_flag) const {
-	switch (p_flag) {
-		case PhysicsServer2D::PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED: {
-			return angular_limit_enabled;
-		}
-		case PhysicsServer2D::PIN_JOINT_FLAG_MOTOR_ENABLED: {
-			return motor_enabled;
-		}
+	if (p_param == PhysicsServer2D::PIN_JOINT_SOFTNESS) {
+		return softness;
 	}
 	ERR_FAIL_V(0);
 }
@@ -324,7 +220,6 @@ GodotPinJoint2D::GodotPinJoint2D(const Vector2 &p_pos, GodotBody2D *p_body_a, Go
 	p_body_a->add_constraint(this, 0);
 	if (p_body_b) {
 		p_body_b->add_constraint(this, 1);
-		initial_angle = A->get_transform().get_origin().angle_to_point(B->get_transform().get_origin());
 	}
 }
 
@@ -391,7 +286,7 @@ bool GodotGrooveJoint2D::setup(real_t p_step) {
 	}
 
 	GodotSpace2D *space = A->get_space();
-	ERR_FAIL_NULL_V(space, false);
+	ERR_FAIL_COND_V(!space, false);
 
 	// calculate endpoints in worldspace
 	Vector2 ta = A->get_transform().xform(A_groove_1);

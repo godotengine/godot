@@ -143,11 +143,11 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 			}
 
 			for (int j = from; j < to; j++) {
-				max = MAX(max, mix_chunk[j].left);
-				max = MAX(max, mix_chunk[j].right);
+				max = MAX(max, mix_chunk[j].l);
+				max = MAX(max, mix_chunk[j].r);
 
-				min = MIN(min, mix_chunk[j].left);
-				min = MIN(min, mix_chunk[j].right);
+				min = MIN(min, mix_chunk[j].l);
+				min = MIN(min, mix_chunk[j].r);
 			}
 
 			uint8_t pfrom = CLAMP((min * 0.5 + 0.5) * 255, 0, 255);
@@ -158,7 +158,7 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 		}
 
 		frames_todo -= to_read;
-		callable_mp(singleton, &AudioStreamPreviewGenerator::_update_emit).call_deferred(preview->id);
+		singleton->call_deferred(SNAME("_update_emit"), preview->id);
 	}
 
 	preview->preview->version++;
@@ -216,6 +216,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 }
 
 void AudioStreamPreviewGenerator::_bind_methods() {
+	ClassDB::bind_method("_update_emit", &AudioStreamPreviewGenerator::_update_emit);
 	ClassDB::bind_method(D_METHOD("generate_preview", "stream"), &AudioStreamPreviewGenerator::generate_preview);
 
 	ADD_SIGNAL(MethodInfo("preview_updated", PropertyInfo(Variant::INT, "obj_id")));

@@ -208,12 +208,12 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
 
 #if !defined(HB_NO_VAR) && !defined(HB_NO_OT_FONT_ADVANCE_CACHE)
   const OT::HVAR &HVAR = *hmtx.var_table;
-  const OT::ItemVariationStore &varStore = &HVAR + HVAR.varStore;
-  OT::ItemVariationStore::cache_t *varStore_cache = font->num_coords * count >= 128 ? varStore.create_cache () : nullptr;
+  const OT::VariationStore &varStore = &HVAR + HVAR.varStore;
+  OT::VariationStore::cache_t *varStore_cache = font->num_coords * count >= 128 ? varStore.create_cache () : nullptr;
 
   bool use_cache = font->num_coords;
 #else
-  OT::ItemVariationStore::cache_t *varStore_cache = nullptr;
+  OT::VariationStore::cache_t *varStore_cache = nullptr;
   bool use_cache = false;
 #endif
 
@@ -277,7 +277,7 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
   }
 
 #if !defined(HB_NO_VAR) && !defined(HB_NO_OT_FONT_ADVANCE_CACHE)
-  OT::ItemVariationStore::destroy_cache (varStore_cache);
+  OT::VariationStore::destroy_cache (varStore_cache);
 #endif
 
   if (font->x_strength && !font->embolden_in_place)
@@ -313,10 +313,10 @@ hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
   {
 #if !defined(HB_NO_VAR) && !defined(HB_NO_OT_FONT_ADVANCE_CACHE)
     const OT::VVAR &VVAR = *vmtx.var_table;
-    const OT::ItemVariationStore &varStore = &VVAR + VVAR.varStore;
-    OT::ItemVariationStore::cache_t *varStore_cache = font->num_coords ? varStore.create_cache () : nullptr;
+    const OT::VariationStore &varStore = &VVAR + VVAR.varStore;
+    OT::VariationStore::cache_t *varStore_cache = font->num_coords ? varStore.create_cache () : nullptr;
 #else
-    OT::ItemVariationStore::cache_t *varStore_cache = nullptr;
+    OT::VariationStore::cache_t *varStore_cache = nullptr;
 #endif
 
     for (unsigned int i = 0; i < count; i++)
@@ -327,7 +327,7 @@ hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
     }
 
 #if !defined(HB_NO_VAR) && !defined(HB_NO_OT_FONT_ADVANCE_CACHE)
-    OT::ItemVariationStore::destroy_cache (varStore_cache);
+    OT::VariationStore::destroy_cache (varStore_cache);
 #endif
   }
   else

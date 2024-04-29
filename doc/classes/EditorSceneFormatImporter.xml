@@ -56,7 +56,5 @@
 		</constant>
 		<constant name="IMPORT_DISCARD_MESHES_AND_MATERIALS" value="32">
 		</constant>
-		<constant name="IMPORT_FORCE_DISABLE_MESH_COMPRESSION" value="64">
-		</constant>
 	</constants>
 </class>

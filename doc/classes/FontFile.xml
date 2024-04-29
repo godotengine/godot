@@ -28,7 +28,6 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
 		<method name="clear_cache">
@@ -42,7 +41,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="Vector2i" />
 			<description>
-				Removes all rendered glyph information from the cache entry.
+				Removes all rendered glyphs information from the cache entry.
 				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
 			</description>
 		</method>
@@ -129,13 +128,6 @@
 			<param index="0" name="cache_index" type="int" />
 			<description>
 				Returns embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
-			</description>
-		</method>
-		<method name="get_extra_baseline_offset" qualifiers="const">
-			<return type="float" />
-			<param index="0" name="cache_index" type="int" />
-			<description>
-				Returns extra baseline offset (as a fraction of font height).
 			</description>
 		</method>
 		<method name="get_extra_spacing" qualifiers="const">
@@ -263,7 +255,7 @@
 			<return type="Vector2i[]" />
 			<param index="0" name="cache_index" type="int" />
 			<description>
-				Returns list of the font sizes in the cache. Each size is [Vector2i] with font size and outline size.
+				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
 			</description>
 		</method>
 		<method name="get_texture_count" qualifiers="const">
@@ -452,14 +444,6 @@
 				Sets embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
 			</description>
 		</method>
-		<method name="set_extra_baseline_offset">
-			<return type="void" />
-			<param index="0" name="cache_index" type="int" />
-			<param index="1" name="baseline_offset" type="float" />
-			<description>
-				Sets extra baseline offset (as a fraction of font height).
-			</description>
-		</method>
 		<method name="set_extra_spacing">
 			<return type="void" />
 			<param index="0" name="cache_index" type="int" />
@@ -579,7 +563,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
-				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping, and rotating glyphs.
+				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
 			</description>
 		</method>
 		<method name="set_variation_coordinates">
@@ -601,14 +585,8 @@
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contents of the dynamic font source file.
 		</member>
-		<member name="disable_embedded_bitmaps" type="bool" setter="set_disable_embedded_bitmaps" getter="get_disable_embedded_bitmaps" default="true">
-			If set to [code]true[/code], embedded font bitmap loading is disabled (bitmap-only and color fonts ignore this property).
-		</member>
 		<member name="fixed_size" type="int" setter="set_fixed_size" getter="get_fixed_size" default="0">
 			Font size, used only for the bitmap fonts.
-		</member>
-		<member name="fixed_size_scale_mode" type="int" setter="set_fixed_size_scale_mode" getter="get_fixed_size_scale_mode" enum="TextServer.FixedSizeScaleMode" default="0">
-			Scaling mode, used only for the bitmap fonts with [member fixed_size] greater than zero.
 		</member>
 		<member name="font_name" type="String" setter="set_font_name" getter="get_font_name" default="&quot;&quot;">
 			Font family name.

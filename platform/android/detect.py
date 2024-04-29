@@ -6,7 +6,7 @@ import subprocess
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from SCons.Script.SConscript import SConsEnvironment
+    from SCons import Environment
 
 
 def get_name():
@@ -21,14 +21,13 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
-        ("ANDROID_HOME", "Path to the Android SDK", get_env_android_sdk_root()),
+        ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_env_android_sdk_root()),
         (
             "ndk_platform",
             'Target platform (android-<api>, e.g. "android-' + str(get_min_target_api()) + '")',
             "android-" + str(get_min_target_api()),
         ),
         BoolVariable("store_release", "Editor build for Google Play Store (for official builds only)", False),
-        BoolVariable("generate_apk", "Generate an APK/AAB after building Android library by calling Gradle", False),
     ]
 
 
@@ -42,17 +41,17 @@ def get_doc_path():
     return "doc_classes"
 
 
-# Return the ANDROID_HOME environment variable.
+# Return the ANDROID_SDK_ROOT environment variable.
 def get_env_android_sdk_root():
-    return os.environ.get("ANDROID_HOME", os.environ.get("ANDROID_SDK_ROOT", ""))
+    return os.environ.get("ANDROID_SDK_ROOT", -1)
 
 
 def get_min_sdk_version(platform):
     return int(platform.split("-")[1])
 
 
-def get_android_ndk_root(env: "SConsEnvironment"):
-    return env["ANDROID_HOME"] + "/ndk/" + get_ndk_version()
+def get_android_ndk_root(env):
+    return env["ANDROID_SDK_ROOT"] + "/ndk/" + get_ndk_version()
 
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
@@ -69,15 +68,14 @@ def get_flags():
     return [
         ("arch", "arm64"),  # Default for convenience.
         ("target", "template_debug"),
-        ("supported", ["mono"]),
     ]
 
 
 # Check if Android NDK version is installed
 # If not, install it.
-def install_ndk_if_needed(env: "SConsEnvironment"):
+def install_ndk_if_needed(env):
     print("Checking for Android NDK...")
-    sdk_root = env["ANDROID_HOME"]
+    sdk_root = env["ANDROID_SDK_ROOT"]
     if not os.path.exists(get_android_ndk_root(env)):
         extension = ".bat" if os.name == "nt" else ""
         sdkmanager = sdk_root + "/cmdline-tools/latest/bin/sdkmanager" + extension
@@ -89,7 +87,7 @@ def install_ndk_if_needed(env: "SConsEnvironment"):
         else:
             print("Cannot find " + sdkmanager)
             print(
-                "Please ensure ANDROID_HOME is correct and cmdline-tools are installed, or install NDK version "
+                "Please ensure ANDROID_SDK_ROOT is correct and cmdline-tools are installed, or install NDK version "
                 + get_ndk_version()
                 + " manually."
             )
@@ -97,7 +95,7 @@ def install_ndk_if_needed(env: "SConsEnvironment"):
     env["ANDROID_NDK_ROOT"] = get_android_ndk_root(env)
 
 
-def configure(env: "SConsEnvironment"):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
     if env["arch"] not in supported_arches:
@@ -202,7 +200,7 @@ def configure(env: "SConsEnvironment"):
     env.Append(LIBS=["OpenSLES", "EGL", "android", "log", "z", "dl"])
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
         if not env["use_volk"]:
             env.Append(LIBS=["vulkan"])
 

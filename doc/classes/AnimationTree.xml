@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationTree" inherits="AnimationMixer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationTree" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node used for advanced animation transitions in an [AnimationPlayer].
 	</brief_description>
@@ -9,49 +9,223 @@
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
-		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
-		<method name="get_process_callback" qualifiers="const" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
-			<return type="int" enum="AnimationTree.AnimationProcessCallback" />
+		<method name="_post_process_key_value" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="animation" type="Animation" />
+			<param index="1" name="track" type="int" />
+			<param index="2" name="value" type="Variant" />
+			<param index="3" name="object" type="Object" />
+			<param index="4" name="object_idx" type="int" />
 			<description>
-				Returns the process notification in which to update animations.
+				A virtual function for processing after key getting during playback.
 			</description>
 		</method>
-		<method name="set_process_callback" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
+		<method name="advance">
 			<return type="void" />
-			<param index="0" name="mode" type="int" enum="AnimationTree.AnimationProcessCallback" />
+			<param index="0" name="delta" type="float" />
 			<description>
-				Sets the process notification in which to update animations.
+				Manually advance the animations by the specified time (in seconds).
+			</description>
+		</method>
+		<method name="get_root_motion_position" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Retrieve the motion delta of position with the [member root_motion_track] as a [Vector3] that can be used elsewhere.
+				If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_POSITION_3D], returns [code]Vector3(0, 0, 0)[/code].
+				See also [member root_motion_track] and [RootMotionView].
+				The most basic example is applying position to [CharacterBody3D]:
+				[codeblocks]
+				[gdscript]
+				var current_rotation: Quaternion
+
+				func _process(delta):
+				    if Input.is_action_just_pressed("animate"):
+				        current_rotation = get_quaternion()
+				        state_machine.travel("Animate")
+				    var velocity: Vector3 = current_rotation * animation_tree.get_root_motion_position() / delta
+				    set_velocity(velocity)
+				    move_and_slide()
+				[/gdscript]
+				[/codeblocks]
+				By using this in combination with [method get_root_motion_position_accumulator], you can apply the root motion position more correctly to account for the rotation of the node.
+				[codeblocks]
+				[gdscript]
+				func _process(delta):
+				    if Input.is_action_just_pressed("animate"):
+				        state_machine.travel("Animate")
+				    set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
+				    var velocity: Vector3 = (animation_tree.get_root_motion_rotation_accumulator().inverse() * get_quaternion()) * animation_tree.get_root_motion_position() / delta
+				    set_velocity(velocity)
+				    move_and_slide()
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_root_motion_position_accumulator" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Retrieve the blended value of the position tracks with the [member root_motion_track] as a [Vector3] that can be used elsewhere.
+				This is useful in cases where you want to respect the initial key values of the animation.
+				For example, if an animation with only one key [code]Vector3(0, 0, 0)[/code] is played in the previous frame and then an animation with only one key [code]Vector3(1, 0, 1)[/code] is played in the next frame, the difference can be calculated as follows:
+				[codeblocks]
+				[gdscript]
+				var prev_root_motion_position_accumulator: Vector3
+
+				func _process(delta):
+				    if Input.is_action_just_pressed("animate"):
+				        state_machine.travel("Animate")
+				    var current_root_motion_position_accumulator: Vector3 = animation_tree.get_root_motion_position_accumulator()
+				    var difference: Vector3 = current_root_motion_position_accumulator - prev_root_motion_position_accumulator
+				    prev_root_motion_position_accumulator = current_root_motion_position_accumulator
+				    transform.origin += difference
+				[/gdscript]
+				[/codeblocks]
+				However, if the animation loops, an unintended discrete change may occur, so this is only useful for some simple use cases.
+			</description>
+		</method>
+		<method name="get_root_motion_rotation" qualifiers="const">
+			<return type="Quaternion" />
+			<description>
+				Retrieve the motion delta of rotation with the [member root_motion_track] as a [Quaternion] that can be used elsewhere.
+				If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_ROTATION_3D], returns [code]Quaternion(0, 0, 0, 1)[/code].
+				See also [member root_motion_track] and [RootMotionView].
+				The most basic example is applying rotation to [CharacterBody3D]:
+				[codeblocks]
+				[gdscript]
+				func _process(delta):
+				    if Input.is_action_just_pressed("animate"):
+				        state_machine.travel("Animate")
+				    set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_root_motion_rotation_accumulator" qualifiers="const">
+			<return type="Quaternion" />
+			<description>
+				Retrieve the blended value of the rotation tracks with the [member root_motion_track] as a [Quaternion] that can be used elsewhere.
+				This is necessary to apply the root motion position correctly, taking rotation into account. See also [method get_root_motion_position].
+				Also, this is useful in cases where you want to respect the initial key values of the animation.
+				For example, if an animation with only one key [code]Quaternion(0, 0, 0, 1)[/code] is played in the previous frame and then an animation with only one key [code]Quaternion(0, 0.707, 0, 0.707)[/code] is played in the next frame, the difference can be calculated as follows:
+				[codeblocks]
+				[gdscript]
+				var prev_root_motion_rotation_accumulator: Quaternion
+
+				func _process(delta):
+				    if Input.is_action_just_pressed("animate"):
+				        state_machine.travel("Animate")
+				    var current_root_motion_rotation_accumulator: Quaternion = animation_tree.get_root_motion_Quaternion_accumulator()
+				    var difference: Quaternion = prev_root_motion_rotation_accumulator.inverse() * current_root_motion_rotation_accumulator
+				    prev_root_motion_rotation_accumulator = current_root_motion_rotation_accumulator
+				    transform.basis *= difference
+				[/gdscript]
+				[/codeblocks]
+				However, if the animation loops, an unintended discrete change may occur, so this is only useful for some simple use cases.
+			</description>
+		</method>
+		<method name="get_root_motion_scale" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Retrieve the motion delta of scale with the [member root_motion_track] as a [Vector3] that can be used elsewhere.
+				If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_SCALE_3D], returns [code]Vector3(0, 0, 0)[/code].
+				See also [member root_motion_track] and [RootMotionView].
+				The most basic example is applying scale to [CharacterBody3D]:
+				[codeblocks]
+				[gdscript]
+				var current_scale: Vector3 = Vector3(1, 1, 1)
+				var scale_accum: Vector3 = Vector3(1, 1, 1)
+
+				func _process(delta):
+				    if Input.is_action_just_pressed("animate"):
+				        current_scale = get_scale()
+				        scale_accum = Vector3(1, 1, 1)
+				        state_machine.travel("Animate")
+				    scale_accum += animation_tree.get_root_motion_scale()
+				    set_scale(current_scale * scale_accum)
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_root_motion_scale_accumulator" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Retrieve the blended value of the scale tracks with the [member root_motion_track] as a [Vector3] that can be used elsewhere.
+				For example, if an animation with only one key [code]Vector3(1, 1, 1)[/code] is played in the previous frame and then an animation with only one key [code]Vector3(2, 2, 2)[/code] is played in the next frame, the difference can be calculated as follows:
+				[codeblocks]
+				[gdscript]
+				var prev_root_motion_scale_accumulator: Vector3
+
+				func _process(delta):
+				    if Input.is_action_just_pressed("animate"):
+				        state_machine.travel("Animate")
+				    var current_root_motion_scale_accumulator: Vector3 = animation_tree.get_root_motion_scale_accumulator()
+				    var difference: Vector3 = current_root_motion_scale_accumulator - prev_root_motion_scale_accumulator
+				    prev_root_motion_scale_accumulator = current_root_motion_scale_accumulator
+				    transform.basis = transform.basis.scaled(difference)
+				[/gdscript]
+				[/codeblocks]
+				However, if the animation loops, an unintended discrete change may occur, so this is only useful for some simple use cases.
 			</description>
 		</method>
 	</methods>
 	<members>
+		<member name="active" type="bool" setter="set_active" getter="is_active" default="false">
+			If [code]true[/code], the [AnimationTree] will be processing.
+		</member>
 		<member name="advance_expression_base_node" type="NodePath" setter="set_advance_expression_base_node" getter="get_advance_expression_base_node" default="NodePath(&quot;.&quot;)">
-			The path to the [Node] used to evaluate the [AnimationNode] [Expression] if one is not explicitly specified internally.
+			The path to the [Node] used to evaluate the AnimationNode [Expression] if one is not explicitly specified internally.
 		</member>
 		<member name="anim_player" type="NodePath" setter="set_animation_player" getter="get_animation_player" default="NodePath(&quot;&quot;)">
 			The path to the [AnimationPlayer] used for animating.
 		</member>
-		<member name="callback_mode_discrete" type="int" setter="set_callback_mode_discrete" getter="get_callback_mode_discrete" overrides="AnimationMixer" enum="AnimationMixer.AnimationCallbackModeDiscrete" default="2" />
-		<member name="deterministic" type="bool" setter="set_deterministic" getter="is_deterministic" overrides="AnimationMixer" default="true" />
-		<member name="tree_root" type="AnimationRootNode" setter="set_tree_root" getter="get_tree_root">
-			The root animation node of this [AnimationTree]. See [AnimationRootNode].
+		<member name="audio_max_polyphony" type="int" setter="set_audio_max_polyphony" getter="get_audio_max_polyphony" default="32">
+			The number of possible simultaneous sounds for each of the assigned AudioStreamPlayers.
+			For example, if this value is [code]32[/code] and the animation has two audio tracks, the two [AudioStreamPlayer]s assigned can play simultaneously up to [code]32[/code] voices each.
+		</member>
+		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="AnimationTree.AnimationProcessCallback" default="1">
+			The process mode of this [AnimationTree]. See [enum AnimationProcessCallback] for available modes.
+		</member>
+		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">
+			The path to the Animation track used for root motion. Paths must be valid scene-tree paths to a node, and must be specified starting from the parent node of the node that will reproduce the animation. To specify a track that controls properties or bones, append its name after the path, separated by [code]":"[/code]. For example, [code]"character/skeleton:ankle"[/code] or [code]"character/mesh:transform/local"[/code].
+			If the track has type [constant Animation.TYPE_POSITION_3D], [constant Animation.TYPE_ROTATION_3D] or [constant Animation.TYPE_SCALE_3D] the transformation will be canceled visually, and the animation will appear to stay in place. See also [method get_root_motion_position], [method get_root_motion_rotation], [method get_root_motion_scale] and [RootMotionView].
+		</member>
+		<member name="tree_root" type="AnimationNode" setter="set_tree_root" getter="get_tree_root">
+			The root animation node of this [AnimationTree]. See [AnimationNode].
 		</member>
 	</members>
 	<signals>
+		<signal name="animation_finished">
+			<param index="0" name="anim_name" type="StringName" />
+			<description>
+				Notifies when an animation finished playing.
+				[b]Note:[/b] This signal is not emitted if an animation is looping or aborted. Also be aware of the possibility of unseen playback by sync and xfade.
+			</description>
+		</signal>
 		<signal name="animation_player_changed">
 			<description>
 				Emitted when the [member anim_player] is changed.
 			</description>
 		</signal>
+		<signal name="animation_started">
+			<param index="0" name="anim_name" type="StringName" />
+			<description>
+				Notifies when an animation starts playing.
+				[b]Note:[/b] This signal is not emitted if an animation is looping or playbacked from the middle. Also be aware of the possibility of unseen playback by sync and xfade.
+			</description>
+		</signal>
 	</signals>
 	<constants>
-		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].">
+		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback">
+			The animations will progress during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
 		</constant>
-		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_IDLE].">
+		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback">
+			The animations will progress during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
 		</constant>
-		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL].">
+		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback">
+			The animations will only progress manually (see [method advance]).
 		</constant>
 	</constants>
 </class>
