@@ -135,6 +135,7 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 	class_doc.name = get_path();
 	class_doc.is_script_doc = true;
 #endif
+
 	for (PropertyInfo &pi : local) {
 		bool is_group = pi.usage == PROPERTY_USAGE_GROUP || pi.usage == PROPERTY_USAGE_SUBGROUP;
 		if (!p_get_groups && is_group) {
@@ -152,6 +153,8 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 			}
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint()) {
+				DocData::PropertyDoc prop_doc;
+				prop_doc.name = "shader_parameter/" + pi.name;
 #ifdef MODULE_REGEX_ENABLED
 				const RegEx pattern("/\\*\\*([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/\\s*uniform\\s+\\w+\\s+" + pi.name + "(?=[\\s:;=])");
 				Ref<RegExMatch> pattern_ref = pattern.search(code);
@@ -161,24 +164,17 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 					Ref<RegExMatch> pattern_tip_ref = pattern_tip.search(match->get_string(0));
 					RegExMatch *match_tip = pattern_tip_ref.ptr();
 					const RegEx pattern_stripped("\\n\\s*\\*\\s*");
-					DocData::PropertyDoc prop_doc;
-					prop_doc.name = "shader_parameter/" + pi.name;
 					prop_doc.description = pattern_stripped.sub(match_tip->get_string(1), "\n", true);
-					class_doc.properties.push_back(prop_doc);
 				}
-#else
-				DocData::PropertyDoc prop_doc;
-				prop_doc.name = "shader_parameter/" + pi.name;
-				// prop_doc.description = "(Regex module is not enabled, shader parameter documentation will not be available.)";
-				class_doc.properties.push_back(prop_doc);
 #endif
+				class_doc.properties.push_back(prop_doc);
 			}
 #endif
 			p_params->push_back(pi);
 		}
 	}
 #ifdef TOOLS_ENABLED
-	if (!class_doc.name.is_empty() && p_params) {
+	if (Engine::get_singleton()->is_editor_hint() && !class_doc.name.is_empty() && p_params) {
 		EditorHelp::get_doc_data()->add_doc(class_doc);
 	}
 #endif
