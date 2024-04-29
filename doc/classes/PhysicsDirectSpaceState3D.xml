@@ -90,7 +90,7 @@
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				[code]distance[/code]: The distance to the intersection point.
-				If the ray did not intersect anything, then an empty dictionary is returned instead.
+				If the ray did not intersect anything, then an empty array is returned instead.
 			</description>
 		</method>
 		<method name="intersect_shape">
