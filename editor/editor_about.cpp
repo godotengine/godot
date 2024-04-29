@@ -63,7 +63,6 @@ void EditorAbout::_notification(int p_what) {
 
 			_logo->set_texture(get_editor_theme_icon(SNAME("Logo")));
 
-			Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
 			for (ItemList *il : name_lists) {
 				for (int i = 0; i < il->get_item_count(); i++) {
 					if (il->get_item_metadata(i)) {
