@@ -950,7 +950,6 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 				}
 				
 				else if (multi_layer_selection_mode == true) {
-					Vector<TileMapLayer *> layers = TileMapLayerEditor::tile_map_layers_in_scene_cache;
 					for (int selected_layer = 0; selected_layer < layers.size(); selected_layer++) {
 						edited_layer = layers[selected_layer]; 
 						for (const Vector2i &coords : tile_map_selection) {
@@ -1106,7 +1105,6 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 								}
 							}  else if (multi_layer_selection_mode == true) {
 								drag_modified_layers.clear();
-								Vector<TileMapLayer *> layers = TileMapLayerEditor::tile_map_layers_in_scene_cache;
 								for (int selected_layer = 0; selected_layer < layers.size(); selected_layer++) {
 									TileMapLayer *current_layer = layers[selected_layer];
 									drag_modified_layers.resize(layers.size());
