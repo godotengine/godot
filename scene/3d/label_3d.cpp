@@ -636,6 +636,10 @@ void Label3D::_shape() {
 }
 
 void Label3D::set_text(const String &p_string) {
+	if (text == p_string) {
+		return;
+	}
+
 	text = p_string;
 	xl_text = atr(p_string);
 	dirty_text = true;
