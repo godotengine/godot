@@ -365,14 +365,14 @@ TypedArray<Dictionary> PhysicsDirectSpaceState2D::_intersect_ray_multiple(const 
 	TypedArray<Dictionary> r;
 	r.resize(rc);
 	for (int i = 0; i < rc; i++) {
-	  Dictionary d;
-	  d["position"] = results[i].position;
-	  d["normal"] = results[i].normal;
-	  d["collider_id"] = results[i].collider_id;
-	  d["collider"] = results[i].collider;
-	  d["shape"] = results[i].shape;
-	  d["rid"] = results[i].rid;
-	  d["distance"] = results[i].distance;
+		Dictionary d;
+		d["position"] = results[i].position;
+		d["normal"] = results[i].normal;
+		d["collider_id"] = results[i].collider_id;
+		d["collider"] = results[i].collider;
+		d["shape"] = results[i].shape;
+		d["rid"] = results[i].rid;
+		d["distance"] = results[i].distance;
 		r[i] = d;
 	}
 	return r;
