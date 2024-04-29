@@ -50,6 +50,31 @@ public:
 	// Not using 'RANDOM_MAX' to avoid conflict with system headers on some OSes (at least NetBSD).
 	static const uint64_t RANDOM_32BIT_MAX = 0xFFFFFFFF;
 
+	template <typename T>
+	static constexpr T abs(T p_value) {
+		return p_value == T(0) ? T(0) : (p_value < T(0) ? -p_value : p_value);
+	}
+
+	template <typename T>
+	static constexpr T sign(T p_value) {
+		return p_value > T(0) ? T(1) : (p_value < T(0) ? T(-1) : T(0));
+	}
+
+	template <typename T>
+	static constexpr T min(T p_left, T p_right) {
+		return p_left < p_right ? p_left : p_right;
+	}
+
+	template <typename T>
+	static constexpr T max(T p_left, T p_right) {
+		return p_left > p_right ? p_left : p_right;
+	}
+
+	template <typename T>
+	static constexpr T clamp(T p_value, T p_min, T p_max) {
+		return p_value < p_min ? p_min : (p_value > p_max ? p_max : p_value);
+	}
+
 	static _ALWAYS_INLINE_ double sin(double p_x) { return ::sin(p_x); }
 	static _ALWAYS_INLINE_ float sin(float p_x) { return ::sinf(p_x); }
 
@@ -216,10 +241,6 @@ public:
 
 	static _ALWAYS_INLINE_ bool is_finite(double p_val) { return isfinite(p_val); }
 	static _ALWAYS_INLINE_ bool is_finite(float p_val) { return isfinite(p_val); }
-
-	static _ALWAYS_INLINE_ double abs(double g) { return absd(g); }
-	static _ALWAYS_INLINE_ float abs(float g) { return absf(g); }
-	static _ALWAYS_INLINE_ int abs(int g) { return g > 0 ? g : -g; }
 
 	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
 		double value = Math::fmod(p_x, p_y);
@@ -449,35 +470,35 @@ public:
 		if (is_equal_approx(p_from, p_to)) {
 			return p_from;
 		}
-		double s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0, 1.0);
+		double s = clamp((p_s - p_from) / (p_to - p_from), 0.0, 1.0);
 		return s * s * (3.0 - 2.0 * s);
 	}
 	static _ALWAYS_INLINE_ float smoothstep(float p_from, float p_to, float p_s) {
 		if (is_equal_approx(p_from, p_to)) {
 			return p_from;
 		}
-		float s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0f, 1.0f);
+		float s = clamp((p_s - p_from) / (p_to - p_from), 0.0f, 1.0f);
 		return s * s * (3.0f - 2.0f * s);
 	}
 
 	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) {
-		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
+		return abs(p_to - p_from) <= p_delta ? p_to : p_from + sign(p_to - p_from) * p_delta;
 	}
 	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) {
-		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
+		return abs(p_to - p_from) <= p_delta ? p_to : p_from + sign(p_to - p_from) * p_delta;
 	}
 
 	static _ALWAYS_INLINE_ double rotate_toward(double p_from, double p_to, double p_delta) {
 		double difference = Math::angle_difference(p_from, p_to);
 		double abs_difference = Math::abs(difference);
 		// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
-		return p_from + CLAMP(p_delta, abs_difference - Math_PI, abs_difference) * (difference >= 0.0 ? 1.0 : -1.0);
+		return p_from + clamp(p_delta, abs_difference - Math_PI, abs_difference) * (difference >= 0.0 ? 1.0 : -1.0);
 	}
 	static _ALWAYS_INLINE_ float rotate_toward(float p_from, float p_to, float p_delta) {
 		float difference = Math::angle_difference(p_from, p_to);
 		float abs_difference = Math::abs(difference);
 		// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
-		return p_from + CLAMP(p_delta, abs_difference - (float)Math_PI, abs_difference) * (difference >= 0.0f ? 1.0f : -1.0f);
+		return p_from + clamp(p_delta, abs_difference - (float)Math_PI, abs_difference) * (difference >= 0.0f ? 1.0f : -1.0f);
 	}
 
 	static _ALWAYS_INLINE_ double linear_to_db(double p_linear) {
@@ -607,27 +628,6 @@ public:
 
 	static _ALWAYS_INLINE_ bool is_zero_approx(double s) {
 		return abs(s) < CMP_EPSILON;
-	}
-
-	static _ALWAYS_INLINE_ float absf(float g) {
-		union {
-			float f;
-			uint32_t i;
-		} u;
-
-		u.f = g;
-		u.i &= 2147483647u;
-		return u.f;
-	}
-
-	static _ALWAYS_INLINE_ double absd(double g) {
-		union {
-			double d;
-			uint64_t i;
-		} u;
-		u.d = g;
-		u.i &= (uint64_t)9223372036854775807ll;
-		return u.d;
 	}
 
 	// This function should be as fast as possible and rounding mode should not matter.
