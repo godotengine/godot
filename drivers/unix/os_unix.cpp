@@ -78,6 +78,7 @@
 #include <string.h>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
@@ -103,9 +104,7 @@
 #define UNIX_GET_ENTROPY
 #endif
 
-#if !defined(UNIX_GET_ENTROPY) && !defined(NO_URANDOM)
 #include <fcntl.h>
-#endif
 
 /// Clock Setup function (used by get_ticks_usec)
 static uint64_t _clock_start = 0;
@@ -183,8 +182,18 @@ Vector<String> OS_Unix::get_video_adapter_driver_info() const {
 }
 
 String OS_Unix::get_stdin_string() {
-	char buff[1024];
-	return String::utf8(fgets(buff, 1024, stdin));
+	String result;
+	ssize_t size = BUFSIZ;
+	LocalVector<char> buff;
+	int flags = fcntl(STDIN_FILENO, F_GETFL, 0);
+	if (flags != -1) {
+		buff.resize(size);
+		while ((size = read(fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK), &buff[0], size)) > 0) {
+			buff.resize(size);
+			result += String::utf8((char *)buff.ptr(), size);
+		}
+	}
+	return result;
 }
 
 Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {
