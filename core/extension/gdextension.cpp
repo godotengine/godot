@@ -387,7 +387,7 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 		p_extension_funcs->set_func, // GDExtensionClassSet set_func;
 		p_extension_funcs->get_func, // GDExtensionClassGet get_func;
 		p_extension_funcs->get_property_list_func, // GDExtensionClassGetPropertyList get_property_list_func;
-		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
+		nullptr, // GDExtensionClassFreePropertyList2 free_property_list_func;
 		p_extension_funcs->property_can_revert_func, // GDExtensionClassPropertyCanRevert property_can_revert_func;
 		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
 		nullptr, // GDExtensionClassValidateProperty validate_property_func;
@@ -406,7 +406,8 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 	};
 
 	const ClassCreationDeprecatedInfo legacy = {
-		p_extension_funcs->notification_func,
+		p_extension_funcs->notification_func, // GDExtensionClassNotification notification_func;
+		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
 	};
 	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info3, &legacy);
 }
@@ -420,7 +421,7 @@ void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->set_func, // GDExtensionClassSet set_func;
 		p_extension_funcs->get_func, // GDExtensionClassGet get_func;
 		p_extension_funcs->get_property_list_func, // GDExtensionClassGetPropertyList get_property_list_func;
-		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
+		nullptr, // GDExtensionClassFreePropertyList2 free_property_list_func;
 		p_extension_funcs->property_can_revert_func, // GDExtensionClassPropertyCanRevert property_can_revert_func;
 		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
 		p_extension_funcs->validate_property_func, // GDExtensionClassValidateProperty validate_property_func;
@@ -438,7 +439,11 @@ void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->class_userdata, // void *class_userdata;
 	};
 
-	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info3);
+	const ClassCreationDeprecatedInfo legacy = {
+		nullptr, // GDExtensionClassNotification notification_func;
+		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
+	};
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info3, &legacy);
 }
 #endif // DISABLE_DEPRECATED
 
@@ -514,13 +519,14 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	extension->gdextension.set = p_extension_funcs->set_func;
 	extension->gdextension.get = p_extension_funcs->get_func;
 	extension->gdextension.get_property_list = p_extension_funcs->get_property_list_func;
-	extension->gdextension.free_property_list = p_extension_funcs->free_property_list_func;
+	extension->gdextension.free_property_list2 = p_extension_funcs->free_property_list_func;
 	extension->gdextension.property_can_revert = p_extension_funcs->property_can_revert_func;
 	extension->gdextension.property_get_revert = p_extension_funcs->property_get_revert_func;
 	extension->gdextension.validate_property = p_extension_funcs->validate_property_func;
 #ifndef DISABLE_DEPRECATED
 	if (p_deprecated_funcs) {
 		extension->gdextension.notification = p_deprecated_funcs->notification_func;
+		extension->gdextension.free_property_list = p_deprecated_funcs->free_property_list_func;
 	}
 #endif // DISABLE_DEPRECATED
 	extension->gdextension.notification2 = p_extension_funcs->notification_func;
