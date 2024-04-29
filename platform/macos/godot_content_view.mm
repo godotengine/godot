@@ -313,7 +313,7 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-	if (!wd.drop_files_callback.is_null()) {
+	if (wd.drop_files_callback.is_valid()) {
 		Vector<String> files;
 		NSPasteboard *pboard = [sender draggingPasteboard];
 

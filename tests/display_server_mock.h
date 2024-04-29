@@ -86,7 +86,7 @@ private:
 	}
 
 	void _send_window_event(WindowEvent p_event) {
-		if (!event_callback.is_null()) {
+		if (event_callback.is_valid()) {
 			Variant event = int(p_event);
 			event_callback.call(event);
 		}

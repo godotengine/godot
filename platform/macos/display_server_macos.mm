@@ -938,7 +938,7 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 		button_pressed = int64_t(2 + (ret - NSAlertThirdButtonReturn));
 	}
 
-	if (!p_callback.is_null()) {
+	if (p_callback.is_valid()) {
 		Variant ret;
 		Callable::CallError ce;
 		const Variant *args[1] = { &button_pressed };
@@ -1018,7 +1018,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 							  String url;
 							  url.parse_utf8([[[panel URL] path] UTF8String]);
 							  files.push_back(url);
-							  if (!callback.is_null()) {
+							  if (callback.is_valid()) {
 								  if (p_options_in_cb) {
 									  Variant v_result = true;
 									  Variant v_files = files;
@@ -1047,7 +1047,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 								  }
 							  }
 						  } else {
-							  if (!callback.is_null()) {
+							  if (callback.is_valid()) {
 								  if (p_options_in_cb) {
 									  Variant v_result = false;
 									  Variant v_files = Vector<String>();
@@ -1134,7 +1134,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 								  url.parse_utf8([[[urls objectAtIndex:i] path] UTF8String]);
 								  files.push_back(url);
 							  }
-							  if (!callback.is_null()) {
+							  if (callback.is_valid()) {
 								  if (p_options_in_cb) {
 									  Variant v_result = true;
 									  Variant v_files = files;
@@ -1163,7 +1163,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 								  }
 							  }
 						  } else {
-							  if (!callback.is_null()) {
+							  if (callback.is_valid()) {
 								  if (p_options_in_cb) {
 									  Variant v_result = false;
 									  Variant v_files = Vector<String>();
@@ -1222,7 +1222,7 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	String ret;
 	ret.parse_utf8([[input stringValue] UTF8String]);
 
-	if (!p_callback.is_null()) {
+	if (p_callback.is_valid()) {
 		Variant v_result = ret;
 		Variant ret;
 		Callable::CallError ce;

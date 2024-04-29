@@ -2106,7 +2106,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 		if (visibility_notifier->just_visible) {
 			visibility_notifier->just_visible = false;
 
-			if (!visibility_notifier->enter_callable.is_null()) {
+			if (visibility_notifier->enter_callable.is_valid()) {
 				if (RSG::threaded) {
 					visibility_notifier->enter_callable.call_deferred();
 				} else {
@@ -2117,7 +2117,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 			if (visibility_notifier->visible_in_frame != RSG::rasterizer->get_frame_number()) {
 				visibility_notifier_list.remove(E);
 
-				if (!visibility_notifier->exit_callable.is_null()) {
+				if (visibility_notifier->exit_callable.is_valid()) {
 					if (RSG::threaded) {
 						visibility_notifier->exit_callable.call_deferred();
 					} else {
