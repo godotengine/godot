@@ -222,7 +222,9 @@ void FindInFiles::_scan_dir(const String &path, PackedStringArray &out_folders, 
 
 	dir->list_dir_begin();
 
-	for (int i = 0; i < 1000; ++i) {
+	// Limit to 100,000 iterations to avoid an infinite loop just in case
+	// (this technically limits results to 100,000 files per folder).
+	for (int i = 0; i < 100'000; ++i) {
 		String file = dir->get_next();
 
 		if (file.is_empty()) {
