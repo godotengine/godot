@@ -97,9 +97,9 @@ void TilesEditorUtils::_thread() {
 
 				TileMap *tile_map = memnew(TileMap);
 				tile_map->set_tileset(item.tile_set);
-
 				for (int pattern_layer = 1; pattern_layer < item.pattern->get_number_of_layers(); pattern_layer++) {
 					tile_map->add_layer(pattern_layer);
+					// once for 0, another for 1, another 2. For a total of 3 loops. But there's already one layer, so we'd have 4 layers!
 				} 
 				tile_map->set_pattern(0, Vector2(), item.pattern);
 				viewport->add_child(tile_map);

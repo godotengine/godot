@@ -625,7 +625,26 @@ Vector2i TileMap::map_pattern(const Vector2i &p_position_in_tilemap, const Vecto
 }
 
 void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern) {
-	TILEMAP_CALL_FOR_LAYER(p_layer, set_pattern, p_position, p_pattern);
+	if (p_pattern->get_is_single_layer() == true) {
+		if (p_layer < 0) {
+			p_layer = layers.size() + p_layer;
+		};
+		if ((p_layer) < 0 || (p_layer) >= ((int)layers.size())) {
+			_err_print_index_error(__FUNCTION__, "C:\\Users\\LPC\\source\\repos\\Godot Extension Project\\Godot Engine Fork\\godot\\scene\\2d\\tile_map.cpp", 628, p_layer, (int)layers.size(), "p_layer", "(int)layers.size()");
+			return;
+		} else
+			((void)0);
+		layers[p_layer]->set_pattern(p_position, p_pattern);
+		;
+	}
+	// The above code is the same aside from the if statement, just inline instead of a macro.
+	// The below code is needed because tiles_editor_plugin.cpp's _thread function used for saving patterns to the tileset patterns list depends on (deprecated) TileMap functionality.
+	else if (p_pattern->get_is_single_layer() == false) {
+		print_line("set_pattern multi layer called");
+		for (int pattern_layer = 0; pattern_layer < p_pattern->get_number_of_layers(); pattern_layer++) {
+			layers[pattern_layer]->set_pattern_layer(pattern_layer, p_position, p_pattern);
+		}
+	}
 }
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_constraints(int p_layer, const Vector<Vector2i> &p_to_replace, int p_terrain_set, const RBSet<TerrainConstraint> &p_constraints) {

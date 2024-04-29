@@ -427,8 +427,9 @@ public:
 
 	// Patterns.
 	Ref<TileMapPattern> get_pattern(TypedArray<Vector2i> p_coords_array, bool is_single_layer = true);
+	Ref<TileMapPattern> get_pattern_layer(TypedArray<Vector2i> p_coords_array, Ref<TileMapPattern> p_pattern, int p_layer);
 	void set_pattern(const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
-
+	void set_pattern_layer(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern);
 	// Terrains.
 	void set_cells_terrain_connect(TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);
 	void set_cells_terrain_path(TypedArray<Vector2i> p_path, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);
