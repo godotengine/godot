@@ -70,6 +70,11 @@ void XRHandModifier3D::_get_joint_data() {
 		return;
 	}
 
+	if (has_stored_previous_transforms) {
+		previous_relative_transforms.clear();
+		has_stored_previous_transforms = false;
+	}
+
 	// Table of bone names for different rig types.
 	static const String bone_names[XRHandTracker::HAND_JOINT_MAX] = {
 		"Palm",
@@ -196,6 +201,18 @@ void XRHandModifier3D::_process_modification() {
 
 	// Skip if no tracking data
 	if (!tracker->get_has_tracking_data()) {
+		if (!has_stored_previous_transforms) {
+			return;
+		}
+
+		// Apply previous relative transforms if they are stored.
+		for (int joint = 0; joint < XRHandTracker::HAND_JOINT_MAX; joint++) {
+			if (bone_update == BONE_UPDATE_FULL) {
+				skeleton->set_bone_pose_position(joints[joint].bone, previous_relative_transforms[joint].origin);
+			}
+
+			skeleton->set_bone_pose_rotation(joints[joint].bone, Quaternion(previous_relative_transforms[joint].basis));
+		}
 		return;
 	}
 
@@ -223,6 +240,12 @@ void XRHandModifier3D::_process_modification() {
 		return;
 	}
 
+	if (!has_stored_previous_transforms) {
+		previous_relative_transforms.resize(XRHandTracker::HAND_JOINT_MAX);
+		has_stored_previous_transforms = true;
+	}
+	Transform3D *previous_relative_transforms_ptr = previous_relative_transforms.ptrw();
+
 	for (int joint = 0; joint < XRHandTracker::HAND_JOINT_MAX; joint++) {
 		// Get the skeleton bone (skip if none).
 		const int bone = joints[joint].bone;
@@ -233,6 +256,7 @@ void XRHandModifier3D::_process_modification() {
 		// Calculate the relative relationship to the parent bone joint.
 		const int parent_joint = joints[joint].parent_joint;
 		const Transform3D relative_transform = inv_transforms[parent_joint] * transforms[joint];
+		previous_relative_transforms_ptr[joint] = relative_transform;
 
 		// Update the bone position if enabled by update mode.
 		if (bone_update == BONE_UPDATE_FULL) {
