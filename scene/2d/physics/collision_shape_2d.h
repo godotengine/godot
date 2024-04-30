@@ -71,6 +71,8 @@ public:
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
 
+  bool contains_point(const Vector2 &point);
+
 	void set_one_way_collision(bool p_enable);
 	bool is_one_way_collision_enabled() const;
 
