@@ -325,6 +325,11 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 				}
 			} break;
 		}
+
+		bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
+		if (p_option.begins_with("privacy")) {
+			return advanced_options_enabled;
+		}
 	}
 
 	// These entitlements are required to run managed code, and are always enabled in Mono builds.
@@ -372,6 +377,58 @@ List<String> EditorExportPlatformMacOS::get_binary_extensions(const Ref<EditorEx
 
 	return list;
 }
+
+struct DataCollectionInfo {
+	String prop_name;
+	String type_name;
+};
+
+static const DataCollectionInfo data_collect_type_info[] = {
+	{ "name", "NSPrivacyCollectedDataTypeName" },
+	{ "email_address", "NSPrivacyCollectedDataTypeEmailAddress" },
+	{ "phone_number", "NSPrivacyCollectedDataTypePhoneNumber" },
+	{ "physical_address", "NSPrivacyCollectedDataTypePhysicalAddress" },
+	{ "other_contact_info", "NSPrivacyCollectedDataTypeOtherUserContactInfo" },
+	{ "health", "NSPrivacyCollectedDataTypeHealth" },
+	{ "fitness", "NSPrivacyCollectedDataTypeFitness" },
+	{ "payment_info", "NSPrivacyCollectedDataTypePaymentInfo" },
+	{ "credit_info", "NSPrivacyCollectedDataTypeCreditInfo" },
+	{ "other_financial_info", "NSPrivacyCollectedDataTypeOtherFinancialInfo" },
+	{ "precise_location", "NSPrivacyCollectedDataTypePreciseLocation" },
+	{ "coarse_location", "NSPrivacyCollectedDataTypeCoarseLocation" },
+	{ "sensitive_info", "NSPrivacyCollectedDataTypeSensitiveInfo" },
+	{ "contacts", "NSPrivacyCollectedDataTypeContacts" },
+	{ "emails_or_text_messages", "NSPrivacyCollectedDataTypeEmailsOrTextMessages" },
+	{ "photos_or_videos", "NSPrivacyCollectedDataTypePhotosorVideos" },
+	{ "audio_data", "NSPrivacyCollectedDataTypeAudioData" },
+	{ "gameplay_content", "NSPrivacyCollectedDataTypeGameplayContent" },
+	{ "customer_support", "NSPrivacyCollectedDataTypeCustomerSupport" },
+	{ "other_user_content", "NSPrivacyCollectedDataTypeOtherUserContent" },
+	{ "browsing_history", "NSPrivacyCollectedDataTypeBrowsingHistory" },
+	{ "search_hhistory", "NSPrivacyCollectedDataTypeSearchHistory" },
+	{ "user_id", "NSPrivacyCollectedDataTypeUserID" },
+	{ "device_id", "NSPrivacyCollectedDataTypeDeviceID" },
+	{ "purchase_history", "NSPrivacyCollectedDataTypePurchaseHistory" },
+	{ "product_interaction", "NSPrivacyCollectedDataTypeProductInteraction" },
+	{ "advertising_data", "NSPrivacyCollectedDataTypeAdvertisingData" },
+	{ "other_usage_data", "NSPrivacyCollectedDataTypeOtherUsageData" },
+	{ "crash_data", "NSPrivacyCollectedDataTypeCrashData" },
+	{ "performance_data", "NSPrivacyCollectedDataTypePerformanceData" },
+	{ "other_diagnostic_data", "NSPrivacyCollectedDataTypeOtherDiagnosticData" },
+	{ "environment_scanning", "NSPrivacyCollectedDataTypeEnvironmentScanning" },
+	{ "hands", "NSPrivacyCollectedDataTypeHands" },
+	{ "head", "NSPrivacyCollectedDataTypeHead" },
+	{ "other_data_types", "NSPrivacyCollectedDataTypeOtherDataTypes" },
+};
+
+static const DataCollectionInfo data_collect_purpose_info[] = {
+	{ "Analytics", "NSPrivacyCollectedDataTypePurposeAnalytics" },
+	{ "App Functionality", "NSPrivacyCollectedDataTypePurposeAppFunctionality" },
+	{ "Developer Advertising", "NSPrivacyCollectedDataTypePurposeDeveloperAdvertising" },
+	{ "Third-party Advertising", "NSPrivacyCollectedDataTypePurposeThirdPartyAdvertising" },
+	{ "Product Personalization", "NSPrivacyCollectedDataTypePurposeProductPersonalization" },
+	{ "Other", "NSPrivacyCollectedDataTypePurposeOther" },
+};
 
 void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options) const {
 #ifdef MACOS_ENABLED
@@ -483,6 +540,25 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/network_volumes_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/removable_volumes_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use removable volumes"), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/removable_volumes_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "privacy/tracking_enabled"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "privacy/tracking_domains"), Vector<String>()));
+
+	{
+		String hint;
+		for (uint64_t i = 0; i < sizeof(data_collect_purpose_info) / sizeof(data_collect_purpose_info[0]); ++i) {
+			if (i != 0) {
+				hint += ",";
+			}
+			hint += vformat("%s:%d", data_collect_purpose_info[i].prop_name, (1 << i));
+		}
+		for (uint64_t i = 0; i < sizeof(data_collect_type_info) / sizeof(data_collect_type_info[0]); ++i) {
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/collected", data_collect_type_info[i].prop_name)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[i].prop_name)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[i].prop_name)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::INT, vformat("privacy/collected_data/%s/collection_purposes", data_collect_type_info[i].prop_name), PROPERTY_HINT_FLAGS, hint), 0));
+		}
+	}
 
 	String run_script = "#!/usr/bin/env bash\n"
 						"unzip -o -q \"{temp_dir}/{archive_name}\" -d \"{temp_dir}\"\n"
@@ -642,6 +718,85 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<EditorExportPreset> &p_pres
 	encode_uint32(total_len, &data.write[4]);
 
 	p_data = data;
+}
+
+void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist) {
+	String str;
+	String strnew;
+	str.parse_utf8((const char *)plist.ptr(), plist.size());
+	Vector<String> lines = str.split("\n");
+	for (int i = 0; i < lines.size(); i++) {
+		if (lines[i].find("$priv_collection") != -1) {
+			bool section_opened = false;
+			for (uint64_t j = 0; j < sizeof(data_collect_type_info) / sizeof(data_collect_type_info[0]); ++j) {
+				bool data_collected = p_preset->get(vformat("privacy/collected_data/%s/collected", data_collect_type_info[j].prop_name));
+				bool linked = p_preset->get(vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[j].prop_name));
+				bool tracking = p_preset->get(vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[j].prop_name));
+				int purposes = p_preset->get(vformat("privacy/collected_data/%s/collection_purposes", data_collect_type_info[j].prop_name));
+				if (data_collected) {
+					if (!section_opened) {
+						section_opened = true;
+						strnew += "\t<key>NSPrivacyCollectedDataTypes</key>\n";
+						strnew += "\t<array>\n";
+					}
+					strnew += "\t\t<dict>\n";
+					strnew += "\t\t\t<key>NSPrivacyCollectedDataType</key>\n";
+					strnew += vformat("\t\t\t<string>%s</string>\n", data_collect_type_info[j].type_name);
+					strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypeLinked</key>\n";
+					if (linked) {
+						strnew += "\t\t\t\t<true/>\n";
+					} else {
+						strnew += "\t\t\t\t<false/>\n";
+					}
+					strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypeTracking</key>\n";
+					if (tracking) {
+						strnew += "\t\t\t\t<true/>\n";
+					} else {
+						strnew += "\t\t\t\t<false/>\n";
+					}
+					if (purposes != 0) {
+						strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypePurposes</key>\n";
+						strnew += "\t\t\t\t<array>\n";
+						for (uint64_t k = 0; k < sizeof(data_collect_purpose_info) / sizeof(data_collect_purpose_info[0]); ++k) {
+							if (purposes & (1 << k)) {
+								strnew += vformat("\t\t\t\t\t<string>%s</string>\n", data_collect_purpose_info[k].type_name);
+							}
+						}
+						strnew += "\t\t\t\t</array>\n";
+					}
+					strnew += "\t\t\t</dict>\n";
+				}
+			}
+			if (section_opened) {
+				strnew += "\t</array>\n";
+			}
+		} else if (lines[i].find("$priv_tracking") != -1) {
+			bool tracking = p_preset->get("privacy/tracking_enabled");
+			strnew += "\t<key>NSPrivacyTracking</key>\n";
+			if (tracking) {
+				strnew += "\t<true/>\n";
+			} else {
+				strnew += "\t<false/>\n";
+			}
+			Vector<String> tracking_domains = p_preset->get("privacy/tracking_domains");
+			if (!tracking_domains.is_empty()) {
+				strnew += "\t<key>NSPrivacyTrackingDomains</key>\n";
+				strnew += "\t<array>\n";
+				for (const String &E : tracking_domains) {
+					strnew += "\t\t<string>" + E + "</string>\n";
+				}
+				strnew += "\t</array>\n";
+			}
+		} else {
+			strnew += lines[i] + "\n";
+		}
+	}
+
+	CharString cs = strnew.utf8();
+	plist.resize(cs.size() - 1);
+	for (int i = 0; i < cs.size() - 1; i++) {
+		plist.write[i] = cs[i];
+	}
 }
 
 void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary) {
@@ -1672,6 +1827,10 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 		if (file == "Contents/Info.plist") {
 			_fix_plist(p_preset, data, pkg_name);
+		}
+
+		if (file == "Contents/Resources/PrivacyInfo.xcprivacy") {
+			_fix_privacy_manifest(p_preset, data);
 		}
 
 		if (file.begins_with("Contents/MacOS/godot_")) {
