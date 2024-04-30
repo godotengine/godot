@@ -39,7 +39,9 @@
 
 // Version 2: changed names for Basis, AABB, Vectors, etc.
 // Version 3: new string ID for ext/subresources, breaks forward compat.
+// Version 4: PackedByteArray is now stored as base64 encoded.
 #define FORMAT_VERSION 3
+#define FORMAT_VERSION_READABLE 4
 
 #define BINARY_FORMAT_VERSION 4
 
@@ -1050,7 +1052,7 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 
 	if (tag.fields.has("format")) {
 		int fmt = tag.fields["format"];
-		if (fmt > FORMAT_VERSION) {
+		if (fmt > FORMAT_VERSION_READABLE) {
 			error_text = "Saved with newer format version";
 			_printerr();
 			error = ERR_PARSE_ERROR;
@@ -1541,7 +1543,7 @@ String ResourceLoaderText::recognize_script_class(Ref<FileAccess> p_f) {
 
 	if (tag.fields.has("format")) {
 		int fmt = tag.fields["format"];
-		if (fmt > FORMAT_VERSION) {
+		if (fmt > FORMAT_VERSION_READABLE) {
 			error_text = "Saved with newer format version";
 			_printerr();
 			return "";
@@ -1579,7 +1581,7 @@ String ResourceLoaderText::recognize(Ref<FileAccess> p_f) {
 
 	if (tag.fields.has("format")) {
 		int fmt = tag.fields["format"];
-		if (fmt > FORMAT_VERSION) {
+		if (fmt > FORMAT_VERSION_READABLE) {
 			error_text = "Saved with newer format version";
 			_printerr();
 			return "";
