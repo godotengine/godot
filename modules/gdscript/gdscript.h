@@ -365,6 +365,8 @@ class GDScriptInstance : public ScriptInstance {
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
+	void _call_implicit_ready_recursively(GDScript *p_script);
+
 public:
 	virtual Object *get_owner() { return owner; }
 
