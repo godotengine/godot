@@ -210,7 +210,8 @@ bool CollisionShape2D::is_disabled() const {
 
 bool CollisionShape2D::contains_point(const Vector2 &point)
 {
-  return shape->contains_point((point - collision_object->shape_owner_get_transform(owner_id).get_origin()).rotated(collision_object->shape_owner_get_transform(owner_id).get_rotation()));
+  return shape->contains_point((point - collision_object->shape_owner_get_transform(owner_id).get_origin()).
+    rotated(collision_object->shape_owner_get_transform(owner_id).get_rotation()));
 }
 
 void CollisionShape2D::set_one_way_collision(bool p_enable) {
