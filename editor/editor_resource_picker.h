@@ -52,6 +52,8 @@ class EditorResourcePicker : public HBoxContainer {
 	bool dropping = false;
 
 	Vector<String> inheritors_array;
+	mutable HashSet<StringName> allowed_types_without_convert;
+	mutable HashSet<StringName> allowed_types_with_convert;
 
 	Button *assign_button = nullptr;
 	TextureRect *preview_rect = nullptr;
@@ -97,7 +99,7 @@ class EditorResourcePicker : public HBoxContainer {
 	void _button_input(const Ref<InputEvent> &p_event);
 
 	String _get_resource_type(const Ref<Resource> &p_resource) const;
-	void _get_allowed_types(bool p_with_convert, HashSet<StringName> *p_vector) const;
+	void _ensure_allowed_types() const;
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
 	bool _is_type_valid(const String &p_type_name, const HashSet<StringName> &p_allowed_types) const;
 
