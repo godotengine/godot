@@ -314,7 +314,7 @@ Error OS_IOS::shell_open(const String &p_uri) {
 	return OK;
 }
 
-String OS_IOS::get_user_data_dir() const {
+String OS_IOS::get_user_data_dir(const String &p_user_dir) const {
 	static String ret;
 	if (ret.is_empty()) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);

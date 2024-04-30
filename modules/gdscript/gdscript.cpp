@@ -254,7 +254,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 
 bool GDScript::can_instantiate() const {
 #ifdef TOOLS_ENABLED
-	return valid && (tool || ScriptServer::is_scripting_enabled());
+	return valid && (tool || ScriptServer::is_scripting_enabled()) && !Engine::get_singleton()->is_recovery_mode_hint();
 #else
 	return valid;
 #endif
