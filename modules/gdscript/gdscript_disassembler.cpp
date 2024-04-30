@@ -1107,6 +1107,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				DISASSEMBLE_TYPE_ADJUST(PACKED_VECTOR3_ARRAY);
 				DISASSEMBLE_TYPE_ADJUST(PACKED_COLOR_ARRAY);
 
+			case OPCODE_CONVERT_RELATIVE_PATH: {
+				text += "convert_relative_path ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+
+				incr += 3;
+			} break;
 			case OPCODE_ASSERT: {
 				text += "assert (";
 				text += DADDR(1);

@@ -160,6 +160,7 @@ public:
 	virtual void write_newline(int p_line) = 0;
 	virtual void write_return(const Address &p_return_value) = 0;
 	virtual void write_assert(const Address &p_test, const Address &p_message) = 0;
+	virtual void write_convert_relative_path(const Address &p_target, const Address &p_path) = 0;
 
 	virtual ~GDScriptCodeGenerator() {}
 };

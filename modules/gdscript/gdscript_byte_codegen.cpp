@@ -1741,6 +1741,12 @@ void GDScriptByteCodeGenerator::write_assert(const Address &p_test, const Addres
 	append(p_message);
 }
 
+void GDScriptByteCodeGenerator::write_convert_relative_path(const Address &p_target, const Address &p_path) {
+	append_opcode(GDScriptFunction::OPCODE_CONVERT_RELATIVE_PATH);
+	append(p_target);
+	append(p_path);
+}
+
 void GDScriptByteCodeGenerator::start_block() {
 	push_stack_identifiers();
 }

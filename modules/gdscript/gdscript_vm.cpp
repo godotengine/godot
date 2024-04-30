@@ -356,6 +356,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR2_ARRAY,     \
 		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR3_ARRAY,     \
 		&&OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY,       \
+		&&OPCODE_CONVERT_RELATIVE_PATH,                \
 		&&OPCODE_ASSERT,                               \
 		&&OPCODE_BREAKPOINT,                           \
 		&&OPCODE_LINE,                                 \
@@ -3435,6 +3436,23 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_TYPE_ADJUST(PACKED_VECTOR2_ARRAY, PackedVector2Array);
 			OPCODE_TYPE_ADJUST(PACKED_VECTOR3_ARRAY, PackedVector3Array);
 			OPCODE_TYPE_ADJUST(PACKED_COLOR_ARRAY, PackedColorArray);
+
+			OPCODE(OPCODE_CONVERT_RELATIVE_PATH) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(target, 0);
+				GET_VARIANT_PTR(path_ptr, 1);
+
+				String path = *path_ptr;
+				if (path.is_relative_path()) {
+					path = _script->get_path().get_base_dir().path_join(path);
+				}
+
+				*target = path;
+
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ASSERT) {
 				CHECK_SPACE(3);

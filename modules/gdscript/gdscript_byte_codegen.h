@@ -547,6 +547,7 @@ public:
 	virtual void write_newline(int p_line) override;
 	virtual void write_return(const Address &p_return_value) override;
 	virtual void write_assert(const Address &p_test, const Address &p_message) override;
+	virtual void write_convert_relative_path(const Address &p_target, const Address &p_path) override;
 
 	virtual ~GDScriptByteCodeGenerator();
 };
