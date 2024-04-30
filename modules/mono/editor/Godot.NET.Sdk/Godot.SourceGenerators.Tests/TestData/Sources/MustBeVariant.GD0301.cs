@@ -66,6 +66,12 @@ public class MustBeVariantGD0301
         Method<Rid[]>();
     }
 
+    public void MethodCallDynamic()
+    {
+        dynamic self = this;
+        self.Method<object>();
+    }
+
     public void Method<[MustBeVariant] T>()
     {
     }
