@@ -48,6 +48,13 @@
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 #endif
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+#pragma clang diagnostic ignored "-Wswitch"
+#pragma clang diagnostic ignored "-Wunused-private-field"
+#endif
+
 #if defined(AS)
 #undef AS
 #endif
@@ -59,6 +66,10 @@
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
+#endif
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 
 using Microsoft::WRL::ComPtr;

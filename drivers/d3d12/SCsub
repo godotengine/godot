@@ -139,6 +139,12 @@ else:
         ("__REQUIRED_RPCNDR_H_VERSION__", 475),
         "HAVE_STRUCT_TIMESPEC",
     ]
+    env_d3d12_rdd.Append(
+        CXXFLAGS=[
+            "-fno-strict-aliasing",  # tex_info->desc = *(CD3DX12_RESOURCE_DESC *)&resource_desc
+        ]
+    )
+
 
 # This is needed since rendering_device_d3d12.cpp needs to include some Mesa internals.
 env_d3d12_rdd.Prepend(CPPPATH=mesa_private_inc_paths)

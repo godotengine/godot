@@ -30,15 +30,34 @@ jobs:
             # Skip debug symbols, they're way too big with MSVC.
             sconsflags: debug_symbols=no vsproj=yes vsproj_gen_only=no windows_subsystem=console
             bin: "./bin/godot.windows.editor.x86_64.exe"
+            compiler: msvc
+
+          - name: Editor with GCC compilation (target=editor, tests=yes, use_mingw=yes)
+            cache-name: windows-editor-gcc
+            target: editor
+            tests: true
+            sconsflags: debug_symbols=no windows_subsystem=console use_mingw=yes
+            bin: "./bin/godot.windows.editor.x86_64.exe"
+            compiler: gcc
+
+          - name: Editor with clang compilation (target=editor, tests=yes, use_mingw=yes, use_llvm=yes)
+            cache-name: windows-editor-clang
+            target: editor
+            tests: true
+            sconsflags: debug_symbols=no windows_subsystem=console use_mingw=yes use_llvm=yes
+            bin: "./bin/godot.windows.editor.x86_64.llvm.exe"
+            compiler: clang
 
           - name: Template (target=template_release)
             cache-name: windows-template
             target: template_release
             tests: false
             sconsflags: debug_symbols=no
+            compiler: msvc
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -55,7 +74,20 @@ jobs:
         run: python ./misc/scripts/install_d3d12_sdk_windows.py
 
       - name: Setup MSVC problem matcher
+        if: ${{ matrix.compiler == 'msvc' }}
         uses: ammaraskar/msvc-problem-matcher@master
+
+      - name: Setup GCC problem matcher
+        if: ${{ matrix.compiler != 'msvc' }}
+        uses: ammaraskar/gcc-problem-matcher@master
+
+      # "windows-latest" mingw lacks clang & will try to use the MSVC builtin instead.
+      # Circumvent by using WinLibs, which prepends its bin folder to `$PATH`.
+      - name: Setup WinLibs
+        if: ${{ matrix.compiler == 'clang' }}
+        uses: bwoodsend/setup-winlibs-action@v1
+        with:
+          with_clang: true
 
       - name: Compilation
         uses: ./.github/actions/godot-build
@@ -66,10 +98,12 @@ jobs:
           tests: ${{ matrix.tests }}
 
       - name: Prepare artifact
+        if: ${{ matrix.compiler == 'msvc' }}
         run: |
           Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
 
       - name: Upload artifact
+        if: ${{ matrix.compiler == 'msvc' }}
         uses: ./.github/actions/upload-artifact
         with:
           name: ${{ matrix.cache-name }}

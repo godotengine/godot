@@ -53,6 +53,11 @@
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
 #include "dxil_validator.h"
 #include "nir_spirv.h"
 #include "nir_to_dxil.h"
@@ -63,6 +68,10 @@ extern "C" {
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
+#endif
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 
 #if defined(_MSC_VER)
@@ -95,11 +104,6 @@ static const D3D12_RANGE VOID_RANGE = {};
 
 static const uint32_t ROOT_CONSTANT_REGISTER = GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER * (RDD::MAX_UNIFORM_SETS + 1);
 static const uint32_t RUNTIME_DATA_REGISTER = GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER * (RDD::MAX_UNIFORM_SETS + 2);
-
-#ifdef DEV_ENABLED
-//#define DEBUG_COUNT_BARRIERS
-#define CUSTOM_INFO_QUEUE_ENABLED 0
-#endif
 
 /*****************/
 /**** GENERIC ****/
@@ -1391,10 +1395,10 @@ RDD::TextureID RenderingDeviceDriverD3D12::_texture_create_shared_from_slice(Tex
 		allocation_desc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 		allocation_desc.ExtraHeapFlags = D3D12_HEAP_FLAG_ALLOW_ONLY_NON_RT_DS_TEXTURES;
 
-		if (p_slice_type != -1) {
+		if (p_slice_type != TextureSliceType(-1)) {
 #ifdef DEV_ENABLED
 			// Actual slicing is not contemplated. If ever needed, let's at least realize.
-			if (p_slice_type != -1) {
+			if (p_slice_type != TextureSliceType(-1)) {
 				uint32_t new_texture_subresorce_count = owner_tex_info->mipmaps * owner_tex_info->layers;
 				uint32_t slice_subresorce_count = p_mipmaps * p_layers;
 				DEV_ASSERT(new_texture_subresorce_count == slice_subresorce_count);
@@ -1433,7 +1437,7 @@ RDD::TextureID RenderingDeviceDriverD3D12::_texture_create_shared_from_slice(Tex
 		uav_desc.Format = RD_TO_D3D12_FORMAT[p_view.format].general_format;
 	}
 
-	if (p_slice_type != -1) {
+	if (p_slice_type != TextureSliceType(-1)) {
 		// Complete description with slicing.
 
 		switch (p_slice_type) {
@@ -1536,7 +1540,7 @@ RDD::TextureID RenderingDeviceDriverD3D12::_texture_create_shared_from_slice(Tex
 		uint32_t new_texture_subresorce_count = owner_tex_info->mipmaps * owner_tex_info->layers;
 #ifdef DEV_ENABLED
 		// Actual slicing is not contemplated. If ever needed, let's at least realize.
-		if (p_slice_type != -1) {
+		if (p_slice_type != TextureSliceType(-1)) {
 			uint32_t slice_subresorce_count = p_mipmaps * p_layers;
 			DEV_ASSERT(new_texture_subresorce_count == slice_subresorce_count);
 		}
@@ -1582,7 +1586,7 @@ RDD::TextureID RenderingDeviceDriverD3D12::_texture_create_shared_from_slice(Tex
 	}
 	tex_info->format = p_view.format;
 	tex_info->desc = new_tex_resource_desc;
-	if (p_slice_type == -1) {
+	if (p_slice_type == TextureSliceType(-1)) {
 		tex_info->base_layer = owner_tex_info->base_layer;
 		tex_info->layers = owner_tex_info->layers;
 		tex_info->base_mip = owner_tex_info->base_mip;
@@ -1741,7 +1745,7 @@ RDD::SamplerID RenderingDeviceDriverD3D12::sampler_create(const SamplerState &p_
 		slot = 1;
 	} else {
 		for (uint32_t i = 1; i < samplers.size(); i++) {
-			if (samplers[i].Filter == INT_MAX) {
+			if (samplers[i].Filter == D3D12_FILTER(INT_MAX)) {
 				slot = i;
 				break;
 			}
@@ -2383,6 +2387,9 @@ D3D12_UNORDERED_ACCESS_VIEW_DESC RenderingDeviceDriverD3D12::_make_ranged_uav_fo
 			uav_desc.Texture3D.MipSlice = mip;
 			uav_desc.Texture3D.WSize >>= p_mipmap_offset;
 		} break;
+		default: {
+			DEV_ASSERT(false);
+		}
 	}
 
 	return uav_desc;
@@ -3772,7 +3779,6 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 
 	{
 		uniform_set_info->resource_states.reserve(resource_states.size());
-		uint32_t i = 0;
 		for (const KeyValue<ResourceInfo *, NeededState> &E : resource_states) {
 			UniformSetInfo::StateRequirement sr;
 			sr.resource = E.key;
@@ -3780,7 +3786,6 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 			sr.states = E.value.states;
 			sr.shader_uniform_idx_mask = E.value.shader_uniform_idx_mask;
 			uniform_set_info->resource_states.push_back(sr);
-			i++;
 		}
 	}
 
