@@ -207,9 +207,6 @@ class CodeTextEditor : public VBoxContainer {
 
 	void _toggle_scripts_pressed();
 
-	int _get_affected_lines_from(int p_caret);
-	int _get_affected_lines_to(int p_caret);
-
 protected:
 	virtual void _load_theme_settings() {}
 	virtual void _validate_script() {}
@@ -237,11 +234,6 @@ public:
 	void convert_case(CaseStyle p_case);
 
 	void set_indent_using_spaces(bool p_use_spaces);
-
-	void move_lines_up();
-	void move_lines_down();
-	void delete_lines();
-	void duplicate_selection();
 
 	/// Toggle inline comment on currently selected lines, or on current line if nothing is selected,
 	/// by adding or removing comment delimiter
