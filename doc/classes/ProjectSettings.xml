@@ -1023,6 +1023,15 @@
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
 			Maximum undo/redo history size for [TextEdit] fields.
 		</member>
+		<member name="gui/common/use_visual_caret_movement_style" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], visual caret movement style (move between character as they appear on the screen) is preferred.
+		</member>
+		<member name="gui/common/visual_caret_selection" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], text selection use visual caret movement style (move between character as they appear on the screen).
+		</member>
+		<member name="gui/common/visual_caret_suppress_ambiguous_deletes" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], text editing controls using visual caret movement style will not allow ambiguous deletions.
+		</member>
 		<member name="gui/fonts/dynamic_fonts/use_oversampling" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">

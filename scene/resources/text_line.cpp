@@ -102,6 +102,7 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color"), &TextLine::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
 
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextLine::hit_test);
+	ClassDB::bind_method(D_METHOD("hit_test_visual", "coords"), &TextLine::hit_test_visual);
 }
 
 void TextLine::_shape() {
@@ -468,6 +469,12 @@ int TextLine::hit_test(float p_coords) const {
 	const_cast<TextLine *>(this)->_shape();
 
 	return TS->shaped_text_hit_test_position(rid, p_coords);
+}
+
+int TextLine::hit_test_visual(float p_coords) const {
+	const_cast<TextLine *>(this)->_shape();
+
+	return TS->shaped_text_hit_test_visual_position(rid, p_coords);
 }
 
 TextLine::TextLine(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {

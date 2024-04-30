@@ -217,6 +217,11 @@ public:
 		FIXED_SIZE_SCALE_ENABLED,
 	};
 
+	enum VisualCaretOperations {
+		VC_OP_BACKSPACE = 1 << 0,
+		VC_OP_DELETE = 1 << 1,
+	};
+
 	void _draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;
 
 protected:
@@ -519,6 +524,7 @@ public:
 
 	virtual int64_t shaped_text_hit_test_grapheme(const RID &p_shaped, double p_coords) const; // Return grapheme index.
 	virtual int64_t shaped_text_hit_test_position(const RID &p_shaped, double p_coords) const; // Return caret/selection position.
+	virtual int64_t shaped_text_hit_test_visual_position(const RID &p_shaped, double p_coords) const; // Return visual caret/selection position.
 
 	virtual Vector2 shaped_text_get_grapheme_bounds(const RID &p_shaped, int64_t p_pos) const;
 	virtual int64_t shaped_text_next_grapheme_pos(const RID &p_shaped, int64_t p_pos) const;
@@ -528,6 +534,12 @@ public:
 	virtual int64_t shaped_text_next_character_pos(const RID &p_shaped, int64_t p_pos) const;
 	virtual int64_t shaped_text_prev_character_pos(const RID &p_shaped, int64_t p_pos) const;
 	virtual int64_t shaped_text_closest_character_pos(const RID &p_shaped, int64_t p_pos) const;
+
+	virtual int64_t shaped_text_next_visual_character_pos(const RID &p_shaped, int64_t p_pos) const;
+	virtual int64_t shaped_text_prev_visual_character_pos(const RID &p_shaped, int64_t p_pos) const;
+	virtual BitField<VisualCaretOperations> shaped_text_allowed_visual_caret_operations(const RID &p_shaped, int64_t p_pos) const;
+	virtual Vector2i shaped_text_visual_selection_glyphs(const RID &p_shaped, int64_t p_pos) const;
+	virtual Vector2i shaped_text_visual_validate_selection(const RID &p_shaped, const Vector2i &p_glyphs, const Vector2i &p_chars) const;
 
 	// The pen position is always placed on the baseline and moveing left to right.
 	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const;
@@ -651,6 +663,7 @@ VARIANT_ENUM_CAST(TextServer::StructuredTextParser);
 VARIANT_ENUM_CAST(TextServer::FontAntialiasing);
 VARIANT_ENUM_CAST(TextServer::FontLCDSubpixelLayout);
 VARIANT_ENUM_CAST(TextServer::FixedSizeScaleMode);
+VARIANT_BITFIELD_CAST(TextServer::VisualCaretOperations);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
 GDVIRTUAL_NATIVE_PTR(CaretInfo);

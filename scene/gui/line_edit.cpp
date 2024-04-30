@@ -30,6 +30,7 @@
 
 #include "line_edit.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -77,7 +78,9 @@ void LineEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 
 		set_caret_column(cc);
 	} else {
-		if (caret_mid_grapheme_enabled) {
+		if (_is_caret_visual()) {
+			set_caret_column(TS->shaped_text_prev_visual_character_pos(text_rid, get_caret_column()));
+		} else if (caret_mid_grapheme_enabled) {
 			set_caret_column(get_caret_column() - 1);
 		} else {
 			set_caret_column(TS->shaped_text_prev_character_pos(text_rid, get_caret_column()));
@@ -110,7 +113,9 @@ void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 
 		set_caret_column(cc);
 	} else {
-		if (caret_mid_grapheme_enabled) {
+		if (_is_caret_visual()) {
+			set_caret_column(TS->shaped_text_next_visual_character_pos(text_rid, get_caret_column()));
+		} else if (caret_mid_grapheme_enabled) {
 			set_caret_column(get_caret_column() + 1);
 		} else {
 			set_caret_column(TS->shaped_text_next_character_pos(text_rid, get_caret_column()));
@@ -123,18 +128,31 @@ void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 
 void LineEdit::_move_caret_start(bool p_select) {
 	shift_selection_check_pre(p_select);
-	set_caret_column(0);
+	if (_is_caret_visual()) {
+		set_caret_column(TS->shaped_text_prev_visual_character_pos(text_rid, 0));
+	} else {
+		set_caret_column(0);
+	}
 	shift_selection_check_post(p_select);
 }
 
 void LineEdit::_move_caret_end(bool p_select) {
 	shift_selection_check_pre(p_select);
-	set_caret_column(text.length());
+	if (_is_caret_visual()) {
+		set_caret_column(TS->shaped_text_next_visual_character_pos(text_rid, text.length()));
+	} else {
+		set_caret_column(text.length());
+	}
 	shift_selection_check_post(p_select);
 }
 
 void LineEdit::_backspace(bool p_word, bool p_all_to_left) {
 	if (!editable) {
+		return;
+	}
+
+	if (_is_caret_visual() && _caret_visual_no_delete() && !TS->shaped_text_allowed_visual_caret_operations(text_rid, caret_column).has_flag(TextServer::VC_OP_BACKSPACE)) {
+		DisplayServer::get_singleton()->beep();
 		return;
 	}
 
@@ -176,6 +194,11 @@ void LineEdit::_backspace(bool p_word, bool p_all_to_left) {
 
 void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 	if (!editable) {
+		return;
+	}
+
+	if (_is_caret_visual() && _caret_visual_no_delete() && !TS->shaped_text_allowed_visual_caret_operations(text_rid, caret_column).has_flag(TextServer::VC_OP_DELETE)) {
+		DisplayServer::get_singleton()->beep();
 		return;
 	}
 
@@ -1017,12 +1040,14 @@ void LineEdit::_notification(int p_what) {
 
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.l_caret, caret_color);
 					} else {
+						TextServer::Direction bdir = TS->shaped_text_get_inferred_direction(text_rid);
+						bool vcaret = _is_caret_visual();
 						if (caret.l_caret != Rect2() && caret.l_dir == TextServer::DIRECTION_AUTO) {
 							// Draw extra marker on top of mid caret.
 							Rect2 trect = Rect2(caret.l_caret.position.x - 2.5 * caret_width, caret.l_caret.position.y, 6 * caret_width, caret_width);
 							trect.position += ofs;
 							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
-						} else if (caret.l_caret != Rect2() && caret.t_caret != Rect2() && caret.l_dir != caret.t_dir) {
+						} else if (caret.l_caret != Rect2() && caret.t_caret != Rect2() && caret.l_dir != caret.t_dir && !vcaret) {
 							// Draw extra direction marker on top of split caret.
 							float d = (caret.l_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
 							Rect2 trect = Rect2(caret.l_caret.position.x + d * caret_width, caret.l_caret.position.y + caret.l_caret.size.y - caret_width, 3 * caret_width, caret_width);
@@ -1035,14 +1060,25 @@ void LineEdit::_notification(int p_what) {
 							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
 						}
 
-						caret.l_caret.position += ofs;
-						caret.l_caret.size.x = caret_width;
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.l_caret, caret_color);
+						if (!vcaret || caret.l_dir == bdir || caret.l_dir == caret.t_dir) {
+							if (vcaret) {
+								caret.l_caret.position.y = -TS->shaped_text_get_ascent(text_rid);
+								caret.l_caret.size.y = TS->shaped_text_get_ascent(text_rid) + TS->shaped_text_get_descent(text_rid);
+							}
+							caret.l_caret.position += ofs;
+							caret.l_caret.size.x = caret_width;
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.l_caret, caret_color);
+						}
 
-						caret.t_caret.position += ofs;
-						caret.t_caret.size.x = caret_width;
-
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.t_caret, caret_color);
+						if (!vcaret || caret.t_dir == bdir || caret.l_dir == caret.t_dir) {
+							if (vcaret) {
+								caret.t_caret.position.y = -TS->shaped_text_get_ascent(text_rid);
+								caret.t_caret.size.y = TS->shaped_text_get_ascent(text_rid) + TS->shaped_text_get_descent(text_rid);
+							}
+							caret.t_caret.position += ofs;
+							caret.t_caret.size.x = caret_width;
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.t_caret, caret_color);
+						}
 					}
 				}
 				if (!ime_text.is_empty()) {
@@ -1342,7 +1378,12 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 		}
 	}
 
-	int ofs = ceil(TS->shaped_text_hit_test_position(text_rid, p_x - x_ofs - scroll_offset));
+	int ofs = 0;
+	if (_is_caret_visual()) {
+		ofs = ceil(TS->shaped_text_hit_test_visual_position(text_rid, p_x - x_ofs - scroll_offset));
+	} else {
+		ofs = ceil(TS->shaped_text_hit_test_position(text_rid, p_x - x_ofs - scroll_offset));
+	}
 	if (!caret_mid_grapheme_enabled) {
 		ofs = TS->shaped_text_closest_character_pos(text_rid, ofs);
 	}
@@ -1478,6 +1519,53 @@ float LineEdit::get_caret_blink_interval() const {
 void LineEdit::set_caret_blink_interval(const float p_interval) {
 	ERR_FAIL_COND(p_interval <= 0);
 	caret_blink_interval = p_interval;
+}
+
+bool LineEdit::_is_caret_visual() const {
+	switch (caret_caret_movement_style) {
+		case CARET_MOVEMENT_DEFAULT:
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint() && is_inside_tree() && !get_tree()->is_node_being_edited(this)) {
+				return EDITOR_GET("text_editor/appearance/caret/use_visual_caret_movement_style").operator bool();
+			}
+#endif
+			return GLOBAL_GET("gui/common/use_visual_caret_movement_style").operator bool();
+		case CARET_MOVEMENT_VISUAL:
+			return true;
+		default:
+			return false;
+	}
+}
+
+bool LineEdit::_caret_visual_no_delete() const {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint() && is_inside_tree() && !get_tree()->is_node_being_edited(this)) {
+		return EDITOR_GET("text_editor/appearance/caret/visual_caret_suppress_ambiguous_deletes").operator bool();
+	}
+#endif
+	return GLOBAL_GET("gui/common/visual_caret_suppress_ambiguous_deletes").operator bool();
+}
+
+bool LineEdit::_caret_visual_select() const {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint() && is_inside_tree() && !get_tree()->is_node_being_edited(this)) {
+		return EDITOR_GET("text_editor/appearance/caret/visual_caret_selection").operator bool();
+	}
+#endif
+	return GLOBAL_GET("gui/common/visual_caret_selection").operator bool();
+}
+
+LineEdit::CaretMovementStyle LineEdit::get_caret_movement_style() const {
+	return caret_caret_movement_style;
+}
+
+void LineEdit::set_caret_movement_style(LineEdit::CaretMovementStyle p_style) {
+	if (caret_caret_movement_style == p_style) {
+		return;
+	}
+
+	caret_caret_movement_style = p_style;
+	queue_redraw();
 }
 
 void LineEdit::_reset_caret_blink_timer() {
@@ -1894,6 +1982,19 @@ void LineEdit::selection_fill_at_caret() {
 
 	selection.begin = caret_column;
 	selection.end = selection.start_column;
+
+	if (_is_caret_visual() && _caret_visual_select()) {
+		Vector2i b_gl = TS->shaped_text_visual_selection_glyphs(text_rid, selection.begin);
+		Vector2i e_gl = TS->shaped_text_visual_selection_glyphs(text_rid, selection.end);
+		Vector2i sel;
+		if (b_gl.x < e_gl.x) {
+			sel = TS->shaped_text_visual_validate_selection(text_rid, Vector2i(b_gl.y, e_gl.x), Vector2i(selection.begin, selection.end));
+		} else {
+			sel = TS->shaped_text_visual_validate_selection(text_rid, Vector2i(b_gl.x, e_gl.y), Vector2i(selection.begin, selection.end));
+		}
+		selection.begin = sel.x;
+		selection.end = sel.y;
+	}
 
 	if (selection.end < selection.begin) {
 		int aux = selection.end;
@@ -2574,6 +2675,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_caret_force_displayed"), &LineEdit::is_caret_force_displayed);
 	ClassDB::bind_method(D_METHOD("set_caret_blink_interval", "interval"), &LineEdit::set_caret_blink_interval);
 	ClassDB::bind_method(D_METHOD("get_caret_blink_interval"), &LineEdit::get_caret_blink_interval);
+	ClassDB::bind_method(D_METHOD("set_caret_movement_style", "style"), &LineEdit::set_caret_movement_style);
+	ClassDB::bind_method(D_METHOD("get_caret_movement_style"), &LineEdit::get_caret_movement_style);
 	ClassDB::bind_method(D_METHOD("set_max_length", "chars"), &LineEdit::set_max_length);
 	ClassDB::bind_method(D_METHOD("get_max_length"), &LineEdit::get_max_length);
 	ClassDB::bind_method(D_METHOD("insert_text_at_caret", "text"), &LineEdit::insert_text_at_caret);
@@ -2658,6 +2761,10 @@ void LineEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_PASSWORD);
 	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_URL);
 
+	BIND_ENUM_CONSTANT(CARET_MOVEMENT_DEFAULT);
+	BIND_ENUM_CONSTANT(CARET_MOVEMENT_LOGICAL);
+	BIND_ENUM_CONSTANT(CARET_MOVEMENT_VISUAL);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text"), "set_placeholder", "get_placeholder");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
@@ -2684,6 +2791,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_column", PROPERTY_HINT_RANGE, "0,1000,1,or_greater"), "set_caret_column", "get_caret_column");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_force_displayed"), "set_caret_force_displayed", "is_caret_force_displayed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_mid_grapheme"), "set_caret_mid_grapheme_enabled", "is_caret_mid_grapheme_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_movement_style", PROPERTY_HINT_ENUM, "Default,Logical,Visual"), "set_caret_movement_style", "get_caret_movement_style");
 
 	ADD_GROUP("Secret", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "secret"), "set_secret", "is_secret");

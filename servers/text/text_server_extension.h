@@ -521,8 +521,10 @@ public:
 
 	virtual int64_t shaped_text_hit_test_grapheme(const RID &p_shaped, double p_coords) const override;
 	virtual int64_t shaped_text_hit_test_position(const RID &p_shaped, double p_coords) const override;
+	virtual int64_t shaped_text_hit_test_visual_position(const RID &p_shaped, double p_coords) const override;
 	GDVIRTUAL2RC(int64_t, _shaped_text_hit_test_grapheme, RID, double);
 	GDVIRTUAL2RC(int64_t, _shaped_text_hit_test_position, RID, double);
+	GDVIRTUAL2RC(int64_t, _shaped_text_hit_test_visual_position, RID, double);
 
 	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const override;
 	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const override;
@@ -544,6 +546,20 @@ public:
 	GDVIRTUAL2RC(int64_t, _shaped_text_next_character_pos, RID, int64_t);
 	GDVIRTUAL2RC(int64_t, _shaped_text_prev_character_pos, RID, int64_t);
 	GDVIRTUAL2RC(int64_t, _shaped_text_closest_character_pos, RID, int64_t);
+
+	virtual int64_t shaped_text_next_visual_character_pos(const RID &p_shaped, int64_t p_pos) const override;
+	virtual int64_t shaped_text_prev_visual_character_pos(const RID &p_shaped, int64_t p_pos) const override;
+	GDVIRTUAL2RC(int64_t, _shaped_text_next_visual_character_pos, RID, int64_t);
+	GDVIRTUAL2RC(int64_t, _shaped_text_prev_visual_character_pos, RID, int64_t);
+
+	virtual BitField<TextServer::VisualCaretOperations> shaped_text_allowed_visual_caret_operations(const RID &p_shaped, int64_t p_pos) const override;
+	GDVIRTUAL2RC(BitField<TextServer::VisualCaretOperations>, _shaped_text_allowed_visual_caret_operations, RID, int64_t);
+
+	virtual Vector2i shaped_text_visual_selection_glyphs(const RID &p_shaped, int64_t p_pos) const override;
+	GDVIRTUAL2RC(Vector2i, _shaped_text_visual_selection_glyphs, RID, int64_t);
+
+	virtual Vector2i shaped_text_visual_validate_selection(const RID &p_shaped, const Vector2i &p_glyphs, const Vector2i &p_chars) const override;
+	GDVIRTUAL3RC(Vector2i, _shaped_text_visual_validate_selection, RID, const Vector2i &, const Vector2i &);
 
 	virtual String format_number(const String &p_string, const String &p_language = "") const override;
 	virtual String parse_number(const String &p_string, const String &p_language = "") const override;

@@ -56,6 +56,12 @@ public:
 		CARET_TYPE_BLOCK
 	};
 
+	enum CaretMovementStyle {
+		CARET_MOVEMENT_DEFAULT,
+		CARET_MOVEMENT_LOGICAL,
+		CARET_MOVEMENT_VISUAL,
+	};
+
 	/* Selection */
 	enum SelectionMode {
 		SELECTION_MODE_NONE,
@@ -432,6 +438,7 @@ private:
 	bool move_caret_on_right_click = true;
 
 	bool caret_mid_grapheme_enabled = false;
+	CaretMovementStyle caret_caret_movement_style = CARET_MOVEMENT_DEFAULT;
 
 	bool multi_carets_enabled = true;
 
@@ -609,6 +616,9 @@ private:
 	void _base_remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
 
 	/* Input actions. */
+	bool _is_caret_visual() const;
+	bool _caret_visual_no_delete() const;
+	bool _caret_visual_select() const;
 	void _swap_current_input_direction();
 	void _new_line(bool p_split_current = true, bool p_above = false);
 	void _move_caret_left(bool p_select, bool p_move_by_word = false);
@@ -851,6 +861,9 @@ public:
 	void set_multiple_carets_enabled(bool p_enabled);
 	bool is_multiple_carets_enabled() const;
 
+	void set_caret_movement_style(CaretMovementStyle p_style);
+	CaretMovementStyle get_caret_movement_style() const;
+
 	int add_caret(int p_line, int p_col);
 	void remove_caret(int p_caret);
 	void remove_secondary_carets();
@@ -1048,6 +1061,7 @@ public:
 
 VARIANT_ENUM_CAST(TextEdit::EditAction);
 VARIANT_ENUM_CAST(TextEdit::CaretType);
+VARIANT_ENUM_CAST(TextEdit::CaretMovementStyle);
 VARIANT_ENUM_CAST(TextEdit::LineWrappingMode);
 VARIANT_ENUM_CAST(TextEdit::SelectionMode);
 VARIANT_ENUM_CAST(TextEdit::GutterType);

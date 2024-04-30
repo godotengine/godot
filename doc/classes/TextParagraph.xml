@@ -221,7 +221,14 @@
 			<return type="int" />
 			<param index="0" name="coords" type="Vector2" />
 			<description>
-				Returns caret character offset at the specified coordinates. This function always returns a valid position.
+				Returns logical caret character offset at the specified coordinates. This function always returns a valid position.
+			</description>
+		</method>
+		<method name="hit_test_visual" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="coords" type="Vector2" />
+			<description>
+				Returns visual caret character offset at the specified coordinates. This function always returns a valid position.
 			</description>
 		</method>
 		<method name="resize_object">

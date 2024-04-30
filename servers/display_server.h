@@ -570,6 +570,8 @@ public:
 	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback);
 	virtual void delete_status_indicator(IndicatorID p_id);
 
+	virtual void beep() const;
+
 	enum Context {
 		CONTEXT_EDITOR,
 		CONTEXT_PROJECTMAN,

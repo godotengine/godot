@@ -10,6 +10,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="beep" qualifiers="const">
+			<return type="void" />
+			<description>
+				Plays the system beep sound, if possible.
+				[b]Note:[/b] This method is implemented on macOS, Linux (X11) and Windows.
+			</description>
+		</method>
 		<method name="clipboard_get" qualifiers="const">
 			<return type="String" />
 			<description>

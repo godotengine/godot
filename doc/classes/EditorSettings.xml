@@ -955,6 +955,15 @@
 		<member name="text_editor/appearance/caret/type" type="int" setter="" getter="">
 			The shape of the caret to use in the script editor. [b]Line[/b] displays a vertical line to the left of the current character, whereas [b]Block[/b] displays an outline over the current character.
 		</member>
+		<member name="text_editor/appearance/caret/use_visual_caret_movement_style" type="bool" setter="" getter="">
+			If [code]true[/code], visual caret movement style (move between character as they appear on the screen) is preferred.
+		</member>
+		<member name="text_editor/appearance/caret/visual_caret_selection" type="bool" setter="" getter="">
+			If [code]true[/code], text selection use visual caret movement style (move between character as they appear on the screen).
+		</member>
+		<member name="text_editor/appearance/caret/visual_caret_suppress_ambiguous_deletes" type="bool" setter="" getter="">
+			If [code]true[/code], text editing controls using visual caret movement style will not allow ambiguous deletions.
+		</member>
 		<member name="text_editor/appearance/guidelines/line_length_guideline_hard_column" type="int" setter="" getter="">
 			The column at which to display a subtle line as a line length guideline for scripts. This should generally be greater than [member text_editor/appearance/guidelines/line_length_guideline_soft_column].
 		</member>

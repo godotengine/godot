@@ -1201,6 +1201,14 @@
 				Adds text span and font to draw it to the text buffer.
 			</description>
 		</method>
+		<method name="shaped_text_allowed_visual_caret_operations" qualifiers="const">
+			<return type="int" enum="TextServer.VisualCaretOperations" is_bitfield="true" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns set of possible non-ambiguous edit operations for the visual caret is at specified character position.
+			</description>
+		</method>
 		<method name="shaped_text_clear">
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
@@ -1530,7 +1538,15 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="coords" type="float" />
 			<description>
-				Returns caret character offset at the specified pixel offset at the baseline. This function always returns a valid position.
+				Returns logical caret character offset at the specified pixel offset at the baseline. This function always returns a valid position.
+			</description>
+		</method>
+		<method name="shaped_text_hit_test_visual_position" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="coords" type="float" />
+			<description>
+				Returns visual caret character offset at the specified pixel offset at the baseline. This function always returns a valid position.
 			</description>
 		</method>
 		<method name="shaped_text_is_ready" qualifiers="const">
@@ -1556,6 +1572,14 @@
 				Returns grapheme end position closest to the [param pos].
 			</description>
 		</method>
+		<method name="shaped_text_next_visual_character_pos" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns character position corresponding to the next visual caret position.
+			</description>
+		</method>
 		<method name="shaped_text_overrun_trim_to_width">
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
@@ -1579,6 +1603,14 @@
 			<param index="1" name="pos" type="int" />
 			<description>
 				Returns grapheme start position closest to the [param pos].
+			</description>
+		</method>
+		<method name="shaped_text_prev_visual_character_pos" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns character position corresponding to the previous visual caret position.
 			</description>
 		</method>
 		<method name="shaped_text_resize_object">
@@ -1690,6 +1722,22 @@
 			<param index="1" name="tab_stops" type="PackedFloat32Array" />
 			<description>
 				Aligns shaped text to the given tab-stops.
+			</description>
+		</method>
+		<method name="shaped_text_visual_selection_glyphs" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns selection glyph indices for visual caret.
+			</description>
+		</method>
+		<method name="shaped_text_visual_validate_selection" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="glyphs" type="Vector2i" />
+			<param index="2" name="chars" type="Vector2i" />
+			<description>
 			</description>
 		</method>
 		<method name="spoof_check" qualifiers="const">
@@ -2110,6 +2158,12 @@
 		</constant>
 		<constant name="FIXED_SIZE_SCALE_ENABLED" value="2" enum="FixedSizeScaleMode">
 			Bitmap font is scaled to an arbitrary (fractional) size. This is the recommended option for non-pixel art fonts.
+		</constant>
+		<constant name="VC_OP_BACKSPACE" value="1" enum="VisualCaretOperations" is_bitfield="true">
+			Visual caret "delete" (remove next logical character) operation.
+		</constant>
+		<constant name="VC_OP_DELETE" value="2" enum="VisualCaretOperations" is_bitfield="true">
+			Visual caret "backspace" (remove previous logical character) operation.
 		</constant>
 	</constants>
 </class>

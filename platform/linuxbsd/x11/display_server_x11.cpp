@@ -5177,6 +5177,10 @@ void DisplayServerX11::set_context(Context p_context) {
 	}
 }
 
+void DisplayServerX11::beep() const {
+	XBell(x11_display, 0);
+}
+
 void DisplayServerX11::set_native_icon(const String &p_filename) {
 	WARN_PRINT("Native icon not supported by this display server.");
 }

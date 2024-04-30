@@ -151,6 +151,7 @@ public:
 	void draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 
 	int hit_test(const Point2 &p_coords) const;
+	int hit_test_visual(const Point2 &p_coords) const;
 
 	Mutex &get_mutex() const { return _thread_safe_; };
 
