@@ -658,7 +658,10 @@ namespace Godot.SourceGenerators
                 var elementType = MarshalUtils.GetArrayElementType(type);
 
                 if (elementType == null)
-                    return false; // Non-generic Array, so there's no hint to add
+                    return false; // Non-generic Array, so there's no hint to add.
+
+                if (elementType.TypeKind == TypeKind.TypeParameter)
+                    return false; // The generic is not constructed, we can't really hint anything.
 
                 var elementMarshalType = MarshalUtils.ConvertManagedTypeToMarshalType(elementType, typeCache)!.Value;
                 var elementVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(elementMarshalType)!.Value;
