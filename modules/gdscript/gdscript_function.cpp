@@ -163,6 +163,10 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 		return Variant();
 	}
 
+	if (cancelled) {
+		return Variant();
+	}
+
 	return resume(arg);
 }
 
@@ -182,6 +186,9 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 		if (state.instance && !instances_list.in_list()) {
 			return false;
 		}
+		if (cancelled) {
+			return false;
+		}
 	}
 
 	return true;
@@ -189,6 +196,11 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	ERR_FAIL_NULL_V(function, Variant());
+	if (first_state.is_valid()) {
+		ERR_FAIL_COND_V_MSG(first_state->cancelled, Variant(), "Attempt to explicitly resume a cancelled coroutine.");
+	} else {
+		ERR_FAIL_COND_V_MSG(cancelled, Variant(), "Attempt to explicitly resume a cancelled coroutine.");
+	}
 	{
 		MutexLock lock(GDScriptLanguage::singleton->mutex);
 
@@ -211,18 +223,23 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 		instances_list.remove_from_list();
 	}
 
+	GDScriptFunctionState *first_state_ptr = first_state.is_valid() ? first_state.ptr() : this;
+
 	state.result = p_arg;
 	Callable::CallError err;
-	Variant ret = function->call(nullptr, nullptr, 0, err, &state);
 
-	bool completed = true;
+	first_state_ptr->running = true;
+	Variant ret = function->call(nullptr, nullptr, 0, err, &state);
+	first_state_ptr->running = false;
+
+	first_state_ptr->completed = true;
 
 	// If the return value is a GDScriptFunctionState reference,
 	// then the function did await again after resuming.
 	if (ret.is_ref_counted()) {
 		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
 		if (gdfs && gdfs->function == function) {
-			completed = false;
+			first_state_ptr->completed = false;
 			gdfs->first_state = first_state.is_valid() ? first_state : Ref<GDScriptFunctionState>(this);
 		}
 	}
@@ -230,12 +247,8 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	function = nullptr; //cleaned up;
 	state.result = Variant();
 
-	if (completed) {
-		if (first_state.is_valid()) {
-			first_state->emit_signal(SNAME("completed"), ret);
-		} else {
-			emit_signal(SNAME("completed"), ret);
-		}
+	if (first_state_ptr->completed) {
+		first_state_ptr->emit_signal(SNAME("completed"), ret);
 
 #ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active()) {
@@ -247,6 +260,26 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	}
 
 	return ret;
+}
+
+void GDScriptFunctionState::cancel() {
+	GDScriptFunctionState *gdfs;
+	if (first_state.is_valid()) {
+		gdfs = first_state.ptr();
+	} else {
+		gdfs = this;
+	}
+	ERR_FAIL_COND_MSG(gdfs->completed, "Attempt to cancel a completed coroutine.");
+	ERR_FAIL_COND_MSG(gdfs->running, "Attempt to cancel a running coroutine.");
+	if (!gdfs->cancelled) {
+		gdfs->cancelled = true;
+		gdfs->completed = true;
+		gdfs->emit_signal(SNAME("completed"), Variant());
+		scripts_list.remove_from_list();
+		instances_list.remove_from_list();
+		_clear_connections();
+		_clear_stack();
+	}
 }
 
 void GDScriptFunctionState::_clear_stack() {
@@ -272,6 +305,7 @@ void GDScriptFunctionState::_clear_connections() {
 void GDScriptFunctionState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("resume", "arg"), &GDScriptFunctionState::resume, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("is_valid", "extended_check"), &GDScriptFunctionState::is_valid, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("cancel"), &GDScriptFunctionState::cancel);
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &GDScriptFunctionState::_signal_callback, MethodInfo("_signal_callback"));
 
 	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(Variant::NIL, "result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
