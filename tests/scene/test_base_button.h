@@ -47,21 +47,84 @@ TEST_CASE("[SceneTree][BaseButton]") {
 	Window *root = SceneTree::get_singleton()->get_root();
 	root->add_child(base_button);
 
+	Point2i onButtonTopLeft = Point2i(5, 5);
+	Point2i onButtonBottomRight = Point2i(54, 54);
+	Point2i offButtonTopLeft = Point2i(4, 4);
+	Point2i offButtonBottomRight = Point2i(55, 55);
+
+	Array args1;
+	Array empty_args;
+	empty_args.push_back(args1);
+
+	SIGNAL_WATCH(base_button, "pressed");
+	SIGNAL_WATCH(base_button, "button_down");
+	SIGNAL_WATCH(base_button, "button_up");
+	SIGNAL_WATCH(base_button, "toggled");
+
 	SUBCASE("[BaseButton][Hovering] is_hovered is updated when mouse enters and exits") {
 		CHECK_FALSE(base_button->is_hovered());
-		SEND_GUI_MOUSE_MOTION_EVENT(Point2i(0, 0), MouseButtonMask::NONE, Key::NONE);
+		SEND_GUI_MOUSE_MOTION_EVENT(offButtonTopLeft, MouseButtonMask::NONE, Key::NONE);
 		CHECK_FALSE(base_button->is_hovered());
-		SEND_GUI_MOUSE_MOTION_EVENT(Point2i(5, 5), MouseButtonMask::NONE, Key::NONE);
+		SEND_GUI_MOUSE_MOTION_EVENT(onButtonTopLeft, MouseButtonMask::NONE, Key::NONE);
 		CHECK(base_button->is_hovered());
-		SEND_GUI_MOUSE_MOTION_EVENT(Point2i(54, 54), MouseButtonMask::NONE, Key::NONE);
+		SEND_GUI_MOUSE_MOTION_EVENT(onButtonBottomRight, MouseButtonMask::NONE, Key::NONE);
 		CHECK(base_button->is_hovered());
-		SEND_GUI_MOUSE_MOTION_EVENT(Point2i(55, 55), MouseButtonMask::NONE, Key::NONE);
+		SEND_GUI_MOUSE_MOTION_EVENT(offButtonBottomRight, MouseButtonMask::NONE, Key::NONE);
 		CHECK_FALSE(base_button->is_hovered());
 	}
 
-	SUBCASE("[BaseButton][Pressing] is_pressing is updated when mouse clicks and releases") {}
-	SUBCASE("[BaseButton][Pressed] is_pressed is updated when mouse clicks and releases") {}
+	SUBCASE("[BaseButton][Pressing] is_pressing is updated when mouse clicks and releases") {
+		CHECK_FALSE(base_button->is_pressing());
+		SIGNAL_CHECK_FALSE("pressed");
+		SIGNAL_CHECK_FALSE("button_down");
+		SIGNAL_CHECK_FALSE("button_up");
+		
+		SEND_GUI_MOUSE_BUTTON_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		
+		CHECK(base_button->is_pressing());
+		SIGNAL_CHECK_FALSE("pressed");
+		SIGNAL_CHECK("button_down", empty_args);
+		SIGNAL_CHECK_FALSE("button_up")
+		
+		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		
+		CHECK_FALSE(base_button->is_pressing());
+		SIGNAL_CHECK("pressed", empty_args);
+		SIGNAL_CHECK_FALSE("button_down");
+		SIGNAL_CHECK("button_up", empty_args)
+	}
+
+	SUBCASE("[BaseButton][Pressed] is_pressed is updated when mouse clicks and releases") {
+		// TODO signal checks
+		CHECK_FALSE(base_button->is_pressed());
+		SEND_GUI_MOUSE_BUTTON_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		CHECK(base_button->is_pressed());
+		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		CHECK_FALSE(base_button->is_pressed());
+
+		SUBCASE("is_pressed is updated when mouse releases for toggle_mode") {
+			// TODO signal checks
+			base_button->set_toggle_mode(true);
+			CHECK_FALSE(base_button->is_pressed());
+			SEND_GUI_MOUSE_BUTTON_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+			CHECK_FALSE(base_button->is_pressed());
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+			CHECK(base_button->is_pressed());
+			SEND_GUI_MOUSE_BUTTON_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+			CHECK(base_button->is_pressed());
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+			CHECK_FALSE(base_button->is_pressed());
+			base_button->set_toggle_mode(false);
+		}
+	}
+
 	SUBCASE("[BaseButton][Set Pressed] set_pressed works") {}
+
+	// get_draw_mode
+	SIGNAL_UNWATCH(base_button, "pressed");
+	SIGNAL_UNWATCH(base_button, "button_down");
+	SIGNAL_UNWATCH(base_button, "button_up");
+	SIGNAL_WATCH(base_button, "toggled");
 }
 
 } // namespace TestBaseButton
