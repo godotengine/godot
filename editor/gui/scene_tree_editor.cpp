@@ -570,8 +570,13 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			Color button_color = Color(1, 1, 1);
 			// Can't set tooltip after adding button, need to do it before.
 			if (scr->is_tool()) {
-				additional_notes += "\n" + TTR("This script is currently running in the editor.");
-				button_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+				if (Engine::get_singleton()->is_recovery_mode_hint()) {
+					additional_notes += "\n" + TTR("This script can run in the editor.\nIt is currently disabled due to recovery mode.");
+					button_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+				} else {
+					additional_notes += "\n" + TTR("This script is currently running in the editor.");
+					button_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+				}
 			}
 			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr) {
 				additional_notes += "\n" + TTR("This script is a custom type.");

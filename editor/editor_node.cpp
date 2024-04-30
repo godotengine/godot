@@ -730,6 +730,10 @@ void EditorNode::_notification(int p_what) {
 			CanvasItemEditor::ThemePreviewMode theme_preview_mode = (CanvasItemEditor::ThemePreviewMode)(int)EditorSettings::get_singleton()->get_project_metadata("2d_editor", "theme_preview", CanvasItemEditor::THEME_PREVIEW_PROJECT);
 			update_preview_themes(theme_preview_mode);
 
+			if (Engine::get_singleton()->is_recovery_mode_hint()) {
+				EditorToaster::get_singleton()->popup_str(TTR("Recovery Mode is enabled. Editor functionality has been restricted."), EditorToaster::SEVERITY_WARNING);
+			}
+
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
@@ -1152,7 +1156,13 @@ void EditorNode::_sources_changed(bool p_exist) {
 		if (!singleton->cmdline_export_mode) {
 			EditorResourcePreview::get_singleton()->start();
 		}
+
+		get_tree()->create_timer(1.0f)->connect("timeout", callable_mp(this, &EditorNode::_remove_lock_file));
 	}
+}
+
+void EditorNode::_remove_lock_file() {
+	OS::get_singleton()->remove_lock_file();
 }
 
 void EditorNode::_scan_external_changes() {
@@ -5382,6 +5392,10 @@ void EditorNode::_save_window_settings_to_config(Ref<ConfigFile> p_layout, const
 }
 
 void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout) {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return;
+	}
+
 	if (!bool(EDITOR_GET("interface/scene_tabs/restore_scenes_on_load"))) {
 		return;
 	}
@@ -6613,7 +6627,9 @@ void EditorNode::_feature_profile_changed() {
 
 		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_3D, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
 		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_SCRIPT, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
-		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_GAME, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_GAME));
+		if (!Engine::get_singleton()->is_recovery_mode_hint()) {
+			editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_GAME, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_GAME));
+		}
 		if (AssetLibraryEditorPlugin::is_available()) {
 			editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_ASSETLIB, !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
 		}
@@ -6624,7 +6640,9 @@ void EditorNode::_feature_profile_changed() {
 		editor_dock_manager->set_dock_enabled(history_dock, true);
 		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_3D, true);
 		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_SCRIPT, true);
-		editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_GAME, true);
+		if (!Engine::get_singleton()->is_recovery_mode_hint()) {
+			editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_GAME, true);
+		}
 		if (AssetLibraryEditorPlugin::is_available()) {
 			editor_main_screen->set_button_enabled(EditorMainScreen::EDITOR_ASSETLIB, true);
 		}
@@ -7761,7 +7779,10 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(CanvasItemEditorPlugin));
 	add_editor_plugin(memnew(Node3DEditorPlugin));
 	add_editor_plugin(memnew(ScriptEditorPlugin));
-	add_editor_plugin(memnew(GameViewPlugin));
+
+	if (!Engine::get_singleton()->is_recovery_mode_hint()) {
+		add_editor_plugin(memnew(GameViewPlugin));
+	}
 
 	EditorAudioBuses *audio_bus_editor = EditorAudioBuses::register_editor();
 
