@@ -191,6 +191,7 @@ struct LookupSegmentArray
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  first <= last &&
 		  valuesZ.sanitize (c, base, last - first + 1));
   }
@@ -199,6 +200,7 @@ struct LookupSegmentArray
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  first <= last &&
 		  valuesZ.sanitize (c, base, last - first + 1, std::forward<Ts> (ds)...));
   }
@@ -360,6 +362,7 @@ struct LookupFormat10
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  valueSize <= 4 &&
 		  valueArrayZ.sanitize (c, glyphCount * valueSize));
   }
@@ -415,6 +418,7 @@ struct Lookup
   {
     TRACE_SANITIZE (this);
     if (!u.format.sanitize (c)) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case 0: return_trace (u.format0.sanitize (c));
     case 2: return_trace (u.format2.sanitize (c));
@@ -429,6 +433,7 @@ struct Lookup
   {
     TRACE_SANITIZE (this);
     if (!u.format.sanitize (c)) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case 0: return_trace (u.format0.sanitize (c, base));
     case 2: return_trace (u.format2.sanitize (c, base));
@@ -558,6 +563,7 @@ struct StateTable
   {
     TRACE_SANITIZE (this);
     if (unlikely (!(c->check_struct (this) &&
+		    hb_barrier () &&
 		    nClasses >= 4 /* Ensure pre-defined classes fit.  */ &&
 		    classTable.sanitize (c, this)))) return_trace (false);
 
@@ -851,43 +857,41 @@ struct StateTableDriver
        *
        *   https://github.com/harfbuzz/harfbuzz/issues/2860
        */
-      const EntryT *wouldbe_entry;
-      bool safe_to_break =
-	/* 1. */
-	!c->is_actionable (this, entry)
-      &&
-	/* 2. */
-	(
-	  /* 2a. */
-	  state == StateTableT::STATE_START_OF_TEXT
-	||
-	  /* 2b. */
-	  (
-	    (entry.flags & context_t::DontAdvance) &&
-	    next_state == StateTableT::STATE_START_OF_TEXT
-	  )
-	||
-	  /* 2c. */
-	  (
-	    wouldbe_entry = &machine.get_entry (StateTableT::STATE_START_OF_TEXT, klass)
-	  ,
-	    /* 2c'. */
-	    !c->is_actionable (this, *wouldbe_entry)
-	  &&
-	    /* 2c". */
-	    (
-	      next_state == machine.new_state (wouldbe_entry->newState)
-	    &&
-	      (entry.flags & context_t::DontAdvance) == (wouldbe_entry->flags & context_t::DontAdvance)
-	    )
-	  )
-	)
-      &&
-	/* 3. */
-	!c->is_actionable (this, machine.get_entry (state, StateTableT::CLASS_END_OF_TEXT))
-      ;
 
-      if (!safe_to_break && buffer->backtrack_len () && buffer->idx < buffer->len)
+      const auto is_safe_to_break_extra = [&]()
+      {
+          /* 2c. */
+          const auto wouldbe_entry = machine.get_entry(StateTableT::STATE_START_OF_TEXT, klass);
+      
+          /* 2c'. */
+          if (c->is_actionable (this, wouldbe_entry))
+              return false;
+      
+          /* 2c". */
+          return next_state == machine.new_state(wouldbe_entry.newState)
+              && (entry.flags & context_t::DontAdvance) == (wouldbe_entry.flags & context_t::DontAdvance);
+      };
+      
+      const auto is_safe_to_break = [&]()
+      {
+          /* 1. */
+          if (c->is_actionable (this, entry))
+              return false;
+      
+          /* 2. */
+          // This one is meh, I know...
+          const auto ok =
+                 state == StateTableT::STATE_START_OF_TEXT
+              || ((entry.flags & context_t::DontAdvance) && next_state == StateTableT::STATE_START_OF_TEXT)
+              || is_safe_to_break_extra();
+          if (!ok)
+              return false;
+      
+          /* 3. */
+          return !c->is_actionable (this, machine.get_entry (state, StateTableT::CLASS_END_OF_TEXT));
+      };
+
+      if (!is_safe_to_break () && buffer->backtrack_len () && buffer->idx < buffer->len)
 	buffer->unsafe_to_break_from_outbuffer (buffer->backtrack_len () - 1, buffer->idx + 1);
 
       c->transition (this, entry);

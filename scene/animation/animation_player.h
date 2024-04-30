@@ -111,6 +111,9 @@ private:
 	void _process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started, bool p_is_current = false);
 	void _blend_playback_data(double p_delta, bool p_started);
 	void _stop_internal(bool p_reset, bool p_keep_state);
+	void _check_immediately_after_start();
+
+	float get_current_blend_amount();
 
 	bool playing = false;
 
@@ -125,6 +128,7 @@ protected:
 
 	// Make animation instances.
 	virtual bool _blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map) override;
+	virtual void _blend_capture(double p_delta) override;
 	virtual void _blend_post_process() override;
 
 	virtual void _animation_removed(const StringName &p_name, const StringName &p_library) override;
@@ -138,6 +142,8 @@ protected:
 	void _set_root_bind_compat_80813(const NodePath &p_root);
 	NodePath _get_root_bind_compat_80813() const;
 	void _seek_bind_compat_80813(double p_time, bool p_update = false);
+	void _play_compat_84906(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
+	void _play_backwards_compat_84906(const StringName &p_name = StringName(), double p_custom_blend = -1);
 
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
@@ -154,6 +160,7 @@ public:
 
 	void play(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void play_backwards(const StringName &p_name = StringName(), double p_custom_blend = -1);
+	void play_with_capture(const StringName &p_name, double p_duration = -1.0, double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false, Tween::TransitionType p_trans_type = Tween::TRANS_LINEAR, Tween::EaseType p_ease_type = Tween::EASE_IN);
 	void queue(const StringName &p_name);
 	Vector<String> get_queue();
 	void clear_queue();
@@ -181,7 +188,11 @@ public:
 	double get_current_animation_position() const;
 	double get_current_animation_length() const;
 
+#ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
+
+	virtual void advance(double p_time) override;
 
 	AnimationPlayer();
 	~AnimationPlayer();

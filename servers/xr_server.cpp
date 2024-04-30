@@ -30,8 +30,12 @@
 
 #include "xr_server.h"
 #include "core/config/project_settings.h"
+#include "xr/xr_body_tracker.h"
+#include "xr/xr_face_tracker.h"
+#include "xr/xr_hand_tracker.h"
 #include "xr/xr_interface.h"
 #include "xr/xr_positional_tracker.h"
+#include "xr_server.compat.inc"
 
 XRServer::XRMode XRServer::xr_mode = XRMODE_DEFAULT;
 
@@ -55,6 +59,7 @@ void XRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_world_origin"), &XRServer::get_world_origin);
 	ClassDB::bind_method(D_METHOD("set_world_origin", "world_origin"), &XRServer::set_world_origin);
 	ClassDB::bind_method(D_METHOD("get_reference_frame"), &XRServer::get_reference_frame);
+	ClassDB::bind_method(D_METHOD("clear_reference_frame"), &XRServer::get_reference_frame);
 	ClassDB::bind_method(D_METHOD("center_on_hmd", "rotation_mode", "keep_height"), &XRServer::center_on_hmd);
 	ClassDB::bind_method(D_METHOD("get_hmd_transform"), &XRServer::get_hmd_transform);
 
@@ -82,6 +87,9 @@ void XRServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRACKER_CONTROLLER);
 	BIND_ENUM_CONSTANT(TRACKER_BASESTATION);
 	BIND_ENUM_CONSTANT(TRACKER_ANCHOR);
+	BIND_ENUM_CONSTANT(TRACKER_HAND);
+	BIND_ENUM_CONSTANT(TRACKER_BODY);
+	BIND_ENUM_CONSTANT(TRACKER_FACE);
 	BIND_ENUM_CONSTANT(TRACKER_ANY_KNOWN);
 	BIND_ENUM_CONSTANT(TRACKER_UNKNOWN);
 	BIND_ENUM_CONSTANT(TRACKER_ANY);
@@ -129,12 +137,6 @@ void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 		return;
 	}
 
-	if (primary_interface->get_play_area_mode() == XRInterface::XR_PLAY_AREA_STAGE) {
-		// center_on_hmd is not available in this mode
-		reference_frame = Transform3D();
-		return;
-	}
-
 	// clear our current reference frame or we'll end up double adjusting it
 	reference_frame = Transform3D();
 
@@ -163,6 +165,10 @@ void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 
 	reference_frame = new_reference_frame.inverse();
 };
+
+void XRServer::clear_reference_frame() {
+	reference_frame = Transform3D();
+}
 
 Transform3D XRServer::get_hmd_transform() {
 	Transform3D hmd_transform;
@@ -198,9 +204,7 @@ void XRServer::remove_interface(const Ref<XRInterface> &p_interface) {
 	};
 
 	ERR_FAIL_COND_MSG(idx == -1, "Interface not found.");
-
-	print_verbose("XR: Removed interface" + p_interface->get_name());
-
+	print_verbose("XR: Removed interface \"" + p_interface->get_name() + "\"");
 	emit_signal(SNAME("interface_removed"), p_interface->get_name());
 	interfaces.remove_at(idx);
 };
@@ -254,7 +258,7 @@ void XRServer::set_primary_interface(const Ref<XRInterface> &p_primary_interface
 	}
 };
 
-void XRServer::add_tracker(Ref<XRPositionalTracker> p_tracker) {
+void XRServer::add_tracker(const Ref<XRTracker> &p_tracker) {
 	ERR_FAIL_COND(p_tracker.is_null());
 
 	StringName tracker_name = p_tracker->get_tracker_name();
@@ -270,7 +274,7 @@ void XRServer::add_tracker(Ref<XRPositionalTracker> p_tracker) {
 	}
 };
 
-void XRServer::remove_tracker(Ref<XRPositionalTracker> p_tracker) {
+void XRServer::remove_tracker(const Ref<XRTracker> &p_tracker) {
 	ERR_FAIL_COND(p_tracker.is_null());
 
 	StringName tracker_name = p_tracker->get_tracker_name();
@@ -296,12 +300,12 @@ Dictionary XRServer::get_trackers(int p_tracker_types) {
 	return res;
 }
 
-Ref<XRPositionalTracker> XRServer::get_tracker(const StringName &p_name) const {
+Ref<XRTracker> XRServer::get_tracker(const StringName &p_name) const {
 	if (trackers.has(p_name)) {
 		return trackers[p_name];
 	} else {
 		// tracker hasn't been registered yet, which is fine, no need to spam the error log...
-		return Ref<XRPositionalTracker>();
+		return Ref<XRTracker>();
 	}
 };
 
@@ -404,14 +408,8 @@ XRServer::XRServer() {
 XRServer::~XRServer() {
 	primary_interface.unref();
 
-	while (interfaces.size() > 0) {
-		interfaces.remove_at(0);
-	}
-
-	// TODO pretty sure there is a clear function or something...
-	while (trackers.size() > 0) {
-		trackers.erase(trackers.get_key_at_index(0));
-	}
+	interfaces.clear();
+	trackers.clear();
 
 	singleton = nullptr;
 };

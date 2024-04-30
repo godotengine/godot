@@ -859,7 +859,7 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 }
 
 void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) {
-	ERR_FAIL_COND(p_layers.size() == 0);
+	ERR_FAIL_COND(p_layers.is_empty());
 
 	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP && p_layers.size() != 6);
 	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY && (p_layers.size() < 6 || (p_layers.size() % 6) != 0));
@@ -971,7 +971,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 }
 
 void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
-	ERR_FAIL_COND(p_data.size() == 0);
+	ERR_FAIL_COND(p_data.is_empty());
 
 	Image::Image3DValidateError verr = Image::validate_3d_image(p_format, p_width, p_height, p_depth, p_mipmaps, p_data);
 	if (verr != Image::VALIDATE_3D_OK) {
@@ -1269,7 +1269,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 	}
 #endif
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
-	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
+	ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 	Ref<Image> image;
 
 	// Expand RGB10_A2 into RGBAH. This is needed for capturing viewport data
@@ -1318,7 +1318,7 @@ Ref<Image> TextureStorage::texture_2d_layer_get(RID p_texture, int p_layer) cons
 	ERR_FAIL_NULL_V(tex, Ref<Image>());
 
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, p_layer);
-	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
+	ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 	Ref<Image> image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
 	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 	if (tex->format != tex->validated_format) {
@@ -1557,9 +1557,9 @@ uint64_t TextureStorage::texture_get_native_handle(RID p_texture, bool p_srgb) c
 	ERR_FAIL_NULL_V(tex, 0);
 
 	if (p_srgb && tex->rd_texture_srgb.is_valid()) {
-		return RD::get_singleton()->texture_get_native_handle(tex->rd_texture_srgb);
+		return RD::get_singleton()->get_driver_resource(RD::DRIVER_RESOURCE_TEXTURE, tex->rd_texture_srgb);
 	} else {
-		return RD::get_singleton()->texture_get_native_handle(tex->rd_texture);
+		return RD::get_singleton()->get_driver_resource(RD::DRIVER_RESOURCE_TEXTURE, tex->rd_texture);
 	}
 }
 
@@ -2552,7 +2552,7 @@ void TextureStorage::update_decal_atlas() {
 		//generate atlas
 		Vector<DecalAtlas::SortItem> itemsv;
 		itemsv.resize(decal_atlas.textures.size());
-		int base_size = 8;
+		uint32_t base_size = 8;
 
 		int idx = 0;
 
@@ -2565,7 +2565,7 @@ void TextureStorage::update_decal_atlas() {
 			si.size.height = (src_tex->height / border) + 1;
 			si.pixel_size = Size2i(src_tex->width, src_tex->height);
 
-			if (base_size < si.size.width) {
+			if (base_size < (uint32_t)si.size.width) {
 				base_size = nearest_power_of_2_templated(si.size.width);
 			}
 
@@ -2596,7 +2596,7 @@ void TextureStorage::update_decal_atlas() {
 				DecalAtlas::SortItem &si = items[i];
 				int best_idx = -1;
 				int best_height = 0x7FFFFFFF;
-				for (int j = 0; j <= base_size - si.size.width; j++) {
+				for (uint32_t j = 0; j <= base_size - si.size.width; j++) {
 					int height = 0;
 					for (int k = 0; k < si.size.width; k++) {
 						int h = v_offsets[k + j];
@@ -2627,7 +2627,7 @@ void TextureStorage::update_decal_atlas() {
 				}
 			}
 
-			if (max_height <= base_size * 2) {
+			if ((uint32_t)max_height <= base_size * 2) {
 				atlas_height = max_height;
 				break; //good ratio, break;
 			}
@@ -2703,7 +2703,7 @@ void TextureStorage::update_decal_atlas() {
 				Vector<Color> cc;
 				cc.push_back(clear_color);
 
-				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, cc);
+				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, cc);
 
 				for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
@@ -2862,7 +2862,7 @@ void TextureStorage::update_decal_buffer(const PagedArray<RID> &p_decals, const 
 		Decal *decal = decal_sort[i].decal;
 
 		if (using_forward_ids) {
-			forward_id_storage->map_forward_id(FORWARD_ID_TYPE_DECAL, decal_instance->forward_id, i);
+			forward_id_storage->map_forward_id(FORWARD_ID_TYPE_DECAL, decal_instance->forward_id, i, RSG::rasterizer->get_frame_number());
 		}
 
 		decal_instance->cull_mask = decal->cull_mask;
@@ -2965,7 +2965,7 @@ void TextureStorage::update_decal_buffer(const PagedArray<RID> &p_decals, const 
 			dd.emission_rect[3] = 0;
 		}
 
-		Color modulate = decal->modulate;
+		Color modulate = decal->modulate.srgb_to_linear();
 		dd.modulate[0] = modulate.r;
 		dd.modulate[1] = modulate.g;
 		dd.modulate[2] = modulate.b;
@@ -2981,7 +2981,7 @@ void TextureStorage::update_decal_buffer(const PagedArray<RID> &p_decals, const 
 	}
 
 	if (decal_count > 0) {
-		RD::get_singleton()->buffer_update(decal_buffer, 0, sizeof(DecalData) * decal_count, decals, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+		RD::get_singleton()->buffer_update(decal_buffer, 0, sizeof(DecalData) * decal_count, decals);
 	}
 }
 
@@ -3364,6 +3364,31 @@ RS::ViewportMSAA TextureStorage::render_target_get_msaa(RID p_render_target) con
 	return rt->msaa;
 }
 
+void TextureStorage::render_target_set_msaa_needs_resolve(RID p_render_target, bool p_needs_resolve) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->msaa_needs_resolve = p_needs_resolve;
+}
+
+bool TextureStorage::render_target_get_msaa_needs_resolve(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, false);
+
+	return rt->msaa_needs_resolve;
+}
+
+void TextureStorage::render_target_do_msaa_resolve(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+	if (!rt->msaa_needs_resolve) {
+		return;
+	}
+	RD::get_singleton()->draw_list_begin(rt->get_framebuffer(), RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
+	RD::get_singleton()->draw_list_end();
+	rt->msaa_needs_resolve = false;
+}
+
 void TextureStorage::render_target_set_use_hdr(RID p_render_target, bool p_use_hdr) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
@@ -3476,9 +3501,10 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	}
 	Vector<Color> clear_colors;
 	clear_colors.push_back(rt->use_hdr ? rt->clear_color.srgb_to_linear() : rt->clear_color);
-	RD::get_singleton()->draw_list_begin(rt->get_framebuffer(), RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, clear_colors);
+	RD::get_singleton()->draw_list_begin(rt->get_framebuffer(), RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD, clear_colors);
 	RD::get_singleton()->draw_list_end();
 	rt->clear_requested = false;
+	rt->msaa_needs_resolve = false;
 }
 
 void TextureStorage::render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) {
@@ -3511,7 +3537,9 @@ Rect2i TextureStorage::_render_target_get_sdf_rect(const RenderTarget *rt) const
 			scale = 200;
 		} break;
 		default: {
-		}
+			ERR_PRINT("Invalid viewport SDF oversize, defaulting to 100%.");
+			scale = 100;
+		} break;
 	}
 
 	margin = (rt->size * scale / 100) - rt->size;
@@ -3603,13 +3631,13 @@ void TextureStorage::_render_target_allocate_sdf(RenderTarget *rt) {
 			scale = 25;
 		} break;
 		default: {
+			ERR_PRINT("Invalid viewport SDF scale, defaulting to 100%.");
 			scale = 100;
 		} break;
 	}
 
 	rt->process_size = size * scale / 100;
-	rt->process_size.x = MAX(rt->process_size.x, 1);
-	rt->process_size.y = MAX(rt->process_size.y, 1);
+	rt->process_size = rt->process_size.max(Size2i(1, 1));
 
 	tformat.format = RD::DATA_FORMAT_R16G16_SINT;
 	tformat.width = rt->process_size.width;
@@ -3792,7 +3820,10 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
 		copy_effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, !rt->use_hdr, true);
 	} else {
-		copy_effects->copy_to_fb_rect(rt->color, rt->backbuffer_fb, region, false, false, false, false, RID(), false, true);
+		Rect2 src_rect = Rect2(region);
+		src_rect.position /= Size2(rt->size);
+		src_rect.size /= Size2(rt->size);
+		copy_effects->copy_to_fb_rect(rt->color, rt->backbuffer_fb, region, false, false, false, false, RID(), false, true, false, false, src_rect);
 	}
 
 	if (!p_gen_mipmaps) {

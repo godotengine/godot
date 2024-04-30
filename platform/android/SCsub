@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import subprocess
+from methods import print_warning
+
 Import("env")
 
 android_files = [
@@ -21,7 +24,7 @@ android_files = [
     "android_keys_utils.cpp",
     "display_server_android.cpp",
     "plugin/godot_plugin_jni.cpp",
-    "vulkan_context_android.cpp",
+    "rendering_context_driver_vulkan_android.cpp",
 ]
 
 env_android = env.Clone()
@@ -50,7 +53,7 @@ elif env["arch"] == "x86_32":
 elif env["arch"] == "x86_64":
     lib_arch_dir = "x86_64"
 else:
-    print("WARN: Architecture not suitable for embedding into APK; keeping .so at \\bin")
+    print_warning("Architecture not suitable for embedding into APK; keeping .so at \\bin")
 
 if lib_arch_dir != "":
     if env.dev_build:
@@ -77,3 +80,29 @@ if lib_arch_dir != "":
         str(env["ANDROID_NDK_ROOT"]) + "/sources/cxx-stl/llvm-libc++/libs/" + lib_arch_dir + "/libc++_shared.so"
     )
     env_android.Command(out_dir + "/libc++_shared.so", stl_lib_path, Copy("$TARGET", "$SOURCE"))
+
+    def generate_apk(target, source, env):
+        if env["target"] != "editor" and env["dev_build"]:
+            subprocess.run(
+                [
+                    "./gradlew",
+                    "generateDevTemplate",
+                    "--quiet",
+                ],
+                cwd="platform/android/java",
+            )
+        else:
+            # Android editor with `dev_build=yes` is handled by the `generateGodotEditor` task.
+            subprocess.run(
+                [
+                    "./gradlew",
+                    "generateGodotEditor" if env["target"] == "editor" else "generateGodotTemplates",
+                    "--quiet",
+                ],
+                cwd="platform/android/java",
+            )
+
+    if env["generate_apk"]:
+        generate_apk_command = env_android.Command("generate_apk", [], generate_apk)
+        command = env_android.AlwaysBuild(generate_apk_command)
+        env_android.Depends(command, [lib])

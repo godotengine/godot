@@ -37,6 +37,7 @@ bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) 
 	EditorExport::singleton->save_presets();
 	if (update_visibility.has(p_name)) {
 		if (update_visibility[p_name]) {
+			update_value_overrides();
 			notify_property_list_changed();
 		}
 		return true;
@@ -46,6 +47,11 @@ bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) 
 }
 
 bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
+	if (value_overrides.has(p_name)) {
+		r_ret = value_overrides[p_name];
+		return true;
+	}
+
 	if (values.has(p_name)) {
 		r_ret = values[p_name];
 		return true;
@@ -59,6 +65,10 @@ void EditorExportPreset::_bind_methods() {
 }
 
 String EditorExportPreset::_get_property_warning(const StringName &p_name) const {
+	if (value_overrides.has(p_name)) {
+		return String();
+	}
+
 	String warning = platform->get_export_option_warning(this, p_name);
 	if (!warning.is_empty()) {
 		warning += "\n";
@@ -83,7 +93,7 @@ String EditorExportPreset::_get_property_warning(const StringName &p_name) const
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<StringName, PropertyInfo> &E : properties) {
-		if (platform->get_export_option_visibility(this, E.key)) {
+		if (!value_overrides.has(E.key) && platform->get_export_option_visibility(this, E.key)) {
 			p_list->push_back(E.value);
 		}
 	}
@@ -117,6 +127,37 @@ void EditorExportPreset::update_files() {
 			customized_files.erase(to_remove[i]);
 		}
 	}
+}
+
+void EditorExportPreset::update_value_overrides() {
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	HashMap<StringName, Variant> new_value_overrides;
+
+	value_overrides.clear();
+
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (!export_plugins[i]->supports_platform(platform)) {
+			continue;
+		}
+
+		export_plugins.write[i]->set_export_preset(Ref<EditorExportPreset>(this));
+
+		Dictionary plugin_overrides = export_plugins[i]->_get_export_options_overrides(platform);
+		if (!plugin_overrides.is_empty()) {
+			Array keys = plugin_overrides.keys();
+			for (int x = 0; x < keys.size(); x++) {
+				StringName key = keys[x];
+				Variant value = plugin_overrides[key];
+				if (new_value_overrides.has(key) && new_value_overrides[key] != value) {
+					WARN_PRINT_ED(vformat("Editor export plugin '%s' overrides pre-existing export option override '%s' with new value.", export_plugins[i]->get_name(), key));
+				}
+				new_value_overrides[key] = value;
+			}
+		}
+	}
+
+	value_overrides = new_value_overrides;
+	notify_property_list_changed();
 }
 
 Vector<String> EditorExportPreset::get_files_to_export() const {
@@ -180,11 +221,25 @@ String EditorExportPreset::get_name() const {
 
 void EditorExportPreset::set_runnable(bool p_enable) {
 	runnable = p_enable;
+	EditorExport::singleton->emit_presets_runnable_changed();
 	EditorExport::singleton->save_presets();
 }
 
 bool EditorExportPreset::is_runnable() const {
 	return runnable;
+}
+
+void EditorExportPreset::set_advanced_options_enabled(bool p_enabled) {
+	if (advanced_options_enabled == p_enabled) {
+		return;
+	}
+	advanced_options_enabled = p_enabled;
+	EditorExport::singleton->save_presets();
+	notify_property_list_changed();
+}
+
+bool EditorExportPreset::are_advanced_options_enabled() const {
+	return advanced_options_enabled;
 }
 
 void EditorExportPreset::set_dedicated_server(bool p_enable) {
@@ -323,6 +378,15 @@ String EditorExportPreset::get_script_encryption_key() const {
 	return script_key;
 }
 
+void EditorExportPreset::set_script_export_mode(int p_mode) {
+	script_mode = p_mode;
+	EditorExport::singleton->save_presets();
+}
+
+int EditorExportPreset::get_script_export_mode() const {
+	return script_mode;
+}
+
 Variant EditorExportPreset::get_or_env(const StringName &p_name, const String &p_env_var, bool *r_valid) const {
 	const String from_env = OS::get_singleton()->get_environment(p_env_var);
 	if (!from_env.is_empty()) {
@@ -334,31 +398,55 @@ Variant EditorExportPreset::get_or_env(const StringName &p_name, const String &p
 	return get(p_name, r_valid);
 }
 
+_FORCE_INLINE_ bool _check_digits(const String &p_str) {
+	for (int i = 0; i < p_str.length(); i++) {
+		char32_t c = p_str.operator[](i);
+		if (!is_digit(c)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 String EditorExportPreset::get_version(const StringName &p_preset_string, bool p_windows_version) const {
 	String result = get(p_preset_string);
 	if (result.is_empty()) {
 		result = GLOBAL_GET("application/config/version");
 
-		if (p_windows_version) {
-			// Modify version number to match Windows constraints (version numbers must have 4 components).
-			const PackedStringArray result_split = result.split(".");
-			String windows_version;
-			if (result_split.is_empty()) {
-				// Use a valid fallback if the version string is empty, as a version number must be specified.
-				result = "1.0.0.0";
-			} else if (result_split.size() == 1) {
-				result = result + ".0.0.0";
-			} else if (result_split.size() == 2) {
-				result = result + ".0.0";
-			} else if (result_split.size() == 3) {
-				result = result + ".0";
-			} else {
-				// 4 components or more in the version string. Trim to contain only the first 4 components.
-				result = vformat("%s.%s.%s.%s", result_split[0] + result_split[1] + result_split[2] + result_split[3]);
+		// Split and validate version number components.
+		const PackedStringArray result_split = result.split(".", false);
+		bool valid_version = !result_split.is_empty();
+		for (const String &E : result_split) {
+			if (!_check_digits(E)) {
+				valid_version = false;
+				break;
 			}
-		} else if (result.is_empty()) {
-			// Use a valid fallback if the version string is empty, as a version number must be specified.
-			result = "1.0.0";
+		}
+
+		if (valid_version) {
+			if (p_windows_version) {
+				// Modify version number to match Windows constraints (version numbers must have 4 components).
+				if (result_split.size() == 1) {
+					result = result + ".0.0.0";
+				} else if (result_split.size() == 2) {
+					result = result + ".0.0";
+				} else if (result_split.size() == 3) {
+					result = result + ".0";
+				} else {
+					result = vformat("%s.%s.%s.%s", result_split[0], result_split[1], result_split[2], result_split[3]);
+				}
+			} else {
+				result = String(".").join(result_split);
+			}
+		} else {
+			if (!result.is_empty()) {
+				WARN_PRINT(vformat("Invalid version number \"%s\". The version number can only contain numeric characters (0-9) and non-consecutive periods (.).", result));
+			}
+			if (p_windows_version) {
+				result = "1.0.0.0";
+			} else {
+				result = "1.0.0";
+			}
 		}
 	}
 

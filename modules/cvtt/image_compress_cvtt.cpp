@@ -302,8 +302,6 @@ void image_decompress_cvtt(Image *p_image) {
 			int y_end = y_start + 4;
 
 			for (int x_start = 0; x_start < w; x_start += 4 * cvtt::NumParallelBlocks) {
-				int x_end = x_start + 4 * cvtt::NumParallelBlocks;
-
 				uint8_t input_blocks[16 * cvtt::NumParallelBlocks];
 				memset(input_blocks, 0, sizeof(input_blocks));
 
@@ -314,6 +312,8 @@ void image_decompress_cvtt(Image *p_image) {
 
 				memcpy(input_blocks, in_bytes, 16 * num_real_blocks);
 				in_bytes += 16 * num_real_blocks;
+
+				int x_end = x_start + 4 * num_real_blocks;
 
 				if (is_hdr) {
 					if (is_signed) {

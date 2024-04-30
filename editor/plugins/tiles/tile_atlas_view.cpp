@@ -32,14 +32,13 @@
 
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_settings.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
-
-#include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
 
 void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	if (panner->gui_input(p_event)) {
@@ -90,8 +89,6 @@ Size2i TileAtlasView::_compute_alternative_tiles_control_size() {
 }
 
 void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
-	// Don't allow zoom to go below 1% or above 10000%
-	zoom_widget->set_zoom(CLAMP(zoom_widget->get_zoom(), 0.01f, 100.f));
 	float zoom = zoom_widget->get_zoom();
 
 	// Compute the minimum sizes.
@@ -504,8 +501,7 @@ Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p
 	// Clamp.
 	if (p_clamp) {
 		Vector2i size = tile_set_atlas_source->get_atlas_grid_size();
-		ret.x = CLAMP(ret.x, 0, size.x - 1);
-		ret.y = CLAMP(ret.y, 0, size.y - 1);
+		ret = ret.clamp(Vector2i(), size - Vector2i(1, 1));
 	}
 
 	return ret;
@@ -578,8 +574,13 @@ void TileAtlasView::_update_theme_item_cache() {
 
 void TileAtlasView::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				break;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 		} break;
 

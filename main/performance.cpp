@@ -30,16 +30,20 @@
 
 #include "performance.h"
 
-#include "core/object/message_queue.h"
 #include "core/os/os.h"
 #include "core/variant/typed_array.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
 #include "servers/navigation_server_3d.h"
-#include "servers/physics_server_2d.h"
-#include "servers/physics_server_3d.h"
 #include "servers/rendering_server.h"
+
+// 2D
+#include "servers/physics_server_2d.h"
+
+#ifndef _3D_DISABLED
+#include "servers/physics_server_3d.h"
+#endif // _3D_DISABLED
 
 Performance *Performance::singleton = nullptr;
 
@@ -72,9 +76,11 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(PHYSICS_2D_ACTIVE_OBJECTS);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_ISLAND_COUNT);
+#ifndef _3D_DISABLED
 	BIND_ENUM_CONSTANT(PHYSICS_3D_ACTIVE_OBJECTS);
 	BIND_ENUM_CONSTANT(PHYSICS_3D_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PHYSICS_3D_ISLAND_COUNT);
+#endif // _3D_DISABLED
 	BIND_ENUM_CONSTANT(AUDIO_OUTPUT_LATENCY);
 	BIND_ENUM_CONSTANT(NAVIGATION_ACTIVE_MAPS);
 	BIND_ENUM_CONSTANT(NAVIGATION_REGION_COUNT);
@@ -120,9 +126,11 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		"physics_2d/active_objects",
 		"physics_2d/collision_pairs",
 		"physics_2d/islands",
+#ifndef _3D_DISABLED
 		"physics_3d/active_objects",
 		"physics_3d/collision_pairs",
 		"physics_3d/islands",
+#endif // _3D_DISABLED
 		"audio/driver/output_latency",
 		"navigation/active_maps",
 		"navigation/regions",
@@ -181,12 +189,22 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_COLLISION_PAIRS);
 		case PHYSICS_2D_ISLAND_COUNT:
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ISLAND_COUNT);
+#ifdef _3D_DISABLED
+		case PHYSICS_3D_ACTIVE_OBJECTS:
+			return 0;
+		case PHYSICS_3D_COLLISION_PAIRS:
+			return 0;
+		case PHYSICS_3D_ISLAND_COUNT:
+			return 0;
+#else
 		case PHYSICS_3D_ACTIVE_OBJECTS:
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_ACTIVE_OBJECTS);
 		case PHYSICS_3D_COLLISION_PAIRS:
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_COLLISION_PAIRS);
 		case PHYSICS_3D_ISLAND_COUNT:
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_ISLAND_COUNT);
+#endif // _3D_DISABLED
+
 		case AUDIO_OUTPUT_LATENCY:
 			return AudioServer::get_singleton()->get_output_latency();
 		case NAVIGATION_ACTIVE_MAPS:
@@ -239,9 +257,11 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
+#ifndef _3D_DISABLED
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
+#endif // _3D_DISABLED
 		MONITOR_TYPE_TIME,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,

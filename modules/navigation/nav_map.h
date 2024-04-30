@@ -48,6 +48,8 @@ class NavAgent;
 class NavObstacle;
 
 class NavMap : public NavRid {
+	RWLock map_rwlock;
+
 	/// Map Up
 	Vector3 up = Vector3(0, 1, 0);
 
@@ -55,6 +57,12 @@ class NavMap : public NavRid {
 	/// each cell has the following cell_size and cell_height.
 	real_t cell_size = 0.25; // Must match ProjectSettings default 3D cell_size and NavigationMesh cell_size.
 	real_t cell_height = 0.25; // Must match ProjectSettings default 3D cell_height and NavigationMesh cell_height.
+
+	// For the inter-region merging to work, internal rasterization is performed.
+	float merge_rasterizer_cell_size = 0.25;
+	float merge_rasterizer_cell_height = 0.25;
+	// This value is used to control sensitivity of internal rasterizer.
+	float merge_rasterizer_cell_scale = 1.0;
 
 	bool use_edge_connections = true;
 	/// This value is used to detect the near edges to connect.
@@ -100,7 +108,7 @@ class NavMap : public NavRid {
 	real_t deltatime = 0.0;
 
 	/// Change the id each time the map is updated.
-	uint32_t map_update_id = 0;
+	uint32_t iteration_id = 0;
 
 	bool use_threads = true;
 	bool avoidance_use_multiple_threads = true;
@@ -120,6 +128,8 @@ public:
 	NavMap();
 	~NavMap();
 
+	uint32_t get_iteration_id() const { return iteration_id; }
+
 	void set_up(Vector3 p_up);
 	Vector3 get_up() const {
 		return up;
@@ -132,6 +142,11 @@ public:
 
 	void set_cell_height(real_t p_cell_height);
 	real_t get_cell_height() const { return cell_height; }
+
+	void set_merge_rasterizer_cell_scale(float p_value);
+	float get_merge_rasterizer_cell_scale() const {
+		return merge_rasterizer_cell_scale;
+	}
 
 	void set_use_edge_connections(bool p_enabled);
 	bool get_use_edge_connections() const {
@@ -186,9 +201,7 @@ public:
 		return obstacles;
 	}
 
-	uint32_t get_map_update_id() const {
-		return map_update_id;
-	}
+	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
 
 	void sync();
 	void step(real_t p_deltatime);
@@ -215,6 +228,8 @@ private:
 	void _update_rvo_obstacles_tree_2d();
 	void _update_rvo_agents_tree_2d();
 	void _update_rvo_agents_tree_3d();
+
+	void _update_merge_rasterizer_cell_dimensions();
 };
 
 #endif // NAV_MAP_H

@@ -7,7 +7,7 @@ namespace OT {
 namespace Layout {
 namespace GPOS_impl {
 
-struct SinglePosFormat2
+struct SinglePosFormat2 : ValueBase
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 2 */
@@ -143,6 +143,37 @@ struct SinglePosFormat2
     coverage.serialize_serialize (c, glyphs);
   }
 
+  template<typename Iterator,
+      hb_requires (hb_is_iterator (Iterator))>
+  unsigned compute_effective_format (const hb_face_t *face,
+                                     Iterator it,
+                                     bool is_instancing, bool strip_hints,
+                                     bool has_gdef_varstore,
+                                     const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *varidx_delta_map) const
+  {
+    hb_blob_t* blob = hb_face_reference_table (face, HB_TAG ('f','v','a','r'));
+    bool has_fvar = (blob != hb_blob_get_empty ());
+    hb_blob_destroy (blob);
+
+    unsigned new_format = 0;
+    if (is_instancing)
+    {
+      new_format = new_format | valueFormat.get_effective_format (+ it | hb_map (hb_second), false, false, this, varidx_delta_map);
+    }
+    /* do not strip hints for VF */
+    else if (strip_hints)
+    {
+      bool strip = !has_fvar;
+      if (has_fvar && !has_gdef_varstore)
+        strip = true;
+      new_format = new_format | valueFormat.get_effective_format (+ it | hb_map (hb_second), strip, true, this, nullptr);
+    }
+    else
+      new_format = valueFormat;
+
+    return new_format;
+  }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -163,8 +194,13 @@ struct SinglePosFormat2
                               })
     ;
 
+    unsigned new_format = compute_effective_format (c->plan->source, it,
+                                                    bool (c->plan->normalized_coords),
+                                                    bool (c->plan->flags & HB_SUBSET_FLAGS_NO_HINTING),
+                                                    c->plan->has_gdef_varstore,
+                                                    &c->plan->layout_variation_idx_delta_map);
     bool ret = bool (it);
-    SinglePos_serialize (c->serializer, this, it, &c->plan->layout_variation_idx_delta_map, c->plan->all_axes_pinned);
+    SinglePos_serialize (c->serializer, this, it, &c->plan->layout_variation_idx_delta_map, new_format);
     return_trace (ret);
   }
 };

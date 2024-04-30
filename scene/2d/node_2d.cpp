@@ -143,10 +143,12 @@ void Node2D::_update_transform() {
 
 void Node2D::reparent(Node *p_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD;
-	Transform2D temp = get_global_transform();
-	Node::reparent(p_parent);
 	if (p_keep_global_transform) {
+		Transform2D temp = get_global_transform();
+		Node::reparent(p_parent);
 		set_global_transform(temp);
+	} else {
+		Node::reparent(p_parent);
 	}
 }
 
@@ -424,14 +426,17 @@ Point2 Node2D::to_global(Point2 p_local) const {
 }
 
 void Node2D::_notification(int p_notification) {
-	ERR_THREAD_GUARD;
 	switch (p_notification) {
 		case NOTIFICATION_ENTER_TREE: {
+			ERR_MAIN_THREAD_GUARD;
+
 			if (get_viewport()) {
 				get_parent()->connect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty), CONNECT_REFERENCE_COUNTED);
 			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			ERR_MAIN_THREAD_GUARD;
+
 			if (get_viewport()) {
 				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty));
 			}

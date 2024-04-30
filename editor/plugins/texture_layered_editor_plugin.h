@@ -32,7 +32,7 @@
 #define TEXTURE_LAYERED_EDITOR_PLUGIN_H
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/spin_box.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
@@ -51,20 +51,20 @@ class TextureLayeredEditor : public Control {
 	float y_rot = 0;
 	Control *texture_rect = nullptr;
 
-	void _make_shaders();
+	bool setting = false;
 
+	void _make_shaders();
 	void _update_material();
-	bool setting;
+
 	void _layer_changed(double) {
 		if (!setting) {
 			_update_material();
 		}
 	}
+	void _texture_changed();
 
 	void _texture_rect_update_area();
 	void _texture_rect_draw();
-
-	void _texture_changed();
 
 protected:
 	void _notification(int p_what);

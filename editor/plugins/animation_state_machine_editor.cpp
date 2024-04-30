@@ -36,10 +36,10 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/menu_button.h"
@@ -74,6 +74,11 @@ void AnimationNodeStateMachineEditor::edit(const Ref<AnimationNode> &p_node) {
 		selected_nodes.clear();
 		_update_mode();
 		_update_graph();
+	}
+
+	if (read_only) {
+		tool_create->set_pressed(false);
+		tool_connect->set_pressed(false);
 	}
 
 	tool_create->set_disabled(read_only);
@@ -198,7 +203,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			}
 
 			if (node_rects[i].edit.has_point(mb->get_position())) { //edit name
-				call_deferred(SNAME("_open_editor"), node_rects[i].node_name);
+				callable_mp(this, &AnimationNodeStateMachineEditor::_open_editor).call_deferred(node_rects[i].node_name);
 				return;
 			}
 
@@ -332,10 +337,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && tool_select->is_pressed()) {
 		box_selecting = true;
 		box_selecting_from = box_selecting_to = state_machine_draw->get_local_mouse_position();
-		box_selecting_rect = Rect2(MIN(box_selecting_from.x, box_selecting_to.x),
-				MIN(box_selecting_from.y, box_selecting_to.y),
-				ABS(box_selecting_from.x - box_selecting_to.x),
-				ABS(box_selecting_from.y - box_selecting_to.y));
+		box_selecting_rect = Rect2(box_selecting_from.min(box_selecting_to), (box_selecting_from - box_selecting_to).abs());
 
 		if (mb->is_command_or_control_pressed() || mb->is_shift_pressed()) {
 			previous_selected = selected_nodes;
@@ -418,10 +420,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	if (mm.is_valid() && box_selecting) {
 		box_selecting_to = state_machine_draw->get_local_mouse_position();
 
-		box_selecting_rect = Rect2(MIN(box_selecting_from.x, box_selecting_to.x),
-				MIN(box_selecting_from.y, box_selecting_to.y),
-				ABS(box_selecting_from.x - box_selecting_to.x),
-				ABS(box_selecting_from.y - box_selecting_to.y));
+		box_selecting_rect = Rect2(box_selecting_from.min(box_selecting_to), (box_selecting_from - box_selecting_to).abs());
 
 		for (int i = 0; i < node_rects.size(); i++) {
 			bool in_box = node_rects[i].node.intersects(box_selecting_rect);
@@ -563,7 +562,7 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 
 	List<StringName> animation_names;
 	tree->get_animation_list(&animation_names);
-	menu->add_submenu_item(TTR("Add Animation"), "animations");
+	menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 	if (animation_names.is_empty()) {
 		menu->set_item_disabled(menu->get_item_idx_from_text(TTR("Add Animation")), true);
 	} else {
@@ -1179,7 +1178,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	state_machine_play_pos->queue_redraw();
 }
 
-void AnimationNodeStateMachineEditor::_state_machine_pos_draw_individual(String p_name, float p_ratio) {
+void AnimationNodeStateMachineEditor::_state_machine_pos_draw_individual(const String &p_name, float p_ratio) {
 	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
 	if (!tree) {
 		return;
@@ -1242,14 +1241,14 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw_all() {
 	{
 		float len = MAX(0.0001, current_length);
 		float pos = CLAMP(current_play_pos, 0, len);
-		float c = current_length == HUGE_LENGTH ? 1 : (pos / len);
+		float c = pos / len;
 		_state_machine_pos_draw_individual(playback->get_current_node(), c);
 	}
 
 	{
 		float len = MAX(0.0001, fade_from_length);
 		float pos = CLAMP(fade_from_current_play_pos, 0, len);
-		float c = fade_from_length == HUGE_LENGTH ? 1 : (pos / len);
+		float c = pos / len;
 		_state_machine_pos_draw_individual(playback->get_fading_from_node(), c);
 	}
 }
@@ -1591,6 +1590,11 @@ void AnimationNodeStateMachineEditor::_update_mode() {
 		selection_tools_hb->hide();
 	}
 
+	if (read_only) {
+		tool_create->set_pressed(false);
+		tool_connect->set_pressed(false);
+	}
+
 	if (tool_connect->is_pressed()) {
 		transition_tools_hb->show();
 	} else {
@@ -1600,12 +1604,6 @@ void AnimationNodeStateMachineEditor::_update_mode() {
 
 void AnimationNodeStateMachineEditor::_bind_methods() {
 	ClassDB::bind_method("_update_graph", &AnimationNodeStateMachineEditor::_update_graph);
-	ClassDB::bind_method("_open_editor", &AnimationNodeStateMachineEditor::_open_editor);
-	ClassDB::bind_method("_connect_to", &AnimationNodeStateMachineEditor::_connect_to);
-	ClassDB::bind_method("_stop_connecting", &AnimationNodeStateMachineEditor::_stop_connecting);
-	ClassDB::bind_method("_delete_selected", &AnimationNodeStateMachineEditor::_delete_selected);
-	ClassDB::bind_method("_delete_all", &AnimationNodeStateMachineEditor::_delete_all);
-	ClassDB::bind_method("_delete_tree_draw", &AnimationNodeStateMachineEditor::_delete_tree_draw);
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, panel_style, "panel", "GraphStateMachine");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, error_panel_style, "error_panel", "GraphStateMachine");
@@ -1773,8 +1771,8 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	menu->connect("popup_hide", callable_mp(this, &AnimationNodeStateMachineEditor::_stop_connecting));
 
 	animations_menu = memnew(PopupMenu);
+	animations_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	menu->add_child(animations_menu);
-	animations_menu->set_name("animations");
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_add_animation_type));
 
 	connect_menu = memnew(PopupMenu);
@@ -1811,6 +1809,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	add_child(delete_window);
 
 	delete_tree = memnew(Tree);
+	delete_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	delete_tree->set_hide_root(true);
 	delete_tree->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_delete_tree_draw));
 	delete_window->add_child(delete_tree);

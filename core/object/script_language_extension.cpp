@@ -55,6 +55,10 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_class_icon_path);
 
 	GDVIRTUAL_BIND(_has_method, "method");
+	GDVIRTUAL_BIND(_has_static_method, "method");
+
+	GDVIRTUAL_BIND(_get_script_method_argument_count, "method");
+
 	GDVIRTUAL_BIND(_get_method_info, "method");
 
 	GDVIRTUAL_BIND(_is_tool);
@@ -91,6 +95,7 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_reserved_words);
 	GDVIRTUAL_BIND(_is_control_flow_keyword, "keyword");
 	GDVIRTUAL_BIND(_get_comment_delimiters);
+	GDVIRTUAL_BIND(_get_doc_comment_delimiters);
 	GDVIRTUAL_BIND(_get_string_delimiters);
 	GDVIRTUAL_BIND(_make_template, "template", "class_name", "base_class_name");
 	GDVIRTUAL_BIND(_get_built_in_templates, "object");
@@ -105,10 +110,12 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_supports_builtin_mode);
 	GDVIRTUAL_BIND(_supports_documentation);
 	GDVIRTUAL_BIND(_can_inherit_from_file);
-	GDVIRTUAL_BIND(_find_function, "class_name", "function_name");
+	GDVIRTUAL_BIND(_find_function, "function", "code");
 	GDVIRTUAL_BIND(_make_function, "class_name", "function_name", "function_args");
+	GDVIRTUAL_BIND(_can_make_function);
 	GDVIRTUAL_BIND(_open_in_external_editor, "script", "line", "column");
 	GDVIRTUAL_BIND(_overrides_external_editor);
+	GDVIRTUAL_BIND(_preferred_file_name_casing);
 
 	GDVIRTUAL_BIND(_complete_code, "code", "path", "owner");
 	GDVIRTUAL_BIND(_lookup_code, "code", "symbol", "path", "owner");
@@ -143,6 +150,7 @@ void ScriptLanguageExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_profiling_start);
 	GDVIRTUAL_BIND(_profiling_stop);
+	GDVIRTUAL_BIND(_profiling_set_save_native_calls, "enable");
 
 	GDVIRTUAL_BIND(_profiling_get_accumulated_data, "info_array", "info_max");
 	GDVIRTUAL_BIND(_profiling_get_frame_data, "info_array", "info_max");

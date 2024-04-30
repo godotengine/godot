@@ -31,6 +31,7 @@
 #ifndef RENDERING_SERVER_DEFAULT_H
 #define RENDERING_SERVER_DEFAULT_H
 
+#include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 #include "core/templates/hash_map.h"
@@ -75,21 +76,16 @@ class RenderingServerDefault : public RenderingServer {
 
 	mutable CommandQueueMT command_queue;
 
-	static void _thread_callback(void *_instance);
 	void _thread_loop();
 
-	Thread::ID server_thread;
-	SafeFlag exit;
-	Thread thread;
-	SafeFlag draw_thread_up;
-	bool create_thread;
+	Thread::ID server_thread = Thread::UNASSIGNED_ID;
+	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
+	bool exit = false;
+	bool create_thread = false;
 
 	void _thread_draw(bool p_swap_buffers, double frame_step);
-	void _thread_flush();
 
 	void _thread_exit();
-
-	Mutex alloc_mutex;
 
 	void _draw(bool p_swap_buffers, double frame_step);
 	void _init();
@@ -109,10 +105,6 @@ public:
 		_changes_changed();
 	}
 
-#define DISPLAY_CHANGED \
-	changes++;          \
-	_changes_changed();
-
 #else
 	_FORCE_INLINE_ static void redraw_request() {
 		changes++;
@@ -125,6 +117,10 @@ public:
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
 #else
 #define SYNC_DEBUG
+#endif
+
+#ifdef DEBUG_ENABLED
+#define MAIN_THREAD_SYNC_WARN WARN_PRINT("Call to " + String(__FUNCTION__) + " causing RenderingServer synchronizations on every frame. This significantly affects performance.");
 #endif
 
 #include "servers/server_wrap_mt_common.h"
@@ -315,6 +311,9 @@ public:
 	FUNC2(mesh_set_custom_aabb, RID, const AABB &)
 	FUNC1RC(AABB, mesh_get_custom_aabb, RID)
 
+	FUNC2(mesh_set_path, RID, const String &)
+	FUNC1RC(String, mesh_get_path, RID)
+
 	FUNC2(mesh_set_shadow_mesh, RID, RID)
 
 	FUNC1(mesh_clear, RID)
@@ -331,6 +330,9 @@ public:
 	FUNC3(multimesh_instance_set_transform_2d, RID, int, const Transform2D &)
 	FUNC3(multimesh_instance_set_color, RID, int, const Color &)
 	FUNC3(multimesh_instance_set_custom_data, RID, int, const Color &)
+
+	FUNC2(multimesh_set_custom_aabb, RID, const AABB &)
+	FUNC1RC(AABB, multimesh_get_custom_aabb, RID)
 
 	FUNC1RC(RID, multimesh_get_mesh, RID)
 	FUNC1RC(AABB, multimesh_get_aabb, RID)
@@ -401,6 +403,7 @@ public:
 	FUNC2(reflection_probe_set_enable_box_projection, RID, bool)
 	FUNC2(reflection_probe_set_enable_shadows, RID, bool)
 	FUNC2(reflection_probe_set_cull_mask, RID, uint32_t)
+	FUNC2(reflection_probe_set_reflection_mask, RID, uint32_t)
 	FUNC2(reflection_probe_set_resolution, RID, int)
 	FUNC2(reflection_probe_set_mesh_lod_threshold, RID, float)
 
@@ -476,6 +479,8 @@ public:
 	FUNC2(voxel_gi_set_interior, RID, bool)
 	FUNC2(voxel_gi_set_use_two_bounces, RID, bool)
 
+	FUNC0(sdfgi_reset)
+
 	/* PARTICLES */
 
 #undef ServerName
@@ -490,6 +495,7 @@ public:
 	FUNC2(particles_set_emitting, RID, bool)
 	FUNC1R(bool, particles_get_emitting, RID)
 	FUNC2(particles_set_amount, RID, int)
+	FUNC2(particles_set_amount_ratio, RID, float)
 	FUNC2(particles_set_lifetime, RID, double)
 	FUNC2(particles_set_one_shot, RID, bool)
 	FUNC2(particles_set_pre_process_time, RID, double)
@@ -521,6 +527,8 @@ public:
 
 	FUNC1R(AABB, particles_get_current_aabb, RID)
 	FUNC2(particles_set_emission_transform, RID, const Transform3D &)
+	FUNC2(particles_set_emitter_velocity, RID, const Vector3 &)
+	FUNC2(particles_set_interp_to_end, RID, float)
 
 	/* PARTICLES COLLISION */
 
@@ -579,6 +587,7 @@ public:
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
 	FUNC2(camera_set_camera_attributes, RID, RID)
+	FUNC2(camera_set_compositor, RID, RID)
 	FUNC2(camera_set_use_vertical_aspect, RID, bool)
 
 	/* OCCLUDER */
@@ -612,6 +621,7 @@ public:
 	FUNC2(viewport_set_texture_mipmap_bias, RID, float)
 
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
+	FUNC1RC(ViewportUpdateMode, viewport_get_update_mode, RID)
 
 	FUNC1RC(RID, viewport_get_render_target, RID)
 	FUNC1RC(RID, viewport_get_texture, RID)
@@ -664,13 +674,26 @@ public:
 	FUNC2(viewport_set_vrs_mode, RID, ViewportVRSMode)
 	FUNC2(viewport_set_vrs_texture, RID, RID)
 
-	/* ENVIRONMENT API */
+	/* COMPOSITOR EFFECT */
 
 #undef server_name
 #undef ServerName
 //from now on, calls forwarded to this singleton
 #define ServerName RenderingMethod
 #define server_name RSG::scene
+
+	FUNCRIDSPLIT(compositor_effect)
+	FUNC2(compositor_effect_set_enabled, RID, bool)
+	FUNC3(compositor_effect_set_callback, RID, CompositorEffectCallbackType, const Callable &)
+	FUNC3(compositor_effect_set_flag, RID, CompositorEffectFlags, bool)
+
+	/* COMPOSITOR */
+
+	FUNC2(compositor_set_compositor_effects, RID, const TypedArray<RID> &)
+
+	FUNCRIDSPLIT(compositor)
+
+	/* ENVIRONMENT API */
 
 	FUNC1(voxel_gi_set_quality, VoxelGIQuality)
 
@@ -681,6 +704,8 @@ public:
 	FUNC2(sky_set_mode, RID, SkyMode)
 	FUNC2(sky_set_material, RID, RID)
 	FUNC4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
+
+	/* ENVIRONMENT */
 
 	FUNCRIDSPLIT(environment)
 
@@ -713,7 +738,9 @@ public:
 
 	FUNC7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
-	FUNC10(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float)
+	FUNC11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, EnvironmentFogMode)
+
+	FUNC4(environment_set_fog_depth, RID, float, float, float)
 	FUNC14(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float, float)
 
 	FUNC2(environment_set_volumetric_fog_volume_size, int, int)
@@ -765,6 +792,7 @@ public:
 	FUNC2(scenario_set_environment, RID, RID)
 	FUNC2(scenario_set_camera_attributes, RID, RID)
 	FUNC2(scenario_set_fallback_environment, RID, RID)
+	FUNC2(scenario_set_compositor, RID, RID)
 
 	/* INSTANCING API */
 	FUNCRIDSPLIT(instance)
@@ -821,6 +849,7 @@ public:
 
 	FUNCRIDSPLIT(canvas)
 	FUNC3(canvas_set_item_mirroring, RID, RID, const Point2 &)
+	FUNC3(canvas_set_item_repeat, RID, const Point2 &, int)
 	FUNC2(canvas_set_modulate, RID, const Color &)
 	FUNC3(canvas_set_parent, RID, RID, float)
 	FUNC1(canvas_set_disable_scale, bool)
@@ -891,6 +920,13 @@ public:
 
 	FUNC6(canvas_item_set_canvas_group_mode, RID, CanvasGroupMode, float, bool, float, bool)
 
+	FUNC1(canvas_item_set_debug_redraw, bool)
+	FUNC0RC(bool, canvas_item_get_debug_redraw)
+
+	FUNC2(canvas_item_set_interpolated, RID, bool)
+	FUNC1(canvas_item_reset_physics_interpolation, RID)
+	FUNC2(canvas_item_transform_physics_interpolation, RID, const Transform2D &)
+
 	FUNCRIDSPLIT(canvas_light)
 
 	FUNC2(canvas_light_set_mode, RID, CanvasLightMode)
@@ -917,6 +953,10 @@ public:
 	FUNC2(canvas_light_set_shadow_color, RID, const Color &)
 	FUNC2(canvas_light_set_shadow_smooth, RID, float)
 
+	FUNC2(canvas_light_set_interpolated, RID, bool)
+	FUNC1(canvas_light_reset_physics_interpolation, RID)
+	FUNC2(canvas_light_transform_physics_interpolation, RID, const Transform2D &)
+
 	FUNCRIDSPLIT(canvas_light_occluder)
 	FUNC2(canvas_light_occluder_attach_to_canvas, RID, RID)
 	FUNC2(canvas_light_occluder_set_enabled, RID, bool)
@@ -925,12 +965,18 @@ public:
 	FUNC2(canvas_light_occluder_set_transform, RID, const Transform2D &)
 	FUNC2(canvas_light_occluder_set_light_mask, RID, int)
 
+	FUNC2(canvas_light_occluder_set_interpolated, RID, bool)
+	FUNC1(canvas_light_occluder_reset_physics_interpolation, RID)
+	FUNC2(canvas_light_occluder_transform_physics_interpolation, RID, const Transform2D &)
+
 	FUNCRIDSPLIT(canvas_occluder_polygon)
 	FUNC3(canvas_occluder_polygon_set_shape, RID, const Vector<Vector2> &, bool)
 
 	FUNC2(canvas_occluder_polygon_set_cull_mode, RID, CanvasOccluderPolygonCullMode)
 
 	FUNC1(canvas_set_shadow_texture_size, int)
+
+	FUNC1R(Rect2, _debug_canvas_item_get_rect, RID)
 
 	/* GLOBAL SHADER UNIFORMS */
 
@@ -963,6 +1009,9 @@ public:
 #undef ServerName
 #undef WRITE_ACTION
 #undef SYNC_DEBUG
+#ifdef DEBUG_ENABLED
+#undef MAIN_THREAD_SYNC_WARN
+#endif
 
 	virtual uint64_t get_rendering_info(RenderingInfo p_info) override;
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const override;
@@ -983,6 +1032,11 @@ public:
 			command_queue.push(this, &RenderingServerDefault::_free, p_rid);
 		}
 	}
+
+	/* INTERPOLATION */
+
+	virtual void tick() override;
+	virtual void set_physics_interpolation_enabled(bool p_enabled) override;
 
 	/* EVENT QUEUING */
 
@@ -1011,7 +1065,9 @@ public:
 	virtual Color get_default_clear_color() override;
 	virtual void set_default_clear_color(const Color &p_color) override;
 
+#ifndef DISABLE_DEPRECATED
 	virtual bool has_feature(Features p_feature) const override;
+#endif
 
 	virtual bool has_os_feature(const String &p_feature) const override;
 	virtual void set_debug_generate_wireframes(bool p_generate) override;

@@ -63,7 +63,7 @@ class ImmediateMesh : public Mesh {
 		Ref<Material> material;
 		bool vertex_2d = false;
 		int array_len = 0;
-		uint32_t format = 0;
+		uint64_t format = 0;
 		AABB aabb;
 	};
 

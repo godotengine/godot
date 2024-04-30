@@ -42,6 +42,25 @@ HashMap<String, bool *> OpenXRHTCViveTrackerExtension::get_requested_extensions(
 	return request_extensions;
 }
 
+PackedStringArray OpenXRHTCViveTrackerExtension::get_suggested_tracker_names() {
+	PackedStringArray arr = {
+		"/user/vive_tracker_htcx/role/handheld_object",
+		"/user/vive_tracker_htcx/role/left_foot",
+		"/user/vive_tracker_htcx/role/right_foot",
+		"/user/vive_tracker_htcx/role/left_shoulder",
+		"/user/vive_tracker_htcx/role/right_shoulder",
+		"/user/vive_tracker_htcx/role/left_elbow",
+		"/user/vive_tracker_htcx/role/right_elbow",
+		"/user/vive_tracker_htcx/role/left_knee",
+		"/user/vive_tracker_htcx/role/right_knee",
+		"/user/vive_tracker_htcx/role/waist",
+		"/user/vive_tracker_htcx/role/chest",
+		"/user/vive_tracker_htcx/role/camera",
+		"/user/vive_tracker_htcx/role/keyboard",
+	};
+	return arr;
+}
+
 bool OpenXRHTCViveTrackerExtension::is_available() {
 	return available;
 }

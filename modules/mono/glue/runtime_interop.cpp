@@ -239,7 +239,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_get_instance_binding_managed(Object
 	CRASH_COND(!p_unmanaged);
 #endif
 
-	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
+	void *data = CSharpLanguage::get_instance_binding_with_setup(p_unmanaged);
 	ERR_FAIL_NULL_V(data, { nullptr });
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
 	ERR_FAIL_COND_V(!script_binding.inited, { nullptr });
@@ -252,7 +252,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(Obj
 	CRASH_COND(!p_unmanaged);
 #endif
 
-	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
+	void *data = CSharpLanguage::get_instance_binding_with_setup(p_unmanaged);
 	ERR_FAIL_NULL_V(data, { nullptr });
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
 	ERR_FAIL_COND_V(!script_binding.inited, { nullptr });
@@ -316,7 +316,7 @@ void godotsharp_internal_new_csharp_script(Ref<CSharpScript> *r_dest) {
 }
 
 void godotsharp_internal_editor_file_system_update_file(const String *p_script_path) {
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 	// If the EditorFileSystem singleton is available, update the file;
 	// otherwise, the file will be updated when the singleton becomes available.
 	EditorFileSystem *efs = EditorFileSystem::get_singleton();

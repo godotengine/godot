@@ -1,3 +1,5 @@
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+
 using System;
 using System.Runtime.InteropServices;
 using Godot.Collections;
@@ -213,13 +215,13 @@ namespace Godot.NativeInterop
             if (p_string.Buffer == IntPtr.Zero)
                 return string.Empty;
 
-            const int sizeOfChar32 = 4;
+            const int SizeOfChar32 = 4;
             byte* bytes = (byte*)p_string.Buffer;
             int size = p_string.Size;
             if (size == 0)
                 return string.Empty;
             size -= 1; // zero at the end
-            int sizeInBytes = size * sizeOfChar32;
+            int sizeInBytes = size * SizeOfChar32;
             return System.Text.Encoding.UTF32.GetString(bytes, sizeInBytes);
         }
 
@@ -259,7 +261,7 @@ namespace Godot.NativeInterop
                 }
 
                 return new godot_callable(method /* Takes ownership of disposable */,
-                    p_managed_callable.Target.GetInstanceId());
+                    p_managed_callable.Target?.GetInstanceId() ?? 0);
             }
         }
 

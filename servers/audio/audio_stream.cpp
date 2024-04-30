@@ -80,6 +80,16 @@ void AudioStreamPlayback::tag_used_streams() {
 	GDVIRTUAL_CALL(_tag_used_streams);
 }
 
+void AudioStreamPlayback::set_parameter(const StringName &p_name, const Variant &p_value) {
+	GDVIRTUAL_CALL(_set_parameter, p_name, p_value);
+}
+
+Variant AudioStreamPlayback::get_parameter(const StringName &p_name) const {
+	Variant ret;
+	GDVIRTUAL_CALL(_get_parameter, p_name, ret);
+	return ret;
+}
+
 void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_start, "from_pos")
 	GDVIRTUAL_BIND(_stop)
@@ -89,6 +99,8 @@ void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_seek, "position")
 	GDVIRTUAL_BIND(_mix, "buffer", "rate_scale", "frames");
 	GDVIRTUAL_BIND(_tag_used_streams);
+	GDVIRTUAL_BIND(_set_parameter, "name", "value");
+	GDVIRTUAL_BIND(_get_parameter, "name");
 }
 //////////////////////////////
 
@@ -249,6 +261,16 @@ float AudioStream::get_tagged_frame_offset(int p_index) const {
 	return tagged_offsets[p_index];
 }
 
+void AudioStream::get_parameter_list(List<Parameter> *r_parameters) {
+	TypedArray<Dictionary> ret;
+	GDVIRTUAL_CALL(_get_parameter_list, ret);
+	for (int i = 0; i < ret.size(); i++) {
+		Dictionary d = ret[i];
+		ERR_CONTINUE(!d.has("default_value"));
+		r_parameters->push_back(Parameter(PropertyInfo::from_dict(d), d["default_value"]));
+	}
+}
+
 void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
 	ClassDB::bind_method(D_METHOD("is_monophonic"), &AudioStream::is_monophonic);
@@ -259,6 +281,9 @@ void AudioStream::_bind_methods() {
 	GDVIRTUAL_BIND(_is_monophonic);
 	GDVIRTUAL_BIND(_get_bpm)
 	GDVIRTUAL_BIND(_get_beat_count)
+	GDVIRTUAL_BIND(_get_parameter_list)
+
+	ADD_SIGNAL(MethodInfo("parameter_list_changed"));
 }
 
 ////////////////////////////////
@@ -651,63 +676,6 @@ bool AudioStreamRandomizer::is_monophonic() const {
 	return false;
 }
 
-bool AudioStreamRandomizer::_get(const StringName &p_name, Variant &r_ret) const {
-	if (AudioStream::_get(p_name, r_ret)) {
-		return true;
-	}
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() == 2 && components[0].begins_with("stream_") && components[0].trim_prefix("stream_").is_valid_int()) {
-		int index = components[0].trim_prefix("stream_").to_int();
-		if (index < 0 || index >= (int)audio_stream_pool.size()) {
-			return false;
-		}
-
-		if (components[1] == "stream") {
-			r_ret = get_stream(index);
-			return true;
-		} else if (components[1] == "weight") {
-			r_ret = get_stream_probability_weight(index);
-			return true;
-		} else {
-			return false;
-		}
-	}
-	return false;
-}
-
-bool AudioStreamRandomizer::_set(const StringName &p_name, const Variant &p_value) {
-	if (AudioStream::_set(p_name, p_value)) {
-		return true;
-	}
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() == 2 && components[0].begins_with("stream_") && components[0].trim_prefix("stream_").is_valid_int()) {
-		int index = components[0].trim_prefix("stream_").to_int();
-		if (index < 0 || index >= (int)audio_stream_pool.size()) {
-			return false;
-		}
-
-		if (components[1] == "stream") {
-			set_stream(index, p_value);
-			return true;
-		} else if (components[1] == "weight") {
-			set_stream_probability_weight(index, p_value);
-			return true;
-		} else {
-			return false;
-		}
-	}
-	return false;
-}
-
-void AudioStreamRandomizer::_get_property_list(List<PropertyInfo> *p_list) const {
-	AudioStream::_get_property_list(p_list); // Define the trivial scalar properties.
-	p_list->push_back(PropertyInfo(Variant::NIL, "Streams", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	for (int i = 0; i < audio_stream_pool.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("stream_%d/stream", i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("stream_%d/weight", i), PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"));
-	}
-}
-
 void AudioStreamRandomizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_stream", "index", "stream", "weight"), &AudioStreamRandomizer::add_stream, DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("move_stream", "index_from", "index_to"), &AudioStreamRandomizer::move_stream);
@@ -739,9 +707,17 @@ void AudioStreamRandomizer::_bind_methods() {
 	BIND_ENUM_CONSTANT(PLAYBACK_RANDOM_NO_REPEATS);
 	BIND_ENUM_CONSTANT(PLAYBACK_RANDOM);
 	BIND_ENUM_CONSTANT(PLAYBACK_SEQUENTIAL);
+
+	PoolEntry defaults;
+
+	base_property_helper.set_prefix("stream_");
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), defaults.stream, &AudioStreamRandomizer::set_stream, &AudioStreamRandomizer::get_stream);
+	base_property_helper.register_property(PropertyInfo(Variant::FLOAT, "weight", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), defaults.weight, &AudioStreamRandomizer::set_stream_probability_weight, &AudioStreamRandomizer::get_stream_probability_weight);
 }
 
-AudioStreamRandomizer::AudioStreamRandomizer() {}
+AudioStreamRandomizer::AudioStreamRandomizer() {
+	property_helper.setup_for_instance(base_property_helper, this);
+}
 
 void AudioStreamPlaybackRandomizer::start(double p_from_pos) {
 	playing = playback;
@@ -810,7 +786,11 @@ void AudioStreamPlaybackRandomizer::tag_used_streams() {
 
 int AudioStreamPlaybackRandomizer::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	if (playing.is_valid()) {
-		return playing->mix(p_buffer, p_rate_scale * pitch_scale, p_frames);
+		int mixed_samples = playing->mix(p_buffer, p_rate_scale * pitch_scale, p_frames);
+		for (int samp = 0; samp < mixed_samples; samp++) {
+			p_buffer[samp] *= volume_scale;
+		}
+		return mixed_samples;
 	} else {
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);

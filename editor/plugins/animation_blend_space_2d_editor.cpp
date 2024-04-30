@@ -36,19 +36,23 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
+#include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
 #include "scene/main/window.h"
 
 bool AnimationNodeBlendSpace2DEditor::can_edit(const Ref<AnimationNode> &p_node) {
@@ -121,7 +125,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			classes.sort_custom<StringName::AlphCompare>();
 
 			ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
-			menu->add_submenu_item(TTR("Add Animation"), "animations");
+			menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 
 			List<StringName> names;
 			tree->get_animation_list(&names);
@@ -803,9 +807,9 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 			open_editor->set_icon(get_editor_theme_icon(SNAME("Edit")));
 			auto_triangles->set_icon(get_editor_theme_icon(SNAME("AutoTriangle")));
 			interpolation->clear();
-			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), "", 0);
-			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), "", 1);
-			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackCapture")), "", 2);
+			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), TTR("Continuous"), 0);
+			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), TTR("Discrete"), 1);
+			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackCapture")), TTR("Capture"), 2);
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1069,7 +1073,6 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	add_child(error_panel);
 	error_label = memnew(Label);
 	error_panel->add_child(error_label);
-	error_label->set_text("eh");
 
 	set_custom_minimum_size(Size2(0, 300 * EDSCALE));
 
@@ -1078,8 +1081,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	menu->connect("id_pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_add_menu_type));
 
 	animations_menu = memnew(PopupMenu);
+	animations_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	menu->add_child(animations_menu);
-	animations_menu->set_name("animations");
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_add_animation_type));
 
 	open_file = memnew(EditorFileDialog);

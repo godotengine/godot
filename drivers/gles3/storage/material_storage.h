@@ -43,7 +43,6 @@
 #include "servers/rendering/storage/utilities.h"
 
 #include "drivers/gles3/shaders/canvas.glsl.gen.h"
-#include "drivers/gles3/shaders/cubemap_filter.glsl.gen.h"
 #include "drivers/gles3/shaders/particles.glsl.gen.h"
 #include "drivers/gles3/shaders/scene.glsl.gen.h"
 #include "drivers/gles3/shaders/sky.glsl.gen.h"
@@ -139,7 +138,7 @@ struct Material {
 /* CanvasItem Materials */
 
 struct CanvasShaderData : public ShaderData {
-	enum BlendMode { //used internally
+	enum BlendMode { // Used internally.
 		BLEND_MODE_MIX,
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
@@ -149,9 +148,11 @@ struct CanvasShaderData : public ShaderData {
 		BLEND_MODE_LCD,
 	};
 
+	// All these members are (re)initialized in `set_code`.
+	// Make sure to add the init to `set_code` whenever adding new members.
+
 	bool valid;
 	RID version;
-	BlendMode blend_mode = BLEND_MODE_MIX;
 
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
@@ -160,10 +161,16 @@ struct CanvasShaderData : public ShaderData {
 
 	String code;
 
-	bool uses_screen_texture = false;
-	bool uses_screen_texture_mipmaps = false;
-	bool uses_sdf = false;
-	bool uses_time = false;
+	BlendMode blend_mode;
+
+	bool uses_screen_texture;
+	bool uses_screen_texture_mipmaps;
+	bool uses_sdf;
+	bool uses_time;
+	bool uses_custom0;
+	bool uses_custom1;
+
+	uint64_t vertex_input_mask;
 
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
@@ -191,6 +198,9 @@ MaterialData *_create_canvas_material_func(ShaderData *p_shader);
 /* Sky Materials */
 
 struct SkyShaderData : public ShaderData {
+	// All these members are (re)initialized in `set_code`.
+	// Make sure to add the init to `set_code` whenever adding new members.
+
 	bool valid;
 	RID version;
 
@@ -233,7 +243,7 @@ MaterialData *_create_sky_material_func(ShaderData *p_shader);
 /* Scene Materials */
 
 struct SceneShaderData : public ShaderData {
-	enum BlendMode { //used internally
+	enum BlendMode { // Used internally.
 		BLEND_MODE_MIX,
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
@@ -264,6 +274,9 @@ struct SceneShaderData : public ShaderData {
 		ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
 	};
 
+	// All these members are (re)initialized in `set_code`.
+	// Make sure to add the init to `set_code` whenever adding new members.
+
 	bool valid;
 	RID version;
 
@@ -282,8 +295,8 @@ struct SceneShaderData : public ShaderData {
 
 	bool uses_point_size;
 	bool uses_alpha;
-	bool uses_blend_alpha;
 	bool uses_alpha_clip;
+	bool uses_blend_alpha;
 	bool uses_depth_prepass_alpha;
 	bool uses_discard;
 	bool uses_roughness;
@@ -316,10 +329,7 @@ struct SceneShaderData : public ShaderData {
 	bool uses_bones;
 	bool uses_weights;
 
-	uint32_t vertex_input_mask = 0;
-
-	uint64_t last_pass = 0;
-	uint32_t index = 0;
+	uint64_t vertex_input_mask;
 
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
@@ -354,21 +364,24 @@ enum {
 };
 
 struct ParticlesShaderData : public ShaderData {
-	bool valid = false;
+	// All these members are (re)initialized in `set_code`.
+	// Make sure to add the init to `set_code` whenever adding new members.
+
+	bool valid;
 	RID version;
-	bool uses_collision = false;
 
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 	Vector<uint32_t> ubo_offsets;
-	uint32_t ubo_size = 0;
+	uint32_t ubo_size;
 
 	String code;
 
-	bool uses_time = false;
+	bool uses_collision;
+	bool uses_time;
 
 	bool userdatas_used[PARTICLES_MAX_USERDATAS] = {};
-	uint32_t userdata_count = 0;
+	uint32_t userdata_count;
 
 	virtual void set_code(const String &p_Code);
 	virtual bool is_animated() const;
@@ -529,7 +542,6 @@ public:
 		CanvasShaderGLES3 canvas_shader;
 		SkyShaderGLES3 sky_shader;
 		SceneShaderGLES3 scene_shader;
-		CubemapFilterShaderGLES3 cubemap_filter_shader;
 		ParticlesShaderGLES3 particles_process_shader;
 
 		ShaderCompiler compiler_canvas;

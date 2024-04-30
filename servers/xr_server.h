@@ -38,6 +38,7 @@
 #include "core/variant/variant.h"
 
 class XRInterface;
+class XRTracker;
 class XRPositionalTracker;
 
 /**
@@ -68,6 +69,9 @@ public:
 		TRACKER_CONTROLLER = 0x02, /* tracks a controller */
 		TRACKER_BASESTATION = 0x04, /* tracks location of a base station */
 		TRACKER_ANCHOR = 0x08, /* tracks an anchor point, used in AR to track a real live location */
+		TRACKER_HAND = 0x10, /* tracks a hand */
+		TRACKER_BODY = 0x20, /* tracks a body */
+		TRACKER_FACE = 0x40, /* tracks a face */
 		TRACKER_UNKNOWN = 0x80, /* unknown tracker */
 
 		TRACKER_ANY_KNOWN = 0x7f, /* all except unknown */
@@ -96,6 +100,13 @@ protected:
 	static XRServer *singleton;
 
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	void _add_tracker_bind_compat_90645(const Ref<XRPositionalTracker> &p_tracker);
+	void _remove_tracker_bind_compat_90645(const Ref<XRPositionalTracker> &p_tracker);
+	Ref<XRPositionalTracker> _get_tracker_bind_compat_90645(const StringName &p_name) const;
+#endif
 
 public:
 	static XRMode get_xr_mode();
@@ -142,6 +153,7 @@ public:
 		and in the virtual world out of sync
 	*/
 	Transform3D get_reference_frame() const;
+	void clear_reference_frame();
 	void center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height);
 
 	/*
@@ -167,13 +179,13 @@ public:
 	void set_primary_interface(const Ref<XRInterface> &p_primary_interface);
 
 	/*
-		Our trackers are objects that expose the orientation and position of physical devices such as controller, anchor points, etc.
+		Our trackers are objects that expose tracked information about physical objects such as controller, anchor points, faces, hands etc.
 		They are created and managed by our active AR/VR interfaces.
 	*/
-	void add_tracker(Ref<XRPositionalTracker> p_tracker);
-	void remove_tracker(Ref<XRPositionalTracker> p_tracker);
+	void add_tracker(const Ref<XRTracker> &p_tracker);
+	void remove_tracker(const Ref<XRTracker> &p_tracker);
 	Dictionary get_trackers(int p_tracker_types);
-	Ref<XRPositionalTracker> get_tracker(const StringName &p_name) const;
+	Ref<XRTracker> get_tracker(const StringName &p_name) const;
 
 	/*
 		We don't know which trackers and actions will existing during runtime but we can request suggested names from our interfaces to help our IDE UI.

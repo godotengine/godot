@@ -121,6 +121,7 @@ const GodotJSWrapper = {
 		},
 	},
 
+	godot_js_wrapper_interface_get__proxy: 'sync',
 	godot_js_wrapper_interface_get__sig: 'ii',
 	godot_js_wrapper_interface_get: function (p_name) {
 		const name = GodotRuntime.parseString(p_name);
@@ -130,6 +131,7 @@ const GodotJSWrapper = {
 		return 0;
 	},
 
+	godot_js_wrapper_object_get__proxy: 'sync',
 	godot_js_wrapper_object_get__sig: 'iiii',
 	godot_js_wrapper_object_get: function (p_id, p_exchange, p_prop) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
@@ -148,6 +150,7 @@ const GodotJSWrapper = {
 		return GodotJSWrapper.js2variant(obj, p_exchange);
 	},
 
+	godot_js_wrapper_object_set__proxy: 'sync',
 	godot_js_wrapper_object_set__sig: 'viiii',
 	godot_js_wrapper_object_set: function (p_id, p_name, p_type, p_exchange) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
@@ -162,6 +165,7 @@ const GodotJSWrapper = {
 		}
 	},
 
+	godot_js_wrapper_object_call__proxy: 'sync',
 	godot_js_wrapper_object_call__sig: 'iiiiiiiii',
 	godot_js_wrapper_object_call: function (p_id, p_method, p_args, p_argc, p_convert_callback, p_exchange, p_lock, p_free_lock_callback) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
@@ -189,6 +193,7 @@ const GodotJSWrapper = {
 		}
 	},
 
+	godot_js_wrapper_object_unref__proxy: 'sync',
 	godot_js_wrapper_object_unref__sig: 'vi',
 	godot_js_wrapper_object_unref: function (p_id) {
 		const proxy = IDHandler.get(p_id);
@@ -197,6 +202,7 @@ const GodotJSWrapper = {
 		}
 	},
 
+	godot_js_wrapper_create_cb__proxy: 'sync',
 	godot_js_wrapper_create_cb__sig: 'iii',
 	godot_js_wrapper_create_cb: function (p_ref, p_func) {
 		const func = GodotRuntime.get_func(p_func);
@@ -210,7 +216,7 @@ const GodotJSWrapper = {
 			// This is safe! JavaScript is single threaded (and using it in threads is not a good idea anyway).
 			GodotJSWrapper.cb_ret = null;
 			const args = Array.from(arguments);
-			const argsProxy = GodotJSWrapper.MyProxy(args);
+			const argsProxy = new GodotJSWrapper.MyProxy(args);
 			func(p_ref, argsProxy.get_id(), args.length);
 			argsProxy.unref();
 			const ret = GodotJSWrapper.cb_ret;
@@ -221,11 +227,13 @@ const GodotJSWrapper = {
 		return id;
 	},
 
+	godot_js_wrapper_object_set_cb_ret__proxy: 'sync',
 	godot_js_wrapper_object_set_cb_ret__sig: 'vii',
 	godot_js_wrapper_object_set_cb_ret: function (p_val_type, p_val_ex) {
 		GodotJSWrapper.cb_ret = GodotJSWrapper.variant2js(p_val_type, p_val_ex);
 	},
 
+	godot_js_wrapper_object_getvar__proxy: 'sync',
 	godot_js_wrapper_object_getvar__sig: 'iiii',
 	godot_js_wrapper_object_getvar: function (p_id, p_type, p_exchange) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
@@ -244,6 +252,7 @@ const GodotJSWrapper = {
 		}
 	},
 
+	godot_js_wrapper_object_setvar__proxy: 'sync',
 	godot_js_wrapper_object_setvar__sig: 'iiiiii',
 	godot_js_wrapper_object_setvar: function (p_id, p_key_type, p_key_ex, p_val_type, p_val_ex) {
 		const obj = GodotJSWrapper.get_proxied_value(p_id);
@@ -260,6 +269,7 @@ const GodotJSWrapper = {
 		}
 	},
 
+	godot_js_wrapper_create_object__proxy: 'sync',
 	godot_js_wrapper_create_object__sig: 'iiiiiiii',
 	godot_js_wrapper_create_object: function (p_object, p_args, p_argc, p_convert_callback, p_exchange, p_lock, p_free_lock_callback) {
 		const name = GodotRuntime.parseString(p_object);

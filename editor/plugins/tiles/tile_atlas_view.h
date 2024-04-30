@@ -37,7 +37,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 
 class ViewPanner;
 

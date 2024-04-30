@@ -45,7 +45,7 @@
 
 class EGLManager {
 private:
-	// An EGL-side rappresentation of a display with its own rendering
+	// An EGL-side representation of a display with its own rendering
 	// context.
 	struct GLDisplay {
 		void *display = nullptr;
@@ -92,12 +92,12 @@ private:
 public:
 	int display_get_native_visual_id(void *p_display);
 
+	Error open_display(void *p_display);
 	Error window_create(DisplayServer::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height);
 
 	void window_destroy(DisplayServer::WindowID p_window_id);
 
 	void release_current();
-	void make_current();
 	void swap_buffers();
 
 	void window_make_current(DisplayServer::WindowID p_window_id);

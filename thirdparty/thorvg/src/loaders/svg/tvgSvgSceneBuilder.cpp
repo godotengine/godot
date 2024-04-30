@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -284,8 +284,12 @@ static void _applyComposition(SvgLoaderData& loaderData, Paint* paint, const Svg
 
             bool isMaskWhite = true;
             if (auto comp = _sceneBuildHelper(loaderData, compNode, vBox, svgPath, true, 0, &isMaskWhite)) {
-                Matrix finalTransform = _compositionTransform(paint, node, compNode, SvgNodeType::Mask);
-                comp->transform(finalTransform);
+                if (!compNode->node.mask.userSpace) {
+                    Matrix finalTransform = _compositionTransform(paint, node, compNode, SvgNodeType::Mask);
+                    comp->transform(finalTransform);
+                } else {
+                    if (node->transform) comp->transform(*node->transform);
+                }
 
                 if (compNode->node.mask.type == SvgMaskType::Luminance && !isMaskWhite) {
                     paint->composite(std::move(comp), CompositeMethod::LumaMask);
@@ -392,10 +396,9 @@ static bool _recognizeShape(SvgNode* node, Shape* shape)
     switch (node->type) {
         case SvgNodeType::Path: {
             if (node->node.path.path) {
-                Array<PathCommand> cmds;
-                Array<Point> pts;
-                if (svgPathToTvgPath(node->node.path.path, cmds, pts)) {
-                    shape->appendPath(cmds.data, cmds.count, pts.data, pts.count);
+                if (!svgPathToShape(node->node.path.path, shape)) {
+                    TVGERR("SVG", "Invalid path information.");
+                    return false;
                 }
             }
             break;
@@ -406,7 +409,7 @@ static bool _recognizeShape(SvgNode* node, Shape* shape)
         }
         case SvgNodeType::Polygon: {
             if (node->node.polygon.pts.count < 2) break;
-            auto pts = node->node.polygon.pts.data;
+            auto pts = node->node.polygon.pts.begin();
             shape->moveTo(pts[0], pts[1]);
             for (pts += 2; pts < node->node.polygon.pts.end(); pts += 2) {
                 shape->lineTo(pts[0], pts[1]);
@@ -416,7 +419,7 @@ static bool _recognizeShape(SvgNode* node, Shape* shape)
         }
         case SvgNodeType::Polyline: {
             if (node->node.polyline.pts.count < 2) break;
-            auto pts = node->node.polyline.pts.data;
+            auto pts = node->node.polyline.pts.begin();
             shape->moveTo(pts[0], pts[1]);
             for (pts += 2; pts < node->node.polyline.pts.end(); pts += 2) {
                 shape->lineTo(pts[0], pts[1]);
@@ -841,7 +844,7 @@ static void _updateInvalidViewSize(const Scene* scene, Box& vBox, float& w, floa
 /* External Class Implementation                                        */
 /************************************************************************/
 
-unique_ptr<Scene> svgSceneBuild(SvgLoaderData& loaderData, Box vBox, float w, float h, AspectRatioAlign align, AspectRatioMeetOrSlice meetOrSlice, const string& svgPath, SvgViewFlag viewFlag)
+Scene* svgSceneBuild(SvgLoaderData& loaderData, Box vBox, float w, float h, AspectRatioAlign align, AspectRatioMeetOrSlice meetOrSlice, const string& svgPath, SvgViewFlag viewFlag)
 {
     //TODO: aspect ratio is valid only if viewBox was set
 
@@ -859,8 +862,7 @@ unique_ptr<Scene> svgSceneBuild(SvgLoaderData& loaderData, Box vBox, float w, fl
     }
 
     auto viewBoxClip = Shape::gen();
-    viewBoxClip->appendRect(0, 0, w, h, 0, 0);
-    viewBoxClip->fill(0, 0, 0);
+    viewBoxClip->appendRect(0, 0, w, h);
 
     auto compositeLayer = Scene::gen();
     compositeLayer->composite(std::move(viewBoxClip), CompositeMethod::ClipPath);
@@ -876,5 +878,5 @@ unique_ptr<Scene> svgSceneBuild(SvgLoaderData& loaderData, Box vBox, float w, fl
     loaderData.doc->node.doc.w = w;
     loaderData.doc->node.doc.h = h;
 
-    return root;
+    return root.release();
 }

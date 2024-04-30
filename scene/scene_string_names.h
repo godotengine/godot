@@ -99,7 +99,7 @@ public:
 	StringName RESET;
 
 	StringName pose_updated;
-	StringName bone_pose_changed;
+	StringName skeleton_updated;
 	StringName bone_enabled_changed;
 	StringName show_rest_only_changed;
 

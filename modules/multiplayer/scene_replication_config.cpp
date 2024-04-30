@@ -103,6 +103,14 @@ void SceneReplicationConfig::_get_property_list(List<PropertyInfo> *p_list) cons
 	}
 }
 
+void SceneReplicationConfig::reset_state() {
+	dirty = false;
+	properties.clear();
+	sync_props.clear();
+	spawn_props.clear();
+	watch_props.clear();
+}
+
 TypedArray<NodePath> SceneReplicationConfig::get_properties() const {
 	TypedArray<NodePath> paths;
 	for (const ReplicationProperty &prop : properties) {

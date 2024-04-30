@@ -31,9 +31,9 @@
 #ifndef SKELETON_3D_EDITOR_PLUGIN_H
 #define SKELETON_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -75,7 +75,7 @@ class BoneTransformEditor : public VBoxContainer {
 
 	void create_editors();
 
-	void _value_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing);
+	void _value_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing);
 
 	void _property_keyed(const String &p_path, bool p_advance);
 
@@ -198,7 +198,6 @@ class Skeleton3DEditor : public VBoxContainer {
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
-	static void _bind_methods();
 
 public:
 	static Skeleton3DEditor *get_singleton() { return singleton; }

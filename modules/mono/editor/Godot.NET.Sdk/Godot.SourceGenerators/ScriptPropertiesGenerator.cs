@@ -30,16 +30,13 @@ namespace Godot.SourceGenerators
                         {
                             if (x.cds.IsPartial())
                             {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
+                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out _))
                                 {
-                                    Common.ReportNonPartialGodotScriptOuterClass(context, typeMissingPartial!);
                                     return false;
                                 }
 
                                 return true;
                             }
-
-                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
                         .Select(x => x.symbol)
@@ -91,16 +88,20 @@ namespace Godot.SourceGenerators
             if (isInnerClass)
             {
                 var containingType = symbol.ContainingType;
+                AppendPartialContainingTypeDeclarations(containingType);
 
-                while (containingType != null)
+                void AppendPartialContainingTypeDeclarations(INamedTypeSymbol? containingType)
                 {
+                    if (containingType == null)
+                        return;
+
+                    AppendPartialContainingTypeDeclarations(containingType.ContainingType);
+
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
                     source.Append(containingType.NameWithTypeParameters());
                     source.Append("\n{\n");
-
-                    containingType = containingType.ContainingType;
                 }
             }
 
@@ -129,7 +130,7 @@ namespace Godot.SourceGenerators
                 .Append("    /// </summary>\n");
 
             source.Append(
-                $"    public new class PropertyName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.PropertyName {{\n");
+                $"    public new class PropertyName : {symbol.BaseType!.FullQualifiedNameIncludeGlobal()}.PropertyName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -245,7 +246,7 @@ namespace Godot.SourceGenerators
                 }
                 // Generate GetGodotPropertyList
 
-                const string dictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
+                const string DictionaryType = "global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
 
                 source.Append("    /// <summary>\n")
                     .Append("    /// Get the property information for all the properties declared in this class.\n")
@@ -256,11 +257,11 @@ namespace Godot.SourceGenerators
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
 
                 source.Append("    internal new static ")
-                    .Append(dictionaryType)
+                    .Append(DictionaryType)
                     .Append(" GetGodotPropertyList()\n    {\n");
 
                 source.Append("        var properties = new ")
-                    .Append(dictionaryType)
+                    .Append(DictionaryType)
                     .Append("();\n");
 
                 // To retain the definition order (and display categories correctly), we want to
@@ -439,14 +440,22 @@ namespace Godot.SourceGenerators
                 if (propertySymbol.GetMethod == null)
                 {
                     // This should never happen, as we filtered WriteOnly properties, but just in case.
-                    Common.ReportExportedMemberIsWriteOnly(context, propertySymbol);
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ExportedPropertyIsWriteOnlyRule,
+                        propertySymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        propertySymbol.ToDisplayString()
+                    ));
                     return null;
                 }
 
                 if (propertySymbol.SetMethod == null || propertySymbol.SetMethod.IsInitOnly)
                 {
                     // This should never happen, as we filtered ReadOnly properties, but just in case.
-                    Common.ReportExportedMemberIsReadOnly(context, propertySymbol);
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ExportedMemberIsReadOnlyRule,
+                        propertySymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        propertySymbol.ToDisplayString()
+                    ));
                     return null;
                 }
             }

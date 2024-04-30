@@ -507,6 +507,10 @@ void register_global_constants() {
 	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, KPAD);
 	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, GROUP_SWITCH);
 
+	BIND_CORE_ENUM_CLASS_CONSTANT(KeyLocation, KEY_LOCATION, UNSPECIFIED);
+	BIND_CORE_ENUM_CLASS_CONSTANT(KeyLocation, KEY_LOCATION, LEFT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(KeyLocation, KEY_LOCATION, RIGHT);
+
 	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, NONE);
 	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, LEFT);
 	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, RIGHT);
@@ -794,6 +798,8 @@ void register_global_constants() {
 
 void unregister_global_constants() {
 	_global_constants.clear();
+	_global_constants_map.clear();
+	_global_enums.clear();
 }
 
 int CoreConstants::get_global_constant_count() {
@@ -843,7 +849,7 @@ bool CoreConstants::is_global_enum(const StringName &p_enum) {
 	return _global_enums.has(p_enum);
 }
 
-void CoreConstants::get_enum_values(StringName p_enum, HashMap<StringName, int64_t> *p_values) {
+void CoreConstants::get_enum_values(const StringName &p_enum, HashMap<StringName, int64_t> *p_values) {
 	ERR_FAIL_NULL_MSG(p_values, "Trying to get enum values with null map.");
 	ERR_FAIL_COND_MSG(!_global_enums.has(p_enum), "Trying to get values of non-existing enum.");
 	for (const _CoreConstant &constant : _global_enums[p_enum]) {

@@ -103,8 +103,8 @@ bool TextureButton::has_point(const Point2 &p_point) const {
 			point *= scale;
 
 			// finally, we need to check if the point is inside a rectangle with a position >= 0,0 and a size <= mask_size
-			rect.position = Point2(MAX(0, _texture_region.position.x), MAX(0, _texture_region.position.y));
-			rect.size = Size2(MIN(mask_size.x, _texture_region.size.x), MIN(mask_size.y, _texture_region.size.y));
+			rect.position = Point2().max(_texture_region.position);
+			rect.size = mask_size.min(_texture_region.size);
 		}
 
 		if (!rect.has_point(point)) {

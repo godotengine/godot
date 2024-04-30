@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 2D vector using floating point coordinates.
+		A 2D vector using floating-point coordinates.
 	</brief_description>
 	<description>
 		A 2-element structure that can be used to represent 2D coordinates or any other pair of numeric values.
@@ -14,7 +14,7 @@
 		<link title="Vector math">$DOCS_URL/tutorials/math/vector_math.html</link>
 		<link title="Advanced vector math">$DOCS_URL/tutorials/math/vectors_advanced.html</link>
 		<link title="3Blue1Brown Essence of Linear Algebra">https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab</link>
-		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/2787</link>
 		<link title="All 2D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/2d</link>
 	</tutorials>
 	<constructors>
@@ -110,7 +110,8 @@
 			<return type="Vector2" />
 			<param index="0" name="n" type="Vector2" />
 			<description>
-				Returns a new vector "bounced off" from a plane defined by the given normal.
+				Returns the vector "bounced off" from a line defined by the given normal [param n] perpendicular to the line.
+				[b]Note:[/b] [method bounce] performs the operation that most engines and frameworks call [code skip-lint]reflect()[/code].
 			</description>
 		</method>
 		<method name="ceil" qualifiers="const">
@@ -132,7 +133,7 @@
 			<param index="0" name="with" type="Vector2" />
 			<description>
 				Returns the 2D analog of the cross product for this vector and [param with].
-				This is the signed area of the parallelogram formed by the two vectors. If the second vector is clockwise from the first vector, then the cross product is the positive area. If counter-clockwise, the cross product is the negative area.
+				This is the signed area of the parallelogram formed by the two vectors. If the second vector is clockwise from the first vector, then the cross product is the positive area. If counter-clockwise, the cross product is the negative area. If the two vectors are parallel this returns zero, making it useful for testing if two vectors are parallel.
 				[b]Note:[/b] Cross product is not defined in 2D mathematically. This method embeds the 2D vectors in the XY plane of 3D space and uses their cross product's Z component as the analog.
 			</description>
 		</method>
@@ -157,7 +158,7 @@
 			<param index="6" name="post_b_t" type="float" />
 			<description>
 				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
-				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
+				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
 			</description>
 		</method>
 		<method name="direction_to" qualifiers="const">
@@ -236,7 +237,7 @@
 				This method is faster than using [method is_equal_approx] with one value as a zero vector.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.
@@ -249,7 +250,7 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
-		<method name="lerp" qualifiers="const">
+		<method name="lerp" qualifiers="const" keywords="interpolate">
 			<return type="Vector2" />
 			<param index="0" name="to" type="Vector2" />
 			<param index="1" name="weight" type="float" />
@@ -257,7 +258,7 @@
 				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
-		<method name="limit_length" qualifiers="const">
+		<method name="limit_length" qualifiers="const" keywords="truncate">
 			<return type="Vector2" />
 			<param index="0" name="length" type="float" default="1.0" />
 			<description>
@@ -315,14 +316,16 @@
 			<return type="Vector2" />
 			<param index="0" name="b" type="Vector2" />
 			<description>
-				Returns the result of projecting the vector onto the given vector [param b].
+				Returns a new vector resulting from projecting this vector onto the given vector [param b]. The resulting new vector is parallel to [param b]. See also [method slide].
+				[b]Note:[/b] If the vector [param b] is a zero vector, the components of the resulting new vector will be [constant @GDScript.NAN].
 			</description>
 		</method>
 		<method name="reflect" qualifiers="const">
 			<return type="Vector2" />
-			<param index="0" name="n" type="Vector2" />
+			<param index="0" name="line" type="Vector2" />
 			<description>
-				Returns the result of reflecting the vector from a line defined by the given direction vector [param n].
+				Returns the result of reflecting the vector from a line defined by the given direction vector [param line].
+				[b]Note:[/b] [method reflect] differs from what other engines and frameworks call [code skip-lint]reflect()[/code]. In other engines, [code skip-lint]reflect()[/code] takes a normal direction which is a direction perpendicular to the line. In Godot, you specify the direction of the line directly. See also [method bounce] which does what most engines call [code skip-lint]reflect()[/code].
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
@@ -352,7 +355,7 @@
 				Returns a new vector with each component set to [code]1.0[/code] if it's positive, [code]-1.0[/code] if it's negative, and [code]0.0[/code] if it's zero. The result is identical to calling [method @GlobalScope.sign] on each component.
 			</description>
 		</method>
-		<method name="slerp" qualifiers="const">
+		<method name="slerp" qualifiers="const" keywords="interpolate">
 			<return type="Vector2" />
 			<param index="0" name="to" type="Vector2" />
 			<param index="1" name="weight" type="float" />
@@ -365,7 +368,8 @@
 			<return type="Vector2" />
 			<param index="0" name="n" type="Vector2" />
 			<description>
-				Returns the result of sliding the vector along a plane defined by the given normal.
+				Returns a new vector resulting from sliding this vector along a line with normal [param n]. The resulting new vector is perpendicular to [param n], and is equivalent to this vector minus its projection on [param n]. See also [method project].
+				[b]Note:[/b] The vector [param n] must be normalized. See also [method normalized].
 			</description>
 		</method>
 		<method name="snapped" qualifiers="const">
@@ -427,7 +431,9 @@
 			<return type="Vector2" />
 			<param index="0" name="right" type="Transform2D" />
 			<description>
-				Inversely transforms (multiplies) the [Vector2] by the given [Transform2D] transformation matrix.
+				Inversely transforms (multiplies) the [Vector2] by the given [Transform2D] transformation matrix, under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not).
+				[code]vector * transform[/code] is equivalent to [code]transform.inverse() * vector[/code]. See [method Transform2D.inverse].
+				For transforming by inverse of an affine transformation (e.g. with scaling) [code]transform.affine_inverse() * vector[/code] can be used instead. See [method Transform2D.affine_inverse].
 			</description>
 		</operator>
 		<operator name="operator *">

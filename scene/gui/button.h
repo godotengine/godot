@@ -45,6 +45,7 @@ private:
 
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
 	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 
 	Ref<Texture2D> icon;
@@ -102,6 +103,7 @@ protected:
 	void _set_internal_margin(Side p_side, float p_value);
 	virtual void _queue_update_size_cache();
 
+	Ref<StyleBox> _get_current_stylebox() const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -115,6 +117,9 @@ public:
 
 	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior() const;
+
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
 
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;

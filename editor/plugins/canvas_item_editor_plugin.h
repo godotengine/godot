@@ -31,7 +31,7 @@
 #ifndef CANVAS_ITEM_EDITOR_PLUGIN_H
 #define CANVAS_ITEM_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/base_button.h"
 #include "scene/gui/box_container.h"
 
@@ -56,7 +56,6 @@ class CanvasItemEditorSelectedItem : public Object {
 
 public:
 	Transform2D prev_xform;
-	real_t prev_rot = 0;
 	Rect2 prev_rect;
 	Vector2 prev_pivot;
 	real_t prev_anchors[4] = { (real_t)0.0 };
@@ -126,7 +125,9 @@ private:
 		SHOW_GUIDES,
 		SHOW_ORIGIN,
 		SHOW_VIEWPORT,
-		SHOW_EDIT_LOCKS,
+		SHOW_POSITION_GIZMOS,
+		SHOW_LOCK_GIZMOS,
+		SHOW_GROUP_GIZMOS,
 		SHOW_TRANSFORMATION_GIZMOS,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
@@ -173,6 +174,7 @@ private:
 		DRAG_SCALE_BOTH,
 		DRAG_ROTATE,
 		DRAG_PIVOT,
+		DRAG_TEMP_PIVOT,
 		DRAG_V_GUIDE,
 		DRAG_H_GUIDE,
 		DRAG_DOUBLE_GUIDE,
@@ -209,7 +211,9 @@ private:
 	bool show_origin = true;
 	bool show_viewport = true;
 	bool show_helpers = false;
-	bool show_edit_locks = true;
+	bool show_position_gizmos = true;
+	bool show_lock_gizmos = true;
+	bool show_group_gizmos = true;
 	bool show_transformation_gizmos = true;
 
 	real_t zoom = 1.0;
@@ -248,6 +252,7 @@ private:
 	bool key_scale = false;
 
 	bool pan_pressed = false;
+	Vector2 temp_pivot = Vector2(INFINITY, INFINITY);
 
 	bool ruler_tool_active = false;
 	Point2 ruler_tool_origin;
@@ -294,6 +299,7 @@ private:
 	};
 
 	HashMap<BoneKey, BoneList> bone_list;
+	MenuButton *skeleton_menu = nullptr;
 
 	struct PoseClipboard {
 		Vector2 pos;
@@ -326,11 +332,11 @@ private:
 	Button *group_button = nullptr;
 	Button *ungroup_button = nullptr;
 
-	MenuButton *skeleton_menu = nullptr;
 	Button *override_camera_button = nullptr;
 	MenuButton *view_menu = nullptr;
 	PopupMenu *grid_menu = nullptr;
 	PopupMenu *theme_menu = nullptr;
+	PopupMenu *gizmos_menu = nullptr;
 	HBoxContainer *animation_hb = nullptr;
 	MenuButton *animation_menu = nullptr;
 
@@ -388,9 +394,9 @@ private:
 
 	CanvasItem *ref_item = nullptr;
 
-	void _save_canvas_item_state(List<CanvasItem *> p_canvas_items, bool save_bones = false);
-	void _restore_canvas_item_state(List<CanvasItem *> p_canvas_items, bool restore_bones = false);
-	void _commit_canvas_item_state(List<CanvasItem *> p_canvas_items, String action_name, bool commit_bones = false);
+	void _save_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool save_bones = false);
+	void _restore_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool restore_bones = false);
+	void _commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, const String &action_name, bool commit_bones = false);
 
 	Vector2 _anchor_to_position(const Control *p_control, Vector2 anchor);
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
@@ -424,7 +430,7 @@ private:
 	void _switch_theme_preview(int p_mode);
 
 	List<CanvasItem *> _get_edited_canvas_items(bool retrieve_locked = false, bool remove_canvas_item_if_parent_in_selection = true) const;
-	Rect2 _get_encompassing_rect_from_list(List<CanvasItem *> p_list);
+	Rect2 _get_encompassing_rect_from_list(const List<CanvasItem *> &p_list);
 	void _expand_encompassing_rect_using_children(Rect2 &r_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D(), bool include_locked_nodes = true);
 	Rect2 _get_encompassing_rect(const Node *p_node);
 
@@ -436,7 +442,7 @@ private:
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;
 
-	void _draw_text_at_position(Point2 p_position, String p_string, Side p_side);
+	void _draw_text_at_position(Point2 p_position, const String &p_string, Side p_side);
 	void _draw_margin_at_position(int p_value, Point2 p_position, Side p_side);
 	void _draw_percentage_at_position(real_t p_value, Point2 p_position, Side p_side);
 	void _draw_straight_line(Point2 p_from, Point2 p_to, Color p_color);
@@ -454,7 +460,7 @@ private:
 	void _draw_invisible_nodes_positions(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _draw_hover();
-	void _draw_transform_message();
+	void _draw_message();
 
 	void _draw_viewport();
 
@@ -473,10 +479,13 @@ private:
 
 	void _gui_input_viewport(const Ref<InputEvent> &p_event);
 	void _update_cursor();
+	void _update_lock_and_group_button();
 
 	void _selection_changed();
 	void _focus_selection(int p_op);
 	void _reset_drag();
+
+	void _project_settings_changed();
 
 	SnapTarget snap_target[2];
 	Transform2D snap_transform;
@@ -540,7 +549,9 @@ public:
 		SNAP_DEFAULT = SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL,
 	};
 
-	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = nullptr, List<CanvasItem *> p_other_nodes_exceptions = List<CanvasItem *>());
+	String message;
+
+	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = nullptr, const List<CanvasItem *> &p_other_nodes_exceptions = List<CanvasItem *>());
 	real_t snap_angle(real_t p_target, real_t p_start = 0) const;
 
 	Transform2D get_canvas_transform() const { return transform; }
@@ -638,7 +649,7 @@ class CanvasItemEditorViewport : public Control {
 	void _create_preview(const Vector<String> &files) const;
 	void _remove_preview();
 
-	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
+	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
 	bool _only_packed_scenes_selected() const;
 	void _create_nodes(Node *parent, Node *child, String &path, const Point2 &p_point);
 	bool _create_instance(Node *parent, String &path, const Point2 &p_point);

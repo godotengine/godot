@@ -50,12 +50,14 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 
 	String scheme;
 	Error err = p_url.parse_url(scheme, url, port, request_string);
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Error parsing URL: " + p_url + ".");
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error parsing URL: '%s'.", p_url));
+
 	if (scheme == "https://") {
 		use_tls = true;
 	} else if (scheme != "http://") {
-		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Invalid URL scheme: " + scheme + ".");
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("Invalid URL scheme: '%s'.", scheme));
 	}
+
 	if (port == 0) {
 		port = use_tls ? 443 : 80;
 	}
@@ -472,7 +474,7 @@ bool HTTPRequest::_update_connection() {
 }
 
 void HTTPRequest::_defer_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data) {
-	call_deferred(SNAME("_request_done"), p_status, p_code, p_headers, p_data);
+	callable_mp(this, &HTTPRequest::_request_done).call_deferred(p_status, p_code, p_headers, p_data);
 }
 
 void HTTPRequest::_request_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data) {
@@ -503,7 +505,9 @@ void HTTPRequest::_notification(int p_what) {
 
 void HTTPRequest::set_use_threads(bool p_use) {
 	ERR_FAIL_COND(get_http_client_status() != HTTPClient::STATUS_DISCONNECTED);
+#ifdef THREADS_ENABLED
 	use_threads.set_to(p_use);
+#endif
 }
 
 bool HTTPRequest::is_using_threads() const {
@@ -620,8 +624,6 @@ void HTTPRequest::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_downloaded_bytes"), &HTTPRequest::get_downloaded_bytes);
 	ClassDB::bind_method(D_METHOD("get_body_size"), &HTTPRequest::get_body_size);
-
-	ClassDB::bind_method(D_METHOD("_request_done"), &HTTPRequest::_request_done);
 
 	ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &HTTPRequest::set_timeout);
 	ClassDB::bind_method(D_METHOD("get_timeout"), &HTTPRequest::get_timeout);

@@ -19,7 +19,7 @@ void Contour::addEdge(EdgeHolder &&edge) {
 }
 #endif
 
-EdgeHolder & Contour::addEdge() {
+EdgeHolder &Contour::addEdge() {
     edges.resize(edges.size()+1);
     return edges.back();
 }

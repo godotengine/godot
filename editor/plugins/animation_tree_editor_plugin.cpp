@@ -34,19 +34,15 @@
 #include "animation_blend_space_2d_editor.h"
 #include "animation_blend_tree_editor_plugin.h"
 #include "animation_state_machine_editor.h"
-#include "core/config/project_settings.h"
-#include "core/input/input.h"
-#include "core/io/resource_loader.h"
-#include "core/math/delaunay_2d.h"
-#include "core/os/keyboard.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
-#include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_bottom_panel.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
-#include "scene/animation/animation_player.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/panel.h"
-#include "scene/main/window.h"
+#include "scene/gui/button.h"
+#include "scene/gui/margin_container.h"
+#include "scene/gui/scroll_container.h"
+#include "scene/gui/separator.h"
 #include "scene/scene_string_names.h"
 
 void AnimationTreeEditor::edit(AnimationTree *p_tree) {
@@ -109,6 +105,7 @@ void AnimationTreeEditor::_update_path() {
 	path_hb->add_child(b);
 	for (int i = 0; i < button_path.size(); i++) {
 		b = memnew(Button);
+		b->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		b->set_text(button_path[i]);
 		b->set_toggle_mode(true);
 		b->set_button_group(group);
@@ -296,11 +293,11 @@ void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
 		//editor->hide_animation_player_editors();
 		//editor->animation_panel_make_visible(true);
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(anim_tree_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(anim_tree_editor);
 		anim_tree_editor->set_process(true);
 	} else {
 		if (anim_tree_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 		button->hide();
 		anim_tree_editor->set_process(false);
@@ -311,7 +308,7 @@ AnimationTreeEditorPlugin::AnimationTreeEditorPlugin() {
 	anim_tree_editor = memnew(AnimationTreeEditor);
 	anim_tree_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("AnimationTree"), anim_tree_editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("AnimationTree"), anim_tree_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_tree_bottom_panel", TTR("Toggle AnimationTree Bottom Panel")));
 	button->hide();
 }
 

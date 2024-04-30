@@ -37,6 +37,7 @@ import android.content.*
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.graphics.Color
 import android.graphics.Rect
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -55,6 +56,7 @@ import org.godotengine.godot.io.directory.DirectoryAccessHandler
 import org.godotengine.godot.io.file.FileAccessHandler
 import org.godotengine.godot.plugin.GodotPluginRegistry
 import org.godotengine.godot.tts.GodotTTS
+import org.godotengine.godot.utils.CommandLineFileParser
 import org.godotengine.godot.utils.GodotNetUtils
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.PermissionsUtil.requestPermission
@@ -67,7 +69,7 @@ import org.godotengine.godot.xr.XRMode
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
-import java.nio.charset.StandardCharsets
+import java.lang.Exception
 import java.security.MessageDigest
 import java.util.*
 
@@ -83,8 +85,11 @@ class Godot(private val context: Context) : SensorEventListener {
 		private val TAG = Godot::class.java.simpleName
 	}
 
+	private val windowManager: WindowManager by lazy {
+		requireActivity().getSystemService(Context.WINDOW_SERVICE) as WindowManager
+	}
 	private val pluginRegistry: GodotPluginRegistry by lazy {
-		GodotPluginRegistry.initializePluginRegistry(this)
+		GodotPluginRegistry.getPluginRegistry()
 	}
 	private val mSensorManager: SensorManager by lazy {
 		requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -119,6 +124,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	val directoryAccessHandler = DirectoryAccessHandler(context)
 	val fileAccessHandler = FileAccessHandler(context)
 	val netUtils = GodotNetUtils(context)
+	private val commandLineFileParser = CommandLineFileParser()
 
 	/**
 	 * Tracks whether [onCreate] was completed successfully.
@@ -149,6 +155,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	private var useApkExpansion = false
 	private var useImmersive = false
 	private var useDebugOpengl = false
+	private var darkMode = false
 
 	private var containerLayout: FrameLayout? = null
 	var renderView: GodotRenderView? = null
@@ -184,13 +191,15 @@ class Godot(private val context: Context) : SensorEventListener {
 			return
 		}
 
-		beginBenchmarkMeasure("Godot::onCreate")
+		darkMode = context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+
+		beginBenchmarkMeasure("Startup", "Godot::onCreate")
 		try {
 			this.primaryHost = primaryHost
 			val activity = requireActivity()
 			val window = activity.window
 			window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
-			GodotPluginRegistry.initializePluginRegistry(this)
+			GodotPluginRegistry.initializePluginRegistry(this, primaryHost.getHostPlugins(this))
 			if (io == null) {
 				io = GodotIO(activity)
 			}
@@ -250,11 +259,7 @@ class Godot(private val context: Context) : SensorEventListener {
 				}
 				i++
 			}
-			if (newArgs.isEmpty()) {
-				commandLine = mutableListOf()
-			} else {
-				commandLine = newArgs
-			}
+			commandLine = if (newArgs.isEmpty()) { mutableListOf() } else { newArgs }
 			if (useApkExpansion && mainPackMd5 != null && mainPackKey != null) {
 				// Build the full path to the app's expansion files
 				try {
@@ -290,7 +295,7 @@ class Godot(private val context: Context) : SensorEventListener {
 			initializationStarted = false
 			throw e
 		} finally {
-			endBenchmarkMeasure("Godot::onCreate");
+			endBenchmarkMeasure("Startup", "Godot::onCreate")
 		}
 	}
 
@@ -380,6 +385,8 @@ class Godot(private val context: Context) : SensorEventListener {
 							ViewGroup.LayoutParams.MATCH_PARENT,
 							activity.resources.getDimension(R.dimen.text_edit_height).toInt()
 					)
+			// Prevent GodotEditText from showing on splash screen on devices with Android 14 or newer.
+			editText.setBackgroundColor(Color.TRANSPARENT)
 			// ...add to FrameLayout
 			containerLayout?.addView(editText)
 			renderView = if (usesVulkan()) {
@@ -392,17 +399,21 @@ class Godot(private val context: Context) : SensorEventListener {
 				// Fallback to openGl
 				GodotGLRenderView(host, this, xrMode, useDebugOpengl)
 			}
+
 			if (host == primaryHost) {
-				renderView!!.startRenderer()
+				renderView?.startRenderer()
 			}
-			val view: View = renderView!!.view
-			containerLayout?.addView(
-					view,
+
+			renderView?.let {
+				containerLayout?.addView(
+					it.view,
 					ViewGroup.LayoutParams(
 							ViewGroup.LayoutParams.MATCH_PARENT,
 							ViewGroup.LayoutParams.MATCH_PARENT
 					)
-			)
+				)
+			}
+
 			editText.setView(renderView)
 			io?.setEdit(editText)
 
@@ -445,20 +456,23 @@ class Godot(private val context: Context) : SensorEventListener {
 				})
 			} else {
 				// Infer the virtual keyboard height using visible area.
-				view.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+				renderView?.view?.viewTreeObserver?.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
 					// Don't allocate a new Rect every time the callback is called.
 					val visibleSize = Rect()
 					override fun onGlobalLayout() {
-						val surfaceView = renderView!!.view
-						surfaceView.getWindowVisibleDisplayFrame(visibleSize)
-						val keyboardHeight = surfaceView.height - visibleSize.bottom
-						GodotLib.setVirtualKeyboardHeight(keyboardHeight)
+						renderView?.let {
+							val surfaceView = it.view
+
+							surfaceView.getWindowVisibleDisplayFrame(visibleSize)
+							val keyboardHeight = surfaceView.height - visibleSize.bottom
+							GodotLib.setVirtualKeyboardHeight(keyboardHeight)
+						}
 					}
 				})
 			}
 
 			if (host == primaryHost) {
-				renderView!!.queueOnRenderThread {
+				renderView?.queueOnRenderThread {
 					for (plugin in pluginRegistry.allPlugins) {
 						plugin.onRegisterPluginWithGodotNative()
 					}
@@ -487,12 +501,20 @@ class Godot(private val context: Context) : SensorEventListener {
 		return containerLayout
 	}
 
+	fun onStart(host: GodotHost) {
+		if (host != primaryHost) {
+			return
+		}
+
+		renderView?.onActivityStarted()
+	}
+
 	fun onResume(host: GodotHost) {
 		if (host != primaryHost) {
 			return
 		}
 
-		renderView!!.onActivityResumed()
+		renderView?.onActivityResumed()
 		if (mAccelerometer != null) {
 			mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME)
 		}
@@ -524,11 +546,19 @@ class Godot(private val context: Context) : SensorEventListener {
 			return
 		}
 
-		renderView!!.onActivityPaused()
+		renderView?.onActivityPaused()
 		mSensorManager.unregisterListener(this)
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainPause()
 		}
+	}
+
+	fun onStop(host: GodotHost) {
+		if (host != primaryHost) {
+			return
+		}
+
+		renderView?.onActivityStopped()
 	}
 
 	fun onDestroy(primaryHost: GodotHost) {
@@ -539,8 +569,22 @@ class Godot(private val context: Context) : SensorEventListener {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainDestroy()
 		}
-		GodotLib.ondestroy()
-		forceQuit()
+
+		runOnRenderThread {
+			GodotLib.ondestroy()
+			forceQuit()
+		}
+	}
+
+	/**
+	 * Configuration change callback
+	*/
+	fun onConfigurationChanged(newConfig: Configuration) {
+		val newDarkMode = newConfig.uiMode.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+		if (darkMode != newDarkMode) {
+			darkMode = newDarkMode
+			GodotLib.onNightModeChanged()
+		}
 	}
 
 	/**
@@ -575,6 +619,21 @@ class Godot(private val context: Context) : SensorEventListener {
 	 * Invoked on the render thread when the Godot setup is complete.
 	 */
 	private fun onGodotSetupCompleted() {
+		Log.d(TAG, "OnGodotSetupCompleted")
+
+		// These properties are defined after Godot setup completion, so we retrieve them here.
+		val longPressEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
+		val panScaleEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
+		val rotaryInputAxis = java.lang.Integer.parseInt(GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis"))
+
+		runOnUiThread {
+			renderView?.inputHandler?.apply {
+				enableLongPress(longPressEnabled)
+				enablePanningAndScalingGestures(panScaleEnabled)
+				setRotaryInputAxis(rotaryInputAxis)
+			}
+		}
+
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onGodotSetupCompleted()
 		}
@@ -585,6 +644,8 @@ class Godot(private val context: Context) : SensorEventListener {
 	 * Invoked on the render thread when the Godot main loop has started.
 	 */
 	private fun onGodotMainLoopStarted() {
+		Log.d(TAG, "OnGodotMainLoopStarted")
+
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onGodotMainLoopStarted()
 		}
@@ -616,7 +677,7 @@ class Godot(private val context: Context) : SensorEventListener {
 
 	private fun alert(message: String, title: String, okCallback: Runnable?) {
 		val activity: Activity = getActivity() ?: return
-		runOnUiThread(Runnable {
+		runOnUiThread {
 			val builder = AlertDialog.Builder(activity)
 			builder.setMessage(message).setTitle(title)
 			builder.setPositiveButton(
@@ -627,7 +688,7 @@ class Godot(private val context: Context) : SensorEventListener {
 			}
 			val dialog = builder.create()
 			dialog.show()
-		})
+		}
 	}
 
 	/**
@@ -636,9 +697,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	 * This must be called after the render thread has started.
 	 */
 	fun runOnRenderThread(action: Runnable) {
-		if (renderView != null) {
-			renderView!!.queueOnRenderThread(action)
-		}
+		renderView?.queueOnRenderThread(action)
 	}
 
 	/**
@@ -685,9 +744,9 @@ class Godot(private val context: Context) : SensorEventListener {
 		return false
 	}
 
-	private fun setKeepScreenOn(p_enabled: Boolean) {
+	private fun setKeepScreenOn(enabled: Boolean) {
 		runOnUiThread {
-			if (p_enabled) {
+			if (enabled) {
 				getActivity()?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 			} else {
 				getActivity()?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -700,7 +759,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	 */
 	@Keep
 	private fun isDarkModeSupported(): Boolean {
-		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+		return context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_UNDEFINED
 	}
 
 	/**
@@ -708,17 +767,14 @@ class Godot(private val context: Context) : SensorEventListener {
 	 */
 	@Keep
 	private fun isDarkMode(): Boolean {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			return context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-		}
-		return false
+		return darkMode
 	}
 
 	fun hasClipboard(): Boolean {
 		return mClipboard.hasPrimaryClip()
 	}
 
-	fun getClipboard(): String? {
+	fun getClipboard(): String {
 		val clipData = mClipboard.primaryClip ?: return ""
 		val text = clipData.getItemAt(0).text ?: return ""
 		return text.toString()
@@ -735,15 +791,14 @@ class Godot(private val context: Context) : SensorEventListener {
 
 	@Keep
 	private fun forceQuit(instanceId: Int): Boolean {
-		if (primaryHost == null) {
-			return false
-		}
-		return if (instanceId == 0) {
-			primaryHost!!.onGodotForceQuit(this)
-			true
-		} else {
-			primaryHost!!.onGodotForceQuit(instanceId)
-		}
+		primaryHost?.let {
+			if (instanceId == 0) {
+				it.onGodotForceQuit(this)
+				return true
+			} else {
+				return it.onGodotForceQuit(instanceId)
+			}
+		} ?: return false
 	}
 
 	fun onBackPressed(host: GodotHost) {
@@ -757,20 +812,17 @@ class Godot(private val context: Context) : SensorEventListener {
 				shouldQuit = false
 			}
 		}
-		if (shouldQuit && renderView != null) {
-			renderView!!.queueOnRenderThread { GodotLib.back() }
+		if (shouldQuit) {
+			renderView?.queueOnRenderThread { GodotLib.back() }
 		}
 	}
 
 	private fun getRotatedValues(values: FloatArray?): FloatArray? {
 		if (values == null || values.size != 3) {
-			return values
+			return null
 		}
-		val display =
-			(requireActivity().getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
-		val displayRotation = display.rotation
 		val rotatedValues = FloatArray(3)
-		when (displayRotation) {
+		when (windowManager.defaultDisplay.rotation) {
 			Surface.ROTATION_0 -> {
 				rotatedValues[0] = values[0]
 				rotatedValues[1] = values[1]
@@ -799,45 +851,42 @@ class Godot(private val context: Context) : SensorEventListener {
 		if (renderView == null) {
 			return
 		}
+
+		val rotatedValues = getRotatedValues(event.values)
+
 		when (event.sensor.type) {
 			Sensor.TYPE_ACCELEROMETER -> {
-				val rotatedValues = getRotatedValues(event.values)
-				renderView!!.queueOnRenderThread {
-					GodotLib.accelerometer(
-						-rotatedValues!![0], -rotatedValues[1], -rotatedValues[2]
-					)
+				rotatedValues?.let {
+					renderView?.queueOnRenderThread {
+						GodotLib.accelerometer(-it[0], -it[1], -it[2])
+					}
 				}
 			}
 			Sensor.TYPE_GRAVITY -> {
-				val rotatedValues = getRotatedValues(event.values)
-				renderView!!.queueOnRenderThread {
-					GodotLib.gravity(
-						-rotatedValues!![0], -rotatedValues[1], -rotatedValues[2]
-					)
+				rotatedValues?.let {
+					renderView?.queueOnRenderThread {
+						GodotLib.gravity(-it[0], -it[1], -it[2])
+					}
 				}
 			}
 			Sensor.TYPE_MAGNETIC_FIELD -> {
-				val rotatedValues = getRotatedValues(event.values)
-				renderView!!.queueOnRenderThread {
-					GodotLib.magnetometer(
-						-rotatedValues!![0], -rotatedValues[1], -rotatedValues[2]
-					)
+				rotatedValues?.let {
+					renderView?.queueOnRenderThread {
+						GodotLib.magnetometer(-it[0], -it[1], -it[2])
+					}
 				}
 			}
 			Sensor.TYPE_GYROSCOPE -> {
-				val rotatedValues = getRotatedValues(event.values)
-				renderView!!.queueOnRenderThread {
-					GodotLib.gyroscope(
-						rotatedValues!![0], rotatedValues[1], rotatedValues[2]
-					)
+				rotatedValues?.let {
+					renderView?.queueOnRenderThread {
+						GodotLib.gyroscope(it[0], it[1], it[2])
+					}
 				}
 			}
 		}
 	}
 
-	override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-		// Do something here if sensor accuracy changes.
-	}
+	override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
 	/**
 	 * Used by the native code (java_godot_wrapper.h) to vibrate the device.
@@ -863,47 +912,18 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	private fun getCommandLine(): MutableList<String> {
-		val original: MutableList<String> = parseCommandLine()
-		val hostCommandLine = primaryHost?.commandLine
-		if (hostCommandLine != null && hostCommandLine.isNotEmpty()) {
-			original.addAll(hostCommandLine)
-		}
-		return original
-	}
-
-	private fun parseCommandLine(): MutableList<String> {
-		val inputStream: InputStream
-		return try {
-			inputStream = requireActivity().assets.open("_cl_")
-			val len = ByteArray(4)
-			var r = inputStream.read(len)
-			if (r < 4) {
-				return mutableListOf()
-			}
-			val argc =
-				(len[3].toInt() and 0xFF) shl 24 or ((len[2].toInt() and 0xFF) shl 16) or ((len[1].toInt() and 0xFF) shl 8) or (len[0].toInt() and 0xFF)
-			val cmdline = ArrayList<String>(argc)
-			for (i in 0 until argc) {
-				r = inputStream.read(len)
-				if (r < 4) {
-					return mutableListOf()
-				}
-				val strlen =
-					(len[3].toInt() and 0xFF) shl 24 or ((len[2].toInt() and 0xFF) shl 16) or ((len[1].toInt() and 0xFF) shl 8) or (len[0].toInt() and 0xFF)
-				if (strlen > 65535) {
-					return mutableListOf()
-				}
-				val arg = ByteArray(strlen)
-				r = inputStream.read(arg)
-				if (r == strlen) {
-					cmdline[i] = String(arg, StandardCharsets.UTF_8)
-				}
-			}
-			cmdline
-		} catch (e: Exception) {
-			// The _cl_ file can be missing with no adverse effect
+		val commandLine = try {
+			commandLineFileParser.parseCommandLine(requireActivity().assets.open("_cl_"))
+		} catch (ignored: Exception) {
 			mutableListOf()
 		}
+
+		val hostCommandLine = primaryHost?.commandLine
+		if (!hostCommandLine.isNullOrEmpty()) {
+			commandLine.addAll(hostCommandLine)
+		}
+
+		return commandLine
 	}
 
 	/**
@@ -925,6 +945,19 @@ class Godot(private val context: Context) : SensorEventListener {
 
 	fun getGrantedPermissions(): Array<String?>? {
 		return PermissionsUtil.getGrantedPermissions(getActivity())
+	}
+
+	/**
+	 * Return true if the given feature is supported.
+	 */
+	@Keep
+	private fun hasFeature(feature: String): Boolean {
+		for (plugin in pluginRegistry.allPlugins) {
+			if (plugin.supportsFeature(feature)) {
+				return true
+			}
+		}
+		return false
 	}
 
 	/**
@@ -981,7 +1014,7 @@ class Godot(private val context: Context) : SensorEventListener {
 
 	@Keep
 	private fun initInputDevices() {
-		renderView!!.initInputDevices()
+		renderView?.initInputDevices()
 	}
 
 	@Keep
@@ -990,13 +1023,13 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	@Keep
-	private fun nativeBeginBenchmarkMeasure(label: String) {
-		beginBenchmarkMeasure(label)
+	private fun nativeBeginBenchmarkMeasure(scope: String, label: String) {
+		beginBenchmarkMeasure(scope, label)
 	}
 
 	@Keep
-	private fun nativeEndBenchmarkMeasure(label: String) {
-		endBenchmarkMeasure(label)
+	private fun nativeEndBenchmarkMeasure(scope: String, label: String) {
+		endBenchmarkMeasure(scope, label)
 	}
 
 	@Keep

@@ -38,6 +38,7 @@ struct HashMapHasherKeys {
 };
 
 HashMap<CFIndex, Key, HashMapHasherKeys> keyusage_map;
+HashMap<CFIndex, KeyLocation, HashMapHasherKeys> location_map;
 
 void KeyMappingIOS::initialize() {
 	if (@available(iOS 13.4, *)) {
@@ -172,6 +173,15 @@ void KeyMappingIOS::initialize() {
 		keyusage_map[0x029D] = Key::GLOBE; // "Globe" key on smart connector / Mac keyboard.
 		keyusage_map[UIKeyboardHIDUsageKeyboardLANG1] = Key::JIS_EISU;
 		keyusage_map[UIKeyboardHIDUsageKeyboardLANG2] = Key::JIS_KANA;
+
+		location_map[UIKeyboardHIDUsageKeyboardLeftAlt] = KeyLocation::LEFT;
+		location_map[UIKeyboardHIDUsageKeyboardRightAlt] = KeyLocation::RIGHT;
+		location_map[UIKeyboardHIDUsageKeyboardLeftControl] = KeyLocation::LEFT;
+		location_map[UIKeyboardHIDUsageKeyboardRightControl] = KeyLocation::RIGHT;
+		location_map[UIKeyboardHIDUsageKeyboardLeftShift] = KeyLocation::LEFT;
+		location_map[UIKeyboardHIDUsageKeyboardRightShift] = KeyLocation::RIGHT;
+		location_map[UIKeyboardHIDUsageKeyboardLeftGUI] = KeyLocation::LEFT;
+		location_map[UIKeyboardHIDUsageKeyboardRightGUI] = KeyLocation::RIGHT;
 	}
 }
 
@@ -183,4 +193,14 @@ Key KeyMappingIOS::remap_key(CFIndex p_keycode) {
 		}
 	}
 	return Key::NONE;
+}
+
+KeyLocation KeyMappingIOS::key_location(CFIndex p_keycode) {
+	if (@available(iOS 13.4, *)) {
+		const KeyLocation *location = location_map.getptr(p_keycode);
+		if (location) {
+			return *location;
+		}
+	}
+	return KeyLocation::UNSPECIFIED;
 }

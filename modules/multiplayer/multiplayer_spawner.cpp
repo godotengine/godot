@@ -251,6 +251,7 @@ NodePath MultiplayerSpawner::get_spawn_path() const {
 void MultiplayerSpawner::set_spawn_path(const NodePath &p_path) {
 	spawn_path = p_path;
 	_update_spawn_node();
+	update_configuration_warnings();
 }
 
 void MultiplayerSpawner::_track(Node *p_node, const Variant &p_argument, int p_scene_id) {

@@ -30,15 +30,15 @@
 
 #include "gradient_editor_plugin.h"
 
-#include "canvas_item_editor_plugin.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/popup.h"
@@ -531,7 +531,7 @@ void GradientEdit::_redraw() {
 			draw_texture(get_theme_icon(SNAME("overbright_indicator"), SNAME("ColorPicker")), Point2(button_offset, 0));
 		}
 	} else {
-		// If no color is selected, draw grey color with 'X' on top.
+		// If no color is selected, draw gray color with 'X' on top.
 		draw_rect(Rect2(button_offset, 0, h, h), Color(0.5, 0.5, 0.5, 1));
 		draw_line(Vector2(button_offset, 0), Vector2(button_offset + h, h), Color(0.8, 0.8, 0.8));
 		draw_line(Vector2(button_offset, h), Vector2(button_offset + h, 0), Color(0.8, 0.8, 0.8));

@@ -33,18 +33,21 @@
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "core/os/time.h"
+#include "editor/editor_command_palette.h"
+#include "editor/editor_dock_manager.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/separator.h"
 
 #define CHECK_PLUGIN_INITIALIZED() \
-	ERR_FAIL_COND_MSG(!EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Plugin from Project menu.");
+	ERR_FAIL_NULL_MSG(EditorVCSInterface::get_singleton(), "No VCS plugin is initialized. Select a Version Control Plugin from Project menu.");
 
 VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = nullptr;
 
@@ -90,8 +93,7 @@ void VersionControlEditorPlugin::popup_vcs_set_up_dialog(const Control *p_gui_ba
 	if (!available_plugins.is_empty()) {
 		Size2 popup_size = Size2(400, 100);
 		Size2 window_size = p_gui_base->get_viewport_rect().size;
-		popup_size.x = MIN(window_size.x * 0.5, popup_size.x);
-		popup_size.y = MIN(window_size.y * 0.5, popup_size.y);
+		popup_size = popup_size.min(window_size * 0.5);
 
 		_populate_available_vcs_names();
 
@@ -142,7 +144,7 @@ void VersionControlEditorPlugin::_set_credentials() {
 	EditorSettings::get_singleton()->set_setting("version_control/ssh_private_key_path", ssh_private_key);
 }
 
-bool VersionControlEditorPlugin::_load_plugin(String p_name) {
+bool VersionControlEditorPlugin::_load_plugin(const String &p_name) {
 	Object *extension_instance = ClassDB::instantiate(p_name);
 	ERR_FAIL_NULL_V_MSG(extension_instance, false, "Received a nullptr VCS extension instance during construction.");
 
@@ -166,7 +168,7 @@ bool VersionControlEditorPlugin::_load_plugin(String p_name) {
 	return true;
 }
 
-void VersionControlEditorPlugin::_update_set_up_warning(String p_new_text) {
+void VersionControlEditorPlugin::_update_set_up_warning(const String &p_new_text) {
 	bool empty_settings = set_up_username->get_text().strip_edges().is_empty() &&
 			set_up_password->get_text().is_empty() &&
 			set_up_ssh_public_key_path->get_text().strip_edges().is_empty() &&
@@ -303,15 +305,15 @@ void VersionControlEditorPlugin::_remote_selected(int p_index) {
 	_refresh_remote_list();
 }
 
-void VersionControlEditorPlugin::_ssh_public_key_selected(String p_path) {
+void VersionControlEditorPlugin::_ssh_public_key_selected(const String &p_path) {
 	set_up_ssh_public_key_path->set_text(p_path);
 }
 
-void VersionControlEditorPlugin::_ssh_private_key_selected(String p_path) {
+void VersionControlEditorPlugin::_ssh_private_key_selected(const String &p_path) {
 	set_up_ssh_private_key_path->set_text(p_path);
 }
 
-void VersionControlEditorPlugin::_popup_file_dialog(Variant p_file_dialog_variant) {
+void VersionControlEditorPlugin::_popup_file_dialog(const Variant &p_file_dialog_variant) {
 	FileDialog *file_dialog = Object::cast_to<FileDialog>(p_file_dialog_variant);
 	ERR_FAIL_NULL(file_dialog);
 
@@ -343,11 +345,11 @@ void VersionControlEditorPlugin::_create_remote() {
 	_refresh_remote_list();
 }
 
-void VersionControlEditorPlugin::_update_branch_create_button(String p_new_text) {
+void VersionControlEditorPlugin::_update_branch_create_button(const String &p_new_text) {
 	branch_create_ok->set_disabled(p_new_text.strip_edges().is_empty());
 }
 
-void VersionControlEditorPlugin::_update_remote_create_button(String p_new_text) {
+void VersionControlEditorPlugin::_update_remote_create_button(const String &p_new_text) {
 	remote_create_ok->set_disabled(p_new_text.strip_edges().is_empty());
 }
 
@@ -382,7 +384,7 @@ void VersionControlEditorPlugin::_refresh_stage_area() {
 	version_commit_dock->set_name(commit_tab_title);
 }
 
-void VersionControlEditorPlugin::_discard_file(String p_file_path, EditorVCSInterface::ChangeType p_change) {
+void VersionControlEditorPlugin::_discard_file(const String &p_file_path, EditorVCSInterface::ChangeType p_change) {
 	CHECK_PLUGIN_INITIALIZED();
 
 	if (p_change == EditorVCSInterface::CHANGE_TYPE_NEW) {
@@ -412,7 +414,7 @@ void VersionControlEditorPlugin::_discard_all() {
 	_refresh_stage_area();
 }
 
-void VersionControlEditorPlugin::_add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType p_change) {
+void VersionControlEditorPlugin::_add_new_item(Tree *p_tree, const String &p_file_path, EditorVCSInterface::ChangeType p_change) {
 	String change_text = p_file_path + " (" + change_type_to_strings[p_change] + ")";
 
 	TreeItem *new_item = p_tree->create_item();
@@ -461,7 +463,7 @@ void VersionControlEditorPlugin::_force_push() {
 void VersionControlEditorPlugin::_update_opened_tabs() {
 	Vector<EditorData::EditedScene> open_scenes = EditorNode::get_editor_data().get_edited_scenes();
 	for (int i = 0; i < open_scenes.size(); i++) {
-		if (open_scenes[i].root == NULL) {
+		if (open_scenes[i].root == nullptr) {
 			continue;
 		}
 		EditorNode::get_singleton()->reload_scene(open_scenes[i].path);
@@ -909,9 +911,9 @@ void VersionControlEditorPlugin::fetch_available_vcs_plugin_names() {
 }
 
 void VersionControlEditorPlugin::register_editor() {
-	EditorNode::get_singleton()->add_control_to_dock(EditorNode::DOCK_SLOT_RIGHT_UL, version_commit_dock);
+	EditorDockManager::get_singleton()->add_dock(version_commit_dock, "", EditorDockManager::DOCK_SLOT_RIGHT_UL);
 
-	version_control_dock_button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Version Control"), version_control_dock);
+	version_control_dock_button = EditorNode::get_bottom_panel()->add_item(TTR("Version Control"), version_control_dock, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_version_control_bottom_panel", TTR("Toggle Version Control Bottom Panel")));
 
 	_set_vcs_ui_state(true);
 }
@@ -929,8 +931,8 @@ void VersionControlEditorPlugin::shut_down() {
 	memdelete(EditorVCSInterface::get_singleton());
 	EditorVCSInterface::set_singleton(nullptr);
 
-	EditorNode::get_singleton()->remove_control_from_dock(version_commit_dock);
-	EditorNode::get_singleton()->remove_bottom_panel_item(version_control_dock);
+	EditorDockManager::get_singleton()->remove_dock(version_commit_dock);
+	EditorNode::get_bottom_panel()->remove_item(version_control_dock);
 
 	_set_vcs_ui_state(false);
 }
@@ -1443,18 +1445,14 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	extra_options_remove_branch_list = memnew(PopupMenu);
 	extra_options_remove_branch_list->connect(SNAME("id_pressed"), callable_mp(this, &VersionControlEditorPlugin::_popup_branch_remove_confirm));
-	extra_options_remove_branch_list->set_name("Remove Branch");
-	extra_options->get_popup()->add_child(extra_options_remove_branch_list);
-	extra_options->get_popup()->add_submenu_item(TTR("Remove Branch"), "Remove Branch");
+	extra_options->get_popup()->add_submenu_node_item(TTR("Remove Branch"), extra_options_remove_branch_list);
 
 	extra_options->get_popup()->add_separator();
 	extra_options->get_popup()->add_item(TTR("Create New Remote"), EXTRA_OPTION_CREATE_REMOTE);
 
 	extra_options_remove_remote_list = memnew(PopupMenu);
 	extra_options_remove_remote_list->connect(SNAME("id_pressed"), callable_mp(this, &VersionControlEditorPlugin::_popup_remote_remove_confirm));
-	extra_options_remove_remote_list->set_name("Remove Remote");
-	extra_options->get_popup()->add_child(extra_options_remove_remote_list);
-	extra_options->get_popup()->add_submenu_item(TTR("Remove Remote"), "Remove Remote");
+	extra_options->get_popup()->add_submenu_node_item(TTR("Remove Remote"), extra_options_remove_remote_list);
 
 	change_type_to_strings[EditorVCSInterface::CHANGE_TYPE_NEW] = TTR("New");
 	change_type_to_strings[EditorVCSInterface::CHANGE_TYPE_MODIFIED] = TTR("Modified");

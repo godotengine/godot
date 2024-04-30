@@ -38,6 +38,7 @@
 //
 
 #include "ParseHelper.h"
+#include "Initialize.h"
 #include "Scan.h"
 
 #include "../OSDependent/osinclude.h"
@@ -992,17 +993,25 @@ TIntermTyped* TParseContext::handleDotDereference(const TSourceLoc& loc, TInterm
                 break;
             }
         }
+
         if (fieldFound) {
-            if (base->getType().getQualifier().isFrontEndConstant())
-                result = intermediate.foldDereference(base, member, loc);
-            else {
-                blockMemberExtensionCheck(loc, base, member, field);
-                TIntermTyped* index = intermediate.addConstantUnion(member, loc);
-                result = intermediate.addIndex(EOpIndexDirectStruct, base, index, loc);
-                result->setType(*(*fields)[member].type);
-                if ((*fields)[member].type->getQualifier().isIo())
-                    intermediate.addIoAccessed(field);
+            if (spvVersion.vulkan != 0 && spvVersion.vulkanRelaxed)
+                result = vkRelaxedRemapDotDereference(loc, *base, *(*fields)[member].type, field);
+
+            if (result == base)
+            {
+                if (base->getType().getQualifier().isFrontEndConstant())
+                    result = intermediate.foldDereference(base, member, loc);
+                else {
+                    blockMemberExtensionCheck(loc, base, member, field);
+                    TIntermTyped* index = intermediate.addConstantUnion(member, loc);
+                    result = intermediate.addIndex(EOpIndexDirectStruct, base, index, loc);
+                    result->setType(*(*fields)[member].type);
+                    if ((*fields)[member].type->getQualifier().isIo())
+                        intermediate.addIoAccessed(field);
+                }
             }
+
             inheritMemoryQualifiers(base->getQualifier(), result->getWritableType().getQualifier());
         } else {
             auto baseSymbol = base;
@@ -1242,6 +1251,8 @@ TIntermAggregate* TParseContext::handleFunctionDefinition(const TSourceLoc& loc,
             error(loc, "function cannot take any parameter(s)", function.getName().c_str(), "");
         if (function.getType().getBasicType() != EbtVoid)
             error(loc, "", function.getType().getBasicTypeString().c_str(), "entry point cannot return a value");
+        if (function.getLinkType() != ELinkNone)
+            error(loc, "main function cannot be exported", "", "");
     }
 
     //
@@ -1278,6 +1289,7 @@ TIntermAggregate* TParseContext::handleFunctionDefinition(const TSourceLoc& loc,
         } else
             paramNodes = intermediate.growAggregate(paramNodes, intermediate.addSymbol(*param.type, loc), loc);
     }
+    paramNodes->setLinkType(function.getLinkType());
     intermediate.setAggregateOperator(paramNodes, EOpParameters, TType(EbtVoid), loc);
     loopNestingLevel = 0;
     statementNestingLevel = 0;
@@ -1651,7 +1663,9 @@ TIntermNode* TParseContext::handleReturnValue(const TSourceLoc& loc, TIntermType
         }
     } else {
         if (value->getType().isTexture() || value->getType().isImage()) {
-            if (!extensionTurnedOn(E_GL_ARB_bindless_texture))
+            if (spvVersion.spv != 0)
+                error(loc, "sampler or image cannot be used as return type when generating SPIR-V", "return", "");
+            else if (!extensionTurnedOn(E_GL_ARB_bindless_texture))
                 error(loc, "sampler or image can be used as return type only when the extension GL_ARB_bindless_texture enabled", "return", "");
         }
         branch = intermediate.addBranch(EOpReturn, value, loc);
@@ -2168,6 +2182,37 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
         }
         break;
     }
+
+    case EOpTexture:
+    case EOpTextureLod:
+    {
+        if ((fnCandidate.getParamCount() > 2) && ((*argp)[1]->getAsTyped()->getType().getBasicType() == EbtFloat) &&
+            ((*argp)[1]->getAsTyped()->getType().getVectorSize() == 4) && fnCandidate[0].type->getSampler().shadow) {
+            featureString = fnCandidate.getName();
+            if (callNode.getOp() == EOpTexture)
+                featureString += "(..., float bias)";
+            else
+                featureString += "(..., float lod)";
+            feature = featureString.c_str();
+
+            if ((fnCandidate[0].type->getSampler().dim == Esd2D && fnCandidate[0].type->getSampler().arrayed) || //2D Array Shadow
+                (fnCandidate[0].type->getSampler().dim == EsdCube && fnCandidate[0].type->getSampler().arrayed && fnCandidate.getParamCount() > 3) || // Cube Array Shadow
+                (fnCandidate[0].type->getSampler().dim == EsdCube && callNode.getOp() == EOpTextureLod)) { // Cube Shadow
+                requireExtensions(loc, 1, &E_GL_EXT_texture_shadow_lod, feature);
+                if (isEsProfile()) {
+                    if (version < 320 &&
+                        !extensionsTurnedOn(Num_AEP_texture_cube_map_array, AEP_texture_cube_map_array))
+                        error(loc, "GL_EXT_texture_shadow_lod not supported for this ES version", feature, "");
+                    else
+                        profileRequires(loc, EEsProfile, 320, nullptr, feature);
+                } else { // Desktop
+                    profileRequires(loc, ~EEsProfile, 130, nullptr, feature);
+                }
+            }
+        }
+        break;
+    }
+
     case EOpSparseTextureGather:
     case EOpSparseTextureGatherOffset:
     case EOpSparseTextureGatherOffsets:
@@ -2282,10 +2327,34 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
             if (callNode.getOp() == EOpTextureOffset) {
                 TSampler s = arg0->getType().getSampler();
                 if (s.is2D() && s.isArrayed() && s.isShadow()) {
-                    if (isEsProfile())
+                    if (
+                        ((*argp)[1]->getAsTyped()->getType().getBasicType() == EbtFloat) && 
+                        ((*argp)[1]->getAsTyped()->getType().getVectorSize() == 4) &&
+                        (fnCandidate.getParamCount() == 4)) {
+                        featureString = fnCandidate.getName() + " for sampler2DArrayShadow";
+                        feature = featureString.c_str();
+                        requireExtensions(loc, 1, &E_GL_EXT_texture_shadow_lod, feature);
+                        profileRequires(loc, EEsProfile, 300, nullptr, feature);
+                        profileRequires(loc, ~EEsProfile, 130, nullptr, feature);
+                    }
+                    else if (isEsProfile())
                         error(loc, "TextureOffset does not support sampler2DArrayShadow : ", "sampler", "ES Profile");
                     else if (version <= 420)
                         error(loc, "TextureOffset does not support sampler2DArrayShadow : ", "sampler", "version <= 420");
+                }
+            }
+
+            if (callNode.getOp() == EOpTextureLodOffset) {
+                TSampler s = arg0->getType().getSampler();
+                if (s.is2D() && s.isArrayed() && s.isShadow() &&
+                    ((*argp)[1]->getAsTyped()->getType().getBasicType() == EbtFloat) &&
+                    ((*argp)[1]->getAsTyped()->getType().getVectorSize() == 4) &&
+                    (fnCandidate.getParamCount() == 4)) {
+                        featureString = fnCandidate.getName() + " for sampler2DArrayShadow";
+                        feature = featureString.c_str();
+                        profileRequires(loc, EEsProfile, 300, nullptr, feature);
+                        profileRequires(loc, ~EEsProfile, 130, nullptr, feature);
+                        requireExtensions(loc, 1, &E_GL_EXT_texture_shadow_lod, feature);
                 }
             }
         }
@@ -2512,12 +2581,19 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
             requireExtensions(loc, 1, &E_GL_EXT_shader_atomic_float2, fnCandidate.getName().c_str());
         }
 
-        const TIntermTyped* base = TIntermediate::findLValueBase(arg0, true , true);
-        const TType* refType = (base->getType().isReference()) ? base->getType().getReferentType() : nullptr;
-        const TQualifier& qualifier = (refType != nullptr) ? refType->getQualifier() : base->getType().getQualifier();
-        if (qualifier.storage != EvqShared && qualifier.storage != EvqBuffer && qualifier.storage != EvqtaskPayloadSharedEXT)
-            error(loc,"Atomic memory function can only be used for shader storage block member or shared variable.",
-            fnCandidate.getName().c_str(), "");
+        const TIntermTyped* base = TIntermediate::traverseLValueBase(arg0, true, true);
+        const char* errMsg = "Only l-values corresponding to shader block storage or shared variables can be used with "
+                             "atomic memory functions.";
+        if (base) {
+            const TType* refType = (base->getType().isReference()) ? base->getType().getReferentType() : nullptr;
+            const TQualifier& qualifier =
+                (refType != nullptr) ? refType->getQualifier() : base->getType().getQualifier();
+            if (qualifier.storage != EvqShared && qualifier.storage != EvqBuffer &&
+                qualifier.storage != EvqtaskPayloadSharedEXT)
+                error(loc, errMsg, fnCandidate.getName().c_str(), "");
+        } else {
+            error(loc, errMsg, fnCandidate.getName().c_str(), "");
+        }
 
         break;
     }
@@ -2525,20 +2601,57 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
     case EOpInterpolateAtCentroid:
     case EOpInterpolateAtSample:
     case EOpInterpolateAtOffset:
-    case EOpInterpolateAtVertex:
-        // Make sure the first argument is an interpolant, or an array element of an interpolant
+    case EOpInterpolateAtVertex: {
         if (arg0->getType().getQualifier().storage != EvqVaryingIn) {
-            // It might still be an array element.
+            // Traverse down the left branch of arg0 to ensure this argument is a valid interpolant.
             //
-            // We could check more, but the semantics of the first argument are already met; the
-            // only way to turn an array into a float/vec* is array dereference and swizzle.
+            // For desktop GL >4.3 we effectively only need to ensure that arg0 represents an l-value from an
+            // input declaration.
             //
-            // ES and desktop 4.3 and earlier:  swizzles may not be used
-            // desktop 4.4 and later: swizzles may be used
-            bool swizzleOkay = (!isEsProfile()) && (version >= 440);
-            const TIntermTyped* base = TIntermediate::findLValueBase(arg0, swizzleOkay);
-            if (base == nullptr || base->getType().getQualifier().storage != EvqVaryingIn)
-                error(loc, "first argument must be an interpolant, or interpolant-array element", fnCandidate.getName().c_str(), "");
+            // For desktop GL <= 4.3 and ES, we must also ensure that swizzling is not used
+            //
+            // For ES, we must also ensure that a field selection operator (i.e., '.') is not used on a named
+            // struct.
+
+            const bool esProfile = isEsProfile();
+            const bool swizzleOkay = !esProfile && (version >= 440);
+
+            std::string interpolantErrorMsg = "first argument must be an interpolant, or interpolant-array element";
+            bool isValid = true; // Assume that the interpolant is valid until we find a condition making it invalid
+            bool isIn = false;   // Checks whether or not the interpolant is a shader input
+            bool structAccessOp = false; // Whether or not the previous node in the chain is a struct accessor
+            TIntermediate::traverseLValueBase(
+                arg0, swizzleOkay, false,
+                [&isValid, &isIn, &interpolantErrorMsg, esProfile, &structAccessOp](const TIntermNode& n) -> bool {
+                    auto* type = n.getAsTyped();
+                    if (type) {
+                        if (type->getType().getQualifier().storage == EvqVaryingIn) {
+                            isIn = true;
+                        }
+                        // If a field accessor was used, it can only be used to access a field with an input block, not a struct.
+                        if (structAccessOp && (type->getType().getBasicType() != EbtBlock)) {
+                            interpolantErrorMsg +=
+                                ". Using the field of a named struct as an interpolant argument is not "
+                                "allowed (ES-only).";
+                            isValid = false;
+                        }
+                    }
+
+                    // ES has different requirements for interpolants than GL
+                    if (esProfile) {
+                        // Swizzling will be taken care of by the 'swizzleOkay' argument passsed to traverseLValueBase,
+                        // so we only ned to check whether or not a field accessor has been used with a named struct.
+                        auto* binary = n.getAsBinaryNode();
+                        if (binary && (binary->getOp() == EOpIndexDirectStruct)) {
+                            structAccessOp = true;
+                        }
+                    }
+                    // Don't continue traversing if we know we have an invalid interpolant at this point.
+                    return isValid;
+                });
+            if (!isIn || !isValid) {
+                error(loc, interpolantErrorMsg.c_str(), fnCandidate.getName().c_str(), "");
+            }
         }
 
         if (callNode.getOp() == EOpInterpolateAtVertex) {
@@ -2554,7 +2667,7 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
                 }
             }
         }
-        break;
+    } break;
 
     case EOpEmitStreamVertex:
     case EOpEndStreamPrimitive:
@@ -2685,7 +2798,6 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
     }
 }
 
-extern bool PureOperatorBuiltins;
 
 // Deprecated!  Use PureOperatorBuiltins == true instead, in which case this
 // functionality is handled in builtInOpCheck() instead of here.
@@ -4126,8 +4238,8 @@ void TParseContext::mergeQualifiers(const TSourceLoc& loc, TQualifier& dst, cons
     dst.spirvStorageClass = src.spirvStorageClass;
 
     // SPIR-V decorate qualifiers (GL_EXT_spirv_intrinsics)
-    if (src.hasSprivDecorate()) {
-        if (dst.hasSprivDecorate()) {
+    if (src.hasSpirvDecorate()) {
+        if (dst.hasSpirvDecorate()) {
             const TSpirvDecorate& srcSpirvDecorate = src.getSpirvDecorate();
             TSpirvDecorate& dstSpirvDecorate = dst.getSpirvDecorate();
             for (auto& decorate : srcSpirvDecorate.decorates) {
@@ -6261,8 +6373,7 @@ void TParseContext::layoutObjectCheck(const TSourceLoc& loc, const TSymbol& symb
         switch (qualifier.storage) {
         case EvqVaryingIn:
         case EvqVaryingOut:
-            if (!type.getQualifier().isTaskMemory() &&
-                !type.getQualifier().hasSprivDecorate() &&
+            if (!type.getQualifier().isTaskMemory() && !type.getQualifier().hasSpirvDecorate() &&
                 (type.getBasicType() != EbtBlock ||
                  (!(*type.getStruct())[0].type->getQualifier().hasLocation() &&
                    (*type.getStruct())[0].type->getQualifier().builtIn == EbvNone)))
@@ -6324,9 +6435,6 @@ void TParseContext::layoutMemberLocationArrayCheck(const TSourceLoc& loc, bool m
 // Do layout error checking with respect to a type.
 void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
 {
-    if (extensionTurnedOn(E_GL_EXT_spirv_intrinsics))
-        return; // Skip any check if GL_EXT_spirv_intrinsics is turned on
-
     const TQualifier& qualifier = type.getQualifier();
 
     // first, intra-layout qualifier-only error checking
@@ -6380,6 +6488,7 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
         case EvqCallableData:
         case EvqCallableDataIn:
         case EvqHitObjectAttrNV:
+        case EvqSpirvStorageClass:
             break;
         case EvqTileImageEXT:
             break;
@@ -6436,7 +6545,7 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
         // an array of size N, all elements of the array from binding through binding + N - 1 must be within this
         // range."
         //
-        if (! type.isOpaque() && type.getBasicType() != EbtBlock)
+        if (!type.isOpaque() && type.getBasicType() != EbtBlock && type.getBasicType() != EbtSpirvType)
             error(loc, "requires block, or sampler/image, or atomic-counter type", "binding", "");
         if (type.getBasicType() == EbtSampler) {
             int lastBinding = qualifier.layoutBinding;
@@ -7258,12 +7367,14 @@ void TParseContext::coopMatTypeParametersCheck(const TSourceLoc& loc, const TPub
     }
 }
 
-bool TParseContext::vkRelaxedRemapUniformVariable(const TSourceLoc& loc, TString& identifier, const TPublicType&,
+bool TParseContext::vkRelaxedRemapUniformVariable(const TSourceLoc& loc, TString& identifier, const TPublicType& publicType,
     TArraySizes*, TIntermTyped* initializer, TType& type)
 {
+    vkRelaxedRemapUniformMembers(loc, publicType, type, identifier);
+
     if (parsingBuiltins || symbolTable.atBuiltInLevel() || !symbolTable.atGlobalLevel() ||
         type.getQualifier().storage != EvqUniform ||
-        !(type.containsNonOpaque()|| type.getBasicType() == EbtAtomicUint)) {
+        !(type.containsNonOpaque() || type.getBasicType() == EbtAtomicUint || (type.containsSampler() && type.isStruct()))) {
         return false;
     }
 
@@ -7335,6 +7446,251 @@ bool TParseContext::vkRelaxedRemapUniformVariable(const TSourceLoc& loc, TString
     mergeObjectLayoutQualifiers(updatedBlock->getWritableType().getQualifier(), type.getQualifier(), true);
 
     return true;
+}
+
+template <typename Function>
+static void ForEachOpaque(const TType& type, const TString& path, Function callback)
+{
+    auto recursion = [&callback](const TType& type, const TString& path, bool skipArray, auto& recursion) -> void {
+        if (!skipArray && type.isArray())
+        {
+            std::vector<int> indices(type.getArraySizes()->getNumDims());
+            for (int flatIndex = 0;
+                 flatIndex < type.getArraySizes()->getCumulativeSize();
+                 ++flatIndex)
+            {
+                TString subscriptPath = path;
+                for (size_t dimIndex = 0; dimIndex < indices.size(); ++dimIndex)
+                {
+                    int index = indices[dimIndex];
+                    subscriptPath.append("[");
+                    subscriptPath.append(String(index));
+                    subscriptPath.append("]");
+                }
+
+                recursion(type, subscriptPath, true, recursion);
+
+                for (size_t dimIndex = 0; dimIndex < indices.size(); ++dimIndex)
+                {
+                    ++indices[dimIndex];
+                    if (indices[dimIndex] < type.getArraySizes()->getDimSize(dimIndex))
+                        break;
+                    else
+                        indices[dimIndex] = 0;
+                }
+            }
+        }
+
+        else if (type.isStruct() && type.containsOpaque())
+        {
+            const TTypeList& types = *type.getStruct();
+            for (const TTypeLoc& typeLoc : types)
+            {
+                TString nextPath = path;
+                nextPath.append(".");
+                nextPath.append(typeLoc.type->getFieldName());
+
+                recursion(*(typeLoc.type), nextPath, false, recursion);
+            }
+        }
+
+        else if (type.isOpaque())
+        {
+            callback(type, path);
+        }
+    };
+
+    recursion(type, path, false, recursion);
+}
+
+void TParseContext::vkRelaxedRemapUniformMembers(const TSourceLoc& loc, const TPublicType& publicType, const TType& type,
+    const TString& identifier)
+{
+    if (!type.isStruct() || !type.containsOpaque())
+        return;
+
+    ForEachOpaque(type, identifier,
+                  [&publicType, &loc, this](const TType& type, const TString& path) {
+                      TArraySizes arraySizes = {};
+                      if (type.getArraySizes()) arraySizes = *type.getArraySizes();
+                      TTypeParameters typeParameters = {};
+                      if (type.getTypeParameters()) typeParameters = *type.getTypeParameters();
+
+                      TPublicType memberType{};
+                      memberType.basicType = type.getBasicType();
+                      memberType.sampler = type.getSampler();
+                      memberType.qualifier = type.getQualifier();
+                      memberType.vectorSize = type.getVectorSize();
+                      memberType.matrixCols = type.getMatrixCols();
+                      memberType.matrixRows = type.getMatrixRows();
+                      memberType.coopmatNV = type.isCoopMatNV();
+                      memberType.coopmatKHR = type.isCoopMatKHR();
+                      memberType.arraySizes = nullptr;
+                      memberType.userDef = nullptr;
+                      memberType.loc = loc;
+                      memberType.typeParameters = (type.getTypeParameters() ? &typeParameters : nullptr);
+                      memberType.spirvType = nullptr;
+
+                      memberType.qualifier.storage = publicType.qualifier.storage;
+                      memberType.shaderQualifiers = publicType.shaderQualifiers;
+
+                      TString& structMemberName = *NewPoolTString(path.c_str()); // A copy is required due to declareVariable() signature.
+                      declareVariable(loc, structMemberName, memberType, nullptr, nullptr);
+                  });
+}
+
+void TParseContext::vkRelaxedRemapFunctionParameter(TFunction* function, TParameter& param, std::vector<int>* newParams)
+{
+    function->addParameter(param);
+
+    if (!param.type->isStruct() || !param.type->containsOpaque())
+        return;
+
+    ForEachOpaque(*param.type, (param.name ? *param.name : param.type->getFieldName()),
+                  [function, param, newParams](const TType& type, const TString& path) {
+                      TString* memberName = NewPoolTString(path.c_str());
+
+                      TType* memberType = new TType();
+                      memberType->shallowCopy(type);
+                      memberType->getQualifier().storage = param.type->getQualifier().storage;
+                      memberType->clearArraySizes();
+
+                      TParameter memberParam = {};
+                      memberParam.name = memberName;
+                      memberParam.type = memberType;
+                      memberParam.defaultValue = nullptr;
+                      function->addParameter(memberParam);
+                      if (newParams)
+                          newParams->push_back(function->getParamCount()-1);
+                  });
+}
+
+//
+// Generates a valid GLSL dereferencing string for the input TIntermNode
+//
+struct AccessChainTraverser : public TIntermTraverser {
+    AccessChainTraverser() : TIntermTraverser(false, false, true)
+    {}
+
+    TString path = "";
+
+    bool visitBinary(TVisit, TIntermBinary* binary) override {
+        if (binary->getOp() == EOpIndexDirectStruct)
+        {
+            const TTypeList& members = *binary->getLeft()->getType().getStruct();
+            const TTypeLoc& member =
+                members[binary->getRight()->getAsConstantUnion()->getConstArray()[0].getIConst()];
+            TString memberName = member.type->getFieldName();
+
+            if (path != "")
+                path.append(".");
+
+            path.append(memberName);
+        }
+
+        if (binary->getOp() == EOpIndexDirect)
+        {
+            const TConstUnionArray& indices = binary->getRight()->getAsConstantUnion()->getConstArray();
+            for (int index = 0; index < indices.size(); ++index)
+            {
+                path.append("[");
+                path.append(String(indices[index].getIConst()));
+                path.append("]");
+            }
+        }
+
+        return true;
+    }
+
+    void visitSymbol(TIntermSymbol* symbol) override {
+        if (!IsAnonymous(symbol->getName()))
+            path.append(symbol->getName());
+    }
+};
+
+TIntermNode* TParseContext::vkRelaxedRemapFunctionArgument(const TSourceLoc& loc, TFunction* function, TIntermTyped* intermTyped)
+{
+    AccessChainTraverser accessChainTraverser{};
+    intermTyped->traverse(&accessChainTraverser);
+
+    TParameter param = { NewPoolTString(accessChainTraverser.path.c_str()), new TType };
+    param.type->shallowCopy(intermTyped->getType());
+
+    std::vector<int> newParams = {};
+    vkRelaxedRemapFunctionParameter(function, param, &newParams);
+
+    if (intermTyped->getType().isOpaque())
+    {
+        TIntermNode* remappedArgument = intermTyped;
+        {
+            TIntermSymbol* intermSymbol = nullptr;
+            TSymbol* symbol = symbolTable.find(*param.name);
+            if (symbol && symbol->getAsVariable())
+                intermSymbol = intermediate.addSymbol(*symbol->getAsVariable(), loc);
+            else
+            {
+                TVariable* variable = new TVariable(param.name, *param.type);
+                intermSymbol = intermediate.addSymbol(*variable, loc);
+            }
+
+            remappedArgument = intermSymbol;
+        }
+
+        return remappedArgument;
+    }
+    else if (!(intermTyped->isStruct() && intermTyped->getType().containsOpaque()))
+        return intermTyped;
+    else
+    {
+        TIntermNode* remappedArgument = intermTyped;
+        {
+            TSymbol* symbol = symbolTable.find(*param.name);
+            if (symbol && symbol->getAsVariable())
+                remappedArgument = intermediate.addSymbol(*symbol->getAsVariable(), loc);
+        }
+
+        if (!newParams.empty())
+            remappedArgument = intermediate.makeAggregate(remappedArgument, loc);
+
+        for (int paramIndex : newParams)
+        {
+            TParameter& newParam = function->operator[](paramIndex);
+            TIntermSymbol* intermSymbol = nullptr;
+            TSymbol* symbol = symbolTable.find(*newParam.name);
+            if (symbol && symbol->getAsVariable())
+                intermSymbol = intermediate.addSymbol(*symbol->getAsVariable(), loc);
+            else
+            {
+                TVariable* variable = new TVariable(newParam.name, *newParam.type);
+                intermSymbol = intermediate.addSymbol(*variable, loc);
+            }
+
+            remappedArgument = intermediate.growAggregate(remappedArgument, intermSymbol);
+        }
+
+        return remappedArgument;
+    }
+}
+
+TIntermTyped* TParseContext::vkRelaxedRemapDotDereference(const TSourceLoc&, TIntermTyped& base, const TType& member,
+    const TString& identifier)
+{
+    if (!member.isOpaque())
+        return &base;
+
+    AccessChainTraverser traverser{};
+    base.traverse(&traverser);
+    if (!traverser.path.empty())
+        traverser.path.append(".");
+    traverser.path.append(identifier);
+
+    const TSymbol* symbol = symbolTable.find(traverser.path);
+    if (!symbol)
+        return &base;
+
+    TIntermTyped* result = intermediate.addSymbol(*symbol->getAsVariable());
+    result->setType(symbol->getType());
+    return result;
 }
 
 //
@@ -8477,7 +8833,7 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
             memberQualifier.storage = EvqtaskPayloadSharedEXT;
         if (memberQualifier.storage == EvqSpirvStorageClass)
             error(memberLoc, "member cannot have a spirv_storage_class qualifier", memberType.getFieldName().c_str(), "");
-        if (memberQualifier.hasSprivDecorate() && !memberQualifier.getSpirvDecorate().decorateIds.empty())
+        if (memberQualifier.hasSpirvDecorate() && !memberQualifier.getSpirvDecorate().decorateIds.empty())
             error(memberLoc, "member cannot have a spirv_decorate_id qualifier", memberType.getFieldName().c_str(), "");
         if ((currentBlockQualifier.storage == EvqUniform || currentBlockQualifier.storage == EvqBuffer) && (memberQualifier.isInterpolation() || memberQualifier.isAuxiliary()))
             error(memberLoc, "member of uniform or buffer block cannot have an auxiliary or interpolation qualifier", memberType.getFieldName().c_str(), "");

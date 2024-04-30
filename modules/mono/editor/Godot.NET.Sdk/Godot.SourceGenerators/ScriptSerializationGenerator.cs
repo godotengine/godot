@@ -30,16 +30,14 @@ namespace Godot.SourceGenerators
                         {
                             if (x.cds.IsPartial())
                             {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
+                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out _))
                                 {
-                                    Common.ReportNonPartialGodotScriptOuterClass(context, typeMissingPartial!);
                                     return false;
                                 }
 
                                 return true;
                             }
 
-                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
                         .Select(x => x.symbol)
@@ -91,16 +89,20 @@ namespace Godot.SourceGenerators
             if (isInnerClass)
             {
                 var containingType = symbol.ContainingType;
+                AppendPartialContainingTypeDeclarations(containingType);
 
-                while (containingType != null)
+                void AppendPartialContainingTypeDeclarations(INamedTypeSymbol? containingType)
                 {
+                    if (containingType == null)
+                        return;
+
+                    AppendPartialContainingTypeDeclarations(containingType.ContainingType);
+
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
                     source.Append(containingType.NameWithTypeParameters());
                     source.Append("\n{\n");
-
-                    containingType = containingType.ContainingType;
                 }
             }
 

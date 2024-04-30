@@ -30,9 +30,9 @@
 
 #include "node_dock.h"
 
-#include "connections_dialog.h"
+#include "editor/connections_dialog.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 
 void NodeDock::show_groups() {
 	groups_button->set_pressed(true);
@@ -67,14 +67,23 @@ void NodeDock::update_lists() {
 	connections->update_tree();
 }
 
+void NodeDock::_on_node_tree_exited() {
+	set_node(nullptr);
+}
+
 void NodeDock::set_node(Node *p_node) {
-	connections->set_node(p_node);
-	groups->set_current(p_node);
-	if (p_node) {
-		last_valid_node = p_node;
+	if (last_valid_node) {
+		last_valid_node->disconnect("tree_exited", callable_mp(this, &NodeDock::_on_node_tree_exited));
+		last_valid_node = nullptr;
 	}
 
+	connections->set_node(p_node);
+	groups->set_current(p_node);
+
 	if (p_node) {
+		last_valid_node = p_node;
+		last_valid_node->connect("tree_exited", callable_mp(this, &NodeDock::_on_node_tree_exited));
+
 		if (connections_button->is_pressed()) {
 			connections->show();
 		} else {
@@ -104,7 +113,7 @@ NodeDock::NodeDock() {
 	mode_hb->hide();
 
 	connections_button = memnew(Button);
-	connections_button->set_flat(true);
+	connections_button->set_theme_type_variation("FlatButton");
 	connections_button->set_text(TTR("Signals"));
 	connections_button->set_toggle_mode(true);
 	connections_button->set_pressed(true);
@@ -114,7 +123,7 @@ NodeDock::NodeDock() {
 	connections_button->connect("pressed", callable_mp(this, &NodeDock::show_connections));
 
 	groups_button = memnew(Button);
-	groups_button->set_flat(true);
+	groups_button->set_theme_type_variation("FlatButton");
 	groups_button->set_text(TTR("Groups"));
 	groups_button->set_toggle_mode(true);
 	groups_button->set_pressed(false);

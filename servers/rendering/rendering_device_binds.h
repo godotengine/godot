@@ -134,6 +134,7 @@ protected:
 class RDFramebufferPass : public RefCounted {
 	GDCLASS(RDFramebufferPass, RefCounted)
 	friend class RenderingDevice;
+	friend class FramebufferCacheRD;
 
 	RD::FramebufferPass base;
 
@@ -289,7 +290,7 @@ public:
 			if (bytecode[i].size()) {
 				RD::ShaderStageSPIRVData stage;
 				stage.shader_stage = RD::ShaderStage(i);
-				stage.spir_v = bytecode[i];
+				stage.spirv = bytecode[i];
 				stages.push_back(stage);
 			}
 		}
@@ -443,6 +444,7 @@ protected:
 class RDUniform : public RefCounted {
 	GDCLASS(RDUniform, RefCounted)
 	friend class RenderingDevice;
+	friend class UniformSetCacheRD;
 	RD::Uniform base;
 
 public:

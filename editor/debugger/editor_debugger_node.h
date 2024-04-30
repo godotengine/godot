@@ -138,14 +138,18 @@ protected:
 	void _remote_object_requested(ObjectID p_id, int p_debugger);
 	void _save_node_requested(ObjectID p_id, const String &p_file, int p_debugger);
 
+	void _breakpoint_set_in_tree(Ref<RefCounted> p_script, int p_line, bool p_enabled, int p_debugger);
+	void _breakpoints_cleared_in_tree(int p_debugger);
+
 	void _clear_execution(Ref<RefCounted> p_script) {
 		emit_signal(SNAME("clear_execution"), p_script);
 	}
 
 	void _text_editor_stack_goto(const ScriptEditorDebugger *p_debugger);
+	void _text_editor_stack_clear(const ScriptEditorDebugger *p_debugger);
 	void _stack_frame_selected(int p_debugger);
 	void _error_selected(const String &p_file, int p_line, int p_debugger);
-	void _breaked(bool p_breaked, bool p_can_debug, String p_message, bool p_has_stackdump, int p_debugger);
+	void _breaked(bool p_breaked, bool p_can_debug, const String &p_message, bool p_has_stackdump, int p_debugger);
 	void _paused();
 	void _break_state_changed();
 	void _menu_option(int p_id);
@@ -159,6 +163,7 @@ public:
 	static EditorDebuggerNode *get_singleton() { return singleton; }
 	void register_undo_redo(UndoRedo *p_undo_redo);
 
+	ScriptEditorDebugger *get_previous_debugger() const;
 	ScriptEditorDebugger *get_current_debugger() const;
 	ScriptEditorDebugger *get_default_debugger() const;
 	ScriptEditorDebugger *get_debugger(int p_debugger) const;
@@ -181,8 +186,9 @@ public:
 
 	bool is_skip_breakpoints() const;
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
-	void set_breakpoints(const String &p_path, Array p_lines);
-	void reload_scripts();
+	void set_breakpoints(const String &p_path, const Array &p_lines);
+	void reload_all_scripts();
+	void reload_scripts(const Vector<String> &p_script_paths);
 
 	// Remote inspector/edit.
 	void request_remote_tree();

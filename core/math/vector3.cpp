@@ -35,11 +35,11 @@
 #include "core/math/vector3i.h"
 #include "core/string/ustring.h"
 
-void Vector3::rotate(const Vector3 &p_axis, const real_t p_angle) {
+void Vector3::rotate(const Vector3 &p_axis, real_t p_angle) {
 	*this = Basis(p_axis, p_angle).xform(*this);
 }
 
-Vector3 Vector3::rotated(const Vector3 &p_axis, const real_t p_angle) const {
+Vector3 Vector3::rotated(const Vector3 &p_axis, real_t p_angle) const {
 	Vector3 r = *this;
 	r.rotate(p_axis, p_angle);
 	return r;
@@ -76,19 +76,19 @@ Vector3 Vector3::clamp(const Vector3 &p_min, const Vector3 &p_max) const {
 			CLAMP(z, p_min.z, p_max.z));
 }
 
-void Vector3::snap(const Vector3 p_step) {
+void Vector3::snap(const Vector3 &p_step) {
 	x = Math::snapped(x, p_step.x);
 	y = Math::snapped(y, p_step.y);
 	z = Math::snapped(z, p_step.z);
 }
 
-Vector3 Vector3::snapped(const Vector3 p_step) const {
+Vector3 Vector3::snapped(const Vector3 &p_step) const {
 	Vector3 v = *this;
 	v.snap(p_step);
 	return v;
 }
 
-Vector3 Vector3::limit_length(const real_t p_len) const {
+Vector3 Vector3::limit_length(real_t p_len) const {
 	const real_t l = length();
 	Vector3 v = *this;
 	if (l > 0 && p_len < l) {
@@ -99,7 +99,7 @@ Vector3 Vector3::limit_length(const real_t p_len) const {
 	return v;
 }
 
-Vector3 Vector3::move_toward(const Vector3 &p_to, const real_t p_delta) const {
+Vector3 Vector3::move_toward(const Vector3 &p_to, real_t p_delta) const {
 	Vector3 v = *this;
 	Vector3 vd = p_to - v;
 	real_t len = vd.length();
@@ -125,25 +125,25 @@ Vector2 Vector3::octahedron_encode() const {
 Vector3 Vector3::octahedron_decode(const Vector2 &p_oct) {
 	Vector2 f(p_oct.x * 2.0f - 1.0f, p_oct.y * 2.0f - 1.0f);
 	Vector3 n(f.x, f.y, 1.0f - Math::abs(f.x) - Math::abs(f.y));
-	float t = CLAMP(-n.z, 0.0f, 1.0f);
+	const real_t t = CLAMP(-n.z, 0.0f, 1.0f);
 	n.x += n.x >= 0 ? -t : t;
 	n.y += n.y >= 0 ? -t : t;
 	return n.normalized();
 }
 
-Vector2 Vector3::octahedron_tangent_encode(const float sign) const {
-	const float bias = 1.0f / 32767.0f;
-	Vector2 res = this->octahedron_encode();
+Vector2 Vector3::octahedron_tangent_encode(float p_sign) const {
+	const real_t bias = 1.0f / (real_t)32767.0f;
+	Vector2 res = octahedron_encode();
 	res.y = MAX(res.y, bias);
 	res.y = res.y * 0.5f + 0.5f;
-	res.y = sign >= 0.0f ? res.y : 1 - res.y;
+	res.y = p_sign >= 0.0f ? res.y : 1 - res.y;
 	return res;
 }
 
-Vector3 Vector3::octahedron_tangent_decode(const Vector2 &p_oct, float *sign) {
+Vector3 Vector3::octahedron_tangent_decode(const Vector2 &p_oct, float *r_sign) {
 	Vector2 oct_compressed = p_oct;
 	oct_compressed.y = oct_compressed.y * 2 - 1;
-	*sign = oct_compressed.y >= 0.0f ? 1.0f : -1.0f;
+	*r_sign = oct_compressed.y >= 0.0f ? 1.0f : -1.0f;
 	oct_compressed.y = Math::abs(oct_compressed.y);
 	Vector3 res = Vector3::octahedron_decode(oct_compressed);
 	return res;

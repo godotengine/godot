@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[MainLoop] is the abstract base class for a Godot project's game loop. It is inherited by [SceneTree], which is the default game loop implementation used in Godot projects, though it is also possible to write and use one's own [MainLoop] subclass instead of the scene tree.
-		Upon the application start, a [MainLoop] implementation must be provided to the OS; otherwise, the application will exit. This happens automatically (and a [SceneTree] is created) unless a [MainLoop] [Script] is provided from the command line (with e.g. [code]godot -s my_loop.gd[/code] or the "Main Loop Type" project setting is overwritten.
+		Upon the application start, a [MainLoop] implementation must be provided to the OS; otherwise, the application will exit. This happens automatically (and a [SceneTree] is created) unless a [MainLoop] [Script] is provided from the command line (with e.g. [code]godot -s my_loop.gd[/code]) or the "Main Loop Type" project setting is overwritten.
 		Here is an example script implementing a simple [MainLoop]:
 		[codeblocks]
 		[gdscript]
@@ -30,6 +30,7 @@
 		[csharp]
 		using Godot;
 
+		[GlobalClass]
 		public partial class CustomMainLoop : MainLoop
 		{
 		    private double _timeElapsed = 0;
@@ -119,19 +120,20 @@
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_RESUMED" value="2014">
 			Notification received from the OS when the application is resumed.
-			Specific to the Android platform.
+			Specific to the Android and iOS platforms.
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_PAUSED" value="2015">
 			Notification received from the OS when the application is paused.
-			Specific to the Android platform.
+			Specific to the Android and iOS platforms.
+			[b]Note:[/b] On iOS, you only have approximately 5 seconds to finish a task started by this signal. If you go over this allotment, iOS will kill the app instead of pausing it.
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_FOCUS_IN" value="2016">
 			Notification received from the OS when the application is focused, i.e. when changing the focus from the OS desktop or a thirdparty application to any open window of the Godot instance.
-			Implemented on desktop platforms.
+			Implemented on desktop and mobile platforms.
 		</constant>
 		<constant name="NOTIFICATION_APPLICATION_FOCUS_OUT" value="2017">
 			Notification received from the OS when the application is defocused, i.e. when changing the focus from any open window of the Godot instance to the OS desktop or a thirdparty application.
-			Implemented on desktop platforms.
+			Implemented on desktop and mobile platforms.
 		</constant>
 		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
 			Notification received when text server is changed.

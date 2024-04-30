@@ -10,6 +10,13 @@
 		<link title="Running Godot apps on macOS">$DOCS_URL/tutorials//export/running_on_macos.html</link>
 	</tutorials>
 	<members>
+		<member name="application/additional_plist_content" type="String" setter="" getter="">
+			Additional data added to the root [code]&lt;dict&gt;[/code] section of the [url=https://developer.apple.com/documentation/bundleresources/information_property_list]Info.plist[/url] file. The value should be an XML section with pairs of key-value elements, e.g.:
+			[codeblock lang=text]
+			&lt;key&gt;key_name&lt;/key&gt;
+			&lt;string&gt;value&lt;/string&gt;
+			[/codeblock]
+		</member>
 		<member name="application/app_category" type="String" setter="" getter="">
 			Application category for the App Store.
 		</member>
@@ -66,7 +73,7 @@
 			Array of the additional command line arguments passed to the code signing tool.
 		</member>
 		<member name="codesign/entitlements/address_book" type="bool" setter="" getter="">
-			Enable to allow access to contacts in the user's address book, if it's enabled you should also provide usage message in the [code]privacy/address_book_usage_description[/code] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_addressbook]com.apple.security.personal-information.addressbook[/url].
+			Enable to allow access to contacts in the user's address book, if it's enabled you should also provide usage message in the [member privacy/address_book_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_addressbook]com.apple.security.personal-information.addressbook[/url].
 		</member>
 		<member name="codesign/entitlements/allow_dyld_environment_variables" type="bool" setter="" getter="">
 			Allows app to use dynamic linker environment variables to inject code. If you are using add-ons with dynamic or self-modifying native code, enable them according to the add-on documentation. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_allow-dyld-environment-variables]com.apple.security.cs.allow-dyld-environment-variables[/url].
@@ -115,13 +122,13 @@
 			Enable to allow app to send Apple events to other apps. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_automation_apple-events]com.apple.security.automation.apple-events[/url].
 		</member>
 		<member name="codesign/entitlements/audio_input" type="bool" setter="" getter="">
-			Enable if you need to use the microphone or other audio input sources, if it's enabled you should also provide usage message in the [code]privacy/microphone_usage_description[/code] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_audio-input]com.apple.security.device.audio-input[/url].
+			Enable if you need to use the microphone or other audio input sources, if it's enabled you should also provide usage message in the [member privacy/microphone_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_audio-input]com.apple.security.device.audio-input[/url].
 		</member>
 		<member name="codesign/entitlements/calendars" type="bool" setter="" getter="">
-			Enable to allow access to the user's calendar, if it's enabled you should also provide usage message in the [code]privacy/calendar_usage_description[/code] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_calendars]com.apple.security.personal-information.calendars[/url].
+			Enable to allow access to the user's calendar, if it's enabled you should also provide usage message in the [member privacy/calendar_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_calendars]com.apple.security.personal-information.calendars[/url].
 		</member>
 		<member name="codesign/entitlements/camera" type="bool" setter="" getter="">
-			Enable if you need to use the camera, if it's enabled you should also provide usage message in the [code]privacy/camera_usage_description[/code] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_camera]com.apple.security.device.camera[/url].
+			Enable if you need to use the camera, if it's enabled you should also provide usage message in the [member privacy/camera_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_device_camera]com.apple.security.device.camera[/url].
 		</member>
 		<member name="codesign/entitlements/custom_file" type="String" setter="" getter="">
 			Custom entitlements [code].plist[/code] file, if specified the rest of entitlements in the export config are ignored.
@@ -133,10 +140,10 @@
 			Allows app to load arbitrary libraries and frameworks (not signed with the same Team ID as the main executable or by Apple). Enable it if you are using GDExtension add-ons or ad-hoc signing, or want to support user-provided external add-ons. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_disable-library-validation]com.apple.security.cs.disable-library-validation[/url].
 		</member>
 		<member name="codesign/entitlements/location" type="bool" setter="" getter="">
-			Enable if you need to use location information from Location Services, if it's enabled you should also provide usage message in the [code]privacy/location_usage_description[/code] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_location]com.apple.security.personal-information.location[/url].
+			Enable if you need to use location information from Location Services, if it's enabled you should also provide usage message in the [member privacy/location_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_location]com.apple.security.personal-information.location[/url].
 		</member>
 		<member name="codesign/entitlements/photos_library" type="bool" setter="" getter="">
-			Enable to allow access to the user's Photos library, if it's enabled you should also provide usage message in the [code]privacy/photos_library_usage_description[/code] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_photos-library]com.apple.security.personal-information.photos-library[/url].
+			Enable to allow access to the user's Photos library, if it's enabled you should also provide usage message in the [member privacy/photos_library_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_photos-library]com.apple.security.personal-information.photos-library[/url].
 		</member>
 		<member name="codesign/identity" type="String" setter="" getter="">
 			The "Full Name", "Common Name" or SHA-1 hash of the signing identity used to sign [code].app[/code] bundle.

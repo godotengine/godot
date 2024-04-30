@@ -40,7 +40,7 @@ String GDScriptWarning::get_message() const {
 	switch (code) {
 		case UNASSIGNED_VARIABLE:
 			CHECK_SYMBOLS(1);
-			return vformat(R"(The variable "%s" was used but never assigned a value.)", symbols[0]);
+			return vformat(R"(The variable "%s" was used before being assigned a value.)", symbols[0]);
 		case UNASSIGNED_VARIABLE_OP_ASSIGN:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(Using assignment with operation but the variable "%s" was not previously assigned a value.)", symbols[0]);
@@ -52,13 +52,13 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"(The local constant "%s" is declared but never used in the block. If this is intended, prefix it with an underscore: "_%s".)", symbols[0], symbols[0]);
 		case UNUSED_PRIVATE_CLASS_VARIABLE:
 			CHECK_SYMBOLS(1);
-			return vformat(R"(The class variable "%s" is declared but never used in the script.)", symbols[0]);
+			return vformat(R"(The class variable "%s" is declared but never used in the class.)", symbols[0]);
 		case UNUSED_PARAMETER:
 			CHECK_SYMBOLS(2);
 			return vformat(R"*(The parameter "%s" is never used in the function "%s()". If this is intended, prefix it with an underscore: "_%s".)*", symbols[1], symbols[0], symbols[1]);
 		case UNUSED_SIGNAL:
 			CHECK_SYMBOLS(1);
-			return vformat(R"(The signal "%s" is declared but never emitted.)", symbols[0]);
+			return vformat(R"(The signal "%s" is declared but never explicitly used in the class.)", symbols[0]);
 		case SHADOWED_VARIABLE:
 			CHECK_SYMBOLS(4);
 			return vformat(R"(The local %s "%s" is shadowing an already-declared %s at line %s.)", symbols[0], symbols[1], symbols[2], symbols[3]);
@@ -76,18 +76,9 @@ String GDScriptWarning::get_message() const {
 		case STANDALONE_EXPRESSION:
 			return "Standalone expression (the line has no effect).";
 		case STANDALONE_TERNARY:
-			return "Standalone ternary conditional operator: the return value is being discarded.";
+			return "Standalone ternary operator: the return value is being discarded.";
 		case INCOMPATIBLE_TERNARY:
-			return "Values of the ternary conditional are not mutually compatible.";
-		case PROPERTY_USED_AS_FUNCTION:
-			CHECK_SYMBOLS(2);
-			return vformat(R"*(The method "%s()" was not found in base "%s" but there's a property with the same name. Did you mean to access it?)*", symbols[0], symbols[1]);
-		case CONSTANT_USED_AS_FUNCTION:
-			CHECK_SYMBOLS(2);
-			return vformat(R"*(The method "%s()" was not found in base "%s" but there's a constant with the same name. Did you mean to access it?)*", symbols[0], symbols[1]);
-		case FUNCTION_USED_AS_PROPERTY:
-			CHECK_SYMBOLS(2);
-			return vformat(R"(The property "%s" was not found in base "%s" but there's a method with the same name. Did you mean to call it?)", symbols[0], symbols[1]);
+			return "Values of the ternary operator are not mutually compatible.";
 		case UNTYPED_DECLARATION:
 			CHECK_SYMBOLS(2);
 			if (symbols[0] == "Function") {
@@ -105,10 +96,10 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The method "%s()" is not present on the inferred type "%s" (but may be present on a subtype).)*", symbols[0], symbols[1]);
 		case UNSAFE_CAST:
 			CHECK_SYMBOLS(1);
-			return vformat(R"(The value is cast to "%s" but has an unknown type.)", symbols[0]);
+			return vformat(R"(Casting "Variant" to "%s" is unsafe.)", symbols[0]);
 		case UNSAFE_CALL_ARGUMENT:
-			CHECK_SYMBOLS(4);
-			return vformat(R"*(The argument %s of the function "%s()" requires the subtype "%s" but the supertype "%s" was provided.)*", symbols[0], symbols[1], symbols[2], symbols[3]);
+			CHECK_SYMBOLS(5);
+			return vformat(R"*(The argument %s of the %s "%s()" requires the subtype "%s" but the supertype "%s" was provided.)*", symbols[0], symbols[1], symbols[2], symbols[3], symbols[4]);
 		case UNSAFE_VOID_RETURN:
 			CHECK_SYMBOLS(2);
 			return vformat(R"*(The method "%s()" returns "void" but it's trying to return a call to "%s()" that can't be ensured to also be "void".)*", symbols[0], symbols[1]);
@@ -135,6 +126,9 @@ String GDScriptWarning::get_message() const {
 		case INT_AS_ENUM_WITHOUT_MATCH:
 			CHECK_SYMBOLS(3);
 			return vformat(R"(Cannot %s %s as Enum "%s": no enum member has matching value.)", symbols[0], symbols[1], symbols[2]);
+		case ENUM_VARIABLE_WITHOUT_DEFAULT:
+			CHECK_SYMBOLS(1);
+			return vformat(R"(The variable "%s" has an enum type and does not set an explicit default value. The default will be set to "0".)", symbols[0]);
 		case EMPTY_FILE:
 			return "Empty script file.";
 		case DEPRECATED_KEYWORD:
@@ -162,10 +156,17 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The default value is using "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
+#ifndef DISABLE_DEPRECATED
+		// Never produced. These warnings migrated from 3.x by mistake.
+		case PROPERTY_USED_AS_FUNCTION: // There is already an error.
+		case CONSTANT_USED_AS_FUNCTION: // There is already an error.
+		case FUNCTION_USED_AS_PROPERTY: // This is valid, returns `Callable`.
+			break;
+#endif
 		case WARNING_MAX:
-			break; // Can't happen, but silences warning
+			break; // Can't happen, but silences warning.
 	}
-	ERR_FAIL_V_MSG(String(), "Invalid GDScript warning code: " + get_name_from_code(code) + ".");
+	ERR_FAIL_V_MSG(String(), vformat(R"(Invalid GDScript warning "%s".)", get_name_from_code(code)));
 
 #undef CHECK_SYMBOLS
 }
@@ -206,9 +207,6 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"STANDALONE_EXPRESSION",
 		"STANDALONE_TERNARY",
 		"INCOMPATIBLE_TERNARY",
-		"PROPERTY_USED_AS_FUNCTION",
-		"CONSTANT_USED_AS_FUNCTION",
-		"FUNCTION_USED_AS_PROPERTY",
 		"UNTYPED_DECLARATION",
 		"INFERRED_DECLARATION",
 		"UNSAFE_PROPERTY_ACCESS",
@@ -226,6 +224,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"NARROWING_CONVERSION",
 		"INT_AS_ENUM_WITHOUT_CAST",
 		"INT_AS_ENUM_WITHOUT_MATCH",
+		"ENUM_VARIABLE_WITHOUT_DEFAULT",
 		"EMPTY_FILE",
 		"DEPRECATED_KEYWORD",
 		"RENAMED_IN_GODOT_4_HINT",
@@ -236,6 +235,11 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"NATIVE_METHOD_OVERRIDE",
 		"GET_NODE_DEFAULT_WITHOUT_ONREADY",
 		"ONREADY_WITH_EXPORT",
+#ifndef DISABLE_DEPRECATED
+		"PROPERTY_USED_AS_FUNCTION",
+		"CONSTANT_USED_AS_FUNCTION",
+		"FUNCTION_USED_AS_PROPERTY",
+#endif
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");

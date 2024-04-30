@@ -79,7 +79,11 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 			if (!text.is_empty()) {
 				text += " " + TTR("or") + " ";
 			}
-			text += mods_text + keycode_get_string(key->get_physical_keycode()) + " (" + TTR("Physical") + ")";
+			text += mods_text + keycode_get_string(key->get_physical_keycode()) + " (" + TTR("Physical");
+			if (key->get_location() != KeyLocation::UNSPECIFIED) {
+				text += " " + key->as_text_location();
+			}
+			text += ")";
 		}
 		if (key->get_key_label() != Key::NONE) {
 			if (!text.is_empty()) {
@@ -175,12 +179,12 @@ void EventListenerLineEdit::_on_text_changed(const String &p_text) {
 }
 
 void EventListenerLineEdit::_on_focus() {
-	set_placeholder(TTR("Listening for input..."));
+	set_placeholder(TTR("Listening for Input"));
 }
 
 void EventListenerLineEdit::_on_unfocus() {
 	ignore_next_event = true;
-	set_placeholder(TTR("Filter by event..."));
+	set_placeholder(TTR("Filter by Event"));
 }
 
 Ref<InputEvent> EventListenerLineEdit::get_event() const {
@@ -227,5 +231,5 @@ void EventListenerLineEdit::_bind_methods() {
 
 EventListenerLineEdit::EventListenerLineEdit() {
 	set_caret_blink_enabled(false);
-	set_placeholder(TTR("Filter by event..."));
+	set_placeholder(TTR("Filter by Event"));
 }

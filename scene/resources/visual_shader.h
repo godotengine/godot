@@ -226,6 +226,9 @@ public: // internal methods
 	void connect_nodes_forced(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
 	bool is_port_types_compatible(int p_a, int p_b) const;
 
+	void attach_node_to_frame(Type p_type, int p_node, int p_frame);
+	void detach_node_from_frame(Type p_type, int p_node);
+
 	void rebuild();
 	void get_node_connections(Type p_type, List<Connection> *r_connections) const;
 
@@ -255,20 +258,6 @@ VARIANT_ENUM_CAST(VisualShader::VaryingType)
 class VisualShaderNode : public Resource {
 	GDCLASS(VisualShaderNode, Resource);
 
-	int port_preview = -1;
-
-	HashMap<int, bool> connected_input_ports;
-	HashMap<int, int> connected_output_ports;
-	HashMap<int, bool> expanded_output_ports;
-
-protected:
-	HashMap<int, Variant> default_input_values;
-	bool simple_decl = true;
-	bool disabled = false;
-	bool closable = false;
-
-	static void _bind_methods();
-
 public:
 	enum PortType {
 		PORT_TYPE_SCALAR,
@@ -283,6 +272,39 @@ public:
 		PORT_TYPE_MAX,
 	};
 
+	enum Category {
+		CATEGORY_NONE,
+		CATEGORY_OUTPUT,
+		CATEGORY_COLOR,
+		CATEGORY_CONDITIONAL,
+		CATEGORY_INPUT,
+		CATEGORY_SCALAR,
+		CATEGORY_TEXTURES,
+		CATEGORY_TRANSFORM,
+		CATEGORY_UTILITY,
+		CATEGORY_VECTOR,
+		CATEGORY_SPECIAL,
+		CATEGORY_PARTICLE,
+		CATEGORY_MAX
+	};
+
+private:
+	int port_preview = -1;
+	int linked_parent_graph_frame = -1;
+
+	HashMap<int, bool> connected_input_ports;
+	HashMap<int, int> connected_output_ports;
+	HashMap<int, bool> expanded_output_ports;
+
+protected:
+	HashMap<int, Variant> default_input_values;
+	bool simple_decl = true;
+	bool disabled = false;
+	bool closable = false;
+
+	static void _bind_methods();
+
+public:
 	bool is_simple_decl() const;
 
 	virtual String get_caption() const = 0;
@@ -314,6 +336,7 @@ public:
 	void set_output_port_connected(int p_port, bool p_connected);
 	bool is_input_port_connected(int p_port) const;
 	void set_input_port_connected(int p_port, bool p_connected);
+	bool is_any_port_connected() const;
 	virtual bool is_generate_input_var(int p_port) const;
 
 	virtual bool has_output_port_preview(int p_port) const;
@@ -332,8 +355,11 @@ public:
 	bool is_disabled() const;
 	void set_disabled(bool p_disabled = true);
 
-	bool is_closable() const;
-	void set_closable(bool p_closable = true);
+	bool is_deletable() const;
+	void set_deletable(bool p_closable = true);
+
+	void set_frame(int p_node);
+	int get_frame() const;
 
 	virtual Vector<StringName> get_editable_properties() const;
 	virtual HashMap<StringName, String> get_editable_properties_names() const;
@@ -346,6 +372,8 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const = 0;
 
 	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
+
+	virtual Category get_category() const;
 
 	VisualShaderNode();
 };
@@ -506,6 +534,8 @@ public:
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
+	virtual Category get_category() const override { return CATEGORY_INPUT; }
+
 	VisualShaderNodeInput();
 };
 
@@ -544,6 +574,8 @@ public:
 	virtual String get_caption() const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual Category get_category() const override { return CATEGORY_OUTPUT; }
 
 	VisualShaderNodeOutput();
 };
@@ -587,6 +619,8 @@ public:
 
 	virtual Vector<StringName> get_editable_properties() const override;
 	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
+
+	virtual Category get_category() const override { return CATEGORY_INPUT; }
 
 	VisualShaderNodeParameter();
 };
@@ -639,6 +673,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const override;
 	virtual String get_output_port_name(int p_port) const override;
 
+	bool is_shader_valid() const;
 	void set_shader_rid(const RID &p_shader);
 
 	void set_parameter_name(const String &p_name);
@@ -658,6 +693,8 @@ public:
 	virtual Vector<StringName> get_editable_properties() const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual Category get_category() const override { return CATEGORY_INPUT; }
 
 	VisualShaderNodeParameterRef();
 };
@@ -682,12 +719,15 @@ public:
 	VisualShaderNodeResizableBase();
 };
 
-class VisualShaderNodeComment : public VisualShaderNodeResizableBase {
-	GDCLASS(VisualShaderNodeComment, VisualShaderNodeResizableBase);
+class VisualShaderNodeFrame : public VisualShaderNodeResizableBase {
+	GDCLASS(VisualShaderNodeFrame, VisualShaderNodeResizableBase);
 
 protected:
-	String title = "Comment";
-	String description = "";
+	String title = "Title";
+	bool tint_color_enabled = false;
+	Color tint_color = Color(0.3, 0.3, 0.3, 0.75);
+	bool autoshrink = true;
+	HashSet<int> attached_nodes;
 
 protected:
 	static void _bind_methods();
@@ -708,11 +748,46 @@ public:
 	void set_title(const String &p_title);
 	String get_title() const;
 
+	void set_tint_color_enabled(bool p_enable);
+	bool is_tint_color_enabled() const;
+
+	void set_tint_color(const Color &p_color);
+	Color get_tint_color() const;
+
+	void set_autoshrink_enabled(bool p_enable);
+	bool is_autoshrink_enabled() const;
+
+	void add_attached_node(int p_node);
+	void remove_attached_node(int p_node);
+	void set_attached_nodes(const PackedInt32Array &p_nodes);
+	PackedInt32Array get_attached_nodes() const;
+
+	virtual Category get_category() const override { return CATEGORY_NONE; }
+
+	VisualShaderNodeFrame();
+};
+
+#ifndef DISABLE_DEPRECATED
+// Deprecated, for compatibility only.
+class VisualShaderNodeComment : public VisualShaderNodeFrame {
+	GDCLASS(VisualShaderNodeComment, VisualShaderNodeFrame);
+
+	String description;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override { return "Comment(Deprecated)"; }
+
+	virtual Category get_category() const override { return CATEGORY_NONE; }
+
 	void set_description(const String &p_description);
 	String get_description() const;
 
-	VisualShaderNodeComment();
+	VisualShaderNodeComment() {}
 };
+#endif
 
 class VisualShaderNodeGroupBase : public VisualShaderNodeResizableBase {
 	GDCLASS(VisualShaderNodeGroupBase, VisualShaderNodeResizableBase);
@@ -779,11 +854,17 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
+	virtual Category get_category() const override { return CATEGORY_SPECIAL; }
+
 	VisualShaderNodeGroupBase();
 };
 
 class VisualShaderNodeExpression : public VisualShaderNodeGroupBase {
 	GDCLASS(VisualShaderNodeExpression, VisualShaderNodeGroupBase);
+
+private:
+	bool _is_valid_identifier_char(char32_t p_c) const;
+	String _replace_port_names(const Vector<Pair<String, String>> &p_pairs, const String &p_expression) const;
 
 protected:
 	String expression = "";
@@ -885,6 +966,8 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
+	virtual Category get_category() const override { return CATEGORY_OUTPUT; }
+
 	VisualShaderNodeVaryingSetter();
 };
 
@@ -904,6 +987,8 @@ public:
 	virtual bool has_output_port_preview(int p_port) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	virtual Category get_category() const override { return CATEGORY_INPUT; }
 
 	VisualShaderNodeVaryingGetter();
 };

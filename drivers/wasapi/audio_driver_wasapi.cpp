@@ -557,12 +557,10 @@ Error AudioDriverWASAPI::init() {
 
 	target_latency_ms = Engine::get_singleton()->get_audio_output_latency();
 
-	Error err = init_output_device();
-	if (err != OK) {
-		ERR_PRINT("WASAPI: init_output_device error");
-	}
-
 	exit_thread.clear();
+
+	Error err = init_output_device();
+	ERR_FAIL_COND_V_MSG(err != OK, err, "WASAPI: init_output_device error.");
 
 	thread.start(thread_func, this);
 
@@ -739,12 +737,17 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 		ad->start_counting_ticks();
 
 		if (avail_frames > 0 && ad->audio_output.audio_client) {
+			UINT32 buffer_size;
 			UINT32 cur_frames;
 			bool invalidated = false;
-			HRESULT hr = ad->audio_output.audio_client->GetCurrentPadding(&cur_frames);
+			HRESULT hr = ad->audio_output.audio_client->GetBufferSize(&buffer_size);
+			if (hr != S_OK) {
+				ERR_PRINT("WASAPI: GetBufferSize error");
+			}
+			hr = ad->audio_output.audio_client->GetCurrentPadding(&cur_frames);
 			if (hr == S_OK) {
 				// Check how much frames are available on the WASAPI buffer
-				UINT32 write_frames = MIN(ad->buffer_frames - cur_frames, avail_frames);
+				UINT32 write_frames = MIN(buffer_size - cur_frames, avail_frames);
 				if (write_frames > 0) {
 					BYTE *buffer = nullptr;
 					hr = ad->audio_output.render_client->GetBuffer(write_frames, &buffer);
