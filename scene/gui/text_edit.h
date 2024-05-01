@@ -525,8 +525,9 @@ private:
 	bool draw_minimap = false;
 
 	int minimap_width = 80;
-	Point2 minimap_char_size = Point2(1, 2);
-	int minimap_line_spacing = 1;
+	Point2 minimap_char_size = Point2(2, 4);
+	int minimap_line_scale = 2;
+	int minimap_line_spacing = 2;
 
 	// Minimap scroll.
 	bool minimap_clicked = false;
@@ -995,6 +996,12 @@ public:
 
 	void set_minimap_width(int p_minimap_width);
 	int get_minimap_width() const;
+
+	void set_minimap_line_spacing(int p_minimap_line_spacing);
+	int get_minimap_line_spacing() const;
+
+	void set_minimap_line_scale(int p_minimap_line_scale);
+	int get_minimap_line_scale() const;
 
 	int get_minimap_visible_lines() const;
 
