@@ -1979,6 +1979,12 @@
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
+		<method name="is_on_render_thread">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if our code is currently executing on the rendering thread.
+			</description>
+		</method>
 		<method name="light_directional_set_blend_splits">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />

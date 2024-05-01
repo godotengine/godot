@@ -31,6 +31,29 @@
 #ifndef OPENXR_INTERFACE_H
 #define OPENXR_INTERFACE_H
 
+// A note on multithreading and thread safety in OpenXR.
+//
+// Most entry points will be called from the main thread in Godot
+// however a number of entry points will be called from the
+// rendering thread, potentially while we're already processing
+// the next frame on the main thread.
+//
+// OpenXR itself has been designed with threading in mind including
+// a high likelihood that the XR runtime runs in separate threads
+// as well.
+// Hence all the frame timing information, use of swapchains and
+// sync functions.
+// Do note that repeated calls to tracking APIs will provide
+// increasingly more accurate data for the same timestamp as
+// tracking data is continuously updated.
+//
+// For our code we mostly implement this in our OpenXRAPI class.
+// We store data accessed from the rendering thread in a separate
+// struct, setting values through our renderer command queue.
+//
+// As some data is setup before we start rendering, and cleaned up
+// after we've stopped, that is accessed directly from both threads.
+
 #include "action_map/openxr_action_map.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "openxr_api.h"
@@ -173,6 +196,8 @@ public:
 	void on_state_visible();
 	void on_state_focused();
 	void on_state_stopping();
+	void on_state_loss_pending();
+	void on_state_exiting();
 	void on_pose_recentered();
 	void on_refresh_rate_changes(float p_new_rate);
 	void tracker_profile_changed(RID p_tracker, RID p_interaction_profile);
