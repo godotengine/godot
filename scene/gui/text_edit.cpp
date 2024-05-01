@@ -6784,9 +6784,7 @@ void TextEdit::_bind_methods() {
 	ADD_GROUP("Minimap", "minimap_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_draw"), "set_draw_minimap", "is_drawing_minimap");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_width", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_width", "get_minimap_width");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_line_scale", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_line_scale", "get_minimap_line_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_line_spacing", "get_minimap_line_spacing");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_line_scale", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_line_scale", "get_minimap_line_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_line_scale", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_line_scale", "get_minimap_line_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_line_spacing", "get_minimap_line_spacing");
 
 	ADD_GROUP("Caret", "caret_");
