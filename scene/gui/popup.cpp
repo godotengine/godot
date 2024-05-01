@@ -77,6 +77,9 @@ void Popup::_notification(int p_what) {
 					_initialize_visible_parents();
 				} else {
 					_deinitialize_visible_parents();
+					if (hide_reason == HIDE_REASON_NONE) {
+						hide_reason = HIDE_REASON_CANCELED;
+					}
 					emit_signal(SNAME("popup_hide"));
 					popped_up = false;
 				}
@@ -87,6 +90,7 @@ void Popup::_notification(int p_what) {
 			if (!is_in_edited_scene_root()) {
 				if (has_focus()) {
 					popped_up = true;
+					hide_reason = HIDE_REASON_NONE;
 				}
 			}
 		} break;
@@ -100,6 +104,7 @@ void Popup::_notification(int p_what) {
 
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			if (!is_in_edited_scene_root()) {
+				hide_reason = HIDE_REASON_UNFOCUSED;
 				_close_pressed();
 			}
 		} break;
@@ -114,6 +119,7 @@ void Popup::_notification(int p_what) {
 
 void Popup::_parent_focused() {
 	if (popped_up && get_flag(FLAG_POPUP)) {
+		hide_reason = HIDE_REASON_UNFOCUSED;
 		_close_pressed();
 	}
 }
