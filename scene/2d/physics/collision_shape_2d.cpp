@@ -209,9 +209,18 @@ bool CollisionShape2D::is_disabled() const {
 }
 
 bool CollisionShape2D::contains_point(const Vector2 &p_point) const {
-	Vector2 unscaledPoint = (p_point - collision_object->shape_owner_get_transform(owner_id).get_origin()).rotated(collision_object->shape_owner_get_transform(owner_id).get_rotation());
-	Size2 scale = collision_object->shape_owner_get_transform(owner_id).get_scale();
-	return shape->contains_point(Vector2(unscaledPoint.x / scale.x, unscaledPoint.y / scale.y));
+	Vector2 unscaledPoint;
+	Size2 scaleCheck;
+	if (collision_object->shape_owner_get_owner(owner_id)->is_class("Node2D")) {
+		Node2D *n = collision_object->shape_owner_get_owner(owner_id)->cast_to<Node2D>(collision_object->shape_owner_get_owner(owner_id));
+		unscaledPoint = (p_point - n->get_global_position()).rotated(n->get_global_rotation());
+		scaleCheck = n->get_global_scale();
+	} else {
+		Transform2D trans = collision_object->shape_owner_get_transform(owner_id);
+		unscaledPoint = (p_point - trans.get_origin()).rotated(trans.get_rotation());
+		scaleCheck = trans.get_scale();
+	}
+	return shape->contains_point(Vector2(unscaledPoint.x / scaleCheck.x, unscaledPoint.y / scaleCheck.y));
 }
 
 void CollisionShape2D::set_one_way_collision(bool p_enable) {
