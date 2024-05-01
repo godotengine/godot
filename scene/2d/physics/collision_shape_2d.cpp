@@ -209,6 +209,9 @@ bool CollisionShape2D::is_disabled() const {
 }
 
 bool CollisionShape2D::contains_point(const Vector2 &p_point) const {
+	if (!collision_object)
+		return false;
+
 	Vector2 unscaledPoint;
 	Size2 scaleCheck;
 	if (collision_object->shape_owner_get_owner(owner_id)->is_class("Node2D")) {
