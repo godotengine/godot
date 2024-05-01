@@ -3486,6 +3486,10 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 			}
 		}
 
+		if (singleton->editor_plugin_screen == p_editor) {
+			singleton->editor_plugin_screen = nullptr;
+		}
+
 		singleton->editor_table.erase(p_editor);
 	}
 	p_editor->make_visible(false);
