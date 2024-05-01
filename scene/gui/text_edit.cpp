@@ -827,15 +827,15 @@ void TextEdit::_notification(int p_what) {
 
 						if (caret_line_wrap_index_map.has(minimap_line) && caret_line_wrap_index_map[minimap_line].has(line_wrap_index) && highlight_current_line) {
 							if (rtl) {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, (i * minimap_line_height), minimap_width, minimap_line_height/2), theme_cache.current_line_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, (i * minimap_line_height), minimap_width, minimap_line_height / 2), theme_cache.current_line_color);
 							} else {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), (i * minimap_line_height), minimap_width, minimap_line_height/2), theme_cache.current_line_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), (i * minimap_line_height), minimap_width, minimap_line_height / 2), theme_cache.current_line_color);
 							}
 						} else if (line_background_color != Color(0, 0, 0, 0)) {
 							if (rtl) {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, (i * minimap_line_height), minimap_width, minimap_line_height/2), line_background_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, (i * minimap_line_height), minimap_width, minimap_line_height / 2), line_background_color);
 							} else {
-								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), (i * minimap_line_height), minimap_width, minimap_line_height/2), line_background_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), (i * minimap_line_height), minimap_width, minimap_line_height / 2), line_background_color);
 							}
 						}
 
