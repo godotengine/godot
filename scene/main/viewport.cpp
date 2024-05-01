@@ -2318,6 +2318,7 @@ void Viewport::_gui_force_drag(Control *p_base, const Variant &p_data, Control *
 	gui.dragging = true;
 	gui.drag_data = p_data;
 	gui.mouse_focus = nullptr;
+	gui.mouse_focus_mask.clear();
 
 	if (p_control) {
 		_gui_set_drag_preview(p_base, p_control);
