@@ -1734,7 +1734,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.mouse_focus_mask.set_flag(button_mask);
 			} else {
 				gui.mouse_focus = gui_find_control(mpos);
-				gui.last_mouse_focus = gui.mouse_focus;
 
 				if (!gui.mouse_focus) {
 					return;
@@ -2390,9 +2389,6 @@ void Viewport::_gui_remove_control(Control *p_control) {
 		gui.mouse_focus = nullptr;
 		gui.forced_mouse_focus = false;
 		gui.mouse_focus_mask.clear();
-	}
-	if (gui.last_mouse_focus == p_control) {
-		gui.last_mouse_focus = nullptr;
 	}
 	if (gui.key_focus == p_control) {
 		gui.key_focus = nullptr;

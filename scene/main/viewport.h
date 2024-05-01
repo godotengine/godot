@@ -345,7 +345,6 @@ private:
 		bool key_event_accepted = false;
 		HashMap<int, ObjectID> touch_focus;
 		Control *mouse_focus = nullptr;
-		Control *last_mouse_focus = nullptr;
 		Control *mouse_click_grabber = nullptr;
 		BitField<MouseButtonMask> mouse_focus_mask;
 		Control *key_focus = nullptr;
