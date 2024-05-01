@@ -749,6 +749,9 @@ void main() {
 	float clearcoat_roughness = 0.0;
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
+#ifdef PREMULT_ALPHA_USED
+	float premult_alpha = 1.0;
+#endif
 #ifndef FOG_DISABLED
 	vec4 fog = vec4(0.0);
 #endif // !FOG_DISABLED
@@ -1846,6 +1849,9 @@ void main() {
 	// On mobile we use a UNORM buffer with 10bpp which results in a range from 0.0 - 1.0 resulting in HDR breaking
 	// We divide by sc_luminance_multiplier to support a range from 0.0 - 2.0 both increasing precision on bright and darker images
 	frag_color.rgb = frag_color.rgb / sc_luminance_multiplier;
+#ifdef PREMULT_ALPHA_USED
+	frag_color.rgb *= premult_alpha;
+#endif
 
 #endif //MODE_MULTIPLE_RENDER_TARGETS
 

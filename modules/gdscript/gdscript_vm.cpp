@@ -211,156 +211,158 @@ void (*type_init_function_table[])(Variant *) = {
 };
 
 #if defined(__GNUC__)
-#define OPCODES_TABLE                                  \
-	static const void *switch_table_ops[] = {          \
-		&&OPCODE_OPERATOR,                             \
-		&&OPCODE_OPERATOR_VALIDATED,                   \
-		&&OPCODE_TYPE_TEST_BUILTIN,                    \
-		&&OPCODE_TYPE_TEST_ARRAY,                      \
-		&&OPCODE_TYPE_TEST_NATIVE,                     \
-		&&OPCODE_TYPE_TEST_SCRIPT,                     \
-		&&OPCODE_SET_KEYED,                            \
-		&&OPCODE_SET_KEYED_VALIDATED,                  \
-		&&OPCODE_SET_INDEXED_VALIDATED,                \
-		&&OPCODE_GET_KEYED,                            \
-		&&OPCODE_GET_KEYED_VALIDATED,                  \
-		&&OPCODE_GET_INDEXED_VALIDATED,                \
-		&&OPCODE_SET_NAMED,                            \
-		&&OPCODE_SET_NAMED_VALIDATED,                  \
-		&&OPCODE_GET_NAMED,                            \
-		&&OPCODE_GET_NAMED_VALIDATED,                  \
-		&&OPCODE_SET_MEMBER,                           \
-		&&OPCODE_GET_MEMBER,                           \
-		&&OPCODE_SET_STATIC_VARIABLE,                  \
-		&&OPCODE_GET_STATIC_VARIABLE,                  \
-		&&OPCODE_ASSIGN,                               \
-		&&OPCODE_ASSIGN_NULL,                          \
-		&&OPCODE_ASSIGN_TRUE,                          \
-		&&OPCODE_ASSIGN_FALSE,                         \
-		&&OPCODE_ASSIGN_TYPED_BUILTIN,                 \
-		&&OPCODE_ASSIGN_TYPED_ARRAY,                   \
-		&&OPCODE_ASSIGN_TYPED_NATIVE,                  \
-		&&OPCODE_ASSIGN_TYPED_SCRIPT,                  \
-		&&OPCODE_CAST_TO_BUILTIN,                      \
-		&&OPCODE_CAST_TO_NATIVE,                       \
-		&&OPCODE_CAST_TO_SCRIPT,                       \
-		&&OPCODE_CONSTRUCT,                            \
-		&&OPCODE_CONSTRUCT_VALIDATED,                  \
-		&&OPCODE_CONSTRUCT_ARRAY,                      \
-		&&OPCODE_CONSTRUCT_TYPED_ARRAY,                \
-		&&OPCODE_CONSTRUCT_DICTIONARY,                 \
-		&&OPCODE_CALL,                                 \
-		&&OPCODE_CALL_RETURN,                          \
-		&&OPCODE_CALL_ASYNC,                           \
-		&&OPCODE_CALL_UTILITY,                         \
-		&&OPCODE_CALL_UTILITY_VALIDATED,               \
-		&&OPCODE_CALL_GDSCRIPT_UTILITY,                \
-		&&OPCODE_CALL_BUILTIN_TYPE_VALIDATED,          \
-		&&OPCODE_CALL_SELF_BASE,                       \
-		&&OPCODE_CALL_METHOD_BIND,                     \
-		&&OPCODE_CALL_METHOD_BIND_RET,                 \
-		&&OPCODE_CALL_BUILTIN_STATIC,                  \
-		&&OPCODE_CALL_NATIVE_STATIC,                   \
-		&&OPCODE_CALL_METHOD_BIND_VALIDATED_RETURN,    \
-		&&OPCODE_CALL_METHOD_BIND_VALIDATED_NO_RETURN, \
-		&&OPCODE_AWAIT,                                \
-		&&OPCODE_AWAIT_RESUME,                         \
-		&&OPCODE_CREATE_LAMBDA,                        \
-		&&OPCODE_CREATE_SELF_LAMBDA,                   \
-		&&OPCODE_JUMP,                                 \
-		&&OPCODE_JUMP_IF,                              \
-		&&OPCODE_JUMP_IF_NOT,                          \
-		&&OPCODE_JUMP_TO_DEF_ARGUMENT,                 \
-		&&OPCODE_JUMP_IF_SHARED,                       \
-		&&OPCODE_RETURN,                               \
-		&&OPCODE_RETURN_TYPED_BUILTIN,                 \
-		&&OPCODE_RETURN_TYPED_ARRAY,                   \
-		&&OPCODE_RETURN_TYPED_NATIVE,                  \
-		&&OPCODE_RETURN_TYPED_SCRIPT,                  \
-		&&OPCODE_ITERATE_BEGIN,                        \
-		&&OPCODE_ITERATE_BEGIN_INT,                    \
-		&&OPCODE_ITERATE_BEGIN_FLOAT,                  \
-		&&OPCODE_ITERATE_BEGIN_VECTOR2,                \
-		&&OPCODE_ITERATE_BEGIN_VECTOR2I,               \
-		&&OPCODE_ITERATE_BEGIN_VECTOR3,                \
-		&&OPCODE_ITERATE_BEGIN_VECTOR3I,               \
-		&&OPCODE_ITERATE_BEGIN_STRING,                 \
-		&&OPCODE_ITERATE_BEGIN_DICTIONARY,             \
-		&&OPCODE_ITERATE_BEGIN_ARRAY,                  \
-		&&OPCODE_ITERATE_BEGIN_PACKED_BYTE_ARRAY,      \
-		&&OPCODE_ITERATE_BEGIN_PACKED_INT32_ARRAY,     \
-		&&OPCODE_ITERATE_BEGIN_PACKED_INT64_ARRAY,     \
-		&&OPCODE_ITERATE_BEGIN_PACKED_FLOAT32_ARRAY,   \
-		&&OPCODE_ITERATE_BEGIN_PACKED_FLOAT64_ARRAY,   \
-		&&OPCODE_ITERATE_BEGIN_PACKED_STRING_ARRAY,    \
-		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR2_ARRAY,   \
-		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR3_ARRAY,   \
-		&&OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY,     \
-		&&OPCODE_ITERATE_BEGIN_OBJECT,                 \
-		&&OPCODE_ITERATE,                              \
-		&&OPCODE_ITERATE_INT,                          \
-		&&OPCODE_ITERATE_FLOAT,                        \
-		&&OPCODE_ITERATE_VECTOR2,                      \
-		&&OPCODE_ITERATE_VECTOR2I,                     \
-		&&OPCODE_ITERATE_VECTOR3,                      \
-		&&OPCODE_ITERATE_VECTOR3I,                     \
-		&&OPCODE_ITERATE_STRING,                       \
-		&&OPCODE_ITERATE_DICTIONARY,                   \
-		&&OPCODE_ITERATE_ARRAY,                        \
-		&&OPCODE_ITERATE_PACKED_BYTE_ARRAY,            \
-		&&OPCODE_ITERATE_PACKED_INT32_ARRAY,           \
-		&&OPCODE_ITERATE_PACKED_INT64_ARRAY,           \
-		&&OPCODE_ITERATE_PACKED_FLOAT32_ARRAY,         \
-		&&OPCODE_ITERATE_PACKED_FLOAT64_ARRAY,         \
-		&&OPCODE_ITERATE_PACKED_STRING_ARRAY,          \
-		&&OPCODE_ITERATE_PACKED_VECTOR2_ARRAY,         \
-		&&OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,         \
-		&&OPCODE_ITERATE_PACKED_COLOR_ARRAY,           \
-		&&OPCODE_ITERATE_OBJECT,                       \
-		&&OPCODE_STORE_GLOBAL,                         \
-		&&OPCODE_STORE_NAMED_GLOBAL,                   \
-		&&OPCODE_TYPE_ADJUST_BOOL,                     \
-		&&OPCODE_TYPE_ADJUST_INT,                      \
-		&&OPCODE_TYPE_ADJUST_FLOAT,                    \
-		&&OPCODE_TYPE_ADJUST_STRING,                   \
-		&&OPCODE_TYPE_ADJUST_VECTOR2,                  \
-		&&OPCODE_TYPE_ADJUST_VECTOR2I,                 \
-		&&OPCODE_TYPE_ADJUST_RECT2,                    \
-		&&OPCODE_TYPE_ADJUST_RECT2I,                   \
-		&&OPCODE_TYPE_ADJUST_VECTOR3,                  \
-		&&OPCODE_TYPE_ADJUST_VECTOR3I,                 \
-		&&OPCODE_TYPE_ADJUST_TRANSFORM2D,              \
-		&&OPCODE_TYPE_ADJUST_VECTOR4,                  \
-		&&OPCODE_TYPE_ADJUST_VECTOR4I,                 \
-		&&OPCODE_TYPE_ADJUST_PLANE,                    \
-		&&OPCODE_TYPE_ADJUST_QUATERNION,               \
-		&&OPCODE_TYPE_ADJUST_AABB,                     \
-		&&OPCODE_TYPE_ADJUST_BASIS,                    \
-		&&OPCODE_TYPE_ADJUST_TRANSFORM3D,              \
-		&&OPCODE_TYPE_ADJUST_PROJECTION,               \
-		&&OPCODE_TYPE_ADJUST_COLOR,                    \
-		&&OPCODE_TYPE_ADJUST_STRING_NAME,              \
-		&&OPCODE_TYPE_ADJUST_NODE_PATH,                \
-		&&OPCODE_TYPE_ADJUST_RID,                      \
-		&&OPCODE_TYPE_ADJUST_OBJECT,                   \
-		&&OPCODE_TYPE_ADJUST_CALLABLE,                 \
-		&&OPCODE_TYPE_ADJUST_SIGNAL,                   \
-		&&OPCODE_TYPE_ADJUST_DICTIONARY,               \
-		&&OPCODE_TYPE_ADJUST_ARRAY,                    \
-		&&OPCODE_TYPE_ADJUST_PACKED_BYTE_ARRAY,        \
-		&&OPCODE_TYPE_ADJUST_PACKED_INT32_ARRAY,       \
-		&&OPCODE_TYPE_ADJUST_PACKED_INT64_ARRAY,       \
-		&&OPCODE_TYPE_ADJUST_PACKED_FLOAT32_ARRAY,     \
-		&&OPCODE_TYPE_ADJUST_PACKED_FLOAT64_ARRAY,     \
-		&&OPCODE_TYPE_ADJUST_PACKED_STRING_ARRAY,      \
-		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR2_ARRAY,     \
-		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR3_ARRAY,     \
-		&&OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY,       \
-		&&OPCODE_ASSERT,                               \
-		&&OPCODE_BREAKPOINT,                           \
-		&&OPCODE_LINE,                                 \
-		&&OPCODE_END                                   \
-	};                                                 \
+#define OPCODES_TABLE                                    \
+	static const void *switch_table_ops[] = {            \
+		&&OPCODE_OPERATOR,                               \
+		&&OPCODE_OPERATOR_VALIDATED,                     \
+		&&OPCODE_TYPE_TEST_BUILTIN,                      \
+		&&OPCODE_TYPE_TEST_ARRAY,                        \
+		&&OPCODE_TYPE_TEST_NATIVE,                       \
+		&&OPCODE_TYPE_TEST_SCRIPT,                       \
+		&&OPCODE_SET_KEYED,                              \
+		&&OPCODE_SET_KEYED_VALIDATED,                    \
+		&&OPCODE_SET_INDEXED_VALIDATED,                  \
+		&&OPCODE_GET_KEYED,                              \
+		&&OPCODE_GET_KEYED_VALIDATED,                    \
+		&&OPCODE_GET_INDEXED_VALIDATED,                  \
+		&&OPCODE_SET_NAMED,                              \
+		&&OPCODE_SET_NAMED_VALIDATED,                    \
+		&&OPCODE_GET_NAMED,                              \
+		&&OPCODE_GET_NAMED_VALIDATED,                    \
+		&&OPCODE_SET_MEMBER,                             \
+		&&OPCODE_GET_MEMBER,                             \
+		&&OPCODE_SET_STATIC_VARIABLE,                    \
+		&&OPCODE_GET_STATIC_VARIABLE,                    \
+		&&OPCODE_ASSIGN,                                 \
+		&&OPCODE_ASSIGN_NULL,                            \
+		&&OPCODE_ASSIGN_TRUE,                            \
+		&&OPCODE_ASSIGN_FALSE,                           \
+		&&OPCODE_ASSIGN_TYPED_BUILTIN,                   \
+		&&OPCODE_ASSIGN_TYPED_ARRAY,                     \
+		&&OPCODE_ASSIGN_TYPED_NATIVE,                    \
+		&&OPCODE_ASSIGN_TYPED_SCRIPT,                    \
+		&&OPCODE_CAST_TO_BUILTIN,                        \
+		&&OPCODE_CAST_TO_NATIVE,                         \
+		&&OPCODE_CAST_TO_SCRIPT,                         \
+		&&OPCODE_CONSTRUCT,                              \
+		&&OPCODE_CONSTRUCT_VALIDATED,                    \
+		&&OPCODE_CONSTRUCT_ARRAY,                        \
+		&&OPCODE_CONSTRUCT_TYPED_ARRAY,                  \
+		&&OPCODE_CONSTRUCT_DICTIONARY,                   \
+		&&OPCODE_CALL,                                   \
+		&&OPCODE_CALL_RETURN,                            \
+		&&OPCODE_CALL_ASYNC,                             \
+		&&OPCODE_CALL_UTILITY,                           \
+		&&OPCODE_CALL_UTILITY_VALIDATED,                 \
+		&&OPCODE_CALL_GDSCRIPT_UTILITY,                  \
+		&&OPCODE_CALL_BUILTIN_TYPE_VALIDATED,            \
+		&&OPCODE_CALL_SELF_BASE,                         \
+		&&OPCODE_CALL_METHOD_BIND,                       \
+		&&OPCODE_CALL_METHOD_BIND_RET,                   \
+		&&OPCODE_CALL_BUILTIN_STATIC,                    \
+		&&OPCODE_CALL_NATIVE_STATIC,                     \
+		&&OPCODE_CALL_NATIVE_STATIC_VALIDATED_RETURN,    \
+		&&OPCODE_CALL_NATIVE_STATIC_VALIDATED_NO_RETURN, \
+		&&OPCODE_CALL_METHOD_BIND_VALIDATED_RETURN,      \
+		&&OPCODE_CALL_METHOD_BIND_VALIDATED_NO_RETURN,   \
+		&&OPCODE_AWAIT,                                  \
+		&&OPCODE_AWAIT_RESUME,                           \
+		&&OPCODE_CREATE_LAMBDA,                          \
+		&&OPCODE_CREATE_SELF_LAMBDA,                     \
+		&&OPCODE_JUMP,                                   \
+		&&OPCODE_JUMP_IF,                                \
+		&&OPCODE_JUMP_IF_NOT,                            \
+		&&OPCODE_JUMP_TO_DEF_ARGUMENT,                   \
+		&&OPCODE_JUMP_IF_SHARED,                         \
+		&&OPCODE_RETURN,                                 \
+		&&OPCODE_RETURN_TYPED_BUILTIN,                   \
+		&&OPCODE_RETURN_TYPED_ARRAY,                     \
+		&&OPCODE_RETURN_TYPED_NATIVE,                    \
+		&&OPCODE_RETURN_TYPED_SCRIPT,                    \
+		&&OPCODE_ITERATE_BEGIN,                          \
+		&&OPCODE_ITERATE_BEGIN_INT,                      \
+		&&OPCODE_ITERATE_BEGIN_FLOAT,                    \
+		&&OPCODE_ITERATE_BEGIN_VECTOR2,                  \
+		&&OPCODE_ITERATE_BEGIN_VECTOR2I,                 \
+		&&OPCODE_ITERATE_BEGIN_VECTOR3,                  \
+		&&OPCODE_ITERATE_BEGIN_VECTOR3I,                 \
+		&&OPCODE_ITERATE_BEGIN_STRING,                   \
+		&&OPCODE_ITERATE_BEGIN_DICTIONARY,               \
+		&&OPCODE_ITERATE_BEGIN_ARRAY,                    \
+		&&OPCODE_ITERATE_BEGIN_PACKED_BYTE_ARRAY,        \
+		&&OPCODE_ITERATE_BEGIN_PACKED_INT32_ARRAY,       \
+		&&OPCODE_ITERATE_BEGIN_PACKED_INT64_ARRAY,       \
+		&&OPCODE_ITERATE_BEGIN_PACKED_FLOAT32_ARRAY,     \
+		&&OPCODE_ITERATE_BEGIN_PACKED_FLOAT64_ARRAY,     \
+		&&OPCODE_ITERATE_BEGIN_PACKED_STRING_ARRAY,      \
+		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR2_ARRAY,     \
+		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR3_ARRAY,     \
+		&&OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY,       \
+		&&OPCODE_ITERATE_BEGIN_OBJECT,                   \
+		&&OPCODE_ITERATE,                                \
+		&&OPCODE_ITERATE_INT,                            \
+		&&OPCODE_ITERATE_FLOAT,                          \
+		&&OPCODE_ITERATE_VECTOR2,                        \
+		&&OPCODE_ITERATE_VECTOR2I,                       \
+		&&OPCODE_ITERATE_VECTOR3,                        \
+		&&OPCODE_ITERATE_VECTOR3I,                       \
+		&&OPCODE_ITERATE_STRING,                         \
+		&&OPCODE_ITERATE_DICTIONARY,                     \
+		&&OPCODE_ITERATE_ARRAY,                          \
+		&&OPCODE_ITERATE_PACKED_BYTE_ARRAY,              \
+		&&OPCODE_ITERATE_PACKED_INT32_ARRAY,             \
+		&&OPCODE_ITERATE_PACKED_INT64_ARRAY,             \
+		&&OPCODE_ITERATE_PACKED_FLOAT32_ARRAY,           \
+		&&OPCODE_ITERATE_PACKED_FLOAT64_ARRAY,           \
+		&&OPCODE_ITERATE_PACKED_STRING_ARRAY,            \
+		&&OPCODE_ITERATE_PACKED_VECTOR2_ARRAY,           \
+		&&OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,           \
+		&&OPCODE_ITERATE_PACKED_COLOR_ARRAY,             \
+		&&OPCODE_ITERATE_OBJECT,                         \
+		&&OPCODE_STORE_GLOBAL,                           \
+		&&OPCODE_STORE_NAMED_GLOBAL,                     \
+		&&OPCODE_TYPE_ADJUST_BOOL,                       \
+		&&OPCODE_TYPE_ADJUST_INT,                        \
+		&&OPCODE_TYPE_ADJUST_FLOAT,                      \
+		&&OPCODE_TYPE_ADJUST_STRING,                     \
+		&&OPCODE_TYPE_ADJUST_VECTOR2,                    \
+		&&OPCODE_TYPE_ADJUST_VECTOR2I,                   \
+		&&OPCODE_TYPE_ADJUST_RECT2,                      \
+		&&OPCODE_TYPE_ADJUST_RECT2I,                     \
+		&&OPCODE_TYPE_ADJUST_VECTOR3,                    \
+		&&OPCODE_TYPE_ADJUST_VECTOR3I,                   \
+		&&OPCODE_TYPE_ADJUST_TRANSFORM2D,                \
+		&&OPCODE_TYPE_ADJUST_VECTOR4,                    \
+		&&OPCODE_TYPE_ADJUST_VECTOR4I,                   \
+		&&OPCODE_TYPE_ADJUST_PLANE,                      \
+		&&OPCODE_TYPE_ADJUST_QUATERNION,                 \
+		&&OPCODE_TYPE_ADJUST_AABB,                       \
+		&&OPCODE_TYPE_ADJUST_BASIS,                      \
+		&&OPCODE_TYPE_ADJUST_TRANSFORM3D,                \
+		&&OPCODE_TYPE_ADJUST_PROJECTION,                 \
+		&&OPCODE_TYPE_ADJUST_COLOR,                      \
+		&&OPCODE_TYPE_ADJUST_STRING_NAME,                \
+		&&OPCODE_TYPE_ADJUST_NODE_PATH,                  \
+		&&OPCODE_TYPE_ADJUST_RID,                        \
+		&&OPCODE_TYPE_ADJUST_OBJECT,                     \
+		&&OPCODE_TYPE_ADJUST_CALLABLE,                   \
+		&&OPCODE_TYPE_ADJUST_SIGNAL,                     \
+		&&OPCODE_TYPE_ADJUST_DICTIONARY,                 \
+		&&OPCODE_TYPE_ADJUST_ARRAY,                      \
+		&&OPCODE_TYPE_ADJUST_PACKED_BYTE_ARRAY,          \
+		&&OPCODE_TYPE_ADJUST_PACKED_INT32_ARRAY,         \
+		&&OPCODE_TYPE_ADJUST_PACKED_INT64_ARRAY,         \
+		&&OPCODE_TYPE_ADJUST_PACKED_FLOAT32_ARRAY,       \
+		&&OPCODE_TYPE_ADJUST_PACKED_FLOAT64_ARRAY,       \
+		&&OPCODE_TYPE_ADJUST_PACKED_STRING_ARRAY,        \
+		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR2_ARRAY,       \
+		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR3_ARRAY,       \
+		&&OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY,         \
+		&&OPCODE_ASSERT,                                 \
+		&&OPCODE_BREAKPOINT,                             \
+		&&OPCODE_LINE,                                   \
+		&&OPCODE_END                                     \
+	};                                                   \
 	static_assert((sizeof(switch_table_ops) / sizeof(switch_table_ops[0]) == (OPCODE_END + 1)), "Opcodes in jump table aren't the same as opcodes in enum.");
 
 #define OPCODE(m_op) \
@@ -1951,6 +1953,78 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = _get_call_error(err, "static function '" + method->get_name().operator String() + "' in type '" + method->get_instance_class().operator String() + "'", argptrs);
 					OPCODE_BREAK;
 				}
+
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CALL_NATIVE_STATIC_VALIDATED_RETURN) {
+				LOAD_INSTRUCTION_ARGS
+				CHECK_SPACE(3 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+				GD_ERR_BREAK(argc < 0);
+
+				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
+				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+
+				Variant **argptrs = instruction_args;
+
+#ifdef DEBUG_ENABLED
+				uint64_t call_time = 0;
+				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+					call_time = OS::get_singleton()->get_ticks_usec();
+				}
+#endif
+
+				GET_INSTRUCTION_ARG(ret, argc);
+				method->validated_call(nullptr, (const Variant **)argptrs, ret);
+
+#ifdef DEBUG_ENABLED
+				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+					uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
+					_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
+					function_call_time += t_taken;
+				}
+#endif
+
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CALL_NATIVE_STATIC_VALIDATED_NO_RETURN) {
+				LOAD_INSTRUCTION_ARGS
+				CHECK_SPACE(3 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+				GD_ERR_BREAK(argc < 0);
+
+				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
+				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+
+				Variant **argptrs = instruction_args;
+#ifdef DEBUG_ENABLED
+				uint64_t call_time = 0;
+				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+					call_time = OS::get_singleton()->get_ticks_usec();
+				}
+#endif
+
+				GET_INSTRUCTION_ARG(ret, argc);
+				VariantInternal::initialize(ret, Variant::NIL);
+				method->validated_call(nullptr, (const Variant **)argptrs, nullptr);
+
+#ifdef DEBUG_ENABLED
+				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+					uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
+					_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
+					function_call_time += t_taken;
+				}
+#endif
 
 				ip += 3;
 			}

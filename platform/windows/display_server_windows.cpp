@@ -3171,14 +3171,12 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	}
 }
 
-DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) {
+DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
 	HICON hicon = nullptr;
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
-		Ref<Image> img = p_icon;
-		if (img != icon) {
-			img = img->duplicate();
-			img->convert(Image::FORMAT_RGBA8);
-		}
+		Ref<Image> img = p_icon->get_image();
+		img = img->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
 
 		int w = img->get_width();
 		int h = img->get_height();
@@ -3241,16 +3239,14 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 	return iid;
 }
 
-void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) {
+void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_COND(!indicators.has(p_id));
 
 	HICON hicon = nullptr;
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
-		Ref<Image> img = p_icon;
-		if (img != icon) {
-			img = img->duplicate();
-			img->convert(Image::FORMAT_RGBA8);
-		}
+		Ref<Image> img = p_icon->get_image();
+		img = img->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
 
 		int w = img->get_width();
 		int h = img->get_height();
@@ -3315,6 +3311,12 @@ void DisplayServerWindows::status_indicator_set_tooltip(IndicatorID p_id, const 
 	ndat.uVersion = NOTIFYICON_VERSION;
 
 	Shell_NotifyIconW(NIM_MODIFY, &ndat);
+}
+
+void DisplayServerWindows::status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	indicators[p_id].menu_rid = p_menu_rid;
 }
 
 void DisplayServerWindows::status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) {
@@ -3838,7 +3840,19 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					mb = MouseButton::MB_XBUTTON1;
 				}
 				if (indicators.has(iid)) {
-					if (indicators[iid].callback.is_valid()) {
+					if (lParam == WM_RBUTTONDOWN && indicators[iid].menu_rid.is_valid() && native_menu->has_menu(indicators[iid].menu_rid)) {
+						NOTIFYICONIDENTIFIER nid;
+						ZeroMemory(&nid, sizeof(NOTIFYICONIDENTIFIER));
+						nid.cbSize = sizeof(NOTIFYICONIDENTIFIER);
+						nid.hWnd = windows[MAIN_WINDOW_ID].hWnd;
+						nid.uID = iid;
+						nid.guidItem = GUID_NULL;
+
+						RECT rect;
+						if (Shell_NotifyIconGetRect(&nid, &rect) == S_OK) {
+							native_menu->popup(indicators[iid].menu_rid, Vector2i((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2));
+						}
+					} else if (indicators[iid].callback.is_valid()) {
 						Variant v_button = mb;
 						Variant v_pos = mouse_get_position();
 						Variant *v_args[2] = { &v_button, &v_pos };

@@ -1568,34 +1568,7 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 		if (I) {
 			ResourceUID::get_singleton()->set_id(I->value, new_path);
 		}
-
-		ScriptServer::remove_global_class_by_path(old_path);
-
-		int index = -1;
-		EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->find_file(old_path, &index);
-
-		if (!efd || index < 0) {
-			// The file was removed.
-			continue;
-		}
-
-		// Update paths for global classes.
-		if (!efd->get_file_script_class_name(index).is_empty()) {
-			String lang;
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				if (ScriptServer::get_language(i)->handles_global_class_type(efd->get_file_type(index))) {
-					lang = ScriptServer::get_language(i)->get_name();
-					break;
-				}
-			}
-			if (lang.is_empty()) {
-				continue; // No language found that can handle this global class.
-			}
-
-			ScriptServer::add_global_class(efd->get_file_script_class_name(index), efd->get_file_script_class_extends(index), lang, new_path);
-			EditorNode::get_editor_data().script_class_set_icon_path(efd->get_file_script_class_name(index), efd->get_file_script_class_icon_path(index));
-			EditorNode::get_editor_data().script_class_set_name(new_path, efd->get_file_script_class_name(index));
-		}
+		EditorFileSystem::get_singleton()->register_global_class_script(old_path, new_path);
 	}
 
 	// Rename all resources loaded, be it subresources or actual resources.
