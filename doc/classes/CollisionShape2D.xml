@@ -17,8 +17,8 @@
 			<return type="bool" />
 			<param index="0" name="point" type="Vector2" />
 			<description>
-      Returns whether a given global [Vector2] point lies within the [CollisionShape2D]'s underlying [Shape2D]. 
-      [b]Note:[/b] If the [CollisionShape2D] is not owned by a [Node2D], it will return [code]false[/code].
+				Returns whether a given global [Vector2] point lies within the [CollisionShape2D]'s underlying [Shape2D]. 
+				[b]Note:[/b] If the [CollisionShape2D] is not owned by a [Node2D], it will return [code]false[/code].
 			</description>
 		</method>
 	</methods>
