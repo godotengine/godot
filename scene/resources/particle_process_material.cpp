@@ -1437,7 +1437,7 @@ void ParticleProcessMaterial::set_param_texture(Parameter p_param, const Ref<Tex
 		} break;
 		case PARAM_ANGLE: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->angle_texture, tex_rid);
-			_adjust_curve_range(p_texture, -360, 360);
+			_adjust_curve_range(p_texture, -1, 1);
 		} break;
 		case PARAM_SCALE: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->scale_texture, tex_rid);
