@@ -3151,10 +3151,11 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 	}
 }
 
-DisplayServer::IndicatorID DisplayServerMacOS::create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) {
+DisplayServer::IndicatorID DisplayServerMacOS::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
 	NSImage *nsimg = nullptr;
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
-		Ref<Image> img = p_icon->duplicate();
+		Ref<Image> img = p_icon->get_image();
+		img = img->duplicate();
 		img->convert(Image::FORMAT_RGBA8);
 
 		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
@@ -3192,13 +3193,18 @@ DisplayServer::IndicatorID DisplayServerMacOS::create_status_indicator(const Ref
 
 	IndicatorData idat;
 
-	idat.item = [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
-	idat.view = [[GodotStatusItemView alloc] init];
+	NSStatusItem *item = [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
+	idat.item = item;
+	idat.delegate = [[GodotStatusItemDelegate alloc] init];
+	[idat.delegate setCallback:p_callback];
 
-	[idat.view setToolTip:[NSString stringWithUTF8String:p_tooltip.utf8().get_data()]];
-	[idat.view setImage:nsimg];
-	[idat.view setCallback:p_callback];
-	[idat.item setView:idat.view];
+	item.button.image = nsimg;
+	item.button.imagePosition = NSImageOnly;
+	item.button.imageScaling = NSImageScaleProportionallyUpOrDown;
+	item.button.target = idat.delegate;
+	item.button.action = @selector(click:);
+	[item.button sendActionOn:(NSEventMaskLeftMouseDown | NSEventMaskRightMouseDown | NSEventMaskOtherMouseDown)];
+	item.button.toolTip = [NSString stringWithUTF8String:p_tooltip.utf8().get_data()];
 
 	IndicatorID iid = indicator_id_counter++;
 	indicators[iid] = idat;
@@ -3206,12 +3212,13 @@ DisplayServer::IndicatorID DisplayServerMacOS::create_status_indicator(const Ref
 	return iid;
 }
 
-void DisplayServerMacOS::status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) {
+void DisplayServerMacOS::status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_COND(!indicators.has(p_id));
 
 	NSImage *nsimg = nullptr;
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
-		Ref<Image> img = p_icon->duplicate();
+		Ref<Image> img = p_icon->get_image();
+		img = img->duplicate();
 		img->convert(Image::FORMAT_RGBA8);
 
 		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
@@ -3247,19 +3254,33 @@ void DisplayServerMacOS::status_indicator_set_icon(IndicatorID p_id, const Ref<I
 		}
 	}
 
-	[indicators[p_id].view setImage:nsimg];
+	NSStatusItem *item = indicators[p_id].item;
+	item.button.image = nsimg;
 }
 
 void DisplayServerMacOS::status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) {
 	ERR_FAIL_COND(!indicators.has(p_id));
 
-	[indicators[p_id].view setToolTip:[NSString stringWithUTF8String:p_tooltip.utf8().get_data()]];
+	NSStatusItem *item = indicators[p_id].item;
+	item.button.toolTip = [NSString stringWithUTF8String:p_tooltip.utf8().get_data()];
+}
+
+void DisplayServerMacOS::status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	NSStatusItem *item = indicators[p_id].item;
+	if (p_menu_rid.is_valid() && native_menu->has_menu(p_menu_rid)) {
+		NSMenu *menu = native_menu->get_native_menu_handle(p_menu_rid);
+		item.menu = menu;
+	} else {
+		item.menu = nullptr;
+	}
 }
 
 void DisplayServerMacOS::status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) {
 	ERR_FAIL_COND(!indicators.has(p_id));
 
-	[indicators[p_id].view setCallback:p_callback];
+	[indicators[p_id].delegate setCallback:p_callback];
 }
 
 void DisplayServerMacOS::delete_status_indicator(IndicatorID p_id) {
