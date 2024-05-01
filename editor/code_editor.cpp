@@ -1034,7 +1034,6 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_minimap_line_scale((int)EDITOR_GET("text_editor/appearance/minimap/minimap_line_scale") * EDSCALE);
 	text_editor->set_minimap_line_spacing((int)EDITOR_GET("text_editor/appearance/minimap/minimap_line_spacing") * EDSCALE);
 
-
 	// Appearance: Lines
 	text_editor->set_line_folding_enabled(EDITOR_GET("text_editor/appearance/lines/code_folding"));
 	text_editor->set_draw_fold_gutter(EDITOR_GET("text_editor/appearance/lines/code_folding"));
