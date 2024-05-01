@@ -3182,6 +3182,7 @@ int Main::start() {
 
 #ifdef TOOLS_ENABLED
 	String doc_tool_path;
+	bool doc_tool_implicit_cwd = false;
 	BitField<DocTools::GenerateFlags> gen_flags;
 	String _export_preset;
 	bool export_debug = false;
@@ -3252,6 +3253,7 @@ int Main::start() {
 				if (doc_tool_path.begins_with("-")) {
 					// Assuming other command line arg, so default to cwd.
 					doc_tool_path = ".";
+					doc_tool_implicit_cwd = true;
 					parsed_pair = false;
 				}
 #ifdef MODULE_GDSCRIPT_ENABLED
@@ -3282,6 +3284,7 @@ int Main::start() {
 		// Handle case where no path is given to --doctool.
 		else if (args[i] == "--doctool") {
 			doc_tool_path = ".";
+			doc_tool_implicit_cwd = true;
 		}
 #endif
 	}
@@ -3308,6 +3311,11 @@ int Main::start() {
 		{
 			Ref<DirAccess> da = DirAccess::open(doc_tool_path);
 			ERR_FAIL_COND_V_MSG(da.is_null(), EXIT_FAILURE, "Argument supplied to --doctool must be a valid directory path.");
+			// Ensure that doctool is running in the root dir, but only if
+			// user did not manually specify a path as argument.
+			if (doc_tool_implicit_cwd) {
+				ERR_FAIL_COND_V_MSG(!da->dir_exists("doc"), EXIT_FAILURE, "--doctool must be run from the Godot repository's root folder, or specify a path that points there.");
+			}
 		}
 
 #ifndef MODULE_MONO_ENABLED
@@ -3636,7 +3644,7 @@ int Main::start() {
 				}
 			}
 
-			if (doc_tool_path == ".") {
+			if (doc_tool_implicit_cwd) {
 				doc_tool_path = "./docs";
 			}
 
