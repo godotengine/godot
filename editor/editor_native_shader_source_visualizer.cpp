@@ -111,7 +111,7 @@ void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
 			// Appearance: Minimap
 			code_edit->set_draw_minimap(EDITOR_GET("text_editor/appearance/minimap/show_minimap"));
 			code_edit->set_minimap_width((int)EDITOR_GET("text_editor/appearance/minimap/minimap_width") * EDSCALE);
-			code_edit->set_minimap_line_scale((int)EDITOR_GET("text_editor/appearance/minimap/minimap_line_scale") * EDSCALE);
+			code_edit->set_minimap_line_scale((int)EDITOR_GET("text_editor/appearance/minimap/minimap_line_scales") * EDSCALE);
 			code_edit->set_minimap_line_spacing((int)EDITOR_GET("text_editor/appearance/minimap/minimap_line_spacing") * EDSCALE);
 
 			// Appearance: Lines
