@@ -346,7 +346,7 @@ void CPUParticles3D::set_param_curve(Parameter p_param, const Ref<Curve> &p_curv
 			_adjust_curve_range(p_curve, 0, 100);
 		} break;
 		case PARAM_ANGLE: {
-			_adjust_curve_range(p_curve, -360, 360);
+			_adjust_curve_range(p_curve, -1, 1);
 		} break;
 		case PARAM_SCALE: {
 		} break;
