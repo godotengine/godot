@@ -1578,31 +1578,7 @@ void EditorFileSystem::_update_script_classes() {
 	update_script_mutex.lock();
 
 	for (const String &path : update_script_paths) {
-		ScriptServer::remove_global_class_by_path(path); // First remove, just in case it changed
-
-		int index = -1;
-		EditorFileSystemDirectory *efd = find_file(path, &index);
-
-		if (!efd || index < 0) {
-			// The file was removed
-			continue;
-		}
-
-		if (!efd->files[index]->script_class_name.is_empty()) {
-			String lang;
-			for (int j = 0; j < ScriptServer::get_language_count(); j++) {
-				if (ScriptServer::get_language(j)->handles_global_class_type(efd->files[index]->type)) {
-					lang = ScriptServer::get_language(j)->get_name();
-				}
-			}
-			if (lang.is_empty()) {
-				continue; // No lang found that can handle this global class
-			}
-
-			ScriptServer::add_global_class(efd->files[index]->script_class_name, efd->files[index]->script_class_extends, lang, path);
-			EditorNode::get_editor_data().script_class_set_icon_path(efd->files[index]->script_class_name, efd->files[index]->script_class_icon_path);
-			EditorNode::get_editor_data().script_class_set_name(path, efd->files[index]->script_class_name);
-		}
+		EditorFileSystem::get_singleton()->register_global_class_script(path, path);
 	}
 
 	// Parse documentation second, as it requires the class names to be correct and registered
@@ -1842,6 +1818,34 @@ void EditorFileSystem::update_file(const String &p_file) {
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {
 	return valid_extensions;
+}
+
+void EditorFileSystem::register_global_class_script(const String &p_search_path, const String &p_target_path) {
+	ScriptServer::remove_global_class_by_path(p_search_path); // First remove, just in case it changed
+
+	int index = -1;
+	EditorFileSystemDirectory *efd = find_file(p_search_path, &index);
+
+	if (!efd || index < 0) {
+		// The file was removed
+		return;
+	}
+
+	if (!efd->files[index]->script_class_name.is_empty()) {
+		String lang;
+		for (int j = 0; j < ScriptServer::get_language_count(); j++) {
+			if (ScriptServer::get_language(j)->handles_global_class_type(efd->files[index]->type)) {
+				lang = ScriptServer::get_language(j)->get_name();
+			}
+		}
+		if (lang.is_empty()) {
+			return; // No lang found that can handle this global class
+		}
+
+		ScriptServer::add_global_class(efd->files[index]->script_class_name, efd->files[index]->script_class_extends, lang, p_target_path);
+		EditorNode::get_editor_data().script_class_set_icon_path(efd->files[index]->script_class_name, efd->files[index]->script_class_icon_path);
+		EditorNode::get_editor_data().script_class_set_name(p_target_path, efd->files[index]->script_class_name);
+	}
 }
 
 Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector<String> &p_files) {
