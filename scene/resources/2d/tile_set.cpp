@@ -235,11 +235,13 @@ TypedArray<Vector2i> TileMapPattern::get_used_cells() {
 		return used_cells;
 	}
 
+	// Used cells covers all cells on every layer.
 	else if (get_is_single_layer() == false) {
 		used_cells.resize(pattern[0].size()); 
 		for (int selected_layer = 0; selected_layer < pattern.size(); selected_layer++) {
 			for (const KeyValue<Vector2i, TileMapCell> &E : pattern[selected_layer]) {
 				Vector2i p(E.key.x, E.key.y);
+				// Do not add a cell if it's already been found on another layer.
 				if (used_cells.has(p)) {
 					continue;
 				}

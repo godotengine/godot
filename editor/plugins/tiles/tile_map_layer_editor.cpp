@@ -1148,22 +1148,26 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 								
 								else if (selection_pattern->get_is_single_layer() == false) {
 									drag_modified_layers.clear();
+									drag_modified_layers.resize(selection_pattern->get_number_of_layers());
 									Vector<HashMap<Vector2i, TileMapCell>> to_draw_multilayer = _draw_line_multilayer(drag_start_mouse_pos, mpos, mpos, drag_erasing);
-
+									
 									for (int pattern_layer = 0; pattern_layer < selection_pattern->get_number_of_layers(); pattern_layer++) {
-										
-										TileMapLayer *current_layer = layers[pattern_layer];
-										drag_modified_layers.resize(selection_pattern->get_number_of_layers());
-										HashMap<Vector2i, TileMapCell> selected_pattern_layer = to_draw_multilayer[pattern_layer];
+				
 										HashMap<Vector2i, TileMapCell> &layer_to_write = drag_modified_layers.write[pattern_layer];
-
+										HashMap<Vector2i, TileMapCell> selected_pattern_layer = to_draw_multilayer[pattern_layer];
+										TileMapLayer* current_layer = layers[pattern_layer];	
+										
+										
 										for (const KeyValue<Vector2i, TileMapCell> &E : selected_pattern_layer) {
 											if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
 												continue;
 											}
 											Vector2i coords = E.key;
 											if (!layer_to_write.has(coords)) {
+
 												layer_to_write.insert(coords, current_layer->get_cell(coords));
+												//print_line("the source id for the current TileMapLayer at these coords are: ", current_layer->get_cell_source_id(coords)); // The source ID is what I expect for current_layer
+												//print_line("the source id for the drag_modified_layer im trying to write to after inserting is :", layer_to_write[coords].source_id); // The source ID does not match current_layer/the printing does not match.
 											}
 											current_layer->set_cell(coords, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 										}
@@ -1656,13 +1660,13 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_line(Vector2
 				Vector2i offset = Vector2i(Math::posmod(drag_start_cell.x, pattern->get_size().x), Math::posmod(drag_start_cell.y, pattern->get_size().y)); // Note: no posmodv for Vector2i for now. Meh.s
 				Vector<Vector2i> line = TileMapLayerEditor::get_line(edited_layer, (last_hovered_cell - offset) / pattern->get_size(), (new_hovered_cell - offset) / pattern->get_size());
 
-				Vector<TileMapLayer *> layers = TileMapLayerEditor::tile_map_layers_in_scene_cache;
+				//Vector<TileMapLayer *> layers = TileMapLayerEditor::tile_map_layers_in_scene_cache;
 				for (int pattern_layer = pattern->get_number_of_layers() - 1; pattern_layer > -1; pattern_layer--) {	
-					TileMapLayer *current_layer = layers[pattern_layer];
+					//TileMapLayer *current_layer = layers[pattern_layer];
 					for (int i = 0; i < line.size(); i++) {
 						Vector2i top_left = line[i] * pattern->get_size() + offset;
 						for (int j = 0; j < used_cells.size(); j++) {
-							Vector2i coords = current_layer->map_pattern(top_left, used_cells[j], pattern);
+							Vector2i coords = edited_layer->map_pattern(top_left, used_cells[j], pattern);
 							//CHANGE 9
 							if (output[coords].source_id == TileSet::INVALID_SOURCE) {
 								output[coords] = TileMapCell(pattern->get_cell_source_id(pattern_layer, used_cells[j]), pattern->get_cell_atlas_coords(pattern_layer, used_cells[j]), pattern->get_cell_alternative_tile(pattern_layer, used_cells[j]));
@@ -1722,17 +1726,20 @@ Vector<HashMap<Vector2i, TileMapCell>> TileMapLayerEditorTilesPlugin::_draw_line
 			Vector2i drag_start_cell = edited_layer->local_to_map(p_start_drag_mouse_pos - mouse_offset);
 
 			TypedArray<Vector2i> used_cells = pattern->get_used_cells();
+
 			Vector2i offset = Vector2i(Math::posmod(drag_start_cell.x, pattern->get_size().x), Math::posmod(drag_start_cell.y, pattern->get_size().y)); // Note: no posmodv for Vector2i for now. Meh.s
-			Vector<Vector2i> line = TileMapLayerEditor::get_line(edited_layer, edited_layer->local_to_map(p_from_mouse_pos), edited_layer->local_to_map(p_to_mouse_pos));
+			Vector<Vector2i> line = TileMapLayerEditor::get_line(edited_layer, (last_hovered_cell - offset) / pattern->get_size(), (new_hovered_cell - offset) / pattern->get_size());
+			output.resize(selection_pattern->get_number_of_layers());
+			//Vector<TileMapLayer *> layers = TileMapLayerEditor::tile_map_layers_in_scene_cache;
 			for (int pattern_layer = 0; pattern_layer < selection_pattern->get_number_of_layers(); pattern_layer++) {
-				Vector<TileMapLayer *> layers = TileMapLayerEditor::tile_map_layers_in_scene_cache;
-				TileMapLayer *current_layer = layers[pattern_layer];
-				output.resize(selection_pattern->get_number_of_layers());
+				//TileMapLayer *current_layer = layers[pattern_layer];
 				HashMap<Vector2i, TileMapCell> &layer_to_write = output.write[pattern_layer];
 				for (int i = 0; i < line.size(); i++) {
 					Vector2i top_left = line[i] * pattern->get_size() + offset;
 					for (int j = 0; j < used_cells.size(); j++) {
-						Vector2i coords = current_layer->map_pattern(top_left, used_cells[j], pattern);
+						Vector2i coords = edited_layer->map_pattern(top_left, used_cells[j], pattern);
+						//print_line("the mapped coordinates in draw_line_multilayer are: ", coords);
+						
 						//CHANGE 9
 						layer_to_write.insert(coords, TileMapCell(pattern->get_cell_source_id(pattern_layer, used_cells[j]), pattern->get_cell_atlas_coords(pattern_layer, used_cells[j]), pattern->get_cell_alternative_tile(pattern_layer, used_cells[j])));
 					}

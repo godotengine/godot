@@ -2404,7 +2404,6 @@ Ref<TileMapPattern> TileMapLayer::get_pattern(TypedArray<Vector2i> p_coords_arra
 			Vector2i coords_in_pattern = coords_in_pattern_array[i];
 			output->set_cell(0, coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords( coords), get_cell_alternative_tile(coords));
 		}
-		output->set_size((max + Vector2i(1, 1)) - min);
 	}
 	// If the pattern is multi layer.
 	else if (is_single_layer == false) {
@@ -2420,7 +2419,6 @@ Ref<TileMapPattern> TileMapLayer::get_pattern(TypedArray<Vector2i> p_coords_arra
 		}
 		output->set_size((max + Vector2i(1, 1)) - min);
 	}
-	print_line("multilayer pattern being returned from get_pattern has the following coordinates: ", output->get_used_cells());
 	return output;
 }
 
@@ -2469,9 +2467,12 @@ Ref<TileMapPattern> TileMapLayer::get_pattern_layer(TypedArray<Vector2i> p_coord
 	// Needed to write a seperate get_pattern_layer function, as set_cell and get_cell_source_id are called on a specific tilemaplayer.
 	for (int i = 0; i < coords_in_pattern_array.size(); i++) {
 		Vector2i coords = p_coords_array[i];
+		print_line("the coordinates in get_pattern are: ", coords);
 		Vector2i coords_in_pattern = coords_in_pattern_array[i];
 		p_pattern->set_cell(p_layer, coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords(coords), get_cell_alternative_tile(coords));
 	}
+	
+	p_pattern->set_size((max + Vector2i(1, 1)) - min);
 	return p_pattern;
 }
 
@@ -2491,16 +2492,15 @@ void TileMapLayer::set_pattern(const Vector2i &p_position, const Ref<TileMapPatt
 
 	else if (p_pattern->get_is_single_layer() == false) {
 		Vector<TileMapLayer *> layers = TileMapLayerEditor::tile_map_layers_in_scene_cache;
-	
 		for (int pattern_layer = 0; pattern_layer < p_pattern->get_number_of_layers(); pattern_layer++) {
-			ERR_FAIL_INDEX_MSG(pattern_layer, p_pattern->get_number_of_layers(), "Layer index out of bounds for set_pattern_layer. It is likely you have more layers in the pattern than you do TileMapLayers in the scene.");
+			ERR_FAIL_INDEX_MSG(pattern_layer, layers.size(), "Layer index out of bounds for set_pattern_layer. It is likely you have more layers in the pattern than you do TileMapLayers in the scene.");
 			layers[pattern_layer]->set_pattern_layer(pattern_layer, p_position, p_pattern);
 		}
 	}
 }
 
 void TileMapLayer::set_pattern_layer(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern) {
-	print_line("set_pattern layer called");
+	print_line("set_pattern_layer called");
 	ERR_FAIL_COND(p_pattern.is_null());
 	ERR_FAIL_COND_EDMSG(p_pattern->get_is_single_layer() == true, " single_layer called with set_pattern_layer");
 
@@ -2509,7 +2509,8 @@ void TileMapLayer::set_pattern_layer(int p_layer, const Vector2i &p_position, co
 		TypedArray<Vector2i> used_cells = p_pattern->get_used_cells();
 		for (int i = 0; i < used_cells.size(); i++) {
 			// Determine the coordinates on the TileMap relative to the pattern, then set the tiles.
-			Vector2i coords = map_pattern(p_position, used_cells[i], p_pattern);
+			Vector2i coords = tile_set->map_pattern(p_position, used_cells[i], p_pattern);
+			print_line("the coordinates in set_pattern_layer are: ", coords);
 			set_cell(coords, p_pattern->get_cell_source_id(p_layer, used_cells[i]), p_pattern->get_cell_atlas_coords(p_layer, used_cells[i]), p_pattern->get_cell_alternative_tile(p_layer, used_cells[i]));
 		}
 	}
