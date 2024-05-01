@@ -5182,7 +5182,7 @@ void TextEdit::add_selection_for_next_occurrence() {
 
 	const String &highlighted_text = get_selected_text(caret);
 	int column = get_selection_from_column(caret) + 1;
-	int line = get_caret_line(caret);
+	int line = get_selection_from_line(caret);
 
 	const Point2i next_occurrence = search(highlighted_text, SEARCH_MATCH_CASE, line, column);
 
@@ -5196,6 +5196,7 @@ void TextEdit::add_selection_for_next_occurrence() {
 
 	if (new_caret != -1) {
 		select(next_occurrence.y, next_occurrence.x, next_occurrence.y, end, new_caret);
+		_unhide_carets();
 		adjust_viewport_to_caret(new_caret);
 		merge_overlapping_carets();
 	}
@@ -5219,8 +5220,8 @@ void TextEdit::skip_selection_for_next_occurrence() {
 	// Due to const and &(reference) presence, ternary operator is a way to avoid errors and warnings.
 	const String &searched_text = has_selection(caret) ? get_selected_text(caret) : get_word_under_caret(caret);
 
-	int column = (has_selection(caret) ? get_selection_from_column(caret) : get_caret_column(caret)) + 1;
-	int line = get_caret_line(caret);
+	int column = get_selection_from_column(caret) + 1;
+	int line = get_selection_from_line(caret);
 
 	const Point2i next_occurrence = search(searched_text, SEARCH_MATCH_CASE, line, column);
 
@@ -5228,12 +5229,13 @@ void TextEdit::skip_selection_for_next_occurrence() {
 		return;
 	}
 
-	int to_column = (has_selection(caret) ? get_selection_to_column(caret) : get_caret_column(caret)) + 1;
+	int to_column = get_selection_to_column(caret) + 1;
 	int end = next_occurrence.x + (to_column - column);
 	int new_caret = add_caret(next_occurrence.y, end);
 
 	if (new_caret != -1) {
 		select(next_occurrence.y, next_occurrence.x, next_occurrence.y, end, new_caret);
+		_unhide_carets();
 		adjust_viewport_to_caret(new_caret);
 		merge_overlapping_carets();
 	}
