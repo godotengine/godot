@@ -59,17 +59,16 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
-				if (updown_offset != -1 && mb->get_position().x > updown_offset) {
-					//there is an updown, so use it.
+				if (updown_offset != -1 && ((!is_layout_rtl() && mb->get_position().x > updown_offset) || (is_layout_rtl() && mb->get_position().x < updown_offset))) {
+					// Updown pressed.
 					if (mb->get_position().y < get_size().height / 2) {
 						set_value(get_value() + get_step());
 					} else {
 						set_value(get_value() - get_step());
 					}
 					return;
-				} else {
-					_grab_start();
 				}
+				_grab_start();
 			} else {
 				_grab_end();
 			}
@@ -121,7 +120,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		} else if (updown_offset != -1) {
-			bool new_hover = (mm->get_position().x > updown_offset);
+			bool new_hover = (!is_layout_rtl() && mm->get_position().x > updown_offset) || (is_layout_rtl() && mm->get_position().x < updown_offset);
 			if (new_hover != hover_updown) {
 				hover_updown = new_hover;
 				queue_redraw();
@@ -296,11 +295,9 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 	// higher margin to match the location where the text begins.
 	// The margin values below were determined by empirical testing.
 	if (is_layout_rtl()) {
-		stylebox->set_content_margin(SIDE_LEFT, 0);
 		stylebox->set_content_margin(SIDE_RIGHT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
 	} else {
 		stylebox->set_content_margin(SIDE_LEFT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
-		stylebox->set_content_margin(SIDE_RIGHT, 0);
 	}
 
 	value_input->add_theme_style_override("normal", stylebox);
@@ -394,6 +391,9 @@ void EditorSpinSlider::_draw_spin_slider() {
 				c *= Color(1.2, 1.2, 1.2);
 			}
 			draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
+			if (rtl) {
+				updown_offset += updown2->get_width();
+			}
 			if (grabber->is_visible()) {
 				grabber->hide();
 			}
@@ -705,6 +705,7 @@ void EditorSpinSlider::_ensure_input_popup() {
 	}
 
 	value_input_popup = memnew(Control);
+	value_input_popup->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	add_child(value_input_popup);
 
 	value_input = memnew(LineEdit);
