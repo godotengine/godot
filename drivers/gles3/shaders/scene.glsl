@@ -1442,9 +1442,9 @@ void main() {
 	float clearcoat_roughness = 0.0;
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
-#ifdef PREMULT_ALPHA_USED
-	float premult_alpha = 1.0;
-#endif
+#ifdef PREMUL_ALPHA_USED
+	float premul_alpha = 1.0;
+#endif PREMUL_ALPHA_USED
 #ifndef FOG_DISABLED
 	vec4 fog = vec4(0.0);
 #endif // !FOG_DISABLED
@@ -2149,7 +2149,7 @@ void main() {
 #endif // !RENDER_MATERIAL
 #endif // !MODE_RENDER_DEPTH
 
-#ifdef PREMULT_ALPHA_USED
-	frag_color.rgb *= premult_alpha;
-#endif
+#ifdef PREMUL_ALPHA_USED
+	frag_color.rgb *= premul_alpha;
+#endif PREMUL_ALPHA_USED
 }
