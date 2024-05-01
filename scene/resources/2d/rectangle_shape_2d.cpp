@@ -60,7 +60,7 @@ bool RectangleShape2D::_get(const StringName &p_name, Variant &r_property) const
 void RectangleShape2D::set_size(const Size2 &p_size) {
 	ERR_FAIL_COND_MSG(p_size.x < 0 || p_size.y < 0, "RectangleShape2D size cannot be negative.");
 	size = p_size;
-  halfsize = {p_size.x / 2, p_size.y / 2};
+	halfsize = { p_size.x / 2, p_size.y / 2 };
 	_update_shape();
 }
 
