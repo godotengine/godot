@@ -5961,7 +5961,7 @@ void TextEdit::set_minimap_line_scale(int p_minimap_line_scale) {
 	}
 
 	minimap_line_scale = p_minimap_line_scale;
-	//Essentially overide the minimap_char_size with the new scale values.
+	//Essentially override the minimap_char_size with the new scale values.
 	minimap_char_size.y = minimap_line_scale;
 	minimap_char_size.x = minimap_line_scale / 2;
 	_update_wrap_at_column();
