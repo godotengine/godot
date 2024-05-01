@@ -486,8 +486,8 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		if (!use_custom_anchors && (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_"))) {
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
-	} else if (Object::cast_to<Container>(parent_node)) {
-		// If the parent is a container, display only container-related properties.
+	} else if (is_managed_by_container()) {
+		// If the parent is a container and the control isn't top-level, display only container-related properties.
 		if (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_") || p_property.name == "anchors_preset") {
 			p_property.usage ^= PROPERTY_USAGE_DEFAULT;
 		} else if (p_property.name == "position" || p_property.name == "rotation" || p_property.name == "scale" || p_property.name == "size" || p_property.name == "pivot_offset") {
@@ -560,7 +560,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	// Disable the property if it's managed by the parent container.
-	if (!Object::cast_to<Container>(parent_node)) {
+	if (!is_managed_by_container()) {
 		return;
 	}
 	bool property_is_managed_by_container = false;
@@ -664,6 +664,10 @@ Rect2 Control::get_parent_anchorable_rect() const {
 Size2 Control::get_parent_area_size() const {
 	ERR_READ_THREAD_GUARD_V(Size2());
 	return get_parent_anchorable_rect().size;
+}
+
+bool Control::is_managed_by_container() const {
+	return Object::cast_to<Container>(get_parent_control()) && !is_set_as_top_level();
 }
 
 // Positioning and sizing.
@@ -901,7 +905,7 @@ Control::LayoutMode Control::_get_layout_mode() const {
 	// In these modes the property is read-only.
 	if (!parent_node) {
 		return LayoutMode::LAYOUT_MODE_UNCONTROLLED;
-	} else if (Object::cast_to<Container>(parent_node)) {
+	} else if (is_managed_by_container()) {
 		return LayoutMode::LAYOUT_MODE_CONTAINER;
 	}
 
@@ -919,7 +923,7 @@ Control::LayoutMode Control::_get_default_layout_mode() const {
 	// In these modes the property is read-only.
 	if (!parent_node) {
 		return LayoutMode::LAYOUT_MODE_UNCONTROLLED;
-	} else if (Object::cast_to<Container>(parent_node)) {
+	} else if (is_managed_by_container()) {
 		return LayoutMode::LAYOUT_MODE_CONTAINER;
 	}
 
@@ -3322,6 +3326,10 @@ void Control::_notification(int p_notification) {
 				_size_changed();
 			}
 		} break;
+
+		case NOTIFICATION_TOP_LEVEL_CHANGED: {
+			notify_property_list_changed();
+		} break;
 	}
 }
 
@@ -3369,6 +3377,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pivot_offset"), &Control::get_pivot_offset);
 	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"), &Control::get_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_parent_area_size"), &Control::get_parent_area_size);
+	ClassDB::bind_method(D_METHOD("is_managed_by_container"), &Control::is_managed_by_container);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
 	ClassDB::bind_method(D_METHOD("get_screen_position"), &Control::get_screen_position);
 	ClassDB::bind_method(D_METHOD("get_rect"), &Control::get_rect);

@@ -60,6 +60,7 @@ public:
 	StringName draw;
 	StringName hidden;
 	StringName visibility_changed;
+	StringName top_level_changed;
 	StringName input_event;
 	StringName _input_event;
 	StringName gui_input;

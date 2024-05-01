@@ -30,6 +30,7 @@
 
 #include "control_editor_plugin.h"
 
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -54,13 +55,19 @@ void ControlPositioningWarning::_update_warning() {
 		title_icon->set_texture(get_editor_theme_icon(SNAME("SubViewport")));
 		title_label->set_text(TTR("This node doesn't have a control parent."));
 		hint_label->set_text(TTR("Use the appropriate layout properties depending on where you are going to put it."));
-	} else if (Object::cast_to<Container>(parent_node)) {
+	} else if (control_node->is_managed_by_container()) {
 		title_icon->set_texture(get_editor_theme_icon(SNAME("ContainerLayout")));
 		title_label->set_text(TTR("This node is a child of a container."));
 		hint_label->set_text(TTR("Use container properties for positioning."));
 	} else {
 		title_icon->set_texture(get_editor_theme_icon(SNAME("ControlLayout")));
-		title_label->set_text(TTR("This node is a child of a regular control."));
+
+		if (control_node->is_set_as_top_level()) {
+			title_label->set_text(TTR("This node is top-level and ignores its parent."));
+		} else {
+			title_label->set_text(TTR("This node is a child of a regular control."));
+		}
+
 		hint_label->set_text(TTR("Use anchors and the rectangle for positioning."));
 	}
 
@@ -784,7 +791,7 @@ void ControlEditorToolbar::_anchors_to_current_ratio() {
 void ControlEditorToolbar::_anchor_mode_toggled(bool p_status) {
 	List<Control *> selection = _get_edited_controls();
 	for (Control *E : selection) {
-		if (Object::cast_to<Container>(E->get_parent())) {
+		if (E->is_managed_by_container()) {
 			continue;
 		}
 
@@ -856,6 +863,16 @@ List<Control *> ControlEditorToolbar::_get_edited_controls() {
 }
 
 void ControlEditorToolbar::_selection_changed() {
+	_update_toolbar();
+}
+
+void ControlEditorToolbar::_inspector_property_edited(const String &p_name) {
+	if (is_visible() && p_name == "top_level") {
+		_update_toolbar();
+	}
+}
+
+void ControlEditorToolbar::_update_toolbar() {
 	// Update toolbar visibility.
 	bool has_controls = false;
 	bool has_control_parents = false;
@@ -887,7 +904,7 @@ void ControlEditorToolbar::_selection_changed() {
 		if (Object::cast_to<Control>(control->get_parent())) {
 			has_control_parents = true;
 		}
-		if (Object::cast_to<Container>(control->get_parent())) {
+		if (control->is_managed_by_container()) {
 			has_container_parents = true;
 
 			Container *parent_container = Object::cast_to<Container>(control->get_parent());
@@ -930,7 +947,7 @@ void ControlEditorToolbar::_selection_changed() {
 			if (!control) {
 				continue;
 			}
-			if (Object::cast_to<Container>(control->get_parent())) {
+			if (control->is_managed_by_container()) {
 				continue;
 			}
 
@@ -1039,6 +1056,7 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	editor_selection->add_editor_plugin(this);
 	editor_selection->connect("selection_changed", callable_mp(this, &ControlEditorToolbar::_selection_changed));
+	EditorInterface::get_singleton()->get_inspector()->connect("property_edited", callable_mp(this, &ControlEditorToolbar::_inspector_property_edited));
 
 	singleton = this;
 }

@@ -428,6 +428,8 @@ public:
 	Size2 get_parent_area_size() const;
 	Rect2 get_parent_anchorable_rect() const;
 
+	bool is_managed_by_container() const;
+
 	// Positioning and sizing.
 
 	virtual Transform2D get_transform() const override;

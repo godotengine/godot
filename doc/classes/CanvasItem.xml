@@ -642,6 +642,11 @@
 				Emitted when the item's [Rect2] boundaries (position or size) have changed, or when an action is taking place that may have impacted these boundaries (e.g. changing [member Sprite2D.texture]).
 			</description>
 		</signal>
+		<signal name="top_level_changed">
+			<description>
+				Emitted when the node's status as top-level changes.
+			</description>
+		</signal>
 		<signal name="visibility_changed">
 			<description>
 				Emitted when the visibility (hidden/visible) changes.
@@ -669,6 +674,9 @@
 		</constant>
 		<constant name="NOTIFICATION_WORLD_2D_CHANGED" value="36">
 			The [CanvasItem]'s active [World2D] changed.
+		</constant>
+		<constant name="NOTIFICATION_TOP_LEVEL_CHANGED" value="37">
+			The [CanvasItem]'s state as a top-level node has changed.
 		</constant>
 		<constant name="TEXTURE_FILTER_PARENT_NODE" value="0" enum="TextureFilter">
 			The [CanvasItem] will inherit the filter from its parent.

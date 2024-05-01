@@ -329,6 +329,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="top_level_changed">
+			<description>
+				Emitted when the node's status as top-level changes.
+			</description>
+		</signal>
 		<signal name="visibility_changed">
 			<description>
 				Emitted when node visibility changes.
@@ -352,6 +357,9 @@
 		<constant name="NOTIFICATION_LOCAL_TRANSFORM_CHANGED" value="44">
 			[Node3D] nodes receive this notification when their local transform changes. This is not received when the transform of a parent node is changed.
 			In order for [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_local_transform].
+		</constant>
+		<constant name="NOTIFICATION_TOP_LEVEL_CHANGED" value="45">
+			[Node3D] nodes receive this notification when its state as a top-level node is changed.
 		</constant>
 		<constant name="ROTATION_EDIT_MODE_EULER" value="0" enum="RotationEditMode">
 			The rotation is edited using [Vector3] Euler angles.

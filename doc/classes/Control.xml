@@ -702,6 +702,12 @@
 				Returns [code]true[/code] if layout is right-to-left.
 			</description>
 		</method>
+		<method name="is_managed_by_container" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the control's positioning is being controlled by a container. This occurs when the parent is a container and the node is not set as top-level.
+			</description>
+		</method>
 		<method name="release_focus">
 			<return type="void" />
 			<description>
