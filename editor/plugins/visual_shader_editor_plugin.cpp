@@ -1002,7 +1002,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			button->hide();
 		}
 
-		if (i == 0 && custom_editor) {
+		if (j == 0 && custom_editor) {
 			hb->add_child(custom_editor);
 			custom_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		} else {
@@ -1019,22 +1019,22 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					type_box->add_item(TTR("Boolean"));
 					type_box->add_item(TTR("Transform"));
 					type_box->add_item(TTR("Sampler"));
-					type_box->select(group_node->get_input_port_type(i));
+					type_box->select(group_node->get_input_port_type(j));
 					type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-					type_box->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_change_input_port_type).bind(p_id, i), CONNECT_DEFERRED);
+					type_box->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_change_input_port_type).bind(p_id, j), CONNECT_DEFERRED);
 
 					LineEdit *name_box = memnew(LineEdit);
 					hb->add_child(name_box);
 					name_box->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 					name_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					name_box->set_text(name_left);
-					name_box->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_change_input_port_name).bind(name_box, p_id, i), CONNECT_DEFERRED);
-					name_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_port_name_focus_out).bind(name_box, p_id, i, false), CONNECT_DEFERRED);
+					name_box->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_change_input_port_name).bind(name_box, p_id, j), CONNECT_DEFERRED);
+					name_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_port_name_focus_out).bind(name_box, p_id, j, false), CONNECT_DEFERRED);
 
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 					remove_btn->set_tooltip_text(TTR("Remove") + " " + name_left);
-					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_input_port).bind(p_id, i), CONNECT_DEFERRED);
+					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_input_port).bind(p_id, j), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
 				} else {
 					Label *label = memnew(Label);
@@ -1043,7 +1043,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					label->add_theme_style_override("normal", editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor"))); //more compact
 					hb->add_child(label);
 
-					if (vsnode->is_input_port_default(i, mode) && !port_left_used) {
+					if (vsnode->is_input_port_default(j, mode) && !port_left_used) {
 						Label *hint_label = memnew(Label);
 						hint_label->set_text(TTR("[default]"));
 						hint_label->add_theme_color_override("font_color", editor->get_theme_color(SNAME("font_readonly_color"), SNAME("TextEdit")));
