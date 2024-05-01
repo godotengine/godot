@@ -828,13 +828,17 @@ void TextEdit::_notification(int p_what) {
 						if (caret_line_wrap_index_map.has(minimap_line) && caret_line_wrap_index_map[minimap_line].has(line_wrap_index) && highlight_current_line) {
 							if (rtl) {
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, (i * minimap_line_height), minimap_width, minimap_line_height / 2), theme_cache.current_line_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, (i * minimap_line_height), minimap_width, minimap_line_height / 2), theme_cache.current_line_color);
 							} else {
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), (i * minimap_line_height), minimap_width, minimap_line_height / 2), theme_cache.current_line_color);
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), (i * minimap_line_height), minimap_width, minimap_line_height / 2), theme_cache.current_line_color);
 							}
 						} else if (line_background_color != Color(0, 0, 0, 0)) {
 							if (rtl) {
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, (i * minimap_line_height), minimap_width, minimap_line_height / 2), line_background_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, (i * minimap_line_height), minimap_width, minimap_line_height / 2), line_background_color);
 							} else {
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), (i * minimap_line_height), minimap_width, minimap_line_height / 2), line_background_color);
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), (i * minimap_line_height), minimap_width, minimap_line_height / 2), line_background_color);
 							}
 						}
@@ -5986,6 +5990,37 @@ int TextEdit::get_minimap_line_spacing() const {
 	return minimap_line_spacing;
 }
 
+void TextEdit::set_minimap_line_scale(int p_minimap_line_scale) {
+	if (minimap_line_scale == p_minimap_line_scale) {
+		return;
+	}
+
+	minimap_line_scale = p_minimap_line_scale;
+	//Essentially overide the minimap_char_size with the new scale values.
+	minimap_char_size.y = minimap_line_scale;
+	minimap_char_size.x = minimap_line_scale / 2;
+	_update_wrap_at_column();
+	queue_redraw();
+}
+
+int TextEdit::get_minimap_line_scale() const {
+	return minimap_line_scale;
+}
+
+void TextEdit::set_minimap_line_spacing(int p_minimap_line_spacing) {
+	if (minimap_line_spacing == p_minimap_line_spacing) {
+		return;
+	}
+
+	minimap_line_spacing = p_minimap_line_spacing;
+	_update_wrap_at_column();
+	queue_redraw();
+}
+
+int TextEdit::get_minimap_line_spacing() const {
+	return minimap_line_spacing;
+}
+
 int TextEdit::get_minimap_visible_lines() const {
 	return _get_control_height() / (minimap_char_size.y + minimap_line_spacing);
 }
@@ -6784,6 +6819,8 @@ void TextEdit::_bind_methods() {
 	ADD_GROUP("Minimap", "minimap_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_draw"), "set_draw_minimap", "is_drawing_minimap");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_width", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_width", "get_minimap_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_line_scale", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_line_scale", "get_minimap_line_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_line_spacing", "get_minimap_line_spacing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_line_scale", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_line_scale", "get_minimap_line_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_line_spacing", "get_minimap_line_spacing");
 
