@@ -1319,6 +1319,12 @@
 		<member name="minimap_width" type="int" setter="set_minimap_width" getter="get_minimap_width" default="80">
 			The width, in pixels, of the minimap.
 		</member>
+		<member name="minimap_line_scale" type="int" setter="set_minimap_line_scale" getter="get_minimap_line_scale" default="2">
+			The line scale, in pixels, of the minimap.
+		</member>
+		<member name="minimap_line_spacing" type="int" setter="set_minimap_line_spacing" getter="get_minimap_line_spacing" default="2">
+			The line spacing, in pixels, of the minimap.
+		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" overrides="Control" enum="Control.CursorShape" default="1" />
 		<member name="placeholder_text" type="String" setter="set_placeholder" getter="get_placeholder" default="&quot;&quot;">
 			Text shown when the [TextEdit] is empty. It is [b]not[/b] the [TextEdit]'s default value (see [member text]).
