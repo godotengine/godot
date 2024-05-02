@@ -4494,6 +4494,9 @@ void TextEdit::set_multiple_carets_enabled(bool p_enabled) {
 	multi_carets_enabled = p_enabled;
 	if (!multi_carets_enabled) {
 		remove_secondary_carets();
+		multicaret_edit_count = 0;
+		multicaret_edit_ignore_carets.clear();
+		multicaret_edit_merge_queued = false;
 	}
 }
 
@@ -4568,6 +4571,9 @@ int TextEdit::get_caret_count() const {
 }
 
 void TextEdit::add_caret_at_carets(bool p_below) {
+	if (!multi_carets_enabled) {
+		return;
+	}
 	const int last_line_max_wrap = get_line_wrap_count(text.size() - 1);
 
 	begin_multicaret_edit();
@@ -4594,6 +4600,7 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 
 		// Add a new caret.
 		int new_caret_index = add_caret(caret_line, caret_column);
+		ERR_FAIL_COND_MSG(new_caret_index < 0, "Failed to add a caret.");
 
 		// Copy the selection origin and last fit.
 		set_selection_origin_line(selection_origin_line, true, -1, new_caret_index);
@@ -4733,7 +4740,7 @@ void TextEdit::collapse_carets(int p_from_line, int p_from_column, int p_to_line
 				// Caret was in the collapsed area.
 				set_caret_line(collapse_line, false, true, -1, i);
 				set_caret_column(collapse_column, false, i);
-				if (is_in_mulitcaret_edit()) {
+				if (is_in_mulitcaret_edit() && get_caret_count() > 1) {
 					multicaret_edit_ignore_carets.insert(i);
 				}
 				any_collapsed = true;
@@ -4746,7 +4753,7 @@ void TextEdit::collapse_carets(int p_from_line, int p_from_column, int p_to_line
 				deselect(i);
 				set_caret_line(collapse_line, false, true, -1, i);
 				set_caret_column(collapse_column, false, i);
-				if (is_in_mulitcaret_edit()) {
+				if (is_in_mulitcaret_edit() && get_caret_count() > 1) {
 					multicaret_edit_ignore_carets.insert(i);
 				}
 				any_collapsed = true;
@@ -4872,10 +4879,16 @@ void TextEdit::merge_overlapping_carets() {
 
 // Starts a multicaret edit operation. Call this before iterating over the carets and call [end_multicaret_edit] afterwards.
 void TextEdit::begin_multicaret_edit() {
+	if (!multi_carets_enabled) {
+		return;
+	}
 	multicaret_edit_count++;
 }
 
 void TextEdit::end_multicaret_edit() {
+	if (!multi_carets_enabled) {
+		return;
+	}
 	if (multicaret_edit_count > 0) {
 		multicaret_edit_count--;
 	}
@@ -7060,7 +7073,7 @@ void TextEdit::_paste_internal(int p_caret) {
 	begin_complex_operation();
 	begin_multicaret_edit();
 	Vector<int> sorted_carets = get_sorted_carets();
-	for (int i = 0; i < get_caret_count(); i++) {
+	for (int i = 0; i < sorted_carets.size(); i++) {
 		int caret_index = sorted_carets[i];
 		if (p_caret != -1 && p_caret != caret_index) {
 			continue;
