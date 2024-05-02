@@ -185,7 +185,15 @@ void EditorDockManager::_update_docks_menu() {
 }
 
 void EditorDockManager::_docks_menu_option(int p_id) {
-	focus_dock(docks_menu_docks[p_id]);
+	Control *dock = docks_menu_docks[p_id];
+	ERR_FAIL_NULL(dock);
+	ERR_FAIL_COND_MSG(!all_docks.has(dock), vformat("Menu option for unknown dock '%s'.", dock->get_name()));
+	if (all_docks[dock].enabled && all_docks[dock].open) {
+		PopupMenu *parent_menu = Object::cast_to<PopupMenu>(docks_menu->get_parent());
+		ERR_FAIL_NULL(parent_menu);
+		parent_menu->hide();
+	}
+	focus_dock(dock);
 }
 
 void EditorDockManager::_window_close_request(WindowWrapper *p_wrapper) {
@@ -822,6 +830,7 @@ EditorDockManager::EditorDockManager() {
 	EditorNode::get_singleton()->get_gui_base()->add_child(dock_context_popup);
 
 	docks_menu = memnew(PopupMenu);
+	docks_menu->set_hide_on_item_selection(false);
 	docks_menu->connect("id_pressed", callable_mp(this, &EditorDockManager::_docks_menu_option));
 	EditorNode::get_singleton()->get_gui_base()->connect("theme_changed", callable_mp(this, &EditorDockManager::_update_docks_menu));
 }
