@@ -3429,7 +3429,7 @@ Rect2 Tree::_get_content_rect() const {
 	const real_t v_size = v_scroll->is_visible() ? (v_scroll->get_combined_minimum_size().x + theme_cache.scrollbar_h_separation) : 0;
 	const real_t h_size = h_scroll->is_visible() ? (h_scroll->get_combined_minimum_size().y + theme_cache.scrollbar_v_separation) : 0;
 	const Point2 scroll_begin = _get_scrollbar_layout_rect().get_end() - Vector2(v_size, h_size);
-	const Size2 offset = (content_rect.get_end() - scroll_begin).max(Vector2(0, 0));
+	const Size2 offset = (content_rect.get_end() - scroll_begin).maxf(0);
 
 	return content_rect.grow_individual(0, 0, -offset.x, -offset.y);
 }
