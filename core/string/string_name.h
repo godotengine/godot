@@ -213,6 +213,16 @@ StringName _scs_create(const char *p_chr, bool p_static = false);
  * Use in places that can be called hundreds of times per frame (or more) is recommended, but this situation is very rare. If in doubt, do not use.
  */
 
-#define SNAME(m_arg) ([]() -> const StringName & { static StringName sname = _scs_create(m_arg, true); return sname; })()
+// #define SNAME(m_arg) ([]() -> const StringName & { static StringName sname = _scs_create(m_arg, true); return sname; })()
+// #define SNAME(m_arg) (m_arg) // >> Quick fix, but we lose the caching system
+#define SNAME(m_arg) ([]() -> const StringName & {         \
+	static std::queue<StringName> snames;                  \
+	static int versionYoloLocal = -1;                      \
+	if (unlikely(Main::versionYolo != versionYoloLocal)) { \
+		versionYoloLocal = Main::versionYolo;              \
+		snames.push(_scs_create(m_arg, true));             \
+	}                                                      \
+	return snames.back();                                  \
+})()
 
 #endif // STRING_NAME_H
