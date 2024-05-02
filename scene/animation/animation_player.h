@@ -56,7 +56,12 @@ private:
 
 	float speed_scale = 1.0;
 	double default_blend_time = 0.0;
+
 	bool auto_capture = true;
+	double auto_capture_duration = -1.0;
+	Tween::TransitionType auto_capture_transition_type = Tween::TRANS_LINEAR;
+	Tween::EaseType auto_capture_ease_type = Tween::EASE_IN;
+
 	bool is_stopping = false;
 
 	struct PlaybackData {
@@ -163,6 +168,12 @@ public:
 
 	void set_auto_capture(bool p_auto_capture);
 	bool is_auto_capture() const;
+	void set_auto_capture_duration(double p_auto_capture_duration);
+	double get_auto_capture_duration() const;
+	void set_auto_capture_transition_type(Tween::TransitionType p_auto_capture_transition_type);
+	Tween::TransitionType get_auto_capture_transition_type() const;
+	void set_auto_capture_ease_type(Tween::EaseType p_auto_capture_ease_type);
+	Tween::EaseType get_auto_capture_ease_type() const;
 
 	void play(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void play_backwards(const StringName &p_name = StringName(), double p_custom_blend = -1);

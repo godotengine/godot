@@ -125,6 +125,8 @@ void AnimationPlayer::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		p_property.hint_string = hint;
+	} else if (!auto_capture && p_property.name.begins_with("playback_auto_capture_")) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -372,7 +374,7 @@ void AnimationPlayer::play_backwards(const StringName &p_name, double p_custom_b
 
 void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, float p_custom_scale, bool p_from_end) {
 	if (auto_capture) {
-		play_with_capture(p_name, -1.0, p_custom_blend, p_custom_scale, p_from_end);
+		play_with_capture(p_name, auto_capture_duration, p_custom_blend, p_custom_scale, p_from_end, auto_capture_transition_type, auto_capture_ease_type);
 	} else {
 		_play(p_name, p_custom_blend, p_custom_scale, p_from_end);
 	}
@@ -716,10 +718,35 @@ double AnimationPlayer::get_blend_time(const StringName &p_animation1, const Str
 
 void AnimationPlayer::set_auto_capture(bool p_auto_capture) {
 	auto_capture = p_auto_capture;
+	notify_property_list_changed();
 }
 
 bool AnimationPlayer::is_auto_capture() const {
 	return auto_capture;
+}
+
+void AnimationPlayer::set_auto_capture_duration(double p_auto_capture_duration) {
+	auto_capture_duration = p_auto_capture_duration;
+}
+
+double AnimationPlayer::get_auto_capture_duration() const {
+	return auto_capture_duration;
+}
+
+void AnimationPlayer::set_auto_capture_transition_type(Tween::TransitionType p_auto_capture_transition_type) {
+	auto_capture_transition_type = p_auto_capture_transition_type;
+}
+
+Tween::TransitionType AnimationPlayer::get_auto_capture_transition_type() const {
+	return auto_capture_transition_type;
+}
+
+void AnimationPlayer::set_auto_capture_ease_type(Tween::EaseType p_auto_capture_ease_type) {
+	auto_capture_ease_type = p_auto_capture_ease_type;
+}
+
+Tween::EaseType AnimationPlayer::get_auto_capture_ease_type() const {
+	return auto_capture_ease_type;
 }
 
 #ifdef TOOLS_ENABLED
@@ -814,6 +841,12 @@ void AnimationPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_auto_capture", "auto_capture"), &AnimationPlayer::set_auto_capture);
 	ClassDB::bind_method(D_METHOD("is_auto_capture"), &AnimationPlayer::is_auto_capture);
+	ClassDB::bind_method(D_METHOD("set_auto_capture_duration", "auto_capture_duration"), &AnimationPlayer::set_auto_capture_duration);
+	ClassDB::bind_method(D_METHOD("get_auto_capture_duration"), &AnimationPlayer::get_auto_capture_duration);
+	ClassDB::bind_method(D_METHOD("set_auto_capture_transition_type", "auto_capture_transition_type"), &AnimationPlayer::set_auto_capture_transition_type);
+	ClassDB::bind_method(D_METHOD("get_auto_capture_transition_type"), &AnimationPlayer::get_auto_capture_transition_type);
+	ClassDB::bind_method(D_METHOD("set_auto_capture_ease_type", "auto_capture_ease_type"), &AnimationPlayer::set_auto_capture_ease_type);
+	ClassDB::bind_method(D_METHOD("get_auto_capture_ease_type"), &AnimationPlayer::get_auto_capture_ease_type);
 
 	ClassDB::bind_method(D_METHOD("play", "name", "custom_blend", "custom_speed", "from_end"), &AnimationPlayer::play, DEFVAL(StringName()), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("play_backwards", "name", "custom_blend"), &AnimationPlayer::play_backwards, DEFVAL(StringName()), DEFVAL(-1));
@@ -856,6 +889,9 @@ void AnimationPlayer::_bind_methods() {
 
 	ADD_GROUP("Playback Options", "playback_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playback_auto_capture"), "set_auto_capture", "is_auto_capture");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_auto_capture_duration", PROPERTY_HINT_NONE, "suffix:s"), "set_auto_capture_duration", "get_auto_capture_duration");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_auto_capture_transition_type", PROPERTY_HINT_ENUM, "Linear,Sine,Quint,Quart,Expo,Elastic,Cubic,Circ,Bounce,Back,Spring"), "set_auto_capture_transition_type", "get_auto_capture_transition_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_auto_capture_ease_type", PROPERTY_HINT_ENUM, "In,Out,InOut,OutIn"), "set_auto_capture_ease_type", "get_auto_capture_ease_type");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:s"), "set_default_blend_time", "get_default_blend_time");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "-4,4,0.001,or_less,or_greater"), "set_speed_scale", "get_speed_scale");
