@@ -988,6 +988,7 @@ public:
 
 	MODBIND1RC(String, strip_diacritics, const String &);
 	MODBIND1RC(bool, is_valid_identifier, const String &);
+	MODBIND1RC(bool, is_valid_letter, char32_t);
 
 	MODBIND2RC(String, string_to_upper, const String &, const String &);
 	MODBIND2RC(String, string_to_lower, const String &, const String &);
