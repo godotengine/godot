@@ -73,10 +73,15 @@ public:
 		DEVICE_TYPE_MAX = 0x5
 	};
 
+	struct Workarounds {
+		bool avoid_compute_after_draw = false;
+	};
+
 	struct Device {
 		String name = "Unknown";
 		Vendor vendor = VENDOR_UNKNOWN;
 		DeviceType type = DEVICE_TYPE_OTHER;
+		Workarounds workarounds;
 	};
 
 	virtual ~RenderingContextDriver();

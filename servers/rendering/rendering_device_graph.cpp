@@ -753,71 +753,96 @@ void RenderingDeviceGraph::_wait_for_secondary_command_buffer_tasks() {
 	}
 }
 
-void RenderingDeviceGraph::_run_render_commands(RDD::CommandBufferID p_command_buffer, int32_t p_level, const RecordedCommandSort *p_sorted_commands, uint32_t p_sorted_commands_count, int32_t &r_current_label_index, int32_t &r_current_label_level) {
+void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedCommandSort *p_sorted_commands, uint32_t p_sorted_commands_count, RDD::CommandBufferID &r_command_buffer, CommandBufferPool &r_command_buffer_pool, int32_t &r_current_label_index, int32_t &r_current_label_level) {
 	for (uint32_t i = 0; i < p_sorted_commands_count; i++) {
 		const uint32_t command_index = p_sorted_commands[i].index;
 		const uint32_t command_data_offset = command_data_offsets[command_index];
 		const RecordedCommand *command = reinterpret_cast<RecordedCommand *>(&command_data[command_data_offset]);
-		_run_label_command_change(p_command_buffer, command->label_index, p_level, false, true, &p_sorted_commands[i], p_sorted_commands_count - i, r_current_label_index, r_current_label_level);
+		_run_label_command_change(r_command_buffer, command->label_index, p_level, false, true, &p_sorted_commands[i], p_sorted_commands_count - i, r_current_label_index, r_current_label_level);
 
 		switch (command->type) {
 			case RecordedCommand::TYPE_BUFFER_CLEAR: {
 				const RecordedBufferClearCommand *buffer_clear_command = reinterpret_cast<const RecordedBufferClearCommand *>(command);
-				driver->command_clear_buffer(p_command_buffer, buffer_clear_command->buffer, buffer_clear_command->offset, buffer_clear_command->size);
+				driver->command_clear_buffer(r_command_buffer, buffer_clear_command->buffer, buffer_clear_command->offset, buffer_clear_command->size);
 			} break;
 			case RecordedCommand::TYPE_BUFFER_COPY: {
 				const RecordedBufferCopyCommand *buffer_copy_command = reinterpret_cast<const RecordedBufferCopyCommand *>(command);
-				driver->command_copy_buffer(p_command_buffer, buffer_copy_command->source, buffer_copy_command->destination, buffer_copy_command->region);
+				driver->command_copy_buffer(r_command_buffer, buffer_copy_command->source, buffer_copy_command->destination, buffer_copy_command->region);
 			} break;
 			case RecordedCommand::TYPE_BUFFER_GET_DATA: {
 				const RecordedBufferGetDataCommand *buffer_get_data_command = reinterpret_cast<const RecordedBufferGetDataCommand *>(command);
-				driver->command_copy_buffer(p_command_buffer, buffer_get_data_command->source, buffer_get_data_command->destination, buffer_get_data_command->region);
+				driver->command_copy_buffer(r_command_buffer, buffer_get_data_command->source, buffer_get_data_command->destination, buffer_get_data_command->region);
 			} break;
 			case RecordedCommand::TYPE_BUFFER_UPDATE: {
 				const RecordedBufferUpdateCommand *buffer_update_command = reinterpret_cast<const RecordedBufferUpdateCommand *>(command);
 				const RecordedBufferCopy *command_buffer_copies = buffer_update_command->buffer_copies();
 				for (uint32_t j = 0; j < buffer_update_command->buffer_copies_count; j++) {
-					driver->command_copy_buffer(p_command_buffer, command_buffer_copies[j].source, buffer_update_command->destination, command_buffer_copies[j].region);
+					driver->command_copy_buffer(r_command_buffer, command_buffer_copies[j].source, buffer_update_command->destination, command_buffer_copies[j].region);
 				}
 			} break;
 			case RecordedCommand::TYPE_COMPUTE_LIST: {
+				if (device.workarounds.avoid_compute_after_draw && workarounds_state.draw_list_found) {
+					// Avoid compute after draw workaround. Refer to the comment that enables this in the Vulkan driver for more information.
+					workarounds_state.draw_list_found = false;
+
+					// Create or reuse a command buffer and finish recording the current one.
+					driver->command_buffer_end(r_command_buffer);
+
+					while (r_command_buffer_pool.buffers_used >= r_command_buffer_pool.buffers.size()) {
+						RDD::CommandBufferID command_buffer = driver->command_buffer_create(r_command_buffer_pool.pool);
+						RDD::SemaphoreID command_semaphore = driver->semaphore_create();
+						r_command_buffer_pool.buffers.push_back(command_buffer);
+						r_command_buffer_pool.semaphores.push_back(command_semaphore);
+					}
+
+					// Start recording on the next usable command buffer from the pool.
+					uint32_t command_buffer_index = r_command_buffer_pool.buffers_used++;
+					r_command_buffer = r_command_buffer_pool.buffers[command_buffer_index];
+					driver->command_buffer_begin(r_command_buffer);
+				}
+
 				const RecordedComputeListCommand *compute_list_command = reinterpret_cast<const RecordedComputeListCommand *>(command);
-				_run_compute_list_command(p_command_buffer, compute_list_command->instruction_data(), compute_list_command->instruction_data_size);
+				_run_compute_list_command(r_command_buffer, compute_list_command->instruction_data(), compute_list_command->instruction_data_size);
 			} break;
 			case RecordedCommand::TYPE_DRAW_LIST: {
+				if (device.workarounds.avoid_compute_after_draw) {
+					// Indicate that a draw list was encountered for the workaround.
+					workarounds_state.draw_list_found = true;
+				}
+
 				const RecordedDrawListCommand *draw_list_command = reinterpret_cast<const RecordedDrawListCommand *>(command);
 				const VectorView clear_values(draw_list_command->clear_values(), draw_list_command->clear_values_count);
-				driver->command_begin_render_pass(p_command_buffer, draw_list_command->render_pass, draw_list_command->framebuffer, draw_list_command->command_buffer_type, draw_list_command->region, clear_values);
-				_run_draw_list_command(p_command_buffer, draw_list_command->instruction_data(), draw_list_command->instruction_data_size);
-				driver->command_end_render_pass(p_command_buffer);
+				driver->command_begin_render_pass(r_command_buffer, draw_list_command->render_pass, draw_list_command->framebuffer, draw_list_command->command_buffer_type, draw_list_command->region, clear_values);
+				_run_draw_list_command(r_command_buffer, draw_list_command->instruction_data(), draw_list_command->instruction_data_size);
+				driver->command_end_render_pass(r_command_buffer);
 			} break;
 			case RecordedCommand::TYPE_TEXTURE_CLEAR: {
 				const RecordedTextureClearCommand *texture_clear_command = reinterpret_cast<const RecordedTextureClearCommand *>(command);
-				driver->command_clear_color_texture(p_command_buffer, texture_clear_command->texture, RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL, texture_clear_command->color, texture_clear_command->range);
+				driver->command_clear_color_texture(r_command_buffer, texture_clear_command->texture, RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL, texture_clear_command->color, texture_clear_command->range);
 			} break;
 			case RecordedCommand::TYPE_TEXTURE_COPY: {
 				const RecordedTextureCopyCommand *texture_copy_command = reinterpret_cast<const RecordedTextureCopyCommand *>(command);
-				driver->command_copy_texture(p_command_buffer, texture_copy_command->from_texture, RDD::TEXTURE_LAYOUT_TRANSFER_SRC_OPTIMAL, texture_copy_command->to_texture, RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL, texture_copy_command->region);
+				driver->command_copy_texture(r_command_buffer, texture_copy_command->from_texture, RDD::TEXTURE_LAYOUT_TRANSFER_SRC_OPTIMAL, texture_copy_command->to_texture, RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL, texture_copy_command->region);
 			} break;
 			case RecordedCommand::TYPE_TEXTURE_GET_DATA: {
 				const RecordedTextureGetDataCommand *texture_get_data_command = reinterpret_cast<const RecordedTextureGetDataCommand *>(command);
 				const VectorView<RDD::BufferTextureCopyRegion> command_buffer_texture_copy_regions_view(texture_get_data_command->buffer_texture_copy_regions(), texture_get_data_command->buffer_texture_copy_regions_count);
-				driver->command_copy_texture_to_buffer(p_command_buffer, texture_get_data_command->from_texture, RDD::TEXTURE_LAYOUT_TRANSFER_SRC_OPTIMAL, texture_get_data_command->to_buffer, command_buffer_texture_copy_regions_view);
+				driver->command_copy_texture_to_buffer(r_command_buffer, texture_get_data_command->from_texture, RDD::TEXTURE_LAYOUT_TRANSFER_SRC_OPTIMAL, texture_get_data_command->to_buffer, command_buffer_texture_copy_regions_view);
 			} break;
 			case RecordedCommand::TYPE_TEXTURE_RESOLVE: {
 				const RecordedTextureResolveCommand *texture_resolve_command = reinterpret_cast<const RecordedTextureResolveCommand *>(command);
-				driver->command_resolve_texture(p_command_buffer, texture_resolve_command->from_texture, RDD::TEXTURE_LAYOUT_TRANSFER_SRC_OPTIMAL, texture_resolve_command->src_layer, texture_resolve_command->src_mipmap, texture_resolve_command->to_texture, RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL, texture_resolve_command->dst_layer, texture_resolve_command->dst_mipmap);
+				driver->command_resolve_texture(r_command_buffer, texture_resolve_command->from_texture, RDD::TEXTURE_LAYOUT_TRANSFER_SRC_OPTIMAL, texture_resolve_command->src_layer, texture_resolve_command->src_mipmap, texture_resolve_command->to_texture, RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL, texture_resolve_command->dst_layer, texture_resolve_command->dst_mipmap);
 			} break;
 			case RecordedCommand::TYPE_TEXTURE_UPDATE: {
 				const RecordedTextureUpdateCommand *texture_update_command = reinterpret_cast<const RecordedTextureUpdateCommand *>(command);
 				const RecordedBufferToTextureCopy *command_buffer_to_texture_copies = texture_update_command->buffer_to_texture_copies();
 				for (uint32_t j = 0; j < texture_update_command->buffer_to_texture_copies_count; j++) {
-					driver->command_copy_buffer_to_texture(p_command_buffer, command_buffer_to_texture_copies[j].from_buffer, texture_update_command->to_texture, RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL, command_buffer_to_texture_copies[j].region);
+					driver->command_copy_buffer_to_texture(r_command_buffer, command_buffer_to_texture_copies[j].from_buffer, texture_update_command->to_texture, RDD::TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL, command_buffer_to_texture_copies[j].region);
 				}
 			} break;
 			case RecordedCommand::TYPE_CAPTURE_TIMESTAMP: {
 				const RecordedCaptureTimestampCommand *texture_capture_timestamp_command = reinterpret_cast<const RecordedCaptureTimestampCommand *>(command);
-				driver->command_timestamp_write(p_command_buffer, texture_capture_timestamp_command->pool, texture_capture_timestamp_command->index);
+				driver->command_timestamp_write(r_command_buffer, texture_capture_timestamp_command->pool, texture_capture_timestamp_command->index);
 			} break;
 			default: {
 				DEV_ASSERT(false && "Unknown recorded command type.");
@@ -1229,8 +1254,9 @@ void RenderingDeviceGraph::_print_compute_list(const uint8_t *p_instruction_data
 	}
 }
 
-void RenderingDeviceGraph::initialize(RDD *p_driver, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame) {
+void RenderingDeviceGraph::initialize(RDD *p_driver, RenderingContextDriver::Device p_device, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame) {
 	driver = p_driver;
+	device = p_device;
 	frames.resize(p_frame_count);
 
 	for (uint32_t i = 0; i < p_frame_count; i++) {
@@ -1805,7 +1831,7 @@ void RenderingDeviceGraph::end_label() {
 	command_label_index = -1;
 }
 
-void RenderingDeviceGraph::end(RDD::CommandBufferID p_command_buffer, bool p_reorder_commands, bool p_full_barriers) {
+void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RDD::CommandBufferID &r_command_buffer, CommandBufferPool &r_command_buffer_pool) {
 	if (command_count == 0) {
 		// No commands have been logged, do nothing.
 		return;
@@ -1919,7 +1945,12 @@ void RenderingDeviceGraph::end(RDD::CommandBufferID p_command_buffer, bool p_reo
 	if (command_count > 0) {
 		int32_t current_label_index = -1;
 		int32_t current_label_level = -1;
-		_run_label_command_change(p_command_buffer, -1, -1, true, true, nullptr, 0, current_label_index, current_label_level);
+		_run_label_command_change(r_command_buffer, -1, -1, true, true, nullptr, 0, current_label_index, current_label_level);
+
+		if (device.workarounds.avoid_compute_after_draw) {
+			// Reset the state of the workaround.
+			workarounds_state.draw_list_found = false;
+		}
 
 		if (p_reorder_commands) {
 #if PRINT_RENDER_GRAPH
@@ -1946,8 +1977,8 @@ void RenderingDeviceGraph::end(RDD::CommandBufferID p_command_buffer, bool p_reo
 					RecordedCommandSort *level_command_ptr = &commands_sorted[current_level_start];
 					uint32_t level_command_count = i - current_level_start;
 					_boost_priority_for_render_commands(level_command_ptr, level_command_count, boosted_priority);
-					_group_barriers_for_render_commands(p_command_buffer, level_command_ptr, level_command_count, p_full_barriers);
-					_run_render_commands(p_command_buffer, current_level, level_command_ptr, level_command_count, current_label_index, current_label_level);
+					_group_barriers_for_render_commands(r_command_buffer, level_command_ptr, level_command_count, p_full_barriers);
+					_run_render_commands(current_level, level_command_ptr, level_command_count, r_command_buffer, r_command_buffer_pool, current_label_index, current_label_level);
 					current_level = commands_sorted[i].level;
 					current_level_start = i;
 				}
@@ -1956,20 +1987,20 @@ void RenderingDeviceGraph::end(RDD::CommandBufferID p_command_buffer, bool p_reo
 			RecordedCommandSort *level_command_ptr = &commands_sorted[current_level_start];
 			uint32_t level_command_count = command_count - current_level_start;
 			_boost_priority_for_render_commands(level_command_ptr, level_command_count, boosted_priority);
-			_group_barriers_for_render_commands(p_command_buffer, level_command_ptr, level_command_count, p_full_barriers);
-			_run_render_commands(p_command_buffer, current_level, level_command_ptr, level_command_count, current_label_index, current_label_level);
+			_group_barriers_for_render_commands(r_command_buffer, level_command_ptr, level_command_count, p_full_barriers);
+			_run_render_commands(current_level, level_command_ptr, level_command_count, r_command_buffer, r_command_buffer_pool, current_label_index, current_label_level);
 
 #if PRINT_RENDER_GRAPH
 			print_line("COMMANDS", command_count, "LEVELS", current_level + 1);
 #endif
 		} else {
 			for (uint32_t i = 0; i < command_count; i++) {
-				_group_barriers_for_render_commands(p_command_buffer, &commands_sorted[i], 1, p_full_barriers);
-				_run_render_commands(p_command_buffer, i, &commands_sorted[i], 1, current_label_index, current_label_level);
+				_group_barriers_for_render_commands(r_command_buffer, &commands_sorted[i], 1, p_full_barriers);
+				_run_render_commands(i, &commands_sorted[i], 1, r_command_buffer, r_command_buffer_pool, current_label_index, current_label_level);
 			}
 		}
 
-		_run_label_command_change(p_command_buffer, -1, -1, true, false, nullptr, 0, current_label_index, current_label_level);
+		_run_label_command_change(r_command_buffer, -1, -1, true, false, nullptr, 0, current_label_index, current_label_level);
 
 #if PRINT_COMMAND_RECORDING
 		print_line(vformat("Recorded %d commands", command_count));
