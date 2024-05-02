@@ -2093,7 +2093,7 @@ Ref<AnimatedValuesBackup> AnimationMixer::apply_reset(bool p_user_initiated) {
 void AnimationMixer::capture(const StringName &p_name, double p_duration, Tween::TransitionType p_trans_type, Tween::EaseType p_ease_type) {
 	ERR_FAIL_COND(!active);
 	ERR_FAIL_COND(!has_animation(p_name));
-	ERR_FAIL_COND(Math::is_zero_approx(p_duration));
+	ERR_FAIL_COND(p_duration <= 0);
 	Ref<Animation> reference_animation = get_animation(p_name);
 
 	if (!cache_valid) {
