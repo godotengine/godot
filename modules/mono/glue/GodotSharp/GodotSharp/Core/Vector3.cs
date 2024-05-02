@@ -437,6 +437,57 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector3(Mathf.Max(X, with.X), Mathf.Max(Y, with.Y), Mathf.Max(Z, with.Z))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector3 Max(Vector3 with)
+        {
+            return new Vector3
+            (
+                Mathf.Max(X, with.X),
+                Mathf.Max(Y, with.Y),
+                Mathf.Max(Z, with.Z)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector3(Mathf.Max(X, with), Mathf.Max(Y, with), Mathf.Max(Z, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector3 Max(real_t with)
+        {
+            return new Vector3
+            (
+                Mathf.Max(X, with),
+                Mathf.Max(Y, with),
+                Mathf.Max(Z, with)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector3(Mathf.Min(X, with.X), Mathf.Min(Y, with.Y), Mathf.Min(Z, with.Z))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector3 Min(Vector3 with)
+        {
+            return new Vector3
+            (
+                Mathf.Min(X, with.X),
+                Mathf.Min(Y, with.Y),
+                Mathf.Min(Z, with.Z)
+            );
+        }
+
+        /// <summary>
         /// Returns the axis of the vector's highest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>

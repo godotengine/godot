@@ -192,6 +192,70 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector2I(Mathf.Max(X, with.X), Mathf.Max(Y, with.Y))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector2I Max(Vector2I with)
+        {
+            return new Vector2I
+            (
+                Mathf.Max(X, with.X),
+                Mathf.Max(Y, with.Y)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector2I(Mathf.Max(X, with), Mathf.Max(Y, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector2I Max(int with)
+        {
+            return new Vector2I
+            (
+                Mathf.Max(X, with),
+                Mathf.Max(Y, with)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector2I(Mathf.Min(X, with.X), Mathf.Min(Y, with.Y))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector2I Min(Vector2I with)
+        {
+            return new Vector2I
+            (
+                Mathf.Min(X, with.X),
+                Mathf.Min(Y, with.Y)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector2I(Mathf.Min(X, with), Mathf.Min(Y, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector2I Min(int with)
+        {
+            return new Vector2I
+            (
+                Mathf.Min(X, with),
+                Mathf.Min(Y, with)
+            );
+        }
+
+        /// <summary>
         /// Returns the axis of the vector's highest value. See <see cref="Axis"/>.
         /// If both components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
