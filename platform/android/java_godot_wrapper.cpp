@@ -72,7 +72,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_granted_permissions = p_env->GetMethodID(godot_class, "getGrantedPermissions", "()[Ljava/lang/String;");
 	_get_ca_certificates = p_env->GetMethodID(godot_class, "getCACertificates", "()Ljava/lang/String;");
 	_init_input_devices = p_env->GetMethodID(godot_class, "initInputDevices", "()V");
-	_vibrate = p_env->GetMethodID(godot_class, "vibrate", "(I)V");
+	_vibrate = p_env->GetMethodID(godot_class, "vibrate", "(II)V");
 	_get_input_fallback_mapping = p_env->GetMethodID(godot_class, "getInputFallbackMapping", "()Ljava/lang/String;");
 	_on_godot_setup_completed = p_env->GetMethodID(godot_class, "onGodotSetupCompleted", "()V");
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
@@ -331,11 +331,18 @@ void GodotJavaWrapper::init_input_devices() {
 	}
 }
 
-void GodotJavaWrapper::vibrate(int p_duration_ms) {
+void GodotJavaWrapper::vibrate(int p_duration_ms, float p_amplitude) {
 	if (_vibrate) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL(env);
-		env->CallVoidMethod(godot_instance, _vibrate, p_duration_ms);
+
+		int j_amplitude = -1.0;
+
+		if (p_amplitude != -1.0) {
+			j_amplitude = CLAMP(int(p_amplitude * 255), 1, 255);
+		}
+
+		env->CallVoidMethod(godot_instance, _vibrate, p_duration_ms, j_amplitude);
 	}
 }
 

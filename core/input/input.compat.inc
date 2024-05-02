@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  ios.h                                                                 */
+/*  input.compat.inc                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,35 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IOS_H
-#define IOS_H
+#ifndef DISABLE_DEPRECATED
 
-#include "core/object/class_db.h"
+void Input::_vibrate_handheld_bind_compat_91143(int p_duration_ms) {
+	vibrate_handheld(p_duration_ms, -1.0);
+}
 
-#import <CoreHaptics/CoreHaptics.h>
+void Input::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("vibrate_handheld", "duration_ms"), &Input::_vibrate_handheld_bind_compat_91143, DEFVAL(500));
+}
 
-class iOS : public Object {
-	GDCLASS(iOS, Object);
-
-	static void _bind_methods();
-
-private:
-	CHHapticEngine *haptic_engine API_AVAILABLE(ios(13)) = nullptr;
-
-	CHHapticEngine *get_haptic_engine_instance() API_AVAILABLE(ios(13));
-	void start_haptic_engine();
-	void stop_haptic_engine();
-
-public:
-	static void alert(const char *p_alert, const char *p_title);
-
-	bool supports_haptic_engine();
-	void vibrate_haptic_engine(float p_duration_seconds, float p_amplitude);
-
-	String get_model() const;
-	String get_rate_url(int p_app_id) const;
-
-	iOS();
-};
-
-#endif // IOS_H
+#endif // DISABLE_DEPRECATED
