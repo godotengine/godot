@@ -1444,7 +1444,7 @@ void main() {
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
 #ifdef PREMUL_ALPHA_USED
 	float premul_alpha = 1.0;
-#endif PREMUL_ALPHA_USED
+#endif // PREMUL_ALPHA_USED
 #ifndef FOG_DISABLED
 	vec4 fog = vec4(0.0);
 #endif // !FOG_DISABLED
@@ -2151,5 +2151,5 @@ void main() {
 
 #ifdef PREMUL_ALPHA_USED
 	frag_color.rgb *= premul_alpha;
-#endif PREMUL_ALPHA_USED
+#endif // PREMUL_ALPHA_USED
 }
