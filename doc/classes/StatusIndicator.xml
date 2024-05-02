@@ -8,6 +8,14 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_rect" qualifiers="const">
+			<return type="Rect2" />
+			<description>
+				Returns the status indicator rectangle in screen coordinates. If this status indicator is not visible, returns an empty [Rect2].
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="icon" type="Texture2D" setter="set_icon" getter="get_icon">
 			Status indicator icon.
