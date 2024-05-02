@@ -337,3 +337,10 @@ GH-91098
 Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/remove_paragraph/arguments': size changed value in new API, from 1 to 2.
 
 Added optional argument. Compatibility method registered.
+
+
+GH-91143
+--------
+Validate extension JSON: Error: Field 'classes/Input/methods/vibrate_handheld/arguments': size changed value in new API, from 1 to 2.
+
+Added optional argument. Compatibility method registered.

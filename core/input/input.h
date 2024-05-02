@@ -264,6 +264,11 @@ private:
 
 	EventDispatchFunc event_dispatch_function = nullptr;
 
+#ifndef DISABLE_DEPRECATED
+	void _vibrate_handheld_bind_compat_91143(int p_duration_ms = 500);
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 protected:
 	static void _bind_methods();
 
@@ -323,7 +328,7 @@ public:
 
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
-	void vibrate_handheld(int p_duration_ms = 500);
+	void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0);
 
 	void set_mouse_position(const Point2 &p_posf);
 

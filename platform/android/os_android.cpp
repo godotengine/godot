@@ -746,8 +746,8 @@ ANativeWindow *OS_Android::get_native_window() const {
 #endif
 }
 
-void OS_Android::vibrate_handheld(int p_duration_ms) {
-	godot_java->vibrate(p_duration_ms);
+void OS_Android::vibrate_handheld(int p_duration_ms, float p_amplitude) {
+	godot_java->vibrate(p_duration_ms, p_amplitude);
 }
 
 String OS_Android::get_config_path() const {
