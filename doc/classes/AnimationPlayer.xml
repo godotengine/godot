@@ -213,6 +213,17 @@
 		</member>
 		<member name="playback_auto_capture" type="bool" setter="set_auto_capture" getter="is_auto_capture" default="true">
 			If [code]true[/code], performs [method AnimationMixer.capture] before playback automatically. This means just [method play_with_capture] is executed with default arguments instead of [method play].
+			[b]Note:[/b] Capture interpolation is only performed if the animation contains a capture track. See also [constant Animation.UPDATE_CAPTURE].
+		</member>
+		<member name="playback_auto_capture_duration" type="float" setter="set_auto_capture_duration" getter="get_auto_capture_duration" default="-1.0">
+			See also [method play_with_capture] and [method AnimationMixer.capture].
+			If [member playback_auto_capture_duration] is negative value, the duration is set to the interval between the current position and the first key.
+		</member>
+		<member name="playback_auto_capture_ease_type" type="int" setter="set_auto_capture_ease_type" getter="get_auto_capture_ease_type" enum="Tween.EaseType" default="0">
+			The ease type of the capture interpolation. See also [enum Tween.EaseType].
+		</member>
+		<member name="playback_auto_capture_transition_type" type="int" setter="set_auto_capture_transition_type" getter="get_auto_capture_transition_type" enum="Tween.TransitionType" default="0">
+			The transition type of the capture interpolation. See also [enum Tween.TransitionType].
 		</member>
 		<member name="playback_default_blend_time" type="float" setter="set_default_blend_time" getter="get_default_blend_time" default="0.0">
 			The default time in which to blend animations. Ranges from 0 to 4096 with 0.01 precision.
