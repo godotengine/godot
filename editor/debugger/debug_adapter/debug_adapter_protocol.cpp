@@ -607,7 +607,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		}
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			int id = variable_id++;
-			PackedVector2Array array = p_var;
+			PackedVector3Array array = p_var;
 			DAP::Variable size;
 			size.name = "size";
 			size.type = Variant::get_type_name(Variant::INT);
