@@ -327,6 +327,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_strip_diacritics, "string");
 	GDVIRTUAL_BIND(_is_valid_identifier, "string");
+	GDVIRTUAL_BIND(_is_valid_letter, "unicode");
 
 	GDVIRTUAL_BIND(_string_get_word_breaks, "string", "language", "chars_per_line");
 	GDVIRTUAL_BIND(_string_get_character_breaks, "string", "language");
@@ -1458,6 +1459,14 @@ bool TextServerExtension::is_valid_identifier(const String &p_string) const {
 		return ret;
 	}
 	return TextServer::is_valid_identifier(p_string);
+}
+
+bool TextServerExtension::is_valid_letter(char32_t p_unicode) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_is_valid_letter, p_unicode, ret)) {
+		return ret;
+	}
+	return TextServer::is_valid_letter(p_unicode);
 }
 
 String TextServerExtension::strip_diacritics(const String &p_string) const {
