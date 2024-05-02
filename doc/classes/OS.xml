@@ -596,6 +596,13 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="is_media_playing" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if another app is currently playing music or other media. Notification equivalents are [code]NOTIFICATION_OS_EXTERNAL_MEDIA_BEGIN[/code] and [code]NOTIFICATION_OS_EXTERNAL_MEDIA_END[/code].
+				[b]Note:[/b] This method is implemented on Android and iOS. Always returns [code]false[/code] on other platforms.
+			</description>
+		</method>
 		<method name="is_process_running" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="pid" type="int" />

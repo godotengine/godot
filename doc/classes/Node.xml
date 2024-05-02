@@ -1249,6 +1249,14 @@
 		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
 			Notification received when the [TextServer] is changed.
 		</constant>
+		<constant name="NOTIFICATION_OS_EXTERNAL_MEDIA_BEGIN" value="2019">
+			Notification received when music or other media begins playing from a different app.
+			Implemented on mobile platforms.
+		</constant>
+		<constant name="NOTIFICATION_OS_EXTERNAL_MEDIA_END" value="2020">
+			Notification received when music or other media stops playing from a different app.
+			Implemented on mobile platforms.
+		</constant>
 		<constant name="PROCESS_MODE_INHERIT" value="0" enum="ProcessMode">
 			Inherits [member process_mode] from the node's parent. This is the default for any newly created node.
 		</constant>

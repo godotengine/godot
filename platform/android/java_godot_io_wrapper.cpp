@@ -66,6 +66,7 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_set_screen_orientation = p_env->GetMethodID(cls, "setScreenOrientation", "(I)V");
 		_get_screen_orientation = p_env->GetMethodID(cls, "getScreenOrientation", "()I");
 		_get_system_dir = p_env->GetMethodID(cls, "getSystemDir", "(IZ)Ljava/lang/String;");
+		_is_media_playing = p_env->GetMethodID(cls, "isMediaPlaying", "()Z");
 	}
 }
 
@@ -264,6 +265,17 @@ String GodotIOJavaWrapper::get_system_dir(int p_dir, bool p_shared_storage) {
 		return jstring_to_string(s, env);
 	} else {
 		return String(".");
+	}
+}
+
+bool GodotIOJavaWrapper::is_media_playing() {
+	if (_is_media_playing) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		bool b = env->CallBooleanMethod(godot_io_instance, _is_media_playing);
+		return b;
+	} else {
+		return false;
 	}
 }
 

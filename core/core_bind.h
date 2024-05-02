@@ -212,6 +212,8 @@ public:
 
 	bool is_stdout_verbose() const;
 
+	bool is_media_playing() const;
+
 	int get_processor_count() const;
 	String get_processor_name() const;
 

@@ -45,6 +45,7 @@
 #include "drivers/unix/syslog_logger.h"
 #include "main/main.h"
 
+#import <AVFoundation/AVFoundation.h>
 #import <AudioToolbox/AudioServices.h>
 #import <CoreText/CoreText.h>
 #import <UIKit/UIKit.h>
@@ -171,6 +172,11 @@ bool OS_IOS::iterate() {
 
 	if (DisplayServer::get_singleton()) {
 		DisplayServer::get_singleton()->process_events();
+	}
+
+	if (media_update_requested) {
+		update_media_state();
+		media_update_requested = false;
 	}
 
 	return Main::iteration();
@@ -354,6 +360,23 @@ String OS_IOS::get_locale() const {
 String OS_IOS::get_unique_id() const {
 	NSString *uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
 	return String::utf8([uuid UTF8String]);
+}
+
+bool OS_IOS::is_media_playing() const {
+	AVAudioSession *audioSession = [AVAudioSession sharedInstance];
+	return [audioSession secondaryAudioShouldBeSilencedHint];
+}
+
+void OS_IOS::update_media_state() {
+	bool state = is_media_playing();
+	if (external_media_playing != state) {
+		if (state) {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_EXTERNAL_MEDIA_BEGIN);
+		} else {
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_EXTERNAL_MEDIA_END);
+		}
+		external_media_playing = state;
+	}
 }
 
 String OS_IOS::get_processor_name() const {
@@ -624,6 +647,7 @@ void OS_IOS::on_focus_in() {
 		[AppDelegate.viewController.godotView startRendering];
 
 		audio_driver.start();
+		media_update_requested = true;
 	}
 }
 

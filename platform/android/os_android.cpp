@@ -888,5 +888,9 @@ void OS_Android::load_platform_gdextensions() const {
 	}
 }
 
+bool OS_Android::is_media_playing() const {
+	return godot_io_java->is_media_playing();
+}
+
 OS_Android::~OS_Android() {
 }

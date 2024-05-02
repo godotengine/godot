@@ -494,6 +494,10 @@ int OS::get_processor_count() const {
 	return ::OS::get_singleton()->get_processor_count();
 }
 
+bool OS::is_media_playing() const {
+	return ::OS::get_singleton()->is_media_playing();
+}
+
 String OS::get_processor_name() const {
 	return ::OS::get_singleton()->get_processor_name();
 }
@@ -587,6 +591,8 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_delta_smoothing", "delta_smoothing_enabled"), &OS::set_delta_smoothing);
 	ClassDB::bind_method(D_METHOD("is_delta_smoothing_enabled"), &OS::is_delta_smoothing_enabled);
+
+	ClassDB::bind_method(D_METHOD("is_media_playing"), &OS::is_media_playing);
 
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &OS::get_processor_count);
 	ClassDB::bind_method(D_METHOD("get_processor_name"), &OS::get_processor_name);

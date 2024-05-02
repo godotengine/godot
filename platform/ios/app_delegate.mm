@@ -98,6 +98,11 @@ static ViewController *mainViewController = nil;
 			   selector:@selector(onAudioInterruption:)
 				   name:AVAudioSessionInterruptionNotification
 				 object:[AVAudioSession sharedInstance]];
+	[[NSNotificationCenter defaultCenter]
+			addObserver:self
+			   selector:@selector(silenceSecondaryAudioHintNotification:)
+				   name:AVAudioSessionSilenceSecondaryAudioHintNotification
+				 object:[AVAudioSession sharedInstance]];
 
 	mainViewController = viewController;
 
@@ -139,6 +144,19 @@ static ViewController *mainViewController = nil;
 		} else if ([[notification.userInfo valueForKey:AVAudioSessionInterruptionTypeKey] isEqualToNumber:[NSNumber numberWithInt:AVAudioSessionInterruptionTypeEnded]]) {
 			NSLog(@"Audio interruption ended");
 			OS_IOS::get_singleton()->on_focus_in();
+		}
+	}
+}
+
+// When user begins or ends media playback from another app, such as music.
+- (void)silenceSecondaryAudioHintNotification:(NSNotification *)notification {
+	if ([notification.name isEqualToString:AVAudioSessionSilenceSecondaryAudioHintNotification]) {
+		if ([[notification.userInfo valueForKey:AVAudioSessionSilenceSecondaryAudioHintTypeKey] isEqualToNumber:[NSNumber numberWithInt:AVAudioSessionSilenceSecondaryAudioHintTypeBegin]]) {
+			NSLog(@"External Audio Started");
+			OS_IOS::get_singleton()->update_media_state();
+		} else if ([[notification.userInfo valueForKey:AVAudioSessionSilenceSecondaryAudioHintTypeKey] isEqualToNumber:[NSNumber numberWithInt:AVAudioSessionSilenceSecondaryAudioHintTypeEnd]]) {
+			NSLog(@"External Audio Ended");
+			OS_IOS::get_singleton()->update_media_state();
 		}
 	}
 }

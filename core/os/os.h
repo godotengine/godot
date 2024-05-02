@@ -304,6 +304,8 @@ public:
 
 	virtual String get_unique_id() const;
 
+	virtual bool is_media_playing() const;
+
 	bool has_feature(const String &p_feature);
 
 	virtual bool is_sandboxed() const;
