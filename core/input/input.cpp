@@ -34,6 +34,7 @@
 #include "core/input/default_controller_mappings.h"
 #include "core/input/input_map.h"
 #include "core/os/os.h"
+#include "servers/display_server.h"
 
 #ifdef DEV_ENABLED
 #include "core/os/thread.h"
@@ -282,6 +283,19 @@ bool Input::is_key_label_pressed(Key p_keycode) const {
 bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 	_THREAD_SAFE_METHOD_
 	return mouse_button_mask.has_flag(mouse_button_to_mask(p_button));
+}
+
+void Input::_project_settings_changed() {
+	ignore_joypad_on_unfocused = bool(GLOBAL_GET("input_devices/config/ignore_joypad_on_unfocused_window"));
+}
+
+bool Input::_config_ignore_joypad_on_unfocused_window() {
+	if (ignore_joypad_on_unfocused) {
+		if (!DisplayServer::get_singleton()->window_is_focused(DisplayServer::MAIN_WINDOW_ID)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 static JoyAxis _combine_device(JoyAxis p_value, int p_device) {
@@ -1082,6 +1096,9 @@ void Input::set_event_dispatch_function(EventDispatchFunc p_function) {
 
 void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 	_THREAD_SAFE_METHOD_;
+	if (_config_ignore_joypad_on_unfocused_window()) {
+		return;
+	}
 	Joypad &joy = joy_names[p_device];
 	ERR_FAIL_INDEX((int)p_button, (int)JoyButton::MAX);
 
@@ -1109,7 +1126,9 @@ void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 
 void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	_THREAD_SAFE_METHOD_;
-
+	if (_config_ignore_joypad_on_unfocused_window()) {
+		return;
+	}
 	ERR_FAIL_INDEX((int)p_axis, (int)JoyAxis::MAX);
 
 	Joypad &joy = joy_names[p_device];
@@ -1177,6 +1196,10 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 
 void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 	_THREAD_SAFE_METHOD_;
+	if (_config_ignore_joypad_on_unfocused_window()) {
+		return;
+	}
+
 	const Joypad &joy = joy_names[p_device];
 
 	JoyEvent map[(size_t)HatDir::MAX];
@@ -1670,6 +1693,8 @@ Input::Input() {
 		// Always use standard behavior in the editor.
 		legacy_just_pressed_behavior = false;
 	}
+
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Input::_project_settings_changed));
 }
 
 Input::~Input() {

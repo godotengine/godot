@@ -1382,6 +1382,9 @@
 			If [code]false[/code], no input will be lost.
 			[b]Note:[/b] You should in nearly all cases prefer the [code]false[/code] setting. The legacy behavior is to enable supporting old projects that rely on the old logic, without changes to script.
 		</member>
+		<member name="input_devices/config/ignore_joypad_on_unfocused_window" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], joypad input will be ignored when the window is not focused.
+		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].

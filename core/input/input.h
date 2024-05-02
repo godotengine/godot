@@ -99,6 +99,7 @@ private:
 	Vector2 mouse_pos;
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
+	bool ignore_joypad_on_unfocused = false;
 
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
@@ -263,6 +264,9 @@ private:
 	static void (*set_custom_mouse_cursor_func)(const Ref<Resource> &, CursorShape, const Vector2 &);
 
 	EventDispatchFunc event_dispatch_function = nullptr;
+
+	bool _config_ignore_joypad_on_unfocused_window();
+	void _project_settings_changed();
 
 protected:
 	static void _bind_methods();
