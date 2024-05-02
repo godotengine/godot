@@ -69,7 +69,7 @@ namespace Godot
         public readonly Aabb Abs()
         {
             Vector3 end = End;
-            Vector3 topLeft = new Vector3(Mathf.Min(_position.X, end.X), Mathf.Min(_position.Y, end.Y), Mathf.Min(_position.Z, end.Z));
+            Vector3 topLeft = end.Min(_position);
             return new Aabb(topLeft, _size.Abs());
         }
 
