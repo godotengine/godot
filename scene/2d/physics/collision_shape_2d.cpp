@@ -209,7 +209,7 @@ bool CollisionShape2D::is_disabled() const {
 }
 
 bool CollisionShape2D::contains_point(const Vector2 &p_point) const {
-	if (!collision_object || Object::cast_to<Node2D>(collision_object->shape_owner_get_owner(owner_id))) {
+	if (!collision_object || !Object::cast_to<Node2D>(collision_object->shape_owner_get_owner(owner_id))) {
 		return false;
 	}
 	return shape->contains_point(to_local(p_point));
