@@ -158,7 +158,6 @@ struct _NO_DISCARD_ Vector2 {
 		return Vector2(Math::abs(x), Math::abs(y));
 	}
 
-
 	Vector2 rotated_around(Vector2 p_origin, real_t p_by) const;
 	Vector2 rotated(real_t p_by) const;
 
