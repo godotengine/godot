@@ -169,6 +169,9 @@ private:
 	GDScriptFunction *static_initializer = nullptr;
 
 	Error _static_init();
+#ifdef TOOLS_ENABLED
+	void _static_default_init(); // Initialize static variables with default values based on their types.
+#endif
 
 	int subclass_count = 0;
 	RBSet<Object *> instances;
