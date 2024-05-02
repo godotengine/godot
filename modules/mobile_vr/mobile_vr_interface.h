@@ -62,6 +62,8 @@ private:
 	double display_to_lens = 4.0;
 	double oversample = 1.5;
 
+	Rect2 offset_rect = Rect2(0, 0, 1, 1); // Full screen rect.
+
 	double k1 = 0.215;
 	double k2 = 0.215;
 	double aspect = 1.0;
@@ -120,6 +122,9 @@ public:
 
 	void set_display_width(const double p_display_width);
 	double get_display_width() const;
+
+	void set_offset_rect(const Rect2 &p_offset_rect);
+	Rect2 get_offset_rect() const;
 
 	void set_display_to_lens(const double p_display_to_lens);
 	double get_display_to_lens() const;
