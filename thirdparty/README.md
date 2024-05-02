@@ -679,6 +679,11 @@ Collection of single-file libraries used in Godot components.
   * Version: git (7bdffb428b2b19ad1c43aa44c714dcc104177e84, 2021)
   * Modifications: Change from STL to Godot types (see provided patch).
   * License: MIT
+- `qoa.h`
+  * Upstream: https://github.com/phoboslab/qoa
+  * Version: git (e4c751d61af2c395ea828c5888e728c1953bf09f, 2024)
+  * Modifications: Inlined functions and patched compiler warnings.
+  * License: MIT
 - `r128.{c,h}`
   * Upstream: https://github.com/fahickman/r128
   * Version: git (6fc177671c47640d5bb69af10cf4ee91050015a1, 2023)
