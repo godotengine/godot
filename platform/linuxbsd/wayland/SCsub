@@ -199,6 +199,7 @@ if env["vulkan"]:
 
 if env["opengl3"]:
     source_files.append("egl_manager_wayland.cpp")
+    source_files.append("egl_manager_wayland_gles.cpp")
 
 objects = []
 
