@@ -7220,6 +7220,11 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 		CHECK(text_edit->get_caret_count() == 1);
 		CHECK(text_edit->get_caret_line(0) == 0);
 		CHECK(text_edit->get_caret_column(0) == 0);
+
+		// Does nothing if multiple carets are disabled.
+		text_edit->set_multiple_carets_enabled(false);
+		text_edit->add_caret_at_carets(true);
+		CHECK(text_edit->get_caret_count() == 1);
 	}
 
 	memdelete(text_edit);
