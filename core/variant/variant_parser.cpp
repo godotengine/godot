@@ -1395,6 +1395,25 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = arr;
+		} else if (id == "PackedVector4Array" || id == "PoolVector4Array" || id == "Vector4Array") {
+			// Not supported for writing, added for compatibility with 4.3.
+			// Handled as a plain array of Vector4 elements.
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			Array arr;
+			{
+				int len = args.size() / 4;
+				arr.resize(len);
+				for (int i = 0; i < len; i++) {
+					arr[i] = Vector4(args[i * 4 + 0], args[i * 4 + 1], args[i * 4 + 2], args[i * 4 + 3]);
+				}
+			}
+
+			value = arr;
 		} else if (id == "PackedColorArray" || id == "PoolColorArray" || id == "ColorArray") {
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);

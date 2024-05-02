@@ -85,15 +85,18 @@ enum {
 	VARIANT_VECTOR4 = 50,
 	VARIANT_VECTOR4I = 51,
 	VARIANT_PROJECTION = 52,
+	VARIANT_PACKED_VECTOR4_ARRAY = 53, // For compat with 4.3, parsing only.
 	OBJECT_EMPTY = 0,
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
 	OBJECT_EXTERNAL_RESOURCE_INDEX = 3,
-	// Version 2: added 64 bits support for float and int.
-	// Version 3: changed nodepath encoding.
-	// Version 4: new string ID for ext/subresources, breaks forward compat.
+	// Version 2: Added 64 bits support for float and int.
+	// Version 3: Changed nodepath encoding.
+	// Version 4: New string ID for ext/subresources, breaks forward compat.
 	// Version 5: Ability to store script class in the header.
 	FORMAT_VERSION = 5,
+	// Version 6: Added PackedVector4Array variant. Parsing only.
+	FORMAT_VERSION_READABLE = 6,
 	FORMAT_VERSION_CAN_RENAME_DEPS = 1,
 	FORMAT_VERSION_NO_NODEPATH_PROPERTY = 3,
 };
@@ -652,6 +655,27 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 #endif
 
 			r_v = array;
+		} break;
+		case VARIANT_PACKED_VECTOR4_ARRAY: {
+			// For compatibility with 4.3, parsing only.
+			// Parse to a Vector<real_t> and then convert to a plain Array.
+			uint32_t len = f->get_32();
+
+			Vector<real_t> array_real;
+			array_real.resize(len * 4);
+			real_t *w = array_real.ptrw();
+			static_assert(sizeof(Vector4) == 4 * sizeof(real_t));
+			const Error err = read_reals(reinterpret_cast<real_t *>(w), f, len * 4);
+			ERR_FAIL_COND_V(err != OK, err);
+
+			Array array;
+			array.resize(len);
+			for (uint32_t i = 0; i < len; i++) {
+				array[i] = Vector4(w[i * 4 + 0], w[i * 4 + 1], w[i * 4 + 2], w[i * 4 + 3]);
+			}
+
+			r_v = array;
+
 		} break;
 		default: {
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
