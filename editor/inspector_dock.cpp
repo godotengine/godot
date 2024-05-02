@@ -278,7 +278,7 @@ void InspectorDock::_unref_resource() {
 	Ref<Resource> current_res = _get_current_resource();
 	ERR_FAIL_COND(current_res.is_null());
 	current_res->set_path("");
-	EditorNode::get_singleton()->edit_current();
+	EditorNode::get_singleton()->edit_current(true);
 }
 
 void InspectorDock::_copy_resource() {
@@ -389,14 +389,14 @@ void InspectorDock::_resource_selected(const Ref<Resource> &p_res, const String 
 
 void InspectorDock::_edit_forward() {
 	if (EditorNode::get_singleton()->get_editor_selection_history()->next()) {
-		EditorNode::get_singleton()->edit_current();
+		EditorNode::get_singleton()->edit_current(true);
 	}
 }
 
 void InspectorDock::_edit_back() {
 	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 	if ((current && editor_history->previous()) || editor_history->get_path_size() == 1) {
-		EditorNode::get_singleton()->edit_current();
+		EditorNode::get_singleton()->edit_current(true);
 	}
 }
 

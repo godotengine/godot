@@ -517,7 +517,7 @@ private:
 	void _dialog_action(String p_file);
 
 	void _add_to_history(const Object *p_object, const String &p_property, bool p_inspector_only);
-	void _edit_current(bool p_skip_foreign = false, bool p_skip_inspector_update = false);
+	void _edit_current(bool p_skip_foreign = false, bool p_skip_inspector_update = false, bool p_update_scene_selection = false);
 	void _dialog_display_save_error(String p_file, Error p_error);
 	void _dialog_display_load_error(String p_file, Error p_error);
 
@@ -890,7 +890,7 @@ public:
 	void dim_editor(bool p_dimming);
 	bool is_editor_dimmed() const;
 
-	void edit_current() { _edit_current(); };
+	void edit_current(bool p_update_scene_selection = false) { _edit_current(false, false, p_update_scene_selection); };
 
 	bool has_scenes_in_session();
 

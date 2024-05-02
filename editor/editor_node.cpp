@@ -2384,7 +2384,7 @@ void EditorNode::_add_to_history(const Object *p_object, const String &p_propert
 	}
 }
 
-void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update) {
+void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update, bool p_update_scene_selection) {
 	ObjectID current_id = editor_history.get_current();
 	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
 
@@ -2467,7 +2467,9 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 		if (current_node->is_inside_tree()) {
 			NodeDock::get_singleton()->set_node(current_node);
 			SceneTreeDock::get_singleton()->set_selected(current_node);
-			SceneTreeDock::get_singleton()->set_selection({ current_node });
+			if (p_update_scene_selection) {
+				SceneTreeDock::get_singleton()->set_selection({ current_node });
+			}
 			InspectorDock::get_singleton()->update(current_node);
 			if (!inspector_only && !skip_main_plugin) {
 				skip_main_plugin = stay_in_script_editor_on_node_selected && !ScriptEditor::get_singleton()->is_editor_floating() && ScriptEditor::get_singleton()->is_visible_in_tree();
@@ -2514,7 +2516,9 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 		InspectorDock::get_inspector_singleton()->edit(current_obj);
 		NodeDock::get_singleton()->set_node(nullptr);
 		SceneTreeDock::get_singleton()->set_selected(selected_node);
-		SceneTreeDock::get_singleton()->set_selection(multi_nodes);
+		if (p_update_scene_selection) {
+			SceneTreeDock::get_singleton()->set_selection(multi_nodes);
+		}
 		InspectorDock::get_singleton()->update(nullptr);
 	}
 
