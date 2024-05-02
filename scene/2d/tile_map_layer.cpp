@@ -2402,7 +2402,7 @@ Ref<TileMapPattern> TileMapLayer::get_pattern(TypedArray<Vector2i> p_coords_arra
 		for (int i = 0; i < coords_in_pattern_array.size(); i++) {
 			Vector2i coords = p_coords_array[i];
 			Vector2i coords_in_pattern = coords_in_pattern_array[i];
-			output->set_cell(0, coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords( coords), get_cell_alternative_tile(coords));
+			output->set_cell(coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords(coords), get_cell_alternative_tile(coords), 0);
 		}
 	}
 	// If the pattern is multi layer.
@@ -2467,9 +2467,8 @@ Ref<TileMapPattern> TileMapLayer::get_pattern_layer(TypedArray<Vector2i> p_coord
 	// Needed to write a seperate get_pattern_layer function, as set_cell and get_cell_source_id are called on a specific tilemaplayer.
 	for (int i = 0; i < coords_in_pattern_array.size(); i++) {
 		Vector2i coords = p_coords_array[i];
-		print_line("the coordinates in get_pattern are: ", coords);
 		Vector2i coords_in_pattern = coords_in_pattern_array[i];
-		p_pattern->set_cell(p_layer, coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords(coords), get_cell_alternative_tile(coords));
+		p_pattern->set_cell(coords_in_pattern + ensure_positive_offset, get_cell_source_id(coords), get_cell_atlas_coords(coords), get_cell_alternative_tile(coords), p_layer);
 	}
 	
 	p_pattern->set_size((max + Vector2i(1, 1)) - min);
@@ -2486,7 +2485,7 @@ void TileMapLayer::set_pattern(const Vector2i &p_position, const Ref<TileMapPatt
 		TypedArray<Vector2i> used_cells = p_pattern->get_used_cells();
 		for (int i = 0; i < used_cells.size(); i++) {
 			Vector2i coords = tile_set->map_pattern(p_position, used_cells[i], p_pattern);
-			set_cell(coords, p_pattern->get_cell_source_id(0, used_cells[i]), p_pattern->get_cell_atlas_coords(0, used_cells[i]), p_pattern->get_cell_alternative_tile(0, used_cells[i]));
+			set_cell(coords, p_pattern->get_cell_source_id(used_cells[i], 0), p_pattern->get_cell_atlas_coords(used_cells[i], 0), p_pattern->get_cell_alternative_tile(used_cells[i], 0));
 		}
 	}
 
@@ -2510,8 +2509,7 @@ void TileMapLayer::set_pattern_layer(int p_layer, const Vector2i &p_position, co
 		for (int i = 0; i < used_cells.size(); i++) {
 			// Determine the coordinates on the TileMap relative to the pattern, then set the tiles.
 			Vector2i coords = tile_set->map_pattern(p_position, used_cells[i], p_pattern);
-			print_line("the coordinates in set_pattern_layer are: ", coords);
-			set_cell(coords, p_pattern->get_cell_source_id(p_layer, used_cells[i]), p_pattern->get_cell_atlas_coords(p_layer, used_cells[i]), p_pattern->get_cell_alternative_tile(p_layer, used_cells[i]));
+			set_cell(coords, p_pattern->get_cell_source_id(used_cells[i], p_layer), p_pattern->get_cell_atlas_coords(used_cells[i], p_layer), p_pattern->get_cell_alternative_tile( used_cells[i], p_layer));
 		}
 	}
 	

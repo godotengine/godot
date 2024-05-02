@@ -115,12 +115,11 @@ class TileMapPattern : public Resource {
 	GDCLASS(TileMapPattern, Resource);
 	bool is_single_layer = true;
 	int pattern_set_index;
-	int number_of_layers = 1;
 	Size2i size;
 	Vector2i pattern_start_position;
 
-	void _set_tile_data(int p_layer, const Vector<int> &p_data);
-	Vector<int> _get_tile_data(int p_layer) const;
+	void _set_tile_data(const Vector<int> &p_data, int p_layer = -1);
+	Vector<int> _get_tile_data(int p_layer = -1) const;
 	HashMap<Vector2i, TileMapCell> pattern_layer;
 	Vector<HashMap<Vector2i, TileMapCell>> pattern;
 
@@ -133,34 +132,33 @@ protected:
 
 public:
 
-	int get_pattern_set_index() const; 
-	void set_pattern_set_index(int p_pattern_set_index);
+	void set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile = 0, int p_layer = -1);
+	bool has_cell(const Vector2i &p_coords, int p_layer = -1) const;
+	void remove_cell(const Vector2i &p_coords, bool p_update_size = true, int p_layer = -1);
+	int get_cell_source_id(const Vector2i &p_coords, int p_layer = -1) const;
+	Vector2i get_cell_atlas_coords(const Vector2i &p_coords, int p_layer = -1) const;
+	int get_cell_alternative_tile( const Vector2i &p_coords, int p_layer = -1) const;
 
-	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile = 0);
-	bool has_cell(const Vector2i &p_coords) const;
-	void remove_cell(int p_layer, const Vector2i &p_coords, bool p_update_size = true);
-	int get_cell_source_id(int p_layer, const Vector2i &p_coords);
-	Vector2i get_cell_atlas_coords(int p_layer, const Vector2i &p_coords) const;
-	int get_cell_alternative_tile(int p_layer, const Vector2i &p_coords) const;
+	Vector<HashMap<Vector2i, TileMapCell>> &get_pattern_multi_layer();
+	HashMap<Vector2i, TileMapCell>& get_pattern_single_layer(int p_layer = -1);
 
-	// CHECK ME: does get_pattern work for multilayer patterns too?
-	const Vector<HashMap<Vector2i, TileMapCell>> &get_pattern_multi_layer();
-	const HashMap<Vector2i, TileMapCell> &get_pattern_single_layer(int p_layer = 0);
-	TypedArray<Vector2i> get_used_cells();
-	TypedArray<Vector2i> get_used_cells_on_layer(int p_layer = 0);
+	TypedArray<Vector2i> get_used_cells() const;
+	TypedArray<Vector2i> get_used_cells_on_layer(int p_layer = -1) const;
 
-	int get_number_of_layers() const; 
-	void set_number_of_layers(int p_number_of_layers);
 	Size2i get_size() const;
 	void set_size(const Size2i &p_size);
 	bool is_empty() const;
+	bool is_layer_empty(int p_layer = -1) const;
 
-	bool get_is_single_layer() const; 
-	void set_is_single_layer(bool p_is_single_layer); 
-	Vector2i get_pattern_start_position() const;
-	void set_pattern_start_position(Vector2i p_position = Vector2i(0, 0));
+	bool get_is_single_layer() const;
+	void set_is_single_layer(bool p_is_single_layer);
+	int get_number_of_layers() const;
+	void set_number_of_layers(int p_number_of_layers);
+	int get_pattern_set_index() const;
+	void set_pattern_set_index(int p_pattern_set_index);
+
 	void clear();
-	void clear_layer(int p_layer);
+	void clear_layer(int p_layer = -1);
 
 	TileMapPattern() :
 		Resource() {
@@ -499,7 +497,7 @@ public:
 	bool is_valid_terrain_peering_bit(int p_terrain_set, TileSet::CellNeighbor p_peering_bit) const;
 
 	// Pattern Sets
-	
+
 	Vector<Ref<TileMapPattern>> get_pattern_set(int p_pattern_set_index) const;
 	void set_pattern_set(int p_pattern_set_index, Vector<Ref<TileMapPattern>> p_pattern_set);
 	String get_pattern_set_name(int p_pattern_set_index) const;
@@ -515,7 +513,7 @@ public:
 	Ref<TileMapPattern> get_pattern(int p_pattern_set_index, int p_index) const;
 	int add_pattern(Ref<TileMapPattern> p_pattern, int p_pattern_set_index, int p_index = -1);
 	void remove_pattern(int p_pattern_set_index, int p_index);
-	void _move_pattern(int p_from_index, int p_to_pos, int p_pattern_set_index = 0);
+	void _move_pattern(int p_from_index, int p_to_pos, int p_pattern_set_index);
 
 	// Navigation
 	int get_navigation_layers_count() const;

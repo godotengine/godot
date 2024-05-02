@@ -984,7 +984,7 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 	}
 	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event)) {
 		// Delete selected tiles.
-		//Check me, should I make this multilayer?
+		// Not going to make this multilayer because then it would depend on the multilayer mode button being toggled to on. Which is something that only shows up when the select tool is pressed. You can't erase with the selection tool.
 		if (!tile_map_selection.is_empty()) {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Delete tiles"));
@@ -1085,6 +1085,7 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 				}
 
 				if (drag_type == DRAG_TYPE_CLIPBOARD_PASTE) {
+					print_line("forward canvas GUI input DRAG_TYPE_CLIPBOARD PASTE CALLED");
 					// Cancel tile pasting on right-click
 					if (mb->get_button_index() == MouseButton::RIGHT) {
 						drag_type = DRAG_TYPE_NONE;
@@ -1241,7 +1242,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * edited_layer->get_global_transform_with_canvas();
 	Vector2 mpos = edited_layer->get_local_mouse_position();
 	Vector2i tile_shape_size = tile_set->get_tile_size();
-
+	Vector<TileMapLayer *> layers = TileMapLayerEditor::tile_map_layers_in_scene_cache;
 	// Draw the selection.
 	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_bottom_panel->is_visible_in_tree()) && tool_buttons_group->get_pressed_button() == select_tool_button) {
 		// In select mode, we only draw the current selection if we are modifying it (pressing control or shift).
@@ -1292,7 +1293,6 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 				}
 			}  else if (multi_layer_selection_mode == true) {
 				print_line("forward_canvas_draw_over_viewport DRAG_TYPE_SELECT multilayer called");
-				Vector<TileMapLayer *> layers = TileMapLayerEditor::tile_map_layers_in_scene_cache;
 				// Check over multiple layers for valid tiles to add to to_draw and return if that coordinate is already there.
 				for (int pattern_layer = 0; pattern_layer < layers.size(); pattern_layer++) {
 					edited_layer = layers[pattern_layer]; 
@@ -1344,7 +1344,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 					for (int i = 0; i < selection_used_cells.size(); i++) {
 						Vector2i coords = edited_layer->map_pattern(offset + top_left, selection_used_cells[i], selection_pattern);
 						//MERGE CHECK 2, SHOULD p_layer = 0? or selected_layer?
-						preview[coords] = TileMapCell(selection_pattern->get_cell_source_id(0, selection_used_cells[i]), selection_pattern->get_cell_atlas_coords( 0, selection_used_cells[i]), selection_pattern->get_cell_alternative_tile( 0, selection_used_cells[i]));
+						preview[coords] = TileMapCell(selection_pattern->get_cell_source_id( selection_used_cells[i]), selection_pattern->get_cell_atlas_coords(  selection_used_cells[i]), selection_pattern->get_cell_alternative_tile(  selection_used_cells[i]));
 					}
 				}  else if (multi_layer_selection_mode == true) {
 					print_line("forward_canvas_draw_over_viewport DRAG_TYPE_MOVE multilayer called");
@@ -1361,14 +1361,13 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 
 					selection_pattern->set_is_single_layer(false);
 					TypedArray<Vector2i> selection_used_cells = selection_pattern->get_used_cells();
-					Vector<TileMapLayer *> layers = TileMapLayerEditor::tile_map_layers_in_scene_cache;
+					
 					for (int pattern_layer = 0; pattern_layer < layers.size(); pattern_layer++) {
-						edited_layer = layers[pattern_layer];
 						for (int i = 0; i < selection_used_cells.size(); i++) {
 							Vector2i coords = edited_layer->map_pattern(offset + top_left, selection_used_cells[i], selection_pattern);
 							//print_line("the coordinate attempting to be set in the preview is", coords);
 							if (preview[coords].source_id == TileSet::INVALID_SOURCE) {
-							preview[coords] = TileMapCell(selection_pattern->get_cell_source_id(pattern_layer, selection_used_cells[i]), selection_pattern->get_cell_atlas_coords(pattern_layer, selection_used_cells[i]), selection_pattern->get_cell_alternative_tile(pattern_layer, selection_used_cells[i]));
+								preview[coords] = TileMapCell(selection_pattern->get_cell_source_id(selection_used_cells[i], pattern_layer), selection_pattern->get_cell_atlas_coords(selection_used_cells[i], pattern_layer), selection_pattern->get_cell_alternative_tile( selection_used_cells[i], pattern_layer));
 							}
 						}
 					}		
@@ -1379,11 +1378,21 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 			// Preview when pasting.
 			Vector2 mouse_offset = (Vector2(tile_map_clipboard->get_size()) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size();
 			TypedArray<Vector2i> clipboard_used_cells = tile_map_clipboard->get_used_cells();
-			for (int i = 0; i < clipboard_used_cells.size(); i++) {
-				Vector2i coords = edited_layer->map_pattern(edited_layer->local_to_map(mpos - mouse_offset), clipboard_used_cells[i], tile_map_clipboard);
-				//MERGE CHECK ME 4, should p_layer =0? How should I create preview?
-				//Vector2i coords = tile_set->map_pattern(tile_set->local_to_map(mpos - mouse_offset), clipboard_used_cells[i], tile_map_clipboard);
-				preview[coords] = TileMapCell(tile_map_clipboard->get_cell_source_id(0, clipboard_used_cells[i]), tile_map_clipboard->get_cell_atlas_coords(0, clipboard_used_cells[i]), tile_map_clipboard->get_cell_alternative_tile(0, clipboard_used_cells[i]));
+			if (multi_layer_selection_mode == false) {
+				for (int i = 0; i < clipboard_used_cells.size(); i++) {
+					Vector2i coords = edited_layer->map_pattern(edited_layer->local_to_map(mpos - mouse_offset), clipboard_used_cells[i], tile_map_clipboard);
+					preview[coords] = TileMapCell(tile_map_clipboard->get_cell_source_id( clipboard_used_cells[i]), tile_map_clipboard->get_cell_atlas_coords( clipboard_used_cells[i]), tile_map_clipboard->get_cell_alternative_tile( clipboard_used_cells[i]));
+				}
+			}
+			else if (multi_layer_selection_mode == true) {
+				for (int selected_layer = 0; selected_layer < layers.size(); selected_layer++) {
+					for (int i = 0; i < clipboard_used_cells.size(); i++) {
+						Vector2i coords = edited_layer->map_pattern(edited_layer->local_to_map(mpos - mouse_offset), clipboard_used_cells[i], tile_map_clipboard);
+						if (preview[coords].source_id == TileSet::INVALID_SOURCE) {
+							preview[coords] = TileMapCell(tile_map_clipboard->get_cell_source_id(clipboard_used_cells[i], selected_layer), tile_map_clipboard->get_cell_atlas_coords(clipboard_used_cells[i], selected_layer), tile_map_clipboard->get_cell_alternative_tile(clipboard_used_cells[i], selected_layer));
+						}
+					}
+				}
 			}
 		} else if (!picker_button->is_pressed() && !(drag_type == DRAG_TYPE_NONE && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
 			bool expand_grid = false;
@@ -1547,9 +1556,9 @@ TileMapCell TileMapLayerEditorTilesPlugin::_pick_random_tile(Ref<TileMapPattern>
 	for (int i = 0; i < used_cells.size(); i++) {
 		//MERGE CHECK ME 3, SHOULD p_layer = 0, or selected layer?
 		
-		int source_id = p_pattern->get_cell_source_id(0, used_cells[i]);
-		Vector2i atlas_coords = p_pattern->get_cell_atlas_coords(0, used_cells[i]);
-		int alternative_tile = p_pattern->get_cell_alternative_tile(0, used_cells[i]);
+		int source_id = p_pattern->get_cell_source_id( used_cells[i]);
+		Vector2i atlas_coords = p_pattern->get_cell_atlas_coords( used_cells[i]);
+		int alternative_tile = p_pattern->get_cell_alternative_tile( used_cells[i]);
 
 		TileSetSource *source = *tile_set->get_source(source_id);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
@@ -1567,9 +1576,9 @@ TileMapCell TileMapLayerEditorTilesPlugin::_pick_random_tile(Ref<TileMapPattern>
 	double rand = Math::random(0.0, sum + empty_probability);
 	for (int i = 0; i < used_cells.size(); i++) {
 		//CHANGE 7
-		int source_id = p_pattern->get_cell_source_id(0, used_cells[i]);
-		Vector2i atlas_coords = p_pattern->get_cell_atlas_coords(0, used_cells[i]);
-		int alternative_tile = p_pattern->get_cell_alternative_tile(0, used_cells[i]);
+		int source_id = p_pattern->get_cell_source_id( used_cells[i]);
+		Vector2i atlas_coords = p_pattern->get_cell_atlas_coords( used_cells[i]);
+		int alternative_tile = p_pattern->get_cell_alternative_tile( used_cells[i]);
 
 		TileSetSource *source = *tile_set->get_source(source_id);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
@@ -1603,7 +1612,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_line(Vector2
 	Ref<TileMapPattern> erase_pattern;
 	erase_pattern.instantiate();
 	// CHANGE 1
-	erase_pattern->set_cell(0, Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+	erase_pattern->set_cell( Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE, 0);
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
 	if (pattern->get_is_single_layer() == true) {
@@ -1631,14 +1640,14 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_line(Vector2
 					for (int j = 0; j < used_cells.size(); j++) {
 						Vector2i coords = edited_layer->map_pattern(top_left, used_cells[j], pattern);
 						//CHANGE 9
-						output.insert(coords, TileMapCell(pattern->get_cell_source_id(0, used_cells[j]), pattern->get_cell_atlas_coords(0, used_cells[j]), pattern->get_cell_alternative_tile(0, used_cells[j])));
+						output.insert(coords, TileMapCell(pattern->get_cell_source_id( used_cells[j]), pattern->get_cell_atlas_coords( used_cells[j]), pattern->get_cell_alternative_tile( used_cells[j])));
 					}
 				}
 			}
 		}
 	} 
 
-	// Multi_layer mode for drawing previews.
+	// Multi_layer mode ONLY for drawing previews. But not for getting an adjusted list of coordinates like draw_line_multilayer.
 	else if (pattern->get_is_single_layer() == false) {
 		if (!pattern->is_empty()) {
 			// Paint the tiles on the tile map.
@@ -1669,7 +1678,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_line(Vector2
 							Vector2i coords = edited_layer->map_pattern(top_left, used_cells[j], pattern);
 							//CHANGE 9
 							if (output[coords].source_id == TileSet::INVALID_SOURCE) {
-								output[coords] = TileMapCell(pattern->get_cell_source_id(pattern_layer, used_cells[j]), pattern->get_cell_atlas_coords(pattern_layer, used_cells[j]), pattern->get_cell_alternative_tile(pattern_layer, used_cells[j]));
+								output[coords] = TileMapCell(pattern->get_cell_source_id(used_cells[j], pattern_layer), pattern->get_cell_atlas_coords(used_cells[j],pattern_layer), pattern->get_cell_alternative_tile(used_cells[j], pattern_layer));
 							}
 						}
 					}
@@ -1702,7 +1711,7 @@ Vector<HashMap<Vector2i, TileMapCell>> TileMapLayerEditorTilesPlugin::_draw_line
 	Ref<TileMapPattern> erase_pattern;
 	erase_pattern.instantiate();
 	// CHANGE 1
-	erase_pattern->set_cell(0, Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+	erase_pattern->set_cell(Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE, 0);
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
 	// CHANGE 8
@@ -1741,7 +1750,7 @@ Vector<HashMap<Vector2i, TileMapCell>> TileMapLayerEditorTilesPlugin::_draw_line
 						//print_line("the mapped coordinates in draw_line_multilayer are: ", coords);
 						
 						//CHANGE 9
-						layer_to_write.insert(coords, TileMapCell(pattern->get_cell_source_id(pattern_layer, used_cells[j]), pattern->get_cell_atlas_coords(pattern_layer, used_cells[j]), pattern->get_cell_alternative_tile(pattern_layer, used_cells[j])));
+						layer_to_write.insert(coords, TileMapCell(pattern->get_cell_source_id(used_cells[j], pattern_layer), pattern->get_cell_atlas_coords(used_cells[j], pattern_layer), pattern->get_cell_alternative_tile(used_cells[j], pattern_layer)));
 					}
 				}
 			}
@@ -1769,7 +1778,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_rect(Vector2
 	Ref<TileMapPattern> erase_pattern;
 	erase_pattern.instantiate();
 	//CHANGE 2
-	erase_pattern->set_cell(0, Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+	erase_pattern->set_cell(Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE, 0);
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
 	HashMap<Vector2i, TileMapCell> err_output;
@@ -1800,7 +1809,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_rect(Vector2
 						Vector2i coords = pattern_coords + used_cells[j];
 						if (rect.has_point(coords)) {
 							//CHANGE 10
-							output.insert(coords, TileMapCell(pattern->get_cell_source_id(0, used_cells[j]), pattern->get_cell_atlas_coords(0, used_cells[j]), pattern->get_cell_alternative_tile(0, used_cells[j])));
+							output.insert(coords, TileMapCell(pattern->get_cell_source_id( used_cells[j]), pattern->get_cell_atlas_coords( used_cells[j]), pattern->get_cell_alternative_tile( used_cells[j])));
 						}
 					}
 				}
@@ -1828,7 +1837,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_bucket_fill(
 	Ref<TileMapPattern> erase_pattern;
 	erase_pattern.instantiate();
 	//CHANGE 11
-	erase_pattern->set_cell(0, Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+	erase_pattern->set_cell(Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE, 0);
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
 	if (!pattern->is_empty()) {
@@ -1863,7 +1872,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_bucket_fill(
 							pattern_coords.y = pattern_coords.y < 0 ? pattern_coords.y + pattern->get_size().y : pattern_coords.y;
 							if (pattern->has_cell(pattern_coords)) {
 								//CHANGE 12
-								output.insert(coords, TileMapCell(pattern->get_cell_source_id(0, pattern_coords), pattern->get_cell_atlas_coords(0, pattern_coords), pattern->get_cell_alternative_tile(0, pattern_coords)));
+								output.insert(coords, TileMapCell(pattern->get_cell_source_id(pattern_coords, 0), pattern->get_cell_atlas_coords(pattern_coords, 0), pattern->get_cell_alternative_tile(pattern_coords, 0)));
 							} else {
 								output.insert(coords, TileMapCell());
 							}
@@ -1910,7 +1919,7 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_bucket_fill(
 						pattern_coords.y = pattern_coords.y < 0 ? pattern_coords.y + pattern->get_size().y : pattern_coords.y;
 						if (pattern->has_cell(pattern_coords)) {
 							//CHANGE 13
-							output.insert(coords, TileMapCell(pattern->get_cell_source_id(0, pattern_coords), pattern->get_cell_atlas_coords(0, pattern_coords), pattern->get_cell_alternative_tile(0, pattern_coords)));
+							output.insert(coords, TileMapCell(pattern->get_cell_source_id(pattern_coords, 0), pattern->get_cell_atlas_coords(pattern_coords, 0), pattern->get_cell_alternative_tile(pattern_coords, 0)));
 						} else {
 							output.insert(coords, TileMapCell());
 						}
@@ -2059,7 +2068,7 @@ void TileMapLayerEditorTilesPlugin::_stop_dragging() {
 						for (int i = 0; i < selection_used_cells.size(); i++) {
 							coords = tile_set->map_pattern(top_left + offset, selection_used_cells[i], selection_pattern);
 							//CHANGE 14
-							cells_do[coords] = TileMapCell(selection_pattern->get_cell_source_id(0, selection_used_cells[i]), selection_pattern->get_cell_atlas_coords(0, selection_used_cells[i]), selection_pattern->get_cell_alternative_tile(0, selection_used_cells[i]));
+							cells_do[coords] = TileMapCell(selection_pattern->get_cell_source_id( selection_used_cells[i]), selection_pattern->get_cell_atlas_coords( selection_used_cells[i]), selection_pattern->get_cell_alternative_tile( selection_used_cells[i]));
 						}
 
 						// Move the tiles.
@@ -2127,7 +2136,7 @@ void TileMapLayerEditorTilesPlugin::_stop_dragging() {
 							}
 							for (int i = 0; i < selection_used_cells.size(); i++) {
 								coords = current_layer->map_pattern(top_left + offset, selection_used_cells[i], selection_pattern);
-								layer_to_write[coords] = TileMapCell(selection_pattern->get_cell_source_id(pattern_layer, selection_used_cells[i]), selection_pattern->get_cell_atlas_coords(pattern_layer, selection_used_cells[i]), selection_pattern->get_cell_alternative_tile(pattern_layer, selection_used_cells[i]));
+								layer_to_write[coords] = TileMapCell(selection_pattern->get_cell_source_id(selection_used_cells[i], pattern_layer), selection_pattern->get_cell_atlas_coords(selection_used_cells[i], pattern_layer), selection_pattern->get_cell_alternative_tile(selection_used_cells[i], pattern_layer));
 							}
 						}
 
@@ -2276,11 +2285,23 @@ void TileMapLayerEditorTilesPlugin::_stop_dragging() {
 				Vector2 mouse_offset = (Vector2(tile_map_clipboard->get_size()) / 2.0 - Vector2(0.5, 0.5)) * tile_set->get_tile_size();
 				undo_redo->create_action(TTR("Paste tiles"));
 				TypedArray<Vector2i> used_cells = tile_map_clipboard->get_used_cells();
-				for (int i = 0; i < used_cells.size(); i++) {
-					//CHECK ME MERGE 6, should p_layer = 0 or selected_layer_id? probably selected layer, otherwise it will paste over the bottom layer?? Right?
-					Vector2i coords = tile_set->map_pattern(tile_set->local_to_map(mpos - mouse_offset), used_cells[i], tile_map_clipboard);
-					undo_redo->add_do_method(edited_layer, "set_cell", coords, tile_map_clipboard->get_cell_source_id(0, used_cells[i]), tile_map_clipboard->get_cell_atlas_coords(0, used_cells[i]), tile_map_clipboard->get_cell_alternative_tile(0, used_cells[i]));
-					undo_redo->add_undo_method(edited_layer, "set_cell", coords, edited_layer->get_cell_source_id(coords), edited_layer->get_cell_atlas_coords(coords), edited_layer->get_cell_alternative_tile(coords));
+				if (multi_layer_selection_mode == false) {
+					for (int i = 0; i < used_cells.size(); i++) {
+						
+						Vector2i coords = tile_set->map_pattern(tile_set->local_to_map(mpos - mouse_offset), used_cells[i], tile_map_clipboard);
+						undo_redo->add_do_method(edited_layer, "set_cell", coords, tile_map_clipboard->get_cell_source_id( used_cells[i]), tile_map_clipboard->get_cell_atlas_coords( used_cells[i]), tile_map_clipboard->get_cell_alternative_tile( used_cells[i]));
+						undo_redo->add_undo_method(edited_layer, "set_cell", coords, edited_layer->get_cell_source_id(coords), edited_layer->get_cell_atlas_coords(coords), edited_layer->get_cell_alternative_tile(coords));
+					}
+				}
+				else if (multi_layer_selection_mode == true) {
+					for (int selected_layer = 0; selected_layer < tile_map_clipboard->get_number_of_layers(); selected_layer++) {
+						TileMapLayer *current_layer = layers[selected_layer];
+						for (int i = 0; i < used_cells.size(); i++) {
+							Vector2i coords = tile_set->map_pattern(tile_set->local_to_map(mpos - mouse_offset), used_cells[i], tile_map_clipboard);
+							undo_redo->add_do_method(current_layer, "set_cell", coords, tile_map_clipboard->get_cell_source_id(used_cells[i], selected_layer), tile_map_clipboard->get_cell_atlas_coords(used_cells[i], selected_layer), tile_map_clipboard->get_cell_alternative_tile( used_cells[i], selected_layer));
+							undo_redo->add_undo_method(current_layer, "set_cell", coords, current_layer->get_cell_source_id(coords), current_layer->get_cell_atlas_coords(coords), current_layer->get_cell_alternative_tile(coords));
+						}
+					}
 				}
 				undo_redo->commit_action();
 			} break;
@@ -2327,9 +2348,9 @@ void TileMapLayerEditorTilesPlugin::_apply_transform(int p_type) {
 				dst_coords = Vector2i(x, size.y - y - 1);
 			}
 
-			transformed_pattern->set_cell( 0, dst_coords,
-					selection_pattern->get_cell_source_id(0, src_coords), selection_pattern->get_cell_atlas_coords(0, src_coords),
-					_get_transformed_alternative(selection_pattern->get_cell_alternative_tile(0, src_coords), p_type));
+			transformed_pattern->set_cell(  dst_coords,
+					selection_pattern->get_cell_source_id(src_coords, 0), selection_pattern->get_cell_atlas_coords(src_coords, 0),
+					_get_transformed_alternative(selection_pattern->get_cell_alternative_tile(src_coords, 0), p_type), 0);
 		}
 	}
 	selection_pattern = transformed_pattern;
@@ -2568,14 +2589,14 @@ void TileMapLayerEditorTilesPlugin::_update_selection_pattern_from_tileset_tiles
 		// Now add everything to the output pattern.
 		for (const KeyValue<Vector2i, const TileMapCell *> &E_cell : organized_pattern) {
 			//CHANGE 21
-			selection_pattern->set_cell(0, E_cell.key - encompassing_rect_coords.position + Vector2i(0, vertical_offset), E_cell.value->source_id, E_cell.value->get_atlas_coords(), E_cell.value->alternative_tile);
+			selection_pattern->set_cell(E_cell.key - encompassing_rect_coords.position + Vector2i(0, vertical_offset), E_cell.value->source_id, E_cell.value->get_atlas_coords(), E_cell.value->alternative_tile, 0);
 		}
 
 		Vector2i organized_size = selection_pattern->get_size();
 		int unorganized_index = 0;
 		for (const TileMapCell *cell : unorganized) {
 			//CHANGE 22
-			selection_pattern->set_cell(0, Vector2(organized_size.x + unorganized_index, vertical_offset), cell->source_id, cell->get_atlas_coords(), cell->alternative_tile);
+			selection_pattern->set_cell( Vector2(organized_size.x + unorganized_index, vertical_offset), cell->source_id, cell->get_atlas_coords(), cell->alternative_tile, 0);
 			unorganized_index++;
 		}
 		vertical_offset += MAX(organized_size.y, 1);
@@ -2616,8 +2637,8 @@ void TileMapLayerEditorTilesPlugin::_update_tileset_selection_from_selection_pat
 	if (multi_layer_selection_mode == false) {
 		for (int i = 0; i < used_cells.size(); i++) {
 			Vector2i coords = used_cells[i];
-			if (selection_pattern->get_cell_source_id(0, coords) != TileSet::INVALID_SOURCE) {
-				tile_set_selection.insert(TileMapCell(selection_pattern->get_cell_source_id(0, coords), selection_pattern->get_cell_atlas_coords(0, coords), selection_pattern->get_cell_alternative_tile(0, coords)));
+			if (selection_pattern->get_cell_source_id(coords,0) != TileSet::INVALID_SOURCE) {
+				tile_set_selection.insert(TileMapCell(selection_pattern->get_cell_source_id(coords, 0), selection_pattern->get_cell_atlas_coords(coords, 0), selection_pattern->get_cell_alternative_tile(coords, 0)));
 			}
 		}
 	}
@@ -2626,8 +2647,8 @@ void TileMapLayerEditorTilesPlugin::_update_tileset_selection_from_selection_pat
 		for (int selected_layer = 0; selected_layer < selection_pattern->get_number_of_layers(); selected_layer++) {
 			for (int i = 0; i < used_cells.size(); i++) {
 				Vector2i coords = used_cells[i];
-				if (selection_pattern->get_cell_source_id(selected_layer, coords) != TileSet::INVALID_SOURCE) {
-						tile_set_selection.insert(TileMapCell(selection_pattern->get_cell_source_id(selected_layer, coords), selection_pattern->get_cell_atlas_coords(selected_layer, coords), selection_pattern->get_cell_alternative_tile(selected_layer, coords)));
+				if (selection_pattern->get_cell_source_id(coords, selected_layer) != TileSet::INVALID_SOURCE) {
+					tile_set_selection.insert(TileMapCell(selection_pattern->get_cell_source_id(coords, selected_layer), selection_pattern->get_cell_atlas_coords(coords, selected_layer), selection_pattern->get_cell_alternative_tile( coords, selected_layer)));
 				}
 			}
 		}
