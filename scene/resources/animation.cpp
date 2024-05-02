@@ -2705,7 +2705,7 @@ void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
 	ValueTrack *vt = static_cast<ValueTrack *>(t);
 	vt->update_mode = p_mode;
 
-	capture_included = capture_included || (p_mode == UPDATE_CAPTURE);
+	_check_capture_included();
 	emit_changed();
 }
 
@@ -3901,7 +3901,7 @@ void Animation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001,suffix:s"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Ping-Pong"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step", PROPERTY_HINT_RANGE, "0,4096,0.001,suffix:s"), "set_step", "get_step");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "capture_included", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY | PROPERTY_USAGE_NO_EDITOR), "_set_capture_included", "is_capture_included");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "capture_included", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY | PROPERTY_USAGE_NO_EDITOR), "_set_capture_included", "is_capture_included");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_POSITION_3D);
