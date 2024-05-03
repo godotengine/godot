@@ -1046,6 +1046,7 @@ private:
 			uint32_t pipeline_shader_layout_hash = 0;
 			RID vertex_array;
 			RID index_array;
+			uint32_t draw_count = 0;
 		} state;
 
 #ifdef DEBUG_ENABLED
@@ -1147,6 +1148,7 @@ private:
 			uint32_t local_group_size[3] = { 0, 0, 0 };
 			uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE] = {};
 			uint32_t push_constant_size = 0;
+			uint32_t dispatch_count = 0;
 		} state;
 
 #ifdef DEBUG_ENABLED
