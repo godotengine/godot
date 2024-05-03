@@ -112,8 +112,9 @@
 		<method name="get_pattern">
 			<return type="TileMapPattern" />
 			<param index="0" name="coords_array" type="Vector2i[]" />
+			<param index="1" name="is_single_layer" type="bool" default="false" />
 			<description>
-				Creates and returns a new [TileMapPattern] from the given array of cells. See also [method set_pattern].
+				Creates and returns a new [TileMapPattern] from the given array of cells. See also [method set_pattern]. If is_single_layer is false, this will return a multi-layer pattern that contains tiles from all TileMapLayer nodes in the scene tree.
 			</description>
 		</method>
 		<method name="get_surrounding_cells">

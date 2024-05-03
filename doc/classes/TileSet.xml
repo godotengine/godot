@@ -48,9 +48,17 @@
 		<method name="add_pattern">
 			<return type="int" />
 			<param index="0" name="pattern" type="TileMapPattern" />
-			<param index="1" name="index" type="int" default="-1" />
+			<param index="1" name="pattern_set_index" type="int" />
+			<param index="2" name="pattern_index" type="int" default="-1" />
 			<description>
-				Adds a [TileMapPattern] to be stored in the TileSet resource. If provided, insert it at the given [param index].
+				Adds a [TileMapPattern] to be stored in one of the pattern sets inside of the TileSet resource. If provided, insert it at the given [param index].
+			</description>
+		</method>
+		<method name="add_pattern_set">
+			<return type="void" />
+			<param index="0" name="pattern_set_index" type="int" default="-1" />
+			<description>
+				Adds a new pattern set at the provided index. Appends a pattern set to the top-most index if no parameter is provided. You should probably use the GUI in the TileMap to do this instead.
 			</description>
 		</method>
 		<method name="add_physics_layer">
@@ -191,17 +199,25 @@
 				Returns the occlusion layers count.
 			</description>
 		</method>
-		<method name="get_pattern">
+		<method name="get_pattern" qualifiers="const">
 			<return type="TileMapPattern" />
-			<param index="0" name="index" type="int" default="-1" />
+			<param index="0" name="pattern_set_index" type="int" />
+			<param index="1" name="pattern_index" type="int" />
 			<description>
-				Returns the [TileMapPattern] at the given [param index].
+				Returns the [TileMapPattern] that is at the pattern_set_index and pattern_index.
 			</description>
 		</method>
-		<method name="get_patterns_count">
+		<method name="get_pattern_sets_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the number of [TileMapPattern] this tile set handles.
+				Get the number of pattern sets stored in this [TileSet].
+			</description>
+		</method>
+		<method name="get_patterns_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="pattern_set_index" type="int" />
+			<description>
+				Returns the number of [TileMapPattern] inside of the pattern set at the index.
 			</description>
 		</method>
 		<method name="get_physics_layer_collision_layer" qualifiers="const">
@@ -361,6 +377,14 @@
 				Moves the occlusion layer at index [param layer_index] to the given position [param to_position] in the array. Also updates the atlas tiles accordingly.
 			</description>
 		</method>
+		<method name="move_pattern_set">
+			<return type="void" />
+			<param index="0" name="from_index" type="int" />
+			<param index="1" name="to_index" type="int" />
+			<description>
+				Move the pattern set from one pattern set index to another. You should probably use the TileMap GUI for this instead.
+			</description>
+		</method>
 		<method name="move_physics_layer">
 			<return type="void" />
 			<param index="0" name="layer_index" type="int" />
@@ -426,9 +450,17 @@
 		</method>
 		<method name="remove_pattern">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
+			<param index="0" name="pattern_set_index" type="int" />
+			<param index="1" name="pattern_index" type="int" />
 			<description>
-				Remove the [TileMapPattern] at the given index.
+				Remove the [TileMapPattern] at the given indices.
+			</description>
+		</method>
+		<method name="remove_pattern_set">
+			<return type="void" />
+			<param index="0" name="pattern_set_index" type="int" />
+			<description>
+				Removes the pattern set at the provided index. You should probably use the TileMap GUI for this instead.
 			</description>
 		</method>
 		<method name="remove_physics_layer">

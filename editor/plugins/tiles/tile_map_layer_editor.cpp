@@ -1398,7 +1398,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 			bool expand_grid = false;
 
 			if (tool_buttons_group->get_pressed_button() == paint_tool_button && drag_type == DRAG_TYPE_NONE) {
-				print_line("forward_canvas_draw_over_viewport paint_tool_button, DRAG_TYPE_NONE");
+				//print_line("forward_canvas_draw_over_viewport paint_tool_button, DRAG_TYPE_NONE");
 				preview = _draw_line(mpos, mpos, mpos, erase_button->is_pressed());
 				expand_grid = true;
 			} else if (tool_buttons_group->get_pressed_button() == line_tool_button || drag_type == DRAG_TYPE_LINE) {
@@ -2200,21 +2200,14 @@ void TileMapLayerEditorTilesPlugin::_stop_dragging() {
 				Ref<TileMapPattern> new_selection_pattern;
 				if (multi_layer_selection_mode == false) {
 					print_line("DRAG_TYPE_PICK singlelayer used");
-					selection_pattern->set_is_single_layer(true);
-					selection_pattern->set_number_of_layers(1);
 					selection_pattern = edited_layer->get_pattern( coords_array, true);
 				}  else if (multi_layer_selection_mode == true) {
 					print_line("DRAG_TYPE_PICK multilayer used");
-					selection_pattern->set_is_single_layer(false);
-					selection_pattern->set_number_of_layers(layers.size());
 					selection_pattern = edited_layer->get_pattern( coords_array, false);
 				} 
 
 				if (!new_selection_pattern->is_empty()) {
 					selection_pattern = new_selection_pattern;
-					print_line("number of layers in drag_type_pick IS");
-					print_line(selection_pattern->get_number_of_layers());
-
 					_update_tileset_selection_from_selection_pattern();
 				}
 				picker_button->set_pressed(false);

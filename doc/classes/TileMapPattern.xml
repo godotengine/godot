@@ -1,53 +1,83 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TileMapPattern" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Holds a pattern to be copied from or pasted into [TileMap]s.
+		Holds a pattern resource to be copied from or pasted into [TileMapLayer]s. A few examples for how a TileMapPattern could be used is doing fine tuned procedural generation of a 2D dungeon or village by setting patterns down in code, making reusable patterns for a 2D platformer, or saving patterns as components or building blocks to help speed up level creation.
 	</brief_description>
 	<description>
-		This resource holds a set of cells to help bulk manipulations of [TileMap].
-		A pattern always start at the [code](0,0)[/code] coordinates and cannot have cells with negative coordinates.
+		The TileMapPattern resource holds layers of (Vector2i, TileMapCell) pairs to perform bulk manipulations of [TileMapLayer]. In other-words, reusable and savable tile patterns. A pattern's internal cell coordinates always start at the [code](0,0)[/code] coordinate and TileMapPatterns cannot have cells with negative coordinates.
+		TileMapPatterns are stored and added to a [TileSet], they are not stored inside of a [TileMapLayer]. Use [method TileMapLayer.get_pattern] to get a pattern from your TileMapLayer in code. Use [method TileSet.get_pattern] to get a stored pattern from a pattern set.
+		TileMapPatterns can either be single-layer or multi-layer patterns (determined when you first get the pattern from the [TileMapLayer], TileMapPatterns are single-layer by default unless multi-layer selection mode is used). Single layer patterns always store their data on p_layer/layer index 0 of the TileMapPattern. If the TileMapPattern is single-layer then the p_layer parameter in many methods does not do anything and can be left as the default value. If a TileMapPattern is multi-layer, then the p_layer parameter is required.
+		To make your first TileMapPattern create a [TileMapLayer] node and then import a [TileSet] for the [TileMapLayer] in the inspector. With the TileMapLayer node selected go to the TileMap tab in the bottom panel (to the right of Shader Editor and TileSet), then go to the patterns tab in the top left of the bottom panel between "Tiles" and "Terrain". Right click inside of the left window to add a pattern set, then with the pattern set selected click and drag a [TileMapLayer] selection you have selected with the Select tool into the patterns window on the right of the bottom panel to create your first pattern. If nothing happens, it is likely you do not have a pattern set selected.
+		To set your newly created TileMapPattern from the pattern set, select the pattern in the pattern set and then use the "Paint" tool (it looks like a pencil and is next to the select button) and mouse over the TileMap to see a preview. Click to place a pattern.
+		To make a multi-layer pattern, make sure you have a pattern set selected, then click on the "Select" tool to the left of the "Paint" tool and then look for the multi-layer selection mode tool to the right (it looks like a stack of layers). Turn the multi-layer selection mode on, then click and drag over an area in the [TileMapLayer] where there are multiple [TileMapLayer]s with valid cells. With the pattern set still selected and highlighted, drag the selection into the pattern window on the right of the bottom panel. Keep in mind that the multi-layer selection mode is still experimental. It is recommended to only use the "Paint" tool for setting multi-layer patterns.
+		The number of layers in a multi-layer pattern is equal to the number of TileMapLayer nodes in the scene tree during it's creation. For example, if you have 3 TileMapLayer nodes in a scene tree and save a pattern, the pattern will have 3 layers. An example of when a multi-layer pattern would be useful is when working with graphically complex tilesets where the tiles are rendered or drawn over top of one another and blending together. See the z-index property of [TileMapLayer].
+		When creating a multi-layer pattern the pattern layer at layer index = 0 (p_layer = 0 for many of the methods) is equal to whatever cells were in the top-most [TileMapLayer] node in the scene tree during creation. Then layer index/p_layer = 1 for the second-highest TileMapLayer in the scene tree and so on. For setting multi-layer patterns layers will be placed down from the top-most [TileMapLayer] node (layer index = 0) in the scene tree at the time of placement to the bottom-most [TileMapLayer] node.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the entire TileMapPattern of all coordinate/cell data on all layers.
+			</description>
+		</method>
+		<method name="clear_layer">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				If the TileMapPattern is single layer this clears layer 0 without any respect to what [param layer] was passed in and functions the same as [code]clear()[/code]. If the TileMapPattern is multi-layer, clears the given layer of the pattern specified by the p_layer parameter.
+			</description>
+		</method>
 		<method name="get_cell_alternative_tile" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="coords" type="Vector2i" />
+			<param index="1" name="layer" type="int" />
 			<description>
-				Returns the tile alternative ID of the cell at [param coords].
+				Returns the tile alternative ID of the cell at [param coords]. [param layer] is only needed for multi-layer patterns.
 			</description>
 		</method>
 		<method name="get_cell_atlas_coords" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="coords" type="Vector2i" />
+			<param index="1" name="layer" type="int" />
 			<description>
-				Returns the tile atlas coordinates ID of the cell at [param coords].
+				Returns the tile atlas coordinates ID of the cell at [param coords]. [param layer] is only needed for multi-layer patterns.
 			</description>
 		</method>
 		<method name="get_cell_source_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="coords" type="Vector2i" />
+			<param index="1" name="layer" type="int" />
 			<description>
-				Returns the tile source ID of the cell at [param coords].
+				Returns the tile source ID of the cell at [param coords]. [param layer] is only needed for multi-layer patterns.
 			</description>
 		</method>
-		<method name="get_size" qualifiers="const">
-			<return type="Vector2i" />
+		<method name="get_pattern_set_index" qualifiers="const">
+			<return type="int" />
 			<description>
-				Returns the size, in cells, of the pattern.
+				Returns the index of the pattern set this pattern belongs to.
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
 			<return type="Vector2i[]" />
 			<description>
-				Returns the list of used cell coordinates in the pattern.
+				Returns the list of used cell coordinates (both empty and with valid tiles) in the pattern. For multi-layer patterns this will include non-repeated cell coordinates on all layers.
+			</description>
+		</method>
+		<method name="get_used_cells_on_layer" qualifiers="const">
+			<return type="Vector2i[]" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns the list of used cell coordinates (both empty coordinates and those with valid tiles) in the pattern at the given layer. For single-layer patterns this will return the same values as [code]get_used_cells()[/code] no matter the [param p_layer] passed in. For multi-layer patterns this value will be equal or less than the value returned by [code]get_used_cells()[/code].
 			</description>
 		</method>
 		<method name="has_cell" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="coords" type="Vector2i" />
+			<param index="1" name="layer" type="int" />
 			<description>
-				Returns whether the pattern has a tile at the given coordinates.
+				Returns whether the pattern has a tile at the given coordinates. [param layer] is only needed for multi-layer patterns.
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
@@ -56,30 +86,43 @@
 				Returns whether the pattern is empty or not.
 			</description>
 		</method>
+		<method name="is_layer_empty" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns whether a particular pattern [param layer] is empty or not. Will return the same value as is_empty for single-layer patterns.
+			</description>
+		</method>
 		<method name="remove_cell">
 			<return type="void" />
 			<param index="0" name="coords" type="Vector2i" />
 			<param index="1" name="update_size" type="bool" />
+			<param index="2" name="layer" type="int" />
 			<description>
-				Remove the cell at the given coordinates.
+				Remove the cell at the given coordinates. [param layer] is only needed for multi-layer patterns.
 			</description>
 		</method>
 		<method name="set_cell">
 			<return type="void" />
 			<param index="0" name="coords" type="Vector2i" />
-			<param index="1" name="source_id" type="int" default="-1" />
-			<param index="2" name="atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
-			<param index="3" name="alternative_tile" type="int" default="-1" />
+			<param index="1" name="source_id" type="int" />
+			<param index="2" name="atlas_coords" type="Vector2i" default="-1" />
+			<param index="3" name="alternative_tile" type="int" default="Vector2i(-1, -1)" />
+			<param index="4" name="layer" type="int" default="-1" />
 			<description>
-				Sets the tile identifiers for the cell at coordinates [param coords]. See [method TileMap.set_cell].
-			</description>
-		</method>
-		<method name="set_size">
-			<return type="void" />
-			<param index="0" name="size" type="Vector2i" />
-			<description>
-				Sets the size of the pattern.
+				Sets the tile identifiers for the cell at coordinates [param coords]. See [method TileMap.set_cell]. [param layer] is only needed for multi-layer patterns.
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="is_single_layer" type="bool" setter="set_is_single_layer" getter="get_is_single_layer" default="true">
+			If true, the pattern is considered single layer. The only reason to set a single-layer pattern to multi-layer is if you plan on setting new cells in additional layers using code. You will need to resize number of pattern layers using [code]set_number_of_layers[/code] as well or undefined behavior will result.
+		</member>
+		<member name="number_of_layers" type="int" setter="set_number_of_layers" getter="get_number_of_layers" default="1">
+			The number of layers in the pattern. This should be 1 for single layer patterns.
+		</member>
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(0, 0)">
+			The size of the pattern (including both empty and tile-containing cells) as a Vector2i.
+		</member>
+	</members>
 </class>

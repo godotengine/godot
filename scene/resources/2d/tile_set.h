@@ -116,7 +116,7 @@ class TileMapPattern : public Resource {
 	bool is_single_layer = true;
 	int pattern_set_index;
 	Size2i size;
-	Vector2i pattern_start_position;
+	int number_of_layers; // neccessary for serializing multi-layer patterns.
 
 	void _set_tile_data(const Vector<int> &p_data, int p_layer = -1);
 	Vector<int> _get_tile_data(int p_layer = -1) const;

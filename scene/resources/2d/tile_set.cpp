@@ -42,7 +42,44 @@
 /////////////////////////////// TileMapPattern //////////////////////////////////////
 void TileMapPattern::_set_tile_data(const Vector<int> &p_data, int p_layer) {
 	if (get_is_single_layer() == true) {
-	
+		int c = p_data.size();
+		const int *r = p_data.ptr();
+
+		int offset = 3;
+		ERR_FAIL_COND_MSG(c % offset != 0, "Corrupted tile data.");
+
+		clear_layer(0);
+
+		for (int i = 0; i < c; i += offset) {
+			const uint8_t *ptr = (const uint8_t *)&r[i];
+			uint8_t local[12];
+			for (int j = 0; j < 12; j++) {
+				local[j] = ptr[j];
+			}
+
+#ifdef BIG_ENDIAN_ENABLED
+			SWAP(local[0], local[3]);
+			SWAP(local[1], local[2]);
+			SWAP(local[4], local[7]);
+			SWAP(local[5], local[6]);
+			SWAP(local[8], local[11]);
+			SWAP(local[9], local[10]);
+#endif
+
+			int16_t x = decode_uint16(&local[0]);
+			int16_t y = decode_uint16(&local[2]);
+			uint16_t source_id = decode_uint16(&local[4]);
+			uint16_t atlas_coords_x = decode_uint16(&local[6]);
+			uint16_t atlas_coords_y = decode_uint16(&local[8]);
+			uint16_t alternative_tile = decode_uint16(&local[10]);
+			set_cell(Vector2i(x, y), source_id, Vector2i(atlas_coords_x, atlas_coords_y), alternative_tile, 0);
+		}
+		emit_signal(SNAME("changed"));
+	}
+
+
+	if (get_is_single_layer() == false) {
+		print_line("p_layer is", p_layer);
 		int c = p_data.size();
 		const int *r = p_data.ptr();
 
@@ -73,87 +110,30 @@ void TileMapPattern::_set_tile_data(const Vector<int> &p_data, int p_layer) {
 			uint16_t atlas_coords_x = decode_uint16(&local[6]);
 			uint16_t atlas_coords_y = decode_uint16(&local[8]);
 			uint16_t alternative_tile = decode_uint16(&local[10]);
-			set_cell(Vector2i(x, y), source_id, Vector2i(atlas_coords_x, atlas_coords_y), alternative_tile, 0);
-		}
-	}
-	// If multi-layer
-	else {
-		ERR_FAIL_COND_EDMSG(p_layer < 0, "Called TileMapPattern::_set_tile_data on a multilayer pattern with parameter p_layer < 0, probably -1 (the default parameter). You must specify the layer when calling this method on a multilayer pattern");
-		ERR_FAIL_INDEX_EDMSG(p_layer, pattern.size(), "Layer index is out of bounds for set_cell");
-		int c = p_data.size();
-		const int *r = p_data.ptr();
-
-		int offset = 3;
-		ERR_FAIL_COND_MSG(c % offset != 0, "Corrupted tile data.");
-
-		clear_layer(p_layer);
-
-		for (int i = 0; i < c; i += offset) {
-			const uint8_t *ptr = (const uint8_t *)&r[i];
-			uint8_t local[12];
-			for (int j = 0; j < 12; j++) {
-				local[j] = ptr[j];
-			}
-
-#ifdef BIG_ENDIAN_ENABLED
-			SWAP(local[0], local[3]);
-			SWAP(local[1], local[2]);
-			SWAP(local[4], local[7]);
-			SWAP(local[5], local[6]);
-			SWAP(local[8], local[11]);
-			SWAP(local[9], local[10]);
-#endif
-
-			int16_t x = decode_uint16(&local[0]);
-			int16_t y = decode_uint16(&local[2]);
-			uint16_t source_id = decode_uint16(&local[4]);
-			uint16_t atlas_coords_x = decode_uint16(&local[6]);
-			uint16_t atlas_coords_y = decode_uint16(&local[8]);
-			uint16_t alternative_tile = decode_uint16(&local[10]);
 			set_cell(Vector2i(x, y), source_id, Vector2i(atlas_coords_x, atlas_coords_y), alternative_tile, p_layer);
 		}
+		emit_signal(SNAME("changed"));
 	}
-	emit_signal(SNAME("changed"));
 }
 
 Vector<int> TileMapPattern::_get_tile_data(int p_layer) const {
+	// Export tile data to raw format
 	Vector<int> data;
 	data.resize(pattern[p_layer].size() * 3);
 	int *w = data.ptrw();
-	if (get_is_single_layer() == true) {
-		// Export tile data to raw format
-
-		// Save in highest format
-
-		int idx = 0;
-		for (const KeyValue<Vector2i, TileMapCell> &E : pattern[p_layer]) {
-			uint8_t *ptr = (uint8_t *)&w[idx];
-			encode_uint16((int16_t)(E.key.x), &ptr[0]);
-			encode_uint16((int16_t)(E.key.y), &ptr[2]);
-			encode_uint16(E.value.source_id, &ptr[4]);
-			encode_uint16(E.value.coord_x, &ptr[6]);
-			encode_uint16(E.value.coord_y, &ptr[8]);
-			encode_uint16(E.value.alternative_tile, &ptr[10]);
-			idx += 3;
-		}
+	
+	// Save in highest format
+	int idx = 0;
+	for (const KeyValue<Vector2i, TileMapCell> &E : pattern[p_layer]) {
+		uint8_t *ptr = (uint8_t *)&w[idx];
+		encode_uint16((int16_t)(E.key.x), &ptr[0]);
+		encode_uint16((int16_t)(E.key.y), &ptr[2]);
+		encode_uint16(E.value.source_id, &ptr[4]);
+		encode_uint16(E.value.coord_x, &ptr[6]);
+		encode_uint16(E.value.coord_y, &ptr[8]);
+		encode_uint16(E.value.alternative_tile, &ptr[10]);
+		idx += 3;
 	}
-
-	else {
-			ERR_FAIL_COND_V_EDMSG(p_layer < 0, data, "Called TileMapPattern::_get_tile_data on a multilayer pattern with parameter p_layer < 0, probably -1 (the default parameter). You must specify the layer when calling this method on a multilayer pattern");
-			ERR_FAIL_INDEX_V_EDMSG(p_layer, pattern.size(), data, "Layer index is out of bounds for set_cell");
-
-			int idx = 0;
-			for (const KeyValue<Vector2i, TileMapCell> &E : pattern[p_layer]) {
-				uint8_t *ptr = (uint8_t *)&w[idx];
-				encode_uint16((int16_t)(E.key.x), &ptr[0]);
-				encode_uint16((int16_t)(E.key.y), &ptr[2]);
-				encode_uint16(E.value.source_id, &ptr[4]);
-				encode_uint16(E.value.coord_x, &ptr[6]);
-				encode_uint16(E.value.coord_y, &ptr[8]);
-				encode_uint16(E.value.alternative_tile, &ptr[10]);
-				idx += 3;
-			}
-		}	
 	return data;
 }
 
@@ -187,7 +167,7 @@ bool TileMapPattern::has_cell(const Vector2i &p_coords, int p_layer) const {
 	// Check every layer for the coordinate in question.
 	else {
 		ERR_FAIL_COND_V_EDMSG(p_layer < 0, false, "Called TileMapPattern::has_cell on a multilayer pattern with parameter p_layer < 0, probably -1 (the default parameter). You must specify the layer when calling this method on a multilayer pattern");
-		ERR_FAIL_INDEX_V_MSG(p_layer, pattern.size(), false, "Layer index is out of bounds for set_cell");
+		ERR_FAIL_INDEX_V_MSG(p_layer, pattern.size(), false, "Layer index is out of bounds for has_cell");
 		for (int selected_layer = 0; selected_layer < pattern.size(); selected_layer++) {
 			HashMap<Vector2i, TileMapCell> current_layer = pattern[selected_layer];
 
@@ -219,7 +199,7 @@ void TileMapPattern::remove_cell(const Vector2i &p_coords, bool p_update_size, i
 
 	if (get_is_single_layer() == false) {
 		ERR_FAIL_COND_EDMSG(p_layer < 0, "Called TileMapPattern::has_cell on a multilayer pattern with parameter p_layer < 0, probably -1 (the default parameter). You must specify the layer when calling this method on a multilayer pattern");
-		ERR_FAIL_INDEX_MSG(p_layer, pattern.size(), "Layer index is out of bounds for set_cell");
+		ERR_FAIL_INDEX_MSG(p_layer, pattern.size(), "Layer index is out of bounds for remove_cell");
 		ERR_FAIL_COND(!pattern[0].has(p_coords));
 		HashMap<Vector2i, TileMapCell> &selected_layer = pattern.write[p_layer];
 		selected_layer.erase(p_coords);
@@ -243,7 +223,7 @@ int TileMapPattern::get_cell_source_id(const Vector2i &p_coords, int p_layer) co
 		return selected_layer[p_coords].source_id;
 	} else {
 		ERR_FAIL_COND_V_EDMSG(p_layer < 0, -1, "Called TileMapPattern::get_cell_cell_source_id on a multilayer pattern with parameter p_layer < 0, probably -1 (the default parameter). You must specify the layer when calling this method on a multilayer pattern");
-		ERR_FAIL_INDEX_V_MSG(p_layer, pattern.size(), -1, "Layer index is out of bounds for set_cell");
+		ERR_FAIL_INDEX_V_MSG(p_layer, pattern.size(), -1, "Layer index is out of bounds for get_cell_source_id");
 		HashMap<Vector2i, TileMapCell> selected_layer = pattern[p_layer];
 		// No unit test here. A multilayer pattern can have p_coords that another layer does not. 
 		return selected_layer[p_coords].source_id;
@@ -257,7 +237,7 @@ Vector2i TileMapPattern::get_cell_atlas_coords(const Vector2i &p_coords, int p_l
 		return selected_layer[p_coords].get_atlas_coords();
 	} else {
 		ERR_FAIL_COND_V_EDMSG(p_layer < 0, Vector2i(-1,-1), "Called TileMapPattern::get_cell_atlas_coords on a multilayer pattern with parameter p_layer < 0, probably -1 (the default parameter). You must specify the layer when calling this method on a multilayer pattern");
-		ERR_FAIL_INDEX_V_MSG(p_layer, pattern.size(), Vector2i(-1, -1), "Layer index is out of bounds for set_cell");
+		ERR_FAIL_INDEX_V_MSG(p_layer, pattern.size(), Vector2i(-1, -1), "Layer index is out of bounds for get_cell_atlas_coords.");
 		HashMap<Vector2i, TileMapCell> selected_layer = pattern[p_layer];
 		// No unit test here. A given layer of a multilayer pattern can have p_coords that another layer does not. 
 		return selected_layer[p_coords].get_atlas_coords();
@@ -272,7 +252,7 @@ int TileMapPattern::get_cell_alternative_tile(const Vector2i &p_coords, int p_la
 
 	} else {
 		ERR_FAIL_COND_V_EDMSG(p_layer < 0, -1, "Called TileMapPattern::get_cell_alternative_tile on a multilayer pattern with parameter p_layer < 0, probably -1 (the default parameter). You must specify the layer when calling this method on a multilayer pattern");
-		ERR_FAIL_INDEX_V_MSG(p_layer, pattern.size(), -1, "Layer index is out of bounds for set_cell");
+		ERR_FAIL_INDEX_V_MSG(p_layer, pattern.size(), -1, "Layer index is out of bounds for get_cell_alternative_tile");
 		HashMap<Vector2i, TileMapCell> selected_layer = pattern[p_layer];
 		// No "has(p_coords) unit test here. A multilayer pattern can have p_coords that another layer does not. 
 		return selected_layer[p_coords].alternative_tile;
@@ -342,7 +322,7 @@ TypedArray<Vector2i> TileMapPattern::get_used_cells_on_layer(int p_layer) const 
 	else {
 		TypedArray<Vector2i> a;
 		ERR_FAIL_COND_V_EDMSG(p_layer < 0, a, "Called TileMapPattern::get_used_cells_on_layer on a multilayer pattern with parameter p_layer < 0, probably -1 (the default parameter). You must specify the layer when calling this method on a multilayer pattern");
-		ERR_FAIL_INDEX_V_MSG(p_layer, pattern.size(), a, "Layer index is out of bounds for set_cell");
+		ERR_FAIL_INDEX_V_MSG(p_layer, pattern.size(), a, "Layer index is out of bounds for get_used_cells_on_layer");
 		a.resize(pattern[p_layer].size());
 		int i = 0;
 		for (const KeyValue<Vector2i, TileMapCell> &E : pattern[p_layer]) {
@@ -359,7 +339,6 @@ Size2i TileMapPattern::get_size() const {
 
 void TileMapPattern::set_size(const Size2i &p_size) {
 	TypedArray<Vector2i> coords;
-	// Figure out where the coords that actually have valid tilemapcells are.
 	if (get_is_single_layer() == true) {
 		for (const KeyValue<Vector2i, TileMapCell> &E : pattern[0]) {
 			coords.push_back(E.key);
@@ -412,7 +391,7 @@ bool TileMapPattern::is_layer_empty(int p_layer) const {
 
 	else {
 		ERR_FAIL_COND_V_EDMSG(p_layer < 0, true,"Called TileMapPattern::is_layer_empty on a multilayer pattern with parameter p_layer < 0, probably -1 (the default parameter). You must specify the layer when calling this method on a multilayer pattern");
-		ERR_FAIL_INDEX_V_MSG(p_layer, pattern.size(), true, "Layer index is out of bounds for set_cell");
+		ERR_FAIL_INDEX_V_MSG(p_layer, pattern.size(), true, "Layer index is out of bounds for is_layer_empty");
 		return pattern[p_layer].is_empty();
 	}
 }
@@ -429,7 +408,9 @@ int TileMapPattern::get_number_of_layers() const {
 }
 
 void TileMapPattern::set_number_of_layers(int p_number_of_layers) {
+	number_of_layers = p_number_of_layers;
 	pattern.resize(p_number_of_layers);
+	
 }
 
 int TileMapPattern::get_pattern_set_index() const {
@@ -451,7 +432,7 @@ void TileMapPattern::clear_layer(int p_layer) {
 		selected_layer.clear();
 	} else {
 		ERR_FAIL_COND_EDMSG(p_layer < 0, "Called TileMapPattern::clear_layer on a multilayer pattern with parameter p_layer < 0, probably -1 (the default parameter). You must specify the layer when calling this method on a multilayer pattern");
-		ERR_FAIL_INDEX_MSG(p_layer, pattern.size(), "Layer index is out of bounds for set_cell");
+		ERR_FAIL_INDEX_MSG(p_layer, pattern.size(), "Layer index is out of bounds for clear_layer");
 		HashMap<Vector2i, TileMapCell> &selected_layer = pattern.write[p_layer];
 		selected_layer.clear();
 		
@@ -497,38 +478,35 @@ void TileMapPattern::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void TileMapPattern::_bind_methods() {
 
-	// Getters and setters that are needed to serialize patterns.
-
-	ClassDB::bind_method(D_METHOD("set_cell", "p_layer" "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMapPattern::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(TileSetSource::INVALID_TILE_ALTERNATIVE));
-	ClassDB::bind_method(D_METHOD("has_cell", "p_layer" "coords"), &TileMapPattern::has_cell);
-	ClassDB::bind_method(D_METHOD("remove_cell","p_layer" "coords", "update_size"), &TileMapPattern::remove_cell);
-	ClassDB::bind_method(D_METHOD("get_cell_source_id","p_layer" "coords"), &TileMapPattern::get_cell_source_id);
-	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords","p_layer" "coords"), &TileMapPattern::get_cell_atlas_coords);
-	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile","p_layer" "coords"), &TileMapPattern::get_cell_alternative_tile);
+	ClassDB::bind_method(D_METHOD("set_cell",  "coords", "source_id", "atlas_coords", "alternative_tile", "p_layer"), &TileMapPattern::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(TileSetSource::INVALID_TILE_ALTERNATIVE));
+	ClassDB::bind_method(D_METHOD("has_cell",  "coords", "layer"), &TileMapPattern::has_cell);
+	ClassDB::bind_method(D_METHOD("remove_cell",  "coords", "update_size", "p_layer"), &TileMapPattern::remove_cell);
+	ClassDB::bind_method(D_METHOD("get_cell_source_id", "coords", "layer"), &TileMapPattern::get_cell_source_id);
+	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "coords", "layer"), &TileMapPattern::get_cell_atlas_coords);
+	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "coords", "layer"), &TileMapPattern::get_cell_alternative_tile);
 
 	//ClassDB::bind_method(D_METHOD("get_pattern_multi_layer"), &TileMapPattern::get_pattern_multi_layer);
 	//ClassDB::bind_method(D_METHOD("get_pattern_single_layer", "p_layer"), &TileMapPattern::get_pattern_single_layer);
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &TileMapPattern::get_used_cells);
-	ClassDB::bind_method(D_METHOD("get_used_cells_on_layer", "p_layer"), &TileMapPattern::get_used_cells_on_layer);
+	ClassDB::bind_method(D_METHOD("get_used_cells_on_layer", "layer"), &TileMapPattern::get_used_cells_on_layer);
 	ClassDB::bind_method(D_METHOD("get_size"), &TileMapPattern::get_size);
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &TileMapPattern::set_size);
 	ClassDB::bind_method(D_METHOD("is_empty"), &TileMapPattern::is_empty);
-	ClassDB::bind_method(D_METHOD("is_layer_empty", "p_layer"), &TileMapPattern::is_layer_empty);
+	ClassDB::bind_method(D_METHOD("is_layer_empty", "layer"), &TileMapPattern::is_layer_empty);
 
 	ClassDB::bind_method(D_METHOD("get_is_single_layer"), &TileMapPattern::get_is_single_layer);
 	ClassDB::bind_method(D_METHOD("set_is_single_layer"), &TileMapPattern::set_is_single_layer);
 	ClassDB::bind_method(D_METHOD("get_number_of_layers"), &TileMapPattern::get_number_of_layers);
-	ClassDB::bind_method(D_METHOD("set_number_of_layers", "p_number_of_layers"), &TileMapPattern::set_number_of_layers);
+	ClassDB::bind_method(D_METHOD("set_number_of_layers", "number_of_layers"), &TileMapPattern::set_number_of_layers);
 	ClassDB::bind_method(D_METHOD("get_pattern_set_index"), &TileMapPattern::get_pattern_set_index);
 	//ClassDB::bind_method(D_METHOD("set_size", "size"), &TileMapPattern::set_size);
 
 	ClassDB::bind_method(D_METHOD("clear"), &TileMapPattern::clear);
-	ClassDB::bind_method(D_METHOD("clear_layer", "p_layer"), &TileMapPattern::clear_layer);
+	ClassDB::bind_method(D_METHOD("clear_layer", "layer"), &TileMapPattern::clear_layer);
 
-	// Getters and setters that are needed to serialize patterns.
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_single_layer", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_is_single_layer", "get_is_single_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "number_of_layers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_number_of_layers", "get_number_of_layers");
-	
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_single_layer", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_is_single_layer", "get_is_single_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_size", "get_size");
 }
 
 /////////////////////////////// TileSet //////////////////////////////////////
@@ -4813,16 +4791,16 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_tile_proxies"), &TileSet::clear_tile_proxies);
 
 	// Patterns
-	ClassDB::bind_method(D_METHOD("get_pattern", "index"), &TileSet::get_pattern, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("add_pattern", "pattern", "pattern_set_index", "index"), &TileSet::add_pattern, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("remove_pattern", "index"), &TileSet::remove_pattern);
+	ClassDB::bind_method(D_METHOD("get_pattern", "pattern_set_index", "pattern_index"), &TileSet::get_pattern);
+	ClassDB::bind_method(D_METHOD("add_pattern", "pattern", "pattern_set_index", "pattern_index"), &TileSet::add_pattern, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("remove_pattern", "pattern_set_index", "pattern_index"), &TileSet::remove_pattern);
 
 	// Pattern Sets
 	ClassDB::bind_method(D_METHOD("get_pattern_sets_count"), &TileSet::get_pattern_sets_count);
-	ClassDB::bind_method(D_METHOD("add_pattern_set", "index"), &TileSet::add_pattern_set, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("remove_pattern_set", "index"), &TileSet::remove_pattern_set);
+	ClassDB::bind_method(D_METHOD("add_pattern_set", "pattern_set_index"), &TileSet::add_pattern_set, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("remove_pattern_set", "pattern_set_index"), &TileSet::remove_pattern_set);
 	ClassDB::bind_method(D_METHOD("move_pattern_set", "from_index", "to_index"), &TileSet::move_pattern_set);
-	ClassDB::bind_method(D_METHOD("get_patterns_count", "index"), &TileSet::get_patterns_count);
+	ClassDB::bind_method(D_METHOD("get_patterns_count", "pattern_set_index"), &TileSet::get_patterns_count);
 	
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_clipping"), "set_uv_clipping", "is_uv_clipping");

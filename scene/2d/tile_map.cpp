@@ -616,6 +616,7 @@ TileData *TileMap::get_cell_tile_data(int p_layer, const Vector2i &p_coords, boo
 }
 
 Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array) {
+	print_line(" TileMap get_pattern called");
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, Ref<TileMapPattern>(), get_pattern, p_coords_array);
 }
 
@@ -640,7 +641,7 @@ void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<Til
 	// The above code is the same aside from the if statement, just inline instead of a macro.
 	// The below code is needed because tiles_editor_plugin.cpp's _thread function used for saving patterns to the tileset patterns list depends on (deprecated) TileMap functionality.
 	else if (p_pattern->get_is_single_layer() == false) {
-		print_line("set_pattern multi layer called");
+		print_line("set_pattern multi layer called the size is", p_pattern->get_number_of_layers());
 		for (int pattern_layer = 0; pattern_layer < p_pattern->get_number_of_layers(); pattern_layer++) {
 			layers[pattern_layer]->set_pattern_layer(pattern_layer, p_position, p_pattern);
 		}
