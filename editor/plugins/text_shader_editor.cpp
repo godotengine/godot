@@ -334,6 +334,8 @@ void ShaderTextEditor::_load_theme_settings() {
 		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_editor_theme()->get_font(SNAME("main"), EditorStringName(EditorFonts)));
 		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_editor_theme()->get_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 	}
+
+	syntax_highlighter->set_uint_suffix_enabled();
 }
 
 void ShaderTextEditor::_check_shader_mode() {
