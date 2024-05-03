@@ -489,6 +489,49 @@ StringName EditorProperty::_get_revert_property() const {
 	return property;
 }
 
+void EditorProperty::_update_property_bg() {
+	// This function is to be called on EditorPropertyResource, EditorPropertyArray, and EditorPropertyDictionary.
+	// Behavior is undetermined on any other EditorProperty.
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	begin_bulk_theme_override();
+
+	if (bottom_editor) {
+		ColorationMode nested_color_mode = (ColorationMode)(int)EDITOR_GET("interface/inspector/nested_color_mode");
+		bool delimitate_all_container_and_resources = EDITOR_GET("interface/inspector/delimitate_all_container_and_resources");
+		int count_subinspectors = 0;
+		if (is_colored(nested_color_mode)) {
+			Node *n = this;
+			while (n) {
+				EditorProperty *ep = Object::cast_to<EditorProperty>(n);
+				if (ep && ep->is_colored(nested_color_mode)) {
+					count_subinspectors++;
+				}
+				n = n->get_parent();
+			}
+			count_subinspectors = MIN(16, count_subinspectors);
+		}
+		add_theme_style_override(SNAME("DictionaryAddItem"), get_theme_stylebox("DictionaryAddItem" + itos(count_subinspectors), EditorStringName(EditorStyles)));
+		add_theme_constant_override("v_separation", 0);
+		if (delimitate_all_container_and_resources || is_colored(nested_color_mode)) {
+			add_theme_style_override("bg_selected", get_theme_stylebox("sub_inspector_property_bg" + itos(count_subinspectors), EditorStringName(EditorStyles)));
+			add_theme_style_override("bg", get_theme_stylebox("sub_inspector_property_bg" + itos(count_subinspectors), EditorStringName(EditorStyles)));
+			add_theme_color_override("property_color", get_theme_color(SNAME("sub_inspector_property_color"), EditorStringName(EditorStyles)));
+			bottom_editor->add_theme_style_override("panel", get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), EditorStringName(EditorStyles)));
+		} else {
+			bottom_editor->add_theme_style_override("panel", get_theme_stylebox("sub_inspector_bg_no_border", EditorStringName(EditorStyles)));
+		}
+	} else {
+		remove_theme_style_override("bg_selected");
+		remove_theme_style_override("bg");
+		remove_theme_color_override("property_color");
+	}
+	end_bulk_theme_override();
+	queue_redraw();
+}
+
 void EditorProperty::update_editor_property_status() {
 	if (property == StringName()) {
 		return; //no property, so nothing to do
@@ -3481,8 +3524,8 @@ void EditorInspector::edit(Object *p_object) {
 
 	next_object = p_object; // Some plugins need to know the next edited object when clearing the inspector.
 	if (object) {
-		_clear();
 		object->disconnect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
+		_clear();
 	}
 	per_array_page.clear();
 
@@ -3676,30 +3719,11 @@ void EditorInspector::set_use_wide_editors(bool p_enable) {
 	wide_editors = p_enable;
 }
 
-void EditorInspector::_update_inspector_bg() {
-	if (sub_inspector) {
-		int count_subinspectors = 0;
-		Node *n = get_parent();
-		while (n) {
-			EditorInspector *ei = Object::cast_to<EditorInspector>(n);
-			if (ei && ei->sub_inspector) {
-				count_subinspectors++;
-			}
-			n = n->get_parent();
-		}
-		count_subinspectors = MIN(15, count_subinspectors);
-		add_theme_style_override("panel", get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), EditorStringName(Editor)));
-	} else {
-		add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-	}
-}
 void EditorInspector::set_sub_inspector(bool p_enable) {
 	sub_inspector = p_enable;
 	if (!is_inside_tree()) {
 		return;
 	}
-
-	_update_inspector_bg();
 }
 
 void EditorInspector::set_use_deletable_properties(bool p_enabled) {
@@ -4014,7 +4038,7 @@ void EditorInspector::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
 			set_process(is_visible_in_tree());
-			_update_inspector_bg();
+			add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -4088,10 +4112,6 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorThemeManager::is_generated_theme_outdated()) {
-				_update_inspector_bg();
-			}
-
 			bool needs_update = false;
 
 			if (use_settings_name_style && EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
@@ -4101,6 +4121,7 @@ void EditorInspector::_notification(int p_what) {
 					needs_update = true;
 				}
 			}
+
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
 				needs_update = true;
 			}
