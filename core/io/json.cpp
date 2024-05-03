@@ -871,7 +871,7 @@ Variant JSON::from_native(const Variant &p_variant, bool p_allow_classes, bool p
 			for (int i = 0; i < arr.size(); i++) {
 				values.push_back(arr[i]);
 			}
-			d["values"] = values;
+			d[VALUES] = values;
 			d[GDTYPE] = Variant::get_type_name(p_variant.get_type());
 			return d;
 		} break;
@@ -882,7 +882,7 @@ Variant JSON::from_native(const Variant &p_variant, bool p_allow_classes, bool p
 			for (int i = 0; i < arr.size(); i++) {
 				values.push_back(arr[i]);
 			}
-			d["values"] = values;
+			d[VALUES] = values;
 			d[GDTYPE] = Variant::get_type_name(p_variant.get_type());
 			return d;
 
@@ -894,7 +894,7 @@ Variant JSON::from_native(const Variant &p_variant, bool p_allow_classes, bool p
 			for (int i = 0; i < arr.size(); i++) {
 				values.push_back(arr[i]);
 			}
-			d["values"] = values;
+			d[VALUES] = values;
 			d[GDTYPE] = Variant::get_type_name(p_variant.get_type());
 			return d;
 		} break;
@@ -905,7 +905,7 @@ Variant JSON::from_native(const Variant &p_variant, bool p_allow_classes, bool p
 			for (int i = 0; i < arr.size(); i++) {
 				values.push_back(arr[i]);
 			}
-			d["values"] = values;
+			d[VALUES] = values;
 			d[GDTYPE] = Variant::get_type_name(p_variant.get_type());
 			return d;
 		} break;
@@ -916,7 +916,7 @@ Variant JSON::from_native(const Variant &p_variant, bool p_allow_classes, bool p
 			for (int i = 0; i < arr.size(); i++) {
 				values.push_back(arr[i]);
 			}
-			d["values"] = values;
+			d[VALUES] = values;
 			d[GDTYPE] = Variant::get_type_name(p_variant.get_type());
 			return d;
 		} break;
@@ -927,7 +927,7 @@ Variant JSON::from_native(const Variant &p_variant, bool p_allow_classes, bool p
 			for (int i = 0; i < arr.size(); i++) {
 				values.push_back(arr[i]);
 			}
-			d["values"] = values;
+			d[VALUES] = values;
 			d[GDTYPE] = Variant::get_type_name(p_variant.get_type());
 			return d;
 		} break;
@@ -940,7 +940,7 @@ Variant JSON::from_native(const Variant &p_variant, bool p_allow_classes, bool p
 				values.push_back(v.x);
 				values.push_back(v.y);
 			}
-			d["values"] = values;
+			d[VALUES] = values;
 			d[GDTYPE] = Variant::get_type_name(p_variant.get_type());
 			return d;
 		} break;
@@ -954,7 +954,7 @@ Variant JSON::from_native(const Variant &p_variant, bool p_allow_classes, bool p
 				values.push_back(v.y);
 				values.push_back(v.z);
 			}
-			d["values"] = values;
+			d[VALUES] = values;
 			d[GDTYPE] = Variant::get_type_name(p_variant.get_type());
 			return d;
 		} break;
@@ -969,7 +969,7 @@ Variant JSON::from_native(const Variant &p_variant, bool p_allow_classes, bool p
 				values.push_back(v.b);
 				values.push_back(v.a);
 			}
-			d["values"] = values;
+			d[VALUES] = values;
 			d[GDTYPE] = Variant::get_type_name(p_variant.get_type());
 			return d;
 		} break;
@@ -985,13 +985,13 @@ Variant JSON::from_native(const Variant &p_variant, bool p_allow_classes, bool p
 				values.push_back(v.z);
 				values.push_back(v.w);
 			}
-			d["values"] = values;
+			d[VALUES] = values;
 			d[GDTYPE] = Variant::get_type_name(p_variant.get_type());
 			return d;
 		} break;
 #endif
 		default: {
-			ERR_PRINT(vformat("Unhandled Variant type '%d' in conversion from native to JSON.", p_variant.get_type()));
+			ERR_PRINT(vformat("Unhandled conversion from native Variant type '%s' to JSON.", Variant::get_type_name(p_variant.get_type())));
 		} break;
 	}
 
@@ -1020,16 +1020,16 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 				// Specific Godot Variant types serialized to JSON.
 				String type = d[GDTYPE];
 				if (type == Variant::get_type_name(Variant::VECTOR2)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					ERR_FAIL_COND_V(values.size() != 2, Variant());
 					Vector2 v;
 					v.x = values[0];
 					v.y = values[1];
 					return v;
 				} else if (type == Variant::get_type_name(Variant::VECTOR2I)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					ERR_FAIL_COND_V(values.size() != 2, Variant());
 					Vector2i v;
 					v.x = values[0];
@@ -1050,8 +1050,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					r.size = to_native(d["size"]);
 					return r;
 				} else if (type == Variant::get_type_name(Variant::VECTOR3)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					ERR_FAIL_COND_V(values.size() != 3, Variant());
 					Vector3 v;
 					v.x = values[0];
@@ -1059,8 +1059,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					v.z = values[2];
 					return v;
 				} else if (type == Variant::get_type_name(Variant::VECTOR3I)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					ERR_FAIL_COND_V(values.size() != 3, Variant());
 					Vector3i v;
 					v.x = values[0];
@@ -1077,8 +1077,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					t[2] = to_native(d["origin"]);
 					return t;
 				} else if (type == Variant::get_type_name(Variant::VECTOR4)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					ERR_FAIL_COND_V(values.size() != 4, Variant());
 					Vector4 v;
 					v.x = values[0];
@@ -1087,8 +1087,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					v.w = values[3];
 					return v;
 				} else if (type == Variant::get_type_name(Variant::VECTOR4I)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					ERR_FAIL_COND_V(values.size() != 4, Variant());
 					Vector4i v;
 					v.x = values[0];
@@ -1104,8 +1104,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					p.d = d["d"];
 					return p;
 				} else if (type == Variant::get_type_name(Variant::QUATERNION)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					ERR_FAIL_COND_V(values.size() != 4, Variant());
 					Quaternion v;
 					v.x = values[0];
@@ -1148,7 +1148,15 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					p[3] = to_native(d["w"]);
 					return p;
 				} else if (type == Variant::get_type_name(Variant::COLOR)) {
-					// TODO
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
+					ERR_FAIL_COND_V(values.size() != 4, Variant());
+					Color c;
+					c.r = values[0];
+					c.g = values[1];
+					c.b = values[2];
+					c.a = values[3];
+					return c;
 				} else if (type == Variant::get_type_name(Variant::NODE_PATH)) {
 					ERR_FAIL_COND_V(!d.has("path"), Variant());
 					NodePath np = d["path"];
@@ -1195,10 +1203,10 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					}
 					return r;
 				} else if (type == Variant::get_type_name(Variant::ARRAY)) {
-					// TODO
+					ERR_PRINT(vformat("Unexpected Array with '%s' key. Arrays are supported natively.", GDTYPE));
 				} else if (type == Variant::get_type_name(Variant::PACKED_BYTE_ARRAY)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					PackedByteArray pbarr;
 					pbarr.resize(values.size());
 					for (int i = 0; i < pbarr.size(); i++) {
@@ -1206,8 +1214,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					}
 					return pbarr;
 				} else if (type == Variant::get_type_name(Variant::PACKED_INT32_ARRAY)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					PackedInt32Array arr;
 					arr.resize(values.size());
 					for (int i = 0; i < arr.size(); i++) {
@@ -1215,8 +1223,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					}
 					return arr;
 				} else if (type == Variant::get_type_name(Variant::PACKED_INT64_ARRAY)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					PackedInt64Array arr;
 					arr.resize(values.size());
 					for (int i = 0; i < arr.size(); i++) {
@@ -1224,8 +1232,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					}
 					return arr;
 				} else if (type == Variant::get_type_name(Variant::PACKED_FLOAT32_ARRAY)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					PackedFloat32Array arr;
 					arr.resize(values.size());
 					for (int i = 0; i < arr.size(); i++) {
@@ -1233,8 +1241,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					}
 					return arr;
 				} else if (type == Variant::get_type_name(Variant::PACKED_FLOAT64_ARRAY)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					PackedFloat64Array arr;
 					arr.resize(values.size());
 					for (int i = 0; i < arr.size(); i++) {
@@ -1242,8 +1250,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					}
 					return arr;
 				} else if (type == Variant::get_type_name(Variant::PACKED_STRING_ARRAY)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					PackedStringArray arr;
 					arr.resize(values.size());
 					for (int i = 0; i < arr.size(); i++) {
@@ -1251,8 +1259,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					}
 					return arr;
 				} else if (type == Variant::get_type_name(Variant::PACKED_VECTOR2_ARRAY)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					ERR_FAIL_COND_V(values.size() % 2 != 0, Variant());
 					PackedVector2Array arr;
 					arr.resize(values.size() / 2);
@@ -1261,8 +1269,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					}
 					return arr;
 				} else if (type == Variant::get_type_name(Variant::PACKED_VECTOR3_ARRAY)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					ERR_FAIL_COND_V(values.size() % 3 != 0, Variant());
 					PackedVector3Array arr;
 					arr.resize(values.size() / 3);
@@ -1271,8 +1279,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					}
 					return arr;
 				} else if (type == Variant::get_type_name(Variant::PACKED_COLOR_ARRAY)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					ERR_FAIL_COND_V(values.size() % 4 != 0, Variant());
 					PackedColorArray arr;
 					arr.resize(values.size() / 4);
@@ -1282,8 +1290,8 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 					return arr;
 #if 0 // Uncomment after GH-85474 is merged.
 				} else if (type == Variant::get_type_name(Variant::PACKED_VECTOR4_ARRAY)) {
-					ERR_FAIL_COND_V(!d.has("values"), Variant());
-					Array values = d["values"];
+					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
+					Array values = d[VALUES];
 					ERR_FAIL_COND_V(values.size() % 4 != 0, Variant());
 					PackedVector4Array arr;
 					arr.resize(values.size() / 4);
@@ -1316,7 +1324,7 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 			return ret;
 		} break;
 		default: {
-			ERR_PRINT("Invalid JSON type: " + Variant::get_type_name(p_json.get_type()));
+			ERR_PRINT(vformat("Unhandled conversion from JSON type '%s' to native Variant type.", Variant::get_type_name(p_json.get_type())));
 			return Variant();
 		}
 	}
