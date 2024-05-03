@@ -1049,7 +1049,9 @@ void fragment_shader(in SceneData scene_data) {
 #endif //USE_MULTIVIEW
 #endif //LIGHT_VERTEX_USED
 
-#ifndef USE_SHADOW_TO_OPACITY
+#ifdef USE_SHADOW_TO_OPACITY
+	float shadow_to_opacity = 0.0;
+#endif
 
 #ifdef ALPHA_SCISSOR_USED
 	if (alpha < alpha_scissor_threshold) {
@@ -1085,8 +1087,6 @@ void fragment_shader(in SceneData scene_data) {
 	}
 #endif // USE_OPAQUE_PREPASS || ALPHA_ANTIALIASING_EDGE_USED
 #endif // MODE_RENDER_DEPTH
-
-#endif // !USE_SHADOW_TO_OPACITY
 
 #ifdef NORMAL_MAP_USED
 
@@ -2068,7 +2068,10 @@ void fragment_shader(in SceneData scene_data) {
 #else
 					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
 #endif
-					true, shadow, f0, orms, 1.0, albedo, alpha,
+					true, shadow, f0, orms, 1.0, albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+					shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -2140,7 +2143,10 @@ void fragment_shader(in SceneData scene_data) {
 
 				shadow = blur_shadow(shadow);
 
-				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
+				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+						shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif
@@ -2212,7 +2218,10 @@ void fragment_shader(in SceneData scene_data) {
 
 				shadow = blur_shadow(shadow);
 
-				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo, alpha,
+				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, shadow, albedo,
+#ifdef USE_SHADOW_TO_OPACITY
+						shadow_to_opacity,
+#endif
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif
@@ -2237,20 +2246,13 @@ void fragment_shader(in SceneData scene_data) {
 		}
 	}
 
+#endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+
 #ifdef USE_SHADOW_TO_OPACITY
 #ifndef MODE_RENDER_DEPTH
-	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
-
-#if defined(ALPHA_SCISSOR_USED)
-	if (alpha < alpha_scissor) {
-		discard;
-	}
-#endif // ALPHA_SCISSOR_USED
-
+	alpha = min(shadow_to_opacity, 1.0 - clamp(length(ambient_light), 0.0, 1.0));
 #endif // !MODE_RENDER_DEPTH
 #endif // USE_SHADOW_TO_OPACITY
-
-#endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 #ifdef MODE_RENDER_DEPTH
 
