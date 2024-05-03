@@ -128,6 +128,7 @@ void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
 	RID material_rid;
 	if (process_material.is_valid()) {
 		material_rid = process_material->get_rid();
+		process_material->connect("emission_shape_changed", callable_mp((Node3D *)this, &GPUParticles3D::update_gizmos));
 	}
 	RS::get_singleton()->particles_set_process_material(particles, material_rid);
 
@@ -514,10 +515,6 @@ void GPUParticles3D::_notification(int p_what) {
 			previous_position = get_global_transform().origin;
 			set_process_internal(true);
 			set_physics_process_internal(true);
-
-			Ref<ParticleProcessMaterial> material = get_process_material();
-			ERR_FAIL_COND(material.is_null());
-			material->connect("emission_shape_changed", callable_mp((Node3D *)this, &GPUParticles3D::update_gizmos));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {

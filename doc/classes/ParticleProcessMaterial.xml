@@ -412,7 +412,7 @@
 	<signals>
 		<signal name="emission_shape_changed">
 			<description>
-				Emitted when the emission shape of the material has been changed in its offset, size, scale, or orientation.
+				Emitted when this material's emission shape is changed in any way. This includes changes to [member emission_shape], [member emission_shape_scale], or [member emission_sphere_radius], and any other property that affects the emission shape's offset, size, scale, or orientation.
 			</description>
 		</signal>
 	</signals>
