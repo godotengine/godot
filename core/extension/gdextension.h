@@ -136,6 +136,15 @@ public:
 		INITIALIZATION_LEVEL_EDITOR = GDEXTENSION_INITIALIZATION_EDITOR
 	};
 
+protected:
+#ifndef DISABLE_DEPRECATED
+	Error _open_library_bind_compat_88418(const String &p_path, const String &p_entry_symbol);
+	void _close_library_bind_compat_88418();
+	void _initialize_library_bind_compat_88418(InitializationLevel p_level);
+	static void _bind_compatibility_methods();
+#endif
+
+public:
 	bool is_library_open() const;
 
 #ifdef TOOLS_ENABLED
