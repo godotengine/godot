@@ -41,7 +41,13 @@ class NavigationRegion3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 		Vector3 to;
 
 		static uint32_t hash(const _EdgeKey &p_key) {
-			return HashMapHasherDefault::hash(p_key.from) ^ HashMapHasherDefault::hash(p_key.to);
+			uint32_t hash = hash_murmur3_one_real(p_key.from.x);
+			hash = hash_murmur3_one_real(p_key.from.y, hash);
+			hash = hash_murmur3_one_real(p_key.from.z, hash);
+			hash = hash_murmur3_one_real(p_key.to.x, hash);
+			hash = hash_murmur3_one_real(p_key.to.y, hash);
+			hash = hash_murmur3_one_real(p_key.to.z, hash);
+			return hash_fmix32(hash);
 		}
 
 		bool operator==(const _EdgeKey &p_with) const {
