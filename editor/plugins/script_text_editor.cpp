@@ -2337,7 +2337,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 	if (p_color || p_open_docs || p_goto_definition) {
 		context_menu->add_separator();
 		if (p_open_docs) {
-			context_menu->add_item(TTR("Lookup Symbol"), LOOKUP_SYMBOL);
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_symbol"), LOOKUP_SYMBOL);
 		}
 		if (p_color) {
 			context_menu->add_item(TTR("Pick Color"), EDIT_PICK_COLOR);
@@ -2491,6 +2491,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	edit_hb->add_child(goto_menu);
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_function"), SEARCH_LOCATE_FUNCTION);
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
+	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_symbol"), LOOKUP_SYMBOL);
 	goto_menu->get_popup()->add_separator();
 
 	goto_menu->get_popup()->add_submenu_node_item(TTR("Bookmarks"), bookmarks_menu);
@@ -2675,6 +2676,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT_OVERRIDE("script_text_editor/goto_function", "macos", KeyModifierMask::CTRL | KeyModifierMask::META | Key::J);
 
 	ED_SHORTCUT("script_text_editor/goto_line", TTRC("Go to Line..."), KeyModifierMask::CMD_OR_CTRL | Key::L);
+	ED_SHORTCUT("script_text_editor/goto_symbol", TTRC("Lookup Symbol"));
 
 	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTRC("Toggle Breakpoint"), Key::F9);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_breakpoint", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
