@@ -4859,7 +4859,7 @@ static void handle_cmdline_options(String glue_dir_path) {
 }
 
 static void cleanup_and_exit_godot() {
-	// Exit once done
+	// Exit once done.
 	Main::cleanup(true);
 	::exit(0);
 }
@@ -4878,7 +4878,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				elem = elem->next();
 			} else {
 				ERR_PRINT(generate_all_glue_option + ": No output directory specified (expected path to '{GODOT_ROOT}/modules/mono/glue').");
-				// Exit once done with invalid command line arguments
+				// Exit once done with invalid command line arguments.
 				cleanup_and_exit_godot();
 			}
 
@@ -4889,8 +4889,14 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 	}
 
 	if (glue_dir_path.length()) {
-		handle_cmdline_options(glue_dir_path);
-		// Exit once done
+		if (Engine::get_singleton()->is_editor_hint() ||
+				Engine::get_singleton()->is_project_manager_hint()) {
+			handle_cmdline_options(glue_dir_path);
+		} else {
+			// Running from a project folder, which doesn't make sense and crashes.
+			ERR_PRINT(generate_all_glue_option + ": Cannot generate Mono glue while running a game project. Change current directory or enable --editor.");
+		}
+		// Exit once done.
 		cleanup_and_exit_godot();
 	}
 }
