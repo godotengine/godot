@@ -123,6 +123,8 @@ var test_weak_packed_vector2_array: PackedVector2Array
   hint=TYPE_STRING hint_string="Vector2:Vector2" usage=DEFAULT|SCRIPT_VARIABLE
 var test_weak_packed_vector3_array: PackedVector3Array
   hint=TYPE_STRING hint_string="Vector3:Vector3" usage=DEFAULT|SCRIPT_VARIABLE
+var test_weak_packed_vector4_array: PackedVector4Array
+  hint=TYPE_STRING hint_string="Vector4:Vector4" usage=DEFAULT|SCRIPT_VARIABLE
 var test_range_weak_packed_byte_array: PackedByteArray
   hint=TYPE_STRING hint_string="int/RANGE:1,10" usage=DEFAULT|SCRIPT_VARIABLE
 var test_range_weak_packed_int32_array: PackedInt32Array

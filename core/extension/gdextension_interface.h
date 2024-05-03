@@ -96,6 +96,7 @@ typedef enum {
 	GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR2_ARRAY,
 	GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR3_ARRAY,
 	GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY,
+	GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY,
 
 	GDEXTENSION_VARIANT_TYPE_VARIANT_MAX
 } GDExtensionVariantType;
@@ -1964,32 +1965,6 @@ typedef uint8_t *(*GDExtensionInterfacePackedByteArrayOperatorIndex)(GDExtension
 typedef const uint8_t *(*GDExtensionInterfacePackedByteArrayOperatorIndexConst)(GDExtensionConstTypePtr p_self, GDExtensionInt p_index);
 
 /**
- * @name packed_color_array_operator_index
- * @since 4.1
- *
- * Gets a pointer to a color in a PackedColorArray.
- *
- * @param p_self A pointer to a PackedColorArray object.
- * @param p_index The index of the Color to get.
- *
- * @return A pointer to the requested Color.
- */
-typedef GDExtensionTypePtr (*GDExtensionInterfacePackedColorArrayOperatorIndex)(GDExtensionTypePtr p_self, GDExtensionInt p_index);
-
-/**
- * @name packed_color_array_operator_index_const
- * @since 4.1
- *
- * Gets a const pointer to a color in a PackedColorArray.
- *
- * @param p_self A const pointer to a const PackedColorArray object.
- * @param p_index The index of the Color to get.
- *
- * @return A const pointer to the requested Color.
- */
-typedef GDExtensionTypePtr (*GDExtensionInterfacePackedColorArrayOperatorIndexConst)(GDExtensionConstTypePtr p_self, GDExtensionInt p_index);
-
-/**
  * @name packed_float32_array_operator_index
  * @since 4.1
  *
@@ -2170,6 +2145,58 @@ typedef GDExtensionTypePtr (*GDExtensionInterfacePackedVector3ArrayOperatorIndex
  * @return A const pointer to the requested Vector3.
  */
 typedef GDExtensionTypePtr (*GDExtensionInterfacePackedVector3ArrayOperatorIndexConst)(GDExtensionConstTypePtr p_self, GDExtensionInt p_index);
+
+/**
+ * @name packed_vector4_array_operator_index
+ * @since 4.3
+ *
+ * Gets a pointer to a Vector4 in a PackedVector4Array.
+ *
+ * @param p_self A pointer to a PackedVector4Array object.
+ * @param p_index The index of the Vector4 to get.
+ *
+ * @return A pointer to the requested Vector4.
+ */
+typedef GDExtensionTypePtr (*GDExtensionInterfacePackedVector4ArrayOperatorIndex)(GDExtensionTypePtr p_self, GDExtensionInt p_index);
+
+/**
+ * @name packed_vector4_array_operator_index_const
+ * @since 4.3
+ *
+ * Gets a const pointer to a Vector4 in a PackedVector4Array.
+ *
+ * @param p_self A const pointer to a PackedVector4Array object.
+ * @param p_index The index of the Vector4 to get.
+ *
+ * @return A const pointer to the requested Vector4.
+ */
+typedef GDExtensionTypePtr (*GDExtensionInterfacePackedVector4ArrayOperatorIndexConst)(GDExtensionConstTypePtr p_self, GDExtensionInt p_index);
+
+/**
+ * @name packed_color_array_operator_index
+ * @since 4.1
+ *
+ * Gets a pointer to a color in a PackedColorArray.
+ *
+ * @param p_self A pointer to a PackedColorArray object.
+ * @param p_index The index of the Color to get.
+ *
+ * @return A pointer to the requested Color.
+ */
+typedef GDExtensionTypePtr (*GDExtensionInterfacePackedColorArrayOperatorIndex)(GDExtensionTypePtr p_self, GDExtensionInt p_index);
+
+/**
+ * @name packed_color_array_operator_index_const
+ * @since 4.1
+ *
+ * Gets a const pointer to a color in a PackedColorArray.
+ *
+ * @param p_self A const pointer to a PackedColorArray object.
+ * @param p_index The index of the Color to get.
+ *
+ * @return A const pointer to the requested Color.
+ */
+typedef GDExtensionTypePtr (*GDExtensionInterfacePackedColorArrayOperatorIndexConst)(GDExtensionConstTypePtr p_self, GDExtensionInt p_index);
 
 /**
  * @name array_operator_index

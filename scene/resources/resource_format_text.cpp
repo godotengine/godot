@@ -37,11 +37,12 @@
 #include "core/object/script_language.h"
 #include "core/version.h"
 
-// Version 2: changed names for Basis, AABB, Vectors, etc.
-// Version 3: new string ID for ext/subresources, breaks forward compat.
-// Version 4: PackedByteArray is now stored as base64 encoded.
-#define FORMAT_VERSION_COMPAT 3
+// Version 2: Changed names for Basis, AABB, Vectors, etc.
+// Version 3: New string ID for ext/subresources, breaks forward compat.
+// Version 4: PackedByteArray can be base64 encoded, and PackedVector4Array was added.
 #define FORMAT_VERSION 4
+// For compat, save as version 3 if not using PackedVector4Array or no big PackedByteArray.
+#define FORMAT_VERSION_COMPAT 3
 
 #define BINARY_FORMAT_VERSION 4
 
@@ -1978,6 +1979,9 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 			if (use_compat && p_variant.operator PackedByteArray().size() > 64) {
 				use_compat = false;
 			}
+		} break;
+		case Variant::PACKED_VECTOR4_ARRAY: {
+			use_compat = false;
 		} break;
 		default: {
 		}

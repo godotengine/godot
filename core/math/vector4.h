@@ -32,9 +32,11 @@
 #define VECTOR4_H
 
 #include "core/error/error_macros.h"
-#include "core/math/math_funcs.h"
+#include "core/math/math_defs.h"
+#include "core/typedefs.h"
 
 class String;
+struct Vector4i;
 
 struct _NO_DISCARD_ Vector4 {
 	static const int AXIS_COUNT = 4;
@@ -140,28 +142,14 @@ struct _NO_DISCARD_ Vector4 {
 	_FORCE_INLINE_ bool operator<=(const Vector4 &p_vec4) const;
 
 	operator String() const;
+	operator Vector4i() const;
 
 	_FORCE_INLINE_ Vector4() {}
-
-	_FORCE_INLINE_ Vector4(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
-			x(p_x),
-			y(p_y),
-			z(p_z),
-			w(p_w) {
-	}
-
-	Vector4(const Vector4 &p_vec4) :
-			x(p_vec4.x),
-			y(p_vec4.y),
-			z(p_vec4.z),
-			w(p_vec4.w) {
-	}
-
-	void operator=(const Vector4 &p_vec4) {
-		x = p_vec4.x;
-		y = p_vec4.y;
-		z = p_vec4.z;
-		w = p_vec4.w;
+	_FORCE_INLINE_ Vector4(real_t p_x, real_t p_y, real_t p_z, real_t p_w) {
+		x = p_x;
+		y = p_y;
+		z = p_z;
+		w = p_w;
 	}
 };
 

@@ -2568,6 +2568,30 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedColorArray, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedColorArray, count, sarray("value"), varray());
 
+	/* Vector4 Array */
+
+	bind_method(PackedVector4Array, size, sarray(), varray());
+	bind_method(PackedVector4Array, is_empty, sarray(), varray());
+	bind_method(PackedVector4Array, set, sarray("index", "value"), varray());
+	bind_method(PackedVector4Array, push_back, sarray("value"), varray());
+	bind_method(PackedVector4Array, append, sarray("value"), varray());
+	bind_method(PackedVector4Array, append_array, sarray("array"), varray());
+	bind_method(PackedVector4Array, remove_at, sarray("index"), varray());
+	bind_method(PackedVector4Array, insert, sarray("at_index", "value"), varray());
+	bind_method(PackedVector4Array, fill, sarray("value"), varray());
+	bind_methodv(PackedVector4Array, resize, &PackedVector4Array::resize_zeroed, sarray("new_size"), varray());
+	bind_method(PackedVector4Array, clear, sarray(), varray());
+	bind_method(PackedVector4Array, has, sarray("value"), varray());
+	bind_method(PackedVector4Array, reverse, sarray(), varray());
+	bind_method(PackedVector4Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedVector4Array, to_byte_array, sarray(), varray());
+	bind_method(PackedVector4Array, sort, sarray(), varray());
+	bind_method(PackedVector4Array, bsearch, sarray("value", "before"), varray(true));
+	bind_method(PackedVector4Array, duplicate, sarray(), varray());
+	bind_method(PackedVector4Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedVector4Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedVector4Array, count, sarray("value"), varray());
+
 	/* Register constants */
 
 	int ncc = Color::get_named_color_count();
