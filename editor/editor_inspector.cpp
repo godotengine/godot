@@ -3482,7 +3482,7 @@ void EditorInspector::edit(Object *p_object) {
 	next_object = p_object; // Some plugins need to know the next edited object when clearing the inspector.
 	if (object) {
 		_clear();
-		object->disconnect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
+		object->disconnect("property_list_changed", callable_mp(this, &EditorInspector::_property_list_changed_callback));
 	}
 	per_array_page.clear();
 
@@ -3493,7 +3493,7 @@ void EditorInspector::edit(Object *p_object) {
 		if (scroll_cache.has(object->get_instance_id())) { //if exists, set something else
 			update_scroll_request = scroll_cache[object->get_instance_id()]; //done this way because wait until full size is accommodated
 		}
-		object->connect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
+		object->connect("property_list_changed", callable_mp(this, &EditorInspector::_property_list_changed_callback));
 		update_tree();
 	}
 
@@ -3715,12 +3715,12 @@ void EditorInspector::_page_change_request(int p_new_page, const StringName &p_a
 	}
 }
 
-void EditorInspector::_edit_request_change(Object *p_object, const String &p_property) {
+void EditorInspector::_edit_request_change(Object *p_object, const String &p_property, const bool p_forced) {
 	if (object != p_object) { //may be undoing/redoing for a non edited object, so ignore
 		return;
 	}
 
-	if (changing) {
+	if (changing && !p_forced) {
 		return;
 	}
 
@@ -4112,10 +4112,10 @@ void EditorInspector::_notification(int p_what) {
 	}
 }
 
-void EditorInspector::_changed_callback() {
+void EditorInspector::_property_list_changed_callback() {
 	//this is called when property change is notified via notify_property_list_changed()
 	if (object != nullptr) {
-		_edit_request_change(object, String());
+		_edit_request_change(object, String(), true);
 	}
 }
 

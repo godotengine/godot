@@ -543,8 +543,8 @@ class EditorInspector : public ScrollContainer {
 	HashMap<StringName, int> per_array_page;
 	void _page_change_request(int p_new_page, const StringName &p_array_prefix);
 
-	void _changed_callback();
-	void _edit_request_change(Object *p_object, const String &p_prop);
+	void _property_list_changed_callback();
+	void _edit_request_change(Object *p_object, const String &p_prop, const bool p_forced = false);
 
 	void _keying_changed();
 
