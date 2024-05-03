@@ -45,6 +45,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Godot.SourceGenerators.Internal\Godot.SourceGenerators.Internal.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>GodotSharpBenchmarks</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
   <!-- Sources -->
   <ItemGroup>
     <Compile Include="Core\Aabb.cs" />

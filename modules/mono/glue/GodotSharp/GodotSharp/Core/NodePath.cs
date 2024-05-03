@@ -46,7 +46,7 @@ namespace Godot
     {
         internal godot_node_path.movable NativeValue;
 
-        private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private DisposablesTracker.Element<WeakReference<IDisposable>>? _weakReferenceToSelf;
 
         ~NodePath()
         {

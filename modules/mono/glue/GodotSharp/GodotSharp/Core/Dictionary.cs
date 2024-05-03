@@ -24,7 +24,7 @@ namespace Godot.Collections
     {
         internal godot_dictionary.movable NativeValue;
 
-        private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private DisposablesTracker.Element<WeakReference<IDisposable>>? _weakReferenceToSelf;
 
         /// <summary>
         /// Constructs a new empty <see cref="Dictionary"/>.

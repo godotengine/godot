@@ -29,7 +29,7 @@ namespace Godot.Collections
     {
         internal godot_array.movable NativeValue;
 
-        private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private DisposablesTracker.Element<WeakReference<IDisposable>>? _weakReferenceToSelf;
 
         /// <summary>
         /// Constructs a new empty <see cref="Array"/>.

@@ -17,7 +17,7 @@ namespace Godot
     {
         internal godot_string_name.movable NativeValue;
 
-        private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private DisposablesTracker.Element<WeakReference<IDisposable>>? _weakReferenceToSelf;
 
         ~StringName()
         {

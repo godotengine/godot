@@ -19,7 +19,7 @@ public partial struct Variant : IDisposable
     {
         private godot_variant.movable _native;
 
-        private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private DisposablesTracker.Element<WeakReference<IDisposable>>? _weakReferenceToSelf;
 
         public Disposer(in godot_variant.movable nativeVar)
         {
