@@ -973,7 +973,6 @@ Variant JSON::from_native(const Variant &p_variant, bool p_allow_classes, bool p
 			d[GDTYPE] = Variant::get_type_name(p_variant.get_type());
 			return d;
 		} break;
-#if 0 // Uncomment after GH-85474 is merged.
 		case Variant::PACKED_VECTOR4_ARRAY: {
 			Dictionary d;
 			PackedVector4Array arr;
@@ -989,7 +988,6 @@ Variant JSON::from_native(const Variant &p_variant, bool p_allow_classes, bool p
 			d[GDTYPE] = Variant::get_type_name(p_variant.get_type());
 			return d;
 		} break;
-#endif
 		default: {
 			ERR_PRINT(vformat("Unhandled conversion from native Variant type '%s' to JSON.", Variant::get_type_name(p_variant.get_type())));
 		} break;
@@ -1288,7 +1286,6 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 						arr.write[i] = Color(values[i * 4 + 0], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]);
 					}
 					return arr;
-#if 0 // Uncomment after GH-85474 is merged.
 				} else if (type == Variant::get_type_name(Variant::PACKED_VECTOR4_ARRAY)) {
 					ERR_FAIL_COND_V(!d.has(VALUES), Variant());
 					Array values = d[VALUES];
@@ -1299,7 +1296,6 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 						arr.write[i] = Vector4(values[i * 4 + 0], values[i * 4 + 1], values[i * 4 + 2], values[i * 4 + 3]);
 					}
 					return arr;
-#endif
 				} else {
 					return Variant();
 				}
@@ -1331,6 +1327,10 @@ Variant JSON::to_native(const Variant &p_json, bool p_allow_classes, bool p_allo
 
 	return Variant();
 }
+
+#undef GDTYPE
+#undef VALUES
+#undef PASS_ARG
 
 ////////////
 
