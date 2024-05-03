@@ -4039,25 +4039,16 @@ void EditorInspector::_notification(int p_what) {
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
 			set_process(is_visible_in_tree());
 			add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-		} break;
-
-		case NOTIFICATION_ENTER_TREE: {
 			if (!sub_inspector) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
-			if (EditorNode::get_singleton() && !EditorNode::get_singleton()->is_exiting()) {
-				// Don't need to clean up if exiting, and object may already be freed.
-				edit(nullptr);
-			}
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-			if (!sub_inspector) {
+			if (!sub_inspector && is_inside_tree()) {
 				get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
+			edit(nullptr);
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
