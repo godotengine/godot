@@ -1383,6 +1383,13 @@ void Control::_set_position(const Point2 &p_point) {
 
 void Control::set_position(const Point2 &p_point, bool p_keep_offsets) {
 	ERR_MAIN_THREAD_GUARD;
+
+	// Can't compute anchors, set position directly and return immediately.
+	if (!is_inside_tree()) {
+		data.pos_cache = p_point;
+		return;
+	}
+
 	if (p_keep_offsets) {
 		_compute_anchors(Rect2(p_point, data.size_cache), data.offset, data.anchor);
 	} else {
@@ -1439,6 +1446,12 @@ void Control::set_size(const Size2 &p_size, bool p_keep_offsets) {
 	}
 	if (new_size.y < min.y) {
 		new_size.y = min.y;
+	}
+
+	// Can't compute anchors, set size directly and return immediately.
+	if (!is_inside_tree()) {
+		data.size_cache = new_size;
+		return;
 	}
 
 	if (p_keep_offsets) {
