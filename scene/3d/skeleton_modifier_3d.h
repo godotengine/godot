@@ -60,6 +60,7 @@ protected:
 	virtual void _set_active(bool p_active);
 
 	virtual void _process_modification();
+	GDVIRTUAL0(_process_modification);
 
 public:
 	virtual PackedStringArray get_configuration_warnings() const override;
