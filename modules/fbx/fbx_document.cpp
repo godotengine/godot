@@ -2026,7 +2026,7 @@ Error FBXDocument::_parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> 
 	opts.space_conversion = UFBX_SPACE_CONVERSION_MODIFY_GEOMETRY;
 	if (!p_state->get_allow_geometry_helper_nodes()) {
 		opts.geometry_transform_handling = UFBX_GEOMETRY_TRANSFORM_HANDLING_MODIFY_GEOMETRY_NO_FALLBACK;
-		opts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_IGNORE;
+		opts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_COMPENSATE_NO_FALLBACK;
 	} else {
 		opts.geometry_transform_handling = UFBX_GEOMETRY_TRANSFORM_HANDLING_HELPER_NODES;
 		opts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_COMPENSATE;
