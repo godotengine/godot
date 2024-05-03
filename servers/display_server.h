@@ -580,6 +580,8 @@ public:
 
 	virtual void set_context(Context p_context);
 
+	virtual bool is_window_transparency_available() const { return false; }
+
 	static void register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers);
 	static int get_create_function_count();
 	static const char *get_create_function_name(int p_index);
