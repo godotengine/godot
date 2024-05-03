@@ -106,6 +106,7 @@ public:
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override{};
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override{};
 	virtual void set_use_debanding(bool p_use_debanding) override{};
+	virtual RID get_color_buffer() override { return render_target; }
 
 	void free_render_buffer_data();
 

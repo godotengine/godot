@@ -73,6 +73,8 @@ private:
 
 	// Our render target represents our final destination that we display on screen.
 	RID render_target;
+	// A proxy RS::Texture to be used with VIEWPORT_MODE_3D.
+	RID color_texture_rs;
 	Size2i target_size = Size2i(0, 0);
 	uint32_t view_count = 1;
 
@@ -190,6 +192,8 @@ public:
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override;
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override;
 	virtual void set_use_debanding(bool p_use_debanding) override;
+
+	virtual RID get_color_buffer() override;
 
 	// Named Textures
 

@@ -605,6 +605,7 @@ public:
 	FUNCRIDSPLIT(viewport)
 
 	FUNC2(viewport_set_use_xr, RID, bool)
+	FUNC2(viewport_set_viewport_mode, RID, ViewportMode)
 	FUNC3(viewport_set_size, RID, int, int)
 
 	FUNC2(viewport_set_active, RID, bool)

@@ -110,6 +110,9 @@ public:
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) = 0;
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) = 0;
 	virtual void set_use_debanding(bool p_use_debanding) = 0;
+
+	virtual RID get_color_buffer() = 0;
+	//virtual RID get_depth_buffer() = 0;
 };
 
 class RenderSceneBuffersExtension : public RenderSceneBuffers {
@@ -131,6 +134,7 @@ public:
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override;
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override;
 	virtual void set_use_debanding(bool p_use_debanding) override;
+	virtual RID get_color_buffer() override { return RID(); }
 };
 
 #endif // RENDER_SCENE_BUFFERS_H

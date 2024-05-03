@@ -876,7 +876,15 @@ public:
 		VIEWPORT_SCALING_3D_MODE_OFF = 255, // for internal use only
 	};
 
+	enum ViewportMode {
+		VIEWPORT_MODE_2D_AND_3D,
+		VIEWPORT_MODE_3D,
+		VIEWPORT_MODE_XR,
+		VIEWPORT_MODE_MAX
+	};
+
 	virtual void viewport_set_use_xr(RID p_viewport, bool p_use_xr) = 0;
+	virtual void viewport_set_viewport_mode(RID p_viewport, ViewportMode p_viewport_mode) = 0;
 	virtual void viewport_set_size(RID p_viewport, int p_width, int p_height) = 0;
 	virtual void viewport_set_active(RID p_viewport, bool p_active) = 0;
 	virtual void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport) = 0;
@@ -1815,6 +1823,7 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportOcclusionCullingBuildQuality);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFScale);
 VARIANT_ENUM_CAST(RenderingServer::ViewportVRSMode);
+VARIANT_ENUM_CAST(RenderingServer::ViewportMode);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
 VARIANT_ENUM_CAST(RenderingServer::CompositorEffectCallbackType);
 VARIANT_ENUM_CAST(RenderingServer::CompositorEffectFlags);

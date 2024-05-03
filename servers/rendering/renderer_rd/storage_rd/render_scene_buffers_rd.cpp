@@ -128,6 +128,11 @@ void RenderSceneBuffersRD::cleanup() {
 	}
 	named_textures.clear();
 
+	if (color_texture_rs.is_valid()) {
+		RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+		texture_storage->texture_2d_for_3d_free(color_texture_rs);
+	}
+
 	// Clear weight_buffer / blur textures.
 	for (WeightBuffers &weight_buffer : weight_buffers) {
 		if (weight_buffer.weight.is_valid()) {
@@ -199,6 +204,7 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 		}
 
 		create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH, format, usage_bits);
+		color_texture_rs = texture_storage->texture_2d_init_for_3d(_get_color_texture(false), internal_size.width, internal_size.height);
 	}
 
 	// Create our MSAA buffers
@@ -275,6 +281,10 @@ void RenderSceneBuffersRD::set_texture_mipmap_bias(float p_texture_mipmap_bias) 
 
 void RenderSceneBuffersRD::set_use_debanding(bool p_use_debanding) {
 	use_debanding = p_use_debanding;
+}
+
+RID RenderSceneBuffersRD::get_color_buffer() {
+	return color_texture_rs;
 }
 
 // Named textures

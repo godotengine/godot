@@ -197,6 +197,9 @@ void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
 	emit_changed();
 }
 
+void ViewportTexture::_update_rid_from_vp() {
+}
+
 void ViewportTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_viewport_path_in_scene", "path"), &ViewportTexture::set_viewport_path_in_scene);
 	ClassDB::bind_method(D_METHOD("get_viewport_path_in_scene"), &ViewportTexture::get_viewport_path_in_scene);
@@ -994,7 +997,7 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 	stretch_transform = stretch_transform_new;
 
 #ifndef _3D_DISABLED
-	if (!use_xr) {
+	if (viewport_mode != VIEWPORT_MODE_XR) {
 #endif
 
 		if (p_allocated) {
@@ -1032,7 +1035,7 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 
 Size2i Viewport::_get_size() const {
 #ifndef _3D_DISABLED
-	if (use_xr) {
+	if (viewport_mode == VIEWPORT_MODE_XR) {
 		if (XRServer::get_singleton() != nullptr) {
 			Ref<XRInterface> xr_interface = XRServer::get_singleton()->get_primary_interface();
 			if (xr_interface.is_valid() && xr_interface->is_initialized()) {
@@ -4500,14 +4503,15 @@ void Viewport::_propagate_exit_world_3d(Node *p_node) {
 	}
 }
 
-void Viewport::set_use_xr(bool p_use_xr) {
+void Viewport::set_viewport_mode(ViewportMode p_viewport_mode) {
 	ERR_MAIN_THREAD_GUARD;
-	if (use_xr != p_use_xr) {
-		use_xr = p_use_xr;
+	bool was_using_xr = is_using_xr();
+	if (p_viewport_mode != viewport_mode) {
+		viewport_mode = p_viewport_mode;
 
-		RS::get_singleton()->viewport_set_use_xr(viewport, use_xr);
+		RS::get_singleton()->viewport_set_viewport_mode(viewport, (RS::ViewportMode)(int)p_viewport_mode);
 
-		if (!use_xr) {
+		if (was_using_xr) {
 			// Set viewport to previous size when exiting XR.
 			if (size_allocated) {
 				RS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
@@ -4519,12 +4523,29 @@ void Viewport::set_use_xr(bool p_use_xr) {
 			RID rt = RS::get_singleton()->viewport_get_render_target(viewport);
 			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID());
 		}
+
+		texture_rid = RenderingServer::get_singleton()->viewport_get_texture(viewport);
+		// Will need a new RID (i.e. switching from 2D render target to 3D buffer).
+		for (ViewportTexture *E : viewport_textures) {
+			RS::get_singleton()->texture_proxy_update(E->get_rid(), texture_rid);
+			E->emit_changed();
+		}
 	}
+}
+
+Viewport::ViewportMode Viewport::get_viewport_mode() const {
+	ERR_READ_THREAD_GUARD_V(VIEWPORT_MODE_2D_AND_3D);
+	return viewport_mode;
+}
+
+void Viewport::set_use_xr(bool p_use_xr) {
+	ERR_MAIN_THREAD_GUARD;
+	set_viewport_mode(p_use_xr ? VIEWPORT_MODE_XR : VIEWPORT_MODE_2D_AND_3D);
 }
 
 bool Viewport::is_using_xr() {
 	ERR_READ_THREAD_GUARD_V(false);
-	return use_xr;
+	return viewport_mode == VIEWPORT_MODE_XR;
 }
 
 void Viewport::set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode) {
@@ -4760,6 +4781,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_xr", "use"), &Viewport::set_use_xr);
 	ClassDB::bind_method(D_METHOD("is_using_xr"), &Viewport::is_using_xr);
 
+	ClassDB::bind_method(D_METHOD("set_viewport_mode", "mode"), &Viewport::set_viewport_mode);
+	ClassDB::bind_method(D_METHOD("get_viewport_mode"), &Viewport::get_viewport_mode);
+
 	ClassDB::bind_method(D_METHOD("set_scaling_3d_mode", "scaling_3d_mode"), &Viewport::set_scaling_3d_mode);
 	ClassDB::bind_method(D_METHOD("get_scaling_3d_mode"), &Viewport::get_scaling_3d_mode);
 
@@ -4779,7 +4803,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vrs_texture"), &Viewport::get_vrs_texture);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_xr"), "set_use_xr", "is_using_xr");
+	//ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_xr"), "set_use_xr", "is_using_xr");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "viewport_mode", PROPERTY_HINT_ENUM, "2D and 3D,3D,XR"), "set_viewport_mode", "get_viewport_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_3d", PROPERTY_HINT_RESOURCE_TYPE, "World3D"), "set_world_3d", "get_world_3d");
 #endif // _3D_DISABLED
