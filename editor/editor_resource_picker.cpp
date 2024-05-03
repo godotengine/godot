@@ -46,6 +46,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
+#include "scene/resources/style_box_flat.h"
 
 void EditorResourcePicker::_update_resource() {
 	String resource_path;
@@ -124,7 +125,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 void EditorResourcePicker::_resource_selected() {
 	if (edited_resource.is_null()) {
 		edit_button->set_pressed(true);
-		_update_menu();
+		_update_menu(MENU_SHOW_CREATE);
 		return;
 	}
 
@@ -170,12 +171,39 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	_update_resource();
 }
 
+void EditorResourcePicker::_file_quick_open() {
+	if (!quick_open) {
+		quick_open = memnew(EditorQuickOpen);
+		add_child(quick_open);
+		quick_open->connect("quick_open", callable_mp(this, &EditorResourcePicker::_file_quick_selected));
+	}
+
+	quick_open->popup_dialog(base_type);
+	quick_open->set_title(TTR("Resource"));
+}
+
 void EditorResourcePicker::_file_quick_selected() {
 	_file_selected(quick_open->get_selected());
 }
 
-void EditorResourcePicker::_update_menu() {
-	_update_menu_items();
+void EditorResourcePicker::_update_button_visibility() {
+	bool active = (mouse_hover || is_menu_open) && is_editable();
+	create_button->set_visible(active);
+	quick_load_button->set_visible(active && !edited_resource.is_valid());
+}
+
+void EditorResourcePicker::_on_mouse_entered() {
+	mouse_hover++;
+	_update_button_visibility();
+}
+
+void EditorResourcePicker::_on_mouse_exited() {
+	mouse_hover = MAX(0, --mouse_hover);
+	_update_button_visibility();
+}
+
+void EditorResourcePicker::_update_menu(const int p_type) {
+	_update_menu_items(p_type);
 
 	Rect2 gt = edit_button->get_screen_rect();
 	edit_menu->reset_size();
@@ -183,15 +211,23 @@ void EditorResourcePicker::_update_menu() {
 	Vector2 popup_pos = gt.get_end() - Vector2(ms, 0);
 	edit_menu->set_position(popup_pos);
 	edit_menu->popup();
+	is_menu_open = true;
 }
 
-void EditorResourcePicker::_update_menu_items() {
+void EditorResourcePicker::_update_menu_items(const int p_type) {
 	_ensure_resource_menu();
 	edit_menu->clear();
 
 	// Add options for creating specific subtypes of the base resource type.
-	if (is_editable()) {
+	if (is_editable() && p_type == MENU_SHOW_CREATE) {
 		set_create_options(edit_menu);
+		return;
+	}
+
+	if (is_editable()) {
+		if (p_type == MENU_SHOW_BOTH) {
+			set_create_options(edit_menu);
+		}
 
 		// Add an option to load a resource from a file using the QuickOpen dialog.
 		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Quick Load..."), OBJ_MENU_QUICKLOAD);
@@ -329,14 +365,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		case OBJ_MENU_QUICKLOAD: {
-			if (!quick_open) {
-				quick_open = memnew(EditorQuickOpen);
-				add_child(quick_open);
-				quick_open->connect("quick_open", callable_mp(this, &EditorResourcePicker::_file_quick_selected));
-			}
-
-			quick_open->popup_dialog(base_type);
-			quick_open->set_title(TTR("Resource"));
+			_file_quick_open();
 		} break;
 
 		case OBJ_MENU_INSPECT: {
@@ -477,6 +506,13 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 	}
 }
 
+void EditorResourcePicker::_on_menu_closed() {
+	is_menu_open = false;
+	_update_button_visibility();
+	create_button->set_pressed(false);
+	edit_button->set_pressed(false);
+}
+
 void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 	_ensure_resource_menu();
 	// If a subclass implements this method, use it to replace all create items.
@@ -506,10 +542,6 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 
 			idx++;
 		}
-
-		if (edit_menu->get_item_count()) {
-			edit_menu->add_separator();
-		}
 	}
 }
 
@@ -534,12 +566,13 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 		// a valid resource or the Picker is editable, as
 		// there will otherwise be nothing to display.
 		if (edited_resource.is_valid() || is_editable()) {
-			_update_menu_items();
+			_update_menu_items(MENU_SHOW_OTHER);
 
 			Vector2 pos = get_screen_position() + mb->get_position();
 			edit_menu->reset_size();
 			edit_menu->set_position(pos);
 			edit_menu->popup();
+			is_menu_open = true;
 		}
 	}
 }
@@ -807,6 +840,8 @@ void EditorResourcePicker::_notification(int p_what) {
 				edit_menu->add_theme_constant_override("icon_max_width", icon_width);
 			}
 
+			create_button->set_icon(get_editor_theme_icon(SNAME("New")));
+			quick_load_button->set_icon(get_editor_theme_icon(SNAME("Load")));
 			edit_button->set_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
 
@@ -948,7 +983,7 @@ void EditorResourcePicker::_ensure_resource_menu() {
 	edit_menu->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 	add_child(edit_menu);
 	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
-	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed).bind(false));
+	edit_menu->connect("popup_hide", callable_mp(this, &EditorResourcePicker::_on_menu_closed));
 }
 
 void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_resource, TreeItem *p_item, const String &p_property_name) const {
@@ -1042,10 +1077,13 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button->set_clip_text(true);
 	assign_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	SET_DRAG_FORWARDING_GCD(assign_button, EditorResourcePicker);
-	add_child(assign_button);
 	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));
 	assign_button->connect("draw", callable_mp(this, &EditorResourcePicker::_button_draw));
 	assign_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
+	// TODO: Get mouse entered/exited from the container instead.
+	assign_button->connect("mouse_entered", callable_mp(this, &EditorResourcePicker::_on_mouse_entered));
+	assign_button->connect("mouse_exited", callable_mp(this, &EditorResourcePicker::_on_mouse_exited));
+	add_child(assign_button);
 
 	if (!p_hide_assign_button_controls) {
 		preview_rect = memnew(TextureRect);
@@ -1058,12 +1096,58 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 		assign_button->add_child(preview_rect);
 	}
 
+	StyleBoxFlat *extras_style_box = memnew(StyleBoxFlat);
+	// TODO: Get color from theme.
+	Color color = Color("#21262E");
+	color.a = .5;
+	extras_style_box->set_bg_color(color);
+
+	PanelContainer *extras_panel = memnew(PanelContainer);
+	extras_panel->set_anchors_preset(Control::PRESET_RIGHT_WIDE);
+	extras_panel->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	extras_panel->add_theme_style_override("panel", extras_style_box);
+	assign_button->add_child(extras_panel);
+
+	HBoxContainer *extras_container = memnew(HBoxContainer);
+	//extras_container->set_anchors_preset(Control::PRESET_RIGHT_WIDE);
+	//extras_container->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	extras_container->add_theme_constant_override("separation", 0);
+	extras_panel->add_child(extras_container);
+	extras_container->connect("mouse_entered", callable_mp(this, &EditorResourcePicker::_on_mouse_entered));
+	extras_container->connect("mouse_exited", callable_mp(this, &EditorResourcePicker::_on_mouse_exited));
+	//assign_button->add_child(extras_container);
+
+	create_button = memnew(Button);
+	create_button->set_flat(true);
+	create_button->set_toggle_mode(true);
+	create_button->set_tooltip_text(TTR("Create New..."));
+	create_button->set_visible(false);
+	create_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_update_menu).bind(MENU_SHOW_CREATE));
+	create_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
+	create_button->connect("mouse_entered", callable_mp(this, &EditorResourcePicker::_on_mouse_entered));
+	create_button->connect("mouse_exited", callable_mp(this, &EditorResourcePicker::_on_mouse_exited));
+	//add_child(create_button);
+	extras_container->add_child(create_button);
+
+	quick_load_button = memnew(Button);
+	quick_load_button->set_flat(true);
+	quick_load_button->set_tooltip_text(TTR("Quick Load..."));
+	quick_load_button->set_visible(false);
+	quick_load_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_file_quick_open));
+	quick_load_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
+	quick_load_button->connect("mouse_entered", callable_mp(this, &EditorResourcePicker::_on_mouse_entered));
+	quick_load_button->connect("mouse_exited", callable_mp(this, &EditorResourcePicker::_on_mouse_exited));
+	//add_child(quick_load_button);
+	extras_container->add_child(quick_load_button);
+
 	edit_button = memnew(Button);
 	edit_button->set_flat(true);
 	edit_button->set_toggle_mode(true);
-	edit_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_update_menu));
-	add_child(edit_button);
+	edit_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_update_menu).bind(MENU_SHOW_OTHER));
 	edit_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
+	edit_button->connect("mouse_entered", callable_mp(this, &EditorResourcePicker::_on_mouse_entered));
+	edit_button->connect("mouse_exited", callable_mp(this, &EditorResourcePicker::_on_mouse_exited));
+	add_child(edit_button);
 
 	add_theme_constant_override("separation", 0);
 }
@@ -1083,7 +1167,6 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 			menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptExtend")), TTR("Extend Script..."), OBJ_MENU_EXTEND_SCRIPT);
 		}
 	}
-	menu_node->add_separator();
 }
 
 bool EditorScriptPicker::handle_menu_selected(int p_which) {
@@ -1133,7 +1216,6 @@ void EditorShaderPicker::set_create_options(Object *p_menu_node) {
 	}
 
 	menu_node->add_icon_item(get_editor_theme_icon(SNAME("Shader")), TTR("New Shader..."), OBJ_MENU_NEW_SHADER);
-	menu_node->add_separator();
 }
 
 bool EditorShaderPicker::handle_menu_selected(int p_which) {
