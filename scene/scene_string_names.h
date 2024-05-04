@@ -125,6 +125,7 @@ public:
 	StringName _ready;
 	StringName _unhandled_input;
 	StringName _unhandled_key_input;
+	StringName _unhandled_picking_input;
 
 	StringName _pressed;
 	StringName _toggled;
