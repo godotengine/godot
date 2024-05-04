@@ -693,10 +693,7 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 
 				// Find the first imported skin deformer
 				for (ufbx_skin_deformer *fbx_skin : fbx_mesh->skin_deformers) {
-					if (!p_state->skin_indices.has(fbx_skin->typed_id)) {
-						continue;
-					}
-					GLTFSkinIndex skin_i = p_state->skin_indices[fbx_skin->typed_id];
+					GLTFSkinIndex skin_i = p_state->original_skin_indices[fbx_skin->typed_id];
 					if (skin_i < 0) {
 						continue;
 					}
@@ -2341,7 +2338,7 @@ Error FBXDocument::_parse_skins(Ref<FBXState> p_state) {
 	HashMap<GLTFNodeIndex, bool> joint_mapping;
 
 	for (const ufbx_skin_deformer *fbx_skin : fbx_scene->skin_deformers) {
-		if (fbx_skin->clusters.count == 0) {
+		if (fbx_skin->clusters.count == 0 || fbx_skin->weights.count == 0) {
 			p_state->skin_indices.push_back(-1);
 			continue;
 		}
@@ -2387,8 +2384,9 @@ Error FBXDocument::_parse_skins(Ref<FBXState> p_state) {
 			}
 		}
 	}
+	p_state->original_skin_indices = p_state->skin_indices.duplicate();
 	Error err = SkinTool::_asset_parse_skins(
-			p_state->skin_indices.duplicate(),
+			p_state->original_skin_indices,
 			p_state->skins.duplicate(),
 			p_state->nodes.duplicate(),
 			p_state->skin_indices,
