@@ -8,8 +8,8 @@
 		[b]Performance:[/b] [RectangleShape2D] is fast to check collisions against. It is faster than [CapsuleShape2D], but slower than [CircleShape2D].
 	</description>
 	<tutorials>
-		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/121</link>
-		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
+		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/2728</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
 	</tutorials>
 	<members>
 		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(20, 20)">

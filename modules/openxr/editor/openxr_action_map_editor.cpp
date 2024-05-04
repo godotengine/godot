@@ -32,9 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 
 // TODO implement redo/undo system
 
@@ -43,7 +44,6 @@ void OpenXRActionMapEditor::_bind_methods() {
 	ClassDB::bind_method("_add_interaction_profile_editor", &OpenXRActionMapEditor::_add_interaction_profile_editor);
 
 	ClassDB::bind_method(D_METHOD("_add_action_set", "name"), &OpenXRActionMapEditor::_add_action_set);
-	ClassDB::bind_method(D_METHOD("_set_focus_on_action_set", "action_set"), &OpenXRActionMapEditor::_set_focus_on_action_set);
 	ClassDB::bind_method(D_METHOD("_remove_action_set", "name"), &OpenXRActionMapEditor::_remove_action_set);
 
 	ClassDB::bind_method(D_METHOD("_do_add_action_set_editor", "action_set_editor"), &OpenXRActionMapEditor::_do_add_action_set_editor);
@@ -175,7 +175,7 @@ void OpenXRActionMapEditor::_on_add_action_set() {
 	// Make sure our action set is the current tab
 	tabs->set_current_tab(0);
 
-	call_deferred("_set_focus_on_action_set", new_action_set_editor);
+	callable_mp(this, &OpenXRActionMapEditor::_set_focus_on_action_set).call_deferred(new_action_set_editor);
 }
 
 void OpenXRActionMapEditor::_set_focus_on_action_set(OpenXRActionSetEditor *p_action_set_editor) {
@@ -357,7 +357,7 @@ void OpenXRActionMapEditor::_do_remove_interaction_profile_editor(OpenXRInteract
 }
 
 void OpenXRActionMapEditor::open_action_map(String p_path) {
-	EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
+	EditorNode::get_bottom_panel()->make_item_visible(this);
 
 	// out with the old...
 	_clear_action_map();

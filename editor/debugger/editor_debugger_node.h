@@ -149,7 +149,7 @@ protected:
 	void _text_editor_stack_clear(const ScriptEditorDebugger *p_debugger);
 	void _stack_frame_selected(int p_debugger);
 	void _error_selected(const String &p_file, int p_line, int p_debugger);
-	void _breaked(bool p_breaked, bool p_can_debug, String p_message, bool p_has_stackdump, int p_debugger);
+	void _breaked(bool p_breaked, bool p_can_debug, const String &p_message, bool p_has_stackdump, int p_debugger);
 	void _paused();
 	void _break_state_changed();
 	void _menu_option(int p_id);
@@ -186,8 +186,9 @@ public:
 
 	bool is_skip_breakpoints() const;
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
-	void set_breakpoints(const String &p_path, Array p_lines);
-	void reload_scripts();
+	void set_breakpoints(const String &p_path, const Array &p_lines);
+	void reload_all_scripts();
+	void reload_scripts(const Vector<String> &p_script_paths);
 
 	// Remote inspector/edit.
 	void request_remote_tree();

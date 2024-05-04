@@ -70,10 +70,12 @@ typedef Vector<int32_t> PackedInt32Array;
 typedef Vector<int64_t> PackedInt64Array;
 typedef Vector<float> PackedFloat32Array;
 typedef Vector<double> PackedFloat64Array;
+typedef Vector<real_t> PackedRealArray;
 typedef Vector<String> PackedStringArray;
 typedef Vector<Vector2> PackedVector2Array;
 typedef Vector<Vector3> PackedVector3Array;
 typedef Vector<Color> PackedColorArray;
+typedef Vector<Vector4> PackedVector4Array;
 
 class Variant {
 public:
@@ -125,6 +127,7 @@ public:
 		PACKED_VECTOR2_ARRAY,
 		PACKED_VECTOR3_ARRAY,
 		PACKED_COLOR_ARRAY,
+		PACKED_VECTOR4_ARRAY,
 
 		VARIANT_MAX
 	};
@@ -164,7 +167,7 @@ private:
 	// Variant takes 20 bytes when real_t is float, and 36 if double
 	// it only allocates extra memory for aabb/matrix.
 
-	Type type = NIL;
+	Type type;
 
 	struct ObjData {
 		ObjectID id;
@@ -175,7 +178,7 @@ private:
 	struct PackedArrayRefBase {
 		SafeRefCount refcount;
 		_FORCE_INLINE_ PackedArrayRefBase *reference() {
-			if (this->refcount.ref()) {
+			if (refcount.ref()) {
 				return this;
 			} else {
 				return nullptr;
@@ -203,7 +206,7 @@ private:
 		_FORCE_INLINE_ virtual ~PackedArrayRefBase() {} //needs virtual destructor, but make inline
 	};
 
-	template <class T>
+	template <typename T>
 	struct PackedArrayRef : public PackedArrayRefBase {
 		Vector<T> array;
 		static _FORCE_INLINE_ PackedArrayRef<T> *create() {
@@ -296,6 +299,7 @@ private:
 			true, //PACKED_VECTOR2_ARRAY,
 			true, //PACKED_VECTOR3_ARRAY,
 			true, //PACKED_COLOR_ARRAY,
+			true, //PACKED_VECTOR4_ARRAY,
 		};
 
 		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
@@ -348,25 +352,21 @@ public:
 	bool is_zero() const;
 	bool is_one() const;
 	bool is_null() const;
+	bool is_read_only() const;
 
 	// Make sure Variant is not implicitly cast when accessing it with bracket notation (GH-49469).
 	Variant &operator[](const Variant &p_key) = delete;
 	const Variant &operator[](const Variant &p_key) const = delete;
 
 	operator bool() const;
-	operator signed int() const;
-	operator unsigned int() const; // this is the real one
-	operator signed short() const;
-	operator unsigned short() const;
-	operator signed char() const;
-	operator unsigned char() const;
-	//operator long unsigned int() const;
 	operator int64_t() const;
+	operator int32_t() const;
+	operator int16_t() const;
+	operator int8_t() const;
 	operator uint64_t() const;
-#ifdef NEED_LONG_INT
-	operator signed long() const;
-	operator unsigned long() const;
-#endif
+	operator uint32_t() const;
+	operator uint16_t() const;
+	operator uint8_t() const;
 
 	operator ObjectID() const;
 
@@ -403,21 +403,22 @@ public:
 	operator Dictionary() const;
 	operator Array() const;
 
-	operator Vector<uint8_t>() const;
-	operator Vector<int32_t>() const;
-	operator Vector<int64_t>() const;
-	operator Vector<float>() const;
-	operator Vector<double>() const;
-	operator Vector<String>() const;
-	operator Vector<Vector3>() const;
-	operator Vector<Color>() const;
+	operator PackedByteArray() const;
+	operator PackedInt32Array() const;
+	operator PackedInt64Array() const;
+	operator PackedFloat32Array() const;
+	operator PackedFloat64Array() const;
+	operator PackedStringArray() const;
+	operator PackedVector3Array() const;
+	operator PackedVector2Array() const;
+	operator PackedColorArray() const;
+	operator PackedVector4Array() const;
+
+	operator Vector<::RID>() const;
 	operator Vector<Plane>() const;
 	operator Vector<Face3>() const;
-
 	operator Vector<Variant>() const;
 	operator Vector<StringName>() const;
-	operator Vector<::RID>() const;
-	operator Vector<Vector2>() const;
 
 	// some core type enums to convert to
 	operator Side() const;
@@ -429,18 +430,14 @@ public:
 	Object *get_validated_object_with_check(bool &r_previously_freed) const;
 
 	Variant(bool p_bool);
-	Variant(signed int p_int); // real one
-	Variant(unsigned int p_int);
-#ifdef NEED_LONG_INT
-	Variant(signed long p_long); // real one
-	Variant(unsigned long p_long);
-#endif
-	Variant(signed short p_short); // real one
-	Variant(unsigned short p_short);
-	Variant(signed char p_char); // real one
-	Variant(unsigned char p_char);
-	Variant(int64_t p_int); // real one
-	Variant(uint64_t p_int);
+	Variant(int64_t p_int64);
+	Variant(int32_t p_int32);
+	Variant(int16_t p_int16);
+	Variant(int8_t p_int8);
+	Variant(uint64_t p_uint64);
+	Variant(uint32_t p_uint32);
+	Variant(uint16_t p_uint16);
+	Variant(uint8_t p_uint8);
 	Variant(float p_float);
 	Variant(double p_double);
 	Variant(const ObjectID &p_id);
@@ -472,27 +469,28 @@ public:
 	Variant(const Dictionary &p_dictionary);
 
 	Variant(const Array &p_array);
-	Variant(const Vector<Plane> &p_array); // helper
-	Variant(const Vector<uint8_t> &p_byte_array);
-	Variant(const Vector<int32_t> &p_int32_array);
-	Variant(const Vector<int64_t> &p_int64_array);
-	Variant(const Vector<float> &p_float32_array);
-	Variant(const Vector<double> &p_float64_array);
-	Variant(const Vector<String> &p_string_array);
-	Variant(const Vector<Vector3> &p_vector3_array);
-	Variant(const Vector<Color> &p_color_array);
-	Variant(const Vector<Face3> &p_face_array);
+	Variant(const PackedByteArray &p_byte_array);
+	Variant(const PackedInt32Array &p_int32_array);
+	Variant(const PackedInt64Array &p_int64_array);
+	Variant(const PackedFloat32Array &p_float32_array);
+	Variant(const PackedFloat64Array &p_float64_array);
+	Variant(const PackedStringArray &p_string_array);
+	Variant(const PackedVector2Array &p_vector2_array);
+	Variant(const PackedVector3Array &p_vector3_array);
+	Variant(const PackedColorArray &p_color_array);
+	Variant(const PackedVector4Array &p_vector4_array);
 
+	Variant(const Vector<::RID> &p_array); // helper
+	Variant(const Vector<Plane> &p_array); // helper
+	Variant(const Vector<Face3> &p_face_array);
 	Variant(const Vector<Variant> &p_array);
 	Variant(const Vector<StringName> &p_array);
-	Variant(const Vector<::RID> &p_array); // helper
-	Variant(const Vector<Vector2> &p_array); // helper
 
 	Variant(const IPAddress &p_address);
 
 #define VARIANT_ENUM_CLASS_CONSTRUCTOR(m_enum) \
-	Variant(m_enum p_value) {                  \
-		type = INT;                            \
+	Variant(m_enum p_value) :                  \
+			type(INT) {                        \
 		_data._int = (int64_t)p_value;         \
 	}
 
@@ -501,6 +499,7 @@ public:
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyAxis)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyButton)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(Key)
+	VARIANT_ENUM_CLASS_CONSTRUCTOR(KeyLocation)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(MIDIMessage)
 	VARIANT_ENUM_CLASS_CONSTRUCTOR(MouseButton)
 
@@ -571,6 +570,7 @@ public:
 	static ValidatedBuiltInMethod get_validated_builtin_method(Variant::Type p_type, const StringName &p_method);
 	static PTRBuiltInMethod get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method);
 
+	static MethodInfo get_builtin_method_info(Variant::Type p_type, const StringName &p_method);
 	static int get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method);
 	static Variant::Type get_builtin_method_argument_type(Variant::Type p_type, const StringName &p_method, int p_argument);
 	static String get_builtin_method_argument_name(Variant::Type p_type, const StringName &p_method, int p_argument);
@@ -706,9 +706,20 @@ public:
 	bool has_key(const Variant &p_key, bool &r_valid) const;
 
 	/* Generic */
-
-	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr);
-	Variant get(const Variant &p_index, bool *r_valid = nullptr) const;
+	enum VariantSetError {
+		SET_OK,
+		SET_KEYED_ERR,
+		SET_NAMED_ERR,
+		SET_INDEXED_ERR
+	};
+	enum VariantGetError {
+		GET_OK,
+		GET_KEYED_ERR,
+		GET_NAMED_ERR,
+		GET_INDEXED_ERR
+	};
+	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr, VariantSetError *err_code = nullptr);
+	Variant get(const Variant &p_index, bool *r_valid = nullptr, VariantGetError *err_code = nullptr) const;
 	bool in(const Variant &p_index, bool *r_valid = nullptr) const;
 
 	bool iter_init(Variant &r_iter, bool &r_valid) const;
@@ -768,8 +779,8 @@ public:
 	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = nullptr);
 
 	static void get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums);
-	static void get_enumerations_for_enum(Variant::Type p_type, StringName p_enum_name, List<StringName> *p_enumerations);
-	static int get_enum_value(Variant::Type p_type, StringName p_enum_name, StringName p_enumeration, bool *r_valid = nullptr);
+	static void get_enumerations_for_enum(Variant::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations);
+	static int get_enum_value(Variant::Type p_type, const StringName &p_enum_name, const StringName &p_enumeration, bool *r_valid = nullptr);
 
 	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
 	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);
@@ -783,7 +794,8 @@ public:
 	static void unregister_types();
 
 	Variant(const Variant &p_variant);
-	_FORCE_INLINE_ Variant() {}
+	_FORCE_INLINE_ Variant() :
+			type(NIL) {}
 	_FORCE_INLINE_ ~Variant() {
 		clear();
 	}
@@ -792,12 +804,23 @@ public:
 //typedef Dictionary Dictionary; no
 //typedef Array Array;
 
-Vector<Variant> varray();
-Vector<Variant> varray(const Variant &p_arg1);
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2);
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3);
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4);
-Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5);
+template <typename... VarArgs>
+Vector<Variant> varray(VarArgs... p_args) {
+	Vector<Variant> v;
+
+	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+	uint32_t argc = sizeof...(p_args);
+
+	if (argc > 0) {
+		v.resize(argc);
+		Variant *vw = v.ptrw();
+
+		for (uint32_t i = 0; i < argc; i++) {
+			vw[i] = args[i];
+		}
+	}
+	return v;
+}
 
 struct VariantHasher {
 	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant) { return p_variant.hash(); }
@@ -851,13 +874,65 @@ Variant Callable::call(VarArgs... p_args) const {
 }
 
 template <typename... VarArgs>
-Callable Callable::bind(VarArgs... p_args) {
+Callable Callable::bind(VarArgs... p_args) const {
 	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 	const Variant *argptrs[sizeof...(p_args) + 1];
 	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
 		argptrs[i] = &args[i];
 	}
 	return bindp(sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+}
+
+Variant &Array::Iterator::operator*() const {
+	if (unlikely(read_only)) {
+		*read_only = *element_ptr;
+		return *read_only;
+	}
+	return *element_ptr;
+}
+
+Variant *Array::Iterator::operator->() const {
+	if (unlikely(read_only)) {
+		*read_only = *element_ptr;
+		return read_only;
+	}
+	return element_ptr;
+}
+
+Array::Iterator &Array::Iterator::operator++() {
+	element_ptr++;
+	return *this;
+}
+
+Array::Iterator &Array::Iterator::operator--() {
+	element_ptr--;
+	return *this;
+}
+
+const Variant &Array::ConstIterator::operator*() const {
+	if (unlikely(read_only)) {
+		*read_only = *element_ptr;
+		return *read_only;
+	}
+	return *element_ptr;
+}
+
+const Variant *Array::ConstIterator::operator->() const {
+	if (unlikely(read_only)) {
+		*read_only = *element_ptr;
+		return read_only;
+	}
+	return element_ptr;
+}
+
+Array::ConstIterator &Array::ConstIterator::operator++() {
+	element_ptr++;
+	return *this;
+}
+
+Array::ConstIterator &Array::ConstIterator::operator--() {
+	element_ptr--;
+	return *this;
 }
 
 #endif // VARIANT_H

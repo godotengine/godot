@@ -3,6 +3,7 @@
 Import("env")
 
 import core_builders
+import methods
 
 env.core_sources = []
 
@@ -28,17 +29,19 @@ if "SCRIPT_AES256_ENCRYPTION_KEY" in os.environ:
                 ec_valid = False
             txt += txts
     if not ec_valid:
-        print("Error: Invalid AES256 encryption key, not 64 hexadecimal characters: '" + key + "'.")
-        print(
+        methods.print_error(
+            f'Invalid AES256 encryption key, not 64 hexadecimal characters: "{key}".\n'
             "Unset 'SCRIPT_AES256_ENCRYPTION_KEY' in your environment "
             "or make sure that it contains exactly 64 hexadecimal characters."
         )
         Exit(255)
 
-# NOTE: It is safe to generate this file here, since this is still executed serially
-with open("script_encryption_key.gen.cpp", "w") as f:
-    f.write('#include "core/config/project_settings.h"\nuint8_t script_encryption_key[32]={' + txt + "};\n")
 
+script_encryption_key_contents = (
+    '#include "core/config/project_settings.h"\nuint8_t script_encryption_key[32]={' + txt + "};\n"
+)
+
+methods.write_file_if_needed("script_encryption_key.gen.cpp", script_encryption_key_contents)
 
 # Add required thirdparty code.
 
@@ -58,7 +61,6 @@ thirdparty_misc_sources = [
     # C++ sources
     "pcg.cpp",
     "polypartition.cpp",
-    "clipper.cpp",
     "smolv.cpp",
 ]
 thirdparty_misc_sources = [thirdparty_misc_dir + file for file in thirdparty_misc_sources]
@@ -202,27 +204,23 @@ env.Depends(
 env.CommandNoCache(
     "#core/io/certs_compressed.gen.h",
     "#thirdparty/certs/ca-certificates.crt",
-    env.Run(core_builders.make_certs_header, "Building ca-certificates header."),
+    env.Run(core_builders.make_certs_header),
 )
 
 # Authors
 env.Depends("#core/authors.gen.h", "../AUTHORS.md")
-env.CommandNoCache(
-    "#core/authors.gen.h", "../AUTHORS.md", env.Run(core_builders.make_authors_header, "Generating authors header.")
-)
+env.CommandNoCache("#core/authors.gen.h", "../AUTHORS.md", env.Run(core_builders.make_authors_header))
 
 # Donors
 env.Depends("#core/donors.gen.h", "../DONORS.md")
-env.CommandNoCache(
-    "#core/donors.gen.h", "../DONORS.md", env.Run(core_builders.make_donors_header, "Generating donors header.")
-)
+env.CommandNoCache("#core/donors.gen.h", "../DONORS.md", env.Run(core_builders.make_donors_header))
 
 # License
 env.Depends("#core/license.gen.h", ["../COPYRIGHT.txt", "../LICENSE.txt"])
 env.CommandNoCache(
     "#core/license.gen.h",
     ["../COPYRIGHT.txt", "../LICENSE.txt"],
-    env.Run(core_builders.make_license_header, "Generating license header."),
+    env.Run(core_builders.make_license_header),
 )
 
 # Chain load SCsubs

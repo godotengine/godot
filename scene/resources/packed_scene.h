@@ -139,7 +139,7 @@ public:
 	static Ref<Resource> get_remap_resource(const Ref<Resource> &p_resource, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache, const Ref<Resource> &p_fallback, Node *p_for_scene);
 
 	int find_node_by_path(const NodePath &p_node) const;
-	Variant get_property_value(int p_node, const StringName &p_property, bool &found) const;
+	Variant get_property_value(int p_node, const StringName &p_property, bool &r_found, bool &r_node_deferred) const;
 	bool is_node_in_group(int p_node, const StringName &p_group) const;
 	bool is_connection(int p_node, const StringName &p_signal, int p_to_node, const StringName &p_to_method) const;
 
@@ -156,6 +156,10 @@ public:
 
 	bool can_instantiate() const;
 	Node *instantiate(GenEditState p_edit_state) const;
+
+	Array setup_resources_in_array(Array &array_to_scan, const SceneState::NodeData &n, HashMap<Ref<Resource>, Ref<Resource>> &resources_local_to_sub_scene, Node *node, const StringName sname, HashMap<Ref<Resource>, Ref<Resource>> &resources_local_to_scene, int i, Node **ret_nodes, SceneState::GenEditState p_edit_state) const;
+	Variant make_local_resource(Variant &value, const SceneState::NodeData &p_node_data, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_sub_scene, Node *p_node, const StringName p_sname, HashMap<Ref<Resource>, Ref<Resource>> &p_resources_local_to_scene, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const;
+	bool has_local_resource(const Array &p_array) const;
 
 	Ref<SceneState> get_base_scene_state() const;
 
@@ -203,6 +207,10 @@ public:
 	void set_base_scene(int p_idx);
 	void add_connection(int p_from, int p_to, int p_signal, int p_method, int p_flags, int p_unbinds, const Vector<int> &p_binds);
 	void add_editable_instance(const NodePath &p_path);
+
+	bool remove_group_references(const StringName &p_name);
+	bool rename_group_references(const StringName &p_old_name, const StringName &p_new_name);
+	HashSet<StringName> get_all_groups();
 
 	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time = p_time; }
 	uint64_t get_last_modified_time() const { return last_modified_time; }
@@ -254,6 +262,8 @@ public:
 	virtual void reload_from_file() override;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+	virtual void set_path_cache(const String &p_path) override;
+
 #ifdef TOOLS_ENABLED
 	virtual void set_last_modified_time(uint64_t p_time) override {
 		Resource::set_last_modified_time(p_time);

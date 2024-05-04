@@ -41,22 +41,15 @@ void PhysicsServer3DWrapMT::thread_step(real_t p_delta) {
 	step_sem.post();
 }
 
-void PhysicsServer3DWrapMT::_thread_callback(void *_instance) {
-	PhysicsServer3DWrapMT *vsmt = reinterpret_cast<PhysicsServer3DWrapMT *>(_instance);
-
-	vsmt->thread_loop();
-}
-
 void PhysicsServer3DWrapMT::thread_loop() {
 	server_thread = Thread::get_caller_id();
 
 	physics_server_3d->init();
 
-	exit = false;
-	step_thread_up = true;
+	command_queue.set_pump_task_id(server_task_id);
 	while (!exit) {
-		// flush commands one by one, until exit is requested
-		command_queue.wait_and_flush();
+		WorkerThreadPool::get_singleton()->yield();
+		command_queue.flush_all();
 	}
 
 	command_queue.flush_all(); // flush all
@@ -70,18 +63,14 @@ void PhysicsServer3DWrapMT::step(real_t p_step) {
 	if (create_thread) {
 		command_queue.push(this, &PhysicsServer3DWrapMT::thread_step, p_step);
 	} else {
-		command_queue.flush_all(); //flush all pending from other threads
+		command_queue.flush_all(); // Flush all pending from other threads.
 		physics_server_3d->step(p_step);
 	}
 }
 
 void PhysicsServer3DWrapMT::sync() {
 	if (create_thread) {
-		if (first_frame) {
-			first_frame = false;
-		} else {
-			step_sem.wait(); //must not wait if a step was not issued
-		}
+		step_sem.wait();
 	}
 	physics_server_3d->sync();
 }
@@ -96,42 +85,34 @@ void PhysicsServer3DWrapMT::end_sync() {
 
 void PhysicsServer3DWrapMT::init() {
 	if (create_thread) {
-		//OS::get_singleton()->release_rendering_thread();
-		thread.start(_thread_callback, this);
-		while (!step_thread_up) {
-			OS::get_singleton()->delay_usec(1000);
-		}
+		exit = false;
+		server_task_id = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &PhysicsServer3DWrapMT::thread_loop), true);
+		step_sem.post();
 	} else {
 		physics_server_3d->init();
 	}
 }
 
 void PhysicsServer3DWrapMT::finish() {
-	if (thread.is_started()) {
+	if (create_thread) {
 		command_queue.push(this, &PhysicsServer3DWrapMT::thread_exit);
-		thread.wait_to_finish();
+		if (server_task_id != WorkerThreadPool::INVALID_TASK_ID) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(server_task_id);
+			server_task_id = WorkerThreadPool::INVALID_TASK_ID;
+		}
 	} else {
 		physics_server_3d->finish();
 	}
 }
 
-PhysicsServer3DWrapMT::PhysicsServer3DWrapMT(PhysicsServer3D *p_contained, bool p_create_thread) :
-		command_queue(p_create_thread) {
+PhysicsServer3DWrapMT::PhysicsServer3DWrapMT(PhysicsServer3D *p_contained, bool p_create_thread) {
 	physics_server_3d = p_contained;
 	create_thread = p_create_thread;
-
-	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");
-
-	if (!p_create_thread) {
-		server_thread = Thread::get_caller_id();
-	} else {
-		server_thread = 0;
+	if (!create_thread) {
+		server_thread = Thread::MAIN_ID;
 	}
-
-	main_thread = Thread::get_caller_id();
 }
 
 PhysicsServer3DWrapMT::~PhysicsServer3DWrapMT() {
 	memdelete(physics_server_3d);
-	//finish();
 }

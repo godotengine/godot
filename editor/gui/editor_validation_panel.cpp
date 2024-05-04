@@ -30,8 +30,8 @@
 
 #include "editor_validation_panel.h"
 
-#include "editor/editor_scale.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -81,7 +81,7 @@ void EditorValidationPanel::set_update_callback(const Callable &p_callback) {
 }
 
 void EditorValidationPanel::update() {
-	ERR_FAIL_COND(update_callback.is_null());
+	ERR_FAIL_COND(!update_callback.is_valid());
 
 	if (pending_update) {
 		return;

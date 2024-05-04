@@ -31,13 +31,35 @@
 #ifndef OPENXR_INTERFACE_H
 #define OPENXR_INTERFACE_H
 
+// A note on multithreading and thread safety in OpenXR.
+//
+// Most entry points will be called from the main thread in Godot
+// however a number of entry points will be called from the
+// rendering thread, potentially while we're already processing
+// the next frame on the main thread.
+//
+// OpenXR itself has been designed with threading in mind including
+// a high likelihood that the XR runtime runs in separate threads
+// as well.
+// Hence all the frame timing information, use of swapchains and
+// sync functions.
+// Do note that repeated calls to tracking APIs will provide
+// increasingly more accurate data for the same timestamp as
+// tracking data is continuously updated.
+//
+// For our code we mostly implement this in our OpenXRAPI class.
+// We store data accessed from the rendering thread in a separate
+// struct, setting values through our renderer command queue.
+//
+// As some data is setup before we start rendering, and cleaned up
+// after we've stopped, that is accessed directly from both threads.
+
 #include "action_map/openxr_action_map.h"
-#include "extensions/openxr_fb_passthrough_extension_wrapper.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "openxr_api.h"
 
+#include "servers/xr/xr_controller_tracker.h"
 #include "servers/xr/xr_interface.h"
-#include "servers/xr/xr_positional_tracker.h"
 
 // declare some default strings
 #define INTERACTION_PROFILE_NONE "/interaction_profiles/none"
@@ -49,7 +71,6 @@ private:
 	OpenXRAPI *openxr_api = nullptr;
 	bool initialized = false;
 	XRInterface::TrackingStatus tracking_state;
-	OpenXRFbPassthroughExtensionWrapper *passthrough_wrapper = nullptr;
 
 	// At a minimum we need a tracker for our head
 	Ref<XRPositionalTracker> head;
@@ -75,7 +96,7 @@ private:
 	struct Tracker { // A tracker we've registered with OpenXR
 		String tracker_name; // Name of our tracker (can be altered from the action map)
 		Vector<Action *> actions; // Actions related to this tracker
-		Ref<XRPositionalTracker> positional_tracker; // Our positional tracker object that holds our tracker state
+		Ref<XRControllerTracker> controller_tracker; // Our positional tracker object that holds our tracker state
 		RID tracker_rid; // RID of the tracker registered with our OpenXR API
 		RID interaction_profile; // RID of the interaction profile bound to this tracker (can be null)
 	};
@@ -112,6 +133,7 @@ public:
 	virtual TrackingStatus get_tracking_status() const override;
 
 	bool is_hand_tracking_supported();
+	bool is_hand_interaction_supported() const;
 	bool is_eye_gaze_interaction_supported();
 
 	bool initialize_on_startup() const;
@@ -125,6 +147,7 @@ public:
 	virtual bool supports_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
 	virtual XRInterface::PlayAreaMode get_play_area_mode() const override;
 	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
+	virtual PackedVector3Array get_play_area() const override;
 
 	float get_display_refresh_rate() const;
 	void set_display_refresh_rate(float p_refresh_rate);
@@ -174,7 +197,10 @@ public:
 	void on_state_visible();
 	void on_state_focused();
 	void on_state_stopping();
+	void on_state_loss_pending();
+	void on_state_exiting();
 	void on_pose_recentered();
+	void on_refresh_rate_changes(float p_new_rate);
 	void tracker_profile_changed(RID p_tracker, RID p_interaction_profile);
 
 	/** Hand tracking. */
@@ -192,6 +218,15 @@ public:
 
 	void set_motion_range(const Hand p_hand, const HandMotionRange p_motion_range);
 	HandMotionRange get_motion_range(const Hand p_hand) const;
+
+	enum HandTrackedSource {
+		HAND_TRACKED_SOURCE_UNKNOWN,
+		HAND_TRACKED_SOURCE_UNOBSTRUCTED,
+		HAND_TRACKED_SOURCE_CONTROLLER,
+		HAND_TRACKED_SOURCE_MAX
+	};
+
+	HandTrackedSource get_hand_tracking_source(const Hand p_hand) const;
 
 	enum HandJoints {
 		HAND_JOINT_PALM = 0,
@@ -247,6 +282,7 @@ public:
 
 VARIANT_ENUM_CAST(OpenXRInterface::Hand)
 VARIANT_ENUM_CAST(OpenXRInterface::HandMotionRange)
+VARIANT_ENUM_CAST(OpenXRInterface::HandTrackedSource)
 VARIANT_ENUM_CAST(OpenXRInterface::HandJoints)
 VARIANT_BITFIELD_CAST(OpenXRInterface::HandJointFlags)
 

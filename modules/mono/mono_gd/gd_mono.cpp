@@ -53,13 +53,6 @@
 #include <dlfcn.h>
 #endif
 
-// TODO mobile
-#if 0
-#ifdef IOS_ENABLED
-#include "support/ios_support.h"
-#endif
-#endif
-
 GDMono *GDMono::singleton = nullptr;
 
 namespace {
@@ -395,6 +388,7 @@ void GDMono::initialize() {
 
 		if (godot_plugins_initialize != nullptr) {
 			is_native_aot = true;
+			runtime_initialized = true;
 		} else {
 			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 		}

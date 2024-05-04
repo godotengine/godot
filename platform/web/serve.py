@@ -5,7 +5,18 @@ from pathlib import Path
 import os
 import sys
 import argparse
+import contextlib
+import socket
 import subprocess
+
+
+# See cpython GH-17851 and GH-17864.
+class DualStackServer(HTTPServer):
+    def server_bind(self):
+        # Suppress exception when protocol is IPv4.
+        with contextlib.suppress(Exception):
+            self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        return super().server_bind()
 
 
 class CORSRequestHandler(SimpleHTTPRequestHandler):
@@ -32,7 +43,7 @@ def serve(root, port, run_browser):
         print("Opening the served URL in the default browser (use `--no-browser` or `-n` to disable this).")
         shell_open(f"http://127.0.0.1:{port}")
 
-    test(CORSRequestHandler, HTTPServer, port=port)
+    test(CORSRequestHandler, DualStackServer, port=port)
 
 
 if __name__ == "__main__":

@@ -44,7 +44,7 @@ void ItemList::_shape_text(int p_idx) {
 	} else {
 		item.text_buf->set_direction((TextServer::Direction)item.text_direction);
 	}
-	item.text_buf->add_string(item.text, theme_cache.font, theme_cache.font_size, item.language);
+	item.text_buf->add_string(item.xl_text, theme_cache.font, theme_cache.font_size, item.language);
 	if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 		item.text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_TRIM_EDGE_SPACES);
 	} else {
@@ -58,6 +58,7 @@ int ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bo
 	Item item;
 	item.icon = p_texture;
 	item.text = p_item;
+	item.xl_text = atr(p_item);
 	item.selectable = p_selectable;
 	items.push_back(item);
 	int item_id = items.size() - 1;
@@ -94,6 +95,7 @@ void ItemList::set_item_text(int p_idx, const String &p_text) {
 	}
 
 	items.write[p_idx].text = p_text;
+	items.write[p_idx].xl_text = atr(p_text);
 	_shape_text(p_idx);
 	queue_redraw();
 	shape_changed = true;
@@ -1001,9 +1003,16 @@ void ItemList::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
-		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < items.size(); i++) {
+				_shape_text(i);
+			}
+			shape_changed = true;
+			queue_redraw();
+		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			for (int i = 0; i < items.size(); i++) {
+				items.write[i].xl_text = atr(items[i].text);
 				_shape_text(i);
 			}
 			shape_changed = true;
@@ -1141,10 +1150,6 @@ void ItemList::_notification(int p_what) {
 				if (should_draw_selected_bg || should_draw_hovered_bg || should_draw_custom_bg) {
 					Rect2 r = rcache;
 					r.position += base_ofs;
-					r.position.y -= theme_cache.v_separation / 2;
-					r.size.y += theme_cache.v_separation;
-					r.position.x -= theme_cache.h_separation / 2;
-					r.size.x += theme_cache.h_separation;
 
 					if (rtl) {
 						r.position.x = size.width - r.position.x - r.size.x;
@@ -1175,6 +1180,12 @@ void ItemList::_notification(int p_what) {
 					Vector2 icon_ofs;
 
 					Point2 pos = items[i].rect_cache.position + icon_ofs + base_ofs;
+
+					if (icon_mode == ICON_MODE_TOP) {
+						pos.y += theme_cache.v_separation / 2;
+					} else {
+						pos.x += theme_cache.h_separation / 2;
+					}
 
 					if (icon_mode == ICON_MODE_TOP) {
 						pos.x += Math::floor((items[i].rect_cache.size.width - icon_size.width) / 2);
@@ -1215,6 +1226,8 @@ void ItemList::_notification(int p_what) {
 
 				if (items[i].tag_icon.is_valid()) {
 					Point2 draw_pos = items[i].rect_cache.position;
+					draw_pos.x += theme_cache.h_separation / 2;
+					draw_pos.y += theme_cache.v_separation / 2;
 					if (rtl) {
 						draw_pos.x = size.width - draw_pos.x - items[i].tag_icon->get_width();
 					}
@@ -1252,11 +1265,17 @@ void ItemList::_notification(int p_what) {
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
+						text_ofs.x += theme_cache.h_separation / 2;
+						text_ofs.y += theme_cache.v_separation / 2;
+
 						if (rtl) {
 							text_ofs.x = size.width - text_ofs.x - max_len;
 						}
 
 						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+
+						float text_w = items[i].rect_cache.size.width - theme_cache.h_separation;
+						items.write[i].text_buf->set_width(text_w);
 
 						if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, theme_cache.font_outline_size, theme_cache.font_outline_color);
@@ -1270,14 +1289,17 @@ void ItemList::_notification(int p_what) {
 
 						if (icon_mode == ICON_MODE_TOP) {
 							text_ofs.x += (items[i].rect_cache.size.width - size2.x) / 2;
+							text_ofs.x += theme_cache.h_separation / 2;
+							text_ofs.y += theme_cache.v_separation / 2;
 						} else {
 							text_ofs.y += (items[i].rect_cache.size.height - size2.y) / 2;
+							text_ofs.x += theme_cache.h_separation / 2;
 						}
 
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
-						float text_w = width - text_ofs.x;
+						float text_w = width - text_ofs.x - theme_cache.h_separation;
 						items.write[i].text_buf->set_width(text_w);
 
 						if (rtl) {
@@ -1300,10 +1322,6 @@ void ItemList::_notification(int p_what) {
 				if (select_mode == SELECT_MULTI && i == current) {
 					Rect2 r = rcache;
 					r.position += base_ofs;
-					r.position.y -= theme_cache.v_separation / 2;
-					r.size.y += theme_cache.v_separation;
-					r.position.x -= theme_cache.h_separation / 2;
-					r.size.x += theme_cache.h_separation;
 
 					if (rtl) {
 						r.position.x = size.width - r.position.x - r.size.x;
@@ -1373,9 +1391,10 @@ void ItemList::force_update_list_size() {
 		}
 		max_column_width = MAX(max_column_width, minsize.x);
 
-		// elements need to adapt to the selected size
+		// Elements need to adapt to the selected size.
 		minsize.y += theme_cache.v_separation;
 		minsize.x += theme_cache.h_separation;
+
 		items.write[i].rect_cache.size = minsize;
 		items.write[i].min_rect_cache.size = minsize;
 	}
@@ -1406,18 +1425,18 @@ void ItemList::force_update_list_size() {
 			}
 
 			if (same_column_width) {
-				items.write[i].rect_cache.size.x = max_column_width;
+				items.write[i].rect_cache.size.x = max_column_width + theme_cache.h_separation;
 			}
 			items.write[i].rect_cache.position = ofs;
 
 			max_h = MAX(max_h, items[i].rect_cache.size.y);
-			ofs.x += items[i].rect_cache.size.x + theme_cache.h_separation;
+			ofs.x += items[i].rect_cache.size.x;
 
 			items.write[i].column = col;
 			col++;
 			if (col == current_columns) {
 				if (i < items.size() - 1) {
-					separators.push_back(ofs.y + max_h + theme_cache.v_separation / 2);
+					separators.push_back(ofs.y + max_h);
 				}
 
 				for (int j = i; j >= 0 && col > 0; j--, col--) {
@@ -1425,7 +1444,7 @@ void ItemList::force_update_list_size() {
 				}
 
 				ofs.x = 0;
-				ofs.y += max_h + theme_cache.v_separation;
+				ofs.y += max_h;
 				col = 0;
 				max_h = 0;
 			}
@@ -1486,6 +1505,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 
 	for (int i = 0; i < items.size(); i++) {
 		Rect2 rc = items[i].rect_cache;
+
 		if (i % current_columns == current_columns - 1) {
 			rc.size.width = get_size().width - rc.position.x; // Make sure you can still select the last item when clicking past the column.
 		}
@@ -1610,7 +1630,7 @@ Vector<int> ItemList::get_selected_items() {
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].selected) {
 			selected.push_back(i);
-			if (this->select_mode == SELECT_SINGLE) {
+			if (select_mode == SELECT_SINGLE) {
 				break;
 			}
 		}
@@ -1669,23 +1689,10 @@ TextServer::OverrunBehavior ItemList::get_text_overrun_behavior() const {
 }
 
 bool ItemList::_set(const StringName &p_name, const Variant &p_value) {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() >= 2 && components[0].begins_with("item_") && components[0].trim_prefix("item_").is_valid_int()) {
-		int item_index = components[0].trim_prefix("item_").to_int();
-		if (components[1] == "text") {
-			set_item_text(item_index, p_value);
-			return true;
-		} else if (components[1] == "icon") {
-			set_item_icon(item_index, p_value);
-			return true;
-		} else if (components[1] == "disabled") {
-			set_item_disabled(item_index, p_value);
-			return true;
-		} else if (components[1] == "selectable") {
-			set_item_selectable(item_index, p_value);
-			return true;
-		}
+	if (property_helper.property_set_value(p_name, p_value)) {
+		return true;
 	}
+
 #ifndef DISABLE_DEPRECATED
 	// Compatibility.
 	if (p_name == "items") {
@@ -1705,45 +1712,6 @@ bool ItemList::_set(const StringName &p_name, const Variant &p_value) {
 	}
 #endif
 	return false;
-}
-
-bool ItemList::_get(const StringName &p_name, Variant &r_ret) const {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() >= 2 && components[0].begins_with("item_") && components[0].trim_prefix("item_").is_valid_int()) {
-		int item_index = components[0].trim_prefix("item_").to_int();
-		if (components[1] == "text") {
-			r_ret = get_item_text(item_index);
-			return true;
-		} else if (components[1] == "icon") {
-			r_ret = get_item_icon(item_index);
-			return true;
-		} else if (components[1] == "disabled") {
-			r_ret = is_item_disabled(item_index);
-			return true;
-		} else if (components[1] == "selectable") {
-			r_ret = is_item_selectable(item_index);
-			return true;
-		}
-	}
-	return false;
-}
-
-void ItemList::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < items.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("item_%d/text", i)));
-
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
-		pi.usage &= ~(get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/selectable", i));
-		pi.usage &= ~(is_item_selectable(i) ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::BOOL, vformat("item_%d/disabled", i));
-		pi.usage &= ~(!is_item_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-	}
 }
 
 void ItemList::_bind_methods() {
@@ -1910,6 +1878,14 @@ void ItemList::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, cursor_style, "cursor_unfocused");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, cursor_focus_style, "cursor");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, guide_color);
+
+	Item defaults(true);
+
+	base_property_helper.set_prefix("item_");
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, &ItemList::set_item_text, &ItemList::get_item_text);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &ItemList::set_item_icon, &ItemList::get_item_icon);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "selectable"), defaults.selectable, &ItemList::set_item_selectable, &ItemList::is_item_selectable);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &ItemList::set_item_disabled, &ItemList::is_item_disabled);
 }
 
 ItemList::ItemList() {
@@ -1921,6 +1897,8 @@ ItemList::ItemList() {
 
 	set_focus_mode(FOCUS_ALL);
 	set_clip_contents(true);
+
+	property_helper.setup_for_instance(base_property_helper, this);
 }
 
 ItemList::~ItemList() {

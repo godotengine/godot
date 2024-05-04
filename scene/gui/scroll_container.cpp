@@ -56,8 +56,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 
 		Size2 child_min_size = c->get_combined_minimum_size();
 
-		largest_child_min_size.x = MAX(largest_child_min_size.x, child_min_size.x);
-		largest_child_min_size.y = MAX(largest_child_min_size.y, child_min_size.y);
+		largest_child_min_size = largest_child_min_size.max(child_min_size);
 	}
 
 	if (horizontal_scroll_mode == SCROLL_MODE_DISABLED) {
@@ -115,19 +114,19 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				// By default, the vertical orientation takes precedence. This is an exception.
 				if ((h_scroll_enabled && mb->is_shift_pressed()) || v_scroll_hidden) {
-					h_scroll->set_value(prev_h_scroll - h_scroll->get_page() / 8 * mb->get_factor());
+					h_scroll->scroll(-h_scroll->get_page() / 8 * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (v_scroll_enabled) {
-					v_scroll->set_value(prev_v_scroll - v_scroll->get_page() / 8 * mb->get_factor());
+					v_scroll->scroll(-v_scroll->get_page() / 8 * mb->get_factor());
 					scroll_value_modified = true;
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				if ((h_scroll_enabled && mb->is_shift_pressed()) || v_scroll_hidden) {
-					h_scroll->set_value(prev_h_scroll + h_scroll->get_page() / 8 * mb->get_factor());
+					h_scroll->scroll(h_scroll->get_page() / 8 * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (v_scroll_enabled) {
-					v_scroll->set_value(prev_v_scroll + v_scroll->get_page() / 8 * mb->get_factor());
+					v_scroll->scroll(v_scroll->get_page() / 8 * mb->get_factor());
 					scroll_value_modified = true;
 				}
 			}
@@ -136,19 +135,19 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (mb->get_button_index() == MouseButton::WHEEL_LEFT) {
 				// By default, the horizontal orientation takes precedence. This is an exception.
 				if ((v_scroll_enabled && mb->is_shift_pressed()) || h_scroll_hidden) {
-					v_scroll->set_value(prev_v_scroll - v_scroll->get_page() / 8 * mb->get_factor());
+					v_scroll->scroll(-v_scroll->get_page() / 8 * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (h_scroll_enabled) {
-					h_scroll->set_value(prev_h_scroll - h_scroll->get_page() / 8 * mb->get_factor());
+					h_scroll->scroll(-h_scroll->get_page() / 8 * mb->get_factor());
 					scroll_value_modified = true;
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_RIGHT) {
 				if ((v_scroll_enabled && mb->is_shift_pressed()) || h_scroll_hidden) {
-					v_scroll->set_value(prev_v_scroll + v_scroll->get_page() / 8 * mb->get_factor());
+					v_scroll->scroll(v_scroll->get_page() / 8 * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (h_scroll_enabled) {
-					h_scroll->set_value(prev_h_scroll + h_scroll->get_page() / 8 * mb->get_factor());
+					h_scroll->scroll(h_scroll->get_page() / 8 * mb->get_factor());
 					scroll_value_modified = true;
 				}
 			}
@@ -214,12 +213,12 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 				Vector2 diff = drag_from + drag_accum;
 				if (h_scroll_enabled) {
-					h_scroll->set_value(diff.x);
+					h_scroll->scroll_to(diff.x);
 				} else {
 					drag_accum.x = 0;
 				}
 				if (v_scroll_enabled) {
-					v_scroll->set_value(diff.y);
+					v_scroll->scroll_to(diff.y);
 				} else {
 					drag_accum.y = 0;
 				}
@@ -236,10 +235,10 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventPanGesture> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid()) {
 		if (h_scroll_enabled) {
-			h_scroll->set_value(prev_h_scroll + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+			h_scroll->scroll(h_scroll->get_page() * pan_gesture->get_delta().x / 8);
 		}
 		if (v_scroll_enabled) {
-			v_scroll->set_value(prev_v_scroll + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+			v_scroll->scroll(v_scroll->get_page() * pan_gesture->get_delta().y / 8);
 		}
 
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
@@ -346,7 +345,7 @@ void ScrollContainer::_notification(int p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_updating_scrollbars = true;
-			call_deferred(SNAME("_update_scrollbar_position"));
+			callable_mp(this, &ScrollContainer::_update_scrollbar_position).call_deferred();
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -392,10 +391,10 @@ void ScrollContainer::_notification(int p_what) {
 					}
 
 					if (horizontal_scroll_mode != SCROLL_MODE_DISABLED) {
-						h_scroll->set_value(pos.x);
+						h_scroll->scroll_to(pos.x);
 					}
 					if (vertical_scroll_mode != SCROLL_MODE_DISABLED) {
-						v_scroll->set_value(pos.y);
+						v_scroll->scroll_to(pos.y);
 					}
 
 					float sgn_x = drag_speed.x < 0 ? -1 : 1;
@@ -573,8 +572,6 @@ VScrollBar *ScrollContainer::get_v_scroll_bar() {
 }
 
 void ScrollContainer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_scrollbar_position"), &ScrollContainer::_update_scrollbar_position);
-
 	ClassDB::bind_method(D_METHOD("set_h_scroll", "value"), &ScrollContainer::set_h_scroll);
 	ClassDB::bind_method(D_METHOD("get_h_scroll"), &ScrollContainer::get_h_scroll);
 

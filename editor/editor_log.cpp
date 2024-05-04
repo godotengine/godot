@@ -35,9 +35,9 @@
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
@@ -127,6 +127,14 @@ void EditorLog::_update_theme() {
 	theme_cache.message_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
 }
 
+void EditorLog::_editor_settings_changed() {
+	int new_line_limit = int(EDITOR_GET("run/output/max_lines"));
+	if (new_line_limit != line_limit) {
+		line_limit = new_line_limit;
+		_rebuild_log();
+	}
+}
+
 void EditorLog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -190,6 +198,10 @@ void EditorLog::_load_state() {
 	show_search_button->set_pressed(show_search);
 
 	is_loading_state = false;
+}
+
+void EditorLog::_meta_clicked(const String &p_meta) {
+	OS::get_singleton()->shell_open(p_meta);
 }
 
 void EditorLog::_clear_request() {
@@ -263,7 +275,35 @@ void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 void EditorLog::_rebuild_log() {
 	log->clear();
 
-	for (int msg_idx = 0; msg_idx < messages.size(); msg_idx++) {
+	int line_count = 0;
+	int start_message_index = 0;
+	int initial_skip = 0;
+
+	// Search backward for starting place.
+	for (start_message_index = messages.size() - 1; start_message_index >= 0; start_message_index--) {
+		LogMessage msg = messages[start_message_index];
+		if (collapse) {
+			if (_check_display_message(msg)) {
+				line_count++;
+			}
+		} else {
+			// If not collapsing, log each instance on a line.
+			for (int i = 0; i < msg.count; i++) {
+				if (_check_display_message(msg)) {
+					line_count++;
+				}
+			}
+		}
+		if (line_count >= line_limit) {
+			initial_skip = line_count - line_limit;
+			break;
+		}
+		if (start_message_index == 0) {
+			break;
+		}
+	}
+
+	for (int msg_idx = start_message_index; msg_idx < messages.size(); msg_idx++) {
 		LogMessage msg = messages[msg_idx];
 
 		if (collapse) {
@@ -271,11 +311,19 @@ void EditorLog::_rebuild_log() {
 			_add_log_line(msg);
 		} else {
 			// If not collapsing, log each instance on a line.
-			for (int i = 0; i < msg.count; i++) {
+			for (int i = initial_skip; i < msg.count; i++) {
+				initial_skip = 0;
 				_add_log_line(msg);
 			}
 		}
 	}
+}
+
+bool EditorLog::_check_display_message(LogMessage &p_message) {
+	bool filter_active = type_filter_map[p_message.type]->is_active();
+	String search_text = search_box->get_text();
+	bool search_match = search_text.is_empty() || p_message.text.findn(search_text) > -1;
+	return filter_active && search_match;
 }
 
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
@@ -290,11 +338,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	}
 
 	// Only add the message to the log if it passes the filters.
-	bool filter_active = type_filter_map[p_message.type]->is_active();
-	String search_text = search_box->get_text();
-	bool search_match = search_text.is_empty() || p_message.text.findn(search_text) > -1;
-
-	if (!filter_active || !search_match) {
+	if (!_check_display_message(p_message)) {
 		return;
 	}
 
@@ -355,6 +399,10 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			}
 		}
 	}
+
+	while (log->get_paragraph_count() > line_limit + 1) {
+		log->remove_paragraph(0, true);
+	}
 }
 
 void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
@@ -388,6 +436,9 @@ EditorLog::EditorLog() {
 	save_state_timer->connect("timeout", callable_mp(this, &EditorLog::_save_state));
 	add_child(save_state_timer);
 
+	line_limit = int(EDITOR_GET("run/output/max_lines"));
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorLog::_editor_settings_changed));
+
 	HBoxContainer *hb = this;
 
 	VBoxContainer *vb_left = memnew(VBoxContainer);
@@ -407,6 +458,7 @@ EditorLog::EditorLog() {
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
 	log->set_deselect_on_focus_loss_enabled(false);
+	log->connect("meta_clicked", callable_mp(this, &EditorLog::_meta_clicked));
 	vb_left->add_child(log);
 
 	// Search box
@@ -430,8 +482,7 @@ EditorLog::EditorLog() {
 	clear_button = memnew(Button);
 	clear_button->set_theme_type_variation("FlatButton");
 	clear_button->set_focus_mode(FOCUS_NONE);
-	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::K));
-	clear_button->set_shortcut_context(this);
+	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::K));
 	clear_button->connect("pressed", callable_mp(this, &EditorLog::_clear_request));
 	hb_tools->add_child(clear_button);
 

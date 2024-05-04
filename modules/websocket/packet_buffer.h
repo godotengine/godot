@@ -33,7 +33,7 @@
 
 #include "core/templates/ring_buffer.h"
 
-template <class T>
+template <typename T>
 class PacketBuffer {
 private:
 	typedef struct {

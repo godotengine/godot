@@ -83,6 +83,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 
 		err = expr->parse(text);
 		if (err != OK) {
+			_update_text();
 			return;
 		}
 	}
@@ -280,8 +281,8 @@ void SpinBox::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			call_deferred(SNAME("update_minimum_size"));
-			get_line_edit()->call_deferred(SNAME("update_minimum_size"));
+			callable_mp((Control *)this, &Control::update_minimum_size).call_deferred();
+			callable_mp((Control *)get_line_edit(), &Control::update_minimum_size).call_deferred();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {

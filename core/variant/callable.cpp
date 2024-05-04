@@ -30,14 +30,14 @@
 
 #include "callable.h"
 
-#include "callable_bind.h"
-#include "core/object/message_queue.h"
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include "core/variant/callable_bind.h"
+#include "core/variant/variant_callable.h"
 
 void Callable::call_deferredp(const Variant **p_arguments, int p_argcount) const {
-	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount);
+	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount, true);
 }
 
 void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const {
@@ -92,10 +92,31 @@ Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, Call
 		r_call_error.expected = 0;
 		return ERR_UNCONFIGURED;
 	} else if (!is_custom()) {
-		r_call_error.error = CallError::CALL_ERROR_INVALID_METHOD;
-		r_call_error.argument = 0;
-		r_call_error.expected = 0;
-		return ERR_UNCONFIGURED;
+		Object *obj = ObjectDB::get_instance(ObjectID(object));
+#ifdef DEBUG_ENABLED
+		if (!obj || !obj->is_class("Node")) {
+			r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			r_call_error.argument = 0;
+			r_call_error.expected = 0;
+			return ERR_UNCONFIGURED;
+		}
+#endif
+
+		int argcount = p_argcount + 2;
+		const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);
+		const Variant args[2] = { p_id, method };
+
+		argptrs[0] = &args[0];
+		argptrs[1] = &args[1];
+		for (int i = 0; i < p_argcount; ++i) {
+			argptrs[i + 2] = p_arguments[i];
+		}
+
+		CallError tmp;
+		Error err = (Error)obj->callp(SNAME("rpc_id"), argptrs, argcount, tmp).operator int64_t();
+
+		r_call_error.error = Callable::CallError::CALL_OK;
+		return err;
 	} else {
 		return custom->rpc(p_id, p_arguments, p_argcount, r_call_error);
 	}
@@ -161,6 +182,20 @@ StringName Callable::get_method() const {
 		return get_custom()->get_method();
 	}
 	return method;
+}
+
+int Callable::get_argument_count(bool *r_is_valid) const {
+	if (is_custom()) {
+		bool valid = false;
+		return custom->get_argument_count(r_is_valid ? *r_is_valid : valid);
+	} else if (!is_null()) {
+		return get_object()->get_method_argument_count(method, r_is_valid);
+	} else {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
 }
 
 int Callable::get_bound_arguments_count() const {
@@ -328,14 +363,27 @@ Callable::operator String() const {
 	}
 }
 
-Callable::Callable(const Object *p_object, const StringName &p_method) {
-	if (p_method == StringName()) {
-		object = 0;
-		ERR_FAIL_MSG("Method argument to Callable constructor must be a non-empty string");
+Callable Callable::create(const Variant &p_variant, const StringName &p_method) {
+	ERR_FAIL_COND_V_MSG(p_method == StringName(), Callable(), "Method argument to Callable::create method must be a non-empty string.");
+
+	switch (p_variant.get_type()) {
+		case Variant::NIL:
+			return Callable(ObjectID(), p_method);
+		case Variant::OBJECT:
+			return Callable(p_variant.operator ObjectID(), p_method);
+		default:
+			return Callable(memnew(VariantCallable(p_variant, p_method)));
 	}
-	if (p_object == nullptr) {
+}
+
+Callable::Callable(const Object *p_object, const StringName &p_method) {
+	if (unlikely(p_method == StringName())) {
 		object = 0;
-		ERR_FAIL_MSG("Object argument to Callable constructor must be non-null");
+		ERR_FAIL_MSG("Method argument to Callable constructor must be a non-empty string.");
+	}
+	if (unlikely(p_object == nullptr)) {
+		object = 0;
+		ERR_FAIL_MSG("Object argument to Callable constructor must be non-null.");
 	}
 
 	object = p_object->get_instance_id();
@@ -343,9 +391,9 @@ Callable::Callable(const Object *p_object, const StringName &p_method) {
 }
 
 Callable::Callable(ObjectID p_object, const StringName &p_method) {
-	if (p_method == StringName()) {
+	if (unlikely(p_method == StringName())) {
 		object = 0;
-		ERR_FAIL_MSG("Method argument to Callable constructor must be a non-empty string");
+		ERR_FAIL_MSG("Method argument to Callable constructor must be a non-empty string.");
 	}
 
 	object = p_object;
@@ -353,9 +401,9 @@ Callable::Callable(ObjectID p_object, const StringName &p_method) {
 }
 
 Callable::Callable(CallableCustom *p_custom) {
-	if (p_custom->referenced) {
+	if (unlikely(p_custom->referenced)) {
 		object = 0;
-		ERR_FAIL_MSG("Callable custom is already referenced");
+		ERR_FAIL_MSG("Callable custom is already referenced.");
 	}
 	p_custom->referenced = true;
 	object = 0; //ensure object is all zero, since pointer may be 32 bits
@@ -402,6 +450,11 @@ Error CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argc
 
 const Callable *CallableCustom::get_base_comparator() const {
 	return nullptr;
+}
+
+int CallableCustom::get_argument_count(bool &r_is_valid) const {
+	r_is_valid = false;
+	return 0;
 }
 
 int CallableCustom::get_bound_arguments_count() const {

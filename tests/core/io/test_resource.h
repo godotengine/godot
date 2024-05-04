@@ -38,6 +38,8 @@
 
 #include "thirdparty/doctest/doctest.h"
 
+#include "tests/test_macros.h"
+
 namespace TestResource {
 
 TEST_CASE("[Resource] Duplication") {
@@ -124,9 +126,12 @@ TEST_CASE("[Resource] Breaking circular references on save") {
 	const String save_path_binary = OS::get_singleton()->get_cache_path().path_join("resource.res");
 	const String save_path_text = OS::get_singleton()->get_cache_path().path_join("resource.tres");
 	ResourceSaver::save(resource_a, save_path_binary);
+	// Suppress expected errors caused by the resources above being uncached.
+	ERR_PRINT_OFF;
 	ResourceSaver::save(resource_a, save_path_text);
 
 	const Ref<Resource> &loaded_resource_a_binary = ResourceLoader::load(save_path_binary);
+	ERR_PRINT_ON;
 	CHECK_MESSAGE(
 			loaded_resource_a_binary->get_name() == "A",
 			"The loaded resource name should be equal to the expected value.");

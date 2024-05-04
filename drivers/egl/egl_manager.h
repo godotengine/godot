@@ -45,7 +45,7 @@
 
 class EGLManager {
 private:
-	// An EGL-side rappresentation of a display with its own rendering
+	// An EGL-side representation of a display with its own rendering
 	// context.
 	struct GLDisplay {
 		void *display = nullptr;
@@ -98,7 +98,6 @@ public:
 	void window_destroy(DisplayServer::WindowID p_window_id);
 
 	void release_current();
-	void make_current();
 	void swap_buffers();
 
 	void window_make_current(DisplayServer::WindowID p_window_id);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,12 @@
  * SOFTWARE.
  */
 
-#include "tvgCommon.h"
 #include "tvgFrameModule.h"
-#include "tvgPaint.h"
-#include "tvgPicture.h"
+#include "tvgAnimation.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
-
-struct Animation::Impl
-{
-    Picture* picture = nullptr;
-
-    Impl()
-    {
-        picture = Picture::gen().release();
-        PP(picture)->ref();
-    }
-
-    ~Impl()
-    {
-        if (PP(picture)->unref() == 0) {
-            delete(picture);
-        }
-    }
-};
 
 /************************************************************************/
 /* External Class Implementation                                        */
@@ -62,9 +42,9 @@ Animation::Animation() : pImpl(new Impl)
 }
 
 
-Result Animation::frame(uint32_t no) noexcept
+Result Animation::frame(float no) noexcept
 {
-    auto loader = pImpl->picture->pImpl->loader.get();
+    auto loader = pImpl->picture->pImpl->loader;
 
     if (!loader) return Result::InsufficientCondition;
     if (!loader->animatable()) return Result::NonSupport;
@@ -80,9 +60,9 @@ Picture* Animation::picture() const noexcept
 }
 
 
-uint32_t Animation::curFrame() const noexcept
+float Animation::curFrame() const noexcept
 {
-    auto loader = pImpl->picture->pImpl->loader.get();
+    auto loader = pImpl->picture->pImpl->loader;
 
     if (!loader) return 0;
     if (!loader->animatable()) return 0;
@@ -91,9 +71,9 @@ uint32_t Animation::curFrame() const noexcept
 }
 
 
-uint32_t Animation::totalFrame() const noexcept
+float Animation::totalFrame() const noexcept
 {
-    auto loader = pImpl->picture->pImpl->loader.get();
+    auto loader = pImpl->picture->pImpl->loader;
 
     if (!loader) return 0;
     if (!loader->animatable()) return 0;
@@ -104,7 +84,7 @@ uint32_t Animation::totalFrame() const noexcept
 
 float Animation::duration() const noexcept
 {
-    auto loader = pImpl->picture->pImpl->loader.get();
+    auto loader = pImpl->picture->pImpl->loader;
 
     if (!loader) return 0;
     if (!loader->animatable()) return 0;

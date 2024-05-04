@@ -1,8 +1,11 @@
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+#pragma warning disable IDE1006 // Naming rule violation
+// ReSharper disable InconsistentNaming
+
 using System;
 using System.Runtime.CompilerServices;
 using Godot.Collections;
 
-// ReSharper disable InconsistentNaming
 
 #nullable enable
 
@@ -162,6 +165,12 @@ namespace Godot.NativeInterop
             return ret;
         }
 
+        public static godot_variant CreateFromPackedVector4Array(in godot_packed_vector4_array from)
+        {
+            NativeFuncs.godotsharp_variant_new_packed_vector4_array(out godot_variant ret, from);
+            return ret;
+        }
+
         public static godot_variant CreateFromPackedColorArray(in godot_packed_color_array from)
         {
             NativeFuncs.godotsharp_variant_new_packed_color_array(out godot_variant ret, from);
@@ -225,6 +234,13 @@ namespace Godot.NativeInterop
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static godot_variant CreateFromPackedVector4Array(Span<Vector4> from)
+        {
+            using var nativePackedArray = Marshaling.ConvertSystemArrayToNativePackedVector4Array(from);
+            return CreateFromPackedVector4Array(nativePackedArray);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromPackedColorArray(Span<Color> from)
         {
             using var nativePackedArray = Marshaling.ConvertSystemArrayToNativePackedColorArray(from);
@@ -232,15 +248,29 @@ namespace Godot.NativeInterop
         }
 
         public static godot_variant CreateFromSystemArrayOfStringName(Span<StringName> from)
-            => CreateFromArray(new Collections.Array(from));
+        {
+            if (from == null)
+                return default;
+            using var fromGodot = new Collections.Array(from);
+            return CreateFromArray((godot_array)fromGodot.NativeValue);
+        }
 
         public static godot_variant CreateFromSystemArrayOfNodePath(Span<NodePath> from)
-            => CreateFromArray(new Collections.Array(from));
+        {
+            if (from == null)
+                return default;
+            using var fromGodot = new Collections.Array(from);
+            return CreateFromArray((godot_array)fromGodot.NativeValue);
+        }
 
         public static godot_variant CreateFromSystemArrayOfRid(Span<Rid> from)
-            => CreateFromArray(new Collections.Array(from));
+        {
+            if (from == null)
+                return default;
+            using var fromGodot = new Collections.Array(from);
+            return CreateFromArray((godot_array)fromGodot.NativeValue);
+        }
 
-        // ReSharper disable once RedundantNameQualifier
         public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject[]? from)
         {
             if (from == null)
@@ -306,7 +336,6 @@ namespace Godot.NativeInterop
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // ReSharper disable once RedundantNameQualifier
         public static godot_variant CreateFromGodotObject(GodotObject? from)
             => from != null ? CreateFromGodotObjectPtr(GodotObject.GetPtr(from)) : default;
 
@@ -459,7 +488,6 @@ namespace Godot.NativeInterop
             => p_var.Type == Variant.Type.Object ? p_var.Object : IntPtr.Zero;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // ReSharper disable once RedundantNameQualifier
         public static GodotObject ConvertToGodotObject(in godot_variant p_var)
             => InteropUtils.UnmanagedGetManaged(ConvertToGodotObjectPtr(p_var));
 
@@ -590,6 +618,12 @@ namespace Godot.NativeInterop
             return Marshaling.ConvertNativePackedVector3ArrayToSystemArray(packedArray);
         }
 
+        public static Vector4[] ConvertAsPackedVector4ArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_vector4_array(p_var);
+            return Marshaling.ConvertNativePackedVector4ArrayToSystemArray(packedArray);
+        }
+
         public static Color[] ConvertAsPackedColorArrayToSystemArray(in godot_variant p_var)
         {
             using var packedArray = NativeFuncs.godotsharp_variant_as_packed_color_array(p_var);
@@ -615,7 +649,6 @@ namespace Godot.NativeInterop
         }
 
         public static T[] ConvertToSystemArrayOfGodotObject<T>(in godot_variant p_var)
-            // ReSharper disable once RedundantNameQualifier
             where T : GodotObject
         {
             using var godotArray = NativeFuncs.godotsharp_variant_as_array(p_var);

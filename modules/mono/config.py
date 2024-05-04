@@ -1,8 +1,3 @@
-# Prior to .NET Core, we supported these: ["windows", "macos", "linuxbsd", "android", "web", "ios"]
-# Eventually support for each them should be added back.
-supported_platforms = ["windows", "macos", "linuxbsd", "android", "ios"]
-
-
 def can_build(env, platform):
     if env["arch"].startswith("rv"):
         return False
@@ -14,9 +9,10 @@ def can_build(env, platform):
 
 
 def configure(env):
-    platform = env["platform"]
+    # Check if the platform has marked mono as supported.
+    supported = env.get("supported", [])
 
-    if platform not in supported_platforms:
+    if not "mono" in supported:
         raise RuntimeError("This module does not currently support building for this platform")
 
     env.add_module_version_string("mono")

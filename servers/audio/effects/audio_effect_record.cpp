@@ -87,8 +87,8 @@ void AudioEffectRecordInstance::_io_store_buffer() {
 
 	while (to_read) {
 		AudioFrame buffered_frame = rb_buf[ring_buffer_read_pos & ring_buffer_mask];
-		recording_data.push_back(buffered_frame.l);
-		recording_data.push_back(buffered_frame.r);
+		recording_data.push_back(buffered_frame.left);
+		recording_data.push_back(buffered_frame.right);
 
 		ring_buffer_read_pos++;
 		to_read--;
@@ -204,7 +204,7 @@ Ref<AudioStreamWAV> AudioEffectRecord::get_recording() const {
 	Vector<uint8_t> dst_data;
 
 	ERR_FAIL_COND_V(current_instance.is_null(), nullptr);
-	ERR_FAIL_COND_V(current_instance->recording_data.size() == 0, nullptr);
+	ERR_FAIL_COND_V(current_instance->recording_data.is_empty(), nullptr);
 
 	if (dst_format == AudioStreamWAV::FORMAT_8_BITS) {
 		int data_size = current_instance->recording_data.size();

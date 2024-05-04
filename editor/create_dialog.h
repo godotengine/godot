@@ -71,7 +71,7 @@ class CreateDialog : public ConfirmationDialog {
 	bool _should_hide_type(const String &p_type) const;
 	void _add_type(const String &p_type, const TypeCategory p_type_category);
 	void _configure_search_option_item(TreeItem *r_item, const String &p_type, const TypeCategory p_type_category);
-	String _top_result(const Vector<String> p_candidates, const String &p_search_text) const;
+	String _top_result(const Vector<String> &p_candidates, const String &p_search_text) const;
 	float _score_type(const String &p_type, const String &p_search) const;
 	bool _is_type_preferred(const String &p_type) const;
 

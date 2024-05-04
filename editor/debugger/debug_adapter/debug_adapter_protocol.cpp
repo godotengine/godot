@@ -607,7 +607,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		}
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			int id = variable_id++;
-			PackedVector2Array array = p_var;
+			PackedVector3Array array = p_var;
 			DAP::Variable size;
 			size.name = "size";
 			size.type = Variant::get_type_name(Variant::INT);
@@ -649,6 +649,28 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
+		case Variant::PACKED_VECTOR4_ARRAY: {
+			int id = variable_id++;
+			PackedVector4Array array = p_var;
+			DAP::Variable size;
+			size.name = "size";
+			size.type = Variant::get_type_name(Variant::INT);
+			size.value = itos(array.size());
+
+			Array arr;
+			arr.push_back(size.to_json());
+
+			for (int i = 0; i < array.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				var.type = Variant::get_type_name(Variant::VECTOR4);
+				var.value = array[i];
+				var.variablesReference = parse_variant(array[i]);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
 		default:
 			// Simple atomic stuff, or too complex to be manipulated
 			return 0;
@@ -678,7 +700,10 @@ bool DebugAdapterProtocol::process_message(const String &p_text) {
 		if (!response.is_empty()) {
 			_current_peer->res_queue.push_front(response);
 		} else {
-			completed = false;
+			// Launch request needs to be deferred until we receive a configurationDone request.
+			if (command != "req_launch") {
+				completed = false;
+			}
 		}
 	}
 
@@ -760,8 +785,8 @@ void DebugAdapterProtocol::notify_continued() {
 	reset_stack_info();
 }
 
-void DebugAdapterProtocol::notify_output(const String &p_message) {
-	Dictionary event = parser->ev_output(p_message);
+void DebugAdapterProtocol::notify_output(const String &p_message, RemoteDebugger::MessageType p_type) {
+	Dictionary event = parser->ev_output(p_message, p_type);
 	for (List<Ref<DAPeer>>::Element *E = clients.front(); E; E = E->next()) {
 		E->get()->res_queue.push_back(event);
 	}
@@ -825,8 +850,8 @@ void DebugAdapterProtocol::on_debug_stopped() {
 	notify_terminated();
 }
 
-void DebugAdapterProtocol::on_debug_output(const String &p_message) {
-	notify_output(p_message);
+void DebugAdapterProtocol::on_debug_output(const String &p_message, int p_type) {
+	notify_output(p_message, RemoteDebugger::MessageType(p_type));
 }
 
 void DebugAdapterProtocol::on_debug_breaked(const bool &p_reallydid, const bool &p_can_debug, const String &p_reason, const bool &p_has_stackdump) {

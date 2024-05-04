@@ -126,7 +126,7 @@ void MobileVRInterface::set_position_from_sensors() {
 	// 9dof is a misleading marketing term coming from 3 accelerometer axis + 3 gyro axis + 3 magnetometer axis = 9 axis
 	// but in reality this only offers 3 dof (yaw, pitch, roll) orientation
 
-	Basis orientation;
+	Basis orientation = head_transform.basis;
 
 	uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 	uint64_t ticks_elapsed = ticks - last_ticks;
@@ -230,6 +230,9 @@ void MobileVRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_display_to_lens", "display_to_lens"), &MobileVRInterface::set_display_to_lens);
 	ClassDB::bind_method(D_METHOD("get_display_to_lens"), &MobileVRInterface::get_display_to_lens);
 
+	ClassDB::bind_method(D_METHOD("set_offset_rect", "offset_rect"), &MobileVRInterface::set_offset_rect);
+	ClassDB::bind_method(D_METHOD("get_offset_rect"), &MobileVRInterface::get_offset_rect);
+
 	ClassDB::bind_method(D_METHOD("set_oversample", "oversample"), &MobileVRInterface::set_oversample);
 	ClassDB::bind_method(D_METHOD("get_oversample"), &MobileVRInterface::get_oversample);
 
@@ -243,6 +246,7 @@ void MobileVRInterface::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "iod", PROPERTY_HINT_RANGE, "4.0,10.0,0.1"), "set_iod", "get_iod");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "display_width", PROPERTY_HINT_RANGE, "5.0,25.0,0.1"), "set_display_width", "get_display_width");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "display_to_lens", PROPERTY_HINT_RANGE, "5.0,25.0,0.1"), "set_display_to_lens", "get_display_to_lens");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "offset_rect"), "set_offset_rect", "get_offset_rect");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversample", PROPERTY_HINT_RANGE, "1.0,2.0,0.1"), "set_oversample", "get_oversample");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "k1", PROPERTY_HINT_RANGE, "0.1,10.0,0.0001"), "set_k1", "get_k1");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "k2", PROPERTY_HINT_RANGE, "0.1,10.0,0.0001"), "set_k2", "get_k2");
@@ -254,6 +258,14 @@ void MobileVRInterface::set_eye_height(const double p_eye_height) {
 
 double MobileVRInterface::get_eye_height() const {
 	return eye_height;
+}
+
+void MobileVRInterface::set_offset_rect(const Rect2 &p_offset_rect) {
+	offset_rect = p_offset_rect;
+}
+
+Rect2 MobileVRInterface::get_offset_rect() const {
+	return offset_rect;
 }
 
 void MobileVRInterface::set_iod(const double p_iod) {
@@ -483,6 +495,8 @@ Vector<BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, 
 	// Because we are rendering to our device we must use our main viewport!
 	ERR_FAIL_COND_V(p_screen_rect == Rect2(), blit_to_screen);
 
+	Rect2 modified_screen_rect = Rect2(p_screen_rect.position + offset_rect.position * p_screen_rect.size, p_screen_rect.size * offset_rect.size);
+
 	// and add our blits
 	BlitToScreen blit;
 	blit.render_target = p_render_target;
@@ -494,16 +508,16 @@ Vector<BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, 
 	blit.lens_distortion.aspect_ratio = aspect;
 
 	// left eye
-	blit.dst_rect = p_screen_rect;
+	blit.dst_rect = modified_screen_rect;
 	blit.dst_rect.size.width *= 0.5;
 	blit.multi_view.layer = 0;
 	blit.lens_distortion.eye_center.x = ((-intraocular_dist / 2.0) + (display_width / 4.0)) / (display_width / 2.0);
 	blit_to_screen.push_back(blit);
 
 	// right eye
-	blit.dst_rect = p_screen_rect;
+	blit.dst_rect = modified_screen_rect;
 	blit.dst_rect.size.width *= 0.5;
-	blit.dst_rect.position.x = blit.dst_rect.size.width;
+	blit.dst_rect.position.x += blit.dst_rect.size.width;
 	blit.multi_view.layer = 1;
 	blit.lens_distortion.eye_center.x = ((intraocular_dist / 2.0) - (display_width / 4.0)) / (display_width / 2.0);
 	blit_to_screen.push_back(blit);

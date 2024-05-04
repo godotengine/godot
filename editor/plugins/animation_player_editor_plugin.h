@@ -32,8 +32,8 @@
 #define ANIMATION_PLAYER_EDITOR_PLUGIN_H
 
 #include "editor/animation_track_editor.h"
-#include "editor/editor_plugin.h"
 #include "editor/plugins/animation_library_editor.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/slider.h"
@@ -128,7 +128,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	} blend_editor;
 
 	ConfirmationDialog *name_dialog = nullptr;
-	ConfirmationDialog *error_dialog = nullptr;
+	AcceptDialog *error_dialog = nullptr;
 	int name_dialog_op = TOOL_NEW_ANIM;
 
 	bool updating = false;
@@ -196,7 +196,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Ref<Animation> _animation_clone(const Ref<Animation> p_anim);
 	void _animation_resource_edit();
 	void _scale_changed(const String &p_scale);
-	void _seek_value_changed(float p_value, bool p_set = false, bool p_timeline_only = false);
+	void _seek_value_changed(float p_value, bool p_timeline_only = false);
 	void _blend_editor_next_changed(const int p_idx);
 
 	void _edit_animation_blend();
@@ -213,7 +213,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_player_changed(Object *p_pl);
 	void _animation_libraries_updated();
 
-	void _animation_key_editor_seek(float p_pos, bool p_drag, bool p_timeline_only = false);
+	void _animation_key_editor_seek(float p_pos, bool p_timeline_only = false);
 	void _animation_key_editor_anim_len_changed(float p_len);
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;

@@ -311,20 +311,6 @@ void GLManager_X11::window_make_current(DisplayServer::WindowID p_window_id) {
 	_internal_set_current_window(&win);
 }
 
-void GLManager_X11::make_current() {
-	if (!_current_window) {
-		return;
-	}
-	if (!_current_window->in_use) {
-		WARN_PRINT("current window not in use!");
-		return;
-	}
-	const GLDisplay &disp = get_current_display();
-	if (!glXMakeCurrent(_x_windisp.x11_display, _x_windisp.x11_window, disp.context->glx_context)) {
-		ERR_PRINT("glXMakeCurrent failed");
-	}
-}
-
 void GLManager_X11::swap_buffers() {
 	if (!_current_window) {
 		return;

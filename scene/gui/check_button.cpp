@@ -57,10 +57,10 @@ Size2 CheckButton::get_icon_size() const {
 
 	Size2 tex_size = Size2(0, 0);
 	if (!on_tex.is_null()) {
-		tex_size = Size2(on_tex->get_width(), on_tex->get_height());
+		tex_size = on_tex->get_size();
 	}
 	if (!off_tex.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, off_tex->get_width()), MAX(tex_size.height, off_tex->get_height()));
+		tex_size = tex_size.max(off_tex->get_size());
 	}
 
 	return tex_size;
@@ -68,12 +68,18 @@ Size2 CheckButton::get_icon_size() const {
 
 Size2 CheckButton::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();
-	Size2 tex_size = get_icon_size();
-	minsize.width += tex_size.width;
-	if (get_text().length() > 0) {
-		minsize.width += MAX(0, theme_cache.h_separation);
+	const Size2 tex_size = get_icon_size();
+	if (tex_size.width > 0 || tex_size.height > 0) {
+		const Size2 padding = _get_current_stylebox()->get_minimum_size();
+		Size2 content_size = minsize - padding;
+		if (content_size.width > 0 && tex_size.width > 0) {
+			content_size.width += MAX(0, theme_cache.h_separation);
+		}
+		content_size.width += tex_size.width;
+		content_size.height = MAX(content_size.height, tex_size.height);
+
+		minsize = content_size + padding;
 	}
-	minsize.height = MAX(minsize.height, tex_size.height + theme_cache.normal_style->get_margin(SIDE_TOP) + theme_cache.normal_style->get_margin(SIDE_BOTTOM));
 
 	return minsize;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 
 #define MATH_PI  3.14159265358979323846f
 #define MATH_PI2 1.57079632679489661923f
+#define PATH_KAPPA 0.552284f
 
 #define mathMin(x, y) (((x) < (y)) ? (x) : (y))
 #define mathMax(x, y) (((x) > (y)) ? (x) : (y))
@@ -69,7 +70,7 @@ static inline bool mathEqual(const Matrix& a, const Matrix& b)
 static inline bool mathRightAngle(const Matrix* m)
 {
    auto radian = fabsf(atan2f(m->e21, m->e11));
-   if (radian < FLT_EPSILON || mathEqual(radian, float(M_PI_2)) || mathEqual(radian, float(M_PI))) return true;
+   if (radian < FLT_EPSILON || mathEqual(radian, MATH_PI2) || mathEqual(radian, MATH_PI)) return true;
    return false;
 }
 
@@ -171,6 +172,18 @@ static inline Point operator+(const Point& lhs, const Point& rhs)
 static inline Point operator*(const Point& lhs, float rhs)
 {
     return {lhs.x * rhs, lhs.y * rhs};
+}
+
+
+static inline Point operator*(const float& lhs, const Point& rhs)
+{
+    return {lhs * rhs.x, lhs * rhs.y};
+}
+
+
+static inline Point operator/(const Point& lhs, const float rhs)
+{
+    return {lhs.x / rhs, lhs.y / rhs};
 }
 
 

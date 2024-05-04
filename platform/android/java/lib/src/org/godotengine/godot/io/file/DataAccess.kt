@@ -36,7 +36,9 @@ import android.util.Log
 import org.godotengine.godot.io.StorageScope
 import java.io.IOException
 import java.nio.ByteBuffer
+import java.nio.channels.ClosedChannelException
 import java.nio.channels.FileChannel
+import java.nio.channels.NonWritableChannelException
 import kotlin.math.max
 
 /**
@@ -133,6 +135,21 @@ internal abstract class DataAccess(private val filePath: String) {
 	fun seekFromEnd(positionFromEnd: Long) {
 		val positionFromBeginning = max(0, size() - positionFromEnd)
 		seek(positionFromBeginning)
+	}
+
+	fun resize(length: Long): Int {
+		return try {
+			fileChannel.truncate(length)
+			FileErrors.OK.nativeValue
+		} catch (e: NonWritableChannelException) {
+			FileErrors.FILE_CANT_OPEN.nativeValue
+		} catch (e: ClosedChannelException) {
+			FileErrors.FILE_CANT_OPEN.nativeValue
+		} catch (e: IllegalArgumentException) {
+			FileErrors.INVALID_PARAMETER.nativeValue
+		} catch (e: IOException) {
+			FileErrors.FAILED.nativeValue
+		}
 	}
 
 	fun position(): Long {

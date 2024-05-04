@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -713,7 +713,7 @@ static void _decomposeOutline(RleWorker& rw)
     auto outline = rw.outline;
     auto first = 0;  //index of first point in contour
 
-    for (auto cntr = outline->cntrs.data; cntr < outline->cntrs.end(); ++cntr) {
+    for (auto cntr = outline->cntrs.begin(); cntr < outline->cntrs.end(); ++cntr) {
         auto last = *cntr;
         auto limit = outline->pts.data + last;
         auto start = UPSCALE(outline->pts[first]);

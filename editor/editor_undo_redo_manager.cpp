@@ -375,6 +375,10 @@ bool EditorUndoRedoManager::has_redo() {
 	return false;
 }
 
+bool EditorUndoRedoManager::has_history(int p_idx) const {
+	return history_map.has(p_idx);
+}
+
 void EditorUndoRedoManager::clear_history(bool p_increase_version, int p_idx) {
 	if (p_idx != INVALID_HISTORY) {
 		History &history = get_or_create_history(p_idx);

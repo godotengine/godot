@@ -44,8 +44,7 @@ Size2 PanelContainer::get_minimum_size() const {
 		}
 
 		Size2 minsize = c->get_combined_minimum_size();
-		ms.width = MAX(ms.width, minsize.width);
-		ms.height = MAX(ms.height, minsize.height);
+		ms = ms.max(minsize);
 	}
 
 	if (theme_cache.panel_style.is_valid()) {

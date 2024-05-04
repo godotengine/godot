@@ -51,3 +51,6 @@ bd282ff43f23fe845f29a3e25c8efc01bd65ffb0
 
 # Add "Godot Engine contributors" copyright line
 df61dc4b2bd54a5a40c515493c76f5a458e5b541
+
+# Enforce template syntax `typename` over `class`
+9903e6779b70fc03aae70a37b9cf053f4f355b91

@@ -42,6 +42,9 @@
 
 #ifdef ANDROID_ENABLED
 typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLint, GLsizei);
+typedef void (*PFNGLTEXSTORAGE3DMULTISAMPLEPROC)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLboolean);
+typedef void (*PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei);
+typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLsizei, GLint, GLsizei);
 #endif
 
 namespace GLES3 {
@@ -63,8 +66,7 @@ public:
 	int64_t max_renderable_lights = 0;
 	int64_t max_lights_per_object = 0;
 
-	// TODO implement wireframe in OpenGL
-	// bool generate_wireframes;
+	bool generate_wireframes = false;
 
 	HashSet<String> extensions;
 
@@ -82,9 +84,20 @@ public:
 	bool support_anisotropic_filter = false;
 	float anisotropic_level = 0.0f;
 
+	GLint msaa_max_samples = 0;
+	bool msaa_supported = false;
+	bool msaa_multiview_supported = false;
+	bool rt_msaa_supported = false;
+	bool rt_msaa_multiview_supported = false;
 	bool multiview_supported = false;
+
+	bool adreno_3xx_compatibility = false;
+
 #ifdef ANDROID_ENABLED
 	PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC eglFramebufferTextureMultiviewOVR = nullptr;
+	PFNGLTEXSTORAGE3DMULTISAMPLEPROC eglTexStorage3DMultisample = nullptr;
+	PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC eglFramebufferTexture2DMultisampleEXT = nullptr;
+	PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC eglFramebufferTextureMultisampleMultiviewOVR = nullptr;
 #endif
 
 	static Config *get_singleton() { return singleton; };

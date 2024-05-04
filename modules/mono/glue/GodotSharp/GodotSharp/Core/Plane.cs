@@ -1,5 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -382,7 +386,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The other object to compare.</param>
         /// <returns>Whether or not the plane and the other object are exactly equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Plane other && Equals(other);
         }
@@ -421,18 +425,15 @@ namespace Godot
         /// Converts this <see cref="Plane"/> to a string.
         /// </summary>
         /// <returns>A string representation of this plane.</returns>
-        public override readonly string ToString()
-        {
-            return $"{_normal}, {_d}";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Plane"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this plane.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
-            return $"{_normal.ToString(format)}, {_d.ToString(format)}";
+            return $"{_normal.ToString(format)}, {_d.ToString(format, CultureInfo.InvariantCulture)}";
         }
     }
 }

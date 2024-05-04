@@ -34,6 +34,7 @@
 #include "../gdscript_compiler.h"
 #include "../gdscript_parser.h"
 #include "../gdscript_tokenizer.h"
+#include "../gdscript_tokenizer_buffer.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
@@ -50,7 +51,7 @@
 namespace GDScriptTests {
 
 static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) {
-	GDScriptTokenizer tokenizer;
+	GDScriptTokenizerText tokenizer;
 	tokenizer.set_source_code(p_code);
 
 	int tab_size = 4;
@@ -107,6 +108,53 @@ static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) 
 	print_line(current.get_name()); // Should be EOF
 }
 
+static void test_tokenizer_buffer(const Vector<uint8_t> &p_buffer, const Vector<String> &p_lines);
+
+static void test_tokenizer_buffer(const String &p_code, const Vector<String> &p_lines) {
+	Vector<uint8_t> binary = GDScriptTokenizerBuffer::parse_code_string(p_code, GDScriptTokenizerBuffer::COMPRESS_NONE);
+	test_tokenizer_buffer(binary, p_lines);
+}
+
+static void test_tokenizer_buffer(const Vector<uint8_t> &p_buffer, const Vector<String> &p_lines) {
+	GDScriptTokenizerBuffer tokenizer;
+	tokenizer.set_code_buffer(p_buffer);
+
+	int tab_size = 4;
+#ifdef TOOLS_ENABLED
+	if (EditorSettings::get_singleton()) {
+		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
+	}
+#endif // TOOLS_ENABLED
+	String tab = String(" ").repeat(tab_size);
+
+	GDScriptTokenizer::Token current = tokenizer.scan();
+	while (current.type != GDScriptTokenizer::Token::TK_EOF) {
+		StringBuilder token;
+		token += " --> "; // Padding for line number.
+
+		for (int l = current.start_line; l <= current.end_line && l <= p_lines.size(); l++) {
+			print_line(vformat("%04d %s", l, p_lines[l - 1]).replace("\t", tab));
+		}
+
+		token += current.get_name();
+
+		if (current.type == GDScriptTokenizer::Token::ERROR || current.type == GDScriptTokenizer::Token::LITERAL || current.type == GDScriptTokenizer::Token::IDENTIFIER || current.type == GDScriptTokenizer::Token::ANNOTATION) {
+			token += "(";
+			token += Variant::get_type_name(current.literal.get_type());
+			token += ") ";
+			token += current.literal;
+		}
+
+		print_line(token.as_string());
+
+		print_line("-------------------------------------------------------");
+
+		current = tokenizer.scan();
+	}
+
+	print_line(current.get_name()); // Should be EOF
+}
+
 static void test_parser(const String &p_code, const String &p_script_path, const Vector<String> &p_lines) {
 	GDScriptParser parser;
 	Error err = parser.parse(p_code, p_script_path, false);
@@ -119,7 +167,7 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 	}
 
 	GDScriptAnalyzer analyzer(&parser);
-	analyzer.analyze();
+	err = analyzer.analyze();
 
 	if (err != OK) {
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
@@ -212,7 +260,7 @@ void test(TestType p_type) {
 	}
 
 	String test = cmdlargs.back()->get();
-	if (!test.ends_with(".gd")) {
+	if (!test.ends_with(".gd") && !test.ends_with(".gdc")) {
 		print_line("This test expects a path to a GDScript file as its last parameter. Got: " + test);
 		return;
 	}
@@ -254,6 +302,13 @@ void test(TestType p_type) {
 	switch (p_type) {
 		case TEST_TOKENIZER:
 			test_tokenizer(code, lines);
+			break;
+		case TEST_TOKENIZER_BUFFER:
+			if (test.ends_with(".gdc")) {
+				test_tokenizer_buffer(buf, lines);
+			} else {
+				test_tokenizer_buffer(code, lines);
+			}
 			break;
 		case TEST_PARSER:
 			test_parser(code, test, lines);

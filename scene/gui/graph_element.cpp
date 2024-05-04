@@ -74,8 +74,7 @@ Size2 GraphElement::get_minimum_size() const {
 
 		Size2i size = child->get_combined_minimum_size();
 
-		minsize.width = MAX(minsize.width, size.width);
-		minsize.height = MAX(minsize.height, size.height);
+		minsize = minsize.max(size);
 	}
 
 	return minsize;
@@ -167,7 +166,11 @@ void GraphElement::gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-			resizing = false;
+			if (resizing) {
+				resizing = false;
+				emit_signal(SNAME("resize_end"), get_size());
+				return;
+			}
 		}
 	}
 
@@ -238,7 +241,8 @@ void GraphElement::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("raise_request"));
 	ADD_SIGNAL(MethodInfo("delete_request"));
-	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
+	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_size")));
+	ADD_SIGNAL(MethodInfo("resize_end", PropertyInfo(Variant::VECTOR2, "new_size")));
 
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
 	ADD_SIGNAL(MethodInfo("position_offset_changed"));

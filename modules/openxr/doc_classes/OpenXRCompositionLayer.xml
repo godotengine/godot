@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRCompositionLayer" inherits="Node3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		The parent class of all OpenXR composition layer nodes.
+	</brief_description>
+	<description>
+		Composition layers allow 2D viewports to be displayed inside of the headset by the XR compositor through special projections that retain their quality. This allows for rendering clear text while keeping the layer at a native resolution.
+		[b]Note:[/b] If the OpenXR runtime doesn't support the given composition layer type, a fallback mesh can be generated with a [ViewportTexture], in order to emulate the composition layer.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="intersects_ray" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="origin" type="Vector3" />
+			<param index="1" name="direction" type="Vector3" />
+			<description>
+				Returns UV coordinates where the given ray intersects with the composition layer. [param origin] and [param direction] must be in global space.
+				Returns [code]Vector2(-1.0, -1.0)[/code] if the ray doesn't intersect.
+			</description>
+		</method>
+		<method name="is_natively_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if the OpenXR runtime natively supports this composition layer type.
+				[b]Note:[/b] This will only return an accurate result after the OpenXR session has started.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="alpha_blend" type="bool" setter="set_alpha_blend" getter="get_alpha_blend" default="false">
+			Enables the blending the layer using its alpha channel.
+			Can be combined with [member Viewport.transparent_bg] to give the layer a transparent background.
+		</member>
+		<member name="layer_viewport" type="SubViewport" setter="set_layer_viewport" getter="get_layer_viewport">
+			The [SubViewport] to render on the composition layer.
+		</member>
+		<member name="sort_order" type="int" setter="set_sort_order" getter="get_sort_order" default="1">
+			The sort order for this composition layer. Higher numbers will be shown in front of lower numbers.
+			[b]Note:[/b] This will have no effect if a fallback mesh is being used.
+		</member>
+	</members>
+</class>

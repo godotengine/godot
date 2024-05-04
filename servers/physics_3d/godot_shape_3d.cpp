@@ -152,7 +152,7 @@ Vector3 GodotWorldBoundaryShape3D::get_moment_of_inertia(real_t p_mass) const {
 
 void GodotWorldBoundaryShape3D::_setup(const Plane &p_plane) {
 	plane = p_plane;
-	configure(AABB(Vector3(-1e4, -1e4, -1e4), Vector3(1e4 * 2, 1e4 * 2, 1e4 * 2)));
+	configure(AABB(Vector3(-1e15, -1e15, -1e15), Vector3(1e15 * 2, 1e15 * 2, 1e15 * 2)));
 }
 
 void GodotWorldBoundaryShape3D::set_data(const Variant &p_data) {
@@ -2016,9 +2016,7 @@ void GodotHeightMapShape3D::_get_cell(const Vector3 &p_point, int &r_x, int &r_y
 	Vector3 pos_local = shape_aabb.position + local_origin;
 
 	Vector3 clamped_point(p_point);
-	clamped_point.x = CLAMP(p_point.x, pos_local.x, pos_local.x + shape_aabb.size.x);
-	clamped_point.y = CLAMP(p_point.y, pos_local.y, pos_local.y + shape_aabb.size.y);
-	clamped_point.z = CLAMP(p_point.z, pos_local.z, pos_local.z + shape_aabb.size.z);
+	clamped_point = p_point.clamp(pos_local, pos_local + shape_aabb.size);
 
 	r_x = (clamped_point.x < 0.0) ? (clamped_point.x - 0.5) : (clamped_point.x + 0.5);
 	r_y = (clamped_point.y < 0.0) ? (clamped_point.y - 0.5) : (clamped_point.y + 0.5);

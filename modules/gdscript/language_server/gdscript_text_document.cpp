@@ -114,7 +114,7 @@ void GDScriptTextDocument::didSave(const Variant &p_param) {
 		scr->update_exports();
 		ScriptEditor::get_singleton()->reload_scripts(true);
 		ScriptEditor::get_singleton()->update_docs_from_script(scr);
-		ScriptEditor::get_singleton()->trigger_live_script_reload();
+		ScriptEditor::get_singleton()->trigger_live_script_reload(scr->get_path());
 	}
 }
 
@@ -315,9 +315,8 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		Vector<String> param_symbols = query.split(SYMBOL_SEPERATOR, false);
 
 		if (param_symbols.size() >= 2) {
-			String class_ = param_symbols[0];
-			StringName class_name = class_;
-			String member_name = param_symbols[param_symbols.size() - 1];
+			StringName class_name = param_symbols[0];
+			const String &member_name = param_symbols[param_symbols.size() - 1];
 			String inner_class_name;
 			if (param_symbols.size() >= 3) {
 				inner_class_name = param_symbols[1];
@@ -422,7 +421,7 @@ Array GDScriptTextDocument::definition(const Dictionary &p_params) {
 	lsp::TextDocumentPositionParams params;
 	params.load(p_params);
 	List<const lsp::DocumentSymbol *> symbols;
-	Array arr = this->find_symbols(params, symbols);
+	Array arr = find_symbols(params, symbols);
 	return arr;
 }
 
@@ -430,7 +429,7 @@ Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
 	lsp::TextDocumentPositionParams params;
 	params.load(p_params);
 	List<const lsp::DocumentSymbol *> symbols;
-	Array arr = this->find_symbols(params, symbols);
+	Array arr = find_symbols(params, symbols);
 	if (arr.is_empty() && !symbols.is_empty() && !symbols.front()->get()->native_class.is_empty()) { // Find a native symbol
 		const lsp::DocumentSymbol *symbol = symbols.front()->get();
 		if (GDScriptLanguageProtocol::get_singleton()->is_goto_native_symbols_enabled()) {
@@ -457,7 +456,7 @@ Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
 					id = "class_global:" + symbol->native_class + ":" + symbol->name;
 					break;
 			}
-			call_deferred(SNAME("show_native_symbol_in_editor"), id);
+			callable_mp(this, &GDScriptTextDocument::show_native_symbol_in_editor).call_deferred(id);
 		} else {
 			notify_client_show_symbol(symbol);
 		}

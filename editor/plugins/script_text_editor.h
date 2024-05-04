@@ -49,7 +49,7 @@ class ConnectionInfoDialog : public AcceptDialog {
 	virtual void ok_pressed() override;
 
 public:
-	void popup_connections(String p_method, Vector<Node *> p_nodes);
+	void popup_connections(const String &p_method, const Vector<Node *> &p_nodes);
 
 	ConnectionInfoDialog();
 };
@@ -99,6 +99,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	Color marked_line_color = Color(1, 1, 1);
 	Color folded_code_region_color = Color(1, 1, 1);
+	int previous_line = 0;
 
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
@@ -164,6 +165,8 @@ protected:
 	void _breakpoint_item_pressed(int p_idx);
 	void _breakpoint_toggled(int p_row);
 
+	void _on_caret_moved();
+
 	void _validate_script(); // No longer virtual.
 	void _update_warnings();
 	void _update_errors();
@@ -177,8 +180,8 @@ protected:
 	void _set_theme_for_script();
 	void _show_errors_panel(bool p_show);
 	void _show_warnings_panel(bool p_show);
-	void _error_clicked(Variant p_line);
-	void _warning_clicked(Variant p_line);
+	void _error_clicked(const Variant &p_line);
+	void _warning_clicked(const Variant &p_line);
 
 	void _notification(int p_what);
 
@@ -240,7 +243,7 @@ public:
 	virtual void set_breakpoint(int p_line, bool p_enabled) override;
 	virtual void clear_breakpoints() override;
 
-	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
+	virtual void add_callback(const String &p_function, const PackedStringArray &p_args) override;
 	virtual void update_settings() override;
 
 	virtual bool show_members_overview() override;
@@ -256,8 +259,12 @@ public:
 	static void register_editor();
 
 	virtual Control *get_base_editor() const override;
+	virtual CodeTextEditor *get_code_editor() const override;
 
 	virtual void validate() override;
+
+	Variant get_previous_state();
+	void store_previous_state();
 
 	ScriptTextEditor();
 	~ScriptTextEditor();

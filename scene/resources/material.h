@@ -106,7 +106,9 @@ protected:
 
 	static void _bind_methods();
 
+#ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	virtual bool _can_do_next_pass() const override;
 	virtual bool _can_use_render_priority() const override;
@@ -217,6 +219,7 @@ public:
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
+		BLEND_MODE_PREMULT_ALPHA,
 		BLEND_MODE_MAX
 	};
 
@@ -682,7 +685,7 @@ public:
 	void set_texture(TextureParam p_param, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture(TextureParam p_param) const;
 	// Used only for shader material conversion
-	Ref<Texture2D> get_texture_by_name(StringName p_name) const;
+	Ref<Texture2D> get_texture_by_name(const StringName &p_name) const;
 
 	void set_texture_filter(TextureFilter p_filter);
 	TextureFilter get_texture_filter() const;

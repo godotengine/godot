@@ -224,6 +224,25 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
+void SpriteFrames::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if (p_idx == 0) {
+		if (pf == "has_animation" || pf == "remove_animation" || pf == "rename_animation" ||
+				pf == "set_animation_speed" || pf == "get_animation_speed" ||
+				pf == "set_animation_loop" || pf == "get_animation_loop" ||
+				pf == "add_frame" || pf == "set_frame" || pf == "remove_frame" ||
+				pf == "get_frame_count" || pf == "get_frame_texture" || pf == "get_frame_duration" ||
+				pf == "clear") {
+			for (const String &E : get_animation_names()) {
+				r_options->push_back(E.quote());
+			}
+		}
+	}
+	Resource::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
+
 void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_animation", "anim"), &SpriteFrames::add_animation);
 	ClassDB::bind_method(D_METHOD("has_animation", "anim"), &SpriteFrames::has_animation);

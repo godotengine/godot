@@ -31,11 +31,11 @@
 #include "control_editor_plugin.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/separator.h"
 
@@ -189,7 +189,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 		Vector<String> text_split = p_options[i].split(":");
 		int64_t current_val = text_split[1].to_int();
 
-		String option_name = text_split[0];
+		const String &option_name = text_split[0];
 		if (option_name.begins_with("Preset")) {
 			String preset_name = option_name.trim_prefix("Preset");
 			String humanized_name = preset_name.capitalize();
@@ -413,7 +413,15 @@ bool EditorInspectorPluginControl::can_handle(Object *p_object) {
 	return Object::cast_to<Control>(p_object) != nullptr;
 }
 
+void EditorInspectorPluginControl::parse_category(Object *p_object, const String &p_category) {
+	inside_control_category = p_category == "Control";
+}
+
 void EditorInspectorPluginControl::parse_group(Object *p_object, const String &p_group) {
+	if (!inside_control_category) {
+		return;
+	}
+
 	Control *control = Object::cast_to<Control>(p_object);
 	if (!control || p_group != "Layout") {
 		return;

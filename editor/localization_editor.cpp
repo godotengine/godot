@@ -32,12 +32,12 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/translation.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/pot_generator.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/control.h"
 
 void LocalizationEditor::_notification(int p_what) {
@@ -45,6 +45,7 @@ void LocalizationEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			translation_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_delete));
 			translation_pot_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_pot_delete));
+			translation_pot_add_builtin->set_pressed(GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot"));
 
 			List<String> tfn;
 			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
@@ -189,7 +190,7 @@ void LocalizationEditor::_translation_res_select() {
 	if (updating_translations) {
 		return;
 	}
-	call_deferred(SNAME("update_translations"));
+	callable_mp(this, &LocalizationEditor::update_translations).call_deferred();
 }
 
 void LocalizationEditor::_translation_res_option_popup(bool p_arrow_clicked) {
@@ -377,6 +378,11 @@ void LocalizationEditor::_pot_generate_open() {
 	pot_generate_dialog->popup_file_dialog();
 }
 
+void LocalizationEditor::_pot_add_builtin_toggled() {
+	ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_add_builtin_strings_to_pot", translation_pot_add_builtin->is_pressed());
+	ProjectSettings::get_singleton()->save();
+}
+
 void LocalizationEditor::_pot_generate(const String &p_file) {
 	POTGenerator::get_singleton()->generate_pot(p_file);
 }
@@ -545,7 +551,7 @@ void LocalizationEditor::update_translations() {
 
 				PackedStringArray selected = remaps[keys[i]];
 				for (int j = 0; j < selected.size(); j++) {
-					String s2 = selected[j];
+					const String &s2 = selected[j];
 					int qp = s2.rfind(":");
 					String path = s2.substr(0, qp);
 					String locale = s2.substr(qp + 1, s2.length());
@@ -730,13 +736,14 @@ LocalizationEditor::LocalizationEditor() {
 		pot_generate_button->connect("pressed", callable_mp(this, &LocalizationEditor::_pot_generate_open));
 		thb->add_child(pot_generate_button);
 
-		VBoxContainer *tmc = memnew(VBoxContainer);
-		tmc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tvb->add_child(tmc);
-
 		translation_pot_list = memnew(Tree);
 		translation_pot_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		tmc->add_child(translation_pot_list);
+		tvb->add_child(translation_pot_list);
+
+		translation_pot_add_builtin = memnew(CheckBox(TTR("Add Built-in Strings to POT")));
+		translation_pot_add_builtin->set_tooltip_text(TTR("Add strings from built-in components such as certain Control nodes."));
+		translation_pot_add_builtin->connect("pressed", callable_mp(this, &LocalizationEditor::_pot_add_builtin_toggled));
+		tvb->add_child(translation_pot_add_builtin);
 
 		pot_generate_dialog = memnew(EditorFileDialog);
 		pot_generate_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);

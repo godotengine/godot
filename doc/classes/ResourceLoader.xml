@@ -9,7 +9,7 @@
 		[b]Note:[/b] You have to import the files into the engine first to load them using [method load]. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
 	</description>
 	<tutorials>
-		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
+		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<methods>
 		<method name="add_resource_format_loader">
@@ -28,6 +28,7 @@
 			<description>
 				Returns whether a recognized resource exists for the given [param path].
 				An optional [param type_hint] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader]. Anything that inherits from [Resource] can be used as a type hint, for example [Image].
+				[b]Note:[/b] If you use [method Resource.take_over_path], this method will return [code]true[/code] for the taken path even if the resource wasn't saved (i.e. exists only in resource cache).
 			</description>
 		</method>
 		<method name="get_dependencies">
@@ -78,6 +79,7 @@
 				Returns an empty resource if no [ResourceFormatLoader] could handle the file.
 				GDScript has a simplified [method @GDScript.load] built-in method which can be used in most situations, leaving the use of [ResourceLoader] for more advanced scenarios.
 				[b]Note:[/b] If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].
+				[b]Note:[/b] Relative paths will be prefixed with [code]"res://"[/code] before loading, to avoid unexpected results make sure your paths are absolute.
 			</description>
 		</method>
 		<method name="load_threaded_get">
@@ -137,10 +139,19 @@
 			The resource was loaded successfully and can be accessed via [method load_threaded_get].
 		</constant>
 		<constant name="CACHE_MODE_IGNORE" value="0" enum="CacheMode">
+			Neither the main resource (the one requested to be loaded) nor any of its subresources are retrieved from cache nor stored into it. Dependencies (external resources) are loaded with [constant CACHE_MODE_REUSE].
 		</constant>
 		<constant name="CACHE_MODE_REUSE" value="1" enum="CacheMode">
+			The main resource (the one requested to be loaded), its subresources, and its dependencies (external resources) are retrieved from cache if present, instead of loaded. Those not cached are loaded and then stored into the cache. The same rules are propagated recursively down the tree of dependencies (external resources).
 		</constant>
 		<constant name="CACHE_MODE_REPLACE" value="2" enum="CacheMode">
+			Like [constant CACHE_MODE_REUSE], but the cache is checked for the main resource (the one requested to be loaded) as well as for each of its subresources. Those already in the cache, as long as the loaded and cached types match, have their data refreshed from storage into the already existing instances. Otherwise, they are recreated as completely new objects.
+		</constant>
+		<constant name="CACHE_MODE_IGNORE_DEEP" value="3" enum="CacheMode">
+			Like [constant CACHE_MODE_IGNORE], but propagated recursively down the tree of dependencies (external resources).
+		</constant>
+		<constant name="CACHE_MODE_REPLACE_DEEP" value="4" enum="CacheMode">
+			Like [constant CACHE_MODE_REPLACE], but propagated recursively down the tree of dependencies (external resources).
 		</constant>
 	</constants>
 </class>

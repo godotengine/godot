@@ -671,7 +671,7 @@ struct hb_pair_t
     return 0;
   }
 
-  friend void swap (hb_pair_t& a, hb_pair_t& b)
+  friend void swap (hb_pair_t& a, hb_pair_t& b) noexcept
   {
     hb_swap (a.first, b.first);
     hb_swap (a.second, b.second);
@@ -1051,6 +1051,18 @@ _hb_cmp_method (const void *pkey, const void *pval, Ts... ds)
   const V& val = * (const V*) pval;
 
   return val.cmp (key, ds...);
+}
+
+template <typename K, typename V>
+static int
+_hb_cmp_operator (const void *pkey, const void *pval)
+{
+  const K& key = * (const K*) pkey;
+  const V& val = * (const V*) pval;
+
+  if (key < val) return -1;
+  if (key > val) return  1;
+  return 0;
 }
 
 template <typename V, typename K, typename ...Ts>

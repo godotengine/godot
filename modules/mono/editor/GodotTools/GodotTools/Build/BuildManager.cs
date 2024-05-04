@@ -11,18 +11,32 @@ namespace GodotTools.Build
 {
     public static class BuildManager
     {
-        private static BuildInfo _buildInProgress;
+        private static BuildInfo? _buildInProgress;
 
         public const string MsBuildIssuesFileName = "msbuild_issues.csv";
         private const string MsBuildLogFileName = "msbuild_log.txt";
 
         public delegate void BuildLaunchFailedEventHandler(BuildInfo buildInfo, string reason);
 
-        public static event BuildLaunchFailedEventHandler BuildLaunchFailed;
-        public static event Action<BuildInfo> BuildStarted;
-        public static event Action<BuildResult> BuildFinished;
-        public static event Action<string> StdOutputReceived;
-        public static event Action<string> StdErrorReceived;
+        public static event BuildLaunchFailedEventHandler? BuildLaunchFailed;
+        public static event Action<BuildInfo>? BuildStarted;
+        public static event Action<BuildResult>? BuildFinished;
+        public static event Action<string?>? StdOutputReceived;
+        public static event Action<string?>? StdErrorReceived;
+
+        public static DateTime LastValidBuildDateTime { get; private set; }
+
+        static BuildManager()
+        {
+            UpdateLastValidBuildDateTime();
+        }
+
+        public static void UpdateLastValidBuildDateTime()
+        {
+            var dllName = $"{GodotSharpDirs.ProjectAssemblyName}.dll";
+            var path = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, "Debug", dllName);
+            LastValidBuildDateTime = File.GetLastWriteTime(path);
+        }
 
         private static void RemoveOldIssuesFile(BuildInfo buildInfo)
         {
@@ -260,8 +274,8 @@ namespace GodotTools.Build
         }
 
         private static BuildInfo CreateBuildInfo(
-            [DisallowNull] string configuration,
-            [AllowNull] string platform = null,
+            string configuration,
+            string? platform = null,
             bool rebuild = false,
             bool onlyClean = false
         )
@@ -280,10 +294,10 @@ namespace GodotTools.Build
         }
 
         private static BuildInfo CreatePublishBuildInfo(
-            [DisallowNull] string configuration,
-            [DisallowNull] string platform,
-            [DisallowNull] string runtimeIdentifier,
-            [DisallowNull] string publishOutputDir,
+            string configuration,
+            string platform,
+            string runtimeIdentifier,
+            string publishOutputDir,
             bool includeDebugSymbols = true
         )
         {
@@ -305,20 +319,20 @@ namespace GodotTools.Build
         }
 
         public static bool BuildProjectBlocking(
-            [DisallowNull] string configuration,
-            [AllowNull] string platform = null,
+            string configuration,
+            string? platform = null,
             bool rebuild = false
         ) => BuildProjectBlocking(CreateBuildInfo(configuration, platform, rebuild));
 
         public static bool CleanProjectBlocking(
-            [DisallowNull] string configuration,
-            [AllowNull] string platform = null
+            string configuration,
+            string? platform = null
         ) => CleanProjectBlocking(CreateBuildInfo(configuration, platform, rebuild: false, onlyClean: true));
 
         public static bool PublishProjectBlocking(
-            [DisallowNull] string configuration,
-            [DisallowNull] string platform,
-            [DisallowNull] string runtimeIdentifier,
+            string configuration,
+            string platform,
+            string runtimeIdentifier,
             string publishOutputDir,
             bool includeDebugSymbols = true
         ) => PublishProjectBlocking(CreatePublishBuildInfo(configuration,

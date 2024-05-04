@@ -1,17 +1,4 @@
 // Gradle build config for Godot Engine's Android port.
-buildscript {
-    apply from: 'config.gradle'
-
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath libraries.androidGradlePlugin
-        classpath libraries.kotlinGradlePlugin
-    }
-}
-
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -23,6 +10,8 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
+        maven { url "https://plugins.gradle.org/m2/" }
 
         // Godot user plugins custom maven repos
         String[] mavenRepos = getGodotPluginsMavenRepos()
@@ -42,8 +31,7 @@ configurations {
 }
 
 dependencies {
-    implementation libraries.kotlinStdLib
-    implementation libraries.androidxFragment
+    implementation "androidx.fragment:fragment:$versions.fragmentVersion"
 
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")
@@ -88,6 +76,8 @@ android {
 
     assetPacks = [":assetPacks:installTime"]
 
+    namespace = 'com.godot.game'
+
     defaultConfig {
         // The default ignore pattern for the 'assets' directory includes hidden files and directories which are used by Godot projects.
         aaptOptions {
@@ -125,6 +115,14 @@ android {
         // 'doNotStrip' is enabled for development within Android Studio
         if (shouldNotStrip()) {
             doNotStrip '**/*.so'
+        }
+
+        jniLibs {
+            // Setting this to true causes AGP to package compressed native libraries when building the app
+            // For more background, see:
+            // - https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs
+            // - https://stackoverflow.com/a/44704840
+            useLegacyPackaging shouldUseLegacyPackaging()
         }
     }
 
@@ -207,37 +205,90 @@ android {
 }
 
 task copyAndRenameDebugApk(type: Copy) {
+    // The 'doNotTrackState' is added to disable gradle's up-to-date checks for output files
+    // and directories. Otherwise this check may cause permissions access failures on Windows
+    // machines.
+    doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
+
     from "$buildDir/outputs/apk/debug/android_debug.apk"
     into getExportPath()
     rename "android_debug.apk", getExportFilename()
 }
 
 task copyAndRenameDevApk(type: Copy) {
+    // The 'doNotTrackState' is added to disable gradle's up-to-date checks for output files
+    // and directories. Otherwise this check may cause permissions access failures on Windows
+    // machines.
+    doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
+
     from "$buildDir/outputs/apk/dev/android_dev.apk"
     into getExportPath()
     rename "android_dev.apk", getExportFilename()
 }
 
 task copyAndRenameReleaseApk(type: Copy) {
+    // The 'doNotTrackState' is added to disable gradle's up-to-date checks for output files
+    // and directories. Otherwise this check may cause permissions access failures on Windows
+    // machines.
+    doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
+
     from "$buildDir/outputs/apk/release/android_release.apk"
     into getExportPath()
     rename "android_release.apk", getExportFilename()
 }
 
 task copyAndRenameDebugAab(type: Copy) {
+    // The 'doNotTrackState' is added to disable gradle's up-to-date checks for output files
+    // and directories. Otherwise this check may cause permissions access failures on Windows
+    // machines.
+    doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
+
     from "$buildDir/outputs/bundle/debug/build-debug.aab"
     into getExportPath()
     rename "build-debug.aab", getExportFilename()
 }
 
 task copyAndRenameDevAab(type: Copy) {
+    // The 'doNotTrackState' is added to disable gradle's up-to-date checks for output files
+    // and directories. Otherwise this check may cause permissions access failures on Windows
+    // machines.
+    doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
+
     from "$buildDir/outputs/bundle/dev/build-dev.aab"
     into getExportPath()
     rename "build-dev.aab", getExportFilename()
 }
 
 task copyAndRenameReleaseAab(type: Copy) {
+    // The 'doNotTrackState' is added to disable gradle's up-to-date checks for output files
+    // and directories. Otherwise this check may cause permissions access failures on Windows
+    // machines.
+    doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
+
     from "$buildDir/outputs/bundle/release/build-release.aab"
     into getExportPath()
     rename "build-release.aab", getExportFilename()
+}
+
+/**
+ * Used to validate the version of the Java SDK used for the Godot gradle builds.
+ */
+task validateJavaVersion {
+    if (JavaVersion.current() != versions.javaVersion) {
+        throw new GradleException("Invalid Java version ${JavaVersion.current()}. Version ${versions.javaVersion} is the required Java version for Godot gradle builds.")
+    }
+}
+
+/*
+When they're scheduled to run, the copy*AARToAppModule tasks generate dependencies for the 'app'
+module, so we're ensuring the ':app:preBuild' task is set to run after those tasks.
+ */
+if (rootProject.tasks.findByPath("copyDebugAARToAppModule") != null) {
+    preBuild.mustRunAfter(rootProject.tasks.named("copyDebugAARToAppModule"))
+}
+if (rootProject.tasks.findByPath("copyDevAARToAppModule") != null) {
+    preBuild.mustRunAfter(rootProject.tasks.named("copyDevAARToAppModule"))
+}
+if (rootProject.tasks.findByPath("copyReleaseAARToAppModule") != null) {
+    preBuild.mustRunAfter(rootProject.tasks.named("copyReleaseAARToAppModule"))
 }

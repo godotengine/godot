@@ -31,9 +31,9 @@
 #include "tile_proxies_manager_dialog.h"
 
 #include "editor/editor_properties_vector.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
@@ -257,13 +257,13 @@ bool TileProxiesManagerDialog::_set(const StringName &p_name, const Variant &p_v
 	if (p_name == "from_source") {
 		from.source_id = MAX(int(p_value), -1);
 	} else if (p_name == "from_coords") {
-		from.set_atlas_coords(Vector2i(p_value).max(Vector2i(-1, -1)));
+		from.set_atlas_coords(Vector2i(p_value).maxi(-1));
 	} else if (p_name == "from_alternative") {
 		from.alternative_tile = MAX(int(p_value), -1);
 	} else if (p_name == "to_source") {
 		to.source_id = MAX(int(p_value), 0);
 	} else if (p_name == "to_coords") {
-		to.set_atlas_coords(Vector2i(p_value).max(Vector2i(0, 0)));
+		to.set_atlas_coords(Vector2i(p_value).maxi(0));
 	} else if (p_name == "to_alternative") {
 		to.alternative_tile = MAX(int(p_value), 0);
 	} else {
@@ -345,6 +345,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	vbox_container->add_child(source_level_label);
 
 	source_level_list = memnew(ItemList);
+	source_level_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	source_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	source_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	source_level_list->set_allow_rmb_select(true);
@@ -356,6 +357,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	vbox_container->add_child(coords_level_label);
 
 	coords_level_list = memnew(ItemList);
+	coords_level_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	coords_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	coords_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	coords_level_list->set_allow_rmb_select(true);
@@ -367,6 +369,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	vbox_container->add_child(alternative_level_label);
 
 	alternative_level_list = memnew(ItemList);
+	alternative_level_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	alternative_level_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	alternative_level_list->set_select_mode(ItemList::SELECT_MULTI);
 	alternative_level_list->set_allow_rmb_select(true);

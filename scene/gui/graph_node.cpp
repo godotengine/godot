@@ -336,7 +336,8 @@ void GraphNode::_notification(int p_what) {
 
 			int width = get_size().width - sb_panel->get_minimum_size().x;
 
-			if (get_child_count() > 0) {
+			// Take the HboxContainer child into account.
+			if (get_child_count(false) > 0) {
 				int slot_index = 0;
 				for (const KeyValue<int, Slot> &E : slot_table) {
 					if (E.key < 0 || E.key >= slot_y_cache.size()) {
@@ -482,6 +483,27 @@ Color GraphNode::get_slot_color_left(int p_slot_index) const {
 	return slot_table[p_slot_index].color_left;
 }
 
+void GraphNode::set_slot_custom_icon_left(int p_slot_index, const Ref<Texture2D> &p_custom_icon) {
+	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set custom_port_icon_left for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
+
+	if (slot_table[p_slot_index].custom_port_icon_left == p_custom_icon) {
+		return;
+	}
+
+	slot_table[p_slot_index].custom_port_icon_left = p_custom_icon;
+	queue_redraw();
+	port_pos_dirty = true;
+
+	emit_signal(SNAME("slot_updated"), p_slot_index);
+}
+
+Ref<Texture2D> GraphNode::get_slot_custom_icon_left(int p_slot_index) const {
+	if (!slot_table.has(p_slot_index)) {
+		return Ref<Texture2D>();
+	}
+	return slot_table[p_slot_index].custom_port_icon_left;
+}
+
 bool GraphNode::is_slot_enabled_right(int p_slot_index) const {
 	if (!slot_table.has(p_slot_index)) {
 		return false;
@@ -545,6 +567,27 @@ Color GraphNode::get_slot_color_right(int p_slot_index) const {
 	return slot_table[p_slot_index].color_right;
 }
 
+void GraphNode::set_slot_custom_icon_right(int p_slot_index, const Ref<Texture2D> &p_custom_icon) {
+	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set custom_port_icon_right for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
+
+	if (slot_table[p_slot_index].custom_port_icon_right == p_custom_icon) {
+		return;
+	}
+
+	slot_table[p_slot_index].custom_port_icon_right = p_custom_icon;
+	queue_redraw();
+	port_pos_dirty = true;
+
+	emit_signal(SNAME("slot_updated"), p_slot_index);
+}
+
+Ref<Texture2D> GraphNode::get_slot_custom_icon_right(int p_slot_index) const {
+	if (!slot_table.has(p_slot_index)) {
+		return Ref<Texture2D>();
+	}
+	return slot_table[p_slot_index].custom_port_icon_right;
+}
+
 bool GraphNode::is_slot_draw_stylebox(int p_slot_index) const {
 	if (!slot_table.has(p_slot_index)) {
 		return false;
@@ -605,6 +648,7 @@ void GraphNode::_port_pos_update() {
 	left_port_cache.clear();
 	right_port_cache.clear();
 	int vertical_ofs = titlebar_hbox->get_size().height + sb_titlebar->get_minimum_size().height + sb_panel->get_margin(SIDE_TOP);
+	int slot_index = 0;
 
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = Object::cast_to<Control>(get_child(i, false));
@@ -614,27 +658,28 @@ void GraphNode::_port_pos_update() {
 
 		Size2i size = child->get_rect().size;
 
-		if (slot_table.has(i)) {
-			if (slot_table[i].enable_left) {
+		if (slot_table.has(slot_index)) {
+			if (slot_table[slot_index].enable_left) {
 				PortCache port_cache;
 				port_cache.pos = Point2i(edgeofs, vertical_ofs + size.height / 2);
-				port_cache.type = slot_table[i].type_left;
-				port_cache.color = slot_table[i].color_left;
-				port_cache.slot_index = child->get_index(false);
+				port_cache.type = slot_table[slot_index].type_left;
+				port_cache.color = slot_table[slot_index].color_left;
+				port_cache.slot_index = slot_index;
 				left_port_cache.push_back(port_cache);
 			}
-			if (slot_table[i].enable_right) {
+			if (slot_table[slot_index].enable_right) {
 				PortCache port_cache;
 				port_cache.pos = Point2i(get_size().width - edgeofs, vertical_ofs + size.height / 2);
-				port_cache.type = slot_table[i].type_right;
-				port_cache.color = slot_table[i].color_right;
-				port_cache.slot_index = child->get_index(false);
+				port_cache.type = slot_table[slot_index].type_right;
+				port_cache.color = slot_table[slot_index].color_right;
+				port_cache.slot_index = slot_index;
 				right_port_cache.push_back(port_cache);
 			}
 		}
 
 		vertical_ofs += separation;
 		vertical_ofs += size.height;
+		slot_index++;
 	}
 
 	port_pos_dirty = false;
@@ -797,6 +842,9 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slot_color_left", "slot_index", "color"), &GraphNode::set_slot_color_left);
 	ClassDB::bind_method(D_METHOD("get_slot_color_left", "slot_index"), &GraphNode::get_slot_color_left);
 
+	ClassDB::bind_method(D_METHOD("set_slot_custom_icon_left", "slot_index", "custom_icon"), &GraphNode::set_slot_custom_icon_left);
+	ClassDB::bind_method(D_METHOD("get_slot_custom_icon_left", "slot_index"), &GraphNode::get_slot_custom_icon_left);
+
 	ClassDB::bind_method(D_METHOD("is_slot_enabled_right", "slot_index"), &GraphNode::is_slot_enabled_right);
 	ClassDB::bind_method(D_METHOD("set_slot_enabled_right", "slot_index", "enable"), &GraphNode::set_slot_enabled_right);
 
@@ -805,6 +853,9 @@ void GraphNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_slot_color_right", "slot_index", "color"), &GraphNode::set_slot_color_right);
 	ClassDB::bind_method(D_METHOD("get_slot_color_right", "slot_index"), &GraphNode::get_slot_color_right);
+
+	ClassDB::bind_method(D_METHOD("set_slot_custom_icon_right", "slot_index", "custom_icon"), &GraphNode::set_slot_custom_icon_right);
+	ClassDB::bind_method(D_METHOD("get_slot_custom_icon_right", "slot_index"), &GraphNode::get_slot_custom_icon_right);
 
 	ClassDB::bind_method(D_METHOD("is_slot_draw_stylebox", "slot_index"), &GraphNode::is_slot_draw_stylebox);
 	ClassDB::bind_method(D_METHOD("set_slot_draw_stylebox", "slot_index", "enable"), &GraphNode::set_slot_draw_stylebox);

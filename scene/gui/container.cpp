@@ -30,7 +30,6 @@
 
 #include "container.h"
 
-#include "core/object/message_queue.h"
 #include "scene/scene_string_names.h"
 
 void Container::_child_minsize_changed() {
@@ -138,7 +137,7 @@ void Container::queue_sort() {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_callable(callable_mp(this, &Container::_sort_children));
+	callable_mp(this, &Container::_sort_children).call_deferred();
 	pending_sort = true;
 }
 

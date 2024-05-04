@@ -31,9 +31,9 @@
 #include "shader_create_dialog.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_scale.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/resources/shader_include.h"
 #include "scene/resources/visual_shader.h"
 #include "servers/rendering/shader_types.h"
@@ -48,8 +48,6 @@ enum ShaderType {
 void ShaderCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			_update_theme();
-
 			String last_lang = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_language", "");
 			if (!last_lang.is_empty()) {
 				for (int i = 0; i < type_menu->get_item_count(); i++) {
@@ -68,28 +66,17 @@ void ShaderCreateDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_theme();
+			static const char *shader_types[3] = { "Shader", "VisualShader", "TextFile" };
+			for (int i = 0; i < 3; i++) {
+				Ref<Texture2D> icon = get_editor_theme_icon(shader_types[i]);
+				if (icon.is_valid()) {
+					type_menu->set_item_icon(i, icon);
+				}
+			}
+
+			path_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 	}
-}
-
-void ShaderCreateDialog::_update_theme() {
-	Ref<Texture2D> shader_icon = gc->get_editor_theme_icon(SNAME("Shader"));
-	if (shader_icon.is_valid()) {
-		type_menu->set_item_icon(0, shader_icon);
-	}
-
-	Ref<Texture2D> visual_shader_icon = gc->get_editor_theme_icon(SNAME("VisualShader"));
-	if (visual_shader_icon.is_valid()) {
-		type_menu->set_item_icon(1, visual_shader_icon);
-	}
-
-	Ref<Texture2D> include_icon = gc->get_editor_theme_icon(SNAME("TextFile"));
-	if (include_icon.is_valid()) {
-		type_menu->set_item_icon(2, include_icon);
-	}
-
-	path_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
 }
 
 void ShaderCreateDialog::_update_language_info() {
@@ -175,9 +162,10 @@ void fragment() {
 	// Called for every pixel the material is visible on.
 }
 
-void light() {
+//void light() {
 	// Called for every pixel for every light affecting the material.
-}
+	// Uncomment to replace the default light processing function with this one.
+//}
 )";
 						break;
 					case Shader::MODE_CANVAS_ITEM:
@@ -190,9 +178,10 @@ void fragment() {
 	// Called for every pixel the material is visible on.
 }
 
-void light() {
+//void light() {
 	// Called for every pixel for every light affecting the CanvasItem.
-}
+	// Uncomment to replace the default light processing function with this one.
+//}
 )";
 						break;
 					case Shader::MODE_PARTICLES:
@@ -254,7 +243,12 @@ void fog() {
 
 		emit_signal(SNAME("shader_include_created"), shader_inc);
 	} else {
-		if (!is_built_in) {
+		if (is_built_in) {
+			Node *edited_scene = get_tree()->get_edited_scene_root();
+			if (likely(edited_scene)) {
+				shader->set_path(edited_scene->get_scene_file_path() + "::");
+			}
+		} else {
 			String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
 			shader->set_path(lpath);
 

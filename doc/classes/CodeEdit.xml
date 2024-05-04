@@ -14,7 +14,7 @@
 			<return type="void" />
 			<param index="0" name="replace" type="bool" />
 			<description>
-				Override this method to define how the selected entry should be inserted. If [param replace] is true, any existing text should be replaced.
+				Override this method to define how the selected entry should be inserted. If [param replace] is [code]true[/code], any existing text should be replaced.
 			</description>
 		</method>
 		<method name="_filter_code_completion_candidates" qualifiers="virtual const">
@@ -29,7 +29,7 @@
 			<return type="void" />
 			<param index="0" name="force" type="bool" />
 			<description>
-				Override this method to define what happens when the user requests code completion. If [param force] is true, any checks should be bypassed.
+				Override this method to define what happens when the user requests code completion. If [param force] is [code]true[/code], any checks should be bypassed.
 			</description>
 		</method>
 		<method name="add_auto_brace_completion_pair">
@@ -48,7 +48,7 @@
 			<param index="2" name="insert_text" type="String" />
 			<param index="3" name="text_color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="icon" type="Resource" default="null" />
-			<param index="5" name="value" type="Variant" default="0" />
+			<param index="5" name="value" type="Variant" default="null" />
 			<param index="6" name="location" type="int" default="1024" />
 			<description>
 				Submits an item to the queue of potential candidates for the autocomplete menu. Call [method update_code_completion_options] to update the list.
@@ -62,9 +62,8 @@
 			<param index="1" name="end_key" type="String" />
 			<param index="2" name="line_only" type="bool" default="false" />
 			<description>
-				Adds a comment delimiter.
-				Both the start and end keys must be symbols. Only the start key has to be unique.
-				[param line_only] denotes if the region should continue until the end of the line or carry over on to the next line. If the end key is blank this is automatically set to [code]true[/code].
+				Adds a comment delimiter from [param start_key] to [param end_key]. Both keys should be symbols, and [param start_key] must not be shared with other delimiters.
+				If [param line_only] is [code]true[/code] or [param end_key] is an empty [String], the region does not carry over to the next line.
 			</description>
 		</method>
 		<method name="add_string_delimiter">
@@ -73,9 +72,8 @@
 			<param index="1" name="end_key" type="String" />
 			<param index="2" name="line_only" type="bool" default="false" />
 			<description>
-				Adds a string delimiter.
-				Both the start and end keys must be symbols. Only the start key has to be unique.
-				[param line_only] denotes if the region should continue until the end of the line or carry over on to the next line. If the end key is blank this is automatically set to [code]true[/code].
+				Defines a string delimiter from [param start_key] to [param end_key]. Both keys should be symbols, and [param start_key] must not be shared with other delimiters.
+				If [param line_only] is [code]true[/code] or [param end_key] is an empty [String], the region does not carry over to the next line.
 			</description>
 		</method>
 		<method name="can_fold_line" qualifiers="const">
@@ -125,7 +123,7 @@
 			<return type="void" />
 			<param index="0" name="replace" type="bool" default="false" />
 			<description>
-				Inserts the selected entry into the text. If [param replace] is true, any existing text is replaced rather than merged.
+				Inserts the selected entry into the text. If [param replace] is [code]true[/code], any existing text is replaced rather than merged.
 			</description>
 		</method>
 		<method name="convert_indent">
@@ -146,6 +144,12 @@
 				Code regions are delimited using start and end tags (respectively [code]region[/code] and [code]endregion[/code] by default) preceded by one line comment delimiter. (eg. [code]#region[/code] and [code]#endregion[/code])
 			</description>
 		</method>
+		<method name="delete_lines">
+			<return type="void" />
+			<description>
+				Deletes all lines that are selected or have a caret on them.
+			</description>
+		</method>
 		<method name="do_indent">
 			<return type="void" />
 			<description>
@@ -156,6 +160,12 @@
 			<return type="void" />
 			<description>
 				Duplicates all lines currently selected with any caret. Duplicates the entire line beneath the current one no matter where the caret is within the line.
+			</description>
+		</method>
+		<method name="duplicate_selection">
+			<return type="void" />
+			<description>
+				Duplicates all selected text and duplicates all lines with a caret on them.
 			</description>
 		</method>
 		<method name="fold_all_lines">
@@ -381,6 +391,18 @@
 				Returns whether the line at the specified index is folded or not.
 			</description>
 		</method>
+		<method name="move_lines_down">
+			<return type="void" />
+			<description>
+				Moves all lines down that are selected or have a caret on them.
+			</description>
+		</method>
+		<method name="move_lines_up">
+			<return type="void" />
+			<description>
+				Moves all lines up that are selected or have a caret on them.
+			</description>
+		</method>
 		<method name="remove_comment_delimiter">
 			<return type="void" />
 			<param index="0" name="start_key" type="String" />
@@ -399,7 +421,7 @@
 			<return type="void" />
 			<param index="0" name="force" type="bool" default="false" />
 			<description>
-				Emits [signal code_completion_requested], if [param force] is true will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path or signal.
+				Emits [signal code_completion_requested], if [param force] is [code]true[/code] will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path, or signal.
 			</description>
 		</method>
 		<method name="set_code_completion_selected_index">
@@ -467,6 +489,12 @@
 			<param index="0" name="line" type="int" />
 			<description>
 				Toggle the folding of the code block at the given line.
+			</description>
+		</method>
+		<method name="toggle_foldable_lines_at_carets">
+			<return type="void" />
+			<description>
+				Toggle the folding of the code block on all lines with a caret on them.
 			</description>
 		</method>
 		<method name="unfold_all_lines">
@@ -623,7 +651,7 @@
 			The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
 		</constant>
 		<constant name="LOCATION_PARENT_MASK" value="256" enum="CodeCompletionLocation">
-			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. 0 for the local class, 1 for the parent, 2 for the grandparent, etc) to store the depth of an option in the class or a parent class.
+			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. [code]0[/code] for the local class, [code]1[/code] for the parent, [code]2[/code] for the grandparent, etc.) to store the depth of an option in the class or a parent class.
 		</constant>
 		<constant name="LOCATION_OTHER_USER_CODE" value="512" enum="CodeCompletionLocation">
 			The option is from user code which is not local and not in a derived class (e.g. Autoload Singletons).

@@ -75,17 +75,21 @@
 			<return type="Vector2i[]" />
 			<param index="0" name="from_id" type="Vector2i" />
 			<param index="1" name="to_id" type="Vector2i" />
+			<param index="2" name="allow_partial_path" type="bool" default="false" />
 			<description>
 				Returns an array with the IDs of the points that form the path found by AStar2D between the given points. The array is ordered from the starting point to the ending point of the path.
+				If there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
 			</description>
 		</method>
 		<method name="get_point_path">
 			<return type="PackedVector2Array" />
 			<param index="0" name="from_id" type="Vector2i" />
 			<param index="1" name="to_id" type="Vector2i" />
+			<param index="2" name="allow_partial_path" type="bool" default="false" />
 			<description>
 				Returns an array with the points that are in the path found by [AStarGrid2D] between the given points. The array is ordered from the starting point to the ending point of the path.
-				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector3Array] and will print an error message.
+				If there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
+				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty array and will print an error message.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
@@ -157,6 +161,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="cell_shape" type="int" setter="set_cell_shape" getter="get_cell_shape" enum="AStarGrid2D.CellShape" default="0">
+			The cell shape. Affects how the positions are placed in the grid. If changed, [method update] needs to be called before finding the next path.
+		</member>
 		<member name="cell_size" type="Vector2" setter="set_cell_size" getter="get_cell_size" default="Vector2(1, 1)">
 			The size of the point cell which will be applied to calculate the resulting point position returned by [method get_point_path]. If changed, [method update] needs to be called before finding the next path.
 		</member>
@@ -182,9 +189,8 @@
 		<member name="region" type="Rect2i" setter="set_region" getter="get_region" default="Rect2i(0, 0, 0, 0)">
 			The region of grid cells available for pathfinding. If changed, [method update] needs to be called before finding the next path.
 		</member>
-		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(0, 0)" is_deprecated="true">
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(0, 0)" deprecated="Use [member region] instead.">
 			The size of the grid (number of cells of size [member cell_size] on each axis). If changed, [method update] needs to be called before finding the next path.
-			[i]Deprecated.[/i] Use [member region] instead.
 		</member>
 	</members>
 	<constants>
@@ -240,6 +246,18 @@
 		</constant>
 		<constant name="DIAGONAL_MODE_MAX" value="4" enum="DiagonalMode">
 			Represents the size of the [enum DiagonalMode] enum.
+		</constant>
+		<constant name="CELL_SHAPE_SQUARE" value="0" enum="CellShape">
+			Rectangular cell shape.
+		</constant>
+		<constant name="CELL_SHAPE_ISOMETRIC_RIGHT" value="1" enum="CellShape">
+			Diamond cell shape (for isometric look). Cell coordinates layout where the horizontal axis goes up-right, and the vertical one goes down-right.
+		</constant>
+		<constant name="CELL_SHAPE_ISOMETRIC_DOWN" value="2" enum="CellShape">
+			Diamond cell shape (for isometric look). Cell coordinates layout where the horizontal axis goes down-right, and the vertical one goes down-left.
+		</constant>
+		<constant name="CELL_SHAPE_MAX" value="3" enum="CellShape">
+			Represents the size of the [enum CellShape] enum.
 		</constant>
 	</constants>
 </class>

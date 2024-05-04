@@ -330,9 +330,7 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditor::forward_3d_gui_input(Cam
 			}
 
 			if (!snap_ignore && Node3DEditor::get_singleton()->is_snap_enabled()) {
-				cpoint = cpoint.snapped(Vector2(
-						Node3DEditor::get_singleton()->get_translate_snap(),
-						Node3DEditor::get_singleton()->get_translate_snap()));
+				cpoint = cpoint.snappedf(Node3DEditor::get_singleton()->get_translate_snap());
 			}
 			edited_point_pos = cpoint;
 
@@ -348,7 +346,7 @@ PackedVector2Array NavigationObstacle3DEditor::_get_polygon() {
 	return PackedVector2Array(obstacle_node->call("get_polygon"));
 }
 
-void NavigationObstacle3DEditor::_set_polygon(PackedVector2Array p_poly) {
+void NavigationObstacle3DEditor::_set_polygon(const PackedVector2Array &p_poly) {
 	ERR_FAIL_NULL_MSG(obstacle_node, "Edited object is not valid.");
 	obstacle_node->call("set_polygon", p_poly);
 }

@@ -27,13 +27,13 @@
 		<method name="get_selected_nodes">
 			<return type="Node[]" />
 			<description>
-				Gets the list of selected nodes.
+				Returns the list of selected nodes.
 			</description>
 		</method>
 		<method name="get_transformable_selected_nodes">
 			<return type="Node[]" />
 			<description>
-				Gets the list of selected nodes, optimized for transform operations (i.e. moving them, rotating, etc). This list avoids situations where a node is selected and also child/grandchild.
+				Returns the list of selected nodes, optimized for transform operations (i.e. moving them, rotating, etc.). This list can be used to avoid situations where a node is selected and is also a child/grandchild.
 			</description>
 		</method>
 		<method name="remove_node">
