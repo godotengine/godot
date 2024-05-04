@@ -14,7 +14,7 @@
 //#include <godot_cpp/classes/static_body3d.hpp>
 
 #include "scene/3d/camera_3d.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/resources/mesh.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/physics/physics_body_3d.h"

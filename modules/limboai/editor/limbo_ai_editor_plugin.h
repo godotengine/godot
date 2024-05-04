@@ -25,7 +25,7 @@
 #include "core/object/object.h"
 #include "core/templates/hash_set.h"
 #include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"

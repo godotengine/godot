@@ -102,7 +102,7 @@ public:
 };
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class UnityLinkServerEditorPlugin : public EditorPlugin {
 	GDCLASS(UnityLinkServerEditorPlugin, EditorPlugin);
