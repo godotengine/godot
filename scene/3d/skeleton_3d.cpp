@@ -264,6 +264,8 @@ void Skeleton3D::_update_process_order() {
 		}
 	}
 
+	bones_backup.resize(bones.size());
+
 	process_order_dirty = false;
 
 	emit_signal("bone_list_changed");
@@ -310,19 +312,10 @@ void Skeleton3D::_notification(int p_what) {
 
 			// Process modifiers.
 			_find_modifiers();
-			LocalVector<Transform3D> current_bone_poses;
-			LocalVector<Vector3> current_pose_positions;
-			LocalVector<Quaternion> current_pose_rotations;
-			LocalVector<Vector3> current_pose_scales;
-			LocalVector<Transform3D> current_bone_global_poses;
 			if (!modifiers.is_empty()) {
 				// Store unmodified bone poses.
-				for (int i = 0; i < len; i++) {
-					current_bone_poses.push_back(bones[i].pose_cache);
-					current_pose_positions.push_back(bones[i].pose_position);
-					current_pose_rotations.push_back(bones[i].pose_rotation);
-					current_pose_scales.push_back(bones[i].pose_scale);
-					current_bone_global_poses.push_back(bones[i].global_pose);
+				for (int i = 0; i < bones.size(); i++) {
+					bones_backup[i].save(bones[i]);
 				}
 				_process_modifiers();
 			}
@@ -388,12 +381,8 @@ void Skeleton3D::_notification(int p_what) {
 
 			if (!modifiers.is_empty()) {
 				// Restore unmodified bone poses.
-				for (int i = 0; i < len; i++) {
-					bonesptr[i].pose_cache = current_bone_poses[i];
-					bonesptr[i].pose_position = current_pose_positions[i];
-					bonesptr[i].pose_rotation = current_pose_rotations[i];
-					bonesptr[i].pose_scale = current_pose_scales[i];
-					bonesptr[i].global_pose = current_bone_global_poses[i];
+				for (int i = 0; i < bones.size(); i++) {
+					bones_backup[i].restore(bones.write[i]);
 				}
 			}
 
