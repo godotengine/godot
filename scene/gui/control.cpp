@@ -2962,14 +2962,14 @@ int Control::get_theme_default_font_size() const {
 
 void Control::begin_bulk_theme_override() {
 	ERR_MAIN_THREAD_GUARD;
-	data.bulk_theme_override = true;
+	data.bulk_theme_override += 1;
 }
 
 void Control::end_bulk_theme_override() {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!data.bulk_theme_override);
 
-	data.bulk_theme_override = false;
+	data.bulk_theme_override -= 1;
 	_notify_theme_override_changed();
 }
 
