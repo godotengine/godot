@@ -54,6 +54,9 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_height_offset", "path_height_offset"), &NavigationAgent3D::set_path_height_offset);
 	ClassDB::bind_method(D_METHOD("get_path_height_offset"), &NavigationAgent3D::get_path_height_offset);
 
+	ClassDB::bind_method(D_METHOD("set_avoidance_space", "avoidance_space"), &NavigationAgent3D::set_avoidance_space);
+	ClassDB::bind_method(D_METHOD("get_avoidance_space"), &NavigationAgent3D::get_avoidance_space);
+
 	ClassDB::bind_method(D_METHOD("set_use_3d_avoidance", "enabled"), &NavigationAgent3D::set_use_3d_avoidance);
 	ClassDB::bind_method(D_METHOD("get_use_3d_avoidance"), &NavigationAgent3D::get_use_3d_avoidance);
 
@@ -233,7 +236,8 @@ void NavigationAgent3D::_notification(int p_what) {
 			set_physics_process_internal(true);
 
 			if (agent_parent && avoidance_enabled) {
-				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
+				NavigationServer3D::get_singleton()->agent_set_avoidance_space(agent, get_avoidance_space());
+				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
 			}
 
 #ifdef DEBUG_ENABLED
@@ -381,9 +385,11 @@ void NavigationAgent3D::set_avoidance_enabled(bool p_enabled) {
 	avoidance_enabled = p_enabled;
 
 	if (avoidance_enabled) {
+		NavigationServer3D::get_singleton()->agent_set_avoidance_space(agent, get_avoidance_space());
 		NavigationServer3D::get_singleton()->agent_set_avoidance_enabled(agent, true);
 		NavigationServer3D::get_singleton()->agent_set_avoidance_callback(agent, callable_mp(this, &NavigationAgent3D::_avoidance_done));
 	} else {
+		NavigationServer3D::get_singleton()->agent_set_avoidance_space(agent, RID());
 		NavigationServer3D::get_singleton()->agent_set_avoidance_enabled(agent, false);
 		NavigationServer3D::get_singleton()->agent_set_avoidance_callback(agent, Callable());
 	}
@@ -398,25 +404,19 @@ void NavigationAgent3D::set_agent_parent(Node *p_agent_parent) {
 		return;
 	}
 
-	// remove agent from any avoidance map before changing parent or there will be leftovers on the RVO map
+	// Remove agent from any avoidance map before changing parent or there will be leftovers on the RVO map.
 	NavigationServer3D::get_singleton()->agent_set_avoidance_callback(agent, Callable());
+	NavigationServer3D::get_singleton()->agent_set_avoidance_space(agent, RID());
 
 	if (Object::cast_to<Node3D>(p_agent_parent) != nullptr) {
-		// place agent on navigation map first or else the RVO agent callback creation fails silently later
 		agent_parent = Object::cast_to<Node3D>(p_agent_parent);
-		if (map_override.is_valid()) {
-			NavigationServer3D::get_singleton()->agent_set_map(get_rid(), map_override);
-		} else {
-			NavigationServer3D::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world_3d()->get_navigation_map());
-		}
-
-		// create new avoidance callback if enabled
+		// Create new avoidance callback if enabled.
 		if (avoidance_enabled) {
+			NavigationServer3D::get_singleton()->agent_set_avoidance_space(agent, get_avoidance_space());
 			NavigationServer3D::get_singleton()->agent_set_avoidance_callback(agent, callable_mp(this, &NavigationAgent3D::_avoidance_done));
 		}
 	} else {
 		agent_parent = nullptr;
-		NavigationServer3D::get_singleton()->agent_set_map(get_rid(), RID());
 	}
 }
 
@@ -505,14 +505,13 @@ void NavigationAgent3D::set_navigation_map(RID p_navigation_map) {
 
 	map_override = p_navigation_map;
 
-	NavigationServer3D::get_singleton()->agent_set_map(agent, map_override);
 	_request_repath();
 }
 
 RID NavigationAgent3D::get_navigation_map() const {
 	if (map_override.is_valid()) {
 		return map_override;
-	} else if (agent_parent != nullptr) {
+	} else if (agent_parent != nullptr && is_inside_tree()) {
 		return agent_parent->get_world_3d()->get_navigation_map();
 	}
 	return RID();
@@ -555,6 +554,27 @@ void NavigationAgent3D::set_height(real_t p_height) {
 
 void NavigationAgent3D::set_path_height_offset(real_t p_path_height_offset) {
 	path_height_offset = p_path_height_offset;
+}
+
+void NavigationAgent3D::set_avoidance_space(RID p_avoidance_space) {
+	if (avoidance_space_override == p_avoidance_space) {
+		return;
+	}
+
+	avoidance_space_override = p_avoidance_space;
+
+	if (avoidance_enabled) {
+		NavigationServer3D::get_singleton()->agent_set_avoidance_space(agent, avoidance_space_override);
+	}
+}
+
+RID NavigationAgent3D::get_avoidance_space() const {
+	if (avoidance_space_override.is_valid()) {
+		return avoidance_space_override;
+	} else if (agent_parent != nullptr && avoidance_enabled) {
+		return agent_parent->get_world_3d()->get_avoidance_space();
+	}
+	return RID();
 }
 
 void NavigationAgent3D::set_use_3d_avoidance(bool p_use_3d_avoidance) {
@@ -743,7 +763,10 @@ void NavigationAgent3D::_update_navigation() {
 
 	bool reload_path = false;
 
-	if (NavigationServer3D::get_singleton()->agent_is_map_changed(agent)) {
+	uint32_t map_iteration_id = NavigationServer3D::get_singleton()->map_get_iteration_id(get_navigation_map());
+
+	if (map_iteration_id != last_map_iteration_id) {
+		last_map_iteration_id = map_iteration_id;
 		reload_path = true;
 	} else if (navigation_result->get_path().size() == 0) {
 		reload_path = true;
@@ -770,12 +793,7 @@ void NavigationAgent3D::_update_navigation() {
 		navigation_query->set_target_position(target_position);
 		navigation_query->set_navigation_layers(navigation_layers);
 		navigation_query->set_metadata_flags(path_metadata_flags);
-
-		if (map_override.is_valid()) {
-			navigation_query->set_map(map_override);
-		} else {
-			navigation_query->set_map(agent_parent->get_world_3d()->get_navigation_map());
-		}
+		navigation_query->set_map(get_navigation_map());
 
 		NavigationServer3D::get_singleton()->query_path(navigation_query, navigation_result);
 #ifdef DEBUG_ENABLED

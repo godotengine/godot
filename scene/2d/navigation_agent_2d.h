@@ -44,6 +44,7 @@ class NavigationAgent2D : public Node {
 
 	RID agent;
 	RID map_override;
+	RID avoidance_space_override;
 
 	bool avoidance_enabled = false;
 	uint32_t avoidance_layers = 1;
@@ -93,6 +94,7 @@ class NavigationAgent2D : public Node {
 	bool last_waypoint_reached = false;
 	// No initialized on purpose
 	uint32_t update_frame_id = 0;
+	uint32_t last_map_iteration_id = 0;
 
 	// Debug properties for exposed bindings
 	bool debug_enabled = false;
@@ -209,6 +211,9 @@ public:
 	void _avoidance_done(Vector3 p_new_velocity);
 
 	PackedStringArray get_configuration_warnings() const override;
+
+	void set_avoidance_space(RID p_avoidance_space);
+	RID get_avoidance_space() const;
 
 	void set_avoidance_layers(uint32_t p_layers);
 	uint32_t get_avoidance_layers() const;

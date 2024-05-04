@@ -56,6 +56,7 @@ public:
 	virtual ~GodotNavigationServer2D();
 
 	virtual TypedArray<RID> get_maps() const override;
+	virtual TypedArray<RID> get_avoidance_spaces() const override;
 
 	virtual RID map_create() override;
 	virtual void map_set_active(RID p_map, bool p_active) override;
@@ -73,8 +74,6 @@ public:
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector2 &p_point) const override;
 	virtual TypedArray<RID> map_get_links(RID p_map) const override;
 	virtual TypedArray<RID> map_get_regions(RID p_map) const override;
-	virtual TypedArray<RID> map_get_agents(RID p_map) const override;
-	virtual TypedArray<RID> map_get_obstacles(RID p_map) const override;
 	virtual void map_force_update(RID p_map) override;
 	virtual Vector2 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const override;
 	virtual uint32_t map_get_iteration_id(RID p_map) const override;
@@ -143,10 +142,6 @@ public:
 	/// Creates the agent.
 	virtual RID agent_create() override;
 
-	/// Put the agent in the map.
-	virtual void agent_set_map(RID p_agent, RID p_map) override;
-	virtual RID agent_get_map(RID p_agent) const override;
-
 	virtual void agent_set_paused(RID p_agent, bool p_paused) override;
 	virtual bool agent_get_paused(RID p_agent) const override;
 
@@ -207,9 +202,6 @@ public:
 	virtual void agent_set_position(RID p_agent, Vector2 p_position) override;
 	virtual Vector2 agent_get_position(RID p_agent) const override;
 
-	/// Returns true if the map got changed the previous frame.
-	virtual bool agent_is_map_changed(RID p_agent) const override;
-
 	/// Callback called at the end of the RVO process
 	virtual void agent_set_avoidance_callback(RID p_agent, Callable p_callback) override;
 	virtual bool agent_has_avoidance_callback(RID p_agent) const override;
@@ -222,12 +214,12 @@ public:
 
 	virtual void agent_set_avoidance_priority(RID p_agent, real_t p_priority) override;
 	virtual real_t agent_get_avoidance_priority(RID p_agent) const override;
+	virtual void agent_set_avoidance_space(RID p_agent, RID p_avoidance_space) override;
+	virtual RID agent_get_avoidance_space(RID p_agent) const override;
 
 	virtual RID obstacle_create() override;
 	virtual void obstacle_set_avoidance_enabled(RID p_obstacle, bool p_enabled) override;
 	virtual bool obstacle_get_avoidance_enabled(RID p_obstacle) const override;
-	virtual void obstacle_set_map(RID p_obstacle, RID p_map) override;
-	virtual RID obstacle_get_map(RID p_obstacle) const override;
 	virtual void obstacle_set_paused(RID p_obstacle, bool p_paused) override;
 	virtual bool obstacle_get_paused(RID p_obstacle) const override;
 	virtual void obstacle_set_radius(RID p_obstacle, real_t p_radius) override;
@@ -240,6 +232,15 @@ public:
 	virtual Vector<Vector2> obstacle_get_vertices(RID p_obstacle) const override;
 	virtual void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) override;
 	virtual uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const override;
+	virtual void obstacle_set_avoidance_space(RID p_obstacle, RID p_avoidance_space) override;
+	virtual RID obstacle_get_avoidance_space(RID p_obstacle) const override;
+
+	virtual RID avoidance_space_create() override;
+	virtual uint32_t avoidance_space_get_iteration_id(RID p_avoidance_space) const override;
+	virtual void avoidance_space_set_active(RID p_avoidance_space, bool p_active) override;
+	virtual bool avoidance_space_is_active(RID p_avoidance_space) const override;
+	virtual TypedArray<RID> avoidance_space_get_agents(RID p_avoidance_space) const override;
+	virtual TypedArray<RID> avoidance_space_get_obstacles(RID p_avoidance_space) const override;
 
 	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const override;
 
@@ -257,6 +258,18 @@ public:
 	virtual void source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) override;
 
 	virtual Vector<Vector2> simplify_path(const Vector<Vector2> &p_path, real_t p_epsilon) override;
+
+#ifndef DISABLE_DEPRECATED
+	virtual TypedArray<RID> map_get_agents(RID p_map) const override;
+	virtual TypedArray<RID> map_get_obstacles(RID p_map) const override;
+
+	virtual void agent_set_map(RID p_agent, RID p_map) override;
+	virtual RID agent_get_map(RID p_agent) const override;
+	virtual bool agent_is_map_changed(RID p_agent) const override;
+
+	virtual void obstacle_set_map(RID p_obstacle, RID p_map) override;
+	virtual RID obstacle_get_map(RID p_obstacle) const override;
+#endif // DISABLE_DEPRECATED
 };
 
 #endif // GODOT_NAVIGATION_SERVER_2D_H

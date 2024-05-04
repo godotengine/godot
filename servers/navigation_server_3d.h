@@ -59,6 +59,7 @@ public:
 	static NavigationServer3D *get_singleton();
 
 	virtual TypedArray<RID> get_maps() const = 0;
+	virtual TypedArray<RID> get_avoidance_spaces() const = 0;
 
 	/// Create a new map.
 	virtual RID map_create() = 0;
@@ -112,8 +113,6 @@ public:
 
 	virtual TypedArray<RID> map_get_links(RID p_map) const = 0;
 	virtual TypedArray<RID> map_get_regions(RID p_map) const = 0;
-	virtual TypedArray<RID> map_get_agents(RID p_map) const = 0;
-	virtual TypedArray<RID> map_get_obstacles(RID p_map) const = 0;
 
 	virtual void map_force_update(RID p_map) = 0;
 	virtual uint32_t map_get_iteration_id(RID p_map) const = 0;
@@ -157,11 +156,6 @@ public:
 
 	/// Set the navigation mesh of this region.
 	virtual void region_set_navigation_mesh(RID p_region, Ref<NavigationMesh> p_navigation_mesh) = 0;
-
-#ifndef DISABLE_DEPRECATED
-	/// Bake the navigation mesh.
-	virtual void region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) = 0;
-#endif // DISABLE_DEPRECATED
 
 	/// Get a list of a region's connection to other regions.
 	virtual int region_get_connections_count(RID p_region) const = 0;
@@ -210,11 +204,6 @@ public:
 
 	/// Creates the agent.
 	virtual RID agent_create() = 0;
-
-	/// Put the agent in the map.
-	virtual void agent_set_map(RID p_agent, RID p_map) = 0;
-	virtual RID agent_get_map(RID p_agent) const = 0;
-
 	virtual void agent_set_paused(RID p_agent, bool p_paused) = 0;
 	virtual bool agent_get_paused(RID p_agent) const = 0;
 
@@ -280,9 +269,6 @@ public:
 	virtual void agent_set_position(RID p_agent, Vector3 p_position) = 0;
 	virtual Vector3 agent_get_position(RID p_agent) const = 0;
 
-	/// Returns true if the map got changed the previous frame.
-	virtual bool agent_is_map_changed(RID p_agent) const = 0;
-
 	/// Callback called at the end of the RVO process
 	virtual void agent_set_avoidance_callback(RID p_agent, Callable p_callback) = 0;
 	virtual bool agent_has_avoidance_callback(RID p_agent) const = 0;
@@ -296,12 +282,11 @@ public:
 	virtual void agent_set_avoidance_priority(RID p_agent, real_t p_priority) = 0;
 	virtual real_t agent_get_avoidance_priority(RID p_agent) const = 0;
 
+	virtual void agent_set_avoidance_space(RID p_agent, RID p_avoidance_space) = 0;
+	virtual RID agent_get_avoidance_space(RID p_agent) const = 0;
+
 	/// Creates the obstacle.
 	virtual RID obstacle_create() = 0;
-
-	virtual void obstacle_set_map(RID p_obstacle, RID p_map) = 0;
-	virtual RID obstacle_get_map(RID p_obstacle) const = 0;
-
 	virtual void obstacle_set_paused(RID p_obstacle, bool p_paused) = 0;
 	virtual bool obstacle_get_paused(RID p_obstacle) const = 0;
 
@@ -324,16 +309,22 @@ public:
 	virtual void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) = 0;
 	virtual uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const = 0;
 
+	virtual void obstacle_set_avoidance_space(RID p_obstacle, RID p_avoidance_space) = 0;
+	virtual RID obstacle_get_avoidance_space(RID p_obstacle) const = 0;
+
+	virtual RID avoidance_space_create() = 0;
+	virtual uint32_t avoidance_space_get_iteration_id(RID p_avoidance_space) const = 0;
+	virtual void avoidance_space_set_active(RID p_avoidance_space, bool p_active) = 0;
+	virtual bool avoidance_space_is_active(RID p_avoidance_space) const = 0;
+	virtual TypedArray<RID> avoidance_space_get_agents(RID p_avoidance_space) const = 0;
+	virtual TypedArray<RID> avoidance_space_get_obstacles(RID p_avoidance_space) const = 0;
+
 	/// Destroy the `RID`
 	virtual void free(RID p_object) = 0;
 
 	/// Control activation of this server.
 	virtual void set_active(bool p_active) = 0;
 
-	/// Process the collision avoidance agents.
-	/// The result of this process is needed by the physics server,
-	/// so this must be called in the main thread.
-	/// Note: This function is not thread safe.
 	virtual void process(real_t delta_time) = 0;
 	virtual void init() = 0;
 	virtual void sync() = 0;
@@ -375,6 +366,20 @@ public:
 
 	void set_debug_enabled(bool p_enabled);
 	bool get_debug_enabled() const;
+
+#ifndef DISABLE_DEPRECATED
+	virtual TypedArray<RID> map_get_agents(RID p_map) const = 0;
+	virtual TypedArray<RID> map_get_obstacles(RID p_map) const = 0;
+
+	virtual void region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) = 0;
+
+	virtual void agent_set_map(RID p_agent, RID p_map) = 0;
+	virtual RID agent_get_map(RID p_agent) const = 0;
+	virtual bool agent_is_map_changed(RID p_agent) const = 0;
+
+	virtual void obstacle_set_map(RID p_obstacle, RID p_map) = 0;
+	virtual RID obstacle_get_map(RID p_obstacle) const = 0;
+#endif // DISABLE_DEPRECATED
 
 private:
 	bool debug_enabled = false;

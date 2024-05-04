@@ -115,6 +115,8 @@ void NavigationAgent2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_avoidance_done", "new_velocity"), &NavigationAgent2D::_avoidance_done);
 
+	ClassDB::bind_method(D_METHOD("set_avoidance_space", "avoidance_space"), &NavigationAgent2D::set_avoidance_space);
+	ClassDB::bind_method(D_METHOD("get_avoidance_space"), &NavigationAgent2D::get_avoidance_space);
 	ClassDB::bind_method(D_METHOD("set_avoidance_layers", "layers"), &NavigationAgent2D::set_avoidance_layers);
 	ClassDB::bind_method(D_METHOD("get_avoidance_layers"), &NavigationAgent2D::get_avoidance_layers);
 	ClassDB::bind_method(D_METHOD("set_avoidance_mask", "mask"), &NavigationAgent2D::set_avoidance_mask);
@@ -214,6 +216,7 @@ void NavigationAgent2D::_notification(int p_what) {
 			set_physics_process_internal(true);
 
 			if (agent_parent && avoidance_enabled) {
+				NavigationServer2D::get_singleton()->agent_set_avoidance_space(agent, get_avoidance_space());
 				NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
 			}
 
@@ -344,9 +347,11 @@ void NavigationAgent2D::set_avoidance_enabled(bool p_enabled) {
 	avoidance_enabled = p_enabled;
 
 	if (avoidance_enabled) {
+		NavigationServer2D::get_singleton()->agent_set_avoidance_space(agent, get_avoidance_space());
 		NavigationServer2D::get_singleton()->agent_set_avoidance_enabled(agent, true);
 		NavigationServer2D::get_singleton()->agent_set_avoidance_callback(agent, callable_mp(this, &NavigationAgent2D::_avoidance_done));
 	} else {
+		NavigationServer2D::get_singleton()->agent_set_avoidance_space(agent, RID());
 		NavigationServer2D::get_singleton()->agent_set_avoidance_enabled(agent, false);
 		NavigationServer2D::get_singleton()->agent_set_avoidance_callback(agent, Callable());
 	}
@@ -363,23 +368,17 @@ void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
 
 	// remove agent from any avoidance map before changing parent or there will be leftovers on the RVO map
 	NavigationServer2D::get_singleton()->agent_set_avoidance_callback(agent, Callable());
+	NavigationServer2D::get_singleton()->agent_set_avoidance_space(agent, RID());
 
 	if (Object::cast_to<Node2D>(p_agent_parent) != nullptr) {
-		// place agent on navigation map first or else the RVO agent callback creation fails silently later
 		agent_parent = Object::cast_to<Node2D>(p_agent_parent);
-		if (map_override.is_valid()) {
-			NavigationServer2D::get_singleton()->agent_set_map(get_rid(), map_override);
-		} else {
-			NavigationServer2D::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world_2d()->get_navigation_map());
-		}
-
-		// create new avoidance callback if enabled
+		// Create new avoidance callback if enabled-
 		if (avoidance_enabled) {
+			NavigationServer2D::get_singleton()->agent_set_avoidance_space(agent, get_avoidance_space());
 			NavigationServer2D::get_singleton()->agent_set_avoidance_callback(agent, callable_mp(this, &NavigationAgent2D::_avoidance_done));
 		}
 	} else {
 		agent_parent = nullptr;
-		NavigationServer2D::get_singleton()->agent_set_map(get_rid(), RID());
 	}
 }
 
@@ -468,14 +467,13 @@ void NavigationAgent2D::set_navigation_map(RID p_navigation_map) {
 
 	map_override = p_navigation_map;
 
-	NavigationServer2D::get_singleton()->agent_set_map(agent, map_override);
 	_request_repath();
 }
 
 RID NavigationAgent2D::get_navigation_map() const {
 	if (map_override.is_valid()) {
 		return map_override;
-	} else if (agent_parent != nullptr) {
+	} else if (agent_parent != nullptr && is_inside_tree()) {
 		return agent_parent->get_world_2d()->get_navigation_map();
 	}
 	return RID();
@@ -677,7 +675,10 @@ void NavigationAgent2D::_update_navigation() {
 
 	bool reload_path = false;
 
-	if (NavigationServer2D::get_singleton()->agent_is_map_changed(agent)) {
+	uint32_t map_iteration_id = NavigationServer2D::get_singleton()->map_get_iteration_id(get_navigation_map());
+
+	if (map_iteration_id != last_map_iteration_id) {
+		last_map_iteration_id = map_iteration_id;
 		reload_path = true;
 	} else if (navigation_result->get_path().size() == 0) {
 		reload_path = true;
@@ -702,12 +703,7 @@ void NavigationAgent2D::_update_navigation() {
 		navigation_query->set_target_position(target_position);
 		navigation_query->set_navigation_layers(navigation_layers);
 		navigation_query->set_metadata_flags(path_metadata_flags);
-
-		if (map_override.is_valid()) {
-			navigation_query->set_map(map_override);
-		} else {
-			navigation_query->set_map(agent_parent->get_world_2d()->get_navigation_map());
-		}
+		navigation_query->set_map(get_navigation_map());
 
 		NavigationServer2D::get_singleton()->query_path(navigation_query, navigation_result);
 #ifdef DEBUG_ENABLED
@@ -862,6 +858,27 @@ void NavigationAgent2D::_transition_to_navigation_finished() {
 void NavigationAgent2D::_transition_to_target_reached() {
 	target_reached = true;
 	emit_signal(SNAME("target_reached"));
+}
+
+void NavigationAgent2D::set_avoidance_space(RID p_avoidance_space) {
+	if (avoidance_space_override == p_avoidance_space) {
+		return;
+	}
+
+	avoidance_space_override = p_avoidance_space;
+
+	if (avoidance_enabled) {
+		NavigationServer2D::get_singleton()->agent_set_avoidance_space(agent, avoidance_space_override);
+	}
+}
+
+RID NavigationAgent2D::get_avoidance_space() const {
+	if (avoidance_space_override.is_valid()) {
+		return avoidance_space_override;
+	} else if (agent_parent != nullptr && avoidance_enabled) {
+		return agent_parent->get_world_2d()->get_avoidance_space();
+	}
+	return RID();
 }
 
 void NavigationAgent2D::set_avoidance_layers(uint32_t p_layers) {

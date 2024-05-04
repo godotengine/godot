@@ -44,6 +44,7 @@ class World2D : public Resource {
 	RID canvas;
 	mutable RID space;
 	mutable RID navigation_map;
+	mutable RID avoidance_space;
 
 	HashSet<Viewport *> viewports;
 
@@ -55,6 +56,7 @@ public:
 	RID get_canvas() const;
 	RID get_space() const;
 	RID get_navigation_map() const;
+	RID get_avoidance_space() const;
 
 	PhysicsDirectSpaceState2D *get_direct_space_state();
 

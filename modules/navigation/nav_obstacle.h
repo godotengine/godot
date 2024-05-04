@@ -38,10 +38,11 @@
 
 class NavAgent;
 class NavMap;
+class NavAvoidanceSpace3D;
 
 class NavObstacle : public NavRid {
 	NavAgent *agent = nullptr;
-	NavMap *map = nullptr;
+	NavAvoidanceSpace3D *avoidance_space = nullptr;
 	Vector3 velocity;
 	Vector3 position;
 	Vector<Vector3> vertices;
@@ -55,7 +56,6 @@ class NavObstacle : public NavRid {
 
 	bool obstacle_dirty = true;
 
-	uint32_t last_map_iteration_id = 0;
 	bool paused = false;
 
 public:
@@ -67,9 +67,6 @@ public:
 
 	void set_use_3d_avoidance(bool p_enabled);
 	bool get_use_3d_avoidance() { return use_3d_avoidance; }
-
-	void set_map(NavMap *p_map);
-	NavMap *get_map() { return map; }
 
 	void set_agent(NavAgent *p_agent);
 	NavAgent *get_agent() { return agent; }
@@ -89,8 +86,6 @@ public:
 	void set_vertices(const Vector<Vector3> &p_vertices);
 	const Vector<Vector3> &get_vertices() const { return vertices; }
 
-	bool is_map_changed();
-
 	void set_avoidance_layers(uint32_t p_layers);
 	uint32_t get_avoidance_layers() const { return avoidance_layers; };
 
@@ -98,6 +93,9 @@ public:
 	bool get_paused() const;
 
 	bool check_dirty();
+
+	void set_avoidance_space(NavAvoidanceSpace3D *p_avoidance_space);
+	NavAvoidanceSpace3D *get_avoidance_space() { return avoidance_space; }
 
 private:
 	void internal_update_agent();

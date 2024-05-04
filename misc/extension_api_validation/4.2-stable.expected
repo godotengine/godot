@@ -332,6 +332,30 @@ Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_circle/ar
 Optional arguments added. Compatibility methods registered.
 
 
+GH-90771
+--------
+Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/set_navigation_map
+Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/get_navigation_map
+Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/set_navigation_map
+Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/get_navigation_map
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/map_get_agents
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/map_get_obstacles
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/agent_set_map
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/agent_get_map
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/agent_is_map_changed
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/obstacle_set_map
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/obstacle_get_map
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/map_get_agents
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/map_get_obstacles
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/agent_set_map
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/agent_get_map
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/agent_is_map_changed
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/obstacle_set_map
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/obstacle_get_map
+
+NavigationServer agents and obstacles are no longer an assigned part of a navigation map. Avoidance agents and avoidance obstacles are moved to avoidance spaces.
+
+
 GH-91098
 --------
 Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/remove_paragraph/arguments': size changed value in new API, from 1 to 2.

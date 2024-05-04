@@ -98,16 +98,19 @@ TEST_SUITE("[Navigation]") {
 			// TODO: Add remaining setters/getters once the missing getters are added.
 		}
 
-		SUBCASE("'ProcessInfo' should report agent with active map") {
-			RID map = navigation_server->map_create();
-			CHECK(map.is_valid());
-			navigation_server->map_set_active(map, true);
-			navigation_server->agent_set_map(agent, map);
+		SUBCASE("'ProcessInfo' should report agent with active avoidance_space") {
+			RID avoidance_space = navigation_server->avoidance_space_create();
+			CHECK(avoidance_space.is_valid());
+			navigation_server->avoidance_space_set_active(avoidance_space, true);
+			navigation_server->agent_set_avoidance_space(agent, avoidance_space);
+			navigation_server->agent_set_avoidance_enabled(agent, true);
 			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->process(0.0);
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_AGENT_COUNT), 1);
-			navigation_server->agent_set_map(agent, RID());
-			navigation_server->free(map);
+			navigation_server->agent_set_avoidance_space(agent, RID());
+			navigation_server->free(avoidance_space);
 			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->process(0.0);
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_AGENT_COUNT), 0);
 		}
 
@@ -177,17 +180,6 @@ TEST_SUITE("[Navigation]") {
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_ACTIVE_MAPS), 0);
 		}
 
-		SUBCASE("Number of agents should be reported properly") {
-			RID agent = navigation_server->agent_create();
-			CHECK(agent.is_valid());
-			navigation_server->agent_set_map(agent, map);
-			navigation_server->process(0.0); // Give server some cycles to commit.
-			CHECK_EQ(navigation_server->map_get_agents(map).size(), 1);
-			navigation_server->free(agent);
-			navigation_server->process(0.0); // Give server some cycles to commit.
-			CHECK_EQ(navigation_server->map_get_agents(map).size(), 0);
-		}
-
 		SUBCASE("Number of links should be reported properly") {
 			RID link = navigation_server->link_create();
 			CHECK(link.is_valid());
@@ -197,17 +189,6 @@ TEST_SUITE("[Navigation]") {
 			navigation_server->free(link);
 			navigation_server->process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_links(map).size(), 0);
-		}
-
-		SUBCASE("Number of obstacles should be reported properly") {
-			RID obstacle = navigation_server->obstacle_create();
-			CHECK(obstacle.is_valid());
-			navigation_server->obstacle_set_map(obstacle, map);
-			navigation_server->process(0.0); // Give server some cycles to commit.
-			CHECK_EQ(navigation_server->map_get_obstacles(map).size(), 1);
-			navigation_server->free(obstacle);
-			navigation_server->process(0.0); // Give server some cycles to commit.
-			CHECK_EQ(navigation_server->map_get_obstacles(map).size(), 0);
 		}
 
 		SUBCASE("Number of regions should be reported properly") {
@@ -291,10 +272,12 @@ TEST_SUITE("[Navigation]") {
 			navigation_server->map_set_active(map, true);
 			navigation_server->link_set_map(link, map);
 			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->process(0.0);
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_LINK_COUNT), 1);
 			navigation_server->link_set_map(link, RID());
 			navigation_server->free(map);
 			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->process(0.0);
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_LINK_COUNT), 0);
 		}
 
@@ -344,10 +327,12 @@ TEST_SUITE("[Navigation]") {
 			navigation_server->map_set_active(map, true);
 			navigation_server->region_set_map(region, map);
 			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->process(0.0);
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_REGION_COUNT), 1);
 			navigation_server->region_set_map(region, RID());
 			navigation_server->free(map);
 			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->process(0.0);
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_REGION_COUNT), 0);
 		}
 
@@ -366,11 +351,11 @@ TEST_SUITE("[Navigation]") {
 	TEST_CASE("[NavigationServer3D] Server should move agent properly") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
 
-		RID map = navigation_server->map_create();
+		RID avoidance_space = navigation_server->avoidance_space_create();
 		RID agent = navigation_server->agent_create();
 
-		navigation_server->map_set_active(map, true);
-		navigation_server->agent_set_map(agent, map);
+		navigation_server->avoidance_space_set_active(avoidance_space, true);
+		navigation_server->agent_set_avoidance_space(agent, avoidance_space);
 		navigation_server->agent_set_avoidance_enabled(agent, true);
 		navigation_server->agent_set_velocity(agent, Vector3(1, 0, 1));
 		CallableMock agent_avoidance_callback_mock;
@@ -381,20 +366,20 @@ TEST_SUITE("[Navigation]") {
 		CHECK_NE(agent_avoidance_callback_mock.function1_latest_arg0, Vector3(0, 0, 0));
 
 		navigation_server->free(agent);
-		navigation_server->free(map);
+		navigation_server->free(avoidance_space);
 	}
 
 	// This test case does not check precise values on purpose - to not be too sensitivte.
 	TEST_CASE("[NavigationServer3D] Server should make agents avoid each other when avoidance enabled") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
 
-		RID map = navigation_server->map_create();
+		RID avoidance_space = navigation_server->avoidance_space_create();
 		RID agent_1 = navigation_server->agent_create();
 		RID agent_2 = navigation_server->agent_create();
 
-		navigation_server->map_set_active(map, true);
+		navigation_server->avoidance_space_set_active(avoidance_space, true);
 
-		navigation_server->agent_set_map(agent_1, map);
+		navigation_server->agent_set_avoidance_space(agent_1, avoidance_space);
 		navigation_server->agent_set_avoidance_enabled(agent_1, true);
 		navigation_server->agent_set_position(agent_1, Vector3(0, 0, 0));
 		navigation_server->agent_set_radius(agent_1, 1);
@@ -402,7 +387,7 @@ TEST_SUITE("[Navigation]") {
 		CallableMock agent_1_avoidance_callback_mock;
 		navigation_server->agent_set_avoidance_callback(agent_1, callable_mp(&agent_1_avoidance_callback_mock, &CallableMock::function1));
 
-		navigation_server->agent_set_map(agent_2, map);
+		navigation_server->agent_set_avoidance_space(agent_2, avoidance_space);
 		navigation_server->agent_set_avoidance_enabled(agent_2, true);
 		navigation_server->agent_set_position(agent_2, Vector3(2.5, 0, 0.5));
 		navigation_server->agent_set_radius(agent_2, 1);
@@ -424,19 +409,19 @@ TEST_SUITE("[Navigation]") {
 
 		navigation_server->free(agent_2);
 		navigation_server->free(agent_1);
-		navigation_server->free(map);
+		navigation_server->free(avoidance_space);
 	}
 
 	TEST_CASE("[NavigationServer3D] Server should make agents avoid dynamic obstacles when avoidance enabled") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
 
-		RID map = navigation_server->map_create();
+		RID avoidance_space = navigation_server->avoidance_space_create();
 		RID agent_1 = navigation_server->agent_create();
 		RID obstacle_1 = navigation_server->obstacle_create();
 
-		navigation_server->map_set_active(map, true);
+		navigation_server->avoidance_space_set_active(avoidance_space, true);
 
-		navigation_server->agent_set_map(agent_1, map);
+		navigation_server->agent_set_avoidance_space(agent_1, avoidance_space);
 		navigation_server->agent_set_avoidance_enabled(agent_1, true);
 		navigation_server->agent_set_position(agent_1, Vector3(0, 0, 0));
 		navigation_server->agent_set_radius(agent_1, 1);
@@ -444,7 +429,7 @@ TEST_SUITE("[Navigation]") {
 		CallableMock agent_1_avoidance_callback_mock;
 		navigation_server->agent_set_avoidance_callback(agent_1, callable_mp(&agent_1_avoidance_callback_mock, &CallableMock::function1));
 
-		navigation_server->obstacle_set_map(obstacle_1, map);
+		navigation_server->obstacle_set_avoidance_space(obstacle_1, avoidance_space);
 		navigation_server->obstacle_set_avoidance_enabled(obstacle_1, true);
 		navigation_server->obstacle_set_position(obstacle_1, Vector3(2.5, 0, 0.5));
 		navigation_server->obstacle_set_radius(obstacle_1, 1);
@@ -458,35 +443,35 @@ TEST_SUITE("[Navigation]") {
 
 		navigation_server->free(obstacle_1);
 		navigation_server->free(agent_1);
-		navigation_server->free(map);
+		navigation_server->free(avoidance_space);
 		navigation_server->process(0.0); // Give server some cycles to commit.
 	}
 
 	TEST_CASE("[NavigationServer3D] Server should make agents avoid static obstacles when avoidance enabled") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
 
-		RID map = navigation_server->map_create();
+		RID avoidance_space = navigation_server->avoidance_space_create();
 		RID agent_1 = navigation_server->agent_create();
 		RID agent_2 = navigation_server->agent_create();
 		RID obstacle_1 = navigation_server->obstacle_create();
 
-		navigation_server->map_set_active(map, true);
+		navigation_server->avoidance_space_set_active(avoidance_space, true);
 
-		navigation_server->agent_set_map(agent_1, map);
+		navigation_server->agent_set_avoidance_space(agent_1, avoidance_space);
 		navigation_server->agent_set_avoidance_enabled(agent_1, true);
 		navigation_server->agent_set_radius(agent_1, 1.6); // Have hit the obstacle already.
 		navigation_server->agent_set_velocity(agent_1, Vector3(1, 0, 0));
 		CallableMock agent_1_avoidance_callback_mock;
 		navigation_server->agent_set_avoidance_callback(agent_1, callable_mp(&agent_1_avoidance_callback_mock, &CallableMock::function1));
 
-		navigation_server->agent_set_map(agent_2, map);
+		navigation_server->agent_set_avoidance_space(agent_2, avoidance_space);
 		navigation_server->agent_set_avoidance_enabled(agent_2, true);
 		navigation_server->agent_set_radius(agent_2, 1.4); // Haven't hit the obstacle yet.
 		navigation_server->agent_set_velocity(agent_2, Vector3(1, 0, 0));
 		CallableMock agent_2_avoidance_callback_mock;
 		navigation_server->agent_set_avoidance_callback(agent_2, callable_mp(&agent_2_avoidance_callback_mock, &CallableMock::function1));
 
-		navigation_server->obstacle_set_map(obstacle_1, map);
+		navigation_server->obstacle_set_avoidance_space(obstacle_1, avoidance_space);
 		navigation_server->obstacle_set_avoidance_enabled(obstacle_1, true);
 		PackedVector3Array obstacle_1_vertices;
 
@@ -522,7 +507,7 @@ TEST_SUITE("[Navigation]") {
 		navigation_server->free(obstacle_1);
 		navigation_server->free(agent_2);
 		navigation_server->free(agent_1);
-		navigation_server->free(map);
+		navigation_server->free(avoidance_space);
 		navigation_server->process(0.0); // Give server some cycles to commit.
 	}
 

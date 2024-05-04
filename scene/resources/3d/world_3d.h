@@ -49,6 +49,7 @@ private:
 	RID scenario;
 	mutable RID space;
 	mutable RID navigation_map;
+	mutable RID avoidance_space;
 
 	Ref<Environment> environment;
 	Ref<Environment> fallback_environment;
@@ -68,6 +69,7 @@ protected:
 public:
 	RID get_space() const;
 	RID get_navigation_map() const;
+	RID get_avoidance_space() const;
 	RID get_scenario() const;
 
 	void set_environment(const Ref<Environment> &p_environment);

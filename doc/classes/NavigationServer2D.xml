@@ -52,11 +52,17 @@
 				Returns the [code]avoidance_priority[/code] of the specified [param agent].
 			</description>
 		</method>
-		<method name="agent_get_map" qualifiers="const">
+		<method name="agent_get_avoidance_space" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="agent" type="RID" />
 			<description>
-				Returns the navigation map [RID] the requested [param agent] is currently assigned to.
+				Returns the [RID] of the avoidance space used by this agent.
+			</description>
+		</method>
+		<method name="agent_get_map" qualifiers="const" deprecated="An agent is no longer an assigned part of a navigation map. See [method agent_get_avoidance_space] to get the agent&apos;s avoidance space.">
+			<return type="RID" />
+			<param index="0" name="agent" type="RID" />
+			<description>
 			</description>
 		</method>
 		<method name="agent_get_max_neighbors" qualifiers="const">
@@ -129,11 +135,10 @@
 				Return [code]true[/code] if the specified [param agent] has an avoidance callback.
 			</description>
 		</method>
-		<method name="agent_is_map_changed" qualifiers="const">
+		<method name="agent_is_map_changed" qualifiers="const" deprecated="An agent is no longer an assigned part of a navigation map. See [method map_get_iteration_id] or connect to [signal map_changed] signal to keep track of the navigation map updates.">
 			<return type="bool" />
 			<param index="0" name="agent" type="RID" />
 			<description>
-				Returns true if the map got changed the previous frame.
 			</description>
 		</method>
 		<method name="agent_set_avoidance_callback">
@@ -178,12 +183,19 @@
 				The specified [param agent] does not adjust the velocity for other agents that would match the [code]avoidance_mask[/code] but have a lower [code]avoidance_priority[/code]. This in turn makes the other agents with lower priority adjust their velocities even more to avoid collision with this agent.
 			</description>
 		</method>
-		<method name="agent_set_map">
+		<method name="agent_set_avoidance_space">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="avoidance_space" type="RID" />
+			<description>
+				Sets the [RID] of the avoidance space to be used by this agent.
+			</description>
+		</method>
+		<method name="agent_set_map" deprecated="An agent is no longer an assigned part of a navigation map. See [method agent_set_avoidance_space] to assigned an avoidance space.">
 			<return type="void" />
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="map" type="RID" />
 			<description>
-				Puts the agent in the map.
 			</description>
 		</method>
 		<method name="agent_set_max_neighbors">
@@ -266,6 +278,48 @@
 				Replaces the internal velocity in the collision avoidance simulation with [param velocity] for the specified [param agent]. When an agent is teleported to a new position far away this function should be used in the same frame. If called frequently this function can get agents stuck.
 			</description>
 		</method>
+		<method name="avoidance_space_create">
+			<return type="RID" />
+			<description>
+				Creates a new avoidance space.
+			</description>
+		</method>
+		<method name="avoidance_space_get_agents" qualifiers="const">
+			<return type="RID[]" />
+			<param index="0" name="avoidance_space" type="RID" />
+			<description>
+				Returns all agents [RID]s that are currently assigned to the requested [param avoidance_space].
+			</description>
+		</method>
+		<method name="avoidance_space_get_iteration_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="avoidance_space" type="RID" />
+			<description>
+				Returns the current iteration id of the requested [param avoidance_space].
+			</description>
+		</method>
+		<method name="avoidance_space_get_obstacles" qualifiers="const">
+			<return type="RID[]" />
+			<param index="0" name="avoidance_space" type="RID" />
+			<description>
+				Returns all obstacles [RID]s that are currently assigned to the requested [param avoidance_space].
+			</description>
+		</method>
+		<method name="avoidance_space_is_active" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="avoidance_space" type="RID" />
+			<description>
+				Returns [code]true[/code] if the requested [param avoidance_space] is active and processing.
+			</description>
+		</method>
+		<method name="avoidance_space_set_active">
+			<return type="void" />
+			<param index="0" name="avoidance_space" type="RID" />
+			<param index="1" name="active" type="bool" />
+			<description>
+				If sets to [code]true[/code] the avoidance space is active and processing.
+			</description>
+		</method>
 		<method name="bake_from_source_geometry_data">
 			<return type="void" />
 			<param index="0" name="navigation_polygon" type="NavigationPolygon" />
@@ -289,6 +343,12 @@
 			<param index="0" name="rid" type="RID" />
 			<description>
 				Destroys the given RID.
+			</description>
+		</method>
+		<method name="get_avoidance_spaces" qualifiers="const">
+			<return type="RID[]" />
+			<description>
+				Returns all created avoidance space [RID]s on the NavigationServer. This returns both 2D and 3D created avoidance spaces.
 			</description>
 		</method>
 		<method name="get_debug_enabled" qualifiers="const">
@@ -636,11 +696,17 @@
 				Returns the [code]avoidance_layers[/code] bitmask of the specified [param obstacle].
 			</description>
 		</method>
-		<method name="obstacle_get_map" qualifiers="const">
+		<method name="obstacle_get_avoidance_space" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="obstacle" type="RID" />
 			<description>
-				Returns the navigation map [RID] the requested [param obstacle] is currently assigned to.
+				Returns the [RID] of the avoidance space used by the specified [param obstacle].
+			</description>
+		</method>
+		<method name="obstacle_get_map" qualifiers="const" deprecated="An obstacle is no longer an assigned part of a navigation map. See [method obstacle_get_avoidance_space] to get the obstacle&apos;s avoidance space.">
+			<return type="RID" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
 			</description>
 		</method>
 		<method name="obstacle_get_paused" qualifiers="const">
@@ -694,12 +760,19 @@
 				Set the obstacles's [code]avoidance_layers[/code] bitmask.
 			</description>
 		</method>
-		<method name="obstacle_set_map">
+		<method name="obstacle_set_avoidance_space">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="avoidance_space" type="RID" />
+			<description>
+				Sets the [RID] of the avoidance space to be used by the specified [param obstacle].
+			</description>
+		</method>
+		<method name="obstacle_set_map" deprecated="An obstacle is no longer an assigned part of a navigation map. See [method obstacle_set_avoidance_space] to assigned an avoidance space.">
 			<return type="void" />
 			<param index="0" name="obstacle" type="RID" />
 			<param index="1" name="map" type="RID" />
 			<description>
-				Sets the navigation map [RID] for the obstacle.
 			</description>
 		</method>
 		<method name="obstacle_set_paused">
@@ -975,6 +1048,11 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="avoidance_debug_changed">
+			<description>
+				Emitted when avoidance debug settings are changed. Only available in debug builds.
+			</description>
+		</signal>
 		<signal name="map_changed">
 			<param index="0" name="map" type="RID" />
 			<description>

@@ -36,6 +36,7 @@
 #include "../nav_map.h"
 #include "../nav_obstacle.h"
 #include "../nav_region.h"
+#include "nav_avoidance_space_3d.h"
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
@@ -77,6 +78,9 @@ class GodotNavigationServer3D : public NavigationServer3D {
 	mutable RID_Owner<NavRegion> region_owner;
 	mutable RID_Owner<NavAgent> agent_owner;
 	mutable RID_Owner<NavObstacle> obstacle_owner;
+	mutable RID_Owner<NavAvoidanceSpace3D> avoidance_space_owner;
+
+	LocalVector<NavAvoidanceSpace3D *> active_avoidance_spaces;
 
 	bool active = true;
 	LocalVector<NavMap *> active_maps;
@@ -86,9 +90,9 @@ class GodotNavigationServer3D : public NavigationServer3D {
 	NavMeshGenerator3D *navmesh_generator_3d = nullptr;
 #endif // _3D_DISABLED
 
-	// Performance Monitor
 	int pm_region_count = 0;
 	int pm_agent_count = 0;
+	int pm_obstacle_count = 0;
 	int pm_link_count = 0;
 	int pm_polygon_count = 0;
 	int pm_edge_count = 0;
@@ -103,8 +107,10 @@ public:
 	void add_command(SetCommand *command);
 
 	virtual TypedArray<RID> get_maps() const override;
+	virtual TypedArray<RID> get_avoidance_spaces() const override;
 
 	virtual RID map_create() override;
+	virtual uint32_t map_get_iteration_id(RID p_map) const override;
 	COMMAND_2(map_set_active, RID, p_map, bool, p_active);
 	virtual bool map_is_active(RID p_map) const override;
 
@@ -138,11 +144,8 @@ public:
 
 	virtual TypedArray<RID> map_get_links(RID p_map) const override;
 	virtual TypedArray<RID> map_get_regions(RID p_map) const override;
-	virtual TypedArray<RID> map_get_agents(RID p_map) const override;
-	virtual TypedArray<RID> map_get_obstacles(RID p_map) const override;
 
 	virtual void map_force_update(RID p_map) override;
-	virtual uint32_t map_get_iteration_id(RID p_map) const override;
 
 	virtual Vector3 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const override;
 
@@ -171,9 +174,6 @@ public:
 	COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform);
 	virtual Transform3D region_get_transform(RID p_region) const override;
 	COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navigation_mesh);
-#ifndef DISABLE_DEPRECATED
-	virtual void region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) override;
-#endif // DISABLE_DEPRECATED
 	virtual int region_get_connections_count(RID p_region) const override;
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override;
@@ -204,8 +204,6 @@ public:
 	virtual bool agent_get_avoidance_enabled(RID p_agent) const override;
 	COMMAND_2(agent_set_use_3d_avoidance, RID, p_agent, bool, p_enabled);
 	virtual bool agent_get_use_3d_avoidance(RID p_agent) const override;
-	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);
-	virtual RID agent_get_map(RID p_agent) const override;
 	COMMAND_2(agent_set_paused, RID, p_agent, bool, p_paused);
 	virtual bool agent_get_paused(RID p_agent) const override;
 	COMMAND_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_distance);
@@ -227,7 +225,6 @@ public:
 	COMMAND_2(agent_set_velocity_forced, RID, p_agent, Vector3, p_velocity);
 	COMMAND_2(agent_set_position, RID, p_agent, Vector3, p_position);
 	virtual Vector3 agent_get_position(RID p_agent) const override;
-	virtual bool agent_is_map_changed(RID p_agent) const override;
 	COMMAND_2(agent_set_avoidance_callback, RID, p_agent, Callable, p_callback);
 	virtual bool agent_has_avoidance_callback(RID p_agent) const override;
 	COMMAND_2(agent_set_avoidance_layers, RID, p_agent, uint32_t, p_layers);
@@ -236,14 +233,14 @@ public:
 	virtual uint32_t agent_get_avoidance_mask(RID p_agent) const override;
 	COMMAND_2(agent_set_avoidance_priority, RID, p_agent, real_t, p_priority);
 	virtual real_t agent_get_avoidance_priority(RID p_agent) const override;
+	COMMAND_2(agent_set_avoidance_space, RID, p_agent, RID, p_avoidance_space);
+	virtual RID agent_get_avoidance_space(RID p_agent) const override;
 
 	virtual RID obstacle_create() override;
 	COMMAND_2(obstacle_set_avoidance_enabled, RID, p_obstacle, bool, p_enabled);
 	virtual bool obstacle_get_avoidance_enabled(RID p_obstacle) const override;
 	COMMAND_2(obstacle_set_use_3d_avoidance, RID, p_obstacle, bool, p_enabled);
 	virtual bool obstacle_get_use_3d_avoidance(RID p_obstacle) const override;
-	COMMAND_2(obstacle_set_map, RID, p_obstacle, RID, p_map);
-	virtual RID obstacle_get_map(RID p_obstacle) const override;
 	COMMAND_2(obstacle_set_paused, RID, p_obstacle, bool, p_paused);
 	virtual bool obstacle_get_paused(RID p_obstacle) const override;
 	COMMAND_2(obstacle_set_radius, RID, p_obstacle, real_t, p_radius);
@@ -258,6 +255,15 @@ public:
 	virtual Vector<Vector3> obstacle_get_vertices(RID p_obstacle) const override;
 	COMMAND_2(obstacle_set_avoidance_layers, RID, p_obstacle, uint32_t, p_layers);
 	virtual uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const override;
+	COMMAND_2(obstacle_set_avoidance_space, RID, p_obstacle, RID, p_avoidance_space);
+	virtual RID obstacle_get_avoidance_space(RID p_obstacle) const override;
+
+	virtual RID avoidance_space_create() override;
+	virtual uint32_t avoidance_space_get_iteration_id(RID p_avoidance_space) const override;
+	COMMAND_2(avoidance_space_set_active, RID, p_avoidance_space, bool, p_active);
+	virtual bool avoidance_space_is_active(RID p_avoidance_space) const override;
+	virtual TypedArray<RID> avoidance_space_get_agents(RID p_avoidance_space) const override;
+	virtual TypedArray<RID> avoidance_space_get_obstacles(RID p_avoidance_space) const override;
 
 	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override;
 	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
@@ -288,9 +294,24 @@ public:
 
 	int get_process_info(ProcessInfo p_info) const override;
 
+#ifndef DISABLE_DEPRECATED
+	virtual TypedArray<RID> map_get_agents(RID p_map) const override;
+	virtual TypedArray<RID> map_get_obstacles(RID p_map) const override;
+
+	virtual void region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) override;
+
+	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);
+	virtual RID agent_get_map(RID p_agent) const override;
+	virtual bool agent_is_map_changed(RID p_agent) const override;
+
+	COMMAND_2(obstacle_set_map, RID, p_obstacle, RID, p_map);
+	virtual RID obstacle_get_map(RID p_obstacle) const override;
+#endif // DISABLE_DEPRECATED
+
 private:
 	void internal_free_agent(RID p_object);
 	void internal_free_obstacle(RID p_object);
+	void internal_free_avoidance_space(RID p_object);
 };
 
 #undef COMMAND_1

@@ -10,6 +10,9 @@
 		<link title="Ray-casting">$DOCS_URL/tutorials/physics/ray-casting.html</link>
 	</tutorials>
 	<members>
+		<member name="avoidance_space" type="RID" setter="" getter="get_avoidance_space">
+			The [RID] of this world's avoidance space. Used by the [NavigationServer2D].
+		</member>
 		<member name="canvas" type="RID" setter="" getter="get_canvas">
 			The [RID] of this world's canvas resource. Used by the [RenderingServer] for 2D drawing.
 		</member>

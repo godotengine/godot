@@ -90,7 +90,9 @@ public:
 	void set_navigation_layer_value(int p_layer_number, bool p_value);
 	bool get_navigation_layer_value(int p_layer_number) const;
 
+#ifndef DISABLE_DEPRECATED
 	RID get_region_rid() const;
+#endif // DISABLE_DEPRECATED
 
 	void set_enter_cost(real_t p_enter_cost);
 	real_t get_enter_cost() const;

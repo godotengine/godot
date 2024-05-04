@@ -30,6 +30,7 @@
 
 #include "nav_agent.h"
 
+#include "3d/nav_avoidance_space_3d.h"
 #include "nav_map.h"
 
 NavAgent::NavAgent() {
@@ -79,48 +80,43 @@ void NavAgent::_update_rvo_agent_properties() {
 		rvo_agent_2d.avoidance_priority_ = avoidance_priority;
 	}
 
-	if (map != nullptr) {
+	if (avoidance_space != nullptr) {
 		if (avoidance_enabled) {
-			map->set_agent_as_controlled(this);
+			avoidance_space->add_agent(this);
 		} else {
-			map->remove_agent_as_controlled(this);
+			avoidance_space->remove_agent(this);
 		}
 	}
 	agent_dirty = true;
 }
 
-void NavAgent::set_map(NavMap *p_map) {
-	if (map == p_map) {
+void NavAgent::set_avoidance_space(NavAvoidanceSpace3D *p_avoidance_space) {
+	if (avoidance_space == p_avoidance_space) {
 		return;
 	}
 
-	if (map) {
-		map->remove_agent(this);
+	if (avoidance_space) {
+		avoidance_space->remove_agent(this);
 	}
 
-	map = p_map;
+	avoidance_space = p_avoidance_space;
 	agent_dirty = true;
 
-	if (map) {
-		map->add_agent(this);
-		if (avoidance_enabled) {
-			map->set_agent_as_controlled(this);
-		}
-	}
-}
-
-bool NavAgent::is_map_changed() {
-	if (map) {
-		bool is_changed = map->get_iteration_id() != last_map_iteration_id;
-		last_map_iteration_id = map->get_iteration_id();
-		return is_changed;
-	} else {
-		return false;
+	if (avoidance_space && avoidance_enabled) {
+		avoidance_space->add_agent(this);
 	}
 }
 
 void NavAgent::set_avoidance_callback(Callable p_callback) {
 	avoidance_callback = p_callback;
+
+	if (avoidance_space) {
+		if (p_callback.is_valid() && avoidance_enabled) {
+			avoidance_space->add_agent(this);
+		} else {
+			avoidance_space->remove_agent(this);
+		}
+	}
 }
 
 bool NavAgent::has_avoidance_callback() const {
@@ -360,11 +356,11 @@ void NavAgent::set_paused(bool p_paused) {
 
 	paused = p_paused;
 
-	if (map) {
-		if (paused) {
-			map->remove_agent_as_controlled(this);
+	if (avoidance_space) {
+		if (avoidance_space) {
+			avoidance_space->remove_agent(this);
 		} else {
-			map->set_agent_as_controlled(this);
+			avoidance_space->add_agent(this);
 		}
 	}
 }

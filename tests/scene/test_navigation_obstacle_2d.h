@@ -45,18 +45,18 @@ TEST_SUITE("[Navigation]") {
 		memdelete(obstacle_node);
 	}
 
-	TEST_CASE("[SceneTree][NavigationObstacle2D] New obstacle should attach to default map") {
+	TEST_CASE("[SceneTree][NavigationObstacle2D] New obstacle should attach to default avoidance space") {
 		Node2D *node_2d = memnew(Node2D);
 		SceneTree::get_singleton()->get_root()->add_child(node_2d);
 
 		NavigationObstacle2D *obstacle_node = memnew(NavigationObstacle2D);
-		// obstacle should not be attached to any map when outside of tree
-		CHECK_FALSE(obstacle_node->get_navigation_map().is_valid());
+		// obstacle should not be attached to any avoidance space when outside of tree
+		CHECK_FALSE(obstacle_node->get_avoidance_space().is_valid());
 
-		SUBCASE("Obstacle should attach to default map when it enters the tree") {
+		SUBCASE("Obstacle should attach to default avoidance space when it enters the tree") {
 			node_2d->add_child(obstacle_node);
-			CHECK(obstacle_node->get_navigation_map().is_valid());
-			CHECK(obstacle_node->get_navigation_map() == node_2d->get_world_2d()->get_navigation_map());
+			CHECK(obstacle_node->get_avoidance_space().is_valid());
+			CHECK(obstacle_node->get_avoidance_space() == node_2d->get_world_2d()->get_avoidance_space());
 		}
 
 		memdelete(obstacle_node);

@@ -40,6 +40,7 @@
 #include <Agent3d.h>
 
 class NavMap;
+class NavAvoidanceSpace3D;
 
 class NavAgent : public NavRid {
 	Vector3 position;
@@ -56,7 +57,7 @@ class NavAgent : public NavRid {
 	Vector3 safe_velocity;
 	bool clamp_speed = true; // Experimental, clamps velocity to max_speed.
 
-	NavMap *map = nullptr;
+	NavAvoidanceSpace3D *avoidance_space = nullptr;
 
 	RVO2D::Agent2D rvo_agent_2d;
 	RVO3D::Agent3D rvo_agent_3d;
@@ -71,7 +72,6 @@ class NavAgent : public NavRid {
 
 	bool agent_dirty = true;
 
-	uint32_t last_map_iteration_id = 0;
 	bool paused = false;
 
 public:
@@ -83,10 +83,8 @@ public:
 	void set_use_3d_avoidance(bool p_enabled);
 	bool get_use_3d_avoidance() { return use_3d_avoidance; }
 
-	void set_map(NavMap *p_map);
-	NavMap *get_map() { return map; }
-
-	bool is_map_changed();
+	void set_avoidance_space(NavAvoidanceSpace3D *p_avoidance_space);
+	NavAvoidanceSpace3D *get_avoidance_space() { return avoidance_space; }
 
 	RVO2D::Agent2D *get_rvo_agent_2d() { return &rvo_agent_2d; }
 	RVO3D::Agent3D *get_rvo_agent_3d() { return &rvo_agent_3d; }

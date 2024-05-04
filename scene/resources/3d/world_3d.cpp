@@ -73,6 +73,14 @@ RID World3D::get_navigation_map() const {
 	return navigation_map;
 }
 
+RID World3D::get_avoidance_space() const {
+	if (avoidance_space.is_null()) {
+		avoidance_space = NavigationServer3D::get_singleton()->avoidance_space_create();
+		NavigationServer3D::get_singleton()->avoidance_space_set_active(avoidance_space, true);
+	}
+	return avoidance_space;
+}
+
 RID World3D::get_scenario() const {
 	return scenario;
 }
@@ -148,6 +156,7 @@ PhysicsDirectSpaceState3D *World3D::get_direct_space_state() {
 void World3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_space"), &World3D::get_space);
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &World3D::get_navigation_map);
+	ClassDB::bind_method(D_METHOD("get_avoidance_space"), &World3D::get_avoidance_space);
 	ClassDB::bind_method(D_METHOD("get_scenario"), &World3D::get_scenario);
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &World3D::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &World3D::get_environment);
@@ -161,6 +170,7 @@ void World3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_space");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "navigation_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_navigation_map");
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "avoidance_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_avoidance_space");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "scenario", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_scenario");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectSpaceState3D", PROPERTY_USAGE_NONE), "", "get_direct_space_state");
 }
@@ -180,5 +190,8 @@ World3D::~World3D() {
 	}
 	if (navigation_map.is_valid()) {
 		NavigationServer3D::get_singleton()->free(navigation_map);
+	}
+	if (avoidance_space.is_valid()) {
+		NavigationServer3D::get_singleton()->free(avoidance_space);
 	}
 }

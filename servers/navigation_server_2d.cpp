@@ -36,6 +36,7 @@ NavigationServer2D *NavigationServer2D::singleton = nullptr;
 
 void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_maps"), &NavigationServer2D::get_maps);
+	ClassDB::bind_method(D_METHOD("get_avoidance_spaces"), &NavigationServer2D::get_avoidance_spaces);
 
 	ClassDB::bind_method(D_METHOD("map_create"), &NavigationServer2D::map_create);
 	ClassDB::bind_method(D_METHOD("map_set_active", "map", "active"), &NavigationServer2D::map_set_active);
@@ -54,9 +55,6 @@ void NavigationServer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("map_get_links", "map"), &NavigationServer2D::map_get_links);
 	ClassDB::bind_method(D_METHOD("map_get_regions", "map"), &NavigationServer2D::map_get_regions);
-	ClassDB::bind_method(D_METHOD("map_get_agents", "map"), &NavigationServer2D::map_get_agents);
-	ClassDB::bind_method(D_METHOD("map_get_obstacles", "map"), &NavigationServer2D::map_get_obstacles);
-
 	ClassDB::bind_method(D_METHOD("map_force_update", "map"), &NavigationServer2D::map_force_update);
 	ClassDB::bind_method(D_METHOD("map_get_iteration_id", "map"), &NavigationServer2D::map_get_iteration_id);
 
@@ -111,8 +109,6 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_create"), &NavigationServer2D::agent_create);
 	ClassDB::bind_method(D_METHOD("agent_set_avoidance_enabled", "agent", "enabled"), &NavigationServer2D::agent_set_avoidance_enabled);
 	ClassDB::bind_method(D_METHOD("agent_get_avoidance_enabled", "agent"), &NavigationServer2D::agent_get_avoidance_enabled);
-	ClassDB::bind_method(D_METHOD("agent_set_map", "agent", "map"), &NavigationServer2D::agent_set_map);
-	ClassDB::bind_method(D_METHOD("agent_get_map", "agent"), &NavigationServer2D::agent_get_map);
 	ClassDB::bind_method(D_METHOD("agent_set_paused", "agent", "paused"), &NavigationServer2D::agent_set_paused);
 	ClassDB::bind_method(D_METHOD("agent_get_paused", "agent"), &NavigationServer2D::agent_get_paused);
 	ClassDB::bind_method(D_METHOD("agent_set_neighbor_distance", "agent", "distance"), &NavigationServer2D::agent_set_neighbor_distance);
@@ -132,7 +128,6 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_get_velocity", "agent"), &NavigationServer2D::agent_get_velocity);
 	ClassDB::bind_method(D_METHOD("agent_set_position", "agent", "position"), &NavigationServer2D::agent_set_position);
 	ClassDB::bind_method(D_METHOD("agent_get_position", "agent"), &NavigationServer2D::agent_get_position);
-	ClassDB::bind_method(D_METHOD("agent_is_map_changed", "agent"), &NavigationServer2D::agent_is_map_changed);
 	ClassDB::bind_method(D_METHOD("agent_set_avoidance_callback", "agent", "callback"), &NavigationServer2D::agent_set_avoidance_callback);
 	ClassDB::bind_method(D_METHOD("agent_has_avoidance_callback", "agent"), &NavigationServer2D::agent_has_avoidance_callback);
 	ClassDB::bind_method(D_METHOD("agent_set_avoidance_layers", "agent", "layers"), &NavigationServer2D::agent_set_avoidance_layers);
@@ -141,12 +136,12 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_get_avoidance_mask", "agent"), &NavigationServer2D::agent_get_avoidance_mask);
 	ClassDB::bind_method(D_METHOD("agent_set_avoidance_priority", "agent", "priority"), &NavigationServer2D::agent_set_avoidance_priority);
 	ClassDB::bind_method(D_METHOD("agent_get_avoidance_priority", "agent"), &NavigationServer2D::agent_get_avoidance_priority);
+	ClassDB::bind_method(D_METHOD("agent_set_avoidance_space", "agent", "avoidance_space"), &NavigationServer2D::agent_set_avoidance_space);
+	ClassDB::bind_method(D_METHOD("agent_get_avoidance_space", "agent"), &NavigationServer2D::agent_get_avoidance_space);
 
 	ClassDB::bind_method(D_METHOD("obstacle_create"), &NavigationServer2D::obstacle_create);
 	ClassDB::bind_method(D_METHOD("obstacle_set_avoidance_enabled", "obstacle", "enabled"), &NavigationServer2D::obstacle_set_avoidance_enabled);
 	ClassDB::bind_method(D_METHOD("obstacle_get_avoidance_enabled", "obstacle"), &NavigationServer2D::obstacle_get_avoidance_enabled);
-	ClassDB::bind_method(D_METHOD("obstacle_set_map", "obstacle", "map"), &NavigationServer2D::obstacle_set_map);
-	ClassDB::bind_method(D_METHOD("obstacle_get_map", "obstacle"), &NavigationServer2D::obstacle_get_map);
 	ClassDB::bind_method(D_METHOD("obstacle_set_paused", "obstacle", "paused"), &NavigationServer2D::obstacle_set_paused);
 	ClassDB::bind_method(D_METHOD("obstacle_get_paused", "obstacle"), &NavigationServer2D::obstacle_get_paused);
 	ClassDB::bind_method(D_METHOD("obstacle_set_radius", "obstacle", "radius"), &NavigationServer2D::obstacle_set_radius);
@@ -159,6 +154,15 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("obstacle_get_vertices", "obstacle"), &NavigationServer2D::obstacle_get_vertices);
 	ClassDB::bind_method(D_METHOD("obstacle_set_avoidance_layers", "obstacle", "layers"), &NavigationServer2D::obstacle_set_avoidance_layers);
 	ClassDB::bind_method(D_METHOD("obstacle_get_avoidance_layers", "obstacle"), &NavigationServer2D::obstacle_get_avoidance_layers);
+	ClassDB::bind_method(D_METHOD("obstacle_set_avoidance_space", "obstacle", "avoidance_space"), &NavigationServer2D::obstacle_set_avoidance_space);
+	ClassDB::bind_method(D_METHOD("obstacle_get_avoidance_space", "obstacle"), &NavigationServer2D::obstacle_get_avoidance_space);
+
+	ClassDB::bind_method(D_METHOD("avoidance_space_create"), &NavigationServer2D::avoidance_space_create);
+	ClassDB::bind_method(D_METHOD("avoidance_space_get_iteration_id", "avoidance_space"), &NavigationServer2D::avoidance_space_get_iteration_id);
+	ClassDB::bind_method(D_METHOD("avoidance_space_set_active", "avoidance_space", "active"), &NavigationServer2D::avoidance_space_set_active);
+	ClassDB::bind_method(D_METHOD("avoidance_space_is_active", "avoidance_space"), &NavigationServer2D::avoidance_space_is_active);
+	ClassDB::bind_method(D_METHOD("avoidance_space_get_agents", "avoidance_space"), &NavigationServer2D::avoidance_space_get_agents);
+	ClassDB::bind_method(D_METHOD("avoidance_space_get_obstacles", "avoidance_space"), &NavigationServer2D::avoidance_space_get_obstacles);
 
 	ClassDB::bind_method(D_METHOD("parse_source_geometry_data", "navigation_polygon", "source_geometry_data", "root_node", "callback"), &NavigationServer2D::parse_source_geometry_data, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data", "navigation_polygon", "source_geometry_data", "callback"), &NavigationServer2D::bake_from_source_geometry_data, DEFVAL(Callable()));
@@ -175,9 +179,22 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_enabled", "enabled"), &NavigationServer2D::set_debug_enabled);
 	ClassDB::bind_method(D_METHOD("get_debug_enabled"), &NavigationServer2D::get_debug_enabled);
 
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("map_get_agents", "map"), &NavigationServer2D::map_get_agents);
+	ClassDB::bind_method(D_METHOD("map_get_obstacles", "map"), &NavigationServer2D::map_get_obstacles);
+
+	ClassDB::bind_method(D_METHOD("agent_set_map", "agent", "map"), &NavigationServer2D::agent_set_map);
+	ClassDB::bind_method(D_METHOD("agent_get_map", "agent"), &NavigationServer2D::agent_get_map);
+	ClassDB::bind_method(D_METHOD("agent_is_map_changed", "agent"), &NavigationServer2D::agent_is_map_changed);
+
+	ClassDB::bind_method(D_METHOD("obstacle_set_map", "obstacle", "map"), &NavigationServer2D::obstacle_set_map);
+	ClassDB::bind_method(D_METHOD("obstacle_get_map", "obstacle"), &NavigationServer2D::obstacle_get_map);
+#endif // DISABLE_DEPRECATED
+
 	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(Variant::RID, "map")));
 
 	ADD_SIGNAL(MethodInfo("navigation_debug_changed"));
+	ADD_SIGNAL(MethodInfo("avoidance_debug_changed"));
 }
 
 NavigationServer2D *NavigationServer2D::get_singleton() {
@@ -192,12 +209,19 @@ NavigationServer2D::NavigationServer2D() {
 
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationServer2D::_emit_navigation_debug_changed_signal));
+	NavigationServer3D::get_singleton()->connect(SNAME("avoidance_debug_changed"), callable_mp(this, &NavigationServer2D::_emit_avoidance_debug_changed_signal));
 #endif // DEBUG_ENABLED
 }
 
 #ifdef DEBUG_ENABLED
 void NavigationServer2D::_emit_navigation_debug_changed_signal() {
 	emit_signal(SNAME("navigation_debug_changed"));
+}
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+void NavigationServer2D::_emit_avoidance_debug_changed_signal() {
+	emit_signal(SNAME("avoidance_debug_changed"));
 }
 #endif // DEBUG_ENABLED
 

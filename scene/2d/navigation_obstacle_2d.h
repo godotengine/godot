@@ -37,9 +37,9 @@ class NavigationObstacle2D : public Node2D {
 	GDCLASS(NavigationObstacle2D, Node2D);
 
 	RID obstacle;
-	RID map_before_pause;
 	RID map_override;
-	RID map_current;
+
+	RID avoidance_space_override;
 
 	real_t radius = 0.0;
 
@@ -60,9 +60,12 @@ class NavigationObstacle2D : public Node2D {
 #ifdef DEBUG_ENABLED
 private:
 	RID debug_canvas_item;
-	void _update_fake_agent_radius_debug();
-	void _update_static_obstacle_debug();
+	void _obstacle_debug_update();
+	void _obstacle_debug_free();
 #endif // DEBUG_ENABLED
+	void _obstacle_enter_tree();
+	void _obstacle_exit_tree();
+	void _obstacle_physics_process();
 
 protected:
 	static void _bind_methods();
@@ -77,8 +80,13 @@ public:
 	void set_avoidance_enabled(bool p_enabled);
 	bool get_avoidance_enabled() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;
+#endif // DISABLE_DEPRECATED
+
+	void set_avoidance_space(RID p_avoidance_space);
+	RID get_avoidance_space() const;
 
 	void set_radius(real_t p_radius);
 	real_t get_radius() const { return radius; }
@@ -107,8 +115,8 @@ public:
 	bool get_carve_navigation_mesh() const;
 
 private:
-	void _update_map(RID p_map);
 	void _update_position(const Vector2 p_position);
+	void _update_avoidance_space(RID p_avoidance_space);
 };
 
 #endif // NAVIGATION_OBSTACLE_2D_H

@@ -37,15 +37,8 @@
 #include "core/math/math_defs.h"
 #include "core/object/worker_thread_pool.h"
 
-#include <KdTree2d.h>
-#include <KdTree3d.h>
-#include <RVOSimulator2d.h>
-#include <RVOSimulator3d.h>
-
 class NavLink;
 class NavRegion;
-class NavAgent;
-class NavObstacle;
 
 class NavMap : public NavRid {
 	RWLock map_rwlock;
@@ -84,39 +77,11 @@ class NavMap : public NavRid {
 	/// Map polygons
 	LocalVector<gd::Polygon> polygons;
 
-	/// RVO avoidance worlds
-	RVO2D::RVOSimulator2D rvo_simulation_2d;
-	RVO3D::RVOSimulator3D rvo_simulation_3d;
-
-	/// avoidance controlled agents
-	LocalVector<NavAgent *> active_2d_avoidance_agents;
-	LocalVector<NavAgent *> active_3d_avoidance_agents;
-
-	/// dirty flag when one of the agent's arrays are modified
-	bool agents_dirty = true;
-
-	/// All the Agents (even the controlled one)
-	LocalVector<NavAgent *> agents;
-
-	/// All the avoidance obstacles (both static and dynamic)
-	LocalVector<NavObstacle *> obstacles;
-
-	/// Are rvo obstacles modified?
-	bool obstacles_dirty = true;
-
-	/// Physics delta time
-	real_t deltatime = 0.0;
-
 	/// Change the id each time the map is updated.
 	uint32_t iteration_id = 0;
 
-	bool use_threads = true;
-	bool avoidance_use_multiple_threads = true;
-	bool avoidance_use_high_priority_threads = true;
-
 	// Performance Monitor
 	int pm_region_count = 0;
-	int pm_agent_count = 0;
 	int pm_link_count = 0;
 	int pm_polygon_count = 0;
 	int pm_edge_count = 0;
@@ -127,8 +92,6 @@ class NavMap : public NavRid {
 public:
 	NavMap();
 	~NavMap();
-
-	uint32_t get_iteration_id() const { return iteration_id; }
 
 	void set_up(Vector3 p_up);
 	Vector3 get_up() const {
@@ -184,32 +147,15 @@ public:
 		return links;
 	}
 
-	bool has_agent(NavAgent *agent) const;
-	void add_agent(NavAgent *agent);
-	void remove_agent(NavAgent *agent);
-	const LocalVector<NavAgent *> &get_agents() const {
-		return agents;
-	}
-
-	void set_agent_as_controlled(NavAgent *agent);
-	void remove_agent_as_controlled(NavAgent *agent);
-
-	bool has_obstacle(NavObstacle *obstacle) const;
-	void add_obstacle(NavObstacle *obstacle);
-	void remove_obstacle(NavObstacle *obstacle);
-	const LocalVector<NavObstacle *> &get_obstacles() const {
-		return obstacles;
-	}
+	uint32_t get_iteration_id() const { return iteration_id; }
 
 	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
 
 	void sync();
-	void step(real_t p_deltatime);
 	void dispatch_callbacks();
 
 	// Performance Monitor
 	int get_pm_region_count() const { return pm_region_count; }
-	int get_pm_agent_count() const { return pm_agent_count; }
 	int get_pm_link_count() const { return pm_link_count; }
 	int get_pm_polygon_count() const { return pm_polygon_count; }
 	int get_pm_edge_count() const { return pm_edge_count; }
@@ -218,16 +164,7 @@ public:
 	int get_pm_edge_free_count() const { return pm_edge_free_count; }
 
 private:
-	void compute_single_step(uint32_t index, NavAgent **agent);
-
-	void compute_single_avoidance_step_2d(uint32_t index, NavAgent **agent);
-	void compute_single_avoidance_step_3d(uint32_t index, NavAgent **agent);
-
 	void clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const;
-	void _update_rvo_simulation();
-	void _update_rvo_obstacles_tree_2d();
-	void _update_rvo_agents_tree_2d();
-	void _update_rvo_agents_tree_3d();
 
 	void _update_merge_rasterizer_cell_dimensions();
 };

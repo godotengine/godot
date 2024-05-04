@@ -31,6 +31,7 @@
 #include "godot_navigation_server_3d.h"
 
 #include "core/os/mutex.h"
+#include "main/performance.h"
 #include "scene/main/node.h"
 
 #ifndef _3D_DISABLED
@@ -106,6 +107,18 @@ TypedArray<RID> GodotNavigationServer3D::get_maps() const {
 	return all_map_rids;
 }
 
+TypedArray<RID> GodotNavigationServer3D::get_avoidance_spaces() const {
+	TypedArray<RID> all_rids;
+	List<RID> owned_list;
+	avoidance_space_owner.get_owned_list(&owned_list);
+	if (owned_list.size()) {
+		for (const RID &E : owned_list) {
+			all_rids.push_back(E);
+		}
+	}
+	return all_rids;
+}
+
 RID GodotNavigationServer3D::map_create() {
 	MutexLock lock(operations_mutex);
 
@@ -122,13 +135,11 @@ COMMAND_2(map_set_active, RID, p_map, bool, p_active) {
 	if (p_active) {
 		if (!map_is_active(p_map)) {
 			active_maps.push_back(map);
-			active_maps_iteration_id.push_back(map->get_iteration_id());
 		}
 	} else {
 		int map_index = active_maps.find(map);
 		ERR_FAIL_COND(map_index < 0);
 		active_maps.remove_at(map_index);
-		active_maps_iteration_id.remove_at(map_index);
 	}
 }
 
@@ -300,32 +311,6 @@ TypedArray<RID> GodotNavigationServer3D::map_get_regions(RID p_map) const {
 	return regions_rids;
 }
 
-TypedArray<RID> GodotNavigationServer3D::map_get_agents(RID p_map) const {
-	TypedArray<RID> agents_rids;
-	const NavMap *map = map_owner.get_or_null(p_map);
-	ERR_FAIL_NULL_V(map, agents_rids);
-
-	const LocalVector<NavAgent *> &agents = map->get_agents();
-	agents_rids.resize(agents.size());
-
-	for (uint32_t i = 0; i < agents.size(); i++) {
-		agents_rids[i] = agents[i]->get_self();
-	}
-	return agents_rids;
-}
-
-TypedArray<RID> GodotNavigationServer3D::map_get_obstacles(RID p_map) const {
-	TypedArray<RID> obstacles_rids;
-	const NavMap *map = map_owner.get_or_null(p_map);
-	ERR_FAIL_NULL_V(map, obstacles_rids);
-	const LocalVector<NavObstacle *> obstacles = map->get_obstacles();
-	obstacles_rids.resize(obstacles.size());
-	for (uint32_t i = 0; i < obstacles.size(); i++) {
-		obstacles_rids[i] = obstacles[i]->get_self();
-	}
-	return obstacles_rids;
-}
-
 RID GodotNavigationServer3D::region_get_map(RID p_region) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL_V(region, RID());
@@ -336,12 +321,12 @@ RID GodotNavigationServer3D::region_get_map(RID p_region) const {
 	return RID();
 }
 
-RID GodotNavigationServer3D::agent_get_map(RID p_agent) const {
+RID GodotNavigationServer3D::agent_get_avoidance_space(RID p_agent) const {
 	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_NULL_V(agent, RID());
 
-	if (agent->get_map()) {
-		return agent->get_map()->get_self();
+	if (agent->get_avoidance_space()) {
+		return agent->get_avoidance_space()->get_self();
 	}
 	return RID();
 }
@@ -488,23 +473,6 @@ COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navi
 
 	region->set_mesh(p_navigation_mesh);
 }
-
-#ifndef DISABLE_DEPRECATED
-void GodotNavigationServer3D::region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) {
-	ERR_FAIL_COND(p_navigation_mesh.is_null());
-	ERR_FAIL_NULL(p_root_node);
-
-	WARN_PRINT_ONCE("NavigationServer3D::region_bake_navigation_mesh() is deprecated due to core threading changes. To upgrade existing code, first create a NavigationMeshSourceGeometryData3D resource. Use this resource with method parse_source_geometry_data() to parse the SceneTree for nodes that should contribute to the navigation mesh baking. The SceneTree parsing needs to happen on the main thread. After the parsing is finished use the resource with method bake_from_source_geometry_data() to bake a navigation mesh..");
-
-#ifndef _3D_DISABLED
-	p_navigation_mesh->clear();
-	Ref<NavigationMeshSourceGeometryData3D> source_geometry_data;
-	source_geometry_data.instantiate();
-	parse_source_geometry_data(p_navigation_mesh, source_geometry_data, p_root_node);
-	bake_from_source_geometry_data(p_navigation_mesh, source_geometry_data);
-#endif
-}
-#endif // DISABLE_DEPRECATED
 
 int GodotNavigationServer3D::region_get_connections_count(RID p_region) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
@@ -711,13 +679,13 @@ bool GodotNavigationServer3D::agent_get_use_3d_avoidance(RID p_agent) const {
 	return agent->get_use_3d_avoidance();
 }
 
-COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
+COMMAND_2(agent_set_avoidance_space, RID, p_agent, RID, p_avoidance_space) {
 	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_NULL(agent);
 
-	NavMap *map = map_owner.get_or_null(p_map);
+	NavAvoidanceSpace3D *avoidance_space = avoidance_space_owner.get_or_null(p_avoidance_space);
 
-	agent->set_map(map);
+	agent->set_avoidance_space(avoidance_space);
 }
 
 COMMAND_2(agent_set_paused, RID, p_agent, bool, p_paused) {
@@ -872,26 +840,11 @@ Vector3 GodotNavigationServer3D::agent_get_position(RID p_agent) const {
 	return agent->get_position();
 }
 
-bool GodotNavigationServer3D::agent_is_map_changed(RID p_agent) const {
-	NavAgent *agent = agent_owner.get_or_null(p_agent);
-	ERR_FAIL_NULL_V(agent, false);
-
-	return agent->is_map_changed();
-}
-
 COMMAND_2(agent_set_avoidance_callback, RID, p_agent, Callable, p_callback) {
 	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_NULL(agent);
 
 	agent->set_avoidance_callback(p_callback);
-
-	if (agent->get_map()) {
-		if (p_callback.is_valid()) {
-			agent->get_map()->set_agent_as_controlled(agent);
-		} else {
-			agent->get_map()->remove_agent_as_controlled(agent);
-		}
-	}
 }
 
 bool GodotNavigationServer3D::agent_has_avoidance_callback(RID p_agent) const {
@@ -984,24 +937,6 @@ bool GodotNavigationServer3D::obstacle_get_use_3d_avoidance(RID p_obstacle) cons
 	ERR_FAIL_NULL_V(obstacle, false);
 
 	return obstacle->get_use_3d_avoidance();
-}
-
-COMMAND_2(obstacle_set_map, RID, p_obstacle, RID, p_map) {
-	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
-	ERR_FAIL_NULL(obstacle);
-
-	NavMap *map = map_owner.get_or_null(p_map);
-
-	obstacle->set_map(map);
-}
-
-RID GodotNavigationServer3D::obstacle_get_map(RID p_obstacle) const {
-	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
-	ERR_FAIL_NULL_V(obstacle, RID());
-	if (obstacle->get_map()) {
-		return obstacle->get_map()->get_self();
-	}
-	return RID();
 }
 
 COMMAND_2(obstacle_set_paused, RID, p_obstacle, bool, p_paused) {
@@ -1099,6 +1034,88 @@ uint32_t GodotNavigationServer3D::obstacle_get_avoidance_layers(RID p_obstacle) 
 	return obstacle->get_avoidance_layers();
 }
 
+COMMAND_2(obstacle_set_avoidance_space, RID, p_obstacle, RID, p_avoidance_space) {
+	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
+	ERR_FAIL_NULL(obstacle);
+
+	NavAvoidanceSpace3D *avoidance_space = avoidance_space_owner.get_or_null(p_avoidance_space);
+
+	obstacle->set_avoidance_space(avoidance_space);
+}
+
+RID GodotNavigationServer3D::obstacle_get_avoidance_space(RID p_obstacle) const {
+	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
+	ERR_FAIL_NULL_V(obstacle, RID());
+	if (obstacle->get_avoidance_space()) {
+		return obstacle->get_avoidance_space()->get_self();
+	}
+	return RID();
+}
+
+RID GodotNavigationServer3D::avoidance_space_create() {
+	MutexLock lock(operations_mutex);
+
+	RID rid = avoidance_space_owner.make_rid();
+	NavAvoidanceSpace3D *avoidance_space = avoidance_space_owner.get_or_null(rid);
+	avoidance_space->set_self(rid);
+	return rid;
+}
+
+uint32_t GodotNavigationServer3D::avoidance_space_get_iteration_id(RID p_avoidance_space) const {
+	NavAvoidanceSpace3D *avoidance_space = avoidance_space_owner.get_or_null(p_avoidance_space);
+	ERR_FAIL_NULL_V(avoidance_space, 0);
+
+	return avoidance_space->get_iteration_id();
+}
+
+void GodotNavigationServer3D::avoidance_space_set_active(RID p_avoidance_space, bool p_active) {
+	NavAvoidanceSpace3D *avoidance_space = avoidance_space_owner.get_or_null(p_avoidance_space);
+	ERR_FAIL_NULL(avoidance_space);
+
+	if (p_active) {
+		if (!avoidance_space_is_active(p_avoidance_space)) {
+			active_avoidance_spaces.push_back(avoidance_space);
+		}
+	} else {
+		int space_index = active_avoidance_spaces.find(avoidance_space);
+		ERR_FAIL_COND(space_index < 0);
+		active_avoidance_spaces.remove_at(space_index);
+	}
+}
+
+bool GodotNavigationServer3D::avoidance_space_is_active(RID p_avoidance_space) const {
+	NavAvoidanceSpace3D *avoidance_space = avoidance_space_owner.get_or_null(p_avoidance_space);
+	ERR_FAIL_NULL_V(avoidance_space, false);
+
+	return active_avoidance_spaces.find(avoidance_space) >= 0;
+}
+
+TypedArray<RID> GodotNavigationServer3D::avoidance_space_get_agents(RID p_avoidance_space) const {
+	TypedArray<RID> agents_rids;
+	const NavAvoidanceSpace3D *avoidance_space = avoidance_space_owner.get_or_null(p_avoidance_space);
+	ERR_FAIL_NULL_V(avoidance_space, agents_rids);
+
+	const LocalVector<NavAgent *> &agents = avoidance_space->get_agents();
+	agents_rids.resize(agents.size());
+
+	for (uint32_t i = 0; i < agents.size(); i++) {
+		agents_rids[i] = agents[i]->get_self();
+	}
+	return agents_rids;
+}
+
+TypedArray<RID> GodotNavigationServer3D::avoidance_space_get_obstacles(RID p_avoidance_space) const {
+	TypedArray<RID> obstacles_rids;
+	const NavAvoidanceSpace3D *avoidance_space = avoidance_space_owner.get_or_null(p_avoidance_space);
+	ERR_FAIL_NULL_V(avoidance_space, obstacles_rids);
+	const LocalVector<NavObstacle *> obstacles = avoidance_space->get_obstacles();
+	obstacles_rids.resize(obstacles.size());
+	for (uint32_t i = 0; i < obstacles.size(); i++) {
+		obstacles_rids[i] = obstacles[i]->get_self();
+	}
+	return obstacles_rids;
+}
+
 void GodotNavigationServer3D::parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback) {
 #ifndef _3D_DISABLED
 	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "The SceneTree can only be parsed on the main thread. Call this function from the main thread or use call_deferred().");
@@ -1155,22 +1172,9 @@ COMMAND_1(free, RID, p_object) {
 			link->set_map(nullptr);
 		}
 
-		// Remove any assigned agent
-		for (NavAgent *agent : map->get_agents()) {
-			map->remove_agent(agent);
-			agent->set_map(nullptr);
-		}
-
-		// Remove any assigned obstacles
-		for (NavObstacle *obstacle : map->get_obstacles()) {
-			map->remove_obstacle(obstacle);
-			obstacle->set_map(nullptr);
-		}
-
 		int map_index = active_maps.find(map);
 		if (map_index >= 0) {
 			active_maps.remove_at(map_index);
-			active_maps_iteration_id.remove_at(map_index);
 		}
 		map_owner.free(p_object);
 
@@ -1207,6 +1211,9 @@ COMMAND_1(free, RID, p_object) {
 		navmesh_generator_3d->free(p_object);
 #endif // _3D_DISABLED
 
+	} else if (avoidance_space_owner.owns(p_object)) {
+		internal_free_avoidance_space(p_object);
+
 	} else {
 		ERR_PRINT("Attempted to free a NavigationServer RID that did not exist (or was already freed).");
 	}
@@ -1215,9 +1222,9 @@ COMMAND_1(free, RID, p_object) {
 void GodotNavigationServer3D::internal_free_agent(RID p_object) {
 	NavAgent *agent = agent_owner.get_or_null(p_object);
 	if (agent) {
-		if (agent->get_map() != nullptr) {
-			agent->get_map()->remove_agent(agent);
-			agent->set_map(nullptr);
+		if (agent->get_avoidance_space() != nullptr) {
+			agent->get_avoidance_space()->remove_agent(agent);
+			agent->set_avoidance_space(nullptr);
 		}
 		agent_owner.free(p_object);
 	}
@@ -1232,11 +1239,24 @@ void GodotNavigationServer3D::internal_free_obstacle(RID p_object) {
 			internal_free_agent(_agent_rid);
 			obstacle->set_agent(nullptr);
 		}
-		if (obstacle->get_map() != nullptr) {
-			obstacle->get_map()->remove_obstacle(obstacle);
-			obstacle->set_map(nullptr);
+		if (obstacle->get_avoidance_space() != nullptr) {
+			obstacle->get_avoidance_space()->remove_obstacle(obstacle);
+			obstacle->set_avoidance_space(nullptr);
 		}
 		obstacle_owner.free(p_object);
+	}
+}
+
+void GodotNavigationServer3D::internal_free_avoidance_space(RID p_object) {
+	NavAvoidanceSpace3D *avoidance_space = avoidance_space_owner.get_or_null(p_object);
+	if (avoidance_space) {
+		for (NavAgent *agent : avoidance_space->get_agents()) {
+			agent->set_avoidance_space(nullptr);
+		}
+		for (NavObstacle *obstacle : avoidance_space->get_obstacles()) {
+			obstacle->set_avoidance_space(nullptr);
+		}
+		avoidance_space_owner.free(p_object);
 	}
 }
 
@@ -1302,26 +1322,31 @@ void GodotNavigationServer3D::process(real_t p_delta_time) {
 	// In c++ we can't be sure that this is performed in the main thread
 	// even with mutable functions.
 	MutexLock lock(operations_mutex);
-	for (uint32_t i(0); i < active_maps.size(); i++) {
-		active_maps[i]->sync();
-		active_maps[i]->step(p_delta_time);
-		active_maps[i]->dispatch_callbacks();
+	for (NavMap *map : active_maps) {
+		const uint32_t map_iteration_id = map->get_iteration_id();
 
-		_new_pm_region_count += active_maps[i]->get_pm_region_count();
-		_new_pm_agent_count += active_maps[i]->get_pm_agent_count();
-		_new_pm_link_count += active_maps[i]->get_pm_link_count();
-		_new_pm_polygon_count += active_maps[i]->get_pm_polygon_count();
-		_new_pm_edge_count += active_maps[i]->get_pm_edge_count();
-		_new_pm_edge_merge_count += active_maps[i]->get_pm_edge_merge_count();
-		_new_pm_edge_connection_count += active_maps[i]->get_pm_edge_connection_count();
-		_new_pm_edge_free_count += active_maps[i]->get_pm_edge_free_count();
+		map->sync();
+		map->dispatch_callbacks();
 
-		// Emit a signal if a map changed.
-		const uint32_t new_map_iteration_id = active_maps[i]->get_iteration_id();
-		if (new_map_iteration_id != active_maps_iteration_id[i]) {
-			emit_signal(SNAME("map_changed"), active_maps[i]->get_self());
-			active_maps_iteration_id[i] = new_map_iteration_id;
+		_new_pm_region_count += map->get_pm_region_count();
+		_new_pm_link_count += map->get_pm_link_count();
+		_new_pm_polygon_count += map->get_pm_polygon_count();
+		_new_pm_edge_count += map->get_pm_edge_count();
+		_new_pm_edge_merge_count += map->get_pm_edge_merge_count();
+		_new_pm_edge_connection_count += map->get_pm_edge_connection_count();
+		_new_pm_edge_free_count += map->get_pm_edge_free_count();
+
+		if (map_iteration_id != map->get_iteration_id()) {
+			emit_signal(SNAME("map_changed"), map->get_self());
 		}
+	}
+
+	for (NavAvoidanceSpace3D *avoidance_space : active_avoidance_spaces) {
+		avoidance_space->sync();
+		avoidance_space->step(p_delta_time);
+		avoidance_space->dispatch_callbacks();
+
+		_new_pm_agent_count += avoidance_space->get_pm_agent_count();
 	}
 
 	pm_region_count = _new_pm_region_count;
@@ -1570,6 +1595,57 @@ int GodotNavigationServer3D::get_process_info(ProcessInfo p_info) const {
 
 	return 0;
 }
+
+#ifndef DISABLE_DEPRECATED
+
+TypedArray<RID> GodotNavigationServer3D::map_get_agents(RID p_map) const {
+	WARN_PRINT_ONCE("NavigationServer3D::map_get_agents() is deprecated. Agents are no longer an assigned part of a navigation map. See 'avoidance_space_get_agents()' to query the agents of an avoidance space.");
+	return TypedArray<RID>();
+}
+
+TypedArray<RID> GodotNavigationServer3D::map_get_obstacles(RID p_map) const {
+	WARN_PRINT_ONCE("NavigationServer3D::map_get_obstacles() is deprecated. Obstacles are no longer an assigned part of a navigation map. See 'avoidance_space_get_obstacles()' to query the obstacles of an avoidance space.");
+	return TypedArray<RID>();
+}
+
+void GodotNavigationServer3D::region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) {
+	ERR_FAIL_COND(p_navigation_mesh.is_null());
+	ERR_FAIL_NULL(p_root_node);
+
+	WARN_PRINT_ONCE("NavigationServer3D::region_bake_navigation_mesh() is deprecated due to core threading changes. To upgrade existing code, first create a NavigationMeshSourceGeometryData3D resource. Use this resource with method parse_source_geometry_data() to parse the SceneTree for nodes that should contribute to the navigation mesh baking. The SceneTree parsing needs to happen on the main thread. After the parsing is finished use the resource with method bake_from_source_geometry_data() to bake a navigation mesh..");
+
+#ifndef _3D_DISABLED
+	p_navigation_mesh->clear();
+	Ref<NavigationMeshSourceGeometryData3D> source_geometry_data;
+	source_geometry_data.instantiate();
+	parse_source_geometry_data(p_navigation_mesh, source_geometry_data, p_root_node);
+	bake_from_source_geometry_data(p_navigation_mesh, source_geometry_data);
+#endif
+}
+
+COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
+	WARN_PRINT_ONCE("NavigationServer3D::agent_set_map() is deprecated. An agent is no longer an assigned part of a navigation map. See 'agent_set_avoidance_space()' to assigned an avoidance space.");
+}
+
+RID GodotNavigationServer3D::agent_get_map(RID p_agent) const {
+	WARN_PRINT_ONCE("NavigationServer3D::agent_get_map() is deprecated. An agent is no longer an assigned part of a navigation map. See 'agent_get_avoidance_space()' to get the agent's avoidance space.");
+	return RID();
+}
+
+bool GodotNavigationServer3D::agent_is_map_changed(RID p_agent) const {
+	WARN_PRINT_ONCE("NavigationServer3D::agent_is_map_changed() is deprecated. Agents are no longer an assigned part of a navigation map. See 'map_get_iteration_id()' or connect to the 'map_changed' signal to keep track of the navigation map updates.");
+	return true;
+}
+
+COMMAND_2(obstacle_set_map, RID, p_obstacle, RID, p_map) {
+	WARN_PRINT_ONCE("NavigationServer3D::obstacle_set_map() is deprecated. An Obstacle is no longer an assigned part of a navigation map. See 'obstacle_set_avoidance_space()' to assigned an avoidance space.");
+}
+
+RID GodotNavigationServer3D::obstacle_get_map(RID p_obstacle) const {
+	WARN_PRINT_ONCE("NavigationServer3D::obstacle_get_map() is deprecated. An Obstacle is no longer an assigned part of a navigation map. See 'obstacle_get_avoidance_space()' to get the obstacle's avoidance space.");
+	return RID();
+}
+#endif // DISABLE_DEPRECATED
 
 #undef COMMAND_1
 #undef COMMAND_2

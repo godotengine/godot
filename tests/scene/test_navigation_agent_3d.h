@@ -64,6 +64,26 @@ TEST_SUITE("[Navigation]") {
 		memdelete(agent_node);
 		memdelete(node_3d);
 	}
+
+	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should attach to default avoidance space") {
+		Node3D *node_3d = memnew(Node3D);
+		SceneTree::get_singleton()->get_root()->add_child(node_3d);
+
+		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
+
+		// agent should not be attached to any avoidance space when outside of tree
+		CHECK_FALSE(agent_node->get_avoidance_space().is_valid());
+
+		SUBCASE("Agent should attach to default avoidance space when it enters the tree with avoidance enabled") {
+			agent_node->set_avoidance_enabled(true);
+			node_3d->add_child(agent_node);
+			CHECK(agent_node->get_avoidance_space().is_valid());
+			CHECK(agent_node->get_avoidance_space() == node_3d->get_world_3d()->get_avoidance_space());
+		}
+
+		memdelete(agent_node);
+		memdelete(node_3d);
+	}
 }
 
 } //namespace TestNavigationAgent3D

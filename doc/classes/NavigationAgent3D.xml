@@ -32,6 +32,12 @@
 				Returns whether or not the specified mask of the [member avoidance_mask] bitmask is enabled, given a [param mask_number] between 1 and 32.
 			</description>
 		</method>
+		<method name="get_avoidance_space" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the avoidance space used by this agent node.
+			</description>
+		</method>
 		<method name="get_current_navigation_path" qualifiers="const">
 			<return type="PackedVector3Array" />
 			<description>
@@ -63,10 +69,9 @@
 				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
-		<method name="get_navigation_map" qualifiers="const">
+		<method name="get_navigation_map" qualifiers="const" deprecated="An agent is no longer an assigned part of a navigation map. See [method get_avoidance_space] to get the agent&apos;s avoidance space.">
 			<return type="RID" />
 			<description>
-				Returns the [RID] of the navigation map for this NavigationAgent node. This function returns always the map set on the NavigationAgent node and not the map of the abstract agent on the NavigationServer. If the agent map is changed directly with the NavigationServer API the NavigationAgent node will not be aware of the map change. Use [method set_navigation_map] to change the navigation map for the NavigationAgent and also update the agent on the NavigationServer.
 			</description>
 		</method>
 		<method name="get_next_path_position">
@@ -116,6 +121,13 @@
 				Based on [param value], enables or disables the specified mask in the [member avoidance_mask] bitmask, given a [param mask_number] between 1 and 32.
 			</description>
 		</method>
+		<method name="set_avoidance_space">
+			<return type="void" />
+			<param index="0" name="avoidance_space" type="RID" />
+			<description>
+				Sets the [RID] of the avoidance space to be used by this agent node.
+			</description>
+		</method>
 		<method name="set_navigation_layer_value">
 			<return type="void" />
 			<param index="0" name="layer_number" type="int" />
@@ -124,11 +136,10 @@
 				Based on [param value], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
-		<method name="set_navigation_map">
+		<method name="set_navigation_map" deprecated="An agent is no longer an assigned part of a navigation map. See [method set_avoidance_space] to assigned an avoidance space.">
 			<return type="void" />
 			<param index="0" name="navigation_map" type="RID" />
 			<description>
-				Sets the [RID] of the navigation map this NavigationAgent node should use and also updates the [code]agent[/code] on the NavigationServer.
 			</description>
 		</method>
 		<method name="set_velocity_forced">

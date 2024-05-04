@@ -30,6 +30,7 @@
 
 #include "nav_obstacle.h"
 
+#include "3d/nav_avoidance_space_3d.h"
 #include "nav_agent.h"
 #include "nav_map.h"
 
@@ -71,23 +72,23 @@ void NavObstacle::set_use_3d_avoidance(bool p_enabled) {
 	}
 }
 
-void NavObstacle::set_map(NavMap *p_map) {
-	if (map == p_map) {
+void NavObstacle::set_avoidance_space(NavAvoidanceSpace3D *p_avoidance_space) {
+	if (avoidance_space == p_avoidance_space) {
 		return;
 	}
 
-	if (map) {
-		map->remove_obstacle(this);
+	if (avoidance_space) {
+		avoidance_space->remove_obstacle(this);
 		if (agent) {
-			agent->set_map(nullptr);
+			agent->set_avoidance_space(nullptr);
 		}
 	}
 
-	map = p_map;
+	avoidance_space = p_avoidance_space;
 	obstacle_dirty = true;
 
-	if (map) {
-		map->add_obstacle(this);
+	if (avoidance_space) {
+		avoidance_space->add_obstacle(this);
 		internal_update_agent();
 	}
 }
@@ -147,16 +148,6 @@ void NavObstacle::set_vertices(const Vector<Vector3> &p_vertices) {
 	obstacle_dirty = true;
 }
 
-bool NavObstacle::is_map_changed() {
-	if (map) {
-		bool is_changed = map->get_iteration_id() != last_map_iteration_id;
-		last_map_iteration_id = map->get_iteration_id();
-		return is_changed;
-	} else {
-		return false;
-	}
-}
-
 void NavObstacle::set_avoidance_layers(uint32_t p_layers) {
 	if (avoidance_layers == p_layers) {
 		return;
@@ -185,7 +176,7 @@ void NavObstacle::internal_update_agent() {
 		agent->set_avoidance_mask(0.0);
 		agent->set_neighbor_distance(0.0);
 		agent->set_avoidance_priority(1.0);
-		agent->set_map(map);
+		agent->set_avoidance_space(avoidance_space);
 		agent->set_paused(paused);
 		agent->set_radius(radius);
 		agent->set_height(height);
@@ -203,11 +194,11 @@ void NavObstacle::set_paused(bool p_paused) {
 
 	paused = p_paused;
 
-	if (map) {
+	if (avoidance_space) {
 		if (paused) {
-			map->remove_obstacle(this);
+			avoidance_space->remove_obstacle(this);
 		} else {
-			map->add_obstacle(this);
+			avoidance_space->add_obstacle(this);
 		}
 	}
 	internal_update_agent();

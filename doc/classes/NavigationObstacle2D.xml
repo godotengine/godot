@@ -19,10 +19,15 @@
 				Returns whether or not the specified layer of the [member avoidance_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
-		<method name="get_navigation_map" qualifiers="const">
+		<method name="get_avoidance_space" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the [RID] of the navigation map for this NavigationObstacle node. This function returns always the map set on the NavigationObstacle node and not the map of the abstract obstacle on the NavigationServer. If the obstacle map is changed directly with the NavigationServer API the NavigationObstacle node will not be aware of the map change. Use [method set_navigation_map] to change the navigation map for the NavigationObstacle and also update the obstacle on the NavigationServer.
+				Returns the [RID] of the avoidance space used by this obstacle node.
+			</description>
+		</method>
+		<method name="get_navigation_map" qualifiers="const" deprecated="An obstacle is no longer an assigned part of a navigation map. See [method get_avoidance_space] to get the obstacle&apos;s avoidance space.">
+			<return type="RID" />
+			<description>
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
@@ -39,11 +44,17 @@
 				Based on [param value], enables or disables the specified layer in the [member avoidance_layers] bitmask, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
-		<method name="set_navigation_map">
+		<method name="set_avoidance_space">
+			<return type="void" />
+			<param index="0" name="avoidance_space" type="RID" />
+			<description>
+				Sets the [RID] of the avoidance space to be used by this obstacle node.
+			</description>
+		</method>
+		<method name="set_navigation_map" deprecated="An obstacle is no longer an assigned part of a navigation map. See [method set_avoidance_space] to assigned an avoidance space.">
 			<return type="void" />
 			<param index="0" name="navigation_map" type="RID" />
 			<description>
-				Sets the [RID] of the navigation map this NavigationObstacle node should use and also updates the [code]obstacle[/code] on the NavigationServer.
 			</description>
 		</method>
 	</methods>

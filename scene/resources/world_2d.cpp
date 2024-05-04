@@ -70,16 +70,26 @@ PhysicsDirectSpaceState2D *World2D::get_direct_space_state() {
 	return PhysicsServer2D::get_singleton()->space_get_direct_state(get_space());
 }
 
+RID World2D::get_avoidance_space() const {
+	if (avoidance_space.is_null()) {
+		avoidance_space = NavigationServer2D::get_singleton()->avoidance_space_create();
+		NavigationServer2D::get_singleton()->avoidance_space_set_active(avoidance_space, true);
+	}
+	return avoidance_space;
+}
+
 void World2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_canvas"), &World2D::get_canvas);
 	ClassDB::bind_method(D_METHOD("get_space"), &World2D::get_space);
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &World2D::get_navigation_map);
+	ClassDB::bind_method(D_METHOD("get_avoidance_space"), &World2D::get_avoidance_space);
 
 	ClassDB::bind_method(D_METHOD("get_direct_space_state"), &World2D::get_direct_space_state);
 
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "canvas", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_canvas");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_space");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "navigation_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_navigation_map");
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "avoidance_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_avoidance_space");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectSpaceState2D", PROPERTY_USAGE_NONE), "", "get_direct_space_state");
 }
 
@@ -105,5 +115,8 @@ World2D::~World2D() {
 	}
 	if (navigation_map.is_valid()) {
 		NavigationServer2D::get_singleton()->free(navigation_map);
+	}
+	if (avoidance_space.is_valid()) {
+		NavigationServer2D::get_singleton()->free(avoidance_space);
 	}
 }

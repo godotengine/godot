@@ -44,6 +44,7 @@ class NavigationAgent3D : public Node {
 
 	RID agent;
 	RID map_override;
+	RID avoidance_space_override;
 
 	bool avoidance_enabled = false;
 	bool use_3d_avoidance = false;
@@ -100,6 +101,7 @@ class NavigationAgent3D : public Node {
 	bool last_waypoint_reached = false;
 	// No initialized on purpose
 	uint32_t update_frame_id = 0;
+	uint32_t last_map_iteration_id = 0;
 
 	// Debug properties for exposed bindings
 	bool debug_enabled = false;
@@ -174,6 +176,9 @@ public:
 
 	void set_path_height_offset(real_t p_path_height_offset);
 	real_t get_path_height_offset() const { return path_height_offset; }
+
+	void set_avoidance_space(RID p_avoidance_space);
+	RID get_avoidance_space() const;
 
 	void set_use_3d_avoidance(bool p_use_3d_avoidance);
 	bool get_use_3d_avoidance() const { return use_3d_avoidance; }
