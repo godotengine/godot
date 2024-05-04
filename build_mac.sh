@@ -1,8 +1,8 @@
 # iOS build templates.
 scons platform=ios target=template_debug tools=no build_feature_profile="kaetram.build" arch=arm64
 scons platform=ios target=template_release tools=no build_feature_profile="kaetram.build" arch=arm64
-scons platform=ios target=template_debug tools=no build_feature_profile="kaetram.build" arch=x86_64
-scons platform=ios target=template_release tools=no build_feature_profile="kaetram.build" arch=x86_64
+# scons platform=ios target=template_debug tools=no build_feature_profile="kaetram.build" arch=x86_64
+# scons platform=ios target=template_release tools=no build_feature_profile="kaetram.build" arch=x86_64
 scons platform=ios target=template_debug tools=no build_feature_profile="kaetram.build" ios_simulator=yes arch=arm64
 scons platform=ios target=template_release tools=no build_feature_profile="kaetram.build" ios_simulator=yes arch=arm64
 scons platform=ios target=template_debug tools=no build_feature_profile="kaetram.build" ios_simulator=yes arch=x86_64
@@ -10,6 +10,7 @@ scons platform=ios target=template_release tools=no build_feature_profile="kaetr
 
 # Create simulator libraries.
 cp -r misc/dist/ios_xcode ./bin
+
 cp bin/libgodot.ios.template_debug.arm64.a bin/ios_xcode/libgodot.ios.debug.xcframework/ios-arm64/libgodot.a
 lipo -create bin/libgodot.ios.template_debug.arm64.simulator.a bin/libgodot.ios.template_debug.x86_64.simulator.a -output bin/ios_xcode/libgodot.ios.debug.xcframework/ios-arm64_x86_64-simulator/libgodot.a
 
