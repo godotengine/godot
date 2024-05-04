@@ -166,6 +166,7 @@ public:
 
 	virtual Error get_error() const = 0; ///< get last error
 
+	virtual Error resize(int64_t p_length) = 0;
 	virtual void flush() = 0;
 	virtual void store_8(uint8_t p_dest) = 0; ///< store a byte
 	virtual void store_16(uint16_t p_dest); ///< store 16 bits uint

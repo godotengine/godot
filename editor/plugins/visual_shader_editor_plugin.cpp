@@ -953,8 +953,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		bool port_left_used = false;
 		String name_left;
 		if (valid_left) {
-			name_left = vsnode->get_input_port_name(i);
-			port_left = vsnode->get_input_port_type(i);
+			name_left = vsnode->get_input_port_name(j);
+			port_left = vsnode->get_input_port_type(j);
 			for (const VisualShader::Connection &E : connections) {
 				if (E.to_node == p_id && E.to_port == j) {
 					port_left_used = true;
@@ -989,20 +989,20 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		Variant default_value;
 
 		if (valid_left && !port_left_used) {
-			default_value = vsnode->get_input_port_default_value(i);
+			default_value = vsnode->get_input_port_default_value(j);
 		}
 
 		Button *button = memnew(Button);
 		hb->add_child(button);
-		register_default_input_button(p_id, i, button);
-		button->connect("pressed", callable_mp(editor, &VisualShaderEditor::_edit_port_default_input).bind(button, p_id, i));
+		register_default_input_button(p_id, j, button);
+		button->connect("pressed", callable_mp(editor, &VisualShaderEditor::_edit_port_default_input).bind(button, p_id, j));
 		if (default_value.get_type() != Variant::NIL) { // only a label
-			set_input_port_default_value(p_type, p_id, i, default_value);
+			set_input_port_default_value(p_type, p_id, j, default_value);
 		} else {
 			button->hide();
 		}
 
-		if (i == 0 && custom_editor) {
+		if (j == 0 && custom_editor) {
 			hb->add_child(custom_editor);
 			custom_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		} else {
@@ -1019,22 +1019,22 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					type_box->add_item(TTR("Boolean"));
 					type_box->add_item(TTR("Transform"));
 					type_box->add_item(TTR("Sampler"));
-					type_box->select(group_node->get_input_port_type(i));
+					type_box->select(group_node->get_input_port_type(j));
 					type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-					type_box->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_change_input_port_type).bind(p_id, i), CONNECT_DEFERRED);
+					type_box->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_change_input_port_type).bind(p_id, j), CONNECT_DEFERRED);
 
 					LineEdit *name_box = memnew(LineEdit);
 					hb->add_child(name_box);
 					name_box->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 					name_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					name_box->set_text(name_left);
-					name_box->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_change_input_port_name).bind(name_box, p_id, i), CONNECT_DEFERRED);
-					name_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_port_name_focus_out).bind(name_box, p_id, i, false), CONNECT_DEFERRED);
+					name_box->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_change_input_port_name).bind(name_box, p_id, j), CONNECT_DEFERRED);
+					name_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_port_name_focus_out).bind(name_box, p_id, j, false), CONNECT_DEFERRED);
 
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 					remove_btn->set_tooltip_text(TTR("Remove") + " " + name_left);
-					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_input_port).bind(p_id, i), CONNECT_DEFERRED);
+					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_input_port).bind(p_id, j), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
 				} else {
 					Label *label = memnew(Label);
@@ -1043,7 +1043,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					label->add_theme_style_override("normal", editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor"))); //more compact
 					hb->add_child(label);
 
-					if (vsnode->is_input_port_default(i, mode) && !port_left_used) {
+					if (vsnode->is_input_port_default(j, mode) && !port_left_used) {
 						Label *hint_label = memnew(Label);
 						hint_label->set_text(TTR("[default]"));
 						hint_label->add_theme_color_override("font_color", editor->get_theme_color(SNAME("font_readonly_color"), SNAME("TextEdit")));
@@ -4673,7 +4673,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 	// Keep dialog within window bounds.
 	Rect2 window_rect = Rect2(get_window()->get_position(), get_window()->get_size());
 	Rect2 dialog_rect = Rect2(members_dialog->get_position(), members_dialog->get_size());
-	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).max(Vector2());
+	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).maxf(0);
 	members_dialog->set_position(members_dialog->get_position() - difference);
 
 	callable_mp((Control *)node_filter, &Control::grab_focus).call_deferred(); // Still not visible.
@@ -4702,7 +4702,7 @@ void VisualShaderEditor::_show_add_varying_dialog() {
 	// Keep dialog within window bounds.
 	Rect2 window_rect = Rect2(DisplayServer::get_singleton()->window_get_position(), DisplayServer::get_singleton()->window_get_size());
 	Rect2 dialog_rect = Rect2(add_varying_dialog->get_position(), add_varying_dialog->get_size());
-	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).max(Vector2());
+	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).maxf(0);
 	add_varying_dialog->set_position(add_varying_dialog->get_position() - difference);
 }
 
@@ -4713,7 +4713,7 @@ void VisualShaderEditor::_show_remove_varying_dialog() {
 	// Keep dialog within window bounds.
 	Rect2 window_rect = Rect2(DisplayServer::get_singleton()->window_get_position(), DisplayServer::get_singleton()->window_get_size());
 	Rect2 dialog_rect = Rect2(remove_varying_dialog->get_position(), remove_varying_dialog->get_size());
-	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).max(Vector2());
+	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).maxf(0);
 	remove_varying_dialog->set_position(remove_varying_dialog->get_position() - difference);
 }
 

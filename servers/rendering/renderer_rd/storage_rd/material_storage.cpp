@@ -1656,13 +1656,9 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 			Variant value = d["value"];
 
 			if (gvtype >= RS::GLOBAL_VAR_TYPE_SAMPLER2D) {
-				//textire
-				if (!p_load_textures) {
-					continue;
-				}
-
 				String path = value;
-				if (path.is_empty()) {
+				// Don't load the textures, but still add the parameter so shaders compile correctly while loading.
+				if (!p_load_textures || path.is_empty()) {
 					value = RID();
 				} else {
 					Ref<Resource> resource = ResourceLoader::load(path);

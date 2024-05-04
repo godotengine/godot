@@ -119,6 +119,7 @@ DOCTEST_STRINGIFY_VARIANT(PackedStringArray);
 DOCTEST_STRINGIFY_VARIANT(PackedVector2Array);
 DOCTEST_STRINGIFY_VARIANT(PackedVector3Array);
 DOCTEST_STRINGIFY_VARIANT(PackedColorArray);
+DOCTEST_STRINGIFY_VARIANT(PackedVector4Array);
 
 // Register test commands to be launched from the command-line.
 // For instance: REGISTER_TEST_COMMAND("gdscript-parser" &test_parser_func).
@@ -136,6 +137,7 @@ int register_test_command(String p_command, TestFunc p_function);
 // Requires Message Queue and InputMap to be setup.
 // SEND_GUI_ACTION    - takes an input map key. e.g SEND_GUI_ACTION("ui_text_newline").
 // SEND_GUI_KEY_EVENT - takes a keycode set.   e.g SEND_GUI_KEY_EVENT(Key::A | KeyModifierMask::META).
+// SEND_GUI_KEY_UP_EVENT - takes a keycode set.   e.g SEND_GUI_KEY_UP_EVENT(Key::A | KeyModifierMask::META).
 // SEND_GUI_MOUSE_BUTTON_EVENT - takes a position, mouse button, mouse mask and modifiers e.g SEND_GUI_MOUSE_BUTTON_EVENT(Vector2(50, 50), MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE, Key::None);
 // SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT - takes a position, mouse button, mouse mask and modifiers e.g SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Vector2(50, 50), MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE, Key::None);
 // SEND_GUI_MOUSE_MOTION_EVENT - takes a position, mouse mask and modifiers e.g SEND_GUI_MOUSE_MOTION_EVENT(Vector2(50, 50), MouseButtonMask::LEFT, KeyModifierMask::META);
@@ -157,6 +159,14 @@ int register_test_command(String p_command, TestFunc p_function);
 	{                                                                        \
 		Ref<InputEventKey> event = InputEventKey::create_reference(m_input); \
 		event->set_pressed(true);                                            \
+		_SEND_DISPLAYSERVER_EVENT(event);                                    \
+		MessageQueue::get_singleton()->flush();                              \
+	}
+
+#define SEND_GUI_KEY_UP_EVENT(m_input)                                       \
+	{                                                                        \
+		Ref<InputEventKey> event = InputEventKey::create_reference(m_input); \
+		event->set_pressed(false);                                           \
 		_SEND_DISPLAYSERVER_EVENT(event);                                    \
 		MessageQueue::get_singleton()->flush();                              \
 	}

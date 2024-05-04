@@ -31,12 +31,35 @@
 #ifndef OPENXR_INTERFACE_H
 #define OPENXR_INTERFACE_H
 
+// A note on multithreading and thread safety in OpenXR.
+//
+// Most entry points will be called from the main thread in Godot
+// however a number of entry points will be called from the
+// rendering thread, potentially while we're already processing
+// the next frame on the main thread.
+//
+// OpenXR itself has been designed with threading in mind including
+// a high likelihood that the XR runtime runs in separate threads
+// as well.
+// Hence all the frame timing information, use of swapchains and
+// sync functions.
+// Do note that repeated calls to tracking APIs will provide
+// increasingly more accurate data for the same timestamp as
+// tracking data is continuously updated.
+//
+// For our code we mostly implement this in our OpenXRAPI class.
+// We store data accessed from the rendering thread in a separate
+// struct, setting values through our renderer command queue.
+//
+// As some data is setup before we start rendering, and cleaned up
+// after we've stopped, that is accessed directly from both threads.
+
 #include "action_map/openxr_action_map.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "openxr_api.h"
 
+#include "servers/xr/xr_controller_tracker.h"
 #include "servers/xr/xr_interface.h"
-#include "servers/xr/xr_positional_tracker.h"
 
 // declare some default strings
 #define INTERACTION_PROFILE_NONE "/interaction_profiles/none"
@@ -57,6 +80,8 @@ private:
 	XRPose::TrackingConfidence head_confidence;
 	Transform3D transform_for_view[2]; // We currently assume 2, but could be 4 for VARJO which we do not support yet
 
+	XRVRS xr_vrs;
+
 	void _load_action_map();
 
 	struct Action { // An action we've registered with OpenXR
@@ -73,7 +98,7 @@ private:
 	struct Tracker { // A tracker we've registered with OpenXR
 		String tracker_name; // Name of our tracker (can be altered from the action map)
 		Vector<Action *> actions; // Actions related to this tracker
-		Ref<XRPositionalTracker> positional_tracker; // Our positional tracker object that holds our tracker state
+		Ref<XRControllerTracker> controller_tracker; // Our positional tracker object that holds our tracker state
 		RID tracker_rid; // RID of the tracker registered with our OpenXR API
 		RID interaction_profile; // RID of the interaction profile bound to this tracker (can be null)
 	};
@@ -110,6 +135,7 @@ public:
 	virtual TrackingStatus get_tracking_status() const override;
 
 	bool is_hand_tracking_supported();
+	bool is_hand_interaction_supported() const;
 	bool is_eye_gaze_interaction_supported();
 
 	bool initialize_on_startup() const;
@@ -144,6 +170,12 @@ public:
 	bool get_foveation_dynamic() const;
 	void set_foveation_dynamic(bool p_foveation_dynamic);
 
+	float get_vrs_min_radius() const;
+	void set_vrs_min_radius(float p_vrs_min_radius);
+
+	float get_vrs_strength() const;
+	void set_vrs_strength(float p_vrs_strength);
+
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
@@ -173,6 +205,8 @@ public:
 	void on_state_visible();
 	void on_state_focused();
 	void on_state_stopping();
+	void on_state_loss_pending();
+	void on_state_exiting();
 	void on_pose_recentered();
 	void on_refresh_rate_changes(float p_new_rate);
 	void tracker_profile_changed(RID p_tracker, RID p_interaction_profile);
@@ -249,6 +283,8 @@ public:
 
 	Vector3 get_hand_joint_linear_velocity(Hand p_hand, HandJoints p_joint) const;
 	Vector3 get_hand_joint_angular_velocity(Hand p_hand, HandJoints p_joint) const;
+
+	virtual RID get_vrs_texture() override;
 
 	OpenXRInterface();
 	~OpenXRInterface();

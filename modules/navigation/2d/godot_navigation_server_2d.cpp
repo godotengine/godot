@@ -389,7 +389,16 @@ bool FORWARD_1_C(agent_is_map_changed, RID, p_agent, rid_to_rid);
 void FORWARD_2(agent_set_paused, RID, p_agent, bool, p_paused, rid_to_rid, bool_to_bool);
 bool FORWARD_1_C(agent_get_paused, RID, p_agent, rid_to_rid);
 
-void FORWARD_1(free, RID, p_object, rid_to_rid);
+void GodotNavigationServer2D::free(RID p_object) {
+#ifdef CLIPPER2_ENABLED
+	if (navmesh_generator_2d && navmesh_generator_2d->owns(p_object)) {
+		navmesh_generator_2d->free(p_object);
+		return;
+	}
+#endif // CLIPPER2_ENABLED
+	NavigationServer3D::get_singleton()->free(p_object);
+}
+
 void FORWARD_2(agent_set_avoidance_callback, RID, p_agent, Callable, p_callback, rid_to_rid, callable_to_callable);
 bool GodotNavigationServer2D::agent_has_avoidance_callback(RID p_agent) const {
 	return NavigationServer3D::get_singleton()->agent_has_avoidance_callback(p_agent);
@@ -452,4 +461,21 @@ void GodotNavigationServer2D::query_path(const Ref<NavigationPathQueryParameters
 	p_query_result->set_path_types(_query_result.path_types);
 	p_query_result->set_path_rids(_query_result.path_rids);
 	p_query_result->set_path_owner_ids(_query_result.path_owner_ids);
+}
+
+RID GodotNavigationServer2D::source_geometry_parser_create() {
+#ifdef CLIPPER2_ENABLED
+	if (navmesh_generator_2d) {
+		return navmesh_generator_2d->source_geometry_parser_create();
+	}
+#endif // CLIPPER2_ENABLED
+	return RID();
+}
+
+void GodotNavigationServer2D::source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) {
+#ifdef CLIPPER2_ENABLED
+	if (navmesh_generator_2d) {
+		navmesh_generator_2d->source_geometry_parser_set_callback(p_parser, p_callback);
+	}
+#endif // CLIPPER2_ENABLED
 }

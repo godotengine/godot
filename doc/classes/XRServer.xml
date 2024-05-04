@@ -10,30 +10,6 @@
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="add_body_tracker">
-			<return type="void" />
-			<param index="0" name="tracker_name" type="StringName" />
-			<param index="1" name="body_tracker" type="XRBodyTracker" />
-			<description>
-				Registers a new [XRBodyTracker] that tracks the joints of a body.
-			</description>
-		</method>
-		<method name="add_face_tracker">
-			<return type="void" />
-			<param index="0" name="tracker_name" type="StringName" />
-			<param index="1" name="face_tracker" type="XRFaceTracker" />
-			<description>
-				Registers a new [XRFaceTracker] that tracks the blend shapes of a face.
-			</description>
-		</method>
-		<method name="add_hand_tracker">
-			<return type="void" />
-			<param index="0" name="tracker_name" type="StringName" />
-			<param index="1" name="hand_tracker" type="XRHandTracker" />
-			<description>
-				Registers a new [XRHandTracker] that tracks the joints of a hand.
-			</description>
-		</method>
 		<method name="add_interface">
 			<return type="void" />
 			<param index="0" name="interface" type="XRInterface" />
@@ -43,9 +19,9 @@
 		</method>
 		<method name="add_tracker">
 			<return type="void" />
-			<param index="0" name="tracker" type="XRPositionalTracker" />
+			<param index="0" name="tracker" type="XRTracker" />
 			<description>
-				Registers a new [XRPositionalTracker] that tracks a spatial location in real space.
+				Registers a new [XRTracker] that tracks a physical object.
 			</description>
 		</method>
 		<method name="center_on_hmd">
@@ -61,8 +37,8 @@
 				You should call this method after a few seconds have passed. For example, when the user requests a realignment of the display holding a designated button on a controller for a short period of time, or when implementing a teleport mechanism.
 			</description>
 		</method>
-		<method name="clear_reference_frame" qualifiers="const">
-			<return type="Transform3D" />
+		<method name="clear_reference_frame">
+			<return type="void" />
 			<description>
 				Clears the reference frame that was set by previous calls to [method center_on_hmd].
 			</description>
@@ -72,45 +48,6 @@
 			<param index="0" name="name" type="String" />
 			<description>
 				Finds an interface by its [param name]. For example, if your project uses capabilities of an AR/VR platform, you can find the interface for that platform by name and initialize it.
-			</description>
-		</method>
-		<method name="get_body_tracker" qualifiers="const">
-			<return type="XRBodyTracker" />
-			<param index="0" name="tracker_name" type="StringName" />
-			<description>
-				Returns the [XRBodyTracker] with the given tracker name.
-			</description>
-		</method>
-		<method name="get_body_trackers" qualifiers="const">
-			<return type="Dictionary" />
-			<description>
-				Returns a dictionary of the registered body trackers. Each element of the dictionary is a tracker name mapping to the [XRBodyTracker] instance.
-			</description>
-		</method>
-		<method name="get_face_tracker" qualifiers="const">
-			<return type="XRFaceTracker" />
-			<param index="0" name="tracker_name" type="StringName" />
-			<description>
-				Returns the [XRFaceTracker] with the given tracker name.
-			</description>
-		</method>
-		<method name="get_face_trackers" qualifiers="const">
-			<return type="Dictionary" />
-			<description>
-				Returns a dictionary of the registered face trackers. Each element of the dictionary is a tracker name mapping to the [XRFaceTracker] instance.
-			</description>
-		</method>
-		<method name="get_hand_tracker" qualifiers="const">
-			<return type="XRHandTracker" />
-			<param index="0" name="tracker_name" type="StringName" />
-			<description>
-				Returns the [XRHandTracker] with the given tracker name.
-			</description>
-		</method>
-		<method name="get_hand_trackers" qualifiers="const">
-			<return type="Dictionary" />
-			<description>
-				Returns a dictionary of the registered hand trackers. Each element of the dictionary is a tracker name mapping to the [XRHandTracker] instance.
 			</description>
 		</method>
 		<method name="get_hmd_transform">
@@ -145,7 +82,7 @@
 			</description>
 		</method>
 		<method name="get_tracker" qualifiers="const">
-			<return type="XRPositionalTracker" />
+			<return type="XRTracker" />
 			<param index="0" name="tracker_name" type="StringName" />
 			<description>
 				Returns the positional tracker with the given [param tracker_name].
@@ -158,27 +95,6 @@
 				Returns a dictionary of trackers for [param tracker_types].
 			</description>
 		</method>
-		<method name="remove_body_tracker">
-			<return type="void" />
-			<param index="0" name="tracker_name" type="StringName" />
-			<description>
-				Removes a registered [XRBodyTracker].
-			</description>
-		</method>
-		<method name="remove_face_tracker">
-			<return type="void" />
-			<param index="0" name="tracker_name" type="StringName" />
-			<description>
-				Removes a registered [XRFaceTracker].
-			</description>
-		</method>
-		<method name="remove_hand_tracker">
-			<return type="void" />
-			<param index="0" name="tracker_name" type="StringName" />
-			<description>
-				Removes a registered [XRHandTracker].
-			</description>
-		</method>
 		<method name="remove_interface">
 			<return type="void" />
 			<param index="0" name="interface" type="XRInterface" />
@@ -188,9 +104,9 @@
 		</method>
 		<method name="remove_tracker">
 			<return type="void" />
-			<param index="0" name="tracker" type="XRPositionalTracker" />
+			<param index="0" name="tracker" type="XRTracker" />
 			<description>
-				Removes this positional [param tracker].
+				Removes this [param tracker].
 			</description>
 		</method>
 	</methods>
@@ -207,66 +123,6 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="body_tracker_added">
-			<param index="0" name="tracker_name" type="StringName" />
-			<param index="1" name="body_tracker" type="XRBodyTracker" />
-			<description>
-				Emitted when a new body tracker is added.
-			</description>
-		</signal>
-		<signal name="body_tracker_removed">
-			<param index="0" name="tracker_name" type="StringName" />
-			<description>
-				Emitted when a body tracker is removed.
-			</description>
-		</signal>
-		<signal name="body_tracker_updated">
-			<param index="0" name="tracker_name" type="StringName" />
-			<param index="1" name="body_tracker" type="XRBodyTracker" />
-			<description>
-				Emitted when an existing body tracker is updated.
-			</description>
-		</signal>
-		<signal name="face_tracker_added">
-			<param index="0" name="tracker_name" type="StringName" />
-			<param index="1" name="face_tracker" type="XRFaceTracker" />
-			<description>
-				Emitted when a new face tracker is added.
-			</description>
-		</signal>
-		<signal name="face_tracker_removed">
-			<param index="0" name="tracker_name" type="StringName" />
-			<description>
-				Emitted when a face tracker is removed.
-			</description>
-		</signal>
-		<signal name="face_tracker_updated">
-			<param index="0" name="tracker_name" type="StringName" />
-			<param index="1" name="face_tracker" type="XRFaceTracker" />
-			<description>
-				Emitted when an existing face tracker is updated.
-			</description>
-		</signal>
-		<signal name="hand_tracker_added">
-			<param index="0" name="tracker_name" type="StringName" />
-			<param index="1" name="hand_tracker" type="XRHandTracker" />
-			<description>
-				Emitted when a new hand tracker is added.
-			</description>
-		</signal>
-		<signal name="hand_tracker_removed">
-			<param index="0" name="tracker_name" type="StringName" />
-			<description>
-				Emitted when a hand tracker is removed.
-			</description>
-		</signal>
-		<signal name="hand_tracker_updated">
-			<param index="0" name="tracker_name" type="StringName" />
-			<param index="1" name="hand_tracker" type="XRHandTracker" />
-			<description>
-				Emitted when an existing hand tracker is updated.
-			</description>
-		</signal>
 		<signal name="interface_added">
 			<param index="0" name="interface_name" type="StringName" />
 			<description>
@@ -313,6 +169,15 @@
 		</constant>
 		<constant name="TRACKER_ANCHOR" value="8" enum="TrackerType">
 			The tracker tracks the location and size of an AR anchor.
+		</constant>
+		<constant name="TRACKER_HAND" value="16" enum="TrackerType">
+			The tracker tracks the location and joints of a hand.
+		</constant>
+		<constant name="TRACKER_BODY" value="32" enum="TrackerType">
+			The tracker tracks the location and joints of a body.
+		</constant>
+		<constant name="TRACKER_FACE" value="64" enum="TrackerType">
+			The tracker tracks the expressions of a face.
 		</constant>
 		<constant name="TRACKER_ANY_KNOWN" value="127" enum="TrackerType">
 			Used internally to filter trackers of any known type.

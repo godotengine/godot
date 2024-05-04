@@ -1931,7 +1931,7 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 	while (instance) {
 		OccluderPolygon *co = occluder_polygon_owner.get_or_null(instance->occluder);
 
-		if (!co || co->sdf_index_array.is_null()) {
+		if (!co || co->sdf_index_array.is_null() || !instance->sdf_collision) {
 			instance = instance->next;
 			continue;
 		}

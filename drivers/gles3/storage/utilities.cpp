@@ -299,7 +299,7 @@ void Utilities::visibility_notifier_call(RID p_notifier, bool p_enter, bool p_de
 	ERR_FAIL_NULL(vn);
 
 	if (p_enter) {
-		if (!vn->enter_callback.is_null()) {
+		if (vn->enter_callback.is_valid()) {
 			if (p_deferred) {
 				vn->enter_callback.call_deferred();
 			} else {
@@ -307,7 +307,7 @@ void Utilities::visibility_notifier_call(RID p_notifier, bool p_enter, bool p_de
 			}
 		}
 	} else {
-		if (!vn->exit_callback.is_null()) {
+		if (vn->exit_callback.is_valid()) {
 			if (p_deferred) {
 				vn->exit_callback.call_deferred();
 			} else {

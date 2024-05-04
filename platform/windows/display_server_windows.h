@@ -464,6 +464,7 @@ class DisplayServerWindows : public DisplayServer {
 	WNDPROC user_proc = nullptr;
 
 	struct IndicatorData {
+		RID menu_rid;
 		Callable callback;
 	};
 
@@ -679,16 +680,17 @@ public:
 	virtual void force_process_and_drop_events() override;
 
 	virtual void release_rendering_thread() override;
-	virtual void make_rendering_thread() override;
 	virtual void swap_buffers() override;
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 
-	virtual IndicatorID create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
-	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) override;
+	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) override;
 	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override;
+	virtual void status_indicator_set_menu(IndicatorID p_id, const RID &p_rid) override;
 	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
+	virtual Rect2 status_indicator_get_rect(IndicatorID p_id) const override;
 	virtual void delete_status_indicator(IndicatorID p_id) override;
 
 	virtual void set_context(Context p_context) override;

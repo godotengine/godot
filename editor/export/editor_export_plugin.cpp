@@ -60,6 +60,10 @@ void EditorExportPlugin::add_shared_object(const String &p_path, const Vector<St
 	shared_objects.push_back(SharedObject(p_path, p_tags, p_target));
 }
 
+void EditorExportPlugin::_add_shared_object(const SharedObject &p_shared_object) {
+	shared_objects.push_back(p_shared_object);
+}
+
 void EditorExportPlugin::add_ios_framework(const String &p_path) {
 	ios_frameworks.push_back(p_path);
 }

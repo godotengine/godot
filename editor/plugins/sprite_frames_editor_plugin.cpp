@@ -1476,6 +1476,10 @@ void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 	_fetch_sprite_node(); // Fetch node after set frames.
 }
 
+bool SpriteFramesEditor::is_editing() const {
+	return frames.is_valid();
+}
+
 Variant SpriteFramesEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	if (read_only) {
 		return false;
@@ -2325,7 +2329,7 @@ bool SpriteFramesEditorPlugin::handles(Object *p_object) const {
 	if (animated_sprite_3d && *animated_sprite_3d->get_sprite_frames()) {
 		return true;
 	}
-	return p_object->is_class("SpriteFrames");
+	return !frames_editor->is_editing() && Object::cast_to<SpriteFrames>(p_object);
 }
 
 void SpriteFramesEditorPlugin::make_visible(bool p_visible) {

@@ -31,7 +31,7 @@
 #ifndef ANIMATION_TREE_EDITOR_PLUGIN_H
 #define ANIMATION_TREE_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/graph_edit.h"
 

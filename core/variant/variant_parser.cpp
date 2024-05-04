@@ -489,11 +489,11 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 						r_token.value = num.as_int();
 					}
 					return OK;
-				} else if (is_ascii_char(cchar) || is_underscore(cchar)) {
+				} else if (is_ascii_alphabet_char(cchar) || is_underscore(cchar)) {
 					StringBuffer<> id;
 					bool first = true;
 
-					while (is_ascii_char(cchar) || is_underscore(cchar) || (!first && is_digit(cchar))) {
+					while (is_ascii_alphabet_char(cchar) || is_underscore(cchar) || (!first && is_digit(cchar))) {
 						id += cchar;
 						cchar = p_stream->get_char();
 						first = false;
@@ -1395,6 +1395,24 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			value = arr;
+		} else if (id == "PackedVector4Array" || id == "PoolVector4Array" || id == "Vector4Array") {
+			Vector<real_t> args;
+			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			if (err) {
+				return err;
+			}
+
+			Vector<Vector4> arr;
+			{
+				int len = args.size() / 4;
+				arr.resize(len);
+				Vector4 *w = arr.ptrw();
+				for (int i = 0; i < len; i++) {
+					w[i] = Vector4(args[i * 4 + 0], args[i * 4 + 1], args[i * 4 + 2], args[i * 4 + 3]);
+				}
+			}
+
+			value = arr;
 		} else if (id == "PackedColorArray" || id == "PoolColorArray" || id == "ColorArray") {
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
@@ -1789,7 +1807,7 @@ static String rtos_fix(double p_value) {
 	}
 }
 
-Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int p_recursion_count) {
+Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int p_recursion_count, bool p_compat) {
 	switch (p_variant.get_type()) {
 		case Variant::NIL: {
 			p_store_string_func(p_store_string_ud, "null");
@@ -2009,7 +2027,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					}
 
 					p_store_string_func(p_store_string_ud, "\"" + E.name + "\":");
-					write(obj->get(E.name), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
+					write(obj->get(E.name), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 				}
 			}
 
@@ -2035,9 +2053,9 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 				p_store_string_func(p_store_string_ud, "{\n");
 				for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-					write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
+					write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 					p_store_string_func(p_store_string_ud, ": ");
-					write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
+					write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 					if (E->next()) {
 						p_store_string_func(p_store_string_ud, ",\n");
 					} else {
@@ -2096,7 +2114,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					} else {
 						p_store_string_func(p_store_string_ud, ", ");
 					}
-					write(var, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count);
+					write(var, p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 				}
 
 				p_store_string_func(p_store_string_ud, "]");
@@ -2110,7 +2128,16 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		case Variant::PACKED_BYTE_ARRAY: {
 			p_store_string_func(p_store_string_ud, "PackedByteArray(");
 			Vector<uint8_t> data = p_variant;
-			if (data.size() > 0) {
+			if (p_compat) {
+				int len = data.size();
+				const uint8_t *ptr = data.ptr();
+				for (int i = 0; i < len; i++) {
+					if (i > 0) {
+						p_store_string_func(p_store_string_ud, ", ");
+					}
+					p_store_string_func(p_store_string_ud, itos(ptr[i]));
+				}
+			} else if (data.size() > 0) {
 				p_store_string_func(p_store_string_ud, "\"");
 				p_store_string_func(p_store_string_ud, CryptoCore::b64_encode_str(data.ptr(), data.size()));
 				p_store_string_func(p_store_string_ud, "\"");
@@ -2239,6 +2266,21 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 			p_store_string_func(p_store_string_ud, ")");
 		} break;
+		case Variant::PACKED_VECTOR4_ARRAY: {
+			p_store_string_func(p_store_string_ud, "PackedVector4Array(");
+			Vector<Vector4> data = p_variant;
+			int len = data.size();
+			const Vector4 *ptr = data.ptr();
+
+			for (int i = 0; i < len; i++) {
+				if (i > 0) {
+					p_store_string_func(p_store_string_ud, ", ");
+				}
+				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x) + ", " + rtos_fix(ptr[i].y) + ", " + rtos_fix(ptr[i].z) + ", " + rtos_fix(ptr[i].w));
+			}
+
+			p_store_string_func(p_store_string_ud, ")");
+		} break;
 
 		default: {
 			ERR_PRINT("Unknown variant type");
@@ -2255,8 +2297,8 @@ static Error _write_to_str(void *ud, const String &p_string) {
 	return OK;
 }
 
-Error VariantWriter::write_to_string(const Variant &p_variant, String &r_string, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud) {
+Error VariantWriter::write_to_string(const Variant &p_variant, String &r_string, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, bool p_compat) {
 	r_string = String();
 
-	return write(p_variant, _write_to_str, &r_string, p_encode_res_func, p_encode_res_ud);
+	return write(p_variant, _write_to_str, &r_string, p_encode_res_func, p_encode_res_ud, 0, p_compat);
 }

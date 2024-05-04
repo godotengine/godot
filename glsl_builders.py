@@ -1,6 +1,7 @@
 """Functions used to generate source files during build time"""
 
 import os.path
+from methods import print_error
 from typing import Optional, Iterable
 
 
@@ -79,15 +80,15 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
                 if not included_file in header_data.vertex_included_files and header_data.reading == "vertex":
                     header_data.vertex_included_files += [included_file]
                     if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
-                        print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
+                        print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
                 elif not included_file in header_data.fragment_included_files and header_data.reading == "fragment":
                     header_data.fragment_included_files += [included_file]
                     if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
-                        print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
+                        print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
                 elif not included_file in header_data.compute_included_files and header_data.reading == "compute":
                     header_data.compute_included_files += [included_file]
                     if include_file_in_rd_header(included_file, header_data, depth + 1) is None:
-                        print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
+                        print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
 
                 line = fs.readline()
 

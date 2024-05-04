@@ -256,19 +256,91 @@ Compatibility methods registered.
 
 GH-88014
 --------
-Validate extension JSON: API was removed: classes/VisualShaderNodeComment
-
-Removed VisualShaderNodeComment, which is replaced by VisualShaderNodeFrame.
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/methods/get_title
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/methods/set_title
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/properties/title
 
 
 GH-87888
 --------
-Validate extension JSON: API was removed: classes/OpenXRHand/methods/get_hand_skeleton
-Validate extension JSON: API was removed: classes/OpenXRHand/methods/set_hand_skeleton
-Validate extension JSON: API was removed: classes/OpenXRHand/properties/hand_skeleton
 Validate extension JSON: API was removed: classes/Skeleton3D/properties/animate_physical_bones
-Validate extension JSON: API was removed: classes/SkeletonIK3D/methods/get_interpolation
-Validate extension JSON: API was removed: classes/SkeletonIK3D/methods/set_interpolation
-Validate extension JSON: API was removed: classes/SkeletonIK3D/properties/interpolation
 
 These base class is changed to SkeletonModifier3D which is processed by Skeleton3D with the assumption that it is Skeleton3D's child.
+
+
+GH-90575
+--------
+Validate extension JSON: API was removed: classes/BoneAttachment3D/methods/on_bone_pose_update
+Validate extension JSON: API was removed: classes/Skeleton3D/signals/bone_pose_changed
+
+They have been replaced by a safer API due to performance concerns. Compatibility method registered.
+
+
+GH-90747
+--------
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/get_avoidance_layers
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/set_avoidance_layers
+Validate extension JSON: API was removed: classes/NavigationRegion2D/properties/avoidance_layers
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/get_avoidance_layer_value
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/set_avoidance_layer_value
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/set_constrain_avoidance
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/get_constrain_avoidance
+Validate extension JSON: API was removed: classes/NavigationRegion2D/properties/constrain_avoidance
+
+Experimental NavigationRegion2D feature "constrain_avoidance" was discontinued with no replacement.
+
+
+GH-90645
+--------
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/get_tracker_desc
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/get_tracker_name
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/get_tracker_type
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/set_tracker_desc
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/set_tracker_name
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/set_tracker_type
+Validate extension JSON: API was removed: classes/XRPositionalTracker/properties/description
+Validate extension JSON: API was removed: classes/XRPositionalTracker/properties/name
+Validate extension JSON: API was removed: classes/XRPositionalTracker/properties/type
+Validate extension JSON: Error: Field 'classes/WebXRInterface/methods/get_input_source_tracker/return_value': type changed value in new API, from "XRPositionalTracker" to "XRControllerTracker".
+Validate extension JSON: Error: Field 'classes/XRServer/methods/add_tracker/arguments/0': type changed value in new API, from "XRPositionalTracker" to "XRTracker".
+Validate extension JSON: Error: Field 'classes/XRServer/methods/get_tracker/return_value': type changed value in new API, from "XRPositionalTracker" to "XRTracker".
+Validate extension JSON: Error: Field 'classes/XRServer/methods/remove_tracker/arguments/0': type changed value in new API, from "XRPositionalTracker" to "XRTracker".
+
+All trackers now have an XRTracker base, and the XRServer uses the XRTracker type.
+
+
+GH-90732
+--------
+Validate extension JSON: Error: Field 'classes/TextServer/methods/shaped_text_get_word_breaks/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shaped_text_get_word_breaks/arguments': size changed value in new API, from 2 to 3.
+
+Added optional argument. Compatibility method registered.
+
+
+GH-86978
+--------
+Validate extension JSON: Error: Field 'classes/TextEdit/methods/set_selection_mode/arguments': size changed value in new API, from 4 to 1.
+
+Removed optional arguments set_selection_mode, use set_selection_origin_line/column instead. 
+Compatibility methods registered.
+
+
+GH-84472
+--------
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_circle/arguments': size changed value in new API, from 3 to 6.
+
+Optional arguments added. Compatibility methods registered.
+
+
+GH-91098
+--------
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/remove_paragraph/arguments': size changed value in new API, from 1 to 2.
+
+Added optional argument. Compatibility method registered.
+
+
+GH-91143
+--------
+Validate extension JSON: Error: Field 'classes/Input/methods/vibrate_handheld/arguments': size changed value in new API, from 1 to 2.
+
+Added optional argument. Compatibility method registered.

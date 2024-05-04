@@ -318,7 +318,7 @@ Files extracted from upstream source:
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
-- Version: 2.0.6 (658f48e72aee3c6582e80b05ac0f8787a64fe6bb, 2024)
+- Version: 2.0.4 (d08b1aa01f8fe57498f04d47b5fa8c48725be877, 2023)
 - License: CC0 1.0 and Apache 2.0
 
 Files extracted from upstream source:
@@ -334,11 +334,11 @@ Files generated from [upstream web instance](https://gen.glad.sh/):
 - `glx.c`
 - `glad/glx.h`
 
-See the permalinks in `glad/egl.h`, `glad/gl.h`, and `glad/glx.h` to regenrate
-the files with a new version of the web instance.
+See the permalinks in `glad/gl.h` and `glad/glx.h` to regenrate the files with
+a new version of the web instance.
 
-Some changes have been made in order to allow loading OpenGL and OpenGLES APIs
-at the same time. See the patches in the `patches` directory.
+Some changes have been made in order to allow loading OpenGL and OpenGLES APIs at the same time.
+See the patches in the `patches` directory.
 
 
 ## glslang
@@ -426,6 +426,18 @@ Files extracted from upstream source:
 
 - `jpgd*.{c,h}`
 - `jpge*.{c,h}`
+
+
+## libbacktrace
+
+- Upstream: https://github.com/ianlancetaylor/libbacktrace
+- Version: git (4d2dd0b172f2c9192f83ba93425f868f2a13c553, 2022)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `*.{c,h}` files for Windows platform
+- `LICENSE`
 
 
 ## libktx
@@ -666,6 +678,11 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.{cpp,h}`)
   * Version: git (7bdffb428b2b19ad1c43aa44c714dcc104177e84, 2021)
   * Modifications: Change from STL to Godot types (see provided patch).
+  * License: MIT
+- `qoa.h`
+  * Upstream: https://github.com/phoboslab/qoa
+  * Version: git (e4c751d61af2c395ea828c5888e728c1953bf09f, 2024)
+  * Modifications: Inlined functions and patched compiler warnings.
   * License: MIT
 - `r128.{c,h}`
   * Upstream: https://github.com/fahickman/r128

@@ -84,7 +84,7 @@ static Error _erase_recursive(DirAccess *da) {
 	String n = da->get_next();
 	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
-			if (da->current_is_dir()) {
+			if (da->current_is_dir() && !da->is_link(n)) {
 				dirs.push_back(n);
 			} else {
 				files.push_back(n);
@@ -581,6 +581,10 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_static_method("DirAccess", D_METHOD("rename_absolute", "from", "to"), &DirAccess::rename_absolute);
 	ClassDB::bind_method(D_METHOD("remove", "path"), &DirAccess::remove);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("remove_absolute", "path"), &DirAccess::remove_absolute);
+
+	ClassDB::bind_method(D_METHOD("is_link", "path"), &DirAccess::is_link);
+	ClassDB::bind_method(D_METHOD("read_link", "path"), &DirAccess::read_link);
+	ClassDB::bind_method(D_METHOD("create_link", "source", "target"), &DirAccess::create_link);
 
 	ClassDB::bind_method(D_METHOD("set_include_navigational", "enable"), &DirAccess::set_include_navigational);
 	ClassDB::bind_method(D_METHOD("get_include_navigational"), &DirAccess::get_include_navigational);

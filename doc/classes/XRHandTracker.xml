@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRHandTracker" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRHandTracker" inherits="XRPositionalTracker" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A tracked hand in XR.
 	</brief_description>
@@ -88,26 +88,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="hand" type="int" setter="set_hand" getter="get_hand" enum="XRHandTracker.Hand" default="0">
-			The type of hand.
-		</member>
+		<member name="hand" type="int" setter="set_tracker_hand" getter="get_tracker_hand" overrides="XRPositionalTracker" enum="XRPositionalTracker.TrackerHand" default="1" />
 		<member name="hand_tracking_source" type="int" setter="set_hand_tracking_source" getter="get_hand_tracking_source" enum="XRHandTracker.HandTrackingSource" default="0">
 			The source of the hand tracking data.
 		</member>
 		<member name="has_tracking_data" type="bool" setter="set_has_tracking_data" getter="get_has_tracking_data" default="false">
 			If [code]true[/code], the hand tracking data is valid.
 		</member>
+		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" overrides="XRTracker" enum="XRServer.TrackerType" default="16" />
 	</members>
 	<constants>
-		<constant name="HAND_LEFT" value="0" enum="Hand">
-			A left hand.
-		</constant>
-		<constant name="HAND_RIGHT" value="1" enum="Hand">
-			A right hand.
-		</constant>
-		<constant name="HAND_MAX" value="2" enum="Hand">
-			Represents the size of the [enum Hand] enum.
-		</constant>
 		<constant name="HAND_TRACKING_SOURCE_UNKNOWN" value="0" enum="HandTrackingSource">
 			The source of hand tracking data is unknown.
 		</constant>

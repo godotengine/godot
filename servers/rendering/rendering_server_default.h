@@ -31,6 +31,7 @@
 #ifndef RENDERING_SERVER_DEFAULT_H
 #define RENDERING_SERVER_DEFAULT_H
 
+#include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 #include "core/templates/hash_map.h"
@@ -75,21 +76,16 @@ class RenderingServerDefault : public RenderingServer {
 
 	mutable CommandQueueMT command_queue;
 
-	static void _thread_callback(void *_instance);
 	void _thread_loop();
 
-	Thread::ID server_thread = 0;
-	SafeFlag exit;
-	Thread thread;
-	SafeFlag draw_thread_up;
-	bool create_thread;
+	Thread::ID server_thread = Thread::UNASSIGNED_ID;
+	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
+	bool exit = false;
+	bool create_thread = false;
 
 	void _thread_draw(bool p_swap_buffers, double frame_step);
-	void _thread_flush();
 
 	void _thread_exit();
-
-	Mutex alloc_mutex;
 
 	void _draw(bool p_swap_buffers, double frame_step);
 	void _init();
@@ -109,10 +105,6 @@ public:
 		_changes_changed();
 	}
 
-#define DISPLAY_CHANGED \
-	changes++;          \
-	_changes_changed();
-
 #else
 	_FORCE_INLINE_ static void redraw_request() {
 		changes++;
@@ -125,6 +117,10 @@ public:
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
 #else
 #define SYNC_DEBUG
+#endif
+
+#ifdef DEBUG_ENABLED
+#define MAIN_THREAD_SYNC_WARN WARN_PRINT("Call to " + String(__FUNCTION__) + " causing RenderingServer synchronizations on every frame. This significantly affects performance.");
 #endif
 
 #include "servers/server_wrap_mt_common.h"
@@ -676,6 +672,7 @@ public:
 	FUNC2(call_set_vsync_mode, DisplayServer::VSyncMode, DisplayServer::WindowID)
 
 	FUNC2(viewport_set_vrs_mode, RID, ViewportVRSMode)
+	FUNC2(viewport_set_vrs_update_mode, RID, ViewportVRSUpdateMode)
 	FUNC2(viewport_set_vrs_texture, RID, RID)
 
 	/* COMPOSITOR EFFECT */
@@ -1013,6 +1010,9 @@ public:
 #undef ServerName
 #undef WRITE_ACTION
 #undef SYNC_DEBUG
+#ifdef DEBUG_ENABLED
+#undef MAIN_THREAD_SYNC_WARN
+#endif
 
 	virtual uint64_t get_rendering_info(RenderingInfo p_info) override;
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const override;
@@ -1048,6 +1048,10 @@ public:
 	virtual bool has_changed() const override;
 	virtual void init() override;
 	virtual void finish() override;
+
+	virtual bool is_on_render_thread() override {
+		return Thread::get_caller_id() == server_thread;
+	}
 
 	virtual void call_on_render_thread(const Callable &p_callable) override {
 		if (Thread::get_caller_id() == server_thread) {

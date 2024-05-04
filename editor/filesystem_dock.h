@@ -116,6 +116,7 @@ private:
 		FILE_INSTANTIATE,
 		FILE_ADD_FAVORITE,
 		FILE_REMOVE_FAVORITE,
+		FILE_SHOW_IN_FILESYSTEM,
 		FILE_DEPENDENCIES,
 		FILE_OWNERS,
 		FILE_MOVE,
@@ -172,7 +173,7 @@ private:
 	LineEdit *file_list_search_box = nullptr;
 	MenuButton *file_list_button_sort = nullptr;
 
-	String searched_string;
+	PackedStringArray searched_tokens;
 	Vector<String> uncollapsed_paths_before_search;
 
 	TextureRect *search_icon = nullptr;
@@ -311,6 +312,7 @@ private:
 	void _split_dragged(int p_offset);
 
 	void _search_changed(const String &p_text, const Control *p_from);
+	bool _matches_all_search_tokens(const String &p_text);
 
 	MenuButton *_create_file_menu_button();
 	void _file_sort_popup(int p_id);
@@ -381,6 +383,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	static constexpr double ITEM_COLOR_SCALE = 1.75;
+	static constexpr double ITEM_ALPHA_MIN = 0.1;
+	static constexpr double ITEM_ALPHA_MAX = 0.15;
+	static constexpr double ITEM_BG_DARK_SCALE = 0.3;
+
 	const HashMap<String, Color> &get_folder_colors() const;
 	Dictionary get_assigned_folder_colors() const;
 

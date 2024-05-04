@@ -13,6 +13,12 @@ The `script/completion` folder contains test for the GDScript autocompletion.
 
 Each test case consists of at least one `.gd` file, which contains the code, and one `.cfg` file, which contains expected results and configuration. Inside of the GDScript file the character `➡` represents the cursor position, at which autocompletion is invoked.
 
+The script files won't be parsable GDScript since it contains an invalid char and and often the code is not complete during autocompletion. To allow for a valid base when used with a scene, the
+runner will remove the line which contains `➡`. Therefore the scripts need to be valid if this line is removed, otherwise the test might behave in unexpected ways. This may for example require
+adding an additional `pass` statement.
+
+This also means, that the runner will add the script to its owner node, so the script should not be loaded through the scene file.
+
 The config file contains two section:
 
 `[input]` contains keys that configure the test environment. The following keys are possible:
@@ -20,6 +26,7 @@ The config file contains two section:
 - `cs: boolean = false`: If `true`, the test will be skipped when running a non C# build.
 - `use_single_quotes: boolean = false`: Configures the corresponding editor setting for the test.
 - `scene: String`: Allows to specify a scene which is opened while autocompletion is performed. If this is not set the test runner will search for a `.tscn` file with the same basename as the GDScript file. If that isn't found either, autocompletion will behave as if no scene was opened.
+- `node_path: String`: The node path of the node which holds the current script inside of the scene. Defaults to the scene root node.
 
 `[output]` specifies the expected results for the test. The following key are supported:
 

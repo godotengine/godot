@@ -44,7 +44,7 @@ private:
 
 	//path sent caches
 	struct NodeCache {
-		int cache_id;
+		int cache_id = 0;
 		HashMap<int, int> recv_ids; // peer id, remote cache id
 		HashMap<int, bool> confirmed_peers; // peer id, confirmed
 	};
@@ -55,6 +55,7 @@ private:
 	};
 
 	HashMap<ObjectID, NodeCache> nodes_cache;
+	HashMap<int, ObjectID> assigned_ids;
 	HashMap<int, PeerInfo> peers_info;
 	int last_send_cache_id = 1;
 

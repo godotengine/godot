@@ -34,7 +34,7 @@
 #include "core/templates/rb_map.h"
 #include "editor/code_editor.h"
 #include "editor/editor_help.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"
 

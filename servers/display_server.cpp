@@ -212,7 +212,7 @@ String DisplayServer::global_menu_get_item_submenu(const String &p_menu_root, in
 	ERR_FAIL_NULL_V(nmenu, String());
 	RID rid = nmenu->get_item_submenu(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 	if (!nmenu->is_system_menu(rid)) {
-		for (HashMap<String, RID>::Iterator E = menu_names.begin(); E;) {
+		for (HashMap<String, RID>::Iterator E = menu_names.begin(); E; ++E) {
 			if (E->value == rid) {
 				return E->key;
 			}
@@ -697,10 +697,6 @@ void DisplayServer::release_rendering_thread() {
 	WARN_PRINT("Rendering thread not supported by this display server.");
 }
 
-void DisplayServer::make_rendering_thread() {
-	WARN_PRINT("Rendering thread not supported by this display server.");
-}
-
 void DisplayServer::swap_buffers() {
 	WARN_PRINT("Swap buffers not supported by this display server.");
 }
@@ -713,12 +709,12 @@ void DisplayServer::set_icon(const Ref<Image> &p_icon) {
 	WARN_PRINT("Icon not supported by this display server.");
 }
 
-DisplayServer::IndicatorID DisplayServer::create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) {
+DisplayServer::IndicatorID DisplayServer::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
 	WARN_PRINT("Status indicator not supported by this display server.");
 	return INVALID_INDICATOR_ID;
 }
 
-void DisplayServer::status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) {
+void DisplayServer::status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) {
 	WARN_PRINT("Status indicator not supported by this display server.");
 }
 
@@ -726,8 +722,17 @@ void DisplayServer::status_indicator_set_tooltip(IndicatorID p_id, const String 
 	WARN_PRINT("Status indicator not supported by this display server.");
 }
 
+void DisplayServer::status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid) {
+	WARN_PRINT("Status indicator not supported by this display server.");
+}
+
 void DisplayServer::status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) {
 	WARN_PRINT("Status indicator not supported by this display server.");
+}
+
+Rect2 DisplayServer::status_indicator_get_rect(IndicatorID p_id) const {
+	WARN_PRINT("Status indicator not supported by this display server.");
+	return Rect2();
 }
 
 void DisplayServer::delete_status_indicator(IndicatorID p_id) {
@@ -981,7 +986,9 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_status_indicator", "icon", "tooltip", "callback"), &DisplayServer::create_status_indicator);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_icon", "id", "icon"), &DisplayServer::status_indicator_set_icon);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_tooltip", "id", "tooltip"), &DisplayServer::status_indicator_set_tooltip);
+	ClassDB::bind_method(D_METHOD("status_indicator_set_menu", "id", "menu_rid"), &DisplayServer::status_indicator_set_menu);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_callback", "id", "callback"), &DisplayServer::status_indicator_set_callback);
+	ClassDB::bind_method(D_METHOD("status_indicator_get_rect", "id"), &DisplayServer::status_indicator_get_rect);
 	ClassDB::bind_method(D_METHOD("delete_status_indicator", "id"), &DisplayServer::delete_status_indicator);
 
 	ClassDB::bind_method(D_METHOD("tablet_get_driver_count"), &DisplayServer::tablet_get_driver_count);

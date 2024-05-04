@@ -31,7 +31,7 @@
 #ifndef DEBUGGER_EDITOR_PLUGIN_H
 #define DEBUGGER_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class EditorFileServer;
 class MenuButton;

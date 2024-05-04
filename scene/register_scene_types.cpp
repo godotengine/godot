@@ -128,9 +128,6 @@
 #include "scene/resources/mesh_texture.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/navigation_mesh.h"
-#include "scene/resources/navigation_mesh_source_geometry_data_2d.h"
-#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
-#include "scene/resources/navigation_polygon.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particle_process_material.h"
 #include "scene/resources/physics_material.h"
@@ -213,6 +210,8 @@
 #include "scene/resources/2d/circle_shape_2d.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+#include "scene/resources/2d/navigation_polygon.h"
 #include "scene/resources/2d/polygon_path_finder.h"
 #include "scene/resources/2d/rectangle_shape_2d.h"
 #include "scene/resources/2d/segment_shape_2d.h"
@@ -299,6 +298,7 @@
 #include "scene/resources/3d/height_map_shape_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/3d/mesh_library.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/3d/separation_ray_shape_3d.h"
 #include "scene/resources/3d/sky_material.h"
@@ -545,7 +545,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Camera3D);
 	GDREGISTER_CLASS(AudioListener3D);
 	GDREGISTER_CLASS(XRCamera3D);
-	GDREGISTER_ABSTRACT_CLASS(XRNode3D);
+	GDREGISTER_CLASS(XRNode3D);
 	GDREGISTER_CLASS(XRController3D);
 	GDREGISTER_CLASS(XRAnchor3D);
 	GDREGISTER_CLASS(XROrigin3D);
@@ -657,6 +657,9 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeConstant);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeVectorBase);
 	GDREGISTER_CLASS(VisualShaderNodeFrame);
+#ifndef DISABLE_DEPRECATED
+	GDREGISTER_CLASS(VisualShaderNodeComment); // Deprecated, just for compatibility.
+#endif
 	GDREGISTER_CLASS(VisualShaderNodeFloatConstant);
 	GDREGISTER_CLASS(VisualShaderNodeIntConstant);
 	GDREGISTER_CLASS(VisualShaderNodeUIntConstant);
@@ -883,6 +886,7 @@ void register_scene_types() {
 	BaseMaterial3D::init_shaders();
 
 	GDREGISTER_CLASS(MeshLibrary);
+	GDREGISTER_CLASS(NavigationMeshSourceGeometryData3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -1004,7 +1008,6 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(NavigationMesh);
 	GDREGISTER_CLASS(NavigationMeshSourceGeometryData2D);
-	GDREGISTER_CLASS(NavigationMeshSourceGeometryData3D);
 	GDREGISTER_CLASS(NavigationPolygon);
 	GDREGISTER_CLASS(NavigationRegion2D);
 	GDREGISTER_CLASS(NavigationAgent2D);

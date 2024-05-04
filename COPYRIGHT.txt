@@ -293,6 +293,11 @@ Comment: jpeg-compressor
 Copyright: 2012, Rich Geldreich
 License: public-domain or Apache-2.0
 
+Files: ./thirdparty/libbacktrace/
+Comment: libbacktrace
+Copyright: 2012-2021, Free Software Foundation, Inc.
+License: BSD-3-clause
+
 Files: ./thirdparty/libktx/
 Comment: KTX
 Copyright: 2013-2020, Mark Callow
@@ -360,12 +365,6 @@ Copyright: 1998-2010, Gilles Vollant
  2009-2010, Mathias Svensson
 License: Zlib
 
-Files: ./thirdparty/misc/clipper.cpp
- ./thirdparty/misc/clipper.hpp
-Comment: Clipper
-Copyright: 2010-2017, Angus Johnson
-License: BSL-1.0
-
 Files: ./thirdparty/misc/cubemap_coeffs.h
 Comment: Fast Filtering of Reflection Probes
 Copyright: 2016, Activision Publishing, Inc.
@@ -410,6 +409,11 @@ Files: ./thirdparty/misc/polypartition.cpp
  ./thirdparty/misc/polypartition.h
 Comment: PolyPartition / Triangulator
 Copyright: 2011-2021, Ivan Fratric and contributors
+License: Expat
+
+Files: ./thirdparty/misc/qoa.h
+Comment: Quite OK Audio Format
+Copyright: 2023, Dominic Szablewski
 License: Expat
 
 Files: ./thirdparty/misc/r128.c

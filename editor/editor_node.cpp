@@ -90,7 +90,6 @@
 #include "editor/editor_log.h"
 #include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_quick_open.h"
@@ -134,12 +133,12 @@
 #include "editor/inspector_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/node_dock.h"
-#include "editor/plugin_config_dialog.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/debugger_editor_plugin.h"
 #include "editor/plugins/dedicated_server_export_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_preview_plugins.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/gdextension_export_plugin.h"
@@ -148,6 +147,7 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/packed_scene_translation_parser_plugin.h"
 #include "editor/plugins/particle_process_material_editor_plugin.h"
+#include "editor/plugins/plugin_config_dialog.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
 #include "editor/plugins/script_text_editor.h"
 #include "editor/plugins/text_editor.h"
@@ -456,6 +456,9 @@ void EditorNode::_update_from_settings() {
 void EditorNode::_gdextensions_reloaded() {
 	// In case the developer is inspecting an object that will be changed by the reload.
 	InspectorDock::get_inspector_singleton()->update_tree();
+
+	// Regenerate documentation.
+	EditorHelp::generate_doc();
 }
 
 void EditorNode::_select_default_main_screen_plugin() {
@@ -769,6 +772,12 @@ void EditorNode::_notification(int p_what) {
 				FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
 				EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
 				EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
+			}
+
+			if (EDITOR_GET("interface/editor/import_resources_when_unfocused")) {
+				scan_changes_timer->start();
+			} else {
+				scan_changes_timer->stop();
 			}
 
 			follow_system_theme = EDITOR_GET("interface/theme/follow_system_theme");
@@ -1444,6 +1453,9 @@ void EditorNode::_dialog_display_load_error(String p_file, Error p_error) {
 			} break;
 			case ERR_FILE_NOT_FOUND: {
 				show_accept(vformat(TTR("Missing file '%s' or one of its dependencies."), p_file.get_file()), TTR("OK"));
+			} break;
+			case ERR_FILE_UNRECOGNIZED: {
+				show_accept(vformat(TTR("File '%s' is saved in a format that is newer than the formats supported by this version of Godot, so it can't be opened."), p_file.get_file()), TTR("OK"));
 			} break;
 			default: {
 				show_accept(vformat(TTR("Error while loading file '%s'."), p_file.get_file()), TTR("OK"));
@@ -2355,7 +2367,13 @@ static bool overrides_external_editor(Object *p_object) {
 
 void EditorNode::_add_to_history(const Object *p_object, const String &p_property, bool p_inspector_only) {
 	ObjectID id = p_object->get_instance_id();
-	if (id != editor_history.get_current()) {
+	ObjectID history_id = editor_history.get_current();
+	if (id != history_id) {
+		const MultiNodeEdit *multi_node_edit = Object::cast_to<const MultiNodeEdit>(p_object);
+		const MultiNodeEdit *history_multi_node_edit = Object::cast_to<const MultiNodeEdit>(ObjectDB::get_instance(history_id));
+		if (multi_node_edit && history_multi_node_edit && multi_node_edit->is_same_selection(history_multi_node_edit)) {
+			return;
+		}
 		if (p_inspector_only) {
 			editor_history.add_object(id, String(), true);
 		} else if (p_property.is_empty()) {
@@ -2449,6 +2467,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 		if (current_node->is_inside_tree()) {
 			NodeDock::get_singleton()->set_node(current_node);
 			SceneTreeDock::get_singleton()->set_selected(current_node);
+			SceneTreeDock::get_singleton()->set_selection({ current_node });
 			InspectorDock::get_singleton()->update(current_node);
 			if (!inspector_only && !skip_main_plugin) {
 				skip_main_plugin = stay_in_script_editor_on_node_selected && !ScriptEditor::get_singleton()->is_editor_floating() && ScriptEditor::get_singleton()->is_visible_in_tree();
@@ -2470,13 +2489,13 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 	} else {
 		Node *selected_node = nullptr;
 
+		Vector<Node *> multi_nodes;
 		if (current_obj->is_class("MultiNodeEdit")) {
 			Node *scene = get_edited_scene();
 			if (scene) {
 				MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(current_obj);
 				int node_count = multi_node_edit->get_node_count();
 				if (node_count > 0) {
-					List<Node *> multi_nodes;
 					for (int node_index = 0; node_index < node_count; ++node_index) {
 						Node *node = scene->get_node(multi_node_edit->get_node(node_index));
 						if (node) {
@@ -2486,7 +2505,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 					if (!multi_nodes.is_empty()) {
 						// Pick the top-most node.
 						multi_nodes.sort_custom<Node::Comparator>();
-						selected_node = multi_nodes.front()->get();
+						selected_node = multi_nodes[0];
 					}
 				}
 			}
@@ -2495,6 +2514,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 		InspectorDock::get_inspector_singleton()->edit(current_obj);
 		NodeDock::get_singleton()->set_node(nullptr);
 		SceneTreeDock::get_singleton()->set_selected(selected_node);
+		SceneTreeDock::get_singleton()->set_selection(multi_nodes);
 		InspectorDock::get_singleton()->update(nullptr);
 	}
 
@@ -3055,8 +3075,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case HELP_DOCS: {
 			OS::get_singleton()->shell_open(VERSION_DOCS_URL "/");
 		} break;
-		case HELP_QA: {
-			OS::get_singleton()->shell_open("https://godotengine.org/qa/");
+		case HELP_FORUM: {
+			OS::get_singleton()->shell_open("https://forum.godotengine.org/");
 		} break;
 		case HELP_REPORT_A_BUG: {
 			OS::get_singleton()->shell_open("https://github.com/godotengine/godot/issues");
@@ -3466,6 +3486,10 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 			}
 		}
 
+		if (singleton->editor_plugin_screen == p_editor) {
+			singleton->editor_plugin_screen = nullptr;
+		}
+
 		singleton->editor_table.erase(p_editor);
 	}
 	p_editor->make_visible(false);
@@ -3492,6 +3516,7 @@ void EditorNode::add_extension_editor_plugin(const StringName &p_class_name) {
 	EditorPlugin *plugin = Object::cast_to<EditorPlugin>(ClassDB::instantiate(p_class_name));
 	singleton->editor_data.add_extension_editor_plugin(p_class_name, plugin);
 	add_editor_plugin(plugin);
+	plugin->enable_plugin();
 }
 
 void EditorNode::remove_extension_editor_plugin(const StringName &p_class_name) {
@@ -3832,6 +3857,8 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 	if (tabs_to_close.is_empty()) {
 		callable_mp(this, &EditorNode::_set_main_scene_state).call_deferred(state, get_edited_scene()); // Do after everything else is done setting up.
 	}
+
+	_update_undo_redo_allowed();
 }
 
 void EditorNode::setup_color_picker(ColorPicker *p_picker) {
@@ -3917,14 +3944,18 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	}
 
 	int prev = editor_data.get_edited_scene();
-	int idx = editor_data.add_edited_scene(-1);
+	int idx = prev;
 
-	if (!editor_data.get_edited_scene_root() && editor_data.get_edited_scene_count() == 2) {
-		_remove_edited_scene();
-	} else if (p_silent_change_tab) {
-		_set_current_scene_nocheck(idx);
+	if (prev == -1 || editor_data.get_edited_scene_root() || !editor_data.get_scene_path(prev).is_empty()) {
+		idx = editor_data.add_edited_scene(-1);
+
+		if (p_silent_change_tab) {
+			_set_current_scene_nocheck(idx);
+		} else {
+			_set_current_scene(idx);
+		}
 	} else {
-		_set_current_scene(idx);
+		EditorUndoRedoManager::get_singleton()->clear_history(false, editor_data.get_current_edited_scene_history_id());
 	}
 
 	dependency_errors.clear();
@@ -3941,7 +3972,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		dependency_error->show(DependencyErrorDialog::MODE_SCENE, lpath, errors);
 		opening_prev = false;
 
-		if (prev != -1) {
+		if (prev != -1 && prev != idx) {
 			_set_current_scene(prev);
 			editor_data.remove_scene(idx);
 		}
@@ -3952,7 +3983,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		_dialog_display_load_error(lpath, err);
 		opening_prev = false;
 
-		if (prev != -1) {
+		if (prev != -1 && prev != idx) {
 			_set_current_scene(prev);
 			editor_data.remove_scene(idx);
 		}
@@ -3988,7 +4019,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		sdata.unref();
 		_dialog_display_load_error(lpath, ERR_FILE_CORRUPT);
 		opening_prev = false;
-		if (prev != -1) {
+		if (prev != -1 && prev != idx) {
 			_set_current_scene(prev);
 			editor_data.remove_scene(idx);
 		}
@@ -4013,10 +4044,6 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	if (editor_state_cf_err == OK || editor_state_cf->has_section("editor_states")) {
 		_load_editor_plugin_states_from_config(editor_state_cf);
 	}
-
-	_update_title();
-	scene_tabs->update_scene_tabs();
-	_add_to_recent_scenes(lpath);
 
 	if (editor_folding.has_folding_data(lpath)) {
 		editor_folding.load_scene_folding(new_scene, lpath);
@@ -4056,6 +4083,14 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	if (!restoring_scenes) {
 		save_editor_layout_delayed();
 	}
+
+	if (p_set_inherited) {
+		EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(editor_data.get_current_edited_scene_history_id());
+	}
+
+	_update_title();
+	scene_tabs->update_scene_tabs();
+	_add_to_recent_scenes(lpath);
 
 	return OK;
 }
@@ -6574,6 +6609,12 @@ EditorNode::EditorNode() {
 	editor_layout_save_delay_timer->set_one_shot(true);
 	editor_layout_save_delay_timer->connect("timeout", callable_mp(this, &EditorNode::_save_editor_layout));
 
+	scan_changes_timer = memnew(Timer);
+	scan_changes_timer->set_wait_time(0.5);
+	scan_changes_timer->set_autostart(EDITOR_GET("interface/editor/import_resources_when_unfocused"));
+	scan_changes_timer->connect("timeout", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan_changes));
+	add_child(scan_changes_timer);
+
 	top_split = memnew(VSplitContainer);
 	center_split->add_child(top_split);
 	top_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -6642,6 +6683,8 @@ EditorNode::EditorNode() {
 	main_menu->set_menu_tooltip(0, TTR("Operations with scene files."));
 
 	accept = memnew(AcceptDialog);
+	accept->set_autowrap(true);
+	accept->set_min_size(Vector2i(600, 0));
 	accept->set_unparent_when_invisible(true);
 
 	save_accept = memnew(AcceptDialog);
@@ -6886,7 +6929,7 @@ EditorNode::EditorNode() {
 	help_menu->add_icon_shortcut(theme->get_icon(SNAME("HelpSearch"), EditorStringName(EditorIcons)), ED_GET_SHORTCUT("editor/editor_help"), HELP_SEARCH);
 	help_menu->add_separator();
 	help_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/online_docs", TTR("Online Documentation")), HELP_DOCS);
-	help_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/q&a", TTR("Questions & Answers")), HELP_QA);
+	help_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/forum", TTR("Forum")), HELP_FORUM);
 	help_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/community", TTR("Community")), HELP_COMMUNITY);
 	help_menu->add_separator();
 	help_menu->add_icon_shortcut(theme->get_icon(SNAME("ActionCopy"), EditorStringName(EditorIcons)), ED_SHORTCUT_AND_COMMAND("editor/copy_system_info", TTR("Copy System Info")), HELP_COPY_SYSTEM_INFO);
@@ -7217,7 +7260,9 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
-		add_editor_plugin(EditorPlugins::create(i));
+		EditorPlugin *plugin = EditorPlugins::create(i);
+		add_editor_plugin(plugin);
+		plugin->enable_plugin();
 	}
 
 	for (const StringName &extension_class_name : GDExtensionEditorPlugins::get_extension_classes()) {

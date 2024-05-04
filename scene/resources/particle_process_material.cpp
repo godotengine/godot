@@ -634,10 +634,10 @@ void ParticleProcessMaterial::_update_shader() {
 	if (emission_shape == EMISSION_SHAPE_RING) {
 		code += "		\n";
 		code += "		float ring_spawn_angle = rand_from_seed(alt_seed) * 2.0 * pi;\n";
-		code += "		float ring_random_radius = rand_from_seed(alt_seed) * (emission_ring_radius - emission_ring_inner_radius) + emission_ring_inner_radius;\n";
-		code += "		vec3 axis = normalize(emission_ring_axis);\n";
+		code += "		float ring_random_radius = sqrt(rand_from_seed(alt_seed) * (emission_ring_radius - emission_ring_inner_radius * emission_ring_inner_radius) + emission_ring_inner_radius * emission_ring_inner_radius);\n";
+		code += "		vec3 axis = emission_ring_axis == vec3(0.0) ? vec3(0.0, 0.0, 1.0) : normalize(emission_ring_axis);\n";
 		code += "		vec3 ortho_axis = vec3(0.0);\n";
-		code += "		if (axis == vec3(1.0, 0.0, 0.0)) {\n";
+		code += "		if (abs(axis) == vec3(1.0, 0.0, 0.0)) {\n";
 		code += "			ortho_axis = cross(axis, vec3(0.0, 1.0, 0.0));\n";
 		code += "		} else {\n";
 		code += " 			ortho_axis = cross(axis, vec3(1.0, 0.0, 0.0));\n";
@@ -741,26 +741,33 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "vec3 get_random_direction_from_spread(inout uint alt_seed, float spread_angle){\n";
 	code += "	float pi = 3.14159;\n";
 	code += "	float degree_to_rad = pi / 180.0;\n";
-	code += "	vec3 velocity = vec3(0.);\n";
 	code += "	float spread_rad = spread_angle * degree_to_rad;\n";
-	code += "	float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
-	code += "	float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
-	code += "	vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
-	code += "	vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
-	code += "	direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
-	code += "	vec3 spread_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
-	code += "	vec3 direction_nrm = length(direction) > 0.0 ? normalize(direction) : vec3(0.0, 0.0, 1.0);\n";
-	code += "	// rotate spread to direction\n";
-	code += "	vec3 binormal = cross(vec3(0.0, 1.0, 0.0), direction_nrm);\n";
-	code += "	if (length(binormal) < 0.0001) {\n";
-	code += "		// direction is parallel to Y. Choose Z as the binormal.\n";
-	code += "		binormal = vec3(0.0, 0.0, 1.0);\n";
-	code += "	}\n";
-	code += "	binormal = normalize(binormal);\n";
-	code += "	vec3 normal = cross(binormal, direction_nrm);\n";
-	code += "	spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
-	code += "	return spread_direction;\n";
-
+	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+		// Spread calculation for 2D.
+		code += "	float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "	angle1_rad += direction.x != 0.0 ? atan(direction.y, direction.x) : sign(direction.y) * (pi / 2.0);\n";
+		code += "	vec3 spread_direction = vec3(cos(angle1_rad), sin(angle1_rad), 0.0);\n";
+		code += "	return spread_direction;\n";
+	} else {
+		// Spread calculation for 3D.
+		code += "	float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "	float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
+		code += "	vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
+		code += "	vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
+		code += "	direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
+		code += "	vec3 spread_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
+		code += "	vec3 direction_nrm = length(direction) > 0.0 ? normalize(direction) : vec3(0.0, 0.0, 1.0);\n";
+		code += "	// rotate spread to direction\n";
+		code += "	vec3 binormal = cross(vec3(0.0, 1.0, 0.0), direction_nrm);\n";
+		code += "	if (length(binormal) < 0.0001) {\n";
+		code += "		// direction is parallel to Y. Choose Z as the binormal.\n";
+		code += "		binormal = vec3(0.0, 0.0, 1.0);\n";
+		code += "	}\n";
+		code += "	binormal = normalize(binormal);\n";
+		code += "	vec3 normal = cross(binormal, direction_nrm);\n";
+		code += "	spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
+		code += "	return normalize(spread_direction);\n";
+	}
 	code += "}\n";
 
 	code += "vec3 process_radial_displacement(DynamicsParameters param, float lifetime, inout uint alt_seed, mat4 transform, mat4 emission_transform, float delta){\n";
@@ -1129,9 +1136,9 @@ void ParticleProcessMaterial::_update_shader() {
 				code += "	if (COLLIDED) emit_count = sub_emitter_amount_at_collision;\n";
 			} break;
 			case SUB_EMITTER_AT_END: {
-				code += "	float unit_delta = DELTA/LIFETIME;\n";
-				code += "	float end_time = CUSTOM.w * 0.95;\n"; // if we do at the end we might miss it, as it can just get deactivated by emitter
-				code += "	if (CUSTOM.y < end_time && (CUSTOM.y + unit_delta) >= end_time) emit_count = sub_emitter_amount_at_end;\n";
+				code += "	if ((CUSTOM.y / CUSTOM.w * LIFETIME) > (LIFETIME - DELTA)) {\n";
+				code += "		emit_count = sub_emitter_amount_at_end;\n";
+				code += "	}\n";
 			} break;
 			default: {
 			}

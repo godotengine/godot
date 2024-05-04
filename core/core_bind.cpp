@@ -152,12 +152,10 @@ void ResourceLoader::_bind_methods() {
 ////// ResourceSaver //////
 
 Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags) {
-	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + p_path + "'.");
 	return ::ResourceSaver::save(p_resource, p_path, p_flags);
 }
 
 Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
-	ERR_FAIL_COND_V_MSG(p_resource.is_null(), Vector<String>(), "It's not a reference to a valid Resource object.");
 	List<String> exts;
 	::ResourceSaver::get_recognized_extensions(p_resource, &exts);
 	Vector<String> ret;
@@ -336,6 +334,10 @@ Error OS::kill(int p_pid) {
 
 bool OS::is_process_running(int p_pid) const {
 	return ::OS::get_singleton()->is_process_running(p_pid);
+}
+
+int OS::get_process_exit_code(int p_pid) const {
+	return ::OS::get_singleton()->get_process_exit_code(p_pid);
 }
 
 int OS::get_process_id() const {
@@ -602,6 +604,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
 	ClassDB::bind_method(D_METHOD("shell_show_in_file_manager", "file_or_dir_path", "open_folder"), &OS::shell_show_in_file_manager, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
+	ClassDB::bind_method(D_METHOD("get_process_exit_code", "pid"), &OS::get_process_exit_code);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
 
 	ClassDB::bind_method(D_METHOD("has_environment", "variable"), &OS::has_environment);
@@ -1439,6 +1442,15 @@ Error ClassDB::class_set_property(Object *p_object, const StringName &p_property
 	return OK;
 }
 
+Variant ClassDB::class_get_property_default_value(const StringName &p_class, const StringName &p_property) const {
+	bool valid;
+	Variant ret = ::ClassDB::class_get_default_property_value(p_class, p_property, &valid);
+	if (valid) {
+		return ret;
+	}
+	return Variant();
+}
+
 bool ClassDB::class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance) const {
 	return ::ClassDB::has_method(p_class, p_method, p_no_inheritance);
 }
@@ -1528,6 +1540,10 @@ StringName ClassDB::class_get_integer_constant_enum(const StringName &p_class, c
 	return ::ClassDB::get_integer_constant_enum(p_class, p_name, p_no_inheritance);
 }
 
+bool ClassDB::is_class_enum_bitfield(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance) const {
+	return ::ClassDB::is_enum_bitfield(p_class, p_enum, p_no_inheritance);
+}
+
 bool ClassDB::is_class_enabled(const StringName &p_class) const {
 	return ::ClassDB::is_class_enabled(p_class);
 }
@@ -1544,7 +1560,7 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 				pf == "class_has_method" || pf == "class_get_method_list" ||
 				pf == "class_get_integer_constant_list" || pf == "class_has_integer_constant" || pf == "class_get_integer_constant" ||
 				pf == "class_has_enum" || pf == "class_get_enum_list" || pf == "class_get_enum_constants" || pf == "class_get_integer_constant_enum" ||
-				pf == "is_class_enabled");
+				pf == "is_class_enabled" || pf == "is_class_enum_bitfield");
 	}
 	if (first_argument_is_class || pf == "is_parent_class") {
 		for (const String &E : get_class_list()) {
@@ -1573,6 +1589,8 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_get_property", "object", "property"), &ClassDB::class_get_property);
 	::ClassDB::bind_method(D_METHOD("class_set_property", "object", "property", "value"), &ClassDB::class_set_property);
 
+	::ClassDB::bind_method(D_METHOD("class_get_property_default_value", "class", "property"), &ClassDB::class_get_property_default_value);
+
 	::ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &ClassDB::class_has_method, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("class_get_method_argument_count", "class", "method", "no_inheritance"), &ClassDB::class_get_method_argument_count, DEFVAL(false));
@@ -1588,6 +1606,8 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_get_enum_list", "class", "no_inheritance"), &ClassDB::class_get_enum_list, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &ClassDB::class_get_enum_constants, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &ClassDB::class_get_integer_constant_enum, DEFVAL(false));
+
+	::ClassDB::bind_method(D_METHOD("is_class_enum_bitfield", "class", "enum", "no_inheritance"), &ClassDB::is_class_enum_bitfield, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
 }
@@ -1901,7 +1921,7 @@ void EngineDebugger::send_message(const String &p_msg, const Array &p_data) {
 
 Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
 	Callable &capture = *(Callable *)p_user;
-	if (capture.is_null()) {
+	if (!capture.is_valid()) {
 		return FAILED;
 	}
 	Variant cmd = p_cmd, data = p_data;

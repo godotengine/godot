@@ -80,10 +80,11 @@ PackedStringArray XRCamera3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
-		// must be child node of XROrigin3D!
-		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
-		if (origin == nullptr) {
-			warnings.push_back(RTR("XRCamera3D must have an XROrigin3D node as its parent."));
+		// Warn if the node has a parent which isn't an XROrigin3D!
+		Node *parent = get_parent();
+		XROrigin3D *origin = Object::cast_to<XROrigin3D>(parent);
+		if (parent && origin == nullptr) {
+			warnings.push_back(RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
 		};
 	}
 
@@ -229,6 +230,10 @@ void XRNode3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pose_name"), &XRNode3D::get_pose_name);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "pose", PROPERTY_HINT_ENUM_SUGGESTION), "set_pose_name", "get_pose_name");
 
+	ClassDB::bind_method(D_METHOD("set_show_when_tracked", "show"), &XRNode3D::set_show_when_tracked);
+	ClassDB::bind_method(D_METHOD("get_show_when_tracked"), &XRNode3D::get_show_when_tracked);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_when_tracked"), "set_show_when_tracked", "get_show_when_tracked");
+
 	ClassDB::bind_method(D_METHOD("get_is_active"), &XRNode3D::get_is_active);
 	ClassDB::bind_method(D_METHOD("get_has_tracking_data"), &XRNode3D::get_has_tracking_data);
 	ClassDB::bind_method(D_METHOD("get_pose"), &XRNode3D::get_pose);
@@ -294,6 +299,14 @@ void XRNode3D::set_pose_name(const StringName &p_pose_name) {
 
 StringName XRNode3D::get_pose_name() const {
 	return pose_name;
+}
+
+void XRNode3D::set_show_when_tracked(bool p_show) {
+	show_when_tracked = p_show;
+}
+
+bool XRNode3D::get_show_when_tracked() const {
+	return show_when_tracked;
 }
 
 bool XRNode3D::get_is_active() const {
@@ -402,6 +415,11 @@ void XRNode3D::_set_has_tracking_data(bool p_has_tracking_data) {
 	// Handle change of has_tracking_data.
 	has_tracking_data = p_has_tracking_data;
 	emit_signal(SNAME("tracking_changed"), has_tracking_data);
+
+	// If configured, show or hide the node based on tracking data.
+	if (show_when_tracked) {
+		set_visible(has_tracking_data);
+	}
 }
 
 XRNode3D::XRNode3D() {
@@ -428,11 +446,12 @@ PackedStringArray XRNode3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
-		// must be child node of XROrigin!
-		XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
-		if (origin == nullptr) {
-			warnings.push_back(RTR("XRController3D must have an XROrigin3D node as its parent."));
-		}
+		// Warn if the node has a parent which isn't an XROrigin3D!
+		Node *parent = get_parent();
+		XROrigin3D *origin = Object::cast_to<XROrigin3D>(parent);
+		if (parent && origin == nullptr) {
+			warnings.push_back(RTR("XRNode3D may not function as expected without an XROrigin3D node as its parent."));
+		};
 
 		if (tracker_name == "") {
 			warnings.push_back(RTR("No tracker name is set."));

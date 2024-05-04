@@ -48,6 +48,7 @@ public:
 		PARSED,
 		INHERITANCE_SOLVED,
 		INTERFACE_SOLVED,
+		BODY_SOLVED,
 		FULLY_SOLVED,
 	};
 
@@ -57,14 +58,16 @@ private:
 	Status status = EMPTY;
 	Error result = OK;
 	String path;
-	bool cleared = false;
+	uint32_t source_hash = 0;
+	bool clearing = false;
 
 	friend class GDScriptCache;
+	friend class GDScript;
 
 public:
-	bool is_valid() const;
 	Status get_status() const;
-	GDScriptParser *get_parser() const;
+	uint32_t get_source_hash() const;
+	GDScriptParser *get_parser();
 	GDScriptAnalyzer *get_analyzer();
 	Error raise_status(Status p_new_status);
 	void clear();
@@ -95,6 +98,8 @@ public:
 	static void move_script(const String &p_from, const String &p_to);
 	static void remove_script(const String &p_path);
 	static Ref<GDScriptParserRef> get_parser(const String &p_path, GDScriptParserRef::Status status, Error &r_error, const String &p_owner = String());
+	static bool has_parser(const String &p_path);
+	static void remove_parser(const String &p_path);
 	static String get_source_code(const String &p_path);
 	static Vector<uint8_t> get_binary_tokens(const String &p_path);
 	static Ref<GDScript> get_shallow_script(const String &p_path, Error &r_error, const String &p_owner = String());

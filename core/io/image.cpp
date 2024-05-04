@@ -521,7 +521,7 @@ void Image::convert(Format p_new_format) {
 	// Includes the main image.
 	const int mipmap_count = get_mipmap_count() + 1;
 
-	if (format > FORMAT_RGBE9995 || p_new_format > FORMAT_RGBE9995) {
+	if (Image::is_format_compressed(format) || Image::is_format_compressed(p_new_format)) {
 		ERR_FAIL_MSG("Cannot convert to <-> from compressed formats. Use compress() and decompress() instead.");
 
 	} else if (format > FORMAT_RGBA8 || p_new_format > FORMAT_RGBA8) {
@@ -1662,7 +1662,7 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 }
 
 bool Image::_can_modify(Format p_format) const {
-	return p_format <= FORMAT_RGBE9995;
+	return !Image::is_format_compressed(p_format);
 }
 
 template <typename Component, int CC, bool renormalize,
@@ -2616,7 +2616,11 @@ int Image::get_image_mipmap_offset_and_dimensions(int p_width, int p_height, For
 }
 
 bool Image::is_compressed() const {
-	return format > FORMAT_RGBE9995;
+	return is_format_compressed(format);
+}
+
+bool Image::is_format_compressed(Format p_format) {
+	return p_format > FORMAT_RGBE9995;
 }
 
 Error Image::decompress() {

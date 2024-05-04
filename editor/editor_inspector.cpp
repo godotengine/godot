@@ -44,6 +44,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
@@ -488,6 +489,49 @@ StringName EditorProperty::_get_revert_property() const {
 	return property;
 }
 
+void EditorProperty::_update_property_bg() {
+	// This function is to be called on EditorPropertyResource, EditorPropertyArray, and EditorPropertyDictionary.
+	// Behavior is undetermined on any other EditorProperty.
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	begin_bulk_theme_override();
+
+	if (bottom_editor) {
+		ColorationMode nested_color_mode = (ColorationMode)(int)EDITOR_GET("interface/inspector/nested_color_mode");
+		bool delimitate_all_container_and_resources = EDITOR_GET("interface/inspector/delimitate_all_container_and_resources");
+		int count_subinspectors = 0;
+		if (is_colored(nested_color_mode)) {
+			Node *n = this;
+			while (n) {
+				EditorProperty *ep = Object::cast_to<EditorProperty>(n);
+				if (ep && ep->is_colored(nested_color_mode)) {
+					count_subinspectors++;
+				}
+				n = n->get_parent();
+			}
+			count_subinspectors = MIN(16, count_subinspectors);
+		}
+		add_theme_style_override(SNAME("DictionaryAddItem"), get_theme_stylebox("DictionaryAddItem" + itos(count_subinspectors), EditorStringName(EditorStyles)));
+		add_theme_constant_override("v_separation", 0);
+		if (delimitate_all_container_and_resources || is_colored(nested_color_mode)) {
+			add_theme_style_override("bg_selected", get_theme_stylebox("sub_inspector_property_bg" + itos(count_subinspectors), EditorStringName(EditorStyles)));
+			add_theme_style_override("bg", get_theme_stylebox("sub_inspector_property_bg" + itos(count_subinspectors), EditorStringName(EditorStyles)));
+			add_theme_color_override("property_color", get_theme_color(SNAME("sub_inspector_property_color"), EditorStringName(EditorStyles)));
+			bottom_editor->add_theme_style_override("panel", get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), EditorStringName(EditorStyles)));
+		} else {
+			bottom_editor->add_theme_style_override("panel", get_theme_stylebox("sub_inspector_bg_no_border", EditorStringName(EditorStyles)));
+		}
+	} else {
+		remove_theme_style_override("bg_selected");
+		remove_theme_style_override("bg");
+		remove_theme_color_override("property_color");
+	}
+	end_bulk_theme_override();
+	queue_redraw();
+}
+
 void EditorProperty::update_editor_property_status() {
 	if (property == StringName()) {
 		return; //no property, so nothing to do
@@ -916,34 +960,35 @@ void EditorProperty::_update_pin_flags() {
 }
 
 Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
-	EditorHelpBit *tooltip = nullptr;
-
-	if (has_doc_tooltip) {
-		String custom_description;
-
-		const EditorInspector *inspector = get_parent_inspector();
-		if (inspector) {
-			custom_description = inspector->get_custom_property_description(p_text);
-		}
-		tooltip = memnew(EditorHelpTooltip(p_text, custom_description));
-	}
-
+	String custom_warning;
 	if (object->has_method("_get_property_warning")) {
-		String warn = object->call("_get_property_warning", property);
-		if (!warn.is_empty()) {
-			String prev_text;
-			if (tooltip == nullptr) {
-				tooltip = memnew(EditorHelpBit());
-				tooltip->set_text(p_text);
-				tooltip->get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 0));
-			} else {
-				prev_text = tooltip->get_rich_text()->get_text() + "\n";
-			}
-			tooltip->set_text(prev_text + "[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + warn + "[/color][/b]");
-		}
+		custom_warning = object->call("_get_property_warning", property);
 	}
 
-	return tooltip;
+	if (has_doc_tooltip || !custom_warning.is_empty()) {
+		EditorHelpBit *help_bit = memnew(EditorHelpBit);
+
+		if (has_doc_tooltip) {
+			help_bit->parse_symbol(p_text);
+
+			const EditorInspector *inspector = get_parent_inspector();
+			if (inspector) {
+				const String custom_description = inspector->get_custom_property_description(p_text);
+				if (!custom_description.is_empty()) {
+					help_bit->prepend_description(custom_description);
+				}
+			}
+		}
+
+		if (!custom_warning.is_empty()) {
+			help_bit->prepend_description("[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + custom_warning + "[/color][/b]");
+		}
+
+		EditorHelpBitTooltip::show_tooltip(help_bit, const_cast<EditorProperty *>(this));
+		return memnew(Control); // Make the standard tooltip invisible.
+	}
+
+	return nullptr;
 }
 
 void EditorProperty::menu_option(int p_option) {
@@ -1178,7 +1223,14 @@ void EditorInspectorCategory::_notification(int p_what) {
 }
 
 Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) const {
-	return doc_class_name.is_empty() ? nullptr : memnew(EditorHelpTooltip(p_text));
+	// If it's not a doc tooltip, fallback to the default one.
+	if (doc_class_name.is_empty()) {
+		return nullptr;
+	}
+
+	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_text));
+	EditorHelpBitTooltip::show_tooltip(help_bit, const_cast<EditorInspectorCategory *>(this));
+	return memnew(Control); // Make the standard tooltip invisible.
 }
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
@@ -2888,8 +2940,8 @@ void EditorInspector::update_tree() {
 				category->doc_class_name = doc_name;
 
 				if (use_doc_hints) {
-					// `|` separator used in `EditorHelpTooltip` for formatting.
-					category->set_tooltip_text("class|" + doc_name + "||");
+					// `|` separators used in `EditorHelpBit`.
+					category->set_tooltip_text("class|" + doc_name + "|");
 				}
 			}
 
@@ -3221,12 +3273,13 @@ void EditorInspector::update_tree() {
 			}
 
 			// Search for the doc path in the cache.
-			HashMap<StringName, HashMap<StringName, String>>::Iterator E = doc_path_cache.find(classname);
+			HashMap<StringName, HashMap<StringName, DocCacheInfo>>::Iterator E = doc_cache.find(classname);
 			if (E) {
-				HashMap<StringName, String>::Iterator F = E->value.find(propname);
+				HashMap<StringName, DocCacheInfo>::Iterator F = E->value.find(propname);
 				if (F) {
 					found = true;
-					doc_path = F->value;
+					doc_path = F->value.doc_path;
+					theme_item_name = F->value.theme_item_name;
 				}
 			}
 
@@ -3249,21 +3302,20 @@ void EditorInspector::update_tree() {
 								theme_item_name = F->value.theme_properties[i].name;
 							}
 						}
-
-						if (is_native_class) {
-							doc_path_cache[classname][propname] = doc_path;
-						}
 					} else {
 						for (int i = 0; i < F->value.properties.size(); i++) {
 							String doc_path_current = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
 							if (F->value.properties[i].name == propname.operator String()) {
 								doc_path = doc_path_current;
 							}
-
-							if (is_native_class) {
-								doc_path_cache[classname][propname] = doc_path;
-							}
 						}
+					}
+
+					if (is_native_class) {
+						DocCacheInfo cache_info;
+						cache_info.doc_path = doc_path;
+						cache_info.theme_item_name = theme_item_name;
+						doc_cache[classname][propname] = cache_info;
 					}
 
 					if (!doc_path.is_empty() || F->value.inherits.is_empty()) {
@@ -3371,15 +3423,20 @@ void EditorInspector::update_tree() {
 				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
 
 				if (use_doc_hints) {
-					// `|` separator used in `EditorHelpTooltip` for formatting.
+					// `|` separators used in `EditorHelpBit`.
 					if (theme_item_name.is_empty()) {
-						if (p.usage & PROPERTY_USAGE_INTERNAL) {
-							ep->set_tooltip_text("internal_property|" + classname + "|" + property_prefix + p.name + "|");
+						if (p.name.contains("shader_parameter/")) {
+							ShaderMaterial *shader_material = Object::cast_to<ShaderMaterial>(object);
+							if (shader_material) {
+								ep->set_tooltip_text("property|" + shader_material->get_shader()->get_path() + "|" + property_prefix + p.name);
+							}
+						} else if (p.usage & PROPERTY_USAGE_INTERNAL) {
+							ep->set_tooltip_text("internal_property|" + classname + "|" + property_prefix + p.name);
 						} else {
-							ep->set_tooltip_text("property|" + classname + "|" + property_prefix + p.name + "|");
+							ep->set_tooltip_text("property|" + classname + "|" + property_prefix + p.name);
 						}
 					} else {
-						ep->set_tooltip_text("theme_item|" + classname + "|" + theme_item_name + "|");
+						ep->set_tooltip_text("theme_item|" + classname + "|" + theme_item_name);
 					}
 					ep->has_doc_tooltip = true;
 				}
@@ -3470,8 +3527,8 @@ void EditorInspector::edit(Object *p_object) {
 
 	next_object = p_object; // Some plugins need to know the next edited object when clearing the inspector.
 	if (object) {
-		_clear();
 		object->disconnect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
+		_clear();
 	}
 	per_array_page.clear();
 
@@ -3665,30 +3722,11 @@ void EditorInspector::set_use_wide_editors(bool p_enable) {
 	wide_editors = p_enable;
 }
 
-void EditorInspector::_update_inspector_bg() {
-	if (sub_inspector) {
-		int count_subinspectors = 0;
-		Node *n = get_parent();
-		while (n) {
-			EditorInspector *ei = Object::cast_to<EditorInspector>(n);
-			if (ei && ei->sub_inspector) {
-				count_subinspectors++;
-			}
-			n = n->get_parent();
-		}
-		count_subinspectors = MIN(15, count_subinspectors);
-		add_theme_style_override("panel", get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), EditorStringName(Editor)));
-	} else {
-		add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-	}
-}
 void EditorInspector::set_sub_inspector(bool p_enable) {
 	sub_inspector = p_enable;
 	if (!is_inside_tree()) {
 		return;
 	}
-
-	_update_inspector_bg();
 }
 
 void EditorInspector::set_use_deletable_properties(bool p_enabled) {
@@ -4003,7 +4041,7 @@ void EditorInspector::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
 			set_process(is_visible_in_tree());
-			_update_inspector_bg();
+			add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -4013,14 +4051,16 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
-			edit(nullptr); //just in case
+			if (EditorNode::get_singleton() && !EditorNode::get_singleton()->is_exiting()) {
+				// Don't need to clean up if exiting, and object may already be freed.
+				edit(nullptr);
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			if (!sub_inspector) {
 				get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
-			edit(nullptr);
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -4075,10 +4115,6 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorThemeManager::is_generated_theme_outdated()) {
-				_update_inspector_bg();
-			}
-
 			bool needs_update = false;
 
 			if (use_settings_name_style && EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
@@ -4088,6 +4124,7 @@ void EditorInspector::_notification(int p_what) {
 					needs_update = true;
 				}
 			}
+
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
 				needs_update = true;
 			}

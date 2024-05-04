@@ -767,6 +767,28 @@ public:
 	VisualShaderNodeFrame();
 };
 
+#ifndef DISABLE_DEPRECATED
+// Deprecated, for compatibility only.
+class VisualShaderNodeComment : public VisualShaderNodeFrame {
+	GDCLASS(VisualShaderNodeComment, VisualShaderNodeFrame);
+
+	String description;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const override { return "Comment(Deprecated)"; }
+
+	virtual Category get_category() const override { return CATEGORY_NONE; }
+
+	void set_description(const String &p_description);
+	String get_description() const;
+
+	VisualShaderNodeComment() {}
+};
+#endif
+
 class VisualShaderNodeGroupBase : public VisualShaderNodeResizableBase {
 	GDCLASS(VisualShaderNodeGroupBase, VisualShaderNodeResizableBase);
 
@@ -856,6 +878,7 @@ public:
 	String get_expression() const;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
 
 	VisualShaderNodeExpression();
 };

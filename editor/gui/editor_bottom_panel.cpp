@@ -37,6 +37,7 @@
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/engine_update_label.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"

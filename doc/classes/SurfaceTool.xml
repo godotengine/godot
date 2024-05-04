@@ -93,7 +93,7 @@
 		<method name="commit_to_arrays">
 			<return type="Array" />
 			<description>
-				Commits the data to the same format used by [method ArrayMesh.add_surface_from_arrays]. This way you can further process the mesh data using the [ArrayMesh] API.
+				Commits the data to the same format used by [method ArrayMesh.add_surface_from_arrays], [method ImporterMesh.add_surface], and [method create_from_arrays]. This way you can further process the mesh data using the [ArrayMesh] or [ImporterMesh] APIs.
 			</description>
 		</method>
 		<method name="create_from">
@@ -102,6 +102,14 @@
 			<param index="1" name="surface" type="int" />
 			<description>
 				Creates a vertex array from an existing [Mesh].
+			</description>
+		</method>
+		<method name="create_from_arrays">
+			<return type="void" />
+			<param index="0" name="arrays" type="Array" />
+			<param index="1" name="primitive_type" type="int" enum="Mesh.PrimitiveType" default="3" />
+			<description>
+				Creates this SurfaceTool from existing vertex arrays such as returned by [method commit_to_arrays], [method Mesh.surface_get_arrays], [method Mesh.surface_get_blend_shape_arrays], [method ImporterMesh.get_surface_arrays], and [method ImporterMesh.get_surface_blend_shape_arrays]. [param primitive_type] controls the type of mesh data, defaulting to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
 		<method name="create_from_blend_shape">

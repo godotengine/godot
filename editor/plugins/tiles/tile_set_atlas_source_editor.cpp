@@ -1088,7 +1088,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 
 			if (drag_type == DRAG_TYPE_CREATE_BIG_TILE) {
 				// Create big tile.
-				new_base_tiles_coords = new_base_tiles_coords.max(Vector2i(0, 0)).min(grid_size - Vector2i(1, 1));
+				new_base_tiles_coords = new_base_tiles_coords.maxi(0).min(grid_size - Vector2i(1, 1));
 
 				Rect2i new_rect = Rect2i(start_base_tiles_coords, new_base_tiles_coords - start_base_tiles_coords).abs();
 				new_rect.size += Vector2i(1, 1);
@@ -1100,8 +1100,8 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 				}
 			} else if (drag_type == DRAG_TYPE_CREATE_TILES) {
 				// Create tiles.
-				last_base_tiles_coords = last_base_tiles_coords.max(Vector2i(0, 0)).min(grid_size - Vector2i(1, 1));
-				new_base_tiles_coords = new_base_tiles_coords.max(Vector2i(0, 0)).min(grid_size - Vector2i(1, 1));
+				last_base_tiles_coords = last_base_tiles_coords.maxi(0).min(grid_size - Vector2i(1, 1));
+				new_base_tiles_coords = new_base_tiles_coords.maxi(0).min(grid_size - Vector2i(1, 1));
 
 				Vector<Point2i> line = Geometry2D::bresenham_line(last_base_tiles_coords, new_base_tiles_coords);
 				for (int i = 0; i < line.size(); i++) {
@@ -1115,8 +1115,8 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 
 			} else if (drag_type == DRAG_TYPE_REMOVE_TILES) {
 				// Remove tiles.
-				last_base_tiles_coords = last_base_tiles_coords.max(Vector2i(0, 0)).min(grid_size - Vector2i(1, 1));
-				new_base_tiles_coords = new_base_tiles_coords.max(Vector2i(0, 0)).min(grid_size - Vector2i(1, 1));
+				last_base_tiles_coords = last_base_tiles_coords.maxi(0).min(grid_size - Vector2i(1, 1));
+				new_base_tiles_coords = new_base_tiles_coords.maxi(0).min(grid_size - Vector2i(1, 1));
 
 				Vector<Point2i> line = Geometry2D::bresenham_line(last_base_tiles_coords, new_base_tiles_coords);
 				for (int i = 0; i < line.size(); i++) {
@@ -1838,7 +1838,8 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 		Vector2i separation = tile_set_atlas_source->get_separation();
 		Vector2i tile_size = tile_set_atlas_source->get_texture_region_size();
 		Vector2i origin = margins + (area.position * (tile_size + separation));
-		TilesEditorUtils::draw_selection_rect(tile_atlas_control, Rect2i(origin, area.size * tile_size));
+		Vector2i size = area.size * tile_size + (area.size - Vector2i(1, 1)).maxi(0) * separation;
+		TilesEditorUtils::draw_selection_rect(tile_atlas_control, Rect2i(origin, size));
 	} else {
 		Vector2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 		if (hovered_base_tile_coords.x >= 0 && hovered_base_tile_coords.y >= 0 && hovered_base_tile_coords.x < grid_size.x && hovered_base_tile_coords.y < grid_size.y) {
@@ -2156,7 +2157,7 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 Vector2i TileSetAtlasSourceEditor::_get_drag_offset_tile_coords(const Vector2i &p_offset) const {
 	Vector2i half_tile_size = tile_set->get_tile_size() / 2;
 	Vector2i new_base_tiles_coords = tile_atlas_view->get_atlas_tile_coords_at_pos(tile_atlas_control->get_local_mouse_position() + half_tile_size * p_offset);
-	return new_base_tiles_coords.max(Vector2i(-1, -1)).min(tile_set_atlas_source->get_atlas_grid_size());
+	return new_base_tiles_coords.maxi(-1).min(tile_set_atlas_source->get_atlas_grid_size());
 }
 
 void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {

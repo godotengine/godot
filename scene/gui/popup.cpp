@@ -194,8 +194,6 @@ Rect2i Popup::_popup_adjust_rect() const {
 
 void Popup::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("popup_hide"));
-
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Popup, panel_style, "panel");
 }
 
 Popup::Popup() {
@@ -232,7 +230,8 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 
 void PopupPanel::_update_child_rects() {
 	Vector2 cpos(theme_cache.panel_style->get_offset());
-	Vector2 csize(get_size() - theme_cache.panel_style->get_minimum_size());
+	Vector2 panel_size = Vector2(get_size()) / get_content_scale_factor();
+	Vector2 csize = panel_size - theme_cache.panel_style->get_minimum_size();
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -246,7 +245,7 @@ void PopupPanel::_update_child_rects() {
 
 		if (c == panel) {
 			c->set_position(Vector2());
-			c->set_size(get_size());
+			c->set_size(panel_size);
 		} else {
 			c->set_position(cpos);
 			c->set_size(csize);

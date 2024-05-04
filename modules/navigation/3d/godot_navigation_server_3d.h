@@ -264,6 +264,9 @@ public:
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const override;
 
+	virtual RID source_geometry_parser_create() override;
+	virtual void source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) override;
+
 	virtual Vector<Vector3> simplify_path(const Vector<Vector3> &p_path, real_t p_epsilon) override;
 
 private:

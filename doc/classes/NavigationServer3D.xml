@@ -1103,6 +1103,23 @@
 				Path simplification can be helpful to mitigate various path following issues that can arise with certain agent types and script behaviors. E.g. "steering" agents or avoidance in "open fields".
 			</description>
 		</method>
+		<method name="source_geometry_parser_create">
+			<return type="RID" />
+			<description>
+				Creates a new source geometry parser. If a [Callable] is set for the parser with [method source_geometry_parser_set_callback] the callback will be called for every single node that gets parsed whenever [method parse_source_geometry_data] is used.
+			</description>
+		</method>
+		<method name="source_geometry_parser_set_callback">
+			<return type="void" />
+			<param index="0" name="parser" type="RID" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Sets the [param callback] [Callable] for the specific source geometry [param parser]. The [Callable] will receive a call with the following parameters:
+				- [code]navigation_mesh[/code] - The [NavigationMesh] reference used to define the parse settings. Do NOT edit or add directly to the navigation mesh.
+				- [code]source_geometry_data[/code] - The [NavigationMeshSourceGeometryData3D] reference. Add custom source geometry for navigation mesh baking to this object.
+				- [code]node[/code] - The [Node] that is parsed.
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="avoidance_debug_changed">

@@ -931,9 +931,12 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		}
 
 		RID rid = l.text_buf->get_line_rid(line);
-		//draw_rect(Rect2(p_ofs + off, TS->shaped_text_get_size(rid)), Color(1,0,0), false, 2); //DEBUG_RECTS
+		double l_ascent = TS->shaped_text_get_ascent(rid);
+		Size2 l_size = TS->shaped_text_get_size(rid);
+		double upos = TS->shaped_text_get_underline_position(rid);
+		double uth = TS->shaped_text_get_underline_thickness(rid);
 
-		off.y += TS->shaped_text_get_ascent(rid);
+		off.y += l_ascent;
 		// Draw inlined objects.
 		Array objects = TS->shaped_text_get_objects(rid);
 		for (int i = 0; i < objects.size(); i++) {
@@ -950,7 +953,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					}
 				}
 				Rect2 rect = TS->shaped_text_get_object_rect(rid, objects[i]);
-				//draw_rect(rect, Color(1,0,0), false, 2); //DEBUG_RECTS
 				switch (it->type) {
 					case ITEM_IMAGE: {
 						ItemImage *img = static_cast<ItemImage *>(it);
@@ -1015,514 +1017,416 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 		const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
 		int gl_size = TS->shaped_text_get_glyph_count(rid);
-
-		Vector2 gloff = off;
-		// Draw outlines and shadow.
-		int processed_glyphs_ol = r_processed_glyphs;
-		for (int i = 0; i < gl_size; i++) {
-			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
-			int size = _find_outline_size(it, p_outline_size);
-			Color font_color = _find_color(it, p_base_color);
-			Color font_outline_color = _find_outline_color(it, p_outline_color);
-			Color font_shadow_color = p_font_shadow_color;
-			if ((size <= 0 || font_outline_color.a == 0) && (font_shadow_color.a == 0)) {
-				gloff.x += glyphs[i].advance;
-				continue;
-			}
-
-			// Get FX.
-			ItemFade *fade = nullptr;
-			Item *fade_item = it;
-			while (fade_item) {
-				if (fade_item->type == ITEM_FADE) {
-					fade = static_cast<ItemFade *>(fade_item);
-					break;
-				}
-				fade_item = fade_item->parent;
-			}
-
-			Vector<ItemFX *> fx_stack;
-			_fetch_item_fx_stack(it, fx_stack);
-			bool custom_fx_ok = true;
-
-			Point2 fx_offset = Vector2(glyphs[i].x_off, glyphs[i].y_off);
-			RID frid = glyphs[i].font_rid;
-			uint32_t gl = glyphs[i].index;
-			uint16_t gl_fl = glyphs[i].flags;
-			uint8_t gl_cn = glyphs[i].count;
-			bool cprev_cluster = false;
-			bool cprev_conn = false;
-			if (gl_cn == 0) { // Parts of the same cluster, always connected.
-				cprev_cluster = true;
-			}
-			if (gl_fl & TextServer::GRAPHEME_IS_RTL) { // Check if previous grapheme cluster is connected.
-				if (i > 0 && (glyphs[i - 1].flags & TextServer::GRAPHEME_IS_CONNECTED)) {
-					cprev_conn = true;
-				}
-			} else {
-				if (glyphs[i].flags & TextServer::GRAPHEME_IS_CONNECTED) {
-					cprev_conn = true;
-				}
-			}
-
-			//Apply fx.
-			if (fade) {
-				float faded_visibility = 1.0f;
-				if (glyphs[i].start >= fade->starting_index) {
-					faded_visibility -= (float)(glyphs[i].start - fade->starting_index) / (float)fade->length;
-					faded_visibility = faded_visibility < 0.0f ? 0.0f : faded_visibility;
-				}
-				font_outline_color.a = faded_visibility;
-				font_shadow_color.a = faded_visibility;
-			}
-
-			bool txt_visible = (font_outline_color.a != 0) || (font_shadow_color.a != 0);
-			Transform2D char_xform;
-			char_xform.set_origin(gloff + p_ofs);
-
-			for (int j = 0; j < fx_stack.size(); j++) {
-				ItemFX *item_fx = fx_stack[j];
-				bool cn = cprev_cluster || (cprev_conn && item_fx->connected);
-
-				if (item_fx->type == ITEM_CUSTOMFX && custom_fx_ok) {
-					ItemCustomFX *item_custom = static_cast<ItemCustomFX *>(item_fx);
-
-					Ref<CharFXTransform> charfx = item_custom->char_fx_transform;
-					Ref<RichTextEffect> custom_effect = item_custom->custom_effect;
-
-					if (!custom_effect.is_null()) {
-						charfx->elapsed_time = item_custom->elapsed_time;
-						charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
-						charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
-						charfx->visibility = txt_visible;
-						charfx->outline = true;
-						charfx->font = frid;
-						charfx->glyph_index = gl;
-						charfx->glyph_flags = gl_fl;
-						charfx->glyph_count = gl_cn;
-						charfx->offset = fx_offset;
-						charfx->color = font_color;
-						charfx->transform = char_xform;
-
-						bool effect_status = custom_effect->_process_effect_impl(charfx);
-						custom_fx_ok = effect_status;
-
-						char_xform = charfx->transform;
-						fx_offset += charfx->offset;
-						font_color = charfx->color;
-						frid = charfx->font;
-						gl = charfx->glyph_index;
-						txt_visible &= charfx->visibility;
-					}
-				} else if (item_fx->type == ITEM_SHAKE) {
-					ItemShake *item_shake = static_cast<ItemShake *>(item_fx);
-
-					if (!cn) {
-						uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
-						uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
-						uint64_t max_rand = 2147483647;
-						double current_offset = Math::remap(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
-						double previous_offset = Math::remap(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
-						double n_time = (double)(item_shake->elapsed_time / (0.5f / item_shake->rate));
-						n_time = (n_time > 1.0) ? 1.0 : n_time;
-						item_shake->prev_off = Point2(Math::lerp(Math::sin(previous_offset), Math::sin(current_offset), n_time), Math::lerp(Math::cos(previous_offset), Math::cos(current_offset), n_time)) * (float)item_shake->strength / 10.0f;
-					}
-					fx_offset += item_shake->prev_off;
-				} else if (item_fx->type == ITEM_WAVE) {
-					ItemWave *item_wave = static_cast<ItemWave *>(item_fx);
-
-					if (!cn) {
-						double value = Math::sin(item_wave->frequency * item_wave->elapsed_time + ((p_ofs.x + gloff.x) / 50)) * (item_wave->amplitude / 10.0f);
-						item_wave->prev_off = Point2(0, 1) * value;
-					}
-					fx_offset += item_wave->prev_off;
-				} else if (item_fx->type == ITEM_TORNADO) {
-					ItemTornado *item_tornado = static_cast<ItemTornado *>(item_fx);
-
-					if (!cn) {
-						double torn_x = Math::sin(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + gloff.x) / 50)) * (item_tornado->radius);
-						double torn_y = Math::cos(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + gloff.x) / 50)) * (item_tornado->radius);
-						item_tornado->prev_off = Point2(torn_x, torn_y);
-					}
-					fx_offset += item_tornado->prev_off;
-				} else if (item_fx->type == ITEM_RAINBOW) {
-					ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
-
-					font_color = font_color.from_hsv(item_rainbow->frequency * (item_rainbow->elapsed_time + ((p_ofs.x + gloff.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
-				} else if (item_fx->type == ITEM_PULSE) {
-					ItemPulse *item_pulse = static_cast<ItemPulse *>(item_fx);
-
-					const float sined_time = (Math::ease(Math::pingpong(item_pulse->elapsed_time, 1.0 / item_pulse->frequency) * item_pulse->frequency, item_pulse->ease));
-					font_color = font_color.lerp(font_color * item_pulse->color, sined_time);
-				}
-			}
-
-			if (is_inside_tree() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-				fx_offset = fx_offset.round();
-			}
-			Vector2 char_off = char_xform.get_origin();
-
-			// Draw glyph outlines.
-			const Color modulated_outline_color = font_outline_color * Color(1, 1, 1, font_color.a);
-			const Color modulated_shadow_color = font_shadow_color * Color(1, 1, 1, font_color.a);
-			for (int j = 0; j < glyphs[i].repeat; j++) {
-				if (txt_visible) {
-					bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
-					if (!skip && frid != RID()) {
-						if (modulated_shadow_color.a > 0) {
-							Transform2D char_reverse_xform;
-							char_reverse_xform.set_origin(-char_off - p_shadow_ofs);
-							Transform2D char_final_xform = char_xform * char_reverse_xform;
-							char_final_xform.columns[2] += p_shadow_ofs;
-							draw_set_transform_matrix(char_final_xform);
-
-							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off + p_shadow_ofs, gl, modulated_shadow_color);
-							if (p_shadow_outline_size > 0) {
-								TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, fx_offset + char_off + p_shadow_ofs, gl, modulated_shadow_color);
-							}
-						}
-						if (modulated_outline_color.a != 0.0 && size > 0) {
-							Transform2D char_reverse_xform;
-							char_reverse_xform.set_origin(-char_off);
-							Transform2D char_final_xform = char_xform * char_reverse_xform;
-							draw_set_transform_matrix(char_final_xform);
-
-							TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, size, fx_offset + char_off, gl, modulated_outline_color);
-						}
-					}
-					processed_glyphs_ol++;
-				}
-				gloff.x += glyphs[i].advance;
-			}
-		}
-		draw_set_transform_matrix(Transform2D());
-
-		Vector2 fbg_line_off = off + p_ofs;
-		// Draw background color box
 		Vector2i chr_range = TS->shaped_text_get_range(rid);
-		_draw_fbg_boxes(ci, rid, fbg_line_off, it_from, it_to, chr_range.x, chr_range.y, 0);
-
-		// Draw main text.
-		Color selection_bg = theme_cache.selection_color;
 
 		int sel_start = -1;
 		int sel_end = -1;
 
-		if (selection.active && (selection.from_frame->lines[selection.from_line].char_offset + selection.from_char) <= (l.char_offset + TS->shaped_text_get_range(rid).y) && (selection.to_frame->lines[selection.to_line].char_offset + selection.to_char) >= (l.char_offset + TS->shaped_text_get_range(rid).x)) {
-			sel_start = MAX(TS->shaped_text_get_range(rid).x, (selection.from_frame->lines[selection.from_line].char_offset + selection.from_char) - l.char_offset);
-			sel_end = MIN(TS->shaped_text_get_range(rid).y, (selection.to_frame->lines[selection.to_line].char_offset + selection.to_char) - l.char_offset);
-
-			Vector<Vector2> sel = TS->shaped_text_get_selection(rid, sel_start, sel_end);
-			for (int i = 0; i < sel.size(); i++) {
-				Rect2 rect = Rect2(sel[i].x + p_ofs.x + off.x, p_ofs.y + off.y - TS->shaped_text_get_ascent(rid), sel[i].y - sel[i].x, TS->shaped_text_get_size(rid).y);
-				RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, selection_bg);
-			}
+		if (selection.active && (selection.from_frame->lines[selection.from_line].char_offset + selection.from_char) <= (l.char_offset + chr_range.y) && (selection.to_frame->lines[selection.to_line].char_offset + selection.to_char) >= (l.char_offset + chr_range.x)) {
+			sel_start = MAX(chr_range.x, (selection.from_frame->lines[selection.from_line].char_offset + selection.from_char) - l.char_offset);
+			sel_end = MIN(chr_range.y, (selection.to_frame->lines[selection.to_line].char_offset + selection.to_char) - l.char_offset);
 		}
 
-		Vector2 ul_start;
-		bool ul_started = false;
-		Color ul_color_prev;
-		Color ul_color;
+		int processed_glyphs_step = 0;
+		for (int step = DRAW_STEP_BACKGROUND; step < DRAW_STEP_MAX; step++) {
+			Vector2 off_step = off;
+			processed_glyphs_step = r_processed_glyphs;
 
-		Vector2 dot_ul_start;
-		bool dot_ul_started = false;
-		Color dot_ul_color_prev;
-		Color dot_ul_color;
+			Vector2 ul_start;
+			bool ul_started = false;
+			Color ul_color_prev;
+			Color ul_color;
 
-		Vector2 st_start;
-		bool st_started = false;
-		Color st_color_prev;
-		Color st_color;
+			Vector2 dot_ul_start;
+			bool dot_ul_started = false;
+			Color dot_ul_color_prev;
+			Color dot_ul_color;
 
-		for (int i = 0; i < gl_size; i++) {
-			bool selected = selection.active && (sel_start != -1) && (glyphs[i].start >= sel_start) && (glyphs[i].end <= sel_end);
-			Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
-			bool has_ul = _find_underline(it);
-			if (!has_ul && underline_meta) {
-				ItemMeta *meta = nullptr;
-				if (_find_meta(it, nullptr, &meta) && meta) {
-					switch (meta->underline) {
-						case META_UNDERLINE_ALWAYS: {
-							has_ul = true;
-						} break;
-						case META_UNDERLINE_NEVER: {
-							has_ul = false;
-						} break;
-						case META_UNDERLINE_ON_HOVER: {
-							has_ul = (meta == meta_hovering);
-						} break;
-					}
-				}
-			}
-			Color font_color = _find_color(it, p_base_color);
-			if (has_ul) {
-				if (ul_started && font_color != ul_color_prev) {
-					float y_off = TS->shaped_text_get_underline_position(rid);
-					float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
-					draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), ul_color, underline_width);
-					ul_start = p_ofs + Vector2(off.x, off.y);
-					ul_color_prev = font_color;
-					ul_color = font_color;
-					ul_color.a *= 0.5;
-				} else if (!ul_started) {
-					ul_started = true;
-					ul_start = p_ofs + Vector2(off.x, off.y);
-					ul_color_prev = font_color;
-					ul_color = font_color;
-					ul_color.a *= 0.5;
-				}
-			} else if (ul_started) {
-				ul_started = false;
-				float y_off = TS->shaped_text_get_underline_position(rid);
-				float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
-				draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), ul_color, underline_width);
-			}
-			if (_find_hint(it, nullptr) && underline_hint) {
-				if (dot_ul_started && font_color != dot_ul_color_prev) {
-					float y_off = TS->shaped_text_get_underline_position(rid);
-					float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
-					draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
-					dot_ul_start = p_ofs + Vector2(off.x, off.y);
-					dot_ul_color_prev = font_color;
-					dot_ul_color = font_color;
-					dot_ul_color.a *= 0.5;
-				} else if (!dot_ul_started) {
-					dot_ul_started = true;
-					dot_ul_start = p_ofs + Vector2(off.x, off.y);
-					dot_ul_color_prev = font_color;
-					dot_ul_color = font_color;
-					dot_ul_color.a *= 0.5;
-				}
-			} else if (dot_ul_started) {
-				dot_ul_started = false;
-				float y_off = TS->shaped_text_get_underline_position(rid);
-				float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
-				draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
-			}
-			if (_find_strikethrough(it)) {
-				if (st_started && font_color != st_color_prev) {
-					float y_off = -TS->shaped_text_get_ascent(rid) + TS->shaped_text_get_size(rid).y / 2;
-					float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
-					draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), st_color, underline_width);
-					st_start = p_ofs + Vector2(off.x, off.y);
-					st_color_prev = font_color;
-					st_color = font_color;
-					st_color.a *= 0.5;
-				} else if (!st_started) {
-					st_started = true;
-					st_start = p_ofs + Vector2(off.x, off.y);
-					st_color_prev = font_color;
-					st_color = font_color;
-					st_color.a *= 0.5;
-				}
-			} else if (st_started) {
-				st_started = false;
-				float y_off = -TS->shaped_text_get_ascent(rid) + TS->shaped_text_get_size(rid).y / 2;
-				float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
-				draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), st_color, underline_width);
-			}
+			Vector2 st_start;
+			bool st_started = false;
+			Color st_color_prev;
+			Color st_color;
 
-			// Get FX.
-			ItemFade *fade = nullptr;
-			Item *fade_item = it;
-			while (fade_item) {
-				if (fade_item->type == ITEM_FADE) {
-					fade = static_cast<ItemFade *>(fade_item);
-					break;
-				}
-				fade_item = fade_item->parent;
-			}
+			float box_start = 0.0;
+			Color last_color = Color(0, 0, 0, 0);
 
-			Vector<ItemFX *> fx_stack;
-			_fetch_item_fx_stack(it, fx_stack);
-			bool custom_fx_ok = true;
+			for (int i = 0; i < gl_size; i++) {
+				bool selected = selection.active && (sel_start != -1) && (glyphs[i].start >= sel_start) && (glyphs[i].end <= sel_end);
+				Item *it = _get_item_at_pos(it_from, it_to, glyphs[i].start);
 
-			Point2 fx_offset = Vector2(glyphs[i].x_off, glyphs[i].y_off);
-			RID frid = glyphs[i].font_rid;
-			uint32_t gl = glyphs[i].index;
-			uint16_t gl_fl = glyphs[i].flags;
-			uint8_t gl_cn = glyphs[i].count;
-			bool cprev_cluster = false;
-			bool cprev_conn = false;
-			if (gl_cn == 0) { // Parts of the same grapheme cluster, always connected.
-				cprev_cluster = true;
-			}
-			if (gl_fl & TextServer::GRAPHEME_IS_RTL) { // Check if previous grapheme cluster is connected.
-				if (i > 0 && (glyphs[i - 1].flags & TextServer::GRAPHEME_IS_CONNECTED)) {
-					cprev_conn = true;
-				}
-			} else {
-				if (glyphs[i].flags & TextServer::GRAPHEME_IS_CONNECTED) {
-					cprev_conn = true;
-				}
-			}
-
-			//Apply fx.
-			if (fade) {
-				float faded_visibility = 1.0f;
-				if (glyphs[i].start >= fade->starting_index) {
-					faded_visibility -= (float)(glyphs[i].start - fade->starting_index) / (float)fade->length;
-					faded_visibility = faded_visibility < 0.0f ? 0.0f : faded_visibility;
-				}
-				font_color.a = faded_visibility;
-			}
-
-			bool txt_visible = (font_color.a != 0);
-
-			Transform2D char_xform;
-			char_xform.set_origin(p_ofs + off);
-
-			for (int j = 0; j < fx_stack.size(); j++) {
-				ItemFX *item_fx = fx_stack[j];
-				bool cn = cprev_cluster || (cprev_conn && item_fx->connected);
-
-				if (item_fx->type == ITEM_CUSTOMFX && custom_fx_ok) {
-					ItemCustomFX *item_custom = static_cast<ItemCustomFX *>(item_fx);
-
-					Ref<CharFXTransform> charfx = item_custom->char_fx_transform;
-					Ref<RichTextEffect> custom_effect = item_custom->custom_effect;
-
-					if (!custom_effect.is_null()) {
-						charfx->elapsed_time = item_custom->elapsed_time;
-						charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
-						charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
-						charfx->visibility = txt_visible;
-						charfx->outline = false;
-						charfx->font = frid;
-						charfx->glyph_index = gl;
-						charfx->glyph_flags = gl_fl;
-						charfx->glyph_count = gl_cn;
-						charfx->offset = fx_offset;
-						charfx->color = font_color;
-						charfx->transform = char_xform;
-
-						bool effect_status = custom_effect->_process_effect_impl(charfx);
-						custom_fx_ok = effect_status;
-
-						char_xform = charfx->transform;
-						fx_offset += charfx->offset;
-						font_color = charfx->color;
-						frid = charfx->font;
-						gl = charfx->glyph_index;
-						txt_visible &= charfx->visibility;
-					}
-				} else if (item_fx->type == ITEM_SHAKE) {
-					ItemShake *item_shake = static_cast<ItemShake *>(item_fx);
-
-					if (!cn) {
-						uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
-						uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
-						uint64_t max_rand = 2147483647;
-						double current_offset = Math::remap(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
-						double previous_offset = Math::remap(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
-						double n_time = (double)(item_shake->elapsed_time / (0.5f / item_shake->rate));
-						n_time = (n_time > 1.0) ? 1.0 : n_time;
-						item_shake->prev_off = Point2(Math::lerp(Math::sin(previous_offset), Math::sin(current_offset), n_time), Math::lerp(Math::cos(previous_offset), Math::cos(current_offset), n_time)) * (float)item_shake->strength / 10.0f;
-					}
-					fx_offset += item_shake->prev_off;
-				} else if (item_fx->type == ITEM_WAVE) {
-					ItemWave *item_wave = static_cast<ItemWave *>(item_fx);
-
-					if (!cn) {
-						double value = Math::sin(item_wave->frequency * item_wave->elapsed_time + ((p_ofs.x + off.x) / 50)) * (item_wave->amplitude / 10.0f);
-						item_wave->prev_off = Point2(0, 1) * value;
-					}
-					fx_offset += item_wave->prev_off;
-				} else if (item_fx->type == ITEM_TORNADO) {
-					ItemTornado *item_tornado = static_cast<ItemTornado *>(item_fx);
-
-					if (!cn) {
-						double torn_x = Math::sin(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + off.x) / 50)) * (item_tornado->radius);
-						double torn_y = Math::cos(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + off.x) / 50)) * (item_tornado->radius);
-						item_tornado->prev_off = Point2(torn_x, torn_y);
-					}
-					fx_offset += item_tornado->prev_off;
-				} else if (item_fx->type == ITEM_RAINBOW) {
-					ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
-
-					font_color = font_color.from_hsv(item_rainbow->frequency * (item_rainbow->elapsed_time + ((p_ofs.x + off.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
-				} else if (item_fx->type == ITEM_PULSE) {
-					ItemPulse *item_pulse = static_cast<ItemPulse *>(item_fx);
-
-					const float sined_time = (Math::ease(Math::pingpong(item_pulse->elapsed_time, 1.0 / item_pulse->frequency) * item_pulse->frequency, item_pulse->ease));
-					font_color = font_color.lerp(font_color * item_pulse->color, sined_time);
-				}
-			}
-
-			if (is_inside_tree() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-				fx_offset = fx_offset.round();
-			}
-			Vector2 char_off = char_xform.get_origin();
-
-			Transform2D char_reverse_xform;
-			char_reverse_xform.set_origin(-char_off);
-			char_xform = char_xform * char_reverse_xform;
-			draw_set_transform_matrix(char_xform);
-
-			if (selected && use_selected_font_color) {
-				font_color = theme_cache.font_selected_color;
-			}
-
-			// Draw glyphs.
-			for (int j = 0; j < glyphs[i].repeat; j++) {
-				bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (r_processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (r_processed_glyphs < total_glyphs - visible_glyphs));
-				if (txt_visible) {
-					if (!skip) {
-						if (frid != RID()) {
-							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
-						} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
-							TS->draw_hex_code_box(ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
+				Color font_color = (step == DRAW_STEP_SHADOW || step == DRAW_STEP_OUTLINE || step == DRAW_STEP_TEXT) ? _find_color(it, p_base_color) : Color();
+				int outline_size = (step == DRAW_STEP_OUTLINE) ? _find_outline_size(it, p_outline_size) : 0;
+				Color font_outline_color = (step == DRAW_STEP_OUTLINE) ? _find_outline_color(it, p_outline_color) : Color();
+				Color font_shadow_color = p_font_shadow_color;
+				bool txt_visible = false;
+				if (step == DRAW_STEP_OUTLINE) {
+					txt_visible = (font_outline_color.a != 0 && outline_size > 0);
+				} else if (step == DRAW_STEP_SHADOW) {
+					txt_visible = (font_shadow_color.a != 0);
+				} else if (step == DRAW_STEP_TEXT) {
+					txt_visible = (font_color.a != 0);
+					bool has_ul = _find_underline(it);
+					if (!has_ul && underline_meta) {
+						ItemMeta *meta = nullptr;
+						if (_find_meta(it, nullptr, &meta) && meta) {
+							switch (meta->underline) {
+								case META_UNDERLINE_ALWAYS: {
+									has_ul = true;
+								} break;
+								case META_UNDERLINE_NEVER: {
+									has_ul = false;
+								} break;
+								case META_UNDERLINE_ON_HOVER: {
+									has_ul = (meta == meta_hovering);
+								} break;
+							}
 						}
 					}
-					r_processed_glyphs++;
-				}
-				if (skip) {
-					// End underline/overline/strikethrough is previous glyph is skipped.
-					if (ul_started) {
+					if (has_ul) {
+						if (ul_started && font_color != ul_color_prev) {
+							float y_off = upos;
+							float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+							draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), ul_color, underline_width);
+							ul_start = p_ofs + Vector2(off_step.x, off_step.y);
+							ul_color_prev = font_color;
+							ul_color = font_color;
+							ul_color.a *= 0.5;
+						} else if (!ul_started) {
+							ul_started = true;
+							ul_start = p_ofs + Vector2(off_step.x, off_step.y);
+							ul_color_prev = font_color;
+							ul_color = font_color;
+							ul_color.a *= 0.5;
+						}
+					} else if (ul_started) {
 						ul_started = false;
-						float y_off = TS->shaped_text_get_underline_position(rid);
-						float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
-						draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), ul_color, underline_width);
+						float y_off = upos;
+						float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+						draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), ul_color, underline_width);
 					}
-					if (dot_ul_started) {
+					if (_find_hint(it, nullptr) && underline_hint) {
+						if (dot_ul_started && font_color != dot_ul_color_prev) {
+							float y_off = upos;
+							float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+							draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
+							dot_ul_start = p_ofs + Vector2(off_step.x, off_step.y);
+							dot_ul_color_prev = font_color;
+							dot_ul_color = font_color;
+							dot_ul_color.a *= 0.5;
+						} else if (!dot_ul_started) {
+							dot_ul_started = true;
+							dot_ul_start = p_ofs + Vector2(off_step.x, off_step.y);
+							dot_ul_color_prev = font_color;
+							dot_ul_color = font_color;
+							dot_ul_color.a *= 0.5;
+						}
+					} else if (dot_ul_started) {
 						dot_ul_started = false;
-						float y_off = TS->shaped_text_get_underline_position(rid);
-						float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
-						draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
+						float y_off = upos;
+						float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+						draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
 					}
-					if (st_started) {
+					if (_find_strikethrough(it)) {
+						if (st_started && font_color != st_color_prev) {
+							float y_off = -l_ascent + l_size.y / 2;
+							float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+							draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), st_color, underline_width);
+							st_start = p_ofs + Vector2(off_step.x, off_step.y);
+							st_color_prev = font_color;
+							st_color = font_color;
+							st_color.a *= 0.5;
+						} else if (!st_started) {
+							st_started = true;
+							st_start = p_ofs + Vector2(off_step.x, off_step.y);
+							st_color_prev = font_color;
+							st_color = font_color;
+							st_color.a *= 0.5;
+						}
+					} else if (st_started) {
 						st_started = false;
-						float y_off = -TS->shaped_text_get_ascent(rid) + TS->shaped_text_get_size(rid).y / 2;
-						float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
-						draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), st_color, underline_width);
+						float y_off = -l_ascent + l_size.y / 2;
+						float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+						draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), st_color, underline_width);
 					}
 				}
-				off.x += glyphs[i].advance;
+				if (step == DRAW_STEP_SHADOW || step == DRAW_STEP_OUTLINE || step == DRAW_STEP_TEXT) {
+					ItemFade *fade = nullptr;
+					Item *fade_item = it;
+					while (fade_item) {
+						if (fade_item->type == ITEM_FADE) {
+							fade = static_cast<ItemFade *>(fade_item);
+							break;
+						}
+						fade_item = fade_item->parent;
+					}
+
+					Vector<ItemFX *> fx_stack;
+					_fetch_item_fx_stack(it, fx_stack);
+					bool custom_fx_ok = true;
+
+					Point2 fx_offset = Vector2(glyphs[i].x_off, glyphs[i].y_off);
+					RID frid = glyphs[i].font_rid;
+					uint32_t gl = glyphs[i].index;
+					uint16_t gl_fl = glyphs[i].flags;
+					uint8_t gl_cn = glyphs[i].count;
+					bool cprev_cluster = false;
+					bool cprev_conn = false;
+					if (gl_cn == 0) { // Parts of the same grapheme cluster, always connected.
+						cprev_cluster = true;
+					}
+					if (gl_fl & TextServer::GRAPHEME_IS_RTL) { // Check if previous grapheme cluster is connected.
+						if (i > 0 && (glyphs[i - 1].flags & TextServer::GRAPHEME_IS_CONNECTED)) {
+							cprev_conn = true;
+						}
+					} else {
+						if (glyphs[i].flags & TextServer::GRAPHEME_IS_CONNECTED) {
+							cprev_conn = true;
+						}
+					}
+
+					//Apply fx.
+					if (fade) {
+						float faded_visibility = 1.0f;
+						if (glyphs[i].start >= fade->starting_index) {
+							faded_visibility -= (float)(glyphs[i].start - fade->starting_index) / (float)fade->length;
+							faded_visibility = faded_visibility < 0.0f ? 0.0f : faded_visibility;
+						}
+						font_color.a = faded_visibility;
+					}
+
+					Transform2D char_xform;
+					char_xform.set_origin(p_ofs + off_step);
+
+					for (int j = 0; j < fx_stack.size(); j++) {
+						ItemFX *item_fx = fx_stack[j];
+						bool cn = cprev_cluster || (cprev_conn && item_fx->connected);
+
+						if (item_fx->type == ITEM_CUSTOMFX && custom_fx_ok) {
+							ItemCustomFX *item_custom = static_cast<ItemCustomFX *>(item_fx);
+
+							Ref<CharFXTransform> charfx = item_custom->char_fx_transform;
+							Ref<RichTextEffect> custom_effect = item_custom->custom_effect;
+
+							if (!custom_effect.is_null()) {
+								charfx->elapsed_time = item_custom->elapsed_time;
+								charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
+								charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
+								charfx->visibility = txt_visible;
+								charfx->outline = (step == DRAW_STEP_SHADOW) || (step == DRAW_STEP_OUTLINE);
+								charfx->font = frid;
+								charfx->glyph_index = gl;
+								charfx->glyph_flags = gl_fl;
+								charfx->glyph_count = gl_cn;
+								charfx->offset = fx_offset;
+								charfx->color = font_color;
+								charfx->transform = char_xform;
+
+								bool effect_status = custom_effect->_process_effect_impl(charfx);
+								custom_fx_ok = effect_status;
+
+								char_xform = charfx->transform;
+								fx_offset += charfx->offset;
+								font_color = charfx->color;
+								frid = charfx->font;
+								gl = charfx->glyph_index;
+								txt_visible &= charfx->visibility;
+							}
+						} else if (item_fx->type == ITEM_SHAKE) {
+							ItemShake *item_shake = static_cast<ItemShake *>(item_fx);
+
+							if (!cn) {
+								uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
+								uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
+								uint64_t max_rand = 2147483647;
+								double current_offset = Math::remap(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
+								double previous_offset = Math::remap(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
+								double n_time = (double)(item_shake->elapsed_time / (0.5f / item_shake->rate));
+								n_time = (n_time > 1.0) ? 1.0 : n_time;
+								item_shake->prev_off = Point2(Math::lerp(Math::sin(previous_offset), Math::sin(current_offset), n_time), Math::lerp(Math::cos(previous_offset), Math::cos(current_offset), n_time)) * (float)item_shake->strength / 10.0f;
+							}
+							fx_offset += item_shake->prev_off;
+						} else if (item_fx->type == ITEM_WAVE) {
+							ItemWave *item_wave = static_cast<ItemWave *>(item_fx);
+
+							if (!cn) {
+								double value = Math::sin(item_wave->frequency * item_wave->elapsed_time + ((p_ofs.x + off_step.x) / 50)) * (item_wave->amplitude / 10.0f);
+								item_wave->prev_off = Point2(0, 1) * value;
+							}
+							fx_offset += item_wave->prev_off;
+						} else if (item_fx->type == ITEM_TORNADO) {
+							ItemTornado *item_tornado = static_cast<ItemTornado *>(item_fx);
+
+							if (!cn) {
+								double torn_x = Math::sin(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + off_step.x) / 50)) * (item_tornado->radius);
+								double torn_y = Math::cos(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + off_step.x) / 50)) * (item_tornado->radius);
+								item_tornado->prev_off = Point2(torn_x, torn_y);
+							}
+							fx_offset += item_tornado->prev_off;
+						} else if (item_fx->type == ITEM_RAINBOW) {
+							ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
+
+							font_color = font_color.from_hsv(item_rainbow->frequency * (item_rainbow->elapsed_time + ((p_ofs.x + off_step.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
+						} else if (item_fx->type == ITEM_PULSE) {
+							ItemPulse *item_pulse = static_cast<ItemPulse *>(item_fx);
+
+							const float sined_time = (Math::ease(Math::pingpong(item_pulse->elapsed_time, 1.0 / item_pulse->frequency) * item_pulse->frequency, item_pulse->ease));
+							font_color = font_color.lerp(font_color * item_pulse->color, sined_time);
+						}
+					}
+
+					if (is_inside_tree() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
+						fx_offset = fx_offset.round();
+					}
+
+					Vector2 char_off = char_xform.get_origin();
+					Transform2D char_reverse_xform;
+					if (step == DRAW_STEP_TEXT) {
+						if (selected && use_selected_font_color) {
+							font_color = theme_cache.font_selected_color;
+						}
+
+						char_reverse_xform.set_origin(-char_off);
+						Transform2D char_final_xform = char_xform * char_reverse_xform;
+						draw_set_transform_matrix(char_final_xform);
+					} else if (step == DRAW_STEP_SHADOW) {
+						font_color = font_shadow_color * Color(1, 1, 1, font_color.a);
+
+						char_reverse_xform.set_origin(-char_off - p_shadow_ofs);
+						Transform2D char_final_xform = char_xform * char_reverse_xform;
+						char_final_xform.columns[2] += p_shadow_ofs;
+						draw_set_transform_matrix(char_final_xform);
+					} else if (step == DRAW_STEP_OUTLINE) {
+						font_color = font_outline_color * Color(1, 1, 1, font_color.a);
+
+						char_reverse_xform.set_origin(-char_off);
+						Transform2D char_final_xform = char_xform * char_reverse_xform;
+						draw_set_transform_matrix(char_final_xform);
+					}
+
+					// Draw glyphs.
+					for (int j = 0; j < glyphs[i].repeat; j++) {
+						bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
+						if (!skip) {
+							if (txt_visible) {
+								if (step == DRAW_STEP_TEXT) {
+									if (frid != RID()) {
+										TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
+									} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
+										TS->draw_hex_code_box(ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
+									}
+								} else if (step == DRAW_STEP_SHADOW && frid != RID()) {
+									TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off + p_shadow_ofs, gl, font_color);
+									if (p_shadow_outline_size > 0) {
+										TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, fx_offset + char_off + p_shadow_ofs, gl, font_color);
+									}
+								} else if (step == DRAW_STEP_OUTLINE && frid != RID() && outline_size > 0) {
+									TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, outline_size, fx_offset + char_off, gl, font_color);
+								}
+							}
+							processed_glyphs_step++;
+						}
+						if (step == DRAW_STEP_TEXT && skip) {
+							// Finish underline/overline/strikethrough is previous glyph is skipped.
+							if (ul_started) {
+								ul_started = false;
+								float y_off = upos;
+								float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+								draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), ul_color, underline_width);
+							}
+							if (dot_ul_started) {
+								dot_ul_started = false;
+								float y_off = upos;
+								float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+								draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
+							}
+							if (st_started) {
+								st_started = false;
+								float y_off = -l_ascent + l_size.y / 2;
+								float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+								draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), st_color, underline_width);
+							}
+						}
+						off_step.x += glyphs[i].advance;
+					}
+					draw_set_transform_matrix(Transform2D());
+				}
+				// Draw boxes.
+				if (step == DRAW_STEP_BACKGROUND || step == DRAW_STEP_FOREGROUND) {
+					for (int j = 0; j < glyphs[i].repeat; j++) {
+						bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
+						if (!skip) {
+							Color color;
+							if (step == DRAW_STEP_BACKGROUND) {
+								color = _find_bgcolor(it);
+							} else if (step == DRAW_STEP_FOREGROUND) {
+								color = _find_fgcolor(it);
+							}
+							if (color != last_color) {
+								if (last_color.a > 0.0) {
+									Vector2 rect_off = p_ofs + Vector2(box_start - theme_cache.text_highlight_h_padding, off_step.y - l_ascent - theme_cache.text_highlight_v_padding);
+									Vector2 rect_size = Vector2(off_step.x - box_start + 2 * theme_cache.text_highlight_h_padding, l_size.y + 2 * theme_cache.text_highlight_v_padding);
+									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(rect_off, rect_size), last_color);
+								}
+								if (color.a > 0.0) {
+									box_start = off_step.x;
+								}
+							}
+							last_color = color;
+							processed_glyphs_step++;
+						} else {
+							// Finish box is previous glyph is skipped.
+							if (last_color.a > 0.0) {
+								Vector2 rect_off = p_ofs + Vector2(box_start - theme_cache.text_highlight_h_padding, off_step.y - l_ascent - theme_cache.text_highlight_v_padding);
+								Vector2 rect_size = Vector2(off_step.x - box_start + 2 * theme_cache.text_highlight_h_padding, l_size.y + 2 * theme_cache.text_highlight_v_padding);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(rect_off, rect_size), last_color);
+							}
+							last_color = Color(0, 0, 0, 0);
+						}
+						off_step.x += glyphs[i].advance;
+					}
+				}
 			}
+			// Finish lines and boxes.
+			if (step == DRAW_STEP_BACKGROUND) {
+				if (sel_start != -1) {
+					Color selection_bg = theme_cache.selection_color;
+					Vector<Vector2> sel = TS->shaped_text_get_selection(rid, sel_start, sel_end);
+					for (int i = 0; i < sel.size(); i++) {
+						Rect2 rect = Rect2(sel[i].x + p_ofs.x + off.x, p_ofs.y + off.y - l_ascent, sel[i].y - sel[i].x, l_size.y); // Note: use "off" not "off_step", selection is relative to the line start.
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, selection_bg);
+					}
+				}
+			}
+			if (step == DRAW_STEP_BACKGROUND || step == DRAW_STEP_FOREGROUND) {
+				if (last_color.a > 0.0) {
+					Vector2 rect_off = p_ofs + Vector2(box_start - theme_cache.text_highlight_h_padding, off_step.y - l_ascent - theme_cache.text_highlight_v_padding);
+					Vector2 rect_size = Vector2(off_step.x - box_start + 2 * theme_cache.text_highlight_h_padding, l_size.y + 2 * theme_cache.text_highlight_v_padding);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(rect_off, rect_size), last_color);
+				}
+			}
+			if (step == DRAW_STEP_TEXT) {
+				if (ul_started) {
+					ul_started = false;
+					float y_off = upos;
+					float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+					draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), ul_color, underline_width);
+				}
+				if (dot_ul_started) {
+					dot_ul_started = false;
+					float y_off = upos;
+					float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+					draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
+				}
+				if (st_started) {
+					st_started = false;
+					float y_off = -l_ascent + l_size.y / 2;
+					float underline_width = MAX(1.0, uth * theme_cache.base_scale);
+					draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), st_color, underline_width);
+				}
+			}
+		}
 
-			draw_set_transform_matrix(Transform2D());
-		}
-		if (ul_started) {
-			ul_started = false;
-			float y_off = TS->shaped_text_get_underline_position(rid);
-			float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
-			draw_line(ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), ul_color, underline_width);
-		}
-		if (dot_ul_started) {
-			dot_ul_started = false;
-			float y_off = TS->shaped_text_get_underline_position(rid);
-			float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
-			draw_dashed_line(dot_ul_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), dot_ul_color, underline_width, MAX(2.0, underline_width * 2));
-		}
-		if (st_started) {
-			st_started = false;
-			float y_off = -TS->shaped_text_get_ascent(rid) + TS->shaped_text_get_size(rid).y / 2;
-			float underline_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * theme_cache.base_scale);
-			draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off.x, off.y + y_off), st_color, underline_width);
-		}
-		// Draw foreground color box
-		_draw_fbg_boxes(ci, rid, fbg_line_off, it_from, it_to, chr_range.x, chr_range.y, 1);
-
+		r_processed_glyphs = processed_glyphs_step;
 		off.y += TS->shaped_text_get_descent(rid);
 	}
 
@@ -1803,7 +1707,7 @@ void RichTextLabel::_scroll_changed(double) {
 		return;
 	}
 
-	if (scroll_follow && vscroll->get_value() >= (vscroll->get_max() - Math::round(vscroll->get_page()))) {
+	if (scroll_follow && vscroll->get_value() > (vscroll->get_max() - vscroll->get_page() - 1)) {
 		scroll_following = true;
 	} else {
 		scroll_following = false;
@@ -2149,12 +2053,12 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (b->get_button_index() == MouseButton::WHEEL_UP) {
 			if (scroll_active) {
-				vscroll->set_value(vscroll->get_value() - vscroll->get_page() * b->get_factor() * 0.5 / 8);
+				vscroll->scroll(-vscroll->get_page() * b->get_factor() * 0.5 / 8);
 			}
 		}
 		if (b->get_button_index() == MouseButton::WHEEL_DOWN) {
 			if (scroll_active) {
-				vscroll->set_value(vscroll->get_value() + vscroll->get_page() * b->get_factor() * 0.5 / 8);
+				vscroll->scroll(vscroll->get_page() * b->get_factor() * 0.5 / 8);
 			}
 		}
 		if (b->get_button_index() == MouseButton::RIGHT && context_menu_enabled) {
@@ -2169,7 +2073,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 		if (scroll_active) {
-			vscroll->set_value(vscroll->get_value() + vscroll->get_page() * pan_gesture->get_delta().y * 0.5 / 8);
+			vscroll->scroll(vscroll->get_page() * pan_gesture->get_delta().y * 0.5 / 8);
 		}
 
 		return;
@@ -2182,27 +2086,27 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			bool handled = false;
 
 			if (k->is_action("ui_page_up", true) && vscroll->is_visible_in_tree()) {
-				vscroll->set_value(vscroll->get_value() - vscroll->get_page());
+				vscroll->scroll(-vscroll->get_page());
 				handled = true;
 			}
 			if (k->is_action("ui_page_down", true) && vscroll->is_visible_in_tree()) {
-				vscroll->set_value(vscroll->get_value() + vscroll->get_page());
+				vscroll->scroll(vscroll->get_page());
 				handled = true;
 			}
 			if (k->is_action("ui_up", true) && vscroll->is_visible_in_tree()) {
-				vscroll->set_value(vscroll->get_value() - theme_cache.normal_font->get_height(theme_cache.normal_font_size));
+				vscroll->scroll(-theme_cache.normal_font->get_height(theme_cache.normal_font_size));
 				handled = true;
 			}
 			if (k->is_action("ui_down", true) && vscroll->is_visible_in_tree()) {
-				vscroll->set_value(vscroll->get_value() + theme_cache.normal_font->get_height(theme_cache.normal_font_size));
+				vscroll->scroll(vscroll->get_value() + theme_cache.normal_font->get_height(theme_cache.normal_font_size));
 				handled = true;
 			}
 			if (k->is_action("ui_home", true) && vscroll->is_visible_in_tree()) {
-				vscroll->set_value(0);
+				vscroll->scroll_to(0);
 				handled = true;
 			}
 			if (k->is_action("ui_end", true) && vscroll->is_visible_in_tree()) {
-				vscroll->set_value(vscroll->get_max());
+				vscroll->scroll_to(vscroll->get_max());
 				handled = true;
 			}
 			if (is_shortcut_keys_enabled()) {
@@ -3212,33 +3116,6 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	queue_redraw();
 }
 
-void RichTextLabel::_remove_item(Item *p_item, const int p_line) {
-	int size = p_item->subitems.size();
-	if (size == 0) {
-		p_item->parent->subitems.erase(p_item);
-		// If a newline was erased, all lines AFTER the newline need to be decremented.
-		if (p_item->type == ITEM_NEWLINE) {
-			current_frame->lines.remove_at(p_line);
-			if (p_line < (int)current_frame->lines.size() && current_frame->lines[p_line].from) {
-				for (List<Item *>::Element *E = current_frame->lines[p_line].from->E; E; E = E->next()) {
-					if (E->get()->line > p_line) {
-						E->get()->line--;
-					}
-				}
-			}
-		}
-	} else {
-		// First, remove all child items for the provided item.
-		while (p_item->subitems.size()) {
-			_remove_item(p_item->subitems.front()->get(), p_line);
-		}
-		// Then remove the provided item itself.
-		p_item->parent->subitems.erase(p_item);
-	}
-	items.free(p_item->rid);
-	memdelete(p_item);
-}
-
 Size2 RichTextLabel::_get_image_size(const Ref<Texture2D> &p_image, int p_width, int p_height, const Rect2 &p_region) {
 	Size2 ret;
 	if (p_width > 0) {
@@ -3424,49 +3301,134 @@ void RichTextLabel::add_newline() {
 	queue_redraw();
 }
 
-bool RichTextLabel::remove_paragraph(const int p_paragraph) {
+void RichTextLabel::_remove_frame(HashSet<Item *> &r_erase_list, ItemFrame *p_frame, int p_line, bool p_erase, int p_char_offset, int p_line_offset) {
+	Line &l = p_frame->lines[p_line];
+	Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
+	if (!p_erase) {
+		l.char_offset -= p_char_offset;
+	}
+
+	for (Item *it = l.from; it && it != it_to;) {
+		Item *next_it = _get_next_item(it);
+		it->line -= p_line_offset;
+		if (!p_erase) {
+			while (r_erase_list.has(it->parent)) {
+				it->E->erase();
+				it->parent = it->parent->parent;
+				it->E = it->parent->subitems.push_back(it);
+			}
+		}
+		if (it->type == ITEM_TABLE) {
+			ItemTable *table = static_cast<ItemTable *>(it);
+			for (List<Item *>::Element *sub_it = table->subitems.front(); sub_it; sub_it = sub_it->next()) {
+				ERR_CONTINUE(sub_it->get()->type != ITEM_FRAME); // Children should all be frames.
+				ItemFrame *frame = static_cast<ItemFrame *>(sub_it->get());
+				for (int i = 0; i < (int)frame->lines.size(); i++) {
+					_remove_frame(r_erase_list, frame, i, p_erase, p_char_offset, 0);
+				}
+				if (p_erase) {
+					r_erase_list.insert(frame);
+				} else {
+					frame->char_ofs -= p_char_offset;
+				}
+			}
+		}
+		if (p_erase) {
+			r_erase_list.insert(it);
+		} else {
+			it->char_ofs -= p_char_offset;
+		}
+		it = next_it;
+	}
+}
+
+bool RichTextLabel::remove_paragraph(int p_paragraph, bool p_no_invalidate) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
-	if (p_paragraph >= (int)current_frame->lines.size() || p_paragraph < 0) {
+	if (p_paragraph >= (int)main->lines.size() || p_paragraph < 0) {
 		return false;
 	}
 
-	// Remove all subitems with the same line as that provided.
-	Vector<List<Item *>::Element *> subitem_to_remove;
-	if (current_frame->lines[p_paragraph].from) {
-		for (List<Item *>::Element *E = current_frame->lines[p_paragraph].from->E; E; E = E->next()) {
-			if (E->get()->line == p_paragraph) {
-				subitem_to_remove.push_back(E);
+	if (main->lines.size() == 1) {
+		// Clear all.
+		main->_clear_children();
+		current = main;
+		current_frame = main;
+		main->lines.clear();
+		main->lines.resize(1);
+
+		current_char_ofs = 0;
+	} else {
+		HashSet<Item *> erase_list;
+		Line &l = main->lines[p_paragraph];
+		int off = l.char_count;
+		for (int i = p_paragraph; i < (int)main->lines.size(); i++) {
+			if (i == p_paragraph) {
+				_remove_frame(erase_list, main, i, true, off, 0);
 			} else {
-				break;
+				_remove_frame(erase_list, main, i, false, off, 1);
 			}
 		}
-	}
-
-	bool had_newline = false;
-	// Reverse for loop to remove items from the end first.
-	for (int i = subitem_to_remove.size() - 1; i >= 0; i--) {
-		List<Item *>::Element *subitem = subitem_to_remove[i];
-		had_newline = had_newline || subitem->get()->type == ITEM_NEWLINE;
-		if (subitem->get() == current) {
-			pop();
+		for (HashSet<Item *>::Iterator E = erase_list.begin(); E; ++E) {
+			Item *it = *E;
+			if (current_frame == it) {
+				current_frame = main;
+			}
+			if (current == it) {
+				current = main;
+			}
+			if (!erase_list.has(it->parent)) {
+				it->E->erase();
+			}
+			items.free(it->rid);
+			it->subitems.clear();
+			memdelete(it);
 		}
-		_remove_item(subitem->get(), p_paragraph);
+		main->lines.remove_at(p_paragraph);
+		current_char_ofs -= off;
 	}
 
-	if (!had_newline) {
-		current_frame->lines.remove_at(p_paragraph);
+	selection.click_frame = nullptr;
+	selection.click_item = nullptr;
+	selection.active = false;
+
+	if (p_no_invalidate) {
+		// Do not invalidate cache, only update vertical offsets of the paragraphs after deleted one and scrollbar.
+		int to_line = main->first_invalid_line.load() - 1;
+		float total_height = (p_paragraph == 0) ? 0 : _calculate_line_vertical_offset(main->lines[p_paragraph - 1]);
+		for (int i = p_paragraph; i < to_line; i++) {
+			MutexLock lock(main->lines[to_line - 1].text_buf->get_mutex());
+			main->lines[i].offset.y = total_height;
+			total_height = _calculate_line_vertical_offset(main->lines[i]);
+		}
+		updating_scroll = true;
+		vscroll->set_max(total_height);
+		updating_scroll = false;
+
+		main->first_invalid_line.store(MAX(main->first_invalid_line.load() - 1, 0));
+		main->first_resized_line.store(MAX(main->first_resized_line.load() - 1, 0));
+		main->first_invalid_font_line.store(MAX(main->first_invalid_font_line.load() - 1, 0));
+	} else {
+		// Invalidate cache after the deleted paragraph.
+		main->first_invalid_line.store(MIN(main->first_invalid_line.load(), p_paragraph));
+		main->first_resized_line.store(MIN(main->first_resized_line.load(), p_paragraph));
+		main->first_invalid_font_line.store(MIN(main->first_invalid_font_line.load(), p_paragraph));
+	}
+	queue_redraw();
+
+	return true;
+}
+
+bool RichTextLabel::invalidate_paragraph(int p_paragraph) {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	if (p_paragraph >= (int)main->lines.size() || p_paragraph < 0) {
+		return false;
 	}
 
-	if (current_frame->lines.is_empty()) {
-		current_frame->lines.resize(1);
-	}
-
-	if (p_paragraph == 0 && current->subitems.size() > 0) {
-		main->lines[0].from = main;
-	}
-
+	// Invalidate cache.
 	main->first_invalid_line.store(MIN(main->first_invalid_line.load(), p_paragraph));
 	main->first_resized_line.store(MIN(main->first_resized_line.load(), p_paragraph));
 	main->first_invalid_font_line.store(MIN(main->first_invalid_font_line.load(), p_paragraph));
@@ -4099,7 +4061,7 @@ bool RichTextLabel::is_scroll_active() const {
 
 void RichTextLabel::set_scroll_follow(bool p_follow) {
 	scroll_follow = p_follow;
-	if (!vscroll->is_visible_in_tree() || vscroll->get_value() >= (vscroll->get_max() - vscroll->get_page())) {
+	if (!vscroll->is_visible_in_tree() || vscroll->get_value() > (vscroll->get_max() - vscroll->get_page() - 1)) {
 		scroll_following = true;
 	}
 }
@@ -4410,6 +4372,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag.begins_with("char=")) {
+			int32_t char_code = tag.substr(5, tag.length()).hex_to_int();
+			add_text(String::chr(char_code));
+			pos = brk_end + 1;
 		} else if (tag == "lb") {
 			add_text("[");
 			pos = brk_end + 1;
@@ -5193,7 +5159,7 @@ void RichTextLabel::scroll_to_paragraph(int p_paragraph) {
 }
 
 int RichTextLabel::get_paragraph_count() const {
-	return current_frame->lines.size();
+	return main->lines.size();
 }
 
 int RichTextLabel::get_visible_paragraph_count() const {
@@ -5921,7 +5887,8 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region", "key", "pad", "tooltip", "size_in_percent"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(Variant()), DEFVAL(false), DEFVAL(String()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("update_image", "key", "mask", "image", "width", "height", "color", "inline_align", "region", "pad", "tooltip", "size_in_percent"), &RichTextLabel::update_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(false), DEFVAL(String()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
-	ClassDB::bind_method(D_METHOD("remove_paragraph", "paragraph"), &RichTextLabel::remove_paragraph);
+	ClassDB::bind_method(D_METHOD("remove_paragraph", "paragraph", "no_invalidate"), &RichTextLabel::remove_paragraph, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("invalidate_paragraph", "paragraph"), &RichTextLabel::invalidate_paragraph);
 	ClassDB::bind_method(D_METHOD("push_font", "font", "font_size"), &RichTextLabel::push_font, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("push_font_size", "font_size"), &RichTextLabel::push_font_size);
 	ClassDB::bind_method(D_METHOD("push_normal"), &RichTextLabel::push_normal);
@@ -6375,65 +6342,6 @@ void RichTextLabel::menu_option(int p_option) {
 		case MENU_SELECT_ALL: {
 			select_all();
 		} break;
-	}
-}
-
-void RichTextLabel::_draw_fbg_boxes(RID p_ci, RID p_rid, Vector2 line_off, Item *it_from, Item *it_to, int start, int end, int fbg_flag) {
-	Vector2i fbg_index = Vector2i(end, start);
-	Color last_color = Color(0, 0, 0, 0);
-	bool draw_box = false;
-	// Draw a box based on color tags associated with glyphs
-	for (int i = start; i < end; i++) {
-		Item *it = _get_item_at_pos(it_from, it_to, i);
-		Color color;
-
-		if (fbg_flag == 0) {
-			color = _find_bgcolor(it);
-		} else {
-			color = _find_fgcolor(it);
-		}
-
-		bool change_to_color = ((color.a > 0) && ((last_color.a - 0.0) < 0.01));
-		bool change_from_color = (((color.a - 0.0) < 0.01) && (last_color.a > 0.0));
-		bool change_color = (((color.a > 0) == (last_color.a > 0)) && (color != last_color));
-
-		if (change_to_color) {
-			fbg_index.x = MIN(i, fbg_index.x);
-			fbg_index.y = MAX(i, fbg_index.y);
-		}
-
-		if (change_from_color || change_color) {
-			fbg_index.x = MIN(i, fbg_index.x);
-			fbg_index.y = MAX(i, fbg_index.y);
-			draw_box = true;
-		}
-
-		if (draw_box) {
-			Vector<Vector2> sel = TS->shaped_text_get_selection(p_rid, fbg_index.x, fbg_index.y);
-			for (int j = 0; j < sel.size(); j++) {
-				Vector2 rect_off = line_off + Vector2(sel[j].x - theme_cache.text_highlight_h_padding, -TS->shaped_text_get_ascent(p_rid) - theme_cache.text_highlight_v_padding);
-				Vector2 rect_size = Vector2(sel[j].y - sel[j].x + 2 * theme_cache.text_highlight_h_padding, TS->shaped_text_get_size(p_rid).y + 2 * theme_cache.text_highlight_v_padding);
-				RenderingServer::get_singleton()->canvas_item_add_rect(p_ci, Rect2(rect_off, rect_size), last_color);
-			}
-			fbg_index = Vector2i(end, start);
-			draw_box = false;
-		}
-
-		if (change_color) {
-			fbg_index.x = MIN(i, fbg_index.x);
-			fbg_index.y = MAX(i, fbg_index.y);
-		}
-
-		last_color = color;
-	}
-
-	if (last_color.a > 0) {
-		Vector<Vector2> sel = TS->shaped_text_get_selection(p_rid, fbg_index.x, end);
-		for (int i = 0; i < sel.size(); i++) {
-			Vector2 rect_off = line_off + Vector2(sel[i].x - theme_cache.text_highlight_h_padding, -TS->shaped_text_get_ascent(p_rid) - theme_cache.text_highlight_v_padding);
-			Vector2 rect_size = Vector2(sel[i].y - sel[i].x + 2 * theme_cache.text_highlight_h_padding, TS->shaped_text_get_size(p_rid).y + 2 * theme_cache.text_highlight_v_padding);
-			RenderingServer::get_singleton()->canvas_item_add_rect(p_ci, Rect2(rect_off, rect_size), last_color);
-		}
 	}
 }
 

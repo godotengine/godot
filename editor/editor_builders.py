@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import uuid
 import zlib
+from methods import print_warning
 
 
 def make_doc_header(target, source, env):
@@ -57,7 +58,7 @@ def make_translations_header(target, source, env, category):
         msgfmt_available = shutil.which("msgfmt") is not None
 
         if not msgfmt_available:
-            print("WARNING: msgfmt is not found, using .po files instead of .mo")
+            print_warning("msgfmt is not found, using .po files instead of .mo")
 
         xl_names = []
         for i in range(len(sorted_paths)):
@@ -71,8 +72,8 @@ def make_translations_header(target, source, env, category):
                     with open(mo_path, "rb") as f:
                         buf = f.read()
                 except OSError as e:
-                    print(
-                        "WARNING: msgfmt execution failed, using .po file instead of .mo: path=%r; [%s] %s"
+                    print_warning(
+                        "msgfmt execution failed, using .po file instead of .mo: path=%r; [%s] %s"
                         % (sorted_paths[i], e.__class__.__name__, e)
                     )
                     with open(sorted_paths[i], "rb") as f:
@@ -82,9 +83,8 @@ def make_translations_header(target, source, env, category):
                         os.remove(mo_path)
                     except OSError as e:
                         # Do not fail the entire build if it cannot delete a temporary file.
-                        print(
-                            "WARNING: Could not delete temporary .mo file: path=%r; [%s] %s"
-                            % (mo_path, e.__class__.__name__, e)
+                        print_warning(
+                            "Could not delete temporary .mo file: path=%r; [%s] %s" % (mo_path, e.__class__.__name__, e)
                         )
             else:
                 with open(sorted_paths[i], "rb") as f:

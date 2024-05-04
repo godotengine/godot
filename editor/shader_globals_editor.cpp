@@ -219,7 +219,7 @@ protected:
 				case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
-					pinfo.hint_string = "Texture2DArray";
+					pinfo.hint_string = "Texture2DArray,CompressedTexture2DArray";
 				} break;
 				case RS::GLOBAL_VAR_TYPE_SAMPLER3D: {
 					pinfo.type = Variant::OBJECT;
@@ -229,7 +229,7 @@ protected:
 				case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
-					pinfo.hint_string = "Cubemap";
+					pinfo.hint_string = "Cubemap,CompressedCubemap";
 				} break;
 				default: {
 				} break;

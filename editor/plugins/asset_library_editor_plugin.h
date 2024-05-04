@@ -32,8 +32,8 @@
 #define ASSET_LIBRARY_EDITOR_PLUGIN_H
 
 #include "editor/editor_asset_installer.h"
-#include "editor/editor_plugin.h"
-#include "editor/editor_plugin_settings.h"
+#include "editor/plugins/editor_plugin.h"
+#include "editor/plugins/editor_plugin_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"

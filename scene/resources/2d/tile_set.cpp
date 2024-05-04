@@ -4650,7 +4650,7 @@ Ref<Texture2D> TileSetAtlasSource::get_texture() const {
 void TileSetAtlasSource::set_margins(Vector2i p_margins) {
 	if (p_margins.x < 0 || p_margins.y < 0) {
 		WARN_PRINT("Atlas source margins should be positive.");
-		margins = p_margins.max(Vector2i());
+		margins = p_margins.maxi(0);
 	} else {
 		margins = p_margins;
 	}
@@ -4666,7 +4666,7 @@ Vector2i TileSetAtlasSource::get_margins() const {
 void TileSetAtlasSource::set_separation(Vector2i p_separation) {
 	if (p_separation.x < 0 || p_separation.y < 0) {
 		WARN_PRINT("Atlas source separation should be positive.");
-		separation = p_separation.max(Vector2i());
+		separation = p_separation.maxi(0);
 	} else {
 		separation = p_separation;
 	}
@@ -4682,7 +4682,7 @@ Vector2i TileSetAtlasSource::get_separation() const {
 void TileSetAtlasSource::set_texture_region_size(Vector2i p_tile_size) {
 	if (p_tile_size.x <= 0 || p_tile_size.y <= 0) {
 		WARN_PRINT("Atlas source tile_size should be strictly positive.");
-		texture_region_size = p_tile_size.max(Vector2i(1, 1));
+		texture_region_size = p_tile_size.maxi(1);
 	} else {
 		texture_region_size = p_tile_size;
 	}
@@ -5590,6 +5590,11 @@ Ref<ImageTexture> TileSetAtlasSource::_create_padded_image_texture(const Ref<Tex
 		Ref<ImageTexture> ret;
 		ret.instantiate();
 		return ret;
+	}
+	if (src_image->is_compressed()) {
+		src_image = src_image->duplicate();
+		Error err = src_image->decompress();
+		ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Unable to decompress image.");
 	}
 
 	Size2 size = get_atlas_grid_size() * (texture_region_size + Vector2i(2, 2));

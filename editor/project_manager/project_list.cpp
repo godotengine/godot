@@ -469,23 +469,19 @@ void ProjectList::update_project_list() {
 	// If you have 150 projects, it may read through 150 files on your disk at once + load 150 icons.
 	// FIXME: Does it really have to be a full, hard reload? Runtime updates should be made much cheaper.
 
-	// Clear whole list
-	for (int i = 0; i < _projects.size(); ++i) {
-		Item &project = _projects.write[i];
-		CRASH_COND(project.control == nullptr);
-		memdelete(project.control); // Why not queue_free()?
-	}
-	_projects.clear();
-	_last_clicked = "";
-	_selected_project_paths.clear();
+	if (ProjectManager::get_singleton()->is_initialized()) {
+		// Clear whole list
+		for (int i = 0; i < _projects.size(); ++i) {
+			Item &project = _projects.write[i];
+			CRASH_COND(project.control == nullptr);
+			memdelete(project.control); // Why not queue_free()?
+		}
 
-	List<String> sections;
-	_config.load(_config_path);
-	_config.get_sections(&sections);
+		_projects.clear();
+		_last_clicked = "";
+		_selected_project_paths.clear();
 
-	for (const String &path : sections) {
-		bool favorite = _config.get_value(path, "favorite", false);
-		_projects.push_back(load_project_data(path, favorite));
+		load_project_list();
 	}
 
 	// Create controls
@@ -590,7 +586,21 @@ void ProjectList::find_projects_multiple(const PackedStringArray &p_paths) {
 	}
 
 	save_config();
-	update_project_list();
+
+	if (ProjectManager::get_singleton()->is_initialized()) {
+		update_project_list();
+	}
+}
+
+void ProjectList::load_project_list() {
+	List<String> sections;
+	_config.load(_config_path);
+	_config.get_sections(&sections);
+
+	for (const String &path : sections) {
+		bool favorite = _config.get_value(path, "favorite", false);
+		_projects.push_back(load_project_data(path, favorite));
+	}
 }
 
 void ProjectList::_scan_folder_recursive(const String &p_path, List<String> *r_projects) {

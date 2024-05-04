@@ -559,16 +559,17 @@ public:
 	virtual void force_process_and_drop_events();
 
 	virtual void release_rendering_thread();
-	virtual void make_rendering_thread();
 	virtual void swap_buffers();
 
 	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
 
-	virtual IndicatorID create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback);
-	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon);
+	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback);
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon);
 	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip);
+	virtual void status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid);
 	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback);
+	virtual Rect2 status_indicator_get_rect(IndicatorID p_id) const;
 	virtual void delete_status_indicator(IndicatorID p_id);
 
 	enum Context {

@@ -202,13 +202,22 @@ void AcceptDialog::register_text_enter(LineEdit *p_line_edit) {
 }
 
 void AcceptDialog::_update_child_rects() {
-	Size2 dlg_size = get_size();
+	Size2 dlg_size = Vector2(get_size()) / get_content_scale_factor();
 	float h_margins = theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT);
 	float v_margins = theme_cache.panel_style->get_margin(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_BOTTOM);
 
 	// Fill the entire size of the window with the background.
 	bg_panel->set_position(Point2());
 	bg_panel->set_size(dlg_size);
+
+	for (int i = 0; i < buttons_hbox->get_child_count(); i++) {
+		Button *b = Object::cast_to<Button>(buttons_hbox->get_child(i));
+		if (!b) {
+			continue;
+		}
+
+		b->set_custom_minimum_size(Size2(theme_cache.buttons_min_width, theme_cache.buttons_min_height));
+	}
 
 	// Place the buttons from the bottom edge to their minimum required size.
 	Size2 buttons_minsize = buttons_hbox->get_combined_minimum_size();
@@ -255,12 +264,6 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 		content_minsize = child_minsize.max(content_minsize);
 	}
 
-	// Then we take the background panel as it provides the offsets,
-	// which are always added to the minimum size.
-	if (theme_cache.panel_style.is_valid()) {
-		content_minsize += theme_cache.panel_style->get_minimum_size();
-	}
-
 	// Then we add buttons. Horizontally we're interested in whichever
 	// value is the biggest. Vertically buttons add to the overall size.
 	Size2 buttons_minsize = buttons_hbox->get_combined_minimum_size();
@@ -268,6 +271,12 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 	content_minsize.y += buttons_minsize.y;
 	// Plus there is a separation size added on top.
 	content_minsize.y += theme_cache.buttons_separation;
+
+	// Then we take the background panel as it provides the offsets,
+	// which are always added to the minimum size.
+	if (theme_cache.panel_style.is_valid()) {
+		content_minsize += theme_cache.panel_style->get_minimum_size();
+	}
 
 	return content_minsize;
 }
@@ -389,6 +398,8 @@ void AcceptDialog::_bind_methods() {
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, AcceptDialog, panel_style, "panel");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, AcceptDialog, buttons_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, AcceptDialog, buttons_min_width);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, AcceptDialog, buttons_min_height);
 }
 
 bool AcceptDialog::swap_cancel_ok = false;

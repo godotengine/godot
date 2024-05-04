@@ -64,6 +64,13 @@
 				Returns the [Texture2D] for the tab at index [param tab_idx] or [code]null[/code] if the tab has no [Texture2D].
 			</description>
 		</method>
+		<method name="get_tab_icon_max_width" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the maximum allowed width of the icon for the tab at index [param tab_idx].
+			</description>
+		</method>
 		<method name="get_tab_idx_at_point" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="point" type="Vector2" />
@@ -90,6 +97,13 @@
 			<param index="0" name="tab_idx" type="int" />
 			<description>
 				Returns the title of the tab at index [param tab_idx]. Tab titles default to the name of the indexed child node, but this can be overridden with [method set_tab_title].
+			</description>
+		</method>
+		<method name="get_tab_tooltip" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the tooltip text of the tab at index [param tab_idx].
 			</description>
 		</method>
 		<method name="is_tab_disabled" qualifiers="const">
@@ -157,6 +171,14 @@
 				Sets an icon for the tab at index [param tab_idx].
 			</description>
 		</method>
+		<method name="set_tab_icon_max_width">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="width" type="int" />
+			<description>
+				Sets the maximum allowed width of the icon for the tab at index [param tab_idx]. This limit is applied on top of the default size of the icon and on top of [theme_item icon_max_width]. The height is adjusted according to the icon's ratio.
+			</description>
+		</method>
 		<method name="set_tab_metadata">
 			<return type="void" />
 			<param index="0" name="tab_idx" type="int" />
@@ -171,6 +193,15 @@
 			<param index="1" name="title" type="String" />
 			<description>
 				Sets a custom title for the tab at index [param tab_idx] (tab titles default to the name of the indexed child node). Set it back to the child's name to make the tab default to it again.
+			</description>
+		</method>
+		<method name="set_tab_tooltip">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="tooltip" type="String" />
+			<description>
+				Sets a custom tooltip text for tab at index [param tab_idx].
+				[b]Note:[/b] By default, if the [param tooltip] is empty and the tab text is truncated (not all characters fit into the tab), the title will be displayed as a tooltip. To hide the tooltip, assign [code]" "[/code] as the [param tooltip] text.
 			</description>
 		</method>
 	</methods>

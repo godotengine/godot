@@ -46,6 +46,41 @@ String GDExtension::get_extension_list_config_file() {
 	return ProjectSettings::get_singleton()->get_project_data_path().path_join("extension_list.cfg");
 }
 
+Vector<SharedObject> GDExtension::find_extension_dependencies(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature) {
+	Vector<SharedObject> dependencies_shared_objects;
+	if (p_config->has_section("dependencies")) {
+		List<String> config_dependencies;
+		p_config->get_section_keys("dependencies", &config_dependencies);
+
+		for (const String &dependency : config_dependencies) {
+			Vector<String> dependency_tags = dependency.split(".");
+			bool all_tags_met = true;
+			for (int i = 0; i < dependency_tags.size(); i++) {
+				String tag = dependency_tags[i].strip_edges();
+				if (!p_has_feature(tag)) {
+					all_tags_met = false;
+					break;
+				}
+			}
+
+			if (all_tags_met) {
+				Dictionary dependency_value = p_config->get_value("dependencies", dependency);
+				for (const Variant *key = dependency_value.next(nullptr); key; key = dependency_value.next(key)) {
+					String dependency_path = *key;
+					String target_path = dependency_value[*key];
+					if (dependency_path.is_relative_path()) {
+						dependency_path = p_path.get_base_dir().path_join(dependency_path);
+					}
+					dependencies_shared_objects.push_back(SharedObject(dependency_path, dependency_tags, target_path));
+				}
+				break;
+			}
+		}
+	}
+
+	return dependencies_shared_objects;
+}
+
 String GDExtension::find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags) {
 	// First, check the explicit libraries.
 	if (p_config->has_section("libraries")) {
@@ -240,7 +275,7 @@ public:
 				ret_opaque = r_ret->get_type() == Variant::NIL ? r_ret : VariantInternal::get_opaque_pointer(r_ret);
 			}
 
-			ptrcall(p_object, argptrs, ret_opaque);
+			ptrcall_func(method_userdata, extension_instance, reinterpret_cast<GDExtensionConstTypePtr *>(argptrs), (GDExtensionTypePtr)ret_opaque);
 
 			if (r_ret && r_ret->get_type() == Variant::OBJECT) {
 				VariantInternal::update_object_id(r_ret);
@@ -254,7 +289,7 @@ public:
 		ERR_FAIL_COND_MSG(p_object && p_object->is_extension_placeholder(), vformat("Cannot call GDExtension method bind '%s' on placeholder instance.", name));
 #endif
 		ERR_FAIL_COND_MSG(vararg, "Vararg methods don't have ptrcall support. This is most likely an engine bug.");
-		GDExtensionClassInstancePtr extension_instance = p_object->_get_extension_instance();
+		GDExtensionClassInstancePtr extension_instance = is_static() ? nullptr : p_object->_get_extension_instance();
 		ptrcall_func(method_userdata, extension_instance, reinterpret_cast<GDExtensionConstTypePtr *>(p_args), (GDExtensionTypePtr)r_ret);
 	}
 
@@ -352,7 +387,7 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 		p_extension_funcs->set_func, // GDExtensionClassSet set_func;
 		p_extension_funcs->get_func, // GDExtensionClassGet get_func;
 		p_extension_funcs->get_property_list_func, // GDExtensionClassGetPropertyList get_property_list_func;
-		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
+		nullptr, // GDExtensionClassFreePropertyList2 free_property_list_func;
 		p_extension_funcs->property_can_revert_func, // GDExtensionClassPropertyCanRevert property_can_revert_func;
 		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
 		nullptr, // GDExtensionClassValidateProperty validate_property_func;
@@ -371,7 +406,8 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 	};
 
 	const ClassCreationDeprecatedInfo legacy = {
-		p_extension_funcs->notification_func,
+		p_extension_funcs->notification_func, // GDExtensionClassNotification notification_func;
+		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
 	};
 	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info3, &legacy);
 }
@@ -385,7 +421,7 @@ void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->set_func, // GDExtensionClassSet set_func;
 		p_extension_funcs->get_func, // GDExtensionClassGet get_func;
 		p_extension_funcs->get_property_list_func, // GDExtensionClassGetPropertyList get_property_list_func;
-		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
+		nullptr, // GDExtensionClassFreePropertyList2 free_property_list_func;
 		p_extension_funcs->property_can_revert_func, // GDExtensionClassPropertyCanRevert property_can_revert_func;
 		p_extension_funcs->property_get_revert_func, // GDExtensionClassPropertyGetRevert property_get_revert_func;
 		p_extension_funcs->validate_property_func, // GDExtensionClassValidateProperty validate_property_func;
@@ -403,7 +439,11 @@ void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->class_userdata, // void *class_userdata;
 	};
 
-	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info3);
+	const ClassCreationDeprecatedInfo legacy = {
+		nullptr, // GDExtensionClassNotification notification_func;
+		p_extension_funcs->free_property_list_func, // GDExtensionClassFreePropertyList free_property_list_func;
+	};
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info3, &legacy);
 }
 #endif // DISABLE_DEPRECATED
 
@@ -479,13 +519,14 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	extension->gdextension.set = p_extension_funcs->set_func;
 	extension->gdextension.get = p_extension_funcs->get_func;
 	extension->gdextension.get_property_list = p_extension_funcs->get_property_list_func;
-	extension->gdextension.free_property_list = p_extension_funcs->free_property_list_func;
+	extension->gdextension.free_property_list2 = p_extension_funcs->free_property_list_func;
 	extension->gdextension.property_can_revert = p_extension_funcs->property_can_revert_func;
 	extension->gdextension.property_get_revert = p_extension_funcs->property_get_revert_func;
 	extension->gdextension.validate_property = p_extension_funcs->validate_property_func;
 #ifndef DISABLE_DEPRECATED
 	if (p_deprecated_funcs) {
 		extension->gdextension.notification = p_deprecated_funcs->notification_func;
+		extension->gdextension.free_property_list = p_deprecated_funcs->free_property_list_func;
 	}
 #endif // DISABLE_DEPRECATED
 	extension->gdextension.notification2 = p_extension_funcs->notification_func;
@@ -727,15 +768,31 @@ GDExtensionInterfaceFunctionPtr GDExtension::get_interface_function(const String
 	return *function;
 }
 
-Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol) {
+Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol, Vector<SharedObject> *p_dependencies) {
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(p_path);
+
+	Vector<String> abs_dependencies_paths;
+	if (p_dependencies != nullptr && !p_dependencies->is_empty()) {
+		for (const SharedObject &dependency : *p_dependencies) {
+			abs_dependencies_paths.push_back(ProjectSettings::get_singleton()->globalize_path(dependency.path));
+		}
+	}
+
 	String actual_lib_path;
-	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, true, &actual_lib_path, Engine::get_singleton()->is_editor_hint());
+	OS::GDExtensionData data = {
+		true, // also_set_library_path
+		&actual_lib_path, // r_resolved_path
+		Engine::get_singleton()->is_editor_hint(), // generate_temp_files
+		&abs_dependencies_paths, // library_dependencies
+	};
+	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, &data);
 
 	if (actual_lib_path.get_file() != abs_path.get_file()) {
 		// If temporary files are generated, let's change the library path to point at the original,
 		// because that's what we want to check to see if it's changed.
 		library_path = actual_lib_path.get_base_dir().path_join(p_path.get_file());
+	} else {
+		library_path = p_path;
 	}
 
 	ERR_FAIL_COND_V_MSG(err == ERR_FILE_NOT_FOUND, err, "GDExtension dynamic library not found: " + abs_path);
@@ -970,7 +1027,8 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 			FileAccess::get_modified_time(library_path));
 #endif
 
-	err = p_extension->open_library(is_static_library ? String() : library_path, entry_symbol);
+	Vector<SharedObject> library_dependencies = GDExtension::find_extension_dependencies(p_path, config, [](const String &p_feature) { return OS::get_singleton()->has_feature(p_feature); });
+	err = p_extension->open_library(is_static_library ? String() : library_path, entry_symbol, &library_dependencies);
 	if (err != OK) {
 		// Unreference the extension so that this loading can be considered a failure.
 		p_extension.unref();

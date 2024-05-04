@@ -1463,7 +1463,7 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 		return String();
 	}
 
-	while (port_name.length() && !is_ascii_char(port_name[0])) {
+	while (port_name.length() && !is_ascii_alphabet_char(port_name[0])) {
 		port_name = port_name.substr(1, port_name.length() - 1);
 	}
 
@@ -1508,7 +1508,7 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 
 String VisualShader::validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const {
 	String param_name = p_name; //validate name first
-	while (param_name.length() && !is_ascii_char(param_name[0])) {
+	while (param_name.length() && !is_ascii_alphabet_char(param_name[0])) {
 		param_name = param_name.substr(1, param_name.length() - 1);
 	}
 	if (!param_name.is_empty()) {
@@ -4206,7 +4206,7 @@ VisualShaderNodeResizableBase::VisualShaderNodeResizableBase() {
 	set_allow_v_resize(true);
 }
 
-////////////// Comment
+////////////// Frame
 
 String VisualShaderNodeFrame::get_caption() const {
 	return title;
@@ -4322,6 +4322,25 @@ void VisualShaderNodeFrame::_bind_methods() {
 
 VisualShaderNodeFrame::VisualShaderNodeFrame() {
 }
+
+////////////// Comment (Deprecated)
+
+#ifndef DISABLE_DEPRECATED
+void VisualShaderNodeComment::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_description", "description"), &VisualShaderNodeComment::set_description);
+	ClassDB::bind_method(D_METHOD("get_description"), &VisualShaderNodeComment::get_description);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "set_description", "get_description");
+}
+
+void VisualShaderNodeComment::set_description(const String &p_description) {
+	description = p_description;
+}
+
+String VisualShaderNodeComment::get_description() const {
+	return description;
+}
+#endif
 
 ////////////// GroupBase
 
@@ -4907,6 +4926,10 @@ String VisualShaderNodeExpression::generate_code(Shader::Mode p_mode, VisualShad
 	code += "\n	}\n";
 
 	return code;
+}
+
+bool VisualShaderNodeExpression::is_output_port_expandable(int p_port) const {
+	return false;
 }
 
 void VisualShaderNodeExpression::_bind_methods() {

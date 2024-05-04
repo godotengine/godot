@@ -34,8 +34,10 @@ name is available.
     Alex Drozd (brno32)
     Alexey Khoroshavin (allkhor)
     Alfred Reinold Baudisch (alfredbaudisch)
+    Alistair Leslie-Hughes (alesliehughes)
     Alket Rexhepi (alketii)
     Andrea Catania (AndreaCatania)
+    Andreia Gaita (shana)
     Andrii Doroshenko (Xrayez)
     Andy Maloney (asmaloney)
     Andy Moss (MillionOstrich)
@@ -46,6 +48,7 @@ name is available.
     Anutrix
     Aren Villanueva (kurikaesu)
     Ariel Manzur (punto-)
+    Arman Elgudzhyan (puchik)
     AThousandShips
     aXu-AP
     Bartłomiej T. Listwon (Listwon)
@@ -132,12 +135,14 @@ name is available.
     J08nY
     Jake Young (Duroxxigar)
     Jakub Grzesik (kubecz3k)
+    Jakub Marcowski (Chubercik)
     James Buck (jbuck3)
     Jan Haller (Bromeon)
     Jason Knight (jasonwinterpixel)
     Jean-Michel Bernard (jmb462)
     Jérôme Gully (Nutriz)
     Jia Jun Chai (SkyLucilfer)
+    jitspoe
     Joan Fons Sanchez (JFonS)
     Johan Manuel (29jm)
     Johannes Witt (HaSa1002)
@@ -214,6 +219,7 @@ name is available.
     Omar El Sheikh (The-O-King)
     Ovnuniarchos
     Pascal Richter (ShyRed)
+    passivestar
     Patrick Dawson (pkdawson)
     Patrick Exner (FlameLizard)
     Patrick (firefly2442)
@@ -229,6 +235,7 @@ name is available.
     Poommetee Ketson (Noshyaar)
     Przemysław Gołąb (n-pigeon)
     Rafael M. G. (rafallus)
+    Raffaele Picca (RPicster)
     Rafał Mikrut (qarmin)
     Ralf Hölzemer (rollenrolm)
     Ramesh Ravone (RameshRavone)
@@ -287,12 +294,15 @@ name is available.
     Will Nations (willnationsdev)
     Wilson E. Alvarez (Rubonnek)
     Xavier Cho (mysticfall)
+    Yaohua Xiong (xiongyaohua)
     yg2f (SuperUserNameMan)
+    Yordan Dolchinkov (Jordyfel)
     Yuri Rubinsky (Chaosus)
     Yuri Sizov (YuriSizov)
     Zae Chao (zaevi)
     Zak Stam (zaksnet)
     Zher Huei Lee (leezh)
+    Zi Ye (MajorMcDoom)
     ZuBsPaCe
     谢天 (jsjtxietian)
     风青山 (Rindbee)

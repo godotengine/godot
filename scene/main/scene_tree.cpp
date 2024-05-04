@@ -729,13 +729,6 @@ void SceneTree::set_quit_on_go_back(bool p_enable) {
 	quit_on_go_back = p_enable;
 }
 
-#ifdef TOOLS_ENABLED
-
-bool SceneTree::is_node_being_edited(const Node *p_node) const {
-	return Engine::get_singleton()->is_editor_hint() && edited_scene_root && (edited_scene_root->is_ancestor_of(p_node) || edited_scene_root == p_node);
-}
-#endif
-
 #ifdef DEBUG_ENABLED
 void SceneTree::set_debug_collisions_hint(bool p_enabled) {
 	debug_collisions_hint = p_enabled;
@@ -1752,7 +1745,7 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_min_size(Size2i(64, 64)); // Define a very small minimum window size to prevent bugs such as GH-37242.
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
-	root->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_ALWAYS);
+	root->set_auto_translate_mode(GLOBAL_GET("internationalization/rendering/root_node_auto_translate") ? Node::AUTO_TRANSLATE_MODE_ALWAYS : Node::AUTO_TRANSLATE_MODE_DISABLED);
 	root->set_name("root");
 	root->set_title(GLOBAL_GET("application/config/name"));
 

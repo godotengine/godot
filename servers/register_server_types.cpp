@@ -94,6 +94,7 @@
 #include "physics_server_3d_wrap_mt.h"
 #include "servers/extensions/physics_server_3d_extension.h"
 #include "xr/xr_body_tracker.h"
+#include "xr/xr_controller_tracker.h"
 #include "xr/xr_face_tracker.h"
 #include "xr/xr_hand_tracker.h"
 #include "xr/xr_interface.h"
@@ -324,13 +325,16 @@ void register_server_types() {
 	PhysicsServer3DManager::get_singleton()->set_default_server("GodotPhysics3D");
 
 	GDREGISTER_ABSTRACT_CLASS(XRInterface);
+	GDREGISTER_CLASS(XRVRS);
 	GDREGISTER_CLASS(XRBodyTracker);
+	GDREGISTER_CLASS(XRControllerTracker);
 	GDREGISTER_CLASS(XRFaceTracker);
 	GDREGISTER_CLASS(XRHandTracker);
 	GDREGISTER_CLASS(XRInterfaceExtension); // can't register this as virtual because we need a creation function for our extensions.
 	GDREGISTER_CLASS(XRPose);
 	GDREGISTER_CLASS(XRPositionalTracker);
 	GDREGISTER_CLASS(XRServer);
+	GDREGISTER_ABSTRACT_CLASS(XRTracker);
 #endif // _3D_DISABLED
 
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer3D);

@@ -102,14 +102,14 @@ void Parallax2D::_update_scroll() {
 	scroll_ofs *= scroll_scale;
 
 	if (repeat_size.x) {
-		real_t mod = Math::fposmod(scroll_ofs.x - scroll_offset.x - autoscroll_offset.x, repeat_size.x);
+		real_t mod = Math::fposmod(scroll_ofs.x - scroll_offset.x - autoscroll_offset.x, repeat_size.x * get_scale().x);
 		scroll_ofs.x = screen_offset.x - mod;
 	} else {
 		scroll_ofs.x = screen_offset.x + scroll_offset.x - scroll_ofs.x;
 	}
 
 	if (repeat_size.y) {
-		real_t mod = Math::fposmod(scroll_ofs.y - scroll_offset.y - autoscroll_offset.y, repeat_size.y);
+		real_t mod = Math::fposmod(scroll_ofs.y - scroll_offset.y - autoscroll_offset.y, repeat_size.y * get_scale().y);
 		scroll_ofs.y = screen_offset.y - mod;
 	} else {
 		scroll_ofs.y = screen_offset.y + scroll_offset.y - scroll_ofs.y;
@@ -127,8 +127,7 @@ void Parallax2D::_update_repeat() {
 		return;
 	}
 
-	Point2 repeat_scale = repeat_size * get_scale();
-	RenderingServer::get_singleton()->canvas_set_item_repeat(get_canvas_item(), repeat_scale, repeat_times);
+	RenderingServer::get_singleton()->canvas_set_item_repeat(get_canvas_item(), repeat_size, repeat_times);
 	RenderingServer::get_singleton()->canvas_item_set_interpolated(get_canvas_item(), false);
 }
 
@@ -145,7 +144,7 @@ void Parallax2D::set_repeat_size(const Size2 &p_repeat_size) {
 		return;
 	}
 
-	repeat_size = p_repeat_size.max(Vector2(0, 0));
+	repeat_size = p_repeat_size.maxf(0);
 
 	_update_process();
 	_update_repeat();

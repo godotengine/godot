@@ -2588,6 +2588,11 @@ TileMapLayer::HighlightMode TileMapLayer::get_highlight_mode() const {
 }
 
 void TileMapLayer::set_tile_map_data_from_array(const Vector<uint8_t> &p_data) {
+	if (p_data.is_empty()) {
+		clear();
+		return;
+	}
+
 	const int cell_data_struct_size = 12;
 
 	int size = p_data.size();
@@ -2630,6 +2635,10 @@ Vector<uint8_t> TileMapLayer::get_tile_map_data_as_array() const {
 	const int cell_data_struct_size = 12;
 
 	Vector<uint8_t> tile_map_data_array;
+	if (tile_map_layer_data.is_empty()) {
+		return tile_map_data_array;
+	}
+
 	tile_map_data_array.resize(2 + tile_map_layer_data.size() * cell_data_struct_size);
 	uint8_t *ptr = tile_map_data_array.ptrw();
 

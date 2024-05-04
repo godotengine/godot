@@ -8,23 +8,23 @@
 		Here's a sample on how to write and read from a file:
 		[codeblocks]
 		[gdscript]
-		func save(content):
+		func save_to_file(content):
 		    var file = FileAccess.open("user://save_game.dat", FileAccess.WRITE)
 		    file.store_string(content)
 
-		func load():
+		func load_from_file():
 		    var file = FileAccess.open("user://save_game.dat", FileAccess.READ)
 		    var content = file.get_as_text()
 		    return content
 		[/gdscript]
 		[csharp]
-		public void Save(string content)
+		public void SaveToFile(string content)
 		{
 		    using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Write);
 		    file.StoreString(content);
 		}
 
-		public string Load()
+		public string LoadFromFile()
 		{
 		    using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Read);
 		    string content = file.GetAsText();
@@ -190,7 +190,7 @@
 		<method name="get_line" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the next line of the file as a [String].
+				Returns the next line of the file as a [String]. The returned string doesn't include newline ([code]\n[/code]) or carriage return ([code]\r[/code]) characters, but does include any other leading or trailing whitespace.
 				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
@@ -322,6 +322,13 @@
 			<description>
 				Creates a new [FileAccess] object and opens an encrypted file in write or read mode. You need to pass a password to encrypt/decrypt it.
 				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
+			</description>
+		</method>
+		<method name="resize">
+			<return type="int" enum="Error" />
+			<param index="0" name="length" type="int" />
+			<description>
+				Resizes the file to a specified length. The file must be open in a mode that permits writing. If the file is extended, NUL characters are appended. If the file is truncated, all data from the end file to the original length of the file is lost.
 			</description>
 		</method>
 		<method name="seek">

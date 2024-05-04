@@ -495,18 +495,19 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 			// We add this command to the adjacency list of all commands that were reading from the entire resource.
 			int32_t read_full_command_list_index = search_tracker->read_full_command_list_index;
 			while (read_full_command_list_index >= 0) {
-				const RecordedCommandListNode &command_list_node = command_list_nodes[read_full_command_list_index];
-				if (command_list_node.command_index == p_command_index) {
+				int32_t read_full_command_index = command_list_nodes[read_full_command_list_index].command_index;
+				int32_t read_full_next_index = command_list_nodes[read_full_command_list_index].next_list_index;
+				if (read_full_command_index == p_command_index) {
 					if (!resource_has_parent) {
 						// Only slices are allowed to be in different usages in the same command as they are guaranteed to have no overlap in the same command.
 						ERR_FAIL_MSG("Command can't have itself as a dependency.");
 					}
 				} else {
 					// Add this command to the adjacency list of each command that was reading this resource.
-					_add_adjacent_command(command_list_node.command_index, p_command_index, r_command);
+					_add_adjacent_command(read_full_command_index, p_command_index, r_command);
 				}
 
-				read_full_command_list_index = command_list_node.next_list_index;
+				read_full_command_list_index = read_full_next_index;
 			}
 
 			if (!resource_has_parent) {

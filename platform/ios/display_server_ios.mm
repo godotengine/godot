@@ -218,7 +218,7 @@ void DisplayServerIOS::send_window_event(DisplayServer::WindowEvent p_event) con
 }
 
 void DisplayServerIOS::_window_callback(const Callable &p_callable, const Variant &p_arg) const {
-	if (!p_callable.is_null()) {
+	if (p_callable.is_valid()) {
 		p_callable.call(p_arg);
 	}
 }
@@ -289,26 +289,20 @@ void DisplayServerIOS::key(Key p_key, char32_t p_char, Key p_unshifted, Key p_ph
 
 // MARK: Motion
 
-void DisplayServerIOS::update_gravity(float p_x, float p_y, float p_z) {
-	Input::get_singleton()->set_gravity(Vector3(p_x, p_y, p_z));
+void DisplayServerIOS::update_gravity(const Vector3 &p_gravity) {
+	Input::get_singleton()->set_gravity(p_gravity);
 }
 
-void DisplayServerIOS::update_accelerometer(float p_x, float p_y, float p_z) {
-	// Found out the Z should not be negated! Pass as is!
-	Vector3 v_accelerometer = Vector3(
-			p_x / kDisplayServerIOSAcceleration,
-			p_y / kDisplayServerIOSAcceleration,
-			p_z / kDisplayServerIOSAcceleration);
-
-	Input::get_singleton()->set_accelerometer(v_accelerometer);
+void DisplayServerIOS::update_accelerometer(const Vector3 &p_accelerometer) {
+	Input::get_singleton()->set_accelerometer(p_accelerometer / kDisplayServerIOSAcceleration);
 }
 
-void DisplayServerIOS::update_magnetometer(float p_x, float p_y, float p_z) {
-	Input::get_singleton()->set_magnetometer(Vector3(p_x, p_y, p_z));
+void DisplayServerIOS::update_magnetometer(const Vector3 &p_magnetometer) {
+	Input::get_singleton()->set_magnetometer(p_magnetometer);
 }
 
-void DisplayServerIOS::update_gyroscope(float p_x, float p_y, float p_z) {
-	Input::get_singleton()->set_gyroscope(Vector3(p_x, p_y, p_z));
+void DisplayServerIOS::update_gyroscope(const Vector3 &p_gyroscope) {
+	Input::get_singleton()->set_gyroscope(p_gyroscope);
 }
 
 // MARK: -

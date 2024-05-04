@@ -1217,6 +1217,12 @@
 				Returns [code]true[/code] if [param string] is a valid identifier.
 			</description>
 		</method>
+		<method name="_is_valid_letter" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="unicode" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_load_support_data" qualifiers="virtual">
 			<return type="bool" />
 			<param index="0" name="filename" type="String" />
@@ -1664,6 +1670,7 @@
 			<return type="PackedInt32Array" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" />
+			<param index="2" name="skip_grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" />
 			<description>
 				[b]Optional.[/b]
 				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking (see [enum TextServer.GraphemeFlag]).

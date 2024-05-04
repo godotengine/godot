@@ -4485,6 +4485,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 			if (p_id.type == Animation::TYPE_VALUE) {
 				undo_redo->add_do_method(reset_anim, "value_track_set_update_mode", p_next_tracks.reset, update_mode);
 			}
+			undo_redo->add_do_method(reset_anim, "track_set_interpolation_type", p_next_tracks.reset, interp_type);
 			undo_redo->add_do_method(reset_anim, "track_insert_key", p_next_tracks.reset, 0.0f, value);
 			undo_redo->add_undo_method(reset_anim, "remove_track", reset_anim->get_track_count());
 			p_next_tracks.reset++;
@@ -5074,7 +5075,8 @@ void AnimationTrackEditor::_fetch_value_track_options(const NodePath &p_path, An
 		case Variant::PACKED_FLOAT64_ARRAY:
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
-		case Variant::PACKED_COLOR_ARRAY: {
+		case Variant::PACKED_COLOR_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY: {
 			*r_update_mode = Animation::UPDATE_CONTINUOUS;
 		} break;
 		default: {

@@ -595,6 +595,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="capture_included" type="bool" setter="_set_capture_included" getter="is_capture_included" default="false">
+			Returns [code]true[/code] if the capture track is included. This is a cached readonly value for performance.
+		</member>
 		<member name="length" type="float" setter="set_length" getter="get_length" default="1.0">
 			The total length of the animation (in seconds).
 			[b]Note:[/b] Length is not delimited by the last key, as this one may be before or after the end to ensure correct interpolation and looping.
@@ -602,7 +605,7 @@
 		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="Animation.LoopMode" default="0">
 			Determines the behavior of both ends of the animation timeline during animation playback. This is used for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
 		</member>
-		<member name="step" type="float" setter="set_step" getter="get_step" default="0.1">
+		<member name="step" type="float" setter="set_step" getter="get_step" default="0.0333333">
 			The animation step value.
 		</member>
 	</members>
@@ -658,7 +661,7 @@
 			Update at the keyframes.
 		</constant>
 		<constant name="UPDATE_CAPTURE" value="2" enum="UpdateMode">
-			Same as [constant UPDATE_CONTINUOUS] but works as a flag to capture the value of the current object and perform interpolation in some methods. See also [method AnimationMixer.capture] and [method AnimationPlayer.play_with_capture].
+			Same as [constant UPDATE_CONTINUOUS] but works as a flag to capture the value of the current object and perform interpolation in some methods. See also [method AnimationMixer.capture], [member AnimationPlayer.playback_auto_capture], and [method AnimationPlayer.play_with_capture].
 		</constant>
 		<constant name="LOOP_NONE" value="0" enum="LoopMode">
 			At both ends of the animation, the animation will stop playing.

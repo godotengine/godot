@@ -260,21 +260,6 @@ void EGLManager::release_current() {
 	eglMakeCurrent(current_display.egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
 
-void EGLManager::make_current() {
-	if (!current_window) {
-		return;
-	}
-
-	if (!current_window->initialized) {
-		WARN_PRINT("Current OpenGL window is uninitialized!");
-		return;
-	}
-
-	GLDisplay &current_display = displays[current_window->gldisplay_id];
-
-	eglMakeCurrent(current_display.egl_display, current_window->egl_surface, current_window->egl_surface, current_display.egl_context);
-}
-
 void EGLManager::swap_buffers() {
 	if (!current_window) {
 		return;

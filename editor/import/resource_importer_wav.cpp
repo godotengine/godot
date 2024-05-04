@@ -90,7 +90,7 @@ void ResourceImporterWAV::get_import_options(const String &p_path, List<ImportOp
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_mode", PROPERTY_HINT_ENUM, "Detect From WAV,Disabled,Forward,Ping-Pong,Backward", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_begin"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_end"), -1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Disabled,RAM (Ima-ADPCM)"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Disabled,RAM (Ima-ADPCM),QOA (Quite OK Audio)"), 0));
 }
 
 Error ResourceImporterWAV::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -330,14 +330,12 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			for (int i = 0; i < new_data_frames; i++) {
 				// Cubic interpolation should be enough.
 
-				float mu = frac;
-
 				float y0 = data[MAX(0, ipos - 1) * format_channels + c];
 				float y1 = data[ipos * format_channels + c];
 				float y2 = data[MIN(frames - 1, ipos + 1) * format_channels + c];
 				float y3 = data[MIN(frames - 1, ipos + 2) * format_channels + c];
 
-				new_data.write[i * format_channels + c] = Math::cubic_interpolate(y1, y2, y0, y3, mu);
+				new_data.write[i * format_channels + c] = Math::cubic_interpolate(y1, y2, y0, y3, frac);
 
 				// update position and always keep fractional part within ]0...1]
 				// in order to avoid 32bit floating point precision errors
@@ -456,13 +454,13 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		is16 = false;
 	}
 
-	Vector<uint8_t> dst_data;
+	Vector<uint8_t> pcm_data;
 	AudioStreamWAV::Format dst_format;
 
 	if (compression == 1) {
 		dst_format = AudioStreamWAV::FORMAT_IMA_ADPCM;
 		if (format_channels == 1) {
-			_compress_ima_adpcm(data, dst_data);
+			_compress_ima_adpcm(data, pcm_data);
 		} else {
 			//byte interleave
 			Vector<float> left;
@@ -484,9 +482,9 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			_compress_ima_adpcm(right, bright);
 
 			int dl = bleft.size();
-			dst_data.resize(dl * 2);
+			pcm_data.resize(dl * 2);
 
-			uint8_t *w = dst_data.ptrw();
+			uint8_t *w = pcm_data.ptrw();
 			const uint8_t *rl = bleft.ptr();
 			const uint8_t *rr = bright.ptr();
 
@@ -498,13 +496,14 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 	} else {
 		dst_format = is16 ? AudioStreamWAV::FORMAT_16_BITS : AudioStreamWAV::FORMAT_8_BITS;
-		dst_data.resize(data.size() * (is16 ? 2 : 1));
+		bool enforce16 = is16 || compression == 2;
+		pcm_data.resize(data.size() * (enforce16 ? 2 : 1));
 		{
-			uint8_t *w = dst_data.ptrw();
+			uint8_t *w = pcm_data.ptrw();
 
 			int ds = data.size();
 			for (int i = 0; i < ds; i++) {
-				if (is16) {
+				if (enforce16) {
 					int16_t v = CLAMP(data[i] * 32768, -32768, 32767);
 					encode_uint16(v, &w[i * 2]);
 				} else {
@@ -513,6 +512,23 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				}
 			}
 		}
+	}
+
+	Vector<uint8_t> dst_data;
+	if (compression == 2) {
+		dst_format = AudioStreamWAV::FORMAT_QOA;
+		qoa_desc desc = { 0, 0, 0, { { { 0 }, { 0 } } } };
+		uint32_t qoa_len = 0;
+
+		desc.samplerate = rate;
+		desc.samples = frames;
+		desc.channels = format_channels;
+
+		void *encoded = qoa_encode((short *)pcm_data.ptrw(), &desc, &qoa_len);
+		dst_data.resize(qoa_len);
+		memcpy(dst_data.ptrw(), encoded, qoa_len);
+	} else {
+		dst_data = pcm_data;
 	}
 
 	Ref<AudioStreamWAV> sample;

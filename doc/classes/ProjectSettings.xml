@@ -254,6 +254,7 @@
 			Path to an image used as the boot splash. If left empty, the default Godot Engine splash will be displayed instead.
 			[b]Note:[/b] Only effective if [member application/boot_splash/show_image] is [code]true[/code].
 			[b]Note:[/b] The only supported format is PNG. Using another image format will result in an error.
+			[b]Note:[/b] The image will also show when opening the project in the editor. If you want to display the default splash image in the editor, add an empty override for [code]editor_hint[/code] feature.
 		</member>
 		<member name="application/boot_splash/minimum_display_time" type="int" setter="" getter="" default="0">
 			Minimum boot splash display time (in milliseconds). It is not recommended to set too high values for this setting.
@@ -343,7 +344,7 @@
 			This setting can be overridden using the [code]--frame-delay &lt;ms;&gt;[/code] command line argument.
 		</member>
 		<member name="application/run/low_processor_mode" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables low-processor usage mode. This setting only works on desktop platforms. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) in most games.
+			If [code]true[/code], enables low-processor usage mode. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) in most games.
 		</member>
 		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="" default="6900">
 			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
@@ -487,6 +488,9 @@
 		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
+		</member>
+		<member name="debug/gdscript/warnings/enum_variable_without_default" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a variable has an enum type but no explicit default value, but only if the enum does not contain [code]0[/code] as a valid value.
 		</member>
 		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
@@ -636,6 +640,9 @@
 		</member>
 		<member name="debug/shader_language/warnings/formatting_error" type="bool" setter="" getter="" default="true">
 			When set to [code]true[/code], produces a warning upon encountering certain formatting errors. Currently this only checks for empty statements. More formatting errors may be added over time.
+		</member>
+		<member name="debug/shader_language/warnings/magic_position_write" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], produces a warning when the shader contains [code]POSITION = vec4(vertex,[/code] as this was very common code written in Godot 4.2 and earlier that was paired with a QuadMesh to produce a full screen post processes pass. With the switch to reversed z in 4.3, this trick no longer works, as it implicitly relied on the [code]VERTEX.z[/code] being 0.
 		</member>
 		<member name="debug/shader_language/warnings/treat_warnings_as_errors" type="bool" setter="" getter="" default="false">
 			When set to [code]true[/code], warnings are treated as errors.
@@ -791,8 +798,8 @@
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
 		</member>
-		<member name="display/window/energy_saving/keep_screen_on.editor" type="bool" setter="" getter="" default="false">
-			Editor-only override for [member display/window/energy_saving/keep_screen_on]. Does not affect exported projects in debug or release mode.
+		<member name="display/window/energy_saving/keep_screen_on.editor_hint" type="bool" setter="" getter="" default="false">
+			Editor-only override for [member display/window/energy_saving/keep_screen_on]. Does not affect running project.
 		</member>
 		<member name="display/window/handheld/orientation" type="int" setter="" getter="" default="0">
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
@@ -1064,6 +1071,9 @@
 		</member>
 		<member name="gui/timers/tooltip_delay_sec" type="float" setter="" getter="" default="0.5">
 			Default delay for tooltips (in seconds).
+		</member>
+		<member name="gui/timers/tooltip_delay_sec.editor_hint" type="float" setter="" getter="" default="0.5">
+			Delay for tooltips in the editor.
 		</member>
 		<member name="input/ui_accept" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to confirm a focused button, menu or list item, or validate input.
@@ -1435,6 +1445,10 @@
 		</member>
 		<member name="internationalization/rendering/force_right_to_left_layout_direction" type="bool" setter="" getter="" default="false">
 			Force layout direction and text writing direction to RTL for all controls.
+		</member>
+		<member name="internationalization/rendering/root_node_auto_translate" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], root node will use [constant Node.AUTO_TRANSLATE_MODE_ALWAYS], otherwise [constant Node.AUTO_TRANSLATE_MODE_DISABLED] will be used.
+			[b]Note:[/b] This property is only read when the project starts. To change the auto translate mode at runtime, set [member Node.auto_translate_mode] of [member SceneTree.root] instead.
 		</member>
 		<member name="internationalization/rendering/root_node_layout_direction" type="int" setter="" getter="" default="0">
 			Root node default layout direction.
@@ -2885,6 +2899,9 @@
 		</member>
 		<member name="xr/openxr/extensions/eye_gaze_interaction" type="bool" setter="" getter="" default="false">
 			Specify whether to enable eye tracking for this project. Depending on the platform, additional export configuration may be needed.
+		</member>
+		<member name="xr/openxr/extensions/hand_interaction_profile" type="bool" setter="" getter="" default="false">
+			If true the hand interaction profile extension will be activated if supported by the platform.
 		</member>
 		<member name="xr/openxr/extensions/hand_tracking" type="bool" setter="" getter="" default="true">
 			If true we enable the hand tracking extension if available.

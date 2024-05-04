@@ -154,6 +154,7 @@ private:
 	RBSet<Vector2i> tile_map_selection;
 	Ref<TileMapPattern> tile_map_clipboard;
 	Ref<TileMapPattern> selection_pattern;
+	Ref<TileMapPattern> erase_pattern;
 	void _set_tile_map_selection(const TypedArray<Vector2i> &p_selection);
 	TypedArray<Vector2i> _get_tile_map_selection() const;
 

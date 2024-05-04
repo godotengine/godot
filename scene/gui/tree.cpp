@@ -35,8 +35,6 @@
 #include "core/math/math_funcs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/string/print_string.h"
-#include "core/string/translation.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/window.h"
@@ -381,8 +379,8 @@ void TreeItem::set_text_overrun_behavior(int p_column, TextServer::OverrunBehavi
 
 	cells.write[p_column].text_buf->set_text_overrun_behavior(p_behavior);
 	cells.write[p_column].dirty = true;
-	_changed_notify(p_column);
 	cells.write[p_column].cached_minimum_size_dirty = true;
+	_changed_notify(p_column);
 }
 
 TextServer::OverrunBehavior TreeItem::get_text_overrun_behavior(int p_column) const {
@@ -1514,7 +1512,9 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 	const TreeItem::Cell &cell = cells[p_column];
 
 	if (cell.cached_minimum_size_dirty) {
-		Size2 size;
+		Size2 size = Size2(
+				parent_tree->theme_cache.inner_item_margin_left + parent_tree->theme_cache.inner_item_margin_right,
+				parent_tree->theme_cache.inner_item_margin_top + parent_tree->theme_cache.inner_item_margin_bottom);
 
 		// Text.
 		if (!cell.text.is_empty()) {
@@ -1522,7 +1522,9 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 				parent_tree->update_item_cell(this, p_column);
 			}
 			Size2 text_size = cell.text_buf->get_size();
-			size.width += text_size.width;
+			if (get_text_overrun_behavior(p_column) == TextServer::OVERRUN_NO_TRIMMING) {
+				size.width += text_size.width;
+			}
 			size.height = MAX(size.height, text_size.height);
 		}
 
@@ -1541,12 +1543,9 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 			Ref<Texture2D> texture = cell.buttons[i].texture;
 			if (texture.is_valid()) {
 				Size2 button_size = texture->get_size() + parent_tree->theme_cache.button_pressed->get_minimum_size();
-				size.width += button_size.width;
+				size.width += button_size.width + parent_tree->theme_cache.button_margin;
 				size.height = MAX(size.height, button_size.height);
 			}
-		}
-		if (cell.buttons.size() >= 2) {
-			size.width += (cell.buttons.size() - 1) * parent_tree->theme_cache.button_margin;
 		}
 
 		cells.write[p_column].cached_minimum_size = size;
@@ -2459,7 +2458,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				if (rtl) {
 					button_ofs.x = get_size().width - button_ofs.x - button_texture->get_width();
 				}
-				p_item->cells.write[i].buttons.write[j].rect = Rect2i(button_ofs, button_size);
 				button_texture->draw(ci, button_ofs, p_item->cells[i].buttons[j].disabled ? Color(1, 1, 1, 0.5) : p_item->cells[i].buttons[j].color);
 				item_width_with_buttons -= button_size.width + theme_cache.button_margin;
 			}
@@ -3431,7 +3429,7 @@ Rect2 Tree::_get_content_rect() const {
 	const real_t v_size = v_scroll->is_visible() ? (v_scroll->get_combined_minimum_size().x + theme_cache.scrollbar_h_separation) : 0;
 	const real_t h_size = h_scroll->is_visible() ? (h_scroll->get_combined_minimum_size().y + theme_cache.scrollbar_v_separation) : 0;
 	const Point2 scroll_begin = _get_scrollbar_layout_rect().get_end() - Vector2(v_size, h_size);
-	const Size2 offset = (content_rect.get_end() - scroll_begin).max(Vector2(0, 0));
+	const Size2 offset = (content_rect.get_end() - scroll_begin).maxf(0);
 
 	return content_rect.grow_individual(0, 0, -offset.x, -offset.y);
 }
@@ -3995,12 +3993,14 @@ bool Tree::edit_selected(bool p_force_edit) {
 		return false;
 	}
 
+	float popup_scale = popup_editor->is_embedded() ? 1.0 : popup_editor->get_parent_visible_window()->get_content_scale_factor();
 	Rect2 rect;
 	if (select_mode == SELECT_ROW) {
 		rect = s->get_meta("__focus_col_" + itos(selected_col));
 	} else {
 		rect = s->get_meta("__focus_rect");
 	}
+	rect.position *= popup_scale;
 	popup_edited_item = s;
 	popup_edited_item_col = col;
 
@@ -4043,7 +4043,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 		popup_rect.size = rect.size;
 
 		// Account for icon.
-		Size2 icon_size = _get_cell_icon_size(c);
+		Size2 icon_size = _get_cell_icon_size(c) * popup_scale;
 		popup_rect.position.x += icon_size.x;
 		popup_rect.size.x -= icon_size.x;
 
@@ -4070,7 +4070,10 @@ bool Tree::edit_selected(bool p_force_edit) {
 		}
 
 		popup_editor->set_position(popup_rect.position);
-		popup_editor->set_size(popup_rect.size);
+		popup_editor->set_size(popup_rect.size * popup_scale);
+		if (!popup_editor->is_embedded()) {
+			popup_editor->set_content_scale_factor(popup_scale);
+		}
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
 
@@ -4086,7 +4089,10 @@ bool Tree::edit_selected(bool p_force_edit) {
 		text_editor->show();
 
 		popup_editor->set_position(get_screen_position() + rect.position);
-		popup_editor->set_size(rect.size);
+		popup_editor->set_size(rect.size * popup_scale);
+		if (!popup_editor->is_embedded()) {
+			popup_editor->set_content_scale_factor(popup_scale);
+		}
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
 
@@ -4339,7 +4345,7 @@ void Tree::_notification(int p_what) {
 						}
 
 						default: {
-							text_pos.x += sb->get_offset().x + (tbrect.size.width - columns[i].text_buf->get_size().x) / 2;
+							text_pos.x += (tbrect.size.width - columns[i].text_buf->get_size().x) / 2;
 							break;
 						}
 					}
@@ -4389,17 +4395,23 @@ void Tree::_update_all() {
 }
 
 Size2 Tree::get_minimum_size() const {
-	if (h_scroll_enabled && v_scroll_enabled) {
-		return Size2();
-	} else {
-		Vector2 min_size = get_internal_min_size();
-		Ref<StyleBox> bg = theme_cache.panel_style;
-		if (bg.is_valid()) {
-			min_size.x += bg->get_margin(SIDE_LEFT) + bg->get_margin(SIDE_RIGHT);
-			min_size.y += bg->get_margin(SIDE_TOP) + bg->get_margin(SIDE_BOTTOM);
-		}
-		return Vector2(h_scroll_enabled ? 0 : min_size.x, v_scroll_enabled ? 0 : min_size.y);
+	Vector2 min_size = Vector2(0, _get_title_button_height());
+
+	if (theme_cache.panel_style.is_valid()) {
+		min_size += theme_cache.panel_style->get_minimum_size();
 	}
+
+	Vector2 content_min_size = get_internal_min_size();
+	if (h_scroll_enabled) {
+		content_min_size.x = 0;
+		min_size.y += h_scroll->get_combined_minimum_size().height;
+	}
+	if (v_scroll_enabled) {
+		min_size.x += v_scroll->get_combined_minimum_size().width;
+		content_min_size.y = 0;
+	}
+
+	return min_size + content_min_size;
 }
 
 TreeItem *Tree::create_item(TreeItem *p_parent, int p_index) {
@@ -4577,6 +4589,7 @@ void Tree::set_hide_root(bool p_enabled) {
 
 	hide_root = p_enabled;
 	queue_redraw();
+	update_minimum_size();
 }
 
 bool Tree::is_root_hidden() const {
@@ -4721,34 +4734,37 @@ int Tree::get_column_minimum_width(int p_column) const {
 
 		// Check if the visible title of the column is wider.
 		if (show_column_titles) {
-			min_width = MAX(theme_cache.font->get_string_size(columns[p_column].xl_title, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT), min_width);
+			const float padding = theme_cache.title_button->get_margin(SIDE_LEFT) + theme_cache.title_button->get_margin(SIDE_RIGHT);
+			min_width = MAX(theme_cache.font->get_string_size(columns[p_column].xl_title, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + padding, min_width);
 		}
 
-		if (!columns[p_column].clip_content) {
-			int depth = 0;
-			TreeItem *next;
-			for (TreeItem *item = get_root(); item; item = next) {
-				next = item->get_next_visible();
-				// Compute the depth in tree.
-				if (next && p_column == 0) {
-					if (next->get_parent() == item) {
-						depth += 1;
-					} else {
-						TreeItem *common_parent = item->get_parent();
-						while (common_parent != next->get_parent() && common_parent) {
-							common_parent = common_parent->get_parent();
-							depth -= 1;
+		if (root && !columns[p_column].clip_content) {
+			int depth = 1;
+
+			TreeItem *last = nullptr;
+			TreeItem *first = hide_root ? root->get_next_visible() : root;
+			for (TreeItem *item = first; item; last = item, item = item->get_next_visible()) {
+				// Get column indentation.
+				int indent;
+				if (p_column == 0) {
+					if (last) {
+						if (item->parent == last) {
+							depth += 1;
+						} else if (item->parent != last->parent) {
+							depth = hide_root ? 0 : 1;
+							for (TreeItem *iter = item->parent; iter; iter = iter->parent) {
+								depth += 1;
+							}
 						}
 					}
+					indent = theme_cache.item_margin * depth;
+				} else {
+					indent = theme_cache.h_separation;
 				}
 
 				// Get the item minimum size.
 				Size2 item_size = item->get_minimum_size(p_column);
-				if (p_column == 0) {
-					item_size.width += theme_cache.item_margin * depth;
-				} else {
-					item_size.width += theme_cache.h_separation;
-				}
+				item_size.width += indent;
 
 				// Check if the item is wider.
 				min_width = MAX(min_width, item_size.width);
@@ -4962,6 +4978,7 @@ void Tree::set_column_titles_visible(bool p_show) {
 
 	show_column_titles = p_show;
 	queue_redraw();
+	update_minimum_size();
 }
 
 bool Tree::are_column_titles_visible() const {
@@ -5260,6 +5277,86 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 	return nullptr;
 }
 
+// When on a button, r_index is valid.
+// When on an item, both r_item and r_column are valid.
+// Otherwise, all output arguments are invalid.
+void Tree::_find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_column, int &r_index) const {
+	r_item = nullptr;
+	r_column = -1;
+	r_index = -1;
+
+	if (!root) {
+		return;
+	}
+
+	Point2 pos = p_pos - theme_cache.panel_style->get_offset();
+	pos.y -= _get_title_button_height();
+	if (pos.y < 0) {
+		return;
+	}
+
+	if (cache.rtl) {
+		pos.x = get_size().width - pos.x;
+	}
+	pos += theme_cache.offset; // Scrolling.
+
+	int col, h, section;
+	TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
+	if (!it) {
+		return;
+	}
+
+	r_item = it;
+	r_column = col;
+
+	const TreeItem::Cell &c = it->cells[col];
+	if (c.buttons.is_empty()) {
+		return;
+	}
+
+	int x_limit = get_size().width - theme_cache.panel_style->get_minimum_size().width + theme_cache.offset.x;
+	if (v_scroll->is_visible_in_tree()) {
+		x_limit -= v_scroll->get_minimum_size().width;
+	}
+
+	for (int i = 0; i < col; i++) {
+		const int col_w = get_column_width(i) + theme_cache.h_separation;
+		pos.x -= col_w;
+		x_limit -= col_w;
+	}
+
+	int x_check;
+	if (cache.rtl) {
+		x_check = get_column_width(col);
+	} else {
+		// Right edge of the buttons area, relative to the start of the column.
+		int buttons_area_min = 0;
+		if (col == 0) {
+			// Content of column 0 should take indentation into account.
+			for (TreeItem *current = it; current && (current != root || !hide_root); current = current->parent) {
+				buttons_area_min += theme_cache.item_margin;
+			}
+		}
+		for (int i = c.buttons.size() - 1; i >= 0; i--) {
+			Ref<Texture2D> b = c.buttons[i].texture;
+			buttons_area_min += b->get_size().width + theme_cache.button_pressed->get_minimum_size().width + theme_cache.button_margin;
+		}
+
+		x_check = MAX(buttons_area_min, MIN(get_column_width(col), x_limit));
+	}
+
+	for (int i = c.buttons.size() - 1; i >= 0; i--) {
+		Ref<Texture2D> b = c.buttons[i].texture;
+		Size2 size = b->get_size() + theme_cache.button_pressed->get_minimum_size();
+		if (pos.x > x_check - size.width) {
+			x_limit -= theme_cache.item_margin;
+			r_index = i;
+			return;
+		}
+		x_check -= size.width + theme_cache.button_margin;
+	}
+}
+
 int Tree::get_column_at_position(const Point2 &p_pos) const {
 	if (root) {
 		Point2 pos = p_pos;
@@ -5351,84 +5448,37 @@ TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
 }
 
 int Tree::get_button_id_at_position(const Point2 &p_pos) const {
-	if (root) {
-		Point2 pos = p_pos;
-		pos -= theme_cache.panel_style->get_offset();
-		pos.y -= _get_title_button_height();
-		if (pos.y < 0) {
-			return -1;
-		}
+	TreeItem *it;
+	int col, index;
+	_find_button_at_pos(p_pos, it, col, index);
 
-		if (h_scroll->is_visible_in_tree()) {
-			pos.x += h_scroll->get_value();
-		}
-		if (v_scroll->is_visible_in_tree()) {
-			pos.y += v_scroll->get_value();
-		}
-
-		int col, h, section;
-		TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
-
-		if (it) {
-			const TreeItem::Cell &c = it->cells[col];
-			int col_width = get_column_width(col);
-
-			for (int i = 0; i < col; i++) {
-				pos.x -= get_column_width(i);
-			}
-
-			for (int j = c.buttons.size() - 1; j >= 0; j--) {
-				Ref<Texture2D> b = c.buttons[j].texture;
-				Size2 size = b->get_size() + theme_cache.button_pressed->get_minimum_size();
-				if (pos.x > col_width - size.width) {
-					return c.buttons[j].id;
-				}
-				col_width -= size.width;
-			}
-		}
+	if (index == -1) {
+		return -1;
 	}
-
-	return -1;
+	return it->cells[col].buttons[index].id;
 }
 
 String Tree::get_tooltip(const Point2 &p_pos) const {
-	if (root) {
-		Point2 pos = p_pos;
-		pos -= theme_cache.panel_style->get_offset();
-		pos.y -= _get_title_button_height();
-		if (pos.y < 0) {
-			return Control::get_tooltip(p_pos);
-		}
+	Point2 pos = p_pos - theme_cache.panel_style->get_offset();
+	pos.y -= _get_title_button_height();
+	if (pos.y < 0) {
+		return Control::get_tooltip(p_pos);
+	}
 
-		Point2 button_pos = pos;
-		if (h_scroll->is_visible_in_tree()) {
-			pos.x += h_scroll->get_value();
-		}
-		if (v_scroll->is_visible_in_tree()) {
-			pos.y += v_scroll->get_value();
-		}
+	TreeItem *it;
+	int col, index;
+	_find_button_at_pos(p_pos, it, col, index);
 
-		int col, h, section;
-		TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
+	if (index != -1) {
+		return it->cells[col].buttons[index].tooltip;
+	}
 
-		if (it) {
-			const TreeItem::Cell &c = it->cells[col];
-			for (int j = c.buttons.size() - 1; j >= 0; j--) {
-				if (c.buttons[j].rect.has_point(button_pos)) {
-					String tooltip = c.buttons[j].tooltip;
-					if (!tooltip.is_empty()) {
-						return tooltip;
-					}
-				}
-			}
-			String ret;
-			if (it->get_tooltip_text(col) == "") {
-				ret = it->get_text(col);
-			} else {
-				ret = it->get_tooltip_text(col);
-			}
-			return ret;
+	if (it) {
+		const String item_tooltip = it->get_tooltip_text(col);
+		if (item_tooltip.is_empty()) {
+			return it->get_text(col);
 		}
+		return item_tooltip;
 	}
 
 	return Control::get_tooltip(p_pos);

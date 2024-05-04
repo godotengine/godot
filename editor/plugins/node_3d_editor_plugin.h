@@ -31,7 +31,7 @@
 #ifndef NODE_3D_EDITOR_PLUGIN_H
 #define NODE_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"

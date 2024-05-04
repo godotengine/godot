@@ -96,9 +96,9 @@ class FindReplaceBar : public HBoxContainer {
 
 	void _get_search_from(int &r_line, int &r_col, bool p_is_searching_next = false);
 	void _update_results_count();
-	void _update_matches_label();
+	void _update_matches_display();
 
-	void _show_search(bool p_focus_replace = false, bool p_show_only = false);
+	void _show_search(bool p_with_replace, bool p_show_only);
 	void _hide_bar(bool p_force_focus = false);
 
 	void _editor_text_changed();
@@ -174,6 +174,8 @@ class CodeTextEditor : public VBoxContainer {
 	int error_line;
 	int error_column;
 
+	Dictionary previous_state;
+
 	void _update_text_editor_theme();
 	void _update_font_ligatures();
 	void _complete_request();
@@ -205,9 +207,6 @@ class CodeTextEditor : public VBoxContainer {
 
 	void _toggle_scripts_pressed();
 
-	int _get_affected_lines_from(int p_caret);
-	int _get_affected_lines_to(int p_caret);
-
 protected:
 	virtual void _load_theme_settings() {}
 	virtual void _validate_script() {}
@@ -236,11 +235,6 @@ public:
 
 	void set_indent_using_spaces(bool p_use_spaces);
 
-	void move_lines_up();
-	void move_lines_down();
-	void delete_lines();
-	void duplicate_selection();
-
 	/// Toggle inline comment on currently selected lines, or on current line if nothing is selected,
 	/// by adding or removing comment delimiter
 	void toggle_inline_comment(const String &delimiter);
@@ -254,6 +248,8 @@ public:
 	Variant get_edit_state();
 	void set_edit_state(const Variant &p_state);
 	Variant get_navigation_state();
+	Variant get_previous_state();
+	void store_previous_state();
 
 	void set_error_count(int p_error_count);
 	void set_warning_count(int p_warning_count);

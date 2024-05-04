@@ -285,7 +285,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_shaped_text_get_line_breaks_adv, "shaped", "width", "start", "once", "break_flags");
 	GDVIRTUAL_BIND(_shaped_text_get_line_breaks, "shaped", "width", "start", "break_flags");
-	GDVIRTUAL_BIND(_shaped_text_get_word_breaks, "shaped", "grapheme_flags");
+	GDVIRTUAL_BIND(_shaped_text_get_word_breaks, "shaped", "grapheme_flags", "skip_grapheme_flags");
 
 	GDVIRTUAL_BIND(_shaped_text_get_trim_pos, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_ellipsis_pos, "shaped");
@@ -332,6 +332,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_strip_diacritics, "string");
 	GDVIRTUAL_BIND(_is_valid_identifier, "string");
+	GDVIRTUAL_BIND(_is_valid_letter, "unicode");
 
 	GDVIRTUAL_BIND(_string_get_word_breaks, "string", "language", "chars_per_line");
 	GDVIRTUAL_BIND(_string_get_character_breaks, "string", "language");
@@ -1256,12 +1257,12 @@ PackedInt32Array TextServerExtension::shaped_text_get_line_breaks(const RID &p_s
 	return TextServer::shaped_text_get_line_breaks(p_shaped, p_width, p_start, p_break_flags);
 }
 
-PackedInt32Array TextServerExtension::shaped_text_get_word_breaks(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags) const {
+PackedInt32Array TextServerExtension::shaped_text_get_word_breaks(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags, BitField<TextServer::GraphemeFlag> p_skip_grapheme_flags) const {
 	PackedInt32Array ret;
-	if (GDVIRTUAL_CALL(_shaped_text_get_word_breaks, p_shaped, p_grapheme_flags, ret)) {
+	if (GDVIRTUAL_CALL(_shaped_text_get_word_breaks, p_shaped, p_grapheme_flags, p_skip_grapheme_flags, ret)) {
 		return ret;
 	}
-	return TextServer::shaped_text_get_word_breaks(p_shaped, p_grapheme_flags);
+	return TextServer::shaped_text_get_word_breaks(p_shaped, p_grapheme_flags, p_skip_grapheme_flags);
 }
 
 int64_t TextServerExtension::shaped_text_get_trim_pos(const RID &p_shaped) const {
@@ -1490,6 +1491,14 @@ bool TextServerExtension::is_valid_identifier(const String &p_string) const {
 		return ret;
 	}
 	return TextServer::is_valid_identifier(p_string);
+}
+
+bool TextServerExtension::is_valid_letter(char32_t p_unicode) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_is_valid_letter, p_unicode, ret)) {
+		return ret;
+	}
+	return TextServer::is_valid_letter(p_unicode);
 }
 
 String TextServerExtension::strip_diacritics(const String &p_string) const {

@@ -1013,7 +1013,6 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 		if (!p_node) {
 			selected = nullptr;
 		}
-		_update_tree();
 		selected = p_node;
 	}
 

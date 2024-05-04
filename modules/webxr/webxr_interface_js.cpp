@@ -164,8 +164,8 @@ bool WebXRInterfaceJS::is_input_source_active(int p_input_source_id) const {
 	return input_sources[p_input_source_id].active;
 }
 
-Ref<XRPositionalTracker> WebXRInterfaceJS::get_input_source_tracker(int p_input_source_id) const {
-	ERR_FAIL_INDEX_V(p_input_source_id, input_source_count, Ref<XRPositionalTracker>());
+Ref<XRControllerTracker> WebXRInterfaceJS::get_input_source_tracker(int p_input_source_id) const {
+	ERR_FAIL_INDEX_V(p_input_source_id, input_source_count, Ref<XRControllerTracker>());
 	return input_sources[p_input_source_id].tracker;
 }
 
@@ -307,7 +307,7 @@ void WebXRInterfaceJS::uninitialize() {
 
 			for (int i = 0; i < HAND_MAX; i++) {
 				if (hand_trackers[i].is_valid()) {
-					xr_server->remove_hand_tracker(i == 0 ? "/user/left" : "/user/right");
+					xr_server->remove_tracker(hand_trackers[i]);
 
 					hand_trackers[i].unref();
 				}
@@ -616,7 +616,7 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 	input_source.target_ray_mode = (WebXRInterface::TargetRayMode)tmp_target_ray_mode;
 	input_source.touch_index = touch_index;
 
-	Ref<XRPositionalTracker> &tracker = input_source.tracker;
+	Ref<XRControllerTracker> &tracker = input_source.tracker;
 
 	if (tracker.is_null()) {
 		tracker.instantiate();
@@ -630,7 +630,6 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 
 		// Input source id's 0 and 1 are always the left and right hands.
 		if (p_input_source_id < 2) {
-			tracker->set_tracker_type(XRServer::TRACKER_CONTROLLER);
 			tracker->set_tracker_name(tracker_name);
 			tracker->set_tracker_desc(p_input_source_id == 0 ? "Left hand controller" : "Right hand controller");
 			tracker->set_tracker_hand(p_input_source_id == 0 ? XRPositionalTracker::TRACKER_HAND_LEFT : XRPositionalTracker::TRACKER_HAND_RIGHT);
@@ -714,7 +713,8 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 
 			if (unlikely(hand_tracker.is_null())) {
 				hand_tracker.instantiate();
-				hand_tracker->set_hand(p_input_source_id == 0 ? XRHandTracker::HAND_LEFT : XRHandTracker::HAND_RIGHT);
+				hand_tracker->set_tracker_hand(p_input_source_id == 0 ? XRPositionalTracker::TRACKER_HAND_LEFT : XRPositionalTracker::TRACKER_HAND_RIGHT);
+				hand_tracker->set_tracker_name(p_input_source_id == 0 ? "/user/hand_tracker/left" : "/user/hand_tracker/right");
 
 				// These flags always apply, since WebXR doesn't give us enough insight to be more fine grained.
 				BitField<XRHandTracker::HandJointFlags> joint_flags(XRHandTracker::HAND_JOINT_FLAG_POSITION_VALID | XRHandTracker::HAND_JOINT_FLAG_ORIENTATION_VALID | XRHandTracker::HAND_JOINT_FLAG_POSITION_TRACKED | XRHandTracker::HAND_JOINT_FLAG_ORIENTATION_TRACKED);
@@ -723,7 +723,7 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 				}
 
 				hand_trackers[p_input_source_id] = hand_tracker;
-				xr_server->add_hand_tracker(p_input_source_id == 0 ? "/user/left" : "/user/right", hand_tracker);
+				xr_server->add_tracker(hand_tracker);
 			}
 
 			hand_tracker->set_has_tracking_data(true);
@@ -746,10 +746,12 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 				Transform3D palm_transform;
 				palm_transform.origin = (Vector3(start_pos[0], start_pos[1], start_pos[2]) + Vector3(end_pos[0], end_pos[1], end_pos[2])) / 2.0;
 				hand_tracker->set_hand_joint_transform(XRHandTracker::HAND_JOINT_PALM, palm_transform);
+				hand_tracker->set_pose("default", palm_transform, Vector3(), Vector3());
 			}
 
 		} else if (hand_tracker.is_valid()) {
 			hand_tracker->set_has_tracking_data(false);
+			hand_tracker->invalidate_pose("default");
 		}
 	}
 }

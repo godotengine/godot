@@ -46,6 +46,8 @@
 #ifdef GLES3_ENABLED
 #include "detect_prime_egl.h"
 #include "drivers/gles3/rasterizer_gles3.h"
+#include "wayland/egl_manager_wayland.h"
+#include "wayland/egl_manager_wayland_gles.h"
 #endif
 
 String DisplayServerWayland::_get_app_id_from_context(Context p_context) {
@@ -1161,6 +1163,12 @@ void DisplayServerWayland::process_events() {
 		}
 	}
 
+#ifdef DBUS_ENABLED
+	if (portal_desktop) {
+		portal_desktop->process_file_dialog_callbacks();
+	}
+#endif
+
 	wayland_thread.mutex.unlock();
 
 	Input::get_singleton()->flush_buffered_events();
@@ -1170,14 +1178,6 @@ void DisplayServerWayland::release_rendering_thread() {
 #ifdef GLES3_ENABLED
 	if (egl_manager) {
 		egl_manager->release_current();
-	}
-#endif
-}
-
-void DisplayServerWayland::make_rendering_thread() {
-#ifdef GLES3_ENABLED
-	if (egl_manager) {
-		egl_manager->make_current();
 	}
 #endif
 }
@@ -1210,6 +1210,7 @@ Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 
 #ifdef GLES3_ENABLED
 	drivers.push_back("opengl3");
+	drivers.push_back("opengl3_es");
 #endif
 
 	return drivers;
@@ -1260,14 +1261,14 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 #ifdef RD_ENABLED
 #ifdef VULKAN_ENABLED
-	if (p_rendering_driver == "vulkan") {
+	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanWayland);
 	}
 #endif
 
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
-			ERR_PRINT(vformat("Could not initialize %s", p_rendering_driver));
+			ERR_PRINT(vformat("Could not initialize %s", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;
 			r_error = ERR_CANT_CREATE;
@@ -1277,7 +1278,14 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #endif
 
 #ifdef GLES3_ENABLED
-	if (p_rendering_driver == "opengl3") {
+	if (rendering_driver == "opengl3" || rendering_driver == "opengl3_es") {
+#ifdef SOWRAP_ENABLED
+		if (initialize_wayland_egl(dylibloader_verbose) != 0) {
+			WARN_PRINT("Can't load the Wayland EGL library.");
+			return;
+		}
+#endif // SOWRAP_ENABLED
+
 		if (getenv("DRI_PRIME") == nullptr) {
 			int prime_idx = -1;
 
@@ -1320,23 +1328,38 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 			}
 		}
 
-		egl_manager = memnew(EGLManagerWayland);
+		if (rendering_driver == "opengl3") {
+			egl_manager = memnew(EGLManagerWayland);
 
-#ifdef SOWRAP_ENABLED
-		if (initialize_wayland_egl(dylibloader_verbose) != 0) {
-			WARN_PRINT("Can't load the Wayland EGL library.");
-			return;
+			if (egl_manager->initialize() != OK || egl_manager->open_display(wayland_thread.get_wl_display()) != OK) {
+				memdelete(egl_manager);
+				egl_manager = nullptr;
+
+				bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_gles");
+				if (fallback) {
+					WARN_PRINT("Your video card drivers seem not to support the required OpenGL version, switching to OpenGLES.");
+					rendering_driver = "opengl3_es";
+				} else {
+					r_error = ERR_UNAVAILABLE;
+					ERR_FAIL_MSG("Could not initialize OpenGL.");
+				}
+			} else {
+				RasterizerGLES3::make_current(true);
+			}
 		}
-#endif // SOWRAP_ENABLED
 
-		if (egl_manager->initialize() != OK) {
-			memdelete(egl_manager);
-			egl_manager = nullptr;
-			r_error = ERR_CANT_CREATE;
-			ERR_FAIL_MSG("Could not initialize GLES3.");
+		if (rendering_driver == "opengl3_es") {
+			egl_manager = memnew(EGLManagerWaylandGLES);
+
+			if (egl_manager->initialize() != OK) {
+				memdelete(egl_manager);
+				egl_manager = nullptr;
+				r_error = ERR_CANT_CREATE;
+				ERR_FAIL_MSG("Could not initialize GLES3.");
+			}
+
+			RasterizerGLES3::make_current(false);
 		}
-
-		RasterizerGLES3::make_current(true);
 	}
 #endif // GLES3_ENABLED
 

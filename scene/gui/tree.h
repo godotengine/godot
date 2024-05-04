@@ -108,7 +108,6 @@ private:
 			Ref<Texture2D> texture;
 			Color color = Color(1, 1, 1, 1);
 			String tooltip;
-			Rect2i rect;
 		};
 
 		Vector<Button> buttons;
@@ -645,6 +644,8 @@ private:
 	TreeItem *_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards = false);
 
 	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &h, int &section) const;
+
+	void _find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_column, int &r_index) const;
 
 	/*	float drag_speed;
 	float drag_accum;

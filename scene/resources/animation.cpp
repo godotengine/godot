@@ -247,6 +247,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 					}
 					vt->update_mode = UpdateMode(um);
 				}
+				capture_included = capture_included || (vt->update_mode == UPDATE_CAPTURE);
 
 				Vector<real_t> times = d["times"];
 				Array values = d["values"];
@@ -966,6 +967,28 @@ void Animation::remove_track(int p_track) {
 	memdelete(t);
 	tracks.remove_at(p_track);
 	emit_changed();
+	_check_capture_included();
+}
+
+void Animation::set_capture_included(bool p_capture_included) {
+	capture_included = p_capture_included;
+}
+
+bool Animation::is_capture_included() const {
+	return capture_included;
+}
+
+void Animation::_check_capture_included() {
+	capture_included = false;
+	for (int i = 0; i < tracks.size(); i++) {
+		if (tracks[i]->type == TYPE_VALUE) {
+			ValueTrack *vt = static_cast<ValueTrack *>(tracks[i]);
+			if (vt->update_mode == UPDATE_CAPTURE) {
+				capture_included = true;
+				break;
+			}
+		}
+	}
 }
 
 int Animation::get_track_count() const {
@@ -2681,6 +2704,8 @@ void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
 
 	ValueTrack *vt = static_cast<ValueTrack *>(t);
 	vt->update_mode = p_mode;
+
+	_check_capture_included();
 	emit_changed();
 }
 
@@ -3870,9 +3895,13 @@ void Animation::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("compress", "page_size", "fps", "split_tolerance"), &Animation::compress, DEFVAL(8192), DEFVAL(120), DEFVAL(4.0));
 
+	ClassDB::bind_method(D_METHOD("_set_capture_included", "capture_included"), &Animation::set_capture_included);
+	ClassDB::bind_method(D_METHOD("is_capture_included"), &Animation::is_capture_included);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_RANGE, "0.001,99999,0.001,suffix:s"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Ping-Pong"), "set_loop_mode", "get_loop_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step", PROPERTY_HINT_RANGE, "0,4096,0.001,suffix:s"), "set_step", "get_step");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "capture_included", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY | PROPERTY_USAGE_NO_EDITOR), "_set_capture_included", "is_capture_included");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_POSITION_3D);

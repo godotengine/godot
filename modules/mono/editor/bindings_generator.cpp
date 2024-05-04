@@ -330,6 +330,8 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 				output.append("'" BINDINGS_NAMESPACE ".Vector3[]'");
 			} else if (tag == "PackedColorArray") {
 				output.append("'" BINDINGS_NAMESPACE ".Color[]'");
+			} else if (tag == "PackedVector4Array") {
+				output.append("'" BINDINGS_NAMESPACE ".Vector4[]'");
 			} else {
 				const TypeInterface *target_itype = _get_type_or_null(TypeReference(tag));
 
@@ -646,6 +648,8 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector3\"/>[]");
 			} else if (tag == "PackedColorArray") {
 				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Color\"/>[]");
+			} else if (tag == "PackedVector4Array") {
+				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector4\"/>[]");
 			} else {
 				const TypeInterface *target_itype = _get_type_or_null(TypeReference(tag));
 
@@ -2581,6 +2585,10 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 		p_output.append("\")]");
 	}
 
+	if (p_iprop.is_hidden) {
+		p_output.append(MEMBER_BEGIN "[EditorBrowsable(EditorBrowsableState.Never)]");
+	}
+
 	p_output.append(MEMBER_BEGIN "public ");
 
 	if (prop_allowed_inherited_member_hiding.has(p_itype.proxy_name + "." + p_iprop.proxy_name)) {
@@ -2840,7 +2848,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			p_output.append("\")]");
 		}
 
-		if (p_imethod.is_compat) {
+		if (p_imethod.is_hidden) {
 			p_output.append(MEMBER_BEGIN "[EditorBrowsable(EditorBrowsableState.Never)]");
 		}
 
@@ -3512,6 +3520,7 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 		case Variant::PACKED_STRING_ARRAY:
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
 		case Variant::PACKED_COLOR_ARRAY:
 		case Variant::CALLABLE:
 		case Variant::SIGNAL:
@@ -3654,11 +3663,16 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
 			iprop.getter = ClassDB::get_property_getter(type_cname, iprop.cname);
 
-			if (iprop.setter != StringName()) {
-				accessor_methods[iprop.setter] = iprop.cname;
-			}
-			if (iprop.getter != StringName()) {
-				accessor_methods[iprop.getter] = iprop.cname;
+			// If the property is internal hide it; otherwise, hide the getter and setter.
+			if (property.usage & PROPERTY_USAGE_INTERNAL) {
+				iprop.is_hidden = true;
+			} else {
+				if (iprop.setter != StringName()) {
+					accessor_methods[iprop.setter] = iprop.cname;
+				}
+				if (iprop.getter != StringName()) {
+					accessor_methods[iprop.getter] = iprop.cname;
+				}
 			}
 
 			bool valid = false;
@@ -3860,10 +3874,10 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			HashMap<StringName, StringName>::Iterator accessor = accessor_methods.find(imethod.cname);
 			if (accessor) {
-				// We only make internal an accessor method if it's in the same class as the property.
+				// We only hide an accessor method if it's in the same class as the property.
 				// It's easier this way, but also we don't know if an accessor method in a different class
 				// could have other purposes, so better leave those untouched.
-				imethod.is_internal = true;
+				imethod.is_hidden = true;
 			}
 
 			if (itype.class_doc) {
@@ -3892,6 +3906,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			// after all the non-compat methods have been added. The compat methods are added in
 			// reverse so the most recently added ones take precedence over older compat methods.
 			if (imethod.is_compat) {
+				imethod.is_hidden = true;
 				compat_methods.push_front(imethod);
 				continue;
 			}
@@ -4236,6 +4251,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 		case Variant::PACKED_STRING_ARRAY:
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
 		case Variant::PACKED_COLOR_ARRAY:
 			r_iarg.default_argument = "Array.Empty<%s>()";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
@@ -4575,6 +4591,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	INSERT_ARRAY(PackedColorArray, godot_packed_color_array, Color);
 	INSERT_ARRAY(PackedVector2Array, godot_packed_vector2_array, Vector2);
 	INSERT_ARRAY(PackedVector3Array, godot_packed_vector3_array, Vector3);
+	INSERT_ARRAY(PackedVector4Array, godot_packed_vector4_array, Vector4);
 
 #undef INSERT_ARRAY
 
@@ -4842,7 +4859,7 @@ static void handle_cmdline_options(String glue_dir_path) {
 }
 
 static void cleanup_and_exit_godot() {
-	// Exit once done
+	// Exit once done.
 	Main::cleanup(true);
 	::exit(0);
 }
@@ -4861,7 +4878,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				elem = elem->next();
 			} else {
 				ERR_PRINT(generate_all_glue_option + ": No output directory specified (expected path to '{GODOT_ROOT}/modules/mono/glue').");
-				// Exit once done with invalid command line arguments
+				// Exit once done with invalid command line arguments.
 				cleanup_and_exit_godot();
 			}
 
@@ -4872,8 +4889,14 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 	}
 
 	if (glue_dir_path.length()) {
-		handle_cmdline_options(glue_dir_path);
-		// Exit once done
+		if (Engine::get_singleton()->is_editor_hint() ||
+				Engine::get_singleton()->is_project_manager_hint()) {
+			handle_cmdline_options(glue_dir_path);
+		} else {
+			// Running from a project folder, which doesn't make sense and crashes.
+			ERR_PRINT(generate_all_glue_option + ": Cannot generate Mono glue while running a game project. Change current directory or enable --editor.");
+		}
+		// Exit once done.
 		cleanup_and_exit_godot();
 	}
 }

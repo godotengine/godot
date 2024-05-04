@@ -577,8 +577,7 @@ void RenderSceneBuffersGLES3::check_glow_buffers() {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	Size2i level_size = internal_size;
 	for (int i = 0; i < 4; i++) {
-		level_size.x = MAX(level_size.x >> 1, 4);
-		level_size.y = MAX(level_size.y >> 1, 4);
+		level_size = Size2i(level_size.x >> 1, level_size.y >> 1).maxi(4);
 
 		glow.levels[i].size = level_size;
 

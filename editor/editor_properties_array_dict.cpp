@@ -39,7 +39,9 @@
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/inspector_dock.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/button.h"
+#include "scene/gui/margin_container.h"
 #include "scene/resources/packed_scene.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
@@ -352,8 +354,7 @@ void EditorPropertyArray::update_property() {
 		updating = true;
 
 		if (!container) {
-			container = memnew(MarginContainer);
-			container->set_theme_type_variation("MarginContainer4px");
+			container = memnew(PanelContainer);
 			container->set_mouse_filter(MOUSE_FILTER_STOP);
 			add_child(container);
 			set_bottom_editor(container);
@@ -389,6 +390,8 @@ void EditorPropertyArray::update_property() {
 			paginator = memnew(EditorPaginator);
 			paginator->connect("page_changed", callable_mp(this, &EditorPropertyArray::_page_changed));
 			vbox->add_child(paginator);
+
+			_update_property_bg();
 
 			for (int i = 0; i < page_length; i++) {
 				_create_new_property_slot();
@@ -451,6 +454,7 @@ void EditorPropertyArray::update_property() {
 			memdelete(container);
 			button_add_item = nullptr;
 			container = nullptr;
+			_update_property_bg();
 			slots.clear();
 		}
 	}
@@ -624,6 +628,10 @@ Node *EditorPropertyArray::get_base_node() {
 void EditorPropertyArray::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
+			if (EditorThemeManager::is_generated_theme_outdated()) {
+				_update_property_bg();
+			}
+			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {
 			change_type->clear();
 			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -814,6 +822,10 @@ void EditorPropertyArray::_reorder_button_up() {
 	_page_changed(page_index);
 }
 
+bool EditorPropertyArray::is_colored(ColorationMode p_mode) {
+	return p_mode == COLORATION_CONTAINER_RESOURCE;
+}
+
 void EditorPropertyArray::_bind_methods() {
 }
 
@@ -973,8 +985,7 @@ void EditorPropertyDictionary::update_property() {
 		updating = true;
 
 		if (!container) {
-			container = memnew(MarginContainer);
-			container->set_theme_type_variation("MarginContainer4px");
+			container = memnew(PanelContainer);
 			container->set_mouse_filter(MOUSE_FILTER_STOP);
 			add_child(container);
 			set_bottom_editor(container);
@@ -989,6 +1000,7 @@ void EditorPropertyDictionary::update_property() {
 			paginator = memnew(EditorPaginator);
 			paginator->connect("page_changed", callable_mp(this, &EditorPropertyDictionary::_page_changed));
 			vbox->add_child(paginator);
+			_update_property_bg();
 
 			for (int i = 0; i < page_length; i++) {
 				_create_new_property_slot(slots.size());
@@ -996,7 +1008,7 @@ void EditorPropertyDictionary::update_property() {
 
 			add_panel = memnew(PanelContainer);
 			property_vbox->add_child(add_panel);
-			add_panel->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("DictionaryAddItem"), EditorStringName(EditorStyles)));
+			add_panel->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("DictionaryAddItem")));
 			VBoxContainer *add_vbox = memnew(VBoxContainer);
 			add_panel->add_child(add_vbox);
 
@@ -1063,6 +1075,7 @@ void EditorPropertyDictionary::update_property() {
 			memdelete(container);
 			button_add_item = nullptr;
 			container = nullptr;
+			_update_property_bg();
 			add_panel = nullptr;
 			slots.clear();
 		}
@@ -1076,6 +1089,10 @@ void EditorPropertyDictionary::_object_id_selected(const StringName &p_property,
 void EditorPropertyDictionary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
+			if (EditorThemeManager::is_generated_theme_outdated()) {
+				_update_property_bg();
+			}
+			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {
 			change_type->clear();
 			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -1124,6 +1141,10 @@ void EditorPropertyDictionary::_page_changed(int p_page) {
 }
 
 void EditorPropertyDictionary::_bind_methods() {
+}
+
+bool EditorPropertyDictionary::is_colored(ColorationMode p_mode) {
+	return p_mode == COLORATION_CONTAINER_RESOURCE;
 }
 
 EditorPropertyDictionary::EditorPropertyDictionary() {

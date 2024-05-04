@@ -300,14 +300,23 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 #endif
 
 				String out_file = next.get_basename() + ".out";
-				if (!is_generating && !dir->file_exists(out_file)) {
-					ERR_FAIL_V_MSG(false, "Could not find output file for " + next);
+				ERR_FAIL_COND_V_MSG(!is_generating && !dir->file_exists(out_file), false, "Could not find output file for " + next);
+
+				if (next.ends_with(".bin.gd")) {
+					// Test text mode first.
+					GDScriptTest text_test(current_dir.path_join(next), current_dir.path_join(out_file), source_dir);
+					tests.push_back(text_test);
+					// Test binary mode even without `--use-binary-tokens`.
+					GDScriptTest bin_test(current_dir.path_join(next), current_dir.path_join(out_file), source_dir);
+					bin_test.set_tokenizer_mode(GDScriptTest::TOKENIZER_BUFFER);
+					tests.push_back(bin_test);
+				} else {
+					GDScriptTest test(current_dir.path_join(next), current_dir.path_join(out_file), source_dir);
+					if (binary_tokens) {
+						test.set_tokenizer_mode(GDScriptTest::TOKENIZER_BUFFER);
+					}
+					tests.push_back(test);
 				}
-				GDScriptTest test(current_dir.path_join(next), current_dir.path_join(out_file), source_dir);
-				if (binary_tokens) {
-					test.set_tokenizer_mode(GDScriptTest::TOKENIZER_BUFFER);
-				}
-				tests.push_back(test);
 			}
 		}
 

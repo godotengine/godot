@@ -89,6 +89,7 @@ public:
 	virtual uint64_t get_space_left() override;
 
 	static void setup(jobject p_dir_access_handler);
+	static void terminate();
 
 	DirAccessJAndroid();
 	~DirAccessJAndroid();

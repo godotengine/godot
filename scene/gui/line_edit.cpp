@@ -771,7 +771,7 @@ void LineEdit::_notification(int p_what) {
 	switch (p_what) {
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_ENTER_TREE: {
-			if (Engine::get_singleton()->is_editor_hint() && !get_tree()->is_node_being_edited(this)) {
+			if (Engine::get_singleton()->is_editor_hint() && !is_part_of_edited_scene()) {
 				set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
 				set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
 

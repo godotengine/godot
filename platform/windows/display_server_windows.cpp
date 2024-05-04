@@ -545,7 +545,7 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 					result->Release();
 				}
 			}
-			if (!p_callback.is_null()) {
+			if (p_callback.is_valid()) {
 				if (p_options_in_cb) {
 					Variant v_result = true;
 					Variant v_files = file_names;
@@ -574,7 +574,7 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 				}
 			}
 		} else {
-			if (!p_callback.is_null()) {
+			if (p_callback.is_valid()) {
 				if (p_options_in_cb) {
 					Variant v_result = false;
 					Variant v_files = Vector<String>();
@@ -2556,7 +2556,7 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 		int button_pressed;
 
 		if (task_dialog_indirect && SUCCEEDED(task_dialog_indirect(&config, &button_pressed, nullptr, nullptr))) {
-			if (!p_callback.is_null()) {
+			if (p_callback.is_valid()) {
 				Variant button = button_pressed;
 				const Variant *args[1] = { &button };
 				Variant ret;
@@ -2962,7 +2962,7 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 }
 
 void DisplayServerWindows::process_events() {
-	_THREAD_SAFE_METHOD_
+	_THREAD_SAFE_LOCK_
 
 	MSG msg;
 
@@ -2977,7 +2977,10 @@ void DisplayServerWindows::process_events() {
 
 	if (!drop_events) {
 		_process_key_events();
+		_THREAD_SAFE_UNLOCK_
 		Input::get_singleton()->flush_buffered_events();
+	} else {
+		_THREAD_SAFE_UNLOCK_
 	}
 }
 
@@ -2990,9 +2993,14 @@ void DisplayServerWindows::force_process_and_drop_events() {
 }
 
 void DisplayServerWindows::release_rendering_thread() {
-}
-
-void DisplayServerWindows::make_rendering_thread() {
+#if defined(GLES3_ENABLED)
+	if (gl_manager_angle) {
+		gl_manager_angle->release_current();
+	}
+	if (gl_manager_native) {
+		gl_manager_native->release_current();
+	}
+#endif
 }
 
 void DisplayServerWindows::swap_buffers() {
@@ -3163,14 +3171,12 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	}
 }
 
-DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) {
+DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
 	HICON hicon = nullptr;
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
-		Ref<Image> img = p_icon;
-		if (img != icon) {
-			img = img->duplicate();
-			img->convert(Image::FORMAT_RGBA8);
-		}
+		Ref<Image> img = p_icon->get_image();
+		img = img->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
 
 		int w = img->get_width();
 		int h = img->get_height();
@@ -3233,16 +3239,14 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 	return iid;
 }
 
-void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) {
+void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_COND(!indicators.has(p_id));
 
 	HICON hicon = nullptr;
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
-		Ref<Image> img = p_icon;
-		if (img != icon) {
-			img = img->duplicate();
-			img->convert(Image::FORMAT_RGBA8);
-		}
+		Ref<Image> img = p_icon->get_image();
+		img = img->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
 
 		int w = img->get_width();
 		int h = img->get_height();
@@ -3309,10 +3313,40 @@ void DisplayServerWindows::status_indicator_set_tooltip(IndicatorID p_id, const 
 	Shell_NotifyIconW(NIM_MODIFY, &ndat);
 }
 
+void DisplayServerWindows::status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	indicators[p_id].menu_rid = p_menu_rid;
+}
+
 void DisplayServerWindows::status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) {
 	ERR_FAIL_COND(!indicators.has(p_id));
 
 	indicators[p_id].callback = p_callback;
+}
+
+Rect2 DisplayServerWindows::status_indicator_get_rect(IndicatorID p_id) const {
+	ERR_FAIL_COND_V(!indicators.has(p_id), Rect2());
+
+	NOTIFYICONIDENTIFIER nid;
+	ZeroMemory(&nid, sizeof(NOTIFYICONIDENTIFIER));
+	nid.cbSize = sizeof(NOTIFYICONIDENTIFIER);
+	nid.hWnd = windows[MAIN_WINDOW_ID].hWnd;
+	nid.uID = p_id;
+	nid.guidItem = GUID_NULL;
+
+	RECT rect;
+	if (Shell_NotifyIconGetRect(&nid, &rect) != S_OK) {
+		return Rect2();
+	}
+	Rect2 ind_rect = Rect2(Point2(rect.left, rect.top) - _get_screens_origin(), Size2(rect.right - rect.left, rect.bottom - rect.top));
+	for (int i = 0; i < get_screen_count(); i++) {
+		Rect2 screen_rect = Rect2(screen_get_position(i), screen_get_size(i));
+		if (screen_rect.encloses(ind_rect)) {
+			return ind_rect;
+		}
+	}
+	return Rect2();
 }
 
 void DisplayServerWindows::delete_status_indicator(IndicatorID p_id) {
@@ -3433,7 +3467,6 @@ void DisplayServerWindows::_dispatch_input_events(const Ref<InputEvent> &p_event
 }
 
 void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event) {
-	_THREAD_SAFE_METHOD_
 	if (in_dispatch_input_event) {
 		return;
 	}
@@ -3831,7 +3864,19 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					mb = MouseButton::MB_XBUTTON1;
 				}
 				if (indicators.has(iid)) {
-					if (indicators[iid].callback.is_valid()) {
+					if (lParam == WM_RBUTTONDOWN && indicators[iid].menu_rid.is_valid() && native_menu->has_menu(indicators[iid].menu_rid)) {
+						NOTIFYICONIDENTIFIER nid;
+						ZeroMemory(&nid, sizeof(NOTIFYICONIDENTIFIER));
+						nid.cbSize = sizeof(NOTIFYICONIDENTIFIER);
+						nid.hWnd = windows[MAIN_WINDOW_ID].hWnd;
+						nid.uID = iid;
+						nid.guidItem = GUID_NULL;
+
+						RECT rect;
+						if (Shell_NotifyIconGetRect(&nid, &rect) == S_OK) {
+							native_menu->popup(indicators[iid].menu_rid, Vector2i((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2));
+						}
+					} else if (indicators[iid].callback.is_valid()) {
 						Variant v_button = mb;
 						Variant v_pos = mouse_get_position();
 						Variant *v_args[2] = { &v_button, &v_pos };
@@ -4584,7 +4629,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			if (rect_changed) {
-				if (!window.rect_changed_callback.is_null()) {
+				if (window.rect_changed_callback.is_valid()) {
 					window.rect_changed_callback.call(Rect2i(window.last_pos.x, window.last_pos.y, window.width, window.height));
 				}
 
@@ -4796,7 +4841,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				files.push_back(file);
 			}
 
-			if (files.size() && !windows[window_id].drop_files_callback.is_null()) {
+			if (files.size() && windows[window_id].drop_files_callback.is_valid()) {
 				windows[window_id].drop_files_callback.call(files);
 			}
 		} break;

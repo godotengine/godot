@@ -49,6 +49,7 @@
 #include "extensions/openxr_composition_layer_extension.h"
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_fb_display_refresh_rate_extension.h"
+#include "extensions/openxr_hand_interaction_extension.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "extensions/openxr_htc_controller_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
@@ -124,6 +125,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRML2ControllerExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMetaControllerExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXREyeGazeInteractionExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHandInteractionExtension));
 
 			// register gated extensions
 			if (GLOBAL_GET("xr/openxr/extensions/hand_tracking")) {

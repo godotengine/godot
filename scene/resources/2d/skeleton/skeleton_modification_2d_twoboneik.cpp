@@ -250,7 +250,9 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 
 void SkeletonModification2DTwoBoneIK::update_target_cache() {
 	if (!is_setup || !stack) {
-		ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
+		if (is_setup) {
+			ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
+		}
 		return;
 	}
 
@@ -271,7 +273,9 @@ void SkeletonModification2DTwoBoneIK::update_target_cache() {
 
 void SkeletonModification2DTwoBoneIK::update_joint_one_bone2d_cache() {
 	if (!is_setup || !stack) {
-		ERR_PRINT_ONCE("Cannot update joint one Bone2D cache: modification is not properly setup!");
+		if (is_setup) {
+			ERR_PRINT_ONCE("Cannot update joint one Bone2D cache: modification is not properly setup!");
+		}
 		return;
 	}
 
@@ -299,7 +303,9 @@ void SkeletonModification2DTwoBoneIK::update_joint_one_bone2d_cache() {
 
 void SkeletonModification2DTwoBoneIK::update_joint_two_bone2d_cache() {
 	if (!is_setup || !stack) {
-		ERR_PRINT_ONCE("Cannot update joint two Bone2D cache: modification is not properly setup!");
+		if (is_setup) {
+			ERR_PRINT_ONCE("Cannot update joint two Bone2D cache: modification is not properly setup!");
+		}
 		return;
 	}
 
@@ -400,7 +406,6 @@ void SkeletonModification2DTwoBoneIK::set_joint_one_bone_idx(int p_bone_idx) {
 			joint_one_bone_idx = p_bone_idx;
 		}
 	} else {
-		WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint one...");
 		joint_one_bone_idx = p_bone_idx;
 	}
 
@@ -425,7 +430,6 @@ void SkeletonModification2DTwoBoneIK::set_joint_two_bone_idx(int p_bone_idx) {
 			joint_two_bone_idx = p_bone_idx;
 		}
 	} else {
-		WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint two...");
 		joint_two_bone_idx = p_bone_idx;
 	}
 

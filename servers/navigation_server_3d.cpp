@@ -181,10 +181,15 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("obstacle_set_avoidance_layers", "obstacle", "layers"), &NavigationServer3D::obstacle_set_avoidance_layers);
 	ClassDB::bind_method(D_METHOD("obstacle_get_avoidance_layers", "obstacle"), &NavigationServer3D::obstacle_get_avoidance_layers);
 
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("parse_source_geometry_data", "navigation_mesh", "source_geometry_data", "root_node", "callback"), &NavigationServer3D::parse_source_geometry_data, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data", "navigation_mesh", "source_geometry_data", "callback"), &NavigationServer3D::bake_from_source_geometry_data, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data_async", "navigation_mesh", "source_geometry_data", "callback"), &NavigationServer3D::bake_from_source_geometry_data_async, DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("is_baking_navigation_mesh", "navigation_mesh"), &NavigationServer3D::is_baking_navigation_mesh);
+#endif // _3D_DISABLED
+
+	ClassDB::bind_method(D_METHOD("source_geometry_parser_create"), &NavigationServer3D::source_geometry_parser_create);
+	ClassDB::bind_method(D_METHOD("source_geometry_parser_set_callback", "parser", "callback"), &NavigationServer3D::source_geometry_parser_set_callback);
 
 	ClassDB::bind_method(D_METHOD("simplify_path", "path", "epsilon"), &NavigationServer3D::simplify_path);
 

@@ -23,7 +23,7 @@
 				Returns display refresh rates supported by the current HMD. Only returned if this feature is supported by the OpenXR runtime and after the interface has been initialized.
 			</description>
 		</method>
-		<method name="get_hand_joint_angular_velocity" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_angular_velocity] obtained from [method XRServer.get_hand_tracker] instead.">
+		<method name="get_hand_joint_angular_velocity" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_angular_velocity] obtained from [method XRServer.get_tracker] instead.">
 			<return type="Vector3" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
 			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
@@ -31,7 +31,7 @@
 				If handtracking is enabled, returns the angular velocity of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR. This is relative to [XROrigin3D]!
 			</description>
 		</method>
-		<method name="get_hand_joint_flags" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_flags] obtained from [method XRServer.get_hand_tracker] instead.">
+		<method name="get_hand_joint_flags" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_flags] obtained from [method XRServer.get_tracker] instead.">
 			<return type="int" enum="OpenXRInterface.HandJointFlags" is_bitfield="true" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
 			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
@@ -39,7 +39,7 @@
 				If handtracking is enabled, returns flags that inform us of the validity of the tracking data.
 			</description>
 		</method>
-		<method name="get_hand_joint_linear_velocity" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_linear_velocity] obtained from [method XRServer.get_hand_tracker] instead.">
+		<method name="get_hand_joint_linear_velocity" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_linear_velocity] obtained from [method XRServer.get_tracker] instead.">
 			<return type="Vector3" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
 			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
@@ -47,7 +47,7 @@
 				If handtracking is enabled, returns the linear velocity of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR. This is relative to [XROrigin3D] without worldscale applied!
 			</description>
 		</method>
-		<method name="get_hand_joint_position" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_transform] obtained from [method XRServer.get_hand_tracker] instead.">
+		<method name="get_hand_joint_position" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_transform] obtained from [method XRServer.get_tracker] instead.">
 			<return type="Vector3" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
 			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
@@ -55,7 +55,7 @@
 				If handtracking is enabled, returns the position of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR. This is relative to [XROrigin3D] without worldscale applied!
 			</description>
 		</method>
-		<method name="get_hand_joint_radius" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_radius] obtained from [method XRServer.get_hand_tracker] instead.">
+		<method name="get_hand_joint_radius" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_radius] obtained from [method XRServer.get_tracker] instead.">
 			<return type="float" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
 			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
@@ -63,7 +63,7 @@
 				If handtracking is enabled, returns the radius of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR. This is without worldscale applied!
 			</description>
 		</method>
-		<method name="get_hand_joint_rotation" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_transform] obtained from [method XRServer.get_hand_tracker] instead.">
+		<method name="get_hand_joint_rotation" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_transform] obtained from [method XRServer.get_tracker] instead.">
 			<return type="Quaternion" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
 			<param index="1" name="joint" type="int" enum="OpenXRInterface.HandJoints" />
@@ -71,7 +71,7 @@
 				If handtracking is enabled, returns the rotation of a joint ([param joint]) of a hand ([param hand]) as provided by OpenXR.
 			</description>
 		</method>
-		<method name="get_hand_tracking_source" qualifiers="const" deprecated="Use [member XRHandTracker.hand_tracking_source] obtained from [method XRServer.get_hand_tracker] instead.">
+		<method name="get_hand_tracking_source" qualifiers="const" deprecated="Use [member XRHandTracker.hand_tracking_source] obtained from [method XRServer.get_tracker] instead.">
 			<return type="int" enum="OpenXRInterface.HandTrackedSource" />
 			<param index="0" name="hand" type="int" enum="OpenXRInterface.Hand" />
 			<description>
@@ -104,6 +104,13 @@
 			<description>
 				Returns [code]true[/code] if OpenXR's foveation extension is supported, the interface must be initialized before this returns a valid value.
 				[b]Note:[/b] This feature is only available on the compatibility renderer and currently only available on some stand alone headsets. For Vulkan set [member Viewport.vrs_mode] to [code]VRS_XR[/code] on desktop.
+			</description>
+		</method>
+		<method name="is_hand_interaction_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if OpenXR's hand interaction profile is supported and enabled.
+				[b]Note:[/b] This only returns a valid value after OpenXR has been initialized.
 			</description>
 		</method>
 		<method name="is_hand_tracking_supported">
@@ -145,8 +152,21 @@
 		<member name="render_target_size_multiplier" type="float" setter="set_render_target_size_multiplier" getter="get_render_target_size_multiplier" default="1.0">
 			The render size multiplier for the current HMD. Must be set before the interface has been initialized.
 		</member>
+		<member name="vrs_min_radius" type="float" setter="set_vrs_min_radius" getter="get_vrs_min_radius" default="20.0">
+			The minimum radius around the focal point where full quality is guaranteed if VRS is used as a percentage of screen size.
+			[b]Note:[/b] Mobile and Forward+ renderers only. Requires [member Viewport.vrs_mode] to be set to [constant Viewport.VRS_XR].
+		</member>
+		<member name="vrs_strength" type="float" setter="set_vrs_strength" getter="get_vrs_strength" default="1.0">
+			The strength used to calculate the VRS density map. The greater this value, the more noticeable VRS is. This improves performance at the cost of quality.
+			[b]Note:[/b] Mobile and Forward+ renderers only. Requires [member Viewport.vrs_mode] to be set to [constant Viewport.VRS_XR].
+		</member>
 	</members>
 	<signals>
+		<signal name="instance_exiting">
+			<description>
+				Informs our OpenXR instance is exiting.
+			</description>
+		</signal>
 		<signal name="pose_recentered">
 			<description>
 				Informs the user queued a recenter of the player position.
@@ -167,6 +187,11 @@
 		<signal name="session_focussed">
 			<description>
 				Informs our OpenXR session now has focus.
+			</description>
+		</signal>
+		<signal name="session_loss_pending">
+			<description>
+				Informs our OpenXR session is in the process of being lost.
 			</description>
 		</signal>
 		<signal name="session_stopping">

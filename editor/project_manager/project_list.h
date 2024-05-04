@@ -220,6 +220,7 @@ public:
 
 	// Project list updates.
 
+	void load_project_list();
 	void update_project_list();
 	void sort_projects();
 	int get_project_count() const;

@@ -151,7 +151,7 @@ def find_any_msbuild_tool(mono_prefix):
     return None
 
 
-def run_msbuild(tools: ToolsLocation, sln: str, msbuild_args: Optional[List[str]] = None):
+def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: Optional[List[str]] = None):
     using_msbuild_mono = False
 
     # Preference order: dotnet CLI > Standalone MSBuild > Mono's MSBuild
@@ -190,7 +190,8 @@ def run_msbuild(tools: ToolsLocation, sln: str, msbuild_args: Optional[List[str]
             }
         )
 
-    return subprocess.call(args, env=msbuild_env)
+    # We want to control cwd when running msbuild, because that's where the search for global.json begins.
+    return subprocess.call(args, env=msbuild_env, cwd=chdir_to)
 
 
 def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision):
@@ -218,11 +219,7 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
             args += ["/p:GodotFloat64=true"]
 
         sln = os.path.join(module_dir, "glue/GodotSharp/GodotSharp.sln")
-        exit_code = run_msbuild(
-            msbuild_tool,
-            sln=sln,
-            msbuild_args=args,
-        )
+        exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
         if exit_code != 0:
             return exit_code
 
@@ -361,7 +358,7 @@ def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, p
         args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
     if precision == "double":
         args += ["/p:GodotFloat64=true"]
-    exit_code = run_msbuild(msbuild_tool, sln=sln, msbuild_args=args)
+    exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
     if exit_code != 0:
         return exit_code
 
@@ -372,7 +369,7 @@ def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, p
     if precision == "double":
         args += ["/p:GodotFloat64=true"]
     sln = os.path.join(module_dir, "editor/Godot.NET.Sdk/Godot.NET.Sdk.sln")
-    exit_code = run_msbuild(msbuild_tool, sln=sln, msbuild_args=args)
+    exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
     if exit_code != 0:
         return exit_code
 

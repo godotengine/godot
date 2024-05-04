@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "servers/text_server.h"
+#include "text_server.compat.inc"
+
 #include "core/variant/typed_array.h"
 #include "servers/rendering_server.h"
 
@@ -435,7 +437,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_range", "shaped"), &TextServer::shaped_text_get_range);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_line_breaks_adv", "shaped", "width", "start", "once", "break_flags"), &TextServer::shaped_text_get_line_breaks_adv, DEFVAL(0), DEFVAL(true), DEFVAL(BREAK_MANDATORY | BREAK_WORD_BOUND));
 	ClassDB::bind_method(D_METHOD("shaped_text_get_line_breaks", "shaped", "width", "start", "break_flags"), &TextServer::shaped_text_get_line_breaks, DEFVAL(0), DEFVAL(BREAK_MANDATORY | BREAK_WORD_BOUND));
-	ClassDB::bind_method(D_METHOD("shaped_text_get_word_breaks", "shaped", "grapheme_flags"), &TextServer::shaped_text_get_word_breaks, DEFVAL(GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION));
+	ClassDB::bind_method(D_METHOD("shaped_text_get_word_breaks", "shaped", "grapheme_flags", "skip_grapheme_flags"), &TextServer::shaped_text_get_word_breaks, DEFVAL(GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION), DEFVAL(GRAPHEME_IS_VIRTUAL));
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_trim_pos", "shaped"), &TextServer::shaped_text_get_trim_pos);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_pos", "shaped"), &TextServer::shaped_text_get_ellipsis_pos);
@@ -488,6 +490,7 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("strip_diacritics", "string"), &TextServer::strip_diacritics);
 	ClassDB::bind_method(D_METHOD("is_valid_identifier", "string"), &TextServer::is_valid_identifier);
+	ClassDB::bind_method(D_METHOD("is_valid_letter", "unicode"), &TextServer::is_valid_letter);
 
 	ClassDB::bind_method(D_METHOD("string_to_upper", "string", "language"), &TextServer::string_to_upper, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("string_to_lower", "string", "language"), &TextServer::string_to_lower, DEFVAL(""));
@@ -1094,7 +1097,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 	return lines;
 }
 
-PackedInt32Array TextServer::shaped_text_get_word_breaks(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags) const {
+PackedInt32Array TextServer::shaped_text_get_word_breaks(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags, BitField<TextServer::GraphemeFlag> p_skip_grapheme_flags) const {
 	PackedInt32Array words;
 
 	const_cast<TextServer *>(this)->shaped_text_update_justification_ops(p_shaped);
@@ -1107,10 +1110,11 @@ PackedInt32Array TextServer::shaped_text_get_word_breaks(const RID &p_shaped, Bi
 
 	for (int i = 0; i < l_size; i++) {
 		if (l_gl[i].count > 0) {
-			if ((l_gl[i].flags & p_grapheme_flags) != 0) {
-				if (word_start != l_gl[i].start) {
+			if ((l_gl[i].flags & p_grapheme_flags) != 0 && (l_gl[i].flags & p_skip_grapheme_flags) == 0) {
+				int next = (i == 0) ? l_gl[i].start : l_gl[i - 1].end;
+				if (word_start < next) {
 					words.push_back(word_start);
-					words.push_back(l_gl[i].start);
+					words.push_back(next);
 				}
 				word_start = l_gl[i].end;
 			}
@@ -2177,6 +2181,10 @@ bool TextServer::is_valid_identifier(const String &p_string) const {
 		}
 	}
 	return true;
+}
+
+bool TextServer::is_valid_letter(char32_t p_unicode) const {
+	return is_unicode_letter(p_unicode);
 }
 
 TextServer::TextServer() {

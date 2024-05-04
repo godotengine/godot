@@ -63,6 +63,7 @@ public:
 	String get_cache_dir() const;
 	String get_project_data_dir() const;
 	String get_export_templates_dir() const;
+	String get_debug_keystore_path() const;
 	String get_project_settings_dir() const;
 	String get_text_editor_themes_dir() const;
 	String get_script_templates_dir() const;

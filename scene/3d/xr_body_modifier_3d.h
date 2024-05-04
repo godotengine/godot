@@ -66,9 +66,6 @@ public:
 	void set_bone_update(BoneUpdate p_bone_update);
 	BoneUpdate get_bone_update() const;
 
-	void set_show_when_tracked(bool p_show_when_tracked);
-	bool get_show_when_tracked() const;
-
 	void _notification(int p_what);
 
 protected:
@@ -83,14 +80,13 @@ private:
 		int parent_joint = -1;
 	};
 
-	StringName tracker_name = "/user/body";
+	StringName tracker_name = "/user/body_tracker";
 	BitField<BodyUpdate> body_update = BODY_UPDATE_UPPER_BODY | BODY_UPDATE_LOWER_BODY | BODY_UPDATE_HANDS;
 	BoneUpdate bone_update = BONE_UPDATE_FULL;
-	bool show_when_tracked = true;
 	JointData joints[XRBodyTracker::JOINT_MAX];
 
 	void _get_joint_data();
-	void _tracker_changed(const StringName &p_tracker_name, const Ref<XRBodyTracker> &p_tracker);
+	void _tracker_changed(const StringName &p_tracker_name, XRServer::TrackerType p_tracker_type);
 };
 
 VARIANT_BITFIELD_CAST(XRBodyModifier3D::BodyUpdate)

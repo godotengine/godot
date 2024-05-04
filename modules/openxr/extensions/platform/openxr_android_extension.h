@@ -34,6 +34,8 @@
 #include "../../util.h"
 #include "../openxr_extension_wrapper.h"
 
+#include <jni.h>
+
 class OpenXRAndroidExtension : public OpenXRExtensionWrapper {
 public:
 	static OpenXRAndroidExtension *get_singleton();
@@ -49,6 +51,8 @@ public:
 private:
 	static OpenXRAndroidExtension *singleton;
 
+	JavaVM *vm;
+	jobject activity_object;
 	bool loader_init_extension_available = false;
 	bool create_instance_extension_available = false;
 

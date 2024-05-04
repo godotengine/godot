@@ -968,8 +968,10 @@ void EditorFileDialog::update_file_list() {
 			}
 		} else if (!dir_access->current_is_hidden()) {
 			String full_path = cdir == "res://" ? item : dir_access->get_current_dir() + "/" + item;
-			if (dir_access->current_is_dir() && (Engine::get_singleton()->is_project_manager_hint() || !EditorFileSystem::_should_skip_directory(full_path))) {
-				dirs.push_back(item);
+			if (dir_access->current_is_dir()) {
+				if (Engine::get_singleton()->is_project_manager_hint() || !EditorFileSystem::_should_skip_directory(full_path)) {
+					dirs.push_back(item);
+				}
 			} else {
 				files.push_back(item);
 			}
@@ -2084,11 +2086,9 @@ EditorFileDialog::EditorFileDialog() {
 	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KeyModifierMask::CMD_OR_CTRL | Key::UP);
 	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KeyModifierMask::CMD_OR_CTRL | Key::DOWN);
 
-	if (EditorSettings::get_singleton()) {
-		ED_SHORTCUT_OVERRIDE("file_dialog/toggle_hidden_files", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::PERIOD);
-		ED_SHORTCUT_OVERRIDE("file_dialog/toggle_favorite", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::F);
-		ED_SHORTCUT_OVERRIDE("file_dialog/toggle_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::V);
-	}
+	ED_SHORTCUT_OVERRIDE("file_dialog/toggle_hidden_files", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::PERIOD);
+	ED_SHORTCUT_OVERRIDE("file_dialog/toggle_favorite", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::F);
+	ED_SHORTCUT_OVERRIDE("file_dialog/toggle_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::V);
 
 	pathhb = memnew(HBoxContainer);
 	vbc->add_child(pathhb);

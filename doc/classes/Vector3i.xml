@@ -59,6 +59,14 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="clampi" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="min" type="int" />
+			<param index="1" name="max" type="int" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
 		<method name="distance_squared_to" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="to" type="Vector3i" />
@@ -87,16 +95,44 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="with" type="Vector3i" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector3i(maxi(x, with.x), maxi(y, with.y), maxi(z, with.z))[/code].
+			</description>
+		</method>
 		<method name="max_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
+		<method name="maxi" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="with" type="int" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector3i(maxi(x, with), maxi(y, with), maxi(z, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="with" type="Vector3i" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector3i(mini(x, with.x), mini(y, with.y), mini(z, with.z))[/code].
+			</description>
+		</method>
 		<method name="min_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Z].
+			</description>
+		</method>
+		<method name="mini" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="with" type="int" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector3i(mini(x, with), mini(y, with), mini(z, with))[/code].
 			</description>
 		</method>
 		<method name="sign" qualifiers="const">
@@ -110,6 +146,13 @@
 			<param index="0" name="step" type="Vector3i" />
 			<description>
 				Returns a new vector with each component snapped to the closest multiple of the corresponding component in [param step].
+			</description>
+		</method>
+		<method name="snappedi" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="step" type="int" />
+			<description>
+				Returns a new vector with each component snapped to the closest multiple of [param step].
 			</description>
 		</method>
 	</methods>

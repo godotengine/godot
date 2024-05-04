@@ -82,6 +82,17 @@ int Engine::get_audio_output_latency() const {
 	return _audio_output_latency;
 }
 
+void Engine::increment_frames_drawn() {
+	if (frame_server_synced) {
+		server_syncs++;
+	} else {
+		server_syncs = 0;
+	}
+	frame_server_synced = false;
+
+	frames_drawn++;
+}
+
 uint64_t Engine::get_frames_drawn() {
 	return frames_drawn;
 }
@@ -362,6 +373,11 @@ Engine *Engine::singleton = nullptr;
 
 Engine *Engine::get_singleton() {
 	return singleton;
+}
+
+bool Engine::notify_frame_server_synced() {
+	frame_server_synced = true;
+	return server_syncs > SERVER_SYNC_FRAME_COUNT_WARNING;
 }
 
 Engine::Engine() {

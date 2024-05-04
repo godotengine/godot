@@ -1578,31 +1578,7 @@ void EditorFileSystem::_update_script_classes() {
 	update_script_mutex.lock();
 
 	for (const String &path : update_script_paths) {
-		ScriptServer::remove_global_class_by_path(path); // First remove, just in case it changed
-
-		int index = -1;
-		EditorFileSystemDirectory *efd = find_file(path, &index);
-
-		if (!efd || index < 0) {
-			// The file was removed
-			continue;
-		}
-
-		if (!efd->files[index]->script_class_name.is_empty()) {
-			String lang;
-			for (int j = 0; j < ScriptServer::get_language_count(); j++) {
-				if (ScriptServer::get_language(j)->handles_global_class_type(efd->files[index]->type)) {
-					lang = ScriptServer::get_language(j)->get_name();
-				}
-			}
-			if (lang.is_empty()) {
-				continue; // No lang found that can handle this global class
-			}
-
-			ScriptServer::add_global_class(efd->files[index]->script_class_name, efd->files[index]->script_class_extends, lang, path);
-			EditorNode::get_editor_data().script_class_set_icon_path(efd->files[index]->script_class_name, efd->files[index]->script_class_icon_path);
-			EditorNode::get_editor_data().script_class_set_name(path, efd->files[index]->script_class_name);
-		}
+		EditorFileSystem::get_singleton()->register_global_class_script(path, path);
 	}
 
 	// Parse documentation second, as it requires the class names to be correct and registered
@@ -1664,8 +1640,13 @@ void EditorFileSystem::_queue_update_script_class(const String &p_path) {
 }
 
 void EditorFileSystem::_update_scene_groups() {
-	update_scene_mutex.lock();
+	EditorProgress *ep = nullptr;
+	if (update_scene_paths.size() > 1) {
+		ep = memnew(EditorProgress("update_scene_groups", TTR("Update Scene Groups"), update_scene_paths.size()));
+	}
+	int step_count = 0;
 
+	update_scene_mutex.lock();
 	for (const String &path : update_scene_paths) {
 		ProjectSettings::get_singleton()->remove_scene_groups_cache(path);
 
@@ -1681,8 +1662,13 @@ void EditorFileSystem::_update_scene_groups() {
 		if (!scene_groups.is_empty()) {
 			ProjectSettings::get_singleton()->add_scene_groups_cache(path, scene_groups);
 		}
+
+		if (ep) {
+			ep->step(TTR("Updating Scene Groups..."), step_count++);
+		}
 	}
 
+	memdelete_notnull(ep);
 	update_scene_paths.clear();
 	update_scene_mutex.unlock();
 
@@ -1832,6 +1818,34 @@ void EditorFileSystem::update_file(const String &p_file) {
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {
 	return valid_extensions;
+}
+
+void EditorFileSystem::register_global_class_script(const String &p_search_path, const String &p_target_path) {
+	ScriptServer::remove_global_class_by_path(p_search_path); // First remove, just in case it changed
+
+	int index = -1;
+	EditorFileSystemDirectory *efd = find_file(p_search_path, &index);
+
+	if (!efd || index < 0) {
+		// The file was removed
+		return;
+	}
+
+	if (!efd->files[index]->script_class_name.is_empty()) {
+		String lang;
+		for (int j = 0; j < ScriptServer::get_language_count(); j++) {
+			if (ScriptServer::get_language(j)->handles_global_class_type(efd->files[index]->type)) {
+				lang = ScriptServer::get_language(j)->get_name();
+			}
+		}
+		if (lang.is_empty()) {
+			return; // No lang found that can handle this global class
+		}
+
+		ScriptServer::add_global_class(efd->files[index]->script_class_name, efd->files[index]->script_class_extends, lang, p_target_path);
+		EditorNode::get_editor_data().script_class_set_icon_path(efd->files[index]->script_class_name, efd->files[index]->script_class_icon_path);
+		EditorNode::get_editor_data().script_class_set_name(p_target_path, efd->files[index]->script_class_name);
+	}
 }
 
 Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector<String> &p_files) {
@@ -2314,8 +2328,9 @@ void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file
 }
 
 void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_import_data) {
-	p_import_data->max_index = MAX(p_import_data->reimport_from + int(p_index), p_import_data->max_index);
-	_reimport_file(p_import_data->reimport_files[p_import_data->reimport_from + p_index].path);
+	int current_max = p_import_data->reimport_from + int(p_index);
+	p_import_data->max_index.exchange_if_greater(current_max);
+	_reimport_file(p_import_data->reimport_files[current_max].path);
 }
 
 void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
@@ -2395,15 +2410,15 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 					importer->import_threaded_begin();
 
 					ImportThreadData tdata;
-					tdata.max_index = from;
+					tdata.max_index.set(from);
 					tdata.reimport_from = from;
 					tdata.reimport_files = reimport_files.ptr();
 
 					WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &EditorFileSystem::_reimport_thread, &tdata, i - from + 1, -1, false, vformat(TTR("Import resources of type: %s"), reimport_files[from].importer));
 					int current_index = from - 1;
 					do {
-						if (current_index < tdata.max_index) {
-							current_index = tdata.max_index;
+						if (current_index < tdata.max_index.get()) {
+							current_index = tdata.max_index.get();
 							pr.step(reimport_files[current_index].path.get_file(), current_index);
 						}
 						OS::get_singleton()->delay_usec(1);

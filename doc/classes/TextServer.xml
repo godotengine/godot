@@ -1103,6 +1103,13 @@
 				- May contain Unicode characters of class XID_Continue in the other positions.
 			</description>
 		</method>
+		<method name="is_valid_letter" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="unicode" type="int" />
+			<description>
+				Returns [code]true[/code] if the given code point is a valid letter, i.e. it belongs to the Unicode category "L".
+			</description>
+		</method>
 		<method name="load_support_data">
 			<return type="bool" />
 			<param index="0" name="filename" type="String" />
@@ -1505,6 +1512,7 @@
 			<return type="PackedInt32Array" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="264" />
+			<param index="2" name="skip_grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="4" />
 			<description>
 				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking (see [enum GraphemeFlag]).
 			</description>

@@ -488,8 +488,8 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 	if (!base_type.is_empty()) {
 		int idx = 0;
 
-		HashSet<StringName> allowed_types;
-		_get_allowed_types(false, &allowed_types);
+		_ensure_allowed_types();
+		HashSet<StringName> allowed_types = allowed_types_without_convert;
 
 		for (const StringName &E : allowed_types) {
 			const String &t = E;
@@ -593,23 +593,29 @@ static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_v
 	}
 }
 
-void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<StringName> *p_vector) const {
+void EditorResourcePicker::_ensure_allowed_types() const {
+	if (!allowed_types_without_convert.is_empty()) {
+		return;
+	}
+
 	Vector<String> allowed_types = base_type.split(",");
 	int size = allowed_types.size();
 
 	for (int i = 0; i < size; i++) {
-		String base = allowed_types[i].strip_edges();
+		const String base = allowed_types[i].strip_edges();
+		_add_allowed_type(base, &allowed_types_without_convert);
+	}
 
-		_add_allowed_type(base, p_vector);
+	allowed_types_with_convert = HashSet<StringName>(allowed_types_without_convert);
 
-		if (p_with_convert) {
-			if (base == "BaseMaterial3D") {
-				p_vector->insert("Texture2D");
-			} else if (base == "ShaderMaterial") {
-				p_vector->insert("Shader");
-			} else if (base == "Texture2D") {
-				p_vector->insert("Image");
-			}
+	for (int i = 0; i < size; i++) {
+		const String base = allowed_types[i].strip_edges();
+		if (base == "BaseMaterial3D") {
+			allowed_types_with_convert.insert("Texture2D");
+		} else if (base == "ShaderMaterial") {
+			allowed_types_with_convert.insert("Shader");
+		} else if (base == "Texture2D") {
+			allowed_types_with_convert.insert("Image");
 		}
 	}
 }
@@ -645,8 +651,8 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 		}
 	}
 
-	HashSet<StringName> allowed_types;
-	_get_allowed_types(true, &allowed_types);
+	_ensure_allowed_types();
+	HashSet<StringName> allowed_types = allowed_types_with_convert;
 
 	if (res.is_valid()) {
 		String res_type = _get_resource_type(res);
@@ -713,8 +719,8 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 	}
 
 	if (dropped_resource.is_valid()) {
-		HashSet<StringName> allowed_types;
-		_get_allowed_types(false, &allowed_types);
+		_ensure_allowed_types();
+		HashSet<StringName> allowed_types = allowed_types_without_convert;
 
 		String res_type = _get_resource_type(dropped_resource);
 
@@ -835,8 +841,8 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 	// There is a possibility that the new base type is conflicting with the existing value.
 	// Keep the value, but warn the user that there is a potential mistake.
 	if (!base_type.is_empty() && edited_resource.is_valid()) {
-		HashSet<StringName> allowed_types;
-		_get_allowed_types(true, &allowed_types);
+		_ensure_allowed_types();
+		HashSet<StringName> allowed_types = allowed_types_with_convert;
 
 		StringName custom_class;
 		bool is_custom = false;
@@ -857,8 +863,8 @@ String EditorResourcePicker::get_base_type() const {
 }
 
 Vector<String> EditorResourcePicker::get_allowed_types() const {
-	HashSet<StringName> allowed_types;
-	_get_allowed_types(false, &allowed_types);
+	_ensure_allowed_types();
+	HashSet<StringName> allowed_types = allowed_types_without_convert;
 
 	Vector<String> types;
 	types.resize(allowed_types.size());
@@ -881,8 +887,8 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 	}
 
 	if (!base_type.is_empty()) {
-		HashSet<StringName> allowed_types;
-		_get_allowed_types(true, &allowed_types);
+		_ensure_allowed_types();
+		HashSet<StringName> allowed_types = allowed_types_with_convert;
 
 		StringName custom_class;
 		bool is_custom = false;
@@ -896,7 +902,10 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 			ERR_FAIL_MSG(vformat("Failed to set a resource of the type '%s' because this EditorResourcePicker only accepts '%s' and its derivatives.", class_str, base_type));
 		}
 	}
+	set_edited_resource_no_check(p_resource);
+}
 
+void EditorResourcePicker::set_edited_resource_no_check(Ref<Resource> p_resource) {
 	edited_resource = p_resource;
 	_update_resource();
 }

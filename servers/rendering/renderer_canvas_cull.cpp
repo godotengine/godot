@@ -332,7 +332,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			child_item_count = ci->ysort_children_count + 1;
 			child_items = (Item **)alloca(child_item_count * sizeof(Item *));
 
-			ci->ysort_xform = final_xform.affine_inverse();
+			ci->ysort_xform = ci->xform_curr.affine_inverse();
 			ci->ysort_pos = Vector2();
 			ci->ysort_modulate = Color(1, 1, 1, 1);
 			ci->ysort_index = 0;
@@ -1970,6 +1970,8 @@ void RendererCanvasCull::canvas_light_occluder_set_polygon(RID p_occluder, RID p
 void RendererCanvasCull::canvas_light_occluder_set_as_sdf_collision(RID p_occluder, bool p_enable) {
 	RendererCanvasRender::LightOccluderInstance *occluder = canvas_light_occluder_owner.get_or_null(p_occluder);
 	ERR_FAIL_NULL(occluder);
+
+	occluder->sdf_collision = p_enable;
 }
 
 void RendererCanvasCull::canvas_light_occluder_set_transform(RID p_occluder, const Transform2D &p_xform) {
@@ -2104,7 +2106,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 		if (visibility_notifier->just_visible) {
 			visibility_notifier->just_visible = false;
 
-			if (!visibility_notifier->enter_callable.is_null()) {
+			if (visibility_notifier->enter_callable.is_valid()) {
 				if (RSG::threaded) {
 					visibility_notifier->enter_callable.call_deferred();
 				} else {
@@ -2115,7 +2117,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 			if (visibility_notifier->visible_in_frame != RSG::rasterizer->get_frame_number()) {
 				visibility_notifier_list.remove(E);
 
-				if (!visibility_notifier->exit_callable.is_null()) {
+				if (visibility_notifier->exit_callable.is_valid()) {
 					if (RSG::threaded) {
 						visibility_notifier->exit_callable.call_deferred();
 					} else {

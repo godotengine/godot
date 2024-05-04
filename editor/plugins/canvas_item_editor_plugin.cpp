@@ -467,7 +467,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 
 	if (((snap_pixel && (p_modes & SNAP_PIXEL)) || (p_forced_modes & SNAP_PIXEL)) && rotation == 0.0) {
 		// Pixel
-		output = output.snapped(Size2(1, 1));
+		output = output.snappedf(1);
 	}
 
 	snap_transform = Transform2D(rotation, output);
@@ -1344,22 +1344,33 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 
 	// Drag the pivot (in pivot mode / with V key)
 	if (drag_type == DRAG_NONE) {
+		bool move_temp_pivot = ((b.is_valid() && b->is_shift_pressed()) || (k.is_valid() && k->is_shift_pressed()));
+
 		if ((b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::LEFT && tool == TOOL_EDIT_PIVOT) ||
-				(k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == Key::V && tool == TOOL_SELECT && k->get_modifiers_mask().is_empty())) {
+				(k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == Key::V && tool == TOOL_SELECT && (k->get_modifiers_mask().is_empty() || move_temp_pivot))) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
 
 			// Filters the selection with nodes that allow setting the pivot
 			drag_selection = List<CanvasItem *>();
 			for (CanvasItem *ci : selection) {
-				if (ci->_edit_use_pivot()) {
+				if (ci->_edit_use_pivot() || move_temp_pivot) {
 					drag_selection.push_back(ci);
 				}
 			}
 
 			// Start dragging if we still have nodes
 			if (drag_selection.size() > 0) {
+				Vector2 event_pos = (b.is_valid()) ? b->get_position() : viewport->get_local_mouse_position();
+
+				if (move_temp_pivot) {
+					drag_type = DRAG_TEMP_PIVOT;
+					temp_pivot = transform.affine_inverse().xform(event_pos);
+					viewport->queue_redraw();
+					return true;
+				}
+
 				_save_canvas_item_state(drag_selection);
-				drag_from = transform.affine_inverse().xform((b.is_valid()) ? b->get_position() : viewport->get_local_mouse_position());
+				drag_from = transform.affine_inverse().xform(event_pos);
 				Vector2 new_pos;
 				if (drag_selection.size() == 1) {
 					new_pos = snap_point(drag_from, SNAP_NODE_SIDES | SNAP_NODE_CENTER | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, drag_selection[0]);
@@ -1416,6 +1427,20 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 	}
+
+	if (drag_type == DRAG_TEMP_PIVOT) {
+		if (m.is_valid()) {
+			temp_pivot = transform.affine_inverse().xform(m->get_position());
+			viewport->queue_redraw();
+			return true;
+		}
+
+		if ((b.is_valid() && !b->is_pressed() && b->get_button_index() == MouseButton::LEFT && tool == TOOL_EDIT_PIVOT) ||
+				(k.is_valid() && !k->is_pressed() && k->get_keycode() == Key::V)) {
+			drag_type = DRAG_NONE;
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -1441,7 +1466,9 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 					drag_type = DRAG_ROTATE;
 					drag_from = transform.affine_inverse().xform(b->get_position());
 					CanvasItem *ci = drag_selection[0];
-					if (ci->_edit_use_pivot()) {
+					if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
+						drag_rotation_center = temp_pivot;
+					} else if (ci->_edit_use_pivot()) {
 						drag_rotation_center = ci->get_global_transform_with_canvas().xform(ci->_edit_get_pivot());
 					} else {
 						drag_rotation_center = ci->get_global_transform_with_canvas().get_origin();
@@ -1461,7 +1488,16 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 				drag_to = transform.affine_inverse().xform(m->get_position());
 				//Rotate the opposite way if the canvas item's compounded scale has an uneven number of negative elements
 				bool opposite = (ci->get_global_transform().get_scale().sign().dot(ci->get_transform().get_scale().sign()) == 0);
-				ci->_edit_set_rotation(snap_angle(ci->_edit_get_rotation() + (opposite ? -1 : 1) * (drag_from - drag_rotation_center).angle_to(drag_to - drag_rotation_center), ci->_edit_get_rotation()));
+				real_t prev_rotation = ci->_edit_get_rotation();
+				real_t new_rotation = snap_angle(ci->_edit_get_rotation() + (opposite ? -1 : 1) * (drag_from - drag_rotation_center).angle_to(drag_to - drag_rotation_center), prev_rotation);
+
+				ci->_edit_set_rotation(new_rotation);
+				if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
+					Transform2D xform = ci->get_global_transform_with_canvas() * ci->get_transform().affine_inverse();
+					Vector2 radius = xform.xform(ci->_edit_get_position()) - temp_pivot;
+					radius = radius.rotated(new_rotation - prev_rotation);
+					ci->_edit_set_position(xform.affine_inverse().xform(temp_pivot + radius));
+				}
 				viewport->queue_redraw();
 			}
 			return true;
@@ -1589,7 +1625,7 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 			previous_anchor = xform.affine_inverse().xform(_anchor_to_position(control, previous_anchor));
 
 			Vector2 new_anchor = xform.xform(snap_point(previous_anchor + (drag_to - drag_from), SNAP_GRID | SNAP_OTHER_NODES, SNAP_NODE_PARENT | SNAP_NODE_SIDES | SNAP_NODE_CENTER, control));
-			new_anchor = _position_to_anchor(control, new_anchor).snapped(Vector2(0.001, 0.001));
+			new_anchor = _position_to_anchor(control, new_anchor).snappedf(0.001);
 
 			bool use_single_axis = m->is_shift_pressed();
 			Vector2 drag_vector = xform.xform(drag_to) - xform.xform(drag_from);
@@ -3161,7 +3197,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 	} else {
 		if (grid_snap_active) {
 			Ref<Texture2D> position_icon = get_editor_theme_icon(SNAME("EditorPosition"));
-			viewport->draw_texture(get_editor_theme_icon(SNAME("EditorPosition")), (ruler_tool_origin - view_offset) * zoom - position_icon->get_size() / 2);
+			viewport->draw_texture(position_icon, (ruler_tool_origin - view_offset) * zoom - position_icon->get_size() / 2);
 		}
 	}
 }
@@ -3583,6 +3619,10 @@ void CanvasItemEditor::_draw_selection() {
 				get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.6),
 				Math::round(2 * EDSCALE));
 	}
+
+	if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
+		viewport->draw_texture(pivot_icon, (temp_pivot - view_offset) * zoom - (pivot_icon->get_size() / 2).floor(), get_theme_color(SNAME("accent_color"), SNAME("Editor")));
+	}
 }
 
 void CanvasItemEditor::_draw_straight_line(Point2 p_from, Point2 p_to, Color p_color) {
@@ -3931,8 +3971,6 @@ void CanvasItemEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
-			int nb_having_pivot = 0;
-
 			// Update the viewport if the canvas_item changes
 			List<CanvasItem *> selection = _get_edited_canvas_items(true);
 			for (CanvasItem *ci : selection) {
@@ -3972,14 +4010,10 @@ void CanvasItemEditor::_notification(int p_what) {
 						viewport->queue_redraw();
 					}
 				}
-
-				if (ci->_edit_use_pivot()) {
-					nb_having_pivot++;
-				}
 			}
 
-			// Activate / Deactivate the pivot tool
-			pivot_button->set_disabled(nb_having_pivot == 0);
+			// Activate / Deactivate the pivot tool.
+			pivot_button->set_disabled(selection.is_empty());
 
 			// Update the viewport if bones changes
 			for (KeyValue<BoneKey, BoneList> &E : bone_list) {
@@ -4048,6 +4082,11 @@ void CanvasItemEditor::_selection_changed() {
 		_reset_drag();
 	}
 	selected_from_canvas = false;
+
+	if (temp_pivot != Vector2(INFINITY, INFINITY)) {
+		temp_pivot = Vector2(INFINITY, INFINITY);
+		viewport->queue_redraw();
+	}
 }
 
 void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
@@ -4201,6 +4240,18 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 	}
 
 	tool = (Tool)p_index;
+
+	if (p_index == TOOL_EDIT_PIVOT && Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+		// Special action that places temporary rotation pivot in the middle of the selection.
+		List<CanvasItem *> selection = _get_edited_canvas_items();
+		if (!selection.is_empty()) {
+			Vector2 center;
+			for (const CanvasItem *ci : selection) {
+				center += ci->_edit_get_position();
+			}
+			temp_pivot = center / selection.size();
+		}
+	}
 
 	viewport->queue_redraw();
 	_update_cursor();
@@ -5279,7 +5330,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(pivot_button);
 	pivot_button->set_toggle_mode(true);
 	pivot_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_EDIT_PIVOT));
-	pivot_button->set_tooltip_text(TTR("Click to change object's rotation pivot."));
+	pivot_button->set_tooltip_text(TTR("Click to change object's rotation pivot.") + "\n" + TTR("Shift: Set temporary rotation pivot.") + "\n" + TTR("Click this button while holding Shift to put the rotation pivot in the center of the selected nodes."));
 
 	pan_button = memnew(Button);
 	pan_button->set_theme_type_variation("FlatButton");
@@ -5860,13 +5911,34 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 }
 
 void CanvasItemEditorViewport::_perform_drop_data() {
+	ERR_FAIL_COND(selected_files.size() <= 0);
+
 	_remove_preview();
 
-	// Without root dropping multiple files is not allowed
-	if (!target_node && selected_files.size() > 1) {
-		accept->set_text(TTR("Cannot instantiate multiple nodes without root."));
-		accept->popup_centered();
-		return;
+	if (!target_node) {
+		// Without root dropping multiple files is not allowed
+		if (selected_files.size() > 1) {
+			accept->set_text(TTR("Cannot instantiate multiple nodes without root."));
+			accept->popup_centered();
+			return;
+		}
+
+		const String &path = selected_files[0];
+		Ref<Resource> res = ResourceLoader::load(path);
+		if (res.is_null()) {
+			return;
+		}
+
+		Ref<PackedScene> scene = res;
+		if (scene.is_valid()) {
+			// Without root node act the same as "Load Inherited Scene".
+			Error err = EditorNode::get_singleton()->load_scene(path, false, true);
+			if (err != OK) {
+				accept->set_text(vformat(TTR("Error instantiating scene from %s."), path.get_file()));
+				accept->popup_centered();
+			}
+			return;
+		}
 	}
 
 	PackedStringArray error_files;
@@ -5882,27 +5954,21 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 		if (res.is_null()) {
 			continue;
 		}
-		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-		if (scene != nullptr && scene.is_valid()) {
-			if (!target_node) {
-				// Without root node act the same as "Load Inherited Scene"
-				Error err = EditorNode::get_singleton()->load_scene(path, false, true);
-				if (err != OK) {
-					error_files.push_back(path.get_file());
-				}
-			} else {
-				bool success = _create_instance(target_node, path, drop_pos);
-				if (!success) {
-					error_files.push_back(path.get_file());
-				}
+
+		Ref<PackedScene> scene = res;
+		if (scene.is_valid()) {
+			bool success = _create_instance(target_node, path, drop_pos);
+			if (!success) {
+				error_files.push_back(path.get_file());
 			}
-		} else {
-			Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
-			if (texture != nullptr && texture.is_valid()) {
-				Node *child = Object::cast_to<Node>(ClassDB::instantiate(default_texture_node_type));
-				_create_nodes(target_node, child, path, drop_pos);
-				undo_redo->add_do_method(editor_selection, "add_node", child);
-			}
+			continue;
+		}
+
+		Ref<Texture2D> texture = res;
+		if (texture.is_valid()) {
+			Node *child = Object::cast_to<Node>(ClassDB::instantiate(default_texture_node_type));
+			_create_nodes(target_node, child, path, drop_pos);
+			undo_redo->add_do_method(editor_selection, "add_node", child);
 		}
 	}
 

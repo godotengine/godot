@@ -344,10 +344,10 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 					r_token.value = number;
 					return OK;
 
-				} else if (is_ascii_char(p_str[index])) {
+				} else if (is_ascii_alphabet_char(p_str[index])) {
 					String id;
 
-					while (is_ascii_char(p_str[index])) {
+					while (is_ascii_alphabet_char(p_str[index])) {
 						id += p_str[index];
 						index++;
 					}

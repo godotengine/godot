@@ -45,7 +45,7 @@
 #endif //RD_ENABLED
 
 #ifdef GLES3_ENABLED
-#include "wayland/egl_manager_wayland.h"
+#include "drivers/egl/egl_manager.h"
 #endif
 
 #if defined(SPEECHD_ENABLED)
@@ -126,7 +126,7 @@ class DisplayServerWayland : public DisplayServer {
 #endif
 
 #ifdef GLES3_ENABLED
-	EGLManagerWayland *egl_manager = nullptr;
+	EGLManager *egl_manager = nullptr;
 #endif
 
 #ifdef SPEECHD_ENABLED
@@ -276,7 +276,6 @@ public:
 	virtual void process_events() override;
 
 	virtual void release_rendering_thread() override;
-	virtual void make_rendering_thread() override;
 	virtual void swap_buffers() override;
 
 	virtual void set_context(Context p_context) override;

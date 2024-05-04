@@ -135,6 +135,17 @@ void EditorSceneTabs::_scene_tab_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
+void EditorSceneTabs::unhandled_key_input(const Ref<InputEvent> &p_event) {
+	if (!tab_preview_panel->is_visible()) {
+		return;
+	}
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		tab_preview_panel->hide();
+	}
+}
+
 void EditorSceneTabs::_reposition_active_tab(int p_to_index) {
 	EditorNode::get_editor_data().move_edited_scene_to_index(p_to_index);
 	update_scene_tabs();
@@ -167,7 +178,7 @@ void EditorSceneTabs::_update_context_menu() {
 
 	if (tab_id >= 0) {
 		scene_tabs_context_menu->add_separator();
-		scene_tabs_context_menu->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")), TTR("Show in FileSystem"), EditorNode::FILE_SHOW_IN_FILESYSTEM);
+		scene_tabs_context_menu->add_item(TTR("Show in FileSystem"), EditorNode::FILE_SHOW_IN_FILESYSTEM);
 		_disable_menu_option_if(EditorNode::FILE_SHOW_IN_FILESYSTEM, !ResourceLoader::exists(EditorNode::get_editor_data().get_scene_path(tab_id)));
 		scene_tabs_context_menu->add_item(TTR("Play This Scene"), EditorNode::FILE_RUN_SCENE);
 		_disable_menu_option_if(EditorNode::FILE_RUN_SCENE, no_root_node);
@@ -369,6 +380,7 @@ EditorSceneTabs::EditorSceneTabs() {
 	singleton = this;
 
 	set_process_shortcut_input(true);
+	set_process_unhandled_key_input(true);
 
 	tabbar_panel = memnew(PanelContainer);
 	add_child(tabbar_panel);
