@@ -31,7 +31,7 @@
 #ifndef TILES_EDITOR_PLUGIN_H
 #define TILES_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
 #include "tile_atlas_view.h"

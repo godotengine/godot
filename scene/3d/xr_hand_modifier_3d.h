@@ -73,6 +73,9 @@ private:
 	BoneUpdate bone_update = BONE_UPDATE_FULL;
 	JointData joints[XRHandTracker::HAND_JOINT_MAX];
 
+	bool has_stored_previous_transforms = false;
+	Vector<Transform3D> previous_relative_transforms;
+
 	void _get_joint_data();
 	void _tracker_changed(StringName p_tracker_name, XRServer::TrackerType p_tracker_type);
 };

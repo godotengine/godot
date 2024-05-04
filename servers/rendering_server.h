@@ -41,6 +41,32 @@
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
 
+// Helper macros for code outside of the rendering server, but that is
+// called by the rendering server.
+#ifdef DEBUG_ENABLED
+#define ERR_ON_RENDER_THREAD                                              \
+	RenderingServer *rendering_server = RenderingServer::get_singleton(); \
+	ERR_FAIL_NULL(rendering_server);                                      \
+	ERR_FAIL_COND(rendering_server->is_on_render_thread());
+#define ERR_ON_RENDER_THREAD_V(m_ret)                                     \
+	RenderingServer *rendering_server = RenderingServer::get_singleton(); \
+	ERR_FAIL_NULL_V(rendering_server, m_ret);                             \
+	ERR_FAIL_COND_V(rendering_server->is_on_render_thread(), m_ret);
+#define ERR_NOT_ON_RENDER_THREAD                                          \
+	RenderingServer *rendering_server = RenderingServer::get_singleton(); \
+	ERR_FAIL_NULL(rendering_server);                                      \
+	ERR_FAIL_COND(!rendering_server->is_on_render_thread());
+#define ERR_NOT_ON_RENDER_THREAD_V(m_ret)                                 \
+	RenderingServer *rendering_server = RenderingServer::get_singleton(); \
+	ERR_FAIL_NULL_V(rendering_server, m_ret);                             \
+	ERR_FAIL_COND_V(!rendering_server->is_on_render_thread(), m_ret);
+#else
+#define ERR_ON_RENDER_THREAD
+#define ERR_ON_RENDER_THREAD_V(m_ret)
+#define ERR_NOT_ON_RENDER_THREAD
+#define ERR_NOT_ON_RENDER_THREAD_V(m_ret)
+#endif
+
 template <typename T>
 class TypedArray;
 
@@ -1030,7 +1056,15 @@ public:
 		VIEWPORT_VRS_MAX,
 	};
 
+	enum ViewportVRSUpdateMode {
+		VIEWPORT_VRS_UPDATE_DISABLED,
+		VIEWPORT_VRS_UPDATE_ONCE,
+		VIEWPORT_VRS_UPDATE_ALWAYS,
+		VIEWPORT_VRS_UPDATE_MAX,
+	};
+
 	virtual void viewport_set_vrs_mode(RID p_viewport, ViewportVRSMode p_mode) = 0;
+	virtual void viewport_set_vrs_update_mode(RID p_viewport, ViewportVRSUpdateMode p_mode) = 0;
 	virtual void viewport_set_vrs_texture(RID p_viewport, RID p_texture) = 0;
 
 	/* SKY API */
@@ -1684,7 +1718,7 @@ public:
 
 #ifndef DISABLE_DEPRECATED
 	// Never actually used, should be removed when we can break compatibility.
-	enum Features {
+	enum Features{
 		FEATURE_SHADERS,
 		FEATURE_MULTITHREADED,
 	};
@@ -1708,6 +1742,7 @@ public:
 	bool is_render_loop_enabled() const;
 	void set_render_loop_enabled(bool p_enabled);
 
+	virtual bool is_on_render_thread() = 0;
 	virtual void call_on_render_thread(const Callable &p_callable) = 0;
 
 #ifdef TOOLS_ENABLED
@@ -1788,6 +1823,7 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportOcclusionCullingBuildQuality);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFScale);
 VARIANT_ENUM_CAST(RenderingServer::ViewportVRSMode);
+VARIANT_ENUM_CAST(RenderingServer::ViewportVRSUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
 VARIANT_ENUM_CAST(RenderingServer::CompositorEffectCallbackType);
 VARIANT_ENUM_CAST(RenderingServer::CompositorEffectFlags);

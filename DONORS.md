@@ -32,10 +32,8 @@ generous deed immortalized in the next stable release of Godot Engine.
 
 ## Silver sponsors
 
-    Affray Interactive <https://scp.games/pandemic/>
     Broken Rules <https://brokenrul.es/>
     Chasing Carrots <https://www.chasing-carrots.com/>
-    Gamblify <https://www.gamblify.com/>
     Indoor Astronaut <https://indoorastronaut.ch/>
     Null <https://null.com/>
     Orbital Knight <https://www.orbitalknight.com/>
@@ -56,6 +54,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Garry Newman
     Isaiah Smith <https://www.isaiahsmith.dev/>
     Kenney <https://kenney.nl/>
+    Libretrend <https://libretrend.com/>
     Life Art Studios <https://lifeartstudios.net/>
     Lucid Silence Games
     Matthew Campbell
@@ -99,19 +98,21 @@ generous deed immortalized in the next stable release of Godot Engine.
     Scott Pezza
     ShikadiGum
     Silver Creek Entertainment
+    SolarLabyrinth
     Stephan Kessler
     Stephan Lanfermann
     TigerJ
     Tim Yuen
     Violin Iliev
     Vladimír Chvátil
-    And 16 anonymous donors
+    And 15 anonymous donors
 
 ## Gold members
 
     @reilaos
     alMoo Games
     Alva Majo
+    Amadan Interactive (Cillian Clifford)
     Antti Vesanen
     Artur Ilkaev
     Asher Glick
@@ -124,21 +125,31 @@ generous deed immortalized in the next stable release of Godot Engine.
     Brian Levinsen
     Brut
     Carlo del Mundo
+    Chickensoft
     ClarkThyLord
     Cosmin Munteanu
+    cowoder
     Coy Humphrey
+    Daniel Eichler
     David Chen Zhen
     David Coles
     David Hubber
     David Snopek
+    Deakcor
     Delton Ding
+    dfseifert
+    Don't You Know Who I Am? Inc.
+    Dono
     Dustuu
+    Edelweiss
     ElektroFox
     endaye
     Ends
+    Eren Öğrül
     Eric Phy
     Faisal Al-Kubaisi (QatariGameDev)
     FeralBytes
+    Garrus Vakarian
     GlassBrick
     Grau
     Guangzhou Lingchan
@@ -153,6 +164,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     John Gabriel
     Jon Woodward
     José Canepa
+    Justin Sasso
     KAR Games
     Karasu Studio
     korinVR
@@ -167,6 +179,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Mara Huldra
     Martin Šenkeřík
     Megabit Interactive
+    Michael Gooch
     Modus Ponens
     nezticle
     Niklas Wahrman
@@ -183,19 +196,25 @@ generous deed immortalized in the next stable release of Godot Engine.
     Robin Ward
     Saltlight Studio
     Samuel Judd
+    ScoreSpace
     Silverclad Studios
     Sofox
     Space Kraken Studios
     Spoony Panda
+    TANAKA Yu
+    TaraSophieDev
     ThatGamer
     ThePolyglotProgrammer
     Tim Nedvyga
     Tom Langwaldt
     Trevor Slocum
     tukon
+    Vagastella
     Vincent Foulon
     Weasel Games
     WuotanStudios.com
+    Yury K.
+    Zee Weasel
     Zhu Li
     zikes
 
@@ -530,7 +549,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     ケルベロス
     貴宏 小松
 
-    And 208 anonymous donors
+    And 201 anonymous donors
 
 ## Silver and bronze donors
 

@@ -125,6 +125,8 @@ void AnimationPlayer::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		p_property.hint_string = hint;
+	} else if (!auto_capture && p_property.name.begins_with("playback_auto_capture_")) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -149,7 +151,7 @@ void AnimationPlayer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			if (!Engine::get_singleton()->is_editor_hint() && animation_set.has(autoplay)) {
-				set_active(true);
+				set_active(active);
 				play(autoplay);
 				_check_immediately_after_start();
 			}
@@ -370,72 +372,20 @@ void AnimationPlayer::play_backwards(const StringName &p_name, double p_custom_b
 	play(p_name, p_custom_blend, -1, true);
 }
 
-void AnimationPlayer::play_with_capture(const StringName &p_name, double p_duration, double p_custom_blend, float p_custom_scale, bool p_from_end, Tween::TransitionType p_trans_type, Tween::EaseType p_ease_type) {
-	StringName name = p_name;
-	if (name == StringName()) {
-		name = playback.assigned;
+void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, float p_custom_scale, bool p_from_end) {
+	if (auto_capture) {
+		play_with_capture(p_name, auto_capture_duration, p_custom_blend, p_custom_scale, p_from_end, auto_capture_transition_type, auto_capture_ease_type);
+	} else {
+		_play(p_name, p_custom_blend, p_custom_scale, p_from_end);
 	}
-
-	if (signbit(p_duration)) {
-		double max_dur = 0;
-		Ref<Animation> anim = get_animation(name);
-		if (anim.is_valid()) {
-			double current_pos = playback.current.pos;
-			if (playback.assigned != name) {
-				current_pos = p_from_end ? anim->get_length() : 0;
-			}
-			for (int i = 0; i < anim->get_track_count(); i++) {
-				if (anim->track_get_type(i) != Animation::TYPE_VALUE) {
-					continue;
-				}
-				if (anim->value_track_get_update_mode(i) != Animation::UPDATE_CAPTURE) {
-					continue;
-				}
-				if (anim->track_get_key_count(i) == 0) {
-					continue;
-				}
-				max_dur = MAX(max_dur, p_from_end ? current_pos - anim->track_get_key_time(i, anim->track_get_key_count(i) - 1) : anim->track_get_key_time(i, 0) - current_pos);
-			}
-		}
-		p_duration = max_dur;
-	}
-
-	capture(name, p_duration, p_trans_type, p_ease_type);
-	play(name, p_custom_blend, p_custom_scale, p_from_end);
 }
 
-void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, float p_custom_scale, bool p_from_end) {
+void AnimationPlayer::_play(const StringName &p_name, double p_custom_blend, float p_custom_scale, bool p_from_end) {
 	StringName name = p_name;
 
 	if (name == StringName()) {
 		name = playback.assigned;
 	}
-
-#ifdef TOOLS_ENABLED
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		bool warn_enabled = false;
-		if (capture_cache.animation.is_null()) {
-			Ref<Animation> anim = get_animation(name);
-			if (anim.is_valid()) {
-				for (int i = 0; i < anim->get_track_count(); i++) {
-					if (anim->track_get_type(i) != Animation::TYPE_VALUE) {
-						continue;
-					}
-					if (anim->value_track_get_update_mode(i) != Animation::UPDATE_CAPTURE) {
-						continue;
-					}
-					if (anim->track_get_key_count(i) == 0) {
-						continue;
-					}
-					warn_enabled = true;
-				}
-			}
-		}
-		if (warn_enabled) {
-			WARN_PRINT_ONCE_ED("Capture track found. If you want to interpolate animation with captured frame, you can use play_with_capture() instead of play().");
-		}
-	}
-#endif
 
 	ERR_FAIL_COND_MSG(!animation_set.has(name), vformat("Animation not found: %s.", name));
 
@@ -523,6 +473,47 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 	if (next != StringName() && animation_set.has(next)) {
 		queue(next);
 	}
+}
+
+void AnimationPlayer::_capture(const StringName &p_name, bool p_from_end, double p_duration, Tween::TransitionType p_trans_type, Tween::EaseType p_ease_type) {
+	StringName name = p_name;
+	if (name == StringName()) {
+		name = playback.assigned;
+	}
+
+	Ref<Animation> anim = get_animation(name);
+	if (anim.is_null() || !anim->is_capture_included()) {
+		return;
+	}
+	if (signbit(p_duration)) {
+		double max_dur = 0;
+		double current_pos = playback.current.pos;
+		if (playback.assigned != name) {
+			current_pos = p_from_end ? anim->get_length() : 0;
+		}
+		for (int i = 0; i < anim->get_track_count(); i++) {
+			if (anim->track_get_type(i) != Animation::TYPE_VALUE) {
+				continue;
+			}
+			if (anim->value_track_get_update_mode(i) != Animation::UPDATE_CAPTURE) {
+				continue;
+			}
+			if (anim->track_get_key_count(i) == 0) {
+				continue;
+			}
+			max_dur = MAX(max_dur, p_from_end ? current_pos - anim->track_get_key_time(i, anim->track_get_key_count(i) - 1) : anim->track_get_key_time(i, 0) - current_pos);
+		}
+		p_duration = max_dur;
+	}
+	if (Math::is_zero_approx(p_duration)) {
+		return;
+	}
+	capture(name, p_duration, p_trans_type, p_ease_type);
+}
+
+void AnimationPlayer::play_with_capture(const StringName &p_name, double p_duration, double p_custom_blend, float p_custom_scale, bool p_from_end, Tween::TransitionType p_trans_type, Tween::EaseType p_ease_type) {
+	_capture(p_name, p_from_end, p_duration, p_trans_type, p_ease_type);
+	_play(p_name, p_custom_blend, p_custom_scale, p_from_end);
 }
 
 bool AnimationPlayer::is_playing() const {
@@ -725,6 +716,39 @@ double AnimationPlayer::get_blend_time(const StringName &p_animation1, const Str
 	}
 }
 
+void AnimationPlayer::set_auto_capture(bool p_auto_capture) {
+	auto_capture = p_auto_capture;
+	notify_property_list_changed();
+}
+
+bool AnimationPlayer::is_auto_capture() const {
+	return auto_capture;
+}
+
+void AnimationPlayer::set_auto_capture_duration(double p_auto_capture_duration) {
+	auto_capture_duration = p_auto_capture_duration;
+}
+
+double AnimationPlayer::get_auto_capture_duration() const {
+	return auto_capture_duration;
+}
+
+void AnimationPlayer::set_auto_capture_transition_type(Tween::TransitionType p_auto_capture_transition_type) {
+	auto_capture_transition_type = p_auto_capture_transition_type;
+}
+
+Tween::TransitionType AnimationPlayer::get_auto_capture_transition_type() const {
+	return auto_capture_transition_type;
+}
+
+void AnimationPlayer::set_auto_capture_ease_type(Tween::EaseType p_auto_capture_ease_type) {
+	auto_capture_ease_type = p_auto_capture_ease_type;
+}
+
+Tween::EaseType AnimationPlayer::get_auto_capture_ease_type() const {
+	return auto_capture_ease_type;
+}
+
 #ifdef TOOLS_ENABLED
 void AnimationPlayer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
@@ -815,9 +839,18 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_blend_time", "sec"), &AnimationPlayer::set_default_blend_time);
 	ClassDB::bind_method(D_METHOD("get_default_blend_time"), &AnimationPlayer::get_default_blend_time);
 
+	ClassDB::bind_method(D_METHOD("set_auto_capture", "auto_capture"), &AnimationPlayer::set_auto_capture);
+	ClassDB::bind_method(D_METHOD("is_auto_capture"), &AnimationPlayer::is_auto_capture);
+	ClassDB::bind_method(D_METHOD("set_auto_capture_duration", "auto_capture_duration"), &AnimationPlayer::set_auto_capture_duration);
+	ClassDB::bind_method(D_METHOD("get_auto_capture_duration"), &AnimationPlayer::get_auto_capture_duration);
+	ClassDB::bind_method(D_METHOD("set_auto_capture_transition_type", "auto_capture_transition_type"), &AnimationPlayer::set_auto_capture_transition_type);
+	ClassDB::bind_method(D_METHOD("get_auto_capture_transition_type"), &AnimationPlayer::get_auto_capture_transition_type);
+	ClassDB::bind_method(D_METHOD("set_auto_capture_ease_type", "auto_capture_ease_type"), &AnimationPlayer::set_auto_capture_ease_type);
+	ClassDB::bind_method(D_METHOD("get_auto_capture_ease_type"), &AnimationPlayer::get_auto_capture_ease_type);
+
 	ClassDB::bind_method(D_METHOD("play", "name", "custom_blend", "custom_speed", "from_end"), &AnimationPlayer::play, DEFVAL(StringName()), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("play_backwards", "name", "custom_blend"), &AnimationPlayer::play_backwards, DEFVAL(StringName()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("play_with_capture", "name", "duration", "custom_blend", "custom_speed", "from_end", "trans_type", "ease_type"), &AnimationPlayer::play_with_capture, DEFVAL(-1.0), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false), DEFVAL(Tween::TRANS_LINEAR), DEFVAL(Tween::EASE_IN));
+	ClassDB::bind_method(D_METHOD("play_with_capture", "name", "duration", "custom_blend", "custom_speed", "from_end", "trans_type", "ease_type"), &AnimationPlayer::play_with_capture, DEFVAL(StringName()), DEFVAL(-1.0), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false), DEFVAL(Tween::TRANS_LINEAR), DEFVAL(Tween::EASE_IN));
 	ClassDB::bind_method(D_METHOD("pause"), &AnimationPlayer::pause);
 	ClassDB::bind_method(D_METHOD("stop", "keep_state"), &AnimationPlayer::stop, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimationPlayer::is_playing);
@@ -855,6 +888,10 @@ void AnimationPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "current_animation_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_current_animation_position");
 
 	ADD_GROUP("Playback Options", "playback_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playback_auto_capture"), "set_auto_capture", "is_auto_capture");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_auto_capture_duration", PROPERTY_HINT_NONE, "suffix:s"), "set_auto_capture_duration", "get_auto_capture_duration");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_auto_capture_transition_type", PROPERTY_HINT_ENUM, "Linear,Sine,Quint,Quart,Expo,Elastic,Cubic,Circ,Bounce,Back,Spring"), "set_auto_capture_transition_type", "get_auto_capture_transition_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_auto_capture_ease_type", PROPERTY_HINT_ENUM, "In,Out,InOut,OutIn"), "set_auto_capture_ease_type", "get_auto_capture_ease_type");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:s"), "set_default_blend_time", "get_default_blend_time");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "-4,4,0.001,or_less,or_greater"), "set_speed_scale", "get_speed_scale");

@@ -35,6 +35,7 @@
 #include "servers/rendering/rendering_server_globals.h"
 
 #include "extensions/openxr_eye_gaze_interaction.h"
+#include "extensions/openxr_hand_interaction_extension.h"
 #include "thirdparty/openxr/include/openxr/openxr.h"
 
 void OpenXRInterface::_bind_methods() {
@@ -43,6 +44,8 @@ void OpenXRInterface::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("session_stopping"));
 	ADD_SIGNAL(MethodInfo("session_focussed"));
 	ADD_SIGNAL(MethodInfo("session_visible"));
+	ADD_SIGNAL(MethodInfo("session_loss_pending"));
+	ADD_SIGNAL(MethodInfo("instance_exiting"));
 	ADD_SIGNAL(MethodInfo("pose_recentered"));
 	ADD_SIGNAL(MethodInfo("refresh_rate_changed", PropertyInfo(Variant::FLOAT, "refresh_rate")));
 
@@ -91,7 +94,18 @@ void OpenXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hand_joint_angular_velocity", "hand", "joint"), &OpenXRInterface::get_hand_joint_angular_velocity);
 
 	ClassDB::bind_method(D_METHOD("is_hand_tracking_supported"), &OpenXRInterface::is_hand_tracking_supported);
+	ClassDB::bind_method(D_METHOD("is_hand_interaction_supported"), &OpenXRInterface::is_hand_interaction_supported);
 	ClassDB::bind_method(D_METHOD("is_eye_gaze_interaction_supported"), &OpenXRInterface::is_eye_gaze_interaction_supported);
+
+	// VRS
+	ClassDB::bind_method(D_METHOD("get_vrs_min_radius"), &OpenXRInterface::get_vrs_min_radius);
+	ClassDB::bind_method(D_METHOD("set_vrs_min_radius", "radius"), &OpenXRInterface::set_vrs_min_radius);
+	ClassDB::bind_method(D_METHOD("get_vrs_strength"), &OpenXRInterface::get_vrs_strength);
+	ClassDB::bind_method(D_METHOD("set_vrs_strength", "strength"), &OpenXRInterface::set_vrs_strength);
+
+	ADD_GROUP("Vulkan VRS", "vrs_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_min_radius", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_vrs_min_radius", "get_vrs_min_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_strength", PROPERTY_HINT_RANGE, "0.1,10.0,0.1"), "set_vrs_strength", "get_vrs_strength");
 
 	BIND_ENUM_CONSTANT(HAND_LEFT);
 	BIND_ENUM_CONSTANT(HAND_RIGHT);
@@ -806,6 +820,21 @@ bool OpenXRInterface::is_hand_tracking_supported() {
 	}
 }
 
+bool OpenXRInterface::is_hand_interaction_supported() const {
+	if (openxr_api == nullptr) {
+		return false;
+	} else if (!openxr_api->is_initialized()) {
+		return false;
+	} else {
+		OpenXRHandInteractionExtension *hand_interaction_ext = OpenXRHandInteractionExtension::get_singleton();
+		if (hand_interaction_ext == nullptr) {
+			return false;
+		} else {
+			return hand_interaction_ext->is_available();
+		}
+	}
+}
+
 bool OpenXRInterface::is_eye_gaze_interaction_supported() {
 	if (openxr_api == nullptr) {
 		return false;
@@ -851,6 +880,22 @@ Array OpenXRInterface::get_action_sets() const {
 	}
 
 	return arr;
+}
+
+float OpenXRInterface::get_vrs_min_radius() const {
+	return xr_vrs.get_vrs_min_radius();
+}
+
+void OpenXRInterface::set_vrs_min_radius(float p_vrs_min_radius) {
+	xr_vrs.set_vrs_min_radius(p_vrs_min_radius);
+}
+
+float OpenXRInterface::get_vrs_strength() const {
+	return xr_vrs.get_vrs_strength();
+}
+
+void OpenXRInterface::set_vrs_strength(float p_vrs_strength) {
+	xr_vrs.set_vrs_strength(p_vrs_strength);
 }
 
 double OpenXRInterface::get_render_target_size_multiplier() const {
@@ -1258,6 +1303,14 @@ void OpenXRInterface::on_state_stopping() {
 	emit_signal(SNAME("session_stopping"));
 }
 
+void OpenXRInterface::on_state_loss_pending() {
+	emit_signal(SNAME("session_loss_pending"));
+}
+
+void OpenXRInterface::on_state_exiting() {
+	emit_signal(SNAME("instance_exiting"));
+}
+
 void OpenXRInterface::on_pose_recentered() {
 	emit_signal(SNAME("pose_recentered"));
 }
@@ -1406,6 +1459,24 @@ Vector3 OpenXRInterface::get_hand_joint_angular_velocity(Hand p_hand, HandJoints
 	}
 
 	return Vector3();
+}
+
+RID OpenXRInterface::get_vrs_texture() {
+	if (!openxr_api) {
+		return RID();
+	}
+
+	PackedVector2Array eye_foci;
+
+	Size2 target_size = get_render_target_size();
+	real_t aspect_ratio = target_size.x / target_size.y;
+	uint32_t view_count = get_view_count();
+
+	for (uint32_t v = 0; v < view_count; v++) {
+		eye_foci.push_back(openxr_api->get_eye_focus(v, aspect_ratio));
+	}
+
+	return xr_vrs.make_vrs_texture(target_size, eye_foci);
 }
 
 OpenXRInterface::OpenXRInterface() {

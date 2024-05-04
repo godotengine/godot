@@ -75,6 +75,7 @@ typedef Vector<String> PackedStringArray;
 typedef Vector<Vector2> PackedVector2Array;
 typedef Vector<Vector3> PackedVector3Array;
 typedef Vector<Color> PackedColorArray;
+typedef Vector<Vector4> PackedVector4Array;
 
 class Variant {
 public:
@@ -126,6 +127,7 @@ public:
 		PACKED_VECTOR2_ARRAY,
 		PACKED_VECTOR3_ARRAY,
 		PACKED_COLOR_ARRAY,
+		PACKED_VECTOR4_ARRAY,
 
 		VARIANT_MAX
 	};
@@ -297,6 +299,7 @@ private:
 			true, //PACKED_VECTOR2_ARRAY,
 			true, //PACKED_VECTOR3_ARRAY,
 			true, //PACKED_COLOR_ARRAY,
+			true, //PACKED_VECTOR4_ARRAY,
 		};
 
 		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
@@ -349,6 +352,7 @@ public:
 	bool is_zero() const;
 	bool is_one() const;
 	bool is_null() const;
+	bool is_read_only() const;
 
 	// Make sure Variant is not implicitly cast when accessing it with bracket notation (GH-49469).
 	Variant &operator[](const Variant &p_key) = delete;
@@ -408,6 +412,7 @@ public:
 	operator PackedVector3Array() const;
 	operator PackedVector2Array() const;
 	operator PackedColorArray() const;
+	operator PackedVector4Array() const;
 
 	operator Vector<::RID>() const;
 	operator Vector<Plane>() const;
@@ -539,6 +544,7 @@ public:
 	Variant(const PackedVector2Array &p_vector2_array);
 	Variant(const PackedVector3Array &p_vector3_array);
 	Variant(const PackedColorArray &p_color_array);
+	Variant(const PackedVector4Array &p_vector4_array);
 
 	Variant(const Vector<::RID> &p_array); // helper
 	Variant(const Vector<Plane> &p_array); // helper

@@ -80,7 +80,16 @@ void VRS::copy_vrs(RID p_source_rd_texture, RID p_dest_framebuffer, bool p_multi
 
 	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_rd_texture }));
 
-	VRSMode mode = p_multiview ? VRS_MULTIVIEW : VRS_DEFAULT;
+	VRSPushConstant push_constant = {};
+
+	int mode = p_multiview ? VRS_MULTIVIEW : VRS_DEFAULT;
+
+	// Set maximum texel factor based on maximum fragment size, some GPUs do not support 8x8 (fragment shading rate approach).
+	if (MIN(RD::get_singleton()->limit_get(RD::LIMIT_VRS_MAX_FRAGMENT_WIDTH), RD::get_singleton()->limit_get(RD::LIMIT_VRS_MAX_FRAGMENT_HEIGHT)) > 4) {
+		push_constant.max_texel_factor = 3.0;
+	} else {
+		push_constant.max_texel_factor = 2.0;
+	}
 
 	RID shader = vrs_shader.shader.version_get_shader(vrs_shader.shader_version, mode);
 	ERR_FAIL_COND(shader.is_null());
@@ -88,7 +97,7 @@ void VRS::copy_vrs(RID p_source_rd_texture, RID p_dest_framebuffer, bool p_multi
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD, Vector<Color>());
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, vrs_shader.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
-	// RD::get_singleton()->draw_list_set_push_constant(draw_list, &vrs_shader.push_constant, sizeof(VRSPushConstant));
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(VRSPushConstant));
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
 	RD::get_singleton()->draw_list_end();
 }
@@ -111,11 +120,10 @@ Size2i VRS::get_vrs_texture_size(const Size2i p_base_size) const {
 void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 	TextureStorage *texture_storage = TextureStorage::get_singleton();
 	RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(p_render_target);
+	RS::ViewportVRSUpdateMode vrs_update_mode = texture_storage->render_target_get_vrs_update_mode(p_render_target);
 
-	if (vrs_mode != RS::VIEWPORT_VRS_DISABLED) {
+	if (vrs_mode != RS::VIEWPORT_VRS_DISABLED && vrs_update_mode != RS::VIEWPORT_VRS_UPDATE_DISABLED) {
 		RD::get_singleton()->draw_command_begin_label("VRS Setup");
-
-		// TODO figure out if image has changed since it was last copied so we can save some resources..
 
 		if (vrs_mode == RS::VIEWPORT_VRS_TEXTURE) {
 			RID vrs_texture = texture_storage->render_target_get_vrs_texture(p_render_target);
@@ -143,6 +151,10 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 				}
 			}
 #endif // _3D_DISABLED
+		}
+
+		if (vrs_update_mode == RS::VIEWPORT_VRS_UPDATE_ONCE) {
+			texture_storage->render_target_set_vrs_update_mode(p_render_target, RS::VIEWPORT_VRS_UPDATE_DISABLED);
 		}
 
 		RD::get_singleton()->draw_command_end_label();

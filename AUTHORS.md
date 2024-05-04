@@ -48,6 +48,7 @@ name is available.
     Anutrix
     Aren Villanueva (kurikaesu)
     Ariel Manzur (punto-)
+    Arman Elgudzhyan (puchik)
     AThousandShips
     aXu-AP
     Bartłomiej T. Listwon (Listwon)
@@ -141,6 +142,7 @@ name is available.
     Jean-Michel Bernard (jmb462)
     Jérôme Gully (Nutriz)
     Jia Jun Chai (SkyLucilfer)
+    jitspoe
     Joan Fons Sanchez (JFonS)
     Johan Manuel (29jm)
     Johannes Witt (HaSa1002)
@@ -217,6 +219,7 @@ name is available.
     Omar El Sheikh (The-O-King)
     Ovnuniarchos
     Pascal Richter (ShyRed)
+    passivestar
     Patrick Dawson (pkdawson)
     Patrick Exner (FlameLizard)
     Patrick (firefly2442)
@@ -232,6 +235,7 @@ name is available.
     Poommetee Ketson (Noshyaar)
     Przemysław Gołąb (n-pigeon)
     Rafael M. G. (rafallus)
+    Raffaele Picca (RPicster)
     Rafał Mikrut (qarmin)
     Ralf Hölzemer (rollenrolm)
     Ramesh Ravone (RameshRavone)
@@ -298,6 +302,7 @@ name is available.
     Zae Chao (zaevi)
     Zak Stam (zaksnet)
     Zher Huei Lee (leezh)
+    Zi Ye (MajorMcDoom)
     ZuBsPaCe
     谢天 (jsjtxietian)
     风青山 (Rindbee)

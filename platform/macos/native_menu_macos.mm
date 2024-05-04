@@ -248,6 +248,13 @@ void NativeMenuMacOS::free_menu(const RID &p_rid) {
 	}
 }
 
+NSMenu *NativeMenuMacOS::get_native_menu_handle(const RID &p_rid) {
+	MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(md, nullptr);
+
+	return md->menu;
+}
+
 Size2 NativeMenuMacOS::get_size(const RID &p_rid) const {
 	const MenuData *md = menus.get_or_null(p_rid);
 	ERR_FAIL_NULL_V(md, Size2());

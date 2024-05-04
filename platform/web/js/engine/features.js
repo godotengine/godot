@@ -72,8 +72,7 @@ const Features = { // eslint-disable-line no-unused-vars
 	 *
 	 * @returns {Array<string>} A list of human-readable missing features.
 	 * @function Engine.getMissingFeatures
-	 * @typedef {{ threads: boolean }} SupportedFeatures
-	 * @param {SupportedFeatures} supportedFeatures
+	 * @param {{threads: (boolean|undefined)}} supportedFeatures
 	 */
 	getMissingFeatures: function (supportedFeatures = {}) {
 		const {

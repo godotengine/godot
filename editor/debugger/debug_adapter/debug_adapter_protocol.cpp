@@ -607,7 +607,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		}
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			int id = variable_id++;
-			PackedVector2Array array = p_var;
+			PackedVector3Array array = p_var;
 			DAP::Variable size;
 			size.name = "size";
 			size.type = Variant::get_type_name(Variant::INT);
@@ -642,6 +642,28 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 				DAP::Variable var;
 				var.name = itos(i);
 				var.type = Variant::get_type_name(Variant::COLOR);
+				var.value = array[i];
+				var.variablesReference = parse_variant(array[i]);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::PACKED_VECTOR4_ARRAY: {
+			int id = variable_id++;
+			PackedVector4Array array = p_var;
+			DAP::Variable size;
+			size.name = "size";
+			size.type = Variant::get_type_name(Variant::INT);
+			size.value = itos(array.size());
+
+			Array arr;
+			arr.push_back(size.to_json());
+
+			for (int i = 0; i < array.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				var.type = Variant::get_type_name(Variant::VECTOR4);
 				var.value = array[i];
 				var.variablesReference = parse_variant(array[i]);
 				arr.push_back(var.to_json());

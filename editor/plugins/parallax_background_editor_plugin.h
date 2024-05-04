@@ -31,7 +31,7 @@
 #ifndef PARALLAX_BACKGROUND_EDITOR_PLUGIN_H
 #define PARALLAX_BACKGROUND_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class HBoxContainer;
 class MenuButton;

@@ -105,10 +105,6 @@ public:
 		_changes_changed();
 	}
 
-#define DISPLAY_CHANGED \
-	changes++;          \
-	_changes_changed();
-
 #else
 	_FORCE_INLINE_ static void redraw_request() {
 		changes++;
@@ -676,6 +672,7 @@ public:
 	FUNC2(call_set_vsync_mode, DisplayServer::VSyncMode, DisplayServer::WindowID)
 
 	FUNC2(viewport_set_vrs_mode, RID, ViewportVRSMode)
+	FUNC2(viewport_set_vrs_update_mode, RID, ViewportVRSUpdateMode)
 	FUNC2(viewport_set_vrs_texture, RID, RID)
 
 	/* COMPOSITOR EFFECT */
@@ -1051,6 +1048,10 @@ public:
 	virtual bool has_changed() const override;
 	virtual void init() override;
 	virtual void finish() override;
+
+	virtual bool is_on_render_thread() override {
+		return Thread::get_caller_id() == server_thread;
+	}
 
 	virtual void call_on_render_thread(const Callable &p_callable) override {
 		if (Thread::get_caller_id() == server_thread) {

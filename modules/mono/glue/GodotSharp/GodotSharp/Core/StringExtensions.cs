@@ -417,76 +417,31 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a case-sensitive comparison to another string, return -1 if less, 0 if equal and +1 if greater.
+        /// Performs a case-sensitive comparison to another string and returns an integer that indicates their relative position in the sort order.
         /// </summary>
         /// <seealso cref="NocasecmpTo(string, string)"/>
         /// <seealso cref="CompareTo(string, string, bool)"/>
         /// <param name="instance">The string to compare.</param>
         /// <param name="to">The other string to compare.</param>
-        /// <returns>-1 if less, 0 if equal and +1 if greater.</returns>
+        /// <returns>An integer that indicates the lexical relationship between the two comparands.</returns>
         public static int CasecmpTo(this string instance, string to)
         {
             return instance.CompareTo(to, caseSensitive: true);
         }
 
         /// <summary>
-        /// Performs a comparison to another string, return -1 if less, 0 if equal and +1 if greater.
+        /// Performs a comparison to another string and returns an integer that indicates their relative position in the sort order.
         /// </summary>
         /// <param name="instance">The string to compare.</param>
         /// <param name="to">The other string to compare.</param>
         /// <param name="caseSensitive">
         /// If <see langword="true"/>, the comparison will be case sensitive.
         /// </param>
-        /// <returns>-1 if less, 0 if equal and +1 if greater.</returns>
+        /// <returns>An integer that indicates the lexical relationship between the two comparands.</returns>
+        [Obsolete("Use string.Compare instead.")]
         public static int CompareTo(this string instance, string to, bool caseSensitive = true)
         {
-            if (string.IsNullOrEmpty(instance))
-                return string.IsNullOrEmpty(to) ? 0 : -1;
-
-            if (string.IsNullOrEmpty(to))
-                return 1;
-
-            int instanceIndex = 0;
-            int toIndex = 0;
-
-            if (caseSensitive) // Outside while loop to avoid checking multiple times, despite some code duplication.
-            {
-                while (true)
-                {
-                    if (to[toIndex] == 0 && instance[instanceIndex] == 0)
-                        return 0; // We're equal
-                    if (instance[instanceIndex] == 0)
-                        return -1; // If this is empty, and the other one is not, then we're less... I think?
-                    if (to[toIndex] == 0)
-                        return 1; // Otherwise the other one is smaller...
-                    if (instance[instanceIndex] < to[toIndex]) // More than
-                        return -1;
-                    if (instance[instanceIndex] > to[toIndex]) // Less than
-                        return 1;
-
-                    instanceIndex++;
-                    toIndex++;
-                }
-            }
-            else
-            {
-                while (true)
-                {
-                    if (to[toIndex] == 0 && instance[instanceIndex] == 0)
-                        return 0; // We're equal
-                    if (instance[instanceIndex] == 0)
-                        return -1; // If this is empty, and the other one is not, then we're less... I think?
-                    if (to[toIndex] == 0)
-                        return 1; // Otherwise the other one is smaller..
-                    if (char.ToUpperInvariant(instance[instanceIndex]) < char.ToUpperInvariant(to[toIndex])) // More than
-                        return -1;
-                    if (char.ToUpperInvariant(instance[instanceIndex]) > char.ToUpperInvariant(to[toIndex])) // Less than
-                        return 1;
-
-                    instanceIndex++;
-                    toIndex++;
-                }
-            }
+            return string.Compare(instance, to, !caseSensitive);
         }
 
         /// <summary>
@@ -1297,13 +1252,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Perform a case-insensitive comparison to another string, return -1 if less, 0 if equal and +1 if greater.
+        /// Performs a case-insensitive comparison to another string and returns an integer that indicates their relative position in the sort order.
         /// </summary>
         /// <seealso cref="CasecmpTo(string, string)"/>
         /// <seealso cref="CompareTo(string, string, bool)"/>
         /// <param name="instance">The string to compare.</param>
         /// <param name="to">The other string to compare.</param>
-        /// <returns>-1 if less, 0 if equal and +1 if greater.</returns>
+        /// <returns>An integer that indicates the lexical relationship between the two comparands.</returns>
         public static int NocasecmpTo(this string instance, string to)
         {
             return instance.CompareTo(to, caseSensitive: false);

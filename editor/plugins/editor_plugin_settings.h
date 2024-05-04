@@ -32,7 +32,7 @@
 #define EDITOR_PLUGIN_SETTINGS_H
 
 #include "editor/editor_data.h"
-#include "editor/plugin_config_dialog.h"
+#include "editor/plugins/plugin_config_dialog.h"
 
 class Tree;
 

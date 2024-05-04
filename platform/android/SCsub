@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+import sys
 import subprocess
+from methods import print_warning
 
 Import("env")
 
@@ -52,7 +54,7 @@ elif env["arch"] == "x86_32":
 elif env["arch"] == "x86_64":
     lib_arch_dir = "x86_64"
 else:
-    print("WARN: Architecture not suitable for embedding into APK; keeping .so at \\bin")
+    print_warning("Architecture not suitable for embedding into APK; keeping .so at \\bin")
 
 if lib_arch_dir != "":
     if env.dev_build:
@@ -81,10 +83,21 @@ if lib_arch_dir != "":
     env_android.Command(out_dir + "/libc++_shared.so", stl_lib_path, Copy("$TARGET", "$SOURCE"))
 
     def generate_apk(target, source, env):
+        gradle_process = []
+
+        if sys.platform.startswith("win"):
+            gradle_process = [
+                "cmd",
+                "/c",
+                "gradlew.bat",
+            ]
+        else:
+            gradle_process = ["./gradlew"]
+
         if env["target"] != "editor" and env["dev_build"]:
             subprocess.run(
-                [
-                    "./gradlew",
+                gradle_process
+                + [
                     "generateDevTemplate",
                     "--quiet",
                 ],
@@ -93,8 +106,8 @@ if lib_arch_dir != "":
         else:
             # Android editor with `dev_build=yes` is handled by the `generateGodotEditor` task.
             subprocess.run(
-                [
-                    "./gradlew",
+                gradle_process
+                + [
                     "generateGodotEditor" if env["target"] == "editor" else "generateGodotTemplates",
                     "--quiet",
                 ],

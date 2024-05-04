@@ -53,6 +53,7 @@ class FBXState : public GLTFState {
 	HashMap<Pair<uint64_t, uint64_t>, GLTFTextureIndex, PairHash<uint64_t, uint64_t>> albedo_transparency_textures;
 
 	Vector<GLTFSkinIndex> skin_indices;
+	Vector<GLTFSkinIndex> original_skin_indices;
 	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_fbx_skeleton;
 	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_fbx_skin;
 	HashSet<String> unique_mesh_names; // Not in GLTFState because GLTFState prefixes mesh names with the scene name (or _)

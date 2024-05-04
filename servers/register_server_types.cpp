@@ -325,6 +325,7 @@ void register_server_types() {
 	PhysicsServer3DManager::get_singleton()->set_default_server("GodotPhysics3D");
 
 	GDREGISTER_ABSTRACT_CLASS(XRInterface);
+	GDREGISTER_CLASS(XRVRS);
 	GDREGISTER_CLASS(XRBodyTracker);
 	GDREGISTER_CLASS(XRControllerTracker);
 	GDREGISTER_CLASS(XRFaceTracker);

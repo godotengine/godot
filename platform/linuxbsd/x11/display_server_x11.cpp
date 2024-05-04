@@ -2225,7 +2225,7 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 
 	Size2i size = p_size;
-	size = size.max(Size2i(1, 1));
+	size = size.maxi(1);
 
 	WindowData &wd = windows[p_window];
 
@@ -4992,7 +4992,7 @@ void DisplayServerX11::process_events() {
 						files.write[i] = files[i].replace("file://", "").uri_decode();
 					}
 
-					if (!windows[window_id].drop_files_callback.is_null()) {
+					if (windows[window_id].drop_files_callback.is_valid()) {
 						windows[window_id].drop_files_callback.call(files);
 					}
 

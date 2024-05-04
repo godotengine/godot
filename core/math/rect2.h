@@ -278,7 +278,7 @@ struct _NO_DISCARD_ Rect2 {
 	}
 
 	_FORCE_INLINE_ Rect2 abs() const {
-		return Rect2(position + size.min(Point2()), size.abs());
+		return Rect2(position + size.minf(0), size.abs());
 	}
 
 	_FORCE_INLINE_ Rect2 round() const {

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  plugin_config_dialog.h                                                */
+/*  xr_vrs.h                                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,61 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PLUGIN_CONFIG_DIALOG_H
-#define PLUGIN_CONFIG_DIALOG_H
+#ifndef XR_VRS_H
+#define XR_VRS_H
 
-#include "scene/gui/check_box.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/text_edit.h"
-#include "scene/gui/texture_rect.h"
+#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
 
-class EditorValidationPanel;
+/* This is a helper class for generating stereoscopic VRS images */
 
-class PluginConfigDialog : public ConfirmationDialog {
-	GDCLASS(PluginConfigDialog, ConfirmationDialog);
+class XRVRS : public Object {
+	GDCLASS(XRVRS, Object);
 
-	enum {
-		MSG_ID_PLUGIN,
-		MSG_ID_SUBFOLDER,
-		MSG_ID_SCRIPT,
-		MSG_ID_ACTIVE,
-	};
+private:
+	float vrs_min_radius = 20.0;
+	float vrs_strength = 1.0;
+	bool vrs_dirty = true;
 
-	LineEdit *name_edit = nullptr;
-	LineEdit *subfolder_edit = nullptr;
-	TextEdit *desc_edit = nullptr;
-	LineEdit *author_edit = nullptr;
-	LineEdit *version_edit = nullptr;
-	OptionButton *script_option_edit = nullptr;
-	LineEdit *script_edit = nullptr;
-	CheckBox *active_edit = nullptr;
-
-	LocalVector<Control *> plugin_edit_hidden_controls;
-
-	EditorValidationPanel *validation_panel = nullptr;
-
-	bool _edit_mode = false;
-
-	void _clear_fields();
-	void _on_confirmed();
-	void _on_canceled();
-	void _on_required_text_changed();
-	String _get_subfolder();
-
-	static String _to_absolute_plugin_path(const String &p_plugin_name);
+	RID vrs_texture;
+	Size2i target_size;
+	PackedVector2Array eye_foci;
 
 protected:
-	virtual void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void config(const String &p_config_path);
+	~XRVRS();
 
-	PluginConfigDialog();
-	~PluginConfigDialog();
+	float get_vrs_min_radius() const;
+	void set_vrs_min_radius(float p_vrs_min_radius);
+	float get_vrs_strength() const;
+	void set_vrs_strength(float p_vrs_strength);
+
+	RID make_vrs_texture(const Size2 &p_target_size, const PackedVector2Array &p_eye_foci);
 };
 
-#endif // PLUGIN_CONFIG_DIALOG_H
+#endif // XR_VRS_H

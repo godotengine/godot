@@ -31,7 +31,7 @@
 #ifndef EDITOR_AUDIO_BUSES_H
 #define EDITOR_AUDIO_BUSES_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"

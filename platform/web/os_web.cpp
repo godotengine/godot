@@ -174,7 +174,7 @@ void OS_Web::add_frame_delay(bool p_can_draw) {
 #endif
 }
 
-void OS_Web::vibrate_handheld(int p_duration_ms) {
+void OS_Web::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 	godot_js_input_vibrate_handheld(p_duration_ms);
 }
 

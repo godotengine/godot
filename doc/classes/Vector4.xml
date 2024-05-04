@@ -64,6 +64,14 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="clampf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="min" type="float" />
+			<param index="1" name="max" type="float" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
 		<method name="cubic_interpolate" qualifiers="const">
 			<return type="Vector4" />
 			<param index="0" name="b" type="Vector4" />
@@ -176,16 +184,44 @@
 				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="Vector4" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector4(maxf(x, with.x), maxf(y, with.y), maxf(z, with.z), maxf(w, with.w))[/code].
+			</description>
+		</method>
 		<method name="max_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
+		<method name="maxf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector4(maxf(x, with), maxf(y, with), maxf(z, with), maxf(w, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="Vector4" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector4(minf(x, with.x), minf(y, with.y), minf(z, with.z), minf(w, with.w))[/code].
+			</description>
+		</method>
 		<method name="min_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_W].
+			</description>
+		</method>
+		<method name="minf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector4(minf(x, with), minf(y, with), minf(z, with), minf(w, with))[/code].
 			</description>
 		</method>
 		<method name="normalized" qualifiers="const">
@@ -226,6 +262,13 @@
 			<param index="0" name="step" type="Vector4" />
 			<description>
 				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
+			</description>
+		</method>
+		<method name="snappedf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="step" type="float" />
+			<description>
+				Returns a new vector with each component snapped to the nearest multiple of [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
 	</methods>

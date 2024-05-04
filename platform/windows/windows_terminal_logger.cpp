@@ -53,26 +53,12 @@ void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_er
 	}
 	buf[len] = 0;
 
-	int wlen = MultiByteToWideChar(CP_UTF8, 0, buf, len, nullptr, 0);
-	if (wlen < 0) {
-		return;
-	}
-
-	wchar_t *wbuf = (wchar_t *)memalloc((len + 1) * sizeof(wchar_t));
-	ERR_FAIL_NULL_MSG(wbuf, "Out of memory.");
-	MultiByteToWideChar(CP_UTF8, 0, buf, len, wbuf, wlen);
-	wbuf[wlen] = 0;
-
-	if (p_err) {
-		fwprintf(stderr, L"%ls", wbuf);
-	} else {
-		wprintf(L"%ls", wbuf);
-	}
-
-	memfree(wbuf);
+	DWORD written = 0;
+	HANDLE h = p_err ? GetStdHandle(STD_ERROR_HANDLE) : GetStdHandle(STD_OUTPUT_HANDLE);
+	WriteFile(h, &buf[0], len, &written, nullptr);
 
 #ifdef DEBUG_ENABLED
-	fflush(stdout);
+	FlushFileBuffers(h);
 #endif
 }
 

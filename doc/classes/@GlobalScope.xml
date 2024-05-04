@@ -604,7 +604,7 @@
 				is_same(arr_a, arr_b)  # false
 				[/codeblock]
 				These are [Variant] value types: [code]null[/code], [bool], [int], [float], [String], [StringName], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i], [Rect2], [Rect2i], [Transform2D], [Transform3D], [Plane], [Quaternion], [AABB], [Basis], [Projection], [Color], [NodePath], [RID], [Callable] and [Signal].
-				These are [Variant] reference types: [Object], [Dictionary], [Array], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedStringArray], [PackedVector2Array], [PackedVector3Array] and [PackedColorArray].
+				These are [Variant] reference types: [Object], [Dictionary], [Array], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedStringArray], [PackedVector2Array], [PackedVector3Array], [PackedVector4Array], and [PackedColorArray].
 			</description>
 		</method>
 		<method name="is_zero_approx">
@@ -696,6 +696,7 @@
 				[codeblock]
 				max(1, 7, 3, -6, 5) # Returns 7
 				[/codeblock]
+				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise maximum, and will pick the largest value when compared using [code]x &lt; y[/code]. To perform component-wise maximum, use [method Vector2.max], [method Vector2i.max], [method Vector3.max], [method Vector3i.max], [method Vector4.max], and [method Vector4i.max].
 			</description>
 		</method>
 		<method name="maxf">
@@ -729,6 +730,7 @@
 				[codeblock]
 				min(1, 7, 3, -6, 5) # Returns -6
 				[/codeblock]
+				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise minimum, and will pick the smallest value when compared using [code]x &lt; y[/code]. To perform component-wise minimum, use [method Vector2.min], [method Vector2i.min], [method Vector3.min], [method Vector3i.min], [method Vector4.min], and [method Vector4i.min].
 			</description>
 		</method>
 		<method name="minf">
@@ -3167,7 +3169,10 @@
 		<constant name="TYPE_PACKED_COLOR_ARRAY" value="37" enum="Variant.Type">
 			Variable is of type [PackedColorArray].
 		</constant>
-		<constant name="TYPE_MAX" value="38" enum="Variant.Type">
+		<constant name="TYPE_PACKED_VECTOR4_ARRAY" value="38" enum="Variant.Type">
+			Variable is of type [PackedVector4Array].
+		</constant>
+		<constant name="TYPE_MAX" value="39" enum="Variant.Type">
 			Represents the size of the [enum Variant.Type] enum.
 		</constant>
 		<constant name="OP_EQUAL" value="0" enum="Variant.Operator">

@@ -382,7 +382,7 @@ Vector3i GPUParticlesCollisionSDF3D::get_estimated_cell_size() const {
 	float cell_size = aabb.get_longest_axis_size() / float(subdiv);
 
 	Vector3i sdf_size = Vector3i(aabb.size / cell_size);
-	sdf_size = sdf_size.max(Vector3i(1, 1, 1));
+	sdf_size = sdf_size.maxi(1);
 	return sdf_size;
 }
 
@@ -395,7 +395,7 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 	float cell_size = aabb.get_longest_axis_size() / float(subdiv);
 
 	Vector3i sdf_size = Vector3i(aabb.size / cell_size);
-	sdf_size = sdf_size.max(Vector3i(1, 1, 1));
+	sdf_size = sdf_size.maxi(1);
 
 	if (bake_begin_function) {
 		bake_begin_function(100);

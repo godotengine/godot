@@ -48,6 +48,8 @@ jobs:
 
       - name: Style checks via pre-commit
         uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --verbose --files ${{ env.CHANGED_FILES }}
 
       - name: File formatting checks (file_format.sh)
         run: |

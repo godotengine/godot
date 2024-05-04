@@ -9,7 +9,6 @@
 	</description>
 	<tutorials>
 		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>
-		<link title="Godot 3.2 will get new audio features">https://godotengine.org/article/godot-32-will-get-new-audio-features</link>
 	</tutorials>
 	<members>
 		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="2.0">

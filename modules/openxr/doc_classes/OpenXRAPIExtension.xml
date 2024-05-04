@@ -54,13 +54,19 @@
 		<method name="get_next_frame_time">
 			<return type="int" />
 			<description>
-				Returns the timing for the next frame.
+				Returns the predicted display timing for the next frame.
 			</description>
 		</method>
 		<method name="get_play_space">
 			<return type="int" />
 			<description>
 				Returns the play space, which is an [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrSpace.html]XrSpace[/url] cast to an integer.
+			</description>
+		</method>
+		<method name="get_predicted_display_time">
+			<return type="int" />
+			<description>
+				Returns the predicted display timing for the current frame.
 			</description>
 		</method>
 		<method name="get_session">

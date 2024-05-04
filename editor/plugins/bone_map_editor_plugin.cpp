@@ -861,6 +861,8 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	picklist.clear();
 
 	// 4-1. Guess Finger
+	int tips_index = -1;
+	bool thumb_tips_size = 0;
 	bool named_finger_is_found = false;
 	LocalVector<String> fingers;
 	fingers.push_back("thumb|pollex");
@@ -893,6 +895,33 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 				while (finger != left_hand_or_palm && finger >= 0) {
 					search_path.push_back(finger);
 					finger = skeleton->get_bone_parent(finger);
+				}
+				// Tips detection by name matching with "distal" from root.
+				for (int j = search_path.size() - 1; j >= 0; j--) {
+					if (RegEx("distal").search(skeleton->get_bone_name(search_path[j]).to_lower()).is_valid()) {
+						tips_index = j - 1;
+						break;
+					}
+				}
+				// Tips detection by name matching with "tip|leaf" from end.
+				if (tips_index < 0) {
+					for (int j = 0; j < search_path.size(); j++) {
+						if (RegEx("tip|leaf").search(skeleton->get_bone_name(search_path[j]).to_lower()).is_valid()) {
+							tips_index = j;
+							break;
+						}
+					}
+				}
+				// Tips detection by thumb children size.
+				if (tips_index < 0) {
+					if (i == 0) {
+						thumb_tips_size = MAX(0, search_path.size() - 3);
+					}
+					tips_index = thumb_tips_size - 1;
+				}
+				// Remove tips.
+				for (int j = 0; j <= tips_index; j++) {
+					search_path.remove_at(0);
 				}
 				search_path.reverse();
 				if (search_path.size() == 1) {
@@ -941,6 +970,14 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 					}
 				}
 				search_path.push_back(finger_root);
+				// Tips detection by thumb children size.
+				if (i == 0) {
+					thumb_tips_size = MAX(0, search_path.size() - 3);
+				}
+				tips_index = thumb_tips_size - 1;
+				for (int j = 0; j <= tips_index; j++) {
+					search_path.remove_at(0);
+				}
 				search_path.reverse();
 				if (search_path.size() == 1) {
 					p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
@@ -958,6 +995,9 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 			picklist.clear();
 		}
 	}
+
+	tips_index = -1;
+	thumb_tips_size = 0;
 	named_finger_is_found = false;
 	if (right_hand_or_palm != -1) {
 		LocalVector<LocalVector<String>> right_fingers_map;
@@ -984,6 +1024,33 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 				while (finger != right_hand_or_palm && finger >= 0) {
 					search_path.push_back(finger);
 					finger = skeleton->get_bone_parent(finger);
+				}
+				// Tips detection by name matching with "distal" from root.
+				for (int j = search_path.size() - 1; j >= 0; j--) {
+					if (RegEx("distal").search(skeleton->get_bone_name(search_path[j]).to_lower()).is_valid()) {
+						tips_index = j - 1;
+						break;
+					}
+				}
+				// Tips detection by name matching with "tip|leaf" from end.
+				if (tips_index < 0) {
+					for (int j = 0; j < search_path.size(); j++) {
+						if (RegEx("tip|leaf").search(skeleton->get_bone_name(search_path[j]).to_lower()).is_valid()) {
+							tips_index = j;
+							break;
+						}
+					}
+				}
+				// Tips detection by thumb children size.
+				if (tips_index < 0) {
+					if (i == 0) {
+						thumb_tips_size = MAX(0, search_path.size() - 3);
+					}
+					tips_index = thumb_tips_size - 1;
+				}
+				// Remove tips.
+				for (int j = 0; j <= tips_index; j++) {
+					search_path.remove_at(0);
 				}
 				search_path.reverse();
 				if (search_path.size() == 1) {
@@ -1032,6 +1099,14 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 					}
 				}
 				search_path.push_back(finger_root);
+				// Tips detection by thumb children size.
+				if (i == 0) {
+					thumb_tips_size = MAX(0, search_path.size() - 3);
+				}
+				tips_index = thumb_tips_size - 1;
+				for (int j = 0; j <= tips_index; j++) {
+					search_path.remove_at(0);
+				}
 				search_path.reverse();
 				if (search_path.size() == 1) {
 					p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
