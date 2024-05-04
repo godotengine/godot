@@ -752,7 +752,7 @@ void EditorNode::_notification(int p_what) {
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
 			// Save on focus loss before applying the FPS limit to avoid slowing down the saving process.
 			if (EDITOR_GET("interface/editor/save_on_focus_loss")) {
-				_menu_option_confirm(FILE_SAVE_SCENE, false);
+				_menu_option_confirm(FILE_SAVE_SCENE_SILENTLY, false);
 			}
 
 			// Set a low FPS cap to decrease CPU/GPU usage while the editor is unfocused.
@@ -2665,6 +2665,16 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case FILE_CLOSE: {
 			_scene_tab_closed(editor_data.get_edited_scene());
+		} break;
+		case FILE_SAVE_SCENE_SILENTLY: {
+			// Save scene without displaying progress dialog. Used to work around
+			// errors about parent node being busy setting up children
+			// when Save on Focus Loss kicks in.
+			Node *scene = editor_data.get_edited_scene_root();
+			if (scene && !scene->get_scene_file_path().is_empty() && DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
+				_save_scene(scene->get_scene_file_path());
+				save_editor_layout_delayed();
+			}
 		} break;
 		case SCENE_TAB_CLOSE:
 		case FILE_SAVE_SCENE: {
