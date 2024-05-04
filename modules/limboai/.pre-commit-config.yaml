@@ -1,0 +1,24 @@
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v17.0.6
+    hooks:
+      - id: clang-format
+        files: \.(c|h|cpp|hpp|cc|cxx|m|mm|inc|java|glsl)$
+        types_or: [text]
+        exclude: |
+          (?x)^(
+            tests/python_build.*|
+            .*thirdparty.*|
+            .*platform/android/java/lib/src/com.*|
+            .*-so_wrap.*
+          )
+
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 24.2.0
+    hooks:
+      - id: black
+        files: (\.py$|SConstruct|SCsub)
+        types_or: [text]
+        exclude: .*thirdparty.*
+        args:
+          - --line-length=120

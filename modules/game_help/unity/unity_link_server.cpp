@@ -187,6 +187,16 @@ static void _buffer_to_animationNode(StreamPeerConstBuffer&  buffer,Ref<Characte
 
 	return ;
 }
+static bool read_string(StreamPeerConstBuffer& msg_buffer,String &str)
+{
+	int len = msg_buffer.get_u32();
+	if (len < 0 || len > 10240) {
+		return false;
+	}
+	str = msg_buffer.get_utf8_string(len);
+	return true;
+
+}
 static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 	int tag = msg_buffer.get_u32();
 	int size = msg_buffer.get_u32();
@@ -195,7 +205,12 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 	if(path_size < 0 || path_size > 10240){
 		return false;
 	}
-	String path = msg_buffer.get_utf8_string(path_size);
+	String path;
+	if (!read_string(msg_buffer, path))
+	{
+		ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + path);
+
+	}
 
 	if(!DirAccess::exists("res://" + path))
 	{
@@ -241,6 +256,13 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 		if(on_load_animation.is_null()){
 			return true;
 		}
+		String name;
+		if (!read_string(msg_buffer, name))
+		{
+			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
+
+		}
+
 		// 解析动画文件
 		int mirror = msg_buffer.get_32();
 		int file_size = size - 16 - path_size;
@@ -257,7 +279,7 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 				Dictionary clip = dict["AnimationClip"];
 				on_load_animation.call(clip,mirror,anim);
 				anim->optimize();
-				String save_path = "res://" + path + "/" + anim->get_class() + "_" + anim->get_name() + (mirror ? "_mirror" : "") + ".anim.tres";
+				String save_path = "res://" + path + "/" + name + ".tres";
 				ResourceSaver::save(anim,save_path);
 				print_line("UnityLinkServer: save animation node :" + save_path);	
 			}

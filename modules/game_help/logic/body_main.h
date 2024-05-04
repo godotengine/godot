@@ -117,12 +117,12 @@ public:
 public:
     void set_animator(const Ref<CharacterAnimator> &p_animator)
     {
-        if(animator.is_valid())
+        if(animator.is_valid() || p_animator.is_null())
         {
             return;
         }
         animator = p_animator;
-        animator->set_body(this);
+		animator->set_body(this);
     }
 
     Ref<CharacterAnimator> get_animator()

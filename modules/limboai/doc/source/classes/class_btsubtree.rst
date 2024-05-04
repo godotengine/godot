@@ -23,6 +23,8 @@ BTSubtree instantiates a :ref:`BehaviorTree<class_BehaviorTree>` and includes it
 
 Returns the status of the subtree's execution.
 
+Note: BTSubTree is designed as a simpler loader, and does not support updating :ref:`subtree<class_BTSubtree_property_subtree>` at runtime. A custom subtree decorator is better suited and `somewhat trivial <https://github.com/limbonaut/limboai/issues/94#issuecomment-2068833610>`__ to implement.
+
 .. rst-class:: classref-reftable-group
 
 Properties

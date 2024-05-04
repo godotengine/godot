@@ -17,8 +17,14 @@
 #include "core/object/ref_counted.h"
 #include "core/string/node_path.h"
 #include "core/variant/variant.h"
+#include "modules/limboai/blackboard/bb_param/bb_bool.h"
+#include "modules/limboai/blackboard/bb_param/bb_float.h"
+#include "modules/limboai/blackboard/bb_param/bb_int.h"
 #include "modules/limboai/blackboard/bb_param/bb_node.h"
 #include "modules/limboai/blackboard/bb_param/bb_param.h"
+#include "modules/limboai/blackboard/bb_param/bb_string.h"
+#include "modules/limboai/blackboard/bb_param/bb_variant.h"
+#include "modules/limboai/blackboard/bb_param/bb_vector2.h"
 #include "modules/limboai/blackboard/blackboard.h"
 #include "modules/limboai/bt/tasks/bt_task.h"
 #include "tests/test_macros.h"
@@ -119,6 +125,68 @@ TEST_CASE("[Modules][LimboAI] BBNode") {
 	}
 
 	memdelete(other);
+	memdelete(dummy);
+}
+
+TEST_CASE("[Modules][LimboAI] BBParam default values") {
+	Node *dummy = memnew(Node);
+	Ref<Blackboard> bb = memnew(Blackboard);
+
+	SUBCASE("Test default value for BBBool") {
+		Ref<BBBool> param = memnew(BBBool);
+		param->set_value_source(BBParam::SAVED_VALUE);
+		CHECK_EQ(param->get_value(dummy, bb), Variant(false));
+		CHECK_NE(param->get_value(dummy, bb), Variant());
+	}
+	SUBCASE("Test default value for BBInt") {
+		Ref<BBInt> param = memnew(BBInt);
+		param->set_value_source(BBParam::SAVED_VALUE);
+		CHECK_EQ(param->get_value(dummy, bb), Variant(0));
+		CHECK_NE(param->get_value(dummy, bb), Variant());
+	}
+	SUBCASE("Test default value for BBFloat") {
+		Ref<BBFloat> param = memnew(BBFloat);
+		param->set_value_source(BBParam::SAVED_VALUE);
+		CHECK_EQ(param->get_value(dummy, bb), Variant(0.0));
+		CHECK_NE(param->get_value(dummy, bb), Variant());
+	}
+	SUBCASE("Test default value for BBString") {
+		Ref<BBString> param = memnew(BBString);
+		param->set_value_source(BBParam::SAVED_VALUE);
+		CHECK_EQ(param->get_value(dummy, bb), Variant(""));
+		CHECK_NE(param->get_value(dummy, bb), Variant());
+	}
+	SUBCASE("Test default value for BBVector2") {
+		Ref<BBVector2> param = memnew(BBVector2);
+		param->set_value_source(BBParam::SAVED_VALUE);
+		CHECK_EQ(param->get_value(dummy, bb), Variant(Vector2()));
+		CHECK_NE(param->get_value(dummy, bb), Variant());
+	}
+	SUBCASE("Test default value for BBVariant") {
+		Ref<BBVariant> param = memnew(BBVariant);
+		CHECK_EQ(param->get_value(dummy, bb), Variant());
+		param->set_value_source(BBParam::SAVED_VALUE);
+		CHECK_EQ(param->get_value(dummy, bb), Variant());
+		param->set_type(Variant::BOOL);
+		CHECK_EQ(param->get_value(dummy, bb), Variant(false));
+		CHECK_NE(param->get_value(dummy, bb), Variant());
+		param->set_type(Variant::INT);
+		CHECK_EQ(param->get_value(dummy, bb), Variant(0));
+		CHECK_NE(param->get_value(dummy, bb), Variant());
+		param->set_type(Variant::FLOAT);
+		CHECK_EQ(param->get_value(dummy, bb), Variant(0.0));
+		CHECK_NE(param->get_value(dummy, bb), Variant());
+		param->set_type(Variant::STRING);
+		CHECK_EQ(param->get_value(dummy, bb), Variant(""));
+		CHECK_NE(param->get_value(dummy, bb), Variant());
+		param->set_type(Variant::VECTOR2);
+		CHECK_EQ(param->get_value(dummy, bb), Variant(Vector2()));
+		CHECK_NE(param->get_value(dummy, bb), Variant());
+		param->set_type(Variant::NODE_PATH);
+		CHECK_EQ(param->get_value(dummy, bb), Variant(NodePath()));
+		CHECK_NE(param->get_value(dummy, bb), Variant());
+	}
+
 	memdelete(dummy);
 }
 

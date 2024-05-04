@@ -33,27 +33,27 @@ Methods
 .. table::
    :widths: auto
 
-   +-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`bind_var_to_property<class_Blackboard_method_bind_var_to_property>` **(** StringName var_name, Object object, StringName property **)**                   |
-   +-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`erase_var<class_Blackboard_method_erase_var>` **(** StringName var_name **)**                                                                             |
-   +-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`Blackboard<class_Blackboard>` | :ref:`get_parent<class_Blackboard_method_get_parent>` **(** **)** |const|                                                                                       |
-   +-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | Variant                             | :ref:`get_var<class_Blackboard_method_get_var>` **(** StringName var_name, Variant default=null, bool complain=true **)** |const|                               |
-   +-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | bool                                | :ref:`has_var<class_Blackboard_method_has_var>` **(** StringName var_name **)** |const|                                                                         |
-   +-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`link_var<class_Blackboard_method_link_var>` **(** StringName var_name, :ref:`Blackboard<class_Blackboard>` target_blackboard, StringName target_var **)** |
-   +-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`set_parent<class_Blackboard_method_set_parent>` **(** :ref:`Blackboard<class_Blackboard>` blackboard **)**                                                |
-   +-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`set_var<class_Blackboard_method_set_var>` **(** StringName var_name, Variant value **)**                                                                  |
-   +-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`Blackboard<class_Blackboard>` | :ref:`top<class_Blackboard_method_top>` **(** **)** |const|                                                                                                     |
-   +-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | void                                | :ref:`unbind_var<class_Blackboard_method_unbind_var>` **(** StringName var_name **)**                                                                           |
-   +-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`bind_var_to_property<class_Blackboard_method_bind_var_to_property>` **(** StringName var_name, Object object, StringName property, bool create **)**                   |
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`erase_var<class_Blackboard_method_erase_var>` **(** StringName var_name **)**                                                                                          |
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`Blackboard<class_Blackboard>` | :ref:`get_parent<class_Blackboard_method_get_parent>` **(** **)** |const|                                                                                                    |
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | Variant                             | :ref:`get_var<class_Blackboard_method_get_var>` **(** StringName var_name, Variant default=null, bool complain=true **)** |const|                                            |
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | bool                                | :ref:`has_var<class_Blackboard_method_has_var>` **(** StringName var_name **)** |const|                                                                                      |
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`link_var<class_Blackboard_method_link_var>` **(** StringName var_name, :ref:`Blackboard<class_Blackboard>` target_blackboard, StringName target_var, bool create **)** |
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`set_parent<class_Blackboard_method_set_parent>` **(** :ref:`Blackboard<class_Blackboard>` blackboard **)**                                                             |
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`set_var<class_Blackboard_method_set_var>` **(** StringName var_name, Variant value **)**                                                                               |
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`Blackboard<class_Blackboard>` | :ref:`top<class_Blackboard_method_top>` **(** **)** |const|                                                                                                                  |
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | void                                | :ref:`unbind_var<class_Blackboard_method_unbind_var>` **(** StringName var_name **)**                                                                                        |
+   +-------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -68,9 +68,9 @@ Method Descriptions
 
 .. rst-class:: classref-method
 
-void **bind_var_to_property** **(** StringName var_name, Object object, StringName property **)**
+void **bind_var_to_property** **(** StringName var_name, Object object, StringName property, bool create **)**
 
-Establish a binding between a variable and the object's property specified by ``property`` and ``object``. Changes to the variable update the property, and vice versa.
+Establish a binding between a variable and the object's property specified by ``property`` and ``object``. Changes to the variable update the property, and vice versa. If ``create`` is ``true``, the variable will be created if it doesn't exist.
 
 .. rst-class:: classref-item-separator
 
@@ -128,13 +128,11 @@ Returns ``true`` if the Blackboard contains the ``var_name`` variable, including
 
 .. rst-class:: classref-method
 
-void **link_var** **(** StringName var_name, :ref:`Blackboard<class_Blackboard>` target_blackboard, StringName target_var **)**
+void **link_var** **(** StringName var_name, :ref:`Blackboard<class_Blackboard>` target_blackboard, StringName target_var, bool create **)**
 
-Links a variable to another Blackboard variable. If a variable is linked to another variable, their state will always be identical, and any change to one will be reflected in the other. You can use this method to link a variable in the current scope to a variable in another scope, or in another Blackboard instance.
+Links a variable to another Blackboard variable. If a variable is linked to another variable, their state will always be identical, and any change to one will be reflected in the other. If ``create`` is ``true``, the variable will be created if it doesn't exist.
 
-
-
-A variable can only be linked to one other variable. Calling this method again will overwrite the previous link. However, it is possible to link to the same variable from multiple different variables.
+You can use this method to link a variable in the current scope to a variable in another scope, or in another Blackboard instance. A variable can only be linked to one other variable. Calling this method again will overwrite the previous link. However, it is possible to link to the same variable from multiple different variables.
 
 .. rst-class:: classref-item-separator
 

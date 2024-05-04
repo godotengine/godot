@@ -5,7 +5,7 @@ Import("env_modules")
 
 module_env = env.Clone()
 
-module_env.Append(CPPDEFINES = ['LIMBOAI_MODULE'])
+module_env.Append(CPPDEFINES=["LIMBOAI_MODULE"])
 
 module_env.add_source_files(env.modules_sources, "*.cpp")
 module_env.add_source_files(env.modules_sources, "blackboard/*.cpp")

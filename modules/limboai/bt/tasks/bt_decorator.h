@@ -17,6 +17,9 @@
 class BTDecorator : public BTTask {
 	GDCLASS(BTDecorator, BTTask)
 
+protected:
+	virtual Status _tick(double p_delta) override;
+
 public:
 	virtual PackedStringArray get_configuration_warnings() override;
 };

@@ -31,18 +31,23 @@ def get_script_dir():
 def main():
     silent = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:],
-            "s", ["silent"])
+        opts, args = getopt.getopt(sys.argv[1:], "s", ["silent"])
     except getopt.GetoptError as e:
-        print('%s: %s!\n' % (os.path.basename(__file__), e.msg,))
+        print(
+            "%s: %s!\n"
+            % (
+                os.path.basename(__file__),
+                e.msg,
+            )
+        )
         usage()
         sys.exit(2)
 
     for opt, arg in opts:
-        if opt in ('-h', '--help'):
+        if opt in ("-h", "--help"):
             usage()
             sys.exit(0)
-        elif opt in ('-s','--silent'):
+        elif opt in ("-s", "--silent"):
             silent = True
 
     config_dir = get_script_dir()
@@ -66,7 +71,7 @@ def main():
 
     icon_files.sort()
     for icon_file in icon_files:
-        content += os.path.splitext(icon_file)[0] + " = \"res://addons/limboai/icons/" + icon_file + "\"\n"
+        content += os.path.splitext(icon_file)[0] + ' = "res://addons/limboai/icons/' + icon_file + '"\n'
 
     f = open(config_path, "w")
     f.write(content)

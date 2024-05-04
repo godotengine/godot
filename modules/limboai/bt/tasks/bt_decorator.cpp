@@ -18,3 +18,8 @@ PackedStringArray BTDecorator::get_configuration_warnings() {
 	}
 	return warnings;
 }
+
+BT::Status BTDecorator::_tick(double p_delta) {
+	ERR_FAIL_COND_V_MSG(get_child_count() == 0, FAILURE, "BT decorator doesn't have a child.");
+	return get_child(0)->execute(p_delta);
+}

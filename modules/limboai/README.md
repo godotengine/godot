@@ -34,6 +34,7 @@ Behavior Trees are powerful hierarchical structures used to model and control th
 [![Demonstration](https://img.youtube.com/vi/NWaMArUg7mY/0.jpg)](https://www.youtube.com/watch?v=NWaMArUg7mY)
 
 >**🛈 Demo project** lives in the `demo` folder and is available separately in [**Releases**](https://github.com/limbonaut/limboai/releases).
+> Run `demo/scenes/showcase.tscn` to get started.
 > It also contains a tutorial that introduces behavior trees using examples.
 
 ## Features

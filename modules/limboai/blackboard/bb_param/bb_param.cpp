@@ -79,6 +79,9 @@ Variant BBParam::get_value(Object *p_agent, const Ref<Blackboard> &p_blackboard,
 	ERR_FAIL_COND_V(!p_blackboard.is_valid(), p_default);
 
 	if (value_source == SAVED_VALUE) {
+		if (saved_value == Variant()) {
+			_assign_default_value();
+		}
 		return saved_value;
 	} else {
 		ERR_FAIL_COND_V_MSG(!p_blackboard->has_var(variable), p_default, vformat("BBParam: Blackboard variable \"%s\" doesn't exist.", variable));
@@ -114,6 +117,4 @@ void BBParam::_bind_methods() {
 
 BBParam::BBParam() {
 	value_source = SAVED_VALUE;
-
-	_assign_default_value();
 }
