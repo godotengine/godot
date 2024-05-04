@@ -2967,7 +2967,7 @@ void Control::begin_bulk_theme_override() {
 
 void Control::end_bulk_theme_override() {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!data.bulk_theme_override);
+	ERR_FAIL_COND_MSG(data.bulk_theme_override <= 0, "end_bulk_theme_override() called without a matching begin_bulk_theme_override().");
 
 	data.bulk_theme_override -= 1;
 	_notify_theme_override_changed();
