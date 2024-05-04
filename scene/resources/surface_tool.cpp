@@ -142,24 +142,12 @@ uint32_t SurfaceTool::VertexHasher::hash(const Vertex &p_vtx) {
 	h = hash_murmur3_one_float(p_vtx.color.b, h);
 	h = hash_murmur3_one_float(p_vtx.color.a, h);
 
-	h = hash_murmur3_one_real(p_vtx.normal.x, h);
-	h = hash_murmur3_one_real(p_vtx.normal.y, h);
-	h = hash_murmur3_one_real(p_vtx.normal.z, h);
-	h = hash_murmur3_one_real(p_vtx.binormal.x, h);
-	h = hash_murmur3_one_real(p_vtx.binormal.y, h);
-	h = hash_murmur3_one_real(p_vtx.binormal.z, h);
-	h = hash_murmur3_one_real(p_vtx.tangent.x, h);
-	h = hash_murmur3_one_real(p_vtx.tangent.y, h);
-	h = hash_murmur3_one_real(p_vtx.tangent.z, h);
-
-	h = hash_murmur3_one_real(p_vtx.uv.x, h);
-	h = hash_murmur3_one_real(p_vtx.uv.y, h);
-	h = hash_murmur3_one_real(p_vtx.uv2.x, h);
-	h = hash_murmur3_one_real(p_vtx.uv2.y, h);
-
-	h = hash_murmur3_one_real(p_vtx.vertex.x, h);
-	h = hash_murmur3_one_real(p_vtx.vertex.y, h);
-	h = hash_murmur3_one_real(p_vtx.vertex.z, h);
+	h = HashMapHasherDefault::hash_seed(p_vtx.normal, h);
+	h = HashMapHasherDefault::hash_seed(p_vtx.binormal, h);
+	h = HashMapHasherDefault::hash_seed(p_vtx.tangent, h);
+	h = HashMapHasherDefault::hash_seed(p_vtx.uv, h);
+	h = HashMapHasherDefault::hash_seed(p_vtx.uv2, h);
+	h = HashMapHasherDefault::hash_seed(p_vtx.vertex, h);
 
 	h = hash_murmur3_buffer((const uint8_t *)p_vtx.bones.ptr(), p_vtx.bones.size() * sizeof(int), h);
 	h = hash_murmur3_buffer((const uint8_t *)p_vtx.weights.ptr(), p_vtx.weights.size() * sizeof(float), h);
@@ -182,9 +170,7 @@ bool SurfaceTool::SmoothGroupVertex::operator==(const SmoothGroupVertex &p_verte
 
 uint32_t SurfaceTool::SmoothGroupVertexHasher::hash(const SmoothGroupVertex &p_vtx) {
 	uint32_t h = hash_murmur3_one_32(p_vtx.smooth_group);
-	h = hash_murmur3_one_real(p_vtx.vertex.x, h);
-	h = hash_murmur3_one_real(p_vtx.vertex.y, h);
-	h = hash_murmur3_one_real(p_vtx.vertex.z, h);
+	h = HashMapHasherDefault::hash_seed(p_vtx.vertex, h);
 	return hash_fmix32(h);
 }
 
