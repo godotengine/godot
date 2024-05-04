@@ -3451,9 +3451,9 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 	if (p_region != Rect2() && p_region != Rect2(Vector2(), viewport_size)) { // Check custom region.
 		Rect2i viewport(viewport_offset, viewport_size);
 		Rect2i regioni = p_region;
-		if (!(regioni.position.x >= viewport.position.x) && (regioni.position.y >= viewport.position.y) &&
-				((regioni.position.x + regioni.size.x) <= (viewport.position.x + viewport.size.x)) &&
-				((regioni.position.y + regioni.size.y) <= (viewport.position.y + viewport.size.y))) {
+		if (!((regioni.position.x >= viewport.position.x) && (regioni.position.y >= viewport.position.y) &&
+					((regioni.position.x + regioni.size.x) <= (viewport.position.x + viewport.size.x)) &&
+					((regioni.position.y + regioni.size.y) <= (viewport.position.y + viewport.size.y)))) {
 			ERR_FAIL_V_MSG(INVALID_ID, "When supplying a custom region, it must be contained within the framebuffer rectangle");
 		}
 
