@@ -250,6 +250,16 @@ void MobileVRInterface::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversample", PROPERTY_HINT_RANGE, "1.0,2.0,0.1"), "set_oversample", "get_oversample");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "k1", PROPERTY_HINT_RANGE, "0.1,10.0,0.0001"), "set_k1", "get_k1");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "k2", PROPERTY_HINT_RANGE, "0.1,10.0,0.0001"), "set_k2", "get_k2");
+
+	ClassDB::bind_method(D_METHOD("get_vrs_min_radius"), &MobileVRInterface::get_vrs_min_radius);
+	ClassDB::bind_method(D_METHOD("set_vrs_min_radius", "radius"), &MobileVRInterface::set_vrs_min_radius);
+
+	ClassDB::bind_method(D_METHOD("get_vrs_strength"), &MobileVRInterface::get_vrs_strength);
+	ClassDB::bind_method(D_METHOD("set_vrs_strength", "strength"), &MobileVRInterface::set_vrs_strength);
+
+	ADD_GROUP("Vulkan VRS", "vrs_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_min_radius", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_vrs_min_radius", "get_vrs_min_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_strength", PROPERTY_HINT_RANGE, "0.1,10.0,0.1"), "set_vrs_strength", "get_vrs_strength");
 }
 
 void MobileVRInterface::set_eye_height(const double p_eye_height) {
@@ -315,6 +325,22 @@ void MobileVRInterface::set_k2(const double p_k2) {
 double MobileVRInterface::get_k2() const {
 	return k2;
 };
+
+float MobileVRInterface::get_vrs_min_radius() const {
+	return xr_vrs.get_vrs_min_radius();
+}
+
+void MobileVRInterface::set_vrs_min_radius(float p_vrs_min_radius) {
+	xr_vrs.set_vrs_min_radius(p_vrs_min_radius);
+}
+
+float MobileVRInterface::get_vrs_strength() const {
+	return xr_vrs.get_vrs_strength();
+}
+
+void MobileVRInterface::set_vrs_strength(float p_vrs_strength) {
+	xr_vrs.set_vrs_strength(p_vrs_strength);
+}
 
 uint32_t MobileVRInterface::get_view_count() {
 	// needs stereo...
@@ -489,11 +515,16 @@ Vector<BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, 
 
 	Vector<BlitToScreen> blit_to_screen;
 
-	// We must have a valid render target
+	// We must have a valid render target.
 	ERR_FAIL_COND_V(!p_render_target.is_valid(), blit_to_screen);
 
-	// Because we are rendering to our device we must use our main viewport!
-	ERR_FAIL_COND_V(p_screen_rect == Rect2(), blit_to_screen);
+	// We will only output to screen if this is our main viewport.
+	if (p_screen_rect == Rect2()) {
+		// Warn the developer once, it's up to the developer to output to screen.
+		WARN_PRINT_ONCE("SubViewport used with MobileVRInterface, no output to screen");
+
+		return blit_to_screen;
+	}
 
 	Rect2 modified_screen_rect = Rect2(p_screen_rect.position + offset_rect.position * p_screen_rect.size, p_screen_rect.size * offset_rect.size);
 
@@ -541,6 +572,23 @@ void MobileVRInterface::process() {
 		}
 	};
 };
+
+RID MobileVRInterface::get_vrs_texture() {
+	PackedVector2Array eye_foci;
+
+	Size2 target_size = get_render_target_size();
+	real_t aspect_ratio = target_size.x / target_size.y;
+	uint32_t view_count = get_view_count();
+
+	for (uint32_t v = 0; v < view_count; v++) {
+		Projection cm = get_projection_for_view(v, aspect_ratio, 0.1, 1000.0);
+		Vector3 center = cm.xform(Vector3(0.0, 0.0, 999.0));
+
+		eye_foci.push_back(Vector2(center.x, center.y));
+	}
+
+	return xr_vrs.make_vrs_texture(target_size, eye_foci);
+}
 
 MobileVRInterface::MobileVRInterface() {}
 

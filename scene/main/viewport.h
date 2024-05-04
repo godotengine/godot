@@ -213,6 +213,13 @@ public:
 		VRS_MAX
 	};
 
+	enum VRSUpdateMode {
+		VRS_UPDATE_DISABLED,
+		VRS_UPDATE_ONCE,
+		VRS_UPDATE_ALWAYS,
+		VRS_UPDATE_MAX
+	};
+
 private:
 	friend class ViewportTexture;
 
@@ -337,6 +344,7 @@ private:
 
 	// VRS
 	VRSMode vrs_mode = VRS_DISABLED;
+	VRSUpdateMode vrs_update_mode = VRS_UPDATE_ONCE;
 	Ref<Texture2D> vrs_texture;
 
 	struct GUI {
@@ -636,6 +644,9 @@ public:
 	void set_vrs_mode(VRSMode p_vrs_mode);
 	VRSMode get_vrs_mode() const;
 
+	void set_vrs_update_mode(VRSUpdateMode p_vrs_update_mode);
+	VRSUpdateMode get_vrs_update_mode() const;
+
 	void set_vrs_texture(Ref<Texture2D> p_texture);
 	Ref<Texture2D> get_vrs_texture() const;
 
@@ -844,6 +855,7 @@ VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(Viewport::SDFScale);
 VARIANT_ENUM_CAST(Viewport::SDFOversize);
 VARIANT_ENUM_CAST(Viewport::VRSMode);
+VARIANT_ENUM_CAST(Viewport::VRSUpdateMode);
 VARIANT_ENUM_CAST(SubViewport::ClearMode);
 VARIANT_ENUM_CAST(Viewport::RenderInfo);
 VARIANT_ENUM_CAST(Viewport::RenderInfoType);
