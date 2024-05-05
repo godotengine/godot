@@ -76,6 +76,7 @@ layout(set = 1, binding = 3) uniform DenoiseParams {
 	float albedo_bandwidth;
 	float normal_bandwidth;
 
+	int half_search_window;
 	float filter_strength;
 }
 denoise_params;
@@ -849,10 +850,10 @@ void main() {
 
 	// Half the size of the patch window around each pixel that is weighted to compute the denoised pixel.
 	// A value of 1 represents a 3x3 window, a value of 2 a 5x5 window, etc.
-	const int HALF_PATCH_WINDOW = 4;
+	const int HALF_PATCH_WINDOW = 3;
 
 	// Half the size of the search window around each pixel that is denoised and weighted to compute the denoised pixel.
-	const int HALF_SEARCH_WINDOW = 10;
+	const int HALF_SEARCH_WINDOW = denoise_params.half_search_window;
 
 	// For all of the following sigma values, smaller values will give less weight to pixels that have a bigger distance
 	// in the feature being evaluated. Therefore, smaller values are likely to cause more noise to appear, but will also
