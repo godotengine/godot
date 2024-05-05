@@ -88,7 +88,7 @@ def install_ndk_if_needed(env: "SConsEnvironment"):
         else:
             print_error(
                 f'Cannot find "{sdkmanager}". Please ensure ANDROID_HOME is correct and cmdline-tools'
-                f'are installed, or install NDK version "{get_ndk_version()}" manually.'
+                f' are installed, or install NDK version "{get_ndk_version()}" manually.'
             )
             sys.exit(255)
     env["ANDROID_NDK_ROOT"] = get_android_ndk_root(env)
