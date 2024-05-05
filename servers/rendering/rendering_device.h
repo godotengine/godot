@@ -1427,6 +1427,8 @@ public:
 	Error initialize(RenderingContextDriver *p_context, DisplayServer::WindowID p_main_window = DisplayServer::INVALID_WINDOW_ID);
 	void finalize();
 
+	void _set_max_fps(int p_max_fps);
+
 	void free(RID p_id);
 
 	/****************/
