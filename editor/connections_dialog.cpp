@@ -282,7 +282,7 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 	List<MethodInfo> ret;
 
 	for (const MethodInfo &mi : p_methods) {
-		if (!p_search_string.is_empty() && !mi.name.contains(p_search_string)) {
+		if (!p_search_string.is_empty() && mi.name.findn(p_search_string) == -1) {
 			continue;
 		}
 
