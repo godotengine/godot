@@ -56,32 +56,18 @@ protected:
 
 public:
 	static Ref<LottieSheet> load_string(String p_string, float p_scale = 1);
-
 	static Ref<LottieSheet> load_json(Ref<JSON> p_json, float p_scale = 1);
 
 	Ref<JSON> get_json();
 	void set_json(Ref<JSON> p_json);
-
 	float get_scale();
 	void set_scale(float p_scale);
-
-	void update_image(int frame);
-
-	Ref<Image> get_image() { return image; };
-
-	Ref<Image> get_frame_image(int frame) {
-		update_image(frame);
-		return image;
-	};
-
-	Vector2i get_image_size() {
-		return Vector2i(width, height);
-	}
-
-	float total_frame() { return animation->totalFrame(); };
-
-	float duration() { return animation->duration(); };
-
+	void update_frame(float frame);
+	Ref<Image> get_image();
+	Ref<Image> get_frame_image(float frame);
+	Vector2i get_image_size();
+	float get_total_frame();
+	float get_duration();
 	~LottieSheet();
 };
 

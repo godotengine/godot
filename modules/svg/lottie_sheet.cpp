@@ -83,7 +83,7 @@ Ref<LottieSheet> LottieSheet::load_string(String p_string, float p_scale) {
 	return ret;
 }
 
-void LottieSheet::update_image(int frame) {
+void LottieSheet::update_frame(float frame) {
 	tvg::Result res = animation->frame(frame);
 	if (res == tvg::Result::Success) {
 		sw_canvas->update(picture);
@@ -128,6 +128,21 @@ void LottieSheet::update_image(int frame) {
 	image->set_data(width, height, false, Image::FORMAT_RGBA8, image_data);
 }
 
+Ref<Image> LottieSheet::get_image() { return image; };
+
+Ref<Image> LottieSheet::get_frame_image(float frame) {
+	update_frame(frame);
+	return image;
+};
+
+Vector2i LottieSheet::get_image_size() {
+	return Vector2i(width, height);
+}
+
+float LottieSheet::get_total_frame() { return animation->totalFrame(); };
+
+float LottieSheet::get_duration() { return animation->duration(); };
+
 Ref<JSON> LottieSheet::get_json() { return json; }
 
 void LottieSheet::set_json(Ref<JSON> p_json) {
@@ -158,12 +173,12 @@ void LottieSheet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_json", "p_json"), &LottieSheet::set_json);
 	ClassDB::bind_method(D_METHOD("get_scale"), &LottieSheet::get_scale);
 	ClassDB::bind_method(D_METHOD("set_scale", "p_scale"), &LottieSheet::set_scale);
-	ClassDB::bind_method(D_METHOD("update_image", "frame"), &LottieSheet::update_image);
+	ClassDB::bind_method(D_METHOD("update_frame", "frame"), &LottieSheet::update_frame);
 	ClassDB::bind_method(D_METHOD("get_image"), &LottieSheet::get_image);
 	ClassDB::bind_method(D_METHOD("get_frame_image", "frame"), &LottieSheet::get_frame_image);
 	ClassDB::bind_method(D_METHOD("get_image_size"), &LottieSheet::get_image_size);
-	ClassDB::bind_method(D_METHOD("total_frame"), &LottieSheet::total_frame);
-	ClassDB::bind_method(D_METHOD("duration"), &LottieSheet::duration);
+	ClassDB::bind_method(D_METHOD("get_total_frame"), &LottieSheet::get_total_frame);
+	ClassDB::bind_method(D_METHOD("get_duration"), &LottieSheet::get_duration);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "json"), "set_json", "get_json");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scale"), "set_scale", "get_scale");
