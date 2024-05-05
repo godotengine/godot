@@ -41,8 +41,9 @@ void PostImportPluginSkeletonRestFixer::get_internal_import_options(InternalImpo
 	if (p_category == INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE) {
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/apply_node_transforms"), true));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/normalize_position_tracks"), true));
-		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/overwrite_axis"), true));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/reset_all_bone_poses_after_import"), true));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/overwrite_axis", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/keep_global_rest_on_leftovers"), true));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/fix_silhouette/enable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 		// TODO: PostImportPlugin need to be implemented such as validate_option(PropertyInfo &property, const Dictionary &p_options).
 		// get_internal_option_visibility() is not sufficient because it can only retrieve options implemented in the core and can only read option values.
@@ -61,6 +62,8 @@ Variant PostImportPluginSkeletonRestFixer::get_internal_option_visibility(Intern
 					return false;
 				}
 			}
+		} else if (p_option == "retarget/rest_fixer/keep_global_rest_on_leftovers") {
+			return bool(p_options["retarget/rest_fixer/overwrite_axis"]);
 		}
 	}
 	return true;
@@ -460,6 +463,48 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				old_skeleton_global_rest.push_back(src_skeleton->get_bone_global_rest(i));
 			}
 
+			bool keep_global_rest_leftovers = bool(p_options["retarget/rest_fixer/keep_global_rest_on_leftovers"]);
+
+			// Scan hierarchy and populate a whitelist of unmapped bones without mapped descendants.
+			Vector<int> keep_bone_rest;
+			if (keep_global_rest_leftovers) {
+				Vector<int> bones_to_process = src_skeleton->get_parentless_bones();
+				while (bones_to_process.size() > 0) {
+					int src_idx = bones_to_process[0];
+					bones_to_process.erase(src_idx);
+					Vector<int> src_children = src_skeleton->get_bone_children(src_idx);
+					for (const int &src_child : src_children) {
+						bones_to_process.push_back(src_child);
+					}
+
+					StringName src_bone_name = is_renamed ? StringName(src_skeleton->get_bone_name(src_idx)) : bone_map->find_profile_bone_name(src_skeleton->get_bone_name(src_idx));
+					if (src_bone_name != StringName() && !profile->has_bone(src_bone_name)) {
+						// Scan descendants for mapped bones.
+						bool found_mapped = false;
+
+						Vector<int> decendants_to_process = src_skeleton->get_bone_children(src_idx);
+						while (decendants_to_process.size() > 0) {
+							int desc_idx = decendants_to_process[0];
+							decendants_to_process.erase(desc_idx);
+							Vector<int> desc_children = src_skeleton->get_bone_children(desc_idx);
+							for (const int &desc_child : desc_children) {
+								decendants_to_process.push_back(desc_child);
+							}
+
+							StringName desc_bone_name = is_renamed ? StringName(src_skeleton->get_bone_name(desc_idx)) : bone_map->find_profile_bone_name(src_skeleton->get_bone_name(desc_idx));
+							if (desc_bone_name != StringName() && profile->has_bone(desc_bone_name)) {
+								found_mapped = true;
+								break;
+							}
+						}
+
+						if (!found_mapped) {
+							keep_bone_rest.push_back(src_idx); // No mapped descendants. Add to whitelist.
+						}
+					}
+				}
+			}
+
 			Vector<Basis> diffs;
 			diffs.resize(src_skeleton->get_bone_count());
 			Basis *diffs_w = diffs.ptrw();
@@ -485,13 +530,9 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 					int prof_idx = profile->find_bone(src_bone_name);
 					if (prof_idx >= 0) {
 						tgt_rot = src_pg.inverse() * prof_skeleton->get_bone_global_rest(prof_idx).basis; // Mapped bone uses reference pose.
+					} else if (keep_global_rest_leftovers && keep_bone_rest.has(src_idx)) {
+						tgt_rot = src_pg.inverse() * old_skeleton_global_rest[src_idx].basis; // Non-Mapped bone without mapped children keeps global rest.
 					}
-					/*
-					// If there is rest-relative animation, this logic may be work fine, but currently not so...
-					} else {
-						// tgt_rot = src_pg.inverse() * old_skeleton_global_rest[src_idx].basis; // Non-Mapped bone keeps global rest.
-					}
-					*/
 				}
 
 				if (src_skeleton->get_bone_parent(src_idx) >= 0) {
