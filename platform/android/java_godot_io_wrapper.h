@@ -60,6 +60,7 @@ private:
 	jmethodID _hide_keyboard = 0;
 	jmethodID _set_screen_orientation = 0;
 	jmethodID _get_screen_orientation = 0;
+	jmethodID _get_internal_current_screen_rotation = 0;
 	jmethodID _get_system_dir = 0;
 
 public:
@@ -86,6 +87,7 @@ public:
 	void set_vk_height(int p_height);
 	void set_screen_orientation(int p_orient);
 	int get_screen_orientation();
+	int get_internal_current_screen_rotation();
 	String get_system_dir(int p_dir, bool p_shared_storage);
 };
 

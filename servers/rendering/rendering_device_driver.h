@@ -456,6 +456,10 @@ public:
 	// Retrieve the format used by the swap chain's framebuffers.
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) = 0;
 
+	// Tells the swapchain the max_fps so it can use the proper frame pacing.
+	// Android uses this with Swappy library. Some implementations or platforms may ignore this hint.
+	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {}
+
 	// Wait until all rendering associated to the swap chain is finished before deleting it.
 	virtual void swap_chain_free(SwapChainID p_swap_chain) = 0;
 
