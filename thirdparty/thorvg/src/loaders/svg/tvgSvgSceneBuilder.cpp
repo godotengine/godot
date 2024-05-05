@@ -557,7 +557,7 @@ static bool _isValidImageMimeTypeAndEncoding(const char** href, const char** mim
 
 static unique_ptr<Picture> _imageBuildHelper(SvgLoaderData& loaderData, SvgNode* node, const Box& vBox, const string& svgPath)
 {
-    if (!node->node.image.href) return nullptr;
+    if (!node->node.image.href || !strlen(node->node.image.href)) return nullptr;
     auto picture = Picture::gen();
 
     TaskScheduler::async(false);    //force to load a picture on the same thread

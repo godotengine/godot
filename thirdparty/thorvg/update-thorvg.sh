@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=0.12.10
+VERSION=0.13.2
 
 cd thirdparty/thorvg/ || true
 rm -rf AUTHORS LICENSE inc/ src/ *.zip *.tar.gz tmp/
@@ -38,6 +38,7 @@ cat << EOF > ../inc/config.h
 #define THORVG_SVG_LOADER_SUPPORT
 #define THORVG_PNG_LOADER_SUPPORT
 #define THORVG_JPG_LOADER_SUPPORT
+#define THORVG_LOTTIE_LOADER_SUPPORT
 #define THORVG_THREAD_SUPPORT
 
 // For internal debugging:
@@ -60,6 +61,7 @@ mkdir ../src/loaders
 cp -rv src/loaders/svg src/loaders/raw  ../src/loaders/
 cp -rv src/loaders/jpg  ../src/loaders/
 cp -rv src/loaders/png src/loaders/external_png  ../src/loaders/
+cp -rv src/loaders/lottie  ../src/loaders/
 
 popd
 rm -rf tmp

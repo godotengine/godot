@@ -31,6 +31,7 @@
 #include "register_types.h"
 
 #include "image_loader_svg.h"
+#include "lottie_sheet.h"
 
 #include <thorvg.h>
 
@@ -55,6 +56,7 @@ void initialize_svg_module(ModuleInitializationLevel p_level) {
 
 	image_loader_svg.instantiate();
 	ImageLoader::add_image_format_loader(image_loader_svg);
+	ClassDB::register_class<LottieSheet>();
 }
 
 void uninitialize_svg_module(ModuleInitializationLevel p_level) {

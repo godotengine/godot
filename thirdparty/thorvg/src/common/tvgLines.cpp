@@ -21,7 +21,7 @@
  */
 
 #include "tvgMath.h"
-#include "tvgBezier.h"
+#include "tvgLines.h"
 
 #define BEZIER_EPSILON 1e-4f
 
@@ -100,6 +100,25 @@ float _bezAt(const Bezier& bz, float at, float length, LengthFunc lineLengthFunc
 
 namespace tvg
 {
+
+float lineLength(const Point& pt1, const Point& pt2)
+{
+    return _lineLength(pt1, pt2);
+}
+
+
+void lineSplitAt(const Line& cur, float at, Line& left, Line& right)
+{
+    auto len = lineLength(cur.pt1, cur.pt2);
+    auto dx = ((cur.pt2.x - cur.pt1.x) / len) * at;
+    auto dy = ((cur.pt2.y - cur.pt1.y) / len) * at;
+    left.pt1 = cur.pt1;
+    left.pt2.x = left.pt1.x + dx;
+    left.pt2.y = left.pt1.y + dy;
+    right.pt1 = left.pt2;
+    right.pt2 = cur.pt2;
+}
+
 
 void bezSplit(const Bezier& cur, Bezier& left, Bezier& right)
 {
@@ -219,7 +238,7 @@ float bezAngleAt(const Bezier& bz, float t)
     pt.x *= 3;
     pt.y *= 3;
 
-    return atan2(pt.x, pt.y) * 180.0f / 3.141592f;
+    return mathRad2Deg(atan2(pt.x, pt.y));
 }
 
 
