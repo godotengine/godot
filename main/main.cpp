@@ -759,8 +759,6 @@ Error Main::test_setup() {
 	translation_server->load_translations();
 	ResourceLoader::load_translation_remaps(); //load remaps for resources
 
-	ResourceLoader::load_path_remaps();
-
 	// Initialize ThemeDB early so that scene types can register their theme items.
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
 	initialize_theme_db();
@@ -3475,8 +3473,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 		translation_server->load_translations();
 		ResourceLoader::load_translation_remaps(); //load remaps for resources
 
-		ResourceLoader::load_path_remaps();
-
 		OS::get_singleton()->benchmark_end_measure("Startup", "Translations and Remaps");
 	}
 
@@ -4915,7 +4911,6 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->_local_clipboard = "";
 
 	ResourceLoader::clear_translation_remaps();
-	ResourceLoader::clear_path_remaps();
 
 	WorkerThreadPool::get_singleton()->exit_languages_threads();
 
