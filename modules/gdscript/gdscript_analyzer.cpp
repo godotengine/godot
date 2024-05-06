@@ -6415,7 +6415,7 @@ void GDScriptAnalyzer::resolve_pending_lambda_bodies() {
 	static_context = previous_static_context;
 }
 
-bool GDScriptAnalyzer::class_exists(const StringName &p_class) const {
+bool GDScriptAnalyzer::class_exists(const StringName &p_class) {
 	return ClassDB::class_exists(p_class) && ClassDB::is_class_exposed(p_class);
 }
 
