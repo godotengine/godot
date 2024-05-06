@@ -744,7 +744,7 @@ String EditorHelpSearch::Runner::_match_keywords_in_all_terms(const String &p_ke
 
 bool EditorHelpSearch::Runner::_match_string(const String &p_term, const String &p_string) const {
 	if (search_flags & SEARCH_CASE_SENSITIVE) {
-		return p_string.find(p_term) > -1;
+		return p_string.contains(p_term);
 	} else {
 		return p_string.findn(p_term) > -1;
 	}

@@ -2993,7 +2993,7 @@ Error Main::setup2() {
 				// Dummy text driver cannot draw any text, making the editor unusable if selected.
 				continue;
 			}
-			if (!text_driver_options.is_empty() && text_driver_options.find(",") == -1) {
+			if (!text_driver_options.is_empty() && !text_driver_options.contains(",")) {
 				// Not the first option; add a comma before it as a separator for the property hint.
 				text_driver_options += ",";
 			}

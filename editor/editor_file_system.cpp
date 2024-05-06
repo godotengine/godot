@@ -269,7 +269,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 					FileCache fc;
 					fc.type = split[1];
-					if (fc.type.find("/") != -1) {
+					if (fc.type.contains("/")) {
 						fc.type = fc.type.get_slice("/", 0);
 						fc.resource_script_class = fc.type.get_slice("/", 1);
 					}
@@ -2707,7 +2707,7 @@ void EditorFileSystem::_update_extensions() {
 }
 
 void EditorFileSystem::add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query) {
-	ERR_FAIL_COND(import_support_queries.find(p_query) != -1);
+	ERR_FAIL_COND(import_support_queries.has(p_query));
 	import_support_queries.push_back(p_query);
 }
 void EditorFileSystem::remove_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query) {

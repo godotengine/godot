@@ -618,7 +618,7 @@ Ref<AudioStreamPlayback> AudioStreamRandomizer::instance_playback_sequential() {
 		if (entry.stream.is_null()) {
 			continue;
 		}
-		if (local_pool.find(entry.stream) != -1) {
+		if (local_pool.has(entry.stream)) {
 			WARN_PRINT("Duplicate stream in sequential playback pool");
 			continue;
 		}

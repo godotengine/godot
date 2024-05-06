@@ -742,7 +742,7 @@ void ScriptEditor::_add_recent_script(const String &p_path) {
 	}
 
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scripts", Array());
-	if (rc.find(p_path) != -1) {
+	if (rc.has(p_path)) {
 		rc.erase(p_path);
 	}
 	rc.push_front(p_path);

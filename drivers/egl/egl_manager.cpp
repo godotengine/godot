@@ -383,7 +383,7 @@ Error EGLManager::initialize() {
 	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
 
 	const char *platform = _get_platform_extension_name();
-	if (extensions_string.split(" ").find(platform) < 0) {
+	if (!extensions_string.split(" ").has(platform)) {
 		ERR_FAIL_V_MSG(ERR_UNAVAILABLE, vformat("EGL platform extension \"%s\" not found.", platform));
 	}
 
