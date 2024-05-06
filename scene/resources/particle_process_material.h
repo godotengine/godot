@@ -186,7 +186,7 @@ private:
 	}
 
 	static Mutex material_mutex;
-	static SelfList<ParticleProcessMaterial>::List *dirty_materials;
+	static SelfList<ParticleProcessMaterial>::List dirty_materials;
 
 	struct ShaderNames {
 		StringName direction;
@@ -293,7 +293,6 @@ private:
 
 	void _update_shader();
 	_FORCE_INLINE_ void _queue_shader_change();
-	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
 	Vector3 direction;
 	float spread = 0.0f;
