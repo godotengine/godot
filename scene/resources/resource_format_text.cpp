@@ -37,10 +37,11 @@
 #include "core/object/script_language.h"
 #include "core/version.h"
 
-// Version 2: changed names for Basis, AABB, Vectors, etc.
-// Version 3: new string ID for ext/subresources, breaks forward compat.
-// Version 4: PackedByteArray is now stored as base64 encoded.
+// Version 2: Changed names for Basis, AABB, Vectors, etc.
+// Version 3: New string ID for ext/subresources, breaks forward compat.
 #define FORMAT_VERSION 3
+// Version 4: PackedByteArray can be base64 encoded, and PackedVector4Array was added.
+// Parsing only, for forward compat with 4.3+.
 #define FORMAT_VERSION_READABLE 4
 
 #define BINARY_FORMAT_VERSION 4
