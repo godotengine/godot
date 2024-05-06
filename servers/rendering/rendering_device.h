@@ -183,15 +183,16 @@ private:
 
 	// <TF>
 	// @ShadyTF persistently mapped buffers
-	struct PersistentBuffer {
+	struct LinearBuffer {
 		uint32_t size;
 		BitField<RDD::BufferUsageBits> usage;
 		int usage_index;
+		uint32_t usage_frame;
 		Vector<Buffer> buffers;
 	};
-	RID_Owner<PersistentBuffer> persistent_buffer_owner;
-	void persistent_uniform_buffer_advance(RID p_buffer);
-	void persistent_uniform_buffers_reset();
+	RID_Owner<LinearBuffer> linear_buffer_owner;
+	void linear_uniform_buffer_advance(RID p_buffer);
+	void linear_uniform_buffers_reset();
 	void update_perf_report();
 	// flag for using persistent buffers;
 	bool persistent_buffer_enabled = true;

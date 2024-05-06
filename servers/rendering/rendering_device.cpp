@@ -227,9 +227,9 @@ RenderingDevice::Buffer *RenderingDevice::_get_buffer_from_owner(RID p_buffer) {
 	} else if (index_buffer_owner.owns(p_buffer)) {
 		buffer = index_buffer_owner.get_or_null(p_buffer);
 		// <TF>
-		// @ShadyTF persistently mapped buffers
-	} else if (persistent_buffer_owner.owns(p_buffer)) {
-		PersistentBuffer* linear_buffer = persistent_buffer_owner.get_or_null(p_buffer);
+		// @ShadyTF linear buffers
+	} else if (linear_buffer_owner.owns(p_buffer)) {
+		LinearBuffer* linear_buffer = linear_buffer_owner.get_or_null(p_buffer);
 		DEV_ASSERT(linear_buffer->usage_index != -1);
 		buffer = linear_buffer->buffers.ptrw() + linear_buffer->usage_index;
 		// </TF>
@@ -511,7 +511,7 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 
 	// <TF>
 	// @ShadyTF
-	persistent_uniform_buffer_advance(p_buffer);
+	linear_uniform_buffer_advance(p_buffer);
 	// </TF>
 
 	Buffer *buffer = _get_buffer_from_owner(p_buffer);
@@ -549,8 +549,8 @@ String RenderingDevice::get_perf_report() const {
 	return perf_report_text;
 
 }
-void RenderingDevice::persistent_uniform_buffer_advance(RID p_buffer) {
-	PersistentBuffer *linear_buffer = persistent_buffer_owner.get_or_null(p_buffer);
+void RenderingDevice::linear_uniform_buffer_advance(RID p_buffer) {
+	LinearBuffer *linear_buffer = linear_buffer_owner.get_or_null(p_buffer);
 	if (linear_buffer) {
 		if (linear_buffer->buffers.size() <= (linear_buffer->usage_index + 1)) {
 			Buffer buffer;
@@ -560,16 +560,22 @@ void RenderingDevice::persistent_uniform_buffer_advance(RID p_buffer) {
 			buffer_memory += buffer.size;
 			linear_buffer->buffers.append(buffer);
 		}
+
+		if (linear_buffer->usage_index == -1)
+			linear_buffer->usage_frame = frame;
+
 		linear_buffer->usage_index++;
 	}
 }
 
-void RenderingDevice::persistent_uniform_buffers_reset() {
+void RenderingDevice::linear_uniform_buffers_reset() {
 	List<RID> owned;
-	persistent_buffer_owner.get_owned_list(&owned);
+	linear_buffer_owner.get_owned_list(&owned);
+
 	for (const RID& curr : owned) {
-		PersistentBuffer* curr_linear_buffer = persistent_buffer_owner.get_or_null(curr);
-		curr_linear_buffer->usage_index = -1;
+		LinearBuffer* curr_linear_buffer = linear_buffer_owner.get_or_null(curr);
+		if (curr_linear_buffer->usage_frame == frame)
+			curr_linear_buffer->usage_index = -1;
 	}
 }
 
@@ -2727,10 +2733,10 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 }
 // <TF>
 
-// @ShadyTF : persistent buffers
+// @ShadyTF : linear buffers
 RID RenderingDevice::linear_buffer_create(uint32_t p_size_bytes, bool p_storage, BitField<StorageBufferUsage> p_usage) {
 	_THREAD_SAFE_METHOD_
-	PersistentBuffer linear_buffer;
+	LinearBuffer linear_buffer;
 	if (p_storage) {
 		linear_buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_STORAGE_BIT| RDD::BUFFER_USAGE_PERSISTENT_BIT);
 		if (p_usage.has_flag(STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT)) {
@@ -2740,24 +2746,18 @@ RID RenderingDevice::linear_buffer_create(uint32_t p_size_bytes, bool p_storage,
 		linear_buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_UNIFORM_BIT | RDD::BUFFER_USAGE_PERSISTENT_BIT);
 	}
 	
+	Buffer buffer;
+	buffer.size = p_size_bytes;
+	buffer.usage = linear_buffer.usage;
+	buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
+	ERR_FAIL_COND_V(!buffer.driver_id, RID());
+	buffer_memory += buffer.size;
 
-	static uint32_t frame_count = MAX(2U, uint32_t(GLOBAL_GET("rendering/rendering_device/vsync/frame_queue_size")));
-	
-	for (int i = 0; i < frame_count; i++) {
-		Buffer buffer;
-		buffer.size = p_size_bytes;
-		buffer.usage = linear_buffer.usage;
-		buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU);
-		ERR_FAIL_COND_V(!buffer.driver_id, RID());
-		buffer_memory += buffer.size;
-
-		linear_buffer.buffers.append(buffer);
-		linear_buffer.usage_index = -1;
-	}
-	
+	linear_buffer.buffers.append(buffer);
+	linear_buffer.usage_index = -1;
 	linear_buffer.size = p_size_bytes;
 	
-	RID id = persistent_buffer_owner.make_rid(linear_buffer);
+	RID id = linear_buffer_owner.make_rid(linear_buffer);
 	return id;
 }
 // </TF>
@@ -3032,9 +3032,9 @@ RID RenderingDevice::uniform_set_create(const Vector<Uniform> &p_uniforms, RID p
 				RID buffer_id = uniform.get_id(0);
 				Buffer *buffer = uniform_buffer_owner.get_or_null(buffer_id);
 				// <TF>
-				// @ShadyTF persistently mapped buffers
+				// @ShadyTF linear buffers
 				if (buffer == nullptr) {
-					PersistentBuffer *linear_buffer = persistent_buffer_owner.get_or_null(uniform.get_id(0));
+					LinearBuffer *linear_buffer = linear_buffer_owner.get_or_null(uniform.get_id(0));
 					buffer = linear_buffer->buffers.ptrw() + MAX(0, linear_buffer->usage_index);
 				}
 				// </TF>
@@ -5027,13 +5027,13 @@ void RenderingDevice::_free_internal(RID p_id) {
 		frames[frame].buffers_to_dispose_of.push_back(*uniform_buffer);
 		uniform_buffer_owner.free(p_id);
 		// <TF>
-		// @ShadyTF persistently mapped buffers
-	} else if (persistent_buffer_owner.owns(p_id)) {
-		PersistentBuffer *linear_uniform_buffer = persistent_buffer_owner.get_or_null(p_id);
+		// @ShadyTF linear buffers
+	} else if (linear_buffer_owner.owns(p_id)) {
+		LinearBuffer *linear_uniform_buffer = linear_buffer_owner.get_or_null(p_id);
 		for (const Buffer &buffer : linear_uniform_buffer->buffers) {
 			frames[frame].buffers_to_dispose_of.push_back(buffer);
 		}
-		persistent_buffer_owner.free(p_id);
+		linear_buffer_owner.free(p_id);
 		// </TF>
 	} else if (texture_buffer_owner.owns(p_id)) {
 		Buffer *texture_buffer = texture_buffer_owner.get_or_null(p_id);
@@ -5314,9 +5314,9 @@ void RenderingDevice::_begin_frame(bool presented) {
 
 	if (presented) {
 		// <TF>
-		// @ShadyTF persistently mapped buffers
+		// @ShadyTF linear buffers
 		// reset linear uniform
-		persistent_uniform_buffers_reset();
+		linear_uniform_buffers_reset();
 		update_perf_report();
 		// reset linear descriptor sets
 		driver->linear_uniform_set_pools_reset(frame);
@@ -5488,6 +5488,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 
 	frame = 0;
 	frames.resize(frame_count);
+
 	max_timestamp_query_elements = 256;
 
 	device = context->device_get(device_index);
@@ -5794,9 +5795,9 @@ uint64_t RenderingDevice::get_driver_resource(DriverResource p_resource, RID p_r
 			} else if (uniform_buffer_owner.owns(p_rid)) {
 				buffer = uniform_buffer_owner.get_or_null(p_rid);
 			// <TF>
-			// @ShadyTF persistently mapped buffers
-			} else if (persistent_buffer_owner.owns(p_rid)) {
-				PersistentBuffer* linear_buffer = persistent_buffer_owner.get_or_null(p_rid);
+			// @ShadyTF linear buffers
+			} else if (linear_buffer_owner.owns(p_rid)) {
+				LinearBuffer* linear_buffer = linear_buffer_owner.get_or_null(p_rid);
 				buffer = linear_buffer->buffers.ptrw() + linear_buffer->usage_index;
 			// </TF>
 			} else if (texture_buffer_owner.owns(p_rid)) {
