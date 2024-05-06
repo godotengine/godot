@@ -275,6 +275,7 @@ public:
 	String get_stack_script_file() const;
 	int get_stack_script_line() const;
 	int get_stack_script_frame() const;
+	String get_stack_script_owner() const;
 
 	bool request_stack_dump(const int &p_frame);
 

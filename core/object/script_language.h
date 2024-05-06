@@ -374,6 +374,7 @@ public:
 	struct StackInfo {
 		String file;
 		String func;
+		String owner;
 		int line;
 	};
 

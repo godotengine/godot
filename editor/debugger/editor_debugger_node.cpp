@@ -141,6 +141,18 @@ void EditorDebuggerNode::_stack_frame_selected(int p_debugger) {
 	if (dbg != get_current_debugger()) {
 		return;
 	}
+
+	bool use_external_editor = EDITOR_GET("text_editor/external/use_external_editor");
+	const bool open_dominant = EDITOR_GET("text_editor/behavior/files/open_dominant_script_on_scene_change");
+	if (open_dominant && !use_external_editor) {
+		const String owner = dbg->get_stack_script_owner();
+		if (owner.length() != 0) {
+			EditorData &editor_data = EditorNode::get_editor_data();
+			EditorInterface::get_singleton()->open_scene_from_path(owner);
+			editor_data.notify_edited_scene_changed();
+		}
+	}
+
 	_text_editor_stack_goto(dbg);
 }
 
