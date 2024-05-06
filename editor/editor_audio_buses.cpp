@@ -44,6 +44,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
 #include "servers/audio_server.h"
@@ -165,8 +166,8 @@ void EditorAudioBus::_notification(int p_what) {
 					channel[i].peak_r -= get_process_delta_time() * 60.0;
 				}
 
-				channel[i].vu_l->set_value(channel[i].peak_l);
-				channel[i].vu_r->set_value(channel[i].peak_r);
+				channel[i].vu_l->set_value(_scaled_db_to_normalized_volume(channel[i].peak_l));
+				channel[i].vu_r->set_value(_scaled_db_to_normalized_volume(channel[i].peak_r));
 
 				if (activity_found != channel[i].prev_active) {
 					if (activity_found) {
@@ -855,7 +856,12 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	vb->add_child(separator);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
-	vb->add_child(hb);
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->add_theme_constant_override("margin_top", 5.0);
+	mc->add_theme_constant_override("margin_bottom", 9.0);
+	mc->add_child(hb);
+
+	vb->add_child(mc);
 	slider = memnew(VSlider);
 	slider->set_min(0.0);
 	slider->set_max(1.0);
@@ -894,16 +900,16 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		channel[i].vu_l = memnew(TextureProgressBar);
 		channel[i].vu_l->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
 		hb->add_child(channel[i].vu_l);
-		channel[i].vu_l->set_min(-80);
-		channel[i].vu_l->set_max(24);
-		channel[i].vu_l->set_step(0.1);
+		channel[i].vu_l->set_min(0.0);
+		channel[i].vu_l->set_max(1.0);
+		channel[i].vu_l->set_step(0.001);
 
 		channel[i].vu_r = memnew(TextureProgressBar);
 		channel[i].vu_r->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
 		hb->add_child(channel[i].vu_r);
-		channel[i].vu_r->set_min(-80);
-		channel[i].vu_r->set_max(24);
-		channel[i].vu_r->set_step(0.1);
+		channel[i].vu_r->set_min(0.0);
+		channel[i].vu_r->set_max(1.0);
+		channel[i].vu_r->set_step(0.001);
 
 		channel[i].peak_l = 0.0f;
 		channel[i].peak_r = 0.0f;
@@ -1424,7 +1430,7 @@ Size2 EditorAudioMeterNotches::get_minimum_size() const {
 	float font_height = font->get_height(font_size);
 
 	float width = 0;
-	float height = top_padding + btm_padding;
+	float height = 0;
 
 	for (int i = 0; i < notches.size(); i++) {
 		if (notches[i].render_db_value) {
@@ -1464,15 +1470,15 @@ void EditorAudioMeterNotches::_draw_audio_notches() {
 
 	for (int i = 0; i < notches.size(); i++) {
 		AudioNotch n = notches[i];
-		draw_line(Vector2(0, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
-				Vector2(line_length * EDSCALE, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
+		draw_line(Vector2(0, (1.0f - n.relative_position) * get_size().y),
+				Vector2(line_length * EDSCALE, (1.0f - n.relative_position) * get_size().y),
 				theme_cache.notch_color,
 				Math::round(EDSCALE));
 
 		if (n.render_db_value) {
 			draw_string(theme_cache.font,
 					Vector2((line_length + label_space) * EDSCALE,
-							(1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
+							(1.0f - n.relative_position) * get_size().y + (font_height / 4)),
 					String::num(Math::abs(n.db_value)) + "dB",
 					HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size,
 					theme_cache.notch_color);
