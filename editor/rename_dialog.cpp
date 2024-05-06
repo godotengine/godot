@@ -473,7 +473,7 @@ void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *
 	String source_file = String::utf8(p_file);
 
 	// Only show first error that is related to "regex"
-	if (self->has_errors || source_file.find("regex") < 0) {
+	if (self->has_errors || !source_file.contains("regex")) {
 		return;
 	}
 

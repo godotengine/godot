@@ -172,7 +172,7 @@ Ref<OpenXRIPBinding> OpenXRInteractionProfile::get_binding_for_action(const Ref<
 void OpenXRInteractionProfile::add_binding(Ref<OpenXRIPBinding> p_binding) {
 	ERR_FAIL_COND(p_binding.is_null());
 
-	if (bindings.find(p_binding) == -1) {
+	if (!bindings.has(p_binding)) {
 		ERR_FAIL_COND_MSG(get_binding_for_action(p_binding->get_action()).is_valid(), "There is already a binding for this action in this interaction profile");
 
 		bindings.push_back(p_binding);

@@ -391,7 +391,7 @@ OpenXRInterface::Action *OpenXRInterface::create_action(ActionSet *p_action_set,
 
 	// we link our actions back to our trackers so we know which actions to check when we're processing our trackers
 	for (int i = 0; i < p_trackers.size(); i++) {
-		if (p_trackers[i]->actions.find(action) == -1) {
+		if (!p_trackers[i]->actions.has(action)) {
 			p_trackers[i]->actions.push_back(action);
 		}
 	}

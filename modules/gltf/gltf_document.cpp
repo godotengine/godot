@@ -7032,7 +7032,7 @@ void GLTFDocument::_build_parent_hierachy(Ref<GLTFState> p_state) {
 Vector<Ref<GLTFDocumentExtension>> GLTFDocument::all_document_extensions;
 
 void GLTFDocument::register_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension, bool p_first_priority) {
-	if (all_document_extensions.find(p_extension) == -1) {
+	if (!all_document_extensions.has(p_extension)) {
 		if (p_first_priority) {
 			all_document_extensions.insert(0, p_extension);
 		} else {

@@ -873,7 +873,7 @@ void BindingsGenerator::_append_text_method(StringBuilder &p_output, const TypeI
 }
 
 void BindingsGenerator::_append_text_member(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
-	if (p_link_target.find("/") >= 0) {
+	if (p_link_target.contains("/")) {
 		// Properties with '/' (slash) in the name are not declared in C#, so there is nothing to reference.
 		_append_text_undeclared(p_output, p_link_target);
 	} else if (!p_target_itype || !p_target_itype->is_object_type) {
@@ -1154,7 +1154,7 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 }
 
 void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
-	if (p_link_target.find("/") >= 0) {
+	if (p_link_target.contains("/")) {
 		// Properties with '/' (slash) in the name are not declared in C#, so there is nothing to reference.
 		_append_xml_undeclared(p_xml_output, p_link_target);
 	} else if (!p_target_itype || !p_target_itype->is_object_type) {
@@ -3654,7 +3654,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				continue;
 			}
 
-			if (property.name.find("/") >= 0) {
+			if (property.name.contains("/")) {
 				// Ignore properties with '/' (slash) in the name. These are only meant for use in the inspector.
 				continue;
 			}

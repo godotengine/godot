@@ -63,7 +63,7 @@ bool EditorPropertyNameProcessor::is_localization_available() {
 		return false;
 	}
 	const Vector<String> forbidden = String("en").split(",");
-	return forbidden.find(EDITOR_GET("interface/editor/editor_language")) == -1;
+	return !forbidden.has(EDITOR_GET("interface/editor/editor_language"));
 }
 
 String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const {

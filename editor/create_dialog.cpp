@@ -376,7 +376,7 @@ float CreateDialog::_score_type(const String &p_type, const String &p_search) co
 	score *= _is_type_preferred(p_type) ? 1.0f : 0.9f;
 
 	// Add score for being a favorite type.
-	score *= (favorite_list.find(p_type) > -1) ? 1.0f : 0.8f;
+	score *= favorite_list.has(p_type) ? 1.0f : 0.8f;
 
 	// Look through at most 5 recent items
 	bool in_recent = false;

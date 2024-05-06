@@ -175,7 +175,7 @@ void JoypadLinux::enumerate_joypads(udev *p_udev) {
 
 		if (devnode) {
 			String devnode_str = devnode;
-			if (devnode_str.find(ignore_str) == -1) {
+			if (!devnode_str.contains(ignore_str)) {
 				open_joypad(devnode);
 			}
 		}
@@ -214,7 +214,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 				const char *devnode = udev_device_get_devnode(dev);
 				if (devnode) {
 					String devnode_str = devnode;
-					if (devnode_str.find(ignore_str) == -1) {
+					if (!devnode_str.contains(ignore_str)) {
 						if (action == "add") {
 							open_joypad(devnode);
 						} else if (String(action) == "remove") {
@@ -244,7 +244,7 @@ void JoypadLinux::monitor_joypads() {
 					continue;
 				}
 				sprintf(fname, "/dev/input/%.*s", 16, current->d_name);
-				if (attached_devices.find(fname) == -1) {
+				if (!attached_devices.has(fname)) {
 					open_joypad(fname);
 				}
 			}

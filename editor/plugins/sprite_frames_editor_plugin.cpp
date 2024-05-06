@@ -1312,7 +1312,7 @@ void SpriteFramesEditor::_update_library_impl() {
 		TreeItem *selected = nullptr;
 		for (const StringName &E : anim_names) {
 			String name = E;
-			if (searching && name.to_lower().find(searched_string) < 0) {
+			if (searching && !name.to_lower().contains(searched_string)) {
 				continue;
 			}
 			TreeItem *it = animations->create_item(anim_root);

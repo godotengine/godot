@@ -253,7 +253,7 @@ void Skeleton3D::_update_process_order() {
 			int parent_bone_idx = bonesptr[i].parent;
 
 			// Check to see if this node is already added to the parent.
-			if (bonesptr[parent_bone_idx].child_bones.find(i) < 0) {
+			if (!bonesptr[parent_bone_idx].child_bones.has(i)) {
 				// Add the child node.
 				bonesptr[parent_bone_idx].child_bones.push_back(i);
 			} else {
