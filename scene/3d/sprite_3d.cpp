@@ -1186,16 +1186,13 @@ void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 
 		List<StringName> al;
 		frames->get_animation_list(&al);
-		if (al.size() == 0) {
-			set_animation(StringName());
+
+		animation = StringName();
+		if (!al.is_empty()) {
+			set_animation(frames->has_animation(animation) ? animation : al[0]);
+		}
+		if (!frames->has_animation(autoplay)) {
 			autoplay = String();
-		} else {
-			if (!frames->has_animation(animation)) {
-				set_animation(al[0]);
-			}
-			if (!frames->has_animation(autoplay)) {
-				autoplay = String();
-			}
 		}
 	}
 
