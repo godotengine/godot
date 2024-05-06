@@ -100,9 +100,12 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_translation.h"
+#include "editor/plugins/packed_scene_translation_parser_plugin.h"
+#include "editor/pot_generator.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_manager.h"
 #include "editor/register_editor_types.h"
+#include "modules/gdscript/editor/gdscript_translation_parser_plugin.h"
 
 #ifndef NO_EDITOR_SPLASH
 #include "main/splash_editor.gen.h"
@@ -183,6 +186,7 @@ static String log_file;
 static bool show_help = false;
 static uint64_t quit_after = 0;
 static OS::ProcessID editor_pid = 0;
+static String generate_pot_path;
 #ifdef TOOLS_ENABLED
 static bool found_project = false;
 static bool auto_build_solutions = false;
@@ -648,6 +652,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("", "If incompatibilities or errors are detected, the exit code will be non-zero.\n");
 	print_help_option("--benchmark", "Benchmark the run time and print it to console.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--benchmark-file <path>", "Benchmark the run time and save it to a given file in JSON format. The path should be absolute.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--generate-pot <path>", "Generate a POT template file for translation to the given <path>.\n");
 #ifdef TESTS_ENABLED
 	print_help_option("--test [--help]", "Run unit tests. Use --test --help for more information.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif
@@ -1488,6 +1493,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			audio_driver = NULL_AUDIO_DRIVER;
 			display_driver = NULL_DISPLAY_DRIVER;
 			main_args.push_back(I->get());
+		} else if (I->get() == "--generate-pot") {
+			cmdline_tool = true;
+
+			if (I->next()) {
+				generate_pot_path = I->next()->get();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing path to generate POT file, aborting.\n");
+				goto error;
+			}
+#endif // TOOLS_ENABLED
 #ifdef MODULE_GDSCRIPT_ENABLED
 		} else if (I->get() == "--gdscript-docs") {
 			if (I->next()) {
@@ -1501,7 +1517,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 #endif // MODULE_GDSCRIPT_ENABLED
-#endif // TOOLS_ENABLED
 		} else if (I->get() == "--path") { // set path of project to start or edit
 
 			if (I->next()) {
@@ -3411,6 +3426,20 @@ int Main::start() {
 			bool valid = GDExtensionAPIDump::validate_extension_json_file(validate_extension_api_file) == OK;
 			return valid ? EXIT_SUCCESS : EXIT_FAILURE;
 		}
+	}
+
+	if (!generate_pot_path.is_empty()) {
+		Ref<GDScriptEditorTranslationParserPlugin> gdscript_translation_parser_plugin;
+		Ref<PackedSceneEditorTranslationParserPlugin> packed_scene_translation_parser_plugin;
+		gdscript_translation_parser_plugin.instantiate();
+		packed_scene_translation_parser_plugin.instantiate();
+		EditorTranslationParser::get_singleton()->add_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
+		EditorTranslationParser::get_singleton()->add_parser(packed_scene_translation_parser_plugin, EditorTranslationParser::STANDARD);
+		POTGenerator::get_singleton()->generate_pot(generate_pot_path);
+		EditorTranslationParser::get_singleton()->remove_parser(packed_scene_translation_parser_plugin, EditorTranslationParser::STANDARD);
+		EditorTranslationParser::get_singleton()->remove_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
+		OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
+		return false;
 	}
 
 #ifndef DISABLE_DEPRECATED
