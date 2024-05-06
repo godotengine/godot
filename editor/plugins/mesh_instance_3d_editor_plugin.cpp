@@ -33,6 +33,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/multi_node_edit.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/navigation_region_3d.h"
@@ -188,8 +189,7 @@ void MeshInstance3DEditor::_create_collision_shape() {
 				cshape->set_shape(shape);
 				cshape->set_name("CollisionShape3D");
 				cshape->set_transform(node->get_transform());
-				ur->add_do_method(E->get_parent(), "add_child", cshape);
-				ur->add_do_method(E->get_parent(), "move_child", cshape, E->get_index() + 1);
+				ur->add_do_method(E, "add_sibling", cshape, true);
 				ur->add_do_method(cshape, "set_owner", owner);
 				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
 				ur->add_do_reference(cshape);
@@ -612,11 +612,48 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 }
 
 void MeshInstance3DEditorPlugin::edit(Object *p_object) {
-	mesh_editor->edit(Object::cast_to<MeshInstance3D>(p_object));
+	{
+		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_object);
+		if (mi) {
+			mesh_editor->edit(mi);
+			return;
+		}
+	}
+
+	Ref<MultiNodeEdit> mne = Ref<MultiNodeEdit>(p_object);
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+	if (mne.is_valid() && edited_scene) {
+		for (int i = 0; i < mne->get_node_count(); i++) {
+			MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(edited_scene->get_node(mne->get_node(i)));
+			if (mi) {
+				mesh_editor->edit(mi);
+				return;
+			}
+		}
+	}
+	mesh_editor->edit(nullptr);
 }
 
 bool MeshInstance3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("MeshInstance3D");
+	if (Object::cast_to<MeshInstance3D>(p_object)) {
+		return true;
+	}
+
+	Ref<MultiNodeEdit> mne = Ref<MultiNodeEdit>(p_object);
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+	if (mne.is_valid() && edited_scene) {
+		bool has_mesh = false;
+		for (int i = 0; i < mne->get_node_count(); i++) {
+			if (Object::cast_to<MeshInstance3D>(edited_scene->get_node(mne->get_node(i)))) {
+				if (has_mesh) {
+					return true;
+				} else {
+					has_mesh = true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 void MeshInstance3DEditorPlugin::make_visible(bool p_visible) {
