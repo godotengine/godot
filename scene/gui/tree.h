@@ -513,7 +513,6 @@ private:
 
 	void popup_select(int p_option);
 
-	void item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mouse_index = MouseButton::NONE);
 	void item_changed(int p_column, TreeItem *p_item);
 	void item_selected(int p_column, TreeItem *p_item);
 	void item_deselected(int p_column, TreeItem *p_item);
@@ -707,6 +706,7 @@ public:
 	TreeItem *create_item(TreeItem *p_parent = nullptr, int p_index = -1);
 	TreeItem *get_root() const;
 	TreeItem *get_last_item() const;
+	void item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mouse_index = MouseButton::NONE);
 
 	void set_column_custom_minimum_width(int p_column, int p_min_width);
 	void set_column_expand(int p_column, bool p_expand);

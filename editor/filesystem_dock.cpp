@@ -62,6 +62,10 @@
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
 
+#ifdef MODULE_REGEX_ENABLED
+#include "editor/filesystem_dock_rename_dialog.h"
+#endif // MODULE_REGEX_ENABLED
+
 Control *FileSystemTree::make_custom_tooltip(const String &p_text) const {
 	TreeItem *item = get_item_at_position(get_local_mouse_position());
 	if (!item) {
@@ -133,6 +137,10 @@ bool FileSystemList::edit_selected() {
 	return true;
 }
 
+void FileSystemList::set_edit_text(const String &p_text) {
+	line_editor->set_text(p_text);
+}
+
 String FileSystemList::get_edit_text() {
 	return line_editor->get_text();
 }
@@ -149,6 +157,7 @@ void FileSystemList::_text_editor_popup_modal_close() {
 
 void FileSystemList::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_edited"));
+	ClassDB::bind_method(D_METHOD("_line_editor_submit"), &FileSystemList::_line_editor_submit);
 }
 
 FileSystemList::FileSystemList() {
@@ -1774,6 +1783,34 @@ void FileSystemDock::_folder_removed(const String &p_folder) {
 	}
 }
 
+void FileSystemDock::_batch_rename(const String &p_path, const String &p_new_name, const bool &p_is_tree) {
+	// Set to_rename variable for callback execution.
+	to_rename.path = p_path;
+	to_rename.is_file = !to_rename.path.ends_with("/");
+	if (to_rename.path == "res://") {
+		return;
+	}
+
+	// Rename has same logic as move for resource files.
+	to_move.clear();
+	to_move.push_back(to_rename);
+
+	if (p_is_tree) {
+		// Edit node in Tree.
+		TreeItem *ti = tree->get_item_with_metadata(p_path);
+		ti->set_text(0, p_new_name);
+		tree->item_edited(0, ti);
+
+	} else {
+		const int files_item_idx = files->find_metadata(p_path);
+		if (files_item_idx != -1) {
+			files->select(files_item_idx);
+			files->set_edit_text(p_new_name);
+			files->call("_line_editor_submit", p_new_name);
+		}
+	}
+}
+
 void FileSystemDock::_rename_operation_confirm() {
 	String new_name;
 	TreeItem *ti = tree->get_edited();
@@ -2091,6 +2128,12 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 				tree->get_selected()->set_collapsed_recursive(p_option == FOLDER_COLLAPSE_ALL);
 			}
 		} break;
+#ifdef MODULE_REGEX_ENABLED
+		case FILE_BATCH_RENAME: {
+			[[fallthrough]];
+		}
+#endif // MODULE_REGEX_ENABLED
+
 		case FILE_RENAME: {
 			selected_strings = _tree_get_selected(false, true);
 			[[fallthrough]];
@@ -2436,7 +2479,28 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				}
 			}
 		} break;
+#ifdef MODULE_REGEX_ENABLED
+		case FILE_BATCH_RENAME: {
+			if (!tree->has_focus() && !files->has_focus()) {
+				break;
+			}
 
+			if (tree->has_focus()) {
+				PackedStringArray selected = FileSystemDock::get_singleton()->get_selected_paths();
+				rename_dialog->set_selected_files(selected, true);
+			} else {
+				Vector<int> selected_id = files->get_selected_items();
+				Vector<String> selected;
+				for (int i = 0; i < selected_id.size(); i++) {
+					selected.push_back(files->get_item_metadata(selected_id[i]));
+				}
+
+				rename_dialog->set_selected_files(selected, false);
+			}
+
+			rename_dialog->popup_centered();
+		} break;
+#endif // MODULE_REGEX_ENABLED
 		case FILE_REMOVE: {
 			// Remove the selected files.
 			Vector<String> remove_files;
@@ -3221,6 +3285,11 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		p_popup->add_icon_item(get_editor_theme_icon(SNAME("MoveUp")), TTR("Move/Duplicate To..."), FILE_MOVE);
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_GET_SHORTCUT("filesystem_dock/delete"), FILE_REMOVE);
 	}
+#ifdef MODULE_REGEX_ENABLED
+	if (p_paths.size() > 1) {
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("filesystem_dock/batch_rename"), FILE_BATCH_RENAME);
+	}
+#endif // MODULE_REGEX_ENABLED
 
 	p_popup->add_separator();
 
@@ -3529,6 +3598,10 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			_tree_rmb_option(FILE_REMOVE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
 			_tree_rmb_option(FILE_RENAME);
+#ifdef MODULE_REGEX_ENABLED
+		} else if (ED_IS_SHORTCUT("filesystem_dock/batch_rename", p_event)) {
+			_file_list_rmb_option(FILE_BATCH_RENAME);
+#endif // MODULE_REGEX_ENABLED
 		} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_event)) {
 			_tree_rmb_option(FILE_SHOW_IN_EXPLORER);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_external_program", p_event)) {
@@ -3819,6 +3892,8 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_dock_horizontal", "enable"), &FileSystemDock::_set_dock_horizontal);
 	ClassDB::bind_method(D_METHOD("_can_dock_horizontal"), &FileSystemDock::_can_dock_horizontal);
 
+	ClassDB::bind_method(D_METHOD("_batch_rename"), &FileSystemDock::_batch_rename);
+
 	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("instantiate", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 
@@ -3911,6 +3986,8 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), Key::KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), Key::F2);
 	ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);
+	ED_SHORTCUT("filesystem_dock/batch_rename", TTR("Batch Rename..."), KeyModifierMask::SHIFT | Key::F2);
+	ED_SHORTCUT_OVERRIDE("scene_tree/batch_rename", "macos", KeyModifierMask::SHIFT | Key::ENTER);
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	// Opening the system file manager or opening in an external program is not supported on the Android and web editors.
 	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTR("Open in File Manager"));
@@ -4097,6 +4174,11 @@ FileSystemDock::FileSystemDock() {
 	overwrite_dialog->set_ok_button_text(TTR("Overwrite"));
 	overwrite_dialog->add_button(TTR("Keep Both"), true)->connect("pressed", callable_mp(this, &FileSystemDock::_overwrite_dialog_action).bind(false));
 	overwrite_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_overwrite_dialog_action).bind(true));
+
+#ifdef MODULE_REGEX_ENABLED
+	rename_dialog = memnew(FileSystemRenameDialog(this));
+	add_child(rename_dialog);
+#endif // MODULE_REGEX_ENABLED
 
 	VBoxContainer *overwrite_dialog_vb = memnew(VBoxContainer);
 	overwrite_dialog->add_child(overwrite_dialog_vb);

@@ -63,7 +63,7 @@
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
-#include "editor/rename_dialog.h"
+#include "editor/scene_tree_rename_dialog.h"
 #endif // MODULE_REGEX_ENABLED
 
 void SceneTreeDock::_nodes_drag_begin() {
@@ -4385,7 +4385,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	create_dialog->connect("favorites_updated", callable_mp(this, &SceneTreeDock::_update_create_root_dialog));
 
 #ifdef MODULE_REGEX_ENABLED
-	rename_dialog = memnew(RenameDialog(scene_tree));
+	rename_dialog = memnew(SceneTreeRenameDialog(scene_tree));
 	add_child(rename_dialog);
 #endif // MODULE_REGEX_ENABLED
 

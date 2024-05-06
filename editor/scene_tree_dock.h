@@ -47,7 +47,7 @@ class TextureRect;
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
-class RenameDialog;
+class SceneTreeRenameDialog;
 #endif // MODULE_REGEX_ENABLED
 
 class SceneTreeDock : public VBoxContainer {
@@ -109,7 +109,7 @@ class SceneTreeDock : public VBoxContainer {
 	int current_option = 0;
 	CreateDialog *create_dialog = nullptr;
 #ifdef MODULE_REGEX_ENABLED
-	RenameDialog *rename_dialog = nullptr;
+	SceneTreeRenameDialog *rename_dialog = nullptr;
 #endif // MODULE_REGEX_ENABLED
 
 	Button *button_add = nullptr;

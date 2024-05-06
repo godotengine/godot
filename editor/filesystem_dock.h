@@ -51,6 +51,10 @@ class SceneCreateDialog;
 class ShaderCreateDialog;
 class DirectoryCreateDialog;
 class EditorResourceTooltipPlugin;
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+class FileSystemRenameDialog;
+#endif // MODULE_REGEX_ENABLED
 
 class FileSystemTree : public Tree {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
@@ -72,6 +76,7 @@ protected:
 
 public:
 	bool edit_selected();
+	void set_edit_text(const String &p_text);
 	String get_edit_text();
 
 	FileSystemList();
@@ -121,6 +126,9 @@ private:
 		FILE_OWNERS,
 		FILE_MOVE,
 		FILE_RENAME,
+#ifdef MODULE_REGEX_ENABLED
+		FILE_BATCH_RENAME,
+#endif // MODULE_REGEX_ENABLED
 		FILE_REMOVE,
 		FILE_DUPLICATE,
 		FILE_REIMPORT,
@@ -206,6 +214,10 @@ private:
 	ShaderCreateDialog *make_shader_dialog = nullptr;
 	CreateDialog *new_resource_dialog = nullptr;
 
+#ifdef MODULE_REGEX_ENABLED
+	FileSystemRenameDialog *rename_dialog = nullptr;
+#endif // MODULE_REGEX_ENABLED
+
 	bool always_show_folders = false;
 
 	bool editor_is_dark_theme = false;
@@ -290,6 +302,7 @@ private:
 
 	void _resource_created();
 	void _make_scene_confirm();
+	void _batch_rename(const String &p_path, const String &p_new_name, const bool &p_is_tree);
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm();
 	void _overwrite_dialog_action(bool p_overwrite);
