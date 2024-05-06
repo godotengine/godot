@@ -626,11 +626,11 @@ void GodotSoftBody3D::generate_bending_constraints(int p_distance) {
 			for (Link &link : links) {
 				const int ia = (int)(link.n[0] - &nodes[0]);
 				const int ib = (int)(link.n[1] - &nodes[0]);
-				if (node_links[ia].find(ib) == -1) {
+				if (!node_links[ia].has(ib)) {
 					node_links[ia].push_back(ib);
 				}
 
-				if (node_links[ib].find(ia) == -1) {
+				if (!node_links[ib].has(ia)) {
 					node_links[ib].push_back(ia);
 				}
 			}

@@ -73,7 +73,7 @@ public:
 			return false;
 		}
 		for (int i = 0; i < get_node_count(); i++) {
-			if (nodes.find(p_other->get_node(i)) == -1) {
+			if (!nodes.has(p_other->get_node(i))) {
 				return false;
 			}
 		}

@@ -1098,7 +1098,7 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 			};
 
 			// Check if edge has already been processed.
-			if (processed_edges.find(edge_points_and_uvs) != -1) {
+			if (processed_edges.has(edge_points_and_uvs)) {
 				continue;
 			}
 
