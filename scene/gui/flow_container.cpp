@@ -63,11 +63,8 @@ void FlowContainer::_resort() {
 
 	// First pass for line wrapping and minimum size calculation.
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i));
-		if (!child || !child->is_visible()) {
-			continue;
-		}
-		if (child->is_set_as_top_level()) {
+		Control *child = as_sortable_control(get_child(i));
+		if (!child) {
 			continue;
 		}
 
@@ -138,11 +135,8 @@ void FlowContainer::_resort() {
 	ofs.y = 0;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i));
-		if (!child || !child->is_visible()) {
-			continue;
-		}
-		if (child->is_set_as_top_level()) {
+		Control *child = as_sortable_control(get_child(i));
+		if (!child) {
 			continue;
 		}
 		Size2i child_size = children_minsize_cache[child];
@@ -256,15 +250,8 @@ Size2 FlowContainer::get_minimum_size() const {
 	Size2i minimum;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
+		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
-			continue;
-		}
-
-		if (!c->is_visible()) {
 			continue;
 		}
 

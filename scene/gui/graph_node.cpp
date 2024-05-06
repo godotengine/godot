@@ -175,9 +175,8 @@ void GraphNode::_resort() {
 	HashMap<Control *, _MinSizeCache> min_size_cache;
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i, false));
-
-		if (!child || !child->is_visible_in_tree() || child->is_set_as_top_level()) {
+		Control *child = as_sortable_control(get_child(i, false));
+		if (!child) {
 			continue;
 		}
 
@@ -218,8 +217,8 @@ void GraphNode::_resort() {
 		bool refit_successful = true;
 
 		for (int i = 0; i < get_child_count(false); i++) {
-			Control *child = Object::cast_to<Control>(get_child(i, false));
-			if (!child || !child->is_visible_in_tree() || child->is_set_as_top_level()) {
+			Control *child = as_sortable_control(get_child(i, false));
+			if (!child) {
 				continue;
 			}
 
@@ -256,8 +255,8 @@ void GraphNode::_resort() {
 	int width = new_size.width - sb_panel->get_minimum_size().width;
 	int valid_children_idx = 0;
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i, false));
-		if (!child || !child->is_visible_in_tree() || child->is_set_as_top_level()) {
+		Control *child = as_sortable_control(get_child(i, false));
+		if (!child) {
 			continue;
 		}
 
@@ -614,8 +613,8 @@ Size2 GraphNode::get_minimum_size() const {
 	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i, false));
-		if (!child || !child->is_visible() || child->is_set_as_top_level()) {
+		Control *child = as_sortable_control(get_child(i, false));
+		if (!child) {
 			continue;
 		}
 

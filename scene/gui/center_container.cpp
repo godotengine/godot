@@ -36,14 +36,8 @@ Size2 CenterContainer::get_minimum_size() const {
 	}
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
+		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
-			continue;
-		}
-		if (!c->is_visible()) {
 			continue;
 		}
 		Size2 minsize = c->get_combined_minimum_size();
@@ -81,14 +75,10 @@ void CenterContainer::_notification(int p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
 			Size2 size = get_size();
 			for (int i = 0; i < get_child_count(); i++) {
-				Control *c = Object::cast_to<Control>(get_child(i));
+				Control *c = as_sortable_control(get_child(i));
 				if (!c) {
 					continue;
 				}
-				if (c->is_set_as_top_level()) {
-					continue;
-				}
-
 				Size2 minsize = c->get_combined_minimum_size();
 				Point2 ofs = use_top_left ? (-minsize * 0.5).floor() : ((size - minsize) / 2.0).floor();
 				fit_child_in_rect(c, Rect2(ofs, minsize));
