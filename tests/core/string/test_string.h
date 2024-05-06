@@ -297,6 +297,19 @@ TEST_CASE("[String] Contains") {
 	CHECK(!s.contains(String("\\char_test.tscn")));
 }
 
+TEST_CASE("[String] Contains case insensitive") {
+	String s = "C:\\Godot\\project\\string_test.tscn";
+	CHECK(s.containsn("Godot"));
+	CHECK(s.containsn("godot"));
+	CHECK(s.containsn(String("Project\\string_test")));
+	CHECK(s.containsn(String("\\string_Test.tscn")));
+
+	CHECK(!s.containsn("Godoh"));
+	CHECK(!s.containsn("godoh"));
+	CHECK(!s.containsn(String("project\\string test")));
+	CHECK(!s.containsn(String("\\char_test.tscn")));
+}
+
 TEST_CASE("[String] Test chr") {
 	CHECK(String::chr('H') == "H");
 	CHECK(String::chr(0x3012)[0] == 0x3012);
@@ -376,7 +389,7 @@ TEST_CASE("[String] Find") {
 	MULTICHECK_STRING_INT_EQ(s, rfind, "", 15, -1);
 }
 
-TEST_CASE("[String] Find no case") {
+TEST_CASE("[String] Find case insensitive") {
 	String s = "Pretty Whale Whale";
 	MULTICHECK_STRING_EQ(s, findn, "WHA", 7);
 	MULTICHECK_STRING_INT_EQ(s, findn, "WHA", 9, 13);

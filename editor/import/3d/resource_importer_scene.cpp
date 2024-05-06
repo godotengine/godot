@@ -387,7 +387,7 @@ static bool _teststr(const String &p_what, const String &p_str) {
 		what = what.substr(0, what.length() - 1);
 	}
 
-	if (what.findn("$" + p_str) != -1) { //blender and other stuff
+	if (what.containsn("$" + p_str)) { // Blender and other stuff.
 		return true;
 	}
 	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
@@ -410,7 +410,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 
 	String end = p_what.substr(what.length(), p_what.length() - what.length());
 
-	if (what.findn("$" + p_str) != -1) { //blender and other stuff
+	if (what.containsn("$" + p_str)) { // Blender and other stuff.
 		return what.replace("$" + p_str, "") + end;
 	}
 	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
