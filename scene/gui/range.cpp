@@ -107,7 +107,7 @@ void Range::_set_value_no_signal(double p_val) {
 	}
 
 	if (shared->step > 0) {
-		 p_val = Math::round(p_val / shared->step) * shared->step;
+		p_val = Math::round(p_val / shared->step) * shared->step;
 	}
 
 	if (_rounded_values) {
