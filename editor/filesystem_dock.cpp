@@ -2848,7 +2848,7 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		String to_dir;
 		bool favorite;
 		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
-		return !favorite && Array(drag_data["nodes"]).size() == 1;
+		return !favorite;
 	}
 
 	return false;
