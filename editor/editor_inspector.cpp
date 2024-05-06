@@ -52,7 +52,7 @@
 #include "scene/resources/style_box_flat.h"
 
 bool EditorInspector::_property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
-	if (p_property_path.findn(p_filter) != -1) {
+	if (p_property_path.containsn(p_filter)) {
 		return true;
 	}
 

@@ -157,7 +157,7 @@ Config::Config() {
 				continue;
 			}
 
-			if (renderer.findn(v) != -1) {
+			if (renderer.containsn(v)) {
 				use_depth_prepass = false;
 			}
 		}

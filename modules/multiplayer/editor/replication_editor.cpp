@@ -81,7 +81,7 @@ void ReplicationEditor::_pick_node_select_recursive(TreeItem *p_item, const Stri
 	NodePath np = p_item->get_metadata(0);
 	Node *node = get_node(np);
 
-	if (!p_filter.is_empty() && ((String)node->get_name()).findn(p_filter) != -1) {
+	if (!p_filter.is_empty() && ((String)node->get_name()).containsn(p_filter)) {
 		p_select_candidates.push_back(node);
 	}
 
