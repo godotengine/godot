@@ -2593,8 +2593,8 @@ void Node3DEditorViewport::scale_freelook_speed(real_t scale) {
 	surface->queue_redraw();
 }
 
-Point2i Node3DEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const {
-	Point2i relative;
+Point2 Node3DEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const {
+	Point2 relative;
 	if (bool(EDITOR_GET("editors/3d/navigation/warped_mouse_panning"))) {
 		relative = Input::get_singleton()->warp_mouse_motion(p_ev_mouse_motion, surface->get_global_rect());
 	} else {

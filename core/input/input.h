@@ -316,7 +316,7 @@ public:
 	BitField<MouseButtonMask> get_mouse_button_mask() const;
 
 	void warp_mouse(const Vector2 &p_position);
-	Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
+	Point2 warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
 
 	void parse_input_event(const Ref<InputEvent> &p_event);
 
