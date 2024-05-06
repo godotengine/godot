@@ -1228,8 +1228,10 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 
 			if (is_imported) {
 				SceneImportSettingsDialog::get_singleton()->open_settings(p_path, resource_type == "AnimationLibrary");
-			} else {
+			} else if (resource_type == "PackedScene") {
 				EditorNode::get_singleton()->open_request(fpath);
+			} else {
+				EditorNode::get_singleton()->load_resource(fpath);
 			}
 		} else if (ResourceLoader::is_imported(fpath)) {
 			// If the importer has advanced settings, show them.

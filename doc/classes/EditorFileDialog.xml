@@ -90,6 +90,12 @@
 				Notify the [EditorFileDialog] that its view of the data is no longer accurate. Updates the view contents on next view update.
 			</description>
 		</method>
+		<method name="popup_file_dialog">
+			<return type="void" />
+			<description>
+				Shows the [EditorFileDialog] at the default size and position for file dialogs in the editor, and selects the file name if there is a current file.
+			</description>
+		</method>
 		<method name="set_option_default">
 			<return type="void" />
 			<param index="0" name="option" type="int" />
