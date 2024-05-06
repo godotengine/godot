@@ -177,6 +177,9 @@ void OS_JavaScript::send_notification_callback(int p_notification) {
 	if (p_notification == MainLoop::NOTIFICATION_WM_MOUSE_ENTER || p_notification == MainLoop::NOTIFICATION_WM_MOUSE_EXIT) {
 		os->cursor_inside_canvas = p_notification == MainLoop::NOTIFICATION_WM_MOUSE_ENTER;
 	}
+	if (godot_js_is_ime_focused() && (p_notification == MainLoop::NOTIFICATION_WM_FOCUS_IN || p_notification == MainLoop::NOTIFICATION_WM_FOCUS_OUT)) {
+		return;
+	}
 	MainLoop *loop = os->get_main_loop();
 	if (loop) {
 		loop->notification(p_notification);
@@ -283,22 +286,39 @@ static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod) {
 void OS_JavaScript::key_callback(int p_pressed, int p_repeat, int p_modifiers) {
 	OS_JavaScript *os = get_singleton();
 	JSKeyEvent &key_event = os->key_event;
+
+	const String code = String::utf8(key_event.code);
+	const String key = String::utf8(key_event.key);
+
 	// Resume audio context after input in case autoplay was denied.
 	os->resume_audio();
 
-	Ref<InputEventKey> ev;
-	ev.instance();
-	ev->set_echo(p_repeat);
-	ev->set_scancode(dom_code2godot_scancode(key_event.code, key_event.key, false));
-	ev->set_physical_scancode(dom_code2godot_scancode(key_event.code, key_event.key, true));
-	ev->set_pressed(p_pressed);
-	dom2godot_mod(ev, p_modifiers);
-
-	String unicode = String::utf8(key_event.key);
-	if (unicode.length() == 1) {
-		ev->set_unicode(unicode[0]);
+	if (os->ime_started) {
+		return;
 	}
-	os->input->parse_input_event(ev);
+
+	wchar_t c = 0x00;
+	String unicode = key;
+	if (unicode.length() == 1) {
+		c = unicode[0];
+	}
+	uint32_t keycode = dom_code2godot_scancode(code.utf8().get_data(), key.utf8().get_data(), false);
+	uint32_t scancode = dom_code2godot_scancode(code.utf8().get_data(), key.utf8().get_data(), true);
+
+	OS_JavaScript::KeyEvent ke;
+
+	ke.pressed = p_pressed;
+	ke.echo = p_repeat;
+	ke.raw = true;
+	ke.keycode = keycode;
+	ke.physical_keycode = scancode;
+	ke.unicode = c;
+	ke.mod = p_modifiers;
+
+	if (os->key_event_pos >= os->key_event_buffer.size()) {
+		os->key_event_buffer.resize(1 + os->key_event_pos);
+	}
+	os->key_event_buffer.write[os->key_event_pos++] = ke;
 
 	// Make sure to flush all events so we can call restricted APIs inside the event.
 	os->input->flush_buffered_events();
@@ -579,7 +599,7 @@ OS::MouseMode OS_JavaScript::get_mouse_mode() const {
 int OS_JavaScript::mouse_wheel_callback(double p_delta_x, double p_delta_y) {
 	OS_JavaScript *os = get_singleton();
 
-	if (!godot_js_display_canvas_is_focused()) {
+	if (!godot_js_display_canvas_is_focused() && !godot_js_is_ime_focused()) {
 		if (os->cursor_inside_canvas) {
 			godot_js_display_canvas_focus();
 		} else {
@@ -670,6 +690,90 @@ void OS_JavaScript::touch_callback(int p_type, int p_count) {
 	}
 }
 
+// IME.
+void OS_JavaScript::ime_callback(int p_type, const char *p_text) {
+	OS_JavaScript *os = get_singleton();
+
+	// Resume audio context after input in case autoplay was denied.
+	os->resume_audio();
+
+	switch (p_type) {
+		case 0: {
+			// IME start.
+			os->ime_text = String();
+			os->ime_selection = Vector2i();
+			for (int i = os->key_event_pos - 1; i >= 0; i--) {
+				// Delete last raw keydown event from query.
+				if (os->key_event_buffer[i].pressed && os->key_event_buffer[i].raw) {
+					os->key_event_buffer.remove(i);
+					os->key_event_pos--;
+					break;
+				}
+			}
+			os->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+			os->ime_started = true;
+		} break;
+		case 1: {
+			// IME update.
+			if (os->ime_active && os->ime_started) {
+				os->ime_text = String::utf8(p_text);
+				os->ime_selection = Vector2i(os->ime_text.length(), os->ime_text.length());
+				os->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+			}
+		} break;
+		case 2: {
+			// IME commit.
+			if (os->ime_active && os->ime_started) {
+				os->ime_started = false;
+
+				os->ime_text = String();
+				os->ime_selection = Vector2i();
+				os->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+
+				String text = String::utf8(p_text);
+				for (int i = 0; i < text.length(); i++) {
+					OS_JavaScript::KeyEvent ke;
+
+					ke.pressed = true;
+					ke.echo = false;
+					ke.raw = false;
+					ke.keycode = 0;
+					ke.physical_keycode = 0;
+					ke.unicode = text[i];
+					ke.mod = 0;
+
+					if (os->key_event_pos >= os->key_event_buffer.size()) {
+						os->key_event_buffer.resize(1 + os->key_event_pos);
+					}
+					os->key_event_buffer.write[os->key_event_pos++] = ke;
+				}
+			}
+		} break;
+		default:
+			break;
+	}
+
+	os->process_keys();
+	os->input->flush_buffered_events();
+}
+
+void OS_JavaScript::set_ime_active(const bool p_active) {
+	ime_active = p_active;
+	godot_js_set_ime_active(p_active);
+}
+
+void OS_JavaScript::set_ime_position(const Point2 &p_pos) {
+	godot_js_set_ime_position(p_pos.x, p_pos.y);
+}
+
+Point2 OS_JavaScript::get_ime_selection() const {
+	return ime_selection;
+}
+
+String OS_JavaScript::get_ime_text() const {
+	return ime_text;
+}
+
 // Gamepad
 void OS_JavaScript::gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid) {
 	InputDefault *input = get_singleton()->input;
@@ -705,6 +809,26 @@ void OS_JavaScript::process_joypads() {
 			input->joy_axis(idx, a, s_axes[a]);
 		}
 	}
+}
+
+void OS_JavaScript::process_keys() {
+	for (int i = 0; i < key_event_pos; i++) {
+		const OS_JavaScript::KeyEvent &ke = key_event_buffer[i];
+
+		Ref<InputEventKey> ev;
+		ev.instance();
+		ev->set_pressed(ke.pressed);
+		ev->set_echo(ke.echo);
+		ev->set_scancode(ke.keycode);
+		ev->set_physical_scancode(ke.physical_keycode);
+		ev->set_unicode(ke.unicode);
+		if (ke.raw) {
+			dom2godot_mod(ev, ke.mod);
+		}
+
+		input->parse_input_event(ev);
+	}
+	key_event_pos = 0;
 }
 
 bool OS_JavaScript::is_joy_known(int p_device) {
@@ -857,6 +981,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	godot_js_input_gamepad_cb(&OS_JavaScript::gamepad_callback);
 	godot_js_input_paste_cb(&OS_JavaScript::update_clipboard_callback);
 	godot_js_input_drop_files_cb(&OS_JavaScript::drop_files_callback);
+	godot_js_set_ime_cb(&OS_JavaScript::ime_callback, &OS_JavaScript::key_callback, key_event.code, key_event.key);
 
 	// JS Display interface (js/libs/library_godot_display.js)
 	godot_js_display_fullscreen_cb(&OS_JavaScript::fullscreen_change_callback);
@@ -938,8 +1063,8 @@ bool OS_JavaScript::main_loop_iterate() {
 		godot_js_os_fs_sync(&OS_JavaScript::fs_sync_callback);
 	}
 
+	process_keys();
 	input->flush_buffered_events();
-
 	if (godot_js_input_gamepad_sample() == OK) {
 		process_joypads();
 	}

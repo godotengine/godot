@@ -54,6 +54,24 @@ private:
 	};
 	JSKeyEvent key_event;
 
+	bool ime_active = false;
+	bool ime_started = false;
+	String ime_text;
+	Vector2 ime_selection;
+
+	struct KeyEvent {
+		bool pressed = false;
+		bool echo = false;
+		bool raw = false;
+		uint32_t keycode = 0;
+		uint32_t physical_keycode = 0;
+		uint32_t unicode = 0;
+		int mod = 0;
+	};
+
+	Vector<KeyEvent> key_event_buffer;
+	int key_event_pos = 0;
+
 	VideoMode video_mode;
 	bool transparency_enabled;
 
@@ -94,6 +112,7 @@ private:
 	static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
 	static void input_text_callback(const char *p_text, int p_cursor);
 	void process_joypads();
+	void process_keys();
 
 	static void file_access_close_callback(const String &p_file, int p_flags);
 
@@ -105,6 +124,7 @@ private:
 	static void update_clipboard_callback(const char *p_text);
 	static void update_pwa_state_callback();
 	static void _js_utterance_callback(int p_event, int p_id, int p_pos);
+	static void ime_callback(int p_type, const char *p_text);
 	static void update_voices_callback(int p_size, const char **p_voice);
 
 protected:
@@ -160,6 +180,12 @@ public:
 	virtual int get_screen_dpi(int p_screen = -1) const;
 	virtual float get_screen_scale(int p_screen = -1) const;
 	virtual float get_screen_max_scale() const;
+
+	virtual void set_ime_active(const bool p_active);
+	virtual void set_ime_position(const Point2 &p_pos);
+
+	virtual Point2 get_ime_selection() const;
+	virtual String get_ime_text() const;
 
 	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
