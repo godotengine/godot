@@ -2603,7 +2603,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 			break;
 	}
 
-	bool present_mode_available = present_modes.find(present_mode) >= 0;
+	bool present_mode_available = present_modes.has(present_mode);
 	if (present_mode_available) {
 		print_verbose("Using present mode: " + present_mode_name);
 	} else {
