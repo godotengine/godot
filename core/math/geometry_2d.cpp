@@ -308,7 +308,12 @@ Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_poly
 
 		Vector<Vector2> polypath2;
 		for (PathsD::size_type j = 0; j < path.size(); ++j) {
-			polypath2.push_back(Point2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
+			// Remove duplicate sequentual points from the polygon.
+			real_t x{static_cast<real_t>(path[j].x)};
+			real_t y{static_cast<real_t>(path[j].y)};
+			if(j == 0 || polypath2[polypath2.size()-1].x != x || polypath2[polypath2.size()-1].y != y) {
+				polypath2.push_back(Point2(x,y));
+			}
 		}
 		polypaths.push_back(polypath2);
 	}
