@@ -884,14 +884,14 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 		if (d.has("byteStride")) {
 			buffer_view->byte_stride = d["byteStride"];
 
-			// Magic numbers from gltf bufferview schema
+			// Some magic numbers from the gltf bufferview schema.
 			ERR_FAIL_COND_V_MSG((buffer_view->byte_stride % 4 != 0) || (buffer_view->byte_stride < 4) || (buffer_view->byte_stride > 252),
 					ERR_PARSE_ERROR, "glTF: Incorrect byte_stride (" + itos(buffer_view->byte_stride) + ")");
 		}
-		// bufferview can't point to something outside the actual data
+		// The bufferview can't point to something outside the actual data.
 		ERR_FAIL_COND_V_MSG((buffer_view->byte_length + buffer_view->byte_offset) > buffersData[buffer_view->buffer].size(),
 				ERR_PARSE_ERROR, "glTF: length+offset > size (" + itos(buffersData[buffer_view->buffer].size()) + ")");
-		// TODO: check the combination of byte_stride, offset and byte_length
+		// TODO: Check the combination of byte_stride, offset and byte_length for bounds.
 
 		if (d.has("target")) {
 			const int target = d["target"];
