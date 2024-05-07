@@ -138,9 +138,7 @@ String FileSystemList::get_edit_text() {
 }
 
 void FileSystemList::_text_editor_popup_modal_close() {
-	if (Input::get_singleton()->is_key_pressed(Key::ESCAPE) ||
-			Input::get_singleton()->is_key_pressed(Key::KP_ENTER) ||
-			Input::get_singleton()->is_key_pressed(Key::ENTER)) {
+	if (popup_editor->get_hide_reason() == Popup::HIDE_REASON_CANCELED) {
 		return;
 	}
 
