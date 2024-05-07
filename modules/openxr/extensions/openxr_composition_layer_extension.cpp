@@ -187,7 +187,7 @@ void OpenXRViewportCompositionLayerProvider::on_pre_render() {
 
 XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_composition_layer() {
 	if (openxr_api == nullptr || composition_layer_extension == nullptr) {
-		// OpenXR not initialised or we're in the editor?
+		// OpenXR not initialized or we're in the editor?
 		return nullptr;
 	}
 
@@ -260,7 +260,7 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 
 bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p_static_image) {
 	if (openxr_api == nullptr || composition_layer_extension == nullptr) {
-		// OpenXR not initialised or we're in the editor?
+		// OpenXR not initialized or we're in the editor?
 		return false;
 	}
 	if (!composition_layer_extension->is_available(composition_layer->type)) {
