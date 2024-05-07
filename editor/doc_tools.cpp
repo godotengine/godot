@@ -1602,7 +1602,7 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 	}
 }
 
-Error DocTools::save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path, bool p_include_xml_schema) {
+Error DocTools::save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path, bool p_use_relative_schema) {
 	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
 		DocData::ClassDoc &c = E.value;
 
@@ -1634,15 +1634,17 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		if (!c.keywords.is_empty()) {
 			header += String(" keywords=\"") + c.keywords.xml_escape(true) + "\"";
 		}
-		if (p_include_xml_schema) {
-			// Reference the XML schema so editors can provide error checking.
+		// Reference the XML schema so editors can provide error checking.
+		String schema_path;
+		if (p_use_relative_schema) {
 			// Modules are nested deep, so change the path to reference the same schema everywhere.
-			const String schema_path = save_path.find("modules/") != -1 ? "../../../doc/class.xsd" : "../class.xsd";
-			header += vformat(
-					R"( xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="%s")",
-					schema_path);
+			schema_path = save_path.find("modules/") != -1 ? "../../../doc/class.xsd" : "../class.xsd";
+		} else {
+			schema_path = "https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd";
 		}
-		header += ">";
+		header += vformat(
+				R"( xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="%s">)",
+				schema_path);
 		_write_string(f, 0, header);
 
 		_write_string(f, 1, "<brief_description>");

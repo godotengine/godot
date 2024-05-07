@@ -637,6 +637,7 @@ void Main::print_help(const char *p_binary) {
 #endif // DISABLE_DEPRECATED
 	print_help_option("--doctool [path]", "Dump the engine API reference to the given <path> (defaults to current directory) in XML format, merging if existing files are found.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--no-docbase", "Disallow dumping the base types (used with --doctool).\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--gdextension-docs", "Rather than dumping the engine API, generate API reference from all the GDExtensions loaded in the current project (used with --doctool).\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #ifdef MODULE_GDSCRIPT_ENABLED
 	print_help_option("--gdscript-docs <path>", "Rather than dumping the engine API, generate API reference from the inline documentation in the GDScript files found in <path> (used with --doctool).\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif
@@ -3214,6 +3215,9 @@ int Main::start() {
 #ifdef TOOLS_ENABLED
 		} else if (E->get() == "--no-docbase") {
 			gen_flags.set_flag(DocTools::GENERATE_FLAG_SKIP_BASIC_TYPES);
+		} else if (E->get() == "--gdextension-docs") {
+			gen_flags.set_flag(DocTools::GENERATE_FLAG_SKIP_BASIC_TYPES);
+			gen_flags.set_flag(DocTools::GENERATE_FLAG_EXTENSION_CLASSES_ONLY);
 #ifndef DISABLE_DEPRECATED
 		} else if (E->get() == "--convert-3to4") {
 			converting_project = true;
@@ -3340,29 +3344,34 @@ int Main::start() {
 		HashSet<String> checked_paths;
 		print_line("Loading docs...");
 
-		for (int i = 0; i < _doc_data_class_path_count; i++) {
-			// Custom modules are always located by absolute path.
-			String path = _doc_data_class_paths[i].path;
-			if (path.is_relative_path()) {
-				path = doc_tool_path.path_join(path);
-			}
-			String name = _doc_data_class_paths[i].name;
-			doc_data_classes[name] = path;
-			if (!checked_paths.has(path)) {
-				checked_paths.insert(path);
+		const bool gdextension_docs = gen_flags.has_flag(DocTools::GENERATE_FLAG_EXTENSION_CLASSES_ONLY);
 
-				// Create the module documentation directory if it doesn't exist
-				Ref<DirAccess> da = DirAccess::create_for_path(path);
-				err = da->make_dir_recursive(path);
-				ERR_FAIL_COND_V_MSG(err != OK, EXIT_FAILURE, "Error: Can't create directory: " + path + ": " + itos(err));
+		if (!gdextension_docs) {
+			for (int i = 0; i < _doc_data_class_path_count; i++) {
+				// Custom modules are always located by absolute path.
+				String path = _doc_data_class_paths[i].path;
+				if (path.is_relative_path()) {
+					path = doc_tool_path.path_join(path);
+				}
+				String name = _doc_data_class_paths[i].name;
+				doc_data_classes[name] = path;
+				if (!checked_paths.has(path)) {
+					checked_paths.insert(path);
 
-				print_line("Loading docs from: " + path);
-				err = docsrc.load_classes(path);
-				ERR_FAIL_COND_V_MSG(err != OK, EXIT_FAILURE, "Error loading docs from: " + path + ": " + itos(err));
+					// Create the module documentation directory if it doesn't exist
+					Ref<DirAccess> da = DirAccess::create_for_path(path);
+					err = da->make_dir_recursive(path);
+					ERR_FAIL_COND_V_MSG(err != OK, EXIT_FAILURE, "Error: Can't create directory: " + path + ": " + itos(err));
+
+					print_line("Loading docs from: " + path);
+					err = docsrc.load_classes(path);
+					ERR_FAIL_COND_V_MSG(err != OK, EXIT_FAILURE, "Error loading docs from: " + path + ": " + itos(err));
+				}
 			}
 		}
 
-		String index_path = doc_tool_path.path_join("doc/classes");
+		// For GDExtension docs, use a path that is compatible with Godot modules.
+		String index_path = gdextension_docs ? doc_tool_path.path_join("doc_classes") : doc_tool_path.path_join("doc/classes");
 		// Create the main documentation directory if it doesn't exist
 		Ref<DirAccess> da = DirAccess::create_for_path(index_path);
 		err = da->make_dir_recursive(index_path);
@@ -3383,7 +3392,7 @@ int Main::start() {
 		}
 
 		print_line("Generating new docs...");
-		err = doc.save_classes(index_path, doc_data_classes);
+		err = doc.save_classes(index_path, doc_data_classes, !gdextension_docs);
 		ERR_FAIL_COND_V_MSG(err != OK, EXIT_FAILURE, "Error saving new docs:" + itos(err));
 
 		print_line("Deleting docs cache...");
