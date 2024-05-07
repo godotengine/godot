@@ -189,7 +189,7 @@ void SubViewportContainer::_propagate_nonpositional_event(const Ref<InputEvent> 
 		return;
 	}
 
-	bool send;
+	bool send = false;
 	if (GDVIRTUAL_CALL(_propagate_input_event, p_event, send)) {
 		if (!send) {
 			return;
@@ -210,7 +210,7 @@ void SubViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	bool send;
+	bool send = false;
 	if (GDVIRTUAL_CALL(_propagate_input_event, p_event, send)) {
 		if (!send) {
 			return;
