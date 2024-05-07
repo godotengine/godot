@@ -61,37 +61,31 @@ TEST_CASE("[SceneTree][BaseButton]") {
 	SIGNAL_WATCH(base_button, "button_up");
 	SIGNAL_WATCH(base_button, "toggled");
 
-	SUBCASE("[BaseButton][Hovering] is_hovered is updated when mouse enters and exits") {
-		CHECK_FALSE(base_button->is_hovered());
-		SEND_GUI_MOUSE_MOTION_EVENT(offButtonTopLeft, MouseButtonMask::NONE, Key::NONE);
-		CHECK_FALSE(base_button->is_hovered());
+	SUBCASE("[BaseButton][Draw Mode] get_draw_mode works") {
+		CHECK_EQ(base_button->get_draw_mode(), BaseButton::DRAW_NORMAL);
+		base_button->set_disabled(true);
+		CHECK_EQ(base_button->get_draw_mode(), BaseButton::DRAW_DISABLED);
+		base_button->set_disabled(false);
+		CHECK_EQ(base_button->get_draw_mode(), BaseButton::DRAW_NORMAL);
 		SEND_GUI_MOUSE_MOTION_EVENT(onButtonTopLeft, MouseButtonMask::NONE, Key::NONE);
-		CHECK(base_button->is_hovered());
-		SEND_GUI_MOUSE_MOTION_EVENT(onButtonBottomRight, MouseButtonMask::NONE, Key::NONE);
-		CHECK(base_button->is_hovered());
-		SEND_GUI_MOUSE_MOTION_EVENT(offButtonBottomRight, MouseButtonMask::NONE, Key::NONE);
-		CHECK_FALSE(base_button->is_hovered());
-	}
-
-	SUBCASE("[BaseButton][Pressing] is_pressing is updated when mouse clicks and releases") {
-		CHECK_FALSE(base_button->is_pressing());
-		SIGNAL_CHECK_FALSE("pressed");
-		SIGNAL_CHECK_FALSE("button_down");
-		SIGNAL_CHECK_FALSE("button_up");
-		
+		CHECK_EQ(base_button->get_draw_mode(), BaseButton::DRAW_HOVER);
+		SEND_GUI_MOUSE_MOTION_EVENT(offButtonTopLeft, MouseButtonMask::NONE, Key::NONE);
+		CHECK_EQ(base_button->get_draw_mode(), BaseButton::DRAW_NORMAL);
 		SEND_GUI_MOUSE_BUTTON_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
-		
-		CHECK(base_button->is_pressing());
-		SIGNAL_CHECK_FALSE("pressed");
-		SIGNAL_CHECK("button_down", empty_args);
-		SIGNAL_CHECK_FALSE("button_up")
+		CHECK_EQ(base_button->get_draw_mode(), BaseButton::DRAW_PRESSED);
+		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		CHECK_EQ(base_button->get_draw_mode(), BaseButton::DRAW_HOVER);
+
+		// TODO figure out how to properly trigger this
+		SEND_GUI_MOUSE_BUTTON_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		CHECK_EQ(base_button->get_draw_mode(), BaseButton::DRAW_HOVER_PRESSED);
+		SEND_GUI_MOUSE_MOTION_EVENT(offButtonBottomRight, MouseButtonMask::NONE, Key::NONE);
+		CHECK_EQ(base_button->get_draw_mode(), BaseButton::DRAW_PRESSED);
 		
 		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
-		
-		CHECK_FALSE(base_button->is_pressing());
-		SIGNAL_CHECK("pressed", empty_args);
-		SIGNAL_CHECK_FALSE("button_down");
-		SIGNAL_CHECK("button_up", empty_args)
+		CHECK_EQ(base_button->get_draw_mode(), BaseButton::DRAW_HOVER);
+		SEND_GUI_MOUSE_MOTION_EVENT(offButtonBottomRight, MouseButtonMask::NONE, Key::NONE);
+		CHECK_EQ(base_button->get_draw_mode(), BaseButton::DRAW_NORMAL);
 	}
 
 	SUBCASE("[BaseButton][Pressed] is_pressed is updated when mouse clicks and releases") {
@@ -118,13 +112,66 @@ TEST_CASE("[SceneTree][BaseButton]") {
 		}
 	}
 
-	SUBCASE("[BaseButton][Set Pressed] set_pressed works") {}
+	SUBCASE("[BaseButton][Pressing] is_pressing is updated when mouse clicks and releases") {
+		CHECK_FALSE(base_button->is_pressing());
+		SIGNAL_CHECK_FALSE("pressed");
+		SIGNAL_CHECK_FALSE("button_down");
+		SIGNAL_CHECK_FALSE("button_up");
+		
+		SEND_GUI_MOUSE_BUTTON_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		
+		CHECK(base_button->is_pressing());
+		SIGNAL_CHECK_FALSE("pressed");
+		SIGNAL_CHECK("button_down", empty_args);
+		SIGNAL_CHECK_FALSE("button_up")
+		
+		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(onButtonTopLeft, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		
+		CHECK_FALSE(base_button->is_pressing());
+		SIGNAL_CHECK("pressed", empty_args);
+		SIGNAL_CHECK_FALSE("button_down");
+		SIGNAL_CHECK("button_up", empty_args)
+	}
 
-	// get_draw_mode
+	SUBCASE("[BaseButton][Hovering] is_hovered is updated when mouse enters and exits") {
+		CHECK_FALSE(base_button->is_hovered());
+		SEND_GUI_MOUSE_MOTION_EVENT(offButtonTopLeft, MouseButtonMask::NONE, Key::NONE);
+		CHECK_FALSE(base_button->is_hovered());
+		SEND_GUI_MOUSE_MOTION_EVENT(onButtonTopLeft, MouseButtonMask::NONE, Key::NONE);
+		CHECK(base_button->is_hovered());
+		SEND_GUI_MOUSE_MOTION_EVENT(onButtonBottomRight, MouseButtonMask::NONE, Key::NONE);
+		CHECK(base_button->is_hovered());
+		SEND_GUI_MOUSE_MOTION_EVENT(offButtonBottomRight, MouseButtonMask::NONE, Key::NONE);
+		CHECK_FALSE(base_button->is_hovered());
+	}
+
+	SUBCASE("[BaseButton][Set Pressed] set_pressed works") {}
+	SUBCASE("[BaseButton][] set_pressed_no_signal works") {}
+	SUBCASE("[BaseButton][] set_toggle_mode works") {}
+	SUBCASE("[BaseButton][] is_toggle_mode works") {}
+	SUBCASE("[BaseButton][] set_shortcut_in_tooltip works") {}
+	SUBCASE("[BaseButton][] is_shortcut_in_tooltip_enabled works") {}
+	SUBCASE("[BaseButton][] set_disabled works") {}
+	SUBCASE("[BaseButton][] is_disabled works") {}
+	SUBCASE("[BaseButton][] set_action_mode works") {}
+	SUBCASE("[BaseButton][] get_action_mode works") {}
+	SUBCASE("[BaseButton][] set_keep_pressed_outside works") {}
+	SUBCASE("[BaseButton][] is_keep_pressed_outside works") {}
+	SUBCASE("[BaseButton][] set_shortcut_feedback works") {}
+	SUBCASE("[BaseButton][] is_shortcut_feedback works") {}
+	SUBCASE("[BaseButton][] set_button_mask works") {}
+	SUBCASE("[BaseButton][] get_button_mask works") {}
+	SUBCASE("[BaseButton][] set_shortcut works") {}
+	SUBCASE("[BaseButton][] get_shortcut works") {}
+	SUBCASE("[BaseButton][] get_tooltip works") {}
+	SUBCASE("[BaseButton][] set_button_group works") {}
+	SUBCASE("[BaseButton][] get_button_group works") {}
+	SUBCASE("[BaseButton][] get_configuration_warnings works") {}
+
 	SIGNAL_UNWATCH(base_button, "pressed");
 	SIGNAL_UNWATCH(base_button, "button_down");
 	SIGNAL_UNWATCH(base_button, "button_up");
-	SIGNAL_WATCH(base_button, "toggled");
+	SIGNAL_UNWATCH(base_button, "toggled");
 }
 
 } // namespace TestBaseButton
