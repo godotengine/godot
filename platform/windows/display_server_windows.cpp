@@ -2525,7 +2525,7 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 
 	Char16String title = p_title.utf16();
 	Char16String message = p_description.utf16();
-	List<Char16String> buttons;
+	LocalVector<Char16String> buttons;
 	for (String s : p_buttons) {
 		buttons.push_back(s.utf16());
 	}
@@ -2533,7 +2533,7 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 	config.pszWindowTitle = (LPCWSTR)(title.get_data());
 	config.pszContent = (LPCWSTR)(message.get_data());
 
-	const int button_count = MIN(buttons.size(), 8);
+	const int button_count = MIN((int)buttons.size(), 8);
 	config.cButtons = button_count;
 
 	// No dynamic stack array size :(

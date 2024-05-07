@@ -2563,16 +2563,16 @@ EditorProperty *EditorInspector::instantiate_property_editor(Object *p_object, c
 	for (int i = inspector_plugin_count - 1; i >= 0; i--) {
 		inspector_plugins[i]->parse_property(p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		if (inspector_plugins[i]->added_editors.size()) {
-			for (int j = 1; j < inspector_plugins[i]->added_editors.size(); j++) { //only keep first one
-				memdelete(inspector_plugins[i]->added_editors[j].property_editor);
+			for (List<EditorInspectorPlugin::AddedEditor>::Element *E = inspector_plugins[i]->added_editors.front()->next(); E; E = E->next()) { //only keep first one
+				memdelete(E->get().property_editor);
 			}
 
-			EditorProperty *prop = Object::cast_to<EditorProperty>(inspector_plugins[i]->added_editors[0].property_editor);
+			EditorProperty *prop = Object::cast_to<EditorProperty>(inspector_plugins[i]->added_editors.front()->get().property_editor);
 			if (prop) {
 				inspector_plugins[i]->added_editors.clear();
 				return prop;
 			} else {
-				memdelete(inspector_plugins[i]->added_editors[0].property_editor);
+				memdelete(inspector_plugins[i]->added_editors.front()->get().property_editor);
 				inspector_plugins[i]->added_editors.clear();
 			}
 		}

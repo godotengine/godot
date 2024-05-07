@@ -2308,8 +2308,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			output << imethod.proxy_name << "(";
 
-			for (int i = 0; i < imethod.arguments.size(); i++) {
-				const ArgumentInterface &iarg = imethod.arguments[i];
+			int i = 0;
+			for (List<BindingsGenerator::ArgumentInterface>::ConstIterator itr = imethod.arguments.begin(); itr != imethod.arguments.end(); ++itr, ++i) {
+				const ArgumentInterface &iarg = *itr;
 
 				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
 				ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
@@ -3727,8 +3728,6 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			const MethodInfo &method_info = E.first;
 			const uint32_t hash = E.second;
 
-			int argc = method_info.arguments.size();
-
 			if (method_info.name.is_empty()) {
 				continue;
 			}
@@ -3820,8 +3819,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = _get_type_name_from_meta(return_info.type, m ? m->get_argument_meta(-1) : (GodotTypeInfo::Metadata)method_info.return_val_metadata);
 			}
 
-			for (int i = 0; i < argc; i++) {
-				PropertyInfo arginfo = method_info.arguments[i];
+			int idx = 0;
+			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
+				const PropertyInfo &arginfo = *itr;
 
 				String orig_arg_name = arginfo.name;
 
@@ -3841,13 +3841,13 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.type == Variant::NIL) {
 					iarg.type.cname = name_cache.type_Variant;
 				} else {
-					iarg.type.cname = _get_type_name_from_meta(arginfo.type, m ? m->get_argument_meta(i) : (GodotTypeInfo::Metadata)method_info.get_argument_meta(i));
+					iarg.type.cname = _get_type_name_from_meta(arginfo.type, m ? m->get_argument_meta(idx) : (GodotTypeInfo::Metadata)method_info.get_argument_meta(idx));
 				}
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
 
-				if (m && m->has_default_argument(i)) {
-					bool defval_ok = _arg_default_value_from_variant(m->get_default_argument(i), iarg);
+				if (m && m->has_default_argument(idx)) {
+					bool defval_ok = _arg_default_value_from_variant(m->get_default_argument(idx), iarg);
 					ERR_FAIL_COND_V_MSG(!defval_ok, false,
 							"Cannot determine default value for argument '" + orig_arg_name + "' of method '" + itype.name + "." + imethod.name + "'.");
 				}
@@ -3946,10 +3946,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			isignal.name = method_info.name;
 			isignal.cname = method_info.name;
 
-			int argc = method_info.arguments.size();
-
-			for (int i = 0; i < argc; i++) {
-				PropertyInfo arginfo = method_info.arguments[i];
+			int idx = 0;
+			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
+				const PropertyInfo &arginfo = *itr;
 
 				String orig_arg_name = arginfo.name;
 
@@ -3969,7 +3968,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.type == Variant::NIL) {
 					iarg.type.cname = name_cache.type_Variant;
 				} else {
-					iarg.type.cname = _get_type_name_from_meta(arginfo.type, (GodotTypeInfo::Metadata)method_info.get_argument_meta(i));
+					iarg.type.cname = _get_type_name_from_meta(arginfo.type, (GodotTypeInfo::Metadata)method_info.get_argument_meta(idx));
 				}
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
@@ -4770,9 +4769,11 @@ bool BindingsGenerator::_method_has_conflicting_signature(const MethodInterface 
 		return false;
 	}
 
-	for (int i = 0; i < p_imethod_left.arguments.size(); i++) {
-		const ArgumentInterface &iarg_left = p_imethod_left.arguments[i];
-		const ArgumentInterface &iarg_right = p_imethod_right.arguments[i];
+	List<BindingsGenerator::ArgumentInterface>::ConstIterator left_itr = p_imethod_left.arguments.begin();
+	List<BindingsGenerator::ArgumentInterface>::ConstIterator right_itr = p_imethod_right.arguments.begin();
+	for (; left_itr != p_imethod_left.arguments.end(); ++left_itr, ++right_itr) {
+		const ArgumentInterface &iarg_left = *left_itr;
+		const ArgumentInterface &iarg_right = *right_itr;
 
 		if (iarg_left.type.cname != iarg_right.type.cname) {
 			// Different types for arguments in the same position, so no conflict.

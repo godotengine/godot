@@ -3427,7 +3427,7 @@ bool WaylandThread::window_get_idle_inhibition(DisplayServer::WindowID p_window_
 WaylandThread::ScreenData WaylandThread::screen_get_data(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, registry.wl_outputs.size(), ScreenData());
 
-	return wl_output_get_screen_state(registry.wl_outputs[p_screen])->data;
+	return wl_output_get_screen_state(registry.wl_outputs.get(p_screen))->data;
 }
 
 int WaylandThread::get_screen_count() const {

@@ -212,8 +212,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 	// Free all quadrants.
 	if (forced_cleanup || quandrant_shape_changed) {
 		for (const KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
-			for (int i = 0; i < kv.value->canvas_items.size(); i++) {
-				const RID &ci = kv.value->canvas_items[i];
+			for (const RID &ci : kv.value->canvas_items) {
 				if (ci.is_valid()) {
 					rs->free(ci);
 				}
@@ -354,8 +353,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 
 			} else {
 				// Free the quadrant.
-				for (int i = 0; i < rendering_quadrant->canvas_items.size(); i++) {
-					const RID &ci = rendering_quadrant->canvas_items[i];
+				for (const RID &ci : rendering_quadrant->canvas_items) {
 					if (ci.is_valid()) {
 						rs->free(ci);
 					}

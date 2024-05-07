@@ -223,7 +223,7 @@ void GDScriptWorkspace::reload_all_workspace_scripts() {
 			HashMap<String, ExtendGDScriptParser *>::Iterator S = parse_results.find(path);
 			String err_msg = "Failed parse script " + path;
 			if (S) {
-				err_msg += "\n" + S->value->get_errors()[0].message;
+				err_msg += "\n" + S->value->get_errors().front()->get().message;
 			}
 			ERR_CONTINUE_MSG(err != OK, err_msg);
 		}
@@ -619,8 +619,8 @@ Node *GDScriptWorkspace::_get_owner_scene_node(String p_path) {
 
 	_get_owners(EditorFileSystem::get_singleton()->get_filesystem(), p_path, owners);
 
-	for (int i = 0; i < owners.size(); i++) {
-		NodePath owner_path = owners[i];
+	for (const String &owner : owners) {
+		NodePath owner_path = owner;
 		Ref<Resource> owner_res = ResourceLoader::load(owner_path);
 		if (Object::cast_to<PackedScene>(owner_res.ptr())) {
 			Ref<PackedScene> owner_packed_scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*owner_res));

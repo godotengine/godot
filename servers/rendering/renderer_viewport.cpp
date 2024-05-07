@@ -85,7 +85,7 @@ Vector<RendererViewport::Viewport *> RendererViewport::_sort_active_viewports() 
 	}
 
 	while (!nodes.is_empty()) {
-		const Viewport *node = nodes[0];
+		const Viewport *node = nodes.front()->get();
 		nodes.pop_front();
 
 		for (int i = active_viewports.size() - 1; i >= 0; --i) {

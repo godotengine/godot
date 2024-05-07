@@ -852,7 +852,7 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 	bones_to_process.push_back(p_bone_idx);
 
 	while (bones_to_process.size() > 0) {
-		int current_bone_idx = bones_to_process[0];
+		int current_bone_idx = bones_to_process.front()->get();
 		bones_to_process.erase(current_bone_idx);
 
 		Bone &b = bonesptr[current_bone_idx];

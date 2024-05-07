@@ -142,7 +142,7 @@ TEST_CASE("[Object] Core getters") {
 			inheritance_list.size() == 1,
 			"The inheritance list should consist of Object only");
 	CHECK_MESSAGE(
-			inheritance_list[0] == "Object",
+			inheritance_list.front()->get() == "Object",
 			"The inheritance list should consist of Object only");
 }
 

@@ -3129,24 +3129,28 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 					bool types_match = true;
 
-					for (int i = 0; i < p_call->arguments.size(); i++) {
-						GDScriptParser::DataType par_type = type_from_property(info.arguments[i], true);
-						GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
-						if (!is_type_compatible(par_type, arg_type, true)) {
-							types_match = false;
-							break;
+					{
+						List<PropertyInfo>::ConstIterator arg_itr = info.arguments.begin();
+						for (int i = 0; i < p_call->arguments.size(); ++arg_itr, ++i) {
+							GDScriptParser::DataType par_type = type_from_property(*arg_itr, true);
+							GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
+							if (!is_type_compatible(par_type, arg_type, true)) {
+								types_match = false;
+								break;
 #ifdef DEBUG_ENABLED
-						} else {
-							if (par_type.builtin_type == Variant::INT && arg_type.builtin_type == Variant::FLOAT && builtin_type != Variant::INT) {
-								parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, function_name);
-							}
+							} else {
+								if (par_type.builtin_type == Variant::INT && arg_type.builtin_type == Variant::FLOAT && builtin_type != Variant::INT) {
+									parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, function_name);
+								}
 #endif
+							}
 						}
 					}
 
 					if (types_match) {
-						for (int i = 0; i < p_call->arguments.size(); i++) {
-							GDScriptParser::DataType par_type = type_from_property(info.arguments[i], true);
+						List<PropertyInfo>::ConstIterator arg_itr = info.arguments.begin();
+						for (int i = 0; i < p_call->arguments.size(); ++arg_itr, ++i) {
+							GDScriptParser::DataType par_type = type_from_property(*arg_itr, true);
 							if (p_call->arguments[i]->is_constant) {
 								update_const_expression_builtin_type(p_call->arguments[i], par_type, "pass");
 							}
@@ -3366,8 +3370,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		// If the function requires typed arrays we must make literals be typed.
 		for (const KeyValue<int, GDScriptParser::ArrayNode *> &E : arrays) {
 			int index = E.key;
-			if (index < par_types.size() && par_types[index].is_hard_type() && par_types[index].has_container_element_type(0)) {
-				update_array_literal_element_type(E.value, par_types[index].get_container_element_type(0));
+			if (index < par_types.size() && par_types.get(index).is_hard_type() && par_types.get(index).has_container_element_type(0)) {
+				update_array_literal_element_type(E.value, par_types.get(index).get_container_element_type(0));
 			}
 		}
 		validate_call_arg(par_types, default_arg_count, method_flags.has_flag(METHOD_FLAG_VARARG), p_call);
@@ -5225,12 +5229,13 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 		push_error(vformat(R"*(Too many arguments for "%s()" call. Expected at most %d but received %d.)*", p_call->function_name, p_par_types.size(), p_call->arguments.size()), p_call->arguments[p_par_types.size()]);
 	}
 
-	for (int i = 0; i < p_call->arguments.size(); i++) {
+	List<GDScriptParser::DataType>::ConstIterator par_itr = p_par_types.begin();
+	for (int i = 0; i < p_call->arguments.size(); ++par_itr, ++i) {
 		if (i >= p_par_types.size()) {
 			// Already on vararg place.
 			break;
 		}
-		GDScriptParser::DataType par_type = p_par_types[i];
+		GDScriptParser::DataType par_type = *par_itr;
 
 		if (par_type.is_hard_type() && p_call->arguments[i]->is_constant) {
 			update_const_expression_builtin_type(p_call->arguments[i], par_type, "pass");

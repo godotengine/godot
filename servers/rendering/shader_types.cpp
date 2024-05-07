@@ -496,7 +496,7 @@ ShaderTypes::ShaderTypes() {
 	shader_types_list.push_back("sky");
 	shader_types_list.push_back("fog");
 
-	for (int i = 0; i < shader_types_list.size(); i++) {
-		shader_types.insert(shader_types_list[i]);
+	for (const String &type : shader_types_list) {
+		shader_types.insert(type);
 	}
 }
