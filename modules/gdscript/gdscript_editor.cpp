@@ -1695,6 +1695,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 				if (full) {
 					// If not fully constant, setting this value is detrimental to the inference.
 					r_type.value = a;
+					r_type.type.is_constant = true;
 				}
 				r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 				r_type.type.kind = GDScriptParser::DataType::BUILTIN;
