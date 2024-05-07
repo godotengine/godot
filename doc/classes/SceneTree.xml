@@ -303,11 +303,13 @@
 			</description>
 		</signal>
 		<signal name="physics_frame">
+			<param index="0" name="delta" type="float" />
 			<description>
 				Emitted immediately before [method Node._physics_process] is called on every node in this tree.
 			</description>
 		</signal>
 		<signal name="process_frame">
+			<param index="0" name="delta" type="float" />
 			<description>
 				Emitted immediately before [method Node._process] is called on every node in this tree.
 			</description>

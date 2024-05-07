@@ -483,7 +483,7 @@ bool SceneTree::physics_process(double p_time) {
 	}
 	physics_process_time = p_time;
 
-	emit_signal(SNAME("physics_frame"));
+	emit_signal(SNAME("physics_frame"), p_time);
 
 	call_group(SNAME("_picking_viewports"), SNAME("_process_picking"));
 
@@ -518,7 +518,7 @@ bool SceneTree::process(double p_time) {
 		}
 	}
 
-	emit_signal(SNAME("process_frame"));
+	emit_signal(SNAME("process_frame"), p_time);
 
 	MessageQueue::get_singleton()->flush(); //small little hack
 
@@ -1677,8 +1677,8 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_renamed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_configuration_warning_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
-	ADD_SIGNAL(MethodInfo("process_frame"));
-	ADD_SIGNAL(MethodInfo("physics_frame"));
+	ADD_SIGNAL(MethodInfo("process_frame", PropertyInfo(Variant::FLOAT, "delta")));
+	ADD_SIGNAL(MethodInfo("physics_frame", PropertyInfo(Variant::FLOAT, "delta")));
 
 	BIND_ENUM_CONSTANT(GROUP_CALL_DEFAULT);
 	BIND_ENUM_CONSTANT(GROUP_CALL_REVERSE);
