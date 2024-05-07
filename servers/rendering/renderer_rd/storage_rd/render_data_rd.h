@@ -78,6 +78,9 @@ public:
 
 	RenderingMethod::RenderInfo *render_info = nullptr;
 
+	/* Viewport data */
+	bool transparent_bg = false;
+
 	/* Shadow data */
 	const RendererSceneRender::RenderShadowData *render_shadows = nullptr;
 	int render_shadow_count = 0;
