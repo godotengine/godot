@@ -32,6 +32,10 @@
 			Enables the blending the layer using its alpha channel.
 			Can be combined with [member Viewport.transparent_bg] to give the layer a transparent background.
 		</member>
+		<member name="enable_hole_punch" type="bool" setter="set_enable_hole_punch" getter="get_enable_hole_punch" default="false">
+			Enables a technique called "hole punching", which allows putting the composition layer behind the main projection layer (i.e. setting [member sort_order] to a negative value) while "punching a hole" through everything rendered by Godot so that the layer is still visible.
+			This can be used to create the illusion that the composition layer exists in the same 3D space as everything rendered by Godot, allowing objects to appear to pass both behind or in front of the composition layer.
+		</member>
 		<member name="layer_viewport" type="SubViewport" setter="set_layer_viewport" getter="get_layer_viewport">
 			The [SubViewport] to render on the composition layer.
 		</member>
