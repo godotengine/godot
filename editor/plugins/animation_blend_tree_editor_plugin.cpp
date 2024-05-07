@@ -391,7 +391,7 @@ void AnimationNodeBlendTreeEditor::_popup(bool p_has_input_ports, const Vector2 
 	_update_options_menu(p_has_input_ports);
 	use_position_from_popup_menu = true;
 	position_from_popup_menu = p_node_position;
-	add_node->get_popup()->set_position(graph->get_screen_position() + graph->get_local_mouse_position());
+	add_node->get_popup()->set_position(graph->get_final_transform().xform(graph->get_local_mouse_position()));
 	add_node->get_popup()->reset_size();
 	add_node->get_popup()->popup();
 }
@@ -921,11 +921,12 @@ void AnimationNodeBlendTreeEditor::_inspect_filters(const String &p_which) {
 		return;
 	}
 
-	filter_dialog->popup_centered(Size2(500, 500) * EDSCALE);
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(500 * EDSCALE, 500 * EDSCALE));
+	filter_dialog->popup_centered(popup_size);
 }
 
 void AnimationNodeBlendTreeEditor::_update_editor_settings() {
-	graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+	graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), this, ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 	graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
 }
 

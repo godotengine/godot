@@ -491,13 +491,15 @@ void FileDialog::_action_pressed() {
 
 		String file_name = file_text.strip_edges().get_file();
 		if (!valid || file_name.is_empty()) {
-			exterr->popup_centered(Size2(250, 80));
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(250, 80));
+			exterr->popup_centered(popup_size);
 			return;
 		}
 
 		if (dir_access->file_exists(f)) {
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(250, 80));
 			confirm_save->set_text(vformat(atr(ETR("File \"%s\" already exists.\nDo you want to overwrite it?")), f));
-			confirm_save->popup_centered(Size2(250, 80));
+			confirm_save->popup_centered(popup_size);
 		} else {
 			emit_signal(SNAME("file_selected"), f);
 			hide();
@@ -1037,13 +1039,15 @@ void FileDialog::_make_dir_confirm() {
 		update_filters();
 		_push_history();
 	} else {
-		mkdirerr->popup_centered(Size2(250, 50));
+		Size2i popup_size = get_final_transform().basis_xform(Vector2i(250, 50));
+		mkdirerr->popup_centered(popup_size);
 	}
 	makedirname->set_text(""); // reset label
 }
 
 void FileDialog::_make_dir() {
-	makedialog->popup_centered(Size2(250, 80));
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(250, 80));
+	makedialog->popup_centered(popup_size);
 	makedirname->grab_focus();
 }
 

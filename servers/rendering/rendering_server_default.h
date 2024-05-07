@@ -921,6 +921,9 @@ public:
 
 	FUNC6(canvas_item_set_canvas_group_mode, RID, CanvasGroupMode, float, bool, float, bool)
 
+	FUNC2(canvas_item_set_oversampling_factor, RID, float)
+	FUNC1RC(float, canvas_item_get_oversampling_factor, RID)
+
 	FUNC1(canvas_item_set_debug_redraw, bool)
 	FUNC0RC(bool, canvas_item_get_debug_redraw)
 

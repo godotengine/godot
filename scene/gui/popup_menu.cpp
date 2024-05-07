@@ -313,17 +313,18 @@ int PopupMenu::_get_items_total_height() const {
 }
 
 int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
-	float win_scale = get_content_scale_factor();
-	if (p_over.x < 0 || p_over.x >= get_size().width * win_scale || p_over.y < theme_cache.panel_style->get_margin(Side::SIDE_TOP) * win_scale) {
+	Size2 dlg_size = get_final_transform().affine_inverse().basis_xform(get_size());
+
+	if (p_over.x < 0 || p_over.x >= dlg_size.width || p_over.y < theme_cache.panel_style->get_margin(Side::SIDE_TOP)) {
 		return -1;
 	}
 
-	Point2 ofs = Point2(0, theme_cache.v_separation * 0.5) * win_scale;
+	Point2 ofs = Point2(0, theme_cache.v_separation * 0.5);
 
 	for (int i = 0; i < items.size(); i++) {
-		ofs.y += i > 0 ? (float)theme_cache.v_separation * win_scale : (float)theme_cache.v_separation * win_scale * 0.5;
-		ofs.y += _get_item_height(i) * win_scale;
-		if (p_over.y - control->get_position().y * win_scale < ofs.y) {
+		ofs.y += i > 0 ? (float)theme_cache.v_separation : (float)theme_cache.v_separation * 0.5;
+		ofs.y += _get_item_height(i);
+		if (p_over.y - control->get_position().y < ofs.y) {
 			return i;
 		}
 	}
@@ -340,18 +341,22 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	Point2 this_pos = get_position();
 	Rect2 this_rect(this_pos, get_size());
 
+	Transform2D xform;
+	Viewport *vp = submenu_popup->get_embedder();
+	if (!vp) {
+		xform = get_final_transform();
+	}
+
 	float scroll_offset = control->get_position().y;
-	float scaled_ofs_cache = items[p_over]._ofs_cache * get_content_scale_factor();
-	float scaled_height_cache = items[p_over]._height_cache * get_content_scale_factor();
 
 	submenu_popup->reset_size(); // Shrink the popup size to its contents.
 	Size2 submenu_size = submenu_popup->get_size();
 
 	Point2 submenu_pos;
 	if (control->is_layout_rtl()) {
-		submenu_pos = this_pos + Point2(-submenu_size.width, scaled_ofs_cache + scroll_offset - theme_cache.v_separation / 2);
+		submenu_pos = this_pos + xform.basis_xform(Point2(0, items[p_over]._ofs_cache + scroll_offset - theme_cache.v_separation / 2)) - Vector2(-submenu_size.width, 0);
 	} else {
-		submenu_pos = this_pos + Point2(this_rect.size.width, scaled_ofs_cache + scroll_offset - theme_cache.v_separation / 2);
+		submenu_pos = this_pos + xform.basis_xform(Point2(0, items[p_over]._ofs_cache + scroll_offset - theme_cache.v_separation / 2)) + Vector2(this_rect.size.width, 0);
 	}
 
 	// Fix pos if going outside parent rect.
@@ -388,9 +393,8 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	// Set autohide areas.
 
 	Rect2 safe_area = this_rect;
-	safe_area.position.y += scaled_ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2;
-	safe_area.size.y = scaled_height_cache + theme_cache.v_separation;
-	Viewport *vp = submenu_popup->get_embedder();
+	safe_area.position.y += xform.basis_xform(Vector2(0, items[p_over]._ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2)).y;
+	safe_area.size.y = xform.basis_xform(Vector2(0, items[p_over]._height_cache + theme_cache.v_separation)).y;
 	if (vp) {
 		vp->subwindow_set_popup_safe_rect(submenu_popup, safe_area);
 	} else {
@@ -400,13 +404,16 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	// Make the position of the parent popup relative to submenu popup.
 	this_rect.position = this_rect.position - submenu_pum->get_position();
 
+	this_rect.position = xform.affine_inverse().basis_xform(this_rect.position); // Convert back to viewport coordinates.
+	this_rect.size = xform.affine_inverse().basis_xform(this_rect.size); // Convert back to viewport coordinates.
+
 	// Autohide area above the submenu item.
 	submenu_pum->clear_autohide_areas();
-	submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y, this_rect.size.x, scaled_ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2));
+	submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y, this_rect.size.x, items[p_over]._ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2));
 
 	// If there is an area below the submenu item, add an autohide area there.
-	if (scaled_ofs_cache + scaled_height_cache + scroll_offset <= control->get_size().height) {
-		int from = scaled_ofs_cache + scaled_height_cache + scroll_offset + theme_cache.v_separation / 2 + theme_cache.panel_style->get_offset().height;
+	if (items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset <= control->get_size().height) {
+		int from = items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset + theme_cache.v_separation / 2 + theme_cache.panel_style->get_offset().height;
 		submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y + from, this_rect.size.x, this_rect.size.y - from));
 	}
 }
@@ -578,7 +585,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		}
 		item_clickable_area.size.width -= scroll_container->get_v_scroll_bar()->get_size().width;
 	}
-	item_clickable_area.size = item_clickable_area.size * get_content_scale_factor();
+	item_clickable_area.size = item_clickable_area.size;
 
 	Ref<InputEventMouseButton> b = p_event;
 
@@ -1150,11 +1157,10 @@ void PopupMenu::_notification(int p_what) {
 
 			// Only used when using operating system windows.
 			if (!activated_by_keyboard && !is_embedded() && autohide_areas.size()) {
-				Point2 mouse_pos = DisplayServer::get_singleton()->mouse_get_position();
-				mouse_pos -= get_position();
+				Point2 mouse_pos = get_final_transform().affine_inverse().xform(DisplayServer::get_singleton()->mouse_get_position());
 
 				for (const Rect2 &E : autohide_areas) {
-					if (!Rect2(Point2(), get_size()).has_point(mouse_pos) && E.has_point(mouse_pos)) {
+					if (!Rect2(Point2(), get_final_transform().affine_inverse().basis_xform(get_size())).has_point(mouse_pos) && E.has_point(mouse_pos)) {
 						_close_pressed();
 						return;
 					}
@@ -2831,9 +2837,7 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 		moved = Vector2();
 		popup_time_msec = OS::get_singleton()->get_ticks_msec();
 		if (!is_embedded()) {
-			float win_scale = get_parent_visible_window()->get_content_scale_factor();
-			set_content_scale_factor(win_scale);
-			Size2 minsize = get_contents_minimum_size() * win_scale;
+			Size2 minsize = get_contents_minimum_size();
 			minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
 			set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
 			set_size(Vector2(0, 0)); // Shrinkwraps to min size.

@@ -222,9 +222,10 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 		case MENU_OPTION_REMOVE_ITEM: {
 			String p = InspectorDock::get_inspector_singleton()->get_selected_path();
 			if (p.begins_with("item") && p.get_slice_count("/") >= 2) {
+				Size2i popup_size = get_final_transform().basis_xform(Vector2i(300 * EDSCALE, 60 * EDSCALE));
 				to_erase = p.get_slice("/", 1).to_int();
 				cd_remove->set_text(vformat(TTR("Remove item %d?"), to_erase));
-				cd_remove->popup_centered(Size2(300, 60));
+				cd_remove->popup_centered(popup_size);
 			}
 		} break;
 		case MENU_OPTION_IMPORT_FROM_SCENE: {
@@ -236,8 +237,9 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 			file->popup_file_dialog();
 		} break;
 		case MENU_OPTION_UPDATE_FROM_SCENE: {
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(500 * EDSCALE, 60 * EDSCALE));
 			cd_update->set_text(vformat(TTR("Update from existing scene?:\n%s"), String(mesh_library->get_meta("_editor_source_scene"))));
-			cd_update->popup_centered(Size2(500, 60));
+			cd_update->popup_centered(popup_size);
 		} break;
 	}
 }

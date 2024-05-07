@@ -222,7 +222,6 @@ class TextServerFallback : public TextServerExtension {
 		double underline_position = 0.0;
 		double underline_thickness = 0.0;
 		double scale = 1.0;
-		double oversampling = 1.0;
 
 		Vector2i size;
 
@@ -234,6 +233,8 @@ class TextServerFallback : public TextServerExtension {
 		FT_Face face = nullptr;
 		FT_StreamRec stream;
 #endif
+
+		List<Vector2i>::Element *oversampling_lru_element = nullptr;
 
 		~FontForSizeFallback() {
 #ifdef MODULE_FREETYPE_ENABLED
@@ -266,7 +267,6 @@ class TextServerFallback : public TextServerExtension {
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 		Dictionary variation_coordinates;
-		double oversampling = 0.0;
 		double embolden = 0.0;
 		Transform2D transform;
 
@@ -279,6 +279,7 @@ class TextServerFallback : public TextServerExtension {
 		float baseline_offset = 0.0;
 
 		HashMap<Vector2i, FontForSizeFallback *, VariantHasher, VariantComparator> cache;
+		List<Vector2i> oversampling_lru;
 
 		bool face_init = false;
 		Dictionary supported_varaitions;
@@ -298,6 +299,7 @@ class TextServerFallback : public TextServerExtension {
 				memdelete(E.value);
 			}
 			cache.clear();
+			oversampling_lru.clear();
 		}
 	};
 
@@ -308,8 +310,8 @@ class TextServerFallback : public TextServerExtension {
 #ifdef MODULE_FREETYPE_ENABLED
 	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontForSizeFallback *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra) const;
 #endif
-	_FORCE_INLINE_ bool _ensure_glyph(FontFallback *p_font_data, const Vector2i &p_size, int32_t p_glyph) const;
-	_FORCE_INLINE_ bool _ensure_cache_for_size(FontFallback *p_font_data, const Vector2i &p_size) const;
+	_FORCE_INLINE_ bool _ensure_glyph(FontFallback *p_font_data, const Vector2i &p_size, int32_t p_glyph, bool p_oversampling = false) const;
+	_FORCE_INLINE_ bool _ensure_cache_for_size(FontFallback *p_font_data, const Vector2i &p_size, bool p_oversampling = false) const;
 	_FORCE_INLINE_ void _font_clear_cache(FontFallback *p_font_data);
 	static void _generateMTSDF_threaded(void *p_td, uint32_t p_y);
 
@@ -460,7 +462,7 @@ class TextServerFallback : public TextServerExtension {
 
 	// Common data.
 
-	double oversampling = 1.0;
+	int oversampling_capacity = 16;
 	mutable RID_PtrOwner<FontFallbackLinkedVariation> font_var_owner;
 	mutable RID_PtrOwner<FontFallback> font_owner;
 	mutable RID_PtrOwner<ShapedTextDataFallback> shaped_owner;
@@ -490,14 +492,13 @@ class TextServerFallback : public TextServerExtension {
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 		Dictionary variation_coordinates;
-		double oversampling = 0.0;
 		double embolden = 0.0;
 		Transform2D transform;
 		int extra_spacing[4] = { 0, 0, 0, 0 };
 		float baseline_offset = 0.0;
 
 		bool operator==(const SystemFontKey &p_b) const {
-			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (disable_embedded_bitmaps == p_b.disable_embedded_bitmaps) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (variation_coordinates == p_b.variation_coordinates) && (oversampling == p_b.oversampling) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset);
+			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (disable_embedded_bitmaps == p_b.disable_embedded_bitmaps) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (variation_coordinates == p_b.variation_coordinates) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset);
 		}
 
 		SystemFontKey(const String &p_font_name, bool p_italic, int p_weight, int p_stretch, RID p_font, const TextServerFallback *p_fb) {
@@ -516,7 +517,6 @@ class TextServerFallback : public TextServerExtension {
 			hinting = p_fb->_font_get_hinting(p_font);
 			subpixel_positioning = p_fb->_font_get_subpixel_positioning(p_font);
 			variation_coordinates = p_fb->_font_get_variation_coordinates(p_font);
-			oversampling = p_fb->_font_get_oversampling(p_font);
 			embolden = p_fb->_font_get_embolden(p_font);
 			transform = p_fb->_font_get_transform(p_font);
 			extra_spacing[SPACING_TOP] = p_fb->_font_get_spacing(p_font, SPACING_TOP);
@@ -546,7 +546,6 @@ class TextServerFallback : public TextServerExtension {
 			hash = hash_murmur3_one_32(p_a.msdf_range, hash);
 			hash = hash_murmur3_one_32(p_a.msdf_source_size, hash);
 			hash = hash_murmur3_one_32(p_a.fixed_size, hash);
-			hash = hash_murmur3_one_double(p_a.oversampling, hash);
 			hash = hash_murmur3_one_double(p_a.embolden, hash);
 			hash = hash_murmur3_one_real(p_a.transform[0].x, hash);
 			hash = hash_murmur3_one_real(p_a.transform[0].y, hash);
@@ -671,9 +670,6 @@ public:
 	MODBIND2(font_set_hinting, const RID &, TextServer::Hinting);
 	MODBIND1RC(TextServer::Hinting, font_get_hinting, const RID &);
 
-	MODBIND2(font_set_oversampling, const RID &, double);
-	MODBIND1RC(double, font_get_oversampling, const RID &);
-
 	MODBIND1RC(TypedArray<Vector2i>, font_get_size_cache_list, const RID &);
 	MODBIND1(font_clear_size_cache, const RID &);
 	MODBIND2(font_remove_size_cache, const RID &, const Vector2i &);
@@ -761,11 +757,11 @@ public:
 	MODBIND2(font_set_opentype_feature_overrides, const RID &, const Dictionary &);
 	MODBIND1RC(Dictionary, font_get_opentype_feature_overrides, const RID &);
 
+	MODBIND0RC(int, font_get_oversampling_cache_capacity);
+	MODBIND1(font_set_oversampling_cache_capacity, int);
+
 	MODBIND1RC(Dictionary, font_supported_feature_list, const RID &);
 	MODBIND1RC(Dictionary, font_supported_variation_list, const RID &);
-
-	MODBIND0RC(double, font_get_global_oversampling);
-	MODBIND1(font_set_global_oversampling, double);
 
 	/* Shaped text buffer interface */
 

@@ -82,7 +82,7 @@ void Polygon2DEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_ENTER_TREE: {
-			uv_panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			uv_panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), this, ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 		} break;
 
 		case NOTIFICATION_READY: {

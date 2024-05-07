@@ -195,14 +195,14 @@
 		<method name="get_display_cutouts" qualifiers="const">
 			<return type="Rect2[]" />
 			<description>
-				Returns an [Array] of [Rect2], each of which is the bounding rectangle for a display cutout or notch. These are non-functional areas on edge-to-edge screens used by cameras and sensors. Returns an empty array if the device does not have cutouts. See also [method get_display_safe_area].
+				Returns an [Array] of [Rect2], each of which is the bounding rectangle for a display cutout or notch (in screen coordinates). These are non-functional areas on edge-to-edge screens used by cameras and sensors. Returns an empty array if the device does not have cutouts. See also [method get_display_safe_area].
 				[b]Note:[/b] Currently only implemented on Android. Other platforms will return an empty array even if they do have display cutouts or notches.
 			</description>
 		</method>
 		<method name="get_display_safe_area" qualifiers="const">
 			<return type="Rect2i" />
 			<description>
-				Returns the unobscured area of the display where interactive controls should be rendered. See also [method get_display_cutouts].
+				Returns the unobscured area (in screen coordinates) of the display where interactive controls should be rendered. See also [method get_display_cutouts].
 			</description>
 		</method>
 		<method name="get_keyboard_focus_screen" qualifiers="const">
@@ -224,6 +224,12 @@
 				Returns index of the primary screen.
 			</description>
 		</method>
+		<method name="get_screen_coordiantes_unit" qualifiers="const">
+			<return type="int" enum="DisplayServer.ScreenCoordinatesUnit" />
+			<description>
+				Returns screen coordinate system unit used by the system.
+			</description>
+		</method>
 		<method name="get_screen_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -234,7 +240,7 @@
 			<return type="int" />
 			<param index="0" name="rect" type="Rect2" />
 			<description>
-				Returns index of the screen which contains specified rectangle.
+				Returns index of the screen which contains specified rectangle (in screen coordinates).
 			</description>
 		</method>
 		<method name="get_swap_cancel_ok">
@@ -248,7 +254,7 @@
 			<return type="int" />
 			<param index="0" name="position" type="Vector2i" />
 			<description>
-				Returns the ID of the window at the specified screen [param position] (in pixels). On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
+				Returns the ID of the window at the specified screen [param position] (in screen coordinates). On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
 				[codeblock lang=text]
 				* (0, 0)        +-------+
 				                |       |
@@ -1047,7 +1053,7 @@
 			<description>
 				Returns the greatest scale factor of all screens.
 				[b]Note:[/b] On macOS returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
-				[b]Note:[/b] This method is implemented only on macOS.
+				[b]Note:[/b] This method is implemented only on macOS and Windows.
 			</description>
 		</method>
 		<method name="screen_get_orientation" qualifiers="const">
@@ -1062,7 +1068,7 @@
 			<return type="Color" />
 			<param index="0" name="position" type="Vector2i" />
 			<description>
-				Returns color of the display pixel at the [param position].
+				Returns color of the display pixel at the [param position] (in screen coordinates).
 				[b]Note:[/b] This method is implemented on Linux (X11), macOS, and Windows.
 				[b]Note:[/b] On macOS, this method requires "Screen Recording" permission, if permission is not granted it will return desktop wallpaper color.
 			</description>
@@ -1071,7 +1077,7 @@
 			<return type="Vector2i" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the screen's top-left corner position in pixels. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
+				Returns the screen's top-left corner position in screen coordinates. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
 				[codeblock lang=text]
 				* (0, 0)        +-------+
 				                |       |
@@ -1104,21 +1110,28 @@
 			<description>
 				Returns the scale factor of the specified screen by index.
 				[b]Note:[/b] On macOS returned value is [code]2.0[/code] for hiDPI (Retina) screen, and [code]1.0[/code] for all other cases.
-				[b]Note:[/b] This method is implemented only on macOS.
+				[b]Note:[/b] This method is implemented only on Android, macOS, Linux/X11 and Windows.
 			</description>
 		</method>
 		<method name="screen_get_size" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the screen's size in pixels. See also [method screen_get_position] and [method screen_get_usable_rect].
+				Returns the screen's size in screen coordinates. See also [method screen_get_position] and [method screen_get_usable_rect].
+			</description>
+		</method>
+		<method name="screen_get_size_in_pixels" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="screen" type="int" default="-1" />
+			<description>
+				Returns the screen's size in pixles.
 			</description>
 		</method>
 		<method name="screen_get_usable_rect" qualifiers="const">
 			<return type="Rect2i" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the portion of the screen that is not obstructed by a status bar in pixels. See also [method screen_get_size].
+				Returns the portion of the screen that is not obstructed by a status bar in screen coordinates. See also [method screen_get_size].
 			</description>
 		</method>
 		<method name="screen_is_kept_on" qualifiers="const">
@@ -1347,7 +1360,7 @@
 		<method name="virtual_keyboard_get_height" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or if it is currently hidden.
+				Returns the on-screen keyboard's height in screen coordinates. Returns 0 if there is no keyboard or if it is currently hidden.
 			</description>
 		</method>
 		<method name="virtual_keyboard_hide">
@@ -1379,8 +1392,8 @@
 			<return type="void" />
 			<param index="0" name="position" type="Vector2i" />
 			<description>
-				Sets the mouse cursor position to the given [param position] relative to an origin at the upper left corner of the currently focused game Window Manager window.
-				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS, and Linux (X11/Wayland). It has no effect on Android, iOS, and Web.
+				Sets the mouse cursor position to the given [param position] relative to an origin at the upper left corner of the currently focused game Window Manager window (in screen coordinates).
+				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS and Linux (X11/Wayland). It has no effect on Android, iOS and Web.
 			</description>
 		</method>
 		<method name="window_can_draw" qualifiers="const">
@@ -1422,14 +1435,14 @@
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns the window's maximum size (in pixels). See also [method window_set_max_size].
+				Returns the window's maximum size (in screen coordinates). See also [method window_set_max_size].
 			</description>
 		</method>
 		<method name="window_get_min_size" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns the window's minimum size (in pixels). See also [method window_set_min_size].
+				Returns the window's minimum size (in screen coordinates). See also [method window_set_min_size].
 			</description>
 		</method>
 		<method name="window_get_mode" qualifiers="const">
@@ -1452,42 +1465,56 @@
 			<return type="Rect2i" />
 			<param index="0" name="window" type="int" />
 			<description>
-				Returns the bounding box of control, or menu item that was used to open the popup window, in the screen coordinate system.
+				Returns the bounding box of control, or menu item that was used to open the popup window (in screen coordinates).
 			</description>
 		</method>
 		<method name="window_get_position" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns the position of the client area of the given window on the screen.
+				Returns the position of the client area of the given window on the screen (in screen coordinates).
 			</description>
 		</method>
 		<method name="window_get_position_with_decorations" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns the position of the given window on the screen including the borders drawn by the operating system. See also [method window_get_position].
+				Returns the position of the given window on the screen including the borders drawn by the operating system (in screen coordinates). See also [method window_get_position].
 			</description>
 		</method>
 		<method name="window_get_safe_title_margins" qualifiers="const">
 			<return type="Vector3i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns left margins ([code]x[/code]), right margins ([code]y[/code]) and height ([code]z[/code]) of the title that are safe to use (contains no buttons or other elements) when [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set.
+				Returns left margins ([code]x[/code]), right margins ([code]y[/code]) and height ([code]z[/code]) of the title (in screen coordinates) that are safe to use (contains no buttons or other elements) when [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set.
+			</description>
+		</method>
+		<method name="window_get_scale" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns window scaling factor if automatic DPI scaling is supported and enabled.
 			</description>
 		</method>
 		<method name="window_get_size" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns the size of the window specified by [param window_id] (in pixels), excluding the borders drawn by the operating system. This is also called the "client area". See also [method window_get_size_with_decorations], [method window_set_size] and [method window_get_position].
+				Returns the size of the window specified by [param window_id] (in screen coordinates), excluding the borders drawn by the operating system. This is also called the "client area". See also [method window_get_size_with_decorations], [method window_set_size] and [method window_get_position].
+			</description>
+		</method>
+		<method name="window_get_size_in_pixels" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the size of the window specified by [param window_id] (in pixels), excluding the borders drawn by the operating system. This is also called the "client area".
 			</description>
 		</method>
 		<method name="window_get_size_with_decorations" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns the size of the window specified by [param window_id] (in pixels), including the borders drawn by the operating system. See also [method window_get_size].
+				Returns the size of the window specified by [param window_id] (in screen coordinates), including the borders drawn by the operating system. See also [method window_get_size].
 			</description>
 		</method>
 		<method name="window_get_title_size" qualifiers="const">
@@ -1495,7 +1522,7 @@
 			<param index="0" name="title" type="String" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Returns the estimated window title bar size (including text and window buttons) for the window specified by [param window_id] (in pixels). This method does not change the window title.
+				Returns the estimated window title bar size (including text and window buttons) for the window specified by [param window_id] (in screen coordinates). This method does not change the window title.
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
@@ -1598,7 +1625,7 @@
 			<param index="0" name="position" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the position of the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] popup for the specified [param window_id]. Only effective if [method window_set_ime_active] was set to [code]true[/code] for the specified [param window_id].
+				Sets the position (in screen coordinates) of the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] popup for the specified [param window_id]. Only effective if [method window_set_ime_active] was set to [code]true[/code] for the specified [param window_id].
 			</description>
 		</method>
 		<method name="window_set_input_event_callback">
@@ -1624,7 +1651,7 @@
 			<param index="0" name="max_size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the maximum size of the window specified by [param window_id] in pixels. Normally, the user will not be able to drag the window to make it larger than the specified size. See also [method window_get_max_size].
+				Sets the maximum size of the window specified by [param window_id] in screen coordinates. Normally, the user will not be able to drag the window to make it larger than the specified size. See also [method window_get_max_size].
 				[b]Note:[/b] It's recommended to change this value using [member Window.max_size] instead.
 				[b]Note:[/b] Using third-party tools, it is possible for users to disable window geometry restrictions and therefore bypass this limit.
 			</description>
@@ -1634,7 +1661,7 @@
 			<param index="0" name="min_size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the minimum size for the given window to [param min_size] in pixels. Normally, the user will not be able to drag the window to make it smaller than the specified size. See also [method window_get_min_size].
+				Sets the minimum size for the given window to [param min_size] in screen coordinates. Normally, the user will not be able to drag the window to make it smaller than the specified size. See also [method window_get_min_size].
 				[b]Note:[/b] It's recommended to change this value using [member Window.min_size] instead.
 				[b]Note:[/b] By default, the main window has a minimum size of [code]Vector2i(64, 64)[/code]. This prevents issues that can arise when the window is resized to a near-zero size.
 				[b]Note:[/b] Using third-party tools, it is possible for users to disable window geometry restrictions and therefore bypass this limit.
@@ -1654,7 +1681,7 @@
 			<param index="0" name="region" type="PackedVector2Array" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
+				Sets a polygonal region (in screen coordinates) of the window which accepts mouse events. Mouse events outside the region will be passed through.
 				Passing an empty array will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
 				[codeblocks]
 				[gdscript]
@@ -1687,7 +1714,7 @@
 			<param index="0" name="window" type="int" />
 			<param index="1" name="rect" type="Rect2i" />
 			<description>
-				Sets the bounding box of control, or menu item that was used to open the popup window, in the screen coordinate system. Clicking this area will not auto-close this popup.
+				Sets the bounding box of control, or menu item that was used to open the popup window (in screen coordinates). Clicking this area will not auto-close this popup.
 			</description>
 		</method>
 		<method name="window_set_position">
@@ -1695,7 +1722,7 @@
 			<param index="0" name="position" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the position of the given window to [param position]. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
+				Sets the position of the given window to [param position] (in screen coordinates). On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
 				[codeblock lang=text]
 				* (0, 0)        +-------+
 				                |       |
@@ -1723,7 +1750,7 @@
 			<param index="0" name="size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the size of the given window to [param size] (in pixels). See also [method window_get_size] and [method window_get_position].
+				Sets the size of the given window to [param size] (in screen coordinates). See also [method window_get_size] and [method window_get_position].
 				[b]Note:[/b] It's recommended to change this value using [member Window.size] instead.
 			</description>
 		</method>
@@ -1763,7 +1790,7 @@
 			<param index="0" name="offset" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				When [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set, set offset to the center of the first titlebar button.
+				When [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set, set offset (in screen coordinates) to the center of the first titlebar button.
 				[b]Note:[/b] This flag is implemented only on macOS.
 			</description>
 		</method>
@@ -1853,6 +1880,9 @@
 		<constant name="FEATURE_NATIVE_DIALOG_FILE" value="25" enum="Feature">
 			Display server supports spawning dialogs for selecting files or directories using the operating system's native look-and-feel. See [method file_dialog_show] and [method file_dialog_with_options_show]. [b]Windows, macOS, Linux (X11/Wayland)[/b]
 		</constant>
+		<constant name="FEATURE_DPI_SCALING" value="26" enum="Feature">
+			Display server support automatic DPI scaling.
+		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
 		</constant>
@@ -1914,6 +1944,12 @@
 		</constant>
 		<constant name="SCREEN_SENSOR" value="6" enum="ScreenOrientation">
 			Automatic landscape or portrait orientation (default or reverse depending on sensor).
+		</constant>
+		<constant name="SCREEN_COORDS_UNIT_DEVICE_PIXEL" value="0" enum="ScreenCoordinatesUnit">
+			Screen coordinates unit is physical device pixel.
+		</constant>
+		<constant name="SCREEN_COORDS_UNIT_DPI_ADJUSTED_PIXEL" value="1" enum="ScreenCoordinatesUnit">
+			Screen coordinates unit is DPI adjusted pixel (e.g., at [code]2.0[/code] DPI scaling, one DPI adjusted pixel is equal to 2x2 device pixels).
 		</constant>
 		<constant name="KEYBOARD_TYPE_DEFAULT" value="0" enum="VirtualKeyboardType">
 			Default text virtual keyboard.

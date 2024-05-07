@@ -157,7 +157,8 @@ void EditorPropertyRootMotion::_node_assign() {
 	}
 
 	filters->ensure_cursor_is_visible();
-	filter_dialog->popup_centered(Size2(500, 500) * EDSCALE);
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(500 * EDSCALE, 500 * EDSCALE));
+	filter_dialog->popup_centered(popup_size);
 }
 
 void EditorPropertyRootMotion::_node_clear() {

@@ -2088,7 +2088,7 @@ void ColorPickerButton::pressed() {
 
 	float h_offset = (get_size().x - minsize.x) / 2;
 	float v_offset = show_above ? -minsize.y : get_size().y;
-	popup->set_position(get_screen_position() + Vector2(h_offset, v_offset));
+	popup->set_position(get_final_transform().xform(Vector2(h_offset, v_offset)));
 	popup->popup();
 	picker->set_focus_on_line_edit();
 }

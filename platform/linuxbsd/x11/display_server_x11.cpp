@@ -1425,9 +1425,9 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
-	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 96);
 
-	//Get physical monitor Dimensions through XRandR and calculate dpi
+	// Get physical monitor Dimensions through XRandR and calculate DPI.
 	Size2i sc = screen_get_size(p_screen);
 	if (xrandr_ext_ok) {
 		int count = 0;
@@ -1458,8 +1458,49 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 		return (xdpi + ydpi) / (xdpi && ydpi ? 2 : 1);
 	}
 
-	//could not get dpi
+	// Could not get DPI.
 	return 96;
+}
+
+float DisplayServerX11::screen_get_scale(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 1.0);
+
+	// Get physical monitor Dimensions through XRandR and calculate DPI.
+	Size2i sc = screen_get_size(p_screen);
+	if (xrandr_ext_ok) {
+		int count = 0;
+		if (xrr_get_monitors) {
+			xrr_monitor_info *monitors = xrr_get_monitors(x11_display, windows[MAIN_WINDOW_ID].x11_window, true, &count);
+			if (p_screen < count) {
+				double xdpi = sc.width / (double)monitors[p_screen].mwidth * 25.4;
+				double ydpi = sc.height / (double)monitors[p_screen].mheight * 25.4;
+				xrr_free_monitors(monitors);
+				return double(xdpi + ydpi) / 192.0;
+			}
+			xrr_free_monitors(monitors);
+		} else if (p_screen == 0) {
+			XRRScreenSize *sizes = XRRSizes(x11_display, 0, &count);
+			if (sizes) {
+				double xdpi = sc.width / (double)sizes[0].mwidth * 25.4;
+				double ydpi = sc.height / (double)sizes[0].mheight * 25.4;
+				return double(xdpi + ydpi) / 192.0;
+			}
+		}
+	}
+
+	int width_mm = DisplayWidthMM(x11_display, p_screen);
+	int height_mm = DisplayHeightMM(x11_display, p_screen);
+	double xdpi = (width_mm ? sc.width / (double)width_mm * 25.4 : 0);
+	double ydpi = (height_mm ? sc.height / (double)height_mm * 25.4 : 0);
+	if (xdpi || ydpi) {
+		return double(xdpi + ydpi) / (xdpi && ydpi ? 192.0 : 96.0);
+	}
+
+	// Could not get DPI.
+	return 1.0;
 }
 
 Color DisplayServerX11::screen_get_pixel(const Point2i &p_position) const {

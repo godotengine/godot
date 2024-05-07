@@ -387,7 +387,8 @@ void AnimationPlayerEditor::_animation_new() {
 
 	name_dialog_op = TOOL_NEW_ANIM;
 	name_dialog->set_title(TTR("Create New Animation"));
-	name_dialog->popup_centered(Size2(300, 90));
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(300 * EDSCALE, 90 * EDSCALE));
+	name_dialog->popup_centered(popup_size);
 	name_title->set_text(TTR("New Animation Name:"));
 	name->set_text(base);
 	name->select_all();
@@ -410,7 +411,8 @@ void AnimationPlayerEditor::_animation_rename() {
 	name_title->set_text(TTR("Change Animation Name:"));
 	name->set_text(selected_name);
 	name_dialog_op = TOOL_RENAME_ANIM;
-	name_dialog->popup_centered(Size2(300, 90));
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(300 * EDSCALE, 90 * EDSCALE));
+	name_dialog->popup_centered(popup_size);
 	name->select_all();
 	name->grab_focus();
 	library->hide();
@@ -673,7 +675,8 @@ void AnimationPlayerEditor::_edit_animation_blend() {
 		return;
 	}
 
-	blend_editor.dialog->popup_centered(Size2(400, 400) * EDSCALE);
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(400 * EDSCALE, 400 * EDSCALE));
+	blend_editor.dialog->popup_centered(popup_size);
 	_update_animation_blend();
 }
 
@@ -1245,7 +1248,8 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	// TRANSLATORS: This is a label for the new name field in the "Duplicate Animation" dialog.
 	name_title->set_text(TTR("Duplicated Animation Name:"));
 	name->set_text(new_name);
-	name_dialog->popup_centered(Size2(300, 90));
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(300 * EDSCALE, 90 * EDSCALE));
+	name_dialog->popup_centered(popup_size);
 	name->select_all();
 	name->grab_focus();
 }
@@ -1543,7 +1547,7 @@ void AnimationPlayerEditor::_editor_visibility_changed() {
 bool AnimationPlayerEditor::_are_onion_layers_valid() {
 	ERR_FAIL_COND_V(!onion.past && !onion.future, false);
 
-	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServer::MAIN_WINDOW_ID);
+	Size2 capture_size = DisplayServer::get_singleton()->window_get_size_in_pixels(DisplayServer::MAIN_WINDOW_ID);
 	return onion.captures.size() == onion.get_capture_count() && onion.capture_size == capture_size;
 }
 
@@ -1551,7 +1555,7 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 	_free_onion_layers();
 
 	int captures = onion.get_capture_count();
-	Size2 capture_size = DisplayServer::get_singleton()->window_get_size(DisplayServer::MAIN_WINDOW_ID);
+	Size2 capture_size = DisplayServer::get_singleton()->window_get_size_in_pixels(DisplayServer::MAIN_WINDOW_ID);
 
 	onion.captures.resize(captures);
 	onion.captures_valid.resize(captures);
@@ -1662,7 +1666,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_prolog() {
 
 	// Tweak the root viewport to ensure it's rendered before our target.
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
-	onion.temp.screen_rect = Rect2(Vector2(), DisplayServer::get_singleton()->window_get_size(DisplayServer::MAIN_WINDOW_ID));
+	onion.temp.screen_rect = Rect2(Vector2(), DisplayServer::get_singleton()->window_get_size_in_pixels(DisplayServer::MAIN_WINDOW_ID));
 	RS::get_singleton()->viewport_attach_to_screen(root_vp, Rect2(), DisplayServer::INVALID_WINDOW_ID);
 	RS::get_singleton()->viewport_set_update_mode(root_vp, RS::VIEWPORT_UPDATE_ALWAYS);
 

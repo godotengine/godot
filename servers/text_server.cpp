@@ -284,8 +284,10 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_variation_coordinates", "font_rid", "variation_coordinates"), &TextServer::font_set_variation_coordinates);
 	ClassDB::bind_method(D_METHOD("font_get_variation_coordinates", "font_rid"), &TextServer::font_get_variation_coordinates);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("font_set_oversampling", "font_rid", "oversampling"), &TextServer::font_set_oversampling);
 	ClassDB::bind_method(D_METHOD("font_get_oversampling", "font_rid"), &TextServer::font_get_oversampling);
+#endif
 
 	ClassDB::bind_method(D_METHOD("font_get_size_cache_list", "font_rid"), &TextServer::font_get_size_cache_list);
 	ClassDB::bind_method(D_METHOD("font_clear_size_cache", "font_rid"), &TextServer::font_clear_size_cache);
@@ -374,11 +376,16 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_opentype_feature_overrides", "font_rid", "overrides"), &TextServer::font_set_opentype_feature_overrides);
 	ClassDB::bind_method(D_METHOD("font_get_opentype_feature_overrides", "font_rid"), &TextServer::font_get_opentype_feature_overrides);
 
+	ClassDB::bind_method(D_METHOD("font_get_oversampling_cache_capacity"), &TextServer::font_get_oversampling_cache_capacity);
+	ClassDB::bind_method(D_METHOD("font_set_oversampling_cache_capacity", "oversampling_capacity"), &TextServer::font_set_oversampling_cache_capacity);
+
 	ClassDB::bind_method(D_METHOD("font_supported_feature_list", "font_rid"), &TextServer::font_supported_feature_list);
 	ClassDB::bind_method(D_METHOD("font_supported_variation_list", "font_rid"), &TextServer::font_supported_variation_list);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("font_get_global_oversampling"), &TextServer::font_get_global_oversampling);
 	ClassDB::bind_method(D_METHOD("font_set_global_oversampling", "oversampling"), &TextServer::font_set_global_oversampling);
+#endif
 
 	ClassDB::bind_method(D_METHOD("get_hex_code_box_size", "size", "index"), &TextServer::get_hex_code_box_size);
 	ClassDB::bind_method(D_METHOD("draw_hex_code_box", "canvas", "size", "pos", "index", "color"), &TextServer::draw_hex_code_box);

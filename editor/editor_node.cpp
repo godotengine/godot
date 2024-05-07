@@ -1175,18 +1175,24 @@ void EditorNode::_vp_resized() {
 }
 
 void EditorNode::_titlebar_resized() {
-	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(title_bar->get_global_position().y + title_bar->get_size().y / 2, title_bar->get_global_position().y + title_bar->get_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
-	const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID);
+	const Vector2i &offset = title_bar->get_screen_transform().basis_xform(title_bar->get_global_position() + title_bar->get_size() / 2);
+	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(offset.y, offset.y), DisplayServer::MAIN_WINDOW_ID);
+
+	const Vector3i &margins = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID);
+	const Transform2D &xform = title_bar->get_screen_transform().affine_inverse();
+	const int hor_margin_l = xform.basis_xform(Vector2i(margins.x, 0)).x;
+	const int hor_margin_r = xform.basis_xform(Vector2i(margins.y, 0)).x;
+	const int ver_margin = xform.basis_xform(Vector2i(0, margins.z)).y;
 	if (left_menu_spacer) {
-		int w = (gui_base->is_layout_rtl()) ? margin.y : margin.x;
+		int w = (gui_base->is_layout_rtl()) ? hor_margin_r : hor_margin_l;
 		left_menu_spacer->set_custom_minimum_size(Size2(w, 0));
 	}
 	if (right_menu_spacer) {
-		int w = (gui_base->is_layout_rtl()) ? margin.x : margin.y;
+		int w = (gui_base->is_layout_rtl()) ? hor_margin_l : hor_margin_r;
 		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
 	}
 	if (title_bar) {
-		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
+		title_bar->set_custom_minimum_size(Size2(0, ver_margin - title_bar->get_global_position().y));
 	}
 }
 
@@ -3035,7 +3041,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			file_android_build_source->popup_centered_ratio();
 		} break;
 		case SETTINGS_MANAGE_FEATURE_PROFILES: {
-			feature_profile_manager->popup_centered_clamped(Size2(900, 800) * EDSCALE, 0.8);
+			Size2i popup_size = get_window()->get_final_transform().basis_xform(Vector2i(900 * EDSCALE, 800 * EDSCALE));
+			feature_profile_manager->popup_centered_clamped(popup_size, 0.8);
 		} break;
 		case SETTINGS_TOGGLE_FULLSCREEN: {
 			DisplayServer::WindowMode mode = DisplayServer::get_singleton()->window_get_mode();
@@ -3217,7 +3224,8 @@ void EditorNode::_tool_menu_option(int p_idx) {
 			orphan_resources->show();
 		} break;
 		case TOOLS_BUILD_PROFILE_MANAGER: {
-			build_profile_manager->popup_centered_clamped(Size2(700, 800) * EDSCALE, 0.8);
+			Size2i popup_size = get_window()->get_final_transform().basis_xform(Vector2i(700 * EDSCALE, 800 * EDSCALE));
+			build_profile_manager->popup_centered_clamped(popup_size, 0.8);
 		} break;
 		case TOOLS_SURFACE_UPGRADE: {
 			surface_upgrade_dialog->popup_on_demand();
@@ -6331,6 +6339,7 @@ EditorNode::EditorNode() {
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
 	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
 	if (w) {
+		// TODO XXXX -> v to s
 		const Size2 minimum_size = Size2(1024, 600) * EDSCALE;
 		w->set_min_size(minimum_size); // Calling it this early doesn't sync the property with DS.
 		DisplayServer::get_singleton()->window_set_min_size(minimum_size);
@@ -6348,6 +6357,9 @@ EditorNode::EditorNode() {
 	int ed_root_dir = EDITOR_GET("interface/editor/ui_layout_direction");
 	Control::set_root_layout_direction(ed_root_dir);
 	Window::set_root_layout_direction(ed_root_dir);
+
+	bool ed_dpi_scaling = EDITOR_GET("interface/editor/ui_dpi_scaling");
+	Window::set_use_dpi_scaling(ed_dpi_scaling);
 
 	ResourceLoader::set_abort_on_missing_resources(false);
 	ResourceLoader::set_error_notify_func(&EditorNode::add_io_error);
@@ -7015,7 +7027,8 @@ EditorNode::EditorNode() {
 	layout_dialog = memnew(EditorLayoutsDialog);
 	gui_base->add_child(layout_dialog);
 	layout_dialog->set_hide_on_ok(false);
-	layout_dialog->set_size(Size2(225, 270) * EDSCALE);
+	Size2i popup_size = Vector2i(225 * EDSCALE, 270 * EDSCALE);
+	layout_dialog->set_size(popup_size);
 	layout_dialog->connect("name_confirmed", callable_mp(this, &EditorNode::_dialog_action));
 
 	update_spinner = memnew(MenuButton);
@@ -7114,7 +7127,8 @@ EditorNode::EditorNode() {
 	save_confirmation = memnew(ConfirmationDialog);
 	save_confirmation->add_button(TTR("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
 	gui_base->add_child(save_confirmation);
-	save_confirmation->set_min_size(Vector2(450.0 * EDSCALE, 0));
+	popup_size = Vector2i(450 * EDSCALE, 0);
+	save_confirmation->set_min_size(popup_size);
 	save_confirmation->connect("confirmed", callable_mp(this, &EditorNode::_menu_confirm_current));
 	save_confirmation->connect("custom_action", callable_mp(this, &EditorNode::_discard_changes));
 	save_confirmation->connect("canceled", callable_mp(this, &EditorNode::_cancel_close_scene_tab));

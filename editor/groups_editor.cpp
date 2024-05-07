@@ -466,7 +466,7 @@ void GroupsEditor::_item_mouse_selected(const Vector2 &p_pos, MouseButton p_mous
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_GET_SHORTCUT("groups_editor/delete"), DELETE_GROUP);
 		}
 
-		menu->set_position(tree->get_screen_position() + p_pos);
+		menu->set_position(tree->get_final_transform().xform(p_pos));
 		menu->reset_size();
 		menu->popup();
 	}

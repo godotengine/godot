@@ -2000,7 +2000,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 	CodeEdit *tx = code_editor->get_text_editor();
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
-		local_pos = mb->get_global_position() - tx->get_global_position();
+		local_pos = tx->get_local_mouse_position();
 		create_menu = true;
 	} else if (k.is_valid() && k->is_action("ui_menu", true)) {
 		tx->adjust_viewport_to_caret(0);
@@ -2124,7 +2124,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					break;
 			}
 			if (has_color) {
-				color_panel->set_position(get_screen_position() + local_pos);
+				color_panel->set_position(tx->get_final_transform().xform(local_pos));
 			}
 		}
 		_make_context_menu(tx->has_selection(), has_color, foldable, open_docs, goto_definition, local_pos);
@@ -2199,7 +2199,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_UNDO), !tx->has_undo());
 	context_menu->set_item_disabled(context_menu->get_item_index(EDIT_REDO), !tx->has_redo());
 
-	context_menu->set_position(get_screen_position() + p_pos);
+	context_menu->set_position(tx->get_final_transform().xform(p_pos));
 	context_menu->reset_size();
 	context_menu->popup();
 }

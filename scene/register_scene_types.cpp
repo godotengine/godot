@@ -142,6 +142,7 @@
 #include "scene/resources/style_box_line.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/svg_texture.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_file.h"
 #include "scene/resources/text_line.h"
@@ -492,6 +493,9 @@ void register_scene_types() {
 	int root_dir = GLOBAL_GET("internationalization/rendering/root_node_layout_direction");
 	Control::set_root_layout_direction(root_dir);
 	Window::set_root_layout_direction(root_dir);
+
+	bool dpi_scaling = GLOBAL_GET("gui/common/use_dpi_scaling");
+	Window::set_use_dpi_scaling(dpi_scaling);
 
 	/* REGISTER ANIMATION */
 	GDREGISTER_CLASS(Tween);
@@ -931,6 +935,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(Texture3D);
 	GDREGISTER_CLASS(ImageTexture3D);
 	GDREGISTER_CLASS(CompressedTexture3D);
+	GDREGISTER_CLASS(SVGTexture);
 	GDREGISTER_CLASS(Cubemap);
 	GDREGISTER_CLASS(CubemapArray);
 	GDREGISTER_CLASS(Texture2DArray);

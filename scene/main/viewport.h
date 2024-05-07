@@ -316,6 +316,8 @@ private:
 
 	uint32_t canvas_cull_mask = 0xffffffff; // by default show everything
 
+	float oversampling_factor = 1.f;
+
 	enum SubWindowDrag {
 		SUB_WINDOW_DRAG_DISABLED,
 		SUB_WINDOW_DRAG_MOVE,
@@ -542,6 +544,9 @@ public:
 
 	void set_screen_space_aa(ScreenSpaceAA p_screen_space_aa);
 	ScreenSpaceAA get_screen_space_aa() const;
+
+	void set_oversampling_factor(float p_oversampling);
+	float get_oversampling_factor() const;
 
 	void set_use_taa(bool p_use_taa);
 	bool is_using_taa() const;

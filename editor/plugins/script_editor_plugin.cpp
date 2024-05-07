@@ -3269,7 +3269,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 	context_menu->set_item_disabled(context_menu->get_item_index(WINDOW_MOVE_DOWN), tab_container->get_current_tab() >= tab_container->get_tab_count() - 1);
 	context_menu->set_item_disabled(context_menu->get_item_index(WINDOW_SORT), tab_container->get_tab_count() <= 1);
 
-	context_menu->set_position(get_screen_position() + get_local_mouse_position());
+	context_menu->set_position(get_final_transform().xform(get_local_mouse_position()));
 	context_menu->reset_size();
 	context_menu->popup();
 }

@@ -186,7 +186,7 @@ void ViewportNavigationControl::_process_drag(int p_index, Vector2 p_position, V
 	if (focused_index == p_index) {
 		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
-			focused_mouse_start = p_position;
+			focused_mouse_start = get_screen_transform().basis_xform(p_position);
 		}
 		focused_pos += p_relative_position;
 		queue_redraw();
@@ -422,7 +422,7 @@ void ViewportRotationControl::_process_drag(Ref<InputEventWithModifiers> p_event
 	if (orbiting_index == p_index) {
 		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
-			orbiting_mouse_start = p_position;
+			orbiting_mouse_start = get_screen_transform().basis_xform(p_position);
 		}
 		viewport->_nav_orbit(p_event, p_relative_position);
 		focused_axis = -1;
@@ -1591,7 +1591,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		}
 
 		selection_results_menu = selection_results;
-		selection_menu->set_position(get_screen_position() + b->get_position());
+		selection_menu->set_position(get_final_transform().xform(b->get_position()));
 		selection_menu->reset_size();
 		selection_menu->popup();
 	}
@@ -2596,7 +2596,7 @@ void Node3DEditorViewport::scale_freelook_speed(real_t scale) {
 Point2 Node3DEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const {
 	Point2 relative;
 	if (bool(EDITOR_GET("editors/3d/navigation/warped_mouse_panning"))) {
-		relative = Input::get_singleton()->warp_mouse_motion(p_ev_mouse_motion, surface->get_global_rect());
+		relative = Input::get_singleton()->warp_mouse_motion(p_ev_mouse_motion, surface->get_global_rect(), get_screen_transform());
 	} else {
 		relative = p_ev_mouse_motion->get_relative();
 	}
@@ -5369,7 +5369,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	selection_menu = memnew(PopupMenu);
 	add_child(selection_menu);
-	selection_menu->set_min_size(Size2(100, 0) * EDSCALE);
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(100 * EDSCALE, 0));
+	selection_menu->set_min_size(popup_size);
 	selection_menu->connect("id_pressed", callable_mp(this, &Node3DEditorViewport::_selection_result_pressed));
 	selection_menu->connect("popup_hide", callable_mp(this, &Node3DEditorViewport::_selection_menu_hide));
 
@@ -6316,16 +6317,18 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 		} break;
 		case MENU_TRANSFORM_CONFIGURE_SNAP: {
-			snap_dialog->popup_centered(Size2(200, 180));
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(320 * EDSCALE, 180 * EDSCALE));
+			snap_dialog->popup_centered(popup_size);
 		} break;
 		case MENU_TRANSFORM_DIALOG: {
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(320 * EDSCALE, 240 * EDSCALE));
 			for (int i = 0; i < 3; i++) {
 				xform_translate[i]->set_text("0");
 				xform_rotate[i]->set_text("0");
 				xform_scale[i]->set_text("1");
 			}
 
-			xform_dialog->popup_centered(Size2(320, 240) * EDSCALE);
+			xform_dialog->popup_centered(popup_size);
 
 		} break;
 		case MENU_VIEW_USE_1_VIEWPORT: {
@@ -6422,7 +6425,8 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 
 		} break;
 		case MENU_VIEW_CAMERA_SETTINGS: {
-			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50));
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(settings_vbc->get_combined_minimum_size() + Size2(50, 50)));
+			settings_dialog->popup_centered(popup_size);
 		} break;
 		case MENU_SNAP_TO_FLOOR: {
 			snap_selected_nodes_to_floor();
@@ -7603,8 +7607,7 @@ void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 }
 
 void Node3DEditor::_sun_environ_settings_pressed() {
-	Vector2 pos = sun_environ_settings->get_screen_position() + sun_environ_settings->get_size();
-	sun_environ_popup->set_position(pos - Vector2(sun_environ_popup->get_contents_minimum_size().width / 2, 0));
+	sun_environ_popup->set_position(sun_environ_settings->get_final_transform().xform(sun_environ_settings->get_size() - Vector2(sun_environ_popup->get_contents_minimum_size().width / 2, 0)));
 	sun_environ_popup->reset_size();
 	sun_environ_popup->popup();
 }

@@ -32,33 +32,107 @@
 #define LRU_H
 
 #include "core/math/math_funcs.h"
-#include "hash_map.h"
-#include "list.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/pair.h"
 
-template <typename TKey, typename TData, typename Hasher = HashMapHasherDefault, typename Comparator = HashMapComparatorDefault<TKey>>
+template <typename TKey, typename TValue, typename Hasher = HashMapHasherDefault, typename Comparator = HashMapComparatorDefault<TKey>>
 class LRUCache {
 private:
-	struct Pair {
-		TKey key;
-		TData data;
+	typedef typename List<Pair<TKey, TValue>>::Element *Element;
 
-		Pair() {}
-		Pair(const TKey &p_key, const TData &p_data) :
-				key(p_key),
-				data(p_data) {
-		}
-	};
-
-	typedef typename List<Pair>::Element *Element;
-
-	List<Pair> _list;
+	List<Pair<TKey, TValue>> _list;
 	HashMap<TKey, Element, Hasher, Comparator> _map;
 	size_t capacity;
 
 public:
-	const TData *insert(const TKey &p_key, const TData &p_value) {
+	struct ConstIterator {
+		_FORCE_INLINE_ const Pair<TKey, TValue> &operator*() const {
+			return E->get();
+		}
+		_FORCE_INLINE_ const Pair<TKey, TValue> *operator->() const { return &E->get(); }
+		_FORCE_INLINE_ ConstIterator &operator++() {
+			E = E->next();
+			return *this;
+		}
+		_FORCE_INLINE_ ConstIterator &operator--() {
+			E = E->prev();
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
+
+		_FORCE_INLINE_ explicit operator bool() const {
+			return E != nullptr;
+		}
+
+		_FORCE_INLINE_ ConstIterator(const Element p_E) { E = p_E; }
+		_FORCE_INLINE_ ConstIterator() {}
+		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
+		_FORCE_INLINE_ void operator=(const ConstIterator &p_it) {
+			E = p_it.E;
+		}
+
+	private:
+		const Element E = nullptr;
+	};
+
+	struct Iterator {
+		_FORCE_INLINE_ Pair<TKey, TValue> &operator*() const {
+			return E->get();
+		}
+		_FORCE_INLINE_ Pair<TKey, TValue> *operator->() const { return &E->get(); }
+		_FORCE_INLINE_ Iterator &operator++() {
+			E = E->next();
+			return *this;
+		}
+		_FORCE_INLINE_ Iterator &operator--() {
+			E = E->prev();
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+
+		_FORCE_INLINE_ explicit operator bool() const {
+			return E != nullptr;
+		}
+
+		_FORCE_INLINE_ Iterator(Element p_E) { E = p_E; }
+		_FORCE_INLINE_ Iterator() {}
+		_FORCE_INLINE_ Iterator(const Iterator &p_it) { E = p_it.E; }
+		_FORCE_INLINE_ void operator=(const Iterator &p_it) {
+			E = p_it.E;
+		}
+
+		operator ConstIterator() const {
+			return ConstIterator(E);
+		}
+
+	private:
+		Element E = nullptr;
+	};
+
+	_FORCE_INLINE_ Iterator begin() {
+		return Iterator(_list.front());
+	}
+
+	_FORCE_INLINE_ Iterator end() {
+		return Iterator(nullptr);
+	}
+
+	_FORCE_INLINE_ ConstIterator begin() const {
+		return ConstIterator(_list.front());
+	}
+
+	_FORCE_INLINE_ ConstIterator end() const {
+		return ConstIterator(nullptr);
+	}
+
+	const TValue *insert(const TKey &p_key, const TValue &p_value) {
 		Element *e = _map.getptr(p_key);
-		Element n = _list.push_front(Pair(p_key, p_value));
+		Element n = _list.push_front(Pair<TKey, TValue>(p_key, p_value));
 
 		if (e) {
 			_list.erase(*e);
@@ -68,11 +142,11 @@ public:
 
 		while (_map.size() > capacity) {
 			Element d = _list.back();
-			_map.erase(d->get().key);
+			_map.erase(d->get().first);
 			_list.pop_back();
 		}
 
-		return &n->get().data;
+		return &n->get().second;
 	}
 
 	void clear() {
@@ -84,20 +158,20 @@ public:
 		return _map.getptr(p_key);
 	}
 
-	const TData &get(const TKey &p_key) {
+	const TValue &get(const TKey &p_key) {
 		Element *e = _map.getptr(p_key);
 		CRASH_COND(!e);
 		_list.move_to_front(*e);
-		return (*e)->get().data;
+		return (*e)->get().second;
 	};
 
-	const TData *getptr(const TKey &p_key) {
+	const TValue *getptr(const TKey &p_key) {
 		Element *e = _map.getptr(p_key);
 		if (!e) {
 			return nullptr;
 		} else {
 			_list.move_to_front(*e);
-			return &(*e)->get().data;
+			return &(*e)->get().second;
 		}
 	}
 
@@ -109,7 +183,7 @@ public:
 			capacity = p_capacity;
 			while (_map.size() > capacity) {
 				Element d = _list.back();
-				_map.erase(d->get().key);
+				_map.erase(d->get().first);
 				_list.pop_back();
 			}
 		}

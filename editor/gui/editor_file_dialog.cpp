@@ -583,11 +583,13 @@ void EditorFileDialog::_action_pressed() {
 			}
 		}
 
+		Size2i popup_size = get_final_transform().basis_xform(Vector2i(250 * EDSCALE, 80 * EDSCALE));
+
 		// First check we're not having an empty name.
 		String file_name = file_text.strip_edges().get_file();
 		if (file_name.is_empty()) {
 			error_dialog->set_text(TTR("Cannot save file with an empty filename."));
-			error_dialog->popup_centered(Size2(250, 80) * EDSCALE);
+			error_dialog->popup_centered(popup_size);
 			return;
 		}
 
@@ -601,13 +603,13 @@ void EditorFileDialog::_action_pressed() {
 
 		if (file_name.begins_with(".")) { // Could still happen if typed manually.
 			error_dialog->set_text(TTR("Cannot save file with a name starting with a dot."));
-			error_dialog->popup_centered(Size2(250, 80) * EDSCALE);
+			error_dialog->popup_centered(popup_size);
 			return;
 		}
 
 		if (dir_access->file_exists(f) && !disable_overwrite_warning) {
 			confirm_save->set_text(vformat(TTR("File \"%s\" already exists.\nDo you want to overwrite it?"), f));
-			confirm_save->popup_centered(Size2(250, 80) * EDSCALE);
+			confirm_save->popup_centered(popup_size);
 		} else {
 			_save_to_recent();
 			hide();
@@ -762,7 +764,7 @@ void EditorFileDialog::_item_list_item_rmb_clicked(int p_item, const Vector2 &p_
 #endif
 
 	if (item_menu->get_item_count() > 0) {
-		item_menu->set_position(item_list->get_screen_position() + p_pos);
+		item_menu->set_position(item_list->get_final_transform().xform(p_pos));
 		item_menu->reset_size();
 		item_menu->popup();
 	}
@@ -795,7 +797,7 @@ void EditorFileDialog::_item_list_empty_clicked(const Vector2 &p_pos, MouseButto
 	item_menu->add_icon_item(theme_cache.filesystem, TTR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
 #endif
 
-	item_menu->set_position(item_list->get_screen_position() + p_pos);
+	item_menu->set_position(item_list->get_final_transform().xform(p_pos));
 	item_menu->reset_size();
 	item_menu->popup();
 }
@@ -1316,10 +1318,11 @@ EditorFileDialog::Access EditorFileDialog::get_access() const {
 
 void EditorFileDialog::_make_dir_confirm() {
 	const String stripped_dirname = makedirname->get_text().strip_edges();
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(250 * EDSCALE, 50 * EDSCALE));
 
 	if (dir_access->dir_exists(stripped_dirname)) {
 		error_dialog->set_text(TTR("Could not create folder. File with that name already exists."));
-		error_dialog->popup_centered(Size2(250, 50) * EDSCALE);
+		error_dialog->popup_centered(popup_size);
 		makedirname->set_text(""); // Reset label.
 		return;
 	}
@@ -1336,13 +1339,14 @@ void EditorFileDialog::_make_dir_confirm() {
 		}
 	} else {
 		error_dialog->set_text(TTR("Could not create folder."));
-		error_dialog->popup_centered(Size2(250, 50) * EDSCALE);
+		error_dialog->popup_centered(popup_size);
 	}
 	makedirname->set_text(""); // reset label
 }
 
 void EditorFileDialog::_make_dir() {
-	makedialog->popup_centered(Size2(250, 80) * EDSCALE);
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(250 * EDSCALE, 80 * EDSCALE));
+	makedialog->popup_centered(popup_size);
 	makedirname->grab_focus();
 }
 
@@ -1444,8 +1448,9 @@ void EditorFileDialog::_update_icons() {
 void EditorFileDialog::_favorite_selected(int p_idx) {
 	Error change_dir_result = dir_access->change_dir(favorites->get_item_metadata(p_idx));
 	if (change_dir_result != OK) {
+		Size2i popup_size = get_final_transform().basis_xform(Vector2i(250 * EDSCALE, 50 * EDSCALE));
 		error_dialog->set_text(TTR("Favorited folder does not exist anymore and will be removed."));
-		error_dialog->popup_centered(Size2(250, 50) * EDSCALE);
+		error_dialog->popup_centered(popup_size);
 
 		bool res = (access == ACCESS_RESOURCES);
 

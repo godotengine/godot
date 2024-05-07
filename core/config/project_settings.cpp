@@ -1539,6 +1539,7 @@ ProjectSettings::ProjectSettings() {
 #endif
 
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
+	GLOBAL_DEF_BASIC("gui/common/use_dpi_scaling", true);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/vsync/frame_queue_size", PROPERTY_HINT_RANGE, "2,3,1"), 2);

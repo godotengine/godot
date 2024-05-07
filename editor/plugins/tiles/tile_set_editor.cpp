@@ -987,7 +987,8 @@ void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 	}
 	edited_source = p_for_source;
 	id_input->set_value(p_for_source->get("id"));
-	id_edit_dialog->popup_centered(Vector2i(400, 0) * EDSCALE);
+	Size2i popup_size = TileSetEditor::get_singleton()->get_final_transform().basis_xform(Vector2i(400 * EDSCALE, 0));
+	id_edit_dialog->popup_centered(popup_size);
 	callable_mp((Control *)id_input->get_line_edit(), &Control::grab_focus).call_deferred();
 }
 

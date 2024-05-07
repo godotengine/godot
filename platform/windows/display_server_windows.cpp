@@ -121,6 +121,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
+		case FEATURE_DPI_SCALING:
 			return true;
 		default:
 			return false;
@@ -1095,10 +1096,43 @@ static BOOL CALLBACK _MonitorEnumProcDpi(HMONITOR hMonitor, HDC hdcMonitor, LPRE
 	EnumDpiData *data = (EnumDpiData *)dwData;
 	if (data->count == data->screen) {
 		data->dpi = QueryDpiForMonitor(hMonitor);
+		return FALSE;
 	}
 
 	data->count++;
 	return TRUE;
+}
+
+static BOOL CALLBACK _MonitorEnumProcDpiMax(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumDpiData *data = (EnumDpiData *)dwData;
+	data->dpi = MAX(data->dpi, QueryDpiForMonitor(hMonitor));
+
+	return TRUE;
+}
+
+float DisplayServerWindows::screen_get_scale(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	if (OS::get_singleton()->is_hidpi_allowed()) {
+		p_screen = _get_screen_index(p_screen);
+		EnumDpiData data = { 0, p_screen, 72 };
+		EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcDpi, (LPARAM)&data);
+		return (float)data.dpi / 96.0;
+	} else {
+		return 1.0;
+	}
+}
+
+float DisplayServerWindows::screen_get_max_scale() const {
+	_THREAD_SAFE_METHOD_
+
+	if (OS::get_singleton()->is_hidpi_allowed()) {
+		EnumDpiData data = { 0, 0, 72 };
+		EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcDpiMax, (LPARAM)&data);
+		return (float)data.dpi / 96.0;
+	} else {
+		return 1.0;
+	}
 }
 
 int DisplayServerWindows::screen_get_dpi(int p_screen) const {
@@ -4808,6 +4842,18 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 		} break;
+		case WM_DPICHANGED: {
+			if (OS::get_singleton()->is_hidpi_allowed()) {
+				RECT *const new_window_rect = (RECT *)lParam;
+				SetWindowPos(hWnd, NULL, new_window_rect->left,
+						new_window_rect->top,
+						new_window_rect->right - new_window_rect->left,
+						new_window_rect->bottom - new_window_rect->top,
+						SWP_NOZORDER | SWP_NOACTIVATE);
+
+				_send_window_event(windows[window_id], DisplayServer::WINDOW_EVENT_DPI_CHANGE);
+			}
+		} break;
 		case WM_DEVICECHANGE: {
 			joypad->probe_joypads();
 		} break;
@@ -5630,7 +5676,11 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			SetProcessDpiAwareness_t SetProcessDpiAwareness = (SetProcessDpiAwareness_t)GetProcAddress(Shcore, "SetProcessDpiAwareness");
 
 			if (SetProcessDpiAwareness) {
-				SetProcessDpiAwareness(SHC_PROCESS_SYSTEM_DPI_AWARE);
+				if ((os_ver.dwMajorVersion > 6) || ((os_ver.dwMajorVersion == 6) && (os_ver.dwMajorVersion >= 3))) {
+					SetProcessDpiAwareness(SHC_PROCESS_PER_MONITOR_DPI_AWARE);
+				} else {
+					SetProcessDpiAwareness(SHC_PROCESS_SYSTEM_DPI_AWARE);
+				}
 			}
 		}
 	}
@@ -5783,6 +5833,11 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	mouse_monitor = SetWindowsHookEx(WH_MOUSE, ::MouseProc, nullptr, GetCurrentThreadId());
 
+	String stretch_mode = GLOBAL_GET("display/window/stretch/mode");
+	Size2i stretch_size = Size2i(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+	bool dpi_scaling = GLOBAL_GET("gui/common/use_dpi_scaling");
+
+	float scale = 1.f;
 	Point2i window_position;
 	if (p_position != nullptr) {
 		window_position = *p_position;
@@ -5790,11 +5845,14 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 			p_screen = SCREEN_PRIMARY;
 		}
+		if (dpi_scaling && ((stretch_mode != "canvas_items" && stretch_mode != "viewport") || stretch_size.x == 0 || stretch_size.y == 0)) {
+			scale = screen_get_scale(p_screen);
+		}
 		Rect2i scr_rect = screen_get_usable_rect(p_screen);
-		window_position = scr_rect.position + (scr_rect.size - p_resolution) / 2;
+		window_position = scr_rect.position + (scr_rect.size - p_resolution * scale) / 2;
 	}
 
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution * scale));
 	ERR_FAIL_COND_MSG(main_window == INVALID_WINDOW_ID, "Failed to create main window.");
 
 	joypad = new JoypadWindows(&windows[MAIN_WINDOW_ID].hWnd);

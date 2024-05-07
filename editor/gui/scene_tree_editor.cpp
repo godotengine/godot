@@ -1476,7 +1476,7 @@ void SceneTreeEditor::_rmb_select(const Vector2 &p_pos, MouseButton p_button) {
 	if (p_button != MouseButton::RIGHT) {
 		return;
 	}
-	emit_signal(SNAME("rmb_pressed"), tree->get_screen_position() + p_pos);
+	emit_signal(SNAME("rmb_pressed"), p_pos);
 }
 
 void SceneTreeEditor::update_warning() {

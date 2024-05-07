@@ -97,11 +97,11 @@ void EditorObjectSelector::_show_popup() {
 	sub_objects_menu->clear();
 
 	Size2 size = get_size();
-	Point2 gp = get_screen_position();
-	gp.y += size.y;
+	size.y += size.y;
+	Rect2i gp = get_final_transform().xform(Rect2i(Vector2i(), size));
 
-	sub_objects_menu->set_position(gp);
-	sub_objects_menu->set_size(Size2(size.width, 1));
+	sub_objects_menu->set_position(gp.position);
+	sub_objects_menu->set_size(Size2(gp.size.width, 1));
 
 	sub_objects_menu->take_mouse_focus();
 	sub_objects_menu->popup();

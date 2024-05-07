@@ -3261,6 +3261,9 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("debug_canvas_item_get_rect", "item"), &RenderingServer::debug_canvas_item_get_rect);
 
+	ClassDB::bind_method(D_METHOD("canvas_item_set_oversampling_factor", "item", "oversampling"), &RenderingServer::canvas_item_set_oversampling_factor);
+	ClassDB::bind_method(D_METHOD("canvas_item_get_oversampling_factor", "item"), &RenderingServer::canvas_item_get_oversampling_factor);
+
 	BIND_ENUM_CONSTANT(NINE_PATCH_STRETCH);
 	BIND_ENUM_CONSTANT(NINE_PATCH_TILE);
 	BIND_ENUM_CONSTANT(NINE_PATCH_TILE_FIT);

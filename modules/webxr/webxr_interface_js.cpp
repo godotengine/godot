@@ -379,7 +379,7 @@ Size2 WebXRInterfaceJS::get_render_target_size() {
 	if (!initialized || !has_size) {
 		// As a temporary default (until WebXR is fully initialized), use the
 		// window size.
-		return DisplayServer::get_singleton()->window_get_size();
+		return DisplayServer::get_singleton()->window_get_size_in_pixels();
 	}
 
 	render_targetsize.width = (float)js_size[0];

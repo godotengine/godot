@@ -35,8 +35,7 @@
 #include "editor/themes/editor_color_map.h"
 #include "editor/themes/editor_icons.gen.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/resources/image_texture.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/svg_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED
@@ -56,26 +55,8 @@ void editor_configure_icons(bool p_dark_theme) {
 }
 
 // See also `generate_icon()` in `scene/theme/default_theme.cpp`.
-Ref<ImageTexture> editor_generate_icon(int p_index, float p_scale, float p_saturation, const HashMap<Color, Color> &p_convert_colors = HashMap<Color, Color>()) {
-	Ref<Image> img = memnew(Image);
-
-#ifdef MODULE_SVG_ENABLED
-	// Upsample icon generation only if the editor scale isn't an integer multiplier.
-	// Generating upsampled icons is slower, and the benefit is hardly visible
-	// with integer editor scales.
-	const bool upsample = !Math::is_equal_approx(Math::round(p_scale), p_scale);
-	Error err = ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], p_scale, upsample, p_convert_colors);
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Failed generating icon, unsupported or invalid SVG data in editor theme.");
-	if (p_saturation != 1.0) {
-		img->adjust_bcs(1.0, 1.0, p_saturation);
-	}
-#else
-	// If the SVG module is disabled, we can't really display the UI well, but at least we won't crash.
-	// 16 pixels is used as it's the most common base size for Godot icons.
-	img = Image::create_empty(16 * p_scale, 16 * p_scale, false, Image::FORMAT_RGBA8);
-#endif
-
-	return ImageTexture::create_from_image(img);
+Ref<SVGTexture> editor_generate_icon(int p_index, float p_scale, float p_saturation, const Dictionary &p_convert_colors = Dictionary()) {
+	return SVGTexture::create_from_string(editor_icons_sources[p_index], p_scale, p_saturation, p_convert_colors);
 }
 
 float get_gizmo_handle_scale(const String &p_gizmo_handle_name, float p_gizmo_handle_scale) {
@@ -109,7 +90,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	// And then some icons are completely excluded from the conversion.
 
 	// Standard color conversion map.
-	HashMap<Color, Color> color_conversion_map;
+	Dictionary color_conversion_map;
 	// Icons by default are set up for the dark theme, so if the theme is light,
 	// we apply the dark-to-light color conversion map.
 	if (!p_dark_theme) {
@@ -137,7 +118,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	// Accent color conversion map.
 	// It is used on some icons (checkbox, radio, toggle, etc.), regardless of the dark
 	// or light mode.
-	HashMap<Color, Color> accent_color_map;
+	Dictionary accent_color_map;
 	HashSet<StringName> accent_color_icons;
 
 	const Color accent_color = p_theme->get_color(SNAME("accent_color"), EditorStringName(Editor));
@@ -156,7 +137,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	// Generate icons.
 	{
 		for (int i = 0; i < editor_icons_count; i++) {
-			Ref<ImageTexture> icon;
+			Ref<SVGTexture> icon;
 
 			const String &editor_icon_name = editor_icons_names[i];
 			if (accent_color_icons.has(editor_icon_name)) {
@@ -184,7 +165,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 		const float scale = (float)p_thumb_size / 64.0 * EDSCALE;
 		for (int i = 0; i < editor_bg_thumbs_count; i++) {
 			const int index = editor_bg_thumbs_indices[i];
-			Ref<ImageTexture> icon;
+			Ref<SVGTexture> icon;
 
 			if (accent_color_icons.has(editor_icons_names[index])) {
 				icon = editor_generate_icon(index, scale, 1.0, accent_color_map);
@@ -207,7 +188,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 		const float scale = (float)p_thumb_size / 32.0 * EDSCALE;
 		for (int i = 0; i < editor_md_thumbs_count; i++) {
 			const int index = editor_md_thumbs_indices[i];
-			Ref<ImageTexture> icon;
+			Ref<SVGTexture> icon;
 
 			if (accent_color_icons.has(editor_icons_names[index])) {
 				icon = editor_generate_icon(index, scale, 1.0, accent_color_map);

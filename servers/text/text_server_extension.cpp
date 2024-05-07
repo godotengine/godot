@@ -128,8 +128,10 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_variation_coordinates, "font_rid", "variation_coordinates");
 	GDVIRTUAL_BIND(_font_get_variation_coordinates, "font_rid");
 
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_font_set_oversampling, "font_rid", "oversampling");
 	GDVIRTUAL_BIND(_font_get_oversampling, "font_rid");
+#endif
 
 	GDVIRTUAL_BIND(_font_get_size_cache_list, "font_rid");
 	GDVIRTUAL_BIND(_font_clear_size_cache, "font_rid");
@@ -218,11 +220,16 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_opentype_feature_overrides, "font_rid", "overrides");
 	GDVIRTUAL_BIND(_font_get_opentype_feature_overrides, "font_rid");
 
+	GDVIRTUAL_BIND(_font_get_oversampling_cache_capacity);
+	GDVIRTUAL_BIND(_font_set_oversampling_cache_capacity, "oversampling_capacity");
+
 	GDVIRTUAL_BIND(_font_supported_feature_list, "font_rid");
 	GDVIRTUAL_BIND(_font_supported_variation_list, "font_rid");
 
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_font_get_global_oversampling);
 	GDVIRTUAL_BIND(_font_set_global_oversampling, "oversampling");
+#endif
 
 	GDVIRTUAL_BIND(_get_hex_code_box_size, "size", "index");
 	GDVIRTUAL_BIND(_draw_hex_code_box, "canvas", "size", "pos", "index", "color");
@@ -689,15 +696,17 @@ Dictionary TextServerExtension::font_get_variation_coordinates(const RID &p_font
 	return ret;
 }
 
+#ifndef DISABLE_DEPRECATED
 void TextServerExtension::font_set_oversampling(const RID &p_font_rid, double p_oversampling) {
 	GDVIRTUAL_CALL(_font_set_oversampling, p_font_rid, p_oversampling);
 }
 
 double TextServerExtension::font_get_oversampling(const RID &p_font_rid) const {
-	double ret = 0;
+	double ret = 1.f;
 	GDVIRTUAL_CALL(_font_get_oversampling, p_font_rid, ret);
 	return ret;
 }
+#endif
 
 TypedArray<Vector2i> TextServerExtension::font_get_size_cache_list(const RID &p_font_rid) const {
 	TypedArray<Vector2i> ret;
@@ -1005,6 +1014,16 @@ Dictionary TextServerExtension::font_get_opentype_feature_overrides(const RID &p
 	return ret;
 }
 
+int TextServerExtension::font_get_oversampling_cache_capacity() const {
+	int ret = 16;
+	GDVIRTUAL_CALL(_font_get_oversampling_cache_capacity, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_oversampling_cache_capacity(int p_oversampling_capacity) {
+	GDVIRTUAL_CALL(_font_set_oversampling_cache_capacity, p_oversampling_capacity);
+}
+
 Dictionary TextServerExtension::font_supported_feature_list(const RID &p_font_rid) const {
 	Dictionary ret;
 	GDVIRTUAL_CALL(_font_supported_feature_list, p_font_rid, ret);
@@ -1017,6 +1036,7 @@ Dictionary TextServerExtension::font_supported_variation_list(const RID &p_font_
 	return ret;
 }
 
+#ifndef DISABLE_DEPRECATED
 double TextServerExtension::font_get_global_oversampling() const {
 	double ret = 0;
 	GDVIRTUAL_CALL(_font_get_global_oversampling, ret);
@@ -1026,6 +1046,7 @@ double TextServerExtension::font_get_global_oversampling() const {
 void TextServerExtension::font_set_global_oversampling(double p_oversampling) {
 	GDVIRTUAL_CALL(_font_set_global_oversampling, p_oversampling);
 }
+#endif
 
 Vector2 TextServerExtension::get_hex_code_box_size(int64_t p_size, int64_t p_index) const {
 	Vector2 ret;

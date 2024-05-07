@@ -44,6 +44,11 @@
 // Editor integration.
 
 int Window::root_layout_direction = 0;
+bool Window::use_dpi_scaling = true;
+
+void Window::set_use_dpi_scaling(bool p_enabled) {
+	use_dpi_scaling = p_enabled;
+}
 
 void Window::set_root_layout_direction(int p_root_dir) {
 	root_layout_direction = p_root_dir;
@@ -386,6 +391,26 @@ void Window::set_size(const Size2i &p_size) {
 Size2i Window::get_size() const {
 	ERR_READ_THREAD_GUARD_V(Size2i());
 	return size;
+}
+
+float Window::_get_scale_to_px() const {
+	if (get_embedder() == nullptr && DisplayServer::get_singleton()->get_screen_coordiantes_unit() == DisplayServer::SCREEN_COORDS_UNIT_DPI_ADJUSTED_PIXEL) {
+		if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+			// Window is visible, use window scale directly.
+			return MAX(1.0, DisplayServer::get_singleton()->window_get_scale(window_id));
+		} else {
+			// Window is hidden, use saved window rect to estimate scale.
+			return MAX(1.0, DisplayServer::get_singleton()->screen_get_scale(DisplayServer::get_singleton()->get_screen_from_rect(Rect2i(position, size))));
+		}
+	} else {
+		return 1.0;
+	}
+}
+
+Size2i Window::get_size_in_pixels() const {
+	ERR_READ_THREAD_GUARD_V(Size2i());
+
+	return Size2(size) * _get_scale_to_px();
 }
 
 void Window::reset_size() {
@@ -1054,13 +1079,24 @@ void Window::_update_window_size() {
 	_update_viewport_size();
 }
 
+float Window::get_dpi_scale() const {
+	float dpi_scale = 1.0;
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		dpi_scale = MAX(dpi_scale, DisplayServer::get_singleton()->window_get_scale(window_id));
+	}
+	return dpi_scale;
+}
+
 void Window::_update_viewport_size() {
 	//update the viewport part
 
+	Size2i px_size = size * _get_scale_to_px();
+	float dpi_scale = (use_dpi_scaling && window_id != DisplayServer::INVALID_WINDOW_ID) ? MAX(1.0, DisplayServer::get_singleton()->window_get_scale(window_id)) : 1.0;
+
 	Size2i final_size;
 	Size2i final_size_override;
-	Rect2i attach_to_screen_rect(Point2i(), size);
-	float font_oversampling = 1.0;
+	Rect2i attach_to_screen_rect(Point2i(), px_size);
+	float font_oversampling = dpi_scale;
 	window_transform = Transform2D();
 
 	if (content_scale_stretch == Window::CONTENT_SCALE_STRETCH_INTEGER) {
@@ -1075,12 +1111,12 @@ void Window::_update_viewport_size() {
 	}
 
 	if (content_scale_mode == CONTENT_SCALE_MODE_DISABLED || content_scale_size.x == 0 || content_scale_size.y == 0) {
-		font_oversampling = content_scale_factor;
-		final_size = size;
-		final_size_override = Size2(size) / content_scale_factor;
+		font_oversampling = content_scale_factor * dpi_scale;
+		final_size = px_size;
+		final_size_override = Size2(px_size) / dpi_scale / content_scale_factor;
 	} else {
 		//actual screen video mode
-		Size2 video_mode = size;
+		Size2 video_mode = px_size;
 		Size2 desired_res = content_scale_size;
 
 		Size2 viewport_size;
@@ -1187,13 +1223,8 @@ void Window::_update_viewport_size() {
 		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), Rect2i(), DisplayServer::INVALID_WINDOW_ID);
 	}
 
-	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
-		if (!use_font_oversampling) {
-			font_oversampling = 1.0;
-		}
-		if (TS->font_get_global_oversampling() != font_oversampling) {
-			TS->font_set_global_oversampling(font_oversampling);
-		}
+	if ((bool)GLOBAL_GET("gui/fonts/dynamic_fonts/use_oversampling")) {
+		set_oversampling_factor(font_oversampling);
 	}
 
 	notification(NOTIFICATION_WM_SIZE_CHANGED);
@@ -1481,20 +1512,6 @@ void Window::set_content_scale_factor(real_t p_factor) {
 real_t Window::get_content_scale_factor() const {
 	ERR_READ_THREAD_GUARD_V(0);
 	return content_scale_factor;
-}
-
-void Window::set_use_font_oversampling(bool p_oversampling) {
-	ERR_MAIN_THREAD_GUARD;
-	if (is_inside_tree() && window_id != DisplayServer::MAIN_WINDOW_ID) {
-		ERR_FAIL_MSG("Only the root window can set and use font oversampling.");
-	}
-	use_font_oversampling = p_oversampling;
-	_update_viewport_size();
-}
-
-bool Window::is_using_font_oversampling() const {
-	ERR_READ_THREAD_GUARD_V(false);
-	return use_font_oversampling;
 }
 
 DisplayServer::WindowID Window::get_window_id() const {
@@ -2675,7 +2692,10 @@ bool Window::is_auto_translating() const {
 
 Transform2D Window::get_final_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
-	return window_transform * stretch_transform * global_canvas_transform;
+	Vector2 scale = Vector2(1, 1) / _get_scale_to_px();
+	Transform2D scale_transform;
+	scale_transform.scale(scale);
+	return scale_transform * window_transform * stretch_transform * global_canvas_transform;
 }
 
 Transform2D Window::get_screen_transform_internal(bool p_absolute_position) const {
@@ -2766,7 +2786,10 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Window::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &Window::get_size);
+	ClassDB::bind_method(D_METHOD("get_size_in_pixels"), &Window::get_size_in_pixels);
 	ClassDB::bind_method(D_METHOD("reset_size"), &Window::reset_size);
+
+	ClassDB::bind_method(D_METHOD("get_dpi_scale"), &Window::get_dpi_scale);
 
 	ClassDB::bind_method(D_METHOD("get_position_with_decorations"), &Window::get_position_with_decorations);
 	ClassDB::bind_method(D_METHOD("get_size_with_decorations"), &Window::get_size_with_decorations);
@@ -2840,8 +2863,10 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_content_scale_factor", "factor"), &Window::set_content_scale_factor);
 	ClassDB::bind_method(D_METHOD("get_content_scale_factor"), &Window::get_content_scale_factor);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &Window::set_use_font_oversampling);
 	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &Window::is_using_font_oversampling);
+#endif
 
 	ClassDB::bind_method(D_METHOD("set_mouse_passthrough_polygon", "polygon"), &Window::set_mouse_passthrough_polygon);
 	ClassDB::bind_method(D_METHOD("get_mouse_passthrough_polygon"), &Window::get_mouse_passthrough_polygon);

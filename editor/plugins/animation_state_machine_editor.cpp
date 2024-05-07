@@ -190,8 +190,9 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 					edit_rect.position -= line_sb->get_offset();
 					edit_rect.size += line_sb->get_minimum_size();
 
-					name_edit_popup->set_position(state_machine_draw->get_screen_position() + edit_rect.position);
-					name_edit_popup->set_size(edit_rect.size);
+					Rect2i popup_rect = state_machine_draw->get_final_transform().xform(edit_rect);
+					name_edit_popup->set_position(popup_rect.position);
+					name_edit_popup->set_size(popup_rect.size);
 					name_edit->set_text(node_rects[i].node_name);
 					name_edit_popup->popup();
 					name_edit->grab_focus();
@@ -594,7 +595,7 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 	menu->add_separator();
 	menu->add_item(TTR("Load..."), MENU_LOAD_FILE);
 
-	menu->set_position(state_machine_draw->get_screen_transform().xform(p_position));
+	menu->set_position(state_machine_draw->get_final_transform().xform(p_position));
 	menu->popup();
 	add_node_pos = p_position / EDSCALE + state_machine->get_graph_offset();
 }

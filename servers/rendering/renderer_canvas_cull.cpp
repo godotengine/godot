@@ -1659,6 +1659,20 @@ void RendererCanvasCull::canvas_item_transform_physics_interpolation(RID p_item,
 	canvas_item->xform_curr = p_transform * canvas_item->xform_curr;
 }
 
+void RendererCanvasCull::canvas_item_set_oversampling_factor(RID p_item, float p_oversampling) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->oversampling_factor = p_oversampling;
+}
+
+float RendererCanvasCull::canvas_item_get_oversampling_factor(RID p_item) const {
+	const Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL_V(canvas_item, 1.f);
+
+	return canvas_item->oversampling_factor;
+}
+
 void RendererCanvasCull::canvas_item_set_canvas_group_mode(RID p_item, RS::CanvasGroupMode p_mode, float p_clear_margin, bool p_fit_empty, float p_fit_margin, bool p_blur_mipmaps) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);

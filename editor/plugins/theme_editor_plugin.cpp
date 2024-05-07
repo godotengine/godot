@@ -1199,8 +1199,9 @@ ThemeItemImportTree::ThemeItemImportTree() {
 
 void ThemeItemEditorDialog::ok_pressed() {
 	if (import_default_theme_items->has_selected_items() || import_editor_theme_items->has_selected_items() || import_other_theme_items->has_selected_items()) {
+		Size2i popup_size = get_final_transform().basis_xform(Vector2i(380 * EDSCALE, 120 * EDSCALE));
 		confirm_closing_dialog->set_text(TTR("Import Items tab has some items selected. Selection will be lost upon closing this window.\nClose anyway?"));
-		confirm_closing_dialog->popup_centered(Size2(380, 120) * EDSCALE);
+		confirm_closing_dialog->popup_centered(popup_size);
 		return;
 	}
 
@@ -1767,9 +1768,10 @@ void ThemeItemEditorDialog::_open_add_theme_item_dialog(int p_data_type) {
 			break; // Can't happen, but silences warning.
 	}
 
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(380 * EDSCALE, 110 * EDSCALE));
 	edit_theme_item_old_vb->hide();
 	theme_item_name->clear();
-	edit_theme_item_dialog->popup_centered(Size2(380, 110) * EDSCALE);
+	edit_theme_item_dialog->popup_centered(popup_size);
 	theme_item_name->grab_focus();
 }
 
@@ -1803,10 +1805,11 @@ void ThemeItemEditorDialog::_open_rename_theme_item_dialog(Theme::DataType p_dat
 			break; // Can't happen, but silences warning.
 	}
 
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(380 * EDSCALE, 140 * EDSCALE));
 	edit_theme_item_old_vb->show();
 	theme_item_old_name->set_text(p_item_name);
 	theme_item_name->set_text(p_item_name);
-	edit_theme_item_dialog->popup_centered(Size2(380, 140) * EDSCALE);
+	edit_theme_item_dialog->popup_centered(popup_size);
 	theme_item_name->grab_focus();
 }
 
@@ -2776,11 +2779,12 @@ void ThemeTypeEditor::_list_type_selected(int p_index) {
 }
 
 void ThemeTypeEditor::_add_type_button_cbk() {
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(560 * EDSCALE, 420 * EDSCALE));
 	add_type_mode = ADD_THEME_TYPE;
 	add_type_dialog->set_title(TTR("Add Item Type"));
 	add_type_dialog->set_ok_button_text(TTR("Add Type"));
 	add_type_dialog->set_include_own_types(false);
-	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
+	add_type_dialog->popup_centered(popup_size);
 }
 
 void ThemeTypeEditor::_add_default_type_items() {
@@ -3323,11 +3327,12 @@ void ThemeTypeEditor::_type_variation_changed(const String p_value) {
 }
 
 void ThemeTypeEditor::_add_type_variation_cbk() {
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(560 * EDSCALE, 420 * EDSCALE));
 	add_type_mode = ADD_VARIATION_BASE;
 	add_type_dialog->set_title(TTR("Set Variation Base Type"));
 	add_type_dialog->set_ok_button_text(TTR("Set Base Type"));
 	add_type_dialog->set_include_own_types(true);
-	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
+	add_type_dialog->popup_centered(popup_size);
 }
 
 void ThemeTypeEditor::_add_type_dialog_selected(const String p_type_name) {
@@ -3554,7 +3559,8 @@ void ThemeEditor::_theme_save_button_cbk(bool p_save_as) {
 }
 
 void ThemeEditor::_theme_edit_button_cbk() {
-	theme_edit_dialog->popup_centered(Size2(850, 700) * EDSCALE);
+	Size2i popup_size = get_final_transform().basis_xform(Vector2i(850 * EDSCALE, 700 * EDSCALE));
+	theme_edit_dialog->popup_centered(popup_size);
 }
 
 void ThemeEditor::_theme_close_button_cbk() {

@@ -1515,6 +1515,9 @@ public:
 	virtual void canvas_item_reset_physics_interpolation(RID p_item) = 0;
 	virtual void canvas_item_transform_physics_interpolation(RID p_item, const Transform2D &p_transform) = 0;
 
+	virtual void canvas_item_set_oversampling_factor(RID p_item, float p_oversampling) = 0;
+	virtual float canvas_item_get_oversampling_factor(RID p_item) const = 0;
+
 	/* CANVAS LIGHT */
 	virtual RID canvas_light_create() = 0;
 

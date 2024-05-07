@@ -1541,7 +1541,7 @@ void TextEdit::_notification(int p_what) {
 					caret_end = caret_start + post_text.length();
 				}
 
-				DisplayServer::get_singleton()->virtual_keyboard_show(get_text(), get_global_rect(), DisplayServer::KEYBOARD_TYPE_MULTILINE, -1, caret_start, caret_end);
+				DisplayServer::get_singleton()->virtual_keyboard_show(get_text(), get_screen_rect(), DisplayServer::KEYBOARD_TYPE_MULTILINE, -1, caret_start, caret_end);
 			}
 		} break;
 
@@ -1866,7 +1866,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				if (context_menu_enabled) {
 					_update_context_menu();
-					menu->set_position(get_screen_position() + mpos);
+					menu->set_position(get_final_transform().xform(mpos));
 					menu->reset_size();
 					menu->popup();
 					grab_focus();
@@ -2169,7 +2169,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (context_menu_enabled) {
 				_update_context_menu();
 				adjust_viewport_to_caret();
-				menu->set_position(get_screen_position() + get_caret_draw_pos());
+				menu->set_position(get_final_transform().xform(get_caret_draw_pos()));
 				menu->reset_size();
 				menu->popup();
 				menu->grab_focus();
@@ -2849,12 +2849,8 @@ void TextEdit::_update_ime_window_position() {
 		return;
 	}
 	DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-	Point2 pos = get_global_position() + get_caret_draw_pos();
-	if (get_window()->get_embedder()) {
-		pos += get_viewport()->get_popup_base_transform().get_origin();
-	}
 	// The window will move to the updated position the next time the IME is updated, not immediately.
-	DisplayServer::get_singleton()->window_set_ime_position(pos, get_viewport()->get_window_id());
+	DisplayServer::get_singleton()->window_set_ime_position(get_screen_transform().xform(get_caret_draw_pos()), get_viewport()->get_window_id());
 }
 
 void TextEdit::_update_ime_text() {

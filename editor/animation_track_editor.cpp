@@ -1417,7 +1417,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
-				panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+				panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), this, ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			}
 		} break;
 
@@ -2824,7 +2824,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				menu->reset_size();
 
-				Vector2 popup_pos = get_screen_position() + update_mode_rect.position + Vector2(0, update_mode_rect.size.height);
+				Vector2 popup_pos = get_final_transform().xform(update_mode_rect.position + Vector2(0, update_mode_rect.size.height));
 				menu->set_position(popup_pos);
 				menu->popup();
 				accept_event();
@@ -2870,7 +2870,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				menu->reset_size();
 
-				Vector2 popup_pos = get_screen_position() + interp_mode_rect.position + Vector2(0, interp_mode_rect.size.height);
+				Vector2 popup_pos = get_final_transform().xform(interp_mode_rect.position + Vector2(0, interp_mode_rect.size.height));
 				menu->set_position(popup_pos);
 				menu->popup();
 				accept_event();
@@ -2887,7 +2887,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->add_icon_item(get_editor_theme_icon(SNAME("InterpWrapLoop")), TTR("Wrap Loop Interp"), MENU_LOOP_WRAP);
 				menu->reset_size();
 
-				Vector2 popup_pos = get_screen_position() + loop_wrap_rect.position + Vector2(0, loop_wrap_rect.size.height);
+				Vector2 popup_pos = get_final_transform().xform(loop_wrap_rect.position + Vector2(0, loop_wrap_rect.size.height));
 				menu->set_position(popup_pos);
 				menu->popup();
 				accept_event();
@@ -2941,7 +2941,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				menu->reset_size();
 
-				menu->set_position(get_screen_position() + get_local_mouse_position());
+				menu->set_position(get_final_transform().xform(get_local_mouse_position()));
 				menu->popup();
 
 				insert_at_pos = offset + timeline->get_value();
@@ -2963,8 +2963,9 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		path->set_text(animation->track_get_path(track));
 		Vector2 theme_ofs = path->get_theme_stylebox(SNAME("normal"), SNAME("LineEdit"))->get_offset();
-		path_popup->set_position(get_screen_position() + path_rect.position - theme_ofs);
-		path_popup->set_size(path_rect.size);
+		Rect2i popup_rect = get_final_transform().xform(Rect2i(path_rect.position - theme_ofs, path_rect.size));
+		path_popup->set_position(popup_rect.position);
+		path_popup->set_size(popup_rect.size);
 		path_popup->popup();
 		path->grab_focus();
 		path->set_caret_column(path->get_text().length());
@@ -4839,9 +4840,10 @@ void AnimationTrackEditor::_notification(int p_what) {
 		}
 
 		case NOTIFICATION_ENTER_TREE: {
-			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), this, ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			[[fallthrough]];
 		}
+
 		case NOTIFICATION_THEME_CHANGED: {
 			zoom_icon->set_texture(get_editor_theme_icon(SNAME("Zoom")));
 			bezier_edit_icon->set_icon(get_editor_theme_icon(SNAME("EditBezier")));
@@ -6201,8 +6203,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				md["path"] = path;
 				it->set_metadata(0, md);
 			}
-
-			track_copy_dialog->popup_centered(Size2(350, 500) * EDSCALE);
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(350 * EDSCALE, 500 * EDSCALE));
+			track_copy_dialog->popup_centered(popup_size);
 		} break;
 		case EDIT_COPY_TRACKS_CONFIRM: {
 			track_clipboard.clear();
@@ -6286,7 +6288,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 		case EDIT_SCALE_SELECTION:
 		case EDIT_SCALE_FROM_CURSOR: {
-			scale_dialog->popup_centered(Size2(200, 100) * EDSCALE);
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(200 * EDSCALE, 100 * EDSCALE));
+			scale_dialog->popup_centered(popup_size);
 		} break;
 		case EDIT_SCALE_CONFIRM: {
 			if (selection.is_empty()) {
@@ -6452,7 +6455,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		} break;
 
 		case EDIT_EASE_SELECTION: {
-			ease_dialog->popup_centered(Size2(200, 100) * EDSCALE);
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(200 * EDSCALE, 100 * EDSCALE));
+			ease_dialog->popup_centered(popup_size);
 		} break;
 		case EDIT_EASE_CONFIRM: {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -6700,7 +6704,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		} break;
 
 		case EDIT_BAKE_ANIMATION: {
-			bake_dialog->popup_centered(Size2(200, 100) * EDSCALE);
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(200 * EDSCALE, 100 * EDSCALE));
+			bake_dialog->popup_centered(popup_size);
 		} break;
 		case EDIT_BAKE_ANIMATION_CONFIRM: {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -6817,7 +6822,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		} break;
 
 		case EDIT_OPTIMIZE_ANIMATION: {
-			optimize_dialog->popup_centered(Size2(250, 180) * EDSCALE);
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(250 * EDSCALE, 180 * EDSCALE));
+			optimize_dialog->popup_centered(popup_size);
 
 		} break;
 		case EDIT_OPTIMIZE_ANIMATION_CONFIRM: {
@@ -6830,7 +6836,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 		} break;
 		case EDIT_CLEAN_UP_ANIMATION: {
-			cleanup_dialog->popup_centered(Size2(300, 0) * EDSCALE);
+			Size2i popup_size = get_final_transform().basis_xform(Vector2i(300 * EDSCALE, 0));
+			cleanup_dialog->popup_centered(popup_size);
 
 		} break;
 		case EDIT_CLEAN_UP_ANIMATION_CONFIRM: {

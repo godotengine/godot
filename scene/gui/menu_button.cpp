@@ -85,7 +85,7 @@ void MenuButton::show_popup() {
 	rect.size.height = 0;
 	popup->set_size(rect.size);
 	if (is_layout_rtl()) {
-		rect.position.x += rect.size.width - popup->get_size().width;
+		rect.position.x += (rect.size.width - popup->get_size().width);
 	}
 	popup->set_position(rect.position);
 

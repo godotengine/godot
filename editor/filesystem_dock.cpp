@@ -102,7 +102,7 @@ bool FileSystemList::edit_selected() {
 		case ItemList::ICON_MODE_LEFT:
 			rect = get_item_rect(s, true);
 			ofs = Vector2(0, Math::floor((MAX(line_editor->get_minimum_size().height, rect.size.height) - rect.size.height) / 2));
-			popup_rect.position = get_screen_position() + rect.position - ofs;
+			popup_rect.position = rect.position - ofs;
 			popup_rect.size = rect.size;
 
 			// Adjust for icon position and size.
@@ -111,7 +111,7 @@ bool FileSystemList::edit_selected() {
 			break;
 		case ItemList::ICON_MODE_TOP:
 			rect = get_item_rect(s, false);
-			popup_rect.position = get_screen_position() + rect.position;
+			popup_rect.position = rect.position;
 			popup_rect.size = rect.size;
 
 			// Adjust for icon position and size.
@@ -119,6 +119,8 @@ bool FileSystemList::edit_selected() {
 			popup_rect.position.y += icon_size.y;
 			break;
 	}
+
+	popup_rect = get_final_transform().xform(popup_rect);
 
 	popup_editor->set_position(popup_rect.position);
 	popup_editor->set_size(popup_rect.size);
@@ -2473,7 +2475,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					duplicate_dialog_text->set_text(name);
 					duplicate_dialog_text->select(0, name.length());
 				}
-				duplicate_dialog->popup_centered(Size2(250, 80) * EDSCALE);
+				Size2i popup_size = get_final_transform().basis_xform(Vector2i(250 * EDSCALE, 80 * EDSCALE));
+				duplicate_dialog->popup_centered(popup_size);
 				duplicate_dialog_text->grab_focus();
 			}
 		} break;
@@ -3326,7 +3329,7 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button
 	if (!paths.is_empty()) {
 		tree_popup->reset_size();
 		_file_and_folders_fill_popup(tree_popup, paths);
-		tree_popup->set_position(tree->get_screen_position() + p_pos);
+		tree_popup->set_position(tree->get_final_transform().xform(p_pos));
 		tree_popup->reset_size();
 		tree_popup->popup();
 	}
@@ -3352,7 +3355,7 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
 #endif
 
-	tree_popup->set_position(tree->get_screen_position() + p_pos);
+	tree_popup->set_position(tree->get_final_transform().xform(p_pos));
 	tree_popup->reset_size();
 	tree_popup->popup();
 }
@@ -3384,7 +3387,7 @@ void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, M
 	if (!paths.is_empty()) {
 		file_list_popup->clear();
 		_file_and_folders_fill_popup(file_list_popup, paths, searched_tokens.is_empty());
-		file_list_popup->set_position(files->get_screen_position() + p_pos);
+		file_list_popup->set_position(files->get_final_transform().xform(p_pos));
 		file_list_popup->reset_size();
 		file_list_popup->popup();
 	}
@@ -3414,7 +3417,7 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
 	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_OPEN_IN_TERMINAL);
 
-	file_list_popup->set_position(files->get_screen_position() + p_pos);
+	file_list_popup->set_position(files->get_final_transform().xform(p_pos));
 	file_list_popup->reset_size();
 	file_list_popup->popup();
 }

@@ -155,8 +155,9 @@ void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
 // Main layout.
 
 void ProjectManager::_update_size_limits() {
+	//TODO XXXX v to s
 	const Size2 minimum_size = Size2(680, 450) * EDSCALE;
-	const Size2 default_size = Size2(1024, 600) * EDSCALE;
+	const Size2 default_size = Size2(1152, 648) * EDSCALE;
 
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
 	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
@@ -1108,6 +1109,9 @@ ProjectManager::ProjectManager() {
 		Control::set_root_layout_direction(pm_root_dir);
 		Window::set_root_layout_direction(pm_root_dir);
 
+		bool pm_dpi_scaling = EDITOR_GET("interface/editor/ui_dpi_scaling");
+		Window::set_use_dpi_scaling(pm_dpi_scaling);
+
 		EditorThemeManager::initialize();
 		theme = EditorThemeManager::generate_theme();
 		DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
@@ -1116,8 +1120,6 @@ ProjectManager::ProjectManager() {
 
 		_build_icon_type_cache(theme);
 	}
-
-	// Project manager layout.
 
 	background_panel = memnew(Panel);
 	add_child(background_panel);

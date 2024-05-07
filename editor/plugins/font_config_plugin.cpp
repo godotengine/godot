@@ -191,7 +191,7 @@ void EditorPropertyFontMetaOverride::_remove(Object *p_button, const String &p_k
 void EditorPropertyFontMetaOverride::_add_menu() {
 	if (script_editor) {
 		Size2 size = get_size();
-		menu->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
+		menu->set_position(get_final_transform().xform(Vector2(0, size.height * get_global_transform().get_scale().y)));
 		menu->reset_size();
 		menu->popup();
 	} else {
@@ -578,7 +578,7 @@ void EditorPropertyOTFeatures::_remove(Object *p_button, int p_key) {
 
 void EditorPropertyOTFeatures::_add_menu() {
 	Size2 size = get_size();
-	menu->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
+	menu->set_position(get_final_transform().xform(Vector2(0, size.height * get_global_transform().get_scale().y)));
 	menu->reset_size();
 	menu->popup();
 }
@@ -979,7 +979,7 @@ bool EditorInspectorPluginFontPreview::parse_property(Object *p_object, const Va
 
 void EditorPropertyFontNamesArray::_add_element() {
 	Size2 size = get_size();
-	menu->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
+	menu->set_position(get_final_transform().xform(Vector2(0, size.height * get_global_transform().get_scale().y)));
 	menu->reset_size();
 	menu->popup();
 }

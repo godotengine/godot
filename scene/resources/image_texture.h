@@ -44,7 +44,6 @@ class ImageTexture : public Texture2D {
 	bool mipmaps = false;
 	int w = 0;
 	int h = 0;
-	Size2 size_override;
 	mutable Ref<BitMap> alpha_cache;
 	bool image_stored = false;
 

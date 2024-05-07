@@ -197,7 +197,6 @@ class FontFile : public Font {
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
-	real_t oversampling = 0.f;
 
 #ifndef DISABLE_DEPRECATED
 	real_t bmp_height = 0.0;
@@ -280,8 +279,10 @@ public:
 	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
 	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
 
-	virtual void set_oversampling(real_t p_oversampling);
-	virtual real_t get_oversampling() const;
+#ifndef DISABLE_DEPRECATED
+	virtual void set_oversampling(real_t p_oversampling){};
+	virtual real_t get_oversampling() const { return 1.f; };
+#endif
 
 	// Cache.
 	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const override;
@@ -480,7 +481,6 @@ class SystemFont : public Font {
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
-	real_t oversampling = 0.f;
 	bool msdf = false;
 	int msdf_pixel_range = 16;
 	int msdf_size = 48;
@@ -517,8 +517,10 @@ public:
 	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
 	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
 
-	virtual void set_oversampling(real_t p_oversampling);
-	virtual real_t get_oversampling() const;
+#ifndef DISABLE_DEPRECATED
+	virtual void set_oversampling(real_t p_oversampling){};
+	virtual real_t get_oversampling() const { return 1.f; };
+#endif
 
 	virtual void set_multichannel_signed_distance_field(bool p_msdf);
 	virtual bool is_multichannel_signed_distance_field() const;

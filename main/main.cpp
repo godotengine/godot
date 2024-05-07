@@ -3736,9 +3736,6 @@ int Main::start() {
 			bool snap_controls = GLOBAL_GET("gui/common/snap_controls_to_pixels");
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
 
-			bool font_oversampling = GLOBAL_GET("gui/fonts/dynamic_fonts/use_oversampling");
-			sml->get_root()->set_use_font_oversampling(font_oversampling);
-
 			int texture_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
 			int texture_repeat = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_repeat");
 			sml->get_root()->set_default_canvas_item_texture_filter(
@@ -3884,7 +3881,7 @@ int Main::start() {
 	}
 
 	if (movie_writer) {
-		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
+		movie_writer->begin(DisplayServer::get_singleton()->window_get_size_in_pixels(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
 	}
 
 	if (minimum_time_msec) {
