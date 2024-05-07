@@ -1283,6 +1283,8 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 					if (animation_slices.size() > 0) {
 						_create_slices(ap, anim, animation_slices, true);
 					}
+
+					_fill_animation_setting_defaults(anim_settings);
 				}
 
 				anim->set_loop_mode(static_cast<Animation::LoopMode>((int)anim_settings["settings/loop_mode"]));
@@ -1301,6 +1303,27 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 	}
 
 	return p_node;
+}
+
+void ResourceImporterScene::_fill_animation_setting_defaults(Dictionary &anim_settings) {
+	HashMap<StringName, Variant> vis_options;
+	Array keys = anim_settings.keys();
+	for (int i = 0; i < keys.size(); i++) {
+		String key = keys[i];
+		vis_options.insert(key, anim_settings[key]);
+	}
+
+	List<ImportOption> iopts;
+	for (const ImportOption &F : iopts) {
+		if (anim_settings.has(F.option.name)) {
+			continue;
+		}
+
+		const bool is_visible = get_internal_option_visibility(INTERNAL_IMPORT_CATEGORY_ANIMATION, F.option.name, vis_options);
+		if (is_visible) {
+			anim_settings[F.option.name] = F.default_value;
+		}
+	}
 }
 
 Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale) {
@@ -1704,6 +1727,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 				if (p_animation_data.has(name)) {
 					Ref<Animation> anim = ap->get_animation(name);
 					Dictionary anim_settings = p_animation_data[name];
+					_fill_animation_setting_defaults(anim_settings);
 
 					for (int i = 0; i < post_importer_plugins.size(); i++) {
 						post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION, p_root, p_node, anim, anim_settings);
