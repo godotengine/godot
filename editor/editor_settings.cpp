@@ -1539,6 +1539,19 @@ String EditorSettings::get_editor_layouts_config() const {
 float EditorSettings::get_auto_display_scale() const {
 #ifdef LINUXBSD_ENABLED
 	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
+		float main_window_scale = DisplayServer::get_singleton()->screen_get_scale(DisplayServer::SCREEN_OF_MAIN_WINDOW);
+
+		if (DisplayServer::get_singleton()->get_screen_count() == 1 || Math::fract(main_window_scale) != 0) {
+			// If we have a single screen or the screen of the window is fractional, all
+			// bets are off. At this point, let's just return the current's window scale,
+			// which is special-cased to the scale of `SCREEN_OF_MAIN_WINDOW`.
+			return main_window_scale;
+		}
+
+		// If the above branch didn't fire, fractional scaling isn't going to work
+		// properly anyways (we're need the ability to change the UI scale at runtime).
+		// At this point it's more convenient to "supersample" like we do with other
+		// platforms, hoping that the user is only using integer-scaled screens.
 		return DisplayServer::get_singleton()->screen_get_max_scale();
 	}
 #endif
