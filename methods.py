@@ -554,13 +554,15 @@ def split_lib(self, libname, src_list=None, env_lib=None):
     # As SCons doesn't give us much control over how inserting libs in LIBS
     # impacts the linker call, we need to hack our way into the linking commands
     # LINKCOM and SHLINKCOM to set those flags.
+    linkcom = str(env["LINKCOM"])
+    shlinkcom = str(env["SHLINKCOM"])
 
-    if "-Wl,--start-group" in env["LINKCOM"] and "-Wl,--start-group" in env["SHLINKCOM"]:
+    if "-Wl,--start-group" in linkcom and "-Wl,--start-group" in shlinkcom:
         # Already added by a previous call, skip.
         return
 
-    env["LINKCOM"] = str(env["LINKCOM"]).replace("$_LIBFLAGS", "-Wl,--start-group $_LIBFLAGS -Wl,--end-group")
-    env["SHLINKCOM"] = str(env["LINKCOM"]).replace("$_LIBFLAGS", "-Wl,--start-group $_LIBFLAGS -Wl,--end-group")
+    env["LINKCOM"] = linkcom.replace("$_LIBFLAGS", "-Wl,--start-group $_LIBFLAGS -Wl,--end-group")
+    env["SHLINKCOM"] = shlinkcom.replace("$_LIBFLAGS", "-Wl,--start-group $_LIBFLAGS -Wl,--end-group")
 
 
 def save_active_platforms(apnames, ap):
