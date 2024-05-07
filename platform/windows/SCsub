@@ -3,8 +3,6 @@
 Import("env")
 
 import os
-from pathlib import Path
-import platform_windows_builders
 
 sources = []
 
@@ -34,18 +32,6 @@ common_win_wrap = [
 ]
 
 
-def arrange_program_clean(prog):
-    """
-    Given an SCons program, arrange for output files SCons doesn't know about
-    to be cleaned when SCons is called with --clean
-    """
-    extensions_to_clean = [".ilk", ".exp", ".pdb", ".lib"]
-    for program in prog:
-        executable_stem = Path(program.name).stem
-        extra_files_to_clean = [f"#bin/{executable_stem}{extension}" for extension in extensions_to_clean]
-        Clean(prog, extra_files_to_clean)
-
-
 res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
@@ -54,7 +40,7 @@ env.add_source_files(sources, common_win)
 sources += res_obj
 
 prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
-arrange_program_clean(prog)
+env.arrange_program_clean(prog)
 
 # Build console wrapper app.
 if env["windows_subsystem"] == "gui":
@@ -71,7 +57,7 @@ if env["windows_subsystem"] == "gui":
         env_wrap.Append(LIBS=["version"])
 
     prog_wrap = env_wrap.add_program("#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"])
-    arrange_program_clean(prog_wrap)
+    env.arrange_program_clean(prog_wrap)
     env_wrap.Depends(prog_wrap, prog)
     sources += common_win_wrap + res_wrap_obj
 
@@ -138,10 +124,24 @@ if env["d3d12"]:
             Copy("$TARGET", "$SOURCE"),
         )
 
+
+def make_debug_mingw(target, source, env):
+    src = str(target[0])
+    dst = f"{src[:-4]}.debugsymbols"
+    objcopy = env["OBJCOPY"]
+    strip = env["STRIP"]
+
+    # Force separate debug symbols if executable size is larger than 1.9 GB.
+    if env["separate_debug_symbols"] or os.stat(src).st_size >= 2040109465:
+        os.system(f"{objcopy} --only-keep-debug {src} {dst}")
+        os.system(f"{strip} --strip-debug --strip-unneeded {src}")
+        os.system(f"{objcopy} --add-gnu-debuglink={dst} {src}")
+
+
 if not os.getenv("VCINSTALLDIR"):
     if env["debug_symbols"]:
-        env.AddPostAction(prog, env.Run(platform_windows_builders.make_debug_mingw))
+        env.AddPostAction(prog, env.Run(make_debug_mingw))
         if env["windows_subsystem"] == "gui":
-            env.AddPostAction(prog_wrap, env.Run(platform_windows_builders.make_debug_mingw))
+            env.AddPostAction(prog_wrap, env.Run(make_debug_mingw))
 
 env.platform_sources += sources

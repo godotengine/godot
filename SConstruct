@@ -153,6 +153,7 @@ env.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
 env.__class__.add_shared_library = methods.add_shared_library
 env.__class__.add_library = methods.add_library
 env.__class__.add_program = methods.add_program
+env.__class__.arrange_program_clean = methods.arrange_program_clean
 env.__class__.CommandNoCache = methods.CommandNoCache
 env.__class__.Run = methods.Run
 env.__class__.disable_warnings = methods.disable_warnings
