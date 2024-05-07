@@ -1101,6 +1101,42 @@ bool VisualShader::is_nodes_connected_relatively(const Graph *p_graph, int p_nod
 	return result;
 }
 
+bool VisualShader::_check_reroute_subgraph(Type p_type, int p_target_port_type, int p_reroute_node, List<int> *r_visited_reroute_nodes) const {
+	const Graph *g = &graph[p_type];
+
+	// BFS to check whether connecting to the given subgraph (rooted at p_reroute_node) is valid.
+	List<int> queue;
+	queue.push_back(p_reroute_node);
+	if (r_visited_reroute_nodes != nullptr) {
+		r_visited_reroute_nodes->push_back(p_reroute_node);
+	}
+	while (!queue.is_empty()) {
+		int current_node_id = queue.front()->get();
+		VisualShader::Node current_node = g->nodes[current_node_id];
+		queue.pop_front();
+		for (const int &next_node_id : current_node.next_connected_nodes) {
+			Ref<VisualShaderNodeReroute> next_vsnode = g->nodes[next_node_id].node;
+			if (next_vsnode.is_valid()) {
+				queue.push_back(next_node_id);
+				if (r_visited_reroute_nodes != nullptr) {
+					r_visited_reroute_nodes->push_back(next_node_id);
+				}
+				continue;
+			}
+			// Check whether all ports connected with the reroute node are compatible.
+			for (const Connection &c : g->connections) {
+				VisualShaderNode::PortType to_port_type = g->nodes[next_node_id].node->get_input_port_type(c.to_port);
+				if (c.from_node == current_node_id &&
+						c.to_node == next_node_id &&
+						!is_port_types_compatible(p_target_port_type, to_port_type)) {
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
 bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, false);
 	const Graph *g = &graph[p_type];
@@ -1128,7 +1164,12 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 	VisualShaderNode::PortType from_port_type = g->nodes[p_from_node].node->get_output_port_type(p_from_port);
 	VisualShaderNode::PortType to_port_type = g->nodes[p_to_node].node->get_input_port_type(p_to_port);
 
-	if (!is_port_types_compatible(from_port_type, to_port_type)) {
+	Ref<VisualShaderNodeReroute> to_node_reroute = g->nodes[p_to_node].node;
+	if (to_node_reroute.is_valid()) {
+		if (!_check_reroute_subgraph(p_type, from_port_type, p_to_node)) {
+			return false;
+		}
+	} else if (!is_port_types_compatible(from_port_type, to_port_type)) {
 		return false;
 	}
 
@@ -1141,7 +1182,6 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 	if (is_nodes_connected_relatively(g, p_from_node, p_to_node)) {
 		return false;
 	}
-
 	return true;
 }
 
@@ -1177,6 +1217,28 @@ void VisualShader::detach_node_from_frame(Type p_type, int p_node) {
 	}
 
 	g->nodes[p_node].node->set_frame(-1);
+}
+
+String VisualShader::get_reroute_parameter_name(Type p_type, int p_reroute_node) const {
+	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, "");
+	const Graph *g = &graph[p_type];
+
+	ERR_FAIL_COND_V(!g->nodes.has(p_reroute_node), "");
+
+	const VisualShader::Node *node = &g->nodes[p_reroute_node];
+	while (node->prev_connected_nodes.size() > 0) {
+		int connected_node_id = node->prev_connected_nodes[0];
+		node = &g->nodes[connected_node_id];
+		Ref<VisualShaderNodeParameter> parameter_node = node->node;
+		if (parameter_node.is_valid() && parameter_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
+			return parameter_node->get_parameter_name();
+		}
+		Ref<VisualShaderNodeInput> input_node = node->node;
+		if (input_node.is_valid() && input_node->get_output_port_type(0) == VisualShaderNode::PORT_TYPE_SAMPLER) {
+			return input_node->get_input_real_name();
+		}
+	}
+	return "";
 }
 
 void VisualShader::connect_nodes_forced(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
@@ -1217,10 +1279,30 @@ Error VisualShader::connect_nodes(Type p_type, int p_from_node, int p_from_port,
 	ERR_FAIL_COND_V(!g->nodes.has(p_to_node), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_to_port, g->nodes[p_to_node].node->get_input_port_count(), ERR_INVALID_PARAMETER);
 
+	Ref<VisualShaderNodeReroute> from_node_reroute = g->nodes[p_from_node].node;
+	Ref<VisualShaderNodeReroute> to_node_reroute = g->nodes[p_to_node].node;
+
+	// Allow connection with incompatible port types only if the reroute node isn't connected to anything.
 	VisualShaderNode::PortType from_port_type = g->nodes[p_from_node].node->get_output_port_type(p_from_port);
 	VisualShaderNode::PortType to_port_type = g->nodes[p_to_node].node->get_input_port_type(p_to_port);
+	bool port_types_are_compatible = is_port_types_compatible(from_port_type, to_port_type);
 
-	ERR_FAIL_COND_V_MSG(!is_port_types_compatible(from_port_type, to_port_type), ERR_INVALID_PARAMETER, "Incompatible port types (scalar/vec/bool) with transform.");
+	if (to_node_reroute.is_valid()) {
+		List<int> visited_reroute_nodes;
+		port_types_are_compatible = _check_reroute_subgraph(p_type, from_port_type, p_to_node, &visited_reroute_nodes);
+		if (port_types_are_compatible) {
+			// Set the port type of all reroute nodes.
+			for (const int &E : visited_reroute_nodes) {
+				Ref<VisualShaderNodeReroute> reroute_node = g->nodes[E].node;
+				reroute_node->_set_port_type(from_port_type);
+			}
+		}
+	} else if (from_node_reroute.is_valid() && !from_node_reroute->is_input_port_connected(0)) {
+		from_node_reroute->_set_port_type(to_port_type);
+		port_types_are_compatible = true;
+	}
+
+	ERR_FAIL_COND_V_MSG(!port_types_are_compatible, ERR_INVALID_PARAMETER, "Incompatible port types.");
 
 	for (const Connection &E : g->connections) {
 		if (E.from_node == p_from_node && E.from_port == p_from_port && E.to_node == p_to_node && E.to_port == p_to_port) {
@@ -1904,12 +1986,18 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 
 			if (in_type == VisualShaderNode::PORT_TYPE_SAMPLER && out_type == VisualShaderNode::PORT_TYPE_SAMPLER) {
 				VisualShaderNode *ptr = const_cast<VisualShaderNode *>(graph[type].nodes[from_node].node.ptr());
+				// FIXME: This needs to be refactored at some point.
 				if (ptr->has_method("get_input_real_name")) {
 					inputs[i] = ptr->call("get_input_real_name");
 				} else if (ptr->has_method("get_parameter_name")) {
 					inputs[i] = ptr->call("get_parameter_name");
 				} else {
-					inputs[i] = "";
+					Ref<VisualShaderNodeReroute> reroute = graph[type].nodes[from_node].node;
+					if (reroute.is_valid()) {
+						inputs[i] = get_reroute_parameter_name(type, from_node);
+					} else {
+						inputs[i] = "";
+					}
 				}
 			} else if (in_type == out_type) {
 				inputs[i] = src_var;
