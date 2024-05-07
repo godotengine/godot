@@ -401,24 +401,24 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		bool smooth = false;
 
 		if (i < len - 1) {
-			Vector2 pointout = xform.xform(curve->get_point_position(i) + curve->get_point_out(i));
-			if (point != pointout) {
+			Vector2 point_out = xform.xform(curve->get_point_position(i) + curve->get_point_out(i));
+			if (point != point_out) {
 				smooth = true;
 				// Draw the line with a dark and light color to be visible on all backgrounds
-				vpc->draw_line(point, pointout, Color(0, 0, 0, 0.5), Math::round(EDSCALE));
-				vpc->draw_line(point, pointout, Color(1, 1, 1, 0.5), Math::round(EDSCALE));
-				vpc->draw_texture_rect(curve_handle, Rect2(pointout - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
+				vpc->draw_line(point, point_out, Color(0, 0, 0, 0.5), Math::round(EDSCALE));
+				vpc->draw_line(point, point_out, Color(1, 1, 1, 0.5), Math::round(EDSCALE));
+				vpc->draw_texture_rect(curve_handle, Rect2(point_out - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
 			}
 		}
 
 		if (i > 0) {
-			Vector2 pointin = xform.xform(curve->get_point_position(i) + curve->get_point_in(i));
-			if (point != pointin) {
+			Vector2 point_in = xform.xform(curve->get_point_position(i) + curve->get_point_in(i));
+			if (point != point_in) {
 				smooth = true;
 				// Draw the line with a dark and light color to be visible on all backgrounds
-				vpc->draw_line(point, pointin, Color(0, 0, 0, 0.5), Math::round(EDSCALE));
-				vpc->draw_line(point, pointin, Color(1, 1, 1, 0.5), Math::round(EDSCALE));
-				vpc->draw_texture_rect(curve_handle, Rect2(pointin - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
+				vpc->draw_line(point, point_in, Color(0, 0, 0, 0.5), Math::round(EDSCALE));
+				vpc->draw_line(point, point_in, Color(1, 1, 1, 0.5), Math::round(EDSCALE));
+				vpc->draw_texture_rect(curve_handle, Rect2(point_in - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
 			}
 		}
 

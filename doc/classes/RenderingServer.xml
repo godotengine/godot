@@ -634,7 +634,7 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Transforms both the current and previous stored transform for a canvas item.
-				This allows transforming a canvas item without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilising a shifting origin.
+				This allows transforming a canvas item without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilizing a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_light_attach_to_canvas">
@@ -730,7 +730,7 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Transforms both the current and previous stored transform for a light occluder.
-				This allows transforming an occluder without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilising a shifting origin.
+				This allows transforming an occluder without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilizing a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_light_reset_physics_interpolation">
@@ -901,7 +901,7 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Transforms both the current and previous stored transform for a canvas light.
-				This allows transforming a light without creating a "glitch" in the interpolation, which is is particularly useful for large worlds utilising a shifting origin.
+				This allows transforming a light without creating a "glitch" in the interpolation, which is is particularly useful for large worlds utilizing a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_create">
