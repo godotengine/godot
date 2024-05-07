@@ -142,6 +142,99 @@ inline void __swap_tmpl(T &x, T &y) {
 
 /* Functions to handle powers of 2 and shifting. */
 
+#if defined(_MSC_VER)
+#include <intrin.h>
+
+static _FORCE_INLINE_ unsigned int __clz_32(unsigned int value) {
+	unsigned long num = 0;
+	_BitScanReverse(&num, value);
+	return 31 - num;
+}
+
+static _FORCE_INLINE_ unsigned int __clz_64(unsigned long value) {
+	unsigned long num = 0;
+	_BitScanReverse64(&num, value);
+	return 63 - num;
+}
+
+static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
+	if (x == 0) {
+		return 0;
+	}
+	return 0x80000000 >> __clz_32((x << 1) - 1);
+}
+
+static _FORCE_INLINE_ unsigned int previous_power_of_2(unsigned int x) {
+	if (x == 0) {
+		return 0;
+	}
+	return 0x80000000 >> __clz_32(x);
+}
+
+static _FORCE_INLINE_ unsigned int next_power_of_2_64(unsigned long x) {
+	if (x == 0) {
+		return 0;
+	}
+	return 0x8000000000000000 >> __clz_64((x << 1) - 1);
+}
+
+static _FORCE_INLINE_ int get_shift_from_power_of_2(unsigned int p_bits) {
+	if (p_bits && !(p_bits & (p_bits - 1))) {
+		return 31 - __clz_32(p_bits);
+	}
+	return -1;
+}
+
+static _FORCE_INLINE_ unsigned int nearest_shift(unsigned int p_number) {
+	if (p_number == 0) {
+		return 0;
+	}
+
+	int leading_zeros = __clz_32(p_number);
+	return 32 - leading_zeros;
+}
+
+#elif defined(__GNUC__)
+
+static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
+	if (x == 0) {
+		return 0;
+	}
+	return 0x80000000 >> __builtin_clz((x << 1) - 1);
+}
+
+static _FORCE_INLINE_ unsigned int next_power_of_2_64(unsigned long x) {
+	if (x == 0) {
+		return 0;
+	}
+	return 0x8000000000000000 >> __builtin_clzl((x << 1) - 1);
+}
+
+static _FORCE_INLINE_ unsigned int previous_power_of_2(unsigned int x) {
+	if (x == 0) {
+		return 0;
+	}
+	return 0x80000000 >> __builtin_clz(x);
+}
+
+static _FORCE_INLINE_ int get_shift_from_power_of_2(unsigned int p_bits) {
+	if (p_bits && !(p_bits & (p_bits - 1))) {
+		return 31 - __builtin_clz(p_bits);
+	}
+	return -1;
+}
+
+static _FORCE_INLINE_ unsigned int nearest_shift(unsigned int p_number) {
+	if (p_number == 0) {
+		return 0;
+	}
+
+	int leading_zeros = __builtin_clz(p_number);
+	return 32 - leading_zeros;
+}
+
+#else
+
 // Function to find the next power of 2 to an integer.
 static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
 	if (x == 0) {
@@ -168,11 +261,20 @@ static _FORCE_INLINE_ unsigned int previous_power_of_2(unsigned int x) {
 	return x - (x >> 1);
 }
 
-// Function to find the closest power of 2 to an integer.
-static _FORCE_INLINE_ unsigned int closest_power_of_2(unsigned int x) {
-	unsigned int nx = next_power_of_2(x);
-	unsigned int px = previous_power_of_2(x);
-	return (nx - x) > (x - px) ? px : nx;
+static _FORCE_INLINE_ unsigned int next_power_of_2_64(unsigned long x) {
+	if (x == 0) {
+		return 0;
+	}
+
+	--x;
+	x |= x >> 1;
+	x |= x >> 2;
+	x |= x >> 4;
+	x |= x >> 8;
+	x |= x >> 16;
+	x |= x >> 32;
+
+	return ++x;
 }
 
 // Get a shift value from a power of 2.
@@ -184,6 +286,26 @@ static inline int get_shift_from_power_of_2(unsigned int p_bits) {
 	}
 
 	return -1;
+}
+
+// Function to find the nearest (bigger) power of 2 to an integer.
+static inline unsigned int nearest_shift(unsigned int p_number) {
+	for (int i = 30; i >= 0; i--) {
+		if (p_number & (1 << i)) {
+			return i + 1;
+		}
+	}
+
+	return 0;
+}
+
+#endif
+
+// Function to find the closest power of 2 to an integer.
+static _FORCE_INLINE_ unsigned int closest_power_of_2(unsigned int x) {
+	unsigned int nx = next_power_of_2(x);
+	unsigned int px = previous_power_of_2(x);
+	return (nx - x) > (x - px) ? px : nx;
 }
 
 template <typename T>
@@ -202,17 +324,6 @@ static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
 	}
 
 	return ++x;
-}
-
-// Function to find the nearest (bigger) power of 2 to an integer.
-static inline unsigned int nearest_shift(unsigned int p_number) {
-	for (int i = 30; i >= 0; i--) {
-		if (p_number & (1 << i)) {
-			return i + 1;
-		}
-	}
-
-	return 0;
 }
 
 // constexpr function to find the floored log2 of a number

@@ -72,21 +72,11 @@ public:
 private:
 	// Function to find the next power of 2 to an integer.
 	static _FORCE_INLINE_ USize next_po2(USize x) {
-		if (x == 0) {
-			return 0;
-		}
-
-		--x;
-		x |= x >> 1;
-		x |= x >> 2;
-		x |= x >> 4;
-		x |= x >> 8;
-		x |= x >> 16;
 		if (sizeof(USize) == 8) {
-			x |= x >> 32;
+			return next_power_of_2_64(x);
 		}
 
-		return ++x;
+		return next_power_of_2(x);
 	}
 
 	// Alignment:  ↓ max_align_t           ↓ USize          ↓ max_align_t
