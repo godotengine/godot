@@ -426,6 +426,9 @@ msgstr "Temporizadores"
 msgid "Incremental Search Max Interval Msec"
 msgstr "Máximo intervalo de busca incremental Msec"
 
+msgid "Tooltip Delay (sec)"
+msgstr "Delay do Tooltip (seg)"
+
 msgid "Common"
 msgstr "Comum"
 
@@ -461,6 +464,9 @@ msgstr "Tamanho da região de upload de Textura (PX)"
 
 msgid "Pipeline Cache"
 msgstr "Armazenamento Temporário"
+
+msgid "Enable"
+msgstr "Habilitar"
 
 msgid "Save Chunk Size (MB)"
 msgstr "Tamanho (MB) dos Blocos Salvos"
@@ -822,9 +828,6 @@ msgstr "Valor"
 msgid "Arg Count"
 msgstr "Quantia de argumentos"
 
-msgid "Args"
-msgstr "Argumentos"
-
 msgid "Type"
 msgstr "Tipo"
 
@@ -911,6 +914,12 @@ msgstr "Modo Sem Distrações"
 
 msgid "Movie Maker Enabled"
 msgstr "Criador de filmes Ativado"
+
+msgid "Theme"
+msgstr "Tema"
+
+msgid "Line Spacing"
+msgstr "Espaçamento de Linha"
 
 msgid "Base Type"
 msgstr "Tipo Base"
@@ -1056,9 +1065,6 @@ msgstr "Modo de Seletor de Cores Padrão"
 msgid "Default Color Picker Shape"
 msgstr "Formato Padrão do Seletor de Cores"
 
-msgid "Theme"
-msgstr "Tema"
-
 msgid "Preset"
 msgstr "Predefinição"
 
@@ -1121,9 +1127,6 @@ msgstr "Botão de Exibir Script"
 
 msgid "Restore Scenes on Load"
 msgstr "Restaurar Cenas ao Inicializar"
-
-msgid "Enable"
-msgstr "Habilitar"
 
 msgid "External Programs"
 msgstr "Programas Externos"
@@ -1269,9 +1272,6 @@ msgstr "Desenhar Abas"
 msgid "Draw Spaces"
 msgstr "Desenhar Espaços"
 
-msgid "Line Spacing"
-msgstr "Espaçamento de Linha"
-
 msgid "Behavior"
 msgstr "Comportamento"
 
@@ -1379,6 +1379,9 @@ msgstr "Junção"
 
 msgid "Shape"
 msgstr "Forma"
+
+msgid "AABB"
+msgstr "AABB"
 
 msgid "Primary Grid Steps"
 msgstr "Passadas para Grade Primária"
@@ -1926,9 +1929,6 @@ msgstr "Distância de Simplificação"
 msgid "Enabled"
 msgstr "Habilitado"
 
-msgid "Make Streamable"
-msgstr "Streamável"
-
 msgid "Shadow Meshes"
 msgstr "Malhas de Shader"
 
@@ -2195,9 +2195,6 @@ msgstr "Cortar para Região"
 
 msgid "Trim Alpha Border From Region"
 msgstr "Aparar Borda Alfa da Região"
-
-msgid "Force"
-msgstr "Forçar"
 
 msgid "8 Bit"
 msgstr "8 Bits"
@@ -4314,6 +4311,9 @@ msgstr "'Vframes'"
 msgid "Tile Set"
 msgstr "Tile Set"
 
+msgid "Y Sort Origin"
+msgstr "Ordenar Origem Y"
+
 msgid "Bitmask"
 msgstr "Bitmask"
 
@@ -4391,9 +4391,6 @@ msgstr "Planicidade"
 
 msgid "Albedo"
 msgstr "Albedo"
-
-msgid "Normal"
-msgstr "Normal"
 
 msgid "Orm"
 msgstr "'Orm'"
@@ -4686,9 +4683,6 @@ msgstr "Habilitar Sombras"
 msgid "Bones"
 msgstr "Ossos"
 
-msgid "Interpolation"
-msgstr "Interpolação"
-
 msgid "Target"
 msgstr "Alvo"
 
@@ -4700,6 +4694,9 @@ msgstr "Imã"
 
 msgid "Min Distance"
 msgstr "Distância Mínima"
+
+msgid "Active"
+msgstr "Ativo"
 
 msgid "Spatial Attachment Path"
 msgstr "Caminho do Anexo Espacial"
@@ -4721,9 +4718,6 @@ msgstr "Coeficiente de Amortecimento"
 
 msgid "Drag Coefficient"
 msgstr "Coeficiente de arrasto"
-
-msgid "AABB"
-msgstr "AABB"
 
 msgid "Geometry"
 msgstr "Geometria"
@@ -4802,9 +4796,6 @@ msgstr "Contador de Inputs"
 
 msgid "Request"
 msgstr "Solicitação"
-
-msgid "Active"
-msgstr "Ativo"
 
 msgid "Internal Active"
 msgstr "Atividade Interna"
@@ -5334,6 +5325,9 @@ msgstr "Quadrante de Subdivisão 3 Atlas"
 msgid "SDF"
 msgstr "SDF"
 
+msgid "Menu"
+msgstr "Menu"
+
 msgid "Wait Time"
 msgstr "Tempo de Espera"
 
@@ -5394,9 +5388,6 @@ msgstr "'Quad 3'"
 msgid "Canvas Cull Mask"
 msgstr "Máscara de tela"
 
-msgid "Tooltip Delay (sec)"
-msgstr "Delay do Tooltip (seg)"
-
 msgid "Size 2D Override"
 msgstr "Sobreposição de Tamanho 2D"
 
@@ -5448,6 +5439,18 @@ msgstr "Física 3D"
 msgid "Segments"
 msgstr "Segmentos"
 
+msgid "Parsed Geometry Type"
+msgstr "Tipo de Geometria Analisada"
+
+msgid "Source Geometry Mode"
+msgstr "Modo Geometria Original"
+
+msgid "Cells"
+msgstr "Células"
+
+msgid "Agents"
+msgstr "Agentes"
+
 msgid "A"
 msgstr "A"
 
@@ -5489,9 +5492,6 @@ msgstr "Transpor"
 
 msgid "Texture Origin"
 msgstr "Origem da Textura"
-
-msgid "Y Sort Origin"
-msgstr "Ordenar Origem Y"
 
 msgid "Terrain"
 msgstr "Terreno"
@@ -5742,6 +5742,9 @@ msgstr "Espaçamento Extra"
 msgid "Glyph"
 msgstr "Glifo (Relevo)"
 
+msgid "Interpolation"
+msgstr "Interpolação"
+
 msgid "Offsets"
 msgstr "Deslocamentos"
 
@@ -5856,20 +5859,8 @@ msgstr "Formato de Transformação"
 msgid "Visible Instance Count"
 msgstr "Quantidade de Instâncias Visíveis"
 
-msgid "Parsed Geometry Type"
-msgstr "Tipo de Geometria Analisada"
-
-msgid "Source Geometry Mode"
-msgstr "Modo Geometria Original"
-
 msgid "Source Group Name"
 msgstr "Origem do Nome do Grupo"
-
-msgid "Cells"
-msgstr "Células"
-
-msgid "Agents"
-msgstr "Agentes"
 
 msgid "Max Climb"
 msgstr "Máx. Subida"
@@ -6179,9 +6170,6 @@ msgstr "Velocidade de Rolagem"
 
 msgid "Line Separation"
 msgstr "Separação de Linha"
-
-msgid "Menu"
-msgstr "Menu"
 
 msgid "Screen Picker"
 msgstr "Seletor de tela"

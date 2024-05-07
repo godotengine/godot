@@ -247,6 +247,9 @@ msgstr "Bloki Suurus (KB)"
 msgid "Max Size (MB)"
 msgstr "Maksimaalne suurus (MB)"
 
+msgid "Enable"
+msgstr "Luba"
+
 msgid "Save Chunk Size (MB)"
 msgstr "Salvest Tüki Suurus (MB)"
 
@@ -586,9 +589,6 @@ msgstr "Väärtus"
 msgid "Arg Count"
 msgstr "Arg kogus"
 
-msgid "Args"
-msgstr "Argumendid"
-
 msgid "Type"
 msgstr "Tüüp"
 
@@ -669,6 +669,12 @@ msgstr "Häirimatu režiim"
 
 msgid "Movie Maker Enabled"
 msgstr "Movie Maker Sees"
+
+msgid "Theme"
+msgstr "Teema"
+
+msgid "Line Spacing"
+msgstr "Reavahe"
 
 msgid "Base Type"
 msgstr "Baastüüp"
@@ -784,9 +790,6 @@ msgstr "Vaikimisi Värvivalija Režiim"
 msgid "Default Color Picker Shape"
 msgstr "Vaikimisi Värvivalija Kuju"
 
-msgid "Theme"
-msgstr "Teema"
-
 msgid "Preset"
 msgstr "Eelseadistus"
 
@@ -849,9 +852,6 @@ msgstr "Taasta Stseenid Laadimisel"
 
 msgid "Multi Window"
 msgstr "Mitu Akent"
-
-msgid "Enable"
-msgstr "Luba"
 
 msgid "Restore Windows on Load"
 msgstr "Taastage Aknad Laadimisel"
@@ -1005,9 +1005,6 @@ msgstr "Joonista Vahelehed"
 
 msgid "Draw Spaces"
 msgstr "Joonista Tühimikud"
-
-msgid "Line Spacing"
-msgstr "Reavahe"
 
 msgid "Navigation"
 msgstr "Navigatsioon"
@@ -1590,9 +1587,6 @@ msgstr "Salvesta Faili"
 
 msgid "Enabled"
 msgstr "Sisselülitatud"
-
-msgid "Make Streamable"
-msgstr "Muuda Voogedastavaks"
 
 msgid "Use External"
 msgstr "Kasuta Väliseid"
@@ -3064,6 +3058,9 @@ msgstr "Uuenda"
 msgid "Editor Settings"
 msgstr "Redaktori sätted"
 
+msgid "Y Sort Origin"
+msgstr "Y-Sordi Päritolu"
+
 msgid "Cull Mask"
 msgstr "Väljalõikamis mask"
 
@@ -3151,17 +3148,11 @@ msgstr "Maastikud"
 msgid "Custom Data"
 msgstr "Kohandatud Andmed"
 
-msgid "Scenes"
-msgstr "Stseenid"
-
 msgid "Scene"
 msgstr "Stseen"
 
 msgid "Texture Origin"
 msgstr "Tekstuuri Alguspunkt"
-
-msgid "Y Sort Origin"
-msgstr "Y-Sordi Päritolu"
 
 msgid "Probability"
 msgstr "Võimalus"

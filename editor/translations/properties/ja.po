@@ -358,6 +358,9 @@ msgstr "テクスチャアップロード領域サイズ px"
 msgid "Pipeline Cache"
 msgstr "パイプラインキャッシュ"
 
+msgid "Enable"
+msgstr "有効"
+
 msgid "Save Chunk Size (MB)"
 msgstr "保存チャンク サイズ (MB)"
 
@@ -700,9 +703,6 @@ msgstr "値"
 msgid "Arg Count"
 msgstr "引数の数"
 
-msgid "Args"
-msgstr "引数"
-
 msgid "Type"
 msgstr "タイプ(型)"
 
@@ -780,6 +780,12 @@ msgstr "キーイング"
 
 msgid "Distraction Free Mode"
 msgstr "集中モード"
+
+msgid "Theme"
+msgstr "テーマ"
+
+msgid "Line Spacing"
+msgstr "行間隔"
 
 msgid "Base Type"
 msgstr "基底型"
@@ -907,9 +913,6 @@ msgstr "デフォルトのカラーピッカーモード"
 msgid "Default Color Picker Shape"
 msgstr "デフォルトのカラーピッカーモード"
 
-msgid "Theme"
-msgstr "テーマ"
-
 msgid "Preset"
 msgstr "プリセット"
 
@@ -978,9 +981,6 @@ msgstr "ロード時にシーンを復元"
 
 msgid "Multi Window"
 msgstr "マルチウィンドウ"
-
-msgid "Enable"
-msgstr "有効"
 
 msgid "Restore Windows on Load"
 msgstr "ロード時にウインドウを復元"
@@ -1146,9 +1146,6 @@ msgstr "タブを描画"
 
 msgid "Draw Spaces"
 msgstr "スペースを描画"
-
-msgid "Line Spacing"
-msgstr "行間隔"
 
 msgid "Behavior"
 msgstr "ビヘイビア"
@@ -1768,9 +1765,6 @@ msgstr "ファイルへ保存"
 msgid "Enabled"
 msgstr "有効"
 
-msgid "Make Streamable"
-msgstr "ストリーム可能"
-
 msgid "Shadow Meshes"
 msgstr "シャドウメッシュ"
 
@@ -1998,9 +1992,6 @@ msgstr "領域にあわせて切り出す"
 
 msgid "Trim Alpha Border From Region"
 msgstr "領域からアルファ境界をトリミング"
-
-msgid "Force"
-msgstr "強制"
 
 msgid "8 Bit"
 msgstr "8ビット化"
@@ -3142,6 +3133,9 @@ msgstr "エディター設定"
 msgid "Tile Set"
 msgstr "タイルセット"
 
+msgid "Y Sort Origin"
+msgstr "Yソート原点"
+
 msgid "Bitmask"
 msgstr "ビットマスク"
 
@@ -3385,6 +3379,9 @@ msgstr "2D物理"
 msgid "3D Physics"
 msgstr "3D物理"
 
+msgid "Parsed Geometry Type"
+msgstr "解析されたジオメトリ型"
+
 msgid "B"
 msgstr "B"
 
@@ -3399,9 +3396,6 @@ msgstr "行列(縦横)入れ替え"
 
 msgid "Texture Origin"
 msgstr "テクスチャの原点"
-
-msgid "Y Sort Origin"
-msgstr "Yソート原点"
 
 msgid "Probability"
 msgstr "確率"
@@ -3507,9 +3501,6 @@ msgstr "MSDF"
 
 msgid "Transform Format"
 msgstr "変換形式"
-
-msgid "Parsed Geometry Type"
-msgstr "解析されたジオメトリ型"
 
 msgid "Process Mode"
 msgstr "処理モード"

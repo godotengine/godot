@@ -310,6 +310,9 @@ msgstr "計時器"
 msgid "Incremental Search Max Interval Msec"
 msgstr "增量搜索最大間隔(毫秒)"
 
+msgid "Tooltip Delay (sec)"
+msgstr "工具提示延遲（毫秒）"
+
 msgid "Common"
 msgstr "常見"
 
@@ -345,6 +348,9 @@ msgstr "紋理上傳區域大小 px"
 
 msgid "Pipeline Cache"
 msgstr "管道快取"
+
+msgid "Enable"
+msgstr "啟用"
 
 msgid "Save Chunk Size (MB)"
 msgstr "儲存區塊大小（MB）"
@@ -703,9 +709,6 @@ msgstr "值"
 msgid "Arg Count"
 msgstr "參數數量"
 
-msgid "Args"
-msgstr "參數"
-
 msgid "Type"
 msgstr "型別"
 
@@ -792,6 +795,12 @@ msgstr "專注模式"
 
 msgid "Movie Maker Enabled"
 msgstr "啟用 Movie Maker"
+
+msgid "Theme"
+msgstr "主題"
+
+msgid "Line Spacing"
+msgstr "行間距"
 
 msgid "Base Type"
 msgstr "基礎型別"
@@ -940,9 +949,6 @@ msgstr "預設顏色挑選器模式"
 msgid "Default Color Picker Shape"
 msgstr "預設顏色挑選器形狀"
 
-msgid "Theme"
-msgstr "主題"
-
 msgid "Preset"
 msgstr "預設"
 
@@ -1014,9 +1020,6 @@ msgstr "載入時恢復場景"
 
 msgid "Multi Window"
 msgstr "多視窗"
-
-msgid "Enable"
-msgstr "啟用"
 
 msgid "Restore Windows on Load"
 msgstr "載入時恢復視窗"
@@ -1189,9 +1192,6 @@ msgstr "繪製定位字元"
 msgid "Draw Spaces"
 msgstr "繪製空格"
 
-msgid "Line Spacing"
-msgstr "行間距"
-
 msgid "Behavior"
 msgstr "行為"
 
@@ -1326,6 +1326,9 @@ msgstr "交點"
 
 msgid "Shape"
 msgstr "形狀"
+
+msgid "AABB"
+msgstr "AABB"
 
 msgid "Primary Grid Steps"
 msgstr "主網格步長"
@@ -1951,9 +1954,6 @@ msgstr "儲存為檔案"
 msgid "Enabled"
 msgstr "已啟用"
 
-msgid "Make Streamable"
-msgstr "使可串流"
-
 msgid "Shadow Meshes"
 msgstr "陰影網格"
 
@@ -2232,9 +2232,6 @@ msgstr "裁剪至區域"
 
 msgid "Trim Alpha Border From Region"
 msgstr "從區域修剪 Alpha 邊框"
-
-msgid "Force"
-msgstr "強制"
 
 msgid "8 Bit"
 msgstr "8位元"
@@ -2625,9 +2622,6 @@ msgstr "提交深度緩衝區"
 
 msgid "Startup Alert"
 msgstr "啟動警報"
-
-msgid "In Editor"
-msgstr "在編輯器中"
 
 msgid "Boot Splash"
 msgstr "啟動畫面"
@@ -4654,9 +4648,6 @@ msgstr "導航多邊形"
 msgid "Use Edge Connections"
 msgstr "使用邊界連接"
 
-msgid "Constrain Avoidance"
-msgstr "約束避障"
-
 msgid "Skew"
 msgstr "偏斜"
 
@@ -4933,11 +4924,11 @@ msgstr "自訂集成器"
 msgid "Continuous CD"
 msgstr "連續碰撞檢測"
 
-msgid "Max Contacts Reported"
-msgstr "報告的最大接觸"
-
 msgid "Contact Monitor"
 msgstr "接觸監視器"
+
+msgid "Max Contacts Reported"
+msgstr "報告的最大接觸"
 
 msgid "Linear"
 msgstr "線性"
@@ -5020,6 +5011,9 @@ msgstr "影格座標"
 msgid "Filter Clip Enabled"
 msgstr "啟用篩選裁剪"
 
+msgid "Tile Set"
+msgstr "圖塊集"
+
 msgid "Rendering Quadrant Size"
 msgstr "算繪象限大小"
 
@@ -5032,8 +5026,8 @@ msgstr "碰撞可見性模式"
 msgid "Navigation Visibility Mode"
 msgstr "導航可見性模式"
 
-msgid "Tile Set"
-msgstr "圖塊集"
+msgid "Y Sort Origin"
+msgstr "Y 排序原點"
 
 msgid "Texture Normal"
 msgstr "正常紋理"
@@ -5160,9 +5154,6 @@ msgstr "縮放曲線 Z"
 
 msgid "Albedo"
 msgstr "反照率"
-
-msgid "Normal"
-msgstr "正常"
 
 msgid "Orm"
 msgstr "Orm"
@@ -5791,17 +5782,11 @@ msgstr "運動縮放"
 msgid "Show Rest Only"
 msgstr "僅顯示放鬆"
 
-msgid "Animate Physical Bones"
-msgstr "動畫物理骨骼"
-
 msgid "Root Bone"
 msgstr "根骨骼"
 
 msgid "Tip Bone"
 msgstr "尖端骨骼"
-
-msgid "Interpolation"
-msgstr "插值"
 
 msgid "Target"
 msgstr "目標"
@@ -5823,6 +5808,9 @@ msgstr "最小距離"
 
 msgid "Max Iterations"
 msgstr "最大反覆運算數"
+
+msgid "Active"
+msgstr "啟動"
 
 msgid "Pinned Points"
 msgstr "固定點"
@@ -5859,9 +5847,6 @@ msgstr "阻力係數"
 
 msgid "Track Physics Step"
 msgstr "追蹤物理反覆運算"
-
-msgid "AABB"
-msgstr "AABB"
 
 msgid "Sorting"
 msgstr "排序"
@@ -5964,9 +5949,6 @@ msgstr "輸入數"
 
 msgid "Request"
 msgstr "請求"
-
-msgid "Active"
-msgstr "啟動"
 
 msgid "Internal Active"
 msgstr "內部啟動"
@@ -7093,6 +7075,9 @@ msgstr "預設環境"
 msgid "Enable Object Picking"
 msgstr "啟用物件拾取"
 
+msgid "Menu"
+msgstr "選單"
+
 msgid "Wait Time"
 msgstr "等待時間"
 
@@ -7186,9 +7171,6 @@ msgstr "四方形 3"
 msgid "Canvas Cull Mask"
 msgstr "畫布剔除遮罩"
 
-msgid "Tooltip Delay (sec)"
-msgstr "工具提示延遲（毫秒）"
-
 msgid "Size 2D Override"
 msgstr "2D 大小覆蓋"
 
@@ -7263,6 +7245,24 @@ msgstr "3D 導航"
 
 msgid "Segments"
 msgstr "分段"
+
+msgid "Parsed Geometry Type"
+msgstr "解析幾何體型別"
+
+msgid "Parsed Collision Mask"
+msgstr "解析碰撞遮罩"
+
+msgid "Source Geometry Mode"
+msgstr "來源幾何體模式"
+
+msgid "Source Geometry Group Name"
+msgstr "來源幾何體分組名稱"
+
+msgid "Cells"
+msgstr "儲存格"
+
+msgid "Agents"
+msgstr "代理"
 
 msgid "A"
 msgstr "A"
@@ -7414,9 +7414,6 @@ msgstr "地形集"
 msgid "Custom Data Layers"
 msgstr "自訂資料層"
 
-msgid "Scenes"
-msgstr "場景"
-
 msgid "Scene"
 msgstr "場景"
 
@@ -7440,9 +7437,6 @@ msgstr "轉置"
 
 msgid "Texture Origin"
 msgstr "紋理原點"
-
-msgid "Y Sort Origin"
-msgstr "Y 排序原點"
 
 msgid "Terrain Set"
 msgstr "地形集"
@@ -7969,6 +7963,9 @@ msgstr "字重"
 msgid "Font Stretch"
 msgstr "字體拉伸"
 
+msgid "Interpolation"
+msgstr "插值"
+
 msgid "Color Space"
 msgstr "色彩空間"
 
@@ -8197,20 +8194,8 @@ msgstr "可見實例數"
 msgid "Partition Type"
 msgstr "分區型別"
 
-msgid "Parsed Geometry Type"
-msgstr "解析幾何體型別"
-
-msgid "Source Geometry Mode"
-msgstr "來源幾何體模式"
-
 msgid "Source Group Name"
 msgstr "來源分組名稱"
-
-msgid "Cells"
-msgstr "儲存格"
-
-msgid "Agents"
-msgstr "代理"
 
 msgid "Max Climb"
 msgstr "最大爬升"
@@ -8256,12 +8241,6 @@ msgstr "烘焙 AABB"
 
 msgid "Baking AABB Offset"
 msgstr "烘焙 AABB 偏移"
-
-msgid "Parsed Collision Mask"
-msgstr "解析碰撞遮罩"
-
-msgid "Source Geometry Group Name"
-msgstr "來源幾何體分組名稱"
 
 msgid "Bundled"
 msgstr "捆綁"
@@ -9004,9 +8983,6 @@ msgstr "分頁欄背景"
 msgid "Drop Mark"
 msgstr "放下標記"
 
-msgid "Menu"
-msgstr "選單"
-
 msgid "Menu Highlight"
 msgstr "選單高亮"
 
@@ -9024,9 +9000,6 @@ msgstr "圖示間距"
 
 msgid "Button Highlight"
 msgstr "按鈕高亮"
-
-msgid "Large"
-msgstr "大號"
 
 msgid "SV Width"
 msgstr "SV 寬度"
