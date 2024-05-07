@@ -41,7 +41,7 @@
 			<return type="int" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Returns the bone index that matches [param name] as its name.
+				Returns the bone index that matches [param name] as its name. Returns [code]-1[/code] if no bone with this name exists.
 			</description>
 		</method>
 		<method name="force_update_all_bone_transforms" deprecated="This method should only be called internally.">
