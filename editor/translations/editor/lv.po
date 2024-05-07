@@ -87,12 +87,6 @@ msgstr "Joypad Poga %d"
 msgid "Pressure:"
 msgstr "Spiediens:"
 
-msgid "canceled"
-msgstr "atcelts"
-
-msgid "touched"
-msgstr "pieskāries"
-
 msgid "released"
 msgstr "atlaists"
 
@@ -337,15 +331,6 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
-msgid "Example: %s"
-msgstr "Piemērs: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d lietas"
-msgstr[1] "%d lieta"
-msgstr[2] "%d lietas"
-
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -356,17 +341,11 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Darbība ar nosaukumu '%s' jau pastāv."
 
-msgid "Cannot Revert - Action is same as initial"
-msgstr "Nevar Atgriezt — Darbība ir tāda pati kā sākotnējā"
-
 msgid "Revert Action"
 msgstr "Atsaukt Darbību"
 
 msgid "Add Event"
 msgstr "Pievienot Notikumu"
-
-msgid "Remove Action"
-msgstr "Noņemt Darbību"
 
 msgid "Cannot Remove Action"
 msgstr "Nevar Noņemt Darbību"
@@ -938,9 +917,6 @@ msgstr "Izveidot Jaunu %s"
 msgid "No results for \"%s\"."
 msgstr "Nav rezultātu \"%s\"."
 
-msgid "No description available for %s."
-msgstr "Apraksts nav pieejams priekš %s."
-
 msgid "Favorites:"
 msgstr "Favorīti:"
 
@@ -1219,9 +1195,6 @@ msgstr "Sekojošie faili netika izvilkti no paketes \"%s\":"
 msgid "(and %s more files)"
 msgstr "(un vēl %s faili)"
 
-msgid "Asset \"%s\" installed successfully!"
-msgstr "Pakete \"%s\" instalēta sekmīgi!"
-
 msgid "Success!"
 msgstr "Mērķis sasniegts!"
 
@@ -1344,26 +1317,6 @@ msgstr "Ielādēt Kopnes Izkārtojuma noklusējumu."
 
 msgid "Create a new Bus Layout."
 msgstr "Izveidot jaunu Kopnes izkārtojumu."
-
-msgid "Invalid name."
-msgstr "Nederīgs nosaukums."
-
-msgid "Cannot begin with a digit."
-msgstr "Nevar sākt ar ciparu."
-
-msgid "Valid characters:"
-msgstr "Derīgie simboli:"
-
-msgid "Must not collide with an existing engine class name."
-msgstr ""
-"Nosaukums nedrīkst būt vienāds ar eksistējošu konstruktora klases nosaukumu."
-
-msgid "Must not collide with an existing built-in type name."
-msgstr "Nosaukums nedrīkst būt vienāds ar eksistējošu iebūvēta tipa nosaukumu."
-
-msgid "Must not collide with an existing global constant name."
-msgstr ""
-"Nosaukums nedrīkst būt vienāds ar eksistējošu globālo konstantes nosaukumu."
 
 msgid "Autoload '%s' already exists!"
 msgstr "Auto-ielāde '%s' jau eksistē!"
@@ -1579,9 +1532,6 @@ msgstr "Importēt profilu(s)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Pārvaldīt redaktora iespēju profilus"
 
-msgid "Save & Restart"
-msgstr "Saglabāt & pārstartēt"
-
 msgid "ScanSources"
 msgstr "ScanSources / Skenēšanas Avoti"
 
@@ -1662,14 +1612,14 @@ msgstr ""
 "Pašreiz šim mainīgajam nav apraksta. Lūdzu, palīdzi mums [color=$color]"
 "[url=$url]izveidot to[/url][/color]!"
 
+msgid "Editor"
+msgstr "Redaktors"
+
 msgid "Property:"
 msgstr "Parametrs:"
 
 msgid "Signal:"
 msgstr "Signāls:"
-
-msgid "%d match."
-msgstr "%d sakritība."
 
 msgid "%d matches."
 msgstr "%d sakritības."
@@ -1742,9 +1692,6 @@ msgstr "Mainīt Masīva Lielumu"
 msgid "Set %s"
 msgstr "Likt %s"
 
-msgid "Pinned %s"
-msgstr "Piesprausts %s"
-
 msgid "Unpinned %s"
 msgstr "Atsprausts %s"
 
@@ -1781,14 +1728,8 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Griežas, kad redaktora logs atjauninas."
 
-msgid "Imported resources can't be saved."
-msgstr "Importētie resursi nevar tikt saglabāti."
-
 msgid "OK"
 msgstr "Labi"
-
-msgid "Error saving resource!"
-msgstr "Kļūda saglabājot resursu!"
 
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
@@ -1800,15 +1741,6 @@ msgstr ""
 msgid "Save Resource As..."
 msgstr "Saglabāt Resursu Kā..."
 
-msgid "Can't open file for writing:"
-msgstr "Nevar atvērt failu rakstīšanai:"
-
-msgid "Requested file format unknown:"
-msgstr "Pieprasītais faila formāts ir nezināms:"
-
-msgid "Error while saving."
-msgstr "Kļūda saglabājot."
-
 msgid "Saving Scene"
 msgstr "Saglabā Ainu"
 
@@ -1818,21 +1750,8 @@ msgstr "Analizē"
 msgid "Creating Thumbnail"
 msgstr "Izveido sīktēlu"
 
-msgid "This operation can't be done without a tree root."
-msgstr "Nevar veikt šo darbību bez koka cilmes."
-
-msgid ""
-"Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
-"be satisfied."
-msgstr ""
-"Nevar saglabāt ainu. Drošivien atkarības (instances vai mantojumi) ir "
-"kļūdainas."
-
 msgid "Save scene before running..."
 msgstr "Saglabā ainu pirms palaišanas..."
-
-msgid "Could not save one or more scenes!"
-msgstr "Nevar saglabāt vienu vai vairākas ainas!"
 
 msgid "Save All Scenes"
 msgstr "Saglabāt Visas Ainas"
@@ -1840,11 +1759,8 @@ msgstr "Saglabāt Visas Ainas"
 msgid "Can't overwrite scene that is still open!"
 msgstr "Nevar pārrakstīt ainu, kas joprojām ir atvērta!"
 
-msgid "Can't load MeshLibrary for merging!"
-msgstr "Nevarēja ielādēt tīklu bibliotēku sapludināšanai!"
-
-msgid "Error saving MeshLibrary!"
-msgstr "Kļūda saglabājot tīkla bibliotēku!"
+msgid "Apply MeshInstance Transforms"
+msgstr "Pielietot MeshInstances Transformācijas"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -1896,9 +1812,6 @@ msgstr "Ātri atvērt ainu..."
 msgid "Quick Open Script..."
 msgstr "ātri atvērt skriptu..."
 
-msgid "%s no longer exists! Please specify a new save location."
-msgstr "%s vairs neeksistē! Lūdzu norādi jaunu saglabāšanas lokāciju."
-
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) were "
 "saved anyway."
@@ -1947,25 +1860,12 @@ msgstr ""
 msgid "Save & Quit"
 msgstr "Saglabāt & iziet"
 
-msgid "Save changes to the following scene(s) before quitting?"
-msgstr "Saglabāt izmaiņas sekojošai ainai(-ām) pirms iziešanas ?"
-
 msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
 "Saglabāt izmaiņas sekojošai ainai(-ām) pirms projektu menedžera atvēršanas ?"
 
-msgid ""
-"This option is deprecated. Situations where refresh must be forced are now "
-"considered a bug. Please report."
-msgstr ""
-"Šī iespēja in novecojusi. Situācijas, kad atsvaidzināšana ir jāveic piespiedu "
-"kārtā, ir uzskatāma par kļūdu, lūdzu ziņojiet."
-
 msgid "Pick a Main Scene"
 msgstr "Izvēlēties galveno ainu"
-
-msgid "This operation can't be done without a scene."
-msgstr "Šo operāciju nevar veikt bez ainas."
 
 msgid "Export Mesh Library"
 msgstr "Ekportēt tīkla bibliotēku"
@@ -1995,21 +1895,11 @@ msgstr ""
 "Aina '%s' tika importēta automātiski, tāpēc to nevar modificēt.\n"
 "Lai tajā veiktu izmaiņas, izveidojiet jaunu pārmantotu ainu."
 
-msgid ""
-"Error loading scene, it must be inside the project path. Use 'Import' to open "
-"the scene, then save it inside the project path."
-msgstr ""
-"Kļūda ielādējot ainu, tai jābūt projekta ceļā. Izmantojiet 'Importēt', lai "
-"atvērtu ainu, pēc tam saglabājiet to projekta ceļā."
-
 msgid "Scene '%s' has broken dependencies:"
 msgstr "Ainai '%s' ir bojātas atkarības:"
 
 msgid "Clear Recent Scenes"
 msgstr "Notīrīt nesenās ainas"
-
-msgid "There is no defined scene to run."
-msgstr "Nav definēta aina, kuru palaist."
 
 msgid ""
 "No main scene has ever been defined, select one?\n"
@@ -2107,14 +1997,8 @@ msgstr "Redaktora iestatījumi..."
 msgid "Project"
 msgstr "Projekts"
 
-msgid "Project Settings..."
-msgstr "Projekta iestatjumi..."
-
 msgid "Version Control"
 msgstr "Versiju Kontrole"
-
-msgid "Export..."
-msgstr "Eksportēt..."
 
 msgid "Install Android Build Template..."
 msgstr "Instalēt Android būves šablonu..."
@@ -2133,9 +2017,6 @@ msgstr "Pārlādēt pašreizējo projektu"
 
 msgid "Quit to Project List"
 msgstr "Iziet uz projektu sarakstu"
-
-msgid "Editor"
-msgstr "Redaktors"
 
 msgid "Editor Layout"
 msgstr "Redaktora izkārtojums"
@@ -2170,9 +2051,6 @@ msgstr "Palīdzība"
 msgid "Online Documentation"
 msgstr "Tiešsaistes Dokumentācija"
 
-msgid "Questions & Answers"
-msgstr "Jautājumi & Atbildes"
-
 msgid "Community"
 msgstr "Komūna"
 
@@ -2188,20 +2066,17 @@ msgstr "Sūtīt dokumentu atsauksmi"
 msgid "Support Godot Development"
 msgstr "Atbalstīt Godot izstrādi"
 
+msgid "Save & Restart"
+msgstr "Saglabāt & pārstartēt"
+
 msgid "Update Continuously"
 msgstr "Nepārtraukti Atjaunot"
-
-msgid "FileSystem"
-msgstr "Failu sistēma"
 
 msgid "Inspector"
 msgstr "Inspektors"
 
 msgid "Node"
 msgstr "Mezgls"
-
-msgid "Output"
-msgstr "Izeja"
 
 msgid "Don't Save"
 msgstr "Nesaglabāt"
@@ -2226,9 +2101,6 @@ msgstr "Šablona pakotne"
 
 msgid "Export Library"
 msgstr "Eksportēt bibliotēku"
-
-msgid "Apply MeshInstance Transforms"
-msgstr "Pielietot MeshInstances Transformācijas"
 
 msgid ""
 "The following files are newer on disk.\n"
@@ -2270,23 +2142,11 @@ msgstr "Atvērt iepriekšējo redaktoru"
 msgid "Warning!"
 msgstr "Brīdinājums!"
 
-msgid "On"
-msgstr "Ieslēgts"
-
-msgid "Edit Plugin"
-msgstr "Rediģēt spraudni"
-
-msgid "Installed Plugins:"
-msgstr "Instalētie spraudņi:"
-
-msgid "Version"
-msgstr "Versija"
-
-msgid "Author"
-msgstr "Autors"
-
 msgid "Edit Text:"
 msgstr "Rediģēt Tekstu:"
+
+msgid "On"
+msgstr "Ieslēgts"
 
 msgid "Bit %d, value %d"
 msgstr "Bits %d, vērtība %d"
@@ -2300,14 +2160,14 @@ msgstr "Pievienot..."
 msgid "Invalid RID"
 msgstr "Nederīgs RID"
 
-msgid "Remove Item"
-msgstr "Noņemt vienumu"
-
 msgid "New Key:"
 msgstr "Jauna atslēga:"
 
 msgid "New Value:"
 msgstr "Jauna vērtība:"
+
+msgid "Remove Item"
+msgstr "Noņemt vienumu"
 
 msgid "Load..."
 msgstr "Ielādē..."
@@ -2338,9 +2198,6 @@ msgstr "Unicode"
 
 msgid "Storing File:"
 msgstr "Faila saglabāšana:"
-
-msgid "No export template found at the expected path:"
-msgstr "Norādītajā ceļā nav atrasta eksporta veidne:"
 
 msgid "Packing"
 msgstr "Pako"
@@ -2380,27 +2237,6 @@ msgstr "Nevar pievienoties spogulim."
 
 msgid "Cannot remove temporary file:"
 msgstr "Nevar noņemt pagaidu failu:"
-
-msgid "Disconnected"
-msgstr "Atvienots"
-
-msgid "Resolving"
-msgstr "Atrisina"
-
-msgid "Connecting..."
-msgstr "Savienojas..."
-
-msgid "Can't Connect"
-msgstr "Nevar Savieoties"
-
-msgid "Connected"
-msgstr "Savienots"
-
-msgid "Requesting..."
-msgstr "Pieprasa..."
-
-msgid "Downloading"
-msgstr "Lejuplādē"
 
 msgid "Importing:"
 msgstr "Importē:"
@@ -2493,9 +2329,6 @@ msgstr "Noņemt no Favorītiem"
 msgid "Reimport"
 msgstr "Reimportēt"
 
-msgid "Open in File Manager"
-msgstr "Atvērt Failu Pārlūkā"
-
 msgid "New Folder..."
 msgstr "Jauna mape..."
 
@@ -2513,6 +2346,9 @@ msgstr "Dublicēt..."
 
 msgid "Rename..."
 msgstr "Pārsaukt..."
+
+msgid "Open in File Manager"
+msgstr "Atvērt Failu Pārlūkā"
 
 msgid "Find in Files"
 msgstr "Atrast Failos"
@@ -2712,15 +2548,6 @@ msgstr "Grupas"
 msgid "Select a single node to edit its signals and groups."
 msgstr "Izvēlies kādu mezglu, lai rediģētu tā signālus un grupas."
 
-msgid "Update"
-msgstr "Atjaunināt"
-
-msgid "Author:"
-msgstr "Autors:"
-
-msgid "Version:"
-msgstr "Versija:"
-
 msgid "Create Polygon"
 msgstr "Izveidot Daudzstūri"
 
@@ -2823,6 +2650,12 @@ msgstr "Noņemt izvēlēto mezglu vai pāreju."
 msgid "Play Mode:"
 msgstr "Atskaņošanas Režīms:"
 
+msgid "Author"
+msgstr "Autors"
+
+msgid "Version:"
+msgstr "Versija:"
+
 msgid "Contents:"
 msgstr "Saturs:"
 
@@ -2835,14 +2668,17 @@ msgstr "Nevar saglabāt atbildi uz:"
 msgid "Failed:"
 msgstr "Neizdevās:"
 
-msgid "Expected:"
-msgstr "Sagaidāms:"
-
 msgid "Got:"
 msgstr "Saņemts:"
 
 msgid "Resolving..."
 msgstr "Atrisina.."
+
+msgid "Connecting..."
+msgstr "Savienojas..."
+
+msgid "Requesting..."
+msgstr "Pieprasa..."
 
 msgid "Idle"
 msgstr "Dīkstāve"
@@ -2858,9 +2694,6 @@ msgstr "Licence (A-Z)"
 
 msgid "License (Z-A)"
 msgstr "Licence (Z-A)"
-
-msgid "Official"
-msgstr "Oficiāls"
 
 msgid "Testing"
 msgstr "Testē"
@@ -2927,18 +2760,6 @@ msgstr "Tuvināt uz 400%"
 
 msgid "Zoom to 800%"
 msgstr "Tuvināt uz 800%"
-
-msgid "Drag: Rotate selected node around pivot."
-msgstr "Bīdīt: Rotē izvēlēto mezglu apkārt asij."
-
-msgid "Alt+Drag: Move selected node."
-msgstr "Alt+Bīdīt: Pārvietot izvēlēto mezglu."
-
-msgid "Alt+Drag: Scale selected node."
-msgstr "Alt+Bīdīt: Pielāgo mērogu izvēlētajam mezglam."
-
-msgid "V: Set selected node's pivot position."
-msgstr "V: Uzlikt izvēlētā mezgla centra pozīciju."
 
 msgid "Scale Mode"
 msgstr "Mēroga Režīms"
@@ -3029,6 +2850,15 @@ msgstr "Sinhronizēt ainas izmaiņas"
 msgid "Synchronize Script Changes"
 msgstr "Sinhronizēt skripta izmaiņas"
 
+msgid "Edit Plugin"
+msgstr "Rediģēt spraudni"
+
+msgid "Installed Plugins:"
+msgstr "Instalētie spraudņi:"
+
+msgid "Version"
+msgstr "Versija"
+
 msgid " - Variation"
 msgstr " - Dažādība"
 
@@ -3037,24 +2867,6 @@ msgstr "Konvertēt uz CPUParticles2D"
 
 msgid "Select lightmap bake file:"
 msgstr "Izvēlēties gaismas kartes cepšanas failu:"
-
-msgid "Create Simplified Convex Shape"
-msgstr "Izveidot vienkāršotu izliektu formu"
-
-msgid "Create Single Convex Shape"
-msgstr "Izveidot Vienu Izliektu Formu"
-
-msgid "Create Multiple Convex Shapes"
-msgstr "Izveidot Vairākas Izliektas Formas"
-
-msgid "Create Single Convex Collision Sibling"
-msgstr "Izveidot Vienu Izliektu Sadursmes Uzmavu"
-
-msgid "Create Simplified Convex Collision Sibling"
-msgstr "Izveidot vienkāršotu izliektu sadursmes radinieku"
-
-msgid "Create Multiple Convex Collision Siblings"
-msgstr "Izveidot Vairākas Izliektas Sadursmes Uzmavas"
 
 msgid "X-Axis"
 msgstr "X ass"
@@ -3083,6 +2895,9 @@ msgstr "iepriekš"
 msgid "Please Confirm..."
 msgstr "Lūdzu apstipriniet..."
 
+msgid "Author:"
+msgstr "Autors:"
+
 msgid "Add Custom Polygon"
 msgstr "Pievienot pielāgotu daudzstūri"
 
@@ -3107,17 +2922,8 @@ msgstr "Nevar atvērt '%s'. Fails ir pārvietots vai dzēsts."
 msgid "Close and save changes?"
 msgstr "Aizvērt un saglabāt izmaiņas?"
 
-msgid "Error saving file!"
-msgstr "Kļūda saglabājot failu!"
-
-msgid "Error while saving theme."
-msgstr "Kļūda saglabājot motīvu."
-
 msgid "Error Saving"
 msgstr "Kļūda Saglabājot"
-
-msgid "Error importing theme."
-msgstr "Kļūda importējot motīvu."
 
 msgid "Error Importing"
 msgstr "Kļūda Importējot"
@@ -3179,9 +2985,6 @@ msgstr "Atvērt Godot tiešsaistes dokumentāciju."
 msgid "Discard"
 msgstr "Atmest"
 
-msgid "Search Results"
-msgstr "Meklēšanas Rezultāti"
-
 msgid "Clear Recent Scripts"
 msgstr "Notīrīt nesenos skriptus"
 
@@ -3199,11 +3002,11 @@ msgstr ""
 msgid "[Ignore]"
 msgstr "[Ignorēt]"
 
-msgid "Line"
-msgstr "Rinda"
-
 msgid "Go to Function"
 msgstr "Iet uz funkciju"
+
+msgid "Line"
+msgstr "Rinda"
 
 msgid "Bookmarks"
 msgstr "Grāmatzīmes"
@@ -3451,9 +3254,6 @@ msgstr "Noņemt ienākošo portu"
 msgid "Remove Output Port"
 msgstr "Noņemt izejas portu"
 
-msgid "Node(s) Moved"
-msgstr "Mezgls(-i) pārvietots(-i)"
-
 msgid "Create Shader Node"
 msgstr "Izveidot ēnotāja mezglu"
 
@@ -3511,26 +3311,14 @@ msgstr "Norādīt mapi kuru skenēt"
 msgid "Remove All"
 msgstr "Noņemt visu"
 
-msgid "Also delete project contents (no undo!)"
-msgstr "Dzēst projekta saturu (nevar atsaukt)"
-
-msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Kļūme atverot paketes failu (tā nav ZIP formātā)."
-
-msgid "New Game Project"
-msgstr "Jauns spēles projekts"
-
-msgid "Invalid project name."
-msgstr "Nederīgs projekta nosaukums."
-
 msgid "Error opening package file, not in ZIP format."
 msgstr "Kļūda atverot failu arhīvu, nav ZIP formātā."
 
 msgid "The following files failed extraction from package:"
 msgstr "Sekojošie faili netika izvilkti no paketes:"
 
-msgid "Package installed successfully!"
-msgstr "Pakete instalēta sekmīgi!"
+msgid "New Game Project"
+msgstr "Jauns spēles projekts"
 
 msgid "Install & Edit"
 msgstr "Instalēt & Rediģēt"
@@ -3586,9 +3374,6 @@ msgstr "Kļūda ielādējot ainu no %s"
 msgid "Detach Script"
 msgstr "Atvienot skriptu"
 
-msgid "Delete %d nodes and any children?"
-msgstr "Dzēst %d mezglus un to bērnus?"
-
 msgid "Delete %d nodes?"
 msgstr "Izdzēst %d mezglus?"
 
@@ -3612,9 +3397,6 @@ msgstr "Cits mezgls"
 
 msgid "Attach Script"
 msgstr "Pievienot skriptu"
-
-msgid "Cut Node(s)"
-msgstr "Izgriezt mezglu(s)"
 
 msgid "Change type of node(s)"
 msgstr "Mezgla(-u) tipa maiņa"
@@ -3657,10 +3439,6 @@ msgstr "Pievienot mezgla skriptu"
 
 msgid "Invalid base path."
 msgstr "Nederīgs bāzes ceļš."
-
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
-"Nepareizs argumenta tips convert() izsaukšanai, lietojiet TYPE_* konstantes."
 
 msgid "GridMap Fill Selection"
 msgstr "Režģkartes pildīšanas izvēle"
@@ -3725,9 +3503,6 @@ msgstr "Animācija netika atrasta: '%s'"
 
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Nekas nav savienots ar ieeju '%s' mezglam '%s'."
-
-msgid "Alert!"
-msgstr "Brīdinājums!"
 
 msgid "Invalid source for preview."
 msgstr "Nederīgs avots priekšskatījumam."

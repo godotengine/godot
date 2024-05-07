@@ -18,14 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "Example: %s"
-msgstr "Örnek:%s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d öğe"
-msgstr[1] "%d öğe"
-
 msgid "New Code Region"
 msgstr "Yeni Kod Bölgesi"
 
