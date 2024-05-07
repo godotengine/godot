@@ -76,13 +76,6 @@ void OpenXRCompositionLayerCylinder::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fallback_segments", PROPERTY_HINT_NONE, ""), "set_fallback_segments", "get_fallback_segments");
 }
 
-void OpenXRCompositionLayerCylinder::_on_openxr_session_begun() {
-	OpenXRCompositionLayer::_on_openxr_session_begun();
-	if (openxr_api) {
-		composition_layer.space = openxr_api->get_play_space();
-	}
-}
-
 Ref<Mesh> OpenXRCompositionLayerCylinder::_create_fallback_mesh() {
 	Ref<ArrayMesh> mesh;
 	mesh.instantiate();
