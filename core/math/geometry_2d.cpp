@@ -298,9 +298,13 @@ Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_poly
 	}
 
 	// Inflate/deflate.
-	PathsD paths = InflatePaths({ polypath }, p_delta, jt, et, 2.0, PRECISION, 0.0);
+	const int precision = 2;
+	PathsD paths = InflatePaths({ polypath }, p_delta, jt, et, 2.0, precision, 0.0);
 	// Here the miter_limit = 2.0 and arc_tolerance = 0.0 are Clipper2 defaults,
 	// and the PRECISION is used to scale points up internally, to attain the desired precision.
+	// precision is less than the module default because:
+	// (a) clipper2's default is 2 and
+	// (b) a precision of 5 causes duplicated points in the inflated path.
 
 	Vector<Vector<Point2>> polypaths;
 	for (PathsD::size_type i = 0; i < paths.size(); ++i) {
