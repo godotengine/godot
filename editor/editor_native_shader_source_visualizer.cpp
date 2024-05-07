@@ -66,6 +66,8 @@ void EditorNativeShaderSourceVisualizer::_load_theme_settings() {
 	// Colorize preprocessor statements.
 	const Color user_type_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
 	syntax_highlighter->add_color_region("#", "", user_type_color, true);
+
+	syntax_highlighter->set_uint_suffix_enabled(true);
 }
 
 void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
