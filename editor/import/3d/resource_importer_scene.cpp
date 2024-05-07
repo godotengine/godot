@@ -1260,7 +1260,7 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 				Dictionary anim_settings = p_animation_data[name];
 
 				{
-					int slices_count = anim_settings["slices/amount"];
+					int slices_count = anim_settings.get_or_add("slices/amount", 0);
 
 					for (int i = 0; i < slices_count; i++) {
 						String slice_name = anim_settings["slice_" + itos(i + 1) + "/name"];
@@ -1284,21 +1284,11 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 						_create_slices(ap, anim, animation_slices, true);
 					}
 				}
-				{
-					//fill with default values
-					List<ImportOption> iopts;
-					get_internal_import_options(INTERNAL_IMPORT_CATEGORY_ANIMATION, &iopts);
-					for (const ImportOption &F : iopts) {
-						if (!anim_settings.has(F.option.name)) {
-							anim_settings[F.option.name] = F.default_value;
-						}
-					}
-				}
 
 				anim->set_loop_mode(static_cast<Animation::LoopMode>((int)anim_settings["settings/loop_mode"]));
-				bool save = anim_settings["save_to_file/enabled"];
-				String path = anim_settings["save_to_file/path"];
-				bool keep_custom = anim_settings["save_to_file/keep_custom_tracks"];
+				bool save = anim_settings.get_or_add("save_to_file/enabled", false);
+				bool keep_custom = anim_settings.get_or_add("save_to_file/keep_custom_tracks", false);
+				String path = anim_settings.get("save_to_file/path", String());
 
 				Ref<Animation> saved_anim = _save_animation_to_file(anim, save, path, keep_custom);
 
@@ -1714,16 +1704,6 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 				if (p_animation_data.has(name)) {
 					Ref<Animation> anim = ap->get_animation(name);
 					Dictionary anim_settings = p_animation_data[name];
-					{
-						//fill with default values
-						List<ImportOption> iopts;
-						get_internal_import_options(INTERNAL_IMPORT_CATEGORY_ANIMATION, &iopts);
-						for (const ImportOption &F : iopts) {
-							if (!anim_settings.has(F.option.name)) {
-								anim_settings[F.option.name] = F.default_value;
-							}
-						}
-					}
 
 					for (int i = 0; i < post_importer_plugins.size(); i++) {
 						post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION, p_root, p_node, anim, anim_settings);
@@ -2008,7 +1988,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "settings/loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Pingpong"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/path", PROPERTY_HINT_SAVE_FILE, "*.res,*.tres"), ""));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/keep_custom_tracks"), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/keep_custom_tracks", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/amount", PROPERTY_HINT_RANGE, "0,256,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 
 			for (int i = 0; i < 256; i++) {
