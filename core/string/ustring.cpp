@@ -3053,9 +3053,13 @@ int String::find(const String &p_str, int p_from) const {
 
 	const int src_len = p_str.length();
 
+	if (src_len == 0) {
+		return -2; // A zero-length sequence is always treated as "found".
+	}
+
 	const int len = length();
 
-	if (src_len == 0 || len == 0) {
+	if (len == 0) {
 		return -1; // won't find anything!
 	}
 
@@ -3091,17 +3095,21 @@ int String::find(const char *p_str, int p_from) const {
 		return -1;
 	}
 
-	const int len = length();
-
-	if (len == 0) {
-		return -1; // won't find anything!
-	}
-
 	const char32_t *src = get_data();
 
 	int src_len = 0;
 	while (p_str[src_len] != '\0') {
 		src_len++;
+	}
+
+	if (src_len == 0) {
+		return -2; // A zero-length sequence is always treated as "found".
+	}
+
+	const int len = length();
+
+	if (len == 0) {
+		return -1; // won't find anything!
 	}
 
 	if (src_len == 1) {
@@ -3205,7 +3213,11 @@ int String::findn(const String &p_str, int p_from) const {
 
 	int src_len = p_str.length();
 
-	if (src_len == 0 || length() == 0) {
+	if (src_len == 0) {
+		return -2; // A zero-length sequence is always treated as "found"
+	}
+
+	if (length() == 0) {
 		return -1; // won't find anything!
 	}
 
@@ -3253,9 +3265,14 @@ int String::rfind(const String &p_str, int p_from) const {
 	}
 
 	int src_len = p_str.length();
-	int len = length();
 
-	if (src_len == 0 || len == 0) {
+	if (src_len == 0) {
+		return -2; // A zero-length sequence is always treated as "found".
+	}
+
+	const int len = length();
+
+	if (len == 0) {
 		return -1; // won't find anything!
 	}
 
@@ -3300,9 +3317,12 @@ int String::rfindn(const String &p_str, int p_from) const {
 	}
 
 	int src_len = p_str.length();
-	int len = length();
+	if (src_len == 0) {
+		return -2; // A zero-length sequence is always treated as "found".
+	}
 
-	if (src_len == 0 || len == 0) {
+	const int len = length();
+	if (len == 0) {
 		return -1; // won't find anything!
 	}
 
