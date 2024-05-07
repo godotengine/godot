@@ -30,7 +30,7 @@
 		[/codeblock]
 		Node paths cannot check whether they are valid and may point to nodes or properties that do not exist. Their meaning depends entirely on the context in which they're used.
 		You usually do not have to worry about the [NodePath] type, as strings are automatically converted to the type when necessary. There are still times when defining node paths is useful. For example, exported [NodePath] properties allow you to easily select any node within the currently edited scene. They are also automatically updated when moving, renaming or deleting nodes in the scene tree editor. See also [annotation @GDScript.@export_node_path].
-		See also [StringName], which is a similar type designed for optimised strings.
+		See also [StringName], which is a similar type designed for optimized strings.
 		[b]Note:[/b] In a boolean context, a [NodePath] will evaluate to [code]false[/code] if it is empty ([code]NodePath("")[/code]). Otherwise, a [NodePath] will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>

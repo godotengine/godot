@@ -1694,7 +1694,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts the string (which is an array of characters) to an UTF-16 encoded array of bytes.
+        /// Converts the string (which is an array of characters) to a UTF-16 encoded array of bytes.
         /// </summary>
         /// <seealso cref="ToAsciiBuffer(string)"/>
         /// <seealso cref="ToUtf32Buffer(string)"/>
@@ -1707,7 +1707,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts the string (which is an array of characters) to an UTF-32 encoded array of bytes.
+        /// Converts the string (which is an array of characters) to a UTF-32 encoded array of bytes.
         /// </summary>
         /// <seealso cref="ToAsciiBuffer(string)"/>
         /// <seealso cref="ToUtf16Buffer(string)"/>
@@ -1720,7 +1720,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts the string (which is an array of characters) to an UTF-8 encoded array of bytes.
+        /// Converts the string (which is an array of characters) to a UTF-8 encoded array of bytes.
         /// The conversion is a bit slower than <see cref="ToAsciiBuffer(string)"/>,
         /// but supports all UTF-8 characters. Therefore, you should prefer this function
         /// over <see cref="ToAsciiBuffer(string)"/>.
