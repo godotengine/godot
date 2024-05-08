@@ -393,9 +393,6 @@
 		<member name="editors/3d_gizmos/gizmo_colors/joint" type="Color" setter="" getter="">
 			The 3D editor gizmo color for [Joint3D]s and [PhysicalBone3D]s.
 		</member>
-		<member name="editors/3d_gizmos/gizmo_colors/shape" type="Color" setter="" getter="">
-			The 3D editor gizmo color for [CollisionShape3D]s, [VehicleWheel3D]s, [RayCast3D]s and [SpringArm3D]s.
-		</member>
 		<member name="editors/animation/autorename_animation_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], automatically updates animation tracks' target paths when renaming or reparenting nodes in the Scene tree dock.
 		</member>
@@ -634,6 +631,9 @@
 			The display scale factor to use for the editor interface. Higher values are more suited to hiDPI/Retina displays.
 			If set to [b]Auto[/b], the editor scale is automatically determined based on the screen resolution and reported display DPI. This heuristic is not always ideal, which means you can get better results by setting the editor scale manually.
 			If set to [b]Custom[/b], the scaling value in [member interface/editor/custom_display_scale] will be used.
+		</member>
+		<member name="interface/editor/dock_tab_style" type="int" setter="" getter="">
+			Tab style of editor docks.
 		</member>
 		<member name="interface/editor/editor_language" type="String" setter="" getter="">
 			The language to use for the editor interface.

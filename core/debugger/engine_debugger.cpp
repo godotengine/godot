@@ -137,7 +137,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, co
 		script_debugger = memnew(ScriptDebugger);
 		// Tell the OS that we want to handle termination signals.
 		OS::get_singleton()->initialize_debugging();
-	} else if (p_uri.find("://") >= 0) {
+	} else if (p_uri.contains("://")) {
 		const String proto = p_uri.substr(0, p_uri.find("://") + 3);
 		if (!protocols.has(proto)) {
 			return;

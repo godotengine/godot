@@ -142,7 +142,7 @@ public:
 	void set_member_variable_color(Color p_color);
 	Color get_member_variable_color() const;
 
-	void set_uint_suffix_enabled(bool p_enabled = true);
+	void set_uint_suffix_enabled(bool p_enabled);
 };
 
 #endif // SYNTAX_HIGHLIGHTER_H

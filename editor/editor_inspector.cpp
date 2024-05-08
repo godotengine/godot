@@ -52,7 +52,7 @@
 #include "scene/resources/style_box_flat.h"
 
 bool EditorInspector::_property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
-	if (p_property_path.findn(p_filter) != -1) {
+	if (p_property_path.containsn(p_filter)) {
 		return true;
 	}
 
@@ -72,14 +72,8 @@ Size2 EditorProperty::get_minimum_size() const {
 	ms.height = label.is_empty() ? 0 : font->get_height(font_size) + 4 * EDSCALE;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
+		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
-			continue;
-		}
-		if (!c->is_visible()) {
 			continue;
 		}
 		if (c == bottom_editor) {
@@ -143,14 +137,8 @@ void EditorProperty::_notification(int p_what) {
 
 				//compute room needed
 				for (int i = 0; i < get_child_count(); i++) {
-					Control *c = Object::cast_to<Control>(get_child(i));
+					Control *c = as_sortable_control(get_child(i));
 					if (!c) {
-						continue;
-					}
-					if (c->is_set_as_top_level()) {
-						continue;
-					}
-					if (!c->is_visible()) {
 						continue;
 					}
 					if (c == bottom_editor) {
@@ -218,11 +206,8 @@ void EditorProperty::_notification(int p_what) {
 
 			//set children
 			for (int i = 0; i < get_child_count(); i++) {
-				Control *c = Object::cast_to<Control>(get_child(i));
+				Control *c = as_sortable_control(get_child(i));
 				if (!c) {
-					continue;
-				}
-				if (c->is_set_as_top_level()) {
 					continue;
 				}
 				if (c == bottom_editor) {
@@ -1348,14 +1333,10 @@ void EditorInspectorSection::_notification(int p_what) {
 			int header_height = _get_header_height();
 			Vector2 offset = Vector2(is_layout_rtl() ? 0 : inspector_margin, header_height);
 			for (int i = 0; i < get_child_count(); i++) {
-				Control *c = Object::cast_to<Control>(get_child(i));
+				Control *c = as_sortable_control(get_child(i));
 				if (!c) {
 					continue;
 				}
-				if (c->is_set_as_top_level()) {
-					continue;
-				}
-
 				fit_child_in_rect(c, Rect2(offset, size));
 			}
 		} break;
@@ -1504,14 +1485,8 @@ void EditorInspectorSection::_notification(int p_what) {
 Size2 EditorInspectorSection::get_minimum_size() const {
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
+		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
-			continue;
-		}
-		if (!c->is_visible()) {
 			continue;
 		}
 		Size2 minsize = c->get_combined_minimum_size();
@@ -2564,16 +2539,16 @@ EditorProperty *EditorInspector::instantiate_property_editor(Object *p_object, c
 	for (int i = inspector_plugin_count - 1; i >= 0; i--) {
 		inspector_plugins[i]->parse_property(p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		if (inspector_plugins[i]->added_editors.size()) {
-			for (int j = 1; j < inspector_plugins[i]->added_editors.size(); j++) { //only keep first one
-				memdelete(inspector_plugins[i]->added_editors[j].property_editor);
+			for (List<EditorInspectorPlugin::AddedEditor>::Element *E = inspector_plugins[i]->added_editors.front()->next(); E; E = E->next()) { //only keep first one
+				memdelete(E->get().property_editor);
 			}
 
-			EditorProperty *prop = Object::cast_to<EditorProperty>(inspector_plugins[i]->added_editors[0].property_editor);
+			EditorProperty *prop = Object::cast_to<EditorProperty>(inspector_plugins[i]->added_editors.front()->get().property_editor);
 			if (prop) {
 				inspector_plugins[i]->added_editors.clear();
 				return prop;
 			} else {
-				memdelete(inspector_plugins[i]->added_editors[0].property_editor);
+				memdelete(inspector_plugins[i]->added_editors.front()->get().property_editor);
 				inspector_plugins[i]->added_editors.clear();
 			}
 		}
@@ -4042,25 +4017,16 @@ void EditorInspector::_notification(int p_what) {
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
 			set_process(is_visible_in_tree());
 			add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-		} break;
-
-		case NOTIFICATION_ENTER_TREE: {
 			if (!sub_inspector) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
-			if (EditorNode::get_singleton() && !EditorNode::get_singleton()->is_exiting()) {
-				// Don't need to clean up if exiting, and object may already be freed.
-				edit(nullptr);
-			}
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-			if (!sub_inspector) {
+			if (!sub_inspector && is_inside_tree()) {
 				get_tree()->disconnect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
+			edit(nullptr);
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {

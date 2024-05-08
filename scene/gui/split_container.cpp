@@ -127,10 +127,7 @@ Control *SplitContainer::get_containable_child(int p_idx) const {
 
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i, false));
-		if (!c || !c->is_visible()) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
+		if (!c || !c->is_visible() || c->is_set_as_top_level()) {
 			continue;
 		}
 

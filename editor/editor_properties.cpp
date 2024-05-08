@@ -2025,6 +2025,7 @@ void EditorPropertyQuaternion::_custom_value_changed(double val) {
 	spin[1]->set_value_no_signal(temp_q.y);
 	spin[2]->set_value_no_signal(temp_q.z);
 	spin[3]->set_value_no_signal(temp_q.w);
+	_value_changed(-1, "");
 }
 
 void EditorPropertyQuaternion::_value_changed(double val, const String &p_name) {

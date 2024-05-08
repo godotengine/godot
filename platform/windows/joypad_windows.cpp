@@ -427,7 +427,7 @@ void JoypadWindows::process_joypads() {
 		const LONG axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_Z, DIJOFS_RX, DIJOFS_RY, DIJOFS_RZ, (LONG)DIJOFS_SLIDER(0), (LONG)DIJOFS_SLIDER(1) };
 		int values[] = { js.lX, js.lY, js.lZ, js.lRx, js.lRy, js.lRz, js.rglSlider[0], js.rglSlider[1] };
 
-		for (int j = 0; j < joy->joy_axis.size(); j++) {
+		for (uint32_t j = 0; j < joy->joy_axis.size(); j++) {
 			for (int k = 0; k < count; k++) {
 				if (joy->joy_axis[j] == axes[k]) {
 					input->joy_axis(joy->id, (JoyAxis)j, axis_correct(values[k]));

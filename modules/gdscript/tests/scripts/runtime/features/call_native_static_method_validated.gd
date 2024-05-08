@@ -4,4 +4,3 @@ func test():
 
 	# Validated native static call without return value.
 	Node.print_orphan_nodes()
-

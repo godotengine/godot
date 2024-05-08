@@ -642,11 +642,11 @@ void DependencyRemoveDialog::ok_pressed() {
 
 	for (int i = 0; i < previous_favorites.size(); ++i) {
 		if (previous_favorites[i].ends_with("/")) {
-			if (dirs_to_delete.find(previous_favorites[i]) < 0) {
+			if (!dirs_to_delete.has(previous_favorites[i])) {
 				new_favorites.push_back(previous_favorites[i]);
 			}
 		} else {
-			if (files_to_delete.find(previous_favorites[i]) < 0) {
+			if (!files_to_delete.has(previous_favorites[i])) {
 				new_favorites.push_back(previous_favorites[i]);
 			}
 		}

@@ -1695,6 +1695,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 				if (full) {
 					// If not fully constant, setting this value is detrimental to the inference.
 					r_type.value = a;
+					r_type.type.is_constant = true;
 				}
 				r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 				r_type.type.kind = GDScriptParser::DataType::BUILTIN;
@@ -2733,9 +2734,9 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 								// Handle user preference.
 								if (opt.is_quoted()) {
 									opt = opt.unquote().quote(quote_style);
-									if (use_string_names && info.arguments[p_argidx].type == Variant::STRING_NAME) {
+									if (use_string_names && info.arguments.get(p_argidx).type == Variant::STRING_NAME) {
 										opt = opt.indent("&");
-									} else if (use_node_paths && info.arguments[p_argidx].type == Variant::NODE_PATH) {
+									} else if (use_node_paths && info.arguments.get(p_argidx).type == Variant::NODE_PATH) {
 										opt = opt.indent("^");
 									}
 								}
@@ -2746,7 +2747,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					}
 
 					if (p_argidx < method_args) {
-						PropertyInfo arg_info = info.arguments[p_argidx];
+						const PropertyInfo &arg_info = info.arguments.get(p_argidx);
 						if (arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 							_find_enumeration_candidates(p_context, arg_info.class_name, r_result);
 						}
@@ -3334,19 +3335,17 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				}
 				method_hint += "(";
 
-				if (mi.arguments.size()) {
-					for (int i = 0; i < mi.arguments.size(); i++) {
-						if (i > 0) {
-							method_hint += ", ";
-						}
-						String arg = mi.arguments[i].name;
-						if (arg.contains(":")) {
-							arg = arg.substr(0, arg.find(":"));
-						}
-						method_hint += arg;
-						if (use_type_hint) {
-							method_hint += ": " + _get_visual_datatype(mi.arguments[i], true, class_name);
-						}
+				for (List<PropertyInfo>::ConstIterator arg_itr = mi.arguments.begin(); arg_itr != mi.arguments.end(); ++arg_itr) {
+					if (arg_itr != mi.arguments.begin()) {
+						method_hint += ", ";
+					}
+					String arg = arg_itr->name;
+					if (arg.contains(":")) {
+						arg = arg.substr(0, arg.find(":"));
+					}
+					method_hint += arg;
+					if (use_type_hint) {
+						method_hint += ": " + _get_visual_datatype(*arg_itr, true, class_name);
 					}
 				}
 				method_hint += ")";

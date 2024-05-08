@@ -389,6 +389,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool borderless = false;
 		bool resizable = true;
 		bool window_focused = false;
+		int activate_state = 0;
 		bool was_maximized = false;
 		bool always_on_top = false;
 		bool no_focus = false;
@@ -402,6 +403,7 @@ class DisplayServerWindows : public DisplayServer {
 
 		// Timers.
 		uint32_t move_timer_id = 0U;
+		uint32_t activate_timer_id = 0U;
 
 		HANDLE wtctx;
 		LOGCONTEXTW wtlc;
@@ -508,7 +510,7 @@ class DisplayServerWindows : public DisplayServer {
 	WindowID _get_focused_window_or_popup() const;
 	void _register_raw_input_devices(WindowID p_target_window);
 
-	void _process_activate_event(WindowID p_window_id, WPARAM wParam, LPARAM lParam);
+	void _process_activate_event(WindowID p_window_id);
 	void _process_key_events();
 
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);

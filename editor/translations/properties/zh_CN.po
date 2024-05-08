@@ -97,7 +97,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2024-02-23 09:02+0000\n"
+"PO-Revision-Date: 2024-03-23 22:40+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hans/>\n"
@@ -369,6 +369,9 @@ msgstr "计时器"
 msgid "Incremental Search Max Interval Msec"
 msgstr "增量搜索最大间隔（毫秒）"
 
+msgid "Tooltip Delay (sec)"
+msgstr "工具提示延迟（毫秒）"
+
 msgid "Common"
 msgstr "通用"
 
@@ -410,6 +413,9 @@ msgstr "纹理上传区域像素大小"
 
 msgid "Pipeline Cache"
 msgstr "管线缓存"
+
+msgid "Enable"
+msgstr "启用"
 
 msgid "Save Chunk Size (MB)"
 msgstr "保存区块大小（MB）"
@@ -795,9 +801,6 @@ msgstr "值"
 msgid "Arg Count"
 msgstr "参数个数"
 
-msgid "Args"
-msgstr "参数"
-
 msgid "Type"
 msgstr "类型"
 
@@ -885,6 +888,12 @@ msgstr "专注模式"
 msgid "Movie Maker Enabled"
 msgstr "启用 Movie Maker"
 
+msgid "Theme"
+msgstr "主题"
+
+msgid "Line Spacing"
+msgstr "行间距"
+
 msgid "Base Type"
 msgstr "基础类型"
 
@@ -917,6 +926,9 @@ msgstr "编辑器屏幕"
 
 msgid "Project Manager Screen"
 msgstr "项目管理器屏幕"
+
+msgid "Connection"
+msgstr "连接"
 
 msgid "Enable Pseudolocalization"
 msgstr "启用伪本地化"
@@ -1041,8 +1053,8 @@ msgstr "默认取色器模式"
 msgid "Default Color Picker Shape"
 msgstr "默认取色器形状"
 
-msgid "Theme"
-msgstr "主题"
+msgid "Follow System Theme"
+msgstr "跟随系统主题"
 
 msgid "Preset"
 msgstr "预设"
@@ -1058,6 +1070,9 @@ msgstr "基础颜色"
 
 msgid "Accent Color"
 msgstr "强调颜色"
+
+msgid "Use System Accent Color"
+msgstr "使用系统强调颜色"
 
 msgid "Contrast"
 msgstr "对比度"
@@ -1121,9 +1136,6 @@ msgstr "加载时恢复场景"
 
 msgid "Multi Window"
 msgstr "多窗口"
-
-msgid "Enable"
-msgstr "启用"
 
 msgid "Restore Windows on Load"
 msgstr "加载时恢复窗口"
@@ -1196,6 +1208,9 @@ msgstr "RPC 端口"
 
 msgid "RPC Server Uptime"
 msgstr "RPC 服务器在线时间"
+
+msgid "FBX2glTF"
+msgstr "FBX2glTF"
 
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF 路径"
@@ -1316,9 +1331,6 @@ msgstr "绘制制表符"
 
 msgid "Draw Spaces"
 msgstr "绘制空格"
-
-msgid "Line Spacing"
-msgstr "行间距"
 
 msgid "Behavior"
 msgstr "行为"
@@ -1454,6 +1466,9 @@ msgstr "关节"
 
 msgid "Shape"
 msgstr "形状"
+
+msgid "AABB"
+msgstr "AABB"
 
 msgid "Primary Grid Steps"
 msgstr "主栅格步长"
@@ -1623,6 +1638,9 @@ msgstr "点抓取半径"
 msgid "Show Previous Outline"
 msgstr "显示旧有轮廓"
 
+msgid "Auto Bake Delay"
+msgstr "自动烘焙延时"
+
 msgid "Autorename Animation Tracks"
 msgstr "自动重命名动画轨道"
 
@@ -1706,9 +1724,6 @@ msgstr "Linux/BSD"
 
 msgid "Prefer Wayland"
 msgstr "首选 Wayland"
-
-msgid "Connection"
-msgstr "连接"
 
 msgid "Network Mode"
 msgstr "网络模式"
@@ -1872,6 +1887,60 @@ msgstr "搜索结果颜色"
 msgid "Search Result Border Color"
 msgstr "搜索结果边框颜色"
 
+msgid "Connection Colors"
+msgstr "连接颜色"
+
+msgid "Scalar Color"
+msgstr "标量颜色"
+
+msgid "Vector2 Color"
+msgstr "Vector2 颜色"
+
+msgid "Vector 3 Color"
+msgstr "Vector3 颜色"
+
+msgid "Vector 4 Color"
+msgstr "Vector4 颜色"
+
+msgid "Boolean Color"
+msgstr "布尔值颜色"
+
+msgid "Transform Color"
+msgstr "变换颜色"
+
+msgid "Sampler Color"
+msgstr "采样器颜色"
+
+msgid "Category Colors"
+msgstr "分类颜色"
+
+msgid "Output Color"
+msgstr "输出颜色"
+
+msgid "Color Color"
+msgstr "颜色颜色"
+
+msgid "Conditional Color"
+msgstr "条件颜色"
+
+msgid "Input Color"
+msgstr "输入颜色"
+
+msgid "Textures Color"
+msgstr "纹理颜色"
+
+msgid "Utility Color"
+msgstr "工具颜色"
+
+msgid "Vector Color"
+msgstr "向量颜色"
+
+msgid "Special Color"
+msgstr "特殊颜色"
+
+msgid "Particle Color"
+msgstr "粒子颜色"
+
 msgid "Custom Template"
 msgstr "自定义模板"
 
@@ -1917,6 +1986,9 @@ msgstr "文件模式"
 msgid "Filters"
 msgstr "过滤"
 
+msgid "Options"
+msgstr "选项"
+
 msgid "Disable Overwrite Warning"
 msgstr "禁用覆盖警告"
 
@@ -1958,6 +2030,9 @@ msgstr "归一化位置轨道"
 
 msgid "Overwrite Axis"
 msgstr "覆盖轴"
+
+msgid "Reset All Bone Poses After Import"
+msgstr "导入后重置所有骨骼姿势"
 
 msgid "Fix Silhouette"
 msgstr "修复剪影"
@@ -2112,9 +2187,6 @@ msgstr "保存为文件"
 msgid "Enabled"
 msgstr "启用"
 
-msgid "Make Streamable"
-msgstr "使可流式传输"
-
 msgid "Shadow Meshes"
 msgstr "阴影网格"
 
@@ -2180,6 +2252,9 @@ msgstr "应用根缩放"
 
 msgid "Root Scale"
 msgstr "根缩放"
+
+msgid "Import as Skeleton Bones"
+msgstr "作为骨架骨骼导入"
 
 msgid "Meshes"
 msgstr "网格"
@@ -2408,9 +2483,6 @@ msgstr "裁剪至区域"
 
 msgid "Trim Alpha Border From Region"
 msgstr "从区域修剪 Alpha 边框"
-
-msgid "Force"
-msgstr "强制"
 
 msgid "8 Bit"
 msgstr "8 位"
@@ -2835,9 +2907,6 @@ msgstr "手部跟踪"
 msgid "Eye Gaze Interaction"
 msgstr "眼动交互"
 
-msgid "In Editor"
-msgstr "在编辑器中"
-
 msgid "Boot Splash"
 msgstr "启动画面"
 
@@ -3026,6 +3095,12 @@ msgstr "CSG"
 
 msgid "FBX"
 msgstr "FBX"
+
+msgid "Importer"
+msgstr "导入器"
+
+msgid "Allow Geometry Helper Nodes"
+msgstr "允许几何辅助节点"
 
 msgid "Embedded Image Handling"
 msgstr "嵌入图像处理"
@@ -3275,6 +3350,9 @@ msgstr "稀疏值缓冲视图"
 
 msgid "Sparse Values Byte Offset"
 msgstr "稀疏值字节偏移"
+
+msgid "Original Name"
+msgstr "原始名称"
 
 msgid "Loop"
 msgstr "循环"
@@ -3725,6 +3803,9 @@ msgstr "请求参照空间类型"
 
 msgid "Reference Space Type"
 msgstr "参照空间类型"
+
+msgid "Enabled Features"
+msgstr "启用特性"
 
 msgid "Visibility State"
 msgstr "可见状态"
@@ -4932,17 +5013,26 @@ msgstr "导航多边形"
 msgid "Use Edge Connections"
 msgstr "使用边界连接"
 
-msgid "Constrain Avoidance"
-msgstr "约束避障"
-
 msgid "Skew"
 msgstr "偏斜"
+
+msgid "Scroll Scale"
+msgstr "滚动缩放"
 
 msgid "Scroll Offset"
 msgstr "滚动偏移"
 
 msgid "Repeat"
 msgstr "重复"
+
+msgid "Repeat Size"
+msgstr "重复大小"
+
+msgid "Autoscroll"
+msgstr "自动滚动"
+
+msgid "Repeat Times"
+msgstr "重复次数"
 
 msgid "Begin"
 msgstr "起点"
@@ -4952,6 +5042,12 @@ msgstr "行尾"
 
 msgid "Follow Viewport"
 msgstr "跟随视口"
+
+msgid "Ignore Camera Scroll"
+msgstr "忽略相机滚动"
+
+msgid "Screen Offset"
+msgstr "屏幕偏移"
 
 msgid "Scroll"
 msgstr "滚动"
@@ -5211,11 +5307,11 @@ msgstr "自定义集成器"
 msgid "Continuous CD"
 msgstr "连续碰撞检测"
 
-msgid "Max Contacts Reported"
-msgstr "报告的最大接触"
-
 msgid "Contact Monitor"
 msgstr "接触监视器"
+
+msgid "Max Contacts Reported"
+msgstr "报告的最大接触"
 
 msgid "Linear"
 msgstr "线性"
@@ -5298,6 +5394,9 @@ msgstr "帧坐标"
 msgid "Filter Clip Enabled"
 msgstr "启用过滤裁剪"
 
+msgid "Tile Set"
+msgstr "图块集"
+
 msgid "Rendering Quadrant Size"
 msgstr "渲染象限大小"
 
@@ -5310,8 +5409,8 @@ msgstr "碰撞可见性模式"
 msgid "Navigation Visibility Mode"
 msgstr "导航可见性模式"
 
-msgid "Tile Set"
-msgstr "图块集"
+msgid "Y Sort Origin"
+msgstr "Y 排序原点"
 
 msgid "Texture Normal"
 msgstr "正常纹理"
@@ -5441,9 +5540,6 @@ msgstr "缩放曲线 Z"
 
 msgid "Albedo"
 msgstr "反照率"
-
-msgid "Normal"
-msgstr "正常"
 
 msgid "Orm"
 msgstr "Orm"
@@ -6087,17 +6183,11 @@ msgstr "运动缩放"
 msgid "Show Rest Only"
 msgstr "仅显示放松"
 
-msgid "Animate Physical Bones"
-msgstr "动画物理骨骼"
-
 msgid "Root Bone"
 msgstr "根骨骼"
 
 msgid "Tip Bone"
 msgstr "尖端骨骼"
-
-msgid "Interpolation"
-msgstr "插值"
 
 msgid "Target"
 msgstr "目标"
@@ -6119,6 +6209,9 @@ msgstr "最小距离"
 
 msgid "Max Iterations"
 msgstr "最大迭代数"
+
+msgid "Active"
+msgstr "激活"
 
 msgid "Pinned Points"
 msgstr "固定点"
@@ -6155,9 +6248,6 @@ msgstr "阻力系数"
 
 msgid "Track Physics Step"
 msgstr "跟踪物理迭代"
-
-msgid "AABB"
-msgstr "AABB"
 
 msgid "Sorting"
 msgstr "排序"
@@ -6204,14 +6294,26 @@ msgstr "传播"
 msgid "Use Two Bounces"
 msgstr "使用二次反弹"
 
+msgid "Body Tracker"
+msgstr "身体追踪器"
+
+msgid "Body Update"
+msgstr "身体更新"
+
 msgid "Face Tracker"
 msgstr "面部追踪器"
+
+msgid "Hand Tracker"
+msgstr "手部追踪"
 
 msgid "Tracker"
 msgstr "追踪器"
 
 msgid "Pose"
 msgstr "姿势"
+
+msgid "Show When Tracked"
+msgstr "追踪时显示"
 
 msgid "World Scale"
 msgstr "世界缩放"
@@ -6263,9 +6365,6 @@ msgstr "输入数"
 
 msgid "Request"
 msgstr "请求"
-
-msgid "Active"
-msgstr "激活"
 
 msgid "Internal Active"
 msgstr "内部激活"
@@ -6636,9 +6735,6 @@ msgstr "模式覆盖标题"
 msgid "Root Subfolder"
 msgstr "根部子文件夹"
 
-msgid "Options"
-msgstr "选项"
-
 msgid "Use Native Dialog"
 msgstr "使用原生对话框"
 
@@ -6884,9 +6980,6 @@ msgstr "选择状态项目时隐藏"
 
 msgid "Submenu Popup Delay"
 msgstr "子菜单弹出延迟"
-
-msgid "System Menu Root"
-msgstr "系统菜单根"
 
 msgid "Fill Mode"
 msgstr "填充模式"
@@ -7425,6 +7518,9 @@ msgstr "默认环境"
 msgid "Enable Object Picking"
 msgstr "启用对象拾取"
 
+msgid "Menu"
+msgstr "菜单"
+
 msgid "Wait Time"
 msgstr "等待时间"
 
@@ -7521,9 +7617,6 @@ msgstr "四方形 3"
 msgid "Canvas Cull Mask"
 msgstr "画布剔除遮罩"
 
-msgid "Tooltip Delay (sec)"
-msgstr "工具提示延迟（毫秒）"
-
 msgid "Size 2D Override"
 msgstr "2D 大小覆盖"
 
@@ -7604,6 +7697,30 @@ msgstr "3D 导航"
 
 msgid "Segments"
 msgstr "分段"
+
+msgid "Parsed Geometry Type"
+msgstr "解析几何体类型"
+
+msgid "Parsed Collision Mask"
+msgstr "解析碰撞遮罩"
+
+msgid "Source Geometry Mode"
+msgstr "来源几何体模式"
+
+msgid "Source Geometry Group Name"
+msgstr "来源几何体分组名称"
+
+msgid "Cells"
+msgstr "单元格"
+
+msgid "Agents"
+msgstr "代理"
+
+msgid "Baking Rect"
+msgstr "烘焙矩形"
+
+msgid "Baking Rect Offset"
+msgstr "烘焙矩形偏移"
 
 msgid "A"
 msgstr "A"
@@ -7755,9 +7872,6 @@ msgstr "地形集"
 msgid "Custom Data Layers"
 msgstr "自定义数据层"
 
-msgid "Scenes"
-msgstr "场景"
-
 msgid "Scene"
 msgstr "场景"
 
@@ -7781,9 +7895,6 @@ msgstr "转置"
 
 msgid "Texture Origin"
 msgstr "纹理原点"
-
-msgid "Y Sort Origin"
-msgstr "Y 排序原点"
 
 msgid "Terrain Set"
 msgstr "地形集"
@@ -8343,6 +8454,9 @@ msgstr "字重"
 msgid "Font Stretch"
 msgstr "字体拉伸"
 
+msgid "Interpolation"
+msgstr "插值"
+
 msgid "Color Space"
 msgstr "色彩空间"
 
@@ -8571,23 +8685,11 @@ msgstr "可见实例数"
 msgid "Partition Type"
 msgstr "分区类型"
 
-msgid "Parsed Geometry Type"
-msgstr "解析几何体类型"
-
-msgid "Source Geometry Mode"
-msgstr "来源几何体模式"
-
 msgid "Source Group Name"
 msgstr "来源分组名称"
 
-msgid "Cells"
-msgstr "单元格"
-
 msgid "Cell Height"
 msgstr "单元格高度"
-
-msgid "Agents"
-msgstr "代理"
 
 msgid "Max Climb"
 msgstr "最大爬升"
@@ -8633,18 +8735,6 @@ msgstr "烘焙 AABB"
 
 msgid "Baking AABB Offset"
 msgstr "烘焙 AABB 偏移"
-
-msgid "Parsed Collision Mask"
-msgstr "解析碰撞遮罩"
-
-msgid "Source Geometry Group Name"
-msgstr "来源几何体分组名称"
-
-msgid "Baking Rect"
-msgstr "烘焙矩形"
-
-msgid "Baking Rect Offset"
-msgstr "烘焙矩形偏移"
 
 msgid "Bundled"
 msgstr "捆绑"
@@ -9240,6 +9330,9 @@ msgstr "切换隐藏"
 msgid "Folder"
 msgstr "文件夹"
 
+msgid "Create Folder"
+msgstr "创建文件夹"
+
 msgid "Folder Icon Color"
 msgstr "文件夹图标颜色"
 
@@ -9471,9 +9564,6 @@ msgstr "选项卡栏背景"
 msgid "Drop Mark"
 msgstr "放下标记"
 
-msgid "Menu"
-msgstr "菜单"
-
 msgid "Menu Highlight"
 msgstr "菜单高亮"
 
@@ -9491,9 +9581,6 @@ msgstr "图标间距"
 
 msgid "Button Highlight"
 msgstr "按钮高亮"
-
-msgid "Large"
-msgstr "大号"
 
 msgid "SV Width"
 msgstr "SV 宽度"
@@ -10459,7 +10546,7 @@ msgid "Max Clustered Elements"
 msgstr "最大集群元素数"
 
 msgid "OpenGL"
-msgstr "OpenGL（Open Graphics Library）是一种跨平台的图形编程API工具"
+msgstr "OpenGL"
 
 msgid "Max Renderable Elements"
 msgstr "最大可渲染元素数"
@@ -10482,8 +10569,14 @@ msgstr "将警告当作错误"
 msgid "Has Tracking Data"
 msgstr "有跟踪数据"
 
+msgid "Body Flags"
+msgstr "身体标志"
+
 msgid "Blend Shapes"
 msgstr "混合形状"
+
+msgid "Hand Tracking Source"
+msgstr "手部追踪源"
 
 msgid "Is Primary"
 msgstr "是否主要"

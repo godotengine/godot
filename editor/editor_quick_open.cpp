@@ -160,7 +160,7 @@ float EditorQuickOpen::_score_search_result(const PackedStringArray &p_search_to
 		}
 
 		// Prioritize matches at the front of the path token.
-		if (min_match_idx == 0 || p_path.find("/" + s) != -1) {
+		if (min_match_idx == 0 || p_path.contains("/" + s)) {
 			token_score += 1.0f;
 		}
 

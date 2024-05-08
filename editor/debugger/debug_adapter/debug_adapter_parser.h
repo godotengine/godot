@@ -50,7 +50,7 @@ private:
 		if (p_path.contains("\\")) {
 			String project_path = ProjectSettings::get_singleton()->get_resource_path();
 			String path = p_path.replace("\\", "/");
-			return path.findn(project_path) != -1;
+			return path.containsn(project_path);
 		}
 		return p_path.begins_with(ProjectSettings::get_singleton()->get_resource_path());
 	}

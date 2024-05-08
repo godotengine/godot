@@ -1125,7 +1125,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 			//turn particle by rotation in Y
 			if (particle_flags[PARTICLE_FLAG_ROTATE_Y]) {
 				Basis rot_y(Vector3(0, 1, 0), p.custom[0]);
-				p.transform.basis = p.transform.basis * rot_y;
+				p.transform.basis = rot_y;
 			}
 		}
 

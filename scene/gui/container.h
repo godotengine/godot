@@ -42,6 +42,8 @@ class Container : public Control {
 
 protected:
 	void queue_sort();
+	Control *as_sortable_control(Node *p_node) const;
+
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;

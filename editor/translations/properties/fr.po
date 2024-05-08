@@ -123,13 +123,15 @@
 # peperoni <peperoni@users.noreply.hosted.weblate.org>, 2024.
 # Octano <theo.huchard@gmail.com>, 2024.
 # Didier Morandi <didier.morandi@gmail.com>, 2024.
+# clemde france <clemdefranceyt@gmail.com>, 2024.
+# Xltec <axelcrp.pro@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-02-21 09:02+0000\n"
-"Last-Translator: Didier Morandi <didier.morandi@gmail.com>\n"
+"PO-Revision-Date: 2024-05-01 22:07+0000\n"
+"Last-Translator: Xltec <axelcrp.pro@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -137,7 +139,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.5.3-dev\n"
 
 msgid "Application"
 msgstr "Application"
@@ -168,6 +170,9 @@ msgstr "Désactiver stdout"
 
 msgid "Disable stderr"
 msgstr "Désactiver stderr"
+
+msgid "Print Header"
+msgstr "Header"
 
 msgid "Use Hidden Project Data Directory"
 msgstr "Utiliser un répertoire caché pour les données du projet"
@@ -252,6 +257,9 @@ msgstr "Animation"
 
 msgid "Warnings"
 msgstr "Avertissements"
+
+msgid "Check Invalid Track Paths"
+msgstr "piste invalide"
 
 msgid "Audio"
 msgstr "Audio"
@@ -412,6 +420,12 @@ msgstr "Matériel de rendu"
 msgid "V-Sync"
 msgstr "Synchronisation Vertical"
 
+msgid "Frame Queue Size"
+msgstr "Fenêtre taille"
+
+msgid "Swapchain Image Count"
+msgstr "Nombre d'images Swapchain"
+
 msgid "Staging Buffer"
 msgstr "Tampon intermédiaire"
 
@@ -427,6 +441,9 @@ msgstr "Taille de la région de téléchargement de texture en pixels"
 msgid "Pipeline Cache"
 msgstr "Cache du pipeline"
 
+msgid "Enable"
+msgstr "Activer"
+
 msgid "Save Chunk Size (MB)"
 msgstr "Taille du bloc d'enregistrement (Mo)"
 
@@ -435,6 +452,18 @@ msgstr "Vulkan"
 
 msgid "Max Descriptors per Pool"
 msgstr "Descripteurs maximums par Pool"
+
+msgid "D3D12"
+msgstr "D3D12"
+
+msgid "Max Resource Descriptors per Frame"
+msgstr "Nombre maximum de ressources par images"
+
+msgid "Max Sampler Descriptors per Frame"
+msgstr "Descripteurs maximums par Images"
+
+msgid "Agility SDK Version"
+msgstr "Version Agility SDK"
 
 msgid "Textures"
 msgstr "Textures"
@@ -766,9 +795,6 @@ msgstr "Valeur"
 msgid "Arg Count"
 msgstr "Nombre d'arguments"
 
-msgid "Args"
-msgstr "Args"
-
 msgid "Type"
 msgstr "Type"
 
@@ -849,6 +875,12 @@ msgstr "Supprimable"
 
 msgid "Distraction Free Mode"
 msgstr "Mode sans distraction"
+
+msgid "Theme"
+msgstr "Thème"
+
+msgid "Line Spacing"
+msgstr "Espace entre les lignes"
 
 msgid "Base Type"
 msgstr "Type de base"
@@ -973,9 +1005,6 @@ msgstr "Mode par défaut du sélectionneur de couleur"
 msgid "Default Color Picker Shape"
 msgstr "Forme par défaut du sélecteur de couleur"
 
-msgid "Theme"
-msgstr "Thème"
-
 msgid "Preset"
 msgstr "Préréglage"
 
@@ -1038,9 +1067,6 @@ msgstr "Afficher le bouton script"
 
 msgid "Restore Scenes on Load"
 msgstr "Rouvrir les scènes au chargement"
-
-msgid "Enable"
-msgstr "Activer"
 
 msgid "External Programs"
 msgstr "Programmes externes"
@@ -1195,9 +1221,6 @@ msgstr "Montrer les tabulations"
 msgid "Draw Spaces"
 msgstr "Afficher les espaces"
 
-msgid "Line Spacing"
-msgstr "Espace entre les lignes"
-
 msgid "Behavior"
 msgstr "Comportement"
 
@@ -1326,6 +1349,9 @@ msgstr "Jointure"
 
 msgid "Shape"
 msgstr "Forme"
+
+msgid "AABB"
+msgstr "AABB"
 
 msgid "Primary Grid Steps"
 msgstr "Pas de la grille principale"
@@ -1891,9 +1917,6 @@ msgstr "Enregistrer vers un fichier"
 msgid "Enabled"
 msgstr "Activé"
 
-msgid "Make Streamable"
-msgstr "Rendre diffusable"
-
 msgid "Shadow Meshes"
 msgstr "Maillages d'ombres"
 
@@ -2160,9 +2183,6 @@ msgstr "Rogner à la région"
 
 msgid "Trim Alpha Border From Region"
 msgstr "Rogner les bordures alpha de la région"
-
-msgid "Force"
-msgstr "Force"
 
 msgid "8 Bit"
 msgstr "8 Bit"
@@ -2499,9 +2519,6 @@ msgstr "Afficher la configuration"
 
 msgid "Reference Space"
 msgstr "Référentiel spatial"
-
-msgid "In Editor"
-msgstr "Dans l'éditeur"
 
 msgid "Boot Splash"
 msgstr "Écran de démarrage"
@@ -4171,6 +4188,9 @@ msgstr "Coordonnées de trame"
 msgid "Tile Set"
 msgstr "Palette de tuiles"
 
+msgid "Y Sort Origin"
+msgstr "Origine du triage par Y"
+
 msgid "Bitmask"
 msgstr "Bitmask"
 
@@ -4275,9 +4295,6 @@ msgstr "Platitude"
 
 msgid "Albedo"
 msgstr "Albédo"
-
-msgid "Normal"
-msgstr "Normale"
 
 msgid "Emission"
 msgstr "Émission"
@@ -4684,9 +4701,6 @@ msgstr "Os racine"
 msgid "Tip Bone"
 msgstr "Os d'extrémité"
 
-msgid "Interpolation"
-msgstr "Interpolation"
-
 msgid "Target"
 msgstr "Cible"
 
@@ -4707,6 +4721,9 @@ msgstr "Distance Minimale"
 
 msgid "Max Iterations"
 msgstr "Itérations max"
+
+msgid "Active"
+msgstr "Actif"
 
 msgid "Pinned Points"
 msgstr "Points épinglés"
@@ -4743,9 +4760,6 @@ msgstr "Coefficient de traînée"
 
 msgid "Track Physics Step"
 msgstr "Suivre les Etapes Physiques"
-
-msgid "AABB"
-msgstr "AABB"
 
 msgid "Sorting"
 msgstr "Arrangement"
@@ -4812,9 +4826,6 @@ msgstr "Durée du fondu croisé"
 
 msgid "Request"
 msgstr "Requête"
-
-msgid "Active"
-msgstr "Actif"
 
 msgid "Add Amount"
 msgstr "Ajouter une quantité"
@@ -5362,6 +5373,9 @@ msgstr "CDS"
 msgid "Enable Object Picking"
 msgstr "Activer la sélection d'objet"
 
+msgid "Menu"
+msgstr "Menu"
+
 msgid "Wait Time"
 msgstr "Temps d'attente"
 
@@ -5458,6 +5472,18 @@ msgstr "Navigation 3D"
 msgid "Segments"
 msgstr "Segments"
 
+msgid "Parsed Geometry Type"
+msgstr "Type de la géométrie analysée"
+
+msgid "Source Geometry Mode"
+msgstr "Mode Géométrie Source"
+
+msgid "Cells"
+msgstr "Cellules"
+
+msgid "Agents"
+msgstr "Agents"
+
 msgid "A"
 msgstr "A"
 
@@ -5478,9 +5504,6 @@ msgstr "Transposer"
 
 msgid "Texture Origin"
 msgstr "Origine de la Texture"
-
-msgid "Y Sort Origin"
-msgstr "Origine du triage par Y"
 
 msgid "Probability"
 msgstr "Probabilité"
@@ -5752,6 +5775,9 @@ msgstr "Espacement Supplémentaire"
 msgid "Space"
 msgstr "Espace"
 
+msgid "Interpolation"
+msgstr "Interpolation"
+
 msgid "Raw Data"
 msgstr "Données brutes"
 
@@ -5908,20 +5934,8 @@ msgstr "Nombre d'instances visibles"
 msgid "Partition Type"
 msgstr "Type de partition"
 
-msgid "Parsed Geometry Type"
-msgstr "Type de la géométrie analysée"
-
-msgid "Source Geometry Mode"
-msgstr "Mode Géométrie Source"
-
 msgid "Source Group Name"
 msgstr "Nom du groupe source"
-
-msgid "Cells"
-msgstr "Cellules"
-
-msgid "Agents"
-msgstr "Agents"
 
 msgid "Max Climb"
 msgstr "Escalade Max"
@@ -6307,17 +6321,11 @@ msgstr "Séparation de line"
 msgid "Tab Disabled"
 msgstr "Onglet désactivé"
 
-msgid "Menu"
-msgstr "Menu"
-
 msgid "Menu Highlight"
 msgstr "Menu au survol"
 
 msgid "Side Margin"
 msgstr "Marge de coté"
-
-msgid "Large"
-msgstr "Grand"
 
 msgid "SV Width"
 msgstr "Largeur SV"

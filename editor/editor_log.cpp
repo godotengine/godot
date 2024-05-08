@@ -322,7 +322,7 @@ void EditorLog::_rebuild_log() {
 bool EditorLog::_check_display_message(LogMessage &p_message) {
 	bool filter_active = type_filter_map[p_message.type]->is_active();
 	String search_text = search_box->get_text();
-	bool search_match = search_text.is_empty() || p_message.text.findn(search_text) > -1;
+	bool search_match = search_text.is_empty() || p_message.text.containsn(search_text);
 	return filter_active && search_match;
 }
 

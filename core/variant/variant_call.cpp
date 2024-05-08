@@ -1648,19 +1648,19 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(filenocasecmp_to, sarray("to"), varray());
 	bind_string_method(length, sarray(), varray());
 	bind_string_method(substr, sarray("from", "len"), varray(-1));
-	bind_string_method(get_slice, sarray("delimiter", "slice"), varray());
+	bind_string_methodv(get_slice, static_cast<String (String::*)(const String &, int) const>(&String::get_slice), sarray("delimiter", "slice"), varray());
 	bind_string_method(get_slicec, sarray("delimiter", "slice"), varray());
-	bind_string_method(get_slice_count, sarray("delimiter"), varray());
+	bind_string_methodv(get_slice_count, static_cast<int (String::*)(const String &) const>(&String::get_slice_count), sarray("delimiter"), varray());
 	bind_string_methodv(find, static_cast<int (String::*)(const String &, int) const>(&String::find), sarray("what", "from"), varray(0));
-	bind_string_method(count, sarray("what", "from", "to"), varray(0, 0));
-	bind_string_method(countn, sarray("what", "from", "to"), varray(0, 0));
-	bind_string_method(findn, sarray("what", "from"), varray(0));
-	bind_string_method(rfind, sarray("what", "from"), varray(-1));
-	bind_string_method(rfindn, sarray("what", "from"), varray(-1));
+	bind_string_methodv(findn, static_cast<int (String::*)(const String &, int) const>(&String::findn), sarray("what", "from"), varray(0));
+	bind_string_methodv(count, static_cast<int (String::*)(const String &, int, int) const>(&String::count), sarray("what", "from", "to"), varray(0, 0));
+	bind_string_methodv(countn, static_cast<int (String::*)(const String &, int, int) const>(&String::countn), sarray("what", "from", "to"), varray(0, 0));
+	bind_string_methodv(rfind, static_cast<int (String::*)(const String &, int) const>(&String::rfind), sarray("what", "from"), varray(-1));
+	bind_string_methodv(rfindn, static_cast<int (String::*)(const String &, int) const>(&String::rfindn), sarray("what", "from"), varray(-1));
 	bind_string_method(match, sarray("expr"), varray());
 	bind_string_method(matchn, sarray("expr"), varray());
 	bind_string_methodv(begins_with, static_cast<bool (String::*)(const String &) const>(&String::begins_with), sarray("text"), varray());
-	bind_string_method(ends_with, sarray("text"), varray());
+	bind_string_methodv(ends_with, static_cast<bool (String::*)(const String &) const>(&String::ends_with), sarray("text"), varray());
 	bind_string_method(is_subsequence_of, sarray("text"), varray());
 	bind_string_method(is_subsequence_ofn, sarray("text"), varray());
 	bind_string_method(bigrams, sarray(), varray());
@@ -1668,7 +1668,7 @@ static void _register_variant_builtin_methods() {
 
 	bind_string_method(format, sarray("values", "placeholder"), varray("{_}"));
 	bind_string_methodv(replace, static_cast<String (String::*)(const String &, const String &) const>(&String::replace), sarray("what", "forwhat"), varray());
-	bind_string_method(replacen, sarray("what", "forwhat"), varray());
+	bind_string_methodv(replacen, static_cast<String (String::*)(const String &, const String &) const>(&String::replacen), sarray("what", "forwhat"), varray());
 	bind_string_method(repeat, sarray("count"), varray());
 	bind_string_method(reverse, sarray(), varray());
 	bind_string_method(insert, sarray("position", "what"), varray());
@@ -1677,8 +1677,8 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(to_camel_case, sarray(), varray());
 	bind_string_method(to_pascal_case, sarray(), varray());
 	bind_string_method(to_snake_case, sarray(), varray());
-	bind_string_method(split, sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
-	bind_string_method(rsplit, sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
+	bind_string_methodv(split, static_cast<Vector<String> (String::*)(const String &, bool, int) const>(&String::split), sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
+	bind_string_methodv(rsplit, static_cast<Vector<String> (String::*)(const String &, bool, int) const>(&String::rsplit), sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
 	bind_string_method(split_floats, sarray("delimiter", "allow_empty"), varray(true));
 	bind_string_method(join, sarray("parts"), varray());
 
@@ -1707,6 +1707,7 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(sha256_buffer, sarray(), varray());
 	bind_string_method(is_empty, sarray(), varray());
 	bind_string_methodv(contains, static_cast<bool (String::*)(const String &) const>(&String::contains), sarray("what"), varray());
+	bind_string_methodv(containsn, static_cast<bool (String::*)(const String &) const>(&String::containsn), sarray("what"), varray());
 
 	bind_string_method(is_absolute_path, sarray(), varray());
 	bind_string_method(is_relative_path, sarray(), varray());
@@ -1741,8 +1742,8 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(rpad, sarray("min_length", "character"), varray(" "));
 	bind_string_method(pad_decimals, sarray("digits"), varray());
 	bind_string_method(pad_zeros, sarray("digits"), varray());
-	bind_string_method(trim_prefix, sarray("prefix"), varray());
-	bind_string_method(trim_suffix, sarray("suffix"), varray());
+	bind_string_methodv(trim_prefix, static_cast<String (String::*)(const String &) const>(&String::trim_prefix), sarray("prefix"), varray());
+	bind_string_methodv(trim_suffix, static_cast<String (String::*)(const String &) const>(&String::trim_suffix), sarray("suffix"), varray());
 
 	bind_string_method(to_ascii_buffer, sarray(), varray());
 	bind_string_method(to_utf8_buffer, sarray(), varray());

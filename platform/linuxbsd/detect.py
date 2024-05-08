@@ -309,7 +309,7 @@ def configure(env: "SConsEnvironment"):
 
     if not env["builtin_embree"] and env["arch"] in ["x86_64", "arm64"]:
         # No pkgconfig file so far, hardcode expected lib name.
-        env.Append(LIBS=["embree3"])
+        env.Append(LIBS=["embree4"])
 
     if not env["builtin_openxr"]:
         env.ParseConfig("pkg-config openxr --cflags --libs")

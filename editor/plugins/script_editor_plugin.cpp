@@ -374,7 +374,7 @@ void ScriptEditorQuickOpen::_update_search() {
 
 	for (int i = 0; i < functions.size(); i++) {
 		String file = functions[i];
-		if ((search_box->get_text().is_empty() || file.findn(search_box->get_text()) != -1)) {
+		if ((search_box->get_text().is_empty() || file.containsn(search_box->get_text()))) {
 			TreeItem *ti = search_options->create_item(root);
 			ti->set_text(0, file);
 			if (root->get_first_child() == ti) {
@@ -742,7 +742,7 @@ void ScriptEditor::_add_recent_script(const String &p_path) {
 	}
 
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scripts", Array());
-	if (rc.find(p_path) != -1) {
+	if (rc.has(p_path)) {
 		rc.erase(p_path);
 	}
 	rc.push_front(p_path);
@@ -1275,8 +1275,8 @@ void ScriptEditor::_menu_option(int p_option) {
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
 			file_dialog->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
-				file_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
+			for (const String &extension : extensions) {
+				file_dialog->add_filter("*." + extension, extension.to_upper());
 			}
 
 			for (const String &E : textfile_extensions) {
@@ -4479,7 +4479,7 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 
 	EDITOR_GET("text_editor/behavior/files/auto_reload_scripts_on_external_change");
 	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save", true));
-	EDITOR_DEF("text_editor/behavior/files/open_dominant_script_on_scene_change", true);
+	EDITOR_DEF("text_editor/behavior/files/open_dominant_script_on_scene_change", false);
 	EDITOR_DEF("text_editor/external/use_external_editor", false);
 	EDITOR_DEF("text_editor/external/exec_path", "");
 	EDITOR_DEF("text_editor/script_list/script_temperature_enabled", true);

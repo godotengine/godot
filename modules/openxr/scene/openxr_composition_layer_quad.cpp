@@ -62,13 +62,6 @@ void OpenXRCompositionLayerQuad::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "quad_size", PROPERTY_HINT_NONE, ""), "set_quad_size", "get_quad_size");
 }
 
-void OpenXRCompositionLayerQuad::_on_openxr_session_begun() {
-	OpenXRCompositionLayer::_on_openxr_session_begun();
-	if (openxr_api) {
-		composition_layer.space = openxr_api->get_play_space();
-	}
-}
-
 Ref<Mesh> OpenXRCompositionLayerQuad::_create_fallback_mesh() {
 	Ref<QuadMesh> mesh;
 	mesh.instantiate();

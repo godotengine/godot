@@ -357,6 +357,9 @@ msgstr "حجم منطقة تحميل النسيج Px"
 msgid "Pipeline Cache"
 msgstr "ذاكرة التخزين المؤقت لخط الأنابيب"
 
+msgid "Enable"
+msgstr "تفعيل"
+
 msgid "Save Chunk Size (MB)"
 msgstr "حفظ جزء من القطعة (ميجابايت)"
 
@@ -666,9 +669,6 @@ msgstr "التدوير"
 msgid "Value"
 msgstr "قيمة"
 
-msgid "Args"
-msgstr "المعاملات (Args)"
-
 msgid "Type"
 msgstr "النوع"
 
@@ -710,6 +710,12 @@ msgstr "وضع خالي من الإلهاء"
 
 msgid "Movie Maker Enabled"
 msgstr "تم تمكين صانع الأفلام"
+
+msgid "Theme"
+msgstr "الموضوع"
+
+msgid "Line Spacing"
+msgstr "تباعد الأسطر"
 
 msgid "Base Type"
 msgstr "النوع الأساسي"
@@ -816,9 +822,6 @@ msgstr "وضع منتقي الألوان الافتراضي"
 msgid "Default Color Picker Shape"
 msgstr "شكل منتقي الألوان الافتراضي"
 
-msgid "Theme"
-msgstr "الموضوع"
-
 msgid "Preset"
 msgstr "المعد مسبقا"
 
@@ -866,9 +869,6 @@ msgstr "استعادة المشاهد عند التحميل"
 
 msgid "Multi Window"
 msgstr "نافذة متعددة"
-
-msgid "Enable"
-msgstr "تفعيل"
 
 msgid "Restore Windows on Load"
 msgstr "استعادة ويندوز عند التحميل"
@@ -995,9 +995,6 @@ msgstr "رسم فراغات زر التاب"
 
 msgid "Draw Spaces"
 msgstr "رسم فراغات زر السبايس"
-
-msgid "Line Spacing"
-msgstr "تباعد الأسطر"
 
 msgid "Behavior"
 msgstr "سلوك"
@@ -1671,9 +1668,6 @@ msgstr "إخراج"
 msgid "XR"
 msgstr "XR"
 
-msgid "In Editor"
-msgstr "داخل المحرر"
-
 msgid "Fullsize"
 msgstr "الحجم الكامل"
 
@@ -2016,6 +2010,9 @@ msgstr "تحديث"
 msgid "Editor Settings"
 msgstr "إعدادات المُحرر"
 
+msgid "Y Sort Origin"
+msgstr "فرز مركز ص"
+
 msgid "Bitmask"
 msgstr "قناع-البِت"
 
@@ -2213,9 +2210,6 @@ msgstr "المصفوفة المنقولة Transpose"
 
 msgid "Texture Origin"
 msgstr "أصل الملمس"
-
-msgid "Y Sort Origin"
-msgstr "فرز مركز ص"
 
 msgid "Miscellaneous"
 msgstr "متنوع"

@@ -546,8 +546,8 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 		// The child process.
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
-		for (int i = 0; i < p_arguments.size(); i++) {
-			cs.push_back(p_arguments[i].utf8());
+		for (const String &arg : p_arguments) {
+			cs.push_back(arg.utf8());
 		}
 
 		Vector<char *> args;
@@ -606,8 +606,8 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 #else
 	if (r_pipe) {
 		String command = "\"" + p_path + "\"";
-		for (int i = 0; i < p_arguments.size(); i++) {
-			command += String(" \"") + p_arguments[i] + "\"";
+		for (const String &arg : p_arguments) {
+			command += String(" \"") + arg + "\"";
 		}
 		if (read_stderr) {
 			command += " 2>&1"; // Include stderr
@@ -647,8 +647,8 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 		// The child process
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
-		for (int i = 0; i < p_arguments.size(); i++) {
-			cs.push_back(p_arguments[i].utf8());
+		for (const String &arg : p_arguments) {
+			cs.push_back(arg.utf8());
 		}
 
 		Vector<char *> args;
@@ -689,8 +689,8 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
-		for (int i = 0; i < p_arguments.size(); i++) {
-			cs.push_back(p_arguments[i].utf8());
+		for (const String &arg : p_arguments) {
+			cs.push_back(arg.utf8());
 		}
 
 		Vector<char *> args;

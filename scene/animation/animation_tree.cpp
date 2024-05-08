@@ -854,10 +854,10 @@ void AnimationTree::_setup_animation_player() {
 		}
 		List<StringName> list;
 		player->get_animation_library_list(&list);
-		for (int i = 0; i < list.size(); i++) {
-			Ref<AnimationLibrary> lib = player->get_animation_library(list[i]);
+		for (const StringName &E : list) {
+			Ref<AnimationLibrary> lib = player->get_animation_library(E);
 			if (lib.is_valid()) {
-				add_animation_library(list[i], lib);
+				add_animation_library(E, lib);
 			}
 		}
 	}

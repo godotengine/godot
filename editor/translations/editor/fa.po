@@ -43,13 +43,15 @@
 # MohammadSaleh Kamyab <mskf1383@envs.net>, 2023.
 # theBSH <bloodshot1387@hotmail.com>, 2023.
 # Amirhossein Basirat <amir.basirat.2004@gmail.com>, 2023.
+# Mehdi Fardadi <mahdi777jan@gmail.com>, 2024.
+# saeed dashti <saeed777724@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-02-17 15:01+0000\n"
-"Last-Translator: John Smith <pkafsharix@gmail.com>\n"
+"PO-Revision-Date: 2024-04-21 15:07+0000\n"
+"Last-Translator: saeed dashti <saeed777724@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -57,7 +59,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.4\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Main Thread"
 msgstr "موضوع اصلی"
@@ -90,10 +92,10 @@ msgid "Mouse Wheel Right"
 msgstr "غلطاندن ماوس به سمت راست"
 
 msgid "Mouse Thumb Button 1"
-msgstr "دکمه شست ماوس ۱"
+msgstr "دکمه شست ماوس 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "دکمه شست ماوس ۲"
+msgstr "دکمه شست ماوس 2"
 
 msgid "Button"
 msgstr "دکمه"
@@ -105,34 +107,34 @@ msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "حرکت ماوس در موقعیت (%s) با شتاب (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
-msgstr "استیک چپ محور اکس، اهرمک ۰ محور اکس"
+msgstr "استیک چپ محور X، جوی استیک ۰ محور X"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
-msgstr "استیک چپ محور ایگرگ، اهرمک ۰ محور ایگرگ"
+msgstr "استیک چپ محور Y، جوی استیک ۰ محور Y"
 
 msgid "Right Stick X-Axis, Joystick 1 X-Axis"
-msgstr "استیک راست محور اکس، اهرمک ۱ محور اکس"
+msgstr "استیک راست محور X، جوی استیک 1 محور X"
 
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
-msgstr "استیک راست محور ایگرگ، اهرمک ۱ محور ایگرگ"
+msgstr "استیک راست محور Y، جوی استیک 1 محور Y"
 
 msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
-msgstr "اهرمک ۲ محور اکس، تریگر چپ، سونی L2، اکس‌باکس LT"
+msgstr "اهرمک 2 محور X، تریگر چپ، سونی L2، اکس‌باکس LT"
 
 msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
-msgstr "اهرمک ۲ محور ایگرگ، تریگر راست، سونی R2, اکس‌باکس RT"
+msgstr "اهرمک 2 محور Y، تریگر راست، سونی R2, اکس‌باکس RT"
 
 msgid "Joystick 3 X-Axis"
-msgstr "اهرمک ۳ محور اکس"
+msgstr "اهرمک 3 محور X"
 
 msgid "Joystick 3 Y-Axis"
-msgstr "اهرمک ۳ محور ایگرگ"
+msgstr "اهرمک 3 محور Y"
 
 msgid "Joystick 4 X-Axis"
-msgstr "اهرمک ۴ محور ایکس"
+msgstr "اهرمک 4 محور X"
 
 msgid "Joystick 4 Y-Axis"
-msgstr "اهرمک ۴ محور ایگرگ"
+msgstr "اهرمک 4 محور Y"
 
 msgid "Unknown Joypad Axis"
 msgstr "محور جوی‌پد ناشناخته"
@@ -168,10 +170,10 @@ msgid "Right Stick, Sony R3, Xbox R/RS"
 msgstr "استیک راست، سونی R3، اکس‌باکس R/RS"
 
 msgid "Left Shoulder, Sony L1, Xbox LB"
-msgstr "شانه چپ، سونی ال۱، اکس‌باکس ال‌بی"
+msgstr "شانه چپ، سونی L1، اکس‌باکس LB"
 
 msgid "Right Shoulder, Sony R1, Xbox RB"
-msgstr "شانه راست، سونی آر۱، اکس‌باکس آربی"
+msgstr "شانه راست، سونی R1، اکس‌باکس RB"
 
 msgid "D-pad Up"
 msgstr "دی-پد بالا"
@@ -189,19 +191,19 @@ msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "اکس‌باکس Share, میکروفون پی‌اس۵، نینتندو کپچر"
 
 msgid "Xbox Paddle 1"
-msgstr "اکس‌باکس پدل ۱"
+msgstr "اکس‌باکس پدل 1"
 
 msgid "Xbox Paddle 2"
-msgstr "اکس‌باکس پدل ۲"
+msgstr "اکس‌باکس پدل 2"
 
 msgid "Xbox Paddle 3"
-msgstr "اکس‌باکس پدل ۳"
+msgstr "اکس‌باکس پدل 3"
 
 msgid "Xbox Paddle 4"
-msgstr "اکس‌باکس پدل ۴"
+msgstr "اکس‌باکس پدل 4"
 
 msgid "PS4/5 Touchpad"
-msgstr "تاچ‌پد پی‌اس۵/۴"
+msgstr "تاچ‌پدPS4/5"
 
 msgid "Joypad Button %d"
 msgstr "دکمه جوی‌پد %d"
@@ -209,14 +211,8 @@ msgstr "دکمه جوی‌پد %d"
 msgid "Pressure:"
 msgstr "فشار:"
 
-msgid "canceled"
-msgstr "لغو شده"
-
-msgid "touched"
-msgstr "لمس شده"
-
 msgid "released"
-msgstr "رها شده"
+msgstr "منتشر شد"
 
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "نقاط لمس صفحه %s در (%s) با %s"
@@ -232,13 +228,13 @@ msgid "Pan Gesture at (%s) with delta (%s)"
 msgstr "ژست قلم در (%s) با دلتای (%s)"
 
 msgid "MIDI Input on Channel=%s Message=%s"
-msgstr "ورودی ام‌آی‌دی‌آی در کانال=%s پیام=%s"
+msgstr "ورودی MIDI در کانال=%s پیام=%s"
 
 msgid "Input Event with Shortcut=%s"
 msgstr "رویداد ورودی با میانبر=%s"
 
 msgid "Accept"
-msgstr "پذیرش"
+msgstr "تایید"
 
 msgid "Select"
 msgstr "انتخاب"
@@ -292,7 +288,7 @@ msgid "Redo"
 msgstr "جلوگرد"
 
 msgid "Completion Query"
-msgstr "جستوجو کامل کننده"
+msgstr "تکمیل پرس و جو"
 
 msgid "New Line"
 msgstr "خط جدید"
@@ -459,14 +455,6 @@ msgstr "پتابایت"
 msgid "EiB"
 msgstr "اگزابایت"
 
-msgid "Example: %s"
-msgstr "مثال: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d مورد"
-msgstr[1] "%d مورد"
-
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -477,17 +465,11 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "عملیاتی با نام '%s' از قبل وجود دارد."
 
-msgid "Cannot Revert - Action is same as initial"
-msgstr "بازگرداندن امکان پذیر نیست - عملکرد همانند اولیه است"
-
 msgid "Revert Action"
 msgstr "بازگردانی کنش"
 
 msgid "Add Event"
 msgstr "افزودن رویداد"
-
-msgid "Remove Action"
-msgstr "حذف کنش"
 
 msgid "Cannot Remove Action"
 msgstr "نمی‌توان کنش را حذف کرد"
@@ -497,6 +479,9 @@ msgstr "ویرایش رویداد"
 
 msgid "Remove Event"
 msgstr "حذف رویداد"
+
+msgid "Filter by Name"
+msgstr "فیلتر بر اساس نام..."
 
 msgid "Clear All"
 msgstr "پاک کردن همه"
@@ -531,6 +516,12 @@ msgstr "کلید را اینجا وارد کنید"
 msgid "Duplicate Selected Key(s)"
 msgstr "تکرار کلید(های) منتخب"
 
+msgid "Cut Selected Key(s)"
+msgstr "حذف کلید(های) انتخاب شده"
+
+msgid "Copy Selected Key(s)"
+msgstr "کپی کلید(های) انتخاب شده"
+
 msgid "Delete Selected Key(s)"
 msgstr "حذف کلید(های) منتخب"
 
@@ -560,6 +551,9 @@ msgstr "انتقال نقاط بِزیِر"
 
 msgid "Animation Duplicate Keys"
 msgstr "کلیدهای تکراری انیمیشن"
+
+msgid "Animation Paste Keys"
+msgstr "کلیدهای جای‌گذاری انیمیشن"
 
 msgid "Animation Delete Keys"
 msgstr "کلیدهای حذف انیمیشن"
@@ -753,8 +747,17 @@ msgstr "رابط گره حلقه(Loop)"
 msgid "Wrap Loop Interp"
 msgstr "رابط پوشش حلقه"
 
+msgid "Insert Key..."
+msgstr "درج کلید"
+
 msgid "Duplicate Key(s)"
 msgstr "تکرار کلید(ها)"
+
+msgid "Cut Key(s)"
+msgstr "برش کلید(ها)"
+
+msgid "Copy Key(s)"
+msgstr "کپی کلید(ها)"
 
 msgid "Add RESET Value(s)"
 msgstr "اضافه کردن مقدار(های) ریست"
@@ -908,6 +911,12 @@ msgstr "جاگذاری مسیر ها"
 msgid "Animation Scale Keys"
 msgstr "انیمیشن اندازه ی کلید ها"
 
+msgid "Animation Set Start Offset"
+msgstr "تعیین جابجایی شروع انیمیشن"
+
+msgid "Animation Set End Offset"
+msgstr "تعیین جابجایی پایان انیمیشن"
+
 msgid "Make Easing Keys"
 msgstr "ساخت کلید تسهیل"
 
@@ -1000,6 +1009,30 @@ msgstr "ویرایش"
 msgid "Animation properties."
 msgstr "ویژگی‌های انیمیشن."
 
+msgid "Scale Selection..."
+msgstr "تغییر اندازه انتخاب..."
+
+msgid "Scale From Cursor..."
+msgstr "تغییر اندازه نسبت به نشانگر"
+
+msgid "Set Start Offset (Audio)"
+msgstr "تعیین جابجایی شروع (صدا)"
+
+msgid "Set End Offset (Audio)"
+msgstr "تعیین جابجایی پایان (صدا)"
+
+msgid "Cut Selected Keys"
+msgstr "برش کلید(های) انتخاب شده"
+
+msgid "Copy Selected Keys"
+msgstr "کپی کلید(های) انتخاب شده"
+
+msgid "Paste Keys"
+msgstr "جای‌گذاری کلیدها"
+
+msgid "Move Last Selected Key to Cursor"
+msgstr "آخرین کلید انتخاب شده را به نشانگر ببر"
+
 msgid "Delete Selection"
 msgstr "حذف برگزیده"
 
@@ -1011,6 +1044,12 @@ msgstr "برو به گام پیشین"
 
 msgid "Apply Reset"
 msgstr "بازنشانی را اعمال کنید"
+
+msgid "Optimize Animation (no undo)..."
+msgstr "بهینه سازی انیمیشن (بازگردانی نمیشود)"
+
+msgid "Clean-Up Animation (no undo)..."
+msgstr "پاک سازی انیمیشن (بازگردانی نمیشود)"
 
 msgid "Pick a node to animate:"
 msgstr "گره را برای انیمیت کردن انتخاب کنید:"
@@ -1197,9 +1236,8 @@ msgstr "جایگزینی همه"
 msgid "Selection Only"
 msgstr "تنها در قسمت انتخاب شده"
 
-msgctxt "Indentation"
-msgid "Spaces"
-msgstr "جاهای خالی"
+msgid "Hide"
+msgstr "مخفی کردن"
 
 msgctxt "Indentation"
 msgid "Tabs"
@@ -1222,6 +1260,9 @@ msgstr "خطا‌ها"
 
 msgid "Warnings"
 msgstr "هشدارها"
+
+msgid "Zoom factor"
+msgstr "مقدار بزرگنمایی"
 
 msgid "Line and column numbers."
 msgstr "شماره های خط و ستون."
@@ -1386,9 +1427,6 @@ msgstr "این کلاس به عنوان منسوخ علامت گذاری شده 
 msgid "This class is marked as experimental."
 msgstr "این کلاس بعنوان آزمایشی علامت گذاری شده است."
 
-msgid "No description available for %s."
-msgstr "توضیحی برای %s در دسترس نیست."
-
 msgid "Favorites:"
 msgstr "برگزیده‌ها:"
 
@@ -1421,9 +1459,6 @@ msgstr "ذخیرهٔ شاخه به عنوان صحنه"
 
 msgid "Copy Node Path"
 msgstr "کپی کردن مسیر node"
-
-msgid "Instance:"
-msgstr "نمونه:"
 
 msgid ""
 "This node has been instantiated from a PackedScene file:\n"
@@ -1547,9 +1582,6 @@ msgstr "راه‌اندازی از سر گرفته شد."
 
 msgid "Bytes:"
 msgstr "بایت‌ها:"
-
-msgid "Warning:"
-msgstr "هشدار:"
 
 msgid "Error:"
 msgstr "خطا:"
@@ -1829,8 +1861,21 @@ msgstr "ساخت پوشه"
 msgid "Folder name is valid."
 msgstr "نام پوشه معتبر است."
 
+msgid "Double-click to open in browser."
+msgstr "برای باز کردن در مرورگر دو بار کلیک کنید."
+
 msgid "Thanks from the Godot community!"
 msgstr "با تشکر از سوی جامعهٔ گودوت!"
+
+msgid "(unknown)"
+msgstr "(نامشخص)"
+
+msgid ""
+"Git commit date: %s\n"
+"Click to copy the version number."
+msgstr ""
+"تاریخ کامیت در گیت: %s\n"
+"برای کپی شماره نسخه، کلیک کنید."
 
 msgid "Godot Engine contributors"
 msgstr "مشارکت‌کنندگان موتور گودو"
@@ -1932,9 +1977,6 @@ msgstr "استخراج پرونده‌های زیر از دارایی «%s» ش�
 
 msgid "(and %s more files)"
 msgstr "(و %s دیگر فایل ها)"
-
-msgid "Asset \"%s\" installed successfully!"
-msgstr "Asset ه \"%s\" با موفقیت نصب شد!"
 
 msgid "Success!"
 msgstr "موفقیت!"
@@ -2102,30 +2144,6 @@ msgstr "طرح جدید اتوبوس ایجاد کنید."
 msgid "Audio Bus Layout"
 msgstr "چیدمان Bus صوتی"
 
-msgid "Invalid name."
-msgstr "نام نامعتبر."
-
-msgid "Cannot begin with a digit."
-msgstr "نمی توان با یک رقم شروع کرد."
-
-msgid "Valid characters:"
-msgstr "کاراکترهای معتبر:"
-
-msgid "Must not collide with an existing engine class name."
-msgstr "نباید با یک نام کلاس موتور موجود برخورد کند."
-
-msgid "Must not collide with an existing global script class name."
-msgstr "نباید با نام یک کلاس سراسری موجود برخوردی کند."
-
-msgid "Must not collide with an existing built-in type name."
-msgstr "نباید با یک نام نوع درون-ساز موجود برخورد کند."
-
-msgid "Must not collide with an existing global constant name."
-msgstr "نباید با نام یک ثابت سراسری موجود برخوردی کند."
-
-msgid "Keyword cannot be used as an Autoload name."
-msgstr "کلمه کلیدی نمی تواند به عنوان یک نام خودبارگیر بکار برده شود."
-
 msgid "Autoload '%s' already exists!"
 msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
 
@@ -2161,9 +2179,6 @@ msgstr "افزودن بارگیری خودکار"
 
 msgid "Path:"
 msgstr "مسیر:"
-
-msgid "Set path or press \"%s\" to create a script."
-msgstr "مسیر را تنظیم کنید یا برای ایجاد یک اسکریپت \"%s\" را فشار دهید."
 
 msgid "Node Name:"
 msgstr "نام گره:"
@@ -2254,6 +2269,21 @@ msgstr ""
 "از چیدمان های پیچیده متن، BiDi و قابلیت های بافتی OpenType فونت پشتیبانی "
 "میکند."
 
+msgid "WOFF2 font format support using FreeType and Brotli libraries."
+msgstr ""
+"پشتیبانی از فرمت WOFF2 برای فونت ها با استفاده از کتابخانه‌های FreeType و "
+"Brotli."
+
+msgid ""
+"SIL Graphite smart font technology support (supported by Advanced Text Server "
+"only)."
+msgstr ""
+"SIL پشتیبانی از فناوری فونت هوشمند گرافیت (پشتیبانی فقط از طریق سرور متن "
+"پیشرفته )"
+
+msgid "General Features:"
+msgstr "ویژگی‌های اصلی:"
+
 msgid "Text Rendering and Font Options:"
 msgstr "گزینه‌های رندر متن و فونت:"
 
@@ -2275,17 +2305,30 @@ msgstr "جدید"
 msgid "Save"
 msgstr "ذخیره"
 
-msgid "Configure Engine Build Profile:"
-msgstr "پیکربندی نمایه ساخت موتور:"
+msgid "Profile:"
+msgstr "پروفایل:"
 
-msgid "Engine Build Profile"
-msgstr "نمایه ساخت موتور"
+msgid "Reset to Defaults"
+msgstr "بازگشت به پیشفرض‌ها"
+
+msgid "Please Confirm:"
+msgstr "لطفاً تأیید کنید:"
+
+msgid "Load Profile"
+msgstr "بارگزاری پروفایل"
 
 msgid "Export Profile"
 msgstr "صادر کردن نمایه"
 
-msgid "Edit Build Configuration Profile"
-msgstr "ویرایش نمایهٔ پیکربندی ساخت"
+msgid ""
+"Failed to execute command \"%s\":\n"
+"%s."
+msgstr ""
+"خطا در اجرای \"%s\":\n"
+"%s"
+
+msgid "Filter Commands"
+msgstr "فیلتر دستورات"
 
 msgid "Paste Params"
 msgstr "چسباندن پارام ها"
@@ -2307,6 +2350,12 @@ msgstr "[ذخیره نشده]"
 
 msgid "%s - Godot Engine"
 msgstr "%s - موتور گودو"
+
+msgid "Make Floating"
+msgstr "شناور کردن"
+
+msgid "Move to Bottom"
+msgstr "جابه‌جا کردن به زیر"
 
 msgid "3D Editor"
 msgstr "ویرایشگر ۳بعدی"
@@ -2440,12 +2489,6 @@ msgstr "وارد کردن نمایه(ها)"
 msgid "Manage Editor Feature Profiles"
 msgstr "مدیریت ویژگی نمایه‌های ویرایشگر"
 
-msgid "Restart"
-msgstr "راه‌اندازی مجدد"
-
-msgid "Save & Restart"
-msgstr "ذخیره و راه‌اندازی مجدد"
-
 msgid "ScanSources"
 msgstr "منابع‌اسکن"
 
@@ -2554,14 +2597,14 @@ msgstr "(مقدار)"
 msgid "There is currently no description for this property."
 msgstr "درحال حاضر هیچ توضیحی برای این ویژگی وجود ندارد."
 
+msgid "Editor"
+msgstr "ویرایشگر"
+
 msgid "Property:"
 msgstr "ویژگی:"
 
 msgid "Signal:"
 msgstr "سیگنال:"
-
-msgid "%d match."
-msgstr "%d منطبق."
 
 msgid "%d matches."
 msgstr "%d هم‌خوانی."
@@ -2646,9 +2689,6 @@ msgstr "افزودن فراداده(متادیتا)"
 msgid "Set %s"
 msgstr "تنظیم %s"
 
-msgid "Pinned %s"
-msgstr "%s سنجاق شد"
-
 msgid "Unpinned %s"
 msgstr "سنجاق %s برداشته شد"
 
@@ -2708,14 +2748,8 @@ msgstr "پروژه بی‌نام"
 msgid "Spins when the editor window redraws."
 msgstr "هنگامی که پنجره ویرایشگر دوباره ترسیم می شود می چرخد."
 
-msgid "Imported resources can't be saved."
-msgstr "منابع وارد شده را نمی‌توان ذخیره کرد."
-
 msgid "OK"
 msgstr "قبول"
-
-msgid "Error saving resource!"
-msgstr "خطای ذخیره سازی منبع!"
 
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
@@ -2727,18 +2761,6 @@ msgstr ""
 msgid "Save Resource As..."
 msgstr "ذخیره منبع از ..."
 
-msgid "Can't open file for writing:"
-msgstr "نمی‌توان فایل را برای نوشتن باز کرد:"
-
-msgid "Requested file format unknown:"
-msgstr "فرمت فایل درخواست شده ناشناخته است:"
-
-msgid "Error while saving."
-msgstr "خطا در هنگام ذخیره‌سازی."
-
-msgid "Scene file '%s' appears to be invalid/corrupt."
-msgstr "به نظر میرسد پرونده صحنه '%s' نامعتبر/خراب باشد."
-
 msgid "Saving Scene"
 msgstr "ذخیره سازی صحنه"
 
@@ -2748,20 +2770,8 @@ msgstr "در حال پردازش"
 msgid "Creating Thumbnail"
 msgstr "ایجاد بند انگشتی"
 
-msgid "This operation can't be done without a tree root."
-msgstr "این عمل بدون یک ریشه درخت انجام نمی‌شود."
-
-msgid ""
-"Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
-"be satisfied."
-msgstr ""
-"صحنه ذخیره نشد. وابستگی‌های احتمالی (نمونه‌ها یا وراثت) را نمی‌توان راضی کرد."
-
 msgid "Save scene before running..."
 msgstr "ذخیره صحنه پیش از اجرا..."
-
-msgid "Could not save one or more scenes!"
-msgstr "نمی‌توان یک یا چند صحنه را ذخیره کرد!"
 
 msgid "Save All Scenes"
 msgstr "ذخیره همه صحنه‌ها"
@@ -2769,11 +2779,8 @@ msgstr "ذخیره همه صحنه‌ها"
 msgid "Can't overwrite scene that is still open!"
 msgstr "نمی‌توان صحنه‌ای که هنوز باز است را بازنویسی کرد!"
 
-msgid "Can't load MeshLibrary for merging!"
-msgstr "نمی‌توان MeshLibrary را برای ادغام بارگیری کرد!"
-
-msgid "Error saving MeshLibrary!"
-msgstr "خطا در ذخیره MeshLibrary!"
+msgid "Merge With Existing"
+msgstr "ترکیب کردن با نمونه ی موجود"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -2807,9 +2814,6 @@ msgstr ""
 "این منبع وارد شده است، بنابراین قابل ویرایش نیست. تنظیمات آن را در پنل وارد "
 "کردن تغییر دهید و سپس دوباره وارد کنید."
 
-msgid "Changes may be lost!"
-msgstr "ممكن است تغييرات از دست بروند!"
-
 msgid "This object is read-only."
 msgstr "این شی فقط خواندنی است."
 
@@ -2824,9 +2828,6 @@ msgstr "گشودن فوری صحنه..."
 
 msgid "Quick Open Script..."
 msgstr "گشودن سریع اسکریپت..."
-
-msgid "%s no longer exists! Please specify a new save location."
-msgstr "%s دیگر وجود ندارد! لطفا یک محل ذخیره جدید مشخص کنید."
 
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) were "
@@ -2878,24 +2879,11 @@ msgstr "پیش از بازکردن مدیر پروژه تغییرات را در 
 msgid "Pick a Main Scene"
 msgstr "یک صحنه اصلی انتخاب کنید"
 
-msgid "This operation can't be done without a scene."
-msgstr "این عملیات بدون یک صحنه انجام نمی شود."
-
 msgid "Export Mesh Library"
 msgstr "صادر کردن کتابخانه شبکه مش"
 
 msgid "Unable to load addon script from path: '%s'."
 msgstr "امکان بارگیری اسکریپت افزونه از مسیر وجود ندارد: '%s'."
-
-msgid ""
-"Error loading scene, it must be inside the project path. Use 'Import' to open "
-"the scene, then save it inside the project path."
-msgstr ""
-"خطای بارگذاری صحنه، صحنه باید در مسیر پروژه قرار گرفته باشد. از 'وارد کردن' "
-"برای بازکردن صحنه استفاده کنید، سپس آن را در مسیر پروژه ذخیره کنید."
-
-msgid "There is no defined scene to run."
-msgstr "هیچ صحنه تعریف شده‌ای برای اجرا وجود ندارد."
 
 msgid ""
 "Selected scene '%s' does not exist, select a valid one?\n"
@@ -2975,17 +2963,11 @@ msgstr "تنظیمات ویرایشگر…"
 msgid "Project"
 msgstr "پروژه"
 
-msgid "Project Settings..."
-msgstr "تنظیمات پروژه…"
-
 msgid "Project Settings"
 msgstr "تنظیمات پروژه"
 
 msgid "Version Control"
 msgstr "کنترل نسخه"
-
-msgid "Export..."
-msgstr "صدور…"
 
 msgid "Open User Data Folder"
 msgstr "گشودن پوشه اطلاعات کاربر"
@@ -3001,9 +2983,6 @@ msgstr "بارگذاری دوباره پروژه کنونی"
 
 msgid "Quit to Project List"
 msgstr "خروج به فهرست پروژه‌ها"
-
-msgid "Editor"
-msgstr "ویرایشگر"
 
 msgid "Editor Layout"
 msgstr "طرح‌بندی ویرایشگر"
@@ -3032,9 +3011,6 @@ msgstr "پیکربندی وارد‌کننده FBX..."
 msgid "Help"
 msgstr "راهنما"
 
-msgid "Questions & Answers"
-msgstr "سوالات و پاسخ‌ها"
-
 msgid "Community"
 msgstr "اَنجُمَن"
 
@@ -3050,11 +3026,11 @@ msgstr "پیشنهاد یک ویژگی"
 msgid "Support Godot Development"
 msgstr "از توسعه گودو حمایت کنید"
 
+msgid "Save & Restart"
+msgstr "ذخیره و راه‌اندازی مجدد"
+
 msgid "Update Continuously"
 msgstr "بروزرسانی مستمر"
-
-msgid "FileSystem"
-msgstr "سامانه پرونده"
 
 msgid "Inspector"
 msgstr "اینسپکتور"
@@ -3064,9 +3040,6 @@ msgstr "گره"
 
 msgid "History"
 msgstr "تاریخچه"
-
-msgid "Output"
-msgstr "خروجی"
 
 msgid "Don't Save"
 msgstr "ذخیره نکن"
@@ -3082,9 +3055,6 @@ msgstr "واردکردن قالب ها از درون یک فایل ZIP"
 
 msgid "Export Library"
 msgstr "صدور کتابخانه"
-
-msgid "Merge With Existing"
-msgstr "ترکیب کردن با نمونه ی موجود"
 
 msgid "Open & Run a Script"
 msgstr "گشودن و اجرای یک اسکریپت"
@@ -3119,23 +3089,14 @@ msgstr "گشودن کتابخانه دارایی"
 msgid "Open the next Editor"
 msgstr "گشودن ویرایشگر متن"
 
-msgid "Ok"
-msgstr "باشه"
-
 msgid "Warning!"
 msgstr "هشدار!"
 
-msgid "On"
-msgstr "روشن"
-
-msgid "Edit Plugin"
-msgstr "ویرایش افزونه"
-
-msgid "Installed Plugins:"
-msgstr "افزونه های نصب شده:"
-
 msgid "Edit Text:"
 msgstr "ویرایش متن:"
+
+msgid "On"
+msgstr "روشن"
 
 msgid "Rename"
 msgstr "تغییر نام"
@@ -3224,14 +3185,8 @@ msgstr "ذخیره فایل: %s"
 msgid "Storing File:"
 msgstr "ذخیره فایل:"
 
-msgid "No export template found at the expected path:"
-msgstr "هیچ الگوی صادراتی در مسیر مورد انتظار یافت نشد:"
-
 msgid "Packing"
 msgstr "بسته بندی"
-
-msgid "Save PCK"
-msgstr "ذخیره PCK"
 
 msgid "Cannot create file \"%s\"."
 msgstr "نمیتوان فایل \"%s\" راساخت."
@@ -3242,17 +3197,11 @@ msgstr "از فایل‌های پروژه خروجی گرفته نشد."
 msgid "Can't open file to read from path \"%s\"."
 msgstr "نمیتوان فایل را از مسیر \"%s\" برای خواندن بازکرد."
 
-msgid "Save ZIP"
-msgstr "ذخیره ZIP"
-
 msgid "Custom debug template not found."
 msgstr "قالب اشکال زدایی سفارشی یافت نشد."
 
 msgid "Custom release template not found."
 msgstr "قالب انتشار سفارشی یافت نشد."
-
-msgid "Prepare Template"
-msgstr "آماده‌سازی قالب"
 
 msgid "The given export path doesn't exist."
 msgstr "مسیر خروجی وجود ندارد."
@@ -3262,9 +3211,6 @@ msgstr "فایل قالب پیدا نشد: \"%s\"."
 
 msgid "Failed to copy export template."
 msgstr "خطا در کپی قالب خروجی."
-
-msgid "PCK Embedding"
-msgstr "تعبیه پی‌سی‌کی"
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
@@ -3281,30 +3227,6 @@ msgstr "درخواست ناموفق بود:"
 
 msgid "Cannot remove temporary file:"
 msgstr "امکان حذف فایل موقت وجود ندارد:"
-
-msgid "Disconnected"
-msgstr "اتصال قطع شده"
-
-msgid "Resolving"
-msgstr "حل کردن"
-
-msgid "Can't Resolve"
-msgstr "نمی‌تواند حل بشود"
-
-msgid "Connecting..."
-msgstr "در حال اتصال..."
-
-msgid "Connected"
-msgstr "وصل شده"
-
-msgid "Requesting..."
-msgstr "در حال درخواست..."
-
-msgid "Downloading"
-msgstr "در حال بارگیری"
-
-msgid "Connection Error"
-msgstr "خطای اتصال"
 
 msgid "Importing:"
 msgstr "وارد کردن:"
@@ -3341,6 +3263,9 @@ msgstr "خروجی گرفتن پروژه برای تمام تنظیمات از �
 
 msgid "Resources to export:"
 msgstr "منابع برای صدور:"
+
+msgid "Export With Debug"
+msgstr "صدور با اشکال زدا"
 
 msgid "Release"
 msgstr "انتشار"
@@ -3421,9 +3346,6 @@ msgstr "خروجی گرفتن پروژه"
 msgid "Manage Export Templates"
 msgstr "مدیریت قالب‌های صدور"
 
-msgid "Export With Debug"
-msgstr "صدور با اشکال زدا"
-
 msgid "Click this link to download FBX2glTF"
 msgstr "برای دانلود FBX2glTF این لینک را کلیک کنید"
 
@@ -3460,9 +3382,6 @@ msgstr "حذف از علاقمندی‌ها"
 msgid "Reimport"
 msgstr "وارد کردن دوباره"
 
-msgid "Open in File Manager"
-msgstr "گشودن در مدیر پرونده"
-
 msgid "New Folder..."
 msgstr "ساختن پوشه..."
 
@@ -3480,6 +3399,9 @@ msgstr "تکرار..."
 
 msgid "Rename..."
 msgstr "تغییر نام..."
+
+msgid "Open in File Manager"
+msgstr "گشودن در مدیر پرونده"
 
 msgid "Re-Scan Filesystem"
 msgstr "پویش دوباره سامانه پرونده"
@@ -3715,6 +3637,9 @@ msgstr "باز کردن اسکریپت:"
 msgid "Open in Editor"
 msgstr "گشودن در ویرایشگر"
 
+msgid "Instance:"
+msgstr "نمونه:"
+
 msgid "Node Configuration Warning!"
 msgstr "هشدار پیکر‌بندی گره!"
 
@@ -3862,30 +3787,6 @@ msgstr "بومی"
 
 msgid "Groups"
 msgstr "گروه‌ها"
-
-msgid "Create a Plugin"
-msgstr "ساخت یک افزونه"
-
-msgid "Update"
-msgstr "بروز رسانی"
-
-msgid "Plugin Name:"
-msgstr "نام افزونه:"
-
-msgid "Subfolder:"
-msgstr "زیرپوشه:"
-
-msgid "Author:"
-msgstr "خالق:"
-
-msgid "Version:"
-msgstr "نسخه:"
-
-msgid "Script Name:"
-msgstr "نام اسکریپت:"
-
-msgid "Activate now?"
-msgstr "الان فعالسازی شود؟"
 
 msgid "Create points."
 msgstr "ساخت نقاط."
@@ -4076,6 +3977,9 @@ msgstr "حذف انتخاب شده"
 msgid "Root"
 msgstr "ریشه"
 
+msgid "Version:"
+msgstr "نسخه:"
+
 msgid "Contents:"
 msgstr "محتواها:"
 
@@ -4097,9 +4001,6 @@ msgstr "بدون پاسخ."
 msgid "Failed:"
 msgstr "ناموفق:"
 
-msgid "Expected:"
-msgstr "انتظار می‌رود:"
-
 msgid "Got:"
 msgstr "گرفته شد:"
 
@@ -4114,6 +4015,12 @@ msgstr "در حال دانلود..."
 
 msgid "Resolving..."
 msgstr "حل کردن..."
+
+msgid "Connecting..."
+msgstr "در حال اتصال..."
+
+msgid "Requesting..."
+msgstr "در حال درخواست..."
 
 msgid "Error making request"
 msgstr "خطای درخواست"
@@ -4144,9 +4051,6 @@ msgstr "پروانه (A-Z)"
 
 msgid "License (Z-A)"
 msgstr "پروانه (Z-A)"
-
-msgid "Official"
-msgstr "رسمی"
 
 msgid "Testing"
 msgstr "آزمودن"
@@ -4238,9 +4142,6 @@ msgstr "دیدن"
 msgid "Show"
 msgstr "نشان دادن"
 
-msgid "Hide"
-msgstr "مخفی کردن"
-
 msgid "Grid"
 msgstr "شبکه شطرنجی"
 
@@ -4277,6 +4178,9 @@ msgstr "گسترش دادن"
 msgid "Center"
 msgstr "مرکز"
 
+msgid "Restart"
+msgstr "راه‌اندازی مجدد"
+
 msgid "Generation Time (sec):"
 msgstr "زمان تولید (ثانیه):"
 
@@ -4310,20 +4214,6 @@ msgstr "مسیر‌های پدیدار"
 msgid "Visible Navigation"
 msgstr "ناوبری پدیدار"
 
-msgid ""
-"When this option is enabled, navigation meshes and polygons will be visible "
-"in the running project."
-msgstr ""
-"هنگامی که این گزینه فعال باشد، مش‌های ناوبری و چند ضلعی‌ها در پروژهٔ در حال اجرا "
-"قابل مشاهده خواهند بود."
-
-msgid ""
-"When this option is enabled, avoidance objects shapes, radius and velocities "
-"will be visible in the running project."
-msgstr ""
-"هنگامی که این گزینه فعال باشد، اشکال، شعاع و سرعت اشیاء اجتنابی در پروژهٔ در "
-"حال اجرا قابل مشاهده خواهد بود."
-
 msgid "Synchronize Scene Changes"
 msgstr "همگام سازی تغییرات صحنه"
 
@@ -4332,6 +4222,12 @@ msgstr "همگام سازی تغییرات اسکریپت"
 
 msgid "Keep Debug Server Open"
 msgstr "باز نگه داشتن سرور اشکال زدایی"
+
+msgid "Edit Plugin"
+msgstr "ویرایش افزونه"
+
+msgid "Installed Plugins:"
+msgstr "افزونه های نصب شده:"
 
 msgid "Dimensions: %d × %d"
 msgstr "ابعاد: %d × %d"
@@ -4564,12 +4460,6 @@ msgstr "درخشش"
 msgid "Tonemap"
 msgstr "تون‌مپ"
 
-msgid "Select Points"
-msgstr "انتخاب نقطه‌ها"
-
-msgid "Click: Add Point"
-msgstr "کلیک: اضافه کردن نقطه"
-
 msgid "Right Click: Delete Point"
 msgstr "کلیک راست: حذف نقطه"
 
@@ -4582,6 +4472,24 @@ msgstr "لطفاً تأیید کنید…"
 msgid "Move Joint"
 msgstr "حرکت مفصل"
 
+msgid "Create a Plugin"
+msgstr "ساخت یک افزونه"
+
+msgid "Plugin Name:"
+msgstr "نام افزونه:"
+
+msgid "Subfolder:"
+msgstr "زیرپوشه:"
+
+msgid "Author:"
+msgstr "خالق:"
+
+msgid "Script Name:"
+msgstr "نام اسکریپت:"
+
+msgid "Activate now?"
+msgstr "الان فعالسازی شود؟"
+
 msgid "Points"
 msgstr "نقاط"
 
@@ -4590,9 +4498,6 @@ msgstr "چندضلعی‌ها"
 
 msgid "Bones"
 msgstr "استخوان‌ها"
-
-msgid "Move Points"
-msgstr "انتقال نقطه‌ها"
 
 msgid "Rotate Polygon"
 msgstr "چرخش چندضلعی"
@@ -4621,17 +4526,8 @@ msgstr "بارگذاری منبع"
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "نمی‌توان %s را باز کرد. این فایل می‌تواند انتقال یافته یا حذف شده باشد."
 
-msgid "Error saving file!"
-msgstr "خطای ذخیره فایل!"
-
-msgid "Error while saving theme."
-msgstr "خطا هنگام ذخیره زمینه."
-
 msgid "Error Saving"
 msgstr "خطا در ذخیره‌سازی"
-
-msgid "Error importing theme."
-msgstr "خطا در وارد کردن زمینه."
 
 msgid "Error Importing"
 msgstr "خطا در وارد کردن"
@@ -4647,9 +4543,6 @@ msgstr "ذخیره فایل به عنوان..."
 
 msgid "Import Theme"
 msgstr "وارد کردن زمینه"
-
-msgid "Error while saving theme"
-msgstr "خطا هنگام ذخیره زمینه"
 
 msgid "Error saving"
 msgstr "خطا در ذخیره‌سازی"
@@ -4699,9 +4592,6 @@ msgstr "بازکردن مستندات آنلاین گودو."
 msgid "Discard"
 msgstr "رد کردن"
 
-msgid "Search Results"
-msgstr "نتایج جستجو"
-
 msgid "Clear Recent Scripts"
 msgstr "حذف اسکریپت‌های اخیر"
 
@@ -4720,14 +4610,14 @@ msgstr "هدف"
 msgid "[Ignore]"
 msgstr "[چشم پوشی]"
 
-msgid "Line"
-msgstr "خط"
-
 msgid "Go to Function"
 msgstr "برو به تابع"
 
 msgid "Pick Color"
 msgstr "انتخاب رنگ"
+
+msgid "Line"
+msgstr "خط"
 
 msgid "Uppercase"
 msgstr "حروف بزرگ"
@@ -4788,9 +4678,6 @@ msgstr "بستن فایل"
 
 msgid "Make the shader editor floating."
 msgstr "معلق‌سازی ویرایشگر شیدر."
-
-msgid "ShaderFile"
-msgstr "پرونده سایه‌زن"
 
 msgid "Create physical bones"
 msgstr "ساخت استخوان‌های فیزیکی"
@@ -4927,9 +4814,6 @@ msgstr "اندازه"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "ساخت فریم‌ها از ورقه اسپرایت"
-
-msgid "SpriteFrames"
-msgstr "فریم های اسپرایت"
 
 msgid "Set Margin"
 msgstr "تنظیم حاشیه"
@@ -5267,12 +5151,6 @@ msgstr "بله"
 
 msgid "Scenes collection properties:"
 msgstr "ویژگی‌های مجموعه صحنه‌ها:"
-
-msgid "TileMap"
-msgstr "نقشه کاشی"
-
-msgid "TileSet"
-msgstr "تنظیم‌کاشی"
 
 msgid "Error"
 msgstr "خطا"
@@ -5649,28 +5527,6 @@ msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr "فایل پروژه \".zip\" نامعتبر است؛ زیرا حاوی فایل \"project.godot\" نیست."
 
-msgid ""
-"You cannot save a project in the selected path. Please make a new folder or "
-"choose a new path."
-msgstr ""
-"شما نمی‌توانید پروژه ای را در مسیر انتخاب شده ذخیره کنید. لطفا یک پوشه جدید "
-"ساخته یا مسیری جدید انتخاب کنید."
-
-msgid "New Game Project"
-msgstr "پروژه بازی جدید"
-
-msgid "Imported Project"
-msgstr "پروژه واردشده"
-
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "لطفاً یک فایل \"project.godot\" یا \".zip\" را انتخاب نمایید."
-
-msgid "Invalid project name."
-msgstr "نام پروژه نامعتبر است."
-
-msgid "Couldn't create folder."
-msgstr "پوشه ایجاد نشد."
-
 msgid "Supports desktop platforms only."
 msgstr "تنها حمایت از سکو‌های دسکتاپ."
 
@@ -5702,8 +5558,8 @@ msgstr "خطای گشودن بسته بندی پرونده، به شکل ZIP ن�
 msgid "The following files failed extraction from package:"
 msgstr "استخراج پرونده های زیر از بسته بندی انجام نشد:"
 
-msgid "Package installed successfully!"
-msgstr "بسته با موفقیت نصب شد!"
+msgid "New Game Project"
+msgstr "پروژه بازی جدید"
 
 msgid "Import & Edit"
 msgstr "وارد کردن و ویرایش"
@@ -5945,34 +5801,8 @@ msgid "Note: Built-in shaders can't be edited using an external editor."
 msgstr ""
 "توجه: شیدر‌های تعبیه شده نمی‌توانند با استفاده از ویرایشگر خارجی ویرایش شوند."
 
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "نوع نامعتبر ورودی برای ()convert، ثوابت *_TYPE‌ را بکار گیرید."
-
-msgid "Not based on a script"
-msgstr "بر اساس یک اسکریپت نیست"
-
-msgid "Not based on a resource file"
-msgstr "بر اساس یک فایل منبع نیست"
-
-msgid "Invalid instance dictionary format (missing @path)"
-msgstr "فرمت دیکشنری نمونه نامعتبر (pass@ مفقود)"
-
-msgid "Invalid instance dictionary format (can't load script at @path)"
-msgstr ""
-"فرمت نمونه ی دیکشنری نامعتبر است . ( نمی توان اسکریپت را از مسیر path@ "
-"بارگذاری کرد.)"
-
-msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr "فرمت دیکشنری نمونه نامعتبر (اسکریپت نامعتبر در path@)"
-
-msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr "نمونه دیکشنری نامعتبر است (زیرکلاس‌های نامعتبر)"
-
 msgid "glTF 2.0 Scene..."
 msgstr "صحنه glTF 2.0"
-
-msgid "Path does not contain a Blender installation."
-msgstr "مسیر دارای نصب بلندر نیست."
 
 msgid "Plane:"
 msgstr "سطح:"
@@ -5992,32 +5822,6 @@ msgstr "انتخاب فاصله:"
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
 "تعداد بایت‌های مورد نظر برای رمزگشایی بایت‌ها کافی نیست،‌ و یا فرمت نامعتبر است ."
-
-msgid ""
-"Unable to load .NET runtime, no compatible version was found.\n"
-"Attempting to create/edit a project will lead to a crash.\n"
-"\n"
-"Please install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-"
-"us/download and restart Godot."
-msgstr ""
-"زمان اجرای دات‌نت بارگیری نشد، هیچ نسخه سازگاری یافت نشد.\n"
-"تلاش برای ایجاد/ویرایش یک پروژه منجر به خرابی خواهد شد.\n"
-"\n"
-"لطفاً NET SDK 6.0. یا جدیدتر را از https://dotnet.microsoft.com/en-us/download "
-"نصب کنید و گودو را مجدداً راه‌اندازی کنید."
-
-msgid ""
-"Unable to load .NET runtime, specifically hostfxr.\n"
-"Attempting to create/edit a project will lead to a crash.\n"
-"\n"
-"Please install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-"
-"us/download and restart Godot."
-msgstr ""
-"زمان اجرای دات‌نت، به ویژه hostfxr، بارگیری نمی‌شود.\n"
-"تلاش برای ایجاد/ویرایش یک پروژه منجر به خرابی خواهد شد.\n"
-"\n"
-"لطفاً NET SDK 6.0. یا جدیدتر را از https://dotnet.microsoft.com/en-us/download "
-"نصب کنید و گودو را مجدداً راه‌اندازی اندازی کنید."
 
 msgid "%s/s"
 msgstr "%s/ثانیه"
@@ -6172,9 +5976,6 @@ msgstr "گره الف و گره ب باید PhysicsBody3Dهای متفاوت ب�
 msgid "Animation not found: '%s'"
 msgstr "انیمیشن پیدا نشد: '%s'"
 
-msgid "Alert!"
-msgstr "هشدار!"
-
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "اگر \"Exp ویرایش\" فعال است, \"حداقل داده\" باید بزرگتر از 0 باشد."
 
@@ -6200,11 +6001,11 @@ msgstr "تکرار"
 msgid "Invalid comparison function for that type."
 msgstr "عمل مقایسه نامعتبر بزای این نوع."
 
-msgid "Constants cannot be modified."
-msgstr "ثوابت قابل تغییر نیستند."
-
 msgid "Expected a function name."
 msgstr "نام تابع مورد انتظار است."
+
+msgid "Constants cannot be modified."
+msgstr "ثوابت قابل تغییر نیستند."
 
 msgid "Expected a '{' to begin function."
 msgstr "برای شروع یک تابع '{' انتظار میرود."

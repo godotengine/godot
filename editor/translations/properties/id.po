@@ -50,13 +50,14 @@
 # Luqman Firmansyah <luqm4n.firm4n@gmail.com>, 2023.
 # Bayu Satiyo <itsyuukunz@gmail.com>, 2023.
 # Avirur Rahman <avirahmandev@gmail.com>, 2023.
+# Zubub <ziwaonoob002@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-11 22:02+0000\n"
-"Last-Translator: Avirur Rahman <avirahmandev@gmail.com>\n"
+"PO-Revision-Date: 2024-03-07 23:21+0000\n"
+"Last-Translator: Zubub <ziwaonoob002@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/id/>\n"
 "Language: id\n"
@@ -64,7 +65,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 msgid "Application"
 msgstr "Aplikasi"
@@ -309,6 +310,9 @@ msgstr "Timer"
 msgid "Incremental Search Max Interval Msec"
 msgstr "Interval Maksimal Pencarian Tambahan Msec"
 
+msgid "Tooltip Delay (sec)"
+msgstr "Penundaan Tooltip (dtk)"
+
 msgid "Common"
 msgstr "Umum"
 
@@ -344,6 +348,9 @@ msgstr "Ukuran Wilayah Unggah Tekstur Ukuran Px"
 
 msgid "Pipeline Cache"
 msgstr "Cache Alur"
+
+msgid "Enable"
+msgstr "Aktifkan"
 
 msgid "Save Chunk Size (MB)"
 msgstr "Simpan Ukuran Potongan"
@@ -702,9 +709,6 @@ msgstr "Nilai"
 msgid "Arg Count"
 msgstr "Hitungan Arg"
 
-msgid "Args"
-msgstr "Argumen²"
-
 msgid "Type"
 msgstr "Tipe"
 
@@ -791,6 +795,12 @@ msgstr "Mode Tanpa Gangguan"
 
 msgid "Movie Maker Enabled"
 msgstr "Pembuat Film Enabled"
+
+msgid "Theme"
+msgstr "Tema"
+
+msgid "Line Spacing"
+msgstr "Jarak Baris"
 
 msgid "Base Type"
 msgstr "Tipe Dasar"
@@ -939,9 +949,6 @@ msgstr "Mode Pemilih Warna Default"
 msgid "Default Color Picker Shape"
 msgstr "Bentuk Pemilih Warna Default"
 
-msgid "Theme"
-msgstr "Tema"
-
 msgid "Preset"
 msgstr "Prasetel"
 
@@ -1013,9 +1020,6 @@ msgstr "Memulihkan Adegan saat Memuat"
 
 msgid "Multi Window"
 msgstr "Layar Ganda"
-
-msgid "Enable"
-msgstr "Aktifkan"
 
 msgid "Restore Windows on Load"
 msgstr "Pulihkan Windows saat Memuat"
@@ -1188,9 +1192,6 @@ msgstr "Tab Gambar"
 msgid "Draw Spaces"
 msgstr "Gambarkan Spasi"
 
-msgid "Line Spacing"
-msgstr "Jarak Baris"
-
 msgid "Behavior"
 msgstr "Perilaku"
 
@@ -1319,6 +1320,9 @@ msgstr "Sendi"
 
 msgid "Shape"
 msgstr "Bentuk"
+
+msgid "AABB"
+msgstr "AABB"
 
 msgid "Primary Grid Steps"
 msgstr "Langkah Grid Utama"
@@ -1920,9 +1924,6 @@ msgstr "Simpan ke File"
 msgid "Enabled"
 msgstr "Diaktifkan"
 
-msgid "Make Streamable"
-msgstr "Jadikan Streamable"
-
 msgid "Shadow Meshes"
 msgstr "Mesh Bayangan"
 
@@ -2201,9 +2202,6 @@ msgstr "Pangkas ke Wilayah"
 
 msgid "Trim Alpha Border From Region"
 msgstr "Pangkas Perbatasan Alpha Dari Wilayah"
-
-msgid "Force"
-msgstr "Paksa"
 
 msgid "8 Bit"
 msgstr "8 Bit"
@@ -2585,9 +2583,6 @@ msgstr "Kirim Buffer Kedalaman"
 
 msgid "Startup Alert"
 msgstr "Peringatan Startup"
-
-msgid "In Editor"
-msgstr "Di Editor"
 
 msgid "Boot Splash"
 msgstr "Splash Boot"
@@ -4557,9 +4552,6 @@ msgstr "Poligon Navigasi"
 msgid "Use Edge Connections"
 msgstr "unakan Koneksi Tepi"
 
-msgid "Constrain Avoidance"
-msgstr "Penghindaran Pembatasan"
-
 msgid "Skew"
 msgstr "Condong"
 
@@ -4830,11 +4822,11 @@ msgstr "Integrator Kustom"
 msgid "Continuous CD"
 msgstr "CD Berkelanjutan"
 
-msgid "Max Contacts Reported"
-msgstr "Kontak Maks Dilaporkan"
-
 msgid "Contact Monitor"
 msgstr "Monitor Kontak"
+
+msgid "Max Contacts Reported"
+msgstr "Kontak Maks Dilaporkan"
 
 msgid "Linear"
 msgstr "Linier"
@@ -4917,6 +4909,9 @@ msgstr "Koordinat Frame"
 msgid "Filter Clip Enabled"
 msgstr "Klip Filter Diaktifkan"
 
+msgid "Tile Set"
+msgstr "Set Tile"
+
 msgid "Collision Animatable"
 msgstr "Tabrakan yang Dapat Dianimasikan"
 
@@ -4926,8 +4921,8 @@ msgstr "Mode Visibilitas Tabrakan"
 msgid "Navigation Visibility Mode"
 msgstr "Mode Visibilitas Navigasi"
 
-msgid "Tile Set"
-msgstr "Set Tile"
+msgid "Y Sort Origin"
+msgstr "Asal Urutan Y"
 
 msgid "Texture Normal"
 msgstr "Tekstur Normal"
@@ -5054,9 +5049,6 @@ msgstr "Kurva Skala Z"
 
 msgid "Albedo"
 msgstr "Albedo"
-
-msgid "Normal"
-msgstr "Normal"
 
 msgid "Orm"
 msgstr "Orm"
@@ -5679,17 +5671,11 @@ msgstr "Skala Gerak"
 msgid "Show Rest Only"
 msgstr "Tampilkan Istirahat Saja"
 
-msgid "Animate Physical Bones"
-msgstr "Menganimasikan Tulang Fisik"
-
 msgid "Root Bone"
 msgstr "Tulang Akar"
 
 msgid "Tip Bone"
 msgstr "Tulang Ujung"
-
-msgid "Interpolation"
-msgstr "Interpolasi"
 
 msgid "Target"
 msgstr "Sasaran"
@@ -5711,6 +5697,9 @@ msgstr "Jarak Min"
 
 msgid "Max Iterations"
 msgstr "Iterasi Maks"
+
+msgid "Active"
+msgstr "Aktif"
 
 msgid "Pinned Points"
 msgstr "Poin yang Disematkan"
@@ -5747,9 +5736,6 @@ msgstr "Koefisien Hambat"
 
 msgid "Track Physics Step"
 msgstr "Lacak Langkah Fisik"
-
-msgid "AABB"
-msgstr "AABB"
 
 msgid "Sorting"
 msgstr "Penyortiran"
@@ -5852,9 +5838,6 @@ msgstr "Jumlah Masukan"
 
 msgid "Request"
 msgstr "Permintaan"
-
-msgid "Active"
-msgstr "Aktif"
 
 msgid "Internal Active"
 msgstr "Internal yang Aktif"
@@ -6936,6 +6919,9 @@ msgstr "Lingkungan Default"
 msgid "Enable Object Picking"
 msgstr "Aktifkan Pengambilan Objek"
 
+msgid "Menu"
+msgstr "Menu"
+
 msgid "Wait Time"
 msgstr "Waktu Tunggu"
 
@@ -7026,9 +7012,6 @@ msgstr "Kuadran 3"
 msgid "Canvas Cull Mask"
 msgstr "Kanvas Cull Mask"
 
-msgid "Tooltip Delay (sec)"
-msgstr "Penundaan Tooltip (dtk)"
-
 msgid "Size 2D Override"
 msgstr "Penggantian Ukuran 2D"
 
@@ -7103,6 +7086,18 @@ msgstr "Navigasi 3D"
 
 msgid "Segments"
 msgstr "Segmen"
+
+msgid "Parsed Geometry Type"
+msgstr "Jenis Geometri yang Diuraikan"
+
+msgid "Source Geometry Mode"
+msgstr "Mode Geometri Sumber"
+
+msgid "Cells"
+msgstr "Cell"
+
+msgid "Agents"
+msgstr "Agen"
 
 msgid "A"
 msgstr "A"
@@ -7206,9 +7201,6 @@ msgstr "Set Medan"
 msgid "Custom Data Layers"
 msgstr "Lapisan Data Kustom"
 
-msgid "Scenes"
-msgstr "Adegan"
-
 msgid "Scene"
 msgstr "Adegan"
 
@@ -7229,9 +7221,6 @@ msgstr "Mengubah urutan"
 
 msgid "Texture Origin"
 msgstr "Asal Tekstur"
-
-msgid "Y Sort Origin"
-msgstr "Asal Urutan Y"
 
 msgid "Terrain Set"
 msgstr "Set Medan"
@@ -7758,6 +7747,9 @@ msgstr "Tebal Huruf"
 msgid "Font Stretch"
 msgstr "Perlebaran Huruf"
 
+msgid "Interpolation"
+msgstr "Interpolasi"
+
 msgid "Color Space"
 msgstr "Ruang Color"
 
@@ -7986,20 +7978,8 @@ msgstr "Jumlah Instance Terlihat"
 msgid "Partition Type"
 msgstr "Tipe Partisi"
 
-msgid "Parsed Geometry Type"
-msgstr "Jenis Geometri yang Diuraikan"
-
-msgid "Source Geometry Mode"
-msgstr "Mode Geometri Sumber"
-
 msgid "Source Group Name"
 msgstr "Nama Grup Sumber"
-
-msgid "Cells"
-msgstr "Cell"
-
-msgid "Agents"
-msgstr "Agen"
 
 msgid "Max Climb"
 msgstr "Maksimum Kenaikan"
@@ -8748,9 +8728,6 @@ msgstr "Latar Belakang Bar Tab"
 msgid "Drop Mark"
 msgstr "Jatuhkan Tanda"
 
-msgid "Menu"
-msgstr "Menu"
-
 msgid "Menu Highlight"
 msgstr "Sorotan Menu"
 
@@ -8768,9 +8745,6 @@ msgstr "Pemisahan Ikon"
 
 msgid "Button Highlight"
 msgstr "Sorotan Tombol"
-
-msgid "Large"
-msgstr "Besar"
 
 msgid "SV Width"
 msgstr "Lebar SV"
