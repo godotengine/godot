@@ -866,6 +866,9 @@ void DisplayServerWeb::_ime_callback(int p_type, const String &p_text) {
 		default:
 			break;
 	}
+
+	ds->process_keys();
+	Input::get_singleton()->flush_buffered_events();
 }
 
 void DisplayServerWeb::window_set_ime_active(const bool p_active, WindowID p_window) {
@@ -1353,29 +1356,33 @@ DisplayServer::VSyncMode DisplayServerWeb::window_get_vsync_mode(WindowID p_vsyn
 }
 
 void DisplayServerWeb::process_events() {
+	process_keys();
 	Input::get_singleton()->flush_buffered_events();
 	if (godot_js_input_gamepad_sample() == OK) {
 		process_joypads();
-		for (int i = 0; i < key_event_pos; i++) {
-			const DisplayServerWeb::KeyEvent &ke = key_event_buffer[i];
-
-			Ref<InputEventKey> ev;
-			ev.instantiate();
-			ev->set_pressed(ke.pressed);
-			ev->set_echo(ke.echo);
-			ev->set_keycode(ke.keycode);
-			ev->set_physical_keycode(ke.physical_keycode);
-			ev->set_key_label(ke.key_label);
-			ev->set_unicode(ke.unicode);
-			ev->set_location(ke.location);
-			if (ke.raw) {
-				dom2godot_mod(ev, ke.mod, ke.keycode);
-			}
-
-			Input::get_singleton()->parse_input_event(ev);
-		}
-		key_event_pos = 0;
 	}
+}
+
+void DisplayServerWeb::process_keys() {
+	for (int i = 0; i < key_event_pos; i++) {
+		const DisplayServerWeb::KeyEvent &ke = key_event_buffer[i];
+
+		Ref<InputEventKey> ev;
+		ev.instantiate();
+		ev->set_pressed(ke.pressed);
+		ev->set_echo(ke.echo);
+		ev->set_keycode(ke.keycode);
+		ev->set_physical_keycode(ke.physical_keycode);
+		ev->set_key_label(ke.key_label);
+		ev->set_unicode(ke.unicode);
+		ev->set_location(ke.location);
+		if (ke.raw) {
+			dom2godot_mod(ev, ke.mod, ke.keycode);
+		}
+
+		Input::get_singleton()->parse_input_event(ev);
+	}
+	key_event_pos = 0;
 }
 
 int DisplayServerWeb::get_current_video_driver() const {
