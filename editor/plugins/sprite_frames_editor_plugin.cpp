@@ -1835,7 +1835,7 @@ void SpriteFramesEditor::_fetch_sprite_node() {
 	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	const List<Node *> &top_node_list = editor_selection->get_top_selected_node_list();
 	if (top_node_list.size() == 1) {
-		selected = top_node_list.front()->get();
+		selected = top_node_list.get_front();
 	}
 
 	bool show_node_edit = false;
