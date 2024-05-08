@@ -106,7 +106,7 @@ void ThemeItemImportTree::_update_items_tree() {
 		type_node->set_checked(IMPORT_ITEM_DATA, false);
 		type_node->set_editable(IMPORT_ITEM_DATA, true);
 
-		bool is_matching_filter = (filter_text.is_empty() || type_name.findn(filter_text) > -1);
+		bool is_matching_filter = (filter_text.is_empty() || type_name.containsn(filter_text));
 		bool has_filtered_items = false;
 
 		for (int i = 0; i < Theme::DATA_TYPE_MAX; i++) {
@@ -120,7 +120,7 @@ void ThemeItemImportTree::_update_items_tree() {
 
 			for (const StringName &F : names) {
 				String item_name = (String)F;
-				bool is_item_matching_filter = (item_name.findn(filter_text) > -1);
+				bool is_item_matching_filter = item_name.containsn(filter_text);
 				if (!filter_text.is_empty() && !is_matching_filter && !is_item_matching_filter) {
 					continue;
 				}
