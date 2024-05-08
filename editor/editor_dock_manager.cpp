@@ -59,12 +59,13 @@ void DockSplitContainer::_update_visibility() {
 	}
 	is_updating = true;
 	bool any_visible = false;
-	for (int i = 0; i < 2; i++) {
-		Control *split = get_containable_child(i);
-		if (split && split->is_visible()) {
-			any_visible = true;
-			break;
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i, false));
+		if (!c || !c->is_visible() || c->is_set_as_top_level()) {
+			continue;
 		}
+		any_visible = c;
+		break;
 	}
 	set_visible(any_visible);
 	is_updating = false;
@@ -74,10 +75,13 @@ void DockSplitContainer::add_child_notify(Node *p_child) {
 	SplitContainer::add_child_notify(p_child);
 
 	Control *child_control = nullptr;
-	for (int i = 0; i < 2; i++) {
-		Control *split = get_containable_child(i);
-		if (p_child == split) {
-			child_control = split;
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i, false));
+		if (!c || c->is_set_as_top_level()) {
+			continue;
+		}
+		if (p_child == c) {
+			child_control = c;
 			break;
 		}
 	}
@@ -93,10 +97,13 @@ void DockSplitContainer::remove_child_notify(Node *p_child) {
 	SplitContainer::remove_child_notify(p_child);
 
 	Control *child_control = nullptr;
-	for (int i = 0; i < 2; i++) {
-		Control *split = get_containable_child(i);
-		if (p_child == split) {
-			child_control = split;
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i, false));
+		if (!c || c->is_set_as_top_level()) {
+			continue;
+		}
+		if (p_child == c) {
+			child_control = c;
 			break;
 		}
 	}
