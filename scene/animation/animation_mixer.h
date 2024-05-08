@@ -80,6 +80,7 @@ public:
 		Dictionary bone_map;
 		StringName animation_library;
 		uint64_t last_update = 0;
+		bool is_mirror = false;
 	};
 
 	struct PlaybackInfo {

@@ -36,6 +36,416 @@
 
 #define ANIM_MIN_LENGTH 0.001
 
+
+class HumanBone
+{
+	public:
+	// 指頭，大拇指 食指 中指等
+    enum Fingers
+    {
+        kThumb = 0 ,
+        kIndex,
+        kMiddle,
+        kRing,
+        kLittle,
+        kLastFinger
+    };
+	//指骨 每根指頭一共3個關節
+    enum Phalanges
+    {
+        kProximal = 0,
+        kIntermediate, //1
+        kDistal, 
+        kLastPhalange //3
+    };
+	//
+    enum FingerDoF
+    {
+        kProximalDownUp = 0,	//  近端上下
+        kProximalInOut,			// 1 //近端裏外
+        kIntermediateCloseOpen, // 2 // 中間開關
+        kDistalCloseOpen,		// 3 // 遠端開關
+        kLastFingerDoF			// 4 
+    };
+	enum ECount
+	{
+		s_BoneCount = kLastFinger * kLastPhalange, //  指頭數量乘以指骨數量 5*3=15
+		s_DoFCount = kLastFinger * kLastFingerDoF //  指頭數量乘以指骨DOF 5*4 =20//但只手的手指的全部dof
+
+	};
+
+
+
+	// 這裏是身體部分的主要骨骼，包羅了avatar 裏面的body和head，不包含手指部分
+    enum Bones
+    {
+        kHips = 0,     //臀部
+        kLeftUpperLeg, //1   // 左邊大腿根部骨骼
+        kRightUpperLeg, // 右邊邊大腿根部骨骼
+        kLeftLowerLeg, //3     // 左邊膝蓋
+        kRightLowerLeg, // 右邊膝蓋
+        kLeftFoot, //5    // 左邊膝蓋
+        kRightFoot, // 右邊膝蓋
+        kSpine, //7    // 腹部
+        kChest, // 中胸部
+        kUpperChest, //9  // 上胸部
+        kNeck,  // 脖子
+        kHead, //11     // 頭部
+        kLeftShoulder, // 左肩（靠近脖子）
+        kRightShoulder, //13     // 右肩（靠近脖子）
+        kLeftUpperArm, // 左邊上臂根部
+        kRightUpperArm, //15     // 右邊上臂根部
+        kLeftLowerArm, // 左邊肘部
+        kRightLowerArm, //17     // 右邊肘部
+        kLeftHand, //  左手腕
+        kRightHand, //19     //  右手腕
+        kLeftToes, // 左邊脚趾尖
+        kRightToes, //21     //  右邊脚趾尖
+
+        kLeftEye, //  左眼
+        kRightEye, //23    //  右眼
+        kJaw,	  //  下顎
+        kLastBone //25    
+    };
+	// 手部骨骼，枚舉定義值得時候是接到身體後面的
+    enum HumanBones
+    {
+        kBodyBoneStart = 0,
+        kBodyBoneStop = kBodyBoneStart + kLastBone,					//25 // 身體骨骼結束
+        kLeftHandBoneStart = kBodyBoneStop,							//25 // 左手骨骼開始
+        kLeftThumbStart = kLeftHandBoneStart,						//25  //左手拇指開始
+        kLeftThumbStop = kLeftThumbStart + kLastPhalange,		//25+3=28 // 左手拇指結束
+        kLeftIndexStart = kLeftThumbStop,							//28 // 左手食指開始
+        kLeftIndexStop = kLeftIndexStart + kLastPhalange,		//28+3=31 // 左手食指結束
+        kLeftMiddleStart = kLeftIndexStop,							//31 // 左手中指開始
+        kLeftMiddleStop = kLeftMiddleStart + kLastPhalange,	//31+3=34 // 左手中指結束
+        kLeftRingStart = kLeftMiddleStop,							//34 // 左手無名指開始
+        kLeftRingStop = kLeftRingStart + kLastPhalange,		//34+3 = 37 // 左手無名指結束
+        kLeftLittleStart = kLeftRingStop,							//37 // 左手小指開始
+        kLeftLittleStop = kLeftLittleStart + kLastPhalange,	//37+3 = 40 // 左手小指結束
+        kLeftHandBoneStop = kLeftLittleStop,						//40 // 左手骨頭結束
+        kRightHandBoneStart = kLeftHandBoneStop,					//40 // 右手骨頭開始
+        kRightThumbStart = kRightHandBoneStart,						//40 // 右手拇指開始
+        kRightThumbStop = kRightThumbStart + kLastPhalange,	//40+3 =43 // 右手拇指結束
+        kRightIndexStart = kRightThumbStop,							//43 // 右手食指開始
+        kRightIndexStop = kRightIndexStart + kLastPhalange,	//43+3 = 46 // 右手食指結束
+        kRightMiddleStart = kRightIndexStop,						//46 // 右手中指開始
+        kRightMiddleStop = kRightMiddleStart + kLastPhalange,	//46+3=49 // 右手中指結束
+        kRightRingStart = kRightMiddleStop,							//49 // 右手無名指開始
+        kRightRingStop = kRightRingStart + kLastPhalange,		//49+3 = 52 // 右手無名指結束
+        kRightLittleStart = kRightRingStop,							//52 // 右手小指開始
+        kRightLittleStop = kRightLittleStart + kLastPhalange,	//52+3=55 // 右手小指結束
+        kRightHandBoneStop = kRightLittleStop,						//55 // 右手手骨結束
+        kLastHumanBone = kRightHandBoneStop							//55 // 人體骨骼結束
+    };
+	// 身體主幹部位的dof
+    enum BodyDoF
+    {
+        kSpineFrontBack = 0,
+        kSpineLeftRight,		// 1
+        kSpineRollLeftRight,
+        kChestFrontBack,		// 3
+        kChestLeftRight,
+        kChestRollLeftRight,	// 5
+        kUpperChestFrontBack,
+        kUpperChestLeftRight,	// 7
+        kUpperChestRollLeftRight,
+        kLastBodyDoF			// 9 身體一共九塊DOF
+    };
+	// 頭部谷歌的dof
+    enum HeadDoF
+    {
+        kNeckFrontBack = 0,
+        kNeckLeftRight,			// 1
+        kNeckRollLeftRight,
+        kHeadFrontBack,			// 3
+        kHeadLeftRight,
+        kHeadRollLeftRight,		// 5
+        kLeftEyeDownUp,
+        kLeftEyeLeftRight,		// 7
+        kRightEyeDownUp,
+        kRightEyeLeftRight,		// 9
+        kJawDownUp,
+        kJawLeftRight,			// 11
+        kLastHeadDoF
+    };
+	// 大腿的dof
+    enum LegDoF
+    {
+        kUpperLegFrontBack = 0,
+        kUpperLegInOut,			// 1
+        kUpperLegRollInOut,
+        kLegCloseOpen,			// 3
+        kLegRollInOut,
+        kFootCloseOpen,			// 5
+        kFootInOut,
+        kToesUpDown,			// 7
+        kLastLegDoF
+    };
+	// 上肢的dof
+    enum ArmDoF
+    {
+        kShoulderDownUp = 0,    // 0  肩部上下肌肉
+        kShoulderFrontBack,		// 1  肩部前后肌肉
+        kArmDownUp,				//    手臂上下肌肉
+        kArmFrontBack,			// 3  手臂前后肌肉
+        kArmRollInOut,			//    手臂滚动内外肌肉
+        kForeArmCloseOpen,		// 5  前臂开合肌肉
+        kForeArmRollInOut,		//    前臂滚动内外肌肉
+        kHandDownUp,			// 7  手部上下肌肉
+        kHandInOut,				//	  手部内外肌肉
+        kLastArmDoF				// 9
+    };
+
+	// 身體重點部分的dof
+    enum HumanPartDoF
+    {
+        kBodyPart = 0,
+        kHeadPart,				// 1
+        kLeftLegPart,
+        kRightLegPart,			// 3
+        kLeftArmPart,
+        kRightArmPart,			// 5
+        kLeftThumbPart,
+        kLeftIndexPart,			// 7
+        kLeftMiddlePart,
+        kLeftRingPart,			// 9
+        kLeftLittlePart,
+        kRightThumbPart,		// 11
+        kRightIndexPart,
+        kRightMiddlePart,		// 13
+        kRightRingPart,
+        kRightLittlePart,		// 15
+        kLastHumanPartDoF
+    };
+
+	// 身體除了手指部位的全部dof dof的意思是關節的旋轉夾角，
+    enum DoF
+    {
+        kBodyDoFStart = 0,
+        kHeadDoFStart = kBodyDoFStart + kLastBodyDoF,			// 0+9 = 9
+        kLeftLegDoFStart = kHeadDoFStart + kLastHeadDoF,		// 9+12=21
+        kRightLegDoFStart = kLeftLegDoFStart + kLastLegDoF,		// 21+8= 29
+        kLeftArmDoFStart = kRightLegDoFStart + kLastLegDoF,		// 29+8 = 37
+        kRightArmDoFStart = kLeftArmDoFStart + kLastArmDoF,		// 37 + 9 = 46
+        kLastDoF = kRightArmDoFStart + kLastArmDoF				// 46 + 9 = 55 身體除了手指部位的全部dof
+    };
+	// 身體全部部位的全部dof
+    enum HumanDoF
+    {
+        kHumanDoFStart = 0,
+        kHumanDoFStop = kHumanDoFStart + kLastDoF,							// 55
+        kHumanLeftHandDoFStart = kHumanDoFStop,												// 55 // 左手DOF開始
+        kHumanLeftHandDoFStop = kHumanLeftHandDoFStart + s_DoFCount,			// 55+20 = 75 // 左手DOF結束
+        kHumanRightHandDoFStart = kHumanLeftHandDoFStop,									// 75 // 右手DOF開始
+        kHumanRightHandDoFStop = kHumanRightHandDoFStart + s_DoFCount,		// 75+20 =95 // 右手DOF結束
+        kHumanLastDoF = kHumanRightHandDoFStop												// 95 // 身體所有DOF的結束
+    };
+
+    enum BodyTDoF
+    {
+        kSpineTDoF = 0,
+        kChestTDoF,        // 1
+        kUpperChestTDoF,   // 
+        kLastBodyTDoF      // 3
+    };
+
+    enum HeadTDoF
+    {
+        kNeckTDoF = 0,
+        kHeadTDoF,
+        kLastHeadTDoF
+    };
+
+    enum LegTDoF
+    {
+        kUpperLegTDoF = 0,
+        kLowerLegTDoF,
+        kFootTDoF,
+        kToesTDoF,
+        kLastLegTDoF
+    };
+
+    enum ArmTDoF
+    {
+        kShoulderTDoF = 0,
+        kUpperArmTDoF,
+        kLowerArmTDoF,
+        kHandTDoF,
+        kLastArmTDoF
+    };
+
+    enum TDoF
+    {
+        kBodyTDoFStart = 0,
+        kHeadTDoFStart = kBodyTDoFStart + kLastBodyTDoF,			// 0+3 = 3
+        kLeftLegTDoFStart = kHeadTDoFStart + kLastHeadTDoF,			// 3+2 = 5
+        kRightLegTDoFStart = kLeftLegTDoFStart + kLastLegTDoF,		// 5+4 = 9
+        kLeftArmTDoFStart = kRightLegTDoFStart + kLastLegTDoF,		// 9+4 = 13
+        kRightArmTDoFStart = kLeftArmTDoFStart + kLastArmTDoF,		// 13+4 = 17
+        kLastTDoF = kRightArmTDoFStart + kLastArmTDoF				// 17+4 = 21
+    };
+
+    enum Goal
+    {
+        kLeftFootGoal,		//  左脚IK
+        kRightFootGoal,		//  右脚IK 1
+        kLeftHandGoal,		//  左手IK
+        kRightHandGoal,		//  右手IK 3
+        kLastGoal			//  IK量 4
+    };
+	static const String* get_bone_names() {
+		// Table of Godot Humanoid bone names.
+		static const String bone_names[76] = {
+			"Root", // XRBodyTracker::JOINT_ROOT
+
+			// Upper Body Joints.
+			"Hips", // XRBodyTracker::JOINT_HIPS
+			"Spine", // XRBodyTracker::JOINT_SPINE
+			"Chest", // XRBodyTracker::JOINT_CHEST
+			"UpperChest", // XRBodyTracker::JOINT_UPPER_CHEST
+			"Neck", // XRBodyTracker::JOINT_NECK"
+			"Head", // XRBodyTracker::JOINT_HEAD"
+			"HeadTip", // XRBodyTracker::JOINT_HEAD_TIP"
+			"LeftShoulder", // XRBodyTracker::JOINT_LEFT_SHOULDER"
+			"LeftUpperArm", // XRBodyTracker::JOINT_LEFT_UPPER_ARM"
+			"LeftLowerArm", // XRBodyTracker::JOINT_LEFT_LOWER_ARM"
+			"RightShoulder", // XRBodyTracker::JOINT_RIGHT_SHOULDER"
+			"RightUpperArm", // XRBodyTracker::JOINT_RIGHT_UPPER_ARM"
+			"RightLowerArm", // XRBodyTracker::JOINT_RIGHT_LOWER_ARM"
+
+			// Lower Body Joints.
+			"LeftUpperLeg", // XRBodyTracker::JOINT_LEFT_UPPER_LEG
+			"LeftLowerLeg", // XRBodyTracker::JOINT_LEFT_LOWER_LEG
+			"LeftFoot", // XRBodyTracker::JOINT_LEFT_FOOT
+			"LeftToes", // XRBodyTracker::JOINT_LEFT_TOES
+			"RightUpperLeg", // XRBodyTracker::JOINT_RIGHT_UPPER_LEG
+			"RightLowerLeg", // XRBodyTracker::JOINT_RIGHT_LOWER_LEG
+			"RightFoot", // XRBodyTracker::JOINT_RIGHT_FOOT
+			"RightToes", // XRBodyTracker::JOINT_RIGHT_TOES
+
+			// Left Hand Joints.
+			"LeftHand", // XRBodyTracker::JOINT_LEFT_HAND
+			"LeftPalm", // XRBodyTracker::JOINT_LEFT_PALM
+			"LeftWrist", // XRBodyTracker::JOINT_LEFT_WRIST
+			"LeftThumbMetacarpal", // XRBodyTracker::JOINT_LEFT_THUMB_METACARPAL
+			"LeftThumbProximal", // XRBodyTracker::JOINT_LEFT_THUMB_PHALANX_PROXIMAL
+			"LeftThumbDistal", // XRBodyTracker::JOINT_LEFT_THUMB_PHALANX_DISTAL
+			"LeftThumbTip", // XRBodyTracker::JOINT_LEFT_THUMB_TIP
+			"LeftIndexMetacarpal", // XRBodyTracker::JOINT_LEFT_INDEX_FINGER_METACARPAL
+			"LeftIndexProximal", // XRBodyTracker::JOINT_LEFT_INDEX_FINGER_PHALANX_PROXIMAL
+			"LeftIndexIntermediate", // XRBodyTracker::JOINT_LEFT_INDEX_FINGER_PHALANX_INTERMEDIATE
+			"LeftIndexDistal", // XRBodyTracker::JOINT_LEFT_INDEX_FINGER_PHALANX_DISTAL
+			"LeftIndexTip", // XRBodyTracker::JOINT_LEFT_INDEX_FINGER_TIP
+			"LeftMiddleMetacarpal", // XRBodyTracker::JOINT_LEFT_MIDDLE_FINGER_METACARPAL
+			"LeftMiddleProximal", // XRBodyTracker::JOINT_LEFT_MIDDLE_FINGER_PHALANX_PROXIMAL
+			"LeftMiddleIntermediate", // XRBodyTracker::JOINT_LEFT_MIDDLE_FINGER_PHALANX_INTERMEDIATE
+			"LeftMiddleDistal", // XRBodyTracker::JOINT_LEFT_MIDDLE_FINGER_PHALANX_DISTAL
+			"LeftMiddleTip", // XRBodyTracker::JOINT_LEFT_MIDDLE_FINGER_TIP
+			"LeftRingMetacarpal", // XRBodyTracker::JOINT_LEFT_RING_FINGER_METACARPAL
+			"LeftRingProximal", // XRBodyTracker::JOINT_LEFT_RING_FINGER_PHALANX_PROXIMAL
+			"LeftRingIntermediate", // XRBodyTracker::JOINT_LEFT_RING_FINGER_PHALANX_INTERMEDIATE
+			"LeftRingDistal", // XRBodyTracker::JOINT_LEFT_RING_FINGER_PHALANX_DISTAL
+			"LeftRingTip", // XRBodyTracker::JOINT_LEFT_RING_FINGER_TIP
+			"LeftLittleMetacarpal", // XRBodyTracker::JOINT_LEFT_PINKY_FINGER_METACARPAL
+			"LeftLittleProximal", // XRBodyTracker::JOINT_LEFT_PINKY_FINGER_PHALANX_PROXIMAL
+			"LeftLittleIntermediate", // XRBodyTracker::JOINT_LEFT_PINKY_FINGER_PHALANX_INTERMEDIATE
+			"LeftLittleDistal", // XRBodyTracker::JOINT_LEFT_PINKY_FINGER_PHALANX_DISTAL
+			"LeftLittleTip", // XRBodyTracker::JOINT_LEFT_PINKY_FINGER_TIP
+
+			// Right Hand Joints.
+			"RightHand", // XRBodyTracker::JOINT_RIGHT_HAND
+			"RightPalm", // XRBodyTracker::JOINT_RIGHT_PALM
+			"RightWrist", // XRBodyTracker::JOINT_RIGHT_WRIST
+			"RightThumbMetacarpal", // XRBodyTracker::JOINT_RIGHT_THUMB_METACARPAL
+			"RightThumbProximal", // XRBodyTracker::JOINT_RIGHT_THUMB_PHALANX_PROXIMAL
+			"RightThumbDistal", // XRBodyTracker::JOINT_RIGHT_THUMB_PHALANX_DISTAL
+			"RightThumbTip", // XRBodyTracker::JOINT_RIGHT_THUMB_TIP
+			"RightIndexMetacarpal", // XRBodyTracker::JOINT_RIGHT_INDEX_FINGER_METACARPAL
+			"RightIndexProximal", // XRBodyTracker::JOINT_RIGHT_INDEX_FINGER_PHALANX_PROXIMAL
+			"RightIndexIntermediate", // XRBodyTracker::JOINT_RIGHT_INDEX_FINGER_PHALANX_INTERMEDIATE
+			"RightIndexDistal", // XRBodyTracker::JOINT_RIGHT_INDEX_FINGER_PHALANX_DISTAL
+			"RightIndexTip", // XRBodyTracker::JOINT_RIGHT_INDEX_FINGER_TIP
+			"RightMiddleMetacarpal", // XRBodyTracker::JOINT_RIGHT_MIDDLE_FINGER_METACARPAL
+			"RightMiddleProximal", // XRBodyTracker::JOINT_RIGHT_MIDDLE_FINGER_PHALANX_PROXIMAL
+			"RightMiddleIntermediate", // XRBodyTracker::JOINT_RIGHT_MIDDLE_FINGER_PHALANX_INTERMEDIATE
+			"RightMiddleDistal", // XRBodyTracker::JOINT_RIGHT_MIDDLE_FINGER_PHALANX_DISTAL
+			"RightMiddleTip", // XRBodyTracker::JOINT_RIGHT_MIDDLE_FINGER_TIP
+			"RightRingMetacarpal", // XRBodyTracker::JOINT_RIGHT_RING_FINGER_METACARPAL
+			"RightRingProximal", // XRBodyTracker::JOINT_RIGHT_RING_FINGER_PHALANX_PROXIMAL
+			"RightRingIntermediate", // XRBodyTracker::JOINT_RIGHT_RING_FINGER_PHALANX_INTERMEDIATE
+			"RightRingDistal", // XRBodyTracker::JOINT_RIGHT_RING_FINGER_PHALANX_DISTAL
+			"RightRingTip", // XRBodyTracker::JOINT_RIGHT_RING_FINGER_TIP
+			"RightLittleMetacarpal", // XRBodyTracker::JOINT_RIGHT_PINKY_FINGER_METACARPAL
+			"RightLittleProximal", // XRBodyTracker::JOINT_RIGHT_PINKY_FINGER_PHALANX_PROXIMAL
+			"RightLittleIntermediate", // XRBodyTracker::JOINT_RIGHT_PINKY_FINGER_PHALANX_INTERMEDIATE
+			"RightLittleDistal", // XRBodyTracker::JOINT_RIGHT_PINKY_FINGER_PHALANX_DISTAL
+			"RightLittleTip", // XRBodyTracker::JOINT_RIGHT_PINKY_FINGER_TIP
+		};
+		return bone_names;
+	}
+	static HashMap<String, String> get_bone_counterpart_map()
+	{
+		static bool is_init = false;
+		static HashMap<String, String> bone_counterpart_map;
+		if(!is_init)
+		{
+			is_init = true;bone_counterpart_map["LeftEye"] = "RightEye";
+			bone_counterpart_map["RightEye"] = "LeftEye";
+			bone_counterpart_map["LeftShoulder"] = "RightShoulder";
+			bone_counterpart_map["LeftUpperArm"] = "RightUpperArm";
+			bone_counterpart_map["LeftLowerArm"] = "RightLowerArm";
+			bone_counterpart_map["LeftHand"] = "RightHand";
+			bone_counterpart_map["LeftThumbMetacarpal"] = "RightThumbMetacarpal";
+			bone_counterpart_map["LeftThumbProximal"] = "RightThumbProximal";
+			bone_counterpart_map["LeftThumbDistal"] = "RightThumbDistal";
+			bone_counterpart_map["LeftIndexProximal"] = "RightIndexProximal";
+			bone_counterpart_map["LeftIndexIntermediate"] = "RightIndexIntermediate";
+			bone_counterpart_map["LeftIndexDistal"] = "RightIndexDistal";
+			bone_counterpart_map["LeftMiddleProximal"] = "RightMiddleProximal";
+			bone_counterpart_map["LeftMiddleIntermediate"] = "RightMiddleIntermediate";
+			bone_counterpart_map["LeftMiddleDistal"] = "RightMiddleDistal";
+			bone_counterpart_map["LeftRingProximal"] = "RightRingProximal";
+			bone_counterpart_map["LeftRingIntermediate"] = "RightRingIntermediate";
+			bone_counterpart_map["LeftRingDistal"] = "RightRingDistal";
+			bone_counterpart_map["LeftLittleProximal"] = "RightLittleProximal";
+			bone_counterpart_map["LeftLittleIntermediate"] = "RightLittleIntermediate";
+			bone_counterpart_map["LeftLittleDistal"] = "RightLittleDistal";
+			bone_counterpart_map["RightShoulder"] = "LeftShoulder";
+			bone_counterpart_map["RightUpperArm"] = "LeftUpperArm";
+			bone_counterpart_map["RightLowerArm"] = "LeftLowerArm";
+			bone_counterpart_map["RightHand"] = "LeftHand";
+			bone_counterpart_map["RightThumbMetacarpal"] = "LeftThumbMetacarpal";
+			bone_counterpart_map["RightThumbProximal"] = "LeftThumbProximal";
+			bone_counterpart_map["RightThumbDistal"] = "LeftThumbDistal";
+			bone_counterpart_map["RightIndexProximal"] = "LeftIndexProximal";
+			bone_counterpart_map["RightIndexIntermediate"] = "LeftIndexIntermediate";
+			bone_counterpart_map["RightIndexDistal"] = "LeftIndexDistal";
+			bone_counterpart_map["RightMiddleProximal"] = "LeftMiddleProximal";
+			bone_counterpart_map["RightMiddleIntermediate"] = "LeftMiddleIntermediate";
+			bone_counterpart_map["RightMiddleDistal"] = "LeftMiddleDistal";
+			bone_counterpart_map["RightRingProximal"] = "LeftRingProximal";
+			bone_counterpart_map["RightRingIntermediate"] = "LeftRingIntermediate";
+			bone_counterpart_map["RightRingDistal"] = "LeftRingDistal";
+			bone_counterpart_map["RightLittleProximal"] = "LeftLittleProximal";
+			bone_counterpart_map["RightLittleIntermediate"] = "LeftLittleIntermediate";
+			bone_counterpart_map["RightLittleDistal"] = "LeftLittleDistal";
+			bone_counterpart_map["LeftUpperLeg"] = "RightUpperLeg";
+			bone_counterpart_map["LeftLowerLeg"] = "RightLowerLeg";
+			bone_counterpart_map["LeftFoot"] = "RightFoot";
+			bone_counterpart_map["LeftToes"] = "RightToes";
+			bone_counterpart_map["RightUpperLeg"] = "LeftUpperLeg";
+			bone_counterpart_map["RightLowerLeg"] = "LeftLowerLeg";
+			bone_counterpart_map["RightFoot"] = "LeftFoot";
+			bone_counterpart_map["RightToes"] = "LeftToes";
+		}
+		return bone_counterpart_map;
+	}
+
+};
+
+
+
 class Animation : public Resource {
 	GDCLASS(Animation, Resource);
 	RES_BASE_EXTENSION("anim");
@@ -527,6 +937,8 @@ public:
 	static Variant cubic_interpolate_in_time_variant(const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, float c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, bool p_snap_array_element = false);
 
 	static TrackType get_cache_type(TrackType p_type);
+
+	Ref<Animation> mirror_animation(class Skeleton3D * p_ref_ske,Dictionary p_bone_map) const;
 
 	Animation();
 	~Animation();

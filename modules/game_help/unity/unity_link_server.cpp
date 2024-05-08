@@ -298,12 +298,12 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 		// 直接存儲的文件，fbx，png。。。。
 		
 		int file_size = size - 12 - path_size;
+		String name;
+		if (!read_string(msg_buffer, name))
+		{
+			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
 
-		int name_size = msg_buffer.get_32();
-		if(name_size < 0 || name_size > 10240){
-			return false;
 		}
-		String name = msg_buffer.get_utf8_string(name_size);
 
 		Ref<FileAccess> f = FileAccess::open("res://" + path + "/" + name,FileAccess::WRITE);
 		f->store_buffer(msg_buffer.get_u8_ptr(),file_size);	

@@ -34,6 +34,7 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_3d.h"
 #include "scene/scene_string_names.h"
+#include "scene/3d/skeleton_3d.h"
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
@@ -6315,6 +6316,119 @@ bool Animation::inform_variant_array(int &r_min, int &r_max) {
 	SWAP(r_min, r_max);
 	return true;
 }
+
+
+static void mirror_node_path(Ref<Animation> &p_animation, Skeleton3D *skeleton, const int &p_track_index,Dictionary& p_bone_map_inv,Dictionary& p_bone_map)  {
+	const auto node_path = p_animation->track_get_path(p_track_index);
+	if (node_path.get_subname_count() <= 0) {
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(skeleton == nullptr, vformat("Can't mirror animation \"%s\" - no skeleton found for track path \"%s\"", p_animation->get_name(), node_path));
+
+	auto bone_name = node_path.get_subname(node_path.get_subname_count() - 1);
+	// 使用骨骼映射
+	if(p_bone_map.has(bone_name)) {
+		bone_name = p_bone_map[bone_name];
+	}
+	
+	const auto &bone_index = skeleton->find_bone(bone_name);
+
+	if (bone_index < 0) {
+		return;
+	}
+
+#ifdef USE_NATIVE_BONE_COUNTERPART_NAMES
+	// I have a private fork of the engine which has "bone_counterpart_name" directly implemented into SkeletonProfileHumanoid, BoneMap, Skeleton3D and several other places.
+	// If I can get this into the Godot engine, we could even let users add counterpart bones for generic rigs by themselves.
+	// But for now, we have to live with a hard coded solution.
+	const auto &bone_counterpart_name = skeleton->get_bone_counterpart_name(bone_index);
+	if (bone_counterpart_name == StringName()) {
+		return;
+	}
+#else
+	const auto entry = HumanBone::get_bone_counterpart_map().find(bone_name);
+	if (entry == HumanBone::get_bone_counterpart_map().end()) {
+		// no counterpart for the bone defined
+		return;
+	}
+
+	auto bone_counterpart_name = entry->value;
+	if(p_bone_map_inv.has(bone_counterpart_name)) {
+		bone_counterpart_name = p_bone_map_inv[bone_counterpart_name];
+	}
+#endif
+
+	auto sub_names = node_path.get_subnames();
+	sub_names.set(sub_names.size() - 1, bone_counterpart_name);
+
+	const auto mirror_path = NodePath(node_path.get_names(), sub_names, node_path.is_absolute());
+	p_animation->track_set_path(p_track_index, mirror_path);
+}
+
+static void mirror_position_track(Ref<Animation> &p_animation, const int &p_track_index) {
+	const auto scale = Vector3(-1, 1, 1);
+
+	for (int i = 0; i < p_animation->track_get_key_count(p_track_index); i++) {
+		const auto value = p_animation->track_get_key_value(p_track_index, i);
+
+		if (value.get_type() != Variant::VECTOR3) {
+			continue;
+		}
+
+		const auto newValue = static_cast<Vector3>(value) * scale;
+		p_animation->track_set_key_value(p_track_index, i, newValue);
+	}
+}
+
+static void mirror_rotation_track(Ref<Animation> &p_animation, const int &p_track_index) {
+	for (int i = 0; i < p_animation->track_get_key_count(p_track_index); i++) {
+		const auto value = p_animation->track_get_key_value(p_track_index, i);
+
+		if (value.get_type() != Variant::QUATERNION) {
+			continue;
+		}
+
+		const auto current_rotation = static_cast<Quaternion>(value);
+		const auto new_rotation = Quaternion(-current_rotation.x, current_rotation.y, current_rotation.z, -current_rotation.w);
+
+		p_animation->track_set_key_value(p_track_index, i, new_rotation);
+	}
+}
+Ref<Animation> Animation::mirror_animation(Skeleton3D * p_ref_ske,Dictionary p_bone_map) const
+{
+	Ref<Animation> animation;
+
+	Dictionary p_new_bone_map;
+	Array p_new_bone_map_keys = p_bone_map.keys();
+	for(int i=0;i<p_new_bone_map_keys.size();i++)
+	{
+		p_new_bone_map[p_new_bone_map_keys[i]] = p_new_bone_map_keys[i];
+	}
+
+
+	animation = duplicate();
+
+
+	const int track_count = get_track_count();
+	for (int i = 0; i < track_count; i++) {
+		mirror_node_path(animation, p_ref_ske, i,p_new_bone_map,p_bone_map);
+
+		switch (animation->track_get_type(i)) {
+			case Animation::TYPE_POSITION_3D:
+				mirror_position_track(animation, i);
+				break;
+			case Animation::TYPE_ROTATION_3D:
+				mirror_rotation_track(animation, i);
+				break;
+		}
+	}
+	return animation;
+
+}
+
+
+
 
 Animation::Animation() {
 }
