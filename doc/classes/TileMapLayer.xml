@@ -97,7 +97,7 @@
 		<method name="get_navigation_map" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the [RID] of the [NavigationServer2D] navigation used by this [TileMapLayer]. 
+				Returns the [RID] of the [NavigationServer2D] navigation used by this [TileMapLayer].
 				By default this returns the default [World2D] navigation map, unless a custom map was provided using [method set_navigation_map].
 			</description>
 		</method>
