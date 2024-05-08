@@ -29,7 +29,7 @@ res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
 
-prog = env.add_program("#bin/godot", common_win + res_obj, PROGSUFFIX=env["PROGSUFFIX"])
+prog = env.add_program("#bin/RedBox", common_win + res_obj, PROGSUFFIX=env["PROGSUFFIX"])
 
 # Build console wrapper app.
 if env["windows_subsystem"] == "gui":
@@ -45,7 +45,7 @@ if env["windows_subsystem"] == "gui":
         env_wrap.Append(LINKFLAGS=["-Wl,--subsystem,console"])
         env_wrap.Append(LIBS=["version"])
 
-    prog_wrap = env_wrap.add_program("#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"])
+    prog_wrap = env_wrap.add_program("#bin/RedBox", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"])
     env_wrap.Depends(prog_wrap, prog)
 
 # Microsoft Visual Studio Project Generation
