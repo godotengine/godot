@@ -184,7 +184,7 @@ String OS_LinuxBSD::get_processor_name() const {
 
 	while (!f->eof_reached()) {
 		const String line = f->get_line();
-		if (line.find("model name") != -1) {
+		if (line.contains("model name")) {
 			return line.split(":")[1].strip_edges();
 		}
 	}
@@ -269,7 +269,7 @@ String OS_LinuxBSD::get_systemd_os_release_info_value(const String &key) const {
 	if (f.is_valid()) {
 		while (!f->eof_reached()) {
 			const String line = f->get_line();
-			if (line.find(key) != -1) {
+			if (line.contains(key)) {
 				String value = line.split("=")[1].strip_edges();
 				value = value.trim_prefix("\"");
 				return value.trim_suffix("\"");

@@ -3964,7 +3964,7 @@ String String::format(const Variant &values, const String &placeholder) const {
 				Variant v_val = values_arr[i];
 				String val = v_val;
 
-				if (placeholder.find("_") > -1) {
+				if (placeholder.contains("_")) {
 					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
 				} else {
 					new_string = new_string.replace_first(placeholder, val);

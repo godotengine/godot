@@ -242,7 +242,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		String name = String(p_in.m_name);
 		String suite_name = String(p_in.m_test_suite);
 
-		if (name.find("[SceneTree]") != -1 || name.find("[Editor]") != -1) {
+		if (name.contains("[SceneTree]") || name.contains("[Editor]")) {
 			memnew(MessageQueue);
 
 			memnew(Input);
@@ -291,7 +291,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			}
 
 #ifdef TOOLS_ENABLED
-			if (name.find("[Editor]") != -1) {
+			if (name.contains("[Editor]")) {
 				Engine::get_singleton()->set_editor_hint(true);
 				EditorPaths::create();
 				EditorSettings::create();
@@ -301,7 +301,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			return;
 		}
 
-		if (name.find("Audio") != -1) {
+		if (name.contains("Audio")) {
 			// The last driver index should always be the dummy driver.
 			int dummy_idx = AudioDriverManager::get_driver_count() - 1;
 			AudioDriverManager::initialize(dummy_idx);
@@ -311,7 +311,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 
 #ifndef _3D_DISABLED
-		if (suite_name.find("[Navigation]") != -1 && navigation_server_2d == nullptr && navigation_server_3d == nullptr) {
+		if (suite_name.contains("[Navigation]") && navigation_server_2d == nullptr && navigation_server_3d == nullptr) {
 			ERR_PRINT_OFF;
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
 			navigation_server_2d = NavigationServer2DManager::new_default_server();

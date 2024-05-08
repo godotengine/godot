@@ -59,7 +59,7 @@ void OpenXRActionMap::set_action_sets(Array p_action_sets) {
 
 	for (int i = 0; i < p_action_sets.size(); i++) {
 		Ref<OpenXRActionSet> action_set = p_action_sets[i];
-		if (action_set.is_valid() && action_sets.find(action_set) == -1) {
+		if (action_set.is_valid() && !action_sets.has(action_set)) {
 			action_sets.push_back(action_set);
 		}
 	}
@@ -93,7 +93,7 @@ Ref<OpenXRActionSet> OpenXRActionMap::get_action_set(int p_idx) const {
 void OpenXRActionMap::add_action_set(Ref<OpenXRActionSet> p_action_set) {
 	ERR_FAIL_COND(p_action_set.is_null());
 
-	if (action_sets.find(p_action_set) == -1) {
+	if (!action_sets.has(p_action_set)) {
 		action_sets.push_back(p_action_set);
 		emit_changed();
 	}
@@ -112,7 +112,7 @@ void OpenXRActionMap::set_interaction_profiles(Array p_interaction_profiles) {
 
 	for (int i = 0; i < p_interaction_profiles.size(); i++) {
 		Ref<OpenXRInteractionProfile> interaction_profile = p_interaction_profiles[i];
-		if (interaction_profile.is_valid() && interaction_profiles.find(interaction_profile) == -1) {
+		if (interaction_profile.is_valid() && !interaction_profiles.has(interaction_profile)) {
 			interaction_profiles.push_back(interaction_profile);
 		}
 	}
@@ -146,7 +146,7 @@ Ref<OpenXRInteractionProfile> OpenXRActionMap::get_interaction_profile(int p_idx
 void OpenXRActionMap::add_interaction_profile(Ref<OpenXRInteractionProfile> p_interaction_profile) {
 	ERR_FAIL_COND(p_interaction_profile.is_null());
 
-	if (interaction_profiles.find(p_interaction_profile) == -1) {
+	if (!interaction_profiles.has(p_interaction_profile)) {
 		interaction_profiles.push_back(p_interaction_profile);
 		emit_changed();
 	}

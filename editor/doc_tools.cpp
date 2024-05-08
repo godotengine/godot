@@ -1638,7 +1638,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		String schema_path;
 		if (p_use_relative_schema) {
 			// Modules are nested deep, so change the path to reference the same schema everywhere.
-			schema_path = save_path.find("modules/") != -1 ? "../../../doc/class.xsd" : "../class.xsd";
+			schema_path = save_path.contains("modules/") ? "../../../doc/class.xsd" : "../class.xsd";
 		} else {
 			schema_path = "https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd";
 		}
