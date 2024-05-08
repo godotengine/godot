@@ -2686,8 +2686,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 	StringBuilder default_args_doc;
 
-	// Retrieve information from the arguments
-	const ArgumentInterface &first = p_imethod.arguments.front()->get();
+	// Retrieve information from the arguments.
+	const List<ArgumentInterface>::Element *first = p_imethod.arguments.front();
 	for (const ArgumentInterface &iarg : p_imethod.arguments) {
 		const TypeInterface *arg_type = _get_type_or_singleton_or_null(iarg.type);
 		ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
@@ -2711,7 +2711,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		// Add the current arguments to the signature
 		// If the argument has a default value which is not a constant, we will make it Nullable
 		{
-			if (&iarg != &first) {
+			if (&iarg != &first->get()) {
 				arguments_sig += ", ";
 			}
 
@@ -2940,8 +2940,8 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		delegate_type_params += "<";
 	}
 
-	// Retrieve information from the arguments
-	const ArgumentInterface &first = p_isignal.arguments.front()->get();
+	// Retrieve information from the arguments.
+	const List<ArgumentInterface>::Element *first = p_isignal.arguments.front();
 	for (const ArgumentInterface &iarg : p_isignal.arguments) {
 		const TypeInterface *arg_type = _get_type_or_singleton_or_null(iarg.type);
 		ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
@@ -2957,7 +2957,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 		// Add the current arguments to the signature
 
-		if (&iarg != &first) {
+		if (&iarg != &first->get()) {
 			arguments_sig += ", ";
 			delegate_type_params += ", ";
 		}

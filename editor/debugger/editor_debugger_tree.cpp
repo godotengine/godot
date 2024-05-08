@@ -155,7 +155,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	for (const SceneDebuggerTree::RemoteNode &node : p_tree->nodes) {
 		TreeItem *parent = nullptr;
 		if (parents.size()) { // Find last parent.
-			Pair<TreeItem *, int> &p = parents.front()->get();
+			Pair<TreeItem *, int> &p = parents.get_front();
 			parent = p.first;
 			if (!(--p.second)) { // If no child left, remove it.
 				parents.pop_front();
