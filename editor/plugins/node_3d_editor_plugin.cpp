@@ -1674,7 +1674,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 					_edit.gizmo = Ref<EditorNode3DGizmo>();
 				}
-				
+
 				// cancel select
 				if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
 					selection_in_progress = false;
@@ -2377,6 +2377,15 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (!orthogonal && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event)) {
 			set_freelook_active(!is_freelook_active());
 
+			if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+				selection_in_progress = false;
+
+				if (cursor.region_select) {
+					cursor.region_select = false;
+					_select_region();
+					surface->queue_redraw();
+				}
+			}
 		} else if (k->get_keycode() == Key::ESCAPE) {
 			set_freelook_active(false);
 		}
