@@ -542,7 +542,7 @@ double AudioStreamWAV::get_length() const {
 			break;
 		case AudioStreamWAV::FORMAT_QOA:
 			qoa_desc desc = { 0, 0, 0, { { { 0 }, { 0 } } } };
-			qoa_decode_header((uint8_t *)data + DATA_PAD, QOA_MIN_FILESIZE, &desc);
+			qoa_decode_header((uint8_t *)data + DATA_PAD, data_bytes, &desc);
 			len = desc.samples * desc.channels;
 	}
 
@@ -681,7 +681,8 @@ Ref<AudioStreamPlayback> AudioStreamWAV::instantiate_playback() {
 
 	if (format == AudioStreamWAV::FORMAT_QOA) {
 		sample->qoa.desc = (qoa_desc *)memalloc(sizeof(qoa_desc));
-		qoa_decode_header((uint8_t *)data + DATA_PAD, QOA_MIN_FILESIZE, sample->qoa.desc);
+		uint32_t ffp = qoa_decode_header((uint8_t *)data + DATA_PAD, data_bytes, sample->qoa.desc);
+		ERR_FAIL_COND_V(ffp != 8, Ref<AudioStreamPlaybackWAV>());
 		sample->qoa.frame_len = qoa_max_frame_size(sample->qoa.desc);
 		int samples_len = (sample->qoa.desc->samples > QOA_FRAME_LEN ? QOA_FRAME_LEN : sample->qoa.desc->samples);
 		int alloc_len = sample->qoa.desc->channels * samples_len * sizeof(int16_t);
