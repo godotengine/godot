@@ -636,7 +636,10 @@ void WSLPeer::_wsl_msg_recv_callback(wslay_event_context_ptr ctx, const struct w
 		uint8_t is_string = arg->opcode == WSLAY_TEXT_FRAME ? 1 : 0;
 		peer->in_buffer.write_packet(arg->msg, arg->msg_length, &is_string);
 	}
-	// Ping or pong.
+	if (op == WSLAY_PONG) {
+		peer->heartbeat_waiting = false;
+	}
+	// Pong.
 }
 
 wslay_event_callbacks WSLPeer::_wsl_callbacks = {
@@ -680,7 +683,31 @@ void WSLPeer::poll() {
 
 	if (ready_state == STATE_OPEN || ready_state == STATE_CLOSING) {
 		ERR_FAIL_NULL(wsl_ctx);
+		uint64_t ticks = OS::get_singleton()->get_ticks_msec();
 		int err = 0;
+		if (heartbeat_interval_msec != 0 && ticks - last_heartbeat > heartbeat_interval_msec && ready_state == STATE_OPEN) {
+			if (heartbeat_waiting) {
+				wslay_event_context_free(wsl_ctx);
+				wsl_ctx = nullptr;
+				close(-1);
+				return;
+			}
+			heartbeat_waiting = true;
+			struct wslay_event_msg msg;
+			msg.opcode = WSLAY_PING;
+			msg.msg = nullptr;
+			msg.msg_length = 0;
+			err = wslay_event_queue_msg(wsl_ctx, &msg);
+			if (err == 0) {
+				last_heartbeat = ticks;
+			} else {
+				print_verbose("Websocket (wslay) failed to send ping: " + itos(err));
+				wslay_event_context_free(wsl_ctx);
+				wsl_ctx = nullptr;
+				close(-1);
+				return;
+			}
+		}
 		if ((err = wslay_event_recv(wsl_ctx)) != 0 || (err = wslay_event_send(wsl_ctx)) != 0) {
 			// Error close.
 			print_verbose("Websocket (wslay) poll error: " + itos(err));
@@ -781,6 +808,7 @@ void WSLPeer::close(int p_code, String p_reason) {
 		}
 	}
 
+	heartbeat_waiting = false;
 	in_buffer.clear();
 	packet_buffer.resize(0);
 }
