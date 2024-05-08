@@ -3156,7 +3156,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 				List<StringName> libs;
 				ap->get_animation_library_list(&libs);
 				if (libs.size()) {
-					library = ap->get_animation_library(libs.front()->get());
+					library = ap->get_animation_library(libs.get_front());
 					break;
 				}
 			}

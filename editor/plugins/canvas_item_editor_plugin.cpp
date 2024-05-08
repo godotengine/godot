@@ -544,7 +544,7 @@ Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(const List<CanvasItem *
 	ERR_FAIL_COND_V(p_list.is_empty(), Rect2());
 
 	// Handles the first element
-	CanvasItem *ci = p_list.front()->get();
+	CanvasItem *ci = p_list.get_front();
 	Rect2 rect = Rect2(ci->get_global_transform_with_canvas().xform(ci->_edit_get_rect().get_center()), Size2());
 
 	// Expand with the other ones
@@ -2134,7 +2134,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 			Point2 drag_delta = drag_to - drag_from;
 			if (drag_selection.size() == 1 && (drag_type == DRAG_MOVE_X || drag_type == DRAG_MOVE_Y)) {
-				const CanvasItem *selected = drag_selection.front()->get();
+				const CanvasItem *selected = drag_selection.get_front();
 				Transform2D parent_xform = selected->get_global_transform_with_canvas() * selected->get_transform().affine_inverse();
 				Transform2D unscaled_transform = (transform * parent_xform * selected->_edit_get_transform()).orthonormalized();
 				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
@@ -3811,8 +3811,8 @@ void CanvasItemEditor::_draw_hover() {
 }
 
 void CanvasItemEditor::_draw_message() {
-	if (drag_type != DRAG_NONE && !drag_selection.is_empty() && drag_selection.front()->get()) {
-		Transform2D current_transform = drag_selection.front()->get()->get_global_transform();
+	if (drag_type != DRAG_NONE && !drag_selection.is_empty() && drag_selection.get_front()) {
+		Transform2D current_transform = drag_selection.get_front()->get_global_transform();
 
 		double snap = EDITOR_GET("interface/inspector/default_float_step");
 		int snap_step_decimals = Math::range_step_decimals(snap);
