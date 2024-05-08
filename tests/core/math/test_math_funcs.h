@@ -382,7 +382,7 @@ TEST_CASE_TEMPLATE("[Math] remap", T, float, double) {
 	CHECK(Math::remap((T)-200.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0) == doctest::Approx((T)-1000.0));
 	CHECK(Math::remap((T)-250.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0) == doctest::Approx((T)-1500.0));
 
-	// Note: undefined behaviour can happen when `p_istart == p_istop`. We don't bother testing this as it will
+	// Note: undefined behavior can happen when `p_istart == p_istop`. We don't bother testing this as it will
 	// vary between hardware and compilers properly implementing IEEE 754.
 }
 

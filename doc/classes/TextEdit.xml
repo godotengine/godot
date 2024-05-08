@@ -1193,7 +1193,7 @@
 			<param index="2" name="wrap_index" type="int" default="-1" />
 			<param index="3" name="caret_index" type="int" default="0" />
 			<description>
-				Sets the selection origin line to the [param line] for the given [param caret_index]. If the selection origin is moved to the caret position, the selection will deselect. 
+				Sets the selection origin line to the [param line] for the given [param caret_index]. If the selection origin is moved to the caret position, the selection will deselect.
 				If [param can_be_hidden] is [code]false[/code], The line will be set to the nearest unhidden line below or above.
 				If [param wrap_index] is [code]-1[/code], the selection origin column will be clamped to the [param line]'s length. If [param wrap_index] is greater than [code]-1[/code], the column will be moved to attempt to match the visual x position on the line's [param wrap_index] to the position from the last time [method set_selection_origin_column] or [method select] was called.
 			</description>
