@@ -1063,7 +1063,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				/* Chain of gets */
 
 				// Get at (potential) root stack pos, so it can be returned.
-				GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, chain.back()->get()->base);
+				GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, chain.get_back()->base);
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}

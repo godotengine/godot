@@ -95,7 +95,7 @@ Error ENetPacketPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 		enet_packet_destroy(last_packet);
 		last_packet = nullptr;
 	}
-	last_packet = packet_queue.front()->get();
+	last_packet = packet_queue.get_front();
 	packet_queue.pop_front();
 	*r_buffer = (const uint8_t *)(last_packet->data);
 	r_buffer_size = last_packet->dataLength;

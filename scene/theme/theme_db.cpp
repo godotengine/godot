@@ -504,7 +504,7 @@ Ref<Theme> ThemeContext::get_fallback_theme() const {
 		return ThemeDB::get_singleton()->get_default_theme();
 	}
 
-	return themes.back()->get();
+	return themes.get_back();
 }
 
 void ThemeContext::_bind_methods() {
