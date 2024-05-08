@@ -695,6 +695,13 @@
 				On macOS (sandboxed applications only), this function clears list of user selected folders accessible to the application.
 			</description>
 		</method>
+		<method name="sandbox_use_url_for_instance_argumments">
+			<return type="void" />
+			<param index="0" name="schema" type="String" />
+			<description>
+				On macOS (sandboxed applications only), sets URI schema name to use for passing command line arguments when using [method create_instance].
+			</description>
+		</method>
 		<method name="set_environment" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="variable" type="String" />

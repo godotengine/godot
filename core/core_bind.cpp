@@ -458,6 +458,10 @@ bool OS::is_sandboxed() const {
 	return ::OS::get_singleton()->is_sandboxed();
 }
 
+void OS::sandbox_use_url_for_instance_argumments(const String &p_schema) {
+	::OS::get_singleton()->sandbox_use_url_for_instance_argumments(p_schema);
+}
+
 uint64_t OS::get_static_memory_usage() const {
 	return ::OS::get_singleton()->get_static_memory_usage();
 }
@@ -659,6 +663,7 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &OS::has_feature);
 	ClassDB::bind_method(D_METHOD("is_sandboxed"), &OS::is_sandboxed);
+	ClassDB::bind_method(D_METHOD("sandbox_use_url_for_instance_argumments", "schema"), &OS::sandbox_use_url_for_instance_argumments);
 
 	ClassDB::bind_method(D_METHOD("request_permission", "name"), &OS::request_permission);
 	ClassDB::bind_method(D_METHOD("request_permissions"), &OS::request_permissions);

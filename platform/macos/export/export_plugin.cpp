@@ -436,6 +436,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/apple_events"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/debugging"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/enabled"), false, true, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements/app_sandbox/url_schema"), "godotargs"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/network_server"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/network_client"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/app_sandbox/device_usb"), false));
@@ -685,6 +686,26 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			strnew += lines[i].replace("$xcodever", p_preset->get("xcode/xcode_version")) + "\n";
 		} else if (lines[i].find("$xcodebuild") != -1) {
 			strnew += lines[i].replace("$xcodebuild", p_preset->get("xcode/xcode_build")) + "\n";
+		} else if (lines[i].find("$url_schema") != -1) {
+			if ((bool)p_preset->get("codesign/entitlements/app_sandbox/enabled")) {
+				String url_schema;
+				url_schema += "<key>CFBundleURLTypes</key>\n";
+				url_schema += "<array>\n";
+				url_schema += "\t<dict>\n";
+				url_schema += "\t\t<key>CFBundleTypeRole</key>\n";
+				url_schema += "\t\t<string>Editor</string>\n";
+				url_schema += "\t\t<key>CFBundleURLSchemes</key>\n";
+				url_schema += "\t\t<array>\n";
+				url_schema += "\t\t\t<string>" + p_preset->get("codesign/entitlements/app_sandbox/url_schema").operator String() + "</string>\n";
+				url_schema += "\t\t</array>\n";
+				url_schema += "\t\t<key>CFBundleURLName</key>\n";
+				url_schema += "\t\t<string>" + p_preset->get("application/bundle_identifier").operator String() + "." + p_preset->get("codesign/entitlements/app_sandbox/url_schema").operator String() + "</string>\n";
+				url_schema += "\t</dict>\n";
+				url_schema += "\t</array>\n";
+				strnew += lines[i].replace("$url_schema", url_schema) + "\n";
+			} else {
+				strnew += lines[i].replace("$url_schema", "") + "\n";
+			}
 		} else if (lines[i].find("$usage_descriptions") != -1) {
 			String descriptions;
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {

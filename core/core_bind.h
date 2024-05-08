@@ -240,6 +240,7 @@ public:
 
 	bool has_feature(const String &p_feature) const;
 	bool is_sandboxed() const;
+	void sandbox_use_url_for_instance_argumments(const String &p_schema);
 
 	bool request_permission(const String &p_name);
 	bool request_permissions();

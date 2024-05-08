@@ -307,6 +307,7 @@ public:
 	bool has_feature(const String &p_feature);
 
 	virtual bool is_sandboxed() const;
+	virtual void sandbox_use_url_for_instance_argumments(const String &p_schema) {}
 
 	void set_has_server_feature_callback(HasServerFeatureCallback p_callback);
 

@@ -30,6 +30,7 @@
 
 #include "godot_application_delegate.h"
 
+#include "core/core_bind.h"
 #include "display_server_macos.h"
 #include "native_menu_macos.h"
 #include "os_macos.h"
@@ -161,8 +162,16 @@
 	List<String> args;
 	if (([event eventClass] == kInternetEventClass) && ([event eventID] == kAEGetURL)) {
 		// Opening URL scheme.
-		NSString *url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-		args.push_back(vformat("--uri=\"%s\"", String::utf8([url UTF8String])));
+		String url_string = String::utf8([[[event paramDescriptorForKeyword:keyDirectObject] stringValue] UTF8String]);
+		if (os->is_sandboxed() && url_string.begins_with(os->sandbox_get_url_schema() + ":")) {
+			String args_b64 = url_string.replace(os->sandbox_get_url_schema() + ":", "").replace("~", "+").replace("_", "/");
+			Array args_decoded = core_bind::Marshalls::get_singleton()->base64_to_variant(args_b64);
+			for (int i = 0; i < args_decoded.size(); i++) {
+				args.push_back(args_decoded[i]);
+			}
+		} else {
+			args.push_back(vformat("--uri=\"%s\"", url_string));
+		}
 	}
 
 	if (([event eventClass] == kCoreEventClass) && ([event eventID] == kAEOpenDocuments)) {
