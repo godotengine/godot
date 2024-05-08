@@ -2962,30 +2962,28 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 }
 
 void DisplayServerWindows::process_events() {
-	_THREAD_SAFE_LOCK_
-
-	MSG msg;
+	ERR_FAIL_COND(!Thread::is_main_thread());
 
 	if (!drop_events) {
 		joypad->process_joypads();
 	}
 
+	_THREAD_SAFE_LOCK_
+	MSG msg = {};
 	while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
 	}
+	_THREAD_SAFE_UNLOCK_
 
 	if (!drop_events) {
 		_process_key_events();
-		_THREAD_SAFE_UNLOCK_
 		Input::get_singleton()->flush_buffered_events();
-	} else {
-		_THREAD_SAFE_UNLOCK_
 	}
 }
 
 void DisplayServerWindows::force_process_and_drop_events() {
-	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND(!Thread::is_main_thread());
 
 	drop_events = true;
 	process_events();
@@ -4664,10 +4662,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_TIMER: {
 			if (wParam == windows[window_id].move_timer_id) {
+				_THREAD_SAFE_UNLOCK_
 				_process_key_events();
 				if (!Main::is_iterating()) {
 					Main::iteration();
 				}
+				_THREAD_SAFE_LOCK_
 			} else if (wParam == windows[window_id].activate_timer_id) {
 				_process_activate_event(window_id);
 				KillTimer(windows[window_id].hWnd, windows[window_id].activate_timer_id);

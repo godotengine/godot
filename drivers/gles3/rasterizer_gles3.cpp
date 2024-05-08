@@ -395,10 +395,13 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 	if (p_first) {
-		Size2i win_size = DisplayServer::get_singleton()->window_get_size();
 		if (p_screen_rect.position != Vector2() || p_screen_rect.size != rt->size) {
 			// Viewport doesn't cover entire window so clear window to black before blitting.
-			glViewport(0, 0, win_size.width, win_size.height);
+			// Querying the actual window size from the DisplayServer would deadlock in separate render thread mode,
+			// so let's set the biggest viewport the implementation supports, to be sure the window is fully covered.
+			GLsizei max_vp[2] = {};
+			glGetIntegerv(GL_MAX_VIEWPORT_DIMS, max_vp);
+			glViewport(0, 0, max_vp[0], max_vp[1]);
 			glClearColor(0.0, 0.0, 0.0, 1.0);
 			glClear(GL_COLOR_BUFFER_BIT);
 		}
