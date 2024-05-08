@@ -727,6 +727,14 @@
 				Removes a callback previously added by [method add_undo_redo_inspector_hook_callback].
 			</description>
 		</method>
+		<method name="set_dock_tab_icon">
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
+			<param index="1" name="icon" type="Texture2D" />
+			<description>
+				Sets the tab icon for the given control in a dock slot. Setting to [code]null[/code] removes the icon.
+			</description>
+		</method>
 		<method name="set_force_draw_over_forwarding_enabled">
 			<return type="void" />
 			<description>
