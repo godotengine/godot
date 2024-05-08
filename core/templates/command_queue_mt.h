@@ -208,7 +208,7 @@
 #define ARG(N) p##N
 #define PARAM(N) P##N p##N
 #define TYPE_PARAM(N) typename P##N
-#define PARAM_DECL(N) typename GetSimpleTypeT<P##N>::type_t p##N
+#define PARAM_DECL(N) GetSimpleTypeT<P##N> p##N
 
 #define DECL_CMD(N)                                                          \
 	template <typename T, typename M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)> \
