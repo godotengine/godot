@@ -72,14 +72,8 @@ Size2 EditorProperty::get_minimum_size() const {
 	ms.height = label.is_empty() ? 0 : font->get_height(font_size) + 4 * EDSCALE;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
+		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
-			continue;
-		}
-		if (!c->is_visible()) {
 			continue;
 		}
 		if (c == bottom_editor) {
@@ -143,14 +137,8 @@ void EditorProperty::_notification(int p_what) {
 
 				//compute room needed
 				for (int i = 0; i < get_child_count(); i++) {
-					Control *c = Object::cast_to<Control>(get_child(i));
+					Control *c = as_sortable_control(get_child(i));
 					if (!c) {
-						continue;
-					}
-					if (c->is_set_as_top_level()) {
-						continue;
-					}
-					if (!c->is_visible()) {
 						continue;
 					}
 					if (c == bottom_editor) {
@@ -218,11 +206,8 @@ void EditorProperty::_notification(int p_what) {
 
 			//set children
 			for (int i = 0; i < get_child_count(); i++) {
-				Control *c = Object::cast_to<Control>(get_child(i));
+				Control *c = as_sortable_control(get_child(i));
 				if (!c) {
-					continue;
-				}
-				if (c->is_set_as_top_level()) {
 					continue;
 				}
 				if (c == bottom_editor) {
@@ -1347,14 +1332,10 @@ void EditorInspectorSection::_notification(int p_what) {
 			int header_height = _get_header_height();
 			Vector2 offset = Vector2(is_layout_rtl() ? 0 : inspector_margin, header_height);
 			for (int i = 0; i < get_child_count(); i++) {
-				Control *c = Object::cast_to<Control>(get_child(i));
+				Control *c = as_sortable_control(get_child(i));
 				if (!c) {
 					continue;
 				}
-				if (c->is_set_as_top_level()) {
-					continue;
-				}
-
 				fit_child_in_rect(c, Rect2(offset, size));
 			}
 		} break;
@@ -1503,14 +1484,8 @@ void EditorInspectorSection::_notification(int p_what) {
 Size2 EditorInspectorSection::get_minimum_size() const {
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
+		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
-			continue;
-		}
-		if (!c->is_visible()) {
 			continue;
 		}
 		Size2 minsize = c->get_combined_minimum_size();
