@@ -1357,6 +1357,14 @@
 		<constant name="ANCHOR_END" value="1" enum="Anchor">
 			Snaps one of the 4 anchor's sides to the end of the node's [code]Rect[/code], in the bottom right. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].
 		</constant>
+		<constant name="LAYOUT_MODE_POSITION" value="0" enum="LayoutMode">
+		</constant>
+		<constant name="LAYOUT_MODE_ANCHORS" value="1" enum="LayoutMode">
+		</constant>
+		<constant name="LAYOUT_MODE_CONTAINER" value="2" enum="LayoutMode">
+		</constant>
+		<constant name="LAYOUT_MODE_UNCONTROLLED" value="3" enum="LayoutMode">
+		</constant>
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
 			Automatic layout direction, determined from the parent control layout direction.
 		</constant>
