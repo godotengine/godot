@@ -126,8 +126,8 @@ Control *SplitContainer::get_containable_child(int p_idx) const {
 	int idx = 0;
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *c = as_sortable_control(get_child(i, false));
-		if (!c) {
+		Control *c = Object::cast_to<Control>(get_child(i, false));
+		if (!c || !c->is_visible() || c->is_set_as_top_level()) {
 			continue;
 		}
 
