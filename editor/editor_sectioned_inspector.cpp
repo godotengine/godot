@@ -31,18 +31,24 @@
 #include "editor_sectioned_inspector.h"
 
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 
 static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
-	if (p_property_path.containsn(p_filter)) {
+	// Strip feature tag.
+	String property_path = p_property_path;
+	const int dot = property_path.rfind(".");
+	if (dot != -1) {
+		property_path = property_path.substr(0, dot);
+	}
+
+	if (property_path.containsn(p_filter)) {
 		return true;
 	}
 
-	const Vector<String> sections = p_property_path.split("/");
+	const Vector<String> sections = property_path.split("/");
 	for (int i = 0; i < sections.size(); i++) {
-		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i], p_style, p_property_path))) {
+		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i], p_style, property_path))) {
 			return true;
 		}
 	}
