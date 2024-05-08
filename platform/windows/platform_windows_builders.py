@@ -8,8 +8,8 @@ def make_debug_mingw(target, source, env):
     dst = str(target[0])
     # Force separate debug symbols if executable size is larger than 1.9 GB.
     if env["separate_debug_symbols"] or os.stat(dst).st_size >= 2040109465:
-        objcopy = get_mingw_tool("objcopy", env["mingw_prefix"], env["arch"])
-        strip = get_mingw_tool("strip", env["mingw_prefix"], env["arch"])
+        objcopy = get_mingw_tool(env, "objcopy")
+        strip = get_mingw_tool(env, "strip")
 
         if not objcopy or not strip:
             print('`separate_debug_symbols` requires both "objcopy" and "strip" to function.')
