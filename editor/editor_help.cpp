@@ -3760,6 +3760,14 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol) {
 
 /// EditorHelpBitTooltip ///
 
+void EditorHelpBitTooltip::_safe_queue_free() {
+	if (_pushing_input > 0) {
+		_need_free = true;
+	} else {
+		queue_free();
+	}
+}
+
 void EditorHelpBitTooltip::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_WM_MOUSE_ENTER:
@@ -3778,7 +3786,13 @@ void EditorHelpBitTooltip::_input_from_window(const Ref<InputEvent> &p_event) {
 	} else {
 		const Ref<InputEventMouse> mouse_event = p_event;
 		if (mouse_event.is_null()) {
+			// GH-91652. Prevents use-after-free since `ProgressDialog` calls `Main::iteration()`.
+			_pushing_input++;
 			get_parent_viewport()->push_input(p_event);
+			_pushing_input--;
+			if (_pushing_input <= 0 && _need_free) {
+				queue_free();
+			}
 		}
 	}
 }
@@ -3839,7 +3853,7 @@ EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target) {
 
 	timer = memnew(Timer);
 	timer->set_wait_time(0.2);
-	timer->connect("timeout", callable_mp(static_cast<Node *>(this), &Node::queue_free));
+	timer->connect("timeout", callable_mp(this, &EditorHelpBitTooltip::_safe_queue_free));
 	add_child(timer);
 
 	ERR_FAIL_NULL(p_target);

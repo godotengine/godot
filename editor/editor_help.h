@@ -325,6 +325,10 @@ class EditorHelpBitTooltip : public PopupPanel {
 	GDCLASS(EditorHelpBitTooltip, PopupPanel);
 
 	Timer *timer = nullptr;
+	int _pushing_input = 0;
+	bool _need_free = false;
+
+	void _safe_queue_free();
 
 protected:
 	void _notification(int p_what);
