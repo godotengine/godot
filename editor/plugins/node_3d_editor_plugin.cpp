@@ -3068,6 +3068,12 @@ void Node3DEditorViewport::_notification(int p_what) {
 				_remove_preview_node();
 			}
 		} break;
+
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			if (freelook_active) {
+				set_freelook_active(false);
+			}
+		} break;
 	}
 }
 
