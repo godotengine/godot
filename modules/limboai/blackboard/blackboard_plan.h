@@ -28,7 +28,7 @@ class BlackboardPlan : public Resource {
 	GDCLASS(BlackboardPlan, Resource);
 
 private:
-	List<Pair<StringName, BBVariable>> var_list;
+	LocalVector<Pair<StringName, BBVariable>> var_list;
 	HashMap<StringName, BBVariable> var_map;
 
 	// When base is not null, the plan is considered to be derived from the base plan.

@@ -270,9 +270,9 @@ public:
         List<StringName> list;
         TypedArray<Animation> rs;
         player->get_animation_list(&list);
-        for(int i = 0; i < list.size(); i++)
+		for (const StringName& E : list)
         {
-            auto anim = player->get_animation(list[i]);
+            auto anim = player->get_animation(E);
             if(anim.is_valid())
             {                
                 if(is_single_valid)
@@ -324,19 +324,19 @@ public:
         List<StringName> list;
         List<StringName> anim_list;
         tree->get_animation_library_list(&list);
-        for(int i = 0; i < list.size(); i++)
+		for (const StringName& E : list)
         {
-            auto lab = tree->get_animation_library(list[i]);
+            auto lab = tree->get_animation_library(E);
             if(lab.is_valid())
             {
                 anim_list.clear();
                 lab->get_animation_list(&anim_list);
-                for(int a = 0; a < anim_list.size(); a++)
+				for (const StringName& AE : anim_list)
                 {
-                    auto anim = lab->get_animation(anim_list[a]);
+                    auto anim = lab->get_animation(AE);
                     if(anim.is_valid())
                     {
-                        library->add_animation(anim_list[a],anim);
+                        library->add_animation(AE,anim);
                     }
                 }
             }

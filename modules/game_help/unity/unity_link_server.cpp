@@ -201,10 +201,6 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 	int tag = msg_buffer.get_u32();
 	int size = msg_buffer.get_u32();
 	int type = msg_buffer.get_u32();
-	int path_size = msg_buffer.get_u32();
-	if(path_size < 0 || path_size > 10240){
-		return false;
-	}
 	String path;
 	if (!read_string(msg_buffer, path))
 	{
@@ -265,7 +261,8 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 
 		// 解析动画文件
 		int mirror = msg_buffer.get_32();
-		int file_size = size - 16 - path_size;
+		
+		int file_size = size - msg_buffer.get_position();
 		String yaml_anim = msg_buffer.get_utf8_string(file_size);
 		Ref<Animation> anim;
 		anim.instantiate();
@@ -296,14 +293,14 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 	}
 	else if(type == 4){
 		// 直接存儲的文件，fbx，png。。。。
-		
-		int file_size = size - 12 - path_size;
+
 		String name;
 		if (!read_string(msg_buffer, name))
 		{
 			ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + name);
 
 		}
+		int file_size = size - msg_buffer.get_position();
 
 		Ref<FileAccess> f = FileAccess::open("res://" + path + "/" + name,FileAccess::WRITE);
 		f->store_buffer(msg_buffer.get_u8_ptr(),file_size);	

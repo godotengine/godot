@@ -143,7 +143,7 @@ Variant Dictionary::get_valid(const Variant &p_key) const {
 
 Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
 	const Variant *result = getptr(p_key);
-	if (!result) {
+	if (!result || result->get_type() == Variant::NIL) {
 		return p_default;
 	}
 
@@ -151,8 +151,8 @@ Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
 }
 
 Variant Dictionary::get_or_add(const Variant &p_key, const Variant &p_default) {
-	const Variant *result = getptr(p_key);
-	if (!result) {
+	const Variant *result = getptr(p_key);	
+	if (!result || result->get_type() == Variant::NIL) {
 		operator[](p_key) = p_default;
 		return p_default;
 	}

@@ -111,7 +111,7 @@ void BehaviorTreeView::_update_tree(const Ref<BehaviorTreeData> &p_data) {
 		selected_id = item_get_task_id(tree->get_selected());
 	}
 
-	if (last_root_id != 0 && p_data->tasks.size() > 0 && last_root_id == (uint64_t)p_data->tasks[0].id) {
+	if (last_root_id != 0 && p_data->tasks.size() > 0 && last_root_id == (uint64_t)p_data->tasks.get(0).id) {
 		// * Update tree.
 		// ! Update routine is built on assumption that the behavior tree does NOT mutate. With little work it could detect mutations.
 
@@ -120,9 +120,9 @@ void BehaviorTreeView::_update_tree(const Ref<BehaviorTreeData> &p_data) {
 		while (item) {
 			ERR_FAIL_COND(idx >= p_data->tasks.size());
 
-			const BTTask::Status current_status = (BTTask::Status)p_data->tasks[idx].status;
+			const BTTask::Status current_status = (BTTask::Status)p_data->tasks.get(idx).status;
 			const BTTask::Status last_status = item_get_task_status(item);
-			const bool status_changed = last_status != p_data->tasks[idx].status;
+			const bool status_changed = last_status != p_data->tasks.get(idx).status;
 
 			if (status_changed) {
 				item->set_metadata(1, current_status);
@@ -142,7 +142,7 @@ void BehaviorTreeView::_update_tree(const Ref<BehaviorTreeData> &p_data) {
 			}
 
 			if (status_changed || current_status == BTTask::RUNNING) {
-				_item_set_elapsed_time(item, p_data->tasks[idx].elapsed_time);
+				_item_set_elapsed_time(item, p_data->tasks.get(idx).elapsed_time);
 			}
 
 			if (item->get_first_child()) {
@@ -165,7 +165,7 @@ void BehaviorTreeView::_update_tree(const Ref<BehaviorTreeData> &p_data) {
 	} else {
 		// * Create new tree.
 
-		last_root_id = p_data->tasks.size() > 0 ? p_data->tasks[0].id : 0;
+		last_root_id = p_data->tasks.size() > 0 ? p_data->tasks.get(0).id : 0;
 
 		tree->clear();
 		TreeItem *parent = nullptr;
@@ -174,7 +174,7 @@ void BehaviorTreeView::_update_tree(const Ref<BehaviorTreeData> &p_data) {
 			// Figure out parent.
 			parent = nullptr;
 			if (parents.size()) {
-				Pair<TreeItem *, int> &p = parents[0];
+				Pair<TreeItem *, int> &p = parents.get(0);
 				parent = p.first;
 				if (!(--p.second)) {
 					// No children left, remove it.

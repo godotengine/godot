@@ -642,8 +642,8 @@ void Terrain3D::_generate_triangle_pair(PackedVector3Array &p_vertices, PackedVe
 Terrain3D::Terrain3D() {
 	set_notify_transform(true);
 	List<String> args = OS::get_singleton()->get_cmdline_args();
-	for (int i = args.size() - 1; i >= 0; i--) {
-		String arg = args[i];
+	
+	for(auto& arg : args){
 		if (arg.begins_with("--terrain3d-debug=")) {
 			String value = arg.lstrip("--terrain3d-debug=");
 			if (value == "ERROR") {
@@ -655,7 +655,7 @@ Terrain3D::Terrain3D() {
 			} else if (value == "DEBUG_CONT") {
 				set_debug_level(DEBUG_CONT);
 			}
-			break;
+			//break;
 		}
 	}
 }

@@ -209,7 +209,8 @@ void BlackboardPlan::rename_var(const StringName &p_name, const StringName &p_ne
 	BBVariable var = var_map[p_name];
 	Pair<StringName, BBVariable> new_entry(p_new_name, var);
 	Pair<StringName, BBVariable> old_entry(p_name, var);
-	var_list.find(old_entry)->set(new_entry);
+	int64_t index = var_list.find(old_entry);
+	var_list[index] = new_entry;
 
 	var_map.erase(p_name);
 	var_map.insert(p_new_name, var);
@@ -226,19 +227,7 @@ void BlackboardPlan::move_var(int p_index, int p_new_index) {
 		return;
 	}
 
-	List<Pair<StringName, BBVariable>>::Element *E = var_list.front();
-	for (int i = 0; i < p_index; i++) {
-		E = E->next();
-	}
-	List<Pair<StringName, BBVariable>>::Element *E2 = var_list.front();
-	for (int i = 0; i < p_new_index; i++) {
-		E2 = E2->next();
-	}
-
-	var_list.move_before(E, E2);
-	if (p_new_index > p_index) {
-		var_list.move_before(E2, E);
-	}
+	var_list.swap(p_index,p_new_index);
 
 	notify_property_list_changed();
 	emit_changed();
@@ -292,20 +281,11 @@ void BlackboardPlan::sync_with_base_plan() {
 	// Sync order of variables.
 	// Glossary: E - element of current plan, B - element of base plan, F - element of current plan (used for forward search).
 	ERR_FAIL_COND(base->var_list.size() != var_list.size());
-	List<Pair<StringName, BBVariable>>::Element *B = base->var_list.front();
-	for (List<Pair<StringName, BBVariable>>::Element *E = var_list.front(); E; E = E->next()) {
-		if (E->get().first != B->get().first) {
-			List<Pair<StringName, BBVariable>>::Element *F = E->next();
-			while (F) {
-				if (F->get().first == B->get().first) {
-					var_list.move_before(F, E);
-					E = F;
-					break;
-				}
-				F = F->next();
-			}
-		}
-		B = B->next();
+	auto B = base->var_list.begin();
+
+	for(auto & E : base->var_list )
+	{
+		var_list.erase(E);
 	}
 
 	if (changed) {

@@ -3976,27 +3976,24 @@ bool operator == (const Ref<NodeComponent> &p_a, const Node::NodeComponentData &
 
 void Node::node_process(double delta)const
 {
-	for(int i=0;i<component_data.size();i++)
+	for(auto comp : component_data)
 	{
-		auto& comp = component_data[i];
 		if(comp.component.is_valid())		
 			comp.component->node_process((Node*)this,delta,comp.properties);
 	}
 }
 void Node::node_physics_process(double delta)const
 {
-	for(int i=0;i<component_data.size();i++)
+	for(auto comp : component_data)
 	{
-		auto& comp = component_data[i];
 		if(comp.component.is_valid())		
 			comp.component->node_physics_process((Node*)this,delta,comp.properties);
 	}
 }
 void Node::node_enter_tree()const
 {
-	for(int i=0;i<component_data.size();i++)
+	for(auto comp : component_data)
 	{
-		auto& comp = component_data[i];
 		if(comp.component.is_valid())		
 			comp.component->node_enter_tree((Node*)this,comp.properties);
 	}
@@ -4004,9 +4001,8 @@ void Node::node_enter_tree()const
 void Node::node_exit_tree()const
 {
 
-	for(int i=0;i<component_data.size();i++)
+	for(auto comp : component_data)
 	{
-		auto& comp = component_data[i];
 		if(comp.component.is_valid())		
 			comp.component->node_exit_tree((Node*)this,comp.properties);
 	}
@@ -4014,20 +4010,18 @@ void Node::node_exit_tree()const
 }
 void Node::node_ready()const
 {
-	for(int i=0;i<component_data.size();i++)
+	for(auto comp : component_data)
 	{
-		auto& comp = component_data[i];
-		if(comp.component.is_valid())		
+		if(comp.component.is_valid())	
 			comp.component->node_ready((Node*)this,comp.properties);
 	}
 }
 Vector<String> Node::node_get_configuration_warnings()const
 {
 	Vector<String> rs;
-	for(int i=0;i<component_data.size();i++)
+	for(auto comp : component_data)
 	{
-		auto& comp = component_data[i];
-		if(comp.component.is_valid())		
+		if(comp.component.is_valid())	
 			rs.append_array(comp.component->node_get_configuration_warnings((Node*)this,comp.properties));
 	}
 	return rs;
@@ -4035,37 +4029,33 @@ Vector<String> Node::node_get_configuration_warnings()const
 
 void Node::node_input(const Ref<InputEvent> &p_event)const
 {
-	for(int i=0;i<component_data.size();i++)
+	for(auto comp : component_data)
 	{
-		auto& comp = component_data[i];
-		if(comp.component.is_valid())		
+		if(comp.component.is_valid())	
 			comp.component->node_input((Node*)this,p_event,comp.properties);
 	}
 }
 void Node::node_shortcut_input(const Ref<InputEvent> &p_key_event)const
 {
-	for(int i=0;i<component_data.size();i++)
+	for(auto comp : component_data)
 	{
-		auto& comp = component_data[i];
-		if(comp.component.is_valid())		
+		if(comp.component.is_valid())	
 			comp.component->node_shortcut_input((Node*)this,p_key_event,comp.properties);
 
 	}
 }
 void Node::node_unhandled_input(const Ref<InputEvent> &p_event)const
 {
-	for(int i=0;i<component_data.size();i++)
+	for(auto comp : component_data)
 	{
-		auto& comp = component_data[i];
 		if(comp.component.is_valid())		
 			comp.component->node_unhandled_input((Node*)this,p_event,comp.properties);
 	}
 }
 void Node::node_unhandled_key_input(const Ref<InputEvent> &p_key_event)const
 {
-	for(int i=0;i<component_data.size();i++)
+	for(auto comp : component_data)
 	{
-		auto& comp = component_data[i];
 		if(comp.component.is_valid())		
 			comp.component->node_unhandled_key_input((Node*)this,p_key_event,comp.properties);
 	}

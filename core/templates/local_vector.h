@@ -103,6 +103,13 @@ public:
 		}
 		return false;
 	}
+	_FORCE_INLINE_ void swap(U p_index,U p_new_index) {
+		ERR_FAIL_INDEX(p_index, count);
+		ERR_FAIL_INDEX(p_new_index, count);
+		T var = data[p_index];
+		data[p_index] = data[p_new_index];
+		data[p_new_index] = var;
+	}
 
 	U erase_multiple_unordered(const T &p_val) {
 		U from = 0;

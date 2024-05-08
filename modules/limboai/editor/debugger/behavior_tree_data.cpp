@@ -26,7 +26,7 @@ Array BehaviorTreeData::serialize(const Ref<BTTask> &p_tree_instance, const Node
 	List<Ref<BTTask>> stack;
 	stack.push_back(p_tree_instance);
 	while (stack.size()) {
-		Ref<BTTask> task = stack[0];
+		Ref<BTTask> task = stack.front()->get();
 		stack.pop_front();
 
 		int num_children = task->get_child_count();
@@ -87,7 +87,7 @@ Ref<BehaviorTreeData> BehaviorTreeData::create_from_tree_instance(const Ref<BTTa
 	List<Ref<BTTask>> stack;
 	stack.push_back(p_tree_instance);
 	while (stack.size()) {
-		Ref<BTTask> task = stack[0];
+		Ref<BTTask> task = stack.front()->get();
 		stack.pop_front();
 
 		int num_children = task->get_child_count();
