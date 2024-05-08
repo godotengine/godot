@@ -2302,7 +2302,7 @@ void OpenXRAPI::end_frame() {
 		};
 		result = xrEndFrame(session, &frame_end_info);
 		if (XR_FAILED(result)) {
-			print_line("OpenXR: failed to end frame! [", get_error_string(result), "]");
+			print_line("OpenXR: rendering skipped and failed to end frame! [", get_error_string(result), "]");
 			return;
 		}
 

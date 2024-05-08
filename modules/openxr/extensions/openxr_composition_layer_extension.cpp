@@ -209,6 +209,7 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 	switch (composition_layer->type) {
 		case XR_TYPE_COMPOSITION_LAYER_QUAD: {
 			XrCompositionLayerQuad *quad_layer = (XrCompositionLayerQuad *)composition_layer;
+			quad_layer->space = openxr_api->get_play_space();
 			quad_layer->subImage.swapchain = swapchain_info.get_swapchain();
 			quad_layer->subImage.imageArrayIndex = 0;
 			quad_layer->subImage.imageRect.offset.x = 0;
@@ -219,6 +220,7 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 
 		case XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR: {
 			XrCompositionLayerCylinderKHR *cylinder_layer = (XrCompositionLayerCylinderKHR *)composition_layer;
+			cylinder_layer->space = openxr_api->get_play_space();
 			cylinder_layer->subImage.swapchain = swapchain_info.get_swapchain();
 			cylinder_layer->subImage.imageArrayIndex = 0;
 			cylinder_layer->subImage.imageRect.offset.x = 0;
@@ -229,6 +231,7 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 
 		case XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR: {
 			XrCompositionLayerEquirect2KHR *equirect_layer = (XrCompositionLayerEquirect2KHR *)composition_layer;
+			equirect_layer->space = openxr_api->get_play_space();
 			equirect_layer->subImage.swapchain = swapchain_info.get_swapchain();
 			equirect_layer->subImage.imageArrayIndex = 0;
 			equirect_layer->subImage.imageRect.offset.x = 0;
