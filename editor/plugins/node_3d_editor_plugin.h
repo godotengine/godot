@@ -300,6 +300,7 @@ private:
 	Vector<_RayResult> selection_results_menu;
 	bool clicked_wants_append = false;
 	bool selection_in_progress = false;
+	void clear_selection();
 
 	PopupMenu *selection_menu = nullptr;
 

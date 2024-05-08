@@ -683,6 +683,21 @@ float Node3DEditorViewport::get_fov() const {
 	return CLAMP(spatial_editor->get_fov() * cursor.fov_scale, MIN_FOV, MAX_FOV);
 }
 
+void Node3DEditorViewport::clear_selection() {
+	if (selection_in_progress) {
+		selection_in_progress = false;
+
+		if (cursor.region_select) {
+			Vector2 center = surface->get_global_position() + (surface->get_size() / 2);
+			cursor.region_begin = center;
+			cursor.region_end = center;
+			cursor.region_select = false;
+			_select_region();
+			surface->queue_redraw();
+		}
+	}
+}
+
 Transform3D Node3DEditorViewport::_get_camera_transform() const {
 	return camera->get_global_transform();
 }
@@ -1677,15 +1692,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				// cancel select
 				if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
-					selection_in_progress = false;
-
-					if (cursor.region_select) {
-						cursor.region_begin = b->get_position();
-						cursor.region_end = b->get_position();
-						cursor.region_select = false;
-						_select_region();
-						surface->queue_redraw();
-					}
+					clear_selection();
 				}
 
 				if (_edit.mode == TRANSFORM_NONE && b->is_pressed()) {
@@ -1913,14 +1920,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							_select_clicked(false);
 						}
 
-						if (cursor.region_select) {
-							if (selection_in_progress) {
-								_select_region();
-							}
-
-							cursor.region_select = false;
-							surface->queue_redraw();
-						}
+						clear_selection();
 					}
 
 					if (_edit.mode != TRANSFORM_NONE) {
@@ -2378,13 +2378,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			set_freelook_active(!is_freelook_active());
 
 			if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
-				selection_in_progress = false;
-
-				if (cursor.region_select) {
-					cursor.region_select = false;
-					_select_region();
-					surface->queue_redraw();
-				}
+				clear_selection();
 			}
 		} else if (k->get_keycode() == Key::ESCAPE) {
 			set_freelook_active(false);
@@ -3073,6 +3067,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 			if (freelook_active) {
 				set_freelook_active(false);
 			}
+
+			clear_selection();
 		} break;
 	}
 }
