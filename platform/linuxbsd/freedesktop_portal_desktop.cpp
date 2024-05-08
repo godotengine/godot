@@ -808,7 +808,7 @@ void FreeDesktopPortalDesktop::process_callbacks() {
 	{
 		MutexLock lock(file_dialog_mutex);
 		while (!pending_file_cbs.is_empty()) {
-			FileDialogCallback cb = pending_file_cbs.front()->get();
+			FileDialogCallback cb = pending_file_cbs.get_front();
 			pending_file_cbs.pop_front();
 
 			if (cb.opt_in_cb) {
@@ -835,7 +835,7 @@ void FreeDesktopPortalDesktop::process_callbacks() {
 	{
 		MutexLock lock(color_picker_mutex);
 		while (!pending_color_cbs.is_empty()) {
-			ColorPickerCallback cb = pending_color_cbs.front()->get();
+			ColorPickerCallback cb = pending_color_cbs.get_front();
 			pending_color_cbs.pop_front();
 
 			Variant ret;

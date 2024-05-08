@@ -1561,7 +1561,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		} else {
 			if (!preferred.is_empty()) {
 				String resource_name_snake_case = p_resource->get_class().to_snake_case();
-				file->set_current_file("new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower());
+				file->set_current_file("new_" + resource_name_snake_case + "." + preferred.get_front().to_lower());
 			} else {
 				file->set_current_file(String());
 			}
@@ -1571,12 +1571,12 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		if (!extensions.is_empty()) {
 			const String ext = p_resource->get_path().get_extension().to_lower();
 			if (extensions.find(ext) == nullptr) {
-				file->set_current_path(p_resource->get_path().replacen("." + ext, "." + extensions.front()->get()));
+				file->set_current_path(p_resource->get_path().replacen("." + ext, "." + extensions.get_front()));
 			}
 		}
 	} else if (!preferred.is_empty()) {
 		const String resource_name_snake_case = p_resource->get_class().to_snake_case();
-		const String existing = "new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower();
+		const String existing = "new_" + resource_name_snake_case + "." + preferred.get_front().to_lower();
 		file->set_current_path(existing);
 	}
 	file->set_title(TTR("Save Resource As..."));
@@ -2903,7 +2903,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case FILE_OPEN_PREV: {
 			if (!prev_closed_scenes.is_empty()) {
-				load_scene(prev_closed_scenes.back()->get());
+				load_scene(prev_closed_scenes.get_back());
 			}
 		} break;
 		case EditorSceneTabs::SCENE_CLOSE_OTHERS: {
@@ -3001,13 +3001,13 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				file->set_current_path(path);
 				if (extensions.size()) {
 					if (extensions.find(ext) == nullptr) {
-						file->set_current_path(path.replacen("." + ext, "." + extensions.front()->get()));
+						file->set_current_path(path.replacen("." + ext, "." + extensions.get_front()));
 					}
 				}
 			} else if (extensions.size()) {
 				String root_name = scene->get_name();
 				root_name = EditorNode::adjust_scene_name_casing(root_name);
-				file->set_current_path(root_name + "." + extensions.front()->get().to_lower());
+				file->set_current_path(root_name + "." + extensions.get_front().to_lower());
 			}
 			file->set_title(TTR("Save Scene As..."));
 			file->popup_file_dialog();
@@ -5851,7 +5851,7 @@ void EditorNode::_proceed_save_asing_scene_tabs() {
 	if (scenes_to_save_as.is_empty()) {
 		return;
 	}
-	int scene_idx = scenes_to_save_as.front()->get();
+	int scene_idx = scenes_to_save_as.get_front();
 	scenes_to_save_as.pop_front();
 	_set_current_scene(scene_idx);
 	_menu_option_confirm(FILE_MULTI_SAVE_AS_SCENE, false);

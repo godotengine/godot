@@ -108,7 +108,7 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		Ref<InputEventKey> key_event = p_event;
 		if (!popup_menu_list.is_empty() && key_event.is_valid()) {
 			// Redirect to the highest popup menu.
-			window_id = popup_menu_list.back()->get();
+			window_id = popup_menu_list.get_back();
 		}
 
 		// Send to a single window.
@@ -850,15 +850,15 @@ void DisplayServerWayland::delete_sub_window(WindowID p_window_id) {
 	}
 
 	// The XDG shell specification requires us to clear all popups in reverse order.
-	while (!root_wd.popup_stack.is_empty() && root_wd.popup_stack.back()->get() != p_window_id) {
-		_send_window_event(WINDOW_EVENT_FORCE_CLOSE, root_wd.popup_stack.back()->get());
+	while (!root_wd.popup_stack.is_empty() && root_wd.popup_stack.get_back() != p_window_id) {
+		_send_window_event(WINDOW_EVENT_FORCE_CLOSE, root_wd.popup_stack.get_back());
 	}
 
-	if (root_wd.popup_stack.back() && root_wd.popup_stack.back()->get() == p_window_id) {
+	if (root_wd.popup_stack.back() && root_wd.popup_stack.get_back() == p_window_id) {
 		root_wd.popup_stack.pop_back();
 	}
 
-	if (popup_menu_list.back() && popup_menu_list.back()->get() == p_window_id) {
+	if (popup_menu_list.back() && popup_menu_list.get_back() == p_window_id) {
 		popup_menu_list.pop_back();
 	}
 
@@ -897,7 +897,7 @@ DisplayServer::WindowID DisplayServerWayland::window_get_active_popup() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (!popup_menu_list.is_empty()) {
-		return popup_menu_list.back()->get();
+		return popup_menu_list.get_back();
 	}
 
 	return INVALID_WINDOW_ID;

@@ -200,7 +200,7 @@ private:
 		void _clear_children() {
 			RichTextLabel *owner_rtl = ObjectDB::get_instance<RichTextLabel>(owner);
 			while (subitems.size()) {
-				Item *subitem = subitems.front()->get();
+				Item *subitem = subitems.get_front();
 				if (subitem && subitem->rid.is_valid() && owner_rtl) {
 					owner_rtl->items.free(subitem->rid);
 				}
