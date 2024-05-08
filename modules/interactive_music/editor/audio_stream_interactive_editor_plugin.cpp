@@ -340,8 +340,8 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	split->add_child(edit_vb);
 
 	transition_enabled = memnew(CheckBox);
-	transition_enabled->set_text(TTR("Use Transition"));
-	edit_vb->add_margin_child(TTR("Transition Enabled:"), transition_enabled);
+	transition_enabled->set_text(TTR("Enabled"));
+	edit_vb->add_margin_child(TTR("Use Transition:"), transition_enabled);
 	transition_enabled->connect("pressed", callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited));
 
 	transition_from = memnew(OptionButton);
