@@ -761,7 +761,7 @@ Variant::Type GDScriptUtilityFunctions::get_function_argument_type(const StringN
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
 	ERR_FAIL_NULL_V(info, Variant::NIL);
 	ERR_FAIL_COND_V(p_arg >= info->info.arguments.size(), Variant::NIL);
-	return info->info.arguments[p_arg].type;
+	return info->info.arguments.get(p_arg).type;
 }
 
 int GDScriptUtilityFunctions::get_function_argument_count(const StringName &p_function) {

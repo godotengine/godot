@@ -650,42 +650,42 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 	str.parse_utf8((const char *)plist.ptr(), plist.size());
 	Vector<String> lines = str.split("\n");
 	for (int i = 0; i < lines.size(); i++) {
-		if (lines[i].find("$binary") != -1) {
+		if (lines[i].contains("$binary")) {
 			strnew += lines[i].replace("$binary", p_binary) + "\n";
-		} else if (lines[i].find("$name") != -1) {
+		} else if (lines[i].contains("$name")) {
 			strnew += lines[i].replace("$name", GLOBAL_GET("application/config/name")) + "\n";
-		} else if (lines[i].find("$bundle_identifier") != -1) {
+		} else if (lines[i].contains("$bundle_identifier")) {
 			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
-		} else if (lines[i].find("$short_version") != -1) {
+		} else if (lines[i].contains("$short_version")) {
 			strnew += lines[i].replace("$short_version", p_preset->get_version("application/short_version")) + "\n";
-		} else if (lines[i].find("$version") != -1) {
+		} else if (lines[i].contains("$version")) {
 			strnew += lines[i].replace("$version", p_preset->get_version("application/version")) + "\n";
-		} else if (lines[i].find("$signature") != -1) {
+		} else if (lines[i].contains("$signature")) {
 			strnew += lines[i].replace("$signature", p_preset->get("application/signature")) + "\n";
-		} else if (lines[i].find("$app_category") != -1) {
+		} else if (lines[i].contains("$app_category")) {
 			String cat = p_preset->get("application/app_category");
 			strnew += lines[i].replace("$app_category", cat.to_lower()) + "\n";
-		} else if (lines[i].find("$copyright") != -1) {
+		} else if (lines[i].contains("$copyright")) {
 			strnew += lines[i].replace("$copyright", p_preset->get("application/copyright")) + "\n";
-		} else if (lines[i].find("$min_version") != -1) {
+		} else if (lines[i].contains("$min_version")) {
 			strnew += lines[i].replace("$min_version", p_preset->get("application/min_macos_version")) + "\n";
-		} else if (lines[i].find("$highres") != -1) {
+		} else if (lines[i].contains("$highres")) {
 			strnew += lines[i].replace("$highres", p_preset->get("display/high_res") ? "\t<true/>" : "\t<false/>") + "\n";
-		} else if (lines[i].find("$additional_plist_content") != -1) {
+		} else if (lines[i].contains("$additional_plist_content")) {
 			strnew += lines[i].replace("$additional_plist_content", p_preset->get("application/additional_plist_content")) + "\n";
-		} else if (lines[i].find("$platfbuild") != -1) {
+		} else if (lines[i].contains("$platfbuild")) {
 			strnew += lines[i].replace("$platfbuild", p_preset->get("xcode/platform_build")) + "\n";
-		} else if (lines[i].find("$sdkver") != -1) {
+		} else if (lines[i].contains("$sdkver")) {
 			strnew += lines[i].replace("$sdkver", p_preset->get("xcode/sdk_version")) + "\n";
-		} else if (lines[i].find("$sdkname") != -1) {
+		} else if (lines[i].contains("$sdkname")) {
 			strnew += lines[i].replace("$sdkname", p_preset->get("xcode/sdk_name")) + "\n";
-		} else if (lines[i].find("$sdkbuild") != -1) {
+		} else if (lines[i].contains("$sdkbuild")) {
 			strnew += lines[i].replace("$sdkbuild", p_preset->get("xcode/sdk_build")) + "\n";
-		} else if (lines[i].find("$xcodever") != -1) {
+		} else if (lines[i].contains("$xcodever")) {
 			strnew += lines[i].replace("$xcodever", p_preset->get("xcode/xcode_version")) + "\n";
-		} else if (lines[i].find("$xcodebuild") != -1) {
+		} else if (lines[i].contains("$xcodebuild")) {
 			strnew += lines[i].replace("$xcodebuild", p_preset->get("xcode/xcode_build")) + "\n";
-		} else if (lines[i].find("$usage_descriptions") != -1) {
+		} else if (lines[i].contains("$usage_descriptions")) {
 			String descriptions;
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSMicrophoneUsageDescription</key>\n";
@@ -1081,7 +1081,7 @@ Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPres
 			continue;
 		}
 
-		if (extensions_to_sign.find(current_file.get_extension()) > -1) {
+		if (extensions_to_sign.has(current_file.get_extension())) {
 			int ftype = MachO::get_filetype(current_file_path);
 			Error code_sign_error{ _code_sign(p_preset, current_file_path, (ftype == 2 || ftype == 5) ? p_helper_ent_path : p_ent_path, false, (ftype == 2 || ftype == 5)) };
 			if (code_sign_error != OK) {
@@ -1202,7 +1202,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 			// If it is a directory, find and sign all dynamic libraries.
 			err = _code_sign_directory(p_preset, p_in_app_path, p_ent_path, p_helper_ent_path, p_should_error_on_non_code_sign);
 		} else {
-			if (extensions_to_sign.find(p_in_app_path.get_extension()) > -1) {
+			if (extensions_to_sign.has(p_in_app_path.get_extension())) {
 				int ftype = MachO::get_filetype(p_in_app_path);
 				err = _code_sign(p_preset, p_in_app_path, (ftype == 2 || ftype == 5) ? p_helper_ent_path : p_ent_path, false, (ftype == 2 || ftype == 5));
 			}
@@ -1260,7 +1260,7 @@ Error EditorExportPlatformMacOS::_create_pkg(const Ref<EditorExportPreset> &p_pr
 	}
 
 	print_verbose("productbuild returned: " + str);
-	if (str.find("productbuild: error:") != -1) {
+	if (str.contains("productbuild: error:")) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("PKG Creation"), TTR("`productbuild` failed."));
 		return FAILED;
 	}
@@ -1292,8 +1292,8 @@ Error EditorExportPlatformMacOS::_create_dmg(const String &p_dmg_path, const Str
 	}
 
 	print_verbose("hdiutil returned: " + str);
-	if (str.find("create failed") != -1) {
-		if (str.find("File exists") != -1) {
+	if (str.contains("create failed")) {
+		if (str.contains("File exists")) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("`hdiutil create` failed - file exists."));
 		} else {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("`hdiutil create` failed."));

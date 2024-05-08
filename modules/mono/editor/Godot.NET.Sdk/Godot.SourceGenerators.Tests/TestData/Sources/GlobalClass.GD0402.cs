@@ -2,7 +2,7 @@ using Godot;
 
 // This works because it inherits from GodotObject and it doesn't have any generic type parameter.
 [GlobalClass]
-public partial class CustomGlobalClass : GodotObject 
+public partial class CustomGlobalClass : GodotObject
 {
 
 }

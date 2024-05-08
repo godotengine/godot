@@ -175,12 +175,6 @@ msgstr "D-pad phải"
 msgid "Pressure:"
 msgstr "Áp lực:"
 
-msgid "canceled"
-msgstr "huỷ bỏ"
-
-msgid "touched"
-msgstr "dã chạm"
-
 msgid "released"
 msgstr "được thả ra"
 
@@ -336,13 +330,6 @@ msgstr "PiB"
 
 msgid "EiB"
 msgstr "EiB"
-
-msgid "Example: %s"
-msgstr "Ví dụ: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d mục"
 
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
@@ -852,9 +839,6 @@ msgstr "Lớp này được đánh dấu là không dùng nữa."
 msgid "This class is marked as experimental."
 msgstr "Lớp này được đánh dấu là thử nghiệm."
 
-msgid "No description available for %s."
-msgstr "Không có mô tả nào có sẵn cho %s."
-
 msgid "Favorites:"
 msgstr "Ưa thích:"
 
@@ -884,9 +868,6 @@ msgstr "Lưu Nhánh thành Cảnh"
 
 msgid "Copy Node Path"
 msgstr "Sao chép đường dẫn nút"
-
-msgid "Instance:"
-msgstr "Thế:"
 
 msgid "Value"
 msgstr "Giá trị"
@@ -938,9 +919,6 @@ msgstr "Lượt gọi"
 
 msgid "Bytes:"
 msgstr "Bytes:"
-
-msgid "Warning:"
-msgstr "Cảnh báo:"
 
 msgid "Error:"
 msgstr "Lỗi:"
@@ -1193,9 +1171,6 @@ msgstr "Các tệp sau không thể trích xuất từ gói \"%s\":"
 msgid "(and %s more files)"
 msgstr "(và %s tệp nữa)"
 
-msgid "Asset \"%s\" installed successfully!"
-msgstr "Cài đặt gói \"%s\" thành công!"
-
 msgid "Success!"
 msgstr "Thành công!"
 
@@ -1300,24 +1275,6 @@ msgstr "Nạp bố cục Bus mặc định."
 
 msgid "Create a new Bus Layout."
 msgstr "Tạo bố cục Bus mới."
-
-msgid "Invalid name."
-msgstr "Tên không hợp lệ."
-
-msgid "Cannot begin with a digit."
-msgstr "Không được bắt đầu bằng một chữ số."
-
-msgid "Valid characters:"
-msgstr "Ký tự hợp lệ:"
-
-msgid "Must not collide with an existing engine class name."
-msgstr "Không được trùng tên với một lớp có sẵn của công cụ lập trình."
-
-msgid "Must not collide with an existing built-in type name."
-msgstr "Không được trùng với tên một kiểu có sẵn đã tồn tại."
-
-msgid "Must not collide with an existing global constant name."
-msgstr "Không được trùng với tên một hằng số toàn cục đã tồn tại."
 
 msgid "Autoload '%s' already exists!"
 msgstr "Nạp tự động '%s' đã tồn tại!"
@@ -1523,12 +1480,6 @@ msgstr "Nhập vào hồ sơ"
 msgid "Manage Editor Feature Profiles"
 msgstr "Quản lý trình tính năng"
 
-msgid "Restart"
-msgstr "Khởi động lại"
-
-msgid "Save & Restart"
-msgstr "Lưu & Khởi động lại"
-
 msgid "ScanSources"
 msgstr "Quét nguồn"
 
@@ -1634,17 +1585,17 @@ msgstr ""
 "Hiện thuộc tính này chưa được mô tả. Các bạn [color=$color][url=$url]đóng "
 "góp[/url][/color] giúp chúng mình nha!"
 
+msgid "Editor"
+msgstr "Trình chỉnh sửa"
+
+msgid "No description available."
+msgstr "Không có mô tả."
+
 msgid "Property:"
 msgstr "Thuộc tính:"
 
 msgid "Signal:"
 msgstr "Tín hiệu:"
-
-msgid "No description available."
-msgstr "Không có mô tả."
-
-msgid "%d match."
-msgstr "%d khớp."
 
 msgid "%d matches."
 msgstr "%d khớp."
@@ -1728,9 +1679,6 @@ msgstr "Gán nhiều: %s"
 msgid "Remove metadata %s"
 msgstr "Loại bỏ siêu dữ liệu %s"
 
-msgid "Pinned %s"
-msgstr "Đã ghim %s"
-
 msgid "Unpinned %s"
 msgstr "Đã bỏ ghim %s"
 
@@ -1775,14 +1723,8 @@ msgstr "Dự án không tên"
 msgid "Spins when the editor window redraws."
 msgstr "Xoay khi cửa sổ trình chỉnh sửa được vẽ lại."
 
-msgid "Imported resources can't be saved."
-msgstr "Tài nguyên đã nhập không thể lưu."
-
 msgid "OK"
 msgstr "OK"
-
-msgid "Error saving resource!"
-msgstr "Lỗi lưu tài nguyên!"
 
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
@@ -1794,15 +1736,6 @@ msgstr ""
 msgid "Save Resource As..."
 msgstr "Lưu tài nguyên thành ..."
 
-msgid "Can't open file for writing:"
-msgstr "Không thể mở tệp để ghi:"
-
-msgid "Requested file format unknown:"
-msgstr "Tệp yêu cầu có định dạng không xác định:"
-
-msgid "Error while saving."
-msgstr "Lỗi khi lưu."
-
 msgid "Saving Scene"
 msgstr "Lưu cảnh"
 
@@ -1812,21 +1745,8 @@ msgstr "Phân tích"
 msgid "Creating Thumbnail"
 msgstr "Tạo hình thu nhỏ"
 
-msgid "This operation can't be done without a tree root."
-msgstr "Hành động không thể hoàn thành mà không có nút gốc."
-
-msgid ""
-"Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
-"be satisfied."
-msgstr ""
-"Không thể lưu cảnh. Các phần phụ thuộc (trường hợp hoặc kế thừa) không thoả "
-"mãn."
-
 msgid "Save scene before running..."
 msgstr "Lưu cảnh trước khi chạy..."
-
-msgid "Could not save one or more scenes!"
-msgstr "Không thể lưu thêm một hay nhiều cảnh nữa!"
 
 msgid "Save All Scenes"
 msgstr "Lưu hết các Cảnh"
@@ -1834,11 +1754,8 @@ msgstr "Lưu hết các Cảnh"
 msgid "Can't overwrite scene that is still open!"
 msgstr "Không thể ghi đè cảnh vẫn đang mở!"
 
-msgid "Can't load MeshLibrary for merging!"
-msgstr "Không thể nạp MeshLibrary để sáp nhập!"
-
-msgid "Error saving MeshLibrary!"
-msgstr "Lỗi lưu MeshLibrary!"
+msgid "Merge With Existing"
+msgstr "Hợp nhất với Hiện có"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -1877,9 +1794,6 @@ msgstr ""
 "Tài nguyên này được nhập, nên không thể chỉnh sửa. Thay đổi cài đặt của nó "
 "trong bảng Nhập, sau đó Nhập lại."
 
-msgid "Changes may be lost!"
-msgstr "Các thay đổi có thể mất!"
-
 msgid "Open Base Scene"
 msgstr "Mở Cảnh cơ sở"
 
@@ -1891,9 +1805,6 @@ msgstr "Mở Nhanh Cảnh..."
 
 msgid "Quick Open Script..."
 msgstr "Mở Nhanh Tập lệnh..."
-
-msgid "%s no longer exists! Please specify a new save location."
-msgstr "%s không còn tồn tại nữa! Hãy chỉ rõ vị trí lưu mới."
 
 msgid "Save Scene As..."
 msgstr "Lưu Cảnh thành..."
@@ -1941,24 +1852,11 @@ msgstr "Lưu các tài nguyên đã được thay đổi trước khi đóng?"
 msgid "Save changes to the following scene(s) before reloading?"
 msgstr "Lưu thay đổi trong các cảnh sau trước khi thoát không?"
 
-msgid "Save changes to the following scene(s) before quitting?"
-msgstr "Lưu thay đổi trong các scene sau trước khi thoát?"
-
 msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "Lưu thay đổi trong các cảnh sau trước khi mở Quản lí Dự án?"
 
-msgid ""
-"This option is deprecated. Situations where refresh must be forced are now "
-"considered a bug. Please report."
-msgstr ""
-"Tùy chỉnh không chấp nhận. Những tình huống mà bắt phải làm mới bây giờ được "
-"xem là lỗi. Xin hãy báo lại."
-
 msgid "Pick a Main Scene"
 msgstr "Chọn một Scene chính"
-
-msgid "This operation can't be done without a scene."
-msgstr "Thao tác này phải có Cảnh mới làm được."
 
 msgid "Export Mesh Library"
 msgstr "Xuất Mesh Library"
@@ -1989,21 +1887,11 @@ msgstr ""
 "Scene '%s' được nhập tự động, không thể chỉnh sửa.\n"
 "Tạo một cảnh kế thừa để chỉnh sửa."
 
-msgid ""
-"Error loading scene, it must be inside the project path. Use 'Import' to open "
-"the scene, then save it inside the project path."
-msgstr ""
-"Lỗi nạp cảnh, nó phải trong đường dẫn dự án. Sử dụng 'Nhập' để mở các cảnh, "
-"sau đó lưu lại trong đường dẫn dự án."
-
 msgid "Scene '%s' has broken dependencies:"
 msgstr "Cảnh '%s' bị hỏng các phụ thuộc:"
 
 msgid "Clear Recent Scenes"
 msgstr "Dọn các cảnh gần đây"
-
-msgid "There is no defined scene to run."
-msgstr "Không có cảnh được xác định để chạy."
 
 msgid ""
 "No main scene has ever been defined, select one?\n"
@@ -2107,14 +1995,8 @@ msgstr "Cài đặt trình chỉnh sửa..."
 msgid "Project"
 msgstr "Dự án"
 
-msgid "Project Settings..."
-msgstr "Cài đặt Dự án..."
-
 msgid "Version Control"
 msgstr "Theo dõi phiên bản"
-
-msgid "Export..."
-msgstr "Xuất..."
 
 msgid "Install Android Build Template..."
 msgstr "Cài đặt mẫu xây dựng Android..."
@@ -2130,9 +2012,6 @@ msgstr "Tải lại dự án hiện tại"
 
 msgid "Quit to Project List"
 msgstr "Thoát khỏi Danh sách Dự án"
-
-msgid "Editor"
-msgstr "Trình chỉnh sửa"
 
 msgid "Editor Layout"
 msgstr "Cài đặt Bố cục"
@@ -2168,9 +2047,6 @@ msgstr "Trợ giúp"
 msgid "Online Documentation"
 msgstr "Tài liệu trực tuyến"
 
-msgid "Questions & Answers"
-msgstr "Hỏi đáp"
-
 msgid "Community"
 msgstr "Cộng đồng"
 
@@ -2186,23 +2062,20 @@ msgstr "Gửi ý kiến phản hồi về hướng dẫn"
 msgid "Support Godot Development"
 msgstr "Hỗ trợ phát triển Godot"
 
+msgid "Save & Restart"
+msgstr "Lưu & Khởi động lại"
+
 msgid "Update Continuously"
 msgstr "Cập nhật Liên tục"
 
 msgid "Hide Update Spinner"
 msgstr "Ẩn cập nhật spinner"
 
-msgid "FileSystem"
-msgstr "Hệ thống tệp tin"
-
 msgid "Inspector"
 msgstr "Quan Sát Viên"
 
 msgid "Node"
 msgstr "Nút"
-
-msgid "Output"
-msgstr "Đầu ra"
 
 msgid "Don't Save"
 msgstr "Không Lưu"
@@ -2227,9 +2100,6 @@ msgstr "Gói bản mẫu"
 
 msgid "Export Library"
 msgstr "Xuất thư viện ra"
-
-msgid "Merge With Existing"
-msgstr "Hợp nhất với Hiện có"
 
 msgid "Open & Run a Script"
 msgstr "Mở & chạy tập lệnh"
@@ -2274,23 +2144,11 @@ msgstr "Mở trình chỉnh sửa trước đó"
 msgid "Warning!"
 msgstr "Cảnh báo!"
 
-msgid "On"
-msgstr "Bật"
-
-msgid "Edit Plugin"
-msgstr "Chỉnh sửa Tiện ích"
-
-msgid "Installed Plugins:"
-msgstr "Các Tiện ích đã cài:"
-
-msgid "Version"
-msgstr "Phiên bản"
-
-msgid "Author"
-msgstr "Tác giả"
-
 msgid "Edit Text:"
 msgstr "Sửa văn bản:"
+
+msgid "On"
+msgstr "Bật"
 
 msgid "Renaming layer %d:"
 msgstr "Đổi tên lớp %d:"
@@ -2329,17 +2187,17 @@ msgstr "Chọn cổng xem"
 msgid "Selected node is not a Viewport!"
 msgstr "Nút được chọn không phải Cổng xem!"
 
-msgid "Size:"
-msgstr "Kích thước:"
-
-msgid "Remove Item"
-msgstr "Gõ bỏ Mục"
-
 msgid "New Key:"
 msgstr "Khoá mới:"
 
 msgid "New Value:"
 msgstr "Giá trị mới:"
+
+msgid "Size:"
+msgstr "Kích thước:"
+
+msgid "Remove Item"
+msgstr "Gõ bỏ Mục"
 
 msgid "Add Key/Value Pair"
 msgstr "Thêm cặp Khoá/Giá trị"
@@ -2416,9 +2274,6 @@ msgstr "Lưu trữ tệp tin: %s"
 msgid "Storing File:"
 msgstr "Lưu trữ tệp tin:"
 
-msgid "No export template found at the expected path:"
-msgstr "Không thấy bản mẫu xuất nào ở đường dẫn mong đợi:"
-
 msgid "Could not open file to read from path \"%s\"."
 msgstr "Không thể mở tệp tin để đọc từ đường dẫn \"%s\"."
 
@@ -2486,33 +2341,6 @@ msgid ""
 msgstr ""
 "Không tìm thấy liên kết để tải phiên bản này. Chỉ có thể tải trực tiếp các "
 "bản chính thức."
-
-msgid "Disconnected"
-msgstr "Đứt kết nối"
-
-msgid "Resolving"
-msgstr "Đang giải quyết"
-
-msgid "Can't Resolve"
-msgstr "Không thể giải quyết"
-
-msgid "Connecting..."
-msgstr "Đang kết nối..."
-
-msgid "Can't Connect"
-msgstr "Không thể Kết nối"
-
-msgid "Connected"
-msgstr "Đã kết nối"
-
-msgid "Requesting..."
-msgstr "Đang yêu cầu..."
-
-msgid "Downloading"
-msgstr "Đang tải"
-
-msgid "Connection Error"
-msgstr "Kết nối bị lỗi"
 
 msgid "Can't open the export templates file."
 msgstr "Không thể mở tệp bản mẫu xuất."
@@ -2598,6 +2426,9 @@ msgstr "Chạy được"
 msgid "Resources to export:"
 msgstr "Tài nguyên để xuất:"
 
+msgid "Export With Debug"
+msgstr "Xuất cùng gỡ lỗi"
+
 msgid "%s Export"
 msgstr "Xuất cho %s"
 
@@ -2677,9 +2508,6 @@ msgstr "Các mẫu xuất bản cho nền tảng này bị thiếu:"
 
 msgid "Manage Export Templates"
 msgstr "Quản lí bản mẫu xuất"
-
-msgid "Export With Debug"
-msgstr "Xuất cùng gỡ lỗi"
 
 msgid "Browse"
 msgstr "Duyệt"
@@ -2761,9 +2589,6 @@ msgstr "Xóa Ưa thích"
 msgid "Reimport"
 msgstr "Nhập vào lại"
 
-msgid "Open in File Manager"
-msgstr "Mở trong trình quản lý tệp tin"
-
 msgid "New Folder..."
 msgstr "Thư mục mới ..."
 
@@ -2781,6 +2606,9 @@ msgstr "Nhân đôi..."
 
 msgid "Rename..."
 msgstr "Đổi tên..."
+
+msgid "Open in File Manager"
+msgstr "Mở trong trình quản lý tệp tin"
 
 msgid "Re-Scan Filesystem"
 msgstr "Quét lại hệ thống tập tin"
@@ -3009,6 +2837,9 @@ msgstr ""
 msgid "Open in Editor"
 msgstr "Mở trong Trình biên soạn"
 
+msgid "Instance:"
+msgstr "Thế:"
+
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Tên nút không hợp lệ, các ký tự sau bị cấm:"
 
@@ -3062,9 +2893,6 @@ msgstr "3D"
 
 msgid "Importer:"
 msgstr "Công cụ nhập:"
-
-msgid "Keep File (No Import)"
-msgstr "Giữ tệp (Không Nhập)"
 
 msgid "%d Files"
 msgstr "%d Tệp"
@@ -3140,36 +2968,6 @@ msgstr "Nhóm"
 
 msgid "Select a single node to edit its signals and groups."
 msgstr "Chọn nút duy nhất để chỉnh sửa tính hiệu và nhóm của nó."
-
-msgid "Edit a Plugin"
-msgstr "Chỉnh Tiện ích"
-
-msgid "Create a Plugin"
-msgstr "Tạo Tiện ích"
-
-msgid "Update"
-msgstr "Cập nhật"
-
-msgid "Plugin Name:"
-msgstr "Tên Tiện ích:"
-
-msgid "Subfolder:"
-msgstr "Thư mục phụ:"
-
-msgid "Author:"
-msgstr "Tác giả:"
-
-msgid "Version:"
-msgstr "Phiên bản:"
-
-msgid "Script Name:"
-msgstr "Tên tập lệnh:"
-
-msgid "Activate now?"
-msgstr "Kích hoạt bây giờ?"
-
-msgid "Script extension is valid."
-msgstr "Phần mở rộng tập lệnh hợp lệ."
 
 msgid "Create Polygon"
 msgstr "Tạo Polygon"
@@ -3532,6 +3330,12 @@ msgstr "Chế độ chơi:"
 msgid "Delete Selected"
 msgstr "Xoá lựa chọn"
 
+msgid "Author"
+msgstr "Tác giả"
+
+msgid "Version:"
+msgstr "Phiên bản:"
+
 msgid "Contents:"
 msgstr "Nội dung:"
 
@@ -3586,9 +3390,6 @@ msgstr "Quá giờ."
 msgid "Failed:"
 msgstr "Thất bại:"
 
-msgid "Expected:"
-msgstr "Mong đợi:"
-
 msgid "Got:"
 msgstr "Nhận được:"
 
@@ -3609,6 +3410,12 @@ msgstr "Đang tải..."
 
 msgid "Resolving..."
 msgstr "Đang giải thuật..."
+
+msgid "Connecting..."
+msgstr "Đang kết nối..."
+
+msgid "Requesting..."
+msgstr "Đang yêu cầu..."
 
 msgid "Error making request"
 msgstr "Lỗi tạo yêu cầu"
@@ -3643,17 +3450,11 @@ msgstr "Giấy phép (A-Z)"
 msgid "License (Z-A)"
 msgstr "Giấy phép (Z-A)"
 
-msgid "Official"
-msgstr "Chính thức"
-
 msgid "Testing"
 msgstr "Kiểm tra"
 
 msgid "Loading..."
 msgstr "Đang tải..."
-
-msgid "Failed to get repository configuration."
-msgstr "Không thể lấy được cài đặt của kho mã nguồn."
 
 msgid "All"
 msgstr "Tất cả"
@@ -3813,23 +3614,6 @@ msgstr "Góc nhìn ở Giữa"
 
 msgid "Select Mode"
 msgstr "Chế độ chọn"
-
-msgid "Drag: Rotate selected node around pivot."
-msgstr "Kéo: quay nút được chọn quanh chốt."
-
-msgid "Alt+Drag: Move selected node."
-msgstr "Alt+Kéo: Di chuyển nút đang chọn."
-
-msgid "Alt+Drag: Scale selected node."
-msgstr "Alt+Kéo: Chỉnh sửa tỉ lệ nút đang chọn."
-
-msgid "V: Set selected node's pivot position."
-msgstr "V: cài đặt vị trí chốt của nút đang chọn."
-
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+nút chuột phải: Hiển thị danh sách tất cả các nút tại vị trí được nhấp "
-"chuột vào, kể cả những nút đang bị khóa."
 
 msgid "RMB: Add node at position clicked."
 msgstr "Nút chuột phải: thên nút tại vị trí nhấp chuột."
@@ -4021,6 +3805,9 @@ msgstr "Rộng bên phải"
 msgid "Full Rect"
 msgstr "Rộng hết cỡ"
 
+msgid "Restart"
+msgstr "Khởi động lại"
+
 msgid "Solid Pixels"
 msgstr "Điểm ảnh rắn"
 
@@ -4084,13 +3871,6 @@ msgstr ""
 msgid "Visible Navigation"
 msgstr "Điều hướng nhìn thấy được"
 
-msgid ""
-"When this option is enabled, navigation meshes and polygons will be visible "
-"in the running project."
-msgstr ""
-"Khi bật tùy chọn này, các lưới/đa giác điều hướng sẽ hiển thị trong dự án "
-"đang chạy."
-
 msgid "Debug CanvasItem Redraws"
 msgstr "Gỡ lỗi CanvasItem Redraws"
 
@@ -4110,6 +3890,15 @@ msgstr ""
 
 msgid "Synchronize Script Changes"
 msgstr "Đồng bộ hóa thay đổi trong tập lệnh"
+
+msgid "Edit Plugin"
+msgstr "Chỉnh sửa Tiện ích"
+
+msgid "Installed Plugins:"
+msgstr "Các Tiện ích đã cài:"
+
+msgid "Version"
+msgstr "Phiên bản"
 
 msgid "Size: %s"
 msgstr "Kích thước: %s"
@@ -4160,14 +3949,11 @@ msgstr "Âm lượng"
 msgid "Emission Source:"
 msgstr "Nguồn phát:"
 
-msgid "Mesh is empty!"
-msgstr "Lưới trống!"
-
-msgid "This doesn't work on scene root!"
-msgstr "Không thể áp dụng lên Cảnh gốc!"
-
 msgid "Couldn't create any collision shapes."
 msgstr "Không thể tạo bất kì khối va chạm nào."
+
+msgid "Mesh is empty!"
+msgstr "Lưới trống!"
 
 msgid "Create Navigation Mesh"
 msgstr "Tạo lưới điều hướng"
@@ -4180,6 +3966,15 @@ msgstr "Tạo đường viền"
 
 msgid "Mesh"
 msgstr "Lưới"
+
+msgid "Create Outline Mesh..."
+msgstr "Tạo lưới viền..."
+
+msgid "Create Outline Mesh"
+msgstr "Tạo lưới viền"
+
+msgid "Outline Size:"
+msgstr "Kích cỡ viền:"
 
 msgid ""
 "Creates a polygon-based collision shape.\n"
@@ -4194,15 +3989,6 @@ msgid ""
 msgstr ""
 "Tạo một khối va chạm lồi.\n"
 "Đây là cách phát hiện va chạm nhanh (nhưng ẩu) nhất."
-
-msgid "Create Outline Mesh..."
-msgstr "Tạo lưới viền..."
-
-msgid "Create Outline Mesh"
-msgstr "Tạo lưới viền"
-
-msgid "Outline Size:"
-msgstr "Kích cỡ viền:"
 
 msgid "Remove item %d?"
 msgstr "Xóa mục %d?"
@@ -4341,6 +4127,11 @@ msgstr "Nửa độ phân giải"
 msgid "View Rotation Locked"
 msgstr "Đã khóa xoay ở chế độ xem"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+nút chuột phải: Hiển thị danh sách tất cả các nút tại vị trí được nhấp "
+"chuột vào, kể cả những nút đang bị khóa."
+
 msgid "Use Local Space"
 msgstr "Sử dụng Không gian Cục bộ"
 
@@ -4431,23 +4222,8 @@ msgstr "Chia đường Curve"
 msgid "Move Point in Curve"
 msgstr "Di chuyển Điểm trên Đường cong"
 
-msgid "Select Points"
-msgstr "Chọn Points"
-
-msgid "Shift+Drag: Select Control Points"
-msgstr "Shift+Kéo: Chọn các điểm điều khiển"
-
-msgid "Click: Add Point"
-msgstr "Nhấp: Tạo Point"
-
-msgid "Left Click: Split Segment (in curve)"
-msgstr "Chuột trái: Phân tách các đoạn (trong đường cong)"
-
 msgid "Right Click: Delete Point"
 msgstr "Nhấp chuột phải: Xóa Point"
-
-msgid "Add Point (in empty space)"
-msgstr "Thêm điểm (trong không gian trống)"
 
 msgid "Delete Point"
 msgstr "Xóa Point"
@@ -4461,6 +4237,9 @@ msgstr "Xin hãy xác nhận..."
 msgid "Curve Point #"
 msgstr "Điểm uốn #"
 
+msgid "Set Curve Point Position"
+msgstr "Đặt vị trí điểm uốn"
+
 msgid "Split Path"
 msgstr "Tách đường"
 
@@ -4470,11 +4249,32 @@ msgstr "Loại bỏ điểm đường dẫn"
 msgid "Split Segment (in curve)"
 msgstr "Phân tách đoạn (trong đường cong)"
 
-msgid "Set Curve Point Position"
-msgstr "Đặt vị trí điểm uốn"
-
 msgid "Move Joint"
 msgstr "Di chuyển Khớp"
+
+msgid "Edit a Plugin"
+msgstr "Chỉnh Tiện ích"
+
+msgid "Create a Plugin"
+msgstr "Tạo Tiện ích"
+
+msgid "Plugin Name:"
+msgstr "Tên Tiện ích:"
+
+msgid "Subfolder:"
+msgstr "Thư mục phụ:"
+
+msgid "Author:"
+msgstr "Tác giả:"
+
+msgid "Script Name:"
+msgstr "Tên tập lệnh:"
+
+msgid "Activate now?"
+msgstr "Kích hoạt bây giờ?"
+
+msgid "Script extension is valid."
+msgstr "Phần mở rộng tập lệnh hợp lệ."
 
 msgid ""
 "The skeleton property of the Polygon2D does not point to a Skeleton2D node"
@@ -4526,12 +4326,6 @@ msgstr "Đa giác"
 
 msgid "Bones"
 msgstr "Xương"
-
-msgid "Move Points"
-msgstr "Di chuyển các điểm"
-
-msgid "Shift: Move All"
-msgstr "Shift: Di chuyển tất"
 
 msgid "Move Polygon"
 msgstr "Di chuyển đa g"
@@ -4608,20 +4402,8 @@ msgstr "Không thể mở '%s'. Tệp đã được di chuyển hoặc xoá."
 msgid "Close and save changes?"
 msgstr "Đóng và lưu thay đổi?"
 
-msgid "Error writing TextFile:"
-msgstr "Lỗi viết TextFile:"
-
-msgid "Error saving file!"
-msgstr "Lỗi lưu tệp!"
-
-msgid "Error while saving theme."
-msgstr "Lỗi khi lưu Tông màu."
-
 msgid "Error Saving"
 msgstr "Lỗi Khi Lưu"
-
-msgid "Error importing theme."
-msgstr "Lỗi khi nhập Tông màu."
 
 msgid "Error Importing"
 msgstr "Lỗi Khi Nhập"
@@ -4632,17 +4414,11 @@ msgstr "Tệp văn bản mới..."
 msgid "Open File"
 msgstr "Mở tệp"
 
-msgid "Could not load file at:"
-msgstr "Không tải được tệp tại:"
-
 msgid "Save File As..."
 msgstr "Lưu Cảnh thành..."
 
 msgid "Import Theme"
 msgstr "Nhập Tông màu"
-
-msgid "Error while saving theme"
-msgstr "Lỗi khi lưu Tông màu"
 
 msgid "Error saving"
 msgstr "Lỗi khi lưu"
@@ -4738,9 +4514,6 @@ msgstr ""
 "Các tệp sau đây mới hơn trên ổ cứng.\n"
 "Hãy chọn hành động của bạn:"
 
-msgid "Search Results"
-msgstr "Kết quả tìm kiếm"
-
 msgid "Save changes to the following script(s) before quitting?"
 msgstr "Lưu thay đổi trong các tập lệnh sau trước khi thoát không?"
 
@@ -4767,14 +4540,14 @@ msgstr ""
 msgid "[Ignore]"
 msgstr "[Bỏ qua]"
 
-msgid "Line"
-msgstr "Dòng"
-
 msgid "Go to Function"
 msgstr "Đi tới hàm"
 
 msgid "Pick Color"
 msgstr "Chọn màu"
+
+msgid "Line"
+msgstr "Dòng"
 
 msgid "Uppercase"
 msgstr "Chữ hoa"
@@ -4983,12 +4756,6 @@ msgstr "Kích thước"
 msgid "Create Frames from Sprite Sheet"
 msgstr "Tạo Khung hình từ Sprite Sheet"
 
-msgid "SpriteFrames"
-msgstr "Khung hình sprite"
-
-msgid "%s Mipmaps"
-msgstr "%s Mipmaps"
-
 msgid "Memory: %s"
 msgstr "Bộ nhớ: %s"
 
@@ -5100,9 +4867,6 @@ msgstr "Dữ liệu tùy chỉnh %d"
 msgid "Yes"
 msgstr "Có"
 
-msgid "TileSet"
-msgstr "Tập gạch"
-
 msgid "Error"
 msgstr "Lỗi"
 
@@ -5199,9 +4963,6 @@ msgstr "Xóa cổng vào"
 msgid "Remove Output Port"
 msgstr "Xóa cổng ra"
 
-msgid "Set Comment Description"
-msgstr "Đặt mô tả chú thích"
-
 msgid "Set Input Default Port"
 msgstr "Đặt cổng đầu vào mặc định"
 
@@ -5210,9 +4971,6 @@ msgstr "Thêm nút vào Visual Shader"
 
 msgid "Add Varying to Visual Shader: %s"
 msgstr "Thêm Varying vào Visual Shader: %s"
-
-msgid "Node(s) Moved"
-msgstr "Nút đã di chuyển"
 
 msgid "Set Constant: %s"
 msgstr "Thêm hằng số: %s"
@@ -5586,10 +5344,6 @@ msgstr ""
 "Gỡ tất cả dự án bị hỏng khỏi danh sách?\n"
 "Nội dung các thư mục dự án sẽ không bị sửa đổi."
 
-msgid ""
-"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
-msgstr "Không thể tải dự án ở '%s' (lỗi %d). Nó có thể đã bị mất hoặc bị hỏng."
-
 msgid "Couldn't save project at '%s' (error %d)."
 msgstr "Không thể lưu dự án tại '%s' (lỗi %d)."
 
@@ -5635,37 +5389,16 @@ msgstr "Xoá tất cả"
 msgid "Create New Tag"
 msgstr "Tạo Nhãn Mới"
 
-msgid "The path specified doesn't exist."
-msgstr "Đường dẫn đã cho không tồn tại."
-
-msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Lỗi mở gói (không phải dạng ZIP)."
+msgid "It would be a good idea to name your project."
+msgstr "Nó là một ý tưởng tuyệt để đặt tên cho dự án của bạn."
 
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
 "Tệp dự án \".zip\" không hợp lệ; trong nó không chứa tệp \"project.godot\"."
 
-msgid "New Game Project"
-msgstr "Dự án Trò chơi Mới"
-
-msgid "Imported Project"
-msgstr "Đã nạp Dự án"
-
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Chọn tệp \"project.godot\" hoặc tệp \".zip\"."
-
-msgid "Couldn't create folder."
-msgstr "Không thể tạo thư mục."
-
-msgid "There is already a folder in this path with the specified name."
-msgstr "Đã tồn tại một thư mục cùng tên trên đường dẫn này."
-
-msgid "It would be a good idea to name your project."
-msgstr "Nó là một ý tưởng tuyệt để đặt tên cho dự án của bạn."
-
-msgid "Invalid project path (changed anything?)."
-msgstr "Đường dẫn dự án không hợp lệ (bạn có thay đổi điều gì?)."
+msgid "The path specified doesn't exist."
+msgstr "Đường dẫn đã cho không tồn tại."
 
 msgid "Couldn't create project.godot in project path."
 msgstr "Không thể tạo 'project.godot' trong đường dẫn dự án."
@@ -5676,8 +5409,12 @@ msgstr "Lỗi không thể mở gói, không phải dạng nén ZIP."
 msgid "The following files failed extraction from package:"
 msgstr "Không thể lấy các tệp sau khỏi gói:"
 
-msgid "Package installed successfully!"
-msgstr "Cài đặt gói thành công!"
+msgid ""
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
+msgstr "Không thể tải dự án ở '%s' (lỗi %d). Nó có thể đã bị mất hoặc bị hỏng."
+
+msgid "New Game Project"
+msgstr "Dự án Trò chơi Mới"
 
 msgid "Import & Edit"
 msgstr "Nhập & Chỉnh sửa"
@@ -5842,9 +5579,6 @@ msgstr "Cảnh khởi tạo không thể thành gốc"
 msgid "Make node as Root"
 msgstr "Gán nút là nút Gốc"
 
-msgid "Delete %d nodes and any children?"
-msgstr "Xoá %d nút và tất cả các con của nó?"
-
 msgid "Delete %d nodes?"
 msgstr "Xoá %d nút?"
 
@@ -5928,9 +5662,6 @@ msgstr ""
 
 msgid "Can't paste root node into the same scene."
 msgstr "Không thể dán Nút Gốc vào cùng một Cảnh."
-
-msgid "Paste Node(s) as Sibling of %s"
-msgstr "Dán nút với tư cách là nút anh chị em của %s"
 
 msgid "Paste Node(s) as Child of %s"
 msgstr "Dán nút với tư cách là nút con của %s"
@@ -6047,34 +5778,6 @@ msgstr "Thay Đổi Bán Kính Trong Của Hình Xuyến"
 msgid "Change Torus Outer Radius"
 msgstr "Thay Đổi Bán Kính Ngoài Của Hình Xuyến"
 
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Hàm convert() có loại đối số không hợp lệ, hãy sử dụng các hằng TYPE_*."
-
-msgid "Not based on a script"
-msgstr "Không dựa trên tệp lệnh"
-
-msgid "Not based on a resource file"
-msgstr "Không dựa trên tệp tài nguyên"
-
-msgid "Invalid instance dictionary format (can't load script at @path)"
-msgstr "Định dạng từ điển không hợp lệ (Không tải được tệp lệnh ở @path)"
-
-msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr "Định dạng từ điển không hợp lệ (tệp lệnh không hợp lệ ở @path)"
-
-msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr "Từ điển không hợp lệ (Lớp con không hợp lệ)"
-
-msgid "Value of type '%s' can't provide a length."
-msgstr "Giá trị của kiểu '%s' không thể cung cấp chiều dài."
-
-msgid ""
-"Invalid type argument for is_instance_of(), should be a TYPE_* constant, a "
-"class or a script."
-msgstr ""
-"Hàm convert() có loại đối số không hợp lệ, hãy sử dụng hằng TYPE_*, một lớp "
-"hoặc một tập lệnh."
-
 msgid "Next Plane"
 msgstr "Mặt phẳng tiếp theo"
 
@@ -6140,24 +5843,6 @@ msgstr "Lỗi khi lưu tệp %s: %s"
 
 msgid "Error loading %s: %s."
 msgstr "Lỗi khi tải %s: %s."
-
-msgid "Package name is missing."
-msgstr "Thiếu tên gói."
-
-msgid "Package segments must be of non-zero length."
-msgstr "Các phân đoạn của gói phải có độ dài khác không."
-
-msgid "The character '%s' is not allowed in Android application package names."
-msgstr "Không được phép cho kí tự '%s' vào tên gói phần mềm Android."
-
-msgid "A digit cannot be the first character in a package segment."
-msgstr "Không thể có chữ số làm kí tự đầu tiên trong một phần của gói."
-
-msgid "The character '%s' cannot be the first character in a package segment."
-msgstr "Kí tự '%s' không thể ở đầu trong một phân đoạn của gói."
-
-msgid "The package must have at least one '.' separator."
-msgstr "Kí tự phân cách '.' phải xuất hiện ít nhất một lần trong tên gói."
 
 msgid "Invalid public key for APK expansion."
 msgstr "Khóa công khai của bộ APK mở rộng không hợp lệ."
@@ -6233,12 +5918,6 @@ msgstr "Đang thêm các tệp..."
 msgid "Invalid Identifier:"
 msgstr "Định danh không hợp lệ:"
 
-msgid "Identifier is missing."
-msgstr "Thiếu định danh."
-
-msgid "The character '%s' is not allowed in Identifier."
-msgstr "Không được phép có kí tự '%s' trong Định danh."
-
 msgid "Could not open file \"%s\"."
 msgstr "Không thể mở tệp tin \"%s\"."
 
@@ -6281,20 +5960,20 @@ msgstr "Không thể đọc tệp tin: \"%s\"."
 msgid "Could not read HTML shell: \"%s\"."
 msgstr "Không thể đọc được HTML shell: \"%s\"."
 
+msgid "Run in Browser"
+msgstr "Chạy trong Trình duyệt web"
+
+msgid "Stop HTTP Server"
+msgstr "Dừng Máy chủ HTTP"
+
+msgid "Run exported HTML in the system's default browser."
+msgstr "Chạy HTML được xuất với trình duyệt mặc định của máy."
+
 msgid "Could not create HTTP server directory: %s."
 msgstr "Không thể tạo thư mục máy chủ HTTP: %s."
 
 msgid "Error starting HTTP server: %d."
 msgstr "Lỗi khi khởi động máy chủ HTTP: %d."
-
-msgid "Stop HTTP Server"
-msgstr "Dừng Máy chủ HTTP"
-
-msgid "Run in Browser"
-msgstr "Chạy trong Trình duyệt web"
-
-msgid "Run exported HTML in the system's default browser."
-msgstr "Chạy HTML được xuất với trình duyệt mặc định của máy."
 
 msgid "Icon size \"%d\" is missing."
 msgstr "Thiếu kích cỡ biểu tượng \"%d\"."
@@ -6431,9 +6110,6 @@ msgstr "Không có kết nối đến input '%s' của node '%s'."
 msgid "Copy this constructor in a script."
 msgstr "Sao chép constructor này vào một script."
 
-msgid "Alert!"
-msgstr "Cảnh báo!"
-
 msgid "Invalid source for preview."
 msgstr "Nguồn vô hiệu cho xem trước."
 
@@ -6449,11 +6125,11 @@ msgstr "Tham số không hợp lệ cho hàm tích hợp sắn: \"%s(%s)\"."
 msgid "Invalid assignment of '%s' to '%s'."
 msgstr "Phép gán không hợp lệ '%s' cho '%s'."
 
-msgid "Constants cannot be modified."
-msgstr "Không thể chỉnh sửa hằng số."
-
 msgid "Void value not allowed in expression."
 msgstr "Dữ liệu kiểu void không được cho phép trong biểu thức."
+
+msgid "Constants cannot be modified."
+msgstr "Không thể chỉnh sửa hằng số."
 
 msgid "Invalid member for '%s' expression: '.%s'."
 msgstr "Thành viên không hợp lệ cho biểu thực '%s': '.%s'."

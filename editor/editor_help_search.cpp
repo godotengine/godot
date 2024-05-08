@@ -40,7 +40,7 @@
 
 bool EditorHelpSearch::_all_terms_in_name(const Vector<String> &p_terms, const String &p_name) const {
 	for (int i = 0; i < p_terms.size(); i++) {
-		if (p_name.findn(p_terms[i]) < 0) {
+		if (!p_name.containsn(p_terms[i])) {
 			return false;
 		}
 	}
@@ -109,7 +109,7 @@ Dictionary EditorHelpSearch::_native_search_cb(const String &p_search_string, in
 		if (class_doc.name.is_empty()) {
 			continue;
 		}
-		if (class_doc.name.findn(term) > -1) {
+		if (class_doc.name.containsn(term)) {
 			ret[vformat("class_name:%s", class_doc.name)] = class_doc.name;
 		}
 		if (term.length() > 1 || term == "@") {
@@ -744,9 +744,9 @@ String EditorHelpSearch::Runner::_match_keywords_in_all_terms(const String &p_ke
 
 bool EditorHelpSearch::Runner::_match_string(const String &p_term, const String &p_string) const {
 	if (search_flags & SEARCH_CASE_SENSITIVE) {
-		return p_string.find(p_term) > -1;
+		return p_string.contains(p_term);
 	} else {
-		return p_string.findn(p_term) > -1;
+		return p_string.containsn(p_term);
 	}
 }
 

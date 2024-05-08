@@ -198,6 +198,7 @@ class String {
 
 	bool _base_is_subsequence_of(const String &p_string, bool case_insensitive) const;
 	int _count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const;
+	int _count(const char *p_string, int p_from, int p_to, bool p_case_insensitive) const;
 	String _camelcase_to_underscore() const;
 
 public:
@@ -288,14 +289,18 @@ public:
 	int find(const char *p_str, int p_from = 0) const; ///< return <0 if failed
 	int find_char(const char32_t &p_char, int p_from = 0) const; ///< return <0 if failed
 	int findn(const String &p_str, int p_from = 0) const; ///< return <0 if failed, case insensitive
+	int findn(const char *p_str, int p_from = 0) const; ///< return <0 if failed
 	int rfind(const String &p_str, int p_from = -1) const; ///< return <0 if failed
+	int rfind(const char *p_str, int p_from = -1) const; ///< return <0 if failed
 	int rfindn(const String &p_str, int p_from = -1) const; ///< return <0 if failed, case insensitive
+	int rfindn(const char *p_str, int p_from = -1) const; ///< return <0 if failed
 	int findmk(const Vector<String> &p_keys, int p_from = 0, int *r_key = nullptr) const; ///< return <0 if failed
 	bool match(const String &p_wildcard) const;
 	bool matchn(const String &p_wildcard) const;
 	bool begins_with(const String &p_string) const;
 	bool begins_with(const char *p_string) const;
 	bool ends_with(const String &p_string) const;
+	bool ends_with(const char *p_string) const;
 	bool is_enclosed_in(const String &p_string) const;
 	bool is_subsequence_of(const String &p_string) const;
 	bool is_subsequence_ofn(const String &p_string) const;
@@ -304,9 +309,11 @@ public:
 	float similarity(const String &p_string) const;
 	String format(const Variant &values, const String &placeholder = "{_}") const;
 	String replace_first(const String &p_key, const String &p_with) const;
+	String replace_first(const char *p_key, const char *p_with) const;
 	String replace(const String &p_key, const String &p_with) const;
 	String replace(const char *p_key, const char *p_with) const;
 	String replacen(const String &p_key, const String &p_with) const;
+	String replacen(const char *p_key, const char *p_with) const;
 	String repeat(int p_count) const;
 	String reverse() const;
 	String insert(int p_at_pos, const String &p_string) const;
@@ -314,7 +321,9 @@ public:
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
 	String trim_prefix(const String &p_prefix) const;
+	String trim_prefix(const char *p_prefix) const;
 	String trim_suffix(const String &p_suffix) const;
+	String trim_suffix(const char *p_suffix) const;
 	String lpad(int min_length, const String &character = " ") const;
 	String rpad(int min_length, const String &character = " ") const;
 	String sprintf(const Array &values, bool *error) const;
@@ -353,11 +362,15 @@ public:
 
 	String get_with_code_lines() const;
 	int get_slice_count(const String &p_splitter) const;
+	int get_slice_count(const char *p_splitter) const;
 	String get_slice(const String &p_splitter, int p_slice) const;
+	String get_slice(const char *p_splitter, int p_slice) const;
 	String get_slicec(char32_t p_splitter, int p_slice) const;
 
 	Vector<String> split(const String &p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
+	Vector<String> split(const char *p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
 	Vector<String> rsplit(const String &p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
+	Vector<String> rsplit(const char *p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
 	Vector<String> split_spaces() const;
 	Vector<double> split_floats(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<float> split_floats_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
@@ -372,7 +385,9 @@ public:
 	String to_lower() const;
 
 	int count(const String &p_string, int p_from = 0, int p_to = 0) const;
+	int count(const char *p_string, int p_from = 0, int p_to = 0) const;
 	int countn(const String &p_string, int p_from = 0, int p_to = 0) const;
+	int countn(const char *p_string, int p_from = 0, int p_to = 0) const;
 
 	String left(int p_len) const;
 	String right(int p_len) const;
@@ -414,6 +429,8 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 	_FORCE_INLINE_ bool contains(const char *p_str) const { return find(p_str) != -1; }
 	_FORCE_INLINE_ bool contains(const String &p_str) const { return find(p_str) != -1; }
+	_FORCE_INLINE_ bool containsn(const char *p_str) const { return findn(p_str) != -1; }
+	_FORCE_INLINE_ bool containsn(const String &p_str) const { return findn(p_str) != -1; }
 
 	// path functions
 	bool is_absolute_path() const;

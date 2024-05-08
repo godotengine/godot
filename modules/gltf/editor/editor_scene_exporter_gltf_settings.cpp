@@ -77,7 +77,7 @@ void EditorSceneExporterGLTFSettings::_get_property_list(List<PropertyInfo> *p_l
 	for (PropertyInfo prop : _property_list) {
 		if (prop.name == "lossy_quality") {
 			String image_format = get("image_format");
-			bool is_image_format_lossy = image_format == "JPEG" || image_format.findn("Lossy") != -1;
+			bool is_image_format_lossy = image_format == "JPEG" || image_format.containsn("Lossy");
 			prop.usage = is_image_format_lossy ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_STORAGE;
 		}
 		p_list->push_back(prop);

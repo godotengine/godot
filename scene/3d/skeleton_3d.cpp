@@ -253,7 +253,7 @@ void Skeleton3D::_update_process_order() {
 			int parent_bone_idx = bonesptr[i].parent;
 
 			// Check to see if this node is already added to the parent.
-			if (bonesptr[parent_bone_idx].child_bones.find(i) < 0) {
+			if (!bonesptr[parent_bone_idx].child_bones.has(i)) {
 				// Add the child node.
 				bonesptr[parent_bone_idx].child_bones.push_back(i);
 			} else {
@@ -862,7 +862,7 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 	bones_to_process.push_back(p_bone_idx);
 
 	while (bones_to_process.size() > 0) {
-		int current_bone_idx = bones_to_process[0];
+		int current_bone_idx = bones_to_process.front()->get();
 		bones_to_process.erase(current_bone_idx);
 
 		Bone &b = bonesptr[current_bone_idx];

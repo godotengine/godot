@@ -282,7 +282,7 @@ void ShaderCreateDialog::_load_exist() {
 
 void ShaderCreateDialog::_type_changed(int p_language) {
 	current_type = p_language;
-	ShaderTypeData shader_type_data = type_data[p_language];
+	ShaderTypeData shader_type_data = type_data.get(p_language);
 
 	String selected_ext = "." + shader_type_data.default_extension;
 	String path = file_path->get_text();
@@ -342,7 +342,7 @@ void ShaderCreateDialog::_browse_path() {
 	file_browse->set_disable_overwrite_warning(true);
 	file_browse->clear_filters();
 
-	List<String> extensions = type_data[type_menu->get_selected()].extensions;
+	List<String> extensions = type_data.get(type_menu->get_selected()).extensions;
 
 	for (const String &E : extensions) {
 		file_browse->add_filter("*." + E);
@@ -397,7 +397,7 @@ void ShaderCreateDialog::_path_submitted(const String &p_path) {
 void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled, int p_preferred_type, int p_preferred_mode) {
 	if (!p_base_path.is_empty()) {
 		initial_base_path = p_base_path.get_basename();
-		file_path->set_text(initial_base_path + "." + type_data[type_menu->get_selected()].default_extension);
+		file_path->set_text(initial_base_path + "." + type_data.get(type_menu->get_selected()).default_extension);
 		current_type = type_menu->get_selected();
 	} else {
 		initial_base_path = "";
@@ -450,8 +450,9 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 	String extension = p.get_extension();
 	HashSet<String> extensions;
 
-	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
-		for (const String &ext : type_data[i].extensions) {
+	List<ShaderCreateDialog::ShaderTypeData>::ConstIterator itr = type_data.begin();
+	for (int i = 0; i < SHADER_TYPE_MAX; ++itr, ++i) {
+		for (const String &ext : itr->extensions) {
 			if (!extensions.has(ext)) {
 				extensions.insert(ext);
 			}
@@ -464,7 +465,7 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 	for (const String &ext : extensions) {
 		if (ext.nocasecmp_to(extension) == 0) {
 			found = true;
-			for (const String &type_ext : type_data[current_type].extensions) {
+			for (const String &type_ext : type_data.get(current_type).extensions) {
 				if (type_ext.nocasecmp_to(extension) == 0) {
 					match = true;
 					break;

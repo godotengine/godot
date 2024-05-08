@@ -43,7 +43,7 @@
 		<method name="restart">
 			<return type="void" />
 			<description>
-				Restarts the particle emission cycle, clearing existing particles. To avoid particles vanishing from the viewport, wait for the [signal finished] signal before calling.			
+				Restarts the particle emission cycle, clearing existing particles. To avoid particles vanishing from the viewport, wait for the [signal finished] signal before calling.
 				[b]Note:[/b] The [signal finished] signal is only emitted by [member one_shot] emitters.
 			</description>
 		</method>

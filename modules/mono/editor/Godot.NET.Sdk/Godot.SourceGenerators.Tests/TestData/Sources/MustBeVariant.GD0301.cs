@@ -10,7 +10,7 @@ public class MustBeVariantGD0301
         // This raises a GD0301 diagnostic error: object is not Variant (and Method<T> requires a variant generic type).
         Method<{|GD0301:object|}>();
     }
-    
+
     public void MethodCallsOk()
     {
         // All these calls are valid because they are Variant types.
@@ -75,7 +75,7 @@ public class MustBeVariantGD0301
     public void Method<[MustBeVariant] T>()
     {
     }
-    
+
     public void MustBeVariantClasses()
     {
         new ClassWithGenericVariant<bool>();

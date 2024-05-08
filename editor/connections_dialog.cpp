@@ -282,7 +282,7 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 	List<MethodInfo> ret;
 
 	for (const MethodInfo &mi : p_methods) {
-		if (!p_search_string.is_empty() && mi.name.findn(p_search_string) == -1) {
+		if (!p_search_string.is_empty() && !mi.name.containsn(p_search_string)) {
 			continue;
 		}
 
@@ -529,12 +529,13 @@ String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArra
 	signature.append(p_method.name);
 	signature.append("(");
 
-	for (int i = 0; i < p_method.arguments.size(); i++) {
-		if (i > 0) {
+	int i = 0;
+	for (List<PropertyInfo>::ConstIterator itr = p_method.arguments.begin(); itr != p_method.arguments.end(); ++itr, ++i) {
+		if (itr != p_method.arguments.begin()) {
 			signature.append(", ");
 		}
 
-		const PropertyInfo &pi = p_method.arguments[i];
+		const PropertyInfo &pi = *itr;
 		String type_name;
 		switch (pi.type) {
 			case Variant::NIL:

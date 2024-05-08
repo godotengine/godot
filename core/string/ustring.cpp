@@ -1184,6 +1184,26 @@ int String::get_slice_count(const String &p_splitter) const {
 	return slices;
 }
 
+int String::get_slice_count(const char *p_splitter) const {
+	if (is_empty()) {
+		return 0;
+	}
+	if (p_splitter == nullptr || *p_splitter == '\0') {
+		return 0;
+	}
+
+	int pos = 0;
+	int slices = 1;
+	int splitter_length = strlen(p_splitter);
+
+	while ((pos = find(p_splitter, pos)) >= 0) {
+		slices++;
+		pos += splitter_length;
+	}
+
+	return slices;
+}
+
 String String::get_slice(const String &p_splitter, int p_slice) const {
 	if (is_empty() || p_splitter.is_empty()) {
 		return "";
@@ -1217,6 +1237,47 @@ String String::get_slice(const String &p_splitter, int p_slice) const {
 			break;
 		}
 		pos += p_splitter.length();
+		prev_pos = pos;
+		i++;
+	}
+
+	return ""; //no find!
+}
+
+String String::get_slice(const char *p_splitter, int p_slice) const {
+	if (is_empty() || p_splitter == nullptr || *p_splitter == '\0') {
+		return "";
+	}
+
+	int pos = 0;
+	int prev_pos = 0;
+	//int slices=1;
+	if (p_slice < 0) {
+		return "";
+	}
+	if (find(p_splitter) == -1) {
+		return *this;
+	}
+
+	int i = 0;
+	int splitter_length = strlen(p_splitter);
+	while (true) {
+		pos = find(p_splitter, pos);
+		if (pos == -1) {
+			pos = length(); //reached end
+		}
+
+		int from = prev_pos;
+		//int to=pos;
+
+		if (p_slice == i) {
+			return substr(from, pos - from);
+		}
+
+		if (pos == length()) { //reached end and no find
+			break;
+		}
+		pos += splitter_length;
 		prev_pos = pos;
 		i++;
 	}
@@ -1338,6 +1399,54 @@ Vector<String> String::split(const String &p_splitter, bool p_allow_empty, int p
 	return ret;
 }
 
+Vector<String> String::split(const char *p_splitter, bool p_allow_empty, int p_maxsplit) const {
+	Vector<String> ret;
+
+	if (is_empty()) {
+		if (p_allow_empty) {
+			ret.push_back("");
+		}
+		return ret;
+	}
+
+	int from = 0;
+	int len = length();
+
+	while (true) {
+		int end;
+		if (p_splitter == nullptr || *p_splitter == '\0') {
+			end = from + 1;
+		} else {
+			end = find(p_splitter, from);
+			if (end < 0) {
+				end = len;
+			}
+		}
+		if (p_allow_empty || (end > from)) {
+			if (p_maxsplit <= 0) {
+				ret.push_back(substr(from, end - from));
+			} else {
+				// Put rest of the string and leave cycle.
+				if (p_maxsplit == ret.size()) {
+					ret.push_back(substr(from, len));
+					break;
+				}
+
+				// Otherwise, push items until positive limit is reached.
+				ret.push_back(substr(from, end - from));
+			}
+		}
+
+		if (end == len) {
+			break;
+		}
+
+		from = end + strlen(p_splitter);
+	}
+
+	return ret;
+}
+
 Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int p_maxsplit) const {
 	Vector<String> ret;
 	const int len = length();
@@ -1369,6 +1478,49 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 		}
 
 		int substr_start = left_edge + p_splitter.length();
+		if (p_allow_empty || substr_start < remaining_len) {
+			ret.push_back(substr(substr_start, remaining_len - substr_start));
+		}
+
+		remaining_len = left_edge;
+	}
+
+	ret.reverse();
+	return ret;
+}
+
+Vector<String> String::rsplit(const char *p_splitter, bool p_allow_empty, int p_maxsplit) const {
+	Vector<String> ret;
+	const int len = length();
+	const int splitter_length = strlen(p_splitter);
+	int remaining_len = len;
+
+	while (true) {
+		if (remaining_len < splitter_length || (p_maxsplit > 0 && p_maxsplit == ret.size())) {
+			// no room for another splitter or hit max splits, push what's left and we're done
+			if (p_allow_empty || remaining_len > 0) {
+				ret.push_back(substr(0, remaining_len));
+			}
+			break;
+		}
+
+		int left_edge;
+		if (p_splitter == nullptr || *p_splitter == '\0') {
+			left_edge = remaining_len - 1;
+			if (left_edge == 0) {
+				left_edge--; // Skip to the < 0 condition.
+			}
+		} else {
+			left_edge = rfind(p_splitter, remaining_len - splitter_length);
+		}
+
+		if (left_edge < 0) {
+			// no more splitters, we're done
+			ret.push_back(substr(0, remaining_len));
+			break;
+		}
+
+		int substr_start = left_edge + splitter_length;
 		if (p_allow_empty || substr_start < remaining_len) {
 			ret.push_back(substr(substr_start, remaining_len - substr_start));
 		}
@@ -3087,22 +3239,19 @@ int String::find(const String &p_str, int p_from) const {
 }
 
 int String::find(const char *p_str, int p_from) const {
-	if (p_from < 0) {
+	if (p_from < 0 || !p_str) {
 		return -1;
 	}
 
+	const int src_len = strlen(p_str);
+
 	const int len = length();
 
-	if (len == 0) {
+	if (len == 0 || src_len == 0) {
 		return -1; // won't find anything!
 	}
 
 	const char32_t *src = get_data();
-
-	int src_len = 0;
-	while (p_str[src_len] != '\0') {
-		src_len++;
-	}
 
 	if (src_len == 1) {
 		const char32_t needle = p_str[0];
@@ -3238,6 +3387,46 @@ int String::findn(const String &p_str, int p_from) const {
 	return -1;
 }
 
+int String::findn(const char *p_str, int p_from) const {
+	if (p_from < 0) {
+		return -1;
+	}
+
+	int src_len = strlen(p_str);
+
+	if (src_len == 0 || length() == 0) {
+		return -1; // won't find anything!
+	}
+
+	const char32_t *srcd = get_data();
+
+	for (int i = p_from; i <= (length() - src_len); i++) {
+		bool found = true;
+		for (int j = 0; j < src_len; j++) {
+			int read_pos = i + j;
+
+			if (read_pos >= length()) {
+				ERR_PRINT("read_pos>=length()");
+				return -1;
+			}
+
+			char32_t src = _find_lower(srcd[read_pos]);
+			char32_t dst = _find_lower(p_str[j]);
+
+			if (src != dst) {
+				found = false;
+				break;
+			}
+		}
+
+		if (found) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 int String::rfind(const String &p_str, int p_from) const {
 	// establish a limit
 	int limit = length() - p_str.length();
@@ -3272,6 +3461,57 @@ int String::rfind(const String &p_str, int p_from) const {
 			}
 
 			if (src[read_pos] != p_str[j]) {
+				found = false;
+				break;
+			}
+		}
+
+		if (found) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+int String::rfind(const char *p_str, int p_from) const {
+	const int source_length = length();
+	int substring_length = strlen(p_str);
+
+	if (source_length == 0 || substring_length == 0) {
+		return -1; // won't find anything!
+	}
+
+	// establish a limit
+	int limit = length() - substring_length;
+	if (limit < 0) {
+		return -1;
+	}
+
+	// establish a starting point
+	int starting_point;
+	if (p_from < 0) {
+		starting_point = limit;
+	} else if (p_from > limit) {
+		starting_point = limit;
+	} else {
+		starting_point = p_from;
+	}
+
+	const char32_t *source = get_data();
+
+	for (int i = starting_point; i >= 0; i--) {
+		bool found = true;
+		for (int j = 0; j < substring_length; j++) {
+			int read_pos = i + j;
+
+			if (read_pos >= source_length) {
+				ERR_PRINT("read_pos>=source_length");
+				return -1;
+			}
+
+			const char32_t key_needle = p_str[j];
+			if (source[read_pos] != key_needle) {
 				found = false;
 				break;
 			}
@@ -3335,6 +3575,60 @@ int String::rfindn(const String &p_str, int p_from) const {
 	return -1;
 }
 
+int String::rfindn(const char *p_str, int p_from) const {
+	const int source_length = length();
+	int substring_length = strlen(p_str);
+
+	if (source_length == 0 || substring_length == 0) {
+		return -1; // won't find anything!
+	}
+
+	// establish a limit
+	int limit = length() - substring_length;
+	if (limit < 0) {
+		return -1;
+	}
+
+	// establish a starting point
+	int starting_point;
+	if (p_from < 0) {
+		starting_point = limit;
+	} else if (p_from > limit) {
+		starting_point = limit;
+	} else {
+		starting_point = p_from;
+	}
+
+	const char32_t *source = get_data();
+
+	for (int i = starting_point; i >= 0; i--) {
+		bool found = true;
+		for (int j = 0; j < substring_length; j++) {
+			int read_pos = i + j;
+
+			if (read_pos >= source_length) {
+				ERR_PRINT("read_pos>=source_length");
+				return -1;
+			}
+
+			const char32_t key_needle = p_str[j];
+			int srcc = _find_lower(source[read_pos]);
+			int keyc = _find_lower(key_needle);
+
+			if (srcc != keyc) {
+				found = false;
+				break;
+			}
+		}
+
+		if (found) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 bool String::ends_with(const String &p_string) const {
 	int l = p_string.length();
 	if (l > length()) {
@@ -3350,6 +3644,31 @@ bool String::ends_with(const String &p_string) const {
 
 	for (int i = 0; i < l; i++) {
 		if (p[i] != s[i]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool String::ends_with(const char *p_string) const {
+	if (!p_string) {
+		return false;
+	}
+
+	int l = strlen(p_string);
+	if (l > length()) {
+		return false;
+	}
+
+	if (l == 0) {
+		return true;
+	}
+
+	const char32_t *s = &operator[](length() - l);
+
+	for (int i = 0; i < l; i++) {
+		if (static_cast<char32_t>(p_string[i]) != s[i]) {
 			return false;
 		}
 	}
@@ -3380,11 +3699,11 @@ bool String::begins_with(const String &p_string) const {
 }
 
 bool String::begins_with(const char *p_string) const {
-	int l = length();
 	if (!p_string) {
 		return false;
 	}
 
+	int l = length();
 	if (l == 0) {
 		return *p_string == 0;
 	}
@@ -3456,11 +3775,58 @@ int String::_count(const String &p_string, int p_from, int p_to, bool p_case_ins
 	return c;
 }
 
+int String::_count(const char *p_string, int p_from, int p_to, bool p_case_insensitive) const {
+	int substring_length = strlen(p_string);
+	if (substring_length == 0) {
+		return 0;
+	}
+	const int source_length = length();
+
+	if (source_length < substring_length) {
+		return 0;
+	}
+	String str;
+	int search_limit = p_to;
+	if (p_from >= 0 && p_to >= 0) {
+		if (p_to == 0) {
+			search_limit = source_length;
+		} else if (p_from >= p_to) {
+			return 0;
+		}
+		if (p_from == 0 && search_limit == source_length) {
+			str = String();
+			str.copy_from_unchecked(&get_data()[0], source_length);
+		} else {
+			str = substr(p_from, search_limit - p_from);
+		}
+	} else {
+		return 0;
+	}
+	int c = 0;
+	int idx = -1;
+	do {
+		idx = p_case_insensitive ? str.findn(p_string) : str.find(p_string);
+		if (idx != -1) {
+			str = str.substr(idx + substring_length, str.length() - substring_length);
+			++c;
+		}
+	} while (idx != -1);
+	return c;
+}
+
 int String::count(const String &p_string, int p_from, int p_to) const {
 	return _count(p_string, p_from, p_to, false);
 }
 
+int String::count(const char *p_string, int p_from, int p_to) const {
+	return _count(p_string, p_from, p_to, false);
+}
+
 int String::countn(const String &p_string, int p_from, int p_to) const {
+	return _count(p_string, p_from, p_to, true);
+}
+
+int String::countn(const char *p_string, int p_from, int p_to) const {
 	return _count(p_string, p_from, p_to, true);
 }
 
@@ -3598,7 +3964,7 @@ String String::format(const Variant &values, const String &placeholder) const {
 				Variant v_val = values_arr[i];
 				String val = v_val;
 
-				if (placeholder.find("_") > -1) {
+				if (placeholder.contains("_")) {
 					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
 				} else {
 					new_string = new_string.replace_first(placeholder, val);
@@ -3673,6 +4039,16 @@ String String::replace_first(const String &p_key, const String &p_with) const {
 	return *this;
 }
 
+String String::replace_first(const char *p_key, const char *p_with) const {
+	int pos = find(p_key);
+	if (pos >= 0) {
+		int substring_length = strlen(p_key);
+		return substr(0, pos) + p_with + substr(pos + substring_length, length());
+	}
+
+	return *this;
+}
+
 String String::replacen(const String &p_key, const String &p_with) const {
 	String new_string;
 	int search_from = 0;
@@ -3689,6 +4065,31 @@ String String::replacen(const String &p_key, const String &p_with) const {
 	}
 
 	new_string += substr(search_from, length() - search_from);
+	return new_string;
+}
+
+String String::replacen(const char *p_key, const char *p_with) const {
+	String new_string;
+	int search_from = 0;
+	int result = 0;
+	int substring_length = strlen(p_key);
+
+	if (substring_length == 0) {
+		return *this; // there's nothing to match or substitute
+	}
+
+	while ((result = findn(p_key, search_from)) >= 0) {
+		new_string += substr(search_from, result - search_from);
+		new_string += p_with;
+		search_from = result + substring_length;
+	}
+
+	if (search_from == 0) {
+		return *this;
+	}
+
+	new_string += substr(search_from, length() - search_from);
+
 	return new_string;
 }
 
@@ -4420,10 +4821,27 @@ String String::trim_prefix(const String &p_prefix) const {
 	return s;
 }
 
+String String::trim_prefix(const char *p_prefix) const {
+	String s = *this;
+	if (s.begins_with(p_prefix)) {
+		int prefix_length = strlen(p_prefix);
+		return s.substr(prefix_length, s.length() - prefix_length);
+	}
+	return s;
+}
+
 String String::trim_suffix(const String &p_suffix) const {
 	String s = *this;
 	if (s.ends_with(p_suffix)) {
 		return s.substr(0, s.length() - p_suffix.length());
+	}
+	return s;
+}
+
+String String::trim_suffix(const char *p_suffix) const {
+	String s = *this;
+	if (s.ends_with(p_suffix)) {
+		return s.substr(0, s.length() - strlen(p_suffix));
 	}
 	return s;
 }

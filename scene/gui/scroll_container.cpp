@@ -43,11 +43,8 @@ Size2 ScrollContainer::get_minimum_size() const {
 	largest_child_min_size = Size2();
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible()) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
+		Control *c = as_sortable_control(get_child(i));
+		if (!c) {
 			continue;
 		}
 		if (c == h_scroll || c == v_scroll) {
@@ -308,11 +305,8 @@ void ScrollContainer::_reposition_children() {
 	}
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible()) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
+		Control *c = as_sortable_control(get_child(i));
+		if (!c) {
 			continue;
 		}
 		if (c == h_scroll || c == v_scroll) {
@@ -542,11 +536,8 @@ PackedStringArray ScrollContainer::get_configuration_warnings() const {
 	int found = 0;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i));
+		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
 			continue;
 		}
 		if (c == h_scroll || c == v_scroll) {

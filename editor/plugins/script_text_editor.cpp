@@ -531,9 +531,9 @@ void ScriptTextEditor::_validate_script() {
 
 		if (errors.size() > 0) {
 			// TRANSLATORS: Script error pointing to a line and column number.
-			String error_text = vformat(TTR("Error at (%d, %d):"), errors[0].line, errors[0].column) + " " + errors[0].message;
+			String error_text = vformat(TTR("Error at (%d, %d):"), errors.front()->get().line, errors.front()->get().column) + " " + errors.front()->get().message;
 			code_editor->set_error(error_text);
-			code_editor->set_error_pos(errors[0].line - 1, errors[0].column - 1);
+			code_editor->set_error_pos(errors.front()->get().line - 1, errors.front()->get().column - 1);
 		}
 		script_is_valid = false;
 	} else {
@@ -1217,8 +1217,8 @@ void ScriptTextEditor::_update_connected_methods() {
 			while (base_class) {
 				List<MethodInfo> methods;
 				ClassDB::get_method_list(base_class, &methods, true);
-				for (int j = 0; j < methods.size(); j++) {
-					if (methods[j].name == name) {
+				for (const MethodInfo &mi : methods) {
+					if (mi.name == name) {
 						found_base_class = "builtin:" + base_class;
 						break;
 					}

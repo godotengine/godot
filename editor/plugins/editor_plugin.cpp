@@ -100,6 +100,11 @@ void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
 	EditorNode::get_bottom_panel()->remove_item(p_control);
 }
 
+void EditorPlugin::set_dock_tab_icon(Control *p_control, const Ref<Texture2D> &p_icon) {
+	ERR_FAIL_NULL(p_control);
+	EditorDockManager::get_singleton()->set_dock_tab_icon(p_control, p_icon);
+}
+
 void EditorPlugin::add_control_to_container(CustomControlContainer p_location, Control *p_control) {
 	ERR_FAIL_NULL(p_control);
 
@@ -565,6 +570,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_control_from_docks", "control"), &EditorPlugin::remove_control_from_docks);
 	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control"), &EditorPlugin::remove_control_from_bottom_panel);
 	ClassDB::bind_method(D_METHOD("remove_control_from_container", "container", "control"), &EditorPlugin::remove_control_from_container);
+	ClassDB::bind_method(D_METHOD("set_dock_tab_icon", "control", "icon"), &EditorPlugin::set_dock_tab_icon);
 	ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "callable"), &EditorPlugin::add_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_tool_submenu_item", "name", "submenu"), &EditorPlugin::add_tool_submenu_item);
 	ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"), &EditorPlugin::remove_tool_menu_item);

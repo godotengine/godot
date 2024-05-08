@@ -335,7 +335,7 @@ void ShaderTextEditor::_load_theme_settings() {
 		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_editor_theme()->get_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 	}
 
-	syntax_highlighter->set_uint_suffix_enabled();
+	syntax_highlighter->set_uint_suffix_enabled(true);
 }
 
 void ShaderTextEditor::_check_shader_mode() {
@@ -583,9 +583,7 @@ void ShaderTextEditor::_update_warning_panel() {
 	int warning_count = 0;
 
 	warnings_panel->push_table(2);
-	for (int i = 0; i < warnings.size(); i++) {
-		ShaderWarning &w = warnings[i];
-
+	for (const ShaderWarning &w : warnings) {
 		if (warning_count == 0) {
 			if (saved_treat_warning_as_errors) {
 				String error_text = "error(" + itos(w.get_line()) + "): " + w.get_message() + " " + TTR("Warnings should be fixed to prevent errors.");

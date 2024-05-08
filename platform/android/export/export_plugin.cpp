@@ -816,11 +816,11 @@ Error EditorExportPlatformAndroid::copy_gradle_so(void *p_userdata, const Shared
 }
 
 bool EditorExportPlatformAndroid::_has_read_write_storage_permission(const Vector<String> &p_permissions) {
-	return p_permissions.find("android.permission.READ_EXTERNAL_STORAGE") != -1 || p_permissions.find("android.permission.WRITE_EXTERNAL_STORAGE") != -1;
+	return p_permissions.has("android.permission.READ_EXTERNAL_STORAGE") || p_permissions.has("android.permission.WRITE_EXTERNAL_STORAGE");
 }
 
 bool EditorExportPlatformAndroid::_has_manage_external_storage_permission(const Vector<String> &p_permissions) {
-	return p_permissions.find("android.permission.MANAGE_EXTERNAL_STORAGE") != -1;
+	return p_permissions.has("android.permission.MANAGE_EXTERNAL_STORAGE");
 }
 
 bool EditorExportPlatformAndroid::_uses_vulkan() {
@@ -924,7 +924,7 @@ void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset>
 		}
 	}
 	if (p_give_internet) {
-		if (r_permissions.find("android.permission.INTERNET") == -1) {
+		if (!r_permissions.has("android.permission.INTERNET")) {
 			r_permissions.push_back("android.permission.INTERNET");
 		}
 	}
@@ -2716,7 +2716,7 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	}
 
 	String package_name = p_preset->get("package/unique_name");
-	if (package_name.find("$genname") >= 0 && !is_project_name_valid()) {
+	if (package_name.contains("$genname") && !is_project_name_valid()) {
 		// Warning only, so don't override `valid`.
 		err += vformat(TTR("The project name does not meet the requirement for the package name format and will be updated to \"%s\". Please explicitly specify the package name if needed."), get_valid_basename());
 		err += "\n";
@@ -2974,11 +2974,11 @@ void EditorExportPlatformAndroid::_remove_copied_libs(String p_gdextension_libs_
 
 String EditorExportPlatformAndroid::join_list(const List<String> &p_parts, const String &p_separator) {
 	String ret;
-	for (int i = 0; i < p_parts.size(); ++i) {
-		if (i > 0) {
+	for (List<String>::ConstIterator itr = p_parts.begin(); itr != p_parts.end(); ++itr) {
+		if (itr != p_parts.begin()) {
 			ret += p_separator;
 		}
-		ret += p_parts[i];
+		ret += *itr;
 	}
 	return ret;
 }

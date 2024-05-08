@@ -1162,8 +1162,8 @@ void EditorNode3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo,
 
 void EditorNode3DGizmoPlugin::set_state(int p_state) {
 	current_state = p_state;
-	for (int i = 0; i < current_gizmos.size(); ++i) {
-		current_gizmos[i]->set_hidden(current_state == HIDDEN);
+	for (EditorNode3DGizmo *current : current_gizmos) {
+		current->set_hidden(current_state == HIDDEN);
 	}
 }
 
@@ -1180,9 +1180,9 @@ EditorNode3DGizmoPlugin::EditorNode3DGizmoPlugin() {
 }
 
 EditorNode3DGizmoPlugin::~EditorNode3DGizmoPlugin() {
-	for (int i = 0; i < current_gizmos.size(); ++i) {
-		current_gizmos[i]->set_plugin(nullptr);
-		current_gizmos[i]->get_node_3d()->remove_gizmo(current_gizmos[i]);
+	for (EditorNode3DGizmo *current : current_gizmos) {
+		current->set_plugin(nullptr);
+		current->get_node_3d()->remove_gizmo(current);
 	}
 	if (Node3DEditor::get_singleton()) {
 		Node3DEditor::get_singleton()->update_all_gizmos();

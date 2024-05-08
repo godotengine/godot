@@ -671,9 +671,9 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 	TextureFormat format = p_format;
 
 	if (format.shareable_formats.size()) {
-		ERR_FAIL_COND_V_MSG(format.shareable_formats.find(format.format) == -1, RID(),
+		ERR_FAIL_COND_V_MSG(!format.shareable_formats.has(format.format), RID(),
 				"If supplied a list of shareable formats, the current format must be present in the list");
-		ERR_FAIL_COND_V_MSG(p_view.format_override != DATA_FORMAT_MAX && format.shareable_formats.find(p_view.format_override) == -1, RID(),
+		ERR_FAIL_COND_V_MSG(p_view.format_override != DATA_FORMAT_MAX && !format.shareable_formats.has(p_view.format_override), RID(),
 				"If supplied a list of shareable formats, the current view format override must be present in the list");
 	}
 
@@ -854,7 +854,7 @@ RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with
 	} else {
 		ERR_FAIL_INDEX_V(p_view.format_override, DATA_FORMAT_MAX, RID());
 
-		ERR_FAIL_COND_V_MSG(texture.allowed_shared_formats.find(p_view.format_override) == -1, RID(),
+		ERR_FAIL_COND_V_MSG(!texture.allowed_shared_formats.has(p_view.format_override), RID(),
 				"Format override is not in the list of allowed shareable formats for original texture.");
 		tv.format = p_view.format_override;
 	}
@@ -984,7 +984,7 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 	} else {
 		ERR_FAIL_INDEX_V(p_view.format_override, DATA_FORMAT_MAX, RID());
 
-		ERR_FAIL_COND_V_MSG(texture.allowed_shared_formats.find(p_view.format_override) == -1, RID(),
+		ERR_FAIL_COND_V_MSG(!texture.allowed_shared_formats.has(p_view.format_override), RID(),
 				"Format override is not in the list of allowed shareable formats for original texture.");
 		tv.format = p_view.format_override;
 	}

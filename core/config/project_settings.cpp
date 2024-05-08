@@ -257,7 +257,7 @@ bool ProjectSettings::get_ignore_value_in_docs(const String &p_name) const {
 }
 
 void ProjectSettings::add_hidden_prefix(const String &p_prefix) {
-	ERR_FAIL_COND_MSG(hidden_prefixes.find(p_prefix) > -1, vformat("Hidden prefix '%s' already exists.", p_prefix));
+	ERR_FAIL_COND_MSG(hidden_prefixes.has(p_prefix), vformat("Hidden prefix '%s' already exists.", p_prefix));
 	hidden_prefixes.push_back(p_prefix);
 }
 

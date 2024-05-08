@@ -253,8 +253,8 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 	file->clear_filters();
 	file->set_title(TTR("Import Scene"));
-	for (int i = 0; i < extensions.size(); i++) {
-		file->add_filter("*." + extensions[i], extensions[i].to_upper());
+	for (const String &extension : extensions) {
+		file->add_filter("*." + extension, extension.to_upper());
 	}
 	add_child(file);
 	file->connect("file_selected", callable_mp(this, &MeshLibraryEditor::_import_scene_cbk));

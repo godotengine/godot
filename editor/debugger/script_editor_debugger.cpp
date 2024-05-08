@@ -440,13 +440,14 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 
 		Array stack_dump_info;
 
-		for (int i = 0; i < stack.frames.size(); i++) {
+		int i = 0;
+		for (List<ScriptLanguage::StackInfo>::Iterator itr = stack.frames.begin(); itr != stack.frames.end(); ++itr, ++i) {
 			TreeItem *s = stack_dump->create_item(r);
 			Dictionary d;
 			d["frame"] = i;
-			d["file"] = stack.frames[i].file;
-			d["function"] = stack.frames[i].func;
-			d["line"] = stack.frames[i].line;
+			d["file"] = itr->file;
+			d["function"] = itr->func;
+			d["line"] = itr->line;
 			stack_dump_info.push_back(d);
 			s->set_metadata(0, d);
 
@@ -725,20 +726,20 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			metric.categories.push_back(frame_time);
 		}
 
-		for (int i = 0; i < frame.servers.size(); i++) {
-			const ServersDebugger::ServerInfo &srv = frame.servers[i];
+		for (const ServersDebugger::ServerInfo &srv : frame.servers) {
 			EditorProfiler::Metric::Category c;
 			const String name = srv.name;
 			c.name = EditorPropertyNameProcessor::get_singleton()->process_name(name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 			c.items.resize(srv.functions.size());
 			c.total_time = 0;
 			c.signature = "categ::" + name;
-			for (int j = 0; j < srv.functions.size(); j++) {
+			int j = 0;
+			for (List<ServersDebugger::ServerFunctionInfo>::ConstIterator itr = srv.functions.begin(); itr != srv.functions.end(); ++itr, ++j) {
 				EditorProfiler::Metric::Category::Item item;
 				item.calls = 1;
 				item.line = 0;
-				item.name = srv.functions[j].name;
-				item.self = srv.functions[j].time;
+				item.name = itr->name;
+				item.self = itr->time;
 				item.total = item.self;
 				item.signature = "categ::" + name + "::" + item.name;
 				item.name = EditorPropertyNameProcessor::get_singleton()->process_name(item.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);

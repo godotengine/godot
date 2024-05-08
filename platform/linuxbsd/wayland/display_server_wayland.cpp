@@ -550,7 +550,15 @@ float DisplayServerWayland::screen_get_scale(int p_screen) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+		// Wayland does not expose fractional scale factors at the screen-level, but
+		// some code relies on it. Since this special screen is the default and a lot
+		// of code relies on it, we'll return the window's scale, which is what we
+		// really care about. After all, we have very little use of the actual screen
+		// enumeration APIs and we're (for now) in single-window mode anyways.
+		struct wl_surface *wl_surface = wayland_thread.window_get_wl_surface(MAIN_WINDOW_ID);
+		WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wl_surface);
+
+		return wayland_thread.window_state_get_scale_factor(ws);
 	}
 
 	return wayland_thread.screen_get_data(p_screen).scale;

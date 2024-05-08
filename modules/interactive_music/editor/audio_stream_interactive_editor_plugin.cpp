@@ -31,13 +31,9 @@
 #include "audio_stream_interactive_editor_plugin.h"
 
 #include "../audio_stream_interactive.h"
-#include "core/input/input.h"
-#include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
@@ -73,7 +69,7 @@ void AudioStreamInteractiveTransitionEditor::_edited() {
 	int filler = use_filler ? filler_clip->get_selected() - 1 : 0;
 	bool hold = hold_previous->is_pressed();
 
-	EditorUndoRedoManager::get_singleton()->create_action("Edit Transitions");
+	EditorUndoRedoManager::get_singleton()->create_action(TTR("Edit Transitions"));
 	for (int i = 0; i < selected.size(); i++) {
 		if (!enabled) {
 			if (audio_stream_interactive->has_transition(selected[i].x, selected[i].y)) {
@@ -177,7 +173,6 @@ void AudioStreamInteractiveTransitionEditor::_update_transitions() {
 	};
 	for (int i = 0; i <= clip_count; i++) {
 		for (int j = 0; j <= clip_count; j++) {
-			String txt;
 			int from = i == clip_count ? AudioStreamInteractive::CLIP_ANY : i;
 			int to = j == clip_count ? AudioStreamInteractive::CLIP_ANY : j;
 
@@ -187,32 +182,34 @@ void AudioStreamInteractiveTransitionEditor::_update_transitions() {
 			if (!exists) {
 				if (audio_stream_interactive->has_transition(AudioStreamInteractive::CLIP_ANY, to)) {
 					from = AudioStreamInteractive::CLIP_ANY;
-					tooltip = "Using Any Clip -> " + audio_stream_interactive->get_clip_name(to) + ".";
+					tooltip = vformat(TTR("Using Any Clip -> %s."), audio_stream_interactive->get_clip_name(to));
 				} else if (audio_stream_interactive->has_transition(from, AudioStreamInteractive::CLIP_ANY)) {
 					to = AudioStreamInteractive::CLIP_ANY;
-					tooltip = "Using " + audio_stream_interactive->get_clip_name(from) + " -> Any Clip.";
+					tooltip = vformat(TTR("Using %s -> Any Clip."), audio_stream_interactive->get_clip_name(from));
 				} else if (audio_stream_interactive->has_transition(AudioStreamInteractive::CLIP_ANY, AudioStreamInteractive::CLIP_ANY)) {
 					from = to = AudioStreamInteractive::CLIP_ANY;
-					tooltip = "Using All CLips -> Any Clip.";
+					tooltip = TTR("Using All Clips -> Any Clip.");
 				} else {
-					tooltip = "No transition available.";
+					tooltip = TTR("No transition available.");
 				}
 			}
 
+			String from_time;
+			String to_time;
 			if (audio_stream_interactive->has_transition(from, to)) {
 				icon = fade_icons[audio_stream_interactive->get_transition_fade_mode(from, to)];
 				switch (audio_stream_interactive->get_transition_from_time(from, to)) {
 					case AudioStreamInteractive::TRANSITION_FROM_TIME_IMMEDIATE: {
-						txt += TTR("Immediate");
+						from_time = TTR("Immediate");
 					} break;
 					case AudioStreamInteractive::TRANSITION_FROM_TIME_NEXT_BEAT: {
-						txt += TTR("Next Beat");
+						from_time = TTR("Next Beat");
 					} break;
 					case AudioStreamInteractive::TRANSITION_FROM_TIME_NEXT_BAR: {
-						txt += TTR("Next Bar");
+						from_time = TTR("Next Bar");
 					} break;
 					case AudioStreamInteractive::TRANSITION_FROM_TIME_END: {
-						txt += TTR("Clip End");
+						from_time = TTR("Clip End");
 					} break;
 					default: {
 					}
@@ -220,13 +217,13 @@ void AudioStreamInteractiveTransitionEditor::_update_transitions() {
 
 				switch (audio_stream_interactive->get_transition_to_time(from, to)) {
 					case AudioStreamInteractive::TRANSITION_TO_TIME_SAME_POSITION: {
-						txt += TTR(L"⮕ Same");
+						to_time = TTR("Same", "Transition Time Position");
 					} break;
 					case AudioStreamInteractive::TRANSITION_TO_TIME_START: {
-						txt += TTR(L"⮕ Start");
+						to_time = TTR("Start", "Transition Time Position");
 					} break;
 					case AudioStreamInteractive::TRANSITION_TO_TIME_PREVIOUS_POSITION: {
-						txt += TTR(L"⮕ Prev");
+						to_time = TTR("Prev", "Transition Time Position");
 					} break;
 					default: {
 					}
@@ -234,7 +231,7 @@ void AudioStreamInteractiveTransitionEditor::_update_transitions() {
 			}
 
 			rows[j]->set_icon(i, icon);
-			rows[j]->set_text(i, txt);
+			rows[j]->set_text(i, to_time.is_empty() ? from_time : vformat(U"%s ⮕ %s", from_time, to_time));
 			rows[j]->set_tooltip_text(i, tooltip);
 			if (exists) {
 				rows[j]->set_custom_color(i, font_color);
@@ -267,10 +264,10 @@ void AudioStreamInteractiveTransitionEditor::edit(Object *p_obj) {
 	TreeItem *header = tree->create_item(root); // Header
 	int header_index = clip_count + 1;
 	header->set_text(header_index, TTR("From / To"));
-	header->set_editable(0, false);
+	header->set_selectable(header_index, false);
 
 	filler_clip->clear();
-	filler_clip->add_item("Disabled", -1);
+	filler_clip->add_item(TTR("Disabled"), -1);
 
 	Color header_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 
@@ -280,7 +277,6 @@ void AudioStreamInteractiveTransitionEditor::edit(Object *p_obj) {
 	for (int i = 0; i <= clip_count; i++) {
 		int cell_index = i;
 		int clip_i = i == clip_count ? AudioStreamInteractive::CLIP_ANY : i;
-		header->set_editable(cell_index, false);
 		header->set_selectable(cell_index, false);
 		header->set_custom_font(cell_index, header_font);
 		header->set_custom_font_size(cell_index, header_font_size);
@@ -332,6 +328,7 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	split = memnew(HSplitContainer);
 	add_child(split);
 	tree = memnew(Tree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
 	tree->add_theme_constant_override("draw_guides", 1);
 	tree->set_select_mode(Tree::SELECT_MULTI);
@@ -343,8 +340,8 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	split->add_child(edit_vb);
 
 	transition_enabled = memnew(CheckBox);
-	transition_enabled->set_text(TTR("Use Transition"));
-	edit_vb->add_margin_child(TTR("Transition Enabled:"), transition_enabled);
+	transition_enabled->set_text(TTR("Enabled"));
+	edit_vb->add_margin_child(TTR("Use Transition:"), transition_enabled);
 	transition_enabled->connect("pressed", callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited));
 
 	transition_from = memnew(OptionButton);
@@ -375,6 +372,7 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 
 	filler_clip = memnew(OptionButton);
 	edit_vb->add_margin_child(TTR("Filler Clip:"), filler_clip);
+	filler_clip->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	filler_clip->connect("item_selected", callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited).unbind(1));
 
 	hold_previous = memnew(CheckBox);

@@ -107,13 +107,14 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 
 	Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
 
-	for (int i = 0; i < p_sections.size(); i++) {
+	int i = 0;
+	for (List<String>::ConstIterator itr = p_sections.begin(); itr != p_sections.end(); ++itr, ++i) {
 		bool single_column = p_single_column_flags & (1 << i);
 		const char *const *names_ptr = p_src[i];
 		if (*names_ptr) {
 			Label *lbl = memnew(Label);
 			lbl->set_theme_type_variation("HeaderSmall");
-			lbl->set_text(p_sections[i]);
+			lbl->set_text(*itr);
 			vbc->add_child(lbl);
 
 			ItemList *il = memnew(ItemList);

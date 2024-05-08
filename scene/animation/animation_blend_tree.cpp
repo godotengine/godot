@@ -215,7 +215,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 	} else if (cur_loop_mode == Animation::LOOP_PINGPONG) {
 		if (!Math::is_zero_approx(anim_size)) {
 			if (Math::fposmod(cur_playback_time, anim_size * 2.0) >= anim_size) {
-				cur_delta = -cur_delta; // Needed for retrieveing discrete keys correctly.
+				cur_delta = -cur_delta; // Needed for retrieving discrete keys correctly.
 			}
 			prev_playback_time = Math::pingpong(prev_playback_time, anim_size);
 			cur_playback_time = Math::pingpong(cur_playback_time, anim_size);

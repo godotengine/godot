@@ -370,7 +370,7 @@ PackedStringArray RegEx::get_names() const {
 
 	for (uint32_t i = 0; i < count; i++) {
 		String name = &table[i * entry_size + 1];
-		if (result.find(name) < 0) {
+		if (!result.has(name)) {
 			result.append(name);
 		}
 	}

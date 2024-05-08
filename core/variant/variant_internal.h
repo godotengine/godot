@@ -1546,7 +1546,7 @@ struct VariantTypeChanger {
 template <typename T>
 struct VariantTypeAdjust {
 	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
-		VariantTypeChanger<typename GetSimpleTypeT<T>::type_t>::change(r_ret);
+		VariantTypeChanger<GetSimpleTypeT<T>>::change(r_ret);
 	}
 };
 

@@ -295,7 +295,7 @@ void Joint3DGizmoPlugin::incremental_update_gizmos() {
 	if (!current_gizmos.is_empty()) {
 		update_idx++;
 		update_idx = update_idx % current_gizmos.size();
-		redraw(current_gizmos[update_idx]);
+		redraw(current_gizmos.get(update_idx));
 	}
 }
 
