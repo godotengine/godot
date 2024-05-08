@@ -791,7 +791,7 @@ void Node3DEditorViewport::_select_clicked(bool p_allow_locked) {
 
 	if (p_allow_locked || (selected != nullptr && !_is_node_locked(selected))) {
 		if (clicked_wants_append) {
-			Node *active_node = editor_selection->get_selected_node_list().is_empty() ? nullptr : editor_selection->get_selected_node_list().back()->get();
+			Node *active_node = editor_selection->get_selected_node_list().is_empty() ? nullptr : editor_selection->get_selected_node_list().get_back();
 			if (editor_selection->is_selected(selected)) {
 				editor_selection->remove_node(selected);
 				if (selected != active_node) {
@@ -3175,7 +3175,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				} else {
 					List<Node *> &selection = editor_selection->get_selected_node_list();
 					if (selection.size() == 1) {
-						selected_node = Object::cast_to<Node3D>(selection.front()->get());
+						selected_node = Object::cast_to<Node3D>(selection.get_front());
 					}
 				}
 
@@ -4421,7 +4421,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 	if (!preview_node->is_inside_tree() && !ruler->is_inside_tree()) {
 		List<Node *> &selection = editor_selection->get_selected_node_list();
 
-		Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
+		Node3D *first_selected_node = Object::cast_to<Node3D>(selection.get_front());
 
 		Array children = first_selected_node->get_children();
 
@@ -7918,7 +7918,7 @@ void Node3DEditor::_selection_changed() {
 			continue;
 		}
 
-		if (sp == editor_selection->get_selected_node_list().back()->get()) {
+		if (sp == editor_selection->get_selected_node_list().get_back()) {
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance, active_selection_box->get_rid());
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_xray, active_selection_box_xray->get_rid());
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_offset, active_selection_box->get_rid());
