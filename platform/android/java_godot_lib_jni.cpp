@@ -549,4 +549,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIE
 		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
 	}
 }
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_updateInputDispatchSettings(JNIEnv *env, jclass clazz, jboolean p_use_accumulated_input, jboolean p_use_input_buffering) {
+	if (Input::get_singleton()) {
+		Input::get_singleton()->set_use_accumulated_input(p_use_accumulated_input);
+		Input::get_singleton()->set_use_input_buffering(p_use_input_buffering);
+	}
+}
 }

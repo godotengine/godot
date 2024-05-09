@@ -2939,6 +2939,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 			id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_mouse_from_touch", true)));
 		}
 
+		GLOBAL_DEF("input_devices/buffering/android/use_accumulated_input", true);
+		GLOBAL_DEF("input_devices/buffering/android/use_input_buffering", true);
 		GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_long_press_as_right_click", false);
 		GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
 		GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
