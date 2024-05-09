@@ -5,8 +5,7 @@
 	</brief_description>
 	<description>
 		The Crypto class provides access to advanced cryptographic functionalities.
-		Currently, this includes asymmetric key encryption/decryption, signing/verification, and generating
-		cryptographically secure random bytes, RSA keys, HMAC digests, and self-signed [X509Certificate]s.
+		Currently, this includes asymmetric key encryption/decryption, signing/verification, and generating cryptographically secure random bytes, RSA keys, HMAC digests, and self-signed [X509Certificate]s.
 		[codeblocks]
 		[gdscript]
 		var crypto = Crypto.new()
