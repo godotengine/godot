@@ -1,0 +1,19 @@
+// -*- C++ -*-
+//===------------------------- execution ---------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_EXECUTION
+#define _LIBCUDACXX_EXECUTION
+
+#include <__config>
+
+#if defined(_LIBCUDACXX_HAS_PARALLEL_ALGORITHMS) && _LIBCUDACXX_STD_VER >= 17
+#   include <__pstl_execution>
+#endif
+
+#endif // _LIBCUDACXX_EXECUTION

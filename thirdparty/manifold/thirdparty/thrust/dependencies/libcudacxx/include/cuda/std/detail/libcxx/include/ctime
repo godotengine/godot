@@ -1,0 +1,94 @@
+// -*- C++ -*-
+//===---------------------------- ctime -----------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_CTIME
+#define _LIBCUDACXX_CTIME
+
+/*
+    ctime synopsis
+
+Macros:
+
+    NULL
+    CLOCKS_PER_SEC
+    TIME_UTC // C++17
+
+namespace std
+{
+
+Types:
+
+    clock_t
+    size_t
+    time_t
+    tm
+    timespec // C++17
+
+clock_t clock();
+double difftime(time_t time1, time_t time0);
+time_t mktime(tm* timeptr);
+time_t time(time_t* timer);
+char* asctime(const tm* timeptr);
+char* ctime(const time_t* timer);
+tm*    gmtime(const time_t* timer);
+tm* localtime(const time_t* timer);
+size_t strftime(char* restrict s, size_t maxsize, const char* restrict format,
+                const tm* restrict timeptr);
+int timespec_get( struct timespec *ts, int base); // C++17
+}  // std
+
+*/
+
+#ifndef __cuda_std__
+#include <__config>
+#include <time.h>
+#include <__pragma_push>
+#endif
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+
+using ::clock_t;
+using ::size_t;
+using ::time_t;
+
+#ifndef __CUDACC_RTC__
+
+using ::tm;
+#if _LIBCUDACXX_STD_VER > 14 && defined(_LIBCUDACXX_HAS_C11_FEATURES)
+using ::timespec;
+#endif
+using ::clock;
+using ::difftime;
+using ::mktime;
+using ::time;
+#ifndef _LIBCUDACXX_HAS_NO_THREAD_UNSAFE_C_FUNCTIONS
+using ::asctime;
+using ::ctime;
+using ::gmtime;
+using ::localtime;
+#endif
+using ::strftime;
+#if _LIBCUDACXX_STD_VER > 14 && defined(_LIBCUDACXX_HAS_TIMESPEC_GET)
+using ::timespec_get;
+
+#endif
+
+#endif
+
+_LIBCUDACXX_END_NAMESPACE_STD
+
+#ifndef __cuda_std__
+#include <__pragma_pop>
+#endif //__cuda_std__
+
+#endif  // _LIBCUDACXX_CTIME

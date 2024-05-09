@@ -1,0 +1,32 @@
+// -*- C++ -*-
+//===-------------------------- cerrno ------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_CERRNO
+#define _LIBCUDACXX_CERRNO
+
+/*
+    cerrno synopsis
+
+Macros:
+
+    EDOM
+    EILSEQ  // C99
+    ERANGE
+    errno
+
+*/
+
+#include <__config>
+#include <errno.h>
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+#endif  // _LIBCUDACXX_CERRNO

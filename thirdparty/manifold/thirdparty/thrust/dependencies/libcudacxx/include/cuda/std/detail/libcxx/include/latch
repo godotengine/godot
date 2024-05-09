@@ -1,0 +1,129 @@
+// -*- C++ -*-
+//===--------------------------- latch -----------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_LATCH
+#define _LIBCUDACXX_LATCH
+
+/*
+    latch synopsis
+
+namespace std
+{
+
+  class latch
+  {
+  public:
+    constexpr explicit latch(ptrdiff_t __expected);
+    ~latch();
+
+    latch(const latch&) = delete;
+    latch& operator=(const latch&) = delete;
+
+    void count_down(ptrdiff_t __update = 1);
+    bool try_wait() const noexcept;
+    void wait() const;
+    void arrive_and_wait(ptrdiff_t __update = 1);
+
+  private:
+    ptrdiff_t __counter; // exposition only
+  };
+
+}
+
+*/
+
+#ifndef __cuda_std__
+#include <__config>
+#include <__threading_support>
+#include <atomic>
+#include <cassert>
+#include <__pragma_push>
+#endif
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+#ifdef _LIBCUDACXX_HAS_NO_THREADS
+# error <latch> is not supported on this single threaded system
+#endif
+
+#if _LIBCUDACXX_STD_VER < 11
+# error <latch> is requires C++11 or later
+#endif
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+
+# if _LIBCUDACXX_CUDA_ABI_VERSION < 3
+#  define _LIBCUDACXX_LATCH_ALIGNMENT alignas(64)
+# else
+#  define _LIBCUDACXX_LATCH_ALIGNMENT
+# endif
+
+template<int _Sco = 0>
+class __latch_base
+{
+    _LIBCUDACXX_LATCH_ALIGNMENT __atomic_base<ptrdiff_t, _Sco> __counter;
+public:
+    inline _LIBCUDACXX_INLINE_VISIBILITY _LIBCUDACXX_CONSTEXPR
+    explicit __latch_base(ptrdiff_t __expected)
+        : __counter(__expected) { }
+
+    ~__latch_base() = default;
+    __latch_base(const __latch_base&) = delete;
+    __latch_base& operator=(const __latch_base&) = delete;
+
+    inline _LIBCUDACXX_INLINE_VISIBILITY
+    void count_down(ptrdiff_t __update = 1)
+    {
+        assert(__update > 0);
+        auto const __old = __counter.fetch_sub(__update, memory_order_release);
+        assert(__old >= __update);
+        if(__old == __update)
+            __counter.notify_all();
+    }
+    inline _LIBCUDACXX_INLINE_VISIBILITY
+    bool try_wait() const noexcept
+    {
+        return __counter.load(memory_order_acquire) == 0;
+    }
+    inline _LIBCUDACXX_INLINE_VISIBILITY
+    void wait() const
+    {
+        while(1) {
+            auto const __current = __counter.load(memory_order_acquire);
+            if(__current == 0)
+                return;
+            __counter.wait(__current, memory_order_relaxed)
+            ;
+        }
+    }
+    inline _LIBCUDACXX_INLINE_VISIBILITY
+    void arrive_and_wait(ptrdiff_t __update = 1)
+    {
+        count_down(__update);
+        wait();
+    }
+
+    _LIBCUDACXX_INLINE_VISIBILITY
+    static constexpr ptrdiff_t max() noexcept
+    {
+        return numeric_limits<ptrdiff_t>::max();
+    }
+};
+
+using latch = __latch_base<>;
+
+_LIBCUDACXX_END_NAMESPACE_STD
+
+#ifndef __cuda_std__
+#include <__pragma_pop>
+#endif //__cuda_std__
+
+#endif //_LIBCUDACXX_LATCH

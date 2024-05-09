@@ -1,0 +1,27 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the CUDA Toolkit, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _CUDA_COMPLEX
+#define _CUDA_COMPLEX
+
+#include "cmath"
+#include "cstdint"
+#include "climits"
+#include "type_traits"
+
+#include "detail/__config"
+
+#include "detail/__pragma_push"
+
+#include "detail/libcxx/include/complex"
+
+#include "detail/__pragma_pop"
+
+#endif //_CUDA_COMPLEX
+
+

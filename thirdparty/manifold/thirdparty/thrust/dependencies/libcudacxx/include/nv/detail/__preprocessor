@@ -1,0 +1,117 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#if defined(__GNUC__)
+#pragma GCC system_header
+#endif
+
+// For all compilers and dialects this header defines:
+//  _NV_EVAL
+//  _NV_IF
+//  _NV_CONCAT_EVAL
+// For C++11 and up it defines:
+//  _NV_STRIP_PAREN
+//  _NV_DISPATCH_N_ARY
+//  _NV_FIRST_ARG
+//  _NV_REMOVE_PAREN
+
+#if defined(_NV_TARGET_CPP11)
+#  define _NV_EVAL1(...) __VA_ARGS__
+#  define _NV_EVAL(...) _NV_EVAL1(__VA_ARGS__)
+#else
+#  define _NV_EVAL1(x) x
+#  define _NV_EVAL(x) _NV_EVAL1(x)
+#endif // C++11
+
+#define _NV_CONCAT_EVAL1(l, r) _NV_EVAL(l ## r)
+#define _NV_CONCAT_EVAL(l, r) _NV_CONCAT_EVAL1(l, r)
+
+#define _NV_IF_0(t, f) f
+#define _NV_IF_1(t, f) t
+
+#define _NV_IF_BIT(b) _NV_EVAL(_NV_IF_##b)
+#define _NV_IF__EVAL(fn, t, f) _NV_EVAL(fn(t, f))
+#define _NV_IF_EVAL(cond, t, f) _NV_IF__EVAL(_NV_IF_BIT(cond), t, f)
+
+#define _NV_IF1(cond, t, f) _NV_IF_EVAL(cond, t, f)
+#define _NV_IF(cond, t, f) _NV_IF1(_NV_EVAL(cond), _NV_EVAL(t), _NV_EVAL(f))
+
+#if defined(_NV_TARGET_CPP11)
+
+// The below mechanisms were derived from: https://gustedt.wordpress.com/2010/06/08/detect-empty-macro-arguments/
+
+#define _NV_ARG32(...) _NV_EVAL(_NV_ARG32_0(__VA_ARGS__))
+#define _NV_ARG32_0(                                                                         \
+    _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15,                    \
+    _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, _31, ...) _31
+
+#define _NV_HAS_COMMA(...) _NV_ARG32(__VA_ARGS__,   \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)
+
+#define _NV_TRIGGER_PARENTHESIS_(...) ,
+
+#define _NV_ISEMPTY(...)                                                    \
+    _NV_ISEMPTY0(                                                           \
+          /* test if there is just one argument, eventually an empty        \
+             one */                                                         \
+          _NV_EVAL(_NV_HAS_COMMA(__VA_ARGS__)),                                       \
+          /* test if _TRIGGER_PARENTHESIS_ together with the argument       \
+             adds a comma */                                                \
+          _NV_EVAL(_NV_HAS_COMMA(_NV_TRIGGER_PARENTHESIS_ __VA_ARGS__)),              \
+          /* test if the argument together with a parenthesis               \
+             adds a comma */                                                \
+          _NV_EVAL(_NV_HAS_COMMA(__VA_ARGS__ (/*empty*/))),                           \
+          /* test if placing it between _TRIGGER_PARENTHESIS_ and the       \
+             parenthesis adds a comma */                                    \
+          _NV_EVAL(_NV_HAS_COMMA(_NV_TRIGGER_PARENTHESIS_ __VA_ARGS__ (/*empty*/)))   \
+          )
+
+#define _NV_PASTE5(_0, _1, _2, _3, _4) _0 ## _1 ## _2 ## _3 ## _4
+#define _NV_ISEMPTY0(_0, _1, _2, _3) _NV_HAS_COMMA(_NV_PASTE5(_NV_IS_EMPTY_CASE_, _0, _1, _2, _3))
+#define _NV_IS_EMPTY_CASE_0001 ,
+
+
+#define _NV_REMOVE_PAREN(...) _NV_REMOVE_PAREN1(__VA_ARGS__)
+#define _NV_REMOVE_PAREN1(...) _NV_STRIP_PAREN(_NV_IF(_NV_TEST_PAREN(__VA_ARGS__), (_NV_STRIP_PAREN(__VA_ARGS__)), (__VA_ARGS__)))
+
+#define _NV_STRIP_PAREN2(...) __VA_ARGS__
+#define _NV_STRIP_PAREN1(...) _NV_STRIP_PAREN2 __VA_ARGS__
+#define _NV_STRIP_PAREN(...) _NV_STRIP_PAREN1(__VA_ARGS__)
+
+#define _NV_TEST_PAREN(...) _NV_TEST_PAREN1(__VA_ARGS__)
+#define _NV_TEST_PAREN1(...) _NV_TEST_PAREN2(_NV_TEST_PAREN_DUMMY __VA_ARGS__)
+#define _NV_TEST_PAREN2(...) _NV_TEST_PAREN3(_NV_CONCAT_EVAL(_, __VA_ARGS__))
+#define _NV_TEST_PAREN3(...) _NV_EVAL(_NV_FIRST_ARG(__VA_ARGS__))
+
+#define __NV_PAREN_YES 1
+#define __NV_PAREN_NO 0
+
+#define _NV_TEST_PAREN_DUMMY(...) _NV_PAREN_YES
+#define __NV_TEST_PAREN_DUMMY     __NV_PAREN_NO,
+
+#define _NV_FIRST_ARG1(x, ...) x
+#define _NV_FIRST_ARG(x, ...) _NV_FIRST_ARG1(x)
+
+#define _NV_REMOVE_FIRST_ARGS1(...) __VA_ARGS__
+#define _NV_REMOVE_FIRST_ARGS(x, ...) _NV_REMOVE_FIRST_ARGS1(__VA_ARGS__)
+
+#define _NV_NUM_ARGS(...) _NV_NUM_ARGS0(__VA_ARGS__)
+#define _NV_NUM_ARGS0(...) _NV_EVAL(_NV_NUM_ARGS1(__VA_ARGS__))
+#define _NV_NUM_ARGS1(...) _NV_IF(_NV_ISEMPTY(__VA_ARGS__), 0, _NV_NUM_ARGS2(__VA_ARGS__))
+#define _NV_NUM_ARGS2(...) _NV_ARG32(__VA_ARGS__,   \
+    31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16, \
+    15,14,13,12,11,10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+
+#define _NV_DISPATCH_N_IMPL1(name, ...) _NV_EVAL(name(__VA_ARGS__))
+#define _NV_DISPATCH_N_IMPL0(depth, name, ...) _NV_DISPATCH_N_IMPL1(_NV_CONCAT_EVAL(name, depth), __VA_ARGS__)
+#define _NV_DISPATCH_N_IMPL(name, ...) _NV_DISPATCH_N_IMPL0(_NV_NUM_ARGS(__VA_ARGS__), name, __VA_ARGS__)
+#define _NV_DISPATCH_N_ARY(name, ...) _NV_DISPATCH_N_IMPL(name, __VA_ARGS__)
+
+#endif // C++11

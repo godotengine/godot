@@ -1,0 +1,33 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _CUDA_TUPLE
+#define _CUDA_TUPLE
+
+#include "cstdint"
+#include "climits"
+
+#include "type_traits"
+
+#include "detail/libcxx/include/__tuple"
+
+#include "functional"
+#include "utility"
+
+#include "detail/__config"
+
+#include "detail/__pragma_push"
+
+#include "detail/libcxx/include/tuple"
+
+#include "detail/__pragma_pop"
+
+#endif //_CUDA_TUPLE
+
+

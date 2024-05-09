@@ -1,0 +1,76 @@
+// -*- C++ -*-
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX___SSO_ALLOCATOR
+#define _LIBCUDACXX___SSO_ALLOCATOR
+
+#include <__config>
+#include <type_traits>
+#include <new>
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+
+template <class _Tp, size_t _Np> class _LIBCUDACXX_HIDDEN __sso_allocator;
+
+template <size_t _Np>
+class _LIBCUDACXX_HIDDEN __sso_allocator<void, _Np>
+{
+public:
+    typedef const void*       const_pointer;
+    typedef void              value_type;
+};
+
+template <class _Tp, size_t _Np>
+class _LIBCUDACXX_HIDDEN __sso_allocator
+{
+    typename aligned_storage<sizeof(_Tp) * _Np>::type buf_;
+    bool __allocated_;
+public:
+    typedef size_t            size_type;
+    typedef _Tp*              pointer;
+    typedef _Tp               value_type;
+
+    _LIBCUDACXX_INLINE_VISIBILITY __sso_allocator() throw() : __allocated_(false) {}
+    _LIBCUDACXX_INLINE_VISIBILITY __sso_allocator(const __sso_allocator&) throw() : __allocated_(false) {}
+    template <class _Up> _LIBCUDACXX_INLINE_VISIBILITY __sso_allocator(const __sso_allocator<_Up, _Np>&) throw()
+         : __allocated_(false) {}
+private:
+    __sso_allocator& operator=(const __sso_allocator&);
+public:
+    _LIBCUDACXX_INLINE_VISIBILITY pointer allocate(size_type __n, typename __sso_allocator<void, _Np>::const_pointer = 0)
+    {
+        if (!__allocated_ && __n <= _Np)
+        {
+            __allocated_ = true;
+            return (pointer)&buf_;
+        }
+        return static_cast<pointer>(_CUDA_VSTD::__libcpp_allocate(__n * sizeof(_Tp), _LIBCUDACXX_ALIGNOF(_Tp)));
+    }
+    _LIBCUDACXX_INLINE_VISIBILITY void deallocate(pointer __p, size_type __n)
+    {
+        if (__p == (pointer)&buf_)
+            __allocated_ = false;
+        else
+            _CUDA_VSTD::__libcpp_deallocate(__p, __n * sizeof(_Tp), _LIBCUDACXX_ALIGNOF(_Tp));
+    }
+    _LIBCUDACXX_INLINE_VISIBILITY size_type max_size() const throw() {return size_type(~0) / sizeof(_Tp);}
+
+    _LIBCUDACXX_INLINE_VISIBILITY
+    bool operator==(__sso_allocator& __a) const {return &buf_ == &__a.buf_;}
+    _LIBCUDACXX_INLINE_VISIBILITY
+    bool operator!=(__sso_allocator& __a) const {return &buf_ != &__a.buf_;}
+};
+
+_LIBCUDACXX_END_NAMESPACE_STD
+
+#endif  // _LIBCUDACXX___SSO_ALLOCATOR

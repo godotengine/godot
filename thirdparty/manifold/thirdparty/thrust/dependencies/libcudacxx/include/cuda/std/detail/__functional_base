@@ -1,0 +1,25 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _CUDA___FUNCTIONAL_BASE
+#define _CUDA___FUNCTIONAL_BASE
+
+#ifndef __CUDACC_RTC__
+    #include <errno.h>
+#endif
+
+#include "../chrono"
+#include "../climits"
+
+#include "__config"
+
+#include "libcxx/include/__functional_base"
+
+#endif //_CUDA___FUNCTIONAL_BASE
+

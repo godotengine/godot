@@ -1,0 +1,493 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _NV__TARGET_MACROS
+#define _NV__TARGET_MACROS
+
+#include "__preprocessor"
+
+#if defined(__GNUC__)
+#pragma GCC system_header
+#endif
+
+#  define _NV_TARGET_ARCH_TO_SELECTOR_350 nv::target::sm_35
+#  define _NV_TARGET_ARCH_TO_SELECTOR_370 nv::target::sm_37
+#  define _NV_TARGET_ARCH_TO_SELECTOR_500 nv::target::sm_50
+#  define _NV_TARGET_ARCH_TO_SELECTOR_520 nv::target::sm_52
+#  define _NV_TARGET_ARCH_TO_SELECTOR_530 nv::target::sm_53
+#  define _NV_TARGET_ARCH_TO_SELECTOR_600 nv::target::sm_60
+#  define _NV_TARGET_ARCH_TO_SELECTOR_610 nv::target::sm_61
+#  define _NV_TARGET_ARCH_TO_SELECTOR_620 nv::target::sm_62
+#  define _NV_TARGET_ARCH_TO_SELECTOR_700 nv::target::sm_70
+#  define _NV_TARGET_ARCH_TO_SELECTOR_720 nv::target::sm_72
+#  define _NV_TARGET_ARCH_TO_SELECTOR_750 nv::target::sm_75
+#  define _NV_TARGET_ARCH_TO_SELECTOR_800 nv::target::sm_80
+#  define _NV_TARGET_ARCH_TO_SELECTOR_860 nv::target::sm_86
+#  define _NV_TARGET_ARCH_TO_SELECTOR_870 nv::target::sm_87
+#  define _NV_TARGET_ARCH_TO_SELECTOR_900 nv::target::sm_90
+
+#  define _NV_TARGET_ARCH_TO_SM_350 35
+#  define _NV_TARGET_ARCH_TO_SM_370 37
+#  define _NV_TARGET_ARCH_TO_SM_500 50
+#  define _NV_TARGET_ARCH_TO_SM_520 52
+#  define _NV_TARGET_ARCH_TO_SM_530 53
+#  define _NV_TARGET_ARCH_TO_SM_600 60
+#  define _NV_TARGET_ARCH_TO_SM_610 61
+#  define _NV_TARGET_ARCH_TO_SM_620 62
+#  define _NV_TARGET_ARCH_TO_SM_700 70
+#  define _NV_TARGET_ARCH_TO_SM_720 72
+#  define _NV_TARGET_ARCH_TO_SM_750 75
+#  define _NV_TARGET_ARCH_TO_SM_800 80
+#  define _NV_TARGET_ARCH_TO_SM_860 86
+#  define _NV_TARGET_ARCH_TO_SM_870 87
+#  define _NV_TARGET_ARCH_TO_SM_900 90
+
+#if defined(_NV_COMPILER_NVCXX)
+
+#  define _NV_TARGET_VAL_SM_35 nv::target::sm_35
+#  define _NV_TARGET_VAL_SM_37 nv::target::sm_37
+#  define _NV_TARGET_VAL_SM_50 nv::target::sm_50
+#  define _NV_TARGET_VAL_SM_52 nv::target::sm_52
+#  define _NV_TARGET_VAL_SM_53 nv::target::sm_53
+#  define _NV_TARGET_VAL_SM_60 nv::target::sm_60
+#  define _NV_TARGET_VAL_SM_61 nv::target::sm_61
+#  define _NV_TARGET_VAL_SM_62 nv::target::sm_62
+#  define _NV_TARGET_VAL_SM_70 nv::target::sm_70
+#  define _NV_TARGET_VAL_SM_72 nv::target::sm_72
+#  define _NV_TARGET_VAL_SM_75 nv::target::sm_75
+#  define _NV_TARGET_VAL_SM_80 nv::target::sm_80
+#  define _NV_TARGET_VAL_SM_86 nv::target::sm_86
+#  define _NV_TARGET_VAL_SM_87 nv::target::sm_87
+#  define _NV_TARGET_VAL_SM_90 nv::target::sm_90
+
+#  define _NV_TARGET___NV_IS_HOST nv::target::is_host
+#  define _NV_TARGET___NV_IS_DEVICE nv::target::is_device
+
+#  define _NV_TARGET___NV_ANY_TARGET (nv::target::any_target)
+#  define _NV_TARGET___NV_NO_TARGET (nv::target::no_target)
+
+#  if defined(NV_TARGET_SM_INTEGER_LIST)
+#    define NV_TARGET_MINIMUM_SM_SELECTOR _NV_FIRST_ARG(NV_TARGET_SM_SELECTOR_LIST)
+#    define NV_TARGET_MINIMUM_SM_INTEGER _NV_FIRST_ARG(NV_TARGET_SM_INTEGER_LIST)
+#    define __CUDA_MINIMUM_ARCH__ _NV_CONCAT_EVAL(_NV_FIRST_ARG(NV_TARGET_SM_INTEGER_LIST), 0)
+#  endif
+
+#  define _NV_TARGET_PROVIDES(q)   nv::target::provides(q)
+#  define _NV_TARGET_IS_EXACTLY(q) nv::target::is_exactly(q)
+
+#elif defined(_NV_COMPILER_NVCC) || defined (_NV_COMPILER_CLANG_CUDA)
+
+#  define _NV_TARGET_VAL_SM_35 350
+#  define _NV_TARGET_VAL_SM_37 370
+#  define _NV_TARGET_VAL_SM_50 500
+#  define _NV_TARGET_VAL_SM_52 520
+#  define _NV_TARGET_VAL_SM_53 530
+#  define _NV_TARGET_VAL_SM_60 600
+#  define _NV_TARGET_VAL_SM_61 610
+#  define _NV_TARGET_VAL_SM_62 620
+#  define _NV_TARGET_VAL_SM_70 700
+#  define _NV_TARGET_VAL_SM_72 720
+#  define _NV_TARGET_VAL_SM_75 750
+#  define _NV_TARGET_VAL_SM_80 800
+#  define _NV_TARGET_VAL_SM_86 860
+#  define _NV_TARGET_VAL_SM_87 870
+#  define _NV_TARGET_VAL_SM_90 900
+
+#  if defined(__CUDA_ARCH__)
+#    define _NV_TARGET_VAL __CUDA_ARCH__
+#    define NV_TARGET_MINIMUM_SM_SELECTOR _NV_CONCAT_EVAL(_NV_TARGET_ARCH_TO_SELECTOR_, __CUDA_ARCH__)
+#    define NV_TARGET_MINIMUM_SM_INTEGER _NV_CONCAT_EVAL(_NV_TARGET_ARCH_TO_SM_, __CUDA_ARCH__)
+#    define __CUDA_MINIMUM_ARCH__ __CUDA_ARCH__
+#  endif
+
+#  if defined(__CUDA_ARCH__)
+#    define _NV_TARGET_IS_HOST   0
+#    define _NV_TARGET_IS_DEVICE 1
+#  else
+#    define _NV_TARGET_IS_HOST   1
+#    define _NV_TARGET_IS_DEVICE 0
+#  endif
+
+#  if defined(_NV_TARGET_VAL)
+#    define _NV_DEVICE_CHECK(q) (q)
+#  else
+#    define _NV_DEVICE_CHECK(q) (0)
+#  endif
+
+#  define _NV_TARGET_PROVIDES(q)   _NV_DEVICE_CHECK(_NV_TARGET_VAL >= q)
+#  define _NV_TARGET_IS_EXACTLY(q) _NV_DEVICE_CHECK(_NV_TARGET_VAL == q)
+
+// NVCC/NVCXX not being used, only host dispatches allowed
+#else
+
+#  define _NV_COMPILER_NVCC
+
+#  define _NV_TARGET_VAL_SM_35 350
+#  define _NV_TARGET_VAL_SM_37 370
+#  define _NV_TARGET_VAL_SM_50 500
+#  define _NV_TARGET_VAL_SM_52 520
+#  define _NV_TARGET_VAL_SM_53 530
+#  define _NV_TARGET_VAL_SM_60 600
+#  define _NV_TARGET_VAL_SM_61 610
+#  define _NV_TARGET_VAL_SM_62 620
+#  define _NV_TARGET_VAL_SM_70 700
+#  define _NV_TARGET_VAL_SM_72 720
+#  define _NV_TARGET_VAL_SM_75 750
+#  define _NV_TARGET_VAL_SM_80 800
+#  define _NV_TARGET_VAL_SM_86 860
+#  define _NV_TARGET_VAL_SM_87 870
+#  define _NV_TARGET_VAL_SM_90 900
+
+#  define _NV_TARGET_VAL 0
+
+#  define _NV_TARGET_IS_HOST   1
+#  define _NV_TARGET_IS_DEVICE 0
+
+#  define _NV_DEVICE_CHECK(q) (false)
+
+#  define _NV_TARGET_PROVIDES(q)   _NV_DEVICE_CHECK(_NV_TARGET_VAL >= q)
+#  define _NV_TARGET_IS_EXACTLY(q) _NV_DEVICE_CHECK(_NV_TARGET_VAL == q)
+
+#endif
+
+#define _NV_TARGET___NV_PROVIDES_SM_35 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_35))
+#define _NV_TARGET___NV_PROVIDES_SM_37 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_37))
+#define _NV_TARGET___NV_PROVIDES_SM_50 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_50))
+#define _NV_TARGET___NV_PROVIDES_SM_52 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_52))
+#define _NV_TARGET___NV_PROVIDES_SM_53 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_53))
+#define _NV_TARGET___NV_PROVIDES_SM_60 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_60))
+#define _NV_TARGET___NV_PROVIDES_SM_61 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_61))
+#define _NV_TARGET___NV_PROVIDES_SM_62 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_62))
+#define _NV_TARGET___NV_PROVIDES_SM_70 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_70))
+#define _NV_TARGET___NV_PROVIDES_SM_72 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_72))
+#define _NV_TARGET___NV_PROVIDES_SM_75 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_75))
+#define _NV_TARGET___NV_PROVIDES_SM_80 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_80))
+#define _NV_TARGET___NV_PROVIDES_SM_86 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_86))
+#define _NV_TARGET___NV_PROVIDES_SM_87 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_87))
+#define _NV_TARGET___NV_PROVIDES_SM_90 (_NV_TARGET_PROVIDES(_NV_TARGET_VAL_SM_90))
+
+#define _NV_TARGET___NV_IS_EXACTLY_SM_35 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_35))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_37 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_37))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_50 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_50))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_52 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_52))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_53 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_53))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_60 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_60))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_61 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_61))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_62 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_62))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_70 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_70))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_72 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_72))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_75 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_75))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_80 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_80))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_86 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_86))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_87 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_87))
+#define _NV_TARGET___NV_IS_EXACTLY_SM_90 (_NV_TARGET_IS_EXACTLY(_NV_TARGET_VAL_SM_90))
+
+#define NV_PROVIDES_SM_35   __NV_PROVIDES_SM_35
+#define NV_PROVIDES_SM_37   __NV_PROVIDES_SM_37
+#define NV_PROVIDES_SM_50   __NV_PROVIDES_SM_50
+#define NV_PROVIDES_SM_52   __NV_PROVIDES_SM_52
+#define NV_PROVIDES_SM_53   __NV_PROVIDES_SM_53
+#define NV_PROVIDES_SM_60   __NV_PROVIDES_SM_60
+#define NV_PROVIDES_SM_61   __NV_PROVIDES_SM_61
+#define NV_PROVIDES_SM_62   __NV_PROVIDES_SM_62
+#define NV_PROVIDES_SM_70   __NV_PROVIDES_SM_70
+#define NV_PROVIDES_SM_72   __NV_PROVIDES_SM_72
+#define NV_PROVIDES_SM_75   __NV_PROVIDES_SM_75
+#define NV_PROVIDES_SM_80   __NV_PROVIDES_SM_80
+#define NV_PROVIDES_SM_86   __NV_PROVIDES_SM_86
+#define NV_PROVIDES_SM_87   __NV_PROVIDES_SM_87
+#define NV_PROVIDES_SM_90   __NV_PROVIDES_SM_90
+
+#define NV_IS_EXACTLY_SM_35 __NV_IS_EXACTLY_SM_35
+#define NV_IS_EXACTLY_SM_37 __NV_IS_EXACTLY_SM_37
+#define NV_IS_EXACTLY_SM_50 __NV_IS_EXACTLY_SM_50
+#define NV_IS_EXACTLY_SM_52 __NV_IS_EXACTLY_SM_52
+#define NV_IS_EXACTLY_SM_53 __NV_IS_EXACTLY_SM_53
+#define NV_IS_EXACTLY_SM_60 __NV_IS_EXACTLY_SM_60
+#define NV_IS_EXACTLY_SM_61 __NV_IS_EXACTLY_SM_61
+#define NV_IS_EXACTLY_SM_62 __NV_IS_EXACTLY_SM_62
+#define NV_IS_EXACTLY_SM_70 __NV_IS_EXACTLY_SM_70
+#define NV_IS_EXACTLY_SM_72 __NV_IS_EXACTLY_SM_72
+#define NV_IS_EXACTLY_SM_75 __NV_IS_EXACTLY_SM_75
+#define NV_IS_EXACTLY_SM_80 __NV_IS_EXACTLY_SM_80
+#define NV_IS_EXACTLY_SM_86 __NV_IS_EXACTLY_SM_86
+#define NV_IS_EXACTLY_SM_87 __NV_IS_EXACTLY_SM_87
+#define NV_IS_EXACTLY_SM_90 __NV_IS_EXACTLY_SM_90
+
+#define NV_IS_HOST         __NV_IS_HOST
+#define NV_IS_DEVICE       __NV_IS_DEVICE
+
+#define NV_ANY_TARGET      __NV_ANY_TARGET
+#define NV_NO_TARGET       __NV_NO_TARGET
+
+// Platform invoke mechanisms
+#if defined(_NV_COMPILER_NVCXX)
+
+#  define _NV_ARCH_COND(q) (_NV_TARGET_##q)
+
+#  define _NV_BLOCK_EXPAND(...) _NV_REMOVE_PAREN(__VA_ARGS__)
+
+#  define _NV_TARGET_IF(cond, t, ...) \
+    (if target _NV_ARCH_COND(cond) {    \
+      _NV_BLOCK_EXPAND(t)        \
+    } else { _NV_BLOCK_EXPAND(__VA_ARGS__) })
+
+#elif defined(_NV_COMPILER_NVCC) || defined (_NV_COMPILER_CLANG_CUDA)
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_35)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_35 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_35 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_37)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_37 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_37 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_50)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_50 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_50 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_52)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_52 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_52 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_53)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_53 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_53 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_60)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_60 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_60 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_61)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_61 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_61 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_62)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_62 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_62 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_70)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_70 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_70 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_72)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_72 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_72 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_75)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_75 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_75 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_80)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_80 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_80 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_86)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_86 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_86 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_87)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_87 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_87 0
+#  endif
+
+#  if (_NV_TARGET___NV_IS_EXACTLY_SM_90)
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_90 1
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_EXACTLY_SM_90 0
+#  endif
+
+#  if (_NV_TARGET_IS_HOST)
+#    define _NV_TARGET_BOOL___NV_IS_HOST   1
+#    define _NV_TARGET_BOOL___NV_IS_DEVICE 0
+#  else
+#    define _NV_TARGET_BOOL___NV_IS_HOST   0
+#    define _NV_TARGET_BOOL___NV_IS_DEVICE 1
+#  endif
+
+#  define _NV_TARGET_BOOL___NV_ANY_TARGET 1
+#  define _NV_TARGET_BOOL___NV_NO_TARGET 0
+
+// NVCC Greater than stuff
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_35)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_35 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_35 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_37)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_37 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_37 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_50)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_50 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_50 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_52)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_52 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_52 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_53)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_53 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_53 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_60)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_60 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_60 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_61)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_61 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_61 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_62)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_62 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_62 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_70)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_70 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_70 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_72)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_72 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_72 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_75)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_75 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_75 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_80)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_80 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_80 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_86)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_86 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_86 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_87)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_87 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_87 0
+#  endif
+
+#  if (_NV_TARGET___NV_PROVIDES_SM_90)
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_90 1
+#  else
+#    define _NV_TARGET_BOOL___NV_PROVIDES_SM_90 0
+#  endif
+
+#  define _NV_ARCH_COND_CAT1(cond) _NV_TARGET_BOOL_##cond
+#  define _NV_ARCH_COND_CAT(cond) _NV_EVAL(_NV_ARCH_COND_CAT1(cond))
+
+#    define _NV_TARGET_EMPTY_PARAM ;
+
+#  if defined(_NV_TARGET_CPP11)
+
+#    define _NV_BLOCK_EXPAND(...) { _NV_REMOVE_PAREN(__VA_ARGS__) }
+#    define _NV_TARGET_IF(cond, t, ...) _NV_IF( _NV_ARCH_COND_CAT(cond), t, __VA_ARGS__)
+
+#  else // <C++11 fallback
+
+#    define _NV_BLOCK_EXPAND(x) { x }
+
+#    define _NV_TARGET_IF(cond, t)         _NV_IF(_NV_ARCH_COND_CAT(cond), t, _NV_TARGET_EMPTY_PARAM)
+#    define _NV_TARGET_IF_ELSE(cond, t, f) _NV_IF(_NV_ARCH_COND_CAT(cond), t, f)
+
+#  endif
+
+#endif // _NV_COMPILER_NVCC
+
+#if defined(_NV_TARGET_CPP11)
+
+#  define _NV_TARGET_DISPATCH_HANDLE0()
+#  define _NV_TARGET_DISPATCH_HANDLE2(q, fn)        _NV_TARGET_IF(q, fn)
+#  define _NV_TARGET_DISPATCH_HANDLE4(q, fn, ...)   _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE2(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE6(q, fn, ...)   _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE4(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE8(q, fn, ...)   _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE6(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE10(q, fn, ...)  _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE8(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE12(q, fn, ...)  _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE10(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE14(q, fn, ...)  _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE12(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE16(q, fn, ...)  _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE14(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE18(q, fn, ...)  _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE16(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE20(q, fn, ...)  _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE18(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE22(q, fn, ...)  _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE20(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE24(q, fn, ...)  _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE22(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE26(q, fn, ...)  _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE24(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE28(q, fn, ...)  _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE26(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE30(q, fn, ...)  _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE28(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE32(q, fn, ...)  _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE30(__VA_ARGS__))
+#  define _NV_TARGET_DISPATCH_HANDLE34(q, fn, ...)  _NV_TARGET_IF(q, fn, _NV_TARGET_DISPATCH_HANDLE32(__VA_ARGS__))
+
+#  define _NV_TARGET_DISPATCH(...) _NV_BLOCK_EXPAND(_NV_DISPATCH_N_ARY(_NV_TARGET_DISPATCH_HANDLE, __VA_ARGS__))
+
+// NV_IF_TARGET supports a false statement provided as a variadic macro
+#  define NV_IF_TARGET(cond, ...)    _NV_BLOCK_EXPAND(_NV_TARGET_IF(cond, __VA_ARGS__))
+#  define NV_IF_ELSE_TARGET(cond, t, f) _NV_BLOCK_EXPAND(_NV_TARGET_IF(cond, t, f))
+#  define NV_DISPATCH_TARGET(...)       _NV_TARGET_DISPATCH(__VA_ARGS__)
+
+#else // <C++11 fallback
+
+// NV_IF_TARGET does not support a fallback false statement in C++03 or C dialects
+#  define NV_IF_TARGET(cond, t)         _NV_BLOCK_EXPAND(_NV_TARGET_IF(cond, t))
+#  define NV_IF_ELSE_TARGET(cond, t, f) _NV_BLOCK_EXPAND(_NV_TARGET_IF_ELSE(cond, t, f))
+
+#endif
+
+#endif // _NV__TARGET_MACROS

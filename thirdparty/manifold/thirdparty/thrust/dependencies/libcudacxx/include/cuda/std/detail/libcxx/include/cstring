@@ -1,0 +1,103 @@
+// -*- C++ -*-
+//===--------------------------- cstring ----------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_CSTRING
+#define _LIBCUDACXX_CSTRING
+
+/*
+    cstring synopsis
+
+Macros:
+
+    NULL
+
+namespace std
+{
+
+Types:
+
+    size_t
+
+void* memcpy(void* restrict s1, const void* restrict s2, size_t n);
+void* memmove(void* s1, const void* s2, size_t n);
+char* strcpy (char* restrict s1, const char* restrict s2);
+char* strncpy(char* restrict s1, const char* restrict s2, size_t n);
+char* strcat (char* restrict s1, const char* restrict s2);
+char* strncat(char* restrict s1, const char* restrict s2, size_t n);
+int memcmp(const void* s1, const void* s2, size_t n);
+int strcmp (const char* s1, const char* s2);
+int strncmp(const char* s1, const char* s2, size_t n);
+int strcoll(const char* s1, const char* s2);
+size_t strxfrm(char* restrict s1, const char* restrict s2, size_t n);
+const void* memchr(const void* s, int c, size_t n);
+      void* memchr(      void* s, int c, size_t n);
+const char* strchr(const char* s, int c);
+      char* strchr(      char* s, int c);
+size_t strcspn(const char* s1, const char* s2);
+const char* strpbrk(const char* s1, const char* s2);
+      char* strpbrk(      char* s1, const char* s2);
+const char* strrchr(const char* s, int c);
+      char* strrchr(      char* s, int c);
+size_t strspn(const char* s1, const char* s2);
+const char* strstr(const char* s1, const char* s2);
+      char* strstr(      char* s1, const char* s2);
+char* strtok(char* restrict s1, const char* restrict s2);
+void* memset(void* s, int c, size_t n);
+char* strerror(int errnum);
+size_t strlen(const char* s);
+
+}  // std
+
+*/
+
+#ifndef __cuda_std__
+#include <__config>
+#include <string.h>
+#include <__pragma_push>
+#endif //__simet__ <- a tribute to ogiroux
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+
+using ::size_t;
+using ::memcpy;
+using ::memmove;
+using ::strcpy;
+using ::strncpy;
+using ::strcat;
+using ::strncat;
+using ::memcmp;
+using ::strcmp;
+using ::strncmp;
+using ::strcoll;
+using ::strxfrm;
+using ::memchr;
+using ::strchr;
+using ::strcspn;
+using ::strpbrk;
+using ::strrchr;
+using ::strspn;
+using ::strstr;
+#ifndef _LIBCUDACXX_HAS_NO_THREAD_UNSAFE_C_FUNCTIONS
+using ::strtok;
+#endif
+using ::memset;
+using ::strerror;
+using ::strlen;
+
+_LIBCUDACXX_END_NAMESPACE_STD
+
+#ifndef __cuda_std__
+#include <__pragma_pop>
+#endif //__cuda_std__
+
+#endif  // _LIBCUDACXX_CSTRING

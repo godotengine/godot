@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/akuukka/quickhull.git
+	branch = 1ffbc6f884ea1da89e104a5996cf8a726db673d5
+	commit = 1ffbc6f884ea1da89e104a5996cf8a726db673d5
+	parent = b8b715dff0615a5e85dc956d514bcf680efa61fa
+	method = merge
+	cmdver = 0.4.6

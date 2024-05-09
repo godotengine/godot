@@ -1,0 +1,59 @@
+// -*- C++ -*-
+//===-------------------------- algorithm ---------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_EXPERIMENTAL_ALGORITHM
+#define _LIBCUDACXX_EXPERIMENTAL_ALGORITHM
+
+/*
+   experimental/algorithm synopsis
+
+#include <algorithm>
+
+namespace std {
+namespace experimental {
+inline namespace fundamentals_v1 {
+
+template <class ForwardIterator, class Searcher>
+ForwardIterator search(ForwardIterator first, ForwardIterator last,
+                       const Searcher &searcher);
+
+// sample removed because it's now part of C++17
+
+} // namespace fundamentals_v1
+} // namespace experimental
+} // namespace std
+
+*/
+
+#include <experimental/__config>
+#include <algorithm>
+#include <type_traits>
+
+#include <__debug>
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+_LIBCUDACXX_PUSH_MACROS
+#include <__undef_macros>
+
+
+_LIBCUDACXX_BEGIN_NAMESPACE_LFTS
+
+template <class _ForwardIterator, class _Searcher>
+_LIBCUDACXX_INLINE_VISIBILITY
+_ForwardIterator search(_ForwardIterator __f, _ForwardIterator __l, const _Searcher &__s)
+{ return __s(__f, __l).first; }
+
+_LIBCUDACXX_END_NAMESPACE_LFTS
+
+_LIBCUDACXX_POP_MACROS
+
+#endif /* _LIBCUDACXX_EXPERIMENTAL_ALGORITHM */

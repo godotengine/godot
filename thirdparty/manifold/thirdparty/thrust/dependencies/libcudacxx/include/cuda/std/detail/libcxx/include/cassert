@@ -1,0 +1,25 @@
+// -*- C++ -*-
+//===-------------------------- cassert -----------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+/*
+    cassert synopsis
+
+Macros:
+
+    assert
+
+*/
+
+#ifndef __cuda_std__
+#include <__config>
+#include <__pragma_push>
+#include <assert.h>
+#include <__pragma_pop>
+#endif //__cuda_std__
+

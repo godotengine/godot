@@ -1,0 +1,79 @@
+// -*- C++ -*-
+//===--------------------------- __config ---------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_EXPERIMENTAL_CONFIG
+#define _LIBCUDACXX_EXPERIMENTAL_CONFIG
+
+#include <__config>
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+#define _LIBCUDACXX_BEGIN_NAMESPACE_EXPERIMENTAL namespace std { namespace experimental {
+#define _LIBCUDACXX_END_NAMESPACE_EXPERIMENTAL  } }
+#define _CUDA_VSTD_EXPERIMENTAL std::experimental
+
+#define _LIBCUDACXX_BEGIN_NAMESPACE_LFTS _LIBCUDACXX_BEGIN_NAMESPACE_EXPERIMENTAL inline namespace fundamentals_v1 {
+#define _LIBCUDACXX_END_NAMESPACE_LFTS  } } }
+#define _CUDA_VSTD_LFTS _CUDA_VSTD_EXPERIMENTAL::fundamentals_v1
+
+#define _LIBCUDACXX_BEGIN_NAMESPACE_LFTS_V2 _LIBCUDACXX_BEGIN_NAMESPACE_EXPERIMENTAL inline namespace fundamentals_v2 {
+#define _LIBCUDACXX_END_NAMESPACE_LFTS_V2  } } }
+#define _CUDA_VSTD_LFTS_V2 _CUDA_VSTD_EXPERIMENTAL::fundamentals_v2
+
+#define _LIBCUDACXX_BEGIN_NAMESPACE_LFTS_PMR _LIBCUDACXX_BEGIN_NAMESPACE_LFTS namespace pmr {
+#define _LIBCUDACXX_END_NAMESPACE_LFTS_PMR _LIBCUDACXX_END_NAMESPACE_LFTS }
+#define _CUDA_VSTD_LFTS_PMR _CUDA_VSTD_LFTS::pmr
+
+#define _LIBCUDACXX_BEGIN_NAMESPACE_CHRONO_LFTS _LIBCUDACXX_BEGIN_NAMESPACE_STD        \
+  namespace chrono { namespace experimental { inline namespace fundamentals_v1 {
+#define _LIBCUDACXX_END_NAMESPACE_CHRONO_LFTS _LIBCUDACXX_END_NAMESPACE_STD } } }
+
+#if defined(_LIBCUDACXX_NO_EXPERIMENTAL_DEPRECATION_WARNING_FILESYSTEM)
+#   define _LIBCUDACXX_DEPRECATED_EXPERIMENTAL_FILESYSTEM /* nothing */
+#else
+#   define _LIBCUDACXX_DEPRECATED_EXPERIMENTAL_FILESYSTEM __attribute__((deprecated("std::experimental::filesystem has now been deprecated in favor of C++17's std::filesystem. Please stop using it and start using std::filesystem. This experimental version will be removed in LLVM 11. You can remove this warning by defining the _LIBCUDACXX_NO_EXPERIMENTAL_DEPRECATION_WARNING_FILESYSTEM macro.")))
+#endif
+
+#define _LIBCUDACXX_BEGIN_NAMESPACE_EXPERIMENTAL_FILESYSTEM \
+    _LIBCUDACXX_BEGIN_NAMESPACE_EXPERIMENTAL namespace filesystem _LIBCUDACXX_DEPRECATED_EXPERIMENTAL_FILESYSTEM { \
+    inline namespace v1 {
+
+#define _LIBCUDACXX_END_NAMESPACE_EXPERIMENTAL_FILESYSTEM \
+    } } _LIBCUDACXX_END_NAMESPACE_EXPERIMENTAL
+
+#define _LIBCUDACXX_BEGIN_NAMESPACE_EXPERIMENTAL_COROUTINES \
+  _LIBCUDACXX_BEGIN_NAMESPACE_EXPERIMENTAL inline namespace coroutines_v1 {
+
+#define _LIBCUDACXX_END_NAMESPACE_EXPERIMENTAL_COROUTINES \
+  } _LIBCUDACXX_END_NAMESPACE_EXPERIMENTAL
+
+#define _CUDA_VSTD_CORO _CUDA_VSTD_EXPERIMENTAL::coroutines_v1
+
+#define _LIBCUDACXX_BEGIN_NAMESPACE_EXPERIMENTAL_SIMD \
+    _LIBCUDACXX_BEGIN_NAMESPACE_EXPERIMENTAL inline namespace parallelism_v2 {
+
+#define _LIBCUDACXX_END_NAMESPACE_EXPERIMENTAL_SIMD \
+    } _LIBCUDACXX_END_NAMESPACE_EXPERIMENTAL
+
+#define _LIBCUDACXX_BEGIN_NAMESPACE_EXPERIMENTAL_SIMD_ABI \
+    _LIBCUDACXX_BEGIN_NAMESPACE_EXPERIMENTAL_SIMD namespace simd_abi {
+
+#define _LIBCUDACXX_END_NAMESPACE_EXPERIMENTAL_SIMD_ABI \
+    } _LIBCUDACXX_END_NAMESPACE_EXPERIMENTAL_SIMD
+
+// TODO: support more targets
+#if defined(__AVX__)
+#define _LIBCUDACXX_NATIVE_SIMD_WIDTH_IN_BYTES 32
+#else
+#define _LIBCUDACXX_NATIVE_SIMD_WIDTH_IN_BYTES 16
+#endif
+
+#endif

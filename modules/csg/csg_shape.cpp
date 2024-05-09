@@ -32,6 +32,306 @@
 
 #include "core/math/geometry_2d.h"
 
+#include "thirdparty/manifold/src/manifold/include/manifold.h"
+#include "thirdparty/manifold/src/utilities/include/public.h"
+
+// Static helper functions.
+
+struct CSGBrush {
+	struct Face {
+		Vector3 vertices[3];
+		Vector2 uvs[3];
+		AABB aabb;
+		bool smooth = false;
+		bool invert = false;
+		int material = 0;
+	};
+
+	Vector<Face> faces;
+	Vector<Ref<Material>> materials;
+
+	manifold::Manifold manifold;
+	enum {
+		MANIFOLD_PROPERTY_POS_X = 0,
+		MANIFOLD_PROPERTY_POS_Y,
+		MANIFOLD_PROPERTY_POS_Z,
+		MANIFOLD_PROPERTY_UV_X,
+		MANIFOLD_PROPERTY_UV_Y,
+		MANIFOLD_PROPERTY_MATERIAL,
+		MANIFOLD_PROPERTY_SMOOTH,
+		MANIFOLD_PROPERTY_INVERT,
+		MANIFOLD_MAX
+	};
+	static constexpr int MANIFOLD_TRIANGLE = 3;
+
+	inline void _regen_face_aabbs() {
+		for (int i = 0; i < faces.size(); i++) {
+			faces.write[i].aabb = AABB();
+			faces.write[i].aabb.position = faces[i].vertices[0];
+			faces.write[i].aabb.expand_to(faces[i].vertices[1]);
+			faces.write[i].aabb.expand_to(faces[i].vertices[2]);
+		}
+	}
+
+	void pack_manifold(const float p_snap, HashMap<uint32_t, Ref<Material>> &r_materials) {
+		if (faces.is_empty()) {
+			return;
+		}
+		faces.sort_custom<CSGBrush::MaterialIndexComparator>();
+
+		HashSet<int32_t> unique_materials;
+		for (CSGBrush::Face &face : faces) {
+			unique_materials.insert(face.material);
+		}
+
+		LocalVector<CSGBrush> split_brushes;
+		CowData<CSGBrush::Face>::Size unique_face_i = 0;
+		for (int32_t material_id : unique_materials) {
+			uint32_t reserved_id = manifold.ReserveIDs(1);
+			CSGBrush current_brush;
+			Ref<Material> material;
+			if (material_id >= 0 && material_id < materials.size()) {
+				material = materials[material_id];
+			}
+			CSGBrush::Face starting_face = faces[unique_face_i];
+			while (unique_face_i < faces.size()) {
+				CSGBrush::Face face = faces[unique_face_i];
+				if (starting_face.material != face.material) {
+					break;
+				}
+				face.material = reserved_id;
+				current_brush.faces.push_back(face);
+				unique_face_i++;
+			}
+			manifold::MeshGL mesh;
+			mesh.runOriginalID.push_back(reserved_id);
+			mesh.triVerts.resize(current_brush.faces.size() * CSGBrush::MANIFOLD_TRIANGLE, 0);
+			mesh.vertProperties.resize(current_brush.faces.size() * CSGBrush::MANIFOLD_TRIANGLE * CSGBrush::MANIFOLD_MAX, std::numeric_limits<float>::quiet_NaN());
+			mesh.numProp = CSGBrush::MANIFOLD_MAX;
+			constexpr size_t order[CSGBrush::MANIFOLD_TRIANGLE] = { 0, 2, 1 };
+			for (CowData<CSGBrush::Face>::Size face_i = 0; face_i < current_brush.faces.size(); face_i++) {
+				const CSGBrush::Face &face = current_brush.faces[face_i];
+				for (size_t vertex_i = 0; vertex_i < CSGBrush::MANIFOLD_TRIANGLE; vertex_i++) {
+					int32_t index = face_i * CSGBrush::MANIFOLD_TRIANGLE + vertex_i;
+					mesh.triVerts[face_i * CSGBrush::MANIFOLD_TRIANGLE + order[vertex_i]] = index;
+					Vector3 pos = face.vertices[vertex_i];
+					Vector2 uv = face.uvs[vertex_i];
+					mesh.vertProperties[index * CSGBrush::MANIFOLD_MAX + CSGBrush::MANIFOLD_PROPERTY_POS_X] = pos.x;
+					mesh.vertProperties[index * CSGBrush::MANIFOLD_MAX + CSGBrush::MANIFOLD_PROPERTY_POS_Y] = pos.y;
+					mesh.vertProperties[index * CSGBrush::MANIFOLD_MAX + CSGBrush::MANIFOLD_PROPERTY_POS_Z] = pos.z;
+					mesh.vertProperties[index * CSGBrush::MANIFOLD_MAX + CSGBrush::MANIFOLD_PROPERTY_UV_X] = uv.x;
+					mesh.vertProperties[index * CSGBrush::MANIFOLD_MAX + CSGBrush::MANIFOLD_PROPERTY_UV_Y] = uv.y;
+					mesh.vertProperties[index * CSGBrush::MANIFOLD_MAX + CSGBrush::MANIFOLD_PROPERTY_MATERIAL] = reserved_id;
+					mesh.vertProperties[index * CSGBrush::MANIFOLD_MAX + CSGBrush::MANIFOLD_PROPERTY_SMOOTH] = face.smooth ? 1.0f : 0.0f;
+					mesh.vertProperties[index * CSGBrush::MANIFOLD_MAX + CSGBrush::MANIFOLD_PROPERTY_INVERT] = face.invert ? 1.0f : 0.0f;
+				}
+			}
+			mesh.precision = p_snap;
+			mesh.Merge();
+			r_materials.insert(reserved_id, material);
+			manifold = manifold.Boolean(manifold::Manifold(mesh), manifold::OpType::Add);
+			split_brushes.push_back(current_brush);
+		}
+	}
+
+	void unpack_manifold(const HashMap<uint32_t, Ref<Material>> &p_materials) {
+		Ref<StandardMaterial3D> default_material;
+		default_material.instantiate();
+		manifold::MeshGL mesh = manifold.GetMeshGL();
+		LocalVector<Vector3> manifold_positions;
+		manifold_positions.resize(mesh.vertProperties.size());
+		LocalVector<Vector2> manifold_uvs;
+		manifold_uvs.resize(mesh.vertProperties.size());
+		LocalVector<uint64_t> manifold_materials;
+		manifold_materials.resize(mesh.vertProperties.size());
+		LocalVector<bool> manifold_smooths;
+		manifold_smooths.resize(mesh.vertProperties.size());
+		LocalVector<bool> manifold_inverts;
+		manifold_inverts.resize(mesh.vertProperties.size());
+		ERR_FAIL_COND_MSG(mesh.vertProperties.size() % mesh.numProp != 0, "Invalid vertex properties size");
+		size_t position_index = 0;
+		size_t uv_index = 0;
+		size_t material_index = 0;
+		size_t smooth_index = 0;
+		size_t invert_index = 0;
+		for (size_t property_i = 0; property_i < mesh.vertProperties.size(); property_i += CSGBrush::MANIFOLD_MAX) {
+			manifold_positions[position_index++] = Vector3(mesh.vertProperties[property_i + CSGBrush::MANIFOLD_PROPERTY_POS_X], mesh.vertProperties[property_i + CSGBrush::MANIFOLD_PROPERTY_POS_Y], mesh.vertProperties[property_i + MANIFOLD_PROPERTY_POS_Z]);
+			manifold_uvs[uv_index++] = Vector2(mesh.vertProperties[property_i + CSGBrush::MANIFOLD_PROPERTY_UV_X], mesh.vertProperties[property_i + CSGBrush::MANIFOLD_PROPERTY_UV_Y]);
+			manifold_materials[material_index++] = static_cast<int>(Math::round(mesh.vertProperties[property_i + CSGBrush::MANIFOLD_PROPERTY_MATERIAL]));
+			manifold_smooths[smooth_index++] = mesh.vertProperties[property_i + CSGBrush::MANIFOLD_PROPERTY_SMOOTH] > 0.5f;
+			manifold_inverts[invert_index++] = mesh.vertProperties[property_i + CSGBrush::MANIFOLD_PROPERTY_INVERT] > 0.5f;
+		}
+		faces.resize(mesh.triVerts.size() / CSGBrush::MANIFOLD_TRIANGLE);
+		constexpr int32_t order[CSGBrush::MANIFOLD_TRIANGLE] = { 0, 2, 1 };
+		for (size_t triangle_i = 0; triangle_i < mesh.triVerts.size() / CSGBrush::MANIFOLD_TRIANGLE; triangle_i++) {
+			CSGBrush::Face &face = faces.write[triangle_i];
+			for (int32_t vertex_i = 0; vertex_i < 3; vertex_i++) {
+				int32_t index = mesh.triVerts[triangle_i * CSGBrush::MANIFOLD_TRIANGLE + order[vertex_i]];
+				Vector3 position = manifold_positions[index];
+				Vector2 uv = manifold_uvs[index];
+				face.vertices[vertex_i] = Vector3(position.x, position.y, position.z);
+				face.uvs[vertex_i] = Vector2(uv.x, uv.y);
+				face.smooth = manifold_smooths[index];
+				face.invert = manifold_inverts[index];
+				uint32_t rid_id = manifold_materials[index];
+				if (p_materials.has(rid_id)) {
+					Ref<Material> material = p_materials[rid_id];
+					int32_t material_id = materials.find(material);
+					if (material_id != -1) {
+						face.material = material_id;
+					} else {
+						face.material = materials.size();
+						materials.push_back(material);
+					}
+					continue;
+				}
+				int32_t material_id = materials.find(default_material);
+				if (material_id != -1) {
+					face.material = material_id;
+				} else {
+					face.material = manifold_materials.size();
+					materials.push_back(default_material);
+				}
+			}
+		}
+
+		_regen_face_aabbs();
+	}
+
+	class MaterialIndexComparator {
+	public:
+		bool operator()(const CSGBrush::Face &a, const CSGBrush::Face &b) const {
+			return a.material < b.material;
+		}
+	};
+
+	// Create a brush from faces.
+	void build_from_faces(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials, const Vector<bool> &p_invert_faces);
+	void copy_from(const CSGBrush &p_brush, const Transform3D &p_xform, float p_snap, HashMap<uint32_t, Ref<Material>> &r_mesh_materials);
+};
+
+inline bool is_point_in_triangle(const Vector3 &p_point, const Vector3 p_vertices[3], int p_shifted = 0) {
+	real_t det = p_vertices[0].dot(p_vertices[1].cross(p_vertices[2]));
+
+	// If determinant is, zero try shift the triangle and the point.
+	if (Math::is_zero_approx(det)) {
+		if (p_shifted > 2) {
+			// Triangle appears degenerate, so ignore it.
+			return false;
+		}
+		Vector3 shift_by;
+		shift_by[p_shifted] = 1;
+		Vector3 shifted_point = p_point + shift_by;
+		Vector3 shifted_vertices[3] = { p_vertices[0] + shift_by, p_vertices[1] + shift_by, p_vertices[2] + shift_by };
+		return is_point_in_triangle(shifted_point, shifted_vertices, p_shifted + 1);
+	}
+
+	// Find the barycentric coordinates of the point with respect to the vertices.
+	real_t lambda[3];
+	lambda[0] = p_vertices[1].cross(p_vertices[2]).dot(p_point) / det;
+	lambda[1] = p_vertices[2].cross(p_vertices[0]).dot(p_point) / det;
+	lambda[2] = p_vertices[0].cross(p_vertices[1]).dot(p_point) / det;
+
+	// Point is in the plane if all lambdas sum to 1.
+	if (!Math::is_equal_approx(lambda[0] + lambda[1] + lambda[2], 1)) {
+		return false;
+	}
+
+	// Point is inside the triangle if all lambdas are positive.
+	if (lambda[0] < 0 || lambda[1] < 0 || lambda[2] < 0) {
+		return false;
+	}
+
+	return true;
+}
+
+// CSGBrush
+
+void CSGBrush::build_from_faces(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials, const Vector<bool> &p_flip_faces) {
+	faces.clear();
+
+	int vc = p_vertices.size();
+
+	ERR_FAIL_COND((vc % 3) != 0);
+
+	const Vector3 *rv = p_vertices.ptr();
+	int uvc = p_uvs.size();
+	const Vector2 *ruv = p_uvs.ptr();
+	int sc = p_smooth.size();
+	const bool *rs = p_smooth.ptr();
+	int mc = p_materials.size();
+	const Ref<Material> *rm = p_materials.ptr();
+	int ic = p_flip_faces.size();
+	const bool *ri = p_flip_faces.ptr();
+
+	HashMap<Ref<Material>, int> material_map;
+
+	faces.resize(p_vertices.size() / 3);
+
+	for (int i = 0; i < faces.size(); i++) {
+		Face &f = faces.write[i];
+		f.vertices[0] = rv[i * 3 + 0];
+		f.vertices[1] = rv[i * 3 + 1];
+		f.vertices[2] = rv[i * 3 + 2];
+
+		if (uvc == vc) {
+			f.uvs[0] = ruv[i * 3 + 0];
+			f.uvs[1] = ruv[i * 3 + 1];
+			f.uvs[2] = ruv[i * 3 + 2];
+		}
+
+		if (sc == vc / 3) {
+			f.smooth = rs[i];
+		} else {
+			f.smooth = false;
+		}
+
+		if (ic == vc / 3) {
+			f.invert = ri[i];
+		} else {
+			f.invert = false;
+		}
+
+		if (mc == vc / 3) {
+			Ref<Material> mat = rm[i];
+			if (mat.is_valid()) {
+				HashMap<Ref<Material>, int>::ConstIterator E = material_map.find(mat);
+
+				if (E) {
+					f.material = E->value;
+				} else {
+					f.material = material_map.size();
+					material_map[mat] = f.material;
+				}
+
+			} else {
+				f.material = -1;
+			}
+		}
+	}
+
+	materials.resize(material_map.size());
+	for (const KeyValue<Ref<Material>, int> &E : material_map) {
+		materials.write[E.value] = E.key;
+	}
+
+	_regen_face_aabbs();
+}
+
+void CSGBrush::copy_from(const CSGBrush &p_brush, const Transform3D &p_xform, float p_snap, HashMap<uint32_t, Ref<Material>> &r_mesh_materials) {
+	faces = p_brush.faces;
+	materials = p_brush.materials;
+
+	for (int i = 0; i < faces.size(); i++) {
+		for (int j = 0; j < 3; j++) {
+			faces.write[i].vertices[j] = p_xform.xform(p_brush.faces[i].vertices[j]);
+		}
+	}
+
+	_regen_face_aabbs();
+	pack_manifold(p_snap, r_mesh_materials);
+}
+
 void CSGShape3D::set_use_collision(bool p_enable) {
 	if (use_collision == p_enable) {
 		return;
@@ -170,6 +470,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 		brush = nullptr;
 
 		CSGBrush *n = _build_brush();
+		HashMap<uint32_t, Ref<Material>> mesh_materials;
 
 		for (int i = 0; i < get_child_count(); i++) {
 			CSGShape3D *child = Object::cast_to<CSGShape3D>(get_child(i));
@@ -186,29 +487,31 @@ CSGBrush *CSGShape3D::_get_brush() {
 			}
 			if (!n) {
 				n = memnew(CSGBrush);
+				n->manifold = manifold::Manifold();
+				mesh_materials.clear();
 
-				n->copy_from(*n2, child->get_transform());
+				n->copy_from(*n2, child->get_transform(), snap, mesh_materials);
 
 			} else {
+				n->pack_manifold(snap, mesh_materials);
 				CSGBrush *nn = memnew(CSGBrush);
 				CSGBrush *nn2 = memnew(CSGBrush);
-				nn2->copy_from(*n2, child->get_transform());
-
-				CSGBrushOperation bop;
-
+				manifold::Manifold manifold_nn2;
+				nn2->copy_from(*n2, child->get_transform(), snap, mesh_materials);
 				switch (child->get_operation()) {
 					case CSGShape3D::OPERATION_UNION:
-						bop.merge_brushes(CSGBrushOperation::OPERATION_UNION, *n, *nn2, *nn, snap);
+						nn->manifold = n->manifold.Boolean(nn2->manifold, manifold::OpType::Add);
 						break;
 					case CSGShape3D::OPERATION_INTERSECTION:
-						bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *n, *nn2, *nn, snap);
+						nn->manifold = n->manifold.Boolean(nn2->manifold, manifold::OpType::Intersect);
 						break;
 					case CSGShape3D::OPERATION_SUBTRACTION:
-						bop.merge_brushes(CSGBrushOperation::OPERATION_SUBTRACTION, *n, *nn2, *nn, snap);
+						nn->manifold = n->manifold.Boolean(nn2->manifold, manifold::OpType::Subtract);
 						break;
 				}
 				memdelete(n);
 				memdelete(nn2);
+				nn->unpack_manifold(mesh_materials);
 				n = nn;
 			}
 		}
@@ -230,6 +533,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 		}
 
 		brush = n;
+		brush->pack_manifold(snap, mesh_materials);
 
 		dirty = false;
 	}

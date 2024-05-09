@@ -1,0 +1,54 @@
+// -*- C++ -*-
+//===--------------------------- cstdarg ----------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _LIBCUDACXX_CSTDARG
+#define _LIBCUDACXX_CSTDARG
+
+/*
+    cstdarg synopsis
+
+Macros:
+
+    type va_arg(va_list ap, type);
+    void va_copy(va_list dest, va_list src);  // C99
+    void va_end(va_list ap);
+    void va_start(va_list ap, parmN);
+
+namespace std
+{
+
+Types:
+
+    va_list
+
+}  // std
+
+*/
+
+#ifndef __cuda_std__
+#include <__config>
+#include <stdarg.h>
+#include <__pragma_push>
+#endif //__cuda_std__
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+#pragma GCC system_header
+#endif
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+
+using ::va_list;
+
+_LIBCUDACXX_END_NAMESPACE_STD
+
+#ifndef __cuda_std__
+#include <__pragma_pop>
+#endif //__cuda_std__
+
+#endif  // _LIBCUDACXX_CSTDARG

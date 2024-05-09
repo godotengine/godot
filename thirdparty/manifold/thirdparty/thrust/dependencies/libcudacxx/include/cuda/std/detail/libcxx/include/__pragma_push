@@ -1,0 +1,25 @@
+// -*- C++ -*-
+//===---------------------------- chrono ----------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_GCC_SYSTEM_HEADER)
+  #pragma GCC system_header
+#endif
+
+#if defined(_LIBCUDACXX_USE_PRAGMA_MSVC_WARNING)
+  #pragma warning(push)
+  #pragma warning(disable : _LIBCUDACXX_MSVC_DISABLED_WARNINGS)
+#endif
+
+#if defined(_LIBCUDACXX_PUSH_MACROS)
+  _LIBCUDACXX_PUSH_MACROS
+#endif
+
+#ifndef __cuda_std__
+#include <__undef_macros>
+#endif

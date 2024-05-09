@@ -1,0 +1,29 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the CUDA Toolkit, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _CUDA_ITERATOR
+#define _CUDA_ITERATOR
+
+#include "type_traits"
+
+#if !defined(_LIBCUDACXX_COMPILER_NVRTC)
+#include <initializer_list>
+#endif
+
+#include "detail/__config"
+
+#include "detail/__pragma_push"
+
+#include "detail/libcxx/include/iosfwd"
+#include "detail/libcxx/include/iterator"
+
+#include "detail/__pragma_pop"
+
+#endif //_CUDA_ITERATOR
+
+

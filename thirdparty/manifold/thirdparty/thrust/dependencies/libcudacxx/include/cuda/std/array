@@ -1,0 +1,34 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the CUDA Toolkit, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _CUDA_ARRAY
+#define _CUDA_ARRAY
+
+#include "cassert"
+#include "cstdint"
+#include "limits"
+#include "type_traits"
+#include "iterator"
+#include "utility"
+#include "initializer_list"
+
+#include "detail/__config"
+
+#include "detail/__pragma_push"
+
+#include "detail/libcxx/include/algorithm"
+#include "detail/libcxx/include/__tuple"
+#include "detail/libcxx/include/cstdlib"
+#include "detail/libcxx/include/stdexcept"
+#include "detail/libcxx/include/array"
+
+#include "detail/__pragma_pop"
+
+#endif //_CUDA_ARRAY
+
+
