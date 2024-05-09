@@ -39,30 +39,6 @@ CharFXTransform::~CharFXTransform() {
 	environment.clear();
 }
 
-void RichTextEffect::_bind_methods(){
-	GDVIRTUAL_BIND(_process_custom_fx, "char_fx")
-}
-
-Variant RichTextEffect::get_bbcode() const {
-	Variant r;
-	if (get_script_instance()) {
-		if (!get_script_instance()->get("bbcode", r)) {
-			String path = get_script_instance()->get_script()->get_path();
-			r = path.get_file().get_basename();
-		}
-	}
-	return r;
-}
-
-bool RichTextEffect::_process_effect_impl(Ref<CharFXTransform> p_cfx) {
-	bool return_value = false;
-	GDVIRTUAL_CALL(_process_custom_fx, p_cfx, return_value);
-	return return_value;
-}
-
-RichTextEffect::RichTextEffect() {
-}
-
 void CharFXTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_transform"), &CharFXTransform::get_transform);
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &CharFXTransform::set_transform);
@@ -116,4 +92,76 @@ void CharFXTransform::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "glyph_flags"), "set_glyph_flags", "get_glyph_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "relative_index"), "set_relative_index", "get_relative_index");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "font"), "set_font", "get_font");
+}
+
+void RichTextEffect::_bind_methods(){
+	GDVIRTUAL_BIND(_process_custom_fx, "char_fx")
+}
+
+Variant RichTextEffect::get_bbcode() const {
+	Variant r;
+	if (get_script_instance()) {
+		if (!get_script_instance()->get("bbcode", r)) {
+			String path = get_script_instance()->get_script()->get_path();
+			r = path.get_file().get_basename();
+		}
+	}
+	return r;
+}
+
+bool RichTextEffect::_process_effect_impl(Ref<CharFXTransform> p_cfx) {
+	bool return_value = false;
+	GDVIRTUAL_CALL(_process_custom_fx, p_cfx, return_value);
+	return return_value;
+}
+
+RichTextEffect::RichTextEffect() {
+}
+
+
+void RichTextTransition::_bind_methods(){
+	GDVIRTUAL_BIND(_process_enter_fx, "char_fx")
+	GDVIRTUAL_BIND(_process_exit_fx, "char_fx")
+}
+
+void RichTextTransition::_update_characters_to_transition(int p_previous_visible_characters, int p_current_visible_characters) {
+	// Iterate over each character index starting at previous visible characters, adding each to the "to transition" list until we reach the new visible characters
+	int visible_char_count_difference = p_current_visible_characters - p_previous_visible_characters;
+	int num_chars_to_transition = ABS(visible_char_count_difference);
+	// Stop all transitions if visible chars is making a large jump.
+	if (characters_to_transition.size() + num_chars_to_transition > MAX_CONCURRENT_TRANSITIONING_CHARS) {
+		characters_to_transition.clear();
+		return;
+	}
+	bool is_enter = visible_char_count_difference > 0;
+	// If current size is less than new size, reserve capacity to prevent lots of resizing/rehasing in the iterators below.
+	if ((int)characters_to_transition.size() < num_chars_to_transition) {
+		int new_size = characters_to_transition.size() + num_chars_to_transition;
+		characters_to_transition.reserve(MIN(new_size, MAX_CONCURRENT_TRANSITIONING_CHARS));
+	}
+	if (is_enter) {
+		for (int i = p_previous_visible_characters; i < p_current_visible_characters; i++) {
+			characters_to_transition[i] = CharacterToTransition(true);
+		}
+	} else {
+		for (int i = p_previous_visible_characters - 1; i >= p_current_visible_characters; i--) {
+			characters_to_transition[i] = CharacterToTransition(false);
+		}
+	}
+}
+
+bool RichTextTransition::_process_enter_fx_impl(Ref<CharFXTransform> p_cfx) {
+	bool is_processing = false;
+	GDVIRTUAL_CALL(_process_enter_fx, p_cfx, is_processing);
+	return is_processing;
+}
+
+bool RichTextTransition::_process_exit_fx_impl(Ref<CharFXTransform> p_cfx) {
+	bool is_processing = false;
+	GDVIRTUAL_CALL(_process_exit_fx, p_cfx, is_processing);
+	return is_processing;
+}
+
+RichTextTransition::RichTextTransition() {
+	char_fx_transform.instantiate();
 }

@@ -1197,6 +1197,46 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					Transform2D char_xform;
 					char_xform.set_origin(p_ofs + off_step);
 
+					bool is_in_transition = false;
+					if (visibility_transition.is_valid()) {
+						int char_key = processed_glyphs_step;
+						print_line(vformat("GLY %s", processed_glyphs_step));
+						if (visibility_transition->characters_to_transition.has(char_key)) {
+							RichTextTransition::CharacterToTransition character_to_transition = visibility_transition->characters_to_transition[char_key];
+							is_in_transition = true;
+							Ref<CharFXTransform> charfx = visibility_transition->char_fx_transform;
+							charfx->elapsed_time = character_to_transition.elapsed_time;
+							charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
+							charfx->relative_index = l.char_offset + glyphs[i].start;
+							charfx->visibility = txt_visible;
+							charfx->outline = (step == DRAW_STEP_SHADOW) || (step == DRAW_STEP_OUTLINE);
+							charfx->font = frid;
+							charfx->glyph_index = gl;
+							charfx->glyph_flags = gl_fl;
+							charfx->glyph_count = gl_cn;
+							charfx->offset = fx_offset;
+							charfx->color = font_color;
+							charfx->transform = char_xform;
+
+							bool is_transition_active;
+							if (character_to_transition.is_enter) {
+								is_transition_active = visibility_transition->_process_enter_fx_impl(charfx);
+							} else {
+								is_transition_active = visibility_transition->_process_exit_fx_impl(charfx);
+							}
+							if (!is_transition_active) {
+								visibility_transition->characters_to_transition.erase(char_key);
+							}
+
+							char_xform = charfx->transform;
+							fx_offset += charfx->offset;
+							font_color = charfx->color;
+							frid = charfx->font;
+							gl = charfx->glyph_index;
+							txt_visible &= charfx->visibility;
+						}
+					}
+
 					for (int j = 0; j < fx_stack.size(); j++) {
 						ItemFX *item_fx = fx_stack[j];
 						bool cn = cprev_cluster || (cprev_conn && item_fx->connected);
@@ -1305,7 +1345,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 					// Draw glyphs.
 					for (int j = 0; j < glyphs[i].repeat; j++) {
-						bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
+						bool skip = !is_in_transition && ((trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs)));
 						if (!skip) {
 							if (txt_visible) {
 								if (step == DRAW_STEP_TEXT) {
@@ -1719,6 +1759,11 @@ void RichTextLabel::_scroll_changed(double) {
 }
 
 void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, double p_delta_time) {
+	if (visibility_transition.is_valid()) {
+		for (KeyValue<int, RichTextTransition::CharacterToTransition> &E : visibility_transition->characters_to_transition) {
+			E.value.elapsed_time += p_delta_time;
+		}
+	}
 	Item *it = p_frame;
 	while (it) {
 		ItemFX *ifx = nullptr;
@@ -3974,6 +4019,9 @@ void RichTextLabel::clear() {
 	main->lines.clear();
 	main->lines.resize(1);
 	main->first_invalid_line.store(0);
+	if (visibility_transition.is_valid()) {
+		visibility_transition->characters_to_transition.clear();
+	}
 
 	selection.click_frame = nullptr;
 	selection.click_item = nullptr;
@@ -5120,6 +5168,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			break;
 		}
 	}
+
+	if(visibility_transition.is_valid()) {
+		set_process_internal(true);
+	}
 }
 
 void RichTextLabel::scroll_to_selection() {
@@ -5794,15 +5846,25 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 	if (visible_ratio != p_ratio) {
 		_stop_thread();
 
+		int total_char_count = get_total_character_count();
+		int previous_visible_characters = visible_characters >= 0 ? visible_characters : total_char_count;
+
+		int new_visible_chars;
 		if (p_ratio >= 1.0) {
 			visible_characters = -1;
 			visible_ratio = 1.0;
+			new_visible_chars = total_char_count;
 		} else if (p_ratio < 0.0) {
 			visible_characters = 0;
 			visible_ratio = 0.0;
+			new_visible_chars = 0;
 		} else {
 			visible_characters = get_total_character_count() * p_ratio;
 			visible_ratio = p_ratio;
+			new_visible_chars = MIN(visible_characters, total_char_count);
+		}
+		if (visibility_transition.is_valid()) {
+			visibility_transition->_update_characters_to_transition(previous_visible_characters, new_visible_chars);
 		}
 
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
@@ -5826,6 +5888,20 @@ void RichTextLabel::set_effects(Array p_effects) {
 
 Array RichTextLabel::get_effects() {
 	return custom_effects;
+}
+
+void RichTextLabel::set_visibility_transition(Ref<RichTextTransition> p_visibility_transition) {
+	visibility_transition = p_visibility_transition;
+	if (visibility_transition.is_valid()) {
+		set_process_internal(true);
+		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
+			visible_chars_behavior = TextServer::VC_CHARS_AFTER_SHAPING;
+		}
+	}
+}
+
+Ref<RichTextTransition> RichTextLabel::get_visibility_transition() {
+	return visibility_transition;
 }
 
 void RichTextLabel::install_effect(const Variant effect) {
@@ -6005,6 +6081,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_visible_ratio", "ratio"), &RichTextLabel::set_visible_ratio);
 	ClassDB::bind_method(D_METHOD("get_visible_ratio"), &RichTextLabel::get_visible_ratio);
 
+	ClassDB::bind_method(D_METHOD("set_visibility_transition", "visibility_transition"), &RichTextLabel::set_visibility_transition);
+	ClassDB::bind_method(D_METHOD("get_visibility_transition"), &RichTextLabel::get_visibility_transition);
+
 	ClassDB::bind_method(D_METHOD("get_character_line", "character"), &RichTextLabel::get_character_line);
 	ClassDB::bind_method(D_METHOD("get_character_paragraph", "character"), &RichTextLabel::get_character_paragraph);
 	ClassDB::bind_method(D_METHOD("get_total_character_count"), &RichTextLabel::get_total_character_count);
@@ -6070,6 +6149,7 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters_behavior", PROPERTY_HINT_ENUM, "Characters Before Shaping,Characters After Shaping,Glyphs (Layout Direction),Glyphs (Left-to-Right),Glyphs (Right-to-Left)"), "set_visible_characters_behavior", "get_visible_characters_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visible_ratio", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_visible_ratio", "get_visible_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "visibility_transition", PROPERTY_HINT_RESOURCE_TYPE, "RichTextTransition", (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE)), "set_visibility_transition", "get_visibility_transition");
 
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
@@ -6152,6 +6232,11 @@ void RichTextLabel::set_visible_characters_behavior(TextServer::VisibleCharacter
 	if (visible_chars_behavior != p_behavior) {
 		_stop_thread();
 
+		// If visibility_transition is set, force visible_characters_behvaiour to CHARS_AFTER_SHAPING to allow for exit fx.
+		if (p_behavior == TextServer::VC_CHARS_BEFORE_SHAPING && visibility_transition.is_valid()) {
+			p_behavior = TextServer::VC_CHARS_AFTER_SHAPING;
+		}
+
 		visible_chars_behavior = p_behavior;
 		main->first_invalid_line.store(0); //invalidate ALL
 		_validate_line_caches();
@@ -6162,17 +6247,32 @@ void RichTextLabel::set_visible_characters_behavior(TextServer::VisibleCharacter
 void RichTextLabel::set_visible_characters(int p_visible) {
 	if (visible_characters != p_visible) {
 		_stop_thread();
+		bool trim_glyphs = visible_chars_behavior == TextServer::VC_GLYPHS_AUTO || visible_chars_behavior == TextServer::VC_GLYPHS_LTR || visible_chars_behavior == TextServer::VC_GLYPHS_RTL;
+		int total_char_count = get_total_character_count();
+		int total_glyph_count = get_total_glyph_count();
+		int previous_visible_characters = visible_characters >= 0 ? visible_characters : total_char_count;
+		int previous_visible_glyphs = total_glyph_count * visible_ratio;
 
 		visible_characters = p_visible;
+
+		int new_visible_chars;
+		int new_visible_glyphs;
 		if (p_visible == -1) {
 			visible_ratio = 1;
+			new_visible_chars = total_char_count;
+			new_visible_glyphs = total_glyph_count;
 		} else {
-			int total_char_count = get_total_character_count();
 			if (total_char_count > 0) {
 				visible_ratio = (float)p_visible / (float)total_char_count;
 			}
+			// Clamp new_visible_chars to max out at total chars.
+			new_visible_chars = MIN(visible_characters, total_char_count);
+			new_visible_glyphs = total_glyph_count * visible_ratio;
 		}
-		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
+		if (visibility_transition.is_valid()) {
+			visibility_transition->_update_characters_to_transition(trim_glyphs ? previous_visible_glyphs : previous_visible_characters, trim_glyphs ? new_visible_glyphs : new_visible_chars);
+		}
+		if (visible_chars_behavior  == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			main->first_invalid_line.store(0); //invalidate ALL
 			_validate_line_caches();
 		}

@@ -672,11 +672,16 @@
 		</member>
 		<member name="visible_characters_behavior" type="int" setter="set_visible_characters_behavior" getter="get_visible_characters_behavior" enum="TextServer.VisibleCharactersBehavior" default="0">
 			Sets the clipping behavior when [member visible_characters] or [member visible_ratio] is set. See [enum TextServer.VisibleCharactersBehavior] for more info.
+			[b]Note:[/b] This property cannot be set to [constant TextServer.CHARS_BEFORE_SHAPING] when [member RichTextLabel.visibility_transition] is set.
 		</member>
 		<member name="visible_ratio" type="float" setter="set_visible_ratio" getter="get_visible_ratio" default="1.0">
 			The fraction of characters to display, relative to the total number of characters (see [method get_total_character_count]). If set to [code]1.0[/code], all characters are displayed. If set to [code]0.5[/code], only half of the characters will be displayed. This can be useful when animating the text appearing in a dialog box.
 			[b]Note:[/b] Setting this property updates [member visible_characters] accordingly.
 		</member>
+		<member name="visiblity_transition" type="RichTextTransition" setter="set_visibility_transition" getter="get_visibility_transition">
+			Set [RichTextTransition] to use for enter/exit effects when [member RichTextLabel.visible_characters] changes.
+			[b]Note:[/b] Setting this property disables the ability to set [member visible_characters_behavior] to [constant TextServer.CHARS_BEFORE_SHAPING], as characters must be clipped [i]after shaping[/i] for exit effects.
+ 		</member>
 	</members>
 	<signals>
 		<signal name="finished">

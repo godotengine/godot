@@ -465,6 +465,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ColorPickerButton);
 	GDREGISTER_CLASS(RichTextLabel);
 	GDREGISTER_CLASS(RichTextEffect);
+	GDREGISTER_CLASS(RichTextTransition);
 	GDREGISTER_CLASS(CharFXTransform);
 
 	GDREGISTER_CLASS(AcceptDialog);
