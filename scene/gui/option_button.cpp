@@ -571,6 +571,7 @@ void OptionButton::_bind_methods() {
 	PopupMenu::Item defaults(true);
 
 	base_property_helper.set_prefix("popup/item_");
+	base_property_helper.set_array_length_getter(&OptionButton::get_item_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, &OptionButton::_dummy_setter, &OptionButton::get_item_text);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &OptionButton::_dummy_setter, &OptionButton::get_item_icon);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), defaults.id, &OptionButton::_dummy_setter, &OptionButton::get_item_id);
