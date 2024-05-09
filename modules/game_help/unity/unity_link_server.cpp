@@ -207,7 +207,8 @@ static bool poll_client(StreamPeerConstBuffer& msg_buffer) {
 		ERR_FAIL_V_MSG(false, "UnityLinkServer: create animation node error " + itos(ERR_OUT_OF_MEMORY) + " " + path);
 
 	}
-
+	path = path.to_lower();
+	path = path.replace("assets", "Assets");
 	if(!DirAccess::exists("res://" + path))
 	{
 		// 创建目录

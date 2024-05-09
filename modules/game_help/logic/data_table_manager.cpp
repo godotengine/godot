@@ -556,7 +556,7 @@ void write(yml::NodeRef *node, const Variant &variant) {
 			// Try to determine the type, first match will return, so order will matter.
             if (!node.is_val_quoted()) {
                 if (node.val_is_null()) {
-                    *variant = Variant();
+                    *variant = "";
 //						Godot::print("Determined: Nil");
                     return true;
                 }
