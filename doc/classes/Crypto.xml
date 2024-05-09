@@ -14,7 +14,7 @@
 			var crypto = Crypto.new()
 			
 			# Generate new RSA key.
-		    var key = crypto.generate_rsa(4096)
+			var key = crypto.generate_rsa(4096)
 		    
 			# Generate new self-signed certificate with the given key.
 		    var cert = crypto.generate_self_signed_certificate(key, "CN=mydomain.com,O=My Game Company,C=IT")
