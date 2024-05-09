@@ -214,6 +214,8 @@ void MTLXLoader::process_node(const mx::NodePtr &node, Ref<VisualShader> shader,
 		add_input_port(input, expression_node, input_port_i++);
 	}
 
+	print_line(String("Total input ports: ") + String::num(node->getInputs().size())); // Print input count
+
 	std::vector<mx::PortElementPtr> downstream_ports = node->getDownstreamPorts();
 	for (mx::PortElementPtr port : downstream_ports) {
 		mx::OutputPtr connected_output = node->getConnectedOutput(port->getNodeName());
@@ -224,6 +226,8 @@ void MTLXLoader::process_node(const mx::NodePtr &node, Ref<VisualShader> shader,
 		print_line(String("Adding output port for node: ") + String(port->getNodeName().c_str())); // Debug log
 		add_output_port(connected_output, expression_node);
 	}
+
+	print_line(String("Total output ports: ") + String::num(downstream_ports.size())); // Print output count
 }
 
 void MTLXLoader::add_input_port(mx::InputPtr input, Ref<VisualShaderNodeExpression> expression_node, int input_port_i) const {
