@@ -18,30 +18,36 @@ def get_name():
     return "Windows"
 
 
-def get_mingw_tool(tool, prefix="", arch="", test="--version"):
-    if not prefix:
-        prefix = os.getenv("MINGW_PREFIX", "")
-    supported_arches = ["x86_64", "x86_32", "arm64", "arm32"]
-    if arch in supported_arches:
-        arches = [arch, ""]
-    else:
-        arches = ["x86_64", "x86_32", "arm64", "arm32", ""]
-    for a in arches:
+def try_cmd(test, prefix, arch):
+    if arch:
         try:
-            path = f"{get_mingw_bin_prefix(prefix, a)}{tool}"
             out = subprocess.Popen(
-                f"{path} {test}",
+                get_mingw_bin_prefix(prefix, arch) + test,
                 shell=True,
                 stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE,
             )
             out.communicate()
             if out.returncode == 0:
-                return path
+                return True
         except Exception:
             pass
+    else:
+        for a in ["x86_64", "x86_32", "arm64", "arm32"]:
+            try:
+                out = subprocess.Popen(
+                    get_mingw_bin_prefix(prefix, a) + test,
+                    shell=True,
+                    stderr=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                )
+                out.communicate()
+                if out.returncode == 0:
+                    return True
+            except Exception:
+                pass
 
-    return ""
+    return False
 
 
 def can_build():
@@ -59,7 +65,9 @@ def can_build():
 
     if os.name == "posix":
         # Cross-compiling with MinGW-w64 (old MinGW32 is not supported)
-        if get_mingw_tool("gcc") or get_mingw_tool("clang"):
+        prefix = os.getenv("MINGW_PREFIX", "")
+
+        if try_cmd("gcc --version", prefix, "") or try_cmd("clang --version", prefix, ""):
             return True
 
     return False
@@ -247,26 +255,36 @@ def get_flags():
 
 
 def build_res_file(target, source, env: "SConsEnvironment"):
-    cmdbase = get_mingw_tool("windres", env["mingw_prefix"], env["arch"])
-    if not cmdbase:
-        return -1
-
     arch_aliases = {
         "x86_32": "pe-i386",
         "x86_64": "pe-x86-64",
         "arm32": "armv7-w64-mingw32",
         "arm64": "aarch64-w64-mingw32",
     }
-    cmdbase += " --include-dir . --target=" + arch_aliases[env["arch"]]
+    cmdbase = "windres --include-dir . --target=" + arch_aliases[env["arch"]]
+
+    mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
 
     for x in range(len(source)):
-        cmd = f"{cmdbase} -i {source[x]} -o {target[x]}"
+        ok = True
+        # Try prefixed executable (MinGW on Linux).
+        cmd = mingw_bin_prefix + cmdbase + " -i " + str(source[x]) + " -o " + str(target[x])
         try:
             out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
             if len(out[1]):
-                return -1
+                ok = False
         except Exception:
-            return -1
+            ok = False
+
+        # Try generic executable (MSYS2).
+        if not ok:
+            cmd = cmdbase + " -i " + str(source[x]) + " -o " + str(target[x])
+            try:
+                out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
+                if len(out[1]):
+                    return -1
+            except Exception:
+                return -1
 
     return 0
 
@@ -340,8 +358,8 @@ def setup_mingw(env: "SConsEnvironment"):
         )
         sys.exit(255)
 
-    if not get_mingw_tool("gcc", env["mingw_prefix"], env["arch"]) and not get_mingw_tool(
-        "clang", env["mingw_prefix"], env["arch"]
+    if not try_cmd("gcc --version", env["mingw_prefix"], env["arch"]) and not try_cmd(
+        "clang --version", env["mingw_prefix"], env["arch"]
     ):
         print_error("No valid compilers found, use MINGW_PREFIX environment variable to set MinGW path.")
         sys.exit(255)
@@ -582,10 +600,10 @@ def configure_mingw(env: "SConsEnvironment"):
 
     ## Build type
 
-    if not env["use_llvm"] and not get_mingw_tool("gcc", env["mingw_prefix"], env["arch"]):
+    if not env["use_llvm"] and not try_cmd("gcc --version", env["mingw_prefix"], env["arch"]):
         env["use_llvm"] = True
 
-    if env["use_llvm"] and not get_mingw_tool("clang", env["mingw_prefix"], env["arch"]):
+    if env["use_llvm"] and not try_cmd("clang --version", env["mingw_prefix"], env["arch"]):
         env["use_llvm"] = False
 
     # TODO: Re-evaluate the need for this / streamline with common config.
@@ -620,26 +638,27 @@ def configure_mingw(env: "SConsEnvironment"):
     if env["arch"] in ["x86_32", "x86_64"]:
         env["x86_libtheora_opt_gcc"] = True
 
+    mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
+
     if env["use_llvm"]:
-        env["CC"] = get_mingw_tool("clang", env["mingw_prefix"], env["arch"])
-        env["CXX"] = get_mingw_tool("clang++", env["mingw_prefix"], env["arch"])
-        tool_as = get_mingw_tool("as", env["mingw_prefix"], env["arch"])
-        tool_ar = get_mingw_tool("ar", env["mingw_prefix"], env["arch"])
-        tool_ranlib = get_mingw_tool("ranlib", env["mingw_prefix"], env["arch"])
+        env["CC"] = mingw_bin_prefix + "clang"
+        env["CXX"] = mingw_bin_prefix + "clang++"
+        if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
+            env["AS"] = mingw_bin_prefix + "as"
+        if try_cmd("ar --version", env["mingw_prefix"], env["arch"]):
+            env["AR"] = mingw_bin_prefix + "ar"
+        if try_cmd("ranlib --version", env["mingw_prefix"], env["arch"]):
+            env["RANLIB"] = mingw_bin_prefix + "ranlib"
         env.extra_suffix = ".llvm" + env.extra_suffix
     else:
-        env["CC"] = get_mingw_tool("gcc", env["mingw_prefix"], env["arch"])
-        env["CXX"] = get_mingw_tool("g++", env["mingw_prefix"], env["arch"])
-        tool_as = get_mingw_tool("as", env["mingw_prefix"], env["arch"])
-        tool_ar = get_mingw_tool("gcc-ar", env["mingw_prefix"], env["arch"])
-        tool_ranlib = get_mingw_tool("gcc-ranlib", env["mingw_prefix"], env["arch"])
-
-    if tool_as:
-        env["AS"] = tool_as
-    if tool_ar:
-        env["AR"] = tool_ar
-    if tool_ranlib:
-        env["RANLIB"] = tool_ranlib
+        env["CC"] = mingw_bin_prefix + "gcc"
+        env["CXX"] = mingw_bin_prefix + "g++"
+        if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
+            env["AS"] = mingw_bin_prefix + "as"
+        if try_cmd("gcc-ar --version", env["mingw_prefix"], env["arch"]):
+            env["AR"] = mingw_bin_prefix + "gcc-ar"
+        if try_cmd("gcc-ranlib --version", env["mingw_prefix"], env["arch"]):
+            env["RANLIB"] = mingw_bin_prefix + "gcc-ranlib"
 
     ## LTO
 
