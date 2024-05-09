@@ -304,10 +304,15 @@ opts.Add(BoolVariable("builtin_zstd", "Use the built-in Zstd library", True))
 
 # Compilation environment setup
 # CXX, CC, and LINK directly set the equivalent `env` values (which may still
-# be overridden for a specific platform), the lowercase ones are appended.
+# be overridden for a specific platform if platform_tools is True), the lowercase ones are appended.
+opts.Add(BoolVariable("platform_tools", "Allow the platform to override CC, CXX, LINK, AS, AR, RANLIB, and WINDRES", True))
 opts.Add("CXX", "C++ compiler binary")
 opts.Add("CC", "C compiler binary")
 opts.Add("LINK", "Linker binary")
+opts.Add("AS", "Assembler binary")
+opts.Add("AR", "Archiver binary")
+opts.Add("RANLIB", "Ranlib binary")
+opts.Add("WINDRES", "Windres binary")
 opts.Add("cppdefines", "Custom defines for the pre-processor")
 opts.Add("ccflags", "Custom flags for both the C and C++ compilers")
 opts.Add("cxxflags", "Custom flags for the C++ compiler")
