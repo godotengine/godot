@@ -9,31 +9,32 @@
 		[codeblocks]
 		[gdscript]
 		extends Node
-
-		var crypto = Crypto.new()
-		var key = CryptoKey.new()
-		var cert = X509Certificate.new()
-
+	
 		func _ready():
-		    # Generate new RSA key.
-		    key = crypto.generate_rsa(4096)
-		    # Generate new self-signed certificate with the given key.
-		    cert = crypto.generate_self_signed_certificate(key, "CN=mydomain.com,O=My Game Company,C=IT")
-		    # Save key and certificate in the user folder.
-		    key.save("user://generated.key")
-		    cert.save("user://generated.crt")
-		    # Encryption
-		    var data = "Some data"
-		    var encrypted = crypto.encrypt(key, data.to_utf8_buffer())
-		    # Decryption
-		    var decrypted = crypto.decrypt(key, encrypted)
-		    # Signing
-		    var signature = crypto.sign(HashingContext.HASH_SHA256, data.sha256_buffer(), key)
-		    # Verifying
-		    var verified = crypto.verify(HashingContext.HASH_SHA256, data.sha256_buffer(), signature, key)
-		    # Checks
-		    assert(verified)
-		    assert(data.to_utf8_buffer() == decrypted)
+			var crypto = Crypto.new()
+			
+			# Generate new RSA key.
+			var key = crypto.generate_rsa(4096)
+		    
+			# Generate new self-signed certificate with the given key.
+		    	var cert = crypto.generate_self_signed_certificate(key, "CN=mydomain.com,O=My Game Company,C=IT")
+		    
+			# Save key and certificate in the user folder.
+		    	key.save("user://generated.key")
+		    	cert.save("user://generated.crt")
+		    
+			# Encryption
+		    	var data = "Some data"
+		    	var encrypted = crypto.encrypt(key, data.to_utf8_buffer())
+		    	# Decryption
+		    	var decrypted = crypto.decrypt(key, encrypted)
+		    	# Signing
+		    	var signature = crypto.sign(HashingContext.HASH_SHA256, data.sha256_buffer(), key)
+		    	# Verifying
+		    	var verified = crypto.verify(HashingContext.HASH_SHA256, data.sha256_buffer(), signature, key)
+		    	# Checks
+		    	assert(verified)
+		    	assert(data.to_utf8_buffer() == decrypted)
 		[/gdscript]
 		[csharp]
 		using Godot;
@@ -41,20 +42,21 @@
 
 		public partial class MyNode : Node
 		{
-		    private Crypto _crypto = new Crypto();
-		    private CryptoKey _key = new CryptoKey();
-		    private X509Certificate _cert = new X509Certificate();
-
 		    public override void _Ready()
 		    {
-		        // Generate new RSA key.
-		        _key = _crypto.GenerateRsa(4096);
-		        // Generate new self-signed certificate with the given key.
-		        _cert = _crypto.GenerateSelfSignedCertificate(_key, "CN=mydomain.com,O=My Game Company,C=IT");
-		        // Save key and certificate in the user folder.
+			private Crypto _crypto = new Crypto();
+	
+			// Generate new RSA key.
+		        private CryptoKey _key = _crypto.GenerateRsa(4096);
+		        
+			// Generate new self-signed certificate with the given key.
+		        private X509Certificate _cert = _crypto.GenerateSelfSignedCertificate(_key, "CN=mydomain.com,O=My Game Company,C=IT");
+		        
+			// Save key and certificate in the user folder.
 		        _key.Save("user://generated.key");
 		        _cert.Save("user://generated.crt");
-		        // Encryption
+		        
+			// Encryption
 		        string data = "Some data";
 		        byte[] encrypted = _crypto.Encrypt(_key, data.ToUtf8Buffer());
 		        // Decryption
@@ -63,7 +65,8 @@
 		        byte[] signature = _crypto.Sign(HashingContext.HashType.Sha256, Data.Sha256Buffer(), _key);
 		        // Verifying
 		        bool verified = _crypto.Verify(HashingContext.HashType.Sha256, Data.Sha256Buffer(), signature, _key);
-		        // Checks
+		        
+			// Checks
 		        Debug.Assert(verified);
 		        Debug.Assert(data.ToUtf8Buffer() == decrypted);
 		    }
