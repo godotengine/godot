@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef GENERATED_H
+#define GENERATED_H
 //
 // Copyright Contributors to the MaterialX Project
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#ifndef GENERATED_H
-#define GENERATED_H
 
 #define MATERIALX_MAJOR_VERSION 1
 #define MATERIALX_MINOR_VERSION 38

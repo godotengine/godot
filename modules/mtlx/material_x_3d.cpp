@@ -198,7 +198,6 @@ void MTLXLoader::process_node_graph(mx::DocumentPtr doc, Ref<VisualShader> shade
 		}
 	}
 }
-
 void MTLXLoader::process_node(const mx::NodePtr &node, Ref<VisualShader> shader, int node_i) const {
 	Ref<VisualShaderNodeExpression> expression_node;
 	expression_node.instantiate();
@@ -212,9 +211,9 @@ void MTLXLoader::process_node(const mx::NodePtr &node, Ref<VisualShader> shader,
 	for (mx::InputPtr input : node->getInputs()) {
 		add_input_port(input, expression_node, input_port_i++);
 	}
-
-	for (mx::OutputPtr output : mx::getConnectedOutputs(node)) {
-		add_output_port(output, expression_node);
+	std::vector<mx::PortElementPtr> downstream_ports = node->getDownstreamPorts();
+	for (mx::PortElementPtr port : downstream_ports) {
+		add_output_port(node->getConnectedOutput(port->getNodeName()), expression_node);
 	}
 }
 
