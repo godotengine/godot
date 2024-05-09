@@ -92,6 +92,9 @@ class MX_GENSHADER_API ShaderGraph : public ShaderNode
     const vector<ShaderGraphInputSocket*>& getInputSockets() const { return _outputOrder; }
     const vector<ShaderGraphOutputSocket*>& getOutputSockets() const { return _inputOrder; }
 
+    /// Apply color and unit transforms to each input of a node.
+    void applyInputTransforms(ConstNodePtr node, ShaderNodePtr shaderNode, GenContext& context);
+
     /// Create a new node in the graph
     ShaderNode* createNode(ConstNodePtr node, GenContext& context);
 

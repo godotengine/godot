@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <simple_srf name="sr_ps" type="surfaceshader">
+    <input name="specColor" type="color3" value="0.05, 0.05, 0.05" />
+    <input name="specRoughness" type="float" value="0.14" />
+  </simple_srf>
+  <surfacematerial name="paint_semigloss" type="material">
+    <input name="surfaceshader" type="surfaceshader" nodename="sr_ps" />
+  </surfacematerial>
+</materialx>

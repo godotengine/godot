@@ -1,0 +1,10 @@
+{
+    "presets": [
+        [
+          "@babel/preset-env",
+          {
+            "exclude": ["transform-regenerator"]
+          }
+        ]
+      ]
+}

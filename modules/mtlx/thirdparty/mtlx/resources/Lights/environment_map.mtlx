@@ -46,7 +46,12 @@
       <input name="filtertype" type="string" value="linear" />
     </image>
 
+    <multiply name="envImageAdjusted" type="color3">
+      <input name="in1" type="color3" nodename="envImage" />
+      <input name="in2" type="float" value="1.0" />
+    </multiply>
+
     <!-- Return the resulting color -->
-    <output name="out" type="color3" nodename="envImage" />
+    <output name="out" type="color3" nodename="envImageAdjusted" />
   </nodegraph>
 </materialx>

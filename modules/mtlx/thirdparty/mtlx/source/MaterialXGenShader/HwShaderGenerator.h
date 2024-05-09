@@ -71,6 +71,7 @@ Uniform variables :
     $envMatrix                          u_envMatrix                         mat4       Rotation matrix for the environment.
     $envIrradiance                      u_envIrradiance                     sampler2D  Sampler for the texture used for diffuse environment lighting.
     $envRadiance                        u_envRadiance                       sampler2D  Sampler for the texture used for specular environment lighting.
+    $envLightIntensity                  u_envLightIntensity                 float      Linear multiplier for environment lighting
     $envRadianceMips                    u_envRadianceMips                   int        Number of mipmaps used on the specular environment texture.
     $envRadianceSamples                 u_envRadianceSamples                int        Samples to use if Filtered Importance Sampling is used for specular environment lighting.
 
@@ -126,6 +127,7 @@ extern MX_GENSHADER_API const string T_ENV_RADIANCE;
 extern MX_GENSHADER_API const string T_ENV_RADIANCE_MIPS;
 extern MX_GENSHADER_API const string T_ENV_RADIANCE_SAMPLES;
 extern MX_GENSHADER_API const string T_ENV_IRRADIANCE;
+extern MX_GENSHADER_API const string T_ENV_LIGHT_INTENSITY;
 extern MX_GENSHADER_API const string T_ENV_PREFILTER_MIP;
 extern MX_GENSHADER_API const string T_REFRACTION_TWO_SIDED;
 extern MX_GENSHADER_API const string T_ALBEDO_TABLE;
@@ -183,6 +185,7 @@ extern MX_GENSHADER_API const string ENV_RADIANCE;
 extern MX_GENSHADER_API const string ENV_RADIANCE_MIPS;
 extern MX_GENSHADER_API const string ENV_RADIANCE_SAMPLES;
 extern MX_GENSHADER_API const string ENV_IRRADIANCE;
+extern MX_GENSHADER_API const string ENV_LIGHT_INTENSITY;
 extern MX_GENSHADER_API const string ENV_PREFILTER_MIP;
 extern MX_GENSHADER_API const string REFRACTION_TWO_SIDED;
 extern MX_GENSHADER_API const string ALBEDO_TABLE;

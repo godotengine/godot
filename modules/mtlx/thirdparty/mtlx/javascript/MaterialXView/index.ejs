@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>MaterialX Web Viewer</title>
+    <link rel="icon" type="image/x-icon" href="public/favicon.ico" />
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial
+      }
+
+      /* Property editor item color */
+      .peditoritem {
+        background-color: #334444;
+      }
+      /* Property editor folder color */
+      .peditorfolder {
+        background-color: #333333;
+      }
+
+     .peditor_material_assigned {
+        background-color: #006cb8;
+      }
+      .peditor_material_assigned:hover {
+        background-color: #32adff;
+      }
+    </style>
+  </head>
+  <body style="margin: 0px; overflow: hidden;">
+    <div id="container">
+      <div style="color:white; position: absolute; top: 0em; margin: 1em">
+        <label for="materials">Material:</label>
+        <select name="materials" id="materials">
+          <% materials.forEach(function(m){ %>
+            <option value="<%-m.value%>">
+              <%-m.name%>
+            </option>
+            <% }); %>
+        </select>
+      </div>
+      <div style="color:white; position: absolute; top: 1.5em; margin: 1em">
+        <label for="geometry">Geometry:</label>
+        <select name="geometry" id="geometry">
+          <% geometry.forEach(function(m){ %>
+            <option value="<%-m.value%>">
+              <%-m.name%>
+            </option>
+            <% }); %>
+        </select>
+      </div>
+      <canvas id="webglcanvas" tabindex="1" style="outline: none;"></canvas>
+    </div>
+    <script src="JsMaterialXGenShader.js"></script>
+  </body>
+</html>

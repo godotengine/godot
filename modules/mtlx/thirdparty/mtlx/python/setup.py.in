@@ -1,0 +1,18 @@
+from setuptools import setup
+import os
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+def getRecursivePackageData(root):
+    packageData = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        relpath = os.path.relpath(dirpath, root)
+        packageData.append(os.path.join(relpath, '*.*'))
+    return packageData
+
+setup(name='MaterialX',
+      url='www.materialx.org',
+      version='${MATERIALX_MAJOR_VERSION}.${MATERIALX_MINOR_VERSION}.${MATERIALX_BUILD_VERSION}',
+      packages=['MaterialX'],
+      package_data={'MaterialX' : getRecursivePackageData('MaterialX')},
+      zip_safe = False)

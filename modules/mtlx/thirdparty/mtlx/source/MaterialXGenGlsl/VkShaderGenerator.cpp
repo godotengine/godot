@@ -69,9 +69,9 @@ void VkShaderGenerator::emitInputs(GenContext& context, ShaderStage& stage) cons
     }
 }
 
-string VkShaderGenerator::getVertexDataPrefix(const VariableBlock&) const
+string VkShaderGenerator::getVertexDataPrefix(const VariableBlock& vertexData) const
 {
-    return EMPTY_STRING;
+    return vertexData.getInstance() + ".";
 }
 
 void VkShaderGenerator::emitOutputs(GenContext& context, ShaderStage& stage) const

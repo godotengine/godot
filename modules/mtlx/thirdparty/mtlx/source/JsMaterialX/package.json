@@ -1,0 +1,30 @@
+{
+  "name": "jsmaterialx",
+  "version": "1.38.5",
+  "description": "JavaScript MaterialX Library",
+  "main": "JsMaterialXGenShader.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AcademySoftwareFoundation/MaterialX"
+  },
+  "sideEffects": false,
+  "files": [
+    "JsMaterialXCore.js",
+    "JsMaterialXCore.wasm",
+    "JsMaterialXGenShader.data",
+    "JsMaterialXGenShader.js",
+    "JsMaterialXGenShader.wasm",
+    "package.json"
+  ],
+  "keywords": [
+    "materialx",
+    "computer-graphics",
+    "vfx",
+    "3d-graphics",
+    "physically-based-rendering",
+    "real-time-rendering"
+  ],
+  "author": "ASWF",
+  "license": "Apache License 2.0",
+  "homepage": "https://www.materialx.org/"
+}

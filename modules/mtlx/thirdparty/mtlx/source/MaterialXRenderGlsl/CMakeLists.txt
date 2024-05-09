@@ -27,6 +27,10 @@ elseif(UNIX)
         message(FATAL_ERROR "Error in building MaterialXRenderGlsl: Xt was not found")
     endif()
 
+    if(SKBUILD)
+      set(OpenGL_GL_PREFERENCE LEGACY)
+    endif()
+
     find_package(OpenGL REQUIRED)
     include_directories(${X11_INCLUDE_DIR})
 endif()
@@ -70,7 +74,7 @@ if(WIN32)
 elseif(APPLE)
     target_link_libraries(
         ${MATERIALX_MODULE_NAME}
-        OpenGL::GL
+        "-framework OpenGL"
         "-framework Foundation"
         "-framework Cocoa"
         "-framework Metal")

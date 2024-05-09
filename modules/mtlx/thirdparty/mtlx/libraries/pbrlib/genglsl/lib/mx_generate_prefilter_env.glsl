@@ -12,6 +12,13 @@ mat3 mx_orthonormal_basis(vec3 N)
     return mat3(X, Y, N);
 }
 
+// Return the alpha associated with the given mip level in a prefiltered environment.
+float mx_latlong_lod_to_alpha(float lod)
+{
+    float lodBias = lod / float($envRadianceMips - 1);
+    return (lodBias < 0.5) ? mx_square(lodBias) : 2.0 * (lodBias - 0.375);
+}
+
 // The inverse of mx_latlong_projection.
 vec3 mx_latlong_map_projection_inverse(vec2 uv)
 {

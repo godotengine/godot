@@ -1,0 +1,9 @@
+[submodule "source/MaterialXView/NanoGUI"]
+	path = source/MaterialXView/NanoGUI
+	url = https://github.com/mitsuba-renderer/nanogui
+[submodule "source/MaterialXGraphEditor/External/ImGui"]
+	path = source/MaterialXGraphEditor/External/ImGui
+	url = https://github.com/ocornut/imgui
+[submodule "source/MaterialXGraphEditor/External/ImGuiNodeEditor"]
+	path = source/MaterialXGraphEditor/External/ImGuiNodeEditor
+	url = https://github.com/thedmd/imgui-node-editor

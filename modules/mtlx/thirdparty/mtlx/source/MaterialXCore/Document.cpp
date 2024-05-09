@@ -95,7 +95,7 @@ class Document::Cache
                     PortElementPtr portElem = elem->asA<PortElement>();
                     if (portElem)
                     {
-                        portElementMap.emplace(portElem->getQualifiedName(nodeName), portElem);
+                        portElementMap[portElem->getQualifiedName(nodeName)].push_back(portElem);
                     }
                 }
                 else
@@ -105,7 +105,7 @@ class Document::Cache
                         PortElementPtr portElem = elem->asA<PortElement>();
                         if (portElem)
                         {
-                            portElementMap.emplace(portElem->getQualifiedName(nodeGraphName), portElem);
+                            portElementMap[portElem->getQualifiedName(nodeGraphName)].push_back(portElem);
                         }
                     }
                 }
@@ -114,7 +114,7 @@ class Document::Cache
                     NodeDefPtr nodeDef = elem->asA<NodeDef>();
                     if (nodeDef)
                     {
-                        nodeDefMap.emplace(nodeDef->getQualifiedName(nodeString), nodeDef);
+                        nodeDefMap[nodeDef->getQualifiedName(nodeString)].push_back(nodeDef);
                     }
                 }
                 if (!nodeDefString.empty())
@@ -124,7 +124,7 @@ class Document::Cache
                     {
                         if (interface->isA<NodeGraph>())
                         {
-                            implementationMap.emplace(interface->getQualifiedName(nodeDefString), interface);
+                            implementationMap[interface->getQualifiedName(nodeDefString)].push_back(interface);
                         }
                         ImplementationPtr impl = interface->asA<Implementation>();
                         if (impl)
@@ -135,11 +135,11 @@ class Document::Cache
                             {
                                 NodeGraphPtr nodeGraph = impl->getDocument()->getNodeGraph(nodeGraphString);
                                 if (nodeGraph)
-                                    implementationMap.emplace(interface->getQualifiedName(nodeDefString), nodeGraph);
+                                    implementationMap[interface->getQualifiedName(nodeDefString)].push_back(nodeGraph);
                             }
                             else
                             {
-                                implementationMap.emplace(interface->getQualifiedName(nodeDefString), interface);
+                                implementationMap[interface->getQualifiedName(nodeDefString)].push_back(interface);
                             }
                         }
                     }
@@ -154,9 +154,9 @@ class Document::Cache
     weak_ptr<Document> doc;
     std::mutex mutex;
     bool valid;
-    std::unordered_multimap<string, PortElementPtr> portElementMap;
-    std::unordered_multimap<string, NodeDefPtr> nodeDefMap;
-    std::unordered_multimap<string, InterfaceElementPtr> implementationMap;
+    std::unordered_map<string, std::vector<PortElementPtr>> portElementMap;
+    std::unordered_map<string, std::vector<NodeDefPtr>> nodeDefMap;
+    std::unordered_map<string, std::vector<InterfaceElementPtr>> implementationMap;
 };
 
 //
@@ -304,16 +304,15 @@ vector<PortElementPtr> Document::getMatchingPorts(const string& nodeName) const
     // Refresh the cache.
     _cache->refresh();
 
-    // Find all port elements matching the given node name.
-    vector<PortElementPtr> ports;
-    auto keyRange = _cache->portElementMap.equal_range(nodeName);
-    for (auto it = keyRange.first; it != keyRange.second; ++it)
+    // Return all port elements matching the given node name.
+    if (_cache->portElementMap.count(nodeName))
     {
-        ports.push_back(it->second);
+        return _cache->portElementMap.at(nodeName);
     }
-
-    // Return the matches.
-    return ports;
+    else
+    {
+        return vector<PortElementPtr>();
+    }
 }
 
 ValuePtr Document::getGeomPropValue(const string& geomPropName, const string& geom) const
@@ -362,16 +361,15 @@ vector<NodeDefPtr> Document::getMatchingNodeDefs(const string& nodeName) const
     // Refresh the cache.
     _cache->refresh();
 
-    // Find all nodedefs matching the given node name.
-    vector<NodeDefPtr> nodeDefs;
-    auto keyRange = _cache->nodeDefMap.equal_range(nodeName);
-    for (auto it = keyRange.first; it != keyRange.second; ++it)
+    // Return all nodedefs matching the given node name.
+    if (_cache->nodeDefMap.count(nodeName))
     {
-        nodeDefs.push_back(it->second);
+        return _cache->nodeDefMap.at(nodeName);
     }
-
-    // Return the matches.
-    return nodeDefs;
+    else
+    {
+        return vector<NodeDefPtr>();
+    }
 }
 
 vector<InterfaceElementPtr> Document::getMatchingImplementations(const string& nodeDef) const
@@ -379,16 +377,15 @@ vector<InterfaceElementPtr> Document::getMatchingImplementations(const string& n
     // Refresh the cache.
     _cache->refresh();
 
-    // Find all implementations matching the given nodedef string.
-    vector<InterfaceElementPtr> implementations;
-    auto keyRange = _cache->implementationMap.equal_range(nodeDef);
-    for (auto it = keyRange.first; it != keyRange.second; ++it)
+    // Return all implementations matching the given nodedef string.
+    if (_cache->implementationMap.count(nodeDef))
     {
-        implementations.push_back(it->second);
+        return _cache->implementationMap.at(nodeDef);
     }
-
-    // Return the matches.
-    return implementations;
+    else
+    {
+        return vector<InterfaceElementPtr>();
+    }
 }
 
 bool Document::validate(string* message) const

@@ -578,6 +578,7 @@ void GlslProgram::bindLighting(LightHandlerPtr lightHandler, ImageHandlerPtr ima
     Matrix44 envRotation = Matrix44::createRotationY(PI) * lightHandler->getLightTransform().getTranspose();
     bindUniform(HW::ENV_MATRIX, Value::createValue(envRotation), false);
     bindUniform(HW::ENV_RADIANCE_SAMPLES, Value::createValue(lightHandler->getEnvSampleCount()), false);
+    bindUniform(HW::ENV_LIGHT_INTENSITY, Value::createValue(lightHandler->getEnvLightIntensity()), false);
     ImagePtr envRadiance = nullptr;
     if (lightHandler->getIndirectLighting())
     {

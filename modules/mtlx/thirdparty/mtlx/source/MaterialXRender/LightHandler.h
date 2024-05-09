@@ -38,6 +38,7 @@ class MX_RENDER_API LightHandler
         _directLighting(true),
         _indirectLighting(true),
         _usePrefilteredMap(false),
+        _envLightIntensity(1.0f),
         _envSampleCount(DEFAULT_ENV_SAMPLE_COUNT),
         _refractionTwoSided(false)
     {
@@ -150,6 +151,18 @@ class MX_RENDER_API LightHandler
         return _envSampleCount;
     }
 
+    /// Set the environment light intensity.
+    void setEnvLightIntensity(const float intensity)
+    {
+        _envLightIntensity = intensity;
+    }
+
+    /// Return the environment light intensity.
+    float getEnvLightIntensity()
+    {
+        return _envLightIntensity;
+    }
+
     /// Set the two-sided refraction property.
     void setRefractionTwoSided(bool enable)
     {
@@ -246,6 +259,7 @@ class MX_RENDER_API LightHandler
     ImagePtr _envRadianceMap;
     ImagePtr _envPrefilteredMap;
     ImagePtr _envIrradianceMap;
+    float _envLightIntensity;
     int _envSampleCount;
 
     bool _refractionTwoSided;

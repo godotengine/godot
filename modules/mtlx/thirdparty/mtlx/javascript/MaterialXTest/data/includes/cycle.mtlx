@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<materialx version="1.38" colorspace="lin_rec709" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="cycle.mtlx" />
+</materialx>
