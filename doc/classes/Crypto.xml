@@ -11,14 +11,12 @@
 		extends Node
 
 		var crypto = Crypto.new()
-		var key = CryptoKey.new()
-		var cert = X509Certificate.new()
 
 		func _ready():
 		    # Generate new RSA key.
-		    key = crypto.generate_rsa(4096)
+		    var key = crypto.generate_rsa(4096)
 		    # Generate new self-signed certificate with the given key.
-		    cert = crypto.generate_self_signed_certificate(key, "CN=mydomain.com,O=My Game Company,C=IT")
+		    var cert = crypto.generate_self_signed_certificate(key, "CN=mydomain.com,O=My Game Company,C=IT")
 		    # Save key and certificate in the user folder.
 		    key.save("user://generated.key")
 		    cert.save("user://generated.crt")
@@ -42,15 +40,13 @@
 		public partial class MyNode : Node
 		{
 		    private Crypto _crypto = new Crypto();
-		    private CryptoKey _key = new CryptoKey();
-		    private X509Certificate _cert = new X509Certificate();
 
 		    public override void _Ready()
 		    {
 		        // Generate new RSA key.
-		        _key = _crypto.GenerateRsa(4096);
+		        private CryptoKey _key = _crypto.GenerateRsa(4096);
 		        // Generate new self-signed certificate with the given key.
-		        _cert = _crypto.GenerateSelfSignedCertificate(_key, "CN=mydomain.com,O=My Game Company,C=IT");
+		        private X509Certificate _cert = _crypto.GenerateSelfSignedCertificate(_key, "CN=mydomain.com,O=My Game Company,C=IT");
 		        // Save key and certificate in the user folder.
 		        _key.Save("user://generated.key");
 		        _cert.Save("user://generated.crt");
