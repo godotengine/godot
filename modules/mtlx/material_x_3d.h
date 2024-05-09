@@ -53,6 +53,7 @@ class MTLXLoader : public RefCounted {
 	void add_input_port(mx::InputPtr input, Ref<VisualShaderNodeExpression> expression_node, int input_port_i) const;
 	void add_output_port(mx::OutputPtr output, Ref<VisualShaderNodeExpression> expression_node) const;
 	static Variant get_value_as_variant(const mx::ValuePtr &value);
+	int convert_type(const std::string &typeString) const;
 
 protected:
 	static void _bind_methods();

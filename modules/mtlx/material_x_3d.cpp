@@ -232,10 +232,27 @@ void MTLXLoader::add_input_port(mx::InputPtr input, Ref<VisualShaderNodeExpressi
 void MTLXLoader::add_output_port(mx::OutputPtr output, Ref<VisualShaderNodeExpression> expression_node) const {
 	const std::string &output_name = output->getName();
 	print_line(String("MaterialX output " + String(output_name.c_str())));
+	int variant_type = convert_type(output_name);
+	expression_node->add_output_port(expression_node->get_free_output_port_id(), variant_type, output_name.c_str());
+}
 
-	mx::ValuePtr value = output->getValue();
-	Variant variant_value = get_value_as_variant(value);
-
-	print_line(String("MaterialX output value: ") + String(variant_value));
-	expression_node->add_output_port(expression_node->get_free_output_port_id(), variant_value, output_name.c_str());
+int MTLXLoader::convert_type(const std::string &typeString) const {
+	if (typeString == "float") {
+		return Variant::FLOAT;
+	} else if (typeString == "integer") {
+		return Variant::INT;
+	} else if (typeString == "boolean") {
+		return Variant::BOOL;
+	} else if (typeString == "color3" || typeString == "color4") {
+		return Variant::COLOR;
+	} else if (typeString == "vector2") {
+		return Variant::VECTOR2;
+	} else if (typeString == "vector3") {
+		return Variant::VECTOR3;
+	} else if (typeString == "vector4") {
+		return Variant::VECTOR4;
+	} else if (typeString == "matrix33" || typeString == "matrix44") {
+		// Placeholder.
+	}
+	return -1;
 }
