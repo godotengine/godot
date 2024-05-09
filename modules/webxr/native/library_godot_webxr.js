@@ -292,7 +292,7 @@ const GodotWebXR = {
 			GodotWebXR.gl = gl;
 
 			gl.makeXRCompatible().then(function () {
-				GodotWebXR.gl_binding = new XRWebGLBinding(session, gl); // eslint-disable-line no-undef
+				GodotWebXR.gl_binding = new XRWebGLBinding(session, gl);
 
 				// This will trigger the layer to get created.
 				GodotWebXR.getLayer();
