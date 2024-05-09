@@ -24,6 +24,10 @@
         android:hasFragileUserData="false"
         android:requestLegacyExternalStorage="false"
         tools:ignore="GoogleAppIndexingWarning" >
+        <profileable
+            android:shell="true"
+            android:enabled="true"
+            tools:targetApi="29" />
 
         <!-- Records the version of the Godot editor used for building -->
         <meta-data

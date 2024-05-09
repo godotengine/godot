@@ -84,6 +84,10 @@ class Godot(private val context: Context) : SensorEventListener {
 
 	private companion object {
 		private val TAG = Godot::class.java.simpleName
+
+		// Supported build flavors
+		const val EDITOR_FLAVOR = "editor"
+		const val TEMPLATE_FLAVOR = "template"
 	}
 
 	private val windowManager: WindowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -188,6 +192,8 @@ class Godot(private val context: Context) : SensorEventListener {
 			return
 		}
 
+		Log.v(TAG, "OnCreate: $primaryHost")
+
 		darkMode = context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
 		beginBenchmarkMeasure("Startup", "Godot::onCreate")
@@ -196,6 +202,8 @@ class Godot(private val context: Context) : SensorEventListener {
 			val activity = requireActivity()
 			val window = activity.window
 			window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+
+			Log.v(TAG, "Initializing Godot plugin registry")
 			GodotPluginRegistry.initializePluginRegistry(this, primaryHost.getHostPlugins(this))
 			if (io == null) {
 				io = GodotIO(activity)
@@ -319,6 +327,8 @@ class Godot(private val context: Context) : SensorEventListener {
 			return false
 		}
 
+		Log.v(TAG, "OnInitNativeLayer: $host")
+
 		beginBenchmarkMeasure("Startup", "Godot::onInitNativeLayer")
 		try {
 			if (expansionPackPath.isNotEmpty()) {
@@ -337,12 +347,15 @@ class Godot(private val context: Context) : SensorEventListener {
 					fileAccessHandler,
 					useApkExpansion,
 				)
+				Log.v(TAG, "Godot native layer initialization completed: $nativeLayerInitializeCompleted")
 			}
 
 			if (nativeLayerInitializeCompleted && !nativeLayerSetupCompleted) {
 				nativeLayerSetupCompleted = GodotLib.setup(commandLine.toTypedArray(), tts)
 				if (!nativeLayerSetupCompleted) {
 					throw IllegalStateException("Unable to setup the Godot engine! Aborting...")
+				} else {
+					Log.v(TAG, "Godot native layer setup completed")
 				}
 			}
 		} finally {
@@ -369,6 +382,8 @@ class Godot(private val context: Context) : SensorEventListener {
 		if (!isNativeInitialized()) {
 			throw IllegalStateException("onInitNativeLayer() must be invoked successfully prior to initializing the render view")
 		}
+
+		Log.v(TAG, "OnInitRenderView: $host")
 
 		beginBenchmarkMeasure("Startup", "Godot::onInitRenderView")
 		try {
@@ -489,6 +504,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	fun onStart(host: GodotHost) {
+		Log.v(TAG, "OnStart: $host")
 		if (host != primaryHost) {
 			return
 		}
@@ -497,6 +513,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	fun onResume(host: GodotHost) {
+		Log.v(TAG, "OnResume: $host")
 		if (host != primaryHost) {
 			return
 		}
@@ -529,6 +546,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	fun onPause(host: GodotHost) {
+		Log.v(TAG, "OnPause: $host")
 		if (host != primaryHost) {
 			return
 		}
@@ -541,6 +559,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	fun onStop(host: GodotHost) {
+		Log.v(TAG, "OnStop: $host")
 		if (host != primaryHost) {
 			return
 		}
@@ -549,6 +568,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	}
 
 	fun onDestroy(primaryHost: GodotHost) {
+		Log.v(TAG, "OnDestroy: $primaryHost")
 		if (this.primaryHost != primaryHost) {
 			return
 		}
@@ -606,21 +626,28 @@ class Godot(private val context: Context) : SensorEventListener {
 	 * Invoked on the render thread when the Godot setup is complete.
 	 */
 	private fun onGodotSetupCompleted() {
-		Log.d(TAG, "OnGodotSetupCompleted")
+		Log.v(TAG, "OnGodotSetupCompleted")
 
-		// These properties are defined after Godot setup completion, so we retrieve them here.
-		val longPressEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
-		val panScaleEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
-		val rotaryInputAxisValue = GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis")
+		if (!isEditorBuild()) {
+			// These properties are defined after Godot setup completion, so we retrieve them here.
+			val longPressEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
+			val panScaleEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
+			val rotaryInputAxisValue = GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis")
 
-		runOnUiThread {
-			renderView?.inputHandler?.apply {
-				enableLongPress(longPressEnabled)
-				enablePanningAndScalingGestures(panScaleEnabled)
-				try {
-					setRotaryInputAxis(Integer.parseInt(rotaryInputAxisValue))
-				} catch (e: NumberFormatException) {
-					Log.w(TAG, e)
+			val useInputBuffering = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/buffering/android/use_input_buffering"))
+			val useAccumulatedInput = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/buffering/android/use_accumulated_input"))
+			GodotLib.updateInputDispatchSettings(useAccumulatedInput, useInputBuffering)
+
+			runOnUiThread {
+				renderView?.inputHandler?.apply {
+					enableLongPress(longPressEnabled)
+					enablePanningAndScalingGestures(panScaleEnabled)
+					enableInputDispatchToRenderThread(!useInputBuffering && !useAccumulatedInput)
+					try {
+						setRotaryInputAxis(Integer.parseInt(rotaryInputAxisValue))
+					} catch (e: NumberFormatException) {
+						Log.w(TAG, e)
+					}
 				}
 			}
 		}
@@ -635,7 +662,7 @@ class Godot(private val context: Context) : SensorEventListener {
 	 * Invoked on the render thread when the Godot main loop has started.
 	 */
 	private fun onGodotMainLoopStarted() {
-		Log.d(TAG, "OnGodotMainLoopStarted")
+		Log.v(TAG, "OnGodotMainLoopStarted")
 
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onGodotMainLoopStarted()
@@ -761,6 +788,11 @@ class Godot(private val context: Context) : SensorEventListener {
 	fun hasClipboard(): Boolean {
 		return mClipboard.hasPrimaryClip()
 	}
+
+	/**
+	 * @return true if this is an editor build, false if this is a template build
+	 */
+	fun isEditorBuild() = BuildConfig.FLAVOR == EDITOR_FLAVOR
 
 	fun getClipboard(): String {
 		val clipData = mClipboard.primaryClip ?: return ""
