@@ -30,10 +30,10 @@
 
 #include "grid_map.h"
 
+#include "core/core_string_names.h"
+#include "core/error/error_macros.h"
 #include "core/io/marshalls.h"
-#include "scene/3d/light_3d.h"
 #include "scene/resources/3d/mesh_library.h"
-#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/physics_material.h"
 #include "scene/resources/surface_tool.h"
 #include "servers/navigation_server_3d.h"
@@ -132,14 +132,6 @@ void GridMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	p_list->push_back(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-}
-
-void GridMap::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "cell_layout" && cell_shape == CELL_SHAPE_SQUARE) {
-		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-	} else if (p_property.name == "cell_offset_axis" && cell_shape == CELL_SHAPE_SQUARE) {
-		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-	}
 }
 
 void GridMap::set_collision_layer(uint32_t p_layer) {
@@ -285,43 +277,30 @@ void GridMap::set_cell_shape(CellShape p_shape) {
 		return;
 	}
 	cell_shape = p_shape;
+
+	// if we switch to hex cells, make sure to change z & x coords to match
+	if (cell_shape == CELL_SHAPE_HEXAGON) {
+		cell_size.z = cell_size.x;
+	}
+
 	notify_property_list_changed();
 	_recreate_octant_data();
+	emit_signal(SNAME("cell_shape_changed"), cell_shape);
 }
 
 GridMap::CellShape GridMap::get_cell_shape() const {
 	return cell_shape;
 }
 
-void GridMap::set_cell_layout(CellLayout p_layout) {
-	ERR_FAIL_INDEX(p_layout, CELL_LAYOUT_MAX);
-	if (cell_layout == p_layout) {
-		return;
-	}
-	cell_layout = p_layout;
-	_recreate_octant_data();
-}
-
-GridMap::CellLayout GridMap::get_cell_layout() const {
-	return cell_layout;
-}
-
-void GridMap::set_cell_offset_axis(CellOffsetAxis p_offset_axis) {
-	ERR_FAIL_INDEX(p_offset_axis, CELL_OFFSET_AXIS_MAX);
-	if (cell_offset_axis == p_offset_axis) {
-		return;
-	}
-	cell_offset_axis = p_offset_axis;
-	_recreate_octant_data();
-}
-
-GridMap::CellOffsetAxis GridMap::get_cell_offset_axis() const {
-	return cell_offset_axis;
-}
-
 void GridMap::set_cell_size(const Vector3 &p_size) {
 	ERR_FAIL_COND(p_size.x < 0.001 || p_size.y < 0.001 || p_size.z < 0.001);
 	cell_size = p_size;
+	// hex cells have a radius stored in x, and height stored in y.  To make
+	// it clear that irregular hexagons are not supported, the z value of hex
+	// cells will always be updated to be the same as x.
+	if (cell_shape == CELL_SHAPE_HEXAGON) {
+		cell_size.z = cell_size.x;
+	}
 	_recreate_octant_data();
 	emit_signal(SNAME("cell_size_changed"), cell_size);
 }
@@ -479,7 +458,8 @@ int GridMap::get_cell_item_orientation(const Vector3i &p_position) const {
 	return cell_map[key].rot;
 }
 
-static const Basis _ortho_bases[24] = {
+#define ORTHO_BASES_SQUARE_LEN 24
+static const Basis _ortho_bases_square[ORTHO_BASES_SQUARE_LEN] = {
 	Basis(1, 0, 0, 0, 1, 0, 0, 0, 1),
 	Basis(0, -1, 0, 1, 0, 0, 0, 0, 1),
 	Basis(-1, 0, 0, 0, -1, 0, 0, 0, 1),
@@ -506,6 +486,27 @@ static const Basis _ortho_bases[24] = {
 	Basis(0, -1, 0, 0, 0, -1, 1, 0, 0)
 };
 
+// hex cells can be rotated six different ways around the y-axis.  Additionally,
+// they can be flipped upside down.
+#define ORTHO_BASES_HEX_LEN 12
+static const Basis _ortho_bases_hex[ORTHO_BASES_HEX_LEN] = {
+	// rotate around y axis, y up
+	Basis(1, 0, 0, 0, 1, 0, 0, 0, 1),
+	Basis(0.5, 0, SQRT3_2, 0, 1, 0, -SQRT3_2, 0, 0.5),
+	Basis(-0.5, 0, SQRT3_2, 0, 1, 0, -SQRT3_2, 0, -0.5),
+	Basis(-1, 0, 0, 0, 1, 0, 0, 0, -1),
+	Basis(0.5, 0, -SQRT3_2, 0, 1, 0, SQRT3_2, 0, 0.5),
+	Basis(-0.5, 0, -SQRT3_2, 0, 1, 0, SQRT3_2, 0, -0.5),
+
+	// rotate 180 degrees about the x-axis to make y down, and rotate about y
+	Basis(1, 0, 0, 0, -1, 0, 0, 0, -1),
+	Basis(0.5, 0, -SQRT3_2, 0, -1, 0, -SQRT3_2, 0, -0.5),
+	Basis(-0.5, 0, -SQRT3_2, 0, -1, 0, -SQRT3_2, 0, 0.5),
+	Basis(-1, 0, 0, 0, -1, 0, 0, 0, 1),
+	Basis(-0.5, 0, SQRT3_2, 0, -1, 0, SQRT3_2, 0, 0.5),
+	Basis(0.5, 0, SQRT3_2, 0, -1, 0, SQRT3_2, 0, -0.5),
+};
+
 Basis GridMap::get_cell_item_basis(const Vector3i &p_position) const {
 	int orientation = get_cell_item_orientation(p_position);
 
@@ -517,269 +518,284 @@ Basis GridMap::get_cell_item_basis(const Vector3i &p_position) const {
 }
 
 Basis GridMap::get_basis_with_orthogonal_index(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, 24, Basis());
+	if (cell_shape == CELL_SHAPE_SQUARE) {
+		ERR_FAIL_INDEX_V(p_index, ORTHO_BASES_SQUARE_LEN, Basis());
+		return _ortho_bases_square[p_index];
+	} else {
+		ERR_FAIL_INDEX_V(p_index, ORTHO_BASES_HEX_LEN, Basis());
+		return _ortho_bases_hex[p_index];
+	}
+}
 
-	return _ortho_bases[p_index];
+// for hex cells, round a value within a Basis to -sqrt(3)/2, 0.0, sqrt(3)/2
+static inline real_t round_sqrt3_2(real_t v) {
+	if (v < -(SQRT3_2 / 2)) {
+		return -SQRT3_2;
+	} else if (v < SQRT3_2 / 2) {
+		return 0;
+	} else {
+		return SQRT3_2;
+	}
+}
+
+// for hex cells, round a value within a Basis to -1.0, -0.5, 0.5, 1.0
+static inline real_t round_one_or_half(real_t v) {
+	if (v < -0.75) {
+		return -1.0;
+	} else if (v < 0.0) {
+		return -0.5;
+	} else if (v < 0.75) {
+		return 0.50;
+	} else {
+		return 1.0;
+	}
 }
 
 int GridMap::get_orthogonal_index_from_basis(const Basis &p_basis) const {
 	Basis orth = p_basis;
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			real_t v = orth[i][j];
-			if (v > 0.5) {
-				v = 1.0;
-			} else if (v < -0.5) {
-				v = -1.0;
-			} else {
-				v = 0;
+	if (cell_shape == CELL_SHAPE_SQUARE) {
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				real_t v = orth[i][j];
+				if (v > 0.5) {
+					v = 1.0;
+				} else if (v < -0.5) {
+					v = -1.0;
+				} else {
+					v = 0;
+				}
+
+				orth[i][j] = v;
 			}
-
-			orth[i][j] = v;
 		}
-	}
+		for (int i = 0; i < ORTHO_BASES_SQUARE_LEN; i++) {
+			if (_ortho_bases_square[i] == orth) {
+				return i;
+			}
+		}
+	} else {
+		orth[0][0] = round_one_or_half(orth[0][0]);
+		orth[0][1] = 0;
+		orth[0][2] = round_sqrt3_2(orth[0][2]);
 
-	for (int i = 0; i < 24; i++) {
-		if (_ortho_bases[i] == orth) {
-			return i;
+		orth[1][0] = 0;
+		orth[1][1] = orth[1][1] < 0 ? -1 : 1;
+		orth[1][2] = 0;
+
+		orth[2][0] = round_sqrt3_2(orth[2][0]);
+		orth[2][1] = 0;
+		orth[2][2] = round_one_or_half(orth[2][2]);
+
+		for (int i = 0; i < ORTHO_BASES_HEX_LEN; i++) {
+			if (_ortho_bases_hex[i] == orth) {
+				return i;
+			}
 		}
 	}
 
 	return 0;
 }
 
-Vector3i GridMap::local_to_map(const Vector3 &p_local_position) const {
-	Vector3 map_position = p_local_position - _get_offset();
-	map_position /= cell_size;
-
-	// Divide by the overlapping ratio.
-	double overlapping_ratio = 1.0;
-	if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
-		if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
-			overlapping_ratio = 0.75;
-		}
-		map_position.z /= overlapping_ratio;
-	} else { // CELL_OFFSET_AXIS_VERTICAL
-		if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
-			overlapping_ratio = 0.75;
-		}
-		map_position.x /= overlapping_ratio;
+TypedArray<Vector3i> GridMap::get_cell_neighbors(const Vector3i cell) const {
+	TypedArray<Vector3i> out;
+	switch (cell_shape) {
+		case CELL_SHAPE_SQUARE:
+			out.push_back(cell + Vector3(1, 0, 0));
+			out.push_back(cell + Vector3(-1, 0, 0));
+			out.push_back(cell + Vector3(0, 1, 0));
+			out.push_back(cell + Vector3(0, -1, 0));
+			out.push_back(cell + Vector3(0, 0, 1));
+			out.push_back(cell + Vector3(0, 0, -1));
+			break;
+		case CELL_SHAPE_HEXAGON:
+			// each of the six horizontal directions
+			out.push_back(cell + Vector3(1, 0, 0));
+			out.push_back(cell + Vector3(1, 0, -1));
+			out.push_back(cell + Vector3(0, 0, -1));
+			out.push_back(cell + Vector3(-1, 0, 0));
+			out.push_back(cell + Vector3(-1, 0, 1));
+			out.push_back(cell + Vector3(0, 0, 1));
+			// and up and down
+			out.push_back(cell + Vector3(0, 1, 0));
+			out.push_back(cell + Vector3(0, -1, 0));
+			break;
+		default:
+			ERR_PRINT_ED("unsupported cell shape");
 	}
+	return out;
+}
 
-	// For each half-offset shape, we check if we are in the corner of the tile, and thus should correct the world position accordingly.
-	if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
-		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
-		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap.
-		if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
-			// Smart floor of the position.
-			Vector3 raw_pos = map_position;
-			if ((Math::posmod(Math::floor(map_position.z), 2) != 0.0) ^ (cell_layout == GridMap::CELL_LAYOUT_STACKED_OFFSET)) {
-				map_position = Vector3(Math::floor(map_position.x + 0.5) - 0.5, map_position.y, Math::floor(map_position.z));
-			} else {
-				map_position = map_position.floor();
-			}
+// based on blog post https://observablehq.com/@jrus/hexround
+static inline Vector2i axial_round(real_t q_in, real_t r_in) {
+	int q = round(q_in);
+	int r = round(r_in);
 
-			// Compute the tile offset, and if we might the output for a neighbor top tile.
-			Vector2 in_cell_pos = Vector2(raw_pos.x - map_position.x, raw_pos.z - map_position.z);
-			bool in_top_left_triangle = (in_cell_pos - Vector2(0.5, 0.0)).cross(Vector2(-0.5, 1.0 / overlapping_ratio - 1)) <= 0;
-			bool in_top_right_triangle = (in_cell_pos - Vector2(0.5, 0.0)).cross(Vector2(0.5, 1.0 / overlapping_ratio - 1)) > 0;
+	real_t q_rem = q_in - q;
+	real_t r_rem = r_in - r;
 
-			switch (cell_layout) {
-				case GridMap::CELL_LAYOUT_STACKED:
-					map_position = map_position.floor();
-					if (in_top_left_triangle) {
-						map_position += Vector3i(Math::posmod(Math::floor(map_position.z), 2) != 0.0 ? 0 : -1, 0, -1);
-					} else if (in_top_right_triangle) {
-						map_position += Vector3i(Math::posmod(Math::floor(map_position.z), 2) != 0.0 ? 1 : 0, 0, -1);
-					}
-					break;
-				case GridMap::CELL_LAYOUT_STACKED_OFFSET:
-					map_position = map_position.floor();
-					if (in_top_left_triangle) {
-						map_position += Vector3i(Math::posmod(Math::floor(map_position.z), 2) ? -1 : 0, 0, -1);
-					} else if (in_top_right_triangle) {
-						map_position += Vector3i(Math::posmod(Math::floor(map_position.z), 2) ? 0 : 1, 0, -1);
-					}
-					break;
-				case GridMap::CELL_LAYOUT_STAIRS_RIGHT:
-					map_position = Vector3(map_position.x - map_position.z / 2, map_position.y, map_position.z).floor();
-					if (in_top_left_triangle) {
-						map_position += Vector3i(0, 0, -1);
-					} else if (in_top_right_triangle) {
-						map_position += Vector3i(1, 0, -1);
-					}
-					break;
-				case GridMap::CELL_LAYOUT_STAIRS_DOWN:
-					map_position = Vector3(map_position.x * 2, map_position.y, map_position.z / 2 - map_position.x).floor();
-					if (in_top_left_triangle) {
-						map_position += Vector3i(-1, 0, 0);
-					} else if (in_top_right_triangle) {
-						map_position += Vector3i(1, 0, -1);
-					}
-					break;
-				case GridMap::CELL_LAYOUT_DIAMOND_RIGHT:
-					map_position = Vector3(map_position.x - map_position.z / 2, map_position.y, map_position.z / 2 + map_position.x).floor();
-					if (in_top_left_triangle) {
-						map_position += Vector3i(0, 0, -1);
-					} else if (in_top_right_triangle) {
-						map_position += Vector3i(1, 0, 0);
-					}
-					break;
-				case GridMap::CELL_LAYOUT_DIAMOND_DOWN:
-					map_position = Vector3(map_position.x + map_position.z / 2, map_position.y, map_position.z / 2 - map_position.x).floor();
-					if (in_top_left_triangle) {
-						map_position += Vector3i(-1, 0, 0);
-					} else if (in_top_right_triangle) {
-						map_position += Vector3i(0, 0, -1);
-					}
-					break;
-				default:
-					break;
-			}
-		} else { // CELL_OFFSET_AXIS_VERTICAL
-			// Smart floor of the position.
-			Vector3 raw_pos = map_position;
-			if ((Math::posmod(Math::floor(map_position.x), 2) != 0.0) ^ (cell_layout == GridMap::CELL_LAYOUT_STACKED_OFFSET)) {
-				map_position = Vector3(Math::floor(map_position.x), Math::floor(map_position.y), Math::floor(map_position.z + 0.5) - 0.5);
-			} else {
-				map_position = map_position.floor();
-			}
-
-			// Compute the tile offset, and if we might the output for a neighbor top tile.
-			Vector2 in_cell_pos = Vector2(raw_pos.x - map_position.x, raw_pos.z - map_position.z);
-			bool in_top_left_triangle = (in_cell_pos - Vector2(0.0, 0.5)).cross(Vector2(1.0 / overlapping_ratio - 1, -0.5)) > 0;
-			bool in_bottom_left_triangle = (in_cell_pos - Vector2(0.0, 0.5)).cross(Vector2(1.0 / overlapping_ratio - 1, 0.5)) <= 0;
-
-			switch (cell_layout) {
-				case GridMap::CELL_LAYOUT_STACKED:
-					map_position = map_position.floor();
-					if (in_top_left_triangle) {
-						map_position += Vector3i(-1, 0, Math::posmod(Math::floor(map_position.x), 2) != 0.0 ? 0 : -1);
-					} else if (in_bottom_left_triangle) {
-						map_position += Vector3i(-1, 0, Math::posmod(Math::floor(map_position.x), 2) != 0.0 ? 1 : 0);
-					}
-					break;
-				case GridMap::CELL_LAYOUT_STACKED_OFFSET:
-					map_position = map_position.floor();
-					if (in_top_left_triangle) {
-						map_position += Vector3i(-1, 0, Math::posmod(Math::floor(map_position.x), 2) != 0.0 ? -1 : 0);
-					} else if (in_bottom_left_triangle) {
-						map_position += Vector3i(-1, 0, Math::posmod(Math::floor(map_position.x), 2) != 0.0 ? 0 : 1);
-					}
-					break;
-				case GridMap::CELL_LAYOUT_STAIRS_RIGHT:
-					map_position = Vector3(map_position.x / 2 - map_position.z, map_position.y, map_position.z * 2).floor();
-					if (in_top_left_triangle) {
-						map_position += Vector3i(0, 0, -1);
-					} else if (in_bottom_left_triangle) {
-						map_position += Vector3i(-1, 0, 1);
-					}
-					break;
-				case GridMap::CELL_LAYOUT_STAIRS_DOWN:
-					map_position = Vector3(map_position.x, map_position.y, map_position.z - map_position.x / 2).floor();
-					if (in_top_left_triangle) {
-						map_position += Vector3i(-1, 0, 0);
-					} else if (in_bottom_left_triangle) {
-						map_position += Vector3i(-1, 0, 1);
-					}
-					break;
-				case GridMap::CELL_LAYOUT_DIAMOND_RIGHT:
-					map_position = Vector3(map_position.x / 2 - map_position.z, map_position.y, map_position.z + map_position.x / 2).floor();
-					if (in_top_left_triangle) {
-						map_position += Vector3i(0, 0, -1);
-					} else if (in_bottom_left_triangle) {
-						map_position += Vector3i(-1, 0, 0);
-					}
-					break;
-				case GridMap::CELL_LAYOUT_DIAMOND_DOWN:
-					map_position = Vector3(map_position.x / 2 + map_position.z, map_position.y, map_position.z - map_position.x / 2).floor();
-					if (in_top_left_triangle) {
-						map_position += Vector3i(-1, 0, 0);
-					} else if (in_bottom_left_triangle) {
-						map_position += Vector3i(0, 0, 1);
-					}
-					break;
-				default:
-					break;
-			}
-		}
+	if (abs(q_rem) >= abs(r_rem)) {
+		q += round(0.5 * r_rem + q_rem);
 	} else {
-		map_position = (map_position + Vector3(0.00005, 0.00005, 0.00005)).floor();
+		r += round(0.5 * q_rem + r_rem);
 	}
 
-	return Vector3i(map_position);
+	return Vector2i(q, r);
+}
+
+// convert axial hex coordinates to offset coordinates
+// https://www.redblobgames.com/grids/hexagons/#conversions-offset
+static inline Vector3i axial_to_oddr(Vector3i axial) {
+	int x = axial.x + (axial.z - (axial.z & 1)) / 2;
+	return Vector3i(x, axial.y, axial.z);
+}
+
+static inline Vector3i oddr_to_axial(Vector3i oddr) {
+	int q = oddr.x - (oddr.z - (oddr.z & 1)) / 2;
+	return Vector3i(q, oddr.y, oddr.z);
+}
+
+Vector3i GridMap::local_to_map(const Vector3 &p_local_position) const {
+	if (cell_shape != CELL_SHAPE_HEXAGON) {
+		Vector3 map_position = (p_local_position / cell_size).floor();
+		return Vector3i(map_position);
+	}
+
+	// convert x/z point into axial hex coordinates
+	// https://www.redblobgames.com/grids/hexagons/#pixel-to-hex
+	real_t q = (Math_SQRT3 / 3 * p_local_position.x - 1.0 / 3 * p_local_position.z) / cell_size.x;
+	real_t r = (2.0 / 3 * p_local_position.z) / cell_size.x;
+	Vector2i hex = axial_round(q, r);
+
+	// map index for hex cells using (q, r) axial coordinates for the cell are:
+	// (q, level, r).  We do it this way as q and r best map to x and z
+	// respectively.
+	return Vector3i(hex.x, floor(p_local_position.y / cell_size.y), hex.y);
 }
 
 Vector3 GridMap::map_to_local(const Vector3i &p_map_position) const {
-	Vector3 map_position = p_map_position;
-	if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
-		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
-		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap
-		if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
-			switch (cell_layout) {
-				case GridMap::CELL_LAYOUT_STACKED:
-					map_position = Vector3(map_position.x + (Math::posmod(map_position.z, 2) == 0 ? 0.0 : 0.5), map_position.y, map_position.z);
-					break;
-				case GridMap::CELL_LAYOUT_STACKED_OFFSET:
-					map_position = Vector3(map_position.x + (Math::posmod(map_position.z, 2) == 1 ? 0.0 : 0.5), map_position.y, map_position.z);
-					break;
-				case GridMap::CELL_LAYOUT_STAIRS_RIGHT:
-					map_position = Vector3(map_position.x + map_position.z / 2, map_position.y, map_position.z);
-					break;
-				case GridMap::CELL_LAYOUT_STAIRS_DOWN:
-					map_position = Vector3(map_position.x / 2, map_position.y, map_position.z * 2 + map_position.x);
-					break;
-				case GridMap::CELL_LAYOUT_DIAMOND_RIGHT:
-					map_position = Vector3((map_position.x + map_position.z) / 2, map_position.y, map_position.z - map_position.x);
-					break;
-				case GridMap::CELL_LAYOUT_DIAMOND_DOWN:
-					map_position = Vector3((map_position.x - map_position.z) / 2, map_position.y, map_position.z + map_position.x);
-					break;
-				default:
-					break;
-			}
-		} else { // CELL_OFFSET_AXIS_VERTICAL
-			switch (cell_layout) {
-				case GridMap::CELL_LAYOUT_STACKED:
-					map_position = Vector3(map_position.x, map_position.y, map_position.z + (Math::posmod(map_position.x, 2) == 0 ? 0.0 : 0.5));
-					break;
-				case GridMap::CELL_LAYOUT_STACKED_OFFSET:
-					map_position = Vector3(map_position.x, map_position.y, map_position.z + (Math::posmod(map_position.x, 2) == 1 ? 0.0 : 0.5));
-					break;
-				case GridMap::CELL_LAYOUT_STAIRS_RIGHT:
-					map_position = Vector3(map_position.x * 2 + map_position.z, map_position.y, map_position.z / 2);
-					break;
-				case GridMap::CELL_LAYOUT_STAIRS_DOWN:
-					map_position = Vector3(map_position.x, map_position.y, map_position.z + map_position.x / 2);
-					break;
-				case GridMap::CELL_LAYOUT_DIAMOND_RIGHT:
-					map_position = Vector3(map_position.x + map_position.z, map_position.y, (map_position.z - map_position.x) / 2);
-					break;
-				case GridMap::CELL_LAYOUT_DIAMOND_DOWN:
-					map_position = Vector3(map_position.x - map_position.z, map_position.y, (map_position.z + map_position.x) / 2);
-					break;
-				default:
-					break;
-			}
-		}
-	}
-
-	// Multiply by the overlapping ratio.
-	if (cell_shape == GridMap::CELL_SHAPE_HEXAGON) {
-		if (cell_offset_axis == GridMap::CELL_OFFSET_AXIS_HORIZONTAL) {
-			map_position.z *= 0.75;
-		} else { // CELL_OFFSET_AXIS_VERTICAL
-			map_position.x *= 0.75;
-		}
-	}
-
 	Vector3 offset = _get_offset();
-	Vector3 local_position(
-			(map_position.x + offset.x) * cell_size.x,
-			(map_position.y + offset.y) * cell_size.y,
-			(map_position.z + offset.z) * cell_size.z);
+	if (cell_shape != CELL_SHAPE_HEXAGON) {
+		Vector3 local_position(
+				p_map_position.x * cell_size.x + offset.x,
+				p_map_position.y * cell_size.y + offset.y,
+				p_map_position.z * cell_size.z + offset.z);
+		return local_position;
+	}
 
-	return local_position;
+	// convert axial hex coordinates to a point
+	// https://www.redblobgames.com/grids/hexagons/#hex-to-pixel
+	Vector3 local;
+	local.x = cell_size.x * (Math_SQRT3 * p_map_position.x + SQRT3_2 * p_map_position.z);
+	local.y = p_map_position.y * cell_size.y + offset.y;
+	local.z = cell_size.x * (3.0 / 2 * p_map_position.z);
+	return local;
+}
+
+TypedArray<Vector3i> GridMap::local_region_to_map(Vector3 p_a, Vector3 p_b) const {
+	TypedArray<Vector3i> out;
+
+	// shuffle the fields of a & b around so that a is bottom-left, b is
+	// top-right
+	if (p_a.x > p_b.x) {
+		SWAP(p_a.x, p_b.x);
+	}
+	if (p_a.y > p_b.y) {
+		SWAP(p_a.y, p_b.y);
+	}
+	if (p_a.z > p_b.z) {
+		SWAP(p_a.z, p_b.z);
+	}
+	Vector3i bottom_left = local_to_map(p_a);
+	Vector3i top_right = local_to_map(p_b);
+
+	switch (cell_shape) {
+		case CELL_SHAPE_SQUARE:
+			for (int z = bottom_left.z; z <= top_right.z; z++) {
+				for (int y = bottom_left.y; y <= top_right.y; y++) {
+					for (int x = bottom_left.x; x <= top_right.x; x++) {
+						out.push_back(Vector3i(x, y, z));
+					}
+				}
+			}
+			break;
+
+		case CELL_SHAPE_HEXAGON: {
+			// we need the x coordinate of the center of the corner cells later.
+			// grab them now before we switch coordinate systems.
+			real_t left_x_center = map_to_local(bottom_left).x;
+			real_t right_x_center = map_to_local(top_right).x;
+
+			// we're going to use a different coordinate system for this
+			// operation.  It's much easier to walk the region when we use
+			// offset coordinates.  So let's map our corners from axial to
+			// offset, then walk the region the same as the square region.
+			// We'll convert the coordinates back to axial before putting them
+			// in the array.
+			bottom_left = axial_to_oddr(bottom_left);
+			top_right = axial_to_oddr(top_right);
+
+			// Also, unlike square cells, the location of the corner of the
+			// region within a cell matters for hex cells, specifically the x
+			// coordinate.  If you pick a point anywhere within a hex cell,
+			// and draw a line down along the z-axis, that line will intercept
+			// either the cell to the southwest or southeast of the clicked
+			// cell.
+			//
+			// For both the left and right sides of the region, we need to
+			// determine which of the southwest/southeast cells fall within
+			// the region.  We do this by adjusting the x-min and x-max for the
+			// even and odd rows independently.  We use the following table to
+			// determine the modifier for the rows for both the minimum x
+			// value (in bottom_left.x), and the maximum x value (in
+			// top_right.x).
+			//
+			// Given an x coordinate in local space:
+			// | cell z coord | x > cell_center.x | odd mod | even mod |
+			// | even         | false             |  -1     | 0        |
+			// | even         | true              |   0     | 0        |
+			// | odd          | false             |   0     | 0        |
+			// | odd          | true              |   0     | 1        |
+
+			// adjustment applied to the min x value for odd and even cells
+			int x_min_delta[2] = { 0, 0 };
+
+			// if we start on an odd row, and the region starts to the right
+			// of center, we want to skip the even cells at x == a.x.
+			if ((bottom_left.z & 1) == 1 && p_a.x > left_x_center) {
+				x_min_delta[0] = 1;
+			}
+			// if we start on an even row, and the region starts to the left
+			// of center, we want to include the odd cells at x = a.x - 1.
+			else if ((bottom_left.z & 1) == 0 && p_a.x <= left_x_center) {
+				x_min_delta[1] = -1;
+			}
+
+			// same as above, but for the max x values
+			int x_max_delta[2] = { 0, 0 };
+			if ((top_right.z & 1) == 1 && p_b.x > right_x_center) {
+				x_max_delta[0] = 1;
+			} else if ((top_right.z & 1) == 0 && p_b.x <= right_x_center) {
+				x_max_delta[1] = -1;
+			}
+			for (int z = bottom_left.z; z <= top_right.z; z++) {
+				for (int y = bottom_left.y; y <= top_right.y; y++) {
+					int min_x = bottom_left.x + x_min_delta[z & 1];
+					int max_x = top_right.x + x_max_delta[z & 1];
+					for (int x = min_x; x <= max_x; x++) {
+						Vector3i oddr = Vector3i(x, y, z);
+						Vector3i axial = oddr_to_axial(oddr);
+						out.push_back(axial);
+					}
+				}
+			}
+			break;
+		}
+
+		default:
+			ERR_PRINT_ED("unsupported cell shape");
+	}
+
+	return out;
 }
 
 void GridMap::_octant_transform(const OctantKey &p_key) {
@@ -871,7 +887,11 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		Vector3 map_pos = Vector3(E.x, E.y, E.z);
 		Transform3D xform;
 
-		xform.basis = _ortho_bases[c.rot];
+		if (cell_shape == CELL_SHAPE_SQUARE) {
+			xform.basis = _ortho_bases_square[c.rot];
+		} else {
+			xform.basis = _ortho_bases_hex[c.rot];
+		}
 		xform.set_origin(map_to_local(map_pos));
 		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
 		if (baked_meshes.size() == 0) {
@@ -1342,12 +1362,6 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cell_shape", "shape"), &GridMap::set_cell_shape);
 	ClassDB::bind_method(D_METHOD("get_cell_shape"), &GridMap::get_cell_shape);
 
-	ClassDB::bind_method(D_METHOD("set_cell_layout", "layout"), &GridMap::set_cell_layout);
-	ClassDB::bind_method(D_METHOD("get_cell_layout"), &GridMap::get_cell_layout);
-
-	ClassDB::bind_method(D_METHOD("set_cell_offset_axis", "offset_axis"), &GridMap::set_cell_offset_axis);
-	ClassDB::bind_method(D_METHOD("get_cell_offset_axis"), &GridMap::get_cell_offset_axis);
-
 	ClassDB::bind_method(D_METHOD("set_cell_size", "size"), &GridMap::set_cell_size);
 	ClassDB::bind_method(D_METHOD("get_cell_size"), &GridMap::get_cell_size);
 
@@ -1363,9 +1377,11 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cell_item_basis", "position"), &GridMap::get_cell_item_basis);
 	ClassDB::bind_method(D_METHOD("get_basis_with_orthogonal_index", "index"), &GridMap::get_basis_with_orthogonal_index);
 	ClassDB::bind_method(D_METHOD("get_orthogonal_index_from_basis", "basis"), &GridMap::get_orthogonal_index_from_basis);
+	ClassDB::bind_method(D_METHOD("get_cell_neighbors", "cell"), &GridMap::get_cell_neighbors);
 
 	ClassDB::bind_method(D_METHOD("local_to_map", "local_position"), &GridMap::local_to_map);
 	ClassDB::bind_method(D_METHOD("map_to_local", "map_position"), &GridMap::map_to_local);
+	ClassDB::bind_method(D_METHOD("local_region_to_map", "local_position_a", "local_position_b"), &GridMap::local_region_to_map);
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &GridMap::resource_changed);
@@ -1394,8 +1410,6 @@ void GridMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material", "get_physics_material");
 	ADD_GROUP("Cell", "cell_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_shape", PROPERTY_HINT_ENUM, "Square,Hexagon"), "set_cell_shape", "get_cell_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_layout", PROPERTY_HINT_ENUM, "Stacked,Stacked Offset,Stairs Right,Stairs Down,Diamond Right,Diamond Down"), "set_cell_layout", "get_cell_layout");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_offset_axis", PROPERTY_HINT_ENUM, "Horizontal Offset,Vertical Offset"), "set_cell_offset_axis", "get_cell_offset_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cell_size", PROPERTY_HINT_NONE, "suffix:m"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_octant_size", PROPERTY_HINT_RANGE, "1,1024,1"), "set_octant_size", "get_octant_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_center_x"), "set_center_x", "get_center_x");
@@ -1413,21 +1427,11 @@ void GridMap::_bind_methods() {
 	BIND_ENUM_CONSTANT(CELL_SHAPE_HEXAGON);
 	BIND_ENUM_CONSTANT(CELL_SHAPE_MAX);
 
-	BIND_ENUM_CONSTANT(CELL_LAYOUT_STACKED);
-	BIND_ENUM_CONSTANT(CELL_LAYOUT_STACKED_OFFSET);
-	BIND_ENUM_CONSTANT(CELL_LAYOUT_STAIRS_RIGHT);
-	BIND_ENUM_CONSTANT(CELL_LAYOUT_STAIRS_DOWN);
-	BIND_ENUM_CONSTANT(CELL_LAYOUT_DIAMOND_RIGHT);
-	BIND_ENUM_CONSTANT(CELL_LAYOUT_DIAMOND_DOWN);
-	BIND_ENUM_CONSTANT(CELL_LAYOUT_MAX);
-
-	BIND_ENUM_CONSTANT(CELL_OFFSET_AXIS_HORIZONTAL);
-	BIND_ENUM_CONSTANT(CELL_OFFSET_AXIS_VERTICAL);
-	BIND_ENUM_CONSTANT(CELL_OFFSET_AXIS_MAX);
-
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
+	ADD_SIGNAL(MethodInfo("cell_shape_changed",
+			PropertyInfo(Variant::INT, "cell_shape", PROPERTY_HINT_ENUM, "Square,Hexagon")));
 	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
 }
 
@@ -1469,7 +1473,6 @@ Array GridMap::get_meshes() const {
 		return Array();
 	}
 
-	Vector3 ofs = _get_offset();
 	Array meshes;
 
 	for (const KeyValue<IndexKey, Cell> &E : cell_map) {
@@ -1484,13 +1487,17 @@ Array GridMap::get_meshes() const {
 
 		IndexKey ik = E.key;
 
-		Vector3 cellpos = Vector3(ik.x, ik.y, ik.z);
+		Vector3 cellpos = map_to_local(Vector3(ik.x, ik.y, ik.z));
 
 		Transform3D xform;
 
-		xform.basis = _ortho_bases[E.value.rot];
+		if (cell_shape == CELL_SHAPE_SQUARE) {
+			xform.basis = _ortho_bases_square[E.value.rot];
+		} else {
+			xform.basis = _ortho_bases_hex[E.value.rot];
+		}
 
-		xform.set_origin(cellpos * cell_size + ofs);
+		xform.set_origin(cellpos);
 		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
 
 		meshes.push_back(xform * mesh_library->get_item_mesh_transform(id));
@@ -1543,7 +1550,11 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 
 		Transform3D xform;
 
-		xform.basis = _ortho_bases[E.value.rot];
+		if (cell_shape == CELL_SHAPE_SQUARE) {
+			xform.basis = _ortho_bases_square[E.value.rot];
+		} else {
+			xform.basis = _ortho_bases_hex[E.value.rot];
+		}
 		xform.set_origin(cellpos * cell_size + ofs);
 		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
 
