@@ -218,10 +218,10 @@ void MTLXLoader::process_node(const mx::NodePtr &node, Ref<VisualShader> shader,
 	for (mx::PortElementPtr port : downstream_ports) {
 		mx::OutputPtr connected_output = node->getConnectedOutput(port->getNodeName());
 		if (!connected_output) {
-			print_line(String("Skipping null output port for node: ") + port->getNodeName()); // Debug log
+			print_line(String("Skipping null output port for node: ") + String(port->getNodeName().c_str())); // Debug log
 			continue;
 		}
-		print_line(String("Adding output port for node: ") + port->getNodeName()); // Debug log
+		print_line(String("Adding output port for node: ") + String(port->getNodeName().c_str())); // Debug log
 		add_output_port(connected_output, expression_node);
 	}
 }
