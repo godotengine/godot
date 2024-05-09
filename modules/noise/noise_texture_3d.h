@@ -66,6 +66,7 @@ private:
 	static void _thread_function(void *p_ud);
 
 	void _queue_update();
+	void _do_queued_update();
 	TypedArray<Image> _generate_texture();
 	void _update_texture();
 	void _set_texture_data(const TypedArray<Image> &p_data);

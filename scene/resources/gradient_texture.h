@@ -44,6 +44,7 @@ private:
 	bool use_hdr = false;
 
 	void _queue_update();
+	void _do_queued_update();
 	void _update();
 
 protected:
@@ -104,6 +105,7 @@ private:
 
 	bool update_pending = false;
 	void _queue_update();
+	void _do_queued_update();
 	void _update();
 
 protected:

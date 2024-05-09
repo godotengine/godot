@@ -68,6 +68,7 @@ private:
 	static void _thread_function(void *p_ud);
 
 	void _queue_update();
+	void _do_queued_update();
 	Ref<Image> _generate_texture();
 	void _update_texture();
 	void _set_texture_image(const Ref<Image> &p_image);

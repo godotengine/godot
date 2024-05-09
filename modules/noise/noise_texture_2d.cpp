@@ -143,7 +143,17 @@ void NoiseTexture2D::_queue_update() {
 	}
 
 	update_queued = true;
-	callable_mp(this, &NoiseTexture2D::_update_texture).call_deferred();
+	reference(); // Make sure we aren't deallocated while invoking deferred call.
+	callable_mp(this, &NoiseTexture2D::_do_queued_update).call_deferred();
+}
+
+void NoiseTexture2D::_do_queued_update() {
+	_update_texture();
+
+	// Release the reference we acquired when queueing the update.
+	if (unreference()) {
+		memdelete(this);
+	}
 }
 
 Ref<Image> NoiseTexture2D::_generate_texture() {

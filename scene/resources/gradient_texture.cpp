@@ -83,7 +83,17 @@ void GradientTexture1D::_queue_update() {
 		return;
 	}
 	update_pending = true;
-	callable_mp(this, &GradientTexture1D::update_now).call_deferred();
+	reference(); // Make sure we aren't deallocated while invoking deferred call.
+	callable_mp(this, &GradientTexture1D::_do_queued_update).call_deferred();
+}
+
+void GradientTexture1D::_do_queued_update() {
+	update_now();
+
+	// Release the reference we acquired when queueing the update.
+	if (unreference()) {
+		memdelete(this);
+	}
 }
 
 void GradientTexture1D::_update() {
@@ -222,7 +232,17 @@ void GradientTexture2D::_queue_update() {
 		return;
 	}
 	update_pending = true;
-	callable_mp(this, &GradientTexture2D::update_now).call_deferred();
+	reference(); // Make sure we aren't deallocated while invoking deferred call.
+	callable_mp(this, &GradientTexture2D::_do_queued_update).call_deferred();
+}
+
+void GradientTexture2D::_do_queued_update() {
+	update_now();
+
+	// Release the reference we acquired when queueing the update.
+	if (unreference()) {
+		memdelete(this);
+	}
 }
 
 void GradientTexture2D::_update() {
