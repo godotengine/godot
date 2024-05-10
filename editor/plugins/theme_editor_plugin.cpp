@@ -2386,9 +2386,25 @@ HashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, T
 
 	if (p_include_default) {
 		names.clear();
-		String default_type = p_type_name;
-		if (edited_theme->get_type_variation_base(p_type_name) != StringName()) {
-			default_type = edited_theme->get_type_variation_base(p_type_name);
+		String default_type;
+
+		{
+			const StringName variation_base = edited_theme->get_type_variation_base(p_type_name);
+			if (variation_base != StringName()) {
+				default_type = variation_base;
+			}
+		}
+
+		if (default_type.is_empty()) {
+			// If variation base was not found in the edited theme, look in the default theme.
+			const StringName variation_base = ThemeDB::get_singleton()->get_default_theme()->get_type_variation_base(p_type_name);
+			if (variation_base != StringName()) {
+				default_type = variation_base;
+			}
+		}
+
+		if (default_type.is_empty()) {
+			default_type = p_type_name;
 		}
 
 		List<ThemeDB::ThemeItemBind> theme_binds;
