@@ -12,8 +12,8 @@ thirdparty_obj = []
 thirdparty_dir = "#thirdparty/thorvg/"
 thirdparty_sources = [
     # common
-    "src/common/tvgBezier.cpp",
     "src/common/tvgCompressor.cpp",
+    "src/common/tvgLines.cpp",
     "src/common/tvgMath.cpp",
     "src/common/tvgStr.cpp",
     # SVG parser
@@ -24,7 +24,9 @@ thirdparty_sources = [
     "src/loaders/svg/tvgSvgUtil.cpp",
     "src/loaders/svg/tvgXmlParser.cpp",
     "src/loaders/raw/tvgRawLoader.cpp",
+    # image loaders
     "src/loaders/external_png/tvgPngLoader.cpp",
+    "src/loaders/external_webp/tvgWebpLoader.cpp",
     "src/loaders/jpg/tvgJpgd.cpp",
     "src/loaders/jpg/tvgJpgLoader.cpp",
     # renderer common
@@ -74,7 +76,10 @@ env_thirdparty.Prepend(
         thirdparty_dir + "src/renderer/sw_engine",
         thirdparty_dir + "src/loaders/raw",
         thirdparty_dir + "src/loaders/external_png",
+        thirdparty_dir + "src/loaders/external_webp",
         thirdparty_dir + "src/loaders/jpg",
+        "#thirdparty/libpng",
+        "#thirdparty/libwebp/src",
     ]
 )
 

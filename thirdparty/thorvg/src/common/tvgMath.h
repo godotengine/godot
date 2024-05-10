@@ -44,6 +44,18 @@ bool mathIdentity(const Matrix* m);
 void mathMultiply(Point* pt, const Matrix* transform);
 
 
+static inline float mathDeg2Rad(float degree)
+{
+     return degree * (MATH_PI / 180.0f);
+}
+
+
+static inline float mathRad2Deg(float radian)
+{
+    return radian * (180.0f / MATH_PI);
+}
+
+
 static inline bool mathZero(float a)
 {
     return (fabsf(a) < FLT_EPSILON) ? true : false;

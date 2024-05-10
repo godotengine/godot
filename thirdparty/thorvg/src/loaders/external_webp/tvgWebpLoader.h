@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,30 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_PNG_LOADER_H_
-#define _TVG_PNG_LOADER_H_
+#ifndef _TVG_WEBP_LOADER_H_
+#define _TVG_WEBP_LOADER_H_
 
-#include "tvgLodePng.h"
+#include "tvgLoader.h"
 #include "tvgTaskScheduler.h"
 
-
-class PngLoader : public ImageLoader, public Task
+class WebpLoader : public ImageLoader, public Task
 {
-private:
-    LodePNGState state;
-    unsigned char* data = nullptr;
-    unsigned long size = 0;
-    bool freeData = false;
-
-    void run(unsigned tid) override;
-
 public:
-    PngLoader();
-    ~PngLoader();
+    WebpLoader();
+    ~WebpLoader();
 
     bool open(const string& path) override;
     bool open(const char* data, uint32_t size, bool copy) override;
     bool read() override;
 
     Surface* bitmap() override;
+
+private:
+    void run(unsigned tid) override;
+
+    unsigned char* data = nullptr;
+    unsigned long size = 0;
+    bool freeData = false;
 };
 
-#endif //_TVG_PNG_LOADER_H_
+#endif //_TVG_WEBP_LOADER_H_

@@ -98,25 +98,14 @@ struct Canvas::Impl
         auto flag = RenderUpdateFlag::None;
         if (refresh || force) flag = RenderUpdateFlag::All;
 
-        //Update single paint node
         if (paint) {
-            //Optimize Me: Can we skip the searching?
-            for (auto paint2 : paints) {
-                if (paint2 == paint) {
-                    paint->pImpl->update(renderer, nullptr, clips, 255, flag);
-                    return Result::Success;
-                }
-            }
-            return Result::InvalidArguments;
-        //Update all retained paint nodes
+            paint->pImpl->update(renderer, nullptr, clips, 255, flag);
         } else {
             for (auto paint : paints) {
                 paint->pImpl->update(renderer, nullptr, clips, 255, flag);
             }
+            refresh = false;
         }
-
-        refresh = false;
-
         return Result::Success;
     }
 
