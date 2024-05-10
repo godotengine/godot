@@ -117,7 +117,7 @@ for x in sorted(glob.glob("platform/*")):
         platform_exporters.append(platform_name)
     if os.path.exists(x + "/api/api.cpp"):
         platform_apis.append(platform_name)
-    if detect.can_build():
+    if os.getenv("GODOT_CAN_BUILD_" + x.removeprefix("platform/").upper()) or detect.can_build():
         x = x.replace("platform/", "")  # rest of world
         x = x.replace("platform\\", "")  # win32
         platform_list += [x]
@@ -312,7 +312,7 @@ opts.Add("LINK", "Linker binary")
 opts.Add("AS", "Assembler binary")
 opts.Add("AR", "Archiver binary")
 opts.Add("RANLIB", "Ranlib binary")
-opts.Add("WINDRES", "Windres binary")
+opts.Add("RC", "Resource compiler binary")
 opts.Add("cppdefines", "Custom defines for the pre-processor")
 opts.Add("ccflags", "Custom flags for both the C and C++ compilers")
 opts.Add("cxxflags", "Custom flags for the C++ compiler")
