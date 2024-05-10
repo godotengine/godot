@@ -4073,6 +4073,13 @@ void CanvasItemEditor::_notification(int p_what) {
 				override_camera_button->set_pressed(false);
 			}
 		} break;
+
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			if (drag_type != DRAG_NONE) {
+				_reset_drag();
+				viewport->queue_redraw();
+			}
+		} break;
 	}
 }
 
