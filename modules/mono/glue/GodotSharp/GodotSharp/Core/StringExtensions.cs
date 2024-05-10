@@ -426,7 +426,9 @@ namespace Godot
         /// <returns>An integer that indicates the lexical relationship between the two comparands.</returns>
         public static int CasecmpTo(this string instance, string to)
         {
-            return instance.CompareTo(to, caseSensitive: true);
+#pragma warning disable CA1309 // Use ordinal string comparison
+            return string.Compare(instance, to, ignoreCase: false, null);
+#pragma warning restore CA1309
         }
 
         /// <summary>
@@ -441,7 +443,9 @@ namespace Godot
         [Obsolete("Use string.Compare instead.")]
         public static int CompareTo(this string instance, string to, bool caseSensitive = true)
         {
-            return string.Compare(instance, to, !caseSensitive);
+#pragma warning disable CA1309 // Use ordinal string comparison
+            return string.Compare(instance, to, ignoreCase: !caseSensitive, null);
+#pragma warning restore CA1309
         }
 
         /// <summary>
@@ -1261,7 +1265,9 @@ namespace Godot
         /// <returns>An integer that indicates the lexical relationship between the two comparands.</returns>
         public static int NocasecmpTo(this string instance, string to)
         {
-            return instance.CompareTo(to, caseSensitive: false);
+#pragma warning disable CA1309 // Use ordinal string comparison
+            return string.Compare(instance, to, ignoreCase: true, null);
+#pragma warning restore CA1309
         }
 
         /// <summary>
