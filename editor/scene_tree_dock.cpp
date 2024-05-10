@@ -2907,6 +2907,13 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 		}
 	}
 
+	// HACK: Remember size of anchored control.
+	Control *old_control = Object::cast_to<Control>(oldnode);
+	Size2 size;
+	if (old_control) {
+		size = old_control->get_size();
+	}
+
 	String newname = oldnode->get_name();
 
 	List<Node *> to_erase;
@@ -2916,6 +2923,12 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 		}
 	}
 	oldnode->replace_by(newnode, true);
+
+	// Re-apply size of anchored control.
+	Control *new_control = Object::cast_to<Control>(newnode);
+	if (old_control && new_control) {
+		new_control->set_size(size);
+	}
 
 	//small hack to make collisionshapes and other kind of nodes to work
 	for (int i = 0; i < newnode->get_child_count(); i++) {
