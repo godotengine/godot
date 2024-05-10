@@ -15,6 +15,7 @@ const Utils = preload("../../utils.notest.gd")
 @export_node_path("Sprite2D", "Sprite3D", "Control", "Node") var test_node_path := ^"hello"
 @export var test_node: Node
 @export var test_node_array: Array[Node]
+@export_resource_uid("PackedScene") var test_resource_uid: String = "uid://<invalid>"
 
 func test():
 	for property in get_property_list():

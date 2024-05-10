@@ -2826,6 +2826,9 @@
 		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="17" enum="PropertyHint">
 			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
 		</constant>
+		<constant name="PROPERTY_HINT_RESOURCE_UID" value="38" enum="PropertyHint">
+			Hints that a [String] property is a unique identifier of a [Resource]-derived type, specified via the hint string. Editing it will show a popup menu of valid resource types to instantiate.
+		</constant>
 		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
 			Hints that a [String] property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
 		</constant>
@@ -2935,7 +2938,7 @@
 		<constant name="PROPERTY_HINT_PASSWORD" value="36" enum="PropertyHint">
 			Hints that a string property is a password, and every character is replaced with the secret character.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="38" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MAX" value="39" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">

@@ -25,3 +25,5 @@ var test_node: Node = null
   hint=NODE_TYPE hint_string="Node" usage=DEFAULT|SCRIPT_VARIABLE
 var test_node_array: Array = Array[Node]([])
   hint=TYPE_STRING hint_string="Object/NODE_TYPE:Node" usage=DEFAULT|SCRIPT_VARIABLE
+var test_resource_uid: String = "uid://<invalid>"
+  hint=RESOURCE_UID hint_string="PackedScene" usage=DEFAULT|SCRIPT_VARIABLE

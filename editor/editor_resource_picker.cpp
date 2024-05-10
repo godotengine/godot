@@ -217,24 +217,27 @@ void EditorResourcePicker::_update_menu_items() {
 
 		if (is_editable()) {
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Clear")), TTR("Clear"), OBJ_MENU_CLEAR);
-			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
 
-			// Check whether the resource has subresources.
-			List<PropertyInfo> property_list;
-			edited_resource->get_property_list(&property_list);
-			bool has_subresources = false;
-			for (PropertyInfo &p : property_list) {
-				if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script") && ((Object *)edited_resource->get(p.name) != nullptr)) {
-					has_subresources = true;
-					break;
+			if (!is_path_only()) {
+				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+
+				// Check whether the resource has subresources.
+				List<PropertyInfo> property_list;
+				edited_resource->get_property_list(&property_list);
+				bool has_subresources = false;
+				for (PropertyInfo &p : property_list) {
+					if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script") && ((Object *)edited_resource->get(p.name) != nullptr)) {
+						has_subresources = true;
+						break;
+					}
 				}
-			}
-			if (has_subresources) {
-				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique (Recursive)"), OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
-			}
+				if (has_subresources) {
+					edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique (Recursive)"), OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
+				}
 
-			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save"), OBJ_MENU_SAVE);
-			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save As..."), OBJ_MENU_SAVE_AS);
+				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save"), OBJ_MENU_SAVE);
+				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Save")), TTR("Save As..."), OBJ_MENU_SAVE_AS);
+			}
 		}
 
 		if (edited_resource->get_path().is_resource_file()) {
@@ -264,6 +267,12 @@ void EditorResourcePicker::_update_menu_items() {
 		}
 	}
 
+	if (paste_valid && is_path_only()) {
+		if (EditorSettings::get_singleton()->get_resource_clipboard()->get_path().is_empty()) {
+			paste_valid = false;
+		}
+	}
+
 	if (edited_resource.is_valid() || paste_valid) {
 		edit_menu->add_separator();
 
@@ -277,7 +286,7 @@ void EditorResourcePicker::_update_menu_items() {
 	}
 
 	// Add options to convert existing resource to another type of resource.
-	if (is_editable() && edited_resource.is_valid()) {
+	if (is_editable() && !is_path_only() && edited_resource.is_valid()) {
 		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
 		if (conversions.size()) {
 			edit_menu->add_separator();
@@ -478,6 +487,10 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 }
 
 void EditorResourcePicker::set_create_options(Object *p_menu_node) {
+	if (is_path_only()) {
+		return;
+	}
+
 	_ensure_resource_menu();
 	// If a subclass implements this method, use it to replace all create items.
 	if (GDVIRTUAL_CALL(_set_create_options, p_menu_node)) {
@@ -781,6 +794,8 @@ void EditorResourcePicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_toggle_pressed", "pressed"), &EditorResourcePicker::set_toggle_pressed);
 	ClassDB::bind_method(D_METHOD("set_editable", "enable"), &EditorResourcePicker::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &EditorResourcePicker::is_editable);
+	ClassDB::bind_method(D_METHOD("set_path_only", "enable"), &EditorResourcePicker::set_path_only);
+	ClassDB::bind_method(D_METHOD("is_path_only"), &EditorResourcePicker::is_path_only);
 
 	GDVIRTUAL_BIND(_set_create_options, "menu_node");
 	GDVIRTUAL_BIND(_handle_menu_selected, "id");
@@ -788,6 +803,7 @@ void EditorResourcePicker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type"), "set_base_type", "get_base_type");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource", PROPERTY_USAGE_NONE), "set_edited_resource", "get_edited_resource");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_only"), "set_path_only", "is_path_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 
 	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::BOOL, "inspect")));
@@ -938,6 +954,14 @@ void EditorResourcePicker::set_editable(bool p_editable) {
 
 bool EditorResourcePicker::is_editable() const {
 	return editable;
+}
+
+void EditorResourcePicker::set_path_only(bool p_path_only) {
+	path_only = p_path_only;
+}
+
+bool EditorResourcePicker::is_path_only() const {
+	return path_only;
 }
 
 void EditorResourcePicker::_ensure_resource_menu() {

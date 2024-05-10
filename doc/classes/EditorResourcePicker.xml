@@ -49,6 +49,9 @@
 		<member name="edited_resource" type="Resource" setter="set_edited_resource" getter="get_edited_resource">
 			The edited resource value.
 		</member>
+		<member name="path_only" type="bool" setter="set_path_only" getter="is_path_only" default="false" keywords="path_only, disabled, enabled">
+			If [code]true[/code], menu items related to creating resources will be hidden.
+		</member>
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" default="false">
 			If [code]true[/code], the main button with the resource preview works in the toggle mode. Use [method set_toggle_pressed] to manually set the state.
 		</member>

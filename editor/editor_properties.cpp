@@ -3433,6 +3433,59 @@ EditorPropertyResource::EditorPropertyResource() {
 	has_borders = true;
 }
 
+////////////// UID //////////////////////
+
+void EditorPropertyUID::_set_read_only(bool p_read_only) {
+	resource_picker->set_editable(!p_read_only);
+}
+
+void EditorPropertyUID::_resource_selected(const Ref<Resource> &p_resource, bool p_inspect) {
+	emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
+}
+
+void EditorPropertyUID::_resource_changed(const Ref<Resource> &p_resource) {
+	String res;
+	if (p_resource.is_valid() && !p_resource->get_path().is_empty()) {
+		res = ResourceUID::get_singleton()->id_to_text(ResourceLoader::get_resource_uid(p_resource->get_path()));
+	}
+	emit_changed(get_edited_property(), res);
+	update_property();
+}
+
+void EditorPropertyUID::update_property() {
+	String path = get_edited_property_value();
+	Ref<Resource> res;
+	if (ResourceLoader::exists(path)) {
+		res = ResourceLoader::load(path);
+	}
+	resource_picker->set_edited_resource_no_check(res);
+}
+
+void EditorPropertyUID::setup(const String &p_base_type) {
+	if (resource_picker) {
+		memdelete(resource_picker);
+		resource_picker = nullptr;
+	}
+
+	resource_picker = memnew(EditorResourcePicker);
+
+	resource_picker->set_base_type(p_base_type);
+	resource_picker->set_editable(true);
+	resource_picker->set_path_only(true);
+	resource_picker->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(resource_picker);
+
+	resource_picker->connect("resource_selected", callable_mp(this, &EditorPropertyUID::_resource_selected));
+	resource_picker->connect("resource_changed", callable_mp(this, &EditorPropertyUID::_resource_changed));
+
+	for (int i = 0; i < resource_picker->get_child_count(); i++) {
+		Button *b = Object::cast_to<Button>(resource_picker->get_child(i));
+		if (b) {
+			add_focusable(b);
+		}
+	}
+}
+
 ////////////// DEFAULT PLUGIN //////////////////////
 
 bool EditorInspectorDefaultPlugin::can_handle(Object *p_object) {
@@ -3586,7 +3639,6 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
 				editor->setup(p_hint_text);
 				return editor;
-
 			} else {
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 
@@ -3654,6 +3706,10 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				if (save) {
 					editor->set_save_mode();
 				}
+				return editor;
+			} else if (p_hint == PROPERTY_HINT_RESOURCE_UID) {
+				EditorPropertyUID *editor = memnew(EditorPropertyUID);
+				editor->setup(p_hint_text);
 				return editor;
 			} else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);

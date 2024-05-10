@@ -49,6 +49,7 @@ class EditorResourcePicker : public HBoxContainer {
 	Ref<Resource> edited_resource;
 
 	bool editable = true;
+	bool path_only = false;
 	bool dropping = false;
 
 	Vector<String> inheritors_array;
@@ -138,6 +139,9 @@ public:
 
 	void set_editable(bool p_editable);
 	bool is_editable() const;
+
+	void set_path_only(bool p_path_only);
+	bool is_path_only() const;
 
 	virtual void set_create_options(Object *p_menu_node);
 	virtual bool handle_menu_selected(int p_which);
