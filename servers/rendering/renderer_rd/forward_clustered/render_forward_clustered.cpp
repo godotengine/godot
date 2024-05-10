@@ -2289,11 +2289,14 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				params.delta_time = float(time_step);
 				params.reset_accumulation = false; // FIXME: The engine does not provide a way to reset the accumulation.
 
+				Projection correction;
+				correction.set_depth_correction(true, true, false);
+
 				const Projection &prev_proj = p_render_data->scene_data->prev_cam_projection;
 				const Projection &cur_proj = p_render_data->scene_data->cam_projection;
 				const Transform3D &prev_transform = p_render_data->scene_data->prev_cam_transform;
 				const Transform3D &cur_transform = p_render_data->scene_data->cam_transform;
-				params.reprojection = prev_proj.flipped_y() * prev_transform.affine_inverse() * cur_transform * cur_proj.flipped_y().inverse();
+				params.reprojection = (correction * prev_proj) * prev_transform.affine_inverse() * cur_transform * (correction * cur_proj).inverse();
 
 				fsr2_effect->upscale(params);
 			}
