@@ -220,16 +220,12 @@ void MTLXLoader::process_node(const mx::NodePtr &p_node, Ref<VisualShader> p_sha
 		print_line(String("Adding input port: ") + itos(input_port_i) + " Name: " + String(input_name.c_str()));
 		add_input_port(input, expression_node, input_port_i++);
 	}
-
 	print_line(String("Total input ports: ") + itos(p_node->getInputs().size()));
-	std::map<int, mx::PortElementPtr> output_port_map;
-
 	std::vector<mx::PortElementPtr> downstream_ports = p_node->getDownstreamPorts();
 	for (mx::PortElementPtr port : downstream_ports) {
 		const std::string &output_name = port->getName();
 		print_line(String("MaterialX output " + String(output_name.c_str())));
 		int output_port_id = expression_node->get_free_output_port_id();
-		output_port_map[output_port_id] = port;
 		int variant_type = convert_type(port->getType());
 		expression_node->add_output_port(output_port_id, variant_type, String(output_name.c_str()));
 	}
@@ -245,32 +241,14 @@ void MTLXLoader::process_node(const mx::NodePtr &p_node, Ref<VisualShader> p_sha
 		print_line(String("Processing port: ") + String(port->getName().c_str()));
 		print_line(String("Processing connected node for port: ") + String(port->getNodeName().c_str()));
 
-		process_node(connected_node, p_shader, ++p_node_i, p_processed_nodes);
-
-		int output_port_id = -1;
-		for (const auto &pair : output_port_map) {
-			if (pair.second == port) {
-				output_port_id = pair.first;
-				break;
-			}
-		}
-
 		for (mx::InputPtr input : connected_node->getInputs()) {
-			const std::string &input_name = input->getName();
-			print_line(String("Adding input port: ") + itos(input_port_i) + " Name: " + String(input_name.c_str()));
-
-			if (output_port_id != -1) {
-				mx::InputPtr input_port = port_mapping[port->getConnectedOutput()];
-				if (input_port) {
-					int input_port_id = std::distance(connected_node->getInputs().begin(), std::find(connected_node->getInputs().begin(), connected_node->getInputs().end(), input_port));
-					p_shader->connect_nodes(VisualShader::TYPE_FRAGMENT, p_node_i, output_port_id, p_node_i + 1, input_port_id);
-					print_line(String("Successfully connected node: ") + String(port->getNodeName().c_str()) + ", port: " + String(port->getName().c_str()));
-				} else {
-					print_line(String("Could not find matching input port for: ") + String(port->getNodeName().c_str()) + ", port: " + String(port->getName().c_str()));
-				}
-			} else {
-				print_line(String("Could not find matching output port for: ") + String(port->getNodeName().c_str()) + ", port: " + String(port->getName().c_str()));
+			print_line(String("Possible input port: ") + String(input->getName().c_str()));
+			mx::OutputPtr output = connected_node->getConnectedOutput(input->getName());
+			if (!output) {
+				continue;
 			}
+			print_line(String("Output port: ") + String(output->getName().c_str()));
+			// p_shader->connect_nodes(VisualShader::TYPE_FRAGMENT, p_node_i, output_port_id, p_node_i + 1, input_port_id);
 		}
 	}
 }
