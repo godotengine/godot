@@ -227,9 +227,11 @@ bool VisualServerLightCuller::add_light_camera_planes_directional(const LightSou
 		// Create a third point from the light direction.
 		Vector3 pt2 = pt0 - p_light_source.dir;
 
-		// Create plane from 3 points.
-		Plane p(pt0, pt1, pt2);
-		add_cull_plane(p);
+		if (!_is_colinear_tri(pt0, pt1, pt2)) {
+			// Create plane from 3 points.
+			Plane p(pt0, pt1, pt2);
+			add_cull_plane(p);
+		}
 	}
 
 	// Last to 0 edge.
@@ -243,9 +245,11 @@ bool VisualServerLightCuller::add_light_camera_planes_directional(const LightSou
 		// Create a third point from the light direction.
 		Vector3 pt2 = pt0 - p_light_source.dir;
 
-		// Create plane from 3 points.
-		Plane p(pt0, pt1, pt2);
-		add_cull_plane(p);
+		if (!_is_colinear_tri(pt0, pt1, pt2)) {
+			// Create plane from 3 points.
+			Plane p(pt0, pt1, pt2);
+			add_cull_plane(p);
+		}
 	}
 
 #ifdef LIGHT_CULLER_DEBUG_LOGGING
