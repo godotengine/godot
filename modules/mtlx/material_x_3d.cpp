@@ -45,30 +45,30 @@ void MTLXLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_load", "path", "original_path", "use_sub_threads", "cache_mode"), &MTLXLoader::_load);
 }
 
-Variant MTLXLoader::get_value_as_variant(const mx::ValuePtr &value) {
+Variant MTLXLoader::get_value_as_variant(const mx::ValuePtr &p_value) {
 	Variant variant_value;
-	if (value) {
-		std::string typeString = value->getTypeString();
+	if (p_value) {
+		std::string typeString = p_value->getTypeString();
 		if (typeString == "float") {
-			variant_value = value->asA<float>();
+			variant_value = p_value->asA<float>();
 		} else if (typeString == "integer") {
-			variant_value = value->asA<int>();
+			variant_value = p_value->asA<int>();
 		} else if (typeString == "boolean") {
-			variant_value = value->asA<bool>();
+			variant_value = p_value->asA<bool>();
 		} else if (typeString == "color3") {
-			mx::Color3 color = value->asA<mx::Color3>();
+			mx::Color3 color = p_value->asA<mx::Color3>();
 			variant_value = Color(color[0], color[1], color[2]);
 		} else if (typeString == "color4") {
-			mx::Color4 color = value->asA<mx::Color4>();
+			mx::Color4 color = p_value->asA<mx::Color4>();
 			variant_value = Color(color[0], color[1], color[2], color[3]);
 		} else if (typeString == "vector2") {
-			mx::Vector2 vector_2 = value->asA<mx::Vector2>();
+			mx::Vector2 vector_2 = p_value->asA<mx::Vector2>();
 			variant_value = Vector2(vector_2[0], vector_2[1]);
 		} else if (typeString == "vector3") {
-			mx::Vector3 vector_3 = value->asA<mx::Vector3>();
+			mx::Vector3 vector_3 = p_value->asA<mx::Vector3>();
 			variant_value = Vector3(vector_3[0], vector_3[1], vector_3[2]);
 		} else if (typeString == "vector4") {
-			mx::Vector4 vector_4 = value->asA<mx::Vector4>();
+			mx::Vector4 vector_4 = p_value->asA<mx::Vector4>();
 			variant_value = Color(vector_4[0], vector_4[1], vector_4[2], vector_4[3]);
 		} else if (typeString == "matrix33") {
 			// Matrix33 m = value->asA<Matrix33>();
@@ -175,9 +175,10 @@ Variant MTLXLoader::_load(const String &p_save_path, const String &p_original_pa
 	}
 }
 
-void MTLXLoader::process_node_graph(mx::DocumentPtr doc, Ref<VisualShader> shader) const {
-	std::vector<mx::NodeGraphPtr> node_graphs = doc->getNodeGraphs();
+void MTLXLoader::process_node_graph(mx::DocumentPtr p_doc, Ref<VisualShader> p_shader) const {
+	std::vector<mx::NodeGraphPtr> node_graphs = p_doc->getNodeGraphs();
 	int node_i = 2;
+	std::set<mx::NodePtr> processed_nodes;
 
 	for (mx::NodeGraphPtr graph : node_graphs) {
 		String graph_name = graph->getName().c_str();
@@ -194,77 +195,115 @@ void MTLXLoader::process_node_graph(mx::DocumentPtr doc, Ref<VisualShader> shade
 				continue;
 			}
 
-			process_node(node, shader, node_i++);
+			process_node(node, p_shader, node_i++, processed_nodes);
 		}
 	}
 }
 
-void MTLXLoader::process_node(const mx::NodePtr &node, Ref<VisualShader> shader, int node_i) const {
+void MTLXLoader::process_node(const mx::NodePtr &p_node, Ref<VisualShader> p_shader, int p_node_i, std::set<mx::NodePtr> &p_processed_nodes) const {
+	if (p_processed_nodes.find(p_node) != p_processed_nodes.end()) {
+		return;
+	}
+	p_processed_nodes.insert(p_node);
+
 	Ref<VisualShaderNodeExpression> expression_node;
 	expression_node.instantiate();
-	String expression_text = String(node->getName().c_str());
+	String expression_text = String(p_node->getName().c_str());
+	std::map<mx::OutputPtr, mx::InputPtr> port_mapping;
 
 	print_line(String("MaterialX node " + expression_text));
 	expression_node->set_expression(String("// ") + expression_text);
-	shader->add_node(VisualShader::TYPE_FRAGMENT, expression_node, Vector2(200, -200), node_i);
-
+	p_shader->add_node(VisualShader::TYPE_FRAGMENT, expression_node, Vector2(200, -200), p_node_i);
 	int input_port_i = 0;
-	for (mx::InputPtr input : node->getInputs()) {
-		print_line(String("Adding input port: ") + String::num(input_port_i)); // Debug log
+	for (mx::InputPtr input : p_node->getInputs()) {
+		const std::string &input_name = input->getName();
+		print_line(String("Adding input port: ") + itos(input_port_i) + " Name: " + String(input_name.c_str()));
 		add_input_port(input, expression_node, input_port_i++);
 	}
 
-	print_line(String("Total input ports: ") + String::num(node->getInputs().size())); // Print input count
+	print_line(String("Total input ports: ") + itos(p_node->getInputs().size()));
+	std::map<int, mx::PortElementPtr> output_port_map;
 
-	std::vector<mx::PortElementPtr> downstream_ports = node->getDownstreamPorts();
+	std::vector<mx::PortElementPtr> downstream_ports = p_node->getDownstreamPorts();
 	for (mx::PortElementPtr port : downstream_ports) {
-		mx::OutputPtr connected_output = node->getConnectedOutput(port->getNodeName());
-		if (!connected_output) {
-			print_line(String("Skipping null output port for node: ") + String(port->getNodeName().c_str())); // Debug log
+		const std::string &output_name = port->getName();
+		print_line(String("MaterialX output " + String(output_name.c_str())));
+		int output_port_id = expression_node->get_free_output_port_id();
+		output_port_map[output_port_id] = port;
+		int variant_type = convert_type(port->getType());
+		expression_node->add_output_port(output_port_id, variant_type, String(output_name.c_str()));
+	}
+	print_line(String("Total output ports: ") + String::num(downstream_ports.size()));
+
+	for (mx::PortElementPtr port : downstream_ports) {
+		mx::NodePtr connected_node = port->getConnectedNode();
+		if (!connected_node) {
+			print_line(String("Skipping null output port for node: ") + String(port->getNodeName().c_str()) + ", port: " + String(port->getName().c_str()));
 			continue;
 		}
-		print_line(String("Adding output port for node: ") + String(port->getNodeName().c_str())); // Debug log
-		add_output_port(connected_output, expression_node);
-	}
 
-	print_line(String("Total output ports: ") + String::num(downstream_ports.size())); // Print output count
+		print_line(String("Processing port: ") + String(port->getName().c_str()));
+		print_line(String("Processing connected node for port: ") + String(port->getNodeName().c_str()));
+
+		process_node(connected_node, p_shader, ++p_node_i, p_processed_nodes);
+
+		int output_port_id = -1;
+		for (const auto &pair : output_port_map) {
+			if (pair.second == port) {
+				output_port_id = pair.first;
+				break;
+			}
+		}
+
+		for (mx::InputPtr input : connected_node->getInputs()) {
+			const std::string &input_name = input->getName();
+			print_line(String("Adding input port: ") + itos(input_port_i) + " Name: " + String(input_name.c_str()));
+
+			if (output_port_id != -1) {
+				mx::InputPtr input_port = port_mapping[port->getConnectedOutput()];
+				if (input_port) {
+					int input_port_id = std::distance(connected_node->getInputs().begin(), std::find(connected_node->getInputs().begin(), connected_node->getInputs().end(), input_port));
+					p_shader->connect_nodes(VisualShader::TYPE_FRAGMENT, p_node_i, output_port_id, p_node_i + 1, input_port_id);
+					print_line(String("Successfully connected node: ") + String(port->getNodeName().c_str()) + ", port: " + String(port->getName().c_str()));
+				} else {
+					print_line(String("Could not find matching input port for: ") + String(port->getNodeName().c_str()) + ", port: " + String(port->getName().c_str()));
+				}
+			} else {
+				print_line(String("Could not find matching output port for: ") + String(port->getNodeName().c_str()) + ", port: " + String(port->getName().c_str()));
+			}
+		}
+	}
 }
 
-void MTLXLoader::add_input_port(mx::InputPtr input, Ref<VisualShaderNodeExpression> expression_node, int input_port_i) const {
-	const std::string &input_name = input->getName();
-	print_line(String("MaterialX input " + String(input_name.c_str())));
+void MTLXLoader::add_input_port(mx::InputPtr p_input, Ref<VisualShaderNodeExpression> p_expression_node, int p_input_port_i) const {
+	const std::string &input_name = p_input->getName();
+	print_line(vformat("MaterialX input %s", String(input_name.c_str())));
 
-	mx::ValuePtr value = input->getValue();
+	mx::ValuePtr value = p_input->getValue();
 	Variant variant_value = get_value_as_variant(value);
 
-	print_line(String("MaterialX input value: ") + String(variant_value));
-	expression_node->add_input_port(input_port_i, variant_value, input_name.c_str());
+	print_line(vformat("MaterialX input value: %s", String(variant_value)));
+	p_expression_node->add_input_port(p_input_port_i, variant_value, input_name.c_str());
 }
 
-void MTLXLoader::add_output_port(mx::OutputPtr output, Ref<VisualShaderNodeExpression> expression_node) const {
-	const std::string &output_name = output->getName();
-	print_line(String("MaterialX output " + String(output_name.c_str())));
-	int variant_type = convert_type(output_name);
-	expression_node->add_output_port(expression_node->get_free_output_port_id(), variant_type, output_name.c_str());
-}
-
-int MTLXLoader::convert_type(const std::string &typeString) const {
-	if (typeString == "float") {
+int MTLXLoader::convert_type(const std::string &p_type_string) const {
+	if (p_type_string == "float") {
 		return Variant::FLOAT;
-	} else if (typeString == "integer") {
+	} else if (p_type_string == "integer") {
 		return Variant::INT;
-	} else if (typeString == "boolean") {
+	} else if (p_type_string == "boolean") {
 		return Variant::BOOL;
-	} else if (typeString == "color3" || typeString == "color4") {
+	} else if (p_type_string == "color3" || p_type_string == "color4") {
 		return Variant::COLOR;
-	} else if (typeString == "vector2") {
+	} else if (p_type_string == "vector2") {
 		return Variant::VECTOR2;
-	} else if (typeString == "vector3") {
+	} else if (p_type_string == "vector3") {
 		return Variant::VECTOR3;
-	} else if (typeString == "vector4") {
+	} else if (p_type_string == "vector4") {
 		return Variant::VECTOR4;
-	} else if (typeString == "matrix33" || typeString == "matrix44") {
+	} else if (p_type_string == "matrix33" || p_type_string == "matrix44") {
 		// Placeholder.
 	}
+	print_line(String("Unknown type: ") + String(p_type_string.c_str()));
 	return -1;
 }

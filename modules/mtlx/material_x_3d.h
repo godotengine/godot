@@ -49,9 +49,8 @@ namespace mx = MaterialX;
 class MTLXLoader : public RefCounted {
 	GDCLASS(MTLXLoader, RefCounted);
 	void process_node_graph(mx::DocumentPtr doc, Ref<VisualShader> shader) const;
-	void process_node(const mx::NodePtr &node, Ref<VisualShader> shader, int node_i) const;
+	void process_node(const mx::NodePtr &node, Ref<VisualShader> shader, int node_i, std::set<mx::NodePtr>& processed_nodes) const;
 	void add_input_port(mx::InputPtr input, Ref<VisualShaderNodeExpression> expression_node, int input_port_i) const;
-	void add_output_port(mx::OutputPtr output, Ref<VisualShaderNodeExpression> expression_node) const;
 	static Variant get_value_as_variant(const mx::ValuePtr &value);
 	int convert_type(const std::string &typeString) const;
 
