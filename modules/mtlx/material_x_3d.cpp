@@ -38,6 +38,7 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/visual_shader.h"
+#include "thirdparty/mtlx/source/MaterialXCore/Interface.h"
 #include "thirdparty/mtlx/source/MaterialXCore/Node.h"
 #include "thirdparty/mtlx/source/MaterialXCore/Traversal.h"
 
@@ -179,7 +180,9 @@ void MTLXLoader::process_node_graph(mx::DocumentPtr p_doc, Ref<VisualShader> p_s
 	std::vector<mx::NodeGraphPtr> node_graphs = p_doc->getNodeGraphs();
 	int node_i = 2;
 	std::set<mx::NodePtr> processed_nodes;
-
+	std::map<mx::OutputPtr, int> output_to_vsnode_mapping;
+	std::map<mx::OutputPtr, int> output_to_src_port;
+	std::map<mx::OutputPtr, int> output_to_dst_port;
 	for (mx::NodeGraphPtr graph : node_graphs) {
 		String graph_name = graph->getName().c_str();
 		if (!graph_name.begins_with("NG_")) {
@@ -194,13 +197,12 @@ void MTLXLoader::process_node_graph(mx::DocumentPtr p_doc, Ref<VisualShader> p_s
 			if (!node) {
 				continue;
 			}
-
-			process_node(node, p_shader, node_i++, processed_nodes);
+			process_node(node, p_shader, node_i++, processed_nodes, output_to_vsnode_mapping, output_to_src_port, output_to_dst_port);
 		}
 	}
 }
 
-void MTLXLoader::process_node(const mx::NodePtr &p_node, Ref<VisualShader> p_shader, int p_node_i, std::set<mx::NodePtr> &p_processed_nodes) const {
+void MTLXLoader::process_node(const mx::NodePtr &p_node, Ref<VisualShader> p_shader, int p_node_i, std::set<mx::NodePtr> &p_processed_nodes, std::map<mx::OutputPtr, int> &output_to_vsnode_mapping, std::map<mx::OutputPtr, int> &output_to_src_port, std::map<mx::OutputPtr, int> &output_to_dst_port) const {
 	if (p_processed_nodes.find(p_node) != p_processed_nodes.end()) {
 		return;
 	}
@@ -219,6 +221,11 @@ void MTLXLoader::process_node(const mx::NodePtr &p_node, Ref<VisualShader> p_sha
 		const std::string &input_name = input->getName();
 		print_line(String("Adding input port: ") + itos(input_port_i) + " Name: " + String(input_name.c_str()));
 		add_input_port(input, expression_node, input_port_i++);
+		std::vector<mx::PortElementPtr> downstream_ports = p_node->getDownstreamPorts();
+		for (mx::PortElementPtr port : downstream_ports) {
+			mx::OutputPtr output = port->getConnectedOutput();
+			output_to_dst_port[output] = input_port_i;
+		}
 	}
 	print_line(String("Total input ports: ") + itos(p_node->getInputs().size()));
 	std::vector<mx::PortElementPtr> downstream_ports = p_node->getDownstreamPorts();
@@ -228,8 +235,11 @@ void MTLXLoader::process_node(const mx::NodePtr &p_node, Ref<VisualShader> p_sha
 		int output_port_id = expression_node->get_free_output_port_id();
 		int variant_type = convert_type(port->getType());
 		expression_node->add_output_port(output_port_id, variant_type, String(output_name.c_str()));
+		output_to_vsnode_mapping[port->getConnectedOutput()] = p_node_i;
+		output_to_src_port[port->getConnectedOutput()] = output_port_id;
 	}
 	print_line(String("Total output ports: ") + String::num(downstream_ports.size()));
+	createPortMapping(p_node, port_mapping);
 }
 
 void MTLXLoader::add_input_port(mx::InputPtr p_input, Ref<VisualShaderNodeExpression> p_expression_node, int p_input_port_i) const {
@@ -263,4 +273,33 @@ int MTLXLoader::convert_type(const std::string &p_type_string) const {
 	}
 	print_line(String("Unknown type: ") + String(p_type_string.c_str()));
 	return -1;
+}
+
+void MTLXLoader::createPortMapping(const mx::NodePtr &p_node, std::map<mx::OutputPtr, mx::InputPtr> &port_mapping) const {
+	std::vector<mx::PortElementPtr> downstream_ports = p_node->getDownstreamPorts();
+	for (mx::PortElementPtr port : downstream_ports) {
+		mx::NodePtr connected_node = port->getConnectedNode();
+		if (!connected_node) {
+			print_line(String("Skipping null output port for node: ") + String(port->getNodeName().c_str()) + ", port: " + String(port->getName().c_str()));
+			continue;
+		}
+
+		print_line(String("Processing port: ") + String(port->getName().c_str()));
+		print_line(String("Processing connected node for port: ") + String(port->getNodeName().c_str()));
+
+		for (mx::InputPtr input : connected_node->getInputs()) {
+			print_line(String("Possible input port: ") + String(input->getName().c_str()));
+			if (p_node->getConnectedNode(input->getName()) != connected_node) {
+				print_line(String("No output port"));
+				continue;
+			}
+			mx::OutputPtr output = connected_node->getConnectedOutput(input->getName());
+			if (!output) {
+				print_line(String("No output port"));
+				continue;
+			}
+			print_line(String("Output port: ") + String(output->getName().c_str()));
+			port_mapping[output] = input;
+		}
+	}
 }
