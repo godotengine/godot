@@ -102,7 +102,7 @@ public:
 	Vector<String> get_granted_permissions() const;
 	String get_ca_certificates() const;
 	void init_input_devices();
-	void vibrate(int p_duration_ms);
+	void vibrate(int p_duration_ms, float p_amplitude = -1.0);
 	String get_input_fallback_mapping();
 	int create_new_godot_instance(const List<String> &args);
 	void begin_benchmark_measure(const String &p_context, const String &p_label);

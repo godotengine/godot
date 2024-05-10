@@ -206,8 +206,7 @@ void RemoteDebugger::flush_output() {
 		Vector<String> joined_log_strings;
 		Vector<String> strings;
 		Vector<int> types;
-		for (int i = 0; i < output_strings.size(); i++) {
-			const OutputString &output_string = output_strings[i];
+		for (const OutputString &output_string : output_strings) {
 			if (output_string.type == MESSAGE_TYPE_ERROR) {
 				if (!joined_log_strings.is_empty()) {
 					strings.push_back(String("\n").join(joined_log_strings));

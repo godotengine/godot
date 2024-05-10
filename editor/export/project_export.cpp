@@ -270,8 +270,8 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 
 	List<String> extension_list = current->get_platform()->get_binary_extensions(current);
 	Vector<String> extension_vector;
-	for (int i = 0; i < extension_list.size(); i++) {
-		extension_vector.push_back("*." + extension_list[i]);
+	for (const String &extension : extension_list) {
+		extension_vector.push_back("*." + extension);
 	}
 
 	export_path->setup(extension_vector, false, true);
@@ -1089,16 +1089,16 @@ void ProjectExportDialog::_export_project() {
 	export_project->clear_filters();
 
 	List<String> extension_list = platform->get_binary_extensions(current);
-	for (int i = 0; i < extension_list.size(); i++) {
+	for (const String &extension : extension_list) {
 		// TRANSLATORS: This is the name of a project export file format. %s will be replaced by the platform name.
-		export_project->add_filter("*." + extension_list[i], vformat(TTR("%s Export"), platform->get_name()));
+		export_project->add_filter("*." + extension, vformat(TTR("%s Export"), platform->get_name()));
 	}
 
 	if (!current->get_export_path().is_empty()) {
 		export_project->set_current_path(current->get_export_path());
 	} else {
 		if (extension_list.size() >= 1) {
-			export_project->set_current_file(default_filename + "." + extension_list[0]);
+			export_project->set_current_file(default_filename + "." + extension_list.front()->get());
 		} else {
 			export_project->set_current_file(default_filename);
 		}

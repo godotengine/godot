@@ -2225,7 +2225,7 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 
 	Size2i size = p_size;
-	size = size.max(Size2i(1, 1));
+	size = size.maxi(1);
 
 	WindowData &wd = windows[p_window];
 
@@ -4268,6 +4268,8 @@ bool DisplayServerX11::_window_focus_check() {
 }
 
 void DisplayServerX11::process_events() {
+	ERR_FAIL_COND(!Thread::is_main_thread());
+
 	_THREAD_SAFE_LOCK_
 
 #ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED

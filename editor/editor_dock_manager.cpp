@@ -33,12 +33,10 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
-#include "scene/gui/popup.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/main/window.h"
 
-#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -46,6 +44,12 @@
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/window_wrapper.h"
+
+enum class TabStyle {
+	TEXT_ONLY,
+	ICON_ONLY,
+	TEXT_AND_ICON,
+};
 
 EditorDockManager *EditorDockManager::singleton = nullptr;
 
@@ -147,7 +151,6 @@ void EditorDockManager::_update_layout() {
 	if (!dock_context_popup->is_inside_tree() || EditorNode::get_singleton()->is_exiting()) {
 		return;
 	}
-	EditorNode::get_singleton()->edit_current();
 	dock_context_popup->docks_updated();
 	_update_docks_menu();
 	EditorNode::get_singleton()->save_editor_layout_delayed();
@@ -157,7 +160,7 @@ void EditorDockManager::_update_docks_menu() {
 	docks_menu->clear();
 	docks_menu->reset_size();
 
-	const Ref<Texture2D> icon = docks_menu->get_editor_theme_icon(SNAME("Window"));
+	const Ref<Texture2D> default_icon = docks_menu->get_editor_theme_icon(SNAME("Window"));
 	const Color closed_icon_color_mod = Color(1, 1, 1, 0.5);
 
 	// Add docks.
@@ -170,7 +173,8 @@ void EditorDockManager::_update_docks_menu() {
 		} else {
 			docks_menu->add_item(dock.value.title, id);
 		}
-		docks_menu->set_item_icon(id, icon);
+		const Ref<Texture2D> icon = dock.value.icon_name ? docks_menu->get_editor_theme_icon(dock.value.icon_name) : dock.value.icon;
+		docks_menu->set_item_icon(id, icon.is_valid() ? icon : default_icon);
 		if (!dock.value.open) {
 			docks_menu->set_item_icon_modulate(id, closed_icon_color_mod);
 		}
@@ -345,11 +349,49 @@ void EditorDockManager::_move_dock(Control *p_dock, Control *p_target, int p_tab
 	p_target->set_block_signals(false);
 	TabContainer *dock_tab_container = Object::cast_to<TabContainer>(p_target);
 	if (dock_tab_container) {
-		dock_tab_container->set_tab_title(dock_tab_container->get_tab_idx_from_control(p_dock), all_docks[p_dock].title);
+		if (dock_tab_container->is_inside_tree()) {
+			_update_tab_style(p_dock);
+		}
 		if (p_tab_index >= 0) {
 			_move_dock_tab_index(p_dock, p_tab_index, p_set_current);
 		}
 		_dock_container_update_visibility(dock_tab_container);
+	}
+}
+
+void EditorDockManager::_update_tab_style(Control *p_dock) {
+	const DockInfo &dock_info = all_docks[p_dock];
+	if (!dock_info.enabled || !dock_info.open) {
+		return; // Disabled by feature profile or manually closed by user.
+	}
+	if (dock_info.dock_window || dock_info.at_bottom) {
+		return; // Floating or sent to bottom.
+	}
+
+	TabContainer *tab_container = get_dock_tab_container(p_dock);
+	ERR_FAIL_NULL(tab_container);
+	int index = tab_container->get_tab_idx_from_control(p_dock);
+	ERR_FAIL_COND(index == -1);
+
+	const TabStyle style = (TabStyle)EDITOR_GET("interface/editor/dock_tab_style").operator int();
+	switch (style) {
+		case TabStyle::TEXT_ONLY: {
+			tab_container->set_tab_title(index, dock_info.title);
+			tab_container->set_tab_icon(index, Ref<Texture2D>());
+			tab_container->set_tab_tooltip(index, String());
+		} break;
+		case TabStyle::ICON_ONLY: {
+			const Ref<Texture2D> icon = dock_info.icon_name ? tab_container->get_editor_theme_icon(dock_info.icon_name) : dock_info.icon;
+			tab_container->set_tab_title(index, icon.is_valid() ? String() : dock_info.title);
+			tab_container->set_tab_icon(index, icon);
+			tab_container->set_tab_tooltip(index, icon.is_valid() ? dock_info.title : String());
+		} break;
+		case TabStyle::TEXT_AND_ICON: {
+			const Ref<Texture2D> icon = dock_info.icon_name ? tab_container->get_editor_theme_icon(dock_info.icon_name) : dock_info.icon;
+			tab_container->set_tab_title(index, dock_info.title);
+			tab_container->set_tab_icon(index, icon);
+			tab_container->set_tab_tooltip(index, String());
+		} break;
 	}
 }
 
@@ -666,14 +708,15 @@ void EditorDockManager::focus_dock(Control *p_dock) {
 	tab_container->set_current_tab(tab_index);
 }
 
-void EditorDockManager::add_dock(Control *p_dock, const String &p_title, DockSlot p_slot, const Ref<Shortcut> &p_shortcut) {
+void EditorDockManager::add_dock(Control *p_dock, const String &p_title, DockSlot p_slot, const Ref<Shortcut> &p_shortcut, const StringName &p_icon_name) {
 	ERR_FAIL_NULL(p_dock);
 	ERR_FAIL_COND_MSG(all_docks.has(p_dock), vformat("Cannot add dock '%s', already added.", p_dock->get_name()));
 
 	DockInfo dock_info;
-	dock_info.title = !p_title.is_empty() ? p_title : String(p_dock->get_name());
+	dock_info.title = p_title.is_empty() ? String(p_dock->get_name()) : p_title;
 	dock_info.dock_slot_index = p_slot;
 	dock_info.shortcut = p_shortcut;
+	dock_info.icon_name = p_icon_name;
 	all_docks[p_dock] = dock_info;
 
 	if (p_slot != DOCK_SLOT_NONE) {
@@ -696,6 +739,14 @@ void EditorDockManager::remove_dock(Control *p_dock) {
 	_update_layout();
 }
 
+void EditorDockManager::set_dock_tab_icon(Control *p_dock, const Ref<Texture2D> &p_icon) {
+	ERR_FAIL_NULL(p_dock);
+	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot set tab icon for unknown dock '%s'.", p_dock->get_name()));
+
+	all_docks[p_dock].icon = p_icon;
+	_update_tab_style(p_dock);
+}
+
 void EditorDockManager::set_docks_visible(bool p_show) {
 	if (docks_visible == p_show) {
 		return;
@@ -709,6 +760,19 @@ void EditorDockManager::set_docks_visible(bool p_show) {
 
 bool EditorDockManager::are_docks_visible() const {
 	return docks_visible;
+}
+
+void EditorDockManager::update_tab_styles() {
+	for (const KeyValue<Control *, DockInfo> &dock : all_docks) {
+		_update_tab_style(dock.key);
+	}
+}
+
+void EditorDockManager::set_tab_icon_max_width(int p_max_width) {
+	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
+		TabContainer *tab_container = dock_slot[i];
+		tab_container->add_theme_constant_override(SNAME("icon_max_width"), p_max_width);
+	}
 }
 
 void EditorDockManager::add_vsplit(DockSplitContainer *p_split) {

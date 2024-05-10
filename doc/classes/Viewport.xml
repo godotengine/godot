@@ -407,6 +407,9 @@
 			- 8×8 = rgb(255, 255, 0) - #ffff00 - Not supported on most hardware
 			[/codeblock]
 		</member>
+		<member name="vrs_update_mode" type="int" setter="set_vrs_update_mode" getter="get_vrs_update_mode" enum="Viewport.VRSUpdateMode" default="1">
+			Sets the update mode for Variable Rate Shading (VRS) for the viewport. VRS requires the input texture to be converted to the format usable by the VRS method supported by the hardware. The update mode defines how often this happens. If the GPU does not support VRS, or VRS is not enabled, this property is ignored.
+		</member>
 		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">
 			The custom [World2D] which can be used as 2D environment source.
 		</member>
@@ -663,6 +666,18 @@
 		</constant>
 		<constant name="VRS_MAX" value="3" enum="VRSMode">
 			Represents the size of the [enum VRSMode] enum.
+		</constant>
+		<constant name="VRS_UPDATE_DISABLED" value="0" enum="VRSUpdateMode">
+			The input texture for variable rate shading will not be processed.
+		</constant>
+		<constant name="VRS_UPDATE_ONCE" value="1" enum="VRSUpdateMode">
+			The input texture for variable rate shading will be processed once.
+		</constant>
+		<constant name="VRS_UPDATE_ALWAYS" value="2" enum="VRSUpdateMode">
+			The input texture for variable rate shading will be processed each frame.
+		</constant>
+		<constant name="VRS_UPDATE_MAX" value="3" enum="VRSUpdateMode">
+			Represents the size of the [enum VRSUpdateMode] enum.
 		</constant>
 	</constants>
 </class>

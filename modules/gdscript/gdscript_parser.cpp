@@ -3200,6 +3200,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign) {
+	// We want code completion after a DOLLAR even if the current code is invalid.
+	make_completion_context(COMPLETION_GET_NODE, nullptr, -1, true);
+
 	if (!current.is_node_name() && !check(GDScriptTokenizer::Token::LITERAL) && !check(GDScriptTokenizer::Token::SLASH) && !check(GDScriptTokenizer::Token::PERCENT)) {
 		push_error(vformat(R"(Expected node path as string or identifier after "%s".)", previous.get_name()));
 		return nullptr;
@@ -3255,7 +3258,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 			path_state = PATH_STATE_SLASH;
 		}
 
-		make_completion_context(COMPLETION_GET_NODE, get_node, context_argument++);
+		make_completion_context(COMPLETION_GET_NODE, get_node, context_argument++, true);
 
 		if (match(GDScriptTokenizer::Token::LITERAL)) {
 			if (previous.literal.get_type() != Variant::STRING) {
@@ -4130,6 +4133,9 @@ static String _get_annotation_error_string(const StringName &p_annotation_name, 
 			case Variant::COLOR:
 				types.push_back("PackedColorArray");
 				break;
+			case Variant::VECTOR4:
+				types.push_back("PackedVector4Array");
+				break;
 			default:
 				break;
 		}
@@ -4828,6 +4834,8 @@ static Variant::Type _variant_type_to_typed_array_element_type(Variant::Type p_t
 			return Variant::VECTOR3;
 		case Variant::PACKED_COLOR_ARRAY:
 			return Variant::COLOR;
+		case Variant::PACKED_VECTOR4_ARRAY:
+			return Variant::VECTOR4;
 		default:
 			return Variant::NIL;
 	}

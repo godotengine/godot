@@ -98,7 +98,7 @@ public:
 	// Implemented in web_main.cpp loop callback instead.
 	void add_frame_delay(bool p_can_draw) override;
 
-	void vibrate_handheld(int p_duration_ms) override;
+	void vibrate_handheld(int p_duration_ms, float p_amplitude) override;
 
 	String get_cache_path() const override;
 	String get_config_path() const override;

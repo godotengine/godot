@@ -282,7 +282,7 @@ class EditorFileSystem : public Node {
 	struct ImportThreadData {
 		const ImportFile *reimport_files;
 		int reimport_from;
-		int max_index = 0;
+		SafeNumeric<int> max_index;
 	};
 
 	void _reimport_thread(uint32_t p_index, ImportThreadData *p_import_data);
@@ -310,6 +310,7 @@ public:
 	void scan_changes();
 	void update_file(const String &p_file);
 	HashSet<String> get_valid_extensions() const;
+	void register_global_class_script(const String &p_search_path, const String &p_target_path);
 
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);
 	String get_file_type(const String &p_file) const;

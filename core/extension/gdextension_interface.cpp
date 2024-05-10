@@ -595,6 +595,8 @@ static GDExtensionVariantFromTypeConstructorFunc gdextension_get_variant_from_ty
 			return VariantTypeConstructor<PackedVector2Array>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR3_ARRAY:
 			return VariantTypeConstructor<PackedVector3Array>::variant_from_type;
+		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY:
+			return VariantTypeConstructor<PackedVector4Array>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY:
 			return VariantTypeConstructor<PackedColorArray>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_NIL:
@@ -678,6 +680,8 @@ static GDExtensionTypeFromVariantConstructorFunc gdextension_get_variant_to_type
 			return VariantTypeConstructor<PackedVector2Array>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR3_ARRAY:
 			return VariantTypeConstructor<PackedVector3Array>::type_from_variant;
+		case GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY:
+			return VariantTypeConstructor<PackedVector4Array>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY:
 			return VariantTypeConstructor<PackedColorArray>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_NIL:
@@ -1110,6 +1114,22 @@ static GDExtensionTypePtr gdextension_packed_vector3_array_operator_index(GDExte
 
 static GDExtensionTypePtr gdextension_packed_vector3_array_operator_index_const(GDExtensionConstTypePtr p_self, GDExtensionInt p_index) {
 	const PackedVector3Array *self = (const PackedVector3Array *)p_self;
+	if (unlikely(p_index < 0 || p_index >= self->size())) {
+		return nullptr;
+	}
+	return (GDExtensionTypePtr)&self->ptr()[p_index];
+}
+
+static GDExtensionTypePtr gdextension_packed_vector4_array_operator_index(GDExtensionTypePtr p_self, GDExtensionInt p_index) {
+	PackedVector4Array *self = (PackedVector4Array *)p_self;
+	if (unlikely(p_index < 0 || p_index >= self->size())) {
+		return nullptr;
+	}
+	return (GDExtensionTypePtr)&self->ptrw()[p_index];
+}
+
+static GDExtensionTypePtr gdextension_packed_vector4_array_operator_index_const(GDExtensionConstTypePtr p_self, GDExtensionInt p_index) {
+	const PackedVector4Array *self = (const PackedVector4Array *)p_self;
 	if (unlikely(p_index < 0 || p_index >= self->size())) {
 		return nullptr;
 	}
@@ -1620,6 +1640,8 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(packed_vector2_array_operator_index_const);
 	REGISTER_INTERFACE_FUNC(packed_vector3_array_operator_index);
 	REGISTER_INTERFACE_FUNC(packed_vector3_array_operator_index_const);
+	REGISTER_INTERFACE_FUNC(packed_vector4_array_operator_index);
+	REGISTER_INTERFACE_FUNC(packed_vector4_array_operator_index_const);
 	REGISTER_INTERFACE_FUNC(array_operator_index);
 	REGISTER_INTERFACE_FUNC(array_operator_index_const);
 	REGISTER_INTERFACE_FUNC(array_ref);

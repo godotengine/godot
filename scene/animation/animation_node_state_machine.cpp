@@ -350,18 +350,18 @@ float AnimationNodeStateMachinePlayback::get_fading_pos() const {
 void AnimationNodeStateMachinePlayback::_clear_path_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_test_only) {
 	List<AnimationNode::ChildNode> child_nodes;
 	p_state_machine->get_child_nodes(&child_nodes);
-	for (int i = 0; i < child_nodes.size(); i++) {
-		Ref<AnimationNodeStateMachine> anodesm = child_nodes[i].node;
+	for (const AnimationNode::ChildNode &child_node : child_nodes) {
+		Ref<AnimationNodeStateMachine> anodesm = child_node.node;
 		if (anodesm.is_valid() && anodesm->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED) {
-			Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get(base_path + child_nodes[i].name + "/playback");
+			Ref<AnimationNodeStateMachinePlayback> playback = p_tree->get(base_path + child_node.name + "/playback");
 			ERR_FAIL_COND(!playback.is_valid());
-			playback->_set_base_path(base_path + child_nodes[i].name + "/");
+			playback->_set_base_path(base_path + child_node.name + "/");
 			if (p_test_only) {
 				playback = playback->duplicate();
 			}
 			playback->path.clear();
 			playback->_clear_path_children(p_tree, anodesm.ptr(), p_test_only);
-			if (current != child_nodes[i].name) {
+			if (current != child_node.name) {
 				playback->_start(anodesm.ptr()); // Can restart.
 			}
 		}

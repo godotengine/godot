@@ -142,7 +142,7 @@ static void _digest_job_queue(void *p_job_queue, uint32_t p_index) {
 }
 
 void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
-	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA) {
+	if (p_image->is_compressed()) {
 		return; //do not compress, already compressed
 	}
 	int w = p_image->get_width();

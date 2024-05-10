@@ -2828,7 +2828,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			return -1;
 		}
 
-		if (!p_item->disable_folding && !hide_folding && p_item->first_child && (p_pos.x >= x_ofs && p_pos.x < (x_ofs + theme_cache.item_margin))) {
+		if (!p_item->disable_folding && !hide_folding && p_item->first_child && (p_pos.x < (x_ofs + theme_cache.item_margin))) {
 			if (enable_recursive_folding && p_mod->is_shift_pressed()) {
 				p_item->set_collapsed_recursive(!p_item->is_collapsed());
 			} else {
@@ -3152,9 +3152,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 }
 
 void Tree::_text_editor_popup_modal_close() {
-	if (Input::get_singleton()->is_key_pressed(Key::ESCAPE) ||
-			Input::get_singleton()->is_key_pressed(Key::KP_ENTER) ||
-			Input::get_singleton()->is_key_pressed(Key::ENTER)) {
+	if (popup_editor->get_hide_reason() == Popup::HIDE_REASON_CANCELED) {
 		return;
 	}
 
@@ -3429,7 +3427,7 @@ Rect2 Tree::_get_content_rect() const {
 	const real_t v_size = v_scroll->is_visible() ? (v_scroll->get_combined_minimum_size().x + theme_cache.scrollbar_h_separation) : 0;
 	const real_t h_size = h_scroll->is_visible() ? (h_scroll->get_combined_minimum_size().y + theme_cache.scrollbar_v_separation) : 0;
 	const Point2 scroll_begin = _get_scrollbar_layout_rect().get_end() - Vector2(v_size, h_size);
-	const Size2 offset = (content_rect.get_end() - scroll_begin).max(Vector2(0, 0));
+	const Size2 offset = (content_rect.get_end() - scroll_begin).maxf(0);
 
 	return content_rect.grow_individual(0, 0, -offset.x, -offset.y);
 }

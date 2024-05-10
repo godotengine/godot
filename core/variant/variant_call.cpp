@@ -1648,19 +1648,19 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(filenocasecmp_to, sarray("to"), varray());
 	bind_string_method(length, sarray(), varray());
 	bind_string_method(substr, sarray("from", "len"), varray(-1));
-	bind_string_method(get_slice, sarray("delimiter", "slice"), varray());
+	bind_string_methodv(get_slice, static_cast<String (String::*)(const String &, int) const>(&String::get_slice), sarray("delimiter", "slice"), varray());
 	bind_string_method(get_slicec, sarray("delimiter", "slice"), varray());
-	bind_string_method(get_slice_count, sarray("delimiter"), varray());
+	bind_string_methodv(get_slice_count, static_cast<int (String::*)(const String &) const>(&String::get_slice_count), sarray("delimiter"), varray());
 	bind_string_methodv(find, static_cast<int (String::*)(const String &, int) const>(&String::find), sarray("what", "from"), varray(0));
-	bind_string_method(count, sarray("what", "from", "to"), varray(0, 0));
-	bind_string_method(countn, sarray("what", "from", "to"), varray(0, 0));
-	bind_string_method(findn, sarray("what", "from"), varray(0));
-	bind_string_method(rfind, sarray("what", "from"), varray(-1));
-	bind_string_method(rfindn, sarray("what", "from"), varray(-1));
+	bind_string_methodv(findn, static_cast<int (String::*)(const String &, int) const>(&String::findn), sarray("what", "from"), varray(0));
+	bind_string_methodv(count, static_cast<int (String::*)(const String &, int, int) const>(&String::count), sarray("what", "from", "to"), varray(0, 0));
+	bind_string_methodv(countn, static_cast<int (String::*)(const String &, int, int) const>(&String::countn), sarray("what", "from", "to"), varray(0, 0));
+	bind_string_methodv(rfind, static_cast<int (String::*)(const String &, int) const>(&String::rfind), sarray("what", "from"), varray(-1));
+	bind_string_methodv(rfindn, static_cast<int (String::*)(const String &, int) const>(&String::rfindn), sarray("what", "from"), varray(-1));
 	bind_string_method(match, sarray("expr"), varray());
 	bind_string_method(matchn, sarray("expr"), varray());
 	bind_string_methodv(begins_with, static_cast<bool (String::*)(const String &) const>(&String::begins_with), sarray("text"), varray());
-	bind_string_method(ends_with, sarray("text"), varray());
+	bind_string_methodv(ends_with, static_cast<bool (String::*)(const String &) const>(&String::ends_with), sarray("text"), varray());
 	bind_string_method(is_subsequence_of, sarray("text"), varray());
 	bind_string_method(is_subsequence_ofn, sarray("text"), varray());
 	bind_string_method(bigrams, sarray(), varray());
@@ -1668,7 +1668,7 @@ static void _register_variant_builtin_methods() {
 
 	bind_string_method(format, sarray("values", "placeholder"), varray("{_}"));
 	bind_string_methodv(replace, static_cast<String (String::*)(const String &, const String &) const>(&String::replace), sarray("what", "forwhat"), varray());
-	bind_string_method(replacen, sarray("what", "forwhat"), varray());
+	bind_string_methodv(replacen, static_cast<String (String::*)(const String &, const String &) const>(&String::replacen), sarray("what", "forwhat"), varray());
 	bind_string_method(repeat, sarray("count"), varray());
 	bind_string_method(reverse, sarray(), varray());
 	bind_string_method(insert, sarray("position", "what"), varray());
@@ -1677,8 +1677,8 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(to_camel_case, sarray(), varray());
 	bind_string_method(to_pascal_case, sarray(), varray());
 	bind_string_method(to_snake_case, sarray(), varray());
-	bind_string_method(split, sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
-	bind_string_method(rsplit, sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
+	bind_string_methodv(split, static_cast<Vector<String> (String::*)(const String &, bool, int) const>(&String::split), sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
+	bind_string_methodv(rsplit, static_cast<Vector<String> (String::*)(const String &, bool, int) const>(&String::rsplit), sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
 	bind_string_method(split_floats, sarray("delimiter", "allow_empty"), varray(true));
 	bind_string_method(join, sarray("parts"), varray());
 
@@ -1707,6 +1707,7 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(sha256_buffer, sarray(), varray());
 	bind_string_method(is_empty, sarray(), varray());
 	bind_string_methodv(contains, static_cast<bool (String::*)(const String &) const>(&String::contains), sarray("what"), varray());
+	bind_string_methodv(containsn, static_cast<bool (String::*)(const String &) const>(&String::containsn), sarray("what"), varray());
 
 	bind_string_method(is_absolute_path, sarray(), varray());
 	bind_string_method(is_relative_path, sarray(), varray());
@@ -1741,8 +1742,8 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(rpad, sarray("min_length", "character"), varray(" "));
 	bind_string_method(pad_decimals, sarray("digits"), varray());
 	bind_string_method(pad_zeros, sarray("digits"), varray());
-	bind_string_method(trim_prefix, sarray("prefix"), varray());
-	bind_string_method(trim_suffix, sarray("suffix"), varray());
+	bind_string_methodv(trim_prefix, static_cast<String (String::*)(const String &) const>(&String::trim_prefix), sarray("prefix"), varray());
+	bind_string_methodv(trim_suffix, static_cast<String (String::*)(const String &) const>(&String::trim_suffix), sarray("suffix"), varray());
 
 	bind_string_method(to_ascii_buffer, sarray(), varray());
 	bind_string_method(to_utf8_buffer, sarray(), varray());
@@ -1804,7 +1805,13 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, abs, sarray(), varray());
 	bind_method(Vector2, sign, sarray(), varray());
 	bind_method(Vector2, clamp, sarray("min", "max"), varray());
+	bind_method(Vector2, clampf, sarray("min", "max"), varray());
 	bind_method(Vector2, snapped, sarray("step"), varray());
+	bind_method(Vector2, snappedf, sarray("step"), varray());
+	bind_method(Vector2, min, sarray("with"), varray());
+	bind_method(Vector2, minf, sarray("with"), varray());
+	bind_method(Vector2, max, sarray("with"), varray());
+	bind_method(Vector2, maxf, sarray("with"), varray());
 
 	bind_static_method(Vector2, from_angle, sarray("angle"), varray());
 
@@ -1820,7 +1827,13 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2i, sign, sarray(), varray());
 	bind_method(Vector2i, abs, sarray(), varray());
 	bind_method(Vector2i, clamp, sarray("min", "max"), varray());
+	bind_method(Vector2i, clampi, sarray("min", "max"), varray());
 	bind_method(Vector2i, snapped, sarray("step"), varray());
+	bind_method(Vector2i, snappedi, sarray("step"), varray());
+	bind_method(Vector2i, min, sarray("with"), varray());
+	bind_method(Vector2i, mini, sarray("with"), varray());
+	bind_method(Vector2i, max, sarray("with"), varray());
+	bind_method(Vector2i, maxi, sarray("with"), varray());
 
 	/* Rect2 */
 
@@ -1875,7 +1888,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, is_finite, sarray(), varray());
 	bind_method(Vector3, inverse, sarray(), varray());
 	bind_method(Vector3, clamp, sarray("min", "max"), varray());
+	bind_method(Vector3, clampf, sarray("min", "max"), varray());
 	bind_method(Vector3, snapped, sarray("step"), varray());
+	bind_method(Vector3, snappedf, sarray("step"), varray());
 	bind_method(Vector3, rotated, sarray("axis", "angle"), varray());
 	bind_method(Vector3, lerp, sarray("to", "weight"), varray());
 	bind_method(Vector3, slerp, sarray("to", "weight"), varray());
@@ -1896,9 +1911,13 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, project, sarray("b"), varray());
 	bind_method(Vector3, slide, sarray("n"), varray());
 	bind_method(Vector3, bounce, sarray("n"), varray());
-	bind_method(Vector3, reflect, sarray("direction"), varray());
+	bind_method(Vector3, reflect, sarray("n"), varray());
 	bind_method(Vector3, sign, sarray(), varray());
 	bind_method(Vector3, octahedron_encode, sarray(), varray());
+	bind_method(Vector3, min, sarray("with"), varray());
+	bind_method(Vector3, minf, sarray("with"), varray());
+	bind_method(Vector3, max, sarray("with"), varray());
+	bind_method(Vector3, maxf, sarray("with"), varray());
 	bind_static_method(Vector3, octahedron_decode, sarray("uv"), varray());
 
 	/* Vector3i */
@@ -1912,7 +1931,13 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3i, sign, sarray(), varray());
 	bind_method(Vector3i, abs, sarray(), varray());
 	bind_method(Vector3i, clamp, sarray("min", "max"), varray());
+	bind_method(Vector3i, clampi, sarray("min", "max"), varray());
 	bind_method(Vector3i, snapped, sarray("step"), varray());
+	bind_method(Vector3i, snappedi, sarray("step"), varray());
+	bind_method(Vector3i, min, sarray("with"), varray());
+	bind_method(Vector3i, mini, sarray("with"), varray());
+	bind_method(Vector3i, max, sarray("with"), varray());
+	bind_method(Vector3i, maxi, sarray("with"), varray());
 
 	/* Vector4 */
 
@@ -1931,7 +1956,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4, posmod, sarray("mod"), varray());
 	bind_method(Vector4, posmodv, sarray("modv"), varray());
 	bind_method(Vector4, snapped, sarray("step"), varray());
+	bind_method(Vector4, snappedf, sarray("step"), varray());
 	bind_method(Vector4, clamp, sarray("min", "max"), varray());
+	bind_method(Vector4, clampf, sarray("min", "max"), varray());
 	bind_method(Vector4, normalized, sarray(), varray());
 	bind_method(Vector4, is_normalized, sarray(), varray());
 	bind_method(Vector4, direction_to, sarray("to"), varray());
@@ -1942,6 +1969,10 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4, is_equal_approx, sarray("to"), varray());
 	bind_method(Vector4, is_zero_approx, sarray(), varray());
 	bind_method(Vector4, is_finite, sarray(), varray());
+	bind_method(Vector4, min, sarray("with"), varray());
+	bind_method(Vector4, minf, sarray("with"), varray());
+	bind_method(Vector4, max, sarray("with"), varray());
+	bind_method(Vector4, maxf, sarray("with"), varray());
 
 	/* Vector4i */
 
@@ -1952,7 +1983,13 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4i, sign, sarray(), varray());
 	bind_method(Vector4i, abs, sarray(), varray());
 	bind_method(Vector4i, clamp, sarray("min", "max"), varray());
+	bind_method(Vector4i, clampi, sarray("min", "max"), varray());
 	bind_method(Vector4i, snapped, sarray("step"), varray());
+	bind_method(Vector4i, snappedi, sarray("step"), varray());
+	bind_method(Vector4i, min, sarray("with"), varray());
+	bind_method(Vector4i, mini, sarray("with"), varray());
+	bind_method(Vector4i, max, sarray("with"), varray());
+	bind_method(Vector4i, maxi, sarray("with"), varray());
 	bind_method(Vector4i, distance_to, sarray("to"), varray());
 	bind_method(Vector4i, distance_squared_to, sarray("to"), varray());
 
@@ -2531,6 +2568,30 @@ static void _register_variant_builtin_methods() {
 	bind_method(PackedColorArray, find, sarray("value", "from"), varray(0));
 	bind_method(PackedColorArray, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedColorArray, count, sarray("value"), varray());
+
+	/* Vector4 Array */
+
+	bind_method(PackedVector4Array, size, sarray(), varray());
+	bind_method(PackedVector4Array, is_empty, sarray(), varray());
+	bind_method(PackedVector4Array, set, sarray("index", "value"), varray());
+	bind_method(PackedVector4Array, push_back, sarray("value"), varray());
+	bind_method(PackedVector4Array, append, sarray("value"), varray());
+	bind_method(PackedVector4Array, append_array, sarray("array"), varray());
+	bind_method(PackedVector4Array, remove_at, sarray("index"), varray());
+	bind_method(PackedVector4Array, insert, sarray("at_index", "value"), varray());
+	bind_method(PackedVector4Array, fill, sarray("value"), varray());
+	bind_methodv(PackedVector4Array, resize, &PackedVector4Array::resize_zeroed, sarray("new_size"), varray());
+	bind_method(PackedVector4Array, clear, sarray(), varray());
+	bind_method(PackedVector4Array, has, sarray("value"), varray());
+	bind_method(PackedVector4Array, reverse, sarray(), varray());
+	bind_method(PackedVector4Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedVector4Array, to_byte_array, sarray(), varray());
+	bind_method(PackedVector4Array, sort, sarray(), varray());
+	bind_method(PackedVector4Array, bsearch, sarray("value", "before"), varray(true));
+	bind_method(PackedVector4Array, duplicate, sarray(), varray());
+	bind_method(PackedVector4Array, find, sarray("value", "from"), varray(0));
+	bind_method(PackedVector4Array, rfind, sarray("value", "from"), varray(-1));
+	bind_method(PackedVector4Array, count, sarray("value"), varray());
 
 	/* Register constants */
 

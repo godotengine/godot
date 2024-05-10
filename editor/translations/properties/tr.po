@@ -100,7 +100,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-02-23 09:02+0000\n"
+"PO-Revision-Date: 2024-03-09 15:01+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
@@ -372,6 +372,9 @@ msgstr "Zamanlayıcılar"
 msgid "Incremental Search Max Interval Msec"
 msgstr "Artışlı Arama En Büyük Aralığı Msn"
 
+msgid "Tooltip Delay (sec)"
+msgstr "Araçipucu Gecikmesi (sn)"
+
 msgid "Common"
 msgstr "Ortak"
 
@@ -413,6 +416,9 @@ msgstr "Doku Yükleme Bölgesi Boyutu Px (piksel)"
 
 msgid "Pipeline Cache"
 msgstr "İşlem Kuyruğu Önbelleği"
+
+msgid "Enable"
+msgstr "Etkinleştir"
 
 msgid "Save Chunk Size (MB)"
 msgstr "Kaydetme Parça Boyutu (MB)"
@@ -798,9 +804,6 @@ msgstr "Değer"
 msgid "Arg Count"
 msgstr "Girdi Sayısı"
 
-msgid "Args"
-msgstr "Girdiler"
-
 msgid "Type"
 msgstr "Tip"
 
@@ -888,6 +891,12 @@ msgstr "Dikkat Dağıtmayan Kip"
 msgid "Movie Maker Enabled"
 msgstr "Film Yapıcı Etkin"
 
+msgid "Theme"
+msgstr "Tema"
+
+msgid "Line Spacing"
+msgstr "Satır Aralığı"
+
 msgid "Base Type"
 msgstr "Temel Tip"
 
@@ -920,6 +929,9 @@ msgstr "Düzenleyici Ekranı"
 
 msgid "Project Manager Screen"
 msgstr "Proje Yöneticisi Ekranı"
+
+msgid "Connection"
+msgstr "Bağlantı"
 
 msgid "Enable Pseudolocalization"
 msgstr "Sözde-yerelleştirmeyi Etkinleştir"
@@ -1044,8 +1056,8 @@ msgstr "Varsayılan Renk Seçici Kipi"
 msgid "Default Color Picker Shape"
 msgstr "Varsayılan Renk Seçici Şekli"
 
-msgid "Theme"
-msgstr "Tema"
+msgid "Follow System Theme"
+msgstr "Sistem Temasını Uygula"
 
 msgid "Preset"
 msgstr "Hazır Ayar"
@@ -1061,6 +1073,9 @@ msgstr "Temel Renk"
 
 msgid "Accent Color"
 msgstr "Vurgu Rengi"
+
+msgid "Use System Accent Color"
+msgstr "Sistem Vurgu Rengini Kullan"
 
 msgid "Contrast"
 msgstr "Karşıtlık"
@@ -1124,9 +1139,6 @@ msgstr "Açılışta Sahneleri Geri Yükle"
 
 msgid "Multi Window"
 msgstr "Çoklu Pencere"
-
-msgid "Enable"
-msgstr "Etkinleştir"
 
 msgid "Restore Windows on Load"
 msgstr "Açılışta Pencereleri Geri Yükle"
@@ -1199,6 +1211,9 @@ msgstr "RPC Portu"
 
 msgid "RPC Server Uptime"
 msgstr "RPC Sunucu Çalışma Süresi"
+
+msgid "FBX2glTF"
+msgstr "FBX2glTF"
 
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF Yolu"
@@ -1319,9 +1334,6 @@ msgstr "Sekme Karakterlerini Çiz"
 
 msgid "Draw Spaces"
 msgstr "Boşluk Karakterlerini Çiz"
-
-msgid "Line Spacing"
-msgstr "Satır Aralığı"
 
 msgid "Behavior"
 msgstr "Davranış"
@@ -1457,6 +1469,9 @@ msgstr "Eklem"
 
 msgid "Shape"
 msgstr "Şekil"
+
+msgid "AABB"
+msgstr "Eksen-Hizalı Sınırlayıcı Kutu"
 
 msgid "Primary Grid Steps"
 msgstr "Birincil Izgara Adımları"
@@ -1626,6 +1641,9 @@ msgstr "Nokta Yakalama Yarıçapı"
 msgid "Show Previous Outline"
 msgstr "Önceki Anahatı Göster"
 
+msgid "Auto Bake Delay"
+msgstr "Otomatik Pişirme Gecikmesi"
+
 msgid "Autorename Animation Tracks"
 msgstr "Animasyon İzlerini Otomatik Yeniden Adlandır"
 
@@ -1709,9 +1727,6 @@ msgstr "Linuxbsd"
 
 msgid "Prefer Wayland"
 msgstr "Wayland Tercih Et"
-
-msgid "Connection"
-msgstr "Bağlantı"
 
 msgid "Network Mode"
 msgstr "Ağ Kipi"
@@ -1875,6 +1890,60 @@ msgstr "Arama Sonuç Rengi"
 msgid "Search Result Border Color"
 msgstr "Arama Sonuç Kenar Rengi"
 
+msgid "Connection Colors"
+msgstr "Bağlantı Renkleri"
+
+msgid "Scalar Color"
+msgstr "Skaler Rengi"
+
+msgid "Vector2 Color"
+msgstr "Vector2 Rengi"
+
+msgid "Vector 3 Color"
+msgstr "Vector3 Rengi"
+
+msgid "Vector 4 Color"
+msgstr "Vector4 Rengi"
+
+msgid "Boolean Color"
+msgstr "Boolean Rengi"
+
+msgid "Transform Color"
+msgstr "Dönüştürme Rengi"
+
+msgid "Sampler Color"
+msgstr "Örnekleyici Rengi"
+
+msgid "Category Colors"
+msgstr "Kategori Renkleri"
+
+msgid "Output Color"
+msgstr "Çıkış Rengi"
+
+msgid "Color Color"
+msgstr "Renk Rengi"
+
+msgid "Conditional Color"
+msgstr "Koşullu Rengi"
+
+msgid "Input Color"
+msgstr "Giriş Rengi"
+
+msgid "Textures Color"
+msgstr "Dokular Rengi"
+
+msgid "Utility Color"
+msgstr "Yardımcı Rengi"
+
+msgid "Vector Color"
+msgstr "Vector Rengi"
+
+msgid "Special Color"
+msgstr "Özel Rengi"
+
+msgid "Particle Color"
+msgstr "Parçacık Rengi"
+
 msgid "Custom Template"
 msgstr "Özel Şablon"
 
@@ -1920,6 +1989,9 @@ msgstr "Dosya Kipi"
 msgid "Filters"
 msgstr "Filtreler"
 
+msgid "Options"
+msgstr "Seçenekler"
+
 msgid "Disable Overwrite Warning"
 msgstr "Üzerine Yazma Uyarısını Devre Dışı Bırak"
 
@@ -1961,6 +2033,9 @@ msgstr "Konum İzlerini Normalize Et"
 
 msgid "Overwrite Axis"
 msgstr "Eksenlerin Üzerine Yaz"
+
+msgid "Reset All Bone Poses After Import"
+msgstr "İçe Aktarım Sonrası Tüm Kemik Pozlarını Sıfırla"
 
 msgid "Fix Silhouette"
 msgstr "Taslağı Düzelt"
@@ -2115,9 +2190,6 @@ msgstr "Dosyaya Kaydet"
 msgid "Enabled"
 msgstr "Etkin"
 
-msgid "Make Streamable"
-msgstr "Akışa Uygun Hale Getir"
-
 msgid "Shadow Meshes"
 msgstr "Gölge Örgüler"
 
@@ -2183,6 +2255,9 @@ msgstr "Kök Ölçeği Uygula"
 
 msgid "Root Scale"
 msgstr "Kök Ölçeği"
+
+msgid "Import as Skeleton Bones"
+msgstr "İskelet Kemikleri Olarak İçe Aktar"
 
 msgid "Meshes"
 msgstr "Örgüler"
@@ -2411,9 +2486,6 @@ msgstr "Bölgeye Kırp"
 
 msgid "Trim Alpha Border From Region"
 msgstr "Alfa Kenarlarını Bölgeden Kırp"
-
-msgid "Force"
-msgstr "Zorla"
 
 msgid "8 Bit"
 msgstr "8 Bit"
@@ -2838,9 +2910,6 @@ msgstr "El Takibi"
 msgid "Eye Gaze Interaction"
 msgstr "Göz Bakış Etkileşimi"
 
-msgid "In Editor"
-msgstr "Düzenleyici İçinde"
-
 msgid "Boot Splash"
 msgstr "Açılış Resmi"
 
@@ -3029,6 +3098,12 @@ msgstr "CSG"
 
 msgid "FBX"
 msgstr "FBX"
+
+msgid "Importer"
+msgstr "İçe Aktarıcı"
+
+msgid "Allow Geometry Helper Nodes"
+msgstr "Geometri Yardımcı Düğümlerine İzin Ver"
 
 msgid "Embedded Image Handling"
 msgstr "Gömülü Resim İşlemesi"
@@ -3278,6 +3353,9 @@ msgstr "Seyrek Değerler Arabellek Görünümü"
 
 msgid "Sparse Values Byte Offset"
 msgstr "Seyrek Değerler Byte Kaydırma"
+
+msgid "Original Name"
+msgstr "Orijinal İsim"
 
 msgid "Loop"
 msgstr "Döngü"
@@ -3728,6 +3806,9 @@ msgstr "İstenen Başvuru Uzayı Türleri"
 
 msgid "Reference Space Type"
 msgstr "Başvuru Uzayı Türü"
+
+msgid "Enabled Features"
+msgstr "Etkinleştirilmiş Özellikler"
 
 msgid "Visibility State"
 msgstr "Görünebilirlik Durumu"
@@ -4935,17 +5016,26 @@ msgstr "Gezinim Çokgeni"
 msgid "Use Edge Connections"
 msgstr "Kenar Bağlantılarını Kullan"
 
-msgid "Constrain Avoidance"
-msgstr "Kaçınmayı Sınırla"
-
 msgid "Skew"
 msgstr "Yamult"
+
+msgid "Scroll Scale"
+msgstr "Kaydırma Ölçeği"
 
 msgid "Scroll Offset"
 msgstr "Kaydırma Kayması"
 
 msgid "Repeat"
 msgstr "Tekrar Et"
+
+msgid "Repeat Size"
+msgstr "Tekrarlama Boyutu"
+
+msgid "Autoscroll"
+msgstr "Otomatik Kaydırma"
+
+msgid "Repeat Times"
+msgstr "Tekrarlama Süreleri"
 
 msgid "Begin"
 msgstr "Başlangıç"
@@ -4955,6 +5045,12 @@ msgstr "Bitiş"
 
 msgid "Follow Viewport"
 msgstr "Çerçeveyi İzle"
+
+msgid "Ignore Camera Scroll"
+msgstr "Kamera Kaydırmayı Yoksay"
+
+msgid "Screen Offset"
+msgstr "Ekran Kayması"
 
 msgid "Scroll"
 msgstr "Kaydır"
@@ -5214,11 +5310,11 @@ msgstr "Özel Toplayıcı"
 msgid "Continuous CD"
 msgstr "Sürekli Çarpışma Algılayıcı"
 
-msgid "Max Contacts Reported"
-msgstr "Bildirilen En Fazla Temas"
-
 msgid "Contact Monitor"
 msgstr "Temas İzleyici"
+
+msgid "Max Contacts Reported"
+msgstr "Bildirilen En Fazla Temas"
 
 msgid "Linear"
 msgstr "Doğrusal"
@@ -5301,6 +5397,9 @@ msgstr "Kare Konumları"
 msgid "Filter Clip Enabled"
 msgstr "Filtre Kesme Etkin"
 
+msgid "Tile Set"
+msgstr "Karo Kümesi"
+
 msgid "Rendering Quadrant Size"
 msgstr "Çeyreğin Boyutu İşleniyor"
 
@@ -5313,8 +5412,8 @@ msgstr "Çarpışma Görünürlük Kipi"
 msgid "Navigation Visibility Mode"
 msgstr "Gezinti Görünürlük Kipi"
 
-msgid "Tile Set"
-msgstr "Karo Kümesi"
+msgid "Y Sort Origin"
+msgstr "Y Sıralama Kökeni"
 
 msgid "Texture Normal"
 msgstr "Doku Normali"
@@ -5444,9 +5543,6 @@ msgstr "Ölçekle Eğri Z"
 
 msgid "Albedo"
 msgstr "Albedo"
-
-msgid "Normal"
-msgstr "Normal"
 
 msgid "Orm"
 msgstr "Perde/Pürüz/Metal"
@@ -6090,17 +6186,11 @@ msgstr "Hareket Ölçeği"
 msgid "Show Rest Only"
 msgstr "Sadece Rahat Duruşu Göster"
 
-msgid "Animate Physical Bones"
-msgstr "Fiziksel Kemikleri Canlandır"
-
 msgid "Root Bone"
 msgstr "Kök Kemik"
 
 msgid "Tip Bone"
 msgstr "Tepe Kemik"
-
-msgid "Interpolation"
-msgstr "Ara Değerleme"
 
 msgid "Target"
 msgstr "Hedef"
@@ -6122,6 +6212,9 @@ msgstr "En Az Mesafe"
 
 msgid "Max Iterations"
 msgstr "En Fazla Yineleme"
+
+msgid "Active"
+msgstr "Etkin"
 
 msgid "Pinned Points"
 msgstr "Sabitlenmiş Noktalar"
@@ -6158,9 +6251,6 @@ msgstr "Sürükleme Katsayısı"
 
 msgid "Track Physics Step"
 msgstr "Fizik Adımını Takip Et"
-
-msgid "AABB"
-msgstr "Eksen-Hizalı Sınırlayıcı Kutu"
 
 msgid "Sorting"
 msgstr "Sıralama"
@@ -6207,14 +6297,26 @@ msgstr "Yayılma"
 msgid "Use Two Bounces"
 msgstr "İki Sekmeli Kullan"
 
+msgid "Body Tracker"
+msgstr "Cisim İzleyici"
+
+msgid "Body Update"
+msgstr "Cisim Güncellemesi"
+
 msgid "Face Tracker"
 msgstr "Yüz İzleyici"
+
+msgid "Hand Tracker"
+msgstr "El İzleyici"
 
 msgid "Tracker"
 msgstr "İzleyici"
 
 msgid "Pose"
 msgstr "Duruş"
+
+msgid "Show When Tracked"
+msgstr "İzlendiğinde Göster"
 
 msgid "World Scale"
 msgstr "Dünya Ölçeği"
@@ -6266,9 +6368,6 @@ msgstr "Giriş Sayısı"
 
 msgid "Request"
 msgstr "İstek"
-
-msgid "Active"
-msgstr "Etkin"
 
 msgid "Internal Active"
 msgstr "Dahili Etkin"
@@ -6639,9 +6738,6 @@ msgstr "Kip Başlığın Üzerine Yazar"
 msgid "Root Subfolder"
 msgstr "Kök Altklasör"
 
-msgid "Options"
-msgstr "Seçenekler"
-
 msgid "Use Native Dialog"
 msgstr "Yerel Diyaloğu Kullan"
 
@@ -6887,9 +6983,6 @@ msgstr "Durum Öğesi Seçiminde Gizle"
 
 msgid "Submenu Popup Delay"
 msgstr "Altmenü Açılır Pencere Gecikmesi"
-
-msgid "System Menu Root"
-msgstr "Sistem Menüsü Kökü"
 
 msgid "Fill Mode"
 msgstr "Doldurma Kipi"
@@ -7428,6 +7521,9 @@ msgstr "Varsayılan Ortam"
 msgid "Enable Object Picking"
 msgstr "Nesne Seçmeyi Etkinleştir"
 
+msgid "Menu"
+msgstr "Menü"
+
 msgid "Wait Time"
 msgstr "Bekleme Süresi"
 
@@ -7524,9 +7620,6 @@ msgstr "Çeyrek 3"
 msgid "Canvas Cull Mask"
 msgstr "Kanvas Kaldırma Maskesi"
 
-msgid "Tooltip Delay (sec)"
-msgstr "Araçipucu Gecikmesi (sn)"
-
 msgid "Size 2D Override"
 msgstr "2B Boyutun Üzerine Yaz"
 
@@ -7607,6 +7700,30 @@ msgstr "3B Gezinti"
 
 msgid "Segments"
 msgstr "Dilimler"
+
+msgid "Parsed Geometry Type"
+msgstr "Çözümlenmiş Geometri Türü"
+
+msgid "Parsed Collision Mask"
+msgstr "Çözümlenmiş Çarpışma Maskesi"
+
+msgid "Source Geometry Mode"
+msgstr "Kaynak Geometri Kipi"
+
+msgid "Source Geometry Group Name"
+msgstr "Kaynak Geometri Grup İsmi"
+
+msgid "Cells"
+msgstr "Hücreler"
+
+msgid "Agents"
+msgstr "Vekiller"
+
+msgid "Baking Rect"
+msgstr "Dörtgen Pişiriliyor"
+
+msgid "Baking Rect Offset"
+msgstr "Dörtgen Kayması Pişiriliyor"
 
 msgid "A"
 msgstr "A"
@@ -7758,9 +7875,6 @@ msgstr "Arazi Kümeleri"
 msgid "Custom Data Layers"
 msgstr "Özel Veri Katmanları"
 
-msgid "Scenes"
-msgstr "Sahneler"
-
 msgid "Scene"
 msgstr "Sahne"
 
@@ -7784,9 +7898,6 @@ msgstr "Tersini Al"
 
 msgid "Texture Origin"
 msgstr "Doku Kökeni"
-
-msgid "Y Sort Origin"
-msgstr "Y Sıralama Kökeni"
 
 msgid "Terrain Set"
 msgstr "Arazi Kümesi"
@@ -8346,6 +8457,9 @@ msgstr "Yazı Tipi Ağırlığı"
 msgid "Font Stretch"
 msgstr "Yazı Tipi Esnetmesi"
 
+msgid "Interpolation"
+msgstr "Ara Değerleme"
+
 msgid "Color Space"
 msgstr "Renk Uzayı"
 
@@ -8574,23 +8688,11 @@ msgstr "Görünür Örnekleme Sayısı"
 msgid "Partition Type"
 msgstr "Bölüntü Sayısı"
 
-msgid "Parsed Geometry Type"
-msgstr "Çözümlenmiş Geometri Türü"
-
-msgid "Source Geometry Mode"
-msgstr "Kaynak Geometri Kipi"
-
 msgid "Source Group Name"
 msgstr "Kaynak Grup İsmi"
 
-msgid "Cells"
-msgstr "Hücreler"
-
 msgid "Cell Height"
 msgstr "Hücre Yüksekliği"
-
-msgid "Agents"
-msgstr "Vekiller"
 
 msgid "Max Climb"
 msgstr "En Fazla Tırmanma"
@@ -8636,18 +8738,6 @@ msgstr "AABB Pişirme"
 
 msgid "Baking AABB Offset"
 msgstr "AABB Kayması Pişirme"
-
-msgid "Parsed Collision Mask"
-msgstr "Çözümlenmiş Çarpışma Maskesi"
-
-msgid "Source Geometry Group Name"
-msgstr "Kaynak Geometri Grup İsmi"
-
-msgid "Baking Rect"
-msgstr "Dörtgen Pişiriliyor"
-
-msgid "Baking Rect Offset"
-msgstr "Dörtgen Kayması Pişiriliyor"
 
 msgid "Bundled"
 msgstr "Paketlenmiş"
@@ -9243,6 +9333,9 @@ msgstr "Gizlileri Aç/Kapat"
 msgid "Folder"
 msgstr "Klasör"
 
+msgid "Create Folder"
+msgstr "Klasör Oluştur"
+
 msgid "Folder Icon Color"
 msgstr "Klasör Simgesi Rengi"
 
@@ -9474,9 +9567,6 @@ msgstr "Sekme Çubuğu Arkaplanı"
 msgid "Drop Mark"
 msgstr "Bırakma İşareti"
 
-msgid "Menu"
-msgstr "Menü"
-
 msgid "Menu Highlight"
 msgstr "Menü Vurgulama"
 
@@ -9494,9 +9584,6 @@ msgstr "Simge Ayırımı"
 
 msgid "Button Highlight"
 msgstr "Düğme Vurgulama"
-
-msgid "Large"
-msgstr "Geniş"
 
 msgid "SV Width"
 msgstr "Örnekleyici Görünümü Genişliği"
@@ -10485,8 +10572,14 @@ msgstr "Uyarılara Hatalar Gibi Davran"
 msgid "Has Tracking Data"
 msgstr "İzleme Verisi Var mı"
 
+msgid "Body Flags"
+msgstr "Cisim Bayrakları"
+
 msgid "Blend Shapes"
 msgstr "Harmanlama Şekilleri"
+
+msgid "Hand Tracking Source"
+msgstr "El İzleme Kaynağı"
 
 msgid "Is Primary"
 msgstr "Birincil mi"

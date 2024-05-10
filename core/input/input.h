@@ -264,6 +264,11 @@ private:
 
 	EventDispatchFunc event_dispatch_function = nullptr;
 
+#ifndef DISABLE_DEPRECATED
+	void _vibrate_handheld_bind_compat_91143(int p_duration_ms = 500);
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 protected:
 	static void _bind_methods();
 
@@ -311,7 +316,7 @@ public:
 	BitField<MouseButtonMask> get_mouse_button_mask() const;
 
 	void warp_mouse(const Vector2 &p_position);
-	Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
+	Point2 warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
 
 	void parse_input_event(const Ref<InputEvent> &p_event);
 
@@ -323,7 +328,7 @@ public:
 
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
-	void vibrate_handheld(int p_duration_ms = 500);
+	void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0);
 
 	void set_mouse_position(const Point2 &p_posf);
 

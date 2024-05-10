@@ -590,6 +590,11 @@ namespace Godot.SourceGenerators
 
             if (variantType == VariantType.Object && type is INamedTypeSymbol memberNamedType)
             {
+                if (TryGetNodeOrResourceType(exportAttr, out hint, out hintString))
+                {
+                    return true;
+                }
+
                 if (memberNamedType.InheritsFrom("GodotSharp", "Godot.Resource"))
                 {
                     hint = PropertyHint.ResourceType;
@@ -605,6 +610,37 @@ namespace Godot.SourceGenerators
 
                     return true;
                 }
+            }
+
+            static bool TryGetNodeOrResourceType(AttributeData exportAttr, out PropertyHint hint, out string? hintString)
+            {
+                hint = PropertyHint.None;
+                hintString = null;
+
+                if (exportAttr.ConstructorArguments.Length <= 1) return false;
+
+                var hintValue = exportAttr.ConstructorArguments[0].Value;
+
+                var hintEnum = hintValue switch
+                {
+                    null => PropertyHint.None,
+                    int intValue => (PropertyHint)intValue,
+                    _ => (PropertyHint)(long)hintValue
+                };
+
+                if (!hintEnum.HasFlag(PropertyHint.NodeType) && !hintEnum.HasFlag(PropertyHint.ResourceType))
+                    return false;
+
+                var hintStringValue = exportAttr.ConstructorArguments[1].Value?.ToString();
+                if (string.IsNullOrWhiteSpace(hintStringValue))
+                {
+                    return false;
+                }
+
+                hint = hintEnum;
+                hintString = hintStringValue;
+
+                return true;
             }
 
             static string GetTypeName(INamedTypeSymbol memberSymbol)
@@ -658,7 +694,10 @@ namespace Godot.SourceGenerators
                 var elementType = MarshalUtils.GetArrayElementType(type);
 
                 if (elementType == null)
-                    return false; // Non-generic Array, so there's no hint to add
+                    return false; // Non-generic Array, so there's no hint to add.
+
+                if (elementType.TypeKind == TypeKind.TypeParameter)
+                    return false; // The generic is not constructed, we can't really hint anything.
 
                 var elementMarshalType = MarshalUtils.ConvertManagedTypeToMarshalType(elementType, typeCache)!.Value;
                 var elementVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(elementMarshalType)!.Value;

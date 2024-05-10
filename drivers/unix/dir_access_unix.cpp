@@ -289,7 +289,7 @@ String DirAccessUnix::get_drive(int p_drive) {
 
 	ERR_FAIL_INDEX_V(p_drive, list.size(), "");
 
-	return list[p_drive];
+	return list.get(p_drive);
 }
 
 int DirAccessUnix::get_current_drive() {

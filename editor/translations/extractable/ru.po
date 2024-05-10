@@ -19,15 +19,6 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "Example: %s"
-msgstr "Пример: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d элемент"
-msgstr[1] "%d элемента"
-msgstr[2] "%d элементов"
-
 msgid "New Code Region"
 msgstr "Новая область кода"
 

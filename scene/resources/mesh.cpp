@@ -1880,7 +1880,7 @@ void ArrayMesh::set_blend_shape_name(int p_index, const StringName &p_name) {
 		do {
 			shape_name = String(p_name) + " " + itos(count);
 			count++;
-		} while (blend_shapes.find(shape_name) != -1);
+		} while (blend_shapes.has(shape_name));
 	}
 
 	blend_shapes.write[p_index] = shape_name;

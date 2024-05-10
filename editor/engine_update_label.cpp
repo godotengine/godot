@@ -30,6 +30,7 @@
 
 #include "engine_update_label.h"
 
+#include "core/io/json.h"
 #include "core/os/time.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -46,7 +47,7 @@ bool EngineUpdateLabel::_can_check_updates() const {
 void EngineUpdateLabel::_check_update() {
 	checked_update = true;
 	_set_status(UpdateStatus::BUSY);
-	http->request("https://raw.githubusercontent.com/godotengine/godot-website/master/_data/versions.yml");
+	http->request("https://godotengine.org/versions.json");
 }
 
 void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
@@ -62,12 +63,24 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 		return;
 	}
 
-	PackedStringArray lines;
+	Array version_data;
 	{
 		String s;
 		const uint8_t *r = p_body.ptr();
 		s.parse_utf8((const char *)r, p_body.size());
-		lines = s.split("\n");
+
+		Variant result = JSON::parse_string(s);
+		if (result == Variant()) {
+			_set_status(UpdateStatus::ERROR);
+			_set_message(TTR("Failed to parse version JSON."), theme_cache.error_color);
+			return;
+		}
+		if (result.get_type() != Variant::ARRAY) {
+			_set_status(UpdateStatus::ERROR);
+			_set_message(TTR("Received JSON data is not a valid version array."), theme_cache.error_color);
+			return;
+		}
+		version_data = result;
 	}
 
 	UpdateMode update_mode = UpdateMode(int(EDITOR_GET("network/connection/engine_version_update_mode")));
@@ -78,14 +91,11 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 	int current_minor = version_info["minor"];
 	int current_patch = version_info["patch"];
 
-	int current_version_line = -1;
-	for (int i = 0; i < lines.size(); i++) {
-		const String &line = lines[i];
-		if (!line.begins_with("- name")) {
-			continue;
-		}
+	Dictionary found_version_info;
+	for (const Variant &data_bit : version_data) {
+		const Dictionary info = data_bit;
 
-		const String version_string = _extract_sub_string(line);
+		const String version_string = info["name"];
 		const PackedStringArray version_bits = version_string.split(".");
 
 		if (version_bits.size() < 2) {
@@ -111,7 +121,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 		}
 
 		if (minor > current_minor || patch > current_patch) {
-			String version_type = _extract_sub_string(lines[i + 1]);
+			String version_type = info["flavor"];
 			if (stable_only && _get_version_type(version_type, nullptr) != VersionType::STABLE) {
 				continue;
 			}
@@ -120,17 +130,17 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 			found_version += "-" + version_type;
 			break;
 		} else if (minor == current_minor && patch == current_patch) {
-			current_version_line = i;
+			found_version_info = info;
 			found_version = version_string;
 			break;
 		}
 	}
 
-	if (current_version_line == -1 && !found_version.is_empty()) {
+	if (found_version_info.is_empty() && !found_version.is_empty()) {
 		_set_status(UpdateStatus::UPDATE_AVAILABLE);
 		_set_message(vformat(TTR("Update available: %s."), found_version), theme_cache.update_color);
 		return;
-	} else if (current_version_line == -1 || stable_only) {
+	} else if (found_version_info.is_empty() || stable_only) {
 		_set_status(UpdateStatus::UP_TO_DATE);
 		return;
 	}
@@ -138,17 +148,11 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 	int current_version_index;
 	VersionType current_version_type = _get_version_type(version_info["status"], &current_version_index);
 
-	for (int i = current_version_line + 1; i < lines.size(); i++) {
-		const String &line = lines[i];
-		if (line.begins_with("- name")) {
-			break;
-		}
+	const Array releases = found_version_info["releases"];
+	for (const Variant &data_bit : version_data) {
+		const Dictionary info = data_bit;
 
-		if (!line.begins_with("    - name") && !line.begins_with("  flavor")) {
-			continue;
-		}
-
-		const String version_string = _extract_sub_string(line);
+		const String version_string = info["name"];
 		int version_index;
 		VersionType version_type = _get_version_type(version_string, &version_index);
 

@@ -177,6 +177,25 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a new vector with all components clamped between the
+        /// <paramref name="min"/> and <paramref name="max"/> using
+        /// <see cref="Mathf.Clamp(real_t, real_t, real_t)"/>.
+        /// </summary>
+        /// <param name="min">The minimum allowed value.</param>
+        /// <param name="max">The maximum allowed value.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public readonly Vector4 Clamp(real_t min, real_t max)
+        {
+            return new Vector4
+            (
+                Mathf.Clamp(X, min, max),
+                Mathf.Clamp(Y, min, max),
+                Mathf.Clamp(Z, min, max),
+                Mathf.Clamp(W, min, max)
+            );
+        }
+
+        /// <summary>
         /// Performs a cubic interpolation between vectors <paramref name="preA"/>, this vector,
         /// <paramref name="b"/>, and <paramref name="postB"/>, by the given amount <paramref name="weight"/>.
         /// </summary>
@@ -352,6 +371,78 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4(Mathf.Max(X, with.X), Mathf.Max(Y, with.Y), Mathf.Max(Z, with.Z), Mathf.Max(W, with.W))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector4 Max(Vector4 with)
+        {
+            return new Vector4
+            (
+                Mathf.Max(X, with.X),
+                Mathf.Max(Y, with.Y),
+                Mathf.Max(Z, with.Z),
+                Mathf.Max(W, with.W)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4(Mathf.Max(X, with), Mathf.Max(Y, with), Mathf.Max(Z, with), Mathf.Max(W, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector4 Max(real_t with)
+        {
+            return new Vector4
+            (
+                Mathf.Max(X, with),
+                Mathf.Max(Y, with),
+                Mathf.Max(Z, with),
+                Mathf.Max(W, with)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4(Mathf.Min(X, with.X), Mathf.Min(Y, with.Y), Mathf.Min(Z, with.Z), Mathf.Min(W, with.W))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector4 Min(Vector4 with)
+        {
+            return new Vector4
+            (
+                Mathf.Min(X, with.X),
+                Mathf.Min(Y, with.Y),
+                Mathf.Min(Z, with.Z),
+                Mathf.Min(W, with.W)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector4(Mathf.Min(X, with), Mathf.Min(Y, with), Mathf.Min(Z, with), Mathf.Min(W, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector4 Min(real_t with)
+        {
+            return new Vector4
+            (
+                Mathf.Min(X, with),
+                Mathf.Min(Y, with),
+                Mathf.Min(Z, with),
+                Mathf.Min(W, with)
+            );
+        }
+
+        /// <summary>
         /// Returns the axis of the vector's highest value. See <see cref="Axis"/>.
         /// If all components are equal, this method returns <see cref="Axis.X"/>.
         /// </summary>
@@ -465,7 +556,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns this vector with each component snapped to the nearest multiple of <paramref name="step"/>.
+        /// Returns a new vector with each component snapped to the nearest multiple of the corresponding component in <paramref name="step"/>.
         /// This can also be used to round to an arbitrary number of decimals.
         /// </summary>
         /// <param name="step">A vector value representing the step size to snap to.</param>
@@ -477,6 +568,22 @@ namespace Godot
                 Mathf.Snapped(Y, step.Y),
                 Mathf.Snapped(Z, step.Z),
                 Mathf.Snapped(W, step.W)
+            );
+        }
+
+        /// <summary>
+        /// Returns a new vector with each component snapped to the nearest multiple of <paramref name="step"/>.
+        /// This can also be used to round to an arbitrary number of decimals.
+        /// </summary>
+        /// <param name="step">The step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
+        public readonly Vector4 Snapped(real_t step)
+        {
+            return new Vector4(
+                Mathf.Snapped(X, step),
+                Mathf.Snapped(Y, step),
+                Mathf.Snapped(Z, step),
+                Mathf.Snapped(W, step)
             );
         }
 

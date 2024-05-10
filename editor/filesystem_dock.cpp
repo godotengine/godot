@@ -138,9 +138,7 @@ String FileSystemList::get_edit_text() {
 }
 
 void FileSystemList::_text_editor_popup_modal_close() {
-	if (Input::get_singleton()->is_key_pressed(Key::ESCAPE) ||
-			Input::get_singleton()->is_key_pressed(Key::KP_ENTER) ||
-			Input::get_singleton()->is_key_pressed(Key::ENTER)) {
+	if (popup_editor->get_hide_reason() == Popup::HIDE_REASON_CANCELED) {
 		return;
 	}
 
@@ -263,7 +261,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	if (p_unfold_path && current_path.begins_with(lpath) && current_path != lpath) {
 		subdirectory_item->set_collapsed(false);
 	} else {
-		subdirectory_item->set_collapsed(uncollapsed_paths.find(lpath) < 0);
+		subdirectory_item->set_collapsed(!uncollapsed_paths.has(lpath));
 	}
 	if (!searched_tokens.is_empty() && _matches_all_search_tokens(dname)) {
 		parent_should_expand = true;
@@ -409,7 +407,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	favorites_item->set_icon(0, get_editor_theme_icon(SNAME("Favorites")));
 	favorites_item->set_text(0, TTR("Favorites:"));
 	favorites_item->set_metadata(0, "Favorites");
-	favorites_item->set_collapsed(p_uncollapsed_paths.find("Favorites") < 0);
+	favorites_item->set_collapsed(!p_uncollapsed_paths.has("Favorites"));
 
 	Vector<String> favorite_paths = EditorSettings::get_singleton()->get_favorites();
 
@@ -1220,8 +1218,10 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 
 			if (is_imported) {
 				SceneImportSettingsDialog::get_singleton()->open_settings(p_path, resource_type == "AnimationLibrary");
-			} else {
+			} else if (resource_type == "PackedScene") {
 				EditorNode::get_singleton()->open_request(fpath);
+			} else {
+				EditorNode::get_singleton()->load_resource(fpath);
 			}
 		} else if (ResourceLoader::is_imported(fpath)) {
 			// If the importer has advanced settings, show them.
@@ -1568,34 +1568,7 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 		if (I) {
 			ResourceUID::get_singleton()->set_id(I->value, new_path);
 		}
-
-		ScriptServer::remove_global_class_by_path(old_path);
-
-		int index = -1;
-		EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->find_file(old_path, &index);
-
-		if (!efd || index < 0) {
-			// The file was removed.
-			continue;
-		}
-
-		// Update paths for global classes.
-		if (!efd->get_file_script_class_name(index).is_empty()) {
-			String lang;
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				if (ScriptServer::get_language(i)->handles_global_class_type(efd->get_file_type(index))) {
-					lang = ScriptServer::get_language(i)->get_name();
-					break;
-				}
-			}
-			if (lang.is_empty()) {
-				continue; // No language found that can handle this global class.
-			}
-
-			ScriptServer::add_global_class(efd->get_file_script_class_name(index), efd->get_file_script_class_extends(index), lang, new_path);
-			EditorNode::get_editor_data().script_class_set_icon_path(efd->get_file_script_class_name(index), efd->get_file_script_class_icon_path(index));
-			EditorNode::get_editor_data().script_class_set_name(new_path, efd->get_file_script_class_name(index));
-		}
+		EditorFileSystem::get_singleton()->register_global_class_script(old_path, new_path);
 	}
 
 	// Rename all resources loaded, be it subresources or actual resources.
@@ -2295,11 +2268,11 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 
 			const bool is_directory = fpath.ends_with("/");
-			for (int i = 0; i < terminal_emulator_args.size(); i++) {
+			for (String &terminal_emulator_arg : terminal_emulator_args) {
 				if (is_directory) {
-					terminal_emulator_args[i] = terminal_emulator_args[i].replace("{directory}", ProjectSettings::get_singleton()->globalize_path(fpath));
+					terminal_emulator_arg = terminal_emulator_arg.replace("{directory}", ProjectSettings::get_singleton()->globalize_path(fpath));
 				} else {
-					terminal_emulator_args[i] = terminal_emulator_args[i].replace("{directory}", ProjectSettings::get_singleton()->globalize_path(fpath).get_base_dir());
+					terminal_emulator_arg = terminal_emulator_arg.replace("{directory}", ProjectSettings::get_singleton()->globalize_path(fpath).get_base_dir());
 				}
 			}
 
@@ -2315,8 +2288,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			const Error err = OS::get_singleton()->create_process(chosen_terminal_emulator, terminal_emulator_args, nullptr, true);
 			if (err != OK) {
 				String args_string;
-				for (int i = 0; i < terminal_emulator_args.size(); i++) {
-					args_string += terminal_emulator_args[i];
+				for (const String &terminal_emulator_arg : terminal_emulator_args) {
+					args_string += terminal_emulator_arg;
 				}
 				ERR_PRINT_ED(vformat(TTR("Couldn't run external terminal program (error code %d): %s %s\nCheck `filesystem/external_programs/terminal_emulator` and `filesystem/external_programs/terminal_emulator_flags` in the Editor Settings."), err, chosen_terminal_emulator, args_string));
 			}
@@ -2327,7 +2300,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			TreeItem *selected = tree->get_root();
 			selected = tree->get_next_selected(selected);
 			while (selected) {
-				if (p_selected.find(selected->get_metadata(0)) >= 0) {
+				if (p_selected.has(selected->get_metadata(0))) {
 					selected->set_collapsed(false);
 				}
 				selected = tree->get_next_selected(selected);

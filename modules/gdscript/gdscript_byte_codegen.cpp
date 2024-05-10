@@ -109,6 +109,7 @@ uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type
 			case Variant::PACKED_VECTOR2_ARRAY:
 			case Variant::PACKED_VECTOR3_ARRAY:
 			case Variant::PACKED_COLOR_ARRAY:
+			case Variant::PACKED_VECTOR4_ARRAY:
 			case Variant::VARIANT_MAX:
 				// Arrays, dictionaries, and objects are reference counted, so we don't use the pool for them.
 				temp_type = Variant::NIL;
@@ -542,6 +543,9 @@ void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Varia
 			break;
 		case Variant::PACKED_COLOR_ARRAY:
 			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY);
+			break;
+		case Variant::PACKED_VECTOR4_ARRAY:
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR4_ARRAY);
 			break;
 		case Variant::NIL:
 		case Variant::VARIANT_MAX:
@@ -1196,23 +1200,49 @@ void GDScriptByteCodeGenerator::write_call_builtin_type_static(const Address &p_
 }
 
 void GDScriptByteCodeGenerator::write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) {
-	bool is_validated = false;
-
 	MethodBind *method = ClassDB::get_method(p_class, p_method);
 
-	if (!is_validated) {
-		// Perform regular call.
-		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_NATIVE_STATIC, p_arguments.size() + 1);
-		for (int i = 0; i < p_arguments.size(); i++) {
-			append(p_arguments[i]);
-		}
-		CallTarget ct = get_call_target(p_target);
-		append(ct.target);
-		append(method);
-		append(p_arguments.size());
-		ct.cleanup();
-		return;
+	// Perform regular call.
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_NATIVE_STATIC, p_arguments.size() + 1);
+	for (int i = 0; i < p_arguments.size(); i++) {
+		append(p_arguments[i]);
 	}
+	CallTarget ct = get_call_target(p_target);
+	append(ct.target);
+	append(method);
+	append(p_arguments.size());
+	ct.cleanup();
+	return;
+}
+
+void GDScriptByteCodeGenerator::write_call_native_static_validated(const GDScriptCodeGenerator::Address &p_target, MethodBind *p_method, const Vector<GDScriptCodeGenerator::Address> &p_arguments) {
+	Variant::Type return_type = Variant::NIL;
+	bool has_return = p_method->has_return();
+
+	if (has_return) {
+		PropertyInfo return_info = p_method->get_return_info();
+		return_type = return_info.type;
+	}
+
+	CallTarget ct = get_call_target(p_target, return_type);
+
+	if (has_return) {
+		Variant::Type temp_type = temporaries[ct.target.address].type;
+		if (temp_type != return_type) {
+			write_type_adjust(ct.target, return_type);
+		}
+	}
+
+	GDScriptFunction::Opcode code = p_method->has_return() ? GDScriptFunction::OPCODE_CALL_NATIVE_STATIC_VALIDATED_RETURN : GDScriptFunction::OPCODE_CALL_NATIVE_STATIC_VALIDATED_NO_RETURN;
+	append_opcode_and_argcount(code, 1 + p_arguments.size());
+
+	for (int i = 0; i < p_arguments.size(); i++) {
+		append(p_arguments[i]);
+	}
+	append(ct.target);
+	append(p_arguments.size());
+	append(p_method);
+	ct.cleanup();
 }
 
 void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {
@@ -1546,6 +1576,10 @@ void GDScriptByteCodeGenerator::write_for(const Address &p_variable, bool p_use_
 				case Variant::PACKED_COLOR_ARRAY:
 					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY;
 					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_COLOR_ARRAY;
+					break;
+				case Variant::PACKED_VECTOR4_ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_VECTOR4_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_VECTOR4_ARRAY;
 					break;
 				default:
 					break;

@@ -585,12 +585,12 @@ int VisualShaderNodeCustom::get_input_port_count() const {
 
 VisualShaderNodeCustom::PortType VisualShaderNodeCustom::get_input_port_type(int p_port) const {
 	ERR_FAIL_INDEX_V(p_port, input_ports.size(), PORT_TYPE_SCALAR);
-	return (PortType)input_ports[p_port].type;
+	return (PortType)input_ports.get(p_port).type;
 }
 
 String VisualShaderNodeCustom::get_input_port_name(int p_port) const {
 	ERR_FAIL_INDEX_V(p_port, input_ports.size(), "");
-	return input_ports[p_port].name;
+	return input_ports.get(p_port).name;
 }
 
 int VisualShaderNodeCustom::get_default_input_port(PortType p_type) const {
@@ -605,12 +605,12 @@ int VisualShaderNodeCustom::get_output_port_count() const {
 
 VisualShaderNodeCustom::PortType VisualShaderNodeCustom::get_output_port_type(int p_port) const {
 	ERR_FAIL_INDEX_V(p_port, output_ports.size(), PORT_TYPE_SCALAR);
-	return (PortType)output_ports[p_port].type;
+	return (PortType)output_ports.get(p_port).type;
 }
 
 String VisualShaderNodeCustom::get_output_port_name(int p_port) const {
 	ERR_FAIL_INDEX_V(p_port, output_ports.size(), "");
-	return output_ports[p_port].name;
+	return output_ports.get(p_port).name;
 }
 
 String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
@@ -865,7 +865,7 @@ int VisualShader::get_varyings_count() const {
 
 const VisualShader::Varying *VisualShader::get_varying_by_index(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, varyings_list.size(), nullptr);
-	return &varyings_list[p_idx];
+	return &varyings_list.get(p_idx);
 }
 
 void VisualShader::set_varying_mode(const String &p_name, VaryingMode p_mode) {
@@ -2478,10 +2478,11 @@ void VisualShader::_update_shader() const {
 		}
 	}
 
-	for (int i = 0; i < parameters.size(); i++) {
-		VisualShaderNodeParameter *parameter = parameters[i];
+	int idx = 0;
+	for (List<VisualShaderNodeParameter *>::Iterator itr = parameters.begin(); itr != parameters.end(); ++itr, ++idx) {
+		VisualShaderNodeParameter *parameter = *itr;
 		if (used_parameter_names.has(parameter->get_parameter_name())) {
-			global_code += parameter->generate_global(get_mode(), Type(i), -1);
+			global_code += parameter->generate_global(get_mode(), Type(idx), -1);
 			const_cast<VisualShaderNodeParameter *>(parameter)->set_global_code_generated(true);
 		} else {
 			const_cast<VisualShaderNodeParameter *>(parameter)->set_global_code_generated(false);
@@ -2791,8 +2792,9 @@ void VisualShader::_update_shader() const {
 
 	const_cast<VisualShader *>(this)->set_code(final_code);
 	for (int i = 0; i < default_tex_params.size(); i++) {
-		for (int j = 0; j < default_tex_params[i].params.size(); j++) {
-			const_cast<VisualShader *>(this)->set_default_texture_parameter(default_tex_params[i].name, default_tex_params[i].params[j], j);
+		int j = 0;
+		for (List<Ref<Texture2D>>::ConstIterator itr = default_tex_params[i].params.begin(); itr != default_tex_params[i].params.end(); ++itr, ++j) {
+			const_cast<VisualShader *>(this)->set_default_texture_parameter(default_tex_params[i].name, *itr, j);
 		}
 	}
 	if (previous_code != final_code) {
@@ -3684,7 +3686,7 @@ String VisualShaderNodeParameterRef::get_parameter_name_by_index(int p_idx) cons
 	ERR_FAIL_COND_V(!shader_rid.is_valid(), String());
 
 	if (p_idx >= 0 && p_idx < parameters[shader_rid].size()) {
-		return parameters[shader_rid][p_idx].name;
+		return parameters[shader_rid].get(p_idx).name;
 	}
 	return "";
 }
@@ -3692,9 +3694,9 @@ String VisualShaderNodeParameterRef::get_parameter_name_by_index(int p_idx) cons
 VisualShaderNodeParameterRef::ParameterType VisualShaderNodeParameterRef::get_parameter_type_by_name(const String &p_name) const {
 	ERR_FAIL_COND_V(!shader_rid.is_valid(), PARAMETER_TYPE_FLOAT);
 
-	for (int i = 0; i < parameters[shader_rid].size(); i++) {
-		if (parameters[shader_rid][i].name == p_name) {
-			return parameters[shader_rid][i].type;
+	for (const VisualShaderNodeParameterRef::Parameter &parameter : parameters[shader_rid]) {
+		if (parameter.name == p_name) {
+			return parameter.type;
 		}
 	}
 	return PARAMETER_TYPE_FLOAT;
@@ -3704,7 +3706,7 @@ VisualShaderNodeParameterRef::ParameterType VisualShaderNodeParameterRef::get_pa
 	ERR_FAIL_COND_V(!shader_rid.is_valid(), PARAMETER_TYPE_FLOAT);
 
 	if (p_idx >= 0 && p_idx < parameters[shader_rid].size()) {
-		return parameters[shader_rid][p_idx].type;
+		return parameters[shader_rid].get(p_idx).type;
 	}
 	return PARAMETER_TYPE_FLOAT;
 }
@@ -3713,7 +3715,7 @@ VisualShaderNodeParameterRef::PortType VisualShaderNodeParameterRef::get_port_ty
 	ERR_FAIL_COND_V(!shader_rid.is_valid(), PORT_TYPE_SCALAR);
 
 	if (p_idx >= 0 && p_idx < parameters[shader_rid].size()) {
-		switch (parameters[shader_rid][p_idx].type) {
+		switch (parameters[shader_rid].get(p_idx).type) {
 			case PARAMETER_TYPE_FLOAT:
 				return PORT_TYPE_SCALAR;
 			case PARAMETER_TYPE_INT:
@@ -4928,6 +4930,10 @@ String VisualShaderNodeExpression::generate_code(Shader::Mode p_mode, VisualShad
 	return code;
 }
 
+bool VisualShaderNodeExpression::is_output_port_expandable(int p_port) const {
+	return false;
+}
+
 void VisualShaderNodeExpression::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_expression", "expression"), &VisualShaderNodeExpression::set_expression);
 	ClassDB::bind_method(D_METHOD("get_expression"), &VisualShaderNodeExpression::get_expression);
@@ -4980,15 +4986,15 @@ int VisualShaderNodeVarying::get_varyings_count() const {
 
 String VisualShaderNodeVarying::get_varying_name_by_index(int p_idx) const {
 	if (p_idx >= 0 && p_idx < varyings.size()) {
-		return varyings[p_idx].name;
+		return varyings.get(p_idx).name;
 	}
 	return "";
 }
 
 VisualShader::VaryingType VisualShaderNodeVarying::get_varying_type_by_name(const String &p_name) const {
-	for (int i = 0; i < varyings.size(); i++) {
-		if (varyings[i].name == p_name) {
-			return varyings[i].type;
+	for (const VisualShaderNodeVarying::Varying &varying : varyings) {
+		if (varying.name == p_name) {
+			return varying.type;
 		}
 	}
 	return VisualShader::VARYING_TYPE_FLOAT;
@@ -4996,15 +5002,15 @@ VisualShader::VaryingType VisualShaderNodeVarying::get_varying_type_by_name(cons
 
 VisualShader::VaryingType VisualShaderNodeVarying::get_varying_type_by_index(int p_idx) const {
 	if (p_idx >= 0 && p_idx < varyings.size()) {
-		return varyings[p_idx].type;
+		return varyings.get(p_idx).type;
 	}
 	return VisualShader::VARYING_TYPE_FLOAT;
 }
 
 VisualShader::VaryingMode VisualShaderNodeVarying::get_varying_mode_by_name(const String &p_name) const {
-	for (int i = 0; i < varyings.size(); i++) {
-		if (varyings[i].name == p_name) {
-			return varyings[i].mode;
+	for (const VisualShaderNodeVarying::Varying &varying : varyings) {
+		if (varying.name == p_name) {
+			return varying.mode;
 		}
 	}
 	return VisualShader::VARYING_MODE_VERTEX_TO_FRAG_LIGHT;
@@ -5012,14 +5018,14 @@ VisualShader::VaryingMode VisualShaderNodeVarying::get_varying_mode_by_name(cons
 
 VisualShader::VaryingMode VisualShaderNodeVarying::get_varying_mode_by_index(int p_idx) const {
 	if (p_idx >= 0 && p_idx < varyings.size()) {
-		return varyings[p_idx].mode;
+		return varyings.get(p_idx).mode;
 	}
 	return VisualShader::VARYING_MODE_VERTEX_TO_FRAG_LIGHT;
 }
 
 VisualShaderNodeVarying::PortType VisualShaderNodeVarying::get_port_type_by_index(int p_idx) const {
 	if (p_idx >= 0 && p_idx < varyings.size()) {
-		return get_port_type(varyings[p_idx].type, 0);
+		return get_port_type(varyings.get(p_idx).type, 0);
 	}
 	return PORT_TYPE_SCALAR;
 }

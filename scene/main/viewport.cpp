@@ -688,6 +688,18 @@ void Viewport::_process_picking() {
 		physics_picking_events.clear();
 		return;
 	}
+#ifndef _3D_DISABLED
+	if (use_xr) {
+		if (XRServer::get_singleton() != nullptr) {
+			Ref<XRInterface> xr_interface = XRServer::get_singleton()->get_primary_interface();
+			if (xr_interface.is_valid() && xr_interface->is_initialized() && xr_interface->get_view_count() > 1) {
+				WARN_PRINT_ONCE("Object picking can't be used when stereo rendering, this will be turned off!");
+				physics_object_picking = false; // don't try again.
+				return;
+			}
+		}
+	}
+#endif
 
 	_drop_physics_mouseover(true);
 
@@ -856,9 +868,10 @@ void Viewport::_process_picking() {
 
 							if (send_event) {
 								co->_input_event_call(this, ev, res[i].shape);
-								if (physics_object_picking_first_only) {
-									break;
-								}
+							}
+
+							if (physics_object_picking_first_only) {
+								break;
 							}
 						}
 					}
@@ -970,7 +983,7 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 		stretch_transform_new.scale(scale);
 	}
 
-	Size2i new_size = p_size.max(Size2i(2, 2));
+	Size2i new_size = p_size.maxi(2);
 	if (size == new_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override) {
 		return;
 	}
@@ -1721,7 +1734,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.mouse_focus_mask.set_flag(button_mask);
 			} else {
 				gui.mouse_focus = gui_find_control(mpos);
-				gui.last_mouse_focus = gui.mouse_focus;
 
 				if (!gui.mouse_focus) {
 					return;
@@ -2306,6 +2318,7 @@ void Viewport::_gui_force_drag(Control *p_base, const Variant &p_data, Control *
 	gui.dragging = true;
 	gui.drag_data = p_data;
 	gui.mouse_focus = nullptr;
+	gui.mouse_focus_mask.clear();
 
 	if (p_control) {
 		_gui_set_drag_preview(p_base, p_control);
@@ -2361,7 +2374,7 @@ void Viewport::_gui_hide_control(Control *p_control) {
 	if (gui.key_focus == p_control) {
 		gui_release_focus();
 	}
-	if (gui.mouse_over == p_control || gui.mouse_over_hierarchy.find(p_control) >= 0) {
+	if (gui.mouse_over == p_control || gui.mouse_over_hierarchy.has(p_control)) {
 		_drop_mouse_over(p_control->get_parent_control());
 	}
 	if (gui.drag_mouse_over == p_control) {
@@ -2378,13 +2391,10 @@ void Viewport::_gui_remove_control(Control *p_control) {
 		gui.forced_mouse_focus = false;
 		gui.mouse_focus_mask.clear();
 	}
-	if (gui.last_mouse_focus == p_control) {
-		gui.last_mouse_focus = nullptr;
-	}
 	if (gui.key_focus == p_control) {
 		gui.key_focus = nullptr;
 	}
-	if (gui.mouse_over == p_control || gui.mouse_over_hierarchy.find(p_control) >= 0) {
+	if (gui.mouse_over == p_control || gui.mouse_over_hierarchy.has(p_control)) {
 		_drop_mouse_over(p_control->get_parent_control());
 	}
 	if (gui.drag_mouse_over == p_control) {
@@ -2758,7 +2768,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 				Size2i min_size = gui.currently_dragged_subwindow->get_min_size();
 				Size2i min_size_clamped = gui.currently_dragged_subwindow->get_clamped_minimum_size();
 
-				min_size_clamped = min_size_clamped.max(Size2i(1, 1));
+				min_size_clamped = min_size_clamped.maxi(1);
 
 				Rect2i r = gui.subwindow_resize_from_rect;
 
@@ -2819,7 +2829,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 
 				Size2i max_size = gui.currently_dragged_subwindow->get_max_size();
 				if ((max_size.x > 0 || max_size.y > 0) && (max_size.x >= min_size.x && max_size.y >= min_size.y)) {
-					max_size = max_size.max(Size2i(1, 1));
+					max_size = max_size.maxi(1);
 
 					if (r.size.x > max_size.x) {
 						r.size.x = max_size.x;
@@ -3578,6 +3588,13 @@ bool Viewport::gui_is_drag_successful() const {
 	return gui.drag_successful;
 }
 
+void Viewport::gui_cancel_drag() {
+	ERR_MAIN_THREAD_GUARD;
+	if (gui_is_dragging()) {
+		_perform_drop();
+	}
+}
+
 void Viewport::set_input_as_handled() {
 	ERR_MAIN_THREAD_GUARD;
 	if (!handle_input_locally) {
@@ -3716,6 +3733,28 @@ void Viewport::set_vrs_mode(Viewport::VRSMode p_vrs_mode) {
 Viewport::VRSMode Viewport::get_vrs_mode() const {
 	ERR_READ_THREAD_GUARD_V(VRS_DISABLED);
 	return vrs_mode;
+}
+
+void Viewport::set_vrs_update_mode(VRSUpdateMode p_vrs_update_mode) {
+	ERR_MAIN_THREAD_GUARD;
+
+	vrs_update_mode = p_vrs_update_mode;
+	switch (p_vrs_update_mode) {
+		case VRS_UPDATE_ONCE: {
+			RS::get_singleton()->viewport_set_vrs_update_mode(viewport, RS::VIEWPORT_VRS_UPDATE_ONCE);
+		} break;
+		case VRS_UPDATE_ALWAYS: {
+			RS::get_singleton()->viewport_set_vrs_update_mode(viewport, RS::VIEWPORT_VRS_UPDATE_ALWAYS);
+		} break;
+		default: {
+			RS::get_singleton()->viewport_set_vrs_update_mode(viewport, RS::VIEWPORT_VRS_UPDATE_DISABLED);
+		} break;
+	}
+}
+
+Viewport::VRSUpdateMode Viewport::get_vrs_update_mode() const {
+	ERR_READ_THREAD_GUARD_V(VRS_UPDATE_DISABLED);
+	return vrs_update_mode;
 }
 
 void Viewport::set_vrs_texture(Ref<Texture2D> p_texture) {
@@ -4758,6 +4797,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vrs_mode", "mode"), &Viewport::set_vrs_mode);
 	ClassDB::bind_method(D_METHOD("get_vrs_mode"), &Viewport::get_vrs_mode);
 
+	ClassDB::bind_method(D_METHOD("set_vrs_update_mode", "mode"), &Viewport::set_vrs_update_mode);
+	ClassDB::bind_method(D_METHOD("get_vrs_update_mode"), &Viewport::get_vrs_update_mode);
+
 	ClassDB::bind_method(D_METHOD("set_vrs_texture", "texture"), &Viewport::set_vrs_texture);
 	ClassDB::bind_method(D_METHOD("get_vrs_texture"), &Viewport::get_vrs_texture);
 
@@ -4790,6 +4832,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), "set_fsr_sharpness", "get_fsr_sharpness");
 	ADD_GROUP("Variable Rate Shading", "vrs_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vrs_mode", PROPERTY_HINT_ENUM, "Disabled,Texture,Depth buffer,XR"), "set_vrs_mode", "get_vrs_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vrs_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,Always"), "set_vrs_update_mode", "get_vrs_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "vrs_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_vrs_texture", "get_vrs_texture");
 #endif
 	ADD_GROUP("Canvas Items", "canvas_item_");
@@ -4913,10 +4956,19 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(VRS_TEXTURE);
 	BIND_ENUM_CONSTANT(VRS_XR);
 	BIND_ENUM_CONSTANT(VRS_MAX);
+
+	BIND_ENUM_CONSTANT(VRS_UPDATE_DISABLED);
+	BIND_ENUM_CONSTANT(VRS_UPDATE_ONCE);
+	BIND_ENUM_CONSTANT(VRS_UPDATE_ALWAYS);
+	BIND_ENUM_CONSTANT(VRS_UPDATE_MAX);
 }
 
 void Viewport::_validate_property(PropertyInfo &p_property) const {
 	if (vrs_mode != VRS_TEXTURE && (p_property.name == "vrs_texture")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (vrs_mode == VRS_DISABLED && (p_property.name == "vrs_update_mode")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

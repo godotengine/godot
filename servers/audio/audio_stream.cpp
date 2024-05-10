@@ -618,7 +618,7 @@ Ref<AudioStreamPlayback> AudioStreamRandomizer::instance_playback_sequential() {
 		if (entry.stream.is_null()) {
 			continue;
 		}
-		if (local_pool.find(entry.stream) != -1) {
+		if (local_pool.has(entry.stream)) {
 			WARN_PRINT("Duplicate stream in sequential playback pool");
 			continue;
 		}
@@ -711,6 +711,7 @@ void AudioStreamRandomizer::_bind_methods() {
 	PoolEntry defaults;
 
 	base_property_helper.set_prefix("stream_");
+	base_property_helper.set_array_length_getter(&AudioStreamRandomizer::get_streams_count);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), defaults.stream, &AudioStreamRandomizer::set_stream, &AudioStreamRandomizer::get_stream);
 	base_property_helper.register_property(PropertyInfo(Variant::FLOAT, "weight", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), defaults.weight, &AudioStreamRandomizer::set_stream_probability_weight, &AudioStreamRandomizer::get_stream_probability_weight);
 }

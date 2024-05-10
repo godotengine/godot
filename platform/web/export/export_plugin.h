@@ -46,10 +46,16 @@
 class EditorExportPlatformWeb : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformWeb, EditorExportPlatform);
 
+	enum HTTPServerState {
+		HTTP_SERVER_STATE_OFF,
+		HTTP_SERVER_STATE_ON,
+	};
+
 	Ref<ImageTexture> logo;
 	Ref<ImageTexture> run_icon;
 	Ref<ImageTexture> stop_icon;
-	int menu_options = 0;
+	Ref<ImageTexture> restart_icon;
+	HTTPServerState server_state = HTTP_SERVER_STATE_OFF;
 
 	Ref<EditorHTTPServer> server;
 
@@ -96,6 +102,11 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 	Error _build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects);
 	Error _write_or_error(const uint8_t *p_content, int p_len, String p_path);
 
+	Error _export_project(const Ref<EditorExportPreset> &p_preset, int p_debug_flags);
+	Error _launch_browser(const String &p_bind_host, uint16_t p_bind_port, bool p_use_tls);
+	Error _start_server(const String &p_bind_host, uint16_t p_bind_port, bool p_use_tls);
+	Error _stop_server();
+
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
@@ -112,8 +123,8 @@ public:
 
 	virtual bool poll_export() override;
 	virtual int get_options_count() const override;
-	virtual String get_option_label(int p_index) const override { return p_index ? TTR("Stop HTTP Server") : TTR("Run in Browser"); }
-	virtual String get_option_tooltip(int p_index) const override { return p_index ? TTR("Stop HTTP Server") : TTR("Run exported HTML in the system's default browser."); }
+	virtual String get_option_label(int p_index) const override;
+	virtual String get_option_tooltip(int p_index) const override;
 	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) override;
 	virtual Ref<Texture2D> get_run_icon() const override;

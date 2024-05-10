@@ -1617,7 +1617,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 					if (seeked) {
 						// Seek.
-						int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
+						int idx = a->track_find_key(i, time, Animation::FIND_MODE_NEAREST, true);
 						if (idx < 0) {
 							continue;
 						}
@@ -1630,6 +1630,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						double at_anim_pos = 0.0;
 						switch (anim->get_loop_mode()) {
 							case Animation::LOOP_NONE: {
+								if (!is_external_seeking && ((!backward && time >= pos + (double)anim->get_length()) || (backward && time <= pos))) {
+									continue; // Do nothing if current time is outside of length when started.
+								}
 								at_anim_pos = MIN((double)anim->get_length(), time - pos); // Seek to end.
 							} break;
 							case Animation::LOOP_LINEAR: {
@@ -1641,7 +1644,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							default:
 								break;
 						}
-						if (player2->is_playing()) {
+						if (player2->is_playing() || !is_external_seeking) {
 							player2->seek(at_anim_pos, false, p_update_only);
 							player2->play(anim_name);
 							t->playing = true;
@@ -2090,7 +2093,7 @@ Ref<AnimatedValuesBackup> AnimationMixer::apply_reset(bool p_user_initiated) {
 void AnimationMixer::capture(const StringName &p_name, double p_duration, Tween::TransitionType p_trans_type, Tween::EaseType p_ease_type) {
 	ERR_FAIL_COND(!active);
 	ERR_FAIL_COND(!has_animation(p_name));
-	ERR_FAIL_COND(Math::is_zero_approx(p_duration));
+	ERR_FAIL_COND(p_duration <= 0);
 	Ref<Animation> reference_animation = get_animation(p_name);
 
 	if (!cache_valid) {

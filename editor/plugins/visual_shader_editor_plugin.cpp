@@ -748,8 +748,9 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		bool first = true;
 		VBoxContainer *vbox = nullptr;
 
-		for (int i = 0; i < custom_node->dp_props.size(); i++) {
-			const VisualShaderNodeCustom::DropDownListProperty &dp = custom_node->dp_props[i];
+		int i = 0;
+		for (List<VisualShaderNodeCustom::DropDownListProperty>::ConstIterator itr = custom_node->dp_props.begin(); itr != custom_node->dp_props.end(); ++itr, ++i) {
+			const VisualShaderNodeCustom::DropDownListProperty &dp = *itr;
 
 			if (first) {
 				first = false;
@@ -1002,7 +1003,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			button->hide();
 		}
 
-		if (i == 0 && custom_editor) {
+		if (j == 0 && custom_editor) {
 			hb->add_child(custom_editor);
 			custom_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		} else {
@@ -1019,22 +1020,22 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					type_box->add_item(TTR("Boolean"));
 					type_box->add_item(TTR("Transform"));
 					type_box->add_item(TTR("Sampler"));
-					type_box->select(group_node->get_input_port_type(i));
+					type_box->select(group_node->get_input_port_type(j));
 					type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-					type_box->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_change_input_port_type).bind(p_id, i), CONNECT_DEFERRED);
+					type_box->connect("item_selected", callable_mp(editor, &VisualShaderEditor::_change_input_port_type).bind(p_id, j), CONNECT_DEFERRED);
 
 					LineEdit *name_box = memnew(LineEdit);
 					hb->add_child(name_box);
 					name_box->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 					name_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					name_box->set_text(name_left);
-					name_box->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_change_input_port_name).bind(name_box, p_id, i), CONNECT_DEFERRED);
-					name_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_port_name_focus_out).bind(name_box, p_id, i, false), CONNECT_DEFERRED);
+					name_box->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_change_input_port_name).bind(name_box, p_id, j), CONNECT_DEFERRED);
+					name_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_port_name_focus_out).bind(name_box, p_id, j, false), CONNECT_DEFERRED);
 
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 					remove_btn->set_tooltip_text(TTR("Remove") + " " + name_left);
-					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_input_port).bind(p_id, i), CONNECT_DEFERRED);
+					remove_btn->connect("pressed", callable_mp(editor, &VisualShaderEditor::_remove_input_port).bind(p_id, j), CONNECT_DEFERRED);
 					hb->add_child(remove_btn);
 				} else {
 					Label *label = memnew(Label);
@@ -1043,7 +1044,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					label->add_theme_style_override("normal", editor->get_theme_stylebox(SNAME("label_style"), SNAME("VShaderEditor"))); //more compact
 					hb->add_child(label);
 
-					if (vsnode->is_input_port_default(i, mode) && !port_left_used) {
+					if (vsnode->is_input_port_default(j, mode) && !port_left_used) {
 						Label *hint_label = memnew(Label);
 						hint_label->set_text(TTR("[default]"));
 						hint_label->add_theme_color_override("font_color", editor->get_theme_color(SNAME("font_readonly_color"), SNAME("TextEdit")));
@@ -1828,9 +1829,9 @@ void VisualShaderEditor::_update_nodes() {
 		List<StringName> class_list;
 		ScriptServer::get_global_class_list(&class_list);
 
-		for (int i = 0; i < class_list.size(); i++) {
-			if (ScriptServer::get_global_class_native_base(class_list[i]) == "VisualShaderNodeCustom") {
-				String script_path = ScriptServer::get_global_class_path(class_list[i]);
+		for (const StringName &E : class_list) {
+			if (ScriptServer::get_global_class_native_base(E) == "VisualShaderNodeCustom") {
+				String script_path = ScriptServer::get_global_class_path(E);
 				Ref<Resource> res = ResourceLoader::load(script_path);
 				ERR_CONTINUE(res.is_null());
 				ERR_CONTINUE(!res->is_class("Script"));
@@ -1858,16 +1859,16 @@ void VisualShaderEditor::_update_nodes() {
 		List<StringName> class_list;
 		ClassDB::get_class_list(&class_list);
 
-		for (int i = 0; i < class_list.size(); i++) {
-			if (ClassDB::get_parent_class(class_list[i]) == "VisualShaderNodeCustom") {
-				Object *instance = ClassDB::instantiate(class_list[i]);
+		for (const StringName &E : class_list) {
+			if (ClassDB::get_parent_class(E) == "VisualShaderNodeCustom") {
+				Object *instance = ClassDB::instantiate(E);
 				Ref<VisualShaderNodeCustom> ref = Object::cast_to<VisualShaderNodeCustom>(instance);
 				ERR_CONTINUE(ref.is_null());
 				if (!ref->is_available(visual_shader->get_mode(), visual_shader->get_shader_type())) {
 					continue;
 				}
 				Dictionary dict = get_custom_node_data(ref);
-				dict["type"] = class_list[i];
+				dict["type"] = E;
 				dict["script"] = Ref<Script>();
 
 				String key;
@@ -1956,7 +1957,7 @@ void VisualShaderEditor::_update_options_menu() {
 	}
 
 	for (int i = 0; i < add_options.size(); i++) {
-		if (!use_filter || add_options[i].name.findn(filter) != -1) {
+		if (!use_filter || add_options[i].name.containsn(filter)) {
 			// port type filtering
 			if (members_output_port_type != VisualShaderNode::PORT_TYPE_MAX || members_input_port_type != VisualShaderNode::PORT_TYPE_MAX) {
 				Ref<VisualShaderNode> vsn;
@@ -3982,7 +3983,7 @@ void VisualShaderEditor::_handle_node_drop_on_connection() {
 		return;
 	}
 
-	int selected_node_id = drag_buffer[0].node;
+	int selected_node_id = drag_buffer.front()->get().node;
 	VisualShader::Type shader_type = get_current_shader_type();
 	Ref<VisualShaderNode> selected_vsnode = visual_shader->get_node(shader_type, selected_node_id);
 
@@ -4673,7 +4674,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos, VisualShaderNod
 	// Keep dialog within window bounds.
 	Rect2 window_rect = Rect2(get_window()->get_position(), get_window()->get_size());
 	Rect2 dialog_rect = Rect2(members_dialog->get_position(), members_dialog->get_size());
-	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).max(Vector2());
+	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).maxf(0);
 	members_dialog->set_position(members_dialog->get_position() - difference);
 
 	callable_mp((Control *)node_filter, &Control::grab_focus).call_deferred(); // Still not visible.
@@ -4702,7 +4703,7 @@ void VisualShaderEditor::_show_add_varying_dialog() {
 	// Keep dialog within window bounds.
 	Rect2 window_rect = Rect2(DisplayServer::get_singleton()->window_get_position(), DisplayServer::get_singleton()->window_get_size());
 	Rect2 dialog_rect = Rect2(add_varying_dialog->get_position(), add_varying_dialog->get_size());
-	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).max(Vector2());
+	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).maxf(0);
 	add_varying_dialog->set_position(add_varying_dialog->get_position() - difference);
 }
 
@@ -4713,7 +4714,7 @@ void VisualShaderEditor::_show_remove_varying_dialog() {
 	// Keep dialog within window bounds.
 	Rect2 window_rect = Rect2(DisplayServer::get_singleton()->window_get_position(), DisplayServer::get_singleton()->window_get_size());
 	Rect2 dialog_rect = Rect2(remove_varying_dialog->get_position(), remove_varying_dialog->get_size());
-	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).max(Vector2());
+	Vector2 difference = (dialog_rect.get_end() - window_rect.get_end()).maxf(0);
 	remove_varying_dialog->set_position(remove_varying_dialog->get_position() - difference);
 }
 
@@ -7540,8 +7541,9 @@ void VisualShaderNodePortPreview::_shader_changed() {
 	preview_shader.instantiate();
 	preview_shader->set_code(shader_code);
 	for (int i = 0; i < default_textures.size(); i++) {
-		for (int j = 0; j < default_textures[i].params.size(); j++) {
-			preview_shader->set_default_texture_parameter(default_textures[i].name, default_textures[i].params[j], j);
+		int j = 0;
+		for (List<Ref<Texture2D>>::ConstIterator itr = default_textures[i].params.begin(); itr != default_textures[i].params.end(); ++itr, ++j) {
+			preview_shader->set_default_texture_parameter(default_textures[i].name, *itr, j);
 		}
 	}
 

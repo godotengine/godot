@@ -18,32 +18,33 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "Example: %s"
-msgstr "Exemple : %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d élément"
-msgstr[1] "%d éléments"
+msgid "New Code Region"
+msgstr "Nouvelle section de code"
 
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
 "RMB: Remove preset"
 msgstr ""
-"Couleur : #%s\n"
-"Clic gauche : Appliquer la couleur\n"
-"Clic droit : Supprimer le préréglage"
+"Couleur : #%s\n"
+"Clic gauche : Appliquer la couleur\n"
+"Clic droit : Supprimer le préréglage"
 
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color"
 msgstr ""
-"Couleur : #%s\n"
-"Clic gauche : Appliquer la couleur"
+"Couleur : #%s\n"
+"Clic gauche : Appliquer la couleur"
 
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "Entrez un code hexadécimal («#ff0000») ou le nom d'une couleur («red»)."
+
+msgid "Pick a color from the screen."
+msgstr "Échantillonner une couleur depuis l'écran."
+
+msgid "Pick a color from the application window."
+msgstr "Échantillonner une couleur depuis la fenêtre de l'application."
 
 msgid "Select a picker shape."
 msgstr "Sélectionnez une forme de sélection."
@@ -57,6 +58,15 @@ msgstr "Code hexadécimal ou nom de couleur"
 msgid "Add current color as a preset."
 msgstr "Ajouter la couleur courante comme préréglage."
 
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Alert!"
+msgstr "Alerte !"
+
 msgid "Network"
 msgstr "Réseau"
 
@@ -65,7 +75,7 @@ msgid ""
 "Do you want to overwrite it?"
 msgstr ""
 "Le fichier \"%s\" existe déjà.\n"
-"Voulez-vous l'écraser ?"
+"Voulez-vous l'écraser ?"
 
 msgid "Open"
 msgstr "Ouvrir"
@@ -81,6 +91,9 @@ msgstr "Vous n'avez pas l'autorisation d'accéder au contenu de ce dossier."
 
 msgid "All Recognized"
 msgstr "Tous les types de fichiers reconnus"
+
+msgid "All Files"
+msgstr "Tous les fichiers"
 
 msgid "Open a File"
 msgstr "Ouvrir un fichier"
@@ -118,20 +131,26 @@ msgstr "Rafraîchir les fichiers."
 msgid "Toggle the visibility of hidden files."
 msgstr "Activer / désactiver la visibilité des fichiers cachés."
 
+msgid "Create a new folder."
+msgstr "Créer un nouveau dossier."
+
 msgid "Directories & Files:"
-msgstr "Répertoires et fichiers :"
+msgstr "Répertoires et fichiers :"
 
 msgid "File:"
-msgstr "Fichier :"
+msgstr "Fichier :"
 
 msgid "Create Folder"
 msgstr "Créer un dossier"
 
 msgid "Name:"
-msgstr "Nom :"
+msgstr "Nom :"
 
 msgid "Could not create folder."
 msgstr "Impossible de créer le dossier."
+
+msgid "Invalid extension, or empty filename."
+msgstr "Extension invalide ou nom de fichier manquant."
 
 msgid "Zoom Out"
 msgstr "Dézoomer"
@@ -142,11 +161,29 @@ msgstr "Réinitialiser le zoom"
 msgid "Zoom In"
 msgstr "Zoomer"
 
+msgid "Toggle the visual grid."
+msgstr "Activer / désactiver la visibilité de la grille."
+
+msgid "Toggle snapping to the grid."
+msgstr "Activer / désactiver l'aimantation à la grille."
+
 msgid "Change the snapping distance."
 msgstr "Change la distance d'aimantation."
 
+msgid "Toggle the graph minimap."
+msgstr "Activer/Désactiver la mini-carte du graphe."
+
+msgid "Automatically arrange selected nodes."
+msgstr "Réarrangement automatique des nœuds sélectionnés."
+
 msgid "Same as Layout Direction"
-msgstr "Même direction que la Disposition"
+msgstr "Même direction que la disposition"
+
+msgid "Auto-Detect Direction"
+msgstr "Détection automatique de la direction"
+
+msgid "Left-to-Right"
+msgstr "De gauche à droite"
 
 msgid "Right-to-Left"
 msgstr "De droite à gauche"
@@ -219,6 +256,15 @@ msgstr "Annuler"
 
 msgid "Redo"
 msgstr "Refaire"
+
+msgid "Text Writing Direction"
+msgstr "Direction d'écriture du texte"
+
+msgid "Display Control Characters"
+msgstr "Afficher les caractères de contrôle"
+
+msgid "Insert Control Character"
+msgstr "Insérer un caractère de contrôle"
 
 msgid "(Other)"
 msgstr "(Autre)"

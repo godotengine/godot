@@ -141,6 +141,14 @@ void Container::queue_sort() {
 	pending_sort = true;
 }
 
+Control *Container::as_sortable_control(Node *p_node) const {
+	Control *c = Object::cast_to<Control>(p_node);
+	if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
+		return nullptr;
+	}
+	return c;
+}
+
 Vector<int> Container::get_allowed_size_flags_horizontal() const {
 	Vector<int> flags;
 	if (GDVIRTUAL_CALL(_get_allowed_size_flags_horizontal, flags)) {

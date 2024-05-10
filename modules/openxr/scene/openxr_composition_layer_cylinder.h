@@ -50,7 +50,6 @@ protected:
 
 	void _notification(int p_what);
 
-	virtual void _on_openxr_session_begun() override;
 	virtual Ref<Mesh> _create_fallback_mesh() override;
 
 public:

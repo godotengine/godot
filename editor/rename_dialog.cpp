@@ -473,7 +473,7 @@ void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *
 	String source_file = String::utf8(p_file);
 
 	// Only show first error that is related to "regex"
-	if (self->has_errors || source_file.find("regex") < 0) {
+	if (self->has_errors || !source_file.contains("regex")) {
 		return;
 	}
 
@@ -591,12 +591,12 @@ void RenameDialog::rename() {
 		undo_redo->create_action(TTR("Batch Rename"), UndoRedo::MERGE_DISABLE, root_node, true);
 
 		// Make sure to iterate reversed so that child nodes will find parents.
-		for (int i = to_rename.size() - 1; i >= 0; --i) {
-			Node *n = root_node->get_node(to_rename[i].first);
-			const String &new_name = to_rename[i].second;
+		for (List<Pair<NodePath, String>>::Element *E = to_rename.back(); E; E = E->prev()) {
+			Node *n = root_node->get_node(E->get().first);
+			const String &new_name = E->get().second;
 
 			if (!n) {
-				ERR_PRINT("Skipping missing node: " + to_rename[i].first.get_concatenated_subnames());
+				ERR_PRINT("Skipping missing node: " + E->get().first.get_concatenated_subnames());
 				continue;
 			}
 			scene_tree_editor->rename_node(n, new_name);

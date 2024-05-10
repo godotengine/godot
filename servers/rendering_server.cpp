@@ -1226,6 +1226,10 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 					bsformat |= (1 << j);
 				}
 			}
+			if (bsformat & RS::ARRAY_FORMAT_NORMAL) {
+				// We must use tangents if using normals.
+				bsformat |= RS::ARRAY_FORMAT_TANGENT;
+			}
 
 			ERR_FAIL_COND_V_MSG(bsformat != (format & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK), ERR_INVALID_PARAMETER, "Blend shape format must match the main array format for Vertex, Normal and Tangent arrays.");
 		}
@@ -2820,6 +2824,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_get_measured_render_time_gpu", "viewport"), &RenderingServer::viewport_get_measured_render_time_gpu);
 
 	ClassDB::bind_method(D_METHOD("viewport_set_vrs_mode", "viewport", "mode"), &RenderingServer::viewport_set_vrs_mode);
+	ClassDB::bind_method(D_METHOD("viewport_set_vrs_update_mode", "viewport", "mode"), &RenderingServer::viewport_set_vrs_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_vrs_texture", "viewport", "texture"), &RenderingServer::viewport_set_vrs_texture);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_BILINEAR);
@@ -2828,7 +2833,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_DISABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_ONCE); // Then goes to disabled); must be manually updated.
+	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_ONCE); // Then goes to disabled, must be manually updated.
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_WHEN_VISIBLE); // Default
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_ALWAYS);
@@ -2909,6 +2914,11 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_VRS_TEXTURE);
 	BIND_ENUM_CONSTANT(VIEWPORT_VRS_XR);
 	BIND_ENUM_CONSTANT(VIEWPORT_VRS_MAX);
+
+	BIND_ENUM_CONSTANT(VIEWPORT_VRS_UPDATE_DISABLED);
+	BIND_ENUM_CONSTANT(VIEWPORT_VRS_UPDATE_ONCE); // Then goes to disabled, must be manually updated.
+	BIND_ENUM_CONSTANT(VIEWPORT_VRS_UPDATE_ALWAYS);
+	BIND_ENUM_CONSTANT(VIEWPORT_VRS_UPDATE_MAX);
 
 	/* SKY API */
 
@@ -3426,6 +3436,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rendering_device"), &RenderingServer::get_rendering_device);
 	ClassDB::bind_method(D_METHOD("create_local_rendering_device"), &RenderingServer::create_local_rendering_device);
 
+	ClassDB::bind_method(D_METHOD("is_on_render_thread"), &RenderingServer::is_on_render_thread);
 	ClassDB::bind_method(D_METHOD("call_on_render_thread", "callable"), &RenderingServer::call_on_render_thread);
 
 #ifndef DISABLE_DEPRECATED

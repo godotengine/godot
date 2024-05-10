@@ -187,7 +187,7 @@ void OpenXRViewportCompositionLayerProvider::on_pre_render() {
 
 XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_composition_layer() {
 	if (openxr_api == nullptr || composition_layer_extension == nullptr) {
-		// OpenXR not initialised or we're in the editor?
+		// OpenXR not initialized or we're in the editor?
 		return nullptr;
 	}
 
@@ -209,6 +209,7 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 	switch (composition_layer->type) {
 		case XR_TYPE_COMPOSITION_LAYER_QUAD: {
 			XrCompositionLayerQuad *quad_layer = (XrCompositionLayerQuad *)composition_layer;
+			quad_layer->space = openxr_api->get_play_space();
 			quad_layer->subImage.swapchain = swapchain_info.get_swapchain();
 			quad_layer->subImage.imageArrayIndex = 0;
 			quad_layer->subImage.imageRect.offset.x = 0;
@@ -219,6 +220,7 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 
 		case XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR: {
 			XrCompositionLayerCylinderKHR *cylinder_layer = (XrCompositionLayerCylinderKHR *)composition_layer;
+			cylinder_layer->space = openxr_api->get_play_space();
 			cylinder_layer->subImage.swapchain = swapchain_info.get_swapchain();
 			cylinder_layer->subImage.imageArrayIndex = 0;
 			cylinder_layer->subImage.imageRect.offset.x = 0;
@@ -229,6 +231,7 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 
 		case XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR: {
 			XrCompositionLayerEquirect2KHR *equirect_layer = (XrCompositionLayerEquirect2KHR *)composition_layer;
+			equirect_layer->space = openxr_api->get_play_space();
 			equirect_layer->subImage.swapchain = swapchain_info.get_swapchain();
 			equirect_layer->subImage.imageArrayIndex = 0;
 			equirect_layer->subImage.imageRect.offset.x = 0;
@@ -260,7 +263,7 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 
 bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p_static_image) {
 	if (openxr_api == nullptr || composition_layer_extension == nullptr) {
-		// OpenXR not initialised or we're in the editor?
+		// OpenXR not initialized or we're in the editor?
 		return false;
 	}
 	if (!composition_layer_extension->is_available(composition_layer->type)) {
@@ -274,7 +277,7 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 		if (swapchain_size == viewport_size && !p_static_image && !static_image) {
 			// We're all good! Just acquire it.
 			// We can ignore should_render here, return will be false.
-			XrBool32 should_render = true;
+			bool should_render = true;
 			return swapchain_info.acquire(should_render);
 		}
 
@@ -296,7 +299,7 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 
 	// Acquire our image so we can start rendering into it,
 	// we can ignore should_render here, ret will be false.
-	XrBool32 should_render = true;
+	bool should_render = true;
 	bool ret = swapchain_info.acquire(should_render);
 
 	swapchain_size = viewport_size;

@@ -2461,7 +2461,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 		// According to the tablet proto spec, tilt is expressed in degrees relative
 		// to the Z axis of the tablet, so it shouldn't go over 90 degrees either way,
 		// I think. We'll clamp it just in case.
-		td.tilt = td.tilt.clamp(Vector2(-90, -90), Vector2(90, 90));
+		td.tilt = td.tilt.clampf(-90, 90);
 
 		mm->set_tilt(td.tilt / 90);
 
@@ -3427,7 +3427,7 @@ bool WaylandThread::window_get_idle_inhibition(DisplayServer::WindowID p_window_
 WaylandThread::ScreenData WaylandThread::screen_get_data(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, registry.wl_outputs.size(), ScreenData());
 
-	return wl_output_get_screen_state(registry.wl_outputs[p_screen])->data;
+	return wl_output_get_screen_state(registry.wl_outputs.get(p_screen))->data;
 }
 
 int WaylandThread::get_screen_count() const {

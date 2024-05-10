@@ -458,7 +458,7 @@ void GenericTilePolygonEditor::_snap_point(Point2 &r_point) {
 			break;
 
 		case SNAP_HALF_PIXEL:
-			r_point = r_point.snapped(Vector2(0.5, 0.5));
+			r_point = r_point.snappedf(0.5);
 			break;
 
 		case SNAP_GRID: {
@@ -674,6 +674,11 @@ void GenericTilePolygonEditor::_set_snap_option(int p_index) {
 	current_snap_option = p_index;
 	button_pixel_snap->set_icon(button_pixel_snap->get_popup()->get_item_icon(p_index));
 	snap_subdivision->set_visible(p_index == SNAP_GRID);
+
+	if (initializing) {
+		return;
+	}
+
 	base_control->queue_redraw();
 	_store_snap_options();
 }
@@ -955,6 +960,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 
 	snap_subdivision->set_value_no_signal(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_snap_subdiv", 4));
 	_set_snap_option(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_snap_option", SNAP_NONE));
+	initializing = false;
 }
 
 void TileDataDefaultEditor::_property_value_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field) {

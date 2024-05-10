@@ -3,12 +3,15 @@ import sys
 import re
 import glob
 import subprocess
+import contextlib
 from collections import OrderedDict
 from collections.abc import Mapping
 from enum import Enum
-from typing import Iterator
+from typing import Generator, Optional
+from io import TextIOWrapper, StringIO
 from pathlib import Path
 from os.path import normpath, basename
+
 
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
@@ -34,39 +37,41 @@ class ANSI(Enum):
     internal value, or an empty string in a non-colorized scope.
     """
 
-    GRAY = "\x1b[0;30m"
-    RED = "\x1b[0;31m"
-    GREEN = "\x1b[0;32m"
-    YELLOW = "\x1b[0;33m"
-    BLUE = "\x1b[0;34m"
-    PURPLE = "\x1b[0;35m"
-    CYAN = "\x1b[0;36m"
-    WHITE = "\x1b[0;37m"
-
-    BOLD_GRAY = "\x1b[1;90m"
-    BOLD_RED = "\x1b[1;91m"
-    BOLD_GREEN = "\x1b[1;92m"
-    BOLD_YELLOW = "\x1b[1;93m"
-    BOLD_BLUE = "\x1b[1;94m"
-    BOLD_PURPLE = "\x1b[1;95m"
-    BOLD_CYAN = "\x1b[1;96m"
-    BOLD_WHITE = "\x1b[1;97m"
-
     RESET = "\x1b[0m"
 
-    def __str__(self):
+    BOLD = "\x1b[1m"
+    ITALIC = "\x1b[3m"
+    UNDERLINE = "\x1b[4m"
+    STRIKETHROUGH = "\x1b[9m"
+    REGULAR = "\x1b[22;23;24;29m"
+
+    BLACK = "\x1b[30m"
+    RED = "\x1b[31m"
+    GREEN = "\x1b[32m"
+    YELLOW = "\x1b[33m"
+    BLUE = "\x1b[34m"
+    MAGENTA = "\x1b[35m"
+    CYAN = "\x1b[36m"
+    WHITE = "\x1b[37m"
+
+    PURPLE = "\x1b[38;5;93m"
+    PINK = "\x1b[38;5;206m"
+    ORANGE = "\x1b[38;5;214m"
+    GRAY = "\x1b[38;5;244m"
+
+    def __str__(self) -> str:
         global _colorize
-        return self.value if _colorize else ""
+        return str(self.value) if _colorize else ""
 
 
 def print_warning(*values: object) -> None:
     """Prints a warning message with formatting."""
-    print(f"{ANSI.BOLD_YELLOW}WARNING:{ANSI.YELLOW}", *values, ANSI.RESET, file=sys.stderr)
+    print(f"{ANSI.YELLOW}{ANSI.BOLD}WARNING:{ANSI.REGULAR}", *values, ANSI.RESET, file=sys.stderr)
 
 
 def print_error(*values: object) -> None:
     """Prints an error message with formatting."""
-    print(f"{ANSI.BOLD_RED}ERROR:{ANSI.RED}", *values, ANSI.RESET, file=sys.stderr)
+    print(f"{ANSI.RED}{ANSI.BOLD}ERROR:{ANSI.REGULAR}", *values, ANSI.RESET, file=sys.stderr)
 
 
 def add_source_files_orig(self, sources, files, allow_gen=False):
@@ -275,79 +280,6 @@ def get_version_info(module_version_string="", silent=False):
     return version_info
 
 
-_cleanup_env = None
-_cleanup_bool = False
-
-
-def write_file_if_needed(path, string):
-    """Generates a file only if it doesn't already exist or the content has changed.
-
-    Utilizes a dedicated SCons environment to ensure the files are properly removed
-    during cleanup; will not attempt to create files during cleanup.
-
-    - `path` - Path to the file in question; used to create cleanup logic.
-    - `string` - Content to compare against an existing file.
-    """
-    global _cleanup_env
-    global _cleanup_bool
-
-    if _cleanup_env is None:
-        from SCons.Environment import Environment
-
-        _cleanup_env = Environment()
-        _cleanup_bool = _cleanup_env.GetOption("clean")
-
-    _cleanup_env.Clean("#", path)
-    if _cleanup_bool:
-        return
-
-    try:
-        with open(path, "r", encoding="utf-8", newline="\n") as f:
-            if f.read() == string:
-                return
-    except FileNotFoundError:
-        pass
-
-    with open(path, "w", encoding="utf-8", newline="\n") as f:
-        f.write(string)
-
-
-def generate_version_header(module_version_string=""):
-    version_info = get_version_info(module_version_string)
-
-    version_info_header = """\
-/* THIS FILE IS GENERATED DO NOT EDIT */
-#ifndef VERSION_GENERATED_GEN_H
-#define VERSION_GENERATED_GEN_H
-#define VERSION_SHORT_NAME "{short_name}"
-#define VERSION_NAME "{name}"
-#define VERSION_MAJOR {major}
-#define VERSION_MINOR {minor}
-#define VERSION_PATCH {patch}
-#define VERSION_STATUS "{status}"
-#define VERSION_BUILD "{build}"
-#define VERSION_MODULE_CONFIG "{module_config}"
-#define VERSION_WEBSITE "{website}"
-#define VERSION_DOCS_BRANCH "{docs_branch}"
-#define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH
-#endif // VERSION_GENERATED_GEN_H
-""".format(
-        **version_info
-    )
-
-    version_hash_data = """\
-/* THIS FILE IS GENERATED DO NOT EDIT */
-#include "core/version.h"
-const char *const VERSION_HASH = "{git_hash}";
-const uint64_t VERSION_TIMESTAMP = {git_timestamp};
-""".format(
-        **version_info
-    )
-
-    write_file_if_needed("core/version_generated.gen.h", version_info_header)
-    write_file_if_needed("core/version_hash.gen.cpp", version_hash_data)
-
-
 def parse_cg_file(fname, uniforms, sizes, conditionals):
     with open(fname, "r", encoding="utf-8") as fs:
         line = fs.readline()
@@ -461,63 +393,6 @@ def is_module(path):
         if not os.path.exists(os.path.join(path, f)):
             return False
     return True
-
-
-def write_disabled_classes(class_list):
-    file_contents = ""
-
-    file_contents += "/* THIS FILE IS GENERATED DO NOT EDIT */\n"
-    file_contents += "#ifndef DISABLED_CLASSES_GEN_H\n"
-    file_contents += "#define DISABLED_CLASSES_GEN_H\n\n"
-    for c in class_list:
-        cs = c.strip()
-        if cs != "":
-            file_contents += "#define ClassDB_Disable_" + cs + " 1\n"
-    file_contents += "\n#endif\n"
-
-    write_file_if_needed("core/disabled_classes.gen.h", file_contents)
-
-
-def write_modules(modules):
-    includes_cpp = ""
-    initialize_cpp = ""
-    uninitialize_cpp = ""
-
-    for name, path in modules.items():
-        try:
-            with open(os.path.join(path, "register_types.h")):
-                includes_cpp += '#include "' + path + '/register_types.h"\n'
-                initialize_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                initialize_cpp += "\tinitialize_" + name + "_module(p_level);\n"
-                initialize_cpp += "#endif\n"
-                uninitialize_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                uninitialize_cpp += "\tuninitialize_" + name + "_module(p_level);\n"
-                uninitialize_cpp += "#endif\n"
-        except OSError:
-            pass
-
-    modules_cpp = """// register_module_types.gen.cpp
-/* THIS FILE IS GENERATED DO NOT EDIT */
-#include "register_module_types.h"
-
-#include "modules/modules_enabled.gen.h"
-
-%s
-
-void initialize_modules(ModuleInitializationLevel p_level) {
-%s
-}
-
-void uninitialize_modules(ModuleInitializationLevel p_level) {
-%s
-}
-""" % (
-        includes_cpp,
-        initialize_cpp,
-        uninitialize_cpp,
-    )
-
-    write_file_if_needed("modules/register_module_types.gen.cpp", modules_cpp)
 
 
 def convert_custom_modules_path(path):
@@ -647,33 +522,33 @@ def use_windows_spawn_fix(self, platform=None):
 
 
 def no_verbose(env):
-    colors = [ANSI.BLUE, ANSI.BOLD_BLUE, ANSI.RESET]
+    colors = [ANSI.BLUE, ANSI.BOLD, ANSI.REGULAR, ANSI.RESET]
 
     # There is a space before "..." to ensure that source file names can be
     # Ctrl + clicked in the VS Code terminal.
-    compile_source_message = "{0}Compiling {1}$SOURCE{0} ...{2}".format(*colors)
-    java_compile_source_message = "{0}Compiling {1}$SOURCE{0} ...{2}".format(*colors)
-    compile_shared_source_message = "{0}Compiling shared {1}$SOURCE{0} ...{2}".format(*colors)
-    link_program_message = "{0}Linking Program {1}$TARGET{0} ...{2}".format(*colors)
-    link_library_message = "{0}Linking Static Library {1}$TARGET{0} ...{2}".format(*colors)
-    ranlib_library_message = "{0}Ranlib Library {1}$TARGET{0} ...{2}".format(*colors)
-    link_shared_library_message = "{0}Linking Shared Library {1}$TARGET{0} ...{2}".format(*colors)
-    java_library_message = "{0}Creating Java Archive {1}$TARGET{0} ...{2}".format(*colors)
-    compiled_resource_message = "{0}Creating Compiled Resource {1}$TARGET{0} ...{2}".format(*colors)
-    generated_file_message = "{0}Generating {1}$TARGET{0} ...{2}".format(*colors)
+    compile_source_message = "{}Compiling {}$SOURCE{} ...{}".format(*colors)
+    java_compile_source_message = "{}Compiling {}$SOURCE{} ...{}".format(*colors)
+    compile_shared_source_message = "{}Compiling shared {}$SOURCE{} ...{}".format(*colors)
+    link_program_message = "{}Linking Program {}$TARGET{} ...{}".format(*colors)
+    link_library_message = "{}Linking Static Library {}$TARGET{} ...{}".format(*colors)
+    ranlib_library_message = "{}Ranlib Library {}$TARGET{} ...{}".format(*colors)
+    link_shared_library_message = "{}Linking Shared Library {}$TARGET{} ...{}".format(*colors)
+    java_library_message = "{}Creating Java Archive {}$TARGET{} ...{}".format(*colors)
+    compiled_resource_message = "{}Creating Compiled Resource {}$TARGET{} ...{}".format(*colors)
+    generated_file_message = "{}Generating {}$TARGET{} ...{}".format(*colors)
 
-    env.Append(CXXCOMSTR=compile_source_message)
-    env.Append(CCCOMSTR=compile_source_message)
-    env.Append(SHCCCOMSTR=compile_shared_source_message)
-    env.Append(SHCXXCOMSTR=compile_shared_source_message)
-    env.Append(ARCOMSTR=link_library_message)
-    env.Append(RANLIBCOMSTR=ranlib_library_message)
-    env.Append(SHLINKCOMSTR=link_shared_library_message)
-    env.Append(LINKCOMSTR=link_program_message)
-    env.Append(JARCOMSTR=java_library_message)
-    env.Append(JAVACCOMSTR=java_compile_source_message)
-    env.Append(RCCOMSTR=compiled_resource_message)
-    env.Append(GENCOMSTR=generated_file_message)
+    env["CXXCOMSTR"] = compile_source_message
+    env["CCCOMSTR"] = compile_source_message
+    env["SHCCCOMSTR"] = compile_shared_source_message
+    env["SHCXXCOMSTR"] = compile_shared_source_message
+    env["ARCOMSTR"] = link_library_message
+    env["RANLIBCOMSTR"] = ranlib_library_message
+    env["SHLINKCOMSTR"] = link_shared_library_message
+    env["LINKCOMSTR"] = link_program_message
+    env["JARCOMSTR"] = java_library_message
+    env["JAVACCOMSTR"] = java_compile_source_message
+    env["RCCOMSTR"] = compiled_resource_message
+    env["GENCOMSTR"] = generated_file_message
 
 
 def detect_visual_c_compiler_version(tools_env):
@@ -1647,3 +1522,112 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
     if get_bool(original_args, "vsproj_gen_only", True):
         sys.exit()
+
+
+def generate_copyright_header(filename: str) -> str:
+    MARGIN = 70
+    TEMPLATE = """\
+/**************************************************************************/
+/*  %s*/
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+"""
+    filename = filename.split("/")[-1].ljust(MARGIN)
+    if len(filename) > MARGIN:
+        print(f'WARNING: Filename "{filename}" too large for copyright header.')
+    return TEMPLATE % filename
+
+
+@contextlib.contextmanager
+def generated_wrapper(
+    path,  # FIXME: type with `Union[str, Node, List[Node]]` when pytest conflicts are resolved
+    guard: Optional[bool] = None,
+    prefix: str = "",
+    suffix: str = "",
+) -> Generator[TextIOWrapper, None, None]:
+    """
+    Wrapper class to automatically handle copyright headers and header guards
+    for generated scripts. Meant to be invoked via `with` statement similar to
+    creating a file.
+
+    - `path`: The path of the file to be created. Can be passed a raw string, an
+    isolated SCons target, or a full SCons target list. If a target list contains
+    multiple entries, produces a warning & only creates the first entry.
+    - `guard`: Optional bool to determine if a header guard should be added. If
+    unassigned, header guards are determined by the file extension.
+    - `prefix`: Custom prefix to prepend to a header guard. Produces a warning if
+    provided a value when `guard` evaluates to `False`.
+    - `suffix`: Custom suffix to append to a header guard. Produces a warning if
+    provided a value when `guard` evaluates to `False`.
+    """
+
+    # Handle unfiltered SCons target[s] passed as path.
+    if not isinstance(path, str):
+        if isinstance(path, list):
+            if len(path) > 1:
+                print_warning(
+                    "Attempting to use generated wrapper with multiple targets; "
+                    f"will only use first entry: {path[0]}"
+                )
+            path = path[0]
+        if not hasattr(path, "get_abspath"):
+            raise TypeError(f'Expected type "str", "Node" or "List[Node]"; was passed {type(path)}.')
+        path = path.get_abspath()
+
+    path = str(path).replace("\\", "/")
+    if guard is None:
+        guard = path.endswith((".h", ".hh", ".hpp", ".inc"))
+    if not guard and (prefix or suffix):
+        print_warning(f'Trying to assign header guard prefix/suffix while `guard` is disabled: "{path}".')
+
+    header_guard = ""
+    if guard:
+        if prefix:
+            prefix += "_"
+        if suffix:
+            suffix = f"_{suffix}"
+        split = path.split("/")[-1].split(".")
+        header_guard = (f"{prefix}{split[0]}{suffix}.{'.'.join(split[1:])}".upper()
+                .replace(".", "_").replace("-", "_").replace(" ", "_").replace("__", "_"))  # fmt: skip
+
+    with open(path, "wt", encoding="utf-8", newline="\n") as file:
+        file.write(generate_copyright_header(path))
+        file.write("\n/* THIS FILE IS GENERATED. EDITS WILL BE LOST. */\n\n")
+
+        if guard:
+            file.write(f"#ifndef {header_guard}\n")
+            file.write(f"#define {header_guard}\n\n")
+
+        with StringIO(newline="\n") as str_io:
+            yield str_io
+            file.write(str_io.getvalue().strip() or "/* NO CONTENT */")
+
+        if guard:
+            file.write(f"\n\n#endif // {header_guard}")
+
+        file.write("\n")

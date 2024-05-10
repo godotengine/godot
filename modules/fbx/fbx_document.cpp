@@ -217,6 +217,16 @@ static ufbx_skin_deformer *_find_skin_deformer(ufbx_skin_cluster *p_cluster) {
 	return nullptr;
 }
 
+static String _find_element_name(ufbx_element *p_element) {
+	if (p_element->name.length > 0) {
+		return FBXDocument::_as_string(p_element->name);
+	} else if (p_element->instances.count > 0) {
+		return _find_element_name(&p_element->instances[0]->element);
+	} else {
+		return "";
+	}
+}
+
 struct ThreadPoolFBX {
 	struct Group {
 		ufbx_thread_pool_context ctx = {};
@@ -693,10 +703,7 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 
 				// Find the first imported skin deformer
 				for (ufbx_skin_deformer *fbx_skin : fbx_mesh->skin_deformers) {
-					if (!p_state->skin_indices.has(fbx_skin->typed_id)) {
-						continue;
-					}
-					GLTFSkinIndex skin_i = p_state->skin_indices[fbx_skin->typed_id];
+					GLTFSkinIndex skin_i = p_state->original_skin_indices[fbx_skin->typed_id];
 					if (skin_i < 0) {
 						continue;
 					}
@@ -2029,7 +2036,7 @@ Error FBXDocument::_parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> 
 	opts.space_conversion = UFBX_SPACE_CONVERSION_MODIFY_GEOMETRY;
 	if (!p_state->get_allow_geometry_helper_nodes()) {
 		opts.geometry_transform_handling = UFBX_GEOMETRY_TRANSFORM_HANDLING_MODIFY_GEOMETRY_NO_FALLBACK;
-		opts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_IGNORE;
+		opts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_COMPENSATE_NO_FALLBACK;
 	} else {
 		opts.geometry_transform_handling = UFBX_GEOMETRY_TRANSFORM_HANDLING_HELPER_NODES;
 		opts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_COMPENSATE;
@@ -2069,6 +2076,32 @@ Error FBXDocument::_parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> 
 		char err_buf[512];
 		ufbx_format_error(err_buf, sizeof(err_buf), &error);
 		ERR_FAIL_V_MSG(ERR_PARSE_ERROR, err_buf);
+	}
+
+	const int max_warning_count = 10;
+	int warning_count[UFBX_WARNING_TYPE_COUNT] = {};
+	int ignored_warning_count = 0;
+	for (const ufbx_warning &warning : p_state->scene->metadata.warnings) {
+		if (warning_count[warning.type]++ < max_warning_count) {
+			if (warning.count > 1) {
+				WARN_PRINT(vformat("FBX: ufbx warning: %s (x%d)", _as_string(warning.description), (int)warning.count));
+			} else {
+				String element_name;
+				if (warning.element_id != UFBX_NO_INDEX) {
+					element_name = _find_element_name(p_state->scene->elements[warning.element_id]);
+				}
+				if (!element_name.is_empty()) {
+					WARN_PRINT(vformat("FBX: ufbx warning in '%s': %s", element_name, _as_string(warning.description)));
+				} else {
+					WARN_PRINT(vformat("FBX: ufbx warning: %s", _as_string(warning.description)));
+				}
+			}
+		} else {
+			ignored_warning_count++;
+		}
+	}
+	if (ignored_warning_count > 0) {
+		WARN_PRINT(vformat("FBX: ignored %d further ufbx warnings", ignored_warning_count));
 	}
 
 	err = _parse_fbx_state(p_state, p_path);
@@ -2341,7 +2374,7 @@ Error FBXDocument::_parse_skins(Ref<FBXState> p_state) {
 	HashMap<GLTFNodeIndex, bool> joint_mapping;
 
 	for (const ufbx_skin_deformer *fbx_skin : fbx_scene->skin_deformers) {
-		if (fbx_skin->clusters.count == 0) {
+		if (fbx_skin->clusters.count == 0 || fbx_skin->weights.count == 0) {
 			p_state->skin_indices.push_back(-1);
 			continue;
 		}
@@ -2387,8 +2420,9 @@ Error FBXDocument::_parse_skins(Ref<FBXState> p_state) {
 			}
 		}
 	}
+	p_state->original_skin_indices = p_state->skin_indices.duplicate();
 	Error err = SkinTool::_asset_parse_skins(
-			p_state->skin_indices.duplicate(),
+			p_state->original_skin_indices,
 			p_state->skins.duplicate(),
 			p_state->nodes.duplicate(),
 			p_state->skin_indices,

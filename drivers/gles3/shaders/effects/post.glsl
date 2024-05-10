@@ -1,6 +1,6 @@
 /* clang-format off */
 #[modes]
-mode_default = 
+mode_default =
 
 #[specializations]
 

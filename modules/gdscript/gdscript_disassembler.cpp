@@ -678,6 +678,50 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 4 + argc;
 			} break;
 
+			case OPCODE_CALL_NATIVE_STATIC_VALIDATED_RETURN: {
+				int instr_var_args = _code_ptr[++ip];
+				text += "call native static method validated (return) ";
+				MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+				text += DADDR(1 + argc) + " = ";
+				text += method->get_instance_class();
+				text += ".";
+				text += method->get_name();
+				text += "(";
+				for (int i = 0; i < argc; i++) {
+					if (i > 0)
+						text += ", ";
+					text += DADDR(1 + i);
+				}
+				text += ")";
+				incr = 4 + argc;
+			} break;
+
+			case OPCODE_CALL_NATIVE_STATIC_VALIDATED_NO_RETURN: {
+				int instr_var_args = _code_ptr[++ip];
+
+				text += "call native static method validated (no return) ";
+
+				MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
+
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+
+				text += method->get_instance_class();
+				text += ".";
+				text += method->get_name();
+				text += "(";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0) {
+						text += ", ";
+					}
+					text += DADDR(1 + i);
+				}
+				text += ")";
+
+				incr = 4 + argc;
+			} break;
+
 			case OPCODE_CALL_METHOD_BIND_VALIDATED_RETURN: {
 				int instr_var_args = _code_ptr[++ip];
 				text += "call method-bind validated (return) ";
@@ -1002,6 +1046,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 	m_macro(PACKED_VECTOR2_ARRAY);         \
 	m_macro(PACKED_VECTOR3_ARRAY);         \
 	m_macro(PACKED_COLOR_ARRAY);           \
+	m_macro(PACKED_VECTOR4_ARRAY);         \
 	m_macro(OBJECT)
 
 			case OPCODE_ITERATE_BEGIN: {
@@ -1106,6 +1151,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				DISASSEMBLE_TYPE_ADJUST(PACKED_VECTOR2_ARRAY);
 				DISASSEMBLE_TYPE_ADJUST(PACKED_VECTOR3_ARRAY);
 				DISASSEMBLE_TYPE_ADJUST(PACKED_COLOR_ARRAY);
+				DISASSEMBLE_TYPE_ADJUST(PACKED_VECTOR4_ARRAY);
 
 			case OPCODE_ASSERT: {
 				text += "assert (";

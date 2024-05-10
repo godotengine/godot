@@ -241,9 +241,9 @@ static bool _can_use_validate_call(const MethodBind *p_method, const Vector<GDSc
 	}
 	MethodInfo info;
 	ClassDB::get_method_info(p_method->get_instance_class(), p_method->get_name(), &info);
-	for (int i = 0; i < p_arguments.size(); i++) {
-		const PropertyInfo &prop = info.arguments[i];
-		if (!_is_exact_type(prop, p_arguments[i].type)) {
+	int i = 0;
+	for (List<PropertyInfo>::ConstIterator itr = info.arguments.begin(); itr != info.arguments.end(); ++itr, ++i) {
+		if (!_is_exact_type(*itr, p_arguments[i].type)) {
 			return false;
 		}
 	}
@@ -673,7 +673,15 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							} else if (!call->is_super && subscript->base->type == GDScriptParser::Node::IDENTIFIER && call->function_name != SNAME("new") &&
 									ClassDB::class_exists(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name) && !Engine::get_singleton()->has_singleton(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name)) {
 								// It's a static native method call.
-								gen->write_call_native_static(result, static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name, subscript->attribute->name, arguments);
+								StringName class_name = static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name;
+								MethodBind *method = ClassDB::get_method(class_name, subscript->attribute->name);
+								if (_can_use_validate_call(method, arguments)) {
+									// Exact arguments, use validated call.
+									gen->write_call_native_static_validated(result, method, arguments);
+								} else {
+									// Not exact arguments, use regular static call
+									gen->write_call_native_static(result, class_name, subscript->attribute->name, arguments);
+								}
 							} else {
 								GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, subscript->base);
 								if (r_error) {
@@ -2658,7 +2666,10 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 	GDScriptDataType base_type = _gdtype_from_datatype(p_class->base_type, p_script, false);
 
+	ERR_FAIL_COND_V_MSG(base_type.native_type == StringName(), ERR_BUG, vformat(R"(Failed to get base class for "%s")", p_script->path));
+
 	int native_idx = GDScriptLanguage::get_singleton()->get_global_map()[base_type.native_type];
+
 	p_script->native = GDScriptLanguage::get_singleton()->get_global_array()[native_idx];
 	ERR_FAIL_COND_V(p_script->native.is_null(), ERR_BUG);
 

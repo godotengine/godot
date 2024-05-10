@@ -1929,6 +1929,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_overwrite_warning", "disable"), &EditorFileDialog::set_disable_overwrite_warning);
 	ClassDB::bind_method(D_METHOD("is_overwrite_warning_disabled"), &EditorFileDialog::is_overwrite_warning_disabled);
 	ClassDB::bind_method(D_METHOD("add_side_menu", "menu", "title"), &EditorFileDialog::add_side_menu, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("popup_file_dialog"), &EditorFileDialog::popup_file_dialog);
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &EditorFileDialog::invalidate);
 
@@ -1963,6 +1964,7 @@ void EditorFileDialog::_bind_methods() {
 	Option defaults;
 
 	base_property_helper.set_prefix("option_");
+	base_property_helper.set_array_length_getter(&EditorFileDialog::get_option_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), defaults.name, &EditorFileDialog::set_option_name, &EditorFileDialog::get_option_name);
 	base_property_helper.register_property(PropertyInfo(Variant::PACKED_STRING_ARRAY, "values"), defaults.values, &EditorFileDialog::set_option_values, &EditorFileDialog::get_option_values);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "default"), defaults.default_idx, &EditorFileDialog::set_option_default, &EditorFileDialog::get_option_default);
@@ -2086,11 +2088,9 @@ EditorFileDialog::EditorFileDialog() {
 	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KeyModifierMask::CMD_OR_CTRL | Key::UP);
 	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KeyModifierMask::CMD_OR_CTRL | Key::DOWN);
 
-	if (EditorSettings::get_singleton()) {
-		ED_SHORTCUT_OVERRIDE("file_dialog/toggle_hidden_files", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::PERIOD);
-		ED_SHORTCUT_OVERRIDE("file_dialog/toggle_favorite", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::F);
-		ED_SHORTCUT_OVERRIDE("file_dialog/toggle_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::V);
-	}
+	ED_SHORTCUT_OVERRIDE("file_dialog/toggle_hidden_files", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::PERIOD);
+	ED_SHORTCUT_OVERRIDE("file_dialog/toggle_favorite", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::F);
+	ED_SHORTCUT_OVERRIDE("file_dialog/toggle_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::V);
 
 	pathhb = memnew(HBoxContainer);
 	vbc->add_child(pathhb);

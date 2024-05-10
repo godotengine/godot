@@ -211,14 +211,14 @@ protected:
 		if (p_arg < 0) {
 			return return_value_info.type;
 		} else {
-			return arguments_info[p_arg].type;
+			return arguments_info.get(p_arg).type;
 		}
 	}
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		if (p_arg < 0) {
 			return return_value_info;
 		} else {
-			return arguments_info[p_arg];
+			return arguments_info.get(p_arg);
 		}
 	}
 
@@ -232,7 +232,7 @@ public:
 		if (p_arg < 0) {
 			return return_value_metadata;
 		} else {
-			return arguments_metadata[p_arg];
+			return arguments_metadata.get(p_arg);
 		}
 	}
 #endif
@@ -319,8 +319,9 @@ public:
 			return false;
 		}
 
-		for (uint32_t i = 0; i < p_method_info->argument_count; i++) {
-			if (arguments_info[i].type != (Variant::Type)p_method_info->arguments_info[i].type) {
+		List<PropertyInfo>::ConstIterator itr = arguments_info.begin();
+		for (uint32_t i = 0; i < p_method_info->argument_count; ++itr, ++i) {
+			if (itr->type != (Variant::Type)p_method_info->arguments_info[i].type) {
 				return false;
 			}
 		}

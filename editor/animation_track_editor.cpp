@@ -694,7 +694,7 @@ void AnimationMultiTrackKeyEdit::_key_ofs_changed(const Ref<Animation> &p_anim, 
 			}
 
 			int track = E.key;
-			key_ofs_map[track][key] = to;
+			key_ofs_map[track].get(key) = to;
 
 			if (setting) {
 				return;
@@ -3803,8 +3803,8 @@ void AnimationTrackEditor::commit_insert_queue() {
 		reset_allowed = false;
 	} else {
 		bool some_resettable = false;
-		for (int i = 0; i < insert_data.size(); i++) {
-			if (track_type_is_resettable(insert_data[i].type)) {
+		for (const AnimationTrackEditor::InsertData &E : insert_data) {
+			if (track_type_is_resettable(E.type)) {
 				some_resettable = true;
 				break;
 			}
@@ -3818,21 +3818,21 @@ void AnimationTrackEditor::commit_insert_queue() {
 	int num_tracks = 0;
 	String last_track_query;
 	bool all_bezier = true;
-	for (int i = 0; i < insert_data.size(); i++) {
-		if (insert_data[i].type != Animation::TYPE_VALUE && insert_data[i].type != Animation::TYPE_BEZIER) {
+	for (const AnimationTrackEditor::InsertData &E : insert_data) {
+		if (E.type != Animation::TYPE_VALUE && E.type != Animation::TYPE_BEZIER) {
 			all_bezier = false;
 		}
 
-		if (insert_data[i].track_idx == -1) {
+		if (E.track_idx == -1) {
 			++num_tracks;
-			last_track_query = insert_data[i].query;
+			last_track_query = E.query;
 		}
 
-		if (insert_data[i].type != Animation::TYPE_VALUE) {
+		if (E.type != Animation::TYPE_VALUE) {
 			continue;
 		}
 
-		switch (insert_data[i].value.get_type()) {
+		switch (E.value.get_type()) {
 			case Variant::INT:
 			case Variant::FLOAT:
 			case Variant::VECTOR2:
@@ -5075,7 +5075,8 @@ void AnimationTrackEditor::_fetch_value_track_options(const NodePath &p_path, An
 		case Variant::PACKED_FLOAT64_ARRAY:
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
-		case Variant::PACKED_COLOR_ARRAY: {
+		case Variant::PACKED_COLOR_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY: {
 			*r_update_mode = Animation::UPDATE_CONTINUOUS;
 		} break;
 		default: {
@@ -5316,14 +5317,15 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 			Array params;
 			int first_defarg = E.arguments.size() - E.default_arguments.size();
 
-			for (int i = 0; i < E.arguments.size(); i++) {
+			int i = 0;
+			for (List<PropertyInfo>::ConstIterator itr = E.arguments.begin(); itr != E.arguments.end(); ++itr, ++i) {
 				if (i >= first_defarg) {
 					Variant arg = E.default_arguments[i - first_defarg];
 					params.push_back(arg);
 				} else {
 					Callable::CallError ce;
 					Variant arg;
-					Variant::construct(E.arguments[i].type, arg, nullptr, 0, ce);
+					Variant::construct(itr->type, arg, nullptr, 0, ce);
 					params.push_back(arg);
 				}
 			}
@@ -6999,7 +7001,7 @@ void AnimationTrackEditor::_auto_fit_bezier() {
 
 void AnimationTrackEditor::_selection_changed() {
 	if (selected_filter->is_pressed()) {
-		_update_tracks(); // Needs updatin.
+		_update_tracks(); // Needs updating.
 	} else {
 		_redraw_tracks();
 		_redraw_groups();
@@ -7120,7 +7122,7 @@ void AnimationTrackEditor::_pick_track_select_recursive(TreeItem *p_item, const 
 	NodePath np = p_item->get_metadata(0);
 	Node *node = get_node_or_null(np);
 
-	if (node && !p_filter.is_empty() && ((String)node->get_name()).findn(p_filter) != -1) {
+	if (node && !p_filter.is_empty() && ((String)node->get_name()).containsn(p_filter)) {
 		p_select_candidates.push_back(node);
 	}
 

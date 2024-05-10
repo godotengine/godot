@@ -501,7 +501,7 @@ void GraphEdit::_graph_element_resize_request(const Vector2 &p_new_minsize, Node
 	// Snap the new size to the grid if snapping is enabled.
 	Vector2 new_size = p_new_minsize;
 	if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-		new_size = new_size.snapped(Vector2(snapping_distance, snapping_distance));
+		new_size = new_size.snappedf(snapping_distance);
 	}
 
 	// Disallow resizing the frame to a size smaller than the minimum size of the attached nodes.
@@ -851,7 +851,7 @@ void GraphEdit::_set_position_of_frame_attached_nodes(GraphFrame *p_frame, const
 
 		Vector2 pos = (attached_node->get_drag_from() * zoom + drag_accum) / zoom;
 		if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-			pos = pos.snapped(Vector2(snapping_distance, snapping_distance));
+			pos = pos.snappedf(snapping_distance);
 		}
 
 		// Recursively move graph frames.
@@ -1678,7 +1678,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				// Snapping can be toggled temporarily by holding down Ctrl.
 				// This is done here as to not toggle the grid when holding down Ctrl.
 				if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-					pos = pos.snapped(Vector2(snapping_distance, snapping_distance));
+					pos = pos.snappedf(snapping_distance);
 				}
 
 				graph_element->set_position_offset(pos);

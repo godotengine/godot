@@ -758,11 +758,13 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 				vrs_capabilities.min_texel_size.y = vrs_properties.minFragmentShadingRateAttachmentTexelSize.height;
 				vrs_capabilities.max_texel_size.x = vrs_properties.maxFragmentShadingRateAttachmentTexelSize.width;
 				vrs_capabilities.max_texel_size.y = vrs_properties.maxFragmentShadingRateAttachmentTexelSize.height;
+				vrs_capabilities.max_fragment_size.x = vrs_properties.maxFragmentSize.width; // either 4 or 8
+				vrs_capabilities.max_fragment_size.y = vrs_properties.maxFragmentSize.height; // generally the same as width
 
 				// We'll attempt to default to a texel size of 16x16.
 				vrs_capabilities.texel_size = Vector2i(16, 16).clamp(vrs_capabilities.min_texel_size, vrs_capabilities.max_texel_size);
 
-				print_verbose(String("  Attachment fragment shading rate") + String(", min texel size: (") + itos(vrs_capabilities.min_texel_size.x) + String(", ") + itos(vrs_capabilities.min_texel_size.y) + String(")") + String(", max texel size: (") + itos(vrs_capabilities.max_texel_size.x) + String(", ") + itos(vrs_capabilities.max_texel_size.y) + String(")"));
+				print_verbose(String("  Attachment fragment shading rate") + String(", min texel size: (") + itos(vrs_capabilities.min_texel_size.x) + String(", ") + itos(vrs_capabilities.min_texel_size.y) + String(")") + String(", max texel size: (") + itos(vrs_capabilities.max_texel_size.x) + String(", ") + itos(vrs_capabilities.max_texel_size.y) + String(")") + String(", max fragment size: (") + itos(vrs_capabilities.max_fragment_size.x) + String(", ") + itos(vrs_capabilities.max_fragment_size.y) + String(")"));
 			}
 
 		} else {
@@ -2601,7 +2603,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 			break;
 	}
 
-	bool present_mode_available = present_modes.find(present_mode) >= 0;
+	bool present_mode_available = present_modes.has(present_mode);
 	if (present_mode_available) {
 		print_verbose("Using present mode: " + present_mode_name);
 	} else {
@@ -4887,6 +4889,10 @@ uint64_t RenderingDeviceDriverVulkan::limit_get(Limit p_limit) {
 			return vrs_capabilities.texel_size.x;
 		case LIMIT_VRS_TEXEL_HEIGHT:
 			return vrs_capabilities.texel_size.y;
+		case LIMIT_VRS_MAX_FRAGMENT_WIDTH:
+			return vrs_capabilities.max_fragment_size.x;
+		case LIMIT_VRS_MAX_FRAGMENT_HEIGHT:
+			return vrs_capabilities.max_fragment_size.y;
 		default:
 			ERR_FAIL_V(0);
 	}

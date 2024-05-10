@@ -397,11 +397,14 @@
 		<method name="vibrate_handheld">
 			<return type="void" />
 			<param index="0" name="duration_ms" type="int" default="500" />
+			<param index="1" name="amplitude" type="float" default="-1.0" />
 			<description>
+				[b]Note:[/b] While [code skip-lint]amplitude[/code] expects a value between 0 and 1, -1 does the default amplitude for the device.
 				Vibrate the handheld device for the specified duration in milliseconds.
 				[b]Note:[/b] This method is implemented on Android, iOS, and Web. It has no effect on other platforms.
 				[b]Note:[/b] For Android, [method vibrate_handheld] requires enabling the [code]VIBRATE[/code] permission in the export preset. Otherwise, [method vibrate_handheld] will have no effect.
 				[b]Note:[/b] For iOS, specifying the duration is only supported in iOS 13 and later.
+				[b]Note:[/b] For Web, the amplitude cannot be changed.
 				[b]Note:[/b] Some web browsers such as Safari and Firefox for Android do not support [method vibrate_handheld].
 			</description>
 		</method>

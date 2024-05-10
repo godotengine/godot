@@ -49,14 +49,10 @@ void GraphElement::_resort() {
 	Size2 size = get_size();
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i));
-		if (!child || !child->is_visible_in_tree()) {
+		Control *child = as_sortable_control(get_child(i));
+		if (!child) {
 			continue;
 		}
-		if (child->is_set_as_top_level()) {
-			continue;
-		}
-
 		fit_child_in_rect(child, Rect2(Point2(), size));
 	}
 }
@@ -65,10 +61,7 @@ Size2 GraphElement::get_minimum_size() const {
 	Size2 minsize;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *child = Object::cast_to<Control>(get_child(i));
-		if (!child) {
-			continue;
-		}
-		if (child->is_set_as_top_level()) {
+		if (!child || child->is_set_as_top_level()) {
 			continue;
 		}
 

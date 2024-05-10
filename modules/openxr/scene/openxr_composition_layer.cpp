@@ -38,7 +38,14 @@
 #include "scene/3d/xr_nodes.h"
 #include "scene/main/viewport.h"
 
-HashSet<SubViewport *> OpenXRCompositionLayer::viewports_in_use;
+Vector<OpenXRCompositionLayer *> OpenXRCompositionLayer::composition_layer_nodes;
+
+static const char *HOLE_PUNCH_SHADER_CODE =
+		"shader_type spatial;\n"
+		"render_mode blend_mix, depth_draw_opaque, cull_back, shadow_to_opacity, shadows_disabled;\n"
+		"void fragment() {\n"
+		"\tALBEDO = vec3(0.0, 0.0, 0.0);\n"
+		"}\n";
 
 OpenXRCompositionLayer::OpenXRCompositionLayer() {
 	openxr_api = OpenXRAPI::get_singleton();
@@ -66,9 +73,7 @@ OpenXRCompositionLayer::~OpenXRCompositionLayer() {
 		openxr_interface->disconnect("session_stopping", callable_mp(this, &OpenXRCompositionLayer::_on_openxr_session_stopping));
 	}
 
-	if (layer_viewport) {
-		viewports_in_use.erase(layer_viewport);
-	}
+	composition_layer_nodes.erase(this);
 
 	if (openxr_layer_provider != nullptr) {
 		memdelete(openxr_layer_provider);
@@ -79,6 +84,9 @@ OpenXRCompositionLayer::~OpenXRCompositionLayer() {
 void OpenXRCompositionLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_layer_viewport", "viewport"), &OpenXRCompositionLayer::set_layer_viewport);
 	ClassDB::bind_method(D_METHOD("get_layer_viewport"), &OpenXRCompositionLayer::get_layer_viewport);
+
+	ClassDB::bind_method(D_METHOD("set_enable_hole_punch", "enable"), &OpenXRCompositionLayer::set_enable_hole_punch);
+	ClassDB::bind_method(D_METHOD("get_enable_hole_punch"), &OpenXRCompositionLayer::get_enable_hole_punch);
 
 	ClassDB::bind_method(D_METHOD("set_sort_order", "order"), &OpenXRCompositionLayer::set_sort_order);
 	ClassDB::bind_method(D_METHOD("get_sort_order"), &OpenXRCompositionLayer::get_sort_order);
@@ -93,6 +101,16 @@ void OpenXRCompositionLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "layer_viewport", PROPERTY_HINT_NODE_TYPE, "SubViewport"), "set_layer_viewport", "get_layer_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sort_order", PROPERTY_HINT_NONE, ""), "set_sort_order", "get_sort_order");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alpha_blend", PROPERTY_HINT_NONE, ""), "set_alpha_blend", "get_alpha_blend");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_hole_punch", PROPERTY_HINT_NONE, ""), "set_enable_hole_punch", "get_enable_hole_punch");
+}
+
+bool OpenXRCompositionLayer::_should_use_fallback_node() {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return true;
+	} else if (openxr_session_running) {
+		return enable_hole_punch || !is_natively_supported();
+	}
+	return false;
 }
 
 void OpenXRCompositionLayer::_create_fallback_node() {
@@ -103,21 +121,27 @@ void OpenXRCompositionLayer::_create_fallback_node() {
 	should_update_fallback_mesh = true;
 }
 
+void OpenXRCompositionLayer::_remove_fallback_node() {
+	ERR_FAIL_COND(fallback != nullptr);
+	remove_child(fallback);
+	fallback->queue_free();
+	fallback = nullptr;
+}
+
 void OpenXRCompositionLayer::_on_openxr_session_begun() {
-	if (!is_natively_supported()) {
-		if (!fallback) {
-			_create_fallback_node();
-		}
-	} else if (layer_viewport && is_visible() && is_inside_tree()) {
+	openxr_session_running = true;
+	if (layer_viewport && is_natively_supported() && is_visible() && is_inside_tree()) {
 		openxr_layer_provider->set_viewport(layer_viewport->get_viewport_rid(), layer_viewport->get_size());
+	}
+	if (!fallback && _should_use_fallback_node()) {
+		_create_fallback_node();
 	}
 }
 
 void OpenXRCompositionLayer::_on_openxr_session_stopping() {
-	if (fallback && !Engine::get_singleton()->is_editor_hint()) {
-		fallback->queue_free();
-		remove_child(fallback);
-		fallback = nullptr;
+	openxr_session_running = false;
+	if (fallback && !_should_use_fallback_node()) {
+		_remove_fallback_node();
 	} else {
 		openxr_layer_provider->set_viewport(RID(), Size2i());
 	}
@@ -127,22 +151,25 @@ void OpenXRCompositionLayer::update_fallback_mesh() {
 	should_update_fallback_mesh = true;
 }
 
+bool OpenXRCompositionLayer::is_viewport_in_use(SubViewport *p_viewport) {
+	for (const OpenXRCompositionLayer *other_composition_layer : composition_layer_nodes) {
+		if (other_composition_layer != this && other_composition_layer->is_inside_tree() && other_composition_layer->get_layer_viewport() == p_viewport) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void OpenXRCompositionLayer::set_layer_viewport(SubViewport *p_viewport) {
 	if (layer_viewport == p_viewport) {
 		return;
 	}
 
-	ERR_FAIL_COND_EDMSG(viewports_in_use.has(p_viewport), RTR("Cannot use the same SubViewport with multiple OpenXR composition layers. Clear it from its current layer first."));
-
-	if (layer_viewport) {
-		viewports_in_use.erase(layer_viewport);
-	}
+	ERR_FAIL_COND_EDMSG(is_viewport_in_use(p_viewport), RTR("Cannot use the same SubViewport with multiple OpenXR composition layers. Clear it from its current layer first."));
 
 	layer_viewport = p_viewport;
 
 	if (layer_viewport) {
-		viewports_in_use.insert(layer_viewport);
-
 		SubViewport::UpdateMode update_mode = layer_viewport->get_update_mode();
 		if (update_mode == SubViewport::UPDATE_WHEN_VISIBLE || update_mode == SubViewport::UPDATE_WHEN_PARENT_VISIBLE) {
 			WARN_PRINT_ONCE("OpenXR composition layers cannot use SubViewports with UPDATE_WHEN_VISIBLE or UPDATE_WHEN_PARENT_VISIBLE. Switching to UPDATE_ALWAYS.");
@@ -152,7 +179,7 @@ void OpenXRCompositionLayer::set_layer_viewport(SubViewport *p_viewport) {
 
 	if (fallback) {
 		_reset_fallback_material();
-	} else if (openxr_api && openxr_api->is_running() && is_visible() && is_inside_tree()) {
+	} else if (openxr_session_running && is_visible() && is_inside_tree()) {
 		if (layer_viewport) {
 			openxr_layer_provider->set_viewport(layer_viewport->get_viewport_rid(), layer_viewport->get_size());
 		} else {
@@ -165,9 +192,33 @@ SubViewport *OpenXRCompositionLayer::get_layer_viewport() const {
 	return layer_viewport;
 }
 
+void OpenXRCompositionLayer::set_enable_hole_punch(bool p_enable) {
+	if (enable_hole_punch == p_enable) {
+		return;
+	}
+
+	enable_hole_punch = p_enable;
+	if (_should_use_fallback_node()) {
+		if (fallback) {
+			_reset_fallback_material();
+		} else {
+			_create_fallback_node();
+		}
+	} else if (fallback) {
+		_remove_fallback_node();
+	}
+
+	update_configuration_warnings();
+}
+
+bool OpenXRCompositionLayer::get_enable_hole_punch() const {
+	return enable_hole_punch;
+}
+
 void OpenXRCompositionLayer::set_sort_order(int p_order) {
 	if (openxr_layer_provider) {
 		openxr_layer_provider->set_sort_order(p_order);
+		update_configuration_warnings();
 	}
 }
 
@@ -212,15 +263,28 @@ void OpenXRCompositionLayer::_reset_fallback_material() {
 		return;
 	}
 
-	if (layer_viewport) {
+	if (enable_hole_punch && !Engine::get_singleton()->is_editor_hint() && is_natively_supported()) {
+		Ref<ShaderMaterial> material = fallback->get_surface_override_material(0);
+		if (material.is_null()) {
+			Ref<Shader> shader;
+			shader.instantiate();
+			shader->set_code(HOLE_PUNCH_SHADER_CODE);
+
+			material.instantiate();
+			material->set_shader(shader);
+
+			fallback->set_surface_override_material(0, material);
+		}
+	} else if (layer_viewport) {
 		Ref<StandardMaterial3D> material = fallback->get_surface_override_material(0);
 		if (material.is_null()) {
 			material.instantiate();
 			material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-			material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
 			material->set_local_to_scene(true);
 			fallback->set_surface_override_material(0, material);
 		}
+
+		material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, !enable_hole_punch);
 		material->set_transparency(get_alpha_blend() ? StandardMaterial3D::TRANSPARENCY_ALPHA : StandardMaterial3D::TRANSPARENCY_DISABLED);
 
 		Ref<ViewportTexture> texture = material->get_texture(StandardMaterial3D::TEXTURE_ALBEDO);
@@ -243,6 +307,8 @@ void OpenXRCompositionLayer::_reset_fallback_material() {
 void OpenXRCompositionLayer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
+			composition_layer_nodes.push_back(this);
+
 			if (openxr_layer_provider) {
 				for (OpenXRExtensionWrapper *extension : OpenXRAPI::get_registered_extension_wrappers()) {
 					extension_property_values.merge(extension->get_viewport_composition_layer_extension_property_defaults());
@@ -260,7 +326,7 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!fallback && openxr_api && openxr_api->is_running() && is_inside_tree()) {
+			if (!fallback && openxr_session_running && is_inside_tree()) {
 				if (layer_viewport && is_visible()) {
 					openxr_layer_provider->set_viewport(layer_viewport->get_viewport_rid(), layer_viewport->get_size());
 				} else {
@@ -277,7 +343,9 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 				composition_layer_extension->register_viewport_composition_layer_provider(openxr_layer_provider);
 			}
 
-			if (!fallback && layer_viewport && openxr_api && openxr_api->is_running() && is_visible()) {
+			if (is_viewport_in_use(layer_viewport)) {
+				set_layer_viewport(nullptr);
+			} else if (!fallback && layer_viewport && openxr_session_running && is_visible()) {
 				openxr_layer_provider->set_viewport(layer_viewport->get_viewport_rid(), layer_viewport->get_size());
 			}
 		} break;
@@ -286,12 +354,7 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 				composition_layer_extension->unregister_viewport_composition_layer_provider(openxr_layer_provider);
 			}
 
-			// When a node is removed in the editor, we need to clear the layer viewport, because otherwise
-			// there will be issues with the tracking in viewports_in_use, since nodes deleted in the editor
-			// aren't really deleted in order to support undo.
-			if (Engine::get_singleton()->is_editor_hint() && layer_viewport) {
-				set_layer_viewport(nullptr);
-			} else if (!fallback) {
+			if (!fallback) {
 				// This will clean up existing resources.
 				openxr_layer_provider->set_viewport(RID(), Size2i());
 			}
@@ -345,6 +408,10 @@ PackedStringArray OpenXRCompositionLayer::get_configuration_warnings() const {
 
 	if (!get_transform().basis.is_orthonormal()) {
 		warnings.push_back(RTR("OpenXR composition layers must have orthonormalized transforms (ie. no scale or shearing)."));
+	}
+
+	if (enable_hole_punch && get_sort_order() >= 0) {
+		warnings.push_back(RTR("Hole punching won't work as expected unless the sort order is less than zero."));
 	}
 
 	return warnings;

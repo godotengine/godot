@@ -249,7 +249,7 @@ Point2 TextureProgressBar::get_relative_center() {
 	p += rad_center_off;
 	p.x /= progress->get_width();
 	p.y /= progress->get_height();
-	p = p.clamp(Point2(), Point2(1, 1));
+	p = p.clampf(0, 1);
 	return p;
 }
 
@@ -526,7 +526,7 @@ void TextureProgressBar::_notification(int p_what) {
 								Vector<Point2> points;
 								for (const float &f : pts) {
 									Point2 uv = unit_val_to_uv(f);
-									if (uvs.find(uv) >= 0) {
+									if (uvs.has(uv)) {
 										continue;
 									}
 									points.push_back(progress_offset + Point2(uv.x * s.x, uv.y * s.y));

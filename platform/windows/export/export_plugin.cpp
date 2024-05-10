@@ -347,7 +347,7 @@ String EditorExportPlatformWindows::get_export_option_warning(const EditorExport
 				PackedStringArray version_array = file_version.split(".", false);
 				if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
 						!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
-						!version_array[3].is_valid_int() || file_version.find("-") > -1) {
+						!version_array[3].is_valid_int() || file_version.contains("-")) {
 					return TTR("Invalid file version.");
 				}
 			}
@@ -357,7 +357,7 @@ String EditorExportPlatformWindows::get_export_option_warning(const EditorExport
 				PackedStringArray version_array = product_version.split(".", false);
 				if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
 						!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
-						!version_array[3].is_valid_int() || product_version.find("-") > -1) {
+						!version_array[3].is_valid_int() || product_version.contains("-")) {
 					return TTR("Invalid product version.");
 				}
 			}
@@ -569,13 +569,13 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		DirAccess::remove_file_or_error(tmp_icon_path);
 	}
 
-	if (err != OK || (str.find("not found") != -1) || (str.find("not recognized") != -1)) {
+	if (err != OK || str.contains("not found") || str.contains("not recognized")) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), TTR("Could not start rcedit executable. Configure rcedit path in the Editor Settings (Export > Windows > rcedit), or disable \"Application > Modify Resources\" in the export preset."));
 		return err;
 	}
 	print_line("rcedit (" + p_path + "): " + str);
 
-	if (str.find("Fatal error") != -1) {
+	if (str.contains("Fatal error")) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("rcedit failed to modify executable: %s."), str));
 		return FAILED;
 	}
@@ -718,7 +718,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 
 	String str;
 	Error err = OS::get_singleton()->execute(signtool_path, args, &str, nullptr, true);
-	if (err != OK || (str.find("not found") != -1) || (str.find("not recognized") != -1)) {
+	if (err != OK || str.contains("not found") || str.contains("not recognized")) {
 #ifdef WINDOWS_ENABLED
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start signtool executable. Configure signtool path in the Editor Settings (Export > Windows > signtool), or disable \"Codesign\" in the export preset."));
 #else
@@ -729,9 +729,9 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 
 	print_line("codesign (" + p_path + "): " + str);
 #ifndef WINDOWS_ENABLED
-	if (str.find("SignTool Error") != -1) {
+	if (str.contains("SignTool Error")) {
 #else
-	if (str.find("Failed") != -1) {
+	if (str.contains("Failed")) {
 #endif
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Signtool failed to sign executable: %s."), str));
 		return FAILED;

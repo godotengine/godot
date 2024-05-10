@@ -755,11 +755,11 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, const PackedStri
 					node->get_groups(&group_info_list);
 
 					bool term_in_groups = false;
-					for (int j = 0; j < group_info_list.size(); j++) {
-						if (!group_info_list[j].persistent) {
+					for (const Node::GroupInfo &group_info : group_info_list) {
+						if (!group_info.persistent) {
 							continue; // Ignore internal groups.
 						}
-						if (String(group_info_list[j].name).to_lower().contains(argument)) {
+						if (String(group_info.name).to_lower().contains(argument)) {
 							term_in_groups = true;
 							break;
 						}

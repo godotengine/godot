@@ -894,16 +894,25 @@ class Godot(private val context: Context) : SensorEventListener {
 	 */
 	@SuppressLint("MissingPermission")
 	@Keep
-	private fun vibrate(durationMs: Int) {
+	private fun vibrate(durationMs: Int, amplitude: Int) {
 		if (durationMs > 0 && requestPermission("VIBRATE")) {
 			val vibratorService = getActivity()?.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator? ?: return
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				vibratorService.vibrate(
-					VibrationEffect.createOneShot(
-						durationMs.toLong(),
-						VibrationEffect.DEFAULT_AMPLITUDE
+				if (amplitude <= -1) {
+					vibratorService.vibrate(
+						VibrationEffect.createOneShot(
+							durationMs.toLong(),
+							VibrationEffect.DEFAULT_AMPLITUDE
+						)
 					)
-				)
+				} else {
+					vibratorService.vibrate(
+						VibrationEffect.createOneShot(
+							durationMs.toLong(),
+							amplitude
+						)
+					)
+				}
 			} else {
 				// deprecated in API 26
 				vibratorService.vibrate(durationMs.toLong())

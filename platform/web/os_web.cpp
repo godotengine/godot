@@ -174,7 +174,7 @@ void OS_Web::add_frame_delay(bool p_can_draw) {
 #endif
 }
 
-void OS_Web::vibrate_handheld(int p_duration_ms) {
+void OS_Web::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 	godot_js_input_vibrate_handheld(p_duration_ms);
 }
 
@@ -276,8 +276,8 @@ OS_Web::OS_Web() {
 	if (AudioDriverWeb::is_available()) {
 		audio_drivers.push_back(memnew(AudioDriverWorklet));
 	}
-	for (int i = 0; i < audio_drivers.size(); i++) {
-		AudioDriverManager::add_driver(audio_drivers[i]);
+	for (AudioDriverWeb *audio_driver : audio_drivers) {
+		AudioDriverManager::add_driver(audio_driver);
 	}
 
 	idb_available = godot_js_os_fs_is_persistent();

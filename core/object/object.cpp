@@ -1302,9 +1302,8 @@ TypedArray<Dictionary> Object::_get_signal_connection_list(const StringName &p_s
 
 TypedArray<Dictionary> Object::_get_incoming_connections() const {
 	TypedArray<Dictionary> ret;
-	int connections_amount = connections.size();
-	for (int idx_conn = 0; idx_conn < connections_amount; idx_conn++) {
-		ret.push_back(connections[idx_conn]);
+	for (const Object::Connection &connection : connections) {
+		ret.push_back(connection);
 	}
 
 	return ret;
@@ -2308,9 +2307,9 @@ void ObjectDB::setup() {
 }
 
 void ObjectDB::cleanup() {
-	if (slot_count > 0) {
-		spin_lock.lock();
+	spin_lock.lock();
 
+	if (slot_count > 0) {
 		WARN_PRINT("ObjectDB instances leaked at exit (run with --verbose for details).");
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			// Ensure calling the native classes because if a leaked instance has a script
@@ -2341,10 +2340,11 @@ void ObjectDB::cleanup() {
 			}
 			print_line("Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).");
 		}
-		spin_lock.unlock();
 	}
 
 	if (object_slots) {
 		memfree(object_slots);
 	}
+
+	spin_lock.unlock();
 }

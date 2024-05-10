@@ -3342,7 +3342,7 @@ void RichTextLabel::_remove_frame(HashSet<Item *> &r_erase_list, ItemFrame *p_fr
 	}
 }
 
-bool RichTextLabel::remove_paragraph(const int p_paragraph) {
+bool RichTextLabel::remove_paragraph(int p_paragraph, bool p_no_invalidate) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -3391,8 +3391,44 @@ bool RichTextLabel::remove_paragraph(const int p_paragraph) {
 
 	selection.click_frame = nullptr;
 	selection.click_item = nullptr;
-	deselect();
+	selection.active = false;
 
+	if (p_no_invalidate) {
+		// Do not invalidate cache, only update vertical offsets of the paragraphs after deleted one and scrollbar.
+		int to_line = main->first_invalid_line.load() - 1;
+		float total_height = (p_paragraph == 0) ? 0 : _calculate_line_vertical_offset(main->lines[p_paragraph - 1]);
+		for (int i = p_paragraph; i < to_line; i++) {
+			MutexLock lock(main->lines[to_line - 1].text_buf->get_mutex());
+			main->lines[i].offset.y = total_height;
+			total_height = _calculate_line_vertical_offset(main->lines[i]);
+		}
+		updating_scroll = true;
+		vscroll->set_max(total_height);
+		updating_scroll = false;
+
+		main->first_invalid_line.store(MAX(main->first_invalid_line.load() - 1, 0));
+		main->first_resized_line.store(MAX(main->first_resized_line.load() - 1, 0));
+		main->first_invalid_font_line.store(MAX(main->first_invalid_font_line.load() - 1, 0));
+	} else {
+		// Invalidate cache after the deleted paragraph.
+		main->first_invalid_line.store(MIN(main->first_invalid_line.load(), p_paragraph));
+		main->first_resized_line.store(MIN(main->first_resized_line.load(), p_paragraph));
+		main->first_invalid_font_line.store(MIN(main->first_invalid_font_line.load(), p_paragraph));
+	}
+	queue_redraw();
+
+	return true;
+}
+
+bool RichTextLabel::invalidate_paragraph(int p_paragraph) {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	if (p_paragraph >= (int)main->lines.size() || p_paragraph < 0) {
+		return false;
+	}
+
+	// Invalidate cache.
 	main->first_invalid_line.store(MIN(main->first_invalid_line.load(), p_paragraph));
 	main->first_resized_line.store(MIN(main->first_resized_line.load(), p_paragraph));
 	main->first_invalid_font_line.store(MIN(main->first_invalid_font_line.load(), p_paragraph));
@@ -5851,7 +5887,8 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region", "key", "pad", "tooltip", "size_in_percent"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(Variant()), DEFVAL(false), DEFVAL(String()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("update_image", "key", "mask", "image", "width", "height", "color", "inline_align", "region", "pad", "tooltip", "size_in_percent"), &RichTextLabel::update_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(false), DEFVAL(String()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
-	ClassDB::bind_method(D_METHOD("remove_paragraph", "paragraph"), &RichTextLabel::remove_paragraph);
+	ClassDB::bind_method(D_METHOD("remove_paragraph", "paragraph", "no_invalidate"), &RichTextLabel::remove_paragraph, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("invalidate_paragraph", "paragraph"), &RichTextLabel::invalidate_paragraph);
 	ClassDB::bind_method(D_METHOD("push_font", "font", "font_size"), &RichTextLabel::push_font, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("push_font_size", "font_size"), &RichTextLabel::push_font_size);
 	ClassDB::bind_method(D_METHOD("push_normal"), &RichTextLabel::push_normal);

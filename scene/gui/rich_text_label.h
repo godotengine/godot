@@ -134,6 +134,7 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	void _push_meta_bind_compat_89024(const Variant &p_meta);
 	void _add_image_bind_compat_80410(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region);
+	bool _remove_paragraph_bind_compat_91098(int p_paragraph);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -664,7 +665,8 @@ public:
 	void add_image(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false);
 	void update_image(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_size_in_percent = false);
 	void add_newline();
-	bool remove_paragraph(const int p_paragraph);
+	bool remove_paragraph(int p_paragraph, bool p_no_invalidate = false);
+	bool invalidate_paragraph(int p_paragraph);
 	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
 	void _push_def_font(DefaultFont p_def_font);
 	void _push_def_font_var(DefaultFont p_def_font, const Ref<Font> &p_font, int p_size = -1);

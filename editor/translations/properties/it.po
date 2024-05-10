@@ -312,6 +312,9 @@ msgstr "Dispositivo per il Rendering"
 msgid "V-Sync"
 msgstr "Sincronizzazione Verticale"
 
+msgid "Enable"
+msgstr "Abilita"
+
 msgid "Vulkan"
 msgstr "Vulkan"
 
@@ -522,9 +525,6 @@ msgstr "Valore"
 msgid "Arg Count"
 msgstr "Quantità Argomenti"
 
-msgid "Args"
-msgstr "Argomenti"
-
 msgid "Type"
 msgstr "Tipo"
 
@@ -590,6 +590,12 @@ msgstr "Tasti"
 
 msgid "Distraction Free Mode"
 msgstr "Modalità senza distrazioni"
+
+msgid "Theme"
+msgstr "Tema"
+
+msgid "Line Spacing"
+msgstr "Spaziatura Linee"
 
 msgid "Base Type"
 msgstr "Tipo di Base"
@@ -672,9 +678,6 @@ msgstr "Modifica Tipi di Vettori Orizzontali"
 msgid "Default Color Picker Mode"
 msgstr "Modalità di Scelta Colore Predefinita"
 
-msgid "Theme"
-msgstr "Tema"
-
 msgid "Preset"
 msgstr "Preimpostazione"
 
@@ -704,9 +707,6 @@ msgstr "Schede di Scena"
 
 msgid "Show Script Button"
 msgstr "Mostra Pulsante di Script"
-
-msgid "Enable"
-msgstr "Abilita"
 
 msgid "Directories"
 msgstr "Cartelle"
@@ -815,9 +815,6 @@ msgstr "Disegna Tabs"
 
 msgid "Draw Spaces"
 msgstr "Disegna Spazi"
-
-msgid "Line Spacing"
-msgstr "Spaziatura Linee"
 
 msgid "Navigation"
 msgstr "Navigazione"
@@ -1445,9 +1442,6 @@ msgstr "Modalità Importazione"
 
 msgid "Trim Alpha Border From Region"
 msgstr "Accorcia Bordo Alfa Da Regione"
-
-msgid "Force"
-msgstr "Forza"
 
 msgid "8 Bit"
 msgstr "8 Bit"
@@ -2859,6 +2853,9 @@ msgstr "Fisica 2D"
 msgid "3D Physics"
 msgstr "Fisica 3D"
 
+msgid "Parsed Geometry Type"
+msgstr "Tipo di Geometria Analizzata"
+
 msgid "B"
 msgstr "B"
 
@@ -2942,9 +2939,6 @@ msgstr "Dimensione Immagine"
 
 msgid "Transform Format"
 msgstr "Formato Trasformazione"
-
-msgid "Parsed Geometry Type"
-msgstr "Tipo di Geometria Analizzata"
 
 msgid "Blend"
 msgstr "Fondi"

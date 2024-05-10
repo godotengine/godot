@@ -170,6 +170,7 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	replaces["$GODOT_PROJECT_NAME"] = GLOBAL_GET("application/config/name");
 	replaces["$GODOT_HEAD_INCLUDE"] = head_include + custom_head_include;
 	replaces["$GODOT_CONFIG"] = str_config;
+	replaces["$GODOT_SPLASH"] = p_name + ".png";
 
 	if (p_preset->get("variant/thread_support")) {
 		replaces["$GODOT_THREADS_ENABLED"] = "true";
@@ -584,32 +585,176 @@ bool EditorExportPlatformWeb::poll_export() {
 		}
 	}
 
-	int prev = menu_options;
-	menu_options = preset.is_valid();
+	HTTPServerState prev_server_state = server_state;
+	server_state = HTTP_SERVER_STATE_OFF;
 	if (server->is_listening()) {
-		if (menu_options == 0) {
+		if (preset.is_null()) {
 			server->stop();
 		} else {
-			menu_options += 1;
+			server_state = HTTP_SERVER_STATE_ON;
 		}
 	}
-	return menu_options != prev;
+
+	return server_state != prev_server_state;
 }
 
 Ref<ImageTexture> EditorExportPlatformWeb::get_option_icon(int p_index) const {
-	return p_index == 1 ? stop_icon : EditorExportPlatform::get_option_icon(p_index);
+	Ref<ImageTexture> play_icon = EditorExportPlatform::get_option_icon(p_index);
+
+	switch (server_state) {
+		case HTTP_SERVER_STATE_OFF: {
+			switch (p_index) {
+				case 0:
+				case 1:
+					return play_icon;
+			}
+		} break;
+
+		case HTTP_SERVER_STATE_ON: {
+			switch (p_index) {
+				case 0:
+					return play_icon;
+				case 1:
+					return restart_icon;
+				case 2:
+					return stop_icon;
+			}
+		} break;
+	}
+
+	ERR_FAIL_V_MSG(nullptr, vformat(R"(EditorExportPlatformWeb option icon index "%s" is invalid.)", p_index));
 }
 
 int EditorExportPlatformWeb::get_options_count() const {
-	return menu_options;
+	if (server_state == HTTP_SERVER_STATE_ON) {
+		return 3;
+	}
+	return 2;
+}
+
+String EditorExportPlatformWeb::get_option_label(int p_index) const {
+	String run_in_browser = TTR("Run in Browser");
+	String start_http_server = TTR("Start HTTP Server");
+	String reexport_project = TTR("Re-export Project");
+	String stop_http_server = TTR("Stop HTTP Server");
+
+	switch (server_state) {
+		case HTTP_SERVER_STATE_OFF: {
+			switch (p_index) {
+				case 0:
+					return run_in_browser;
+				case 1:
+					return start_http_server;
+			}
+		} break;
+
+		case HTTP_SERVER_STATE_ON: {
+			switch (p_index) {
+				case 0:
+					return run_in_browser;
+				case 1:
+					return reexport_project;
+				case 2:
+					return stop_http_server;
+			}
+		} break;
+	}
+
+	ERR_FAIL_V_MSG("", vformat(R"(EditorExportPlatformWeb option label index "%s" is invalid.)", p_index));
+}
+
+String EditorExportPlatformWeb::get_option_tooltip(int p_index) const {
+	String run_in_browser = TTR("Run exported HTML in the system's default browser.");
+	String start_http_server = TTR("Start the HTTP server.");
+	String reexport_project = TTR("Export project again to account for updates.");
+	String stop_http_server = TTR("Stop the HTTP server.");
+
+	switch (server_state) {
+		case HTTP_SERVER_STATE_OFF: {
+			switch (p_index) {
+				case 0:
+					return run_in_browser;
+				case 1:
+					return start_http_server;
+			}
+		} break;
+
+		case HTTP_SERVER_STATE_ON: {
+			switch (p_index) {
+				case 0:
+					return run_in_browser;
+				case 1:
+					return reexport_project;
+				case 2:
+					return stop_http_server;
+			}
+		} break;
+	}
+
+	ERR_FAIL_V_MSG("", vformat(R"(EditorExportPlatformWeb option tooltip index "%s" is invalid.)", p_index));
 }
 
 Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) {
-	if (p_option == 1) {
-		server->stop();
-		return OK;
+	const uint16_t bind_port = EDITOR_GET("export/web/http_port");
+	// Resolve host if needed.
+	const String bind_host = EDITOR_GET("export/web/http_host");
+	const bool use_tls = EDITOR_GET("export/web/use_tls");
+
+	switch (server_state) {
+		case HTTP_SERVER_STATE_OFF: {
+			switch (p_option) {
+				// Run in Browser.
+				case 0: {
+					Error err = _export_project(p_preset, p_debug_flags);
+					if (err != OK) {
+						return err;
+					}
+					err = _start_server(bind_host, bind_port, use_tls);
+					if (err != OK) {
+						return err;
+					}
+					return _launch_browser(bind_host, bind_port, use_tls);
+				} break;
+
+				// Start HTTP Server.
+				case 1: {
+					Error err = _export_project(p_preset, p_debug_flags);
+					if (err != OK) {
+						return err;
+					}
+					return _start_server(bind_host, bind_port, use_tls);
+				} break;
+			}
+		} break;
+
+		case HTTP_SERVER_STATE_ON: {
+			switch (p_option) {
+				// Run in Browser.
+				case 0: {
+					Error err = _export_project(p_preset, p_debug_flags);
+					if (err != OK) {
+						return err;
+					}
+					return _launch_browser(bind_host, bind_port, use_tls);
+				} break;
+
+				// Re-export Project.
+				case 1: {
+					return _export_project(p_preset, p_debug_flags);
+				} break;
+
+				// Stop HTTP Server.
+				case 2: {
+					return _stop_server();
+				} break;
+			}
+		} break;
 	}
 
+	ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat(R"(Trying to run EditorExportPlatformWeb, but option "%s" isn't known.)", p_option));
+}
+
+Error EditorExportPlatformWeb::_export_project(const Ref<EditorExportPreset> &p_preset, int p_debug_flags) {
 	const String dest = EditorPaths::get_singleton()->get_cache_dir().path_join("web");
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (!da->dir_exists(dest)) {
@@ -636,35 +781,40 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 		DirAccess::remove_file_or_error(basepath + ".wasm");
 		DirAccess::remove_file_or_error(basepath + ".icon.png");
 		DirAccess::remove_file_or_error(basepath + ".apple-touch-icon.png");
-		return err;
 	}
+	return err;
+}
 
-	const uint16_t bind_port = EDITOR_GET("export/web/http_port");
-	// Resolve host if needed.
-	const String bind_host = EDITOR_GET("export/web/http_host");
+Error EditorExportPlatformWeb::_launch_browser(const String &p_bind_host, const uint16_t p_bind_port, const bool p_use_tls) {
+	OS::get_singleton()->shell_open(String((p_use_tls ? "https://" : "http://") + p_bind_host + ":" + itos(p_bind_port) + "/tmp_js_export.html"));
+	// FIXME: Find out how to clean up export files after running the successfully
+	// exported game. Might not be trivial.
+	return OK;
+}
+
+Error EditorExportPlatformWeb::_start_server(const String &p_bind_host, const uint16_t p_bind_port, const bool p_use_tls) {
 	IPAddress bind_ip;
-	if (bind_host.is_valid_ip_address()) {
-		bind_ip = bind_host;
+	if (p_bind_host.is_valid_ip_address()) {
+		bind_ip = p_bind_host;
 	} else {
-		bind_ip = IP::get_singleton()->resolve_hostname(bind_host);
+		bind_ip = IP::get_singleton()->resolve_hostname(p_bind_host);
 	}
-	ERR_FAIL_COND_V_MSG(!bind_ip.is_valid(), ERR_INVALID_PARAMETER, "Invalid editor setting 'export/web/http_host': '" + bind_host + "'. Try using '127.0.0.1'.");
+	ERR_FAIL_COND_V_MSG(!bind_ip.is_valid(), ERR_INVALID_PARAMETER, "Invalid editor setting 'export/web/http_host': '" + p_bind_host + "'. Try using '127.0.0.1'.");
 
-	const bool use_tls = EDITOR_GET("export/web/use_tls");
 	const String tls_key = EDITOR_GET("export/web/tls_key");
 	const String tls_cert = EDITOR_GET("export/web/tls_certificate");
 
 	// Restart server.
 	server->stop();
-	err = server->listen(bind_port, bind_ip, use_tls, tls_key, tls_cert);
+	Error err = server->listen(p_bind_port, bind_ip, p_use_tls, tls_key, tls_cert);
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), vformat(TTR("Error starting HTTP server: %d."), err));
-		return err;
 	}
+	return err;
+}
 
-	OS::get_singleton()->shell_open(String((use_tls ? "https://" : "http://") + bind_host + ":" + itos(bind_port) + "/tmp_js_export.html"));
-	// FIXME: Find out how to clean up export files after running the successfully
-	// exported game. Might not be trivial.
+Error EditorExportPlatformWeb::_stop_server() {
+	server->stop();
 	return OK;
 }
 
@@ -690,8 +840,10 @@ EditorExportPlatformWeb::EditorExportPlatformWeb() {
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {
 			stop_icon = theme->get_icon(SNAME("Stop"), EditorStringName(EditorIcons));
+			restart_icon = theme->get_icon(SNAME("Reload"), EditorStringName(EditorIcons));
 		} else {
 			stop_icon.instantiate();
+			restart_icon.instantiate();
 		}
 	}
 }

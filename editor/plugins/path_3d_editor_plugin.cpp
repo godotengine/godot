@@ -117,7 +117,7 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 		if (p.intersects_ray(ray_from, ray_dir, &inters)) {
 			if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 				float snap = Node3DEditor::get_singleton()->get_translate_snap();
-				inters.snap(Vector3(snap, snap, snap));
+				inters.snapf(snap);
 			}
 
 			Vector3 local = gi.xform(inters);
@@ -146,7 +146,7 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 				Vector3 local = gi.xform(inters) - base;
 				if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 					float snap = Node3DEditor::get_singleton()->get_translate_snap();
-					local.snap(Vector3(snap, snap, snap));
+					local.snapf(snap);
 				}
 
 				if (info.type == HandleType::HANDLE_TYPE_IN) {
@@ -1050,7 +1050,7 @@ int Path3DGizmoPlugin::get_priority() const {
 }
 
 Path3DGizmoPlugin::Path3DGizmoPlugin(float p_disk_size) {
-	Color path_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.9));
+	Color path_color = SceneTree::get_singleton()->get_debug_paths_color();
 	Color path_tilt_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/path_tilt", Color(1.0, 1.0, 0.4, 0.9));
 	disk_size = p_disk_size;
 

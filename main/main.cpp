@@ -637,6 +637,7 @@ void Main::print_help(const char *p_binary) {
 #endif // DISABLE_DEPRECATED
 	print_help_option("--doctool [path]", "Dump the engine API reference to the given <path> (defaults to current directory) in XML format, merging if existing files are found.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--no-docbase", "Disallow dumping the base types (used with --doctool).\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--gdextension-docs", "Rather than dumping the engine API, generate API reference from all the GDExtensions loaded in the current project (used with --doctool).\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #ifdef MODULE_GDSCRIPT_ENABLED
 	print_help_option("--gdscript-docs <path>", "Rather than dumping the engine API, generate API reference from the inline documentation in the GDScript files found in <path> (used with --doctool).\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif
@@ -995,74 +996,77 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	I = args.front();
 	while (I) {
+		List<String>::Element *N = I->next();
+
+		const String &arg = I->get();
+
 #ifdef MACOS_ENABLED
 		// Ignore the process serial number argument passed by macOS Gatekeeper.
 		// Otherwise, Godot would try to open a non-existent project on the first start and abort.
-		if (I->get().begins_with("-psn_")) {
-			I = I->next();
+		if (arg.begins_with("-psn_")) {
+			I = N;
 			continue;
 		}
 #endif
 
-		List<String>::Element *N = I->next();
-
 #ifdef TOOLS_ENABLED
-		if (I->get() == "--debug" ||
-				I->get() == "--verbose" ||
-				I->get() == "--disable-crash-handler") {
-			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
-			forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(I->get());
+		if (arg == "--debug" ||
+				arg == "--verbose" ||
+				arg == "--disable-crash-handler") {
+			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
+			forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(arg);
 		}
-		if (I->get() == "--single-window") {
-			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+		if (arg == "--single-window") {
+			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
 		}
-		if (I->get() == "--audio-driver" ||
-				I->get() == "--display-driver" ||
-				I->get() == "--rendering-method" ||
-				I->get() == "--rendering-driver") {
-			if (I->next()) {
-				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
-				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->next()->get());
+		if (arg == "--audio-driver" ||
+				arg == "--display-driver" ||
+				arg == "--rendering-method" ||
+				arg == "--rendering-driver") {
+			if (N) {
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(N->get());
 			}
 		}
 		// If gpu is specified, both editor and debug instances started from editor will inherit.
-		if (I->get() == "--gpu-index") {
-			if (I->next()) {
-				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
-				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->next()->get());
-				forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(I->get());
-				forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(I->next()->get());
+		if (arg == "--gpu-index") {
+			if (N) {
+				const String &next_arg = N->get();
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(next_arg);
+				forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(arg);
+				forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(next_arg);
 			}
 		}
 #endif
 
 		if (adding_user_args) {
-			user_args.push_back(I->get());
-		} else if (I->get() == "-h" || I->get() == "--help" || I->get() == "/?") { // display help
+			user_args.push_back(arg);
+		} else if (arg == "-h" || arg == "--help" || arg == "/?") { // display help
 
 			show_help = true;
 			exit_err = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
 
-		} else if (I->get() == "--version") {
+		} else if (arg == "--version") {
 			print_line(get_full_version_string());
 			exit_err = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
 			goto error;
 
-		} else if (I->get() == "-v" || I->get() == "--verbose") { // verbose output
+		} else if (arg == "-v" || arg == "--verbose") { // verbose output
 
 			OS::get_singleton()->_verbose_stdout = true;
-		} else if (I->get() == "-q" || I->get() == "--quiet") { // quieter output
+		} else if (arg == "-q" || arg == "--quiet") { // quieter output
 
 			quiet_stdout = true;
 
-		} else if (I->get() == "--no-header") {
+		} else if (arg == "--no-header") {
 			Engine::get_singleton()->_print_header = false;
 
-		} else if (I->get() == "--audio-driver") { // audio driver
+		} else if (arg == "--audio-driver") { // audio driver
 
-			if (I->next()) {
-				audio_driver = I->next()->get();
+			if (N) {
+				audio_driver = N->get();
 
 				bool found = false;
 				for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
@@ -1090,32 +1094,32 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					goto error;
 				}
 
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing audio driver argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--audio-output-latency") {
-			if (I->next()) {
-				audio_output_latency = I->next()->get().to_int();
-				N = I->next()->next();
+		} else if (arg == "--audio-output-latency") {
+			if (N) {
+				audio_output_latency = N->get().to_int();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing audio output latency argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--text-driver") {
-			if (I->next()) {
-				text_driver = I->next()->get();
-				N = I->next()->next();
+		} else if (arg == "--text-driver") {
+			if (N) {
+				text_driver = N->get();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing text driver argument, aborting.\n");
 				goto error;
 			}
 
-		} else if (I->get() == "--display-driver") { // force video driver
+		} else if (arg == "--display-driver") { // force video driver
 
-			if (I->next()) {
-				display_driver = I->next()->get();
+			if (N) {
+				display_driver = N->get();
 
 				bool found = false;
 				for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
@@ -1143,63 +1147,63 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					goto error;
 				}
 
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing display driver argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--rendering-method") {
-			if (I->next()) {
-				rendering_method = I->next()->get();
-				N = I->next()->next();
+		} else if (arg == "--rendering-method") {
+			if (N) {
+				rendering_method = N->get();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing renderer name argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--rendering-driver") {
-			if (I->next()) {
-				rendering_driver = I->next()->get();
-				N = I->next()->next();
+		} else if (arg == "--rendering-driver") {
+			if (N) {
+				rendering_driver = N->get();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing rendering driver argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "-f" || I->get() == "--fullscreen") { // force fullscreen
+		} else if (arg == "-f" || arg == "--fullscreen") { // force fullscreen
 			init_fullscreen = true;
 			window_mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
-		} else if (I->get() == "-m" || I->get() == "--maximized") { // force maximized window
+		} else if (arg == "-m" || arg == "--maximized") { // force maximized window
 			init_maximized = true;
 			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
-		} else if (I->get() == "-w" || I->get() == "--windowed") { // force windowed window
+		} else if (arg == "-w" || arg == "--windowed") { // force windowed window
 
 			init_windowed = true;
-		} else if (I->get() == "--gpu-index") {
-			if (I->next()) {
-				Engine::singleton->gpu_idx = I->next()->get().to_int();
-				N = I->next()->next();
+		} else if (arg == "--gpu-index") {
+			if (N) {
+				Engine::singleton->gpu_idx = N->get().to_int();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing GPU index argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--gpu-validation") {
+		} else if (arg == "--gpu-validation") {
 			Engine::singleton->use_validation_layers = true;
 #ifdef DEBUG_ENABLED
-		} else if (I->get() == "--gpu-abort") {
+		} else if (arg == "--gpu-abort") {
 			Engine::singleton->abort_on_gpu_errors = true;
 #endif
-		} else if (I->get() == "--generate-spirv-debug-info") {
+		} else if (arg == "--generate-spirv-debug-info") {
 			Engine::singleton->generate_spirv_debug_info = true;
-		} else if (I->get() == "--tablet-driver") {
-			if (I->next()) {
-				tablet_driver = I->next()->get();
-				N = I->next()->next();
+		} else if (arg == "--tablet-driver") {
+			if (N) {
+				tablet_driver = N->get();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing tablet driver argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--delta-smoothing") {
-			if (I->next()) {
-				String string = I->next()->get();
+		} else if (arg == "--delta-smoothing") {
+			if (N) {
+				String string = N->get();
 				bool recognized = false;
 				if (string == "enable") {
 					OS::get_singleton()->set_delta_smoothing(true);
@@ -1215,21 +1219,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					OS::get_singleton()->print("Delta-smoothing argument not recognized, aborting.\n");
 					goto error;
 				}
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing delta-smoothing argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--single-window") { // force single window
+		} else if (arg == "--single-window") { // force single window
 
 			single_window = true;
-		} else if (I->get() == "-t" || I->get() == "--always-on-top") { // force always-on-top window
+		} else if (arg == "-t" || arg == "--always-on-top") { // force always-on-top window
 
 			init_always_on_top = true;
-		} else if (I->get() == "--resolution") { // force resolution
+		} else if (arg == "--resolution") { // force resolution
 
-			if (I->next()) {
-				String vm = I->next()->get();
+			if (N) {
+				String vm = N->get();
 
 				if (!vm.contains("x")) { // invalid parameter format
 
@@ -1251,28 +1255,28 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				window_size.height = h;
 				force_res = true;
 
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing resolution argument, aborting.\n");
 				goto error;
 			}
 
-		} else if (I->get() == "--screen") { // set window screen
+		} else if (arg == "--screen") { // set window screen
 
-			if (I->next()) {
-				init_screen = I->next()->get().to_int();
+			if (N) {
+				init_screen = N->get().to_int();
 				init_use_custom_screen = true;
 
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing screen argument, aborting.\n");
 				goto error;
 			}
 
-		} else if (I->get() == "--position") { // set window position
+		} else if (arg == "--position") { // set window position
 
-			if (I->next()) {
-				String vm = I->next()->get();
+			if (N) {
+				String vm = N->get();
 
 				if (!vm.contains(",")) { // invalid parameter format
 
@@ -1287,103 +1291,103 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				init_custom_pos = Point2(x, y);
 				init_use_custom_pos = true;
 
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing position argument, aborting.\n");
 				goto error;
 			}
 
-		} else if (I->get() == "--headless") { // enable headless mode (no audio, no rendering).
+		} else if (arg == "--headless") { // enable headless mode (no audio, no rendering).
 
 			audio_driver = NULL_AUDIO_DRIVER;
 			display_driver = NULL_DISPLAY_DRIVER;
 
-		} else if (I->get() == "--log-file") { // write to log file
+		} else if (arg == "--log-file") { // write to log file
 
-			if (I->next()) {
-				log_file = I->next()->get();
-				N = I->next()->next();
+			if (N) {
+				log_file = N->get();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing log file path argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--profiling") { // enable profiling
+		} else if (arg == "--profiling") { // enable profiling
 
 			use_debug_profiler = true;
 
-		} else if (I->get() == "-l" || I->get() == "--language") { // language
+		} else if (arg == "-l" || arg == "--language") { // language
 
-			if (I->next()) {
-				locale = I->next()->get();
-				N = I->next()->next();
+			if (N) {
+				locale = N->get();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing language argument, aborting.\n");
 				goto error;
 			}
 
-		} else if (I->get() == "--remote-fs") { // remote filesystem
+		} else if (arg == "--remote-fs") { // remote filesystem
 
-			if (I->next()) {
-				remotefs = I->next()->get();
-				N = I->next()->next();
+			if (N) {
+				remotefs = N->get();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing remote filesystem address, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--remote-fs-password") { // remote filesystem password
+		} else if (arg == "--remote-fs-password") { // remote filesystem password
 
-			if (I->next()) {
-				remotefs_pass = I->next()->get();
-				N = I->next()->next();
+			if (N) {
+				remotefs_pass = N->get();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing remote filesystem password, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--render-thread") { // render thread mode
+		} else if (arg == "--render-thread") { // render thread mode
 
-			if (I->next()) {
-				if (I->next()->get() == "safe") {
+			if (N) {
+				if (N->get() == "safe") {
 					rtm = OS::RENDER_THREAD_SAFE;
-				} else if (I->next()->get() == "unsafe") {
+				} else if (N->get() == "unsafe") {
 					rtm = OS::RENDER_THREAD_UNSAFE;
-				} else if (I->next()->get() == "separate") {
+				} else if (N->get() == "separate") {
 					rtm = OS::RENDER_SEPARATE_THREAD;
 				} else {
 					OS::get_singleton()->print("Unknown render thread mode, aborting.\nValid options are 'unsafe', 'safe' and 'separate'.\n");
 					goto error;
 				}
 
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing render thread mode argument, aborting.\n");
 				goto error;
 			}
 #ifdef TOOLS_ENABLED
-		} else if (I->get() == "-e" || I->get() == "--editor") { // starts editor
+		} else if (arg == "-e" || arg == "--editor") { // starts editor
 
 			editor = true;
-		} else if (I->get() == "-p" || I->get() == "--project-manager") { // starts project manager
+		} else if (arg == "-p" || arg == "--project-manager") { // starts project manager
 			project_manager = true;
-		} else if (I->get() == "--debug-server") {
-			if (I->next()) {
-				debug_server_uri = I->next()->get();
+		} else if (arg == "--debug-server") {
+			if (N) {
+				debug_server_uri = N->get();
 				if (!debug_server_uri.contains("://")) { // wrong address
 					OS::get_singleton()->print("Invalid debug server uri. It should be of the form <protocol>://<bind_address>:<port>.\n");
 					goto error;
 				}
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing remote debug server uri, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--single-threaded-scene") {
+		} else if (arg == "--single-threaded-scene") {
 			single_threaded_scene = true;
-		} else if (I->get() == "--build-solutions") { // Build the scripting solution such C#
+		} else if (arg == "--build-solutions") { // Build the scripting solution such C#
 
 			auto_build_solutions = true;
 			editor = true;
 			cmdline_tool = true;
-		} else if (I->get() == "--dump-gdextension-interface") {
+		} else if (arg == "--dump-gdextension-interface") {
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
 			cmdline_tool = true;
@@ -1392,8 +1396,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// Hack. Not needed but otherwise we end up detecting that this should
 			// run the project instead of a cmdline tool.
 			// Needs full refactoring to fix properly.
-			main_args.push_back(I->get());
-		} else if (I->get() == "--dump-extension-api") {
+			main_args.push_back(arg);
+		} else if (arg == "--dump-extension-api") {
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
 			cmdline_tool = true;
@@ -1402,8 +1406,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// Hack. Not needed but otherwise we end up detecting that this should
 			// run the project instead of a cmdline tool.
 			// Needs full refactoring to fix properly.
-			main_args.push_back(I->get());
-		} else if (I->get() == "--dump-extension-api-with-docs") {
+			main_args.push_back(arg);
+		} else if (arg == "--dump-extension-api-with-docs") {
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
 			cmdline_tool = true;
@@ -1413,8 +1417,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// Hack. Not needed but otherwise we end up detecting that this should
 			// run the project instead of a cmdline tool.
 			// Needs full refactoring to fix properly.
-			main_args.push_back(I->get());
-		} else if (I->get() == "--validate-extension-api") {
+			main_args.push_back(arg);
+		} else if (arg == "--validate-extension-api") {
 			// Register as an editor instance to use low-end fallback if relevant.
 			editor = true;
 			cmdline_tool = true;
@@ -1422,64 +1426,64 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// Hack. Not needed but otherwise we end up detecting that this should
 			// run the project instead of a cmdline tool.
 			// Needs full refactoring to fix properly.
-			main_args.push_back(I->get());
+			main_args.push_back(arg);
 
-			if (I->next()) {
-				validate_extension_api_file = I->next()->get();
+			if (N) {
+				validate_extension_api_file = N->get();
 
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing file to load argument after --validate-extension-api, aborting.");
 				goto error;
 			}
-		} else if (I->get() == "--import") {
+		} else if (arg == "--import") {
 			editor = true;
 			cmdline_tool = true;
 			wait_for_import = true;
 			quit_after = 1;
-		} else if (I->get() == "--export-release" || I->get() == "--export-debug" ||
-				I->get() == "--export-pack") { // Export project
+		} else if (arg == "--export-release" || arg == "--export-debug" ||
+				arg == "--export-pack") { // Export project
 			// Actually handling is done in start().
 			editor = true;
 			cmdline_tool = true;
 			wait_for_import = true;
-			main_args.push_back(I->get());
+			main_args.push_back(arg);
 #ifndef DISABLE_DEPRECATED
-		} else if (I->get() == "--export") { // For users used to 3.x syntax.
+		} else if (arg == "--export") { // For users used to 3.x syntax.
 			OS::get_singleton()->print("The Godot 3 --export option was changed to more explicit --export-release / --export-debug / --export-pack options.\nSee the --help output for details.\n");
 			goto error;
-		} else if (I->get() == "--convert-3to4") {
+		} else if (arg == "--convert-3to4") {
 			// Actually handling is done in start().
 			cmdline_tool = true;
-			main_args.push_back(I->get());
+			main_args.push_back(arg);
 
-			if (I->next() && !I->next()->get().begins_with("-")) {
-				if (itos(I->next()->get().to_int()) == I->next()->get()) {
-					converter_max_kb_file = I->next()->get().to_int();
+			if (N && !N->get().begins_with("-")) {
+				if (itos(N->get().to_int()) == N->get()) {
+					converter_max_kb_file = N->get().to_int();
 				}
-				if (I->next()->next() && !I->next()->next()->get().begins_with("-")) {
-					if (itos(I->next()->next()->get().to_int()) == I->next()->next()->get()) {
-						converter_max_line_length = I->next()->next()->get().to_int();
+				if (N->next() && !N->next()->get().begins_with("-")) {
+					if (itos(N->next()->get().to_int()) == N->next()->get()) {
+						converter_max_line_length = N->next()->get().to_int();
 					}
 				}
 			}
-		} else if (I->get() == "--validate-conversion-3to4") {
+		} else if (arg == "--validate-conversion-3to4") {
 			// Actually handling is done in start().
 			cmdline_tool = true;
-			main_args.push_back(I->get());
+			main_args.push_back(arg);
 
-			if (I->next() && !I->next()->get().begins_with("-")) {
-				if (itos(I->next()->get().to_int()) == I->next()->get()) {
-					converter_max_kb_file = I->next()->get().to_int();
+			if (N && !N->get().begins_with("-")) {
+				if (itos(N->get().to_int()) == N->get()) {
+					converter_max_kb_file = N->get().to_int();
 				}
-				if (I->next()->next() && !I->next()->next()->get().begins_with("-")) {
-					if (itos(I->next()->next()->get().to_int()) == I->next()->next()->get()) {
-						converter_max_line_length = I->next()->next()->get().to_int();
+				if (N->next() && !N->next()->get().begins_with("-")) {
+					if (itos(N->next()->get().to_int()) == N->next()->get()) {
+						converter_max_line_length = N->next()->get().to_int();
 					}
 				}
 			}
 #endif // DISABLE_DEPRECATED
-		} else if (I->get() == "--doctool") {
+		} else if (arg == "--doctool") {
 			// Actually handling is done in start().
 			cmdline_tool = true;
 
@@ -1487,49 +1491,49 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// and speed up class reference generation.
 			audio_driver = NULL_AUDIO_DRIVER;
 			display_driver = NULL_DISPLAY_DRIVER;
-			main_args.push_back(I->get());
+			main_args.push_back(arg);
 #ifdef MODULE_GDSCRIPT_ENABLED
-		} else if (I->get() == "--gdscript-docs") {
-			if (I->next()) {
-				project_path = I->next()->get();
+		} else if (arg == "--gdscript-docs") {
+			if (N) {
+				project_path = N->get();
 				// Will be handled in start()
-				main_args.push_back(I->get());
-				main_args.push_back(I->next()->get());
-				N = I->next()->next();
+				main_args.push_back(arg);
+				main_args.push_back(N->get());
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing relative or absolute path to project for --gdscript-docs, aborting.\n");
 				goto error;
 			}
 #endif // MODULE_GDSCRIPT_ENABLED
 #endif // TOOLS_ENABLED
-		} else if (I->get() == "--path") { // set path of project to start or edit
+		} else if (arg == "--path") { // set path of project to start or edit
 
-			if (I->next()) {
-				String p = I->next()->get();
+			if (N) {
+				String p = N->get();
 				if (OS::get_singleton()->set_cwd(p) != OK) {
 					OS::get_singleton()->print("Invalid project path specified: \"%s\", aborting.\n", p.utf8().get_data());
 					goto error;
 				}
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing relative or absolute path, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "-u" || I->get() == "--upwards") { // scan folders upwards
+		} else if (arg == "-u" || arg == "--upwards") { // scan folders upwards
 			upwards = true;
-		} else if (I->get() == "--quit") { // Auto quit at the end of the first main loop iteration
+		} else if (arg == "--quit") { // Auto quit at the end of the first main loop iteration
 			quit_after = 1;
-		} else if (I->get() == "--quit-after") { // Quit after the given number of iterations
-			if (I->next()) {
-				quit_after = I->next()->get().to_int();
-				N = I->next()->next();
+		} else if (arg == "--quit-after") { // Quit after the given number of iterations
+			if (N) {
+				quit_after = N->get().to_int();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing number of iterations, aborting.\n");
 				goto error;
 			}
-		} else if (I->get().ends_with("project.godot")) {
+		} else if (arg.ends_with("project.godot")) {
 			String path;
-			String file = I->get();
+			String file = arg;
 			int sep = MAX(file.rfind("/"), file.rfind("\\"));
 			if (sep == -1) {
 				path = ".";
@@ -1544,108 +1548,108 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 			editor = true;
 #endif
-		} else if (I->get() == "-b" || I->get() == "--breakpoints") { // add breakpoints
+		} else if (arg == "-b" || arg == "--breakpoints") { // add breakpoints
 
-			if (I->next()) {
-				String bplist = I->next()->get();
+			if (N) {
+				String bplist = N->get();
 				breakpoints = bplist.split(",");
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing list of breakpoints, aborting.\n");
 				goto error;
 			}
 
-		} else if (I->get() == "--max-fps") { // set maximum rendered FPS
+		} else if (arg == "--max-fps") { // set maximum rendered FPS
 
-			if (I->next()) {
-				max_fps = I->next()->get().to_int();
-				N = I->next()->next();
+			if (N) {
+				max_fps = N->get().to_int();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing maximum FPS argument, aborting.\n");
 				goto error;
 			}
 
-		} else if (I->get() == "--frame-delay") { // force frame delay
+		} else if (arg == "--frame-delay") { // force frame delay
 
-			if (I->next()) {
-				frame_delay = I->next()->get().to_int();
-				N = I->next()->next();
+			if (N) {
+				frame_delay = N->get().to_int();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing frame delay argument, aborting.\n");
 				goto error;
 			}
 
-		} else if (I->get() == "--time-scale") { // force time scale
+		} else if (arg == "--time-scale") { // force time scale
 
-			if (I->next()) {
-				Engine::get_singleton()->set_time_scale(I->next()->get().to_float());
-				N = I->next()->next();
+			if (N) {
+				Engine::get_singleton()->set_time_scale(N->get().to_float());
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing time scale argument, aborting.\n");
 				goto error;
 			}
 
-		} else if (I->get() == "--main-pack") {
-			if (I->next()) {
-				main_pack = I->next()->get();
-				N = I->next()->next();
+		} else if (arg == "--main-pack") {
+			if (N) {
+				main_pack = N->get();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing path to main pack file, aborting.\n");
 				goto error;
-			};
+			}
 
-		} else if (I->get() == "-d" || I->get() == "--debug") {
+		} else if (arg == "-d" || arg == "--debug") {
 			debug_uri = "local://";
 			OS::get_singleton()->_debug_stdout = true;
 #if defined(DEBUG_ENABLED)
-		} else if (I->get() == "--debug-collisions") {
+		} else if (arg == "--debug-collisions") {
 			debug_collisions = true;
-		} else if (I->get() == "--debug-paths") {
+		} else if (arg == "--debug-paths") {
 			debug_paths = true;
-		} else if (I->get() == "--debug-navigation") {
+		} else if (arg == "--debug-navigation") {
 			debug_navigation = true;
-		} else if (I->get() == "--debug-avoidance") {
+		} else if (arg == "--debug-avoidance") {
 			debug_avoidance = true;
-		} else if (I->get() == "--debug-canvas-item-redraw") {
+		} else if (arg == "--debug-canvas-item-redraw") {
 			debug_canvas_item_redraw = true;
-		} else if (I->get() == "--debug-stringnames") {
+		} else if (arg == "--debug-stringnames") {
 			StringName::set_debug_stringnames(true);
 #endif
-		} else if (I->get() == "--remote-debug") {
-			if (I->next()) {
-				debug_uri = I->next()->get();
+		} else if (arg == "--remote-debug") {
+			if (N) {
+				debug_uri = N->get();
 				if (!debug_uri.contains("://")) { // wrong address
 					OS::get_singleton()->print(
 							"Invalid debug host address, it should be of the form <protocol>://<host/IP>:<port>.\n");
 					goto error;
 				}
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing remote debug host address, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--editor-pid") { // not exposed to user
-			if (I->next()) {
-				editor_pid = I->next()->get().to_int();
-				N = I->next()->next();
+		} else if (arg == "--editor-pid") { // not exposed to user
+			if (N) {
+				editor_pid = N->get().to_int();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing editor PID argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--disable-render-loop") {
+		} else if (arg == "--disable-render-loop") {
 			disable_render_loop = true;
-		} else if (I->get() == "--fixed-fps") {
-			if (I->next()) {
-				fixed_fps = I->next()->get().to_int();
-				N = I->next()->next();
+		} else if (arg == "--fixed-fps") {
+			if (N) {
+				fixed_fps = N->get().to_int();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing fixed-fps argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--write-movie") {
-			if (I->next()) {
-				Engine::get_singleton()->set_write_movie_path(I->next()->get());
-				N = I->next()->next();
+		} else if (arg == "--write-movie") {
+			if (N) {
+				Engine::get_singleton()->set_write_movie_path(N->get());
+				N = N->next();
 				if (fixed_fps == -1) {
 					fixed_fps = 60;
 				}
@@ -1654,21 +1658,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing write-movie argument, aborting.\n");
 				goto error;
 			}
-		} else if (I->get() == "--disable-vsync") {
+		} else if (arg == "--disable-vsync") {
 			disable_vsync = true;
-		} else if (I->get() == "--print-fps") {
+		} else if (arg == "--print-fps") {
 			print_fps = true;
-		} else if (I->get() == "--profile-gpu") {
+		} else if (arg == "--profile-gpu") {
 			profile_gpu = true;
-		} else if (I->get() == "--disable-crash-handler") {
+		} else if (arg == "--disable-crash-handler") {
 			OS::get_singleton()->disable_crash_handler();
-		} else if (I->get() == "--skip-breakpoints") {
+		} else if (arg == "--skip-breakpoints") {
 			skip_breakpoints = true;
 #ifndef _3D_DISABLED
-		} else if (I->get() == "--xr-mode") {
-			if (I->next()) {
-				String xr_mode = I->next()->get().to_lower();
-				N = I->next()->next();
+		} else if (arg == "--xr-mode") {
+			if (N) {
+				String xr_mode = N->get().to_lower();
+				N = N->next();
 				if (xr_mode == "default") {
 					XRServer::set_xr_mode(XRServer::XRMODE_DEFAULT);
 				} else if (xr_mode == "off") {
@@ -1684,37 +1688,37 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 #endif // _3D_DISABLED
-		} else if (I->get() == "--benchmark") {
+		} else if (arg == "--benchmark") {
 			OS::get_singleton()->set_use_benchmark(true);
-		} else if (I->get() == "--benchmark-file") {
-			if (I->next()) {
+		} else if (arg == "--benchmark-file") {
+			if (N) {
 				OS::get_singleton()->set_use_benchmark(true);
-				String benchmark_file = I->next()->get();
+				String benchmark_file = N->get();
 				OS::get_singleton()->set_benchmark_file(benchmark_file);
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing <path> argument for --benchmark-file <path>.\n");
 				goto error;
 			}
 #if defined(TOOLS_ENABLED) && defined(MODULE_GDSCRIPT_ENABLED) && !defined(GDSCRIPT_NO_LSP)
-		} else if (I->get() == "--lsp-port") {
-			if (I->next()) {
-				int port_override = I->next()->get().to_int();
+		} else if (arg == "--lsp-port") {
+			if (N) {
+				int port_override = N->get().to_int();
 				if (port_override < 0 || port_override > 65535) {
 					OS::get_singleton()->print("<port> argument for --lsp-port <port> must be between 0 and 65535.\n");
 					goto error;
 				}
 				GDScriptLanguageServer::port_override = port_override;
-				N = I->next()->next();
+				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing <port> argument for --lsp-port <port>.\n");
 				goto error;
 			}
 #endif // TOOLS_ENABLED && MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
-		} else if (I->get() == "--" || I->get() == "++") {
+		} else if (arg == "--" || arg == "++") {
 			adding_user_args = true;
 		} else {
-			main_args.push_back(I->get());
+			main_args.push_back(arg);
 		}
 
 		I = N;
@@ -2405,6 +2409,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// OpenXR project extensions settings.
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking", true);
+	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/hand_interaction_profile", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
 
 #ifdef TOOLS_ENABLED
@@ -2988,7 +2993,7 @@ Error Main::setup2() {
 				// Dummy text driver cannot draw any text, making the editor unusable if selected.
 				continue;
 			}
-			if (!text_driver_options.is_empty() && text_driver_options.find(",") == -1) {
+			if (!text_driver_options.is_empty() && !text_driver_options.contains(",")) {
 				// Not the first option; add a comma before it as a separator for the property hint.
 				text_driver_options += ",";
 			}
@@ -3182,6 +3187,7 @@ int Main::start() {
 
 #ifdef TOOLS_ENABLED
 	String doc_tool_path;
+	bool doc_tool_implicit_cwd = false;
 	BitField<DocTools::GenerateFlags> gen_flags;
 	String _export_preset;
 	bool export_debug = false;
@@ -3199,75 +3205,79 @@ int Main::start() {
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 
-	for (int i = 0; i < args.size(); i++) {
+	for (List<String>::Element *E = args.front(); E; E = E->next()) {
 		// First check parameters that do not have an argument to the right.
 
 		// Doctest Unit Testing Handler
 		// Designed to override and pass arguments to the unit test handler.
-		if (args[i] == "--check-only") {
+		if (E->get() == "--check-only") {
 			check_only = true;
 #ifdef TOOLS_ENABLED
-		} else if (args[i] == "--no-docbase") {
+		} else if (E->get() == "--no-docbase") {
 			gen_flags.set_flag(DocTools::GENERATE_FLAG_SKIP_BASIC_TYPES);
+		} else if (E->get() == "--gdextension-docs") {
+			gen_flags.set_flag(DocTools::GENERATE_FLAG_SKIP_BASIC_TYPES);
+			gen_flags.set_flag(DocTools::GENERATE_FLAG_EXTENSION_CLASSES_ONLY);
 #ifndef DISABLE_DEPRECATED
-		} else if (args[i] == "--convert-3to4") {
+		} else if (E->get() == "--convert-3to4") {
 			converting_project = true;
-		} else if (args[i] == "--validate-conversion-3to4") {
+		} else if (E->get() == "--validate-conversion-3to4") {
 			validating_converting_project = true;
 #endif // DISABLE_DEPRECATED
-		} else if (args[i] == "-e" || args[i] == "--editor") {
+		} else if (E->get() == "-e" || E->get() == "--editor") {
 			editor = true;
-		} else if (args[i] == "-p" || args[i] == "--project-manager") {
+		} else if (E->get() == "-p" || E->get() == "--project-manager") {
 			project_manager = true;
-		} else if (args[i] == "--install-android-build-template") {
+		} else if (E->get() == "--install-android-build-template") {
 			install_android_build_template = true;
 #endif // TOOLS_ENABLED
-		} else if (args[i].length() && args[i][0] != '-' && positional_arg.is_empty()) {
-			positional_arg = args[i];
+		} else if (E->get().length() && E->get()[0] != '-' && positional_arg.is_empty()) {
+			positional_arg = E->get();
 
-			if (args[i].ends_with(".scn") ||
-					args[i].ends_with(".tscn") ||
-					args[i].ends_with(".escn") ||
-					args[i].ends_with(".res") ||
-					args[i].ends_with(".tres")) {
+			if (E->get().ends_with(".scn") ||
+					E->get().ends_with(".tscn") ||
+					E->get().ends_with(".escn") ||
+					E->get().ends_with(".res") ||
+					E->get().ends_with(".tres")) {
 				// Only consider the positional argument to be a scene path if it ends with
 				// a file extension associated with Godot scenes. This makes it possible
 				// for projects to parse command-line arguments for custom CLI arguments
 				// or other file extensions without trouble. This can be used to implement
 				// "drag-and-drop onto executable" logic, which can prove helpful
 				// for non-game applications.
-				game_path = args[i];
+				game_path = E->get();
 			}
 		}
 		// Then parameters that have an argument to the right.
-		else if (i < (args.size() - 1)) {
+		else if (E->next()) {
 			bool parsed_pair = true;
-			if (args[i] == "-s" || args[i] == "--script") {
-				script = args[i + 1];
-			} else if (args[i] == "--main-loop") {
-				main_loop_type = args[i + 1];
+			if (E->get() == "-s" || E->get() == "--script") {
+				script = E->next()->get();
+			} else if (E->get() == "--main-loop") {
+				main_loop_type = E->next()->get();
 #ifdef TOOLS_ENABLED
-			} else if (args[i] == "--doctool") {
-				doc_tool_path = args[i + 1];
+			} else if (E->get() == "--doctool") {
+				doc_tool_path = E->next()->get();
 				if (doc_tool_path.begins_with("-")) {
 					// Assuming other command line arg, so default to cwd.
 					doc_tool_path = ".";
+					doc_tool_implicit_cwd = true;
 					parsed_pair = false;
 				}
 #ifdef MODULE_GDSCRIPT_ENABLED
-			} else if (args[i] == "--gdscript-docs") {
-				gdscript_docs_path = args[i + 1];
+			} else if (E->get() == "--gdscript-docs") {
+				gdscript_docs_path = E->next()->get();
 #endif
-			} else if (args[i] == "--export-release") {
+			} else if (E->get() == "--export-release") {
 				editor = true; //needs editor
-				_export_preset = args[i + 1];
-			} else if (args[i] == "--export-debug") {
+				_export_preset = E->next()->get();
+			} else if (E->get() == "--export-debug") {
 				editor = true; //needs editor
-				_export_preset = args[i + 1];
+				_export_preset = E->next()->get();
 				export_debug = true;
-			} else if (args[i] == "--export-pack") {
+			} else if (E->get() == "--export-pack") {
 				editor = true;
-				_export_preset = args[i + 1];
+				_export_preset = E->next()->get();
 				export_pack_only = true;
 #endif
 			} else {
@@ -3275,13 +3285,14 @@ int Main::start() {
 				parsed_pair = false;
 			}
 			if (parsed_pair) {
-				i++;
+				E = E->next();
 			}
 		}
 #ifdef TOOLS_ENABLED
 		// Handle case where no path is given to --doctool.
-		else if (args[i] == "--doctool") {
+		else if (E->get() == "--doctool") {
 			doc_tool_path = ".";
+			doc_tool_implicit_cwd = true;
 		}
 #endif
 	}
@@ -3308,6 +3319,11 @@ int Main::start() {
 		{
 			Ref<DirAccess> da = DirAccess::open(doc_tool_path);
 			ERR_FAIL_COND_V_MSG(da.is_null(), EXIT_FAILURE, "Argument supplied to --doctool must be a valid directory path.");
+			// Ensure that doctool is running in the root dir, but only if
+			// user did not manually specify a path as argument.
+			if (doc_tool_implicit_cwd) {
+				ERR_FAIL_COND_V_MSG(!da->dir_exists("doc"), EXIT_FAILURE, "--doctool must be run from the Godot repository's root folder, or specify a path that points there.");
+			}
 		}
 
 #ifndef MODULE_MONO_ENABLED
@@ -3328,29 +3344,34 @@ int Main::start() {
 		HashSet<String> checked_paths;
 		print_line("Loading docs...");
 
-		for (int i = 0; i < _doc_data_class_path_count; i++) {
-			// Custom modules are always located by absolute path.
-			String path = _doc_data_class_paths[i].path;
-			if (path.is_relative_path()) {
-				path = doc_tool_path.path_join(path);
-			}
-			String name = _doc_data_class_paths[i].name;
-			doc_data_classes[name] = path;
-			if (!checked_paths.has(path)) {
-				checked_paths.insert(path);
+		const bool gdextension_docs = gen_flags.has_flag(DocTools::GENERATE_FLAG_EXTENSION_CLASSES_ONLY);
 
-				// Create the module documentation directory if it doesn't exist
-				Ref<DirAccess> da = DirAccess::create_for_path(path);
-				err = da->make_dir_recursive(path);
-				ERR_FAIL_COND_V_MSG(err != OK, EXIT_FAILURE, "Error: Can't create directory: " + path + ": " + itos(err));
+		if (!gdextension_docs) {
+			for (int i = 0; i < _doc_data_class_path_count; i++) {
+				// Custom modules are always located by absolute path.
+				String path = _doc_data_class_paths[i].path;
+				if (path.is_relative_path()) {
+					path = doc_tool_path.path_join(path);
+				}
+				String name = _doc_data_class_paths[i].name;
+				doc_data_classes[name] = path;
+				if (!checked_paths.has(path)) {
+					checked_paths.insert(path);
 
-				print_line("Loading docs from: " + path);
-				err = docsrc.load_classes(path);
-				ERR_FAIL_COND_V_MSG(err != OK, EXIT_FAILURE, "Error loading docs from: " + path + ": " + itos(err));
+					// Create the module documentation directory if it doesn't exist
+					Ref<DirAccess> da = DirAccess::create_for_path(path);
+					err = da->make_dir_recursive(path);
+					ERR_FAIL_COND_V_MSG(err != OK, EXIT_FAILURE, "Error: Can't create directory: " + path + ": " + itos(err));
+
+					print_line("Loading docs from: " + path);
+					err = docsrc.load_classes(path);
+					ERR_FAIL_COND_V_MSG(err != OK, EXIT_FAILURE, "Error loading docs from: " + path + ": " + itos(err));
+				}
 			}
 		}
 
-		String index_path = doc_tool_path.path_join("doc/classes");
+		// For GDExtension docs, use a path that is compatible with Godot modules.
+		String index_path = gdextension_docs ? doc_tool_path.path_join("doc_classes") : doc_tool_path.path_join("doc/classes");
 		// Create the main documentation directory if it doesn't exist
 		Ref<DirAccess> da = DirAccess::create_for_path(index_path);
 		err = da->make_dir_recursive(index_path);
@@ -3371,7 +3392,7 @@ int Main::start() {
 		}
 
 		print_line("Generating new docs...");
-		err = doc.save_classes(index_path, doc_data_classes);
+		err = doc.save_classes(index_path, doc_data_classes, !gdextension_docs);
 		ERR_FAIL_COND_V_MSG(err != OK, EXIT_FAILURE, "Error saving new docs:" + itos(err));
 
 		print_line("Deleting docs cache...");
@@ -3636,7 +3657,7 @@ int Main::start() {
 				}
 			}
 
-			if (doc_tool_path == ".") {
+			if (doc_tool_implicit_cwd) {
 				doc_tool_path = "./docs";
 			}
 

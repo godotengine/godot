@@ -537,6 +537,7 @@ void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const 
 	p_core_type_words->push_back("PackedVector2Array");
 	p_core_type_words->push_back("PackedVector3Array");
 	p_core_type_words->push_back("PackedColorArray");
+	p_core_type_words->push_back("PackedVector4Array");
 }
 
 void ScriptLanguage::frame() {

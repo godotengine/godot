@@ -334,6 +334,8 @@ void ShaderTextEditor::_load_theme_settings() {
 		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_editor_theme()->get_font(SNAME("main"), EditorStringName(EditorFonts)));
 		warnings_panel->add_theme_font_size_override("normal_font_size", EditorNode::get_singleton()->get_editor_theme()->get_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 	}
+
+	syntax_highlighter->set_uint_suffix_enabled(true);
 }
 
 void ShaderTextEditor::_check_shader_mode() {
@@ -581,9 +583,7 @@ void ShaderTextEditor::_update_warning_panel() {
 	int warning_count = 0;
 
 	warnings_panel->push_table(2);
-	for (int i = 0; i < warnings.size(); i++) {
-		ShaderWarning &w = warnings[i];
-
+	for (const ShaderWarning &w : warnings) {
 		if (warning_count == 0) {
 			if (saved_treat_warning_as_errors) {
 				String error_text = "error(" + itos(w.get_line()) + "): " + w.get_message() + " " + TTR("Warnings should be fixed to prevent errors.");
@@ -653,10 +653,10 @@ void TextShaderEditor::_menu_option(int p_option) {
 			code_editor->get_text_editor()->select_all();
 		} break;
 		case EDIT_MOVE_LINE_UP: {
-			code_editor->move_lines_up();
+			code_editor->get_text_editor()->move_lines_up();
 		} break;
 		case EDIT_MOVE_LINE_DOWN: {
-			code_editor->move_lines_down();
+			code_editor->get_text_editor()->move_lines_down();
 		} break;
 		case EDIT_INDENT: {
 			if (shader.is_null() && shader_inc.is_null()) {
@@ -671,10 +671,10 @@ void TextShaderEditor::_menu_option(int p_option) {
 			code_editor->get_text_editor()->unindent_lines();
 		} break;
 		case EDIT_DELETE_LINE: {
-			code_editor->delete_lines();
+			code_editor->get_text_editor()->delete_lines();
 		} break;
 		case EDIT_DUPLICATE_SELECTION: {
-			code_editor->duplicate_selection();
+			code_editor->get_text_editor()->duplicate_selection();
 		} break;
 		case EDIT_DUPLICATE_LINES: {
 			code_editor->get_text_editor()->duplicate_lines();
@@ -1010,7 +1010,7 @@ void TextShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					}
 				}
 				if (!tx->has_selection()) {
-					tx->set_caret_line(row, true, false);
+					tx->set_caret_line(row, true, false, -1);
 					tx->set_caret_column(col);
 				}
 			}

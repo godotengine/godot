@@ -4076,6 +4076,8 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_BOOL:
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.hint = PROPERTY_HINT_TYPE_STRING;
+				pi.hint_string = itos(Variant::INT) + "/" + itos(PROPERTY_HINT_FLAGS) + ":" + RTR("On");
 			} else {
 				pi.type = Variant::BOOL;
 			}
@@ -4083,6 +4085,8 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_BVEC2:
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.hint = PROPERTY_HINT_TYPE_STRING;
+				pi.hint_string = itos(Variant::INT) + "/" + itos(PROPERTY_HINT_FLAGS) + ":x,y";
 			} else {
 				pi.type = Variant::INT;
 				pi.hint = PROPERTY_HINT_FLAGS;
@@ -4092,6 +4096,8 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_BVEC3:
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.hint = PROPERTY_HINT_TYPE_STRING;
+				pi.hint_string = itos(Variant::INT) + "/" + itos(PROPERTY_HINT_FLAGS) + ":x,y,z";
 			} else {
 				pi.type = Variant::INT;
 				pi.hint = PROPERTY_HINT_FLAGS;
@@ -4101,6 +4107,8 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_BVEC4:
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				pi.hint = PROPERTY_HINT_TYPE_STRING;
+				pi.hint_string = itos(Variant::INT) + "/" + itos(PROPERTY_HINT_FLAGS) + ":x,y,z,w";
 			} else {
 				pi.type = Variant::INT;
 				pi.hint = PROPERTY_HINT_FLAGS;
@@ -4111,11 +4119,16 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_INT: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				// TODO: Handle range and encoding for for unsigned values.
 			} else {
 				pi.type = Variant::INT;
+				pi.hint = PROPERTY_HINT_RANGE;
 				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
-					pi.hint = PROPERTY_HINT_RANGE;
 					pi.hint_string = rtos(p_uniform.hint_range[0]) + "," + rtos(p_uniform.hint_range[1]) + "," + rtos(p_uniform.hint_range[2]);
+				} else if (p_uniform.type == ShaderLanguage::TYPE_UINT) {
+					pi.hint_string = "0," + itos(UINT32_MAX);
+				} else {
+					pi.hint_string = itos(INT32_MIN) + "," + itos(INT32_MAX);
 				}
 			}
 		} break;
@@ -4123,6 +4136,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_IVEC2: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				// TODO: Handle vector pairs?
 			} else {
 				pi.type = Variant::VECTOR2I;
 			}
@@ -4131,6 +4145,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_IVEC3: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				// TODO: Handle vector pairs?
 			} else {
 				pi.type = Variant::VECTOR3I;
 			}
@@ -4139,6 +4154,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_IVEC4: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
+				// TODO: Handle vector pairs?
 			} else {
 				pi.type = Variant::VECTOR4I;
 			}
@@ -5201,11 +5217,11 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					funcname->name = name;
 					func->arguments.push_back(funcname);
 
-					for (int i = 0; i < pstruct->members.size(); i++) {
+					for (List<ShaderLanguage::MemberNode *>::Element *E = pstruct->members.front(); E; E = E->next()) {
 						Node *nexpr;
 
-						if (pstruct->members[i]->array_size != 0) {
-							nexpr = _parse_array_constructor(p_block, p_function_info, pstruct->members[i]->get_datatype(), pstruct->members[i]->struct_name, pstruct->members[i]->array_size);
+						if (E->get()->array_size != 0) {
+							nexpr = _parse_array_constructor(p_block, p_function_info, E->get()->get_datatype(), E->get()->struct_name, E->get()->array_size);
 							if (!nexpr) {
 								return nullptr;
 							}
@@ -5214,12 +5230,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							if (!nexpr) {
 								return nullptr;
 							}
-							if (!_compare_datatypes_in_nodes(pstruct->members[i], nexpr)) {
+							if (!_compare_datatypes_in_nodes(E->get(), nexpr)) {
 								return nullptr;
 							}
 						}
 
-						if (i + 1 < pstruct->members.size()) {
+						if (E->next()) {
 							tk = _get_token();
 							if (tk.type != TK_COMMA) {
 								_set_expected_error(",");
@@ -7469,8 +7485,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					continue;
 				} else {
 					HashSet<int> constants;
-					for (int i = 0; i < switch_block->statements.size(); i++) { // Checks for duplicates.
-						ControlFlowNode *flow = static_cast<ControlFlowNode *>(switch_block->statements[i]);
+					for (ShaderLanguage::Node *statement : switch_block->statements) { // Checks for duplicates.
+						ControlFlowNode *flow = static_cast<ControlFlowNode *>(statement);
 						if (flow) {
 							if (flow->flow_op == FLOW_OP_CASE) {
 								if (flow->expressions[0]->type == Node::NODE_TYPE_CONSTANT) {
@@ -9846,9 +9862,9 @@ Error ShaderLanguage::_find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOper
 Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op) {
 	bool found = false;
 
-	for (int i = p_block->statements.size() - 1; i >= 0; i--) {
-		if (p_block->statements[i]->type == Node::NODE_TYPE_CONTROL_FLOW) {
-			ControlFlowNode *flow = static_cast<ControlFlowNode *>(p_block->statements[i]);
+	for (List<ShaderLanguage::Node *>::Element *E = p_block->statements.back(); E; E = E->prev()) {
+		if (E->get()->type == Node::NODE_TYPE_CONTROL_FLOW) {
+			ControlFlowNode *flow = static_cast<ControlFlowNode *>(E->get());
 			if (flow->flow_op == p_op) {
 				found = true;
 				break;
@@ -9858,8 +9874,8 @@ Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperat
 					break;
 				}
 			}
-		} else if (p_block->statements[i]->type == Node::NODE_TYPE_BLOCK) {
-			BlockNode *block = static_cast<BlockNode *>(p_block->statements[i]);
+		} else if (E->get()->type == Node::NODE_TYPE_BLOCK) {
+			BlockNode *block = static_cast<BlockNode *>(E->get());
 			if (_find_last_flow_op_in_block(block, p_op) == OK) {
 				found = true;
 				break;
@@ -10151,8 +10167,8 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		case COMPLETION_STRUCT: {
 			if (shader->structs.has(completion_struct)) {
 				StructNode *node = shader->structs[completion_struct].shader_struct;
-				for (int i = 0; i < node->members.size(); i++) {
-					ScriptLanguage::CodeCompletionOption option(node->members[i]->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+				for (ShaderLanguage::MemberNode *member : node->members) {
+					ScriptLanguage::CodeCompletionOption option(member->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
 					r_options->push_back(option);
 				}
 			}

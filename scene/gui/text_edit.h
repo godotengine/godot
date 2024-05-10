@@ -389,18 +389,12 @@ private:
 	/* Caret. */
 	struct Selection {
 		bool active = false;
-		bool shiftclick_left = false;
 
-		int selecting_line = 0;
-		int selecting_column = 0;
-		int selected_word_beg = 0;
-		int selected_word_end = 0;
-		int selected_word_origin = 0;
-
-		int from_line = 0;
-		int from_column = 0;
-		int to_line = 0;
-		int to_column = 0;
+		int origin_line = 0;
+		int origin_column = 0;
+		int origin_last_fit_x = 0;
+		int word_begin_column = 0;
+		int word_end_column = 0;
 	};
 
 	struct Caret {
@@ -415,11 +409,13 @@ private:
 
 	// Vector containing all the carets, index '0' is the "main caret" and should never be removed.
 	Vector<Caret> carets;
-	Vector<int> caret_index_edit_order;
 
 	bool setting_caret_line = false;
 	bool caret_pos_dirty = false;
-	bool caret_index_edit_dirty = true;
+
+	int multicaret_edit_count = 0;
+	bool multicaret_edit_merge_queued = false;
+	HashSet<int> multicaret_edit_ignore_carets;
 
 	CaretType caret_type = CaretType::CARET_TYPE_LINE;
 
@@ -438,12 +434,18 @@ private:
 	bool drag_action = false;
 	bool drag_caret_force_displayed = false;
 
+	void _caret_changed(int p_caret = -1);
 	void _emit_caret_changed();
 
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
 
 	int _get_column_x_offset_for_line(int p_char, int p_line, int p_column) const;
+	bool _is_line_col_in_range(int p_line, int p_column, int p_from_line, int p_from_column, int p_to_line, int p_to_column, bool p_include_edges = true) const;
+
+	void _offset_carets_after(int p_old_line, int p_old_column, int p_new_line, int p_new_column, bool p_include_selection_begin = true, bool p_include_selection_end = true);
+
+	void _cancel_drag_and_drop_text();
 
 	/* Selection. */
 	SelectionMode selecting_mode = SelectionMode::SELECTION_MODE_NONE;
@@ -456,18 +458,23 @@ private:
 
 	bool selection_drag_attempt = false;
 	bool dragging_selection = false;
+	int drag_and_drop_origin_caret_index = -1;
+	int drag_caret_index = -1;
 
 	Timer *click_select_held = nullptr;
 	uint64_t last_dblclk = 0;
 	Vector2 last_dblclk_pos;
+
+	void _selection_changed(int p_caret = -1);
 	void _click_selection_held();
 
-	void _update_selection_mode_pointer();
-	void _update_selection_mode_word();
-	void _update_selection_mode_line();
+	void _update_selection_mode_pointer(bool p_initial = false);
+	void _update_selection_mode_word(bool p_initial = false);
+	void _update_selection_mode_line(bool p_initial = false);
 
 	void _pre_shift_selection(int p_caret);
-	void _post_shift_selection(int p_caret);
+
+	bool _selection_contains(int p_caret, int p_line, int p_column, bool p_include_edges = true, bool p_only_selections = true) const;
 
 	/* Line wrapping. */
 	LineWrappingMode line_wrapping_mode = LineWrappingMode::LINE_WRAPPING_NONE;
@@ -599,7 +606,8 @@ private:
 
 	/*** Super internal Core API. Everything builds on it. ***/
 	bool text_changed_dirty = false;
-	void _text_changed_emit();
+	void _text_changed();
+	void _emit_text_changed();
 
 	void _insert_text(int p_line, int p_char, const String &p_text, int *r_end_line = nullptr, int *r_end_char = nullptr);
 	void _remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
@@ -625,12 +633,14 @@ private:
 	void _move_caret_document_end(bool p_select);
 	bool _clear_carets_and_selection();
 
-	// Used in add_caret_at_carets
-	void _get_above_below_caret_line_column(int p_old_line, int p_old_wrap_index, int p_old_column, bool p_below, int &p_new_line, int &p_new_column, int p_last_fit_x = -1) const;
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	void _set_selection_mode_compat_86978(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
 
 	virtual void _update_theme_item_cache() override;
 
@@ -659,6 +669,7 @@ protected:
 	bool _is_line_hidden(int p_line) const;
 
 	void _unhide_all_lines();
+	virtual void _unhide_carets();
 
 	// Symbol lookup.
 	String lookup_symbol_word;
@@ -765,9 +776,11 @@ public:
 
 	void swap_lines(int p_from_line, int p_to_line);
 
-	void insert_line_at(int p_at, const String &p_text);
-	void insert_text_at_caret(const String &p_text, int p_caret = -1);
+	void insert_line_at(int p_line, const String &p_text);
+	void remove_line_at(int p_line, bool p_move_carets_down = true);
 
+	void insert_text_at_caret(const String &p_text, int p_caret = -1);
+	void insert_text(const String &p_text, int p_line, int p_column, bool p_before_selection_begin = true, bool p_before_selection_end = false);
 	void remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
 
 	int get_last_unhidden_line() const;
@@ -851,15 +864,20 @@ public:
 	void set_multiple_carets_enabled(bool p_enabled);
 	bool is_multiple_carets_enabled() const;
 
-	int add_caret(int p_line, int p_col);
+	int add_caret(int p_line, int p_column);
 	void remove_caret(int p_caret);
 	void remove_secondary_carets();
-	void merge_overlapping_carets();
 	int get_caret_count() const;
 	void add_caret_at_carets(bool p_below);
 
-	Vector<int> get_caret_index_edit_order();
-	void adjust_carets_after_edit(int p_caret, int p_from_line, int p_from_col, int p_to_line, int p_to_col);
+	Vector<int> get_sorted_carets(bool p_include_ignored_carets = false) const;
+	void collapse_carets(int p_from_line, int p_from_column, int p_to_line, int p_to_column, bool p_inclusive = false);
+
+	void merge_overlapping_carets();
+	void begin_multicaret_edit();
+	void end_multicaret_edit();
+	bool is_in_mulitcaret_edit() const;
+	bool multicaret_edit_ignore_caret(int p_caret) const;
 
 	bool is_caret_visible(int p_caret = 0) const;
 	Point2 get_caret_draw_pos(int p_caret = 0) const;
@@ -867,7 +885,7 @@ public:
 	void set_caret_line(int p_line, bool p_adjust_viewport = true, bool p_can_be_hidden = true, int p_wrap_index = 0, int p_caret = 0);
 	int get_caret_line(int p_caret = 0) const;
 
-	void set_caret_column(int p_col, bool p_adjust_viewport = true, int p_caret = 0);
+	void set_caret_column(int p_column, bool p_adjust_viewport = true, int p_caret = 0);
 	int get_caret_column(int p_caret = 0) const;
 
 	int get_caret_wrap_index(int p_caret = 0) const;
@@ -884,26 +902,33 @@ public:
 	void set_drag_and_drop_selection_enabled(const bool p_enabled);
 	bool is_drag_and_drop_selection_enabled() const;
 
-	void set_selection_mode(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
+	void set_selection_mode(SelectionMode p_mode);
 	SelectionMode get_selection_mode() const;
 
 	void select_all();
 	void select_word_under_caret(int p_caret = -1);
 	void add_selection_for_next_occurrence();
 	void skip_selection_for_next_occurrence();
-	void select(int p_from_line, int p_from_column, int p_to_line, int p_to_column, int p_caret = 0);
+	void select(int p_origin_line, int p_origin_column, int p_caret_line, int p_caret_column, int p_caret = 0);
 
 	bool has_selection(int p_caret = -1) const;
 
 	String get_selected_text(int p_caret = -1);
+	int get_selection_at_line_column(int p_line, int p_column, bool p_include_edges = true, bool p_only_selections = true) const;
+	Vector<Point2i> get_line_ranges_from_carets(bool p_only_selections = false, bool p_merge_adjacent = true) const;
+	TypedArray<Vector2i> get_line_ranges_from_carets_typed_array(bool p_only_selections = false, bool p_merge_adjacent = true) const;
 
-	int get_selection_line(int p_caret = 0) const;
-	int get_selection_column(int p_caret = 0) const;
+	void set_selection_origin_line(int p_line, bool p_can_be_hidden = true, int p_wrap_index = -1, int p_caret = 0);
+	void set_selection_origin_column(int p_column, int p_caret = 0);
+	int get_selection_origin_line(int p_caret = 0) const;
+	int get_selection_origin_column(int p_caret = 0) const;
 
 	int get_selection_from_line(int p_caret = 0) const;
 	int get_selection_from_column(int p_caret = 0) const;
 	int get_selection_to_line(int p_caret = 0) const;
 	int get_selection_to_column(int p_caret = 0) const;
+
+	bool is_caret_after_selection_origin(int p_caret = 0) const;
 
 	void deselect(int p_caret = -1);
 	void delete_selection(int p_caret = -1);
@@ -1042,6 +1067,15 @@ public:
 	bool is_drawing_spaces() const;
 
 	Color get_font_color() const;
+
+	/* Deprecated. */
+#ifndef DISABLE_DEPRECATED
+	Vector<int> get_caret_index_edit_order();
+	void adjust_carets_after_edit(int p_caret, int p_from_line, int p_from_col, int p_to_line, int p_to_col);
+
+	int get_selection_line(int p_caret = 0) const;
+	int get_selection_column(int p_caret = 0) const;
+#endif
 
 	TextEdit(const String &p_placeholder = String());
 };

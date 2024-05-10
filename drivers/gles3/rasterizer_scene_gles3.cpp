@@ -2706,27 +2706,32 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 		rb->check_glow_buffers();
 	}
 
-	bool use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
 	uint64_t bcs_spec_constants = 0;
-	RID color_correction_texture = environment_get_color_correction(p_render_data->environment);
-	if (use_bcs && color_correction_texture.is_valid()) {
-		bcs_spec_constants |= PostShaderGLES3::USE_BCS;
-		bcs_spec_constants |= PostShaderGLES3::USE_COLOR_CORRECTION;
+	if (p_render_data->environment.is_valid()) {
+		bool use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
+		RID color_correction_texture = environment_get_color_correction(p_render_data->environment);
+		if (use_bcs) {
+			bcs_spec_constants |= PostShaderGLES3::USE_BCS;
 
-		bool use_1d_lut = environment_get_use_1d_color_correction(p_render_data->environment);
-		GLenum texture_target = GL_TEXTURE_3D;
-		if (use_1d_lut) {
-			bcs_spec_constants |= PostShaderGLES3::USE_1D_LUT;
-			texture_target = GL_TEXTURE_2D;
+			if (color_correction_texture.is_valid()) {
+				bcs_spec_constants |= PostShaderGLES3::USE_COLOR_CORRECTION;
+
+				bool use_1d_lut = environment_get_use_1d_color_correction(p_render_data->environment);
+				GLenum texture_target = GL_TEXTURE_3D;
+				if (use_1d_lut) {
+					bcs_spec_constants |= PostShaderGLES3::USE_1D_LUT;
+					texture_target = GL_TEXTURE_2D;
+				}
+
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(texture_target, texture_storage->texture_get_texid(color_correction_texture));
+				glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				glTexParameteri(texture_target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+			}
 		}
-
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(texture_target, texture_storage->texture_get_texid(color_correction_texture));
-		glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(texture_target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	}
 
 	if (view_count == 1) {
@@ -3039,6 +3044,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							} else {
 								glBlendFuncSeparate(GL_DST_COLOR, GL_ZERO, GL_ZERO, GL_ONE);
 							}
+
+						} break;
+						case GLES3::SceneShaderData::BLEND_MODE_PREMULT_ALPHA: {
+							glBlendEquation(GL_FUNC_ADD);
+							glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 						} break;
 						case GLES3::SceneShaderData::BLEND_MODE_ALPHA_TO_COVERAGE: {
