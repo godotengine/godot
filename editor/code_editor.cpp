@@ -199,6 +199,7 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 }
 
 void FindReplaceBar::_replace() {
+	text_editor->begin_complex_operation();
 	text_editor->remove_secondary_carets();
 	bool selection_enabled = text_editor->has_selection(0);
 	Point2i selection_begin, selection_end;
@@ -210,7 +211,6 @@ void FindReplaceBar::_replace() {
 	String repl_text = get_replace_text();
 	int search_text_len = get_search_text().length();
 
-	text_editor->begin_complex_operation();
 	if (selection_enabled && is_selection_only()) {
 		// Restrict search_current() to selected region.
 		text_editor->set_caret_line(selection_begin.width, false, true, -1, 0);
@@ -249,6 +249,7 @@ void FindReplaceBar::_replace() {
 }
 
 void FindReplaceBar::_replace_all() {
+	text_editor->begin_complex_operation();
 	text_editor->remove_secondary_carets();
 	text_editor->disconnect("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
 	// Line as x so it gets priority in comparison, column as y.
@@ -278,8 +279,6 @@ void FindReplaceBar::_replace_all() {
 	int rc = 0;
 
 	replace_all_mode = true;
-
-	text_editor->begin_complex_operation();
 
 	if (selection_enabled && is_selection_only()) {
 		text_editor->set_caret_line(selection_begin.width, false, true, -1, 0);
@@ -619,6 +618,7 @@ void FindReplaceBar::_replace_text_submitted(const String &p_text) {
 		search_prev();
 	} else {
 		_replace();
+		search_next();
 	}
 }
 
