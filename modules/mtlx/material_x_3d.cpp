@@ -230,27 +230,6 @@ void MTLXLoader::process_node(const mx::NodePtr &p_node, Ref<VisualShader> p_sha
 		expression_node->add_output_port(output_port_id, variant_type, String(output_name.c_str()));
 	}
 	print_line(String("Total output ports: ") + String::num(downstream_ports.size()));
-
-	for (mx::PortElementPtr port : downstream_ports) {
-		mx::NodePtr connected_node = port->getConnectedNode();
-		if (!connected_node) {
-			print_line(String("Skipping null output port for node: ") + String(port->getNodeName().c_str()) + ", port: " + String(port->getName().c_str()));
-			continue;
-		}
-
-		print_line(String("Processing port: ") + String(port->getName().c_str()));
-		print_line(String("Processing connected node for port: ") + String(port->getNodeName().c_str()));
-
-		for (mx::InputPtr input : connected_node->getInputs()) {
-			print_line(String("Possible input port: ") + String(input->getName().c_str()));
-			mx::OutputPtr output = connected_node->getConnectedOutput(input->getName());
-			if (!output) {
-				continue;
-			}
-			print_line(String("Output port: ") + String(output->getName().c_str()));
-			// p_shader->connect_nodes(VisualShader::TYPE_FRAGMENT, p_node_i, output_port_id, p_node_i + 1, input_port_id);
-		}
-	}
 }
 
 void MTLXLoader::add_input_port(mx::InputPtr p_input, Ref<VisualShaderNodeExpression> p_expression_node, int p_input_port_i) const {
