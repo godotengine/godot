@@ -46,6 +46,9 @@
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]true[/code], the value can be selected and edited.
 		</member>
+		<member name="path_only" type="bool" setter="set_path_only" getter="is_path_only" default="false" keywords="path_only, disabled, enabled">
+			If [code]true[/code], menu items related to creating resources will be hidden.
+		</member>
 		<member name="edited_resource" type="Resource" setter="set_edited_resource" getter="get_edited_resource">
 			The edited resource value.
 		</member>

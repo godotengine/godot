@@ -638,6 +638,21 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@export_resource_uid">
+			<return type="void" />
+			<param index="0" name="type" type="String" />
+			<description>
+				Export an [int] property as a unique identifier to a resource.
+				Used to reference resources without preloading or cyclic dependencies.
+				[codeblock]
+				@export_resource_uid("PackedScene") var scene_to_load : int
+
+				func load_scene():
+					var scene = load(ResourceUID.get_id_path(scene_to_load))
+					return scene.instantiate()
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export_storage">
 			<return type="void" />
 			<description>

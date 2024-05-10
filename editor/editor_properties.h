@@ -734,6 +734,22 @@ public:
 	EditorPropertyResource();
 };
 
+class EditorPropertyUID : public EditorProperty {
+	GDCLASS(EditorPropertyUID, EditorProperty);
+
+	EditorResourcePicker *resource_picker = nullptr;
+
+	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect);
+	void _resource_changed(const Ref<Resource> &p_resource);
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+
+public:
+	virtual void update_property() override;
+	void setup(const String &p_base_type);
+};
+
 ///////////////////////////////////////////////////
 /// \brief The EditorInspectorDefaultPlugin class
 ///
