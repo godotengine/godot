@@ -1,12 +1,12 @@
 """Functions used to generate source files during build time"""
 
 import os.path
-from typing import Iterable, Optional
+from typing import Iterable, List, Optional
 
-from methods import print_error
+from methods import generated_wrapper, print_error
 
 
-def generate_inline_code(input_lines: Iterable[str], insert_newline: bool = True):
+def generate_inline_code(input_lines: Iterable[str], insert_newline: bool = True) -> str:
     """Take header data and generate inline code
 
     :param: input_lines: values for shared inline code
@@ -14,29 +14,28 @@ def generate_inline_code(input_lines: Iterable[str], insert_newline: bool = True
     """
     output = []
     for line in input_lines:
-        if line:
-            output.append(",".join(str(ord(c)) for c in line))
+        output += [str(ord(char)) for char in line]
         if insert_newline:
-            output.append("%s" % ord("\n"))
+            output.append(str(ord("\n")))
     output.append("0")
-    return ",".join(output)
+    return ", ".join(output)
 
 
 class RDHeaderStruct:
-    def __init__(self):
-        self.vertex_lines = []
-        self.fragment_lines = []
-        self.compute_lines = []
+    def __init__(self) -> None:
+        self.vertex_lines: List[str] = []
+        self.fragment_lines: List[str] = []
+        self.compute_lines: List[str] = []
 
-        self.vertex_included_files = []
-        self.fragment_included_files = []
-        self.compute_included_files = []
+        self.vertex_included_files: List[str] = []
+        self.fragment_included_files: List[str] = []
+        self.compute_included_files: List[str] = []
 
-        self.reading = ""
-        self.line_offset = 0
-        self.vertex_offset = 0
-        self.fragment_offset = 0
-        self.compute_offset = 0
+        self.reading: str = ""
+        self.line_offset: int = 0
+        self.vertex_offset: int = 0
+        self.fragment_offset: int = 0
+        self.compute_offset: int = 0
 
 
 def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth: int) -> RDHeaderStruct:
@@ -73,10 +72,10 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
                 includeline = line.replace("#include ", "").strip()[1:-1]
 
                 if includeline.startswith("thirdparty/"):
-                    included_file = os.path.relpath(includeline)
+                    included_file = os.path.relpath(includeline).replace("\\", "/")
 
                 else:
-                    included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
+                    included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline).replace("\\", "/")
 
                 if included_file not in header_data.vertex_included_files and header_data.reading == "vertex":
                     header_data.vertex_included_files += [included_file]
@@ -119,58 +118,47 @@ def build_rd_header(
     else:
         out_file = optional_output_filename
 
-    out_file_base = out_file
-    out_file_base = out_file_base[out_file_base.rfind("/") + 1 :]
-    out_file_base = out_file_base[out_file_base.rfind("\\") + 1 :]
-    out_file_ifdef = out_file_base.replace(".", "_").upper()
-    out_file_class = out_file_base.replace(".glsl.gen.h", "").title().replace("_", "").replace(".", "") + "ShaderRD"
+    out_file_base = os.path.basename(out_file).split(".")[0]
+    out_file_class = out_file_base.title().replace("_", "") + "ShaderRD"
 
     if header_data.compute_lines:
         body_parts = [
-            "static const char _compute_code[] = {\n%s\n\t\t};" % generate_inline_code(header_data.compute_lines),
+            "static const char _compute_code[] = {\n\t\t\t%s\n\t\t};" % generate_inline_code(header_data.compute_lines),
             f'setup(nullptr, nullptr, _compute_code, "{out_file_class}");',
         ]
     else:
         body_parts = [
-            "static const char _vertex_code[] = {\n%s\n\t\t};" % generate_inline_code(header_data.vertex_lines),
-            "static const char _fragment_code[] = {\n%s\n\t\t};" % generate_inline_code(header_data.fragment_lines),
+            "static const char _vertex_code[] = {\n\t\t\t%s\n\t\t};" % generate_inline_code(header_data.vertex_lines),
+            "static const char _fragment_code[] = {\n\t\t\t%s\n\t\t};"
+            % generate_inline_code(header_data.fragment_lines),
             f'setup(_vertex_code, _fragment_code, nullptr, "{out_file_class}");',
         ]
 
     body_content = "\n\t\t".join(body_parts)
 
-    # Intended curly brackets are doubled so f-string doesn't eat them up.
-    shader_template = f"""/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */
-#ifndef {out_file_ifdef}_RD
-#define {out_file_ifdef}_RD
-
+    with generated_wrapper(out_file, suffix="rd") as file:
+        file.write(
+            f"""\
 #include "servers/rendering/renderer_rd/shader_rd.h"
 
 class {out_file_class} : public ShaderRD {{
-
 public:
-
 	{out_file_class}() {{
-
 		{body_content}
 	}}
 }};
-
-#endif
 """
-
-    with open(out_file, "w", encoding="utf-8", newline="\n") as fd:
-        fd.write(shader_template)
+        )
 
 
-def build_rd_headers(target, source, env):
+def build_rd_headers(target, source, env) -> None:
     for x in source:
         build_rd_header(filename=str(x))
 
 
 class RAWHeaderStruct:
-    def __init__(self):
-        self.code = ""
+    def __init__(self) -> None:
+        self.code: str = ""
 
 
 def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, depth: int) -> None:
@@ -192,7 +180,7 @@ def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, dept
 
 def build_raw_header(
     filename: str, optional_output_filename: Optional[str] = None, header_data: Optional[RAWHeaderStruct] = None
-):
+) -> None:
     header_data = header_data or RAWHeaderStruct()
     include_file_in_raw_header(filename, header_data, 0)
 
@@ -201,25 +189,18 @@ def build_raw_header(
     else:
         out_file = optional_output_filename
 
-    out_file_base = out_file.replace(".glsl.gen.h", "_shader_glsl")
-    out_file_base = out_file_base[out_file_base.rfind("/") + 1 :]
-    out_file_base = out_file_base[out_file_base.rfind("\\") + 1 :]
-    out_file_ifdef = out_file_base.replace(".", "_").upper()
+    out_file_base = os.path.basename(out_file).split(".")[0] + "_shader_glsl"
 
-    shader_template = f"""/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */
-#ifndef {out_file_ifdef}_RAW_H
-#define {out_file_ifdef}_RAW_H
-
+    with generated_wrapper(out_file, suffix="raw") as file:
+        file.write(
+            f"""\
 static const char {out_file_base}[] = {{
-    {generate_inline_code(header_data.code, insert_newline=False)}
+	{generate_inline_code(header_data.code, insert_newline=False)}
 }};
-#endif
 """
-
-    with open(out_file, "w", encoding="utf-8", newline="\n") as f:
-        f.write(shader_template)
+        )
 
 
-def build_raw_headers(target, source, env):
+def build_raw_headers(target, source, env) -> None:
     for x in source:
         build_raw_header(filename=str(x))

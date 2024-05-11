@@ -8,7 +8,11 @@ from collections import OrderedDict
 from enum import Enum
 from io import StringIO, TextIOWrapper
 from pathlib import Path
-from typing import Generator, Optional
+from typing import TYPE_CHECKING, Generator, List, Optional, Tuple, Union
+
+if TYPE_CHECKING:
+    from SCons.Node import Node
+
 
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
@@ -1521,7 +1525,51 @@ def generate_vs_project(env, original_args, project_name="godot"):
         sys.exit()
 
 
+def format_defines(text: str, tab_width: int = 4) -> str:
+    """
+    Returns the formatted text contents of C/CPP code, ensuring that any defines had
+    their ending `\\` wrappers properly right-justified.
+
+    - `text`: A string representing the C/CPP script contents.
+    - `tab_width`: An int specifying how many spaces a Character Tabulation (`\\t`)
+    should represent. Defaults to 4.
+    """
+
+    lines = text.splitlines()
+    defines: List[Tuple[int, int]] = []
+
+    start_index = -1
+    for index, line in enumerate(lines):
+        if line.endswith("\\"):
+            if start_index == -1:
+                start_index = index
+        elif start_index != -1:
+            defines.append((start_index, index))
+            start_index = -1
+
+    for start, end in defines:
+        lengths: List[int] = []
+        max_length = -1
+        for line in lines[start:end]:
+            length = len(line.expandtabs(tab_width))
+            max_length = max(length, max_length)
+            lengths.append(length)
+        max_length += 2  # one to reach actual line offset, two to append a space
+        for index, line in enumerate(lines[start:end]):
+            lines[index + start] = line[:-1] + "\\".rjust(max_length - lengths[index])
+
+    return "\n".join(lines) + "\n"
+
+
 def generate_copyright_header(filename: str) -> str:
+    """
+    Outputs a fully-formatted copyright header for C/CPP code.
+
+    - `filename`: The name of the file to receive the header guard. Can be either the
+    basename of the file, or a path leading to the file. Should not be just the file
+    stem, as it makes use of the full name.
+    """
+
     MARGIN = 70
     TEMPLATE = """\
 /**************************************************************************/
@@ -1554,15 +1602,41 @@ def generate_copyright_header(filename: str) -> str:
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 """
-    filename = filename.split("/")[-1].ljust(MARGIN)
-    if len(filename) > MARGIN:
-        print(f'WARNING: Filename "{filename}" too large for copyright header.')
-    return TEMPLATE % filename
+
+    basename = os.path.basename(filename).strip()
+    if not basename:
+        raise ValueError("Copyright header filename cannot be empty.")
+    elif len(basename) > MARGIN:
+        print_warning(f'Filename "{filename}" too large for copyright header.')
+    return TEMPLATE % basename.ljust(MARGIN)
+
+
+def generate_header_guard(filename: str, prefix: str = "", suffix: str = "") -> str:
+    """
+    Outputs a fully-formatted header guard for C/CPP header files.
+
+    - `filename`: The name of the file to receive the header guard. Can be either the
+    basename of the file, or a path leading to the file. Should not be just the file
+    stem, as it makes use of the full name.
+    - `prefix`: Optional custom prefix to prepend to the header guard.
+    - `suffix`: Optional custom suffix to append to the header guard.
+    """
+
+    split = os.path.basename(filename).split(".")
+    if len(split) < 2:
+        if len(split) == 1:
+            print_warning("Generating header guard with no file extension; make sure you didn't pass a file stem.")
+        else:
+            raise ValueError("Header guard filename cannot be empty.")
+    split.insert(0, prefix)  # Prefix comes before everything.
+    split.insert(2, suffix)  # Suffix comes after stem, but before any file extension.
+    guard = "_".join([x for x in split if x.strip()])
+    return guard.upper().replace(".", "_").replace("-", "_").replace(" ", "_")
 
 
 @contextlib.contextmanager
 def generated_wrapper(
-    path,  # FIXME: type with `Union[str, Node, List[Node]]` when pytest conflicts are resolved
+    path: Union[str, "Node", List["Node"]],
     guard: Optional[bool] = None,
     prefix: str = "",
     suffix: str = "",
@@ -1586,31 +1660,23 @@ def generated_wrapper(
     # Handle unfiltered SCons target[s] passed as path.
     if not isinstance(path, str):
         if isinstance(path, list):
+            if len(path) == 0:
+                raise ValueError("Node list cannot be empty.")
             if len(path) > 1:
                 print_warning(
                     "Attempting to use generated wrapper with multiple targets; "
                     f"will only use first entry: {path[0]}"
                 )
             path = path[0]
-        if not hasattr(path, "get_abspath"):
+        if not hasattr(path, "srcnode"):
             raise TypeError(f'Expected type "str", "Node" or "List[Node]"; was passed {type(path)}.')
-        path = path.get_abspath()
+        path = str(path.srcnode().abspath)
 
-    path = str(path).replace("\\", "/")
     if guard is None:
         guard = path.endswith((".h", ".hh", ".hpp", ".inc"))
     if not guard and (prefix or suffix):
         print_warning(f'Trying to assign header guard prefix/suffix while `guard` is disabled: "{path}".')
-
-    header_guard = ""
-    if guard:
-        if prefix:
-            prefix += "_"
-        if suffix:
-            suffix = f"_{suffix}"
-        split = path.split("/")[-1].split(".")
-        header_guard = (f"{prefix}{split[0]}{suffix}.{'.'.join(split[1:])}".upper()
-                .replace(".", "_").replace("-", "_").replace(" ", "_").replace("__", "_"))  # fmt: skip
+    header_guard = generate_header_guard(path, prefix, suffix) if guard else ""
 
     with open(path, "wt", encoding="utf-8", newline="\n") as file:
         file.write(generate_copyright_header(path))
@@ -1622,7 +1688,7 @@ def generated_wrapper(
 
         with StringIO(newline="\n") as str_io:
             yield str_io
-            file.write(str_io.getvalue().strip() or "/* NO CONTENT */")
+            file.write(format_defines(str_io.getvalue()).strip() or "/* NO CONTENT */")
 
         if guard:
             file.write(f"\n\n#endif // {header_guard}")
