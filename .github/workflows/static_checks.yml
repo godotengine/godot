@@ -26,6 +26,20 @@ jobs:
           pip3 install pytest==7.1.2
           git config diff.wsErrorHighlight all
 
+      - name: Get changed files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            files=$(git diff-tree --no-commit-id --name-only -r HEAD^1..HEAD 2> /dev/null || true)
+          elif [ "${{ github.event_name }}" == "push" -a "${{ github.event.forced }}" == "false" -a "${{ github.event.created }}" == "false" ]; then
+            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.before }}..${{ github.event.after }} 2> /dev/null || true)
+          fi
+          echo "$files" >> changed.txt
+          cat changed.txt
+          files=$(echo "$files" | grep -v 'thirdparty' | xargs -I {} sh -c 'echo "./{}"' | tr '\n' ' ')
+          echo "CHANGED_FILES=$files" >> $GITHUB_ENV
+
       # This needs to happen before Python and npm execution; it must happen before any extra files are written.
       - name: .gitignore checks (gitignore_check.sh)
         run: |
@@ -34,7 +48,7 @@ jobs:
       - name: Style checks via pre-commit
         uses: pre-commit/action@v3.0.1
         with:
-          extra_args: --verbose
+          extra_args: --verbose --files ${{ env.CHANGED_FILES }}
 
       - name: Python builders checks via pytest
         run: |
