@@ -467,6 +467,13 @@ void ParticlesStorage::particles_set_collision_base_size(RID p_particles, real_t
 	particles->collision_base_size = p_size;
 }
 
+void ParticlesStorage::particles_set_collision_mask(RID p_particles, uint32_t p_collision_mask) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->collision_mask = p_collision_mask;
+}
+
 void ParticlesStorage::particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
@@ -909,6 +916,9 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 			}
 			ParticlesCollision *pc = particles_collision_owner.get_or_null(pci->collision);
 			ERR_CONTINUE(!pc);
+			if(!(p_particles->collision_mask & pc->collision_layer)) {
+				continue; 
+			}
 
 			Transform3D to_collider = pci->transform;
 			if (p_particles->use_local_coords) {
@@ -1819,10 +1829,10 @@ void ParticlesStorage::particles_collision_set_collision_type(RID p_particles_co
 	particles_collision->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
-void ParticlesStorage::particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) {
+void ParticlesStorage::particles_collision_set_collision_layer(RID p_particles_collision, uint32_t p_collision_layer) {
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL(particles_collision);
-	particles_collision->cull_mask = p_cull_mask;
+	particles_collision->collision_layer = p_collision_layer;
 }
 
 void ParticlesStorage::particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) {
@@ -1892,6 +1902,13 @@ void ParticlesStorage::particles_collision_set_height_field_resolution(RID p_par
 	}
 }
 
+void ParticlesStorage::particles_collision_set_bake_mask(RID p_particles_collision, uint32_t p_bake_mask) {
+	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL(particles_collision);
+	
+	particles_collision->bake_mask = p_bake_mask;
+}
+
 AABB ParticlesStorage::particles_collision_get_aabb(RID p_particles_collision) const {
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL_V(particles_collision, AABB());
@@ -1918,11 +1935,17 @@ Vector3 ParticlesStorage::particles_collision_get_extents(RID p_particles_collis
 	ERR_FAIL_NULL_V(particles_collision, Vector3());
 	return particles_collision->extents;
 }
-
+	
 bool ParticlesStorage::particles_collision_is_heightfield(RID p_particles_collision) const {
 	const ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL_V(particles_collision, false);
 	return particles_collision->type == RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE;
+}
+
+uint32_t ParticlesStorage::particles_collision_get_bake_mask(RID p_particles_collision) const {
+	const ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(particles_collision, 0);
+	return particles_collision->bake_mask;
 }
 
 Dependency *ParticlesStorage::particles_collision_get_dependency(RID p_particles_collision) const {

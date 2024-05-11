@@ -78,6 +78,7 @@ private:
 	bool interpolate = true;
 	NodePath sub_emitter;
 	real_t collision_base_size = 0.01;
+	uint32_t collision_mask = 0xFFFFFFFF;
 
 	bool trail_enabled = false;
 	double trail_lifetime = 0.3;
@@ -122,6 +123,7 @@ public:
 	void set_process_material(const Ref<Material> &p_material);
 	void set_speed_scale(double p_scale);
 	void set_collision_base_size(real_t p_ratio);
+	void set_collision_mask(uint32_t p_collision_mask);
 	void set_trail_enabled(bool p_enabled);
 	void set_trail_lifetime(double p_seconds);
 	void set_interp_to_end(float p_interp);
@@ -139,6 +141,7 @@ public:
 	Ref<Material> get_process_material() const;
 	double get_speed_scale() const;
 	real_t get_collision_base_size() const;
+	uint32_t get_collision_mask() const;
 	bool is_trail_enabled() const;
 	double get_trail_lifetime() const;
 	float get_interp_to_end() const;

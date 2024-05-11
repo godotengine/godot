@@ -64,6 +64,7 @@ public:
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) override {}
 	virtual void particles_set_view_axis(RID p_particles, const Vector3 &p_axis, const Vector3 &p_up_axis) override {}
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override {}
+	virtual void particles_set_collision_mask(RID p_particles, uint32_t p_collision_mask) override {}
 
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override {}
 
@@ -101,7 +102,7 @@ public:
 	virtual void particles_collision_free(RID p_rid) override {}
 
 	virtual void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) override {}
-	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) override {}
+	virtual void particles_collision_set_collision_layer(RID p_particles_collision, uint32_t p_collision_layer) override {}
 	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) override {}
 	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) override {}
 	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength) override {}
@@ -110,9 +111,11 @@ public:
 	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) override {}
 	virtual void particles_collision_height_field_update(RID p_particles_collision) override {}
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) override {}
+	virtual void particles_collision_set_bake_mask(RID p_particles_collision, uint32_t p_bake_mask) override {}
 	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const override { return AABB(); }
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override { return false; }
-
+	virtual uint32_t particles_collision_get_bake_mask(RID p_particles_collision) const override { return 0; };
+	
 	virtual RID particles_collision_instance_create(RID p_collision) override { return RID(); }
 	virtual void particles_collision_instance_free(RID p_rid) override {}
 	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) override {}

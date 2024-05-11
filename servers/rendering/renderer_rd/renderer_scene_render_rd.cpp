@@ -1197,6 +1197,7 @@ void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider,
 	cam_xform.set_look_at(cam_pos, cam_pos - p_transform.basis.get_column(Vector3::AXIS_Y), -p_transform.basis.get_column(Vector3::AXIS_Z).normalized());
 
 	RID fb = particles_storage->particles_collision_get_heightfield_framebuffer(p_collider);
+	uint32_t bake_mask = particles_storage->particles_collision_get_bake_mask(p_collider);
 
 	_render_particle_collider_heightfield(fb, cam_xform, cm, p_instances);
 }

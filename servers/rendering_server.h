@@ -720,6 +720,7 @@ public:
 	virtual void particles_set_interpolate(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_collision_base_size(RID p_particles, float p_size) = 0;
+	virtual void particles_set_collision_mask(RID p_particles, uint32_t p_collision_mask) = 0;
 
 	enum ParticlesTransformAlign {
 		PARTICLES_TRANSFORM_ALIGN_DISABLED,
@@ -782,7 +783,7 @@ public:
 	};
 
 	virtual void particles_collision_set_collision_type(RID p_particles_collision, ParticlesCollisionType p_type) = 0;
-	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) = 0;
+	virtual void particles_collision_set_collision_layer(RID p_particles_collision, uint32_t p_collision_layer) = 0;
 	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) = 0; // For spheres.
 	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) = 0; // For non-spheres.
 	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, real_t p_strength) = 0;
@@ -803,6 +804,7 @@ public:
 	};
 
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, ParticlesCollisionHeightfieldResolution p_resolution) = 0; // For SDF and vector field.
+	virtual void particles_collision_set_bake_mask(RID p_particles_collision, uint32_t p_bake_mask) = 0; // For SDF and vector field.
 
 	/* FOG VOLUME API */
 

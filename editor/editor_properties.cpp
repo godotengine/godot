@@ -1193,6 +1193,12 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 			layer_group_size = 4;
 			layer_count = 32;
 		} break;
+
+		case LAYER_PARTICLE_COLLISION_3D: {
+			basename = "layer_names/3d_particle_collision";
+			layer_group_size = 4;
+			layer_count = 32;
+		} break;
 	}
 
 	Vector<String> names;
@@ -3560,7 +3566,8 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 					p_hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
 					p_hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
 					p_hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION ||
-					p_hint == PROPERTY_HINT_LAYERS_AVOIDANCE) {
+					p_hint == PROPERTY_HINT_LAYERS_AVOIDANCE ||
+					p_hint == PROPERTY_HINT_LAYERS_3D_PARTICLE_COLLISION) {
 				EditorPropertyLayers::LayerType lt = EditorPropertyLayers::LAYER_RENDER_2D;
 				switch (p_hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
@@ -3583,6 +3590,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 						break;
 					case PROPERTY_HINT_LAYERS_AVOIDANCE:
 						lt = EditorPropertyLayers::LAYER_AVOIDANCE;
+						break;
+					case PROPERTY_HINT_LAYERS_3D_PARTICLE_COLLISION:
+						lt = EditorPropertyLayers::LAYER_PARTICLE_COLLISION_3D;
 						break;
 					default: {
 					} //compiler could be smarter here and realize this can't happen

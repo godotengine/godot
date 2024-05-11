@@ -35,20 +35,20 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/main/viewport.h"
 
-void GPUParticlesCollision3D::set_cull_mask(uint32_t p_cull_mask) {
-	cull_mask = p_cull_mask;
-	RS::get_singleton()->particles_collision_set_cull_mask(collision, p_cull_mask);
+void GPUParticlesCollision3D::set_collision_layer(uint32_t p_collision_layer) {
+	collision_layer = p_collision_layer;
+	RS::get_singleton()->particles_collision_set_collision_layer(collision, p_collision_layer);
 }
 
-uint32_t GPUParticlesCollision3D::get_cull_mask() const {
-	return cull_mask;
+uint32_t GPUParticlesCollision3D::get_collision_layer() const {
+	return collision_layer;
 }
 
 void GPUParticlesCollision3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &GPUParticlesCollision3D::set_cull_mask);
-	ClassDB::bind_method(D_METHOD("get_cull_mask"), &GPUParticlesCollision3D::get_cull_mask);
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &GPUParticlesCollision3D::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &GPUParticlesCollision3D::get_collision_layer);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PARTICLE_COLLISION), "set_collision_layer", "get_collision_layer");
 }
 
 GPUParticlesCollision3D::GPUParticlesCollision3D(RS::ParticlesCollisionType p_type) {
@@ -613,6 +613,7 @@ GPUParticlesCollisionSDF3D::Resolution GPUParticlesCollisionSDF3D::get_resolutio
 
 void GPUParticlesCollisionSDF3D::set_bake_mask(uint32_t p_mask) {
 	bake_mask = p_mask;
+	RS::get_singleton()->particles_collision_set_bake_mask(_get_collision(), p_mask);
 	update_configuration_warnings();
 }
 
@@ -724,11 +725,17 @@ void GPUParticlesCollisionHeightField3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_follow_camera_enabled", "enabled"), &GPUParticlesCollisionHeightField3D::set_follow_camera_enabled);
 	ClassDB::bind_method(D_METHOD("is_follow_camera_enabled"), &GPUParticlesCollisionHeightField3D::is_follow_camera_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_bake_mask", "mask"), &GPUParticlesCollisionHeightField3D::set_bake_mask);
+	ClassDB::bind_method(D_METHOD("get_bake_mask"), &GPUParticlesCollisionHeightField3D::get_bake_mask);
+	ClassDB::bind_method(D_METHOD("set_bake_mask_value", "layer_number", "value"), &GPUParticlesCollisionHeightField3D::set_bake_mask_value);
+	ClassDB::bind_method(D_METHOD("get_bake_mask_value", "layer_number"), &GPUParticlesCollisionHeightField3D::get_bake_mask_value);
+
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution", PROPERTY_HINT_ENUM, "256 (Fastest),512 (Fast),1024 (Average),2048 (Slow),4096 (Slower),8192 (Slowest)"), "set_resolution", "get_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "When Moved (Fast),Always (Slow)"), "set_update_mode", "get_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_camera_enabled"), "set_follow_camera_enabled", "is_follow_camera_enabled");
-
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_bake_mask", "get_bake_mask");
+	
 	BIND_ENUM_CONSTANT(RESOLUTION_256);
 	BIND_ENUM_CONSTANT(RESOLUTION_512);
 	BIND_ENUM_CONSTANT(RESOLUTION_1024);
@@ -799,6 +806,32 @@ bool GPUParticlesCollisionHeightField3D::is_follow_camera_enabled() const {
 	return follow_camera_mode;
 }
 
+void GPUParticlesCollisionHeightField3D::set_bake_mask(uint32_t p_mask) {
+	bake_mask = p_mask;
+	RS::get_singleton()->particles_collision_set_bake_mask(_get_collision(), p_mask);
+	update_configuration_warnings();
+}
+
+uint32_t GPUParticlesCollisionHeightField3D::get_bake_mask() const {
+	return bake_mask;
+}
+
+void GPUParticlesCollisionHeightField3D::set_bake_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1 || p_layer_number > 20, vformat("The render layer number (%d) must be between 1 and 20 (inclusive).", p_layer_number));
+	uint32_t mask = get_bake_mask();
+	if (p_value) {
+		mask |= 1 << (p_layer_number - 1);
+	} else {
+		mask &= ~(1 << (p_layer_number - 1));
+	}
+	set_bake_mask(mask);
+}
+
+bool GPUParticlesCollisionHeightField3D::get_bake_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1 || p_layer_number > 20, false, vformat("The render layer number (%d) must be between 1 and 20 (inclusive).", p_layer_number));
+	return bake_mask & (1 << (p_layer_number - 1));
+}
+
 AABB GPUParticlesCollisionHeightField3D::get_aabb() const {
 	return AABB(-size / 2, size);
 }
@@ -813,13 +846,13 @@ GPUParticlesCollisionHeightField3D::~GPUParticlesCollisionHeightField3D() {
 ////////////////////////////
 ////////////////////////////
 
-void GPUParticlesAttractor3D::set_cull_mask(uint32_t p_cull_mask) {
-	cull_mask = p_cull_mask;
-	RS::get_singleton()->particles_collision_set_cull_mask(collision, p_cull_mask);
+void GPUParticlesAttractor3D::set_collision_layer(uint32_t p_collision_layer) {
+	collision_layer = p_collision_layer;
+	RS::get_singleton()->particles_collision_set_collision_layer(collision, p_collision_layer);
 }
 
-uint32_t GPUParticlesAttractor3D::get_cull_mask() const {
-	return cull_mask;
+uint32_t GPUParticlesAttractor3D::get_collision_layer() const {
+	return collision_layer;
 }
 
 void GPUParticlesAttractor3D::set_strength(real_t p_strength) {
@@ -851,8 +884,8 @@ real_t GPUParticlesAttractor3D::get_directionality() const {
 }
 
 void GPUParticlesAttractor3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &GPUParticlesAttractor3D::set_cull_mask);
-	ClassDB::bind_method(D_METHOD("get_cull_mask"), &GPUParticlesAttractor3D::get_cull_mask);
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &GPUParticlesAttractor3D::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &GPUParticlesAttractor3D::get_collision_layer);
 
 	ClassDB::bind_method(D_METHOD("set_strength", "strength"), &GPUParticlesAttractor3D::set_strength);
 	ClassDB::bind_method(D_METHOD("get_strength"), &GPUParticlesAttractor3D::get_strength);
@@ -866,7 +899,7 @@ void GPUParticlesAttractor3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "-128,128,0.01,or_greater,or_less"), "set_strength", "get_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation", PROPERTY_HINT_EXP_EASING, "0,8,0.01"), "set_attenuation", "get_attenuation");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "directionality", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_directionality", "get_directionality");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PARTICLE_COLLISION), "set_collision_layer", "get_collision_layer");
 }
 
 GPUParticlesAttractor3D::GPUParticlesAttractor3D(RS::ParticlesCollisionType p_type) {

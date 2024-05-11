@@ -144,6 +144,11 @@ void GPUParticles3D::set_collision_base_size(real_t p_size) {
 	RS::get_singleton()->particles_set_collision_base_size(particles, p_size);
 }
 
+void GPUParticles3D::set_collision_mask(uint32_t p_collision_mask) {
+	collision_mask = p_collision_mask;
+	RS::get_singleton()->particles_set_collision_mask(particles, p_collision_mask);
+}
+
 bool GPUParticles3D::is_emitting() const {
 	return emitting;
 }
@@ -194,6 +199,10 @@ double GPUParticles3D::get_speed_scale() const {
 
 real_t GPUParticles3D::get_collision_base_size() const {
 	return collision_base_size;
+}
+
+uint32_t GPUParticles3D::get_collision_mask() const {
+	return collision_mask;
 }
 
 void GPUParticles3D::set_draw_order(DrawOrder p_order) {
@@ -681,7 +690,11 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_material", "material"), &GPUParticles3D::set_process_material);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &GPUParticles3D::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles3D::set_collision_base_size);
+	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &GPUParticles3D::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("set_interp_to_end", "interp"), &GPUParticles3D::set_interp_to_end);
+
+	// ClassDB::bind_method(D_METHOD("set_bake_mask_value", "layer_number", "value"), &GPUParticlesCollisionSDF3D::set_bake_mask_value);
+	// ClassDB::bind_method(D_METHOD("get_bake_mask_value", "layer_number"), &GPUParticlesCollisionSDF3D::get_bake_mask_value);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles3D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles3D::get_amount);
@@ -698,6 +711,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_process_material"), &GPUParticles3D::get_process_material);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &GPUParticles3D::get_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_collision_base_size"), &GPUParticles3D::get_collision_base_size);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"), &GPUParticles3D::get_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_interp_to_end"), &GPUParticles3D::get_interp_to_end);
 
 	ClassDB::bind_method(D_METHOD("set_draw_order", "order"), &GPUParticles3D::set_draw_order);
@@ -755,6 +769,7 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater,suffix:m"), "set_collision_base_size", "get_collision_base_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PARTICLE_COLLISION), "set_collision_mask", "get_collision_mask");
 	ADD_GROUP("Drawing", "");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "visibility_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_visibility_aabb", "get_visibility_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");

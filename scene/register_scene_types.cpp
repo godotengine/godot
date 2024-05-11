@@ -1225,6 +1225,10 @@ void register_scene_types() {
 		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/avoidance"), i + 1), "");
 	}
 
+	for (int i = 0; i < 32; i++) {
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/3d_particle_collision"), i + 1), "");
+	}
+
 	if (RenderingServer::get_singleton()) {
 		// RenderingServer needs to exist for this to succeed.
 		ColorPicker::init_shaders();

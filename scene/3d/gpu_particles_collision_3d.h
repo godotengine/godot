@@ -37,7 +37,7 @@
 class GPUParticlesCollision3D : public VisualInstance3D {
 	GDCLASS(GPUParticlesCollision3D, VisualInstance3D);
 
-	uint32_t cull_mask = 0xFFFFFFFF;
+	uint32_t collision_layer = 1;
 	RID collision;
 
 protected:
@@ -47,8 +47,8 @@ protected:
 	GPUParticlesCollision3D(RS::ParticlesCollisionType p_type);
 
 public:
-	void set_cull_mask(uint32_t p_cull_mask);
-	uint32_t get_cull_mask() const;
+	void set_collision_layer(uint32_t p_collision_layer);
+	uint32_t get_collision_layer() const;
 
 	~GPUParticlesCollision3D();
 };
@@ -230,6 +230,7 @@ private:
 	bool follow_camera_mode = false;
 
 	UpdateMode update_mode = UPDATE_MODE_WHEN_MOVED;
+	uint32_t bake_mask = 0xFFFFFFFF;
 
 protected:
 	void _notification(int p_what);
@@ -252,6 +253,13 @@ public:
 	void set_follow_camera_enabled(bool p_enabled);
 	bool is_follow_camera_enabled() const;
 
+	void set_bake_mask(uint32_t p_mask);
+	uint32_t get_bake_mask() const;
+
+	void set_bake_mask_value(int p_layer_number, bool p_enable);
+	bool get_bake_mask_value(int p_layer_number) const;
+
+
 	virtual AABB get_aabb() const override;
 
 	GPUParticlesCollisionHeightField3D();
@@ -264,7 +272,7 @@ VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField3D::UpdateMode)
 class GPUParticlesAttractor3D : public VisualInstance3D {
 	GDCLASS(GPUParticlesAttractor3D, VisualInstance3D);
 
-	uint32_t cull_mask = 0xFFFFFFFF;
+	uint32_t collision_layer = 1;
 	RID collision;
 	real_t strength = 1.0;
 	real_t attenuation = 1.0;
@@ -277,8 +285,8 @@ protected:
 	GPUParticlesAttractor3D(RS::ParticlesCollisionType p_type);
 
 public:
-	void set_cull_mask(uint32_t p_cull_mask);
-	uint32_t get_cull_mask() const;
+	void set_collision_layer(uint32_t p_collision_layer);
+	uint32_t get_collision_layer() const;
 
 	void set_strength(real_t p_strength);
 	real_t get_strength() const;
