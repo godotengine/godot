@@ -1733,7 +1733,7 @@ void SpriteFramesEditor::_autoplay_pressed() {
 
 	if (animated_sprite) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Toggle Autoplay"), UndoRedo::MERGE_DISABLE, frames.ptr());
+		undo_redo->create_action(TTR("Toggle Autoplay"), UndoRedo::MERGE_DISABLE, animated_sprite);
 		String current = animated_sprite->call("get_animation");
 		String current_auto = animated_sprite->call("get_autoplay");
 		if (current == current_auto) {
