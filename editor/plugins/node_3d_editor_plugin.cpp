@@ -1614,7 +1614,7 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 }
 
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
-	if (previewing) {
+	if (previewing || get_viewport()->gui_get_drag_data()) {
 		return; //do NONE
 	}
 
