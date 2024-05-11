@@ -682,10 +682,10 @@ bool TranslationServer::_load_translations(const String &p_from) {
 }
 
 void TranslationServer::setup() {
-	String test = GLOBAL_DEF("internationalization/locale/test", "");
-	test = test.strip_edges();
-	if (!test.is_empty()) {
-		set_locale(test);
+	String custom = GLOBAL_DEF("internationalization/locale/override", "");
+	custom = custom.strip_edges();
+	if (!custom.is_empty()) {
+		set_locale(custom);
 	} else {
 		set_locale(OS::get_singleton()->get_locale());
 	}

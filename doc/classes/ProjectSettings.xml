@@ -1412,8 +1412,8 @@
 			[b]Note:[/b] "ICU / HarfBuzz / Graphite" text server data includes dictionaries for Burmese, Chinese, Japanese, Khmer, Lao and Thai as well as Unicode Standard Annex #29 and Unicode Standard Annex #14 word and line breaking rules. Data is about 4 MB large.
 			[b]Note:[/b] "Fallback" text server does not use additional data.
 		</member>
-		<member name="internationalization/locale/test" type="String" setter="" getter="" default="&quot;&quot;">
-			If non-empty, this locale will be used when running the project from the editor.
+		<member name="internationalization/locale/override" type="String" setter="" getter="" default="&quot;&quot;">
+			If non-empty, this locale will be used.
 		</member>
 		<member name="internationalization/pseudolocalization/double_vowels" type="bool" setter="" getter="" default="false">
 			Double vowels in strings during pseudolocalization to simulate the lengthening of text due to localization.
