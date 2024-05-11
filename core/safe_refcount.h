@@ -131,7 +131,7 @@ public:
 		}
 	}
 
-	_ALWAYS_INLINE_ explicit SafeNumeric<T>(T p_value = static_cast<T>(0)) {
+	_ALWAYS_INLINE_ explicit SafeNumeric(T p_value = static_cast<T>(0)) {
 		set(p_value);
 	}
 };
@@ -257,7 +257,7 @@ public:
 		}
 	}
 
-	_ALWAYS_INLINE_ explicit SafeNumeric<T>(T p_value = static_cast<T>(0)) :
+	_ALWAYS_INLINE_ explicit SafeNumeric(T p_value = static_cast<T>(0)) :
 			value(p_value) {
 	}
 };
