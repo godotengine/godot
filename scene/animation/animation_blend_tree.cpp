@@ -194,8 +194,8 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 	nti.is_just_looped = is_just_looped;
 
 	// 3. Progress for Animation.
-	double prev_playback_time = prev_time - start_offset;
-	double cur_playback_time = cur_time - start_offset;
+	double prev_playback_time = prev_time + start_offset;
+	double cur_playback_time = cur_time + start_offset;
 	if (stretch_time_scale) {
 		double mlt = anim_size / cur_len;
 		cur_playback_time *= mlt;
@@ -241,7 +241,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 				process_state->tree->call_deferred(SNAME("emit_signal"), "animation_started", animation);
 			}
 			// Finished.
-			if (prev_time - start_offset < anim_size && cur_playback_time >= anim_size) {
+			if (prev_time + start_offset < anim_size && cur_playback_time >= anim_size) {
 				process_state->tree->call_deferred(SNAME("emit_signal"), "animation_finished", animation);
 			}
 		}
