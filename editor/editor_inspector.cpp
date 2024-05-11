@@ -1190,19 +1190,27 @@ void EditorInspectorCategory::_notification(int p_what) {
 			if (icon.is_valid()) {
 				w += hs + icon_size;
 			}
+			w = MIN(w, get_size().width - sb->get_minimum_size().width);
 
 			int ofs = (get_size().width - w) / 2;
 
 			if (icon.is_valid()) {
 				Size2 rect_size = Size2(icon_size, icon_size);
 				Point2 rect_pos = Point2(ofs, (get_size().height - icon_size) / 2).floor();
+				if (is_layout_rtl()) {
+					rect_pos.x = get_size().width - rect_pos.x - icon_size;
+				}
 				draw_texture_rect(icon, Rect2(rect_pos, rect_size));
 
 				ofs += hs + icon_size;
+				w -= hs + icon_size;
 			}
 
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Tree"));
-			draw_string(font, Point2(ofs, font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2).floor(), label, HORIZONTAL_ALIGNMENT_LEFT, get_size().width, font_size, color);
+			if (is_layout_rtl()) {
+				ofs = get_size().width - ofs - w;
+			}
+			draw_string(font, Point2(ofs, font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2).floor(), label, HORIZONTAL_ALIGNMENT_LEFT, w, font_size, color);
 		} break;
 	}
 }
