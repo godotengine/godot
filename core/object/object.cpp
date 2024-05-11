@@ -2095,9 +2095,13 @@ Object::~Object() {
 		_extension_instance = nullptr;
 	}
 #ifdef TOOLS_ENABLED
-	else if (_instance_bindings != nullptr && Engine::get_singleton()->is_extension_reloading_enabled()) {
-		for (uint32_t i = 0; i < _instance_binding_count; i++) {
-			GDExtensionManager::get_singleton()->untrack_instance_binding(_instance_bindings[i].token, this);
+	else if (_instance_bindings != nullptr) {
+		Engine *engine = Engine::get_singleton();
+		GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
+		if (engine && gdextension_manager && engine->is_extension_reloading_enabled()) {
+			for (uint32_t i = 0; i < _instance_binding_count; i++) {
+				gdextension_manager->untrack_instance_binding(_instance_bindings[i].token, this);
+			}
 		}
 	}
 #endif

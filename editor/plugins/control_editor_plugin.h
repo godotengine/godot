@@ -45,6 +45,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 
+class CheckButton;
 class EditorSelection;
 class GridContainer;
 
@@ -191,11 +192,12 @@ public:
 class SizeFlagPresetPicker : public ControlEditorPresetPicker {
 	GDCLASS(SizeFlagPresetPicker, ControlEditorPresetPicker);
 
-	CheckBox *expand_button = nullptr;
+	CheckButton *expand_button = nullptr;
 
 	bool vertical = false;
 
 	virtual void _preset_button_pressed(const int p_preset) override;
+	void _expand_button_pressed();
 
 protected:
 	void _notification(int p_notification);
@@ -203,6 +205,7 @@ protected:
 
 public:
 	void set_allowed_flags(Vector<SizeFlags> &p_flags);
+	void set_expand_flag(bool p_expand);
 
 	SizeFlagPresetPicker(bool p_vertical);
 };
@@ -225,6 +228,7 @@ class ControlEditorToolbar : public HBoxContainer {
 	void _anchors_to_current_ratio();
 	void _anchor_mode_toggled(bool p_status);
 	void _container_flags_selected(int p_flags, bool p_vertical);
+	void _expand_flag_toggled(bool p_expand, bool p_vertical);
 
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
 	bool _is_node_locked(const Node *p_node);

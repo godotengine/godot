@@ -314,7 +314,10 @@ bool simpleXmlParseAttributes(const char* buf, unsigned bufLength, simpleXMLAttr
             if ((*keyEnd == '=') || (isspace((unsigned char)*keyEnd))) break;
         }
         if (keyEnd == itrEnd) goto error;
-        if (keyEnd == key) continue;
+        if (keyEnd == key) {  // There is no key. This case is invalid, but explores the following syntax.
+            itr = keyEnd + 1;
+            continue;
+        }
 
         if (*keyEnd == '=') value = keyEnd + 1;
         else {

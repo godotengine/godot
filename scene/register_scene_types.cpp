@@ -589,7 +589,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CPUParticles3D);
 	GDREGISTER_CLASS(Marker3D);
 	GDREGISTER_CLASS(RootMotionView);
-	GDREGISTER_ABSTRACT_CLASS(SkeletonModifier3D);
+	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 

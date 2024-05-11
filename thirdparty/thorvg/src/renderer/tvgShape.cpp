@@ -145,13 +145,15 @@ Result Shape::appendArc(float cx, float cy, float radius, float startAngle, floa
     //just circle
     if (sweep >= 360.0f || sweep <= -360.0f) return appendCircle(cx, cy, radius, radius);
 
-    startAngle = (startAngle * MATH_PI) / 180.0f;
-    sweep = sweep * MATH_PI / 180.0f;
+    const float arcPrecision = 1e-5f;
+    startAngle = mathDeg2Rad(startAngle);
+    sweep = mathDeg2Rad(sweep);
 
-    auto nCurves = ceil(fabsf(sweep / MATH_PI2));
+    auto nCurves = static_cast<int>(fabsf(sweep / MATH_PI2));
+    if (fabsf(sweep / MATH_PI2) - nCurves > arcPrecision) ++nCurves;
     auto sweepSign = (sweep < 0 ? -1 : 1);
     auto fract = fmodf(sweep, MATH_PI2);
-    fract = (mathZero(fract)) ? MATH_PI2 * sweepSign : fract;
+    fract = (fabsf(fract) < arcPrecision) ? MATH_PI2 * sweepSign : fract;
 
     //Start from here
     Point start = {radius * cosf(startAngle), radius * sinf(startAngle)};

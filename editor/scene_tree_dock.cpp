@@ -2865,21 +2865,24 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 
 void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties, bool p_remove_old) {
 	ERR_FAIL_COND_MSG(!p_node->is_inside_tree(), "_replace_node() can't be called on a node outside of tree. You might have called it twice.");
-	Node *n = p_node;
+	Node *oldnode = p_node;
 	Node *newnode = p_by_node;
 
 	if (p_keep_properties) {
-		Node *default_oldnode = Object::cast_to<Node>(ClassDB::instantiate(n->get_class()));
+		Node *default_oldnode = Object::cast_to<Node>(ClassDB::instantiate(oldnode->get_class()));
+
 		List<PropertyInfo> pinfo;
-		n->get_property_list(&pinfo);
+		oldnode->get_property_list(&pinfo);
 
 		for (const PropertyInfo &E : pinfo) {
 			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 				continue;
 			}
 
-			if (default_oldnode->get(E.name) != n->get(E.name)) {
-				newnode->set(E.name, n->get(E.name));
+			bool valid;
+			const Variant &default_val = default_oldnode->get(E.name, &valid);
+			if (!valid || default_val != oldnode->get(E.name)) {
+				newnode->set(E.name, oldnode->get(E.name));
 			}
 		}
 
@@ -2891,10 +2894,10 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 	//reconnect signals
 	List<MethodInfo> sl;
 
-	n->get_signal_list(&sl);
+	oldnode->get_signal_list(&sl);
 	for (const MethodInfo &E : sl) {
 		List<Object::Connection> cl;
-		n->get_signal_connection_list(E.name, &cl);
+		oldnode->get_signal_connection_list(E.name, &cl);
 
 		for (const Object::Connection &c : cl) {
 			if (!(c.flags & Object::CONNECT_PERSIST)) {
@@ -2904,15 +2907,15 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 		}
 	}
 
-	String newname = n->get_name();
+	String newname = oldnode->get_name();
 
 	List<Node *> to_erase;
-	for (int i = 0; i < n->get_child_count(); i++) {
-		if (n->get_child(i)->get_owner() == nullptr && n->is_owned_by_parent()) {
-			to_erase.push_back(n->get_child(i));
+	for (int i = 0; i < oldnode->get_child_count(); i++) {
+		if (oldnode->get_child(i)->get_owner() == nullptr && oldnode->is_owned_by_parent()) {
+			to_erase.push_back(oldnode->get_child(i));
 		}
 	}
-	n->replace_by(newnode, true);
+	oldnode->replace_by(newnode, true);
 
 	//small hack to make collisionshapes and other kind of nodes to work
 	for (int i = 0; i < newnode->get_child_count(); i++) {
@@ -2928,7 +2931,7 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 	_push_item(newnode);
 
 	if (p_remove_old) {
-		memdelete(n);
+		memdelete(oldnode);
 
 		while (to_erase.front()) {
 			memdelete(to_erase.front()->get());

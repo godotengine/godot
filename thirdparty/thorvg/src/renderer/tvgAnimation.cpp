@@ -93,6 +93,33 @@ float Animation::duration() const noexcept
 }
 
 
+Result Animation::segment(float begin, float end) noexcept
+{
+    if (begin < 0.0 || end > 1.0 || begin >= end) return Result::InvalidArguments;
+
+    auto loader = pImpl->picture->pImpl->loader;
+    if (!loader) return Result::InsufficientCondition;
+    if (!loader->animatable()) return Result::NonSupport;
+
+    static_cast<FrameModule*>(loader)->segment(begin, end);
+
+    return Result::Success;
+}
+
+
+Result Animation::segment(float *begin, float *end) noexcept
+{
+    auto loader = pImpl->picture->pImpl->loader;
+    if (!loader) return Result::InsufficientCondition;
+    if (!loader->animatable()) return Result::NonSupport;
+    if (!begin && !end) return Result::InvalidArguments;
+
+    static_cast<FrameModule*>(loader)->segment(begin, end);
+
+    return Result::Success;
+}
+
+
 unique_ptr<Animation> Animation::gen() noexcept
 {
     return unique_ptr<Animation>(new Animation);

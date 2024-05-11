@@ -61,7 +61,6 @@ _helper_module("platform_methods", "platform_methods.py")
 _helper_module("version", "version.py")
 _helper_module("core.core_builders", "core/core_builders.py")
 _helper_module("main.main_builders", "main/main_builders.py")
-_helper_module("modules.modules_builders", "modules/modules_builders.py")
 
 # Local
 import methods
@@ -69,7 +68,7 @@ import glsl_builders
 import gles3_builders
 import scu_builders
 from methods import print_warning, print_error
-from platform_methods import architectures, architecture_aliases, generate_export_icons
+from platform_methods import architectures, architecture_aliases
 
 if ARGUMENTS.get("target", "editor") == "editor":
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
@@ -107,7 +106,6 @@ for x in sorted(glob.glob("platform/*")):
 
     if os.path.exists(x + "/export/export.cpp"):
         platform_exporters.append(platform_name)
-        generate_export_icons(x, platform_name)
     if os.path.exists(x + "/api/api.cpp"):
         platform_apis.append(platform_name)
     if detect.can_build():
@@ -428,7 +426,7 @@ for name, path in modules_detected.items():
     sys.path.remove(path)
     sys.modules.pop("config")
 
-methods.write_modules(modules_detected)
+env.modules_detected = modules_detected
 
 # Update the environment again after all the module options are added.
 opts.Update(env)
@@ -544,7 +542,7 @@ env.Append(CFLAGS=env.get("cflags", "").split())
 env.Append(LINKFLAGS=env.get("linkflags", "").split())
 
 # Feature build profile
-disabled_classes = []
+env.disabled_classes = []
 if env["build_profile"] != "":
     print('Using feature build profile: "{}"'.format(env["build_profile"]))
     import json
@@ -552,7 +550,7 @@ if env["build_profile"] != "":
     try:
         ft = json.load(open(env["build_profile"]))
         if "disabled_classes" in ft:
-            disabled_classes = ft["disabled_classes"]
+            env.disabled_classes = ft["disabled_classes"]
         if "disabled_build_options" in ft:
             dbo = ft["disabled_build_options"]
             for c in dbo:
@@ -560,7 +558,6 @@ if env["build_profile"] != "":
     except:
         print_error('Failed to open feature build profile: "{}"'.format(env["build_profile"]))
         Exit(255)
-methods.write_disabled_classes(disabled_classes)
 
 # Platform specific flags.
 # These can sometimes override default options.
@@ -926,7 +923,7 @@ if env.editor_build:
         print_error("Not all modules required by editor builds are enabled.")
         Exit(255)
 
-methods.generate_version_header(env.module_version_string)
+env.version_info = methods.get_version_info(env.module_version_string)
 
 env["PROGSUFFIX_WRAP"] = suffix + env.module_version_string + ".console" + env["PROGSUFFIX"]
 env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]

@@ -50,7 +50,7 @@ def get_opts():
         BoolVariable("wayland", "Enable Wayland display", True),
         BoolVariable("libdecor", "Enable libdecor support", True),
         BoolVariable("touch", "Enable touch events", True),
-        BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", None),
+        BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
     ]
 
 
@@ -491,16 +491,12 @@ def configure(env: "SConsEnvironment"):
         env.Append(LIBS=["dl"])
 
     if platform.libc_ver()[0] != "glibc":
-        # The default crash handler depends on glibc, so if the host uses
-        # a different libc (BSD libc, musl), fall back to libexecinfo.
-        if not "execinfo" in env:
-            print("Note: Using `execinfo=yes` for the crash handler as required on platforms where glibc is missing.")
-            env["execinfo"] = True
-
         if env["execinfo"]:
             env.Append(LIBS=["execinfo"])
             env.Append(CPPDEFINES=["CRASH_HANDLER_ENABLED"])
         else:
+            # The default crash handler depends on glibc, so if the host uses
+            # a different libc (BSD libc, musl), libexecinfo is required.
             print("Note: Using `execinfo=no` disables the crash handler on platforms where glibc is missing.")
     else:
         env.Append(CPPDEFINES=["CRASH_HANDLER_ENABLED"])

@@ -325,9 +325,7 @@ class CommandQueueMT {
 
 	/***** BASE *******/
 
-	enum {
-		DEFAULT_COMMAND_MEM_SIZE_KB = 256,
-	};
+	static const uint32_t DEFAULT_COMMAND_MEM_SIZE_KB = 64;
 
 	BinaryMutex mutex;
 	LocalVector<uint8_t> command_mem;
