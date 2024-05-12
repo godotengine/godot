@@ -793,6 +793,13 @@ public:
 
 	virtual void particles_collision_height_field_update(RID p_particles_collision) = 0; // For SDF and vector field.
 
+#ifndef DISABLE_DEPRECATED
+	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) { 
+		WARN_DEPRECATED_MSG(R"(The "particles_collision_set_cull_mask" function is deprecated, use "particles_collision_set_collision_layer" instead.)");
+		particles_collision_set_collision_layer(p_particles_collision, p_cull_mask);
+	}
+#endif //DISABLE_DEPRECATED
+
 	enum ParticlesCollisionHeightfieldResolution { // Longest axis resolution.
 		PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_256,
 		PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_512,

@@ -50,6 +50,13 @@ public:
 	void set_collision_layer(uint32_t p_collision_layer);
 	uint32_t get_collision_layer() const;
 
+#ifndef DISABLE_DEPRECATED
+
+	void set_cull_mask(uint32_t p_cull_mask);
+	uint32_t get_cull_mask() const;
+
+#endif //DISABLE_DEPRECATED
+
 	~GPUParticlesCollision3D();
 };
 
@@ -287,6 +294,13 @@ protected:
 public:
 	void set_collision_layer(uint32_t p_collision_layer);
 	uint32_t get_collision_layer() const;
+
+#ifndef DISABLE_DEPRECATED
+
+	void set_cull_mask(uint32_t p_cull_mask);
+	uint32_t get_cull_mask() const;
+
+#endif //DISABLE_DEPRECATED
 
 	void set_strength(real_t p_strength);
 	real_t get_strength() const;
