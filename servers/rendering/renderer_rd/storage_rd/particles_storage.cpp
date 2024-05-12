@@ -916,7 +916,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 			}
 			ParticlesCollision *pc = particles_collision_owner.get_or_null(pci->collision);
 			ERR_CONTINUE(!pc);
-			if(!(p_particles->collision_mask & pc->collision_layer)) {
+			if (!(p_particles->collision_mask & pc->collision_layer)) {
 				continue; 
 			}
 

@@ -3830,7 +3830,7 @@ void RendererSceneCull::render_particle_colliders() {
 				uint32_t bake_mask;
 				_FORCE_INLINE_ bool operator()(void *p_data) {
 					Instance *p_instance = (Instance *)p_data;
-					if(p_instance->layer_mask & bake_mask) {
+					if (p_instance->layer_mask & bake_mask) {
 						result->push_back(p_instance);
 					}
 					return false;
