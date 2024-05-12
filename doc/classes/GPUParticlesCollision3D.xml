@@ -19,7 +19,7 @@
 			After configuring collision layers the collision shapes, specific layers can be unchecked in the collision mask of certain particles to prevent them from being affected by the collision shapes in these layers. For example, this can be used if you're using a collision shape to block certain spell effects but don't want the collision to affect unrelated weather particles at the same position.
 			Particle collision can also be disabled on a per-process material basis by setting [member ParticleProcessMaterial.attractor_interaction_enabled] on the [GPUParticles3D] node.
 		</member>
-		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="1" deprecated="Use [member GPUParticlesCollision3D.cull_mask] instead.">
+		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="1" deprecated="Use [member GPUParticlesCollision3D.collision_layer] instead.">
 			The particle collision layers that this collision shape belongs to. In the [GPUParticles3D] node, set ([member GPUParticles3D.collision_mask]) to determine which collision layers should affect it.
 			After configuring collision layers the collision shapes, specific layers can be unchecked in the collision mask of certain particles to prevent them from being affected by the collision shapes in these layers. For example, this can be used if you're using a collision shape to block certain spell effects but don't want the collision to affect unrelated weather particles at the same position.
 			Particle collision can also be disabled on a per-process material basis by setting [member ParticleProcessMaterial.attractor_interaction_enabled] on the [GPUParticles3D] node.

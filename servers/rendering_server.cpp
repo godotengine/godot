@@ -2710,7 +2710,7 @@ void RenderingServer::_bind_methods() {
 
 #ifndef DISABLE_DEPRECATED
 
-	ClassDB::bind_compatibility_method(D_METHOD("particles_collision_set_cull_mask", "particles_collision", "mask"), &RenderingServer::particles_collision_set_cull_mask);
+	ClassDB::bind_method(D_METHOD("particles_collision_set_cull_mask", "particles_collision", "mask"), &RenderingServer::particles_collision_set_cull_mask);
 
 #endif //DISABLE_DEPRECATED
 

@@ -266,7 +266,6 @@ public:
 	void set_bake_mask_value(int p_layer_number, bool p_enable);
 	bool get_bake_mask_value(int p_layer_number) const;
 
-
 	virtual AABB get_aabb() const override;
 
 	GPUParticlesCollisionHeightField3D();

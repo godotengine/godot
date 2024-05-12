@@ -63,13 +63,18 @@ void GPUParticlesCollision3D::_bind_methods() {
 
 #ifndef DISABLE_DEPRECATED
 
-	ClassDB::bind_compatibility_method(D_METHOD("set_cull_mask", "mask"), &GPUParticlesCollision3D::set_cull_mask);
-	ClassDB::bind_compatibility_method(D_METHOD("get_cull_mask"), &GPUParticlesCollision3D::get_cull_mask);
-	
+	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &GPUParticlesCollision3D::set_cull_mask);
+	ClassDB::bind_method(D_METHOD("get_cull_mask"), &GPUParticlesCollision3D::get_cull_mask);
+
 #endif //DISABLE_DEPRECATED
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PARTICLE_COLLISION), "set_collision_layer", "get_collision_layer");
+
+#ifndef DISABLE_DEPRECATED
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_PARTICLE_COLLISION), "set_cull_mask", "get_cull_mask");
+
+#endif //DISABLE_DEPRECATED
 }
 
 GPUParticlesCollision3D::GPUParticlesCollision3D(RS::ParticlesCollisionType p_type) {
@@ -756,7 +761,7 @@ void GPUParticlesCollisionHeightField3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "When Moved (Fast),Always (Slow)"), "set_update_mode", "get_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_camera_enabled"), "set_follow_camera_enabled", "is_follow_camera_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_bake_mask", "get_bake_mask");
-	
+
 	BIND_ENUM_CONSTANT(RESOLUTION_256);
 	BIND_ENUM_CONSTANT(RESOLUTION_512);
 	BIND_ENUM_CONSTANT(RESOLUTION_1024);
@@ -877,7 +882,6 @@ uint32_t GPUParticlesAttractor3D::get_collision_layer() const {
 }
 
 #ifndef DISABLE_DEPRECATED
-
 void GPUParticlesAttractor3D::set_cull_mask(uint32_t p_cull_mask) {
 	WARN_DEPRECATED_MSG(R"(The "cull_mask" property is deprecated, use "collision_layer" instead.)");
 	set_collision_layer(p_cull_mask);
@@ -886,7 +890,6 @@ void GPUParticlesAttractor3D::set_cull_mask(uint32_t p_cull_mask) {
 uint32_t GPUParticlesAttractor3D::get_cull_mask() const {
 	return collision_layer;
 }
-
 #endif //DISABLE_DEPRECATED
 
 void GPUParticlesAttractor3D::set_strength(real_t p_strength) {
@@ -923,8 +926,8 @@ void GPUParticlesAttractor3D::_bind_methods() {
 
 #ifndef DISABLE_DEPRECATED
 
-	ClassDB::bind_compatibility_method(D_METHOD("set_cull_mask", "mask"), &GPUParticlesAttractor3D::set_cull_mask);
-	ClassDB::bind_compatibility_method(D_METHOD("get_cull_mask"), &GPUParticlesAttractor3D::get_cull_mask);
+	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &GPUParticlesAttractor3D::set_cull_mask);
+	ClassDB::bind_method(D_METHOD("get_cull_mask"), &GPUParticlesAttractor3D::get_cull_mask);
 
 #endif //DISABLE_DEPRECATED
 
@@ -941,7 +944,12 @@ void GPUParticlesAttractor3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation", PROPERTY_HINT_EXP_EASING, "0,8,0.01"), "set_attenuation", "get_attenuation");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "directionality", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_directionality", "get_directionality");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PARTICLE_COLLISION), "set_collision_layer", "get_collision_layer");
+
+#ifndef DISABLE_DEPRECATED
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_PARTICLE_COLLISION), "set_cull_mask", "get_cull_mask");
+
+#endif //DISABLE_DEPRECATED
 }
 
 GPUParticlesAttractor3D::GPUParticlesAttractor3D(RS::ParticlesCollisionType p_type) {
