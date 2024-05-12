@@ -2708,7 +2708,7 @@
 				Sets the collision or attractor shape [param type] for the 3D GPU particles collision or attractor specified by the [param particles_collision] RID.
 			</description>
 		</method>
-		<method name="particles_collision_set_cull_mask" deprecated="Use [member RenderingServer.particles_collision_set_collision_layer] instead.">
+		<method name="particles_collision_set_cull_mask" deprecated="Use [method RenderingServer.particles_collision_set_collision_layer] instead.">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="mask" type="int" />
