@@ -399,7 +399,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 	}
 }
 
-void OptionButton::_select_int(int p_which) {
+void OptionButton::set_selected(int p_which) {
 	if (p_which < NONE_SELECTED) {
 		return;
 	}
