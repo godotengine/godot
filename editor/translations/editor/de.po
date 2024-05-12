@@ -5884,7 +5884,7 @@ msgstr ""
 "auswählen:"
 
 msgid "Pre-render Configurations"
-msgstr "Vorrender-Konfigurationen"
+msgstr "Vorrender Konfigurationen"
 
 msgid ""
 "Add font size, and variation coordinates, and select glyphs to pre-render:"
