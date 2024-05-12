@@ -2692,20 +2692,20 @@
 				Sets the [param extents] for the 3D GPU particles collision by the [param particles_collision] RID. Equivalent to [member GPUParticlesCollisionBox3D.size], [member GPUParticlesCollisionSDF3D.size], [member GPUParticlesCollisionHeightField3D.size], [member GPUParticlesAttractorBox3D.size] or [member GPUParticlesAttractorVectorField3D.size] depending on the [param particles_collision] type.
 			</description>
 		</method>
-		<method name="particles_collision_set_collision_type">
-			<return type="void" />
-			<param index="0" name="particles_collision" type="RID" />
-			<param index="1" name="type" type="int" enum="RenderingServer.ParticlesCollisionType" />
-			<description>
-				Sets the collision or attractor shape [param type] for the 3D GPU particles collision or attractor specified by the [param particles_collision] RID.
-			</description>
-		</method>
 		<method name="particles_collision_set_collision_layer">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="layer" type="int" />
 			<description>
 				Sets the collision [param layer] for the 3D GPU particles collision or attractor specified by the [param particles_collision] RID. Equivalent to [member GPUParticlesCollision3D.collision_layer] or [member GPUParticlesAttractor3D.collision_layer] depending on the [param particles_collision] type.
+			</description>
+		</method>
+		<method name="particles_collision_set_collision_type">
+			<return type="void" />
+			<param index="0" name="particles_collision" type="RID" />
+			<param index="1" name="type" type="int" enum="RenderingServer.ParticlesCollisionType" />
+			<description>
+				Sets the collision or attractor shape [param type] for the 3D GPU particles collision or attractor specified by the [param particles_collision] RID.
 			</description>
 		</method>
 		<method name="particles_collision_set_field_texture">
