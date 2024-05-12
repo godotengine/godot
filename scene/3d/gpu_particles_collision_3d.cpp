@@ -62,8 +62,10 @@ void GPUParticlesCollision3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_layer"), &GPUParticlesCollision3D::get_collision_layer);
 
 #ifndef DISABLE_DEPRECATED
+
 	ClassDB::bind_compatibility_method(D_METHOD("set_cull_mask", "mask"), &GPUParticlesCollision3D::set_cull_mask);
 	ClassDB::bind_compatibility_method(D_METHOD("get_cull_mask"), &GPUParticlesCollision3D::get_cull_mask);
+	
 #endif //DISABLE_DEPRECATED
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PARTICLE_COLLISION), "set_collision_layer", "get_collision_layer");
@@ -920,8 +922,10 @@ void GPUParticlesAttractor3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_layer"), &GPUParticlesAttractor3D::get_collision_layer);
 
 #ifndef DISABLE_DEPRECATED
+
 	ClassDB::bind_compatibility_method(D_METHOD("set_cull_mask", "mask"), &GPUParticlesAttractor3D::set_cull_mask);
 	ClassDB::bind_compatibility_method(D_METHOD("get_cull_mask"), &GPUParticlesAttractor3D::get_cull_mask);
+
 #endif //DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("set_strength", "strength"), &GPUParticlesAttractor3D::set_strength);
