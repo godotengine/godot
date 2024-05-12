@@ -150,8 +150,8 @@ void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
 // Main layout.
 
 void ProjectManager::_update_size_limits() {
-	const Size2 minimum_size = Size2(680, 450) * EDSCALE;
-	const Size2 default_size = Size2(1024, 600) * EDSCALE;
+	const Size2 minimum_size = Size2(720, 450) * EDSCALE;
+	const Size2 default_size = Size2(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT) * EDSCALE;
 
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
 	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
@@ -159,8 +159,12 @@ void ProjectManager::_update_size_limits() {
 		// Calling Window methods this early doesn't sync properties with DS.
 		w->set_min_size(minimum_size);
 		DisplayServer::get_singleton()->window_set_min_size(minimum_size);
-		w->set_size(default_size);
-		DisplayServer::get_singleton()->window_set_size(default_size);
+		if (DisplayServer::get_singleton()->window_get_size() == default_size) {
+			// Only set window size if it currently matches the default, which is defined in `main/main.cpp`.
+			// This allows CLI arguments to override the window size.
+			w->set_size(default_size);
+			DisplayServer::get_singleton()->window_set_size(default_size);
+		}
 	}
 
 	Rect2i screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen());

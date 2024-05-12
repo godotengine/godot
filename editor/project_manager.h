@@ -250,6 +250,9 @@ protected:
 public:
 	static ProjectManager *get_singleton() { return singleton; }
 
+	static constexpr int DEFAULT_WINDOW_WIDTH = 1152;
+	static constexpr int DEFAULT_WINDOW_HEIGHT = 800;
+
 	// Project list.
 
 	bool is_initialized() const { return initialized; }
