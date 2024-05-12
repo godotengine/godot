@@ -313,6 +313,10 @@ void RasterizerStorage::multimesh_allocate(RID p_multimesh, int p_instances, VS:
 		mmi->_data_curr.resize(size_in_floats);
 		mmi->_data_prev.resize(size_in_floats);
 		mmi->_data_interpolated.resize(size_in_floats);
+
+		mmi->_data_curr.fill(0);
+		mmi->_data_prev.fill(0);
+		mmi->_data_interpolated.fill(0);
 	}
 
 	return _multimesh_allocate(p_multimesh, p_instances, p_transform_format, p_color_format, p_data);
