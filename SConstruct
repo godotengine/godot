@@ -492,14 +492,15 @@ if methods.get_cmdline_bool("fast_unsafe", env.dev_build):
 if env["use_precise_math_checks"]:
     env.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
 
-if env.editor_build and env["engine_update_check"]:
-    env.Append(CPPDEFINES=["ENGINE_UPDATE_CHECK_ENABLED"])
+if env.editor_build:
+    if env["engine_update_check"]:
+        env.Append(CPPDEFINES=["ENGINE_UPDATE_CHECK_ENABLED"])
 
-if not env.File("#main/splash_editor.png").exists():
-    # Force disabling editor splash if missing.
-    env["no_editor_splash"] = True
-if env["no_editor_splash"]:
-    env.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
+    if not env.File("#main/splash_editor.png").exists():
+        # Force disabling editor splash if missing.
+        env["no_editor_splash"] = True
+    if env["no_editor_splash"]:
+        env.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
 
 if not env["deprecated"]:
     env.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
