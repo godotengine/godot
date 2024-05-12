@@ -615,7 +615,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 			ParticlesCollision *pc = particles_collision_owner.get_or_null(pci->collision);
 			ERR_CONTINUE(!pc);
 			if (!(p_particles->collision_mask & pc->collision_layer)) {
-				continue; 
+				continue;
 			}
 
 			Transform3D to_collider = pci->transform;
@@ -1382,7 +1382,7 @@ void ParticlesStorage::particles_collision_set_height_field_resolution(RID p_par
 void ParticlesStorage::particles_collision_set_bake_mask(RID p_particles_collision, uint32_t p_bake_mask) {
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL(particles_collision);
-	
+
 	particles_collision->bake_mask = p_bake_mask;
 }
 
