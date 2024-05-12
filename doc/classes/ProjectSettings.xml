@@ -1807,6 +1807,102 @@
 		<member name="layer_names/3d_navigation/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 32. If left empty, the layer will display as "Layer 32".
 		</member>
+		<member name="layer_names/3d_particle_collision/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 1. If left empty, the layer will display as "Layer 1".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 4. If left empty, the layer will display as "Layer 4".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 5. If left empty, the layer will display as "Layer 5".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 6. If left empty, the layer will display as "Layer 6".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 7. If left empty, the layer will display as "Layer 7".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 8. If left empty, the layer will display as "Layer 8".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 9. If left empty, the layer will display as "Layer 9".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 10. If left empty, the layer will display as "Layer 10".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_11" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 11. If left empty, the layer will display as "Layer 11".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_12" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 12. If left empty, the layer will display as "Layer 12".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_13" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 13. If left empty, the layer will display as "Layer 13".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 14. If left empty, the layer will display as "Layer 14".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 15. If left empty, the layer will display as "Layer 15".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_16" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 16. If left empty, the layer will display as "Layer 16".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_17" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 17. If left empty, the layer will display as "Layer 17".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_18" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 18. If left empty, the layer will display as "Layer 18".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 19. If left empty, the layer will display as "Layer 19".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 21. If left empty, the layer will display as "Layer 21".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 23. If left empty, the layer will display as "Layer 23".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 25. If left empty, the layer will display as "Layer 25".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 27. If left empty, the layer will display as "Layer 27".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 29. If left empty, the layer will display as "Layer 29".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 31. If left empty, the layer will display as "Layer 31".
+		</member>
+		<member name="layer_names/3d_particle_collision/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the 3D particle collision layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
 		<member name="layer_names/3d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 1. If left empty, the layer will display as "Layer 1".
 		</member>
@@ -2058,102 +2154,6 @@
 		</member>
 		<member name="layer_names/avoidance/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the navigation avoidance layer 32. If left empty, the layer will display as "Layer 32".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 1. If left empty, the layer will display as "Layer 1".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 2. If left empty, the layer will display as "Layer 2".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 3. If left empty, the layer will display as "Layer 3".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 4. If left empty, the layer will display as "Layer 4".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 5. If left empty, the layer will display as "Layer 5".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 6. If left empty, the layer will display as "Layer 6".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 7. If left empty, the layer will display as "Layer 7".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 8. If left empty, the layer will display as "Layer 8".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 9. If left empty, the layer will display as "Layer 9".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 10. If left empty, the layer will display as "Layer 10".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_11" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 11. If left empty, the layer will display as "Layer 11".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_12" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 12. If left empty, the layer will display as "Layer 12".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_13" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 13. If left empty, the layer will display as "Layer 13".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 14. If left empty, the layer will display as "Layer 14".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 15. If left empty, the layer will display as "Layer 15".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_16" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 16. If left empty, the layer will display as "Layer 16".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_17" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 17. If left empty, the layer will display as "Layer 17".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_18" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 18. If left empty, the layer will display as "Layer 18".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 19. If left empty, the layer will display as "Layer 19".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 20. If left empty, the layer will display as "Layer 20".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 21. If left empty, the layer will display as "Layer 21".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 22. If left empty, the layer will display as "Layer 22".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 23. If left empty, the layer will display as "Layer 23".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 24. If left empty, the layer will display as "Layer 24".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 25. If left empty, the layer will display as "Layer 25".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 26. If left empty, the layer will display as "Layer 26".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 27. If left empty, the layer will display as "Layer 27".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 28. If left empty, the layer will display as "Layer 28".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 29. If left empty, the layer will display as "Layer 29".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 30. If left empty, the layer will display as "Layer 30".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 31. If left empty, the layer will display as "Layer 31".
-		</member>
-		<member name="layer_names/3d_particle_collision/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
-			Optional name for the 3D particle collision layer 32. If left empty, the layer will display as "Layer 32".
 		</member>
 		<member name="memory/limits/message_queue/max_size_mb" type="int" setter="" getter="" default="32">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.

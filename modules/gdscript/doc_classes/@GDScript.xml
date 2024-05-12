@@ -495,6 +495,17 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@export_flags_3d_particle_collision">
+			<return type="void" />
+			<description>
+				Export an integer property as a bit flag field for 3D particle collision layers. The widget in the Inspector dock will use the layer names defined in [member ProjectSettings.layer_names/3d_particle_collision/layer_1].
+				See also [constant PROPERTY_HINT_LAYERS_3D_PARTICLE_COLLISION].
+				[codeblock]
+				@export_flags_3d_particle_collision var particle_collision_layers: int
+				@export_flags_3d_particle_collision var particle_collision_layers_array: Array[int]
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export_flags_3d_physics">
 			<return type="void" />
 			<description>
