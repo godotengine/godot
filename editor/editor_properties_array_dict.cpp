@@ -391,8 +391,6 @@ void EditorPropertyArray::update_property() {
 			paginator->connect("page_changed", callable_mp(this, &EditorPropertyArray::_page_changed));
 			vbox->add_child(paginator);
 
-			_update_property_bg();
-
 			for (int i = 0; i < page_length; i++) {
 				_create_new_property_slot();
 			}
@@ -454,7 +452,6 @@ void EditorPropertyArray::update_property() {
 			memdelete(container);
 			button_add_item = nullptr;
 			container = nullptr;
-			_update_property_bg();
 			slots.clear();
 		}
 	}
@@ -628,10 +625,6 @@ Node *EditorPropertyArray::get_base_node() {
 void EditorPropertyArray::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
-			if (EditorThemeManager::is_generated_theme_outdated()) {
-				_update_property_bg();
-			}
-			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {
 			change_type->clear();
 			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -851,6 +844,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	subtype = Variant::NIL;
 	subtype_hint = PROPERTY_HINT_NONE;
 	subtype_hint_string = "";
+	has_borders = true;
 }
 
 ///////////////////// DICTIONARY ///////////////////////////
@@ -1000,7 +994,6 @@ void EditorPropertyDictionary::update_property() {
 			paginator = memnew(EditorPaginator);
 			paginator->connect("page_changed", callable_mp(this, &EditorPropertyDictionary::_page_changed));
 			vbox->add_child(paginator);
-			_update_property_bg();
 
 			for (int i = 0; i < page_length; i++) {
 				_create_new_property_slot(slots.size());
@@ -1075,7 +1068,6 @@ void EditorPropertyDictionary::update_property() {
 			memdelete(container);
 			button_add_item = nullptr;
 			container = nullptr;
-			_update_property_bg();
 			add_panel = nullptr;
 			slots.clear();
 		}
@@ -1089,10 +1081,6 @@ void EditorPropertyDictionary::_object_id_selected(const StringName &p_property,
 void EditorPropertyDictionary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
-			if (EditorThemeManager::is_generated_theme_outdated()) {
-				_update_property_bg();
-			}
-			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {
 			change_type->clear();
 			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -1109,6 +1097,7 @@ void EditorPropertyDictionary::_notification(int p_what) {
 
 			if (button_add_item) {
 				button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
+				add_panel->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("DictionaryAddItem")));
 			}
 		} break;
 	}
@@ -1166,6 +1155,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	add_child(change_type);
 	change_type->connect("id_pressed", callable_mp(this, &EditorPropertyDictionary::_change_type_menu));
 	changing_type_index = -1;
+	has_borders = true;
 }
 
 ///////////////////// LOCALIZABLE STRING ///////////////////////////

@@ -50,6 +50,7 @@
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/style_box_flat.h"
+#include "scene/scene_string_names.h"
 
 bool EditorInspector::_property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
 	if (p_property_path.containsn(p_filter)) {
@@ -390,6 +391,17 @@ void EditorProperty::_notification(int p_what) {
 				delete_rect = Rect2();
 			}
 		} break;
+		case NOTIFICATION_ENTER_TREE: {
+			if (has_borders) {
+				get_parent()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
+				_update_property_bg();
+			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			if (has_borders) {
+				get_parent()->disconnect(SceneStringName(theme_changed), callable_mp(this, &EditorProperty::_update_property_bg));
+			}
+		}
 	}
 }
 
@@ -810,6 +822,9 @@ void EditorProperty::set_label_reference(Control *p_control) {
 
 void EditorProperty::set_bottom_editor(Control *p_control) {
 	bottom_editor = p_control;
+	if (has_borders) {
+		_update_property_bg();
+	}
 }
 
 Variant EditorProperty::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
@@ -4087,6 +4102,9 @@ void EditorInspector::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			bool needs_update = false;
+			if (EditorThemeManager::is_generated_theme_outdated() && !sub_inspector) {
+				add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			}
 
 			if (use_settings_name_style && EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
 				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_settings_style();
