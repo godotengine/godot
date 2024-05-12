@@ -800,7 +800,7 @@ public:
 		particles_collision_set_collision_layer(p_particles_collision, p_cull_mask);
 	}
 
-#endif //DISABLE_DEPRECATED
+#endif // DISABLE_DEPRECATED
 
 	enum ParticlesCollisionHeightfieldResolution { // Longest axis resolution.
 		PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_256,

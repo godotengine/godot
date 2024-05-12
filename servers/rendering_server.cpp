@@ -2712,7 +2712,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("particles_collision_set_cull_mask", "particles_collision", "mask"), &RenderingServer::particles_collision_set_cull_mask);
 
-#endif //DISABLE_DEPRECATED
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT);
 	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_TYPE_BOX_ATTRACT);
