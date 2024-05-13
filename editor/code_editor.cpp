@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -971,7 +972,7 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 			if (has_theme_icon(p_option.display, EditorStringName(EditorIcons))) {
 				tex = get_editor_theme_icon(p_option.display);
 			} else {
-				tex = get_editor_theme_icon(SNAME("Object"));
+				tex = EditorNode::get_singleton()->get_class_icon(p_option.display);
 			}
 		} break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
