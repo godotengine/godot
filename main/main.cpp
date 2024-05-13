@@ -104,7 +104,7 @@
 #include "editor/project_manager.h"
 #include "editor/register_editor_types.h"
 
-#ifndef NO_EDITOR_SPLASH
+#if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
 #include "main/splash_editor.gen.h"
 #endif
 
