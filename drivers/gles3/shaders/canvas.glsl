@@ -341,6 +341,7 @@ uniform sampler2D color_buffer; //texunit:-4
 uniform sampler2D sdf_texture; //texunit:-5
 uniform sampler2D normal_texture; //texunit:-6
 uniform sampler2D specular_texture; //texunit:-7
+uniform sampler2D depth_buffer; //texunit:-8
 
 uniform sampler2D color_texture; //texunit:0
 
