@@ -397,6 +397,11 @@ void CanvasItem::_notification(int p_what) {
 
 			_notify_transform();
 		} break;
+		case NOTIFICATION_TOP_LEVEL_CHANGED: {
+			ERR_MAIN_THREAD_GUARD;
+
+			emit_signal(SceneStringNames::get_singleton()->top_level_changed);
+		} break;
 	}
 }
 
@@ -475,12 +480,14 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 
 	if (!is_inside_tree()) {
 		top_level = p_top_level;
+		notification(NOTIFICATION_TOP_LEVEL_CHANGED);
 		_notify_transform();
 		return;
 	}
 
 	_exit_canvas();
 	top_level = p_top_level;
+	notification(NOTIFICATION_TOP_LEVEL_CHANGED);
 	_top_level_changed();
 	_enter_canvas();
 
@@ -1290,6 +1297,7 @@ void CanvasItem::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 	ADD_SIGNAL(MethodInfo("hidden"));
 	ADD_SIGNAL(MethodInfo("item_rect_changed"));
+	ADD_SIGNAL(MethodInfo("top_level_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -1298,6 +1306,7 @@ void CanvasItem::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_ENTER_CANVAS);
 	BIND_CONSTANT(NOTIFICATION_EXIT_CANVAS);
 	BIND_CONSTANT(NOTIFICATION_WORLD_2D_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_TOP_LEVEL_CHANGED);
 
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_PARENT_NODE);
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST);

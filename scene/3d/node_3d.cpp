@@ -227,6 +227,12 @@ void Node3D::_notification(int p_what) {
 			}
 #endif
 		} break;
+
+		case NOTIFICATION_TOP_LEVEL_CHANGED: {
+			ERR_MAIN_THREAD_GUARD;
+
+			emit_signal(SceneStringNames::get_singleton()->top_level_changed);
+		} break;
 	}
 }
 
@@ -751,6 +757,7 @@ void Node3D::set_as_top_level(bool p_enabled) {
 		}
 	}
 	data.top_level = p_enabled;
+	notification(NOTIFICATION_TOP_LEVEL_CHANGED);
 }
 
 void Node3D::set_as_top_level_keep_local(bool p_enabled) {
@@ -759,6 +766,7 @@ void Node3D::set_as_top_level_keep_local(bool p_enabled) {
 		return;
 	}
 	data.top_level = p_enabled;
+	notification(NOTIFICATION_TOP_LEVEL_CHANGED);
 	_propagate_transform_changed(this);
 }
 
@@ -1207,6 +1215,7 @@ void Node3D::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_EXIT_WORLD);
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_TOP_LEVEL_CHANGED);
 
 	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_EULER);
 	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_QUATERNION);
@@ -1234,6 +1243,7 @@ void Node3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "visibility_parent", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GeometryInstance3D"), "set_visibility_parent", "get_visibility_parent");
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
+	ADD_SIGNAL(MethodInfo("top_level_changed"));
 }
 
 Node3D::Node3D() :

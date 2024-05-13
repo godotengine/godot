@@ -257,7 +257,9 @@ bool CanvasItemEditor::_is_node_movable(const Node *p_node, bool p_popup_warning
 	if (_is_node_locked(p_node)) {
 		return false;
 	}
-	if (Object::cast_to<Control>(p_node) && Object::cast_to<Container>(p_node->get_parent())) {
+
+	const Control *control = Object::cast_to<Control>(p_node);
+	if (control && control->is_managed_by_container()) {
 		if (p_popup_warning) {
 			EditorToaster::get_singleton()->popup_str(TTR("Children of a container get their position and size determined only by their parent."), EditorToaster::SEVERITY_WARNING);
 		}
@@ -3205,7 +3207,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 void CanvasItemEditor::_draw_control_anchors(Control *control) {
 	Transform2D xform = transform * control->get_global_transform_with_canvas();
 	RID ci = viewport->get_canvas_item();
-	if (tool == TOOL_SELECT && !Object::cast_to<Container>(control->get_parent())) {
+	if (tool == TOOL_SELECT && !control->is_managed_by_container()) {
 		// Compute the anchors
 		real_t anchors_values[4];
 		anchors_values[0] = control->get_anchor(SIDE_LEFT);
@@ -3241,7 +3243,7 @@ void CanvasItemEditor::_draw_control_anchors(Control *control) {
 
 void CanvasItemEditor::_draw_control_helpers(Control *control) {
 	Transform2D xform = transform * control->get_global_transform_with_canvas();
-	if (tool == TOOL_SELECT && show_helpers && !Object::cast_to<Container>(control->get_parent())) {
+	if (tool == TOOL_SELECT && show_helpers && !control->is_managed_by_container()) {
 		// Draw the helpers
 		Color color_base = Color(0.8, 0.8, 0.8, 0.5);
 
