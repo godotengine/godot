@@ -36,13 +36,13 @@ void Joint3D::_disconnect_signals() {
 	Node *node_a = get_node_or_null(a);
 	PhysicsBody3D *body_a = Object::cast_to<PhysicsBody3D>(node_a);
 	if (body_a) {
-		body_a->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Joint3D::_body_exit_tree));
+		body_a->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Joint3D::_body_exit_tree));
 	}
 
 	Node *node_b = get_node_or_null(b);
 	PhysicsBody3D *body_b = Object::cast_to<PhysicsBody3D>(node_b);
 	if (body_b) {
-		body_b->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Joint3D::_body_exit_tree));
+		body_b->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Joint3D::_body_exit_tree));
 	}
 }
 
@@ -108,12 +108,12 @@ void Joint3D::_update_joint(bool p_only_free) {
 
 	if (body_a) {
 		ba = body_a->get_rid();
-		body_a->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Joint3D::_body_exit_tree));
+		body_a->connect(SceneStringName(tree_exiting), callable_mp(this, &Joint3D::_body_exit_tree));
 	}
 
 	if (body_b) {
 		bb = body_b->get_rid();
-		body_b->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &Joint3D::_body_exit_tree));
+		body_b->connect(SceneStringName(tree_exiting), callable_mp(this, &Joint3D::_body_exit_tree));
 	}
 
 	PhysicsServer3D::get_singleton()->joint_disable_collisions_between_bodies(joint, exclude_from_collision);

@@ -478,7 +478,7 @@ void GPUParticles3D::_notification(int p_what) {
 				}
 				if (time > active_time) {
 					if (active && !signal_canceled) {
-						emit_signal(SceneStringNames::get_singleton()->finished);
+						emit_signal(SceneStringName(finished));
 					}
 					active = false;
 					if (!emitting) {

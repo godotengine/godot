@@ -266,7 +266,7 @@ void Node::_propagate_ready() {
 	if (data.ready_first) {
 		data.ready_first = false;
 		notification(NOTIFICATION_READY);
-		emit_signal(SceneStringNames::get_singleton()->ready);
+		emit_signal(SceneStringName(ready));
 	}
 }
 
@@ -295,7 +295,7 @@ void Node::_propagate_enter_tree() {
 
 	GDVIRTUAL_CALL(_enter_tree);
 
-	emit_signal(SceneStringNames::get_singleton()->tree_entered);
+	emit_signal(SceneStringName(tree_entered));
 
 	data.tree->node_added(this);
 
@@ -350,7 +350,7 @@ void Node::_propagate_after_exit_tree() {
 
 	data.blocked--;
 
-	emit_signal(SceneStringNames::get_singleton()->tree_exited);
+	emit_signal(SceneStringName(tree_exited));
 }
 
 void Node::_propagate_exit_tree() {
@@ -372,7 +372,7 @@ void Node::_propagate_exit_tree() {
 
 	GDVIRTUAL_CALL(_exit_tree);
 
-	emit_signal(SceneStringNames::get_singleton()->tree_exiting);
+	emit_signal(SceneStringName(tree_exiting));
 
 	notification(NOTIFICATION_EXIT_TREE, true);
 	if (data.tree) {
@@ -1738,11 +1738,11 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 		StringName name = p_path.get_name(i);
 		Node *next = nullptr;
 
-		if (name == SceneStringNames::get_singleton()->dot) { // .
+		if (name == SceneStringName(dot)) { // .
 
 			next = current;
 
-		} else if (name == SceneStringNames::get_singleton()->doubledot) { // ..
+		} else if (name == SceneStringName(doubledot)) { // ..
 
 			if (current == nullptr || !current->data.parent) {
 				return nullptr;
@@ -2667,7 +2667,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		node->data.editable_instance = data.editable_instance;
 	}
 
-	StringName script_property_name = CoreStringNames::get_singleton()->_script;
+	StringName script_property_name = CoreStringName(script);
 
 	List<const Node *> hidden_roots;
 	List<const Node *> node_tree;
@@ -3323,7 +3323,7 @@ void Node::update_configuration_warnings() {
 		return;
 	}
 	if (get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_ancestor_of(this))) {
-		get_tree()->emit_signal(SceneStringNames::get_singleton()->node_configuration_warning_changed, this);
+		get_tree()->emit_signal(SceneStringName(node_configuration_warning_changed), this);
 	}
 #endif
 }

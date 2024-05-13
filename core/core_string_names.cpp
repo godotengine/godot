@@ -33,12 +33,10 @@
 CoreStringNames *CoreStringNames::singleton = nullptr;
 
 CoreStringNames::CoreStringNames() :
-		_free(StaticCString::create("free")),
+		free_(StaticCString::create("free")),
 		changed(StaticCString::create("changed")),
-		_script(StaticCString::create("script")),
+		script(StaticCString::create("script")),
 		script_changed(StaticCString::create("script_changed")),
-		___pdcdata(StaticCString::create("___pdcdata")),
-		__getvar(StaticCString::create("__getvar")),
 		_iter_init(StaticCString::create("_iter_init")),
 		_iter_next(StaticCString::create("_iter_next")),
 		_iter_get(StaticCString::create("_iter_get")),

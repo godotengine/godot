@@ -2932,7 +2932,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				if (selected || editor->is_selection_active()) {
 					AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
-					if (!player->has_animation(SceneStringNames::get_singleton()->RESET) || animation != player->get_animation(SceneStringNames::get_singleton()->RESET)) {
+					if (!player->has_animation(SceneStringName(RESET)) || animation != player->get_animation(SceneStringName(RESET))) {
 						menu->add_icon_item(get_editor_theme_icon(SNAME("Reload")), TTR("Add RESET Value(s)"), MENU_KEY_ADD_RESET);
 					}
 
@@ -3691,8 +3691,8 @@ void AnimationTrackEditor::_animation_track_remove_request(int p_track, Ref<Anim
 
 		// Remove corresponding reset tracks if they are no longer needed.
 		AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
-		if (player->has_animation(SceneStringNames::get_singleton()->RESET)) {
-			Ref<Animation> reset = player->get_animation(SceneStringNames::get_singleton()->RESET);
+		if (player->has_animation(SceneStringName(RESET))) {
+			Ref<Animation> reset = player->get_animation(SceneStringName(RESET));
 			if (reset != p_from_animation) {
 				for (int i = 0; i < reset->get_track_count(); i++) {
 					if (reset->track_get_path(i) == p_from_animation->track_get_path(p_track)) {
@@ -3798,7 +3798,7 @@ void AnimationTrackEditor::make_insert_queue() {
 void AnimationTrackEditor::commit_insert_queue() {
 	bool reset_allowed = true;
 	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
-	if (player->has_animation(SceneStringNames::get_singleton()->RESET) && player->get_animation(SceneStringNames::get_singleton()->RESET) == animation) {
+	if (player->has_animation(SceneStringName(RESET)) && player->get_animation(SceneStringName(RESET)) == animation) {
 		// Avoid messing with the reset animation itself.
 		reset_allowed = false;
 	} else {
@@ -4207,8 +4207,8 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 
 Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
-	if (player->has_animation(SceneStringNames::get_singleton()->RESET)) {
-		return player->get_animation(SceneStringNames::get_singleton()->RESET);
+	if (player->has_animation(SceneStringName(RESET))) {
+		return player->get_animation(SceneStringName(RESET));
 	} else {
 		Ref<AnimationLibrary> al;
 		AnimationMixer *mixer = AnimationPlayerEditor::get_singleton()->fetch_mixer_for_library();
@@ -4224,9 +4224,9 @@ Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 		reset_anim.instantiate();
 		reset_anim->set_length(ANIM_MIN_LENGTH);
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->add_do_method(al.ptr(), "add_animation", SceneStringNames::get_singleton()->RESET, reset_anim);
+		undo_redo->add_do_method(al.ptr(), "add_animation", SceneStringName(RESET), reset_anim);
 		undo_redo->add_do_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
-		undo_redo->add_undo_method(al.ptr(), "remove_animation", SceneStringNames::get_singleton()->RESET);
+		undo_redo->add_undo_method(al.ptr(), "remove_animation", SceneStringName(RESET));
 		undo_redo->add_undo_method(AnimationPlayerEditor::get_singleton(), "_animation_player_changed", player);
 		return reset_anim;
 	}
@@ -5024,8 +5024,8 @@ void AnimationTrackEditor::_add_track(int p_type) {
 
 void AnimationTrackEditor::_fetch_value_track_options(const NodePath &p_path, Animation::UpdateMode *r_update_mode, Animation::InterpolationType *r_interpolation_type, bool *r_loop_wrap) {
 	AnimationPlayer *player = AnimationPlayerEditor::get_singleton()->get_player();
-	if (player->has_animation(SceneStringNames::get_singleton()->RESET)) {
-		Ref<Animation> reset_anim = player->get_animation(SceneStringNames::get_singleton()->RESET);
+	if (player->has_animation(SceneStringName(RESET))) {
+		Ref<Animation> reset_anim = player->get_animation(SceneStringName(RESET));
 		int rt = reset_anim->find_track(p_path, Animation::TrackType::TYPE_VALUE);
 		if (rt >= 0) {
 			*r_update_mode = reset_anim->value_track_get_update_mode(rt);

@@ -307,14 +307,14 @@ StringName AudioStreamPlayerInternal::get_bus() const {
 			return bus;
 		}
 	}
-	return SceneStringNames::get_singleton()->Master;
+	return SceneStringName(Master);
 }
 
 AudioStreamPlayerInternal::AudioStreamPlayerInternal(Node *p_node, const Callable &p_play_callable, bool p_physical) {
 	node = p_node;
 	play_callable = p_play_callable;
 	physical = p_physical;
-	bus = SceneStringNames::get_singleton()->Master;
+	bus = SceneStringName(Master);
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp((Object *)node, &Object::notify_property_list_changed));
 	AudioServer::get_singleton()->connect("bus_renamed", callable_mp((Object *)node, &Object::notify_property_list_changed).unbind(3));

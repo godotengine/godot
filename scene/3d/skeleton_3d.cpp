@@ -314,7 +314,7 @@ void Skeleton3D::_notification(int p_what) {
 				_process_modifiers();
 			}
 
-			emit_signal(SceneStringNames::get_singleton()->skeleton_updated);
+			emit_signal(SceneStringName(skeleton_updated));
 
 			// Update skins.
 			RenderingServer *rs = RenderingServer::get_singleton();
@@ -605,7 +605,7 @@ void Skeleton3D::set_bone_enabled(int p_bone, bool p_enabled) {
 	ERR_FAIL_INDEX(p_bone, bone_size);
 
 	bones.write[p_bone].enabled = p_enabled;
-	emit_signal(SceneStringNames::get_singleton()->bone_enabled_changed, p_bone);
+	emit_signal(SceneStringName(bone_enabled_changed), p_bone);
 	_make_dirty();
 }
 
@@ -617,7 +617,7 @@ bool Skeleton3D::is_bone_enabled(int p_bone) const {
 
 void Skeleton3D::set_show_rest_only(bool p_enabled) {
 	show_rest_only = p_enabled;
-	emit_signal(SceneStringNames::get_singleton()->show_rest_only_changed);
+	emit_signal(SceneStringName(show_rest_only_changed));
 	_make_dirty();
 }
 
@@ -840,7 +840,7 @@ void Skeleton3D::force_update_all_bone_transforms() {
 	if (updating) {
 		return;
 	}
-	emit_signal(SceneStringNames::get_singleton()->pose_updated);
+	emit_signal(SceneStringName(pose_updated));
 }
 
 void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {

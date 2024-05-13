@@ -216,7 +216,7 @@ void MultiplayerSpawner::_notification(int p_what) {
 			for (const KeyValue<ObjectID, SpawnInfo> &E : tracked_nodes) {
 				Node *node = Object::cast_to<Node>(ObjectDB::get_instance(E.key));
 				ERR_CONTINUE(!node);
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &MultiplayerSpawner::_node_exit));
+				node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &MultiplayerSpawner::_node_exit));
 				get_multiplayer()->object_configuration_remove(node, this);
 			}
 			tracked_nodes.clear();
@@ -258,7 +258,7 @@ void MultiplayerSpawner::_track(Node *p_node, const Variant &p_argument, int p_s
 	ObjectID oid = p_node->get_instance_id();
 	if (!tracked_nodes.has(oid)) {
 		tracked_nodes[oid] = SpawnInfo(p_argument.duplicate(true), p_scene_id);
-		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &MultiplayerSpawner::_node_exit).bind(p_node->get_instance_id()), CONNECT_ONE_SHOT);
+		p_node->connect(SceneStringName(tree_exiting), callable_mp(this, &MultiplayerSpawner::_node_exit).bind(p_node->get_instance_id()), CONNECT_ONE_SHOT);
 		_spawn_notify(p_node->get_instance_id());
 	}
 }

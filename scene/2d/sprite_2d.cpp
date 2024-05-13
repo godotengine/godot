@@ -146,7 +146,7 @@ void Sprite2D::set_texture(const Ref<Texture2D> &p_texture) {
 	}
 
 	queue_redraw();
-	emit_signal(SceneStringNames::get_singleton()->texture_changed);
+	emit_signal(SceneStringName(texture_changed));
 	item_rect_changed();
 }
 
@@ -260,7 +260,7 @@ void Sprite2D::set_frame(int p_frame) {
 
 	frame = p_frame;
 	item_rect_changed();
-	emit_signal(SceneStringNames::get_singleton()->frame_changed);
+	emit_signal(SceneStringName(frame_changed));
 }
 
 int Sprite2D::get_frame() const {

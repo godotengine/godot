@@ -111,7 +111,7 @@ void NinePatchRect::set_texture(const Ref<Texture2D> &p_tex) {
 
 	queue_redraw();
 	update_minimum_size();
-	emit_signal(SceneStringNames::get_singleton()->texture_changed);
+	emit_signal(SceneStringName(texture_changed));
 }
 
 Ref<Texture2D> NinePatchRect::get_texture() const {

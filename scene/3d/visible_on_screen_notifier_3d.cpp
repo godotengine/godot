@@ -38,7 +38,7 @@ void VisibleOnScreenNotifier3D::_visibility_enter() {
 	}
 
 	on_screen = true;
-	emit_signal(SceneStringNames::get_singleton()->screen_entered);
+	emit_signal(SceneStringName(screen_entered));
 	_screen_enter();
 }
 void VisibleOnScreenNotifier3D::_visibility_exit() {
@@ -47,7 +47,7 @@ void VisibleOnScreenNotifier3D::_visibility_exit() {
 	}
 
 	on_screen = false;
-	emit_signal(SceneStringNames::get_singleton()->screen_exited);
+	emit_signal(SceneStringName(screen_exited));
 	_screen_exit();
 }
 

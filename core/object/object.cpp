@@ -260,7 +260,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		}
 	}
 
-	if (p_name == CoreStringNames::get_singleton()->_script) {
+	if (p_name == CoreStringName(script)) {
 		set_script(p_value);
 		if (r_valid) {
 			*r_valid = true;
@@ -351,7 +351,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		}
 	}
 
-	if (p_name == CoreStringNames::get_singleton()->_script) {
+	if (p_name == CoreStringName(script)) {
 		ret = get_script();
 		if (r_valid) {
 			*r_valid = true;
@@ -672,7 +672,7 @@ Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Call
 }
 
 bool Object::has_method(const StringName &p_method) const {
-	if (p_method == CoreStringNames::get_singleton()->_free) {
+	if (p_method == CoreStringName(free_)) {
 		return true;
 	}
 
@@ -698,7 +698,7 @@ int Object::_get_method_argument_count_bind(const StringName &p_method) const {
 }
 
 int Object::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
-	if (p_method == CoreStringNames::get_singleton()->_free) {
+	if (p_method == CoreStringName(free_)) {
 		if (r_is_valid) {
 			*r_is_valid = true;
 		}
@@ -787,7 +787,7 @@ Variant Object::callv(const StringName &p_method, const Array &p_args) {
 Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
-	if (p_method == CoreStringNames::get_singleton()->_free) {
+	if (p_method == CoreStringName(free_)) {
 //free must be here, before anything, always ready
 #ifdef DEBUG_ENABLED
 		if (p_argcount != 0) {
@@ -850,7 +850,7 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 Variant Object::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
-	if (p_method == CoreStringNames::get_singleton()->_free) {
+	if (p_method == CoreStringName(free_)) {
 		// Free is not const, so fail.
 		r_error.error = Callable::CallError::CALL_ERROR_METHOD_NOT_CONST;
 		return Variant();
@@ -979,7 +979,7 @@ void Object::set_script(const Variant &p_script) {
 	}
 
 	notify_property_list_changed(); //scripts may add variables, so refresh is desired
-	emit_signal(CoreStringNames::get_singleton()->script_changed);
+	emit_signal(CoreStringName(script_changed));
 }
 
 void Object::set_script_instance(ScriptInstance *p_instance) {
@@ -1654,7 +1654,7 @@ void Object::clear_internal_resource_paths() {
 }
 
 void Object::notify_property_list_changed() {
-	emit_signal(CoreStringNames::get_singleton()->property_list_changed);
+	emit_signal(CoreStringName(property_list_changed));
 }
 
 void Object::_bind_methods() {

@@ -198,7 +198,7 @@ public:
 
 	NodePath path_pp;
 
-	StringName _default;
+	StringName default_; // "default", conflict with C++ keyword.
 
 	StringName node_configuration_warning_changed;
 
@@ -223,5 +223,7 @@ public:
 	StringName use_dynamic_gi;
 #endif
 };
+
+#define SceneStringName(m_name) SceneStringNames::get_singleton()->m_name
 
 #endif // SCENE_STRING_NAMES_H

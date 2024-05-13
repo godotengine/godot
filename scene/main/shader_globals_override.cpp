@@ -223,11 +223,11 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 void ShaderGlobalsOverride::_activate() {
 	ERR_FAIL_NULL(get_tree());
 	List<Node *> nodes;
-	get_tree()->get_nodes_in_group(SceneStringNames::get_singleton()->shader_overrides_group_active, &nodes);
+	get_tree()->get_nodes_in_group(SceneStringName(shader_overrides_group_active), &nodes);
 	if (nodes.size() == 0) {
 		//good we are the only override, enable all
 		active = true;
-		add_to_group(SceneStringNames::get_singleton()->shader_overrides_group_active);
+		add_to_group(SceneStringName(shader_overrides_group_active));
 
 		for (const KeyValue<StringName, Override> &E : overrides) {
 			const Override *o = &E.value;
@@ -248,7 +248,7 @@ void ShaderGlobalsOverride::_activate() {
 void ShaderGlobalsOverride::_notification(int p_what) {
 	switch (p_what) {
 		case Node::NOTIFICATION_ENTER_TREE: {
-			add_to_group(SceneStringNames::get_singleton()->shader_overrides_group);
+			add_to_group(SceneStringName(shader_overrides_group));
 			_activate();
 		} break;
 
@@ -263,9 +263,9 @@ void ShaderGlobalsOverride::_notification(int p_what) {
 				}
 			}
 
-			remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group_active);
-			remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group);
-			get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringNames::get_singleton()->shader_overrides_group, "_activate"); //another may want to activate when this is removed
+			remove_from_group(SceneStringName(shader_overrides_group_active));
+			remove_from_group(SceneStringName(shader_overrides_group));
+			get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(shader_overrides_group), "_activate"); //another may want to activate when this is removed
 			active = false;
 		} break;
 	}

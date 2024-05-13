@@ -547,8 +547,8 @@ ActionMapEditor::ActionMapEditor() {
 	action_list_search_by_event->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	action_list_search_by_event->set_stretch_ratio(0.75);
 	action_list_search_by_event->connect("event_changed", callable_mp(this, &ActionMapEditor::_search_by_event));
-	action_list_search_by_event->connect(SceneStringNames::get_singleton()->focus_entered, callable_mp(this, &ActionMapEditor::_on_filter_focused));
-	action_list_search_by_event->connect(SceneStringNames::get_singleton()->focus_exited, callable_mp(this, &ActionMapEditor::_on_filter_unfocused));
+	action_list_search_by_event->connect(SceneStringName(focus_entered), callable_mp(this, &ActionMapEditor::_on_filter_focused));
+	action_list_search_by_event->connect(SceneStringName(focus_exited), callable_mp(this, &ActionMapEditor::_on_filter_unfocused));
 	top_hbox->add_child(action_list_search_by_event);
 
 	Button *clear_all_search = memnew(Button);
