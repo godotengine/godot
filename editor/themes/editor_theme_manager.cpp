@@ -1650,7 +1650,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_stylebox("titlebar_selected", "GraphFrame", make_empty_stylebox(4, 4, 4, 4));
 			p_theme->set_color("resizer_color", "GraphFrame", gn_decoration_color);
 
-			// GraphFrame's title Label
+			// GraphFrame's title Label.
 			p_theme->set_type_variation("GraphFrameTitleLabel", "Label");
 			p_theme->set_stylebox("normal", "GraphFrameTitleLabel", memnew(StyleBoxEmpty));
 			p_theme->set_font_size("font_size", "GraphFrameTitleLabel", 22);
@@ -1662,6 +1662,21 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_constant("outline_size", "GraphFrameTitleLabel", 0);
 			p_theme->set_constant("shadow_outline_size", "GraphFrameTitleLabel", 1 * EDSCALE);
 			p_theme->set_constant("line_spacing", "GraphFrameTitleLabel", 3 * EDSCALE);
+		}
+
+		// VisualShader reroute node.
+		{
+			Ref<StyleBox> vs_reroute_panel_style = make_empty_stylebox();
+			Ref<StyleBox> vs_reroute_titlebar_style = vs_reroute_panel_style->duplicate();
+			vs_reroute_titlebar_style->set_content_margin_all(16);
+			p_theme->set_stylebox("panel", "VSRerouteNode", vs_reroute_panel_style);
+			p_theme->set_stylebox("panel_selected", "VSRerouteNode", vs_reroute_panel_style);
+			p_theme->set_stylebox("titlebar", "VSRerouteNode", vs_reroute_titlebar_style);
+			p_theme->set_stylebox("titlebar_selected", "VSRerouteNode", vs_reroute_titlebar_style);
+			p_theme->set_stylebox("slot", "VSRerouteNode", make_empty_stylebox());
+
+			p_theme->set_color("drag_background", "VSRerouteNode", p_config.dark_theme ? Color(0.19, 0.21, 0.24) : Color(0.8, 0.8, 0.8));
+			p_theme->set_color("selected_rim_color", "VSRerouteNode", p_config.dark_theme ? Color(1, 1, 1) : Color(0, 0, 0));
 		}
 	}
 
