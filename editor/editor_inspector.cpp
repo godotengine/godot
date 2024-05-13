@@ -647,7 +647,7 @@ void EditorProperty::_focusable_focused(int p_index) {
 }
 
 void EditorProperty::add_focusable(Control *p_control) {
-	p_control->connect("focus_entered", callable_mp(this, &EditorProperty::_focusable_focused).bind(focusables.size()));
+	p_control->connect(SceneStringName(focus_entered), callable_mp(this, &EditorProperty::_focusable_focused).bind(focusables.size()));
 	focusables.push_back(p_control);
 }
 
@@ -2164,10 +2164,10 @@ void EditorInspectorArray::_setup() {
 		int element_position = begin_array_index + i;
 		ae.panel->set_meta("index", element_position);
 		ae.panel->set_tooltip_text(vformat(TTR("Element %d: %s%d*"), element_position, array_element_prefix, element_position));
-		ae.panel->connect("focus_entered", callable_mp((CanvasItem *)ae.panel, &PanelContainer::queue_redraw));
-		ae.panel->connect("focus_exited", callable_mp((CanvasItem *)ae.panel, &PanelContainer::queue_redraw));
-		ae.panel->connect("draw", callable_mp(this, &EditorInspectorArray::_panel_draw).bind(i));
-		ae.panel->connect("gui_input", callable_mp(this, &EditorInspectorArray::_panel_gui_input).bind(i));
+		ae.panel->connect(SceneStringName(focus_entered), callable_mp((CanvasItem *)ae.panel, &PanelContainer::queue_redraw));
+		ae.panel->connect(SceneStringName(focus_exited), callable_mp((CanvasItem *)ae.panel, &PanelContainer::queue_redraw));
+		ae.panel->connect(SceneStringName(draw), callable_mp(this, &EditorInspectorArray::_panel_draw).bind(i));
+		ae.panel->connect(SceneStringName(gui_input), callable_mp(this, &EditorInspectorArray::_panel_gui_input).bind(i));
 		ae.panel->add_theme_style_override(SNAME("panel"), i % 2 ? odd_style : even_style);
 		elements_vbox->add_child(ae.panel);
 
@@ -2434,7 +2434,7 @@ EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	vbox->add_child(add_button);
 
 	control_dropping = memnew(Control);
-	control_dropping->connect("draw", callable_mp(this, &EditorInspectorArray::_control_dropping_draw));
+	control_dropping->connect(SceneStringName(draw), callable_mp(this, &EditorInspectorArray::_control_dropping_draw));
 	control_dropping->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	add_child(control_dropping);
 
@@ -2454,7 +2454,7 @@ EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	new_size_spin_box->set_editable(!read_only);
 	resize_dialog_vbox->add_margin_child(TTRC("New Size:"), new_size_spin_box);
 
-	vbox->connect("visibility_changed", callable_mp(this, &EditorInspectorArray::_vbox_visibility_changed));
+	vbox->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorInspectorArray::_vbox_visibility_changed));
 }
 
 ////////////////////////////////////////////////
@@ -3522,7 +3522,7 @@ void EditorInspector::edit(Object *p_object) {
 
 	next_object = p_object; // Some plugins need to know the next edited object when clearing the inspector.
 	if (object) {
-		object->disconnect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
+		object->disconnect(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback));
 		_clear();
 	}
 	per_array_page.clear();
@@ -3534,7 +3534,7 @@ void EditorInspector::edit(Object *p_object) {
 		if (scroll_cache.has(object->get_instance_id())) { //if exists, set something else
 			update_scroll_request = scroll_cache[object->get_instance_id()]; //done this way because wait until full size is accommodated
 		}
-		object->connect("property_list_changed", callable_mp(this, &EditorInspector::_changed_callback));
+		object->connect(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback));
 		update_tree();
 	}
 

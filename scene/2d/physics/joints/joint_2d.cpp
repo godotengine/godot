@@ -31,7 +31,6 @@
 #include "joint_2d.h"
 
 #include "scene/2d/physics/physics_body_2d.h"
-#include "scene/scene_string_names.h"
 
 void Joint2D::_disconnect_signals() {
 	Node *node_a = get_node_or_null(a);

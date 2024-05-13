@@ -64,7 +64,6 @@
 #include "editor/window_wrapper.h"
 #include "scene/main/node.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 #include "script_text_editor.h"
 #include "servers/display_server.h"
 #include "text_editor.h"
@@ -425,7 +424,7 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
 	search_box->connect("text_changed", callable_mp(this, &ScriptEditorQuickOpen::_text_changed));
-	search_box->connect("gui_input", callable_mp(this, &ScriptEditorQuickOpen::_sbox_input));
+	search_box->connect(SceneStringName(gui_input), callable_mp(this, &ScriptEditorQuickOpen::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	set_ok_button_text(TTR("Open"));
@@ -1714,7 +1713,7 @@ void ScriptEditor::_notification(int p_what) {
 			filter_scripts->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			filter_methods->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
-			filename->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
+			filename->add_theme_style_override("normal", get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit")));
 
 			recent_scripts->reset_size();
 
@@ -1725,7 +1724,7 @@ void ScriptEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			// Can't set own styles in NOTIFICATION_THEME_CHANGED, so for now this will do.
-			add_theme_style_override("panel", get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
+			add_theme_style_override("panel", get_theme_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
 
 			get_tree()->connect("tree_changed", callable_mp(this, &ScriptEditor::_tree_changed));
 			InspectorDock::get_singleton()->connect("request_help", callable_mp(this, &ScriptEditor::_help_class_open));
@@ -4000,7 +3999,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	filename = memnew(Label);
 	filename->set_clip_text(true);
 	filename->set_h_size_flags(SIZE_EXPAND_FILL);
-	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("normal"), SNAME("LineEdit")));
+	filename->add_theme_style_override("normal", EditorNode::get_singleton()->get_editor_theme()->get_stylebox(CoreStringName(normal), SNAME("LineEdit")));
 	buttons_hbox->add_child(filename);
 
 	members_overview_alphabeta_sort_button = memnew(Button);

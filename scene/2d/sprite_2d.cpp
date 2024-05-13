@@ -31,7 +31,6 @@
 #include "sprite_2d.h"
 
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Sprite2D::_edit_get_state() const {

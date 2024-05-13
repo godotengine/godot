@@ -47,7 +47,6 @@
 #include "scene/gui/tree.h"
 
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
-const char *FindInFiles::SIGNAL_FINISHED = "finished";
 
 // TODO: Would be nice in Vector and Vectors.
 template <typename T>
@@ -115,12 +114,12 @@ void FindInFiles::_notification(int p_what) {
 void FindInFiles::start() {
 	if (_pattern.is_empty()) {
 		print_verbose("Nothing to search, pattern is empty");
-		emit_signal(SNAME(SIGNAL_FINISHED));
+		emit_signal(SceneStringName(finished));
 		return;
 	}
 	if (_extension_filter.size() == 0) {
 		print_verbose("Nothing to search, filter matches no files");
-		emit_signal(SNAME(SIGNAL_FINISHED));
+		emit_signal(SceneStringName(finished));
 		return;
 	}
 
@@ -202,7 +201,7 @@ void FindInFiles::_iterate() {
 		set_process(false);
 		_current_dir = "";
 		_searching = false;
-		emit_signal(SNAME(SIGNAL_FINISHED));
+		emit_signal(SceneStringName(finished));
 	}
 }
 
@@ -292,7 +291,7 @@ void FindInFiles::_bind_methods() {
 			PropertyInfo(Variant::INT, "end"),
 			PropertyInfo(Variant::STRING, "text")));
 
-	ADD_SIGNAL(MethodInfo(SIGNAL_FINISHED));
+	ADD_SIGNAL(MethodInfo("finished"));
 }
 
 //-----------------------------------------------------------------------------
@@ -573,7 +572,7 @@ const char *FindInFilesPanel::SIGNAL_CLOSE_BUTTON_CLICKED = "close_button_clicke
 FindInFilesPanel::FindInFilesPanel() {
 	_finder = memnew(FindInFiles);
 	_finder->connect(FindInFiles::SIGNAL_RESULT_FOUND, callable_mp(this, &FindInFilesPanel::_on_result_found));
-	_finder->connect(FindInFiles::SIGNAL_FINISHED, callable_mp(this, &FindInFilesPanel::_on_finished));
+	_finder->connect(SceneStringName(finished), callable_mp(this, &FindInFilesPanel::_on_finished));
 	add_child(_finder);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);

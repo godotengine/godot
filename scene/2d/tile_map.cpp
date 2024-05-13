@@ -31,7 +31,6 @@
 #include "tile_map.h"
 #include "tile_map.compat.inc"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "scene/gui/control.h"
 

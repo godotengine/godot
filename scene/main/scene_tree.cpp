@@ -55,7 +55,6 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/world_2d.h"
-#include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
@@ -1876,7 +1875,7 @@ SceneTree::SceneTree() {
 
 	root->connect("close_requested", callable_mp(this, &SceneTree::_main_window_close));
 	root->connect("go_back_requested", callable_mp(this, &SceneTree::_main_window_go_back));
-	root->connect("focus_entered", callable_mp(this, &SceneTree::_main_window_focus_in));
+	root->connect(SceneStringName(focus_entered), callable_mp(this, &SceneTree::_main_window_focus_in));
 
 #ifdef TOOLS_ENABLED
 	edited_scene_root = nullptr;

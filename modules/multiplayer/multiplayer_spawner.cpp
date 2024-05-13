@@ -33,7 +33,6 @@
 #include "core/io/marshalls.h"
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 /* This is editor only */

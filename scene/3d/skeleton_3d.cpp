@@ -34,7 +34,6 @@
 #include "core/variant/type_info.h"
 #include "scene/3d/skeleton_modifier_3d.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/scene_string_names.h"
 #ifndef DISABLE_DEPRECATED
 #include "scene/3d/physical_bone_simulator_3d.h"
 #endif // _DISABLE_DEPRECATED

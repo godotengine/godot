@@ -35,7 +35,6 @@
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 
 SceneCacheInterface::NodeCache &SceneCacheInterface::_track(Node *p_node) {
 	const ObjectID oid = p_node->get_instance_id();

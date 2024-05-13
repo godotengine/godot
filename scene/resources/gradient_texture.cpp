@@ -30,7 +30,6 @@
 
 #include "gradient_texture.h"
 
-#include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 
 GradientTexture1D::GradientTexture1D() {

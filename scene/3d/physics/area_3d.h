@@ -33,7 +33,6 @@
 
 #include "core/templates/vset.h"
 #include "scene/3d/physics/collision_object_3d.h"
-#include "scene/scene_string_names.h"
 
 class Area3D : public CollisionObject3D {
 	GDCLASS(Area3D, CollisionObject3D);

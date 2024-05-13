@@ -32,7 +32,6 @@
 #include "gdscript_function.h"
 #include "gdscript_lambda_callable.h"
 
-#include "core/core_string_names.h"
 #include "core/os/os.h"
 
 #ifdef DEBUG_ENABLED

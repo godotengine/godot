@@ -31,7 +31,6 @@
 #include "editor_properties.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties_array_dict.h"
@@ -457,7 +456,7 @@ EditorPropertyLocale::EditorPropertyLocale() {
 	locale = memnew(LineEdit);
 	locale_hb->add_child(locale);
 	locale->connect("text_submitted", callable_mp(this, &EditorPropertyLocale::_locale_selected));
-	locale->connect("focus_exited", callable_mp(this, &EditorPropertyLocale::_locale_focus_exited));
+	locale->connect(SceneStringName(focus_exited), callable_mp(this, &EditorPropertyLocale::_locale_focus_exited));
 	locale->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	locale_edit = memnew(Button);
@@ -598,7 +597,7 @@ EditorPropertyPath::EditorPropertyPath() {
 	path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	path_hb->add_child(path);
 	path->connect("text_submitted", callable_mp(this, &EditorPropertyPath::_path_selected));
-	path->connect("focus_exited", callable_mp(this, &EditorPropertyPath::_path_focus_exited));
+	path->connect(SceneStringName(focus_exited), callable_mp(this, &EditorPropertyPath::_path_focus_exited));
 	path->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	path_edit = memnew(Button);
@@ -1681,8 +1680,8 @@ void EditorPropertyEasing::_bind_methods() {
 
 EditorPropertyEasing::EditorPropertyEasing() {
 	easing_draw = memnew(Control);
-	easing_draw->connect("draw", callable_mp(this, &EditorPropertyEasing::_draw_easing));
-	easing_draw->connect("gui_input", callable_mp(this, &EditorPropertyEasing::_drag_easing));
+	easing_draw->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyEasing::_draw_easing));
+	easing_draw->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyEasing::_drag_easing));
 	easing_draw->set_default_cursor_shape(Control::CURSOR_MOVE);
 	add_child(easing_draw);
 
@@ -1699,7 +1698,7 @@ EditorPropertyEasing::EditorPropertyEasing() {
 	spin->set_allow_lesser(true);
 	spin->set_allow_greater(true);
 	spin->connect("value_changed", callable_mp(this, &EditorPropertyEasing::_spin_value_changed));
-	spin->get_line_edit()->connect("focus_exited", callable_mp(this, &EditorPropertyEasing::_spin_focus_exited));
+	spin->get_line_edit()->connect(SceneStringName(focus_exited), callable_mp(this, &EditorPropertyEasing::_spin_focus_exited));
 	spin->hide();
 	add_child(spin);
 }
@@ -3000,7 +2999,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	edit = memnew(LineEdit);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->hide();
-	edit->connect(SNAME("focus_exited"), callable_mp(this, &EditorPropertyNodePath::_accept_text));
+	edit->connect(SceneStringName(focus_exited), callable_mp(this, &EditorPropertyNodePath::_accept_text));
 	edit->connect(SNAME("text_submitted"), callable_mp(this, &EditorPropertyNodePath::_text_submitted));
 	hbc->add_child(edit);
 }
@@ -3280,7 +3279,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 		EditorShaderPicker *shader_picker = memnew(EditorShaderPicker);
 		shader_picker->set_edited_material(Object::cast_to<ShaderMaterial>(p_object));
 		resource_picker = shader_picker;
-		connect(SNAME("ready"), callable_mp(this, &EditorPropertyResource::_update_preferred_shader));
+		connect(SceneStringName(ready), callable_mp(this, &EditorPropertyResource::_update_preferred_shader));
 	} else if (p_base_type == "AudioStream") {
 		EditorAudioStreamPicker *astream_picker = memnew(EditorAudioStreamPicker);
 		resource_picker = astream_picker;

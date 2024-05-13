@@ -52,13 +52,13 @@ void EditorAbout::_notification(int p_what) {
 			_tpl_text->begin_bulk_theme_override();
 			_tpl_text->add_theme_font_override("normal_font", font);
 			_tpl_text->add_theme_font_size_override("normal_font_size", font_size);
-			_tpl_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
+			_tpl_text->add_theme_constant_override(SceneStringName(line_separation), 4 * EDSCALE);
 			_tpl_text->end_bulk_theme_override();
 
 			license_text_label->begin_bulk_theme_override();
 			license_text_label->add_theme_font_override("normal_font", font);
 			license_text_label->add_theme_font_size_override("normal_font_size", font_size);
-			license_text_label->add_theme_constant_override("line_separation", 4 * EDSCALE);
+			license_text_label->add_theme_constant_override(SceneStringName(line_separation), 4 * EDSCALE);
 			license_text_label->end_bulk_theme_override();
 
 			_logo->set_texture(get_editor_theme_icon(SNAME("Logo")));
@@ -130,8 +130,8 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 				il->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 
 				il->connect("item_activated", callable_mp(this, &EditorAbout::_item_with_website_selected).bind(il));
-				il->connect("resized", callable_mp(this, &EditorAbout::_item_list_resized).bind(il));
-				il->connect("focus_exited", callable_mp(il, &ItemList::deselect_all));
+				il->connect(SceneStringName(resized), callable_mp(this, &EditorAbout::_item_list_resized).bind(il));
+				il->connect(SceneStringName(focus_exited), callable_mp(il, &ItemList::deselect_all));
 
 				il->add_theme_style_override("focus", empty_stylebox);
 				il->add_theme_style_override("selected", empty_stylebox);

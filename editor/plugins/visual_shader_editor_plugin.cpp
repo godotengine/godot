@@ -130,15 +130,15 @@ void VSGraphNode::draw_port(int p_slot_index, Point2i p_pos, bool p_left, const 
 void VSRerouteNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			connect("mouse_entered", callable_mp(this, &VSRerouteNode::_on_mouse_entered));
-			connect("mouse_exited", callable_mp(this, &VSRerouteNode::_on_mouse_exited));
+			connect(SceneStringName(mouse_entered), callable_mp(this, &VSRerouteNode::_on_mouse_entered));
+			connect(SceneStringName(mouse_exited), callable_mp(this, &VSRerouteNode::_on_mouse_exited));
 		} break;
 		case NOTIFICATION_DRAW: {
 			Vector2 offset = Vector2(0, -16);
 			Color drag_bg_color = get_theme_color(SNAME("drag_background"), SNAME("VSRerouteNode"));
 			draw_circle(get_size() * 0.5 + offset, 16, Color(drag_bg_color, selected ? 1 : icon_opacity));
 
-			Ref<Texture2D> icon = get_theme_icon(SNAME("ToolMove"), SNAME("EditorIcons"));
+			Ref<Texture2D> icon = get_editor_theme_icon(SNAME("ToolMove"));
 			Point2 icon_offset = -icon->get_size() * 0.5 + get_size() * 0.5 + offset;
 			draw_texture(icon, icon_offset, Color(1, 1, 1, selected ? 1 : icon_opacity));
 		} break;
@@ -292,8 +292,8 @@ void VisualShaderGraphPlugin::set_input_port_default_value(VisualShader::Type p_
 			button->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
 
 			Callable ce = callable_mp(editor, &VisualShaderEditor::_draw_color_over_button);
-			if (!button->is_connected("draw", ce)) {
-				button->connect("draw", ce.bind(button, p_value));
+			if (!button->is_connected(SceneStringName(draw), ce)) {
+				button->connect(SceneStringName(draw), ce.bind(button, p_value));
 			}
 		} break;
 		case Variant::BOOL: {
@@ -816,7 +816,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		parameter_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		parameter_name->set_text(parameter->get_parameter_name());
 		parameter_name->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_parameter_line_edit_changed).bind(p_id));
-		parameter_name->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_parameter_line_edit_focus_out).bind(parameter_name, p_id));
+		parameter_name->connect(SceneStringName(focus_exited), callable_mp(editor, &VisualShaderEditor::_parameter_line_edit_focus_out).bind(parameter_name, p_id));
 
 		if (vsnode->get_output_port_count() == 1 && vsnode->get_output_port_name(0) == "") {
 			hb = memnew(HBoxContainer);
@@ -1128,7 +1128,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					name_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					name_box->set_text(name_left);
 					name_box->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_change_input_port_name).bind(name_box, p_id, j), CONNECT_DEFERRED);
-					name_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_port_name_focus_out).bind(name_box, p_id, j, false), CONNECT_DEFERRED);
+					name_box->connect(SceneStringName(focus_exited), callable_mp(editor, &VisualShaderEditor::_port_name_focus_out).bind(name_box, p_id, j, false), CONNECT_DEFERRED);
 
 					Button *remove_btn = memnew(Button);
 					remove_btn->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
@@ -1170,7 +1170,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					name_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					name_box->set_text(name_right);
 					name_box->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_change_output_port_name).bind(name_box, p_id, i), CONNECT_DEFERRED);
-					name_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_port_name_focus_out).bind(name_box, p_id, i, true), CONNECT_DEFERRED);
+					name_box->connect(SceneStringName(focus_exited), callable_mp(editor, &VisualShaderEditor::_port_name_focus_out).bind(name_box, p_id, i, true), CONNECT_DEFERRED);
 
 					OptionButton *type_box = memnew(OptionButton);
 					hb->add_child(type_box);
@@ -1414,7 +1414,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		expression_box->set_context_menu_enabled(false);
 		expression_box->set_draw_line_numbers(true);
 
-		expression_box->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_expression_focus_out).bind(expression_box, p_id));
+		expression_box->connect(SceneStringName(focus_exited), callable_mp(editor, &VisualShaderEditor::_expression_focus_out).bind(expression_box, p_id));
 	}
 }
 
@@ -2285,7 +2285,7 @@ void VisualShaderEditor::_draw_color_over_button(Object *p_obj, Color p_color) {
 		return;
 	}
 
-	Ref<StyleBox> normal = get_theme_stylebox(SNAME("normal"), SNAME("Button"));
+	Ref<StyleBox> normal = get_theme_stylebox(CoreStringName(normal), SNAME("Button"));
 	button->draw_rect(Rect2(normal->get_offset(), button->get_size() - normal->get_minimum_size()), p_color);
 }
 
@@ -6068,10 +6068,10 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("copy_nodes_request", callable_mp(this, &VisualShaderEditor::_copy_nodes).bind(false));
 	graph->connect("paste_nodes_request", callable_mp(this, &VisualShaderEditor::_paste_nodes).bind(false, Point2()));
 	graph->connect("delete_nodes_request", callable_mp(this, &VisualShaderEditor::_delete_nodes_request));
-	graph->connect("gui_input", callable_mp(this, &VisualShaderEditor::_graph_gui_input));
+	graph->connect(SceneStringName(gui_input), callable_mp(this, &VisualShaderEditor::_graph_gui_input));
 	graph->connect("connection_to_empty", callable_mp(this, &VisualShaderEditor::_connection_to_empty));
 	graph->connect("connection_from_empty", callable_mp(this, &VisualShaderEditor::_connection_from_empty));
-	graph->connect("visibility_changed", callable_mp(this, &VisualShaderEditor::_visibility_changed));
+	graph->connect(SceneStringName(visibility_changed), callable_mp(this, &VisualShaderEditor::_visibility_changed));
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR_INT);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR_UINT);
@@ -6274,7 +6274,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	node_filter = memnew(LineEdit);
 	filter_hb->add_child(node_filter);
 	node_filter->connect("text_changed", callable_mp(this, &VisualShaderEditor::_member_filter_changed));
-	node_filter->connect("gui_input", callable_mp(this, &VisualShaderEditor::_sbox_input));
+	node_filter->connect(SceneStringName(gui_input), callable_mp(this, &VisualShaderEditor::_sbox_input));
 	node_filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	node_filter->set_placeholder(TTR("Search"));
 
@@ -6419,7 +6419,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	frame_title_change_popup->add_child(frame_title_change_edit);
 	frame_title_change_edit->reset_size();
 	frame_title_change_popup->reset_size();
-	frame_title_change_popup->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_frame_title_popup_focus_out));
+	frame_title_change_popup->connect(SceneStringName(focus_exited), callable_mp(this, &VisualShaderEditor::_frame_title_popup_focus_out));
 	frame_title_change_popup->connect("popup_hide", callable_mp(this, &VisualShaderEditor::_frame_title_popup_hide));
 	add_child(frame_title_change_popup);
 

@@ -796,7 +796,7 @@ void NavigationAgent2D::_trigger_waypoint_reached() {
 	Dictionary details;
 
 	const Vector2 waypoint = navigation_path[navigation_path_index];
-	details[SNAME("position")] = waypoint;
+	details[CoreStringName(position)] = waypoint;
 
 	int waypoint_type = -1;
 	if (path_metadata_flags.has_flag(NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_TYPES)) {

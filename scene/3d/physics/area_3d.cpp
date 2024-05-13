@@ -30,7 +30,6 @@
 
 #include "area_3d.h"
 
-#include "scene/scene_string_names.h"
 #include "servers/audio_server.h"
 
 void Area3D::set_gravity_space_override_mode(SpaceOverride p_mode) {

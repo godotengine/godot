@@ -442,7 +442,7 @@ void AudioStreamRandomizer::add_stream(int p_index, Ref<AudioStream> p_stream, f
 	ERR_FAIL_COND(p_index > audio_stream_pool.size());
 	PoolEntry entry{ p_stream, p_weight };
 	audio_stream_pool.insert(p_index, entry);
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 	notify_property_list_changed();
 }
 
@@ -459,21 +459,21 @@ void AudioStreamRandomizer::move_stream(int p_index_from, int p_index_to) {
 		p_index_from++;
 	}
 	audio_stream_pool.remove_at(p_index_from);
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 	notify_property_list_changed();
 }
 
 void AudioStreamRandomizer::remove_stream(int p_index) {
 	ERR_FAIL_INDEX(p_index, audio_stream_pool.size());
 	audio_stream_pool.remove_at(p_index);
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 	notify_property_list_changed();
 }
 
 void AudioStreamRandomizer::set_stream(int p_index, Ref<AudioStream> p_stream) {
 	ERR_FAIL_INDEX(p_index, audio_stream_pool.size());
 	audio_stream_pool.write[p_index].stream = p_stream;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 Ref<AudioStream> AudioStreamRandomizer::get_stream(int p_index) const {
@@ -484,7 +484,7 @@ Ref<AudioStream> AudioStreamRandomizer::get_stream(int p_index) const {
 void AudioStreamRandomizer::set_stream_probability_weight(int p_index, float p_weight) {
 	ERR_FAIL_INDEX(p_index, audio_stream_pool.size());
 	audio_stream_pool.write[p_index].weight = p_weight;
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 }
 
 float AudioStreamRandomizer::get_stream_probability_weight(int p_index) const {

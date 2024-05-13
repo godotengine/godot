@@ -2874,7 +2874,7 @@ PopupMenu::PopupMenu() {
 	control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	scroll_container->add_child(control, false, INTERNAL_MODE_FRONT);
-	control->connect("draw", callable_mp(this, &PopupMenu::_draw_items));
+	control->connect(SceneStringName(draw), callable_mp(this, &PopupMenu::_draw_items));
 
 	submenu_timer = memnew(Timer);
 	submenu_timer->set_wait_time(0.3);

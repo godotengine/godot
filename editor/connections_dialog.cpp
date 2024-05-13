@@ -1622,7 +1622,7 @@ ConnectionsDock::ConnectionsDock() {
 	connect_dialog->connect("connected", callable_mp(this, &ConnectionsDock::_make_or_edit_connection));
 	tree->connect("item_selected", callable_mp(this, &ConnectionsDock::_tree_item_selected));
 	tree->connect("item_activated", callable_mp(this, &ConnectionsDock::_tree_item_activated));
-	tree->connect("gui_input", callable_mp(this, &ConnectionsDock::_tree_gui_input));
+	tree->connect(SceneStringName(gui_input), callable_mp(this, &ConnectionsDock::_tree_gui_input));
 
 	add_theme_constant_override("separation", 3 * EDSCALE);
 }

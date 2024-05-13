@@ -310,15 +310,15 @@ void ScrollBar::_notification(int p_what) {
 			}
 
 			if (drag_node) {
-				drag_node->connect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-				drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONE_SHOT);
+				drag_node->connect(SceneStringName(gui_input), callable_mp(this, &ScrollBar::_drag_node_input));
+				drag_node->connect(SceneStringName(tree_exiting), callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONE_SHOT);
 			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			if (drag_node) {
-				drag_node->disconnect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-				drag_node->disconnect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit));
+				drag_node->disconnect(SceneStringName(gui_input), callable_mp(this, &ScrollBar::_drag_node_input));
+				drag_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &ScrollBar::_drag_node_exit));
 			}
 
 			drag_node = nullptr;
@@ -522,7 +522,7 @@ float ScrollBar::get_custom_step() const {
 
 void ScrollBar::_drag_node_exit() {
 	if (drag_node) {
-		drag_node->disconnect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
+		drag_node->disconnect(SceneStringName(gui_input), callable_mp(this, &ScrollBar::_drag_node_input));
 	}
 	drag_node = nullptr;
 }
@@ -591,8 +591,8 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 void ScrollBar::set_drag_node(const NodePath &p_path) {
 	if (is_inside_tree()) {
 		if (drag_node) {
-			drag_node->disconnect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-			drag_node->disconnect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit));
+			drag_node->disconnect(SceneStringName(gui_input), callable_mp(this, &ScrollBar::_drag_node_input));
+			drag_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &ScrollBar::_drag_node_exit));
 		}
 	}
 
@@ -606,8 +606,8 @@ void ScrollBar::set_drag_node(const NodePath &p_path) {
 		}
 
 		if (drag_node) {
-			drag_node->connect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-			drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONE_SHOT);
+			drag_node->connect(SceneStringName(gui_input), callable_mp(this, &ScrollBar::_drag_node_input));
+			drag_node->connect(SceneStringName(tree_exiting), callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONE_SHOT);
 		}
 	}
 }

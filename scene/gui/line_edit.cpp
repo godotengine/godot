@@ -2473,8 +2473,8 @@ void LineEdit::_generate_context_menu() {
 	menu_dir->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
 	menu_ctl->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
 
-	menu->connect(SNAME("focus_entered"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
-	menu->connect(SNAME("focus_exited"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
+	menu->connect(SceneStringName(focus_entered), callable_mp(this, &LineEdit::_validate_caret_can_draw));
+	menu->connect(SceneStringName(focus_exited), callable_mp(this, &LineEdit::_validate_caret_can_draw));
 }
 
 void LineEdit::_update_context_menu() {

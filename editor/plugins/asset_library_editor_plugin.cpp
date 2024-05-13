@@ -240,7 +240,7 @@ void EditorAssetLibraryItemDescription::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			previews_bg->add_theme_style_override("panel", previews->get_theme_stylebox(SNAME("normal"), SNAME("TextEdit")));
+			previews_bg->add_theme_style_override("panel", previews->get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit")));
 		} break;
 	}
 }
@@ -330,7 +330,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	desc_vbox->add_child(description);
 	description->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	description->connect("meta_clicked", callable_mp(this, &EditorAssetLibraryItemDescription::_link_click));
-	description->add_theme_constant_override("line_separation", Math::round(5 * EDSCALE));
+	description->add_theme_constant_override(SceneStringName(line_separation), Math::round(5 * EDSCALE));
 
 	previews_vbox = memnew(VBoxContainer);
 	previews_vbox->hide(); // Will be shown if we add any previews later.

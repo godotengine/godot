@@ -201,7 +201,7 @@ void ThemeEditorPreview::_notification(int p_what) {
 				set_process(true);
 			}
 
-			connect("visibility_changed", callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
+			connect(SceneStringName(visibility_changed), callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -279,9 +279,9 @@ ThemeEditorPreview::ThemeEditorPreview() {
 
 	picker_overlay = memnew(Control);
 	add_preview_overlay(picker_overlay);
-	picker_overlay->connect("draw", callable_mp(this, &ThemeEditorPreview::_draw_picker_overlay));
-	picker_overlay->connect("gui_input", callable_mp(this, &ThemeEditorPreview::_gui_input_picker_overlay));
-	picker_overlay->connect("mouse_exited", callable_mp(this, &ThemeEditorPreview::_reset_picker_overlay));
+	picker_overlay->connect(SceneStringName(draw), callable_mp(this, &ThemeEditorPreview::_draw_picker_overlay));
+	picker_overlay->connect(SceneStringName(gui_input), callable_mp(this, &ThemeEditorPreview::_gui_input_picker_overlay));
+	picker_overlay->connect(SceneStringName(mouse_exited), callable_mp(this, &ThemeEditorPreview::_reset_picker_overlay));
 }
 
 void DefaultThemeEditorPreview::_notification(int p_what) {

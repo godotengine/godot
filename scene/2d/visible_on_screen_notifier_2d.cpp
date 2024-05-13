@@ -30,8 +30,6 @@
 
 #include "visible_on_screen_notifier_2d.h"
 
-#include "scene/scene_string_names.h"
-
 #ifdef TOOLS_ENABLED
 Rect2 VisibleOnScreenNotifier2D::_edit_get_rect() const {
 	return rect;

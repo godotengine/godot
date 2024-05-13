@@ -30,9 +30,6 @@
 
 #include "visual_instance_3d.h"
 
-#include "core/core_string_names.h"
-#include "scene/scene_string_names.h"
-
 AABB VisualInstance3D::get_aabb() const {
 	AABB ret;
 	GDVIRTUAL_CALL(_get_aabb, ret);

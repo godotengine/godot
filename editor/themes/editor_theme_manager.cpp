@@ -1044,7 +1044,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_constant("v_separation", "ItemList", p_config.forced_even_separation * EDSCALE);
 			p_theme->set_constant("h_separation", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
 			p_theme->set_constant("icon_margin", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
-			p_theme->set_constant("line_separation", "ItemList", p_config.separation_margin);
+			p_theme->set_constant(SceneStringName(line_separation), "ItemList", p_config.separation_margin);
 			p_theme->set_constant("outline_size", "ItemList", 0);
 		}
 	}
@@ -2216,7 +2216,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_color("code_bg_color", "EditorHelp", p_config.dark_color_3);
 		p_theme->set_color("kbd_bg_color", "EditorHelp", p_config.dark_color_1);
 		p_theme->set_color("param_bg_color", "EditorHelp", p_config.dark_color_1);
-		p_theme->set_constant("line_separation", "EditorHelp", Math::round(6 * EDSCALE));
+		p_theme->set_constant(SceneStringName(line_separation), "EditorHelp", Math::round(6 * EDSCALE));
 		p_theme->set_constant("table_h_separation", "EditorHelp", 16 * EDSCALE);
 		p_theme->set_constant("table_v_separation", "EditorHelp", 6 * EDSCALE);
 		p_theme->set_constant("text_highlight_h_padding", "EditorHelp", 1 * EDSCALE);

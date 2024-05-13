@@ -711,7 +711,7 @@ void ProjectList::_create_project_item_control(int p_index) {
 	hb->set_is_missing(item.missing);
 	hb->set_is_grayed(item.grayed);
 
-	hb->connect("gui_input", callable_mp(this, &ProjectList::_list_item_input).bind(hb));
+	hb->connect(SceneStringName(gui_input), callable_mp(this, &ProjectList::_list_item_input).bind(hb));
 	hb->connect("favorite_pressed", callable_mp(this, &ProjectList::_on_favorite_pressed).bind(hb));
 
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)

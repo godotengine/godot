@@ -3621,7 +3621,7 @@ void CanvasItemEditor::_draw_selection() {
 	}
 
 	if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
-		viewport->draw_texture(pivot_icon, (temp_pivot - view_offset) * zoom - (pivot_icon->get_size() / 2).floor(), get_theme_color(SNAME("accent_color"), SNAME("Editor")));
+		viewport->draw_texture(pivot_icon, (temp_pivot - view_offset) * zoom - (pivot_icon->get_size() / 2).floor(), get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 	}
 }
 
@@ -5079,7 +5079,7 @@ void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
 	context_toolbar_hbox->add_child(p_control);
 	context_toolbar_separators[p_control] = sep;
 
-	p_control->connect("visibility_changed", callable_mp(this, &CanvasItemEditor::_update_context_toolbar));
+	p_control->connect(SceneStringName(visibility_changed), callable_mp(this, &CanvasItemEditor::_update_context_toolbar));
 
 	_update_context_toolbar();
 }
@@ -5088,7 +5088,7 @@ void CanvasItemEditor::remove_control_from_menu_panel(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
 	ERR_FAIL_COND(p_control->get_parent() != context_toolbar_hbox);
 
-	p_control->disconnect("visibility_changed", callable_mp(this, &CanvasItemEditor::_update_context_toolbar));
+	p_control->disconnect(SceneStringName(visibility_changed), callable_mp(this, &CanvasItemEditor::_update_context_toolbar));
 
 	VSeparator *sep = context_toolbar_separators[p_control];
 	context_toolbar_hbox->remove_child(sep);
@@ -5199,7 +5199,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	viewport_scrollable->set_clip_contents(true);
 	viewport_scrollable->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	viewport_scrollable->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	viewport_scrollable->connect("draw", callable_mp(this, &CanvasItemEditor::_update_scrollbars));
+	viewport_scrollable->connect(SceneStringName(draw), callable_mp(this, &CanvasItemEditor::_update_scrollbars));
 
 	SubViewportContainer *scene_tree = memnew(SubViewportContainer);
 	viewport_scrollable->add_child(scene_tree);
@@ -5268,9 +5268,9 @@ CanvasItemEditor::CanvasItemEditor() {
 	viewport->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	viewport->set_clip_contents(true);
 	viewport->set_focus_mode(FOCUS_ALL);
-	viewport->connect("draw", callable_mp(this, &CanvasItemEditor::_draw_viewport));
-	viewport->connect("gui_input", callable_mp(this, &CanvasItemEditor::_gui_input_viewport));
-	viewport->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
+	viewport->connect(SceneStringName(draw), callable_mp(this, &CanvasItemEditor::_draw_viewport));
+	viewport->connect(SceneStringName(gui_input), callable_mp(this, &CanvasItemEditor::_gui_input_viewport));
+	viewport->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
 	h_scroll = memnew(HScrollBar);
 	viewport->add_child(h_scroll);
@@ -6142,11 +6142,11 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			_update_theme();
-			connect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
+			connect(SceneStringName(mouse_exited), callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
+			disconnect(SceneStringName(mouse_exited), callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
 		} break;
 
 		case NOTIFICATION_DRAG_END: {

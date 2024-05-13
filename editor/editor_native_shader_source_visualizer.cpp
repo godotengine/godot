@@ -32,6 +32,7 @@
 
 #include "editor/code_editor.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/text_edit.h"
 #include "servers/rendering/shader_language.h"
@@ -95,8 +96,8 @@ void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
 			CodeEdit *code_edit = memnew(CodeEdit);
 			code_edit->set_editable(false);
 			code_edit->set_syntax_highlighter(syntax_highlighter);
-			code_edit->add_theme_font_override("font", get_theme_font("source", "EditorFonts"));
-			code_edit->add_theme_font_size_override("font_size", get_theme_font_size("source_size", "EditorFonts"));
+			code_edit->add_theme_font_override("font", get_theme_font("source", EditorStringName(EditorFonts)));
+			code_edit->add_theme_font_size_override("font_size", get_theme_font_size("source_size", EditorStringName(EditorFonts)));
 			code_edit->add_theme_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 6));
 
 			// Appearance: Caret

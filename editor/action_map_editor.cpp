@@ -38,7 +38,6 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
-#include "scene/scene_string_names.h"
 
 static bool _is_action_name_valid(const String &p_name) {
 	const char32_t *cstr = p_name.get_data();

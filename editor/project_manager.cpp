@@ -1605,7 +1605,7 @@ ProjectManager::ProjectManager() {
 		DisplayServer::get_singleton()->process_events();
 		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServer::MAIN_WINDOW_ID);
 		title_bar->set_can_move_window(true);
-		title_bar->connect("item_rect_changed", callable_mp(this, &ProjectManager::_titlebar_resized));
+		title_bar->connect(SceneStringName(item_rect_changed), callable_mp(this, &ProjectManager::_titlebar_resized));
 	}
 
 	_update_size_limits();

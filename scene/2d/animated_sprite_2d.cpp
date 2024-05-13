@@ -31,7 +31,6 @@
 #include "animated_sprite_2d.h"
 
 #include "scene/main/viewport.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary AnimatedSprite2D::_edit_get_state() const {
@@ -291,12 +290,12 @@ void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 	}
 
 	if (frames.is_valid()) {
-		frames->disconnect(SceneStringName(changed), callable_mp(this, &AnimatedSprite2D::_res_changed));
+		frames->disconnect(CoreStringName(changed), callable_mp(this, &AnimatedSprite2D::_res_changed));
 	}
 	stop();
 	frames = p_frames;
 	if (frames.is_valid()) {
-		frames->connect(SceneStringName(changed), callable_mp(this, &AnimatedSprite2D::_res_changed));
+		frames->connect(CoreStringName(changed), callable_mp(this, &AnimatedSprite2D::_res_changed));
 
 		List<StringName> al;
 		frames->get_animation_list(&al);
@@ -482,7 +481,7 @@ void AnimatedSprite2D::play(const StringName &p_name, float p_custom_scale, bool
 		} else {
 			set_frame_and_progress(0, 0.0);
 		}
-		emit_signal("animation_changed");
+		emit_signal(SceneStringName(animation_changed));
 	} else {
 		bool is_backward = signbit(speed_scale * custom_speed_scale);
 		if (p_from_end && is_backward && frame == 0 && frame_progress <= 0.0) {
@@ -537,7 +536,7 @@ void AnimatedSprite2D::set_animation(const StringName &p_name) {
 
 	animation = p_name;
 
-	emit_signal("animation_changed");
+	emit_signal(SceneStringName(animation_changed));
 
 	if (frames == nullptr) {
 		animation = StringName();

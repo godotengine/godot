@@ -30,7 +30,6 @@
 
 #include "tile_map_layer.h"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"

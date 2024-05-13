@@ -450,13 +450,13 @@ void Path2DEditor::edit(Node *p_path2d) {
 	if (p_path2d) {
 		node = Object::cast_to<Path2D>(p_path2d);
 
-		if (!node->is_connected("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed))) {
-			node->connect("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed));
+		if (!node->is_connected(SceneStringName(visibility_changed), callable_mp(this, &Path2DEditor::_node_visibility_changed))) {
+			node->connect(SceneStringName(visibility_changed), callable_mp(this, &Path2DEditor::_node_visibility_changed));
 		}
 	} else {
 		// The node may have been deleted at this point.
-		if (node && node->is_connected("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed))) {
-			node->disconnect("visibility_changed", callable_mp(this, &Path2DEditor::_node_visibility_changed));
+		if (node && node->is_connected(SceneStringName(visibility_changed), callable_mp(this, &Path2DEditor::_node_visibility_changed))) {
+			node->disconnect(SceneStringName(visibility_changed), callable_mp(this, &Path2DEditor::_node_visibility_changed));
 		}
 		node = nullptr;
 	}

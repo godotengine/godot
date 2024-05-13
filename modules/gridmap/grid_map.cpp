@@ -30,14 +30,12 @@
 
 #include "grid_map.h"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "scene/3d/light_3d.h"
 #include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/physics_material.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/scene_string_names.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/rendering_server.h"
 

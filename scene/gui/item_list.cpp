@@ -1894,7 +1894,7 @@ ItemList::ItemList() {
 	add_child(scroll_bar, false, INTERNAL_MODE_FRONT);
 	scroll_bar->connect("value_changed", callable_mp(this, &ItemList::_scroll_changed));
 
-	connect("mouse_exited", callable_mp(this, &ItemList::_mouse_exited));
+	connect(SceneStringName(mouse_exited), callable_mp(this, &ItemList::_mouse_exited));
 
 	set_focus_mode(FOCUS_ALL);
 	set_clip_contents(true);

@@ -236,8 +236,8 @@ void EditorAutoloadSettings::_autoload_edited() {
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", selected_autoload, order);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
 
-		undo_redo->add_do_method(this, "call_deferred", "update_autoload");
-		undo_redo->add_undo_method(this, "call_deferred", "update_autoload");
+		undo_redo->add_do_method(this, CoreStringName(call_deferred), "update_autoload");
+		undo_redo->add_undo_method(this, CoreStringName(call_deferred), "update_autoload");
 
 		undo_redo->add_do_method(this, "emit_signal", autoload_changed);
 		undo_redo->add_undo_method(this, "emit_signal", autoload_changed);
@@ -271,8 +271,8 @@ void EditorAutoloadSettings::_autoload_edited() {
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", base, order);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", base, order);
 
-		undo_redo->add_do_method(this, "call_deferred", "update_autoload");
-		undo_redo->add_undo_method(this, "call_deferred", "update_autoload");
+		undo_redo->add_do_method(this, CoreStringName(call_deferred), "update_autoload");
+		undo_redo->add_undo_method(this, CoreStringName(call_deferred), "update_autoload");
 
 		undo_redo->add_do_method(this, "emit_signal", autoload_changed);
 		undo_redo->add_undo_method(this, "emit_signal", autoload_changed);

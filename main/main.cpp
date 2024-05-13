@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_globals.h"
-#include "core/core_string_names.h"
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/extension/extension_api_dump.h"

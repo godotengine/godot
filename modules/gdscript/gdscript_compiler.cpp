@@ -37,7 +37,8 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
+
+#include "scene/scene_string_names.h"
 
 bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringName &p_name) {
 	if (codegen.function_node && codegen.function_node->is_static) {
@@ -2235,7 +2236,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
 	} else {
 		if (p_for_ready) {
-			func_name = "_ready";
+			func_name = SceneStringName(_ready);
 		} else {
 			func_name = "@implicit_new";
 		}

@@ -30,8 +30,6 @@
 
 #include "visible_on_screen_notifier_3d.h"
 
-#include "scene/scene_string_names.h"
-
 void VisibleOnScreenNotifier3D::_visibility_enter() {
 	if (!is_inside_tree() || Engine::get_singleton()->is_editor_hint()) {
 		return;

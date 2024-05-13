@@ -37,7 +37,6 @@
 #include "core/string/translation.h"
 #include "core/variant/variant_parser.h"
 #include "scene/gui/control.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
 
@@ -742,13 +741,13 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
 			focused = true;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_IN);
-			emit_signal(SNAME("focus_entered"));
+			emit_signal(SceneStringName(focus_entered));
 
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
 			focused = false;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_OUT);
-			emit_signal(SNAME("focus_exited"));
+			emit_signal(SceneStringName(focus_exited));
 		} break;
 		case DisplayServer::WINDOW_EVENT_CLOSE_REQUEST: {
 			if (exclusive_child != nullptr) {

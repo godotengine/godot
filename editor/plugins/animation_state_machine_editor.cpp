@@ -51,7 +51,6 @@
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
 #include "scene/resources/style_box_flat.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 
 bool AnimationNodeStateMachineEditor::can_edit(const Ref<AnimationNode> &p_node) {
@@ -185,7 +184,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			if (!read_only) {
 				if (node_rects[i].name.has_point(mb->get_position()) && state_machine->can_edit_node(node_rects[i].node_name)) { // edit name
 					// TODO: Avoid using strings, expose a method on LineEdit.
-					Ref<StyleBox> line_sb = name_edit->get_theme_stylebox(SNAME("normal"));
+					Ref<StyleBox> line_sb = name_edit->get_theme_stylebox(CoreStringName(normal));
 					Rect2 edit_rect = node_rects[i].name;
 					edit_rect.position -= line_sb->get_offset();
 					edit_rect.size += line_sb->get_minimum_size();
@@ -1735,8 +1734,8 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	state_machine_draw = memnew(Control);
 	panel->add_child(state_machine_draw);
-	state_machine_draw->connect("gui_input", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_gui_input));
-	state_machine_draw->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_draw));
+	state_machine_draw->connect(SceneStringName(gui_input), callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_gui_input));
+	state_machine_draw->connect(SceneStringName(draw), callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_draw));
 	state_machine_draw->set_focus_mode(FOCUS_ALL);
 	state_machine_draw->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 
@@ -1744,7 +1743,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	state_machine_draw->add_child(state_machine_play_pos);
 	state_machine_play_pos->set_mouse_filter(MOUSE_FILTER_PASS); //pass all to parent
 	state_machine_play_pos->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	state_machine_play_pos->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw_all));
+	state_machine_play_pos->connect(SceneStringName(draw), callable_mp(this, &AnimationNodeStateMachineEditor::_state_machine_pos_draw_all));
 
 	v_scroll = memnew(VScrollBar);
 	state_machine_draw->add_child(v_scroll);
@@ -1796,7 +1795,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	name_edit_popup->add_child(name_edit);
 	name_edit->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	name_edit->connect("text_submitted", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited));
-	name_edit->connect("focus_exited", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited_focus_out));
+	name_edit->connect(SceneStringName(focus_exited), callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited_focus_out));
 
 	open_file = memnew(EditorFileDialog);
 	add_child(open_file);
@@ -1811,7 +1810,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	delete_tree = memnew(Tree);
 	delete_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	delete_tree->set_hide_root(true);
-	delete_tree->connect("draw", callable_mp(this, &AnimationNodeStateMachineEditor::_delete_tree_draw));
+	delete_tree->connect(SceneStringName(draw), callable_mp(this, &AnimationNodeStateMachineEditor::_delete_tree_draw));
 	delete_window->add_child(delete_tree);
 
 	Button *ok = delete_window->get_cancel_button();

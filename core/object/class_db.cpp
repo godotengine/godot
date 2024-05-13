@@ -31,7 +31,6 @@
 #include "class_db.h"
 
 #include "core/config/engine.h"
-#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/os/mutex.h"

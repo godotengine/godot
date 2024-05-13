@@ -31,7 +31,6 @@
 #include "message_queue.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 

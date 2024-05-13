@@ -31,7 +31,6 @@
 #include "voxel_gi.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "mesh_instance_3d.h"
 #include "multimesh_instance_3d.h"
 #include "scene/resources/camera_attributes.h"

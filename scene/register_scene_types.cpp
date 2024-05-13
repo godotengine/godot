@@ -155,7 +155,6 @@
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/resources/world_2d.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 
 // 2D

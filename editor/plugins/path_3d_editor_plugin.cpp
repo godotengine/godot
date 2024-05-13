@@ -650,14 +650,14 @@ void Path3DEditorPlugin::edit(Object *p_object) {
 		path = Object::cast_to<Path3D>(p_object);
 		if (path) {
 			if (path->get_curve().is_valid()) {
-				path->get_curve()->emit_signal(SNAME("changed"));
+				path->get_curve()->emit_signal(CoreStringName(changed));
 			}
 		}
 	} else {
 		Path3D *pre = path;
 		path = nullptr;
 		if (pre) {
-			pre->get_curve()->emit_signal(SNAME("changed"));
+			pre->get_curve()->emit_signal(CoreStringName(changed));
 		}
 	}
 
@@ -679,7 +679,7 @@ void Path3DEditorPlugin::make_visible(bool p_visible) {
 			Path3D *pre = path;
 			path = nullptr;
 			if (pre && pre->get_curve().is_valid()) {
-				pre->get_curve()->emit_signal(SNAME("changed"));
+				pre->get_curve()->emit_signal(CoreStringName(changed));
 			}
 		}
 	}
@@ -802,7 +802,7 @@ void Path3DEditorPlugin::_notification(int p_what) {
 			// FIXME: This can trigger theme updates when the nodes that we want to update are not yet available.
 			// The toolbar should be extracted to a dedicated control and theme updates should be handled through
 			// the notification.
-			Node3DEditor::get_singleton()->connect("theme_changed", callable_mp(this, &Path3DEditorPlugin::_update_theme));
+			Node3DEditor::get_singleton()->connect(SceneStringName(theme_changed), callable_mp(this, &Path3DEditorPlugin::_update_theme));
 		} break;
 	}
 }

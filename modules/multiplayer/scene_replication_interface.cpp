@@ -35,7 +35,6 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
-#include "scene/scene_string_names.h"
 
 #define MAKE_ROOM(m_amount)             \
 	if (packet_cache.size() < m_amount) \
@@ -236,7 +235,7 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 	sync_nodes.insert(sid);
 
 	// Update visibility.
-	sync->connect("visibility_changed", callable_mp(this, &SceneReplicationInterface::_visibility_changed).bind(sync->get_instance_id()));
+	sync->connect(SceneStringName(visibility_changed), callable_mp(this, &SceneReplicationInterface::_visibility_changed).bind(sync->get_instance_id()));
 	_update_sync_visibility(0, sync);
 
 	if (pending_spawn == p_obj->get_instance_id() && sync->get_multiplayer_authority() == pending_spawn_remote) {
@@ -273,7 +272,7 @@ Error SceneReplicationInterface::on_replication_stop(Object *p_obj, Variant p_co
 	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
 	MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(p_config.get_validated_object());
 	ERR_FAIL_NULL_V(sync, ERR_INVALID_PARAMETER);
-	sync->disconnect("visibility_changed", callable_mp(this, &SceneReplicationInterface::_visibility_changed));
+	sync->disconnect(SceneStringName(visibility_changed), callable_mp(this, &SceneReplicationInterface::_visibility_changed));
 	// Untrack synchronizer.
 	const ObjectID oid = node->get_instance_id();
 	const ObjectID sid = sync->get_instance_id();

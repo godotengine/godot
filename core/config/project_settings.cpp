@@ -31,7 +31,6 @@
 #include "project_settings.h"
 
 #include "core/core_bind.h" // For Compression enum.
-#include "core/core_string_names.h"
 #include "core/input/input_map.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"

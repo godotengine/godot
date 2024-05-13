@@ -132,7 +132,6 @@ SceneStringNames::SceneStringNames() {
 	_unhandled_input = StaticCString::create("_unhandled_input");
 	_unhandled_key_input = StaticCString::create("_unhandled_key_input");
 
-	changed = StaticCString::create("changed");
 	_shader_changed = StaticCString::create("_shader_changed");
 
 	_spatial_editor_group = StaticCString::create("_spatial_editor_group");
@@ -146,10 +145,6 @@ SceneStringNames::SceneStringNames() {
 	rotate = StaticCString::create("rotate");
 	h_offset = StaticCString::create("h_offset");
 	v_offset = StaticCString::create("v_offset");
-
-	transform_pos = StaticCString::create("position");
-	transform_rot = StaticCString::create("rotation");
-	transform_scale = StaticCString::create("scale");
 
 	_update_remote = StaticCString::create("_update_remote");
 	_update_pairs = StaticCString::create("_update_pairs");
