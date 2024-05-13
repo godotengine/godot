@@ -71,11 +71,16 @@ private:
 	Allocator *allocator = nullptr;
 	bool allocator_is_custom = false;
 
-	LocalVector<Page *> pages;
-	LocalVector<uint32_t> page_bytes;
+	LocalVector<Page *> *pages;
+	LocalVector<uint32_t> *page_bytes;
+	LocalVector<Page *> pages_buffer1;
+	LocalVector<uint32_t> page_bytes_buffer1;
+	LocalVector<Page *> pages_buffer2;
+	LocalVector<uint32_t> page_bytes_buffer2;
 	uint32_t max_pages = 0;
-	uint32_t pages_used = 0;
+	uint32_t pages_used = 1;
 	bool flushing = false;
+	bool pages_buffer1_inuse = true;
 
 #ifdef DEV_ENABLED
 	bool is_current_thread_override = false;
@@ -89,14 +94,6 @@ private:
 			int16_t args;
 		};
 	};
-
-	_FORCE_INLINE_ void _ensure_first_page() {
-		if (unlikely(pages.is_empty())) {
-			pages.push_back(allocator->alloc());
-			page_bytes.push_back(0);
-			pages_used = 1;
-		}
-	}
 
 	Error _transfer_messages_to_main_queue();
 

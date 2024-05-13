@@ -60,11 +60,11 @@
 	}
 
 void CallQueue::_add_page() {
-	if (pages_used == page_bytes.size()) {
-		pages.push_back(allocator->alloc());
-		page_bytes.push_back(0);
+	if (pages_used == page_bytes->size()) {
+		pages->push_back(allocator->alloc());
+		page_bytes->push_back(0);
 	}
-	page_bytes[pages_used] = 0;
+	(*page_bytes)[pages_used] = 0;
 	pages_used++;
 }
 
@@ -91,9 +91,7 @@ Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_ar
 
 	LOCK_MUTEX;
 
-	_ensure_first_page();
-
-	if ((page_bytes[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
+	if (((*page_bytes)[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
 		if (pages_used == max_pages) {
 			fprintf(stderr, "Failed method: %s. Message queue out of memory. %s\n", String(p_callable).utf8().get_data(), error_text.utf8().get_data());
 			statistics();
@@ -103,9 +101,9 @@ Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_ar
 		_add_page();
 	}
 
-	Page *page = pages[pages_used - 1];
+	Page *page = (*pages)[pages_used - 1];
 
-	uint8_t *buffer_end = &page->data[page_bytes[pages_used - 1]];
+	uint8_t *buffer_end = &page->data[(*page_bytes)[pages_used - 1]];
 
 	Message *msg = memnew_placement(buffer_end, Message);
 	msg->args = p_argcount;
@@ -127,7 +125,7 @@ Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_ar
 		*v = *p_args[i];
 	}
 
-	page_bytes[pages_used - 1] += room_needed;
+	(*page_bytes)[pages_used - 1] += room_needed;
 
 	UNLOCK_MUTEX;
 
@@ -138,9 +136,7 @@ Error CallQueue::push_set(ObjectID p_id, const StringName &p_prop, const Variant
 	LOCK_MUTEX;
 	uint32_t room_needed = sizeof(Message) + sizeof(Variant);
 
-	_ensure_first_page();
-
-	if ((page_bytes[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
+	if (((*page_bytes)[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
 		if (pages_used == max_pages) {
 			String type;
 			if (ObjectDB::get_instance(p_id)) {
@@ -155,8 +151,8 @@ Error CallQueue::push_set(ObjectID p_id, const StringName &p_prop, const Variant
 		_add_page();
 	}
 
-	Page *page = pages[pages_used - 1];
-	uint8_t *buffer_end = &page->data[page_bytes[pages_used - 1]];
+	Page *page = (*pages)[pages_used - 1];
+	uint8_t *buffer_end = &page->data[(*page_bytes)[pages_used - 1]];
 
 	Message *msg = memnew_placement(buffer_end, Message);
 	msg->args = 1;
@@ -168,7 +164,7 @@ Error CallQueue::push_set(ObjectID p_id, const StringName &p_prop, const Variant
 	Variant *v = memnew_placement(buffer_end, Variant);
 	*v = p_value;
 
-	page_bytes[pages_used - 1] += room_needed;
+	(*page_bytes)[pages_used - 1] += room_needed;
 	UNLOCK_MUTEX;
 
 	return OK;
@@ -179,9 +175,7 @@ Error CallQueue::push_notification(ObjectID p_id, int p_notification) {
 	LOCK_MUTEX;
 	uint32_t room_needed = sizeof(Message);
 
-	_ensure_first_page();
-
-	if ((page_bytes[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
+	if (((*page_bytes)[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
 		if (pages_used == max_pages) {
 			fprintf(stderr, "Failed notification: %d target ID: %s. Message queue out of memory. %s\n", p_notification, itos(p_id).utf8().get_data(), error_text.utf8().get_data());
 			statistics();
@@ -191,8 +185,8 @@ Error CallQueue::push_notification(ObjectID p_id, int p_notification) {
 		_add_page();
 	}
 
-	Page *page = pages[pages_used - 1];
-	uint8_t *buffer_end = &page->data[page_bytes[pages_used - 1]];
+	Page *page = (*pages)[pages_used - 1];
+	uint8_t *buffer_end = &page->data[(*page_bytes)[pages_used - 1]];
 
 	Message *msg = memnew_placement(buffer_end, Message);
 
@@ -201,7 +195,7 @@ Error CallQueue::push_notification(ObjectID p_id, int p_notification) {
 	//msg->target;
 	msg->notification = p_notification;
 
-	page_bytes[pages_used - 1] += room_needed;
+	(*page_bytes)[pages_used - 1] += room_needed;
 	UNLOCK_MUTEX;
 
 	return OK;
@@ -225,10 +219,6 @@ void CallQueue::_call_function(const Callable &p_callable, const Variant *p_args
 }
 
 Error CallQueue::_transfer_messages_to_main_queue() {
-	if (pages.size() == 0) {
-		return OK;
-	}
-
 	CallQueue *mq = MessageQueue::main_singleton;
 	DEV_ASSERT(!mq->allocator_is_custom && !allocator_is_custom); // Transferring pages is only safe if using the same alloator parameters.
 
@@ -244,10 +234,10 @@ Error CallQueue::_transfer_messages_to_main_queue() {
 	{
 		if (mq->pages_used) {
 			uint32_t dst_page = mq->pages_used - 1;
-			uint32_t dst_offset = mq->page_bytes[dst_page];
-			if (dst_offset + page_bytes[0] < uint32_t(PAGE_SIZE_BYTES)) {
-				memcpy(mq->pages[dst_page]->data + dst_offset, pages[0]->data, page_bytes[0]);
-				mq->page_bytes[dst_page] += page_bytes[0];
+			uint32_t dst_offset = (*mq->page_bytes)[dst_page];
+			if (dst_offset + (*page_bytes)[0] < uint32_t(PAGE_SIZE_BYTES)) {
+				memcpy((*mq->pages)[dst_page]->data + dst_offset, (*pages)[0]->data, (*page_bytes)[0]);
+				(*mq->page_bytes)[dst_page] += (*page_bytes)[0];
 				src_page++;
 			}
 		}
@@ -264,13 +254,13 @@ Error CallQueue::_transfer_messages_to_main_queue() {
 
 	for (; src_page < pages_used; src_page++) {
 		mq->_add_page();
-		memcpy(mq->pages[mq->pages_used - 1]->data, pages[src_page]->data, page_bytes[src_page]);
-		mq->page_bytes[mq->pages_used - 1] = page_bytes[src_page];
+		memcpy((*mq->pages)[mq->pages_used - 1]->data, (*pages)[src_page]->data, (*page_bytes)[src_page]);
+		(*mq->page_bytes)[mq->pages_used - 1] = (*page_bytes)[src_page];
 	}
 
 	mq->mutex.unlock();
 
-	page_bytes[0] = 0;
+	(*page_bytes)[0] = 0;
 	pages_used = 1;
 
 	return OK;
@@ -284,12 +274,6 @@ Error CallQueue::flush() {
 
 	LOCK_MUTEX;
 
-	if (pages.size() == 0) {
-		// Never allocated
-		UNLOCK_MUTEX;
-		return OK; // Do nothing.
-	}
-
 	if (flushing) {
 		UNLOCK_MUTEX;
 		return ERR_BUSY;
@@ -297,66 +281,82 @@ Error CallQueue::flush() {
 
 	flushing = true;
 
-	uint32_t i = 0;
-	uint32_t offset = 0;
+	while (pages_used > 1 || (*page_bytes)[0] > 0) {
+		LocalVector<Page *> *current_pages = pages;
+		LocalVector<uint32_t> *current_page_bytes = page_bytes;
+		uint32_t current_pages_used = pages_used;
 
-	while (i < pages_used && offset < page_bytes[i]) {
-		Page *page = pages[i];
-
-		//lock on each iteration, so a call can re-add itself to the message queue
-
-		Message *message = (Message *)&page->data[offset];
-
-		uint32_t advance = sizeof(Message);
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
-			advance += sizeof(Variant) * message->args;
+		if (pages_buffer1_inuse) {
+			pages_buffer1_inuse = false;
+			pages = &pages_buffer2;
+			page_bytes = &page_bytes_buffer2;
+		} else {
+			pages_buffer1_inuse = true;
+			pages = &pages_buffer1;
+			page_bytes = &page_bytes_buffer1;
 		}
 
-		//pre-advance so this function is reentrant
-		offset += advance;
+		(*page_bytes)[0] = 0;
+		pages_used = 1;
 
-		Object *target = message->callable.get_object();
+		// Unlock on each iteration, so a call can re-add itself to the message queue
 
 		UNLOCK_MUTEX;
 
-		switch (message->type & FLAG_MASK) {
-			case TYPE_CALL: {
-				if (target || (message->type & FLAG_NULL_IS_OK)) {
-					Variant *args = (Variant *)(message + 1);
-					_call_function(message->callable, args, message->args, message->type & FLAG_SHOW_ERROR);
-				}
-			} break;
-			case TYPE_NOTIFICATION: {
-				if (target) {
-					target->notification(message->notification);
-				}
-			} break;
-			case TYPE_SET: {
-				if (target) {
-					Variant *arg = (Variant *)(message + 1);
-					target->set(message->callable.get_method(), *arg);
-				}
-			} break;
-		}
+		uint32_t i = 0;
+		uint32_t offset = 0;
 
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
-			Variant *args = (Variant *)(message + 1);
-			for (int k = 0; k < message->args; k++) {
-				args[k].~Variant();
+		while (i < current_pages_used && offset < (*current_page_bytes)[i]) {
+			Page *page = (*current_pages)[i];
+
+			Message *message = (Message *)&page->data[offset];
+
+			uint32_t advance = sizeof(Message);
+			if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
+				advance += sizeof(Variant) * message->args;
+			}
+
+			//pre-advance so this function is reentrant
+			offset += advance;
+
+			Object *target = message->callable.get_object();
+
+			switch (message->type & FLAG_MASK) {
+				case TYPE_CALL: {
+					if (target || (message->type & FLAG_NULL_IS_OK)) {
+						Variant *args = (Variant *)(message + 1);
+						_call_function(message->callable, args, message->args, message->type & FLAG_SHOW_ERROR);
+					}
+				} break;
+				case TYPE_NOTIFICATION: {
+					if (target) {
+						target->notification(message->notification);
+					}
+				} break;
+				case TYPE_SET: {
+					if (target) {
+						Variant *arg = (Variant *)(message + 1);
+						target->set(message->callable.get_method(), *arg);
+					}
+				} break;
+			}
+
+			if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
+				Variant *args = (Variant *)(message + 1);
+				for (int k = 0; k < message->args; k++) {
+					args[k].~Variant();
+				}
+			}
+
+			message->~Message();
+
+			if (offset == (*current_page_bytes)[i]) {
+				i++;
+				offset = 0;
 			}
 		}
-
-		message->~Message();
-
 		LOCK_MUTEX;
-		if (offset == page_bytes[i]) {
-			i++;
-			offset = 0;
-		}
 	}
-
-	page_bytes[0] = 0;
-	pages_used = 1;
 
 	flushing = false;
 	UNLOCK_MUTEX;
@@ -366,17 +366,10 @@ Error CallQueue::flush() {
 void CallQueue::clear() {
 	LOCK_MUTEX;
 
-	if (pages.size() == 0) {
-		UNLOCK_MUTEX;
-		return; // Nothing to clear.
-	}
-
 	for (uint32_t i = 0; i < pages_used; i++) {
 		uint32_t offset = 0;
-		while (offset < page_bytes[i]) {
-			Page *page = pages[i];
-
-			//lock on each iteration, so a call can re-add itself to the message queue
+		while (offset < (*page_bytes)[i]) {
+			Page *page = (*pages)[i];
 
 			Message *message = (Message *)&page->data[offset];
 
@@ -399,7 +392,7 @@ void CallQueue::clear() {
 	}
 
 	pages_used = 1;
-	page_bytes[0] = 0;
+	(*page_bytes)[0] = 0;
 
 	UNLOCK_MUTEX;
 }
@@ -413,8 +406,8 @@ void CallQueue::statistics() {
 
 	for (uint32_t i = 0; i < pages_used; i++) {
 		uint32_t offset = 0;
-		while (offset < page_bytes[i]) {
-			Page *page = pages[i];
+		while (offset < (*page_bytes)[i]) {
+			Page *page = (*pages)[i];
 
 			//lock on each iteration, so a call can re-add itself to the message queue
 
@@ -504,10 +497,7 @@ bool CallQueue::is_flushing() const {
 }
 
 bool CallQueue::has_messages() const {
-	if (pages_used == 0) {
-		return false;
-	}
-	if (pages_used == 1 && page_bytes[0] == 0) {
+	if (pages_used == 1 && (*page_bytes)[0] == 0) {
 		return false;
 	}
 
@@ -515,7 +505,7 @@ bool CallQueue::has_messages() const {
 }
 
 int CallQueue::get_max_buffer_usage() const {
-	return pages.size() * PAGE_SIZE_BYTES;
+	return pages->size() * PAGE_SIZE_BYTES;
 }
 
 CallQueue::CallQueue(Allocator *p_custom_allocator, uint32_t p_max_pages, const String &p_error_text) {
@@ -528,13 +518,23 @@ CallQueue::CallQueue(Allocator *p_custom_allocator, uint32_t p_max_pages, const 
 	}
 	max_pages = p_max_pages;
 	error_text = p_error_text;
+	pages = &pages_buffer1;
+	page_bytes = &page_bytes_buffer1;
+	// Ensure there is at least one page available in each buffer
+	pages_buffer1.push_back(allocator->alloc());
+	page_bytes_buffer1.push_back(0);
+	pages_buffer2.push_back(allocator->alloc());
+	page_bytes_buffer2.push_back(0);
 }
 
 CallQueue::~CallQueue() {
 	clear();
 	// Let go of pages.
-	for (uint32_t i = 0; i < pages.size(); i++) {
-		allocator->free(pages[i]);
+	for (uint32_t i = 0; i < pages_buffer1.size(); i++) {
+		allocator->free(pages_buffer1[i]);
+	}
+	for (uint32_t i = 0; i < pages_buffer2.size(); i++) {
+		allocator->free(pages_buffer2[i]);
 	}
 	if (!allocator_is_custom) {
 		memdelete(allocator);
