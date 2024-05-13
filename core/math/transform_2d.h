@@ -52,11 +52,11 @@ struct _NO_DISCARD_ Transform2D {
 
 	Vector2 columns[3];
 
-	_FORCE_INLINE_ real_t tdotx(const Vector2 &p_v) const { return columns[0][0] * p_v.x + columns[1][0] * p_v.y; }
-	_FORCE_INLINE_ real_t tdoty(const Vector2 &p_v) const { return columns[0][1] * p_v.x + columns[1][1] * p_v.y; }
+	constexpr real_t tdotx(const Vector2 &p_v) const { return columns[0][0] * p_v.x + columns[1][0] * p_v.y; }
+	constexpr real_t tdoty(const Vector2 &p_v) const { return columns[0][1] * p_v.x + columns[1][1] * p_v.y; }
 
-	const Vector2 &operator[](int p_idx) const { return columns[p_idx]; }
-	Vector2 &operator[](int p_idx) { return columns[p_idx]; }
+	constexpr const Vector2 &operator[](size_t p_idx) const { return columns[p_idx]; }
+	constexpr Vector2 &operator[](size_t p_idx) { return columns[p_idx]; }
 
 	void invert();
 	Transform2D inverse() const;
@@ -101,54 +101,123 @@ struct _NO_DISCARD_ Transform2D {
 	bool is_finite() const;
 
 	Transform2D looking_at(const Vector2 &p_target) const;
-
-	bool operator==(const Transform2D &p_transform) const;
-	bool operator!=(const Transform2D &p_transform) const;
-
-	void operator*=(const Transform2D &p_transform);
-	Transform2D operator*(const Transform2D &p_transform) const;
-	void operator*=(real_t p_val);
-	Transform2D operator*(real_t p_val) const;
-	void operator/=(real_t p_val);
-	Transform2D operator/(real_t p_val) const;
-
 	Transform2D interpolate_with(const Transform2D &p_transform, real_t p_c) const;
 
 	_FORCE_INLINE_ Vector2 basis_xform(const Vector2 &p_vec) const;
 	_FORCE_INLINE_ Vector2 basis_xform_inv(const Vector2 &p_vec) const;
-	_FORCE_INLINE_ Vector2 xform(const Vector2 &p_vec) const;
+	constexpr Vector2 xform(const Vector2 &p_vec) const;
 	_FORCE_INLINE_ Vector2 xform_inv(const Vector2 &p_vec) const;
 	_FORCE_INLINE_ Rect2 xform(const Rect2 &p_rect) const;
 	_FORCE_INLINE_ Rect2 xform_inv(const Rect2 &p_rect) const;
 	_FORCE_INLINE_ Vector<Vector2> xform(const Vector<Vector2> &p_array) const;
 	_FORCE_INLINE_ Vector<Vector2> xform_inv(const Vector<Vector2> &p_array) const;
 
+	constexpr Transform2D &operator*=(const Transform2D &p_transform);
+	constexpr Transform2D operator*(const Transform2D &p_transform) const;
+
+	constexpr Transform2D &operator*=(real_t p_val);
+	constexpr Transform2D operator*(real_t p_val) const;
+	constexpr Transform2D &operator/=(real_t p_val);
+	constexpr Transform2D operator/(real_t p_val) const;
+
+	constexpr bool operator==(const Transform2D &p_transform) const;
+	constexpr bool operator!=(const Transform2D &p_transform) const;
+
 	operator String() const;
 
-	Transform2D(real_t p_xx, real_t p_xy, real_t p_yx, real_t p_yy, real_t p_ox, real_t p_oy) {
-		columns[0][0] = p_xx;
-		columns[0][1] = p_xy;
-		columns[1][0] = p_yx;
-		columns[1][1] = p_yy;
-		columns[2][0] = p_ox;
-		columns[2][1] = p_oy;
-	}
+	constexpr Transform2D() :
+			columns{
+				{ 1, 0 },
+				{ 0, 1 },
+				{ 0, 0 },
+			} {}
 
-	Transform2D(const Vector2 &p_x, const Vector2 &p_y, const Vector2 &p_origin) {
-		columns[0] = p_x;
-		columns[1] = p_y;
-		columns[2] = p_origin;
-	}
+	constexpr Transform2D(real_t p_xx, real_t p_xy, real_t p_yx, real_t p_yy, real_t p_ox, real_t p_oy) :
+			columns{
+				{ p_xx, p_xy },
+				{ p_yx, p_yy },
+				{ p_ox, p_oy },
+			} {}
+
+	constexpr Transform2D(const Vector2 &p_x, const Vector2 &p_y, const Vector2 &p_origin) :
+			columns{
+				p_x,
+				p_y,
+				p_origin,
+			} {}
 
 	Transform2D(real_t p_rot, const Vector2 &p_pos);
 
 	Transform2D(real_t p_rot, const Size2 &p_scale, real_t p_skew, const Vector2 &p_pos);
-
-	Transform2D() {
-		columns[0][0] = 1.0;
-		columns[1][1] = 1.0;
-	}
 };
+
+constexpr Transform2D &Transform2D::operator*=(const Transform2D &p_transform) {
+	columns[2] = xform(p_transform.columns[2]);
+
+	real_t x0 = tdotx(p_transform.columns[0]);
+	real_t x1 = tdoty(p_transform.columns[0]);
+	real_t y0 = tdotx(p_transform.columns[1]);
+	real_t y1 = tdoty(p_transform.columns[1]);
+
+	columns[0][0] = x0;
+	columns[0][1] = x1;
+	columns[1][0] = y0;
+	columns[1][1] = y1;
+
+	return *this;
+}
+
+constexpr Transform2D Transform2D::operator*(const Transform2D &p_transform) const {
+	Transform2D t = *this;
+	t *= p_transform;
+	return t;
+}
+
+constexpr Transform2D &Transform2D::operator*=(real_t p_val) {
+	columns[0] *= p_val;
+	columns[1] *= p_val;
+	columns[2] *= p_val;
+	return *this;
+}
+
+constexpr Transform2D Transform2D::operator*(real_t p_val) const {
+	Transform2D ret(*this);
+	ret *= p_val;
+	return ret;
+}
+
+constexpr Transform2D &Transform2D::operator/=(real_t p_val) {
+	columns[0] /= p_val;
+	columns[1] /= p_val;
+	columns[2] /= p_val;
+	return *this;
+}
+
+constexpr Transform2D Transform2D::operator/(real_t p_val) const {
+	Transform2D ret(*this);
+	ret /= p_val;
+	return ret;
+}
+
+constexpr bool Transform2D::operator==(const Transform2D &p_transform) const {
+	for (int i = 0; i < 3; i++) {
+		if (columns[i] != p_transform.columns[i]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+constexpr bool Transform2D::operator!=(const Transform2D &p_transform) const {
+	for (int i = 0; i < 3; i++) {
+		if (columns[i] != p_transform.columns[i]) {
+			return true;
+		}
+	}
+
+	return false;
+}
 
 Vector2 Transform2D::basis_xform(const Vector2 &p_vec) const {
 	return Vector2(
@@ -162,7 +231,7 @@ Vector2 Transform2D::basis_xform_inv(const Vector2 &p_vec) const {
 			columns[1].dot(p_vec));
 }
 
-Vector2 Transform2D::xform(const Vector2 &p_vec) const {
+constexpr Vector2 Transform2D::xform(const Vector2 &p_vec) const {
 	return Vector2(
 				   tdotx(p_vec),
 				   tdoty(p_vec)) +

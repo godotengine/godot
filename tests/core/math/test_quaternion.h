@@ -57,17 +57,17 @@ Quaternion quat_euler_yxz_deg(Vector3 angle) {
 }
 
 TEST_CASE("[Quaternion] Default Construct") {
-	Quaternion q;
+	constexpr Quaternion q;
 
-	CHECK(q[0] == 0.0);
-	CHECK(q[1] == 0.0);
-	CHECK(q[2] == 0.0);
-	CHECK(q[3] == 1.0);
+	static_assert(q[0] == 0.0);
+	static_assert(q[1] == 0.0);
+	static_assert(q[2] == 0.0);
+	static_assert(q[3] == 1.0);
 }
 
 TEST_CASE("[Quaternion] Construct x,y,z,w") {
 	// Values are taken from actual use in another project & are valid (except roundoff error).
-	Quaternion q(0.2391, 0.099, 0.3696, 0.8924);
+	constexpr Quaternion q(0.2391, 0.099, 0.3696, 0.8924);
 
 	CHECK(q[0] == doctest::Approx(0.2391));
 	CHECK(q[1] == doctest::Approx(0.099));
@@ -118,7 +118,7 @@ TEST_CASE("[Quaternion] Construct AxisAngle 4") {
 }
 
 TEST_CASE("[Quaternion] Construct from Quaternion") {
-	Vector3 axis(1.0, 2.0, 0.5);
+	constexpr Vector3 axis(1.0, 2.0, 0.5);
 	Quaternion q_src(axis.normalized(), Math::deg_to_rad(35.0));
 	Quaternion q(q_src);
 
@@ -254,10 +254,10 @@ TEST_CASE("[Quaternion] Get Euler Orders") {
 
 TEST_CASE("[Quaternion] Product (book)") {
 	// Example from "Quaternions and Rotation Sequences" by Jack Kuipers, p. 108.
-	Quaternion p(1.0, -2.0, 1.0, 3.0);
-	Quaternion q(-1.0, 2.0, 3.0, 2.0);
+	constexpr Quaternion p(1.0, -2.0, 1.0, 3.0);
+	constexpr Quaternion q(-1.0, 2.0, 3.0, 2.0);
 
-	Quaternion pq = p * q;
+	constexpr Quaternion pq = p * q;
 	CHECK(pq[0] == doctest::Approx(-9.0));
 	CHECK(pq[1] == doctest::Approx(-2.0));
 	CHECK(pq[2] == doctest::Approx(11.0));
@@ -354,7 +354,7 @@ TEST_CASE("[Quaternion] xform vector") {
 	Basis basis_axes = Basis::from_euler(euler_yzx);
 	Quaternion q(basis_axes);
 
-	Vector3 v_arb(3.0, 4.0, 5.0);
+	constexpr Vector3 v_arb(3.0, 4.0, 5.0);
 	Vector3 v_rot = q.xform(v_arb);
 	Vector3 v_compare = basis_axes.xform(v_arb);
 

@@ -77,10 +77,7 @@ struct _NO_DISCARD_ Transform3D {
 	bool is_equal_approx(const Transform3D &p_transform) const;
 	bool is_finite() const;
 
-	bool operator==(const Transform3D &p_transform) const;
-	bool operator!=(const Transform3D &p_transform) const;
-
-	_FORCE_INLINE_ Vector3 xform(const Vector3 &p_vector) const;
+	constexpr Vector3 xform(const Vector3 &p_vector) const;
 	_FORCE_INLINE_ AABB xform(const AABB &p_aabb) const;
 	_FORCE_INLINE_ Vector<Vector3> xform(const Vector<Vector3> &p_array) const;
 
@@ -100,13 +97,6 @@ struct _NO_DISCARD_ Transform3D {
 	_FORCE_INLINE_ Plane xform_fast(const Plane &p_plane, const Basis &p_basis_inverse_transpose) const;
 	static _FORCE_INLINE_ Plane xform_inv_fast(const Plane &p_plane, const Transform3D &p_inverse, const Basis &p_basis_transpose);
 
-	void operator*=(const Transform3D &p_transform);
-	Transform3D operator*(const Transform3D &p_transform) const;
-	void operator*=(real_t p_val);
-	Transform3D operator*(real_t p_val) const;
-	void operator/=(real_t p_val);
-	Transform3D operator/(real_t p_val) const;
-
 	Transform3D interpolate_with(const Transform3D &p_transform, real_t p_c) const;
 
 	_FORCE_INLINE_ Transform3D inverse_xform(const Transform3D &t) const {
@@ -122,15 +112,79 @@ struct _NO_DISCARD_ Transform3D {
 		origin.z = p_tz;
 	}
 
+	constexpr Transform3D &operator*=(const Transform3D &p_transform);
+	constexpr Transform3D operator*(const Transform3D &p_transform) const;
+
+	constexpr Transform3D &operator*=(real_t p_val);
+	constexpr Transform3D operator*(real_t p_val) const;
+	constexpr Transform3D &operator/=(real_t p_val);
+	constexpr Transform3D operator/(real_t p_val) const;
+
+	constexpr bool operator==(const Transform3D &p_transform) const;
+	constexpr bool operator!=(const Transform3D &p_transform) const;
+
 	operator String() const;
 
-	Transform3D() {}
-	Transform3D(const Basis &p_basis, const Vector3 &p_origin = Vector3());
-	Transform3D(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &p_z, const Vector3 &p_origin);
-	Transform3D(real_t p_xx, real_t p_xy, real_t p_xz, real_t p_yx, real_t p_yy, real_t p_yz, real_t p_zx, real_t p_zy, real_t p_zz, real_t p_ox, real_t p_oy, real_t p_oz);
+	constexpr Transform3D() {}
+
+	constexpr Transform3D(const Basis &p_basis, const Vector3 &p_origin = Vector3()) :
+			basis(p_basis),
+			origin(p_origin) {}
+
+	constexpr Transform3D(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &p_z, const Vector3 &p_origin) :
+			basis(p_x, p_y, p_z),
+			origin(p_origin) {}
+
+	constexpr Transform3D(real_t p_xx, real_t p_xy, real_t p_xz, real_t p_yx, real_t p_yy, real_t p_yz, real_t p_zx, real_t p_zy, real_t p_zz, real_t p_ox, real_t p_oy, real_t p_oz) :
+			basis(p_xx, p_xy, p_xz, p_yx, p_yy, p_yz, p_zx, p_zy, p_zz),
+			origin(p_ox, p_oy, p_oz) {}
 };
 
-_FORCE_INLINE_ Vector3 Transform3D::xform(const Vector3 &p_vector) const {
+constexpr bool Transform3D::operator==(const Transform3D &p_transform) const {
+	return (basis == p_transform.basis && origin == p_transform.origin);
+}
+
+constexpr bool Transform3D::operator!=(const Transform3D &p_transform) const {
+	return (basis != p_transform.basis || origin != p_transform.origin);
+}
+
+constexpr Transform3D &Transform3D::operator*=(const Transform3D &p_transform) {
+	origin = xform(p_transform.origin);
+	basis *= p_transform.basis;
+	return *this;
+}
+
+constexpr Transform3D Transform3D::operator*(const Transform3D &p_transform) const {
+	Transform3D t = *this;
+	t *= p_transform;
+	return t;
+}
+
+constexpr Transform3D &Transform3D::operator*=(real_t p_val) {
+	origin *= p_val;
+	basis *= p_val;
+	return *this;
+}
+
+constexpr Transform3D Transform3D::operator*(real_t p_val) const {
+	Transform3D ret(*this);
+	ret *= p_val;
+	return ret;
+}
+
+constexpr Transform3D &Transform3D::operator/=(real_t p_val) {
+	basis /= p_val;
+	origin /= p_val;
+	return *this;
+}
+
+constexpr Transform3D Transform3D::operator/(real_t p_val) const {
+	Transform3D ret(*this);
+	ret /= p_val;
+	return ret;
+}
+
+constexpr Vector3 Transform3D::xform(const Vector3 &p_vector) const {
 	return Vector3(
 			basis[0].dot(p_vector) + origin.x,
 			basis[1].dot(p_vector) + origin.y,

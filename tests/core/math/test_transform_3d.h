@@ -86,9 +86,9 @@ TEST_CASE("[Transform3D] rotation") {
 }
 
 TEST_CASE("[Transform3D] Finite number checks") {
-	const Vector3 y(0, 1, 2);
+	constexpr Vector3 y(0, 1, 2);
 	const Vector3 infinite_vec(NAN, NAN, NAN);
-	const Basis x(y, y, y);
+	constexpr Basis x(y, y, y);
 	const Basis infinite_basis(infinite_vec, infinite_vec, infinite_vec);
 
 	CHECK_MESSAGE(

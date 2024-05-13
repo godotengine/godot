@@ -36,24 +36,24 @@
 namespace TestMath {
 
 TEST_CASE("[Math] C++ macros") {
-	CHECK(MIN(-2, 2) == -2);
-	CHECK(MIN(600, 2) == 2);
+	static_assert(MIN(-2, 2) == -2);
+	static_assert(MIN(600, 2) == 2);
 
-	CHECK(MAX(-2, 2) == 2);
-	CHECK(MAX(600, 2) == 600);
+	static_assert(MAX(-2, 2) == 2);
+	static_assert(MAX(600, 2) == 600);
 
-	CHECK(CLAMP(600, -2, 2) == 2);
-	CHECK(CLAMP(620, 600, 650) == 620);
+	static_assert(CLAMP(600, -2, 2) == 2);
+	static_assert(CLAMP(620, 600, 650) == 620);
 	// `max` is lower than `min`.
-	CHECK(CLAMP(620, 600, 50) == 50);
+	static_assert(CLAMP(620, 600, 50) == 50);
 
-	CHECK(ABS(-5) == 5);
-	CHECK(ABS(0) == 0);
-	CHECK(ABS(5) == 5);
+	static_assert(ABS(-5) == 5);
+	static_assert(ABS(0) == 0);
+	static_assert(ABS(5) == 5);
 
-	CHECK(SIGN(-5) == -1.0);
-	CHECK(SIGN(0) == 0.0);
-	CHECK(SIGN(5) == 1.0);
+	static_assert(SIGN(-5) == -1.0);
+	static_assert(SIGN(0) == 0.0);
+	static_assert(SIGN(5) == 1.0);
 	// Check that SIGN(NAN) returns 0.0.
 	CHECK(SIGN(NAN) == 0.0);
 }

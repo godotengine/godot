@@ -77,14 +77,17 @@ struct _NO_DISCARD_ Face3 {
 
 	bool intersects_aabb(const AABB &p_aabb) const;
 	_FORCE_INLINE_ bool intersects_aabb2(const AABB &p_aabb) const;
+
 	operator String() const;
 
-	inline Face3() {}
-	inline Face3(const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) {
-		vertex[0] = p_v1;
-		vertex[1] = p_v2;
-		vertex[2] = p_v3;
-	}
+	constexpr Face3() {}
+
+	constexpr Face3(const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) :
+			vertex{
+				p_v1,
+				p_v2,
+				p_v3,
+			} {}
 };
 
 bool Face3::intersects_aabb2(const AABB &p_aabb) const {

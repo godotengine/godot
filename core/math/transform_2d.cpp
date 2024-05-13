@@ -191,48 +191,6 @@ Transform2D Transform2D::looking_at(const Vector2 &p_target) const {
 	return return_trans;
 }
 
-bool Transform2D::operator==(const Transform2D &p_transform) const {
-	for (int i = 0; i < 3; i++) {
-		if (columns[i] != p_transform.columns[i]) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
-bool Transform2D::operator!=(const Transform2D &p_transform) const {
-	for (int i = 0; i < 3; i++) {
-		if (columns[i] != p_transform.columns[i]) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-void Transform2D::operator*=(const Transform2D &p_transform) {
-	columns[2] = xform(p_transform.columns[2]);
-
-	real_t x0, x1, y0, y1;
-
-	x0 = tdotx(p_transform.columns[0]);
-	x1 = tdoty(p_transform.columns[0]);
-	y0 = tdotx(p_transform.columns[1]);
-	y1 = tdoty(p_transform.columns[1]);
-
-	columns[0][0] = x0;
-	columns[0][1] = x1;
-	columns[1][0] = y0;
-	columns[1][1] = y1;
-}
-
-Transform2D Transform2D::operator*(const Transform2D &p_transform) const {
-	Transform2D t = *this;
-	t *= p_transform;
-	return t;
-}
-
 Transform2D Transform2D::scaled(const Size2 &p_scale) const {
 	// Equivalent to left multiplication
 	Transform2D copy = *this;
@@ -281,30 +239,6 @@ Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, real_t
 			get_scale().lerp(p_transform.get_scale(), p_weight),
 			Math::lerp_angle(get_skew(), p_transform.get_skew(), p_weight),
 			get_origin().lerp(p_transform.get_origin(), p_weight));
-}
-
-void Transform2D::operator*=(real_t p_val) {
-	columns[0] *= p_val;
-	columns[1] *= p_val;
-	columns[2] *= p_val;
-}
-
-Transform2D Transform2D::operator*(real_t p_val) const {
-	Transform2D ret(*this);
-	ret *= p_val;
-	return ret;
-}
-
-void Transform2D::operator/=(real_t p_val) {
-	columns[0] /= p_val;
-	columns[1] /= p_val;
-	columns[2] /= p_val;
-}
-
-Transform2D Transform2D::operator/(real_t p_val) const {
-	Transform2D ret(*this);
-	ret /= p_val;
-	return ret;
 }
 
 Transform2D::operator String() const {
