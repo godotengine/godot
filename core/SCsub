@@ -166,7 +166,7 @@ def disabled_class_builder(target, source, env):
         for c in source[0].read():
             cs = c.strip()
             if cs != "":
-                file.write(f"#define ClassDB_Disable_{cs} 1")
+                file.write(f"#define ClassDB_Disable_{cs} 1\n")
 
 
 env.CommandNoCache("disabled_classes.gen.h", env.Value(env.disabled_classes), env.Run(disabled_class_builder))
