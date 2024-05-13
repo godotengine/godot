@@ -168,11 +168,10 @@ public:
 	Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override { return ERR_UNAVAILABLE; }
 
 	void release_rendering_thread() override {}
-	void make_rendering_thread() override {}
 	void swap_buffers() override {}
 
-	IndicatorID create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) override { return INVALID_INDICATOR_ID; }
-	void status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) override {}
+	IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override { return INVALID_INDICATOR_ID; }
+	void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) override {}
 	void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override {}
 	void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override {}
 	void delete_status_indicator(IndicatorID p_id) override {}
