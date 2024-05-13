@@ -33,15 +33,15 @@ partial class AllReadOnly
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.ReadOnlyAutoProperty);
             return true;
         }
-        else if (name == PropertyName.ReadOnlyProperty) {
+        if (name == PropertyName.ReadOnlyProperty) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.ReadOnlyProperty);
             return true;
         }
-        else if (name == PropertyName.InitOnlyAutoProperty) {
+        if (name == PropertyName.InitOnlyAutoProperty) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.InitOnlyAutoProperty);
             return true;
         }
-        else if (name == PropertyName.ReadOnlyField) {
+        if (name == PropertyName.ReadOnlyField) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.ReadOnlyField);
             return true;
         }

@@ -25,7 +25,7 @@ partial class ScriptBoilerplate
             this._nodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
             return true;
         }
-        else if (name == PropertyName._velocity) {
+        if (name == PropertyName._velocity) {
             this._velocity = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
             return true;
         }
@@ -39,7 +39,7 @@ partial class ScriptBoilerplate
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(this._nodePath);
             return true;
         }
-        else if (name == PropertyName._velocity) {
+        if (name == PropertyName._velocity) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this._velocity);
             return true;
         }

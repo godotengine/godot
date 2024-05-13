@@ -253,11 +253,9 @@ namespace Godot.SourceGenerators
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append("    protected override bool HasGodotClassMethod(in godot_string_name method)\n    {\n");
 
-                bool isFirstEntry = true;
                 foreach (string methodName in distinctMethodNames)
                 {
-                    GenerateHasMethodEntry(methodName, source, isFirstEntry);
-                    isFirstEntry = false;
+                    GenerateHasMethodEntry(methodName, source);
                 }
 
                 source.Append("        return base.HasGodotClassMethod(method);\n");
@@ -412,13 +410,10 @@ namespace Godot.SourceGenerators
 
         private static void GenerateHasMethodEntry(
             string methodName,
-            StringBuilder source,
-            bool isFirstEntry
+            StringBuilder source
         )
         {
             source.Append("        ");
-            if (!isFirstEntry)
-                source.Append("else ");
             source.Append("if (method == MethodName.");
             source.Append(methodName);
             source.Append(") {\n           return true;\n        }\n");
