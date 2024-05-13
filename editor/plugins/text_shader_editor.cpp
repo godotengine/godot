@@ -49,6 +49,11 @@ Dictionary GDShaderSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 	for (const Point2i &region : disabled_branch_regions) {
 		if (p_line >= region.x && p_line <= region.y) {
+			// When "color_regions[0].p_start_key.length() > 2",
+			// disabled_branch_region causes color_region to break.
+			// This should be seen as a temporary solution.
+			CodeHighlighter::_get_line_syntax_highlighting_impl(p_line);
+
 			Dictionary highlighter_info;
 			highlighter_info["color"] = disabled_branch_color;
 
