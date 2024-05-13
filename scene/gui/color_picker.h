@@ -275,6 +275,7 @@ private:
 	void _preset_input(const Ref<InputEvent> &p_event, const Color &p_color);
 	void _recent_preset_pressed(const bool pressed, ColorPresetButton *p_preset);
 	void _text_changed(const String &p_new_text);
+	void _text_submitted(const String &p_new_text);
 	void _add_preset_pressed();
 	void _html_focus_exit();
 	void _pick_button_pressed();
@@ -400,6 +401,7 @@ class ColorPickerButton : public Button {
 	void _about_to_popup();
 	void _color_changed(const Color &p_color);
 	void _modal_closed();
+	void _close_modal();
 
 	virtual void pressed() override;
 

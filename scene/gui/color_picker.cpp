@@ -420,6 +420,7 @@ void ColorPicker::create_slider(GridContainer *gc, int idx) {
 
 	LineEdit *vle = val->get_line_edit();
 	vle->connect("text_changed", callable_mp(this, &ColorPicker::_text_changed));
+	vle->connect("text_submitted", callable_mp(this, &ColorPicker::_text_submitted));
 	vle->connect("gui_input", callable_mp(this, &ColorPicker::_line_edit_input));
 	vle->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 
@@ -570,6 +571,13 @@ void ColorPicker::_reset_sliders_theme() {
 }
 
 void ColorPicker::_html_submitted(const String &p_html) {
+	if (Input::get_singleton()->is_action_pressed("ui_text_submit") && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+		// Ctrl + Enter acts as "submit then close" if part of a ColorPickerButton.
+		// Explicitly require pressing Enter so that clicking away doesn't count as submitting
+		// (e.g. if clicking a preset button while focused on the HTML color field).
+		emit_signal(SNAME("choose_color_close_requested"));
+	}
+
 	if (updating || text_is_constructor || !c_text->is_visible()) {
 		return;
 	}
@@ -1067,6 +1075,10 @@ void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
 			// Revert to the old color when left-clicking the old color sample.
 			set_pick_color(old_color);
 			emit_signal(SNAME("color_changed"), color);
+
+			if (mb->is_command_or_control_pressed()) {
+				emit_signal(SNAME("choose_color_close_requested"));
+			}
 		}
 	}
 }
@@ -1344,6 +1356,11 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 			if (deferred_mode_enabled) {
 				emit_signal(SNAME("color_changed"), color);
 			}
+
+			if (bev->is_command_or_control_pressed()) {
+				emit_signal(SNAME("choose_color_close_requested"));
+			}
+
 			add_recent_preset(color);
 			changing_color = false;
 			spinning = false;
@@ -1417,6 +1434,10 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		if (!bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
 			add_recent_preset(color);
 			emit_signal(SNAME("color_changed"), color);
+
+			if (bev->is_command_or_control_pressed()) {
+				emit_signal(SNAME("choose_color_close_requested"));
+			}
 		} else if (!deferred_mode_enabled) {
 			emit_signal(SNAME("color_changed"), color);
 		}
@@ -1453,6 +1474,10 @@ void ColorPicker::_slider_or_spin_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> bev = p_event;
 	if (bev.is_valid() && !bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
 		add_recent_preset(color);
+
+		if (bev->is_command_or_control_pressed()) {
+			emit_signal(SNAME("choose_color_close_requested"));
+		}
 	}
 }
 
@@ -1468,6 +1493,10 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event, const Color &p_c
 
 	if (bev.is_valid()) {
 		if (bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
+			if (bev->is_command_or_control_pressed()) {
+				// Ctrl + Click acts as "choose then close" if part of a ColorPickerButton.
+				emit_signal(SNAME("choose_color_close_requested"));
+			}
 			set_pick_color(p_color);
 			add_recent_preset(color);
 			emit_signal(SNAME("color_changed"), p_color);
@@ -1482,6 +1511,12 @@ void ColorPicker::_recent_preset_pressed(const bool p_pressed, ColorPresetButton
 	if (!p_pressed) {
 		return;
 	}
+
+	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+		// Ctrl + Click acts as "choose then close" if part of a ColorPickerButton.
+		emit_signal(SNAME("choose_color_close_requested"));
+	}
+
 	set_pick_color(p_preset->get_preset_color());
 
 	recent_presets.move_to_back(recent_presets.find(p_preset->get_preset_color()));
@@ -1494,8 +1529,15 @@ void ColorPicker::_recent_preset_pressed(const bool p_pressed, ColorPresetButton
 	emit_signal(SNAME("color_changed"), p_preset->get_preset_color());
 }
 
-void ColorPicker::_text_changed(const String &) {
+void ColorPicker::_text_changed(const String &p_new_text) {
 	text_changed = true;
+}
+
+void ColorPicker::_text_submitted(const String &p_new_text) {
+	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+		// Ctrl + Enter acts as "submit then close" if part of a ColorPickerButton.
+		emit_signal(SNAME("choose_color_close_requested"));
+	}
 }
 
 void ColorPicker::_add_preset_pressed() {
@@ -1767,6 +1809,7 @@ void ColorPicker::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 	ADD_SIGNAL(MethodInfo("preset_added", PropertyInfo(Variant::COLOR, "color")));
 	ADD_SIGNAL(MethodInfo("preset_removed", PropertyInfo(Variant::COLOR, "color")));
+	ADD_SIGNAL(MethodInfo("choose_color_close_requested"));
 
 	BIND_ENUM_CONSTANT(MODE_RGB);
 	BIND_ENUM_CONSTANT(MODE_HSV);
@@ -2069,6 +2112,12 @@ void ColorPickerButton::_modal_closed() {
 	set_pressed(false);
 }
 
+void ColorPickerButton::_close_modal() {
+	if (popup) {
+		popup->hide();
+	}
+}
+
 void ColorPickerButton::pressed() {
 	_update_picker();
 
@@ -2172,6 +2221,7 @@ void ColorPickerButton::_update_picker() {
 		popup->connect("about_to_popup", callable_mp(this, &ColorPickerButton::_about_to_popup));
 		popup->connect("popup_hide", callable_mp(this, &ColorPickerButton::_modal_closed));
 		picker->connect("minimum_size_changed", callable_mp((Window *)popup, &Window::reset_size));
+		picker->connect("choose_color_close_requested", callable_mp(this, &ColorPickerButton::_close_modal));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
 		picker->set_display_old_color(true);
