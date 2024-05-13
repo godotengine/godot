@@ -82,24 +82,25 @@ void Material::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void Material::_mark_initialized(const Callable &p_queue_shader_change_callable) {
+void Material::_mark_ready() {
+	init_state = INIT_STATE_INITIALIZING;
+}
+
+void Material::_mark_initialized(const Callable &p_add_to_dirty_list, const Callable &p_update_shader) {
 	// If this is happening as part of resource loading, it is not safe to queue the update
-	// as an addition to the dirty list, unless the load is happening on the main thread.
-	if (ResourceLoader::is_within_load() && Thread::get_caller_id() != Thread::get_main_id()) {
+	// as an addition to the dirty list. It would be if the load is happening on the main thread,
+	// but even so we'd rather perform the update directly instead of using the dirty list.
+	if (ResourceLoader::is_within_load()) {
 		DEV_ASSERT(init_state != INIT_STATE_READY);
 		if (init_state == INIT_STATE_UNINITIALIZED) { // Prevent queueing twice.
-			// Let's mark this material as being initialized.
 			init_state = INIT_STATE_INITIALIZING;
-			// Knowing that the ResourceLoader will eventually feed deferred calls into the main message queue, let's do these:
-			// 1. Queue setting the init state to INIT_STATE_READY finally.
-			callable_mp(this, &Material::_mark_initialized).bind(p_queue_shader_change_callable).call_deferred();
-			// 2. Queue an individual update of this material.
-			p_queue_shader_change_callable.call_deferred();
+			callable_mp(this, &Material::_mark_ready).call_deferred();
+			p_update_shader.call_deferred();
 		}
 	} else {
 		// Straightforward conditions.
 		init_state = INIT_STATE_READY;
-		p_queue_shader_change_callable.callv(Array());
+		p_add_to_dirty_list.call();
 	}
 }
 
@@ -603,8 +604,6 @@ void BaseMaterial3D::finish_shaders() {
 }
 
 void BaseMaterial3D::_update_shader() {
-	dirty_materials.remove(&element);
-
 	MaterialKey mk = _compute_key();
 	if (mk == current_key) {
 		return; //no update required in the end
@@ -1855,6 +1854,7 @@ void BaseMaterial3D::flush_changes() {
 
 	while (dirty_materials.first()) {
 		dirty_materials.first()->self()->_update_shader();
+		dirty_materials.first()->remove_from_list();
 	}
 }
 
@@ -1864,12 +1864,6 @@ void BaseMaterial3D::_queue_shader_change() {
 	if (_is_initialized() && !element.in_list()) {
 		dirty_materials.add(&element);
 	}
-}
-
-bool BaseMaterial3D::_is_shader_dirty() const {
-	MutexLock lock(material_mutex);
-
-	return element.in_list();
 }
 
 void BaseMaterial3D::set_albedo(const Color &p_albedo) {
@@ -2824,7 +2818,7 @@ BaseMaterial3D::EmissionOperator BaseMaterial3D::get_emission_operator() const {
 
 RID BaseMaterial3D::get_shader_rid() const {
 	MutexLock lock(material_mutex);
-	if (element.in_list()) { // _is_shader_dirty() would create anoder mutex lock
+	if (element.in_list()) {
 		((BaseMaterial3D *)this)->_update_shader();
 	}
 	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
@@ -3412,7 +3406,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 
 	current_key.invalid_key = 1;
 
-	_mark_initialized(callable_mp(this, &BaseMaterial3D::_queue_shader_change));
+	_mark_initialized(callable_mp(this, &BaseMaterial3D::_queue_shader_change), callable_mp(this, &BaseMaterial3D::_update_shader));
 }
 
 BaseMaterial3D::~BaseMaterial3D() {

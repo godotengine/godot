@@ -33,14 +33,12 @@
 #include "core/version.h"
 
 Mutex ParticleProcessMaterial::material_mutex;
-SelfList<ParticleProcessMaterial>::List *ParticleProcessMaterial::dirty_materials = nullptr;
+SelfList<ParticleProcessMaterial>::List ParticleProcessMaterial::dirty_materials;
 HashMap<ParticleProcessMaterial::MaterialKey, ParticleProcessMaterial::ShaderData, ParticleProcessMaterial::MaterialKey> ParticleProcessMaterial::shader_map;
 RBSet<String> ParticleProcessMaterial::min_max_properties;
 ParticleProcessMaterial::ShaderNames *ParticleProcessMaterial::shader_names = nullptr;
 
 void ParticleProcessMaterial::init_shaders() {
-	dirty_materials = memnew(SelfList<ParticleProcessMaterial>::List);
-
 	shader_names = memnew(ShaderNames);
 
 	shader_names->direction = "direction";
@@ -140,15 +138,13 @@ void ParticleProcessMaterial::init_shaders() {
 }
 
 void ParticleProcessMaterial::finish_shaders() {
-	memdelete(dirty_materials);
-	dirty_materials = nullptr;
+	dirty_materials.clear();
 
 	memdelete(shader_names);
+	shader_names = nullptr;
 }
 
 void ParticleProcessMaterial::_update_shader() {
-	dirty_materials->remove(&element);
-
 	MaterialKey mk = _compute_key();
 	if (mk == current_key) {
 		return; //no update required in the end
@@ -1170,8 +1166,9 @@ void ParticleProcessMaterial::_update_shader() {
 void ParticleProcessMaterial::flush_changes() {
 	MutexLock lock(material_mutex);
 
-	while (dirty_materials->first()) {
-		dirty_materials->first()->self()->_update_shader();
+	while (dirty_materials.first()) {
+		dirty_materials.first()->self()->_update_shader();
+		dirty_materials.first()->remove_from_list();
 	}
 }
 
@@ -1179,14 +1176,8 @@ void ParticleProcessMaterial::_queue_shader_change() {
 	MutexLock lock(material_mutex);
 
 	if (_is_initialized() && !element.in_list()) {
-		dirty_materials->add(&element);
+		dirty_materials.add(&element);
 	}
-}
-
-bool ParticleProcessMaterial::_is_shader_dirty() const {
-	MutexLock lock(material_mutex);
-
-	return element.in_list();
 }
 
 bool ParticleProcessMaterial::has_min_max_property(const String &p_name) {
@@ -2330,7 +2321,7 @@ ParticleProcessMaterial::ParticleProcessMaterial() :
 
 	current_key.invalid_key = 1;
 
-	_mark_initialized(callable_mp(this, &ParticleProcessMaterial::_queue_shader_change));
+	_mark_initialized(callable_mp(this, &ParticleProcessMaterial::_queue_shader_change), callable_mp(this, &ParticleProcessMaterial::_update_shader));
 }
 
 ParticleProcessMaterial::~ParticleProcessMaterial() {

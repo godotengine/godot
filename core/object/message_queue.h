@@ -98,8 +98,6 @@ private:
 		}
 	}
 
-	Error _transfer_messages_to_main_queue();
-
 	void _add_page();
 
 	void _call_function(const Callable &p_callable, const Variant *p_args, int p_argcount, bool p_show_error);
