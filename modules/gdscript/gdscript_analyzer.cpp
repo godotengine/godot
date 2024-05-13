@@ -562,11 +562,6 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 	class_type.native_type = result.native_type;
 	p_class->set_datatype(class_type);
 
-	// Add base class to the list of dependencies.
-	if (result.kind == GDScriptParser::DataType::CLASS) {
-		parser->add_dependency(result.script_path);
-	}
-
 	// Apply annotations.
 	for (GDScriptParser::AnnotationNode *&E : p_class->annotations) {
 		resolve_annotation(E);
@@ -873,11 +868,6 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	}
 
 	p_type->set_datatype(result);
-
-	if (result.kind == GDScriptParser::DataType::CLASS || result.kind == GDScriptParser::DataType::SCRIPT) {
-		parser->add_dependency(result.script_path);
-	}
-
 	return result;
 }
 
@@ -4112,7 +4102,6 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 
 	if (ScriptServer::is_global_class(name)) {
 		p_identifier->set_datatype(make_global_class_meta_type(name, p_identifier));
-		parser->add_dependency(p_identifier->get_datatype().script_path);
 		return;
 	}
 
@@ -4155,7 +4144,6 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			}
 			result.is_constant = true;
 			p_identifier->set_datatype(result);
-			parser->add_dependency(autoload.path);
 			return;
 		}
 	}
@@ -4275,6 +4263,7 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 		push_error("Preloaded path must be a constant string.", p_preload->path);
 	} else {
 		p_preload->resolved_path = p_preload->path->reduced_value;
+		// TODO: Save this as script dependency.
 		if (p_preload->resolved_path.is_relative_path()) {
 			p_preload->resolved_path = parser->script_path.get_base_dir().path_join(p_preload->resolved_path);
 		}
@@ -4305,8 +4294,6 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 					push_error(vformat(R"(Could not preload resource file "%s".)", p_preload->resolved_path), p_preload->path);
 				}
 			}
-
-			parser->add_dependency(p_preload->resolved_path);
 		}
 	}
 
