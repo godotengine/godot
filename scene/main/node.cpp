@@ -2667,8 +2667,6 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		node->data.editable_instance = data.editable_instance;
 	}
 
-	StringName script_property_name = CoreStringName(script);
-
 	List<const Node *> hidden_roots;
 	List<const Node *> node_tree;
 	node_tree.push_front(this);
@@ -2865,7 +2863,7 @@ void Node::remap_nested_resources(Ref<Resource> p_resource, const HashMap<Ref<Re
 void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Node *p_copy, int p_flags) const {
 	List<PropertyInfo> props;
 	p_original->get_property_list(&props);
-	StringName script_property_name = CoreStringNames::get_singleton()->_script;
+	const StringName &script_property_name = CoreStringName(script);
 	if (p_flags & DUPLICATE_SCRIPTS) {
 		bool is_valid = false;
 		Variant scr = p_original->get(script_property_name, &is_valid);
