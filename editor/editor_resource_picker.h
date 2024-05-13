@@ -50,11 +50,14 @@ class EditorResourcePicker : public HBoxContainer {
 
 	bool editable = true;
 	bool dropping = false;
+	int mouse_hover = 0;
 
 	Vector<String> inheritors_array;
 	mutable HashSet<StringName> allowed_types_without_convert;
 	mutable HashSet<StringName> allowed_types_with_convert;
 
+	Button *create_button = nullptr;
+	Button *quick_load_button = nullptr;
 	Button *assign_button = nullptr;
 	TextureRect *preview_rect = nullptr;
 	Button *edit_button = nullptr;
@@ -65,6 +68,12 @@ class EditorResourcePicker : public HBoxContainer {
 	Tree *duplicate_resources_tree = nullptr;
 
 	Size2i assign_button_min_size = Size2i(1, 1);
+
+	enum MenuType {
+		MENU_SHOW_CREATE,
+		MENU_SHOW_OTHER,
+		MENU_SHOW_BOTH,
+	};
 
 	enum MenuOption {
 		OBJ_MENU_LOAD,
@@ -84,16 +93,23 @@ class EditorResourcePicker : public HBoxContainer {
 	};
 
 	PopupMenu *edit_menu = nullptr;
+	bool is_menu_open = false;
 
 	void _update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj);
 
 	void _resource_selected();
+	void _file_quick_open();
 	void _file_quick_selected();
 	void _file_selected(const String &p_path);
 
-	void _update_menu();
-	void _update_menu_items();
+	void _update_button_visibility();
+	void _on_mouse_entered();
+	void _on_mouse_exited();
+
+	void _update_menu(const int p_type);
+	void _update_menu_items(const int p_type);
 	void _edit_menu_cbk(int p_which);
+	void _on_menu_closed();
 
 	void _button_draw();
 	void _button_input(const Ref<InputEvent> &p_event);
