@@ -1149,6 +1149,10 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		render_data.sdfgi_update_data = p_sdfgi_update_data;
 
 		render_data.render_info = r_render_info;
+
+		if (p_render_buffers.is_valid() && p_reflection_probe.is_null()) {
+			render_data.transparent_bg = texture_storage->render_target_get_transparent(rb->get_render_target());
+		}
 	}
 
 	PagedArray<RID> empty;
