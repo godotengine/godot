@@ -1736,12 +1736,10 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 		StringName name = p_path.get_name(i);
 		Node *next = nullptr;
 
-		if (name == SceneStringName(dot)) { // .
-
+		if (name == SNAME(".")) {
 			next = current;
 
-		} else if (name == SceneStringName(doubledot)) { // ..
-
+		} else if (name == SNAME("..")) {
 			if (current == nullptr || !current->data.parent) {
 				return nullptr;
 			}
