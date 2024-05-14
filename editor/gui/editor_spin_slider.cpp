@@ -300,7 +300,7 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 		stylebox->set_content_margin(SIDE_LEFT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
 	}
 
-	value_input->add_theme_style_override("normal", stylebox);
+	value_input->add_theme_style_override(CoreStringName(normal), stylebox);
 }
 
 void EditorSpinSlider::_draw_spin_slider() {

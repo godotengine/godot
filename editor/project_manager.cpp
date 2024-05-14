@@ -1297,7 +1297,7 @@ ProjectManager::ProjectManager() {
 				empty_list_message->set_use_bbcode(true);
 				empty_list_message->set_fit_content(true);
 				empty_list_message->set_h_size_flags(SIZE_EXPAND_FILL);
-				empty_list_message->add_theme_style_override("normal", memnew(StyleBoxEmpty));
+				empty_list_message->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty));
 
 				const String line1 = TTR("You don't have any projects yet.");
 				const String line2 = TTR("Get started by creating a new one,\nimporting one that exists, or by downloading a project template from the Asset Library!");

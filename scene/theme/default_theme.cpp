@@ -159,7 +159,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Make the focus outline appear to be flush with the buttons it's focusing.
 	focus->set_expand_margin_all(Math::round(2 * scale));
 
-	theme->set_stylebox("normal", "Button", button_normal);
+	theme->set_stylebox(CoreStringName(normal), "Button", button_normal);
 	theme->set_stylebox("hover", "Button", button_hover);
 	theme->set_stylebox(SceneStringName(pressed), "Button", button_pressed);
 	theme->set_stylebox("disabled", "Button", button_disabled);
@@ -188,7 +188,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("icon_max_width", "Button", 0);
 
 	// MenuBar
-	theme->set_stylebox("normal", "MenuBar", button_normal);
+	theme->set_stylebox(CoreStringName(normal), "MenuBar", button_normal);
 	theme->set_stylebox("hover", "MenuBar", button_hover);
 	theme->set_stylebox(SceneStringName(pressed), "MenuBar", button_pressed);
 	theme->set_stylebox("disabled", "MenuBar", button_disabled);
@@ -231,7 +231,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBox> sb_optbutton_pressed = make_flat_stylebox(style_pressed_color, 2 * default_margin, default_margin, 2 * default_margin, default_margin);
 	Ref<StyleBox> sb_optbutton_disabled = make_flat_stylebox(style_disabled_color, 2 * default_margin, default_margin, 2 * default_margin, default_margin);
 
-	theme->set_stylebox("normal", "OptionButton", sb_optbutton_normal);
+	theme->set_stylebox(CoreStringName(normal), "OptionButton", sb_optbutton_normal);
 	theme->set_stylebox("hover", "OptionButton", sb_optbutton_hover);
 	theme->set_stylebox(SceneStringName(pressed), "OptionButton", sb_optbutton_pressed);
 	theme->set_stylebox("disabled", "OptionButton", sb_optbutton_disabled);
@@ -266,7 +266,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// MenuButton
 
-	theme->set_stylebox("normal", "MenuButton", button_normal);
+	theme->set_stylebox(CoreStringName(normal), "MenuButton", button_normal);
 	theme->set_stylebox(SceneStringName(pressed), "MenuButton", button_pressed);
 	theme->set_stylebox("hover", "MenuButton", button_hover);
 	theme->set_stylebox("disabled", "MenuButton", button_disabled);
@@ -292,7 +292,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBox> cbx_focus = focus;
 	cbx_focus->set_content_margin_all(Math::round(4 * scale));
 
-	theme->set_stylebox("normal", "CheckBox", cbx_empty);
+	theme->set_stylebox(CoreStringName(normal), "CheckBox", cbx_empty);
 	theme->set_stylebox(SceneStringName(pressed), "CheckBox", cbx_empty);
 	theme->set_stylebox("disabled", "CheckBox", cbx_empty);
 	theme->set_stylebox("hover", "CheckBox", cbx_empty);
@@ -328,7 +328,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBox> cb_empty = memnew(StyleBoxEmpty);
 	cb_empty->set_content_margin_individual(Math::round(6 * scale), Math::round(4 * scale), Math::round(6 * scale), Math::round(4 * scale));
 
-	theme->set_stylebox("normal", "CheckButton", cb_empty);
+	theme->set_stylebox(CoreStringName(normal), "CheckButton", cb_empty);
 	theme->set_stylebox(SceneStringName(pressed), "CheckButton", cb_empty);
 	theme->set_stylebox("disabled", "CheckButton", cb_empty);
 	theme->set_stylebox("hover", "CheckButton", cb_empty);
@@ -372,19 +372,19 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxFlat> flat_button_pressed = button_pressed->duplicate();
 	flat_button_pressed->set_bg_color(style_pressed_color * Color(1, 1, 1, 0.85));
 
-	theme->set_stylebox("normal", "FlatButton", flat_button_normal);
+	theme->set_stylebox(CoreStringName(normal), "FlatButton", flat_button_normal);
 	theme->set_stylebox("hover", "FlatButton", flat_button_normal);
 	theme->set_stylebox(SceneStringName(pressed), "FlatButton", flat_button_pressed);
 	theme->set_stylebox("disabled", "FlatButton", flat_button_normal);
 
-	theme->set_stylebox("normal", "FlatMenuButton", flat_button_normal);
+	theme->set_stylebox(CoreStringName(normal), "FlatMenuButton", flat_button_normal);
 	theme->set_stylebox("hover", "FlatMenuButton", flat_button_normal);
 	theme->set_stylebox(SceneStringName(pressed), "FlatMenuButton", flat_button_pressed);
 	theme->set_stylebox("disabled", "FlatMenuButton", flat_button_normal);
 
 	// Label
 
-	theme->set_stylebox("normal", "Label", memnew(StyleBoxEmpty));
+	theme->set_stylebox(CoreStringName(normal), "Label", memnew(StyleBoxEmpty));
 	theme->set_font("font", "Label", Ref<Font>());
 	theme->set_font_size("font_size", "Label", -1);
 
@@ -413,7 +413,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// Add a line at the bottom to make LineEdits distinguishable from Buttons.
 	style_line_edit->set_border_width(SIDE_BOTTOM, 2);
 	style_line_edit->set_border_color(style_pressed_color);
-	theme->set_stylebox("normal", "LineEdit", style_line_edit);
+	theme->set_stylebox(CoreStringName(normal), "LineEdit", style_line_edit);
 
 	theme->set_stylebox("focus", "LineEdit", focus);
 
@@ -457,7 +457,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// TextEdit
 
-	theme->set_stylebox("normal", "TextEdit", style_line_edit);
+	theme->set_stylebox(CoreStringName(normal), "TextEdit", style_line_edit);
 	theme->set_stylebox("focus", "TextEdit", focus);
 	theme->set_stylebox("read_only", "TextEdit", style_line_edit_read_only);
 
@@ -487,7 +487,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// CodeEdit
 
-	theme->set_stylebox("normal", "CodeEdit", style_line_edit);
+	theme->set_stylebox(CoreStringName(normal), "CodeEdit", style_line_edit);
 	theme->set_stylebox("focus", "CodeEdit", focus);
 	theme->set_stylebox("read_only", "CodeEdit", style_line_edit_read_only);
 	theme->set_stylebox("completion", "CodeEdit", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
@@ -746,7 +746,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_type_variation("GraphNodeTitleLabel", "Label");
 
-	theme->set_stylebox("normal", "GraphNodeTitleLabel", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox(CoreStringName(normal), "GraphNodeTitleLabel", make_empty_stylebox(0, 0, 0, 0));
 	theme->set_font("font", "GraphNodeTitleLabel", Ref<Font>());
 	theme->set_font_size("font_size", "GraphNodeTitleLabel", -1);
 	theme->set_color("font_color", "GraphNodeTitleLabel", control_font_color);
@@ -777,7 +777,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_type_variation("GraphFrameTitleLabel", "Label");
 
-	theme->set_stylebox("normal", "GraphFrameTitleLabel", memnew(StyleBoxEmpty));
+	theme->set_stylebox(CoreStringName(normal), "GraphFrameTitleLabel", memnew(StyleBoxEmpty));
 	theme->set_font_size("font_size", "GraphFrameTitleLabel", 22);
 	theme->set_color("font_color", "GraphFrameTitleLabel", Color(1, 1, 1));
 	theme->set_color("font_shadow_color", "GraphFrameTitleLabel", Color(0, 0, 0, 0));
@@ -1050,7 +1050,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// ColorPickerButton
 
 	theme->set_icon("bg", "ColorPickerButton", icons["mini_checkerboard"]);
-	theme->set_stylebox("normal", "ColorPickerButton", button_normal);
+	theme->set_stylebox(CoreStringName(normal), "ColorPickerButton", button_normal);
 	theme->set_stylebox(SceneStringName(pressed), "ColorPickerButton", button_pressed);
 	theme->set_stylebox("hover", "ColorPickerButton", button_hover);
 	theme->set_stylebox("disabled", "ColorPickerButton", button_disabled);
@@ -1101,7 +1101,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// RichTextLabel
 
 	theme->set_stylebox("focus", "RichTextLabel", focus);
-	theme->set_stylebox("normal", "RichTextLabel", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox(CoreStringName(normal), "RichTextLabel", make_empty_stylebox(0, 0, 0, 0));
 
 	theme->set_font("normal_font", "RichTextLabel", Ref<Font>());
 	theme->set_font("bold_font", "RichTextLabel", bold_font);

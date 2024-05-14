@@ -205,7 +205,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_reset->set_flat(true);
 
 	Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
-	zoom_reset->add_theme_style_override("normal", empty_stylebox);
+	zoom_reset->add_theme_style_override(CoreStringName(normal), empty_stylebox);
 	zoom_reset->add_theme_style_override("hover", empty_stylebox);
 	zoom_reset->add_theme_style_override("focus", empty_stylebox);
 	zoom_reset->add_theme_style_override(SceneStringName(pressed), empty_stylebox);
