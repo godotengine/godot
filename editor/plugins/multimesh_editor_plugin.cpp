@@ -296,7 +296,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	Button *b = memnew(Button);
 	hbc->add_child(b);
 	b->set_text("..");
-	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse).bind(false));
+	b->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_browse).bind(false));
 
 	vbc->add_margin_child(TTR("Target Surface:"), hbc);
 
@@ -308,7 +308,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	hbc->add_child(b);
 	b->set_text("..");
 	vbc->add_margin_child(TTR("Source Mesh:"), hbc);
-	b->connect("pressed", callable_mp(this, &MultiMeshEditor::_browse).bind(true));
+	b->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_browse).bind(true));
 
 	populate_axis = memnew(OptionButton);
 	populate_axis->add_item(TTR("X-Axis"));
@@ -354,7 +354,7 @@ MultiMeshEditor::MultiMeshEditor() {
 
 	populate_dialog->set_ok_button_text(TTR("Populate"));
 
-	populate_dialog->get_ok_button()->connect("pressed", callable_mp(this, &MultiMeshEditor::_populate));
+	populate_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_populate));
 	std = memnew(SceneTreeDialog);
 	Vector<StringName> valid_types;
 	valid_types.push_back("MeshInstance3D");

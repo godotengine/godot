@@ -244,7 +244,7 @@ ReplicationEditor::ReplicationEditor() {
 	vb->add_child(hb);
 
 	add_pick_button = memnew(Button);
-	add_pick_button->connect("pressed", callable_mp(this, &ReplicationEditor::_pick_new_property));
+	add_pick_button->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_pick_new_property));
 	add_pick_button->set_text(TTR("Add property to sync..."));
 	hb->add_child(add_pick_button);
 
@@ -260,7 +260,7 @@ ReplicationEditor::ReplicationEditor() {
 	hb->add_child(np_line_edit);
 
 	add_from_path_button = memnew(Button);
-	add_from_path_button->connect("pressed", callable_mp(this, &ReplicationEditor::_add_pressed));
+	add_from_path_button->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_add_pressed));
 	add_from_path_button->set_text(TTR("Add from path"));
 	hb->add_child(add_from_path_button);
 

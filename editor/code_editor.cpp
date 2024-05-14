@@ -721,14 +721,14 @@ FindReplaceBar::FindReplaceBar() {
 	find_prev->set_tooltip_text(TTR("Previous Match"));
 	hbc_button_search->add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
-	find_prev->connect("pressed", callable_mp(this, &FindReplaceBar::search_prev));
+	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::search_prev));
 
 	find_next = memnew(Button);
 	find_next->set_flat(true);
 	find_next->set_tooltip_text(TTR("Next Match"));
 	hbc_button_search->add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
-	find_next->connect("pressed", callable_mp(this, &FindReplaceBar::search_next));
+	find_next->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::search_next));
 
 	case_sensitive = memnew(CheckBox);
 	hbc_option_search->add_child(case_sensitive);
@@ -754,12 +754,12 @@ FindReplaceBar::FindReplaceBar() {
 	replace = memnew(Button);
 	hbc_button_replace->add_child(replace);
 	replace->set_text(TTR("Replace"));
-	replace->connect("pressed", callable_mp(this, &FindReplaceBar::_replace));
+	replace->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_replace));
 
 	replace_all = memnew(Button);
 	hbc_button_replace->add_child(replace_all);
 	replace_all->set_text(TTR("Replace All"));
-	replace_all->connect("pressed", callable_mp(this, &FindReplaceBar::_replace_all));
+	replace_all->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_replace_all));
 
 	selection_only = memnew(CheckBox);
 	hbc_option_replace->add_child(selection_only);
@@ -771,7 +771,7 @@ FindReplaceBar::FindReplaceBar() {
 	add_child(hide_button);
 	hide_button->set_tooltip_text(TTR("Hide"));
 	hide_button->set_focus_mode(FOCUS_NONE);
-	hide_button->connect("pressed", callable_mp(this, &FindReplaceBar::_hide_bar).bind(false));
+	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_hide_bar).bind(false));
 	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
 }
 
@@ -1713,7 +1713,7 @@ CodeTextEditor::CodeTextEditor() {
 	toggle_scripts_button = memnew(Button);
 	toggle_scripts_button->set_flat(true);
 	toggle_scripts_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	toggle_scripts_button->connect("pressed", callable_mp(this, &CodeTextEditor::_toggle_scripts_pressed));
+	toggle_scripts_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_toggle_scripts_pressed));
 	status_bar->add_child(toggle_scripts_button);
 	toggle_scripts_button->hide();
 
@@ -1736,7 +1736,7 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(error_button);
 	error_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	error_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
-	error_button->connect("pressed", callable_mp(this, &CodeTextEditor::_error_button_pressed));
+	error_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_error_button_pressed));
 	error_button->set_tooltip_text(TTR("Errors"));
 	set_error_count(0);
 
@@ -1746,7 +1746,7 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(warning_button);
 	warning_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	warning_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
-	warning_button->connect("pressed", callable_mp(this, &CodeTextEditor::_warning_button_pressed));
+	warning_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_warning_button_pressed));
 	warning_button->set_tooltip_text(TTR("Warnings"));
 	set_warning_count(0);
 

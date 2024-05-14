@@ -205,6 +205,8 @@ SceneStringNames::SceneStringNames() {
 	shader_overrides_group = StaticCString::create("_shader_overrides_group_");
 	shader_overrides_group_active = StaticCString::create("_shader_overrides_group_active_");
 
+	pressed = StaticCString::create("pressed");
+
 #ifndef DISABLE_DEPRECATED
 	use_in_baked_light = StaticCString::create("use_in_baked_light");
 	use_dynamic_gi = StaticCString::create("use_dynamic_gi");

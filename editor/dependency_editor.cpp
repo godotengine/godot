@@ -266,7 +266,7 @@ DependencyEditor::DependencyEditor() {
 	hbc->add_spacer();
 	fixdeps = memnew(Button(TTR("Fix Broken")));
 	hbc->add_child(fixdeps);
-	fixdeps->connect("pressed", callable_mp(this, &DependencyEditor::_fix_all));
+	fixdeps->connect(SceneStringName(pressed), callable_mp(this, &DependencyEditor::_fix_all));
 
 	vb->add_child(hbc);
 

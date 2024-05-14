@@ -1673,7 +1673,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_select->set_button_group(bg);
 	tool_select->set_pressed(true);
 	tool_select->set_tooltip_text(TTR("Select and move nodes.\nRMB: Add node at position clicked.\nShift+LMB+Drag: Connects the selected node with another node or creates a new node if you select an area without nodes."));
-	tool_select->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
+	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_create = memnew(Button);
 	tool_create->set_theme_type_variation("FlatButton");
@@ -1681,7 +1681,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
 	tool_create->set_tooltip_text(TTR("Create new nodes."));
-	tool_create->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
+	tool_create->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_connect = memnew(Button);
 	tool_connect->set_theme_type_variation("FlatButton");
@@ -1689,7 +1689,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_connect->set_toggle_mode(true);
 	tool_connect->set_button_group(bg);
 	tool_connect->set_tooltip_text(TTR("Connect nodes."));
-	tool_connect->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
+	tool_connect->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	// Context-sensitive selection tools:
 	selection_tools_hb = memnew(HBoxContainer);
@@ -1699,7 +1699,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_erase = memnew(Button);
 	tool_erase->set_theme_type_variation("FlatButton");
 	tool_erase->set_tooltip_text(TTR("Remove selected node or transition."));
-	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected).bind(false));
+	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected).bind(false));
 	tool_erase->set_disabled(true);
 	selection_tools_hb->add_child(tool_erase);
 
@@ -1815,10 +1815,10 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	Button *ok = delete_window->get_cancel_button();
 	ok->set_text(TTR("Delete Selected"));
-	ok->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_delete_selected));
+	ok->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_delete_selected));
 
 	Button *delete_all = delete_window->add_button(TTR("Delete All"), true);
-	delete_all->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_delete_all));
+	delete_all->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_delete_all));
 }
 
 void EditorAnimationMultiTransitionEdit::add_transition(const StringName &p_from, const StringName &p_to, Ref<AnimationNodeStateMachineTransition> p_transition) {

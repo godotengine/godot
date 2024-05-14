@@ -229,7 +229,7 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 
 	fold_btn = memnew(Button);
 	fold_btn->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
-	fold_btn->connect("pressed", callable_mp(this, &OpenXRActionSetEditor::_on_toggle_expand));
+	fold_btn->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionSetEditor::_on_toggle_expand));
 	fold_btn->set_flat(true);
 	panel_hb->add_child(fold_btn);
 
@@ -262,13 +262,13 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 
 	add_action = memnew(Button);
 	add_action->set_tooltip_text(TTR("Add action."));
-	add_action->connect("pressed", callable_mp(this, &OpenXRActionSetEditor::_on_add_action));
+	add_action->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionSetEditor::_on_add_action));
 	add_action->set_flat(true);
 	action_set_hb->add_child(add_action);
 
 	rem_action_set = memnew(Button);
 	rem_action_set->set_tooltip_text(TTR("Remove action set."));
-	rem_action_set->connect("pressed", callable_mp(this, &OpenXRActionSetEditor::_on_remove_action_set));
+	rem_action_set->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionSetEditor::_on_remove_action_set));
 	rem_action_set->set_flat(true);
 	action_set_hb->add_child(rem_action_set);
 

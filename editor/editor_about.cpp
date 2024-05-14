@@ -215,7 +215,7 @@ EditorAbout::EditorAbout() {
 	}
 	version_btn->set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version number."), build_date));
 
-	version_btn->connect("pressed", callable_mp(this, &EditorAbout::_version_button_pressed));
+	version_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorAbout::_version_button_pressed));
 	version_info_vbc->add_child(version_btn);
 
 	Label *about_text = memnew(Label);

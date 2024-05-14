@@ -614,12 +614,12 @@ EditorProfiler::EditorProfiler() {
 	activate->set_toggle_mode(true);
 	activate->set_disabled(true);
 	activate->set_text(TTR("Start"));
-	activate->connect("pressed", callable_mp(this, &EditorProfiler::_activate_pressed));
+	activate->connect(SceneStringName(pressed), callable_mp(this, &EditorProfiler::_activate_pressed));
 	hb->add_child(activate);
 
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
-	clear_button->connect("pressed", callable_mp(this, &EditorProfiler::_clear_pressed));
+	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorProfiler::_clear_pressed));
 	clear_button->set_disabled(true);
 	hb->add_child(clear_button);
 
@@ -649,7 +649,7 @@ EditorProfiler::EditorProfiler() {
 	display_internal_profiles = memnew(CheckButton(TTR("Display internal functions")));
 	display_internal_profiles->set_visible(EDITOR_GET("debugger/profile_native_calls"));
 	display_internal_profiles->set_pressed(false);
-	display_internal_profiles->connect("pressed", callable_mp(this, &EditorProfiler::_internal_profiles_pressed));
+	display_internal_profiles->connect(SceneStringName(pressed), callable_mp(this, &EditorProfiler::_internal_profiles_pressed));
 	hb->add_child(display_internal_profiles);
 
 	hb->add_spacer();

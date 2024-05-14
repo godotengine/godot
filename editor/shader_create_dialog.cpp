@@ -644,7 +644,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	hb->add_child(file_path);
 	register_text_enter(file_path);
 	path_button = memnew(Button);
-	path_button->connect("pressed", callable_mp(this, &ShaderCreateDialog::_browse_path));
+	path_button->connect(SceneStringName(pressed), callable_mp(this, &ShaderCreateDialog::_browse_path));
 	hb->add_child(path_button);
 	gc->add_child(memnew(Label(TTR("Path:"))));
 	gc->add_child(hb);

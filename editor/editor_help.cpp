@@ -3117,7 +3117,7 @@ EditorHelp::EditorHelp() {
 
 	toggle_scripts_button = memnew(Button);
 	toggle_scripts_button->set_flat(true);
-	toggle_scripts_button->connect("pressed", callable_mp(this, &EditorHelp::_toggle_scripts_pressed));
+	toggle_scripts_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelp::_toggle_scripts_pressed));
 	status_bar->add_child(toggle_scripts_button);
 
 	class_desc->set_selection_enabled(true);
@@ -4043,13 +4043,13 @@ FindBar::FindBar() {
 	find_prev->set_flat(true);
 	add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
-	find_prev->connect("pressed", callable_mp(this, &FindBar::search_prev));
+	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_prev));
 
 	find_next = memnew(Button);
 	find_next->set_flat(true);
 	add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
-	find_next->connect("pressed", callable_mp(this, &FindBar::search_next));
+	find_next->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_next));
 
 	Control *space = memnew(Control);
 	add_child(space);
@@ -4060,7 +4060,7 @@ FindBar::FindBar() {
 	hide_button->set_focus_mode(FOCUS_NONE);
 	hide_button->set_ignore_texture_size(true);
 	hide_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
-	hide_button->connect("pressed", callable_mp(this, &FindBar::_hide_bar));
+	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindBar::_hide_bar));
 }
 
 void FindBar::popup_search() {

@@ -1228,19 +1228,19 @@ TextureRegionEditor::TextureRegionEditor() {
 	zoom_out = memnew(Button);
 	zoom_out->set_flat(true);
 	zoom_out->set_tooltip_text(TTR("Zoom Out"));
-	zoom_out->connect("pressed", callable_mp(this, &TextureRegionEditor::_zoom_out));
+	zoom_out->connect(SceneStringName(pressed), callable_mp(this, &TextureRegionEditor::_zoom_out));
 	zoom_hb->add_child(zoom_out);
 
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
 	zoom_reset->set_tooltip_text(TTR("Zoom Reset"));
-	zoom_reset->connect("pressed", callable_mp(this, &TextureRegionEditor::_zoom_reset));
+	zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &TextureRegionEditor::_zoom_reset));
 	zoom_hb->add_child(zoom_reset);
 
 	zoom_in = memnew(Button);
 	zoom_in->set_flat(true);
 	zoom_in->set_tooltip_text(TTR("Zoom In"));
-	zoom_in->connect("pressed", callable_mp(this, &TextureRegionEditor::_zoom_in));
+	zoom_in->connect(SceneStringName(pressed), callable_mp(this, &TextureRegionEditor::_zoom_in));
 	zoom_hb->add_child(zoom_in);
 
 	vscroll = memnew(VScrollBar);
@@ -1271,7 +1271,7 @@ bool EditorInspectorPluginTextureRegion::parse_property(Object *p_object, const 
 		if (((Object::cast_to<Sprite2D>(p_object) || Object::cast_to<Sprite3D>(p_object) || Object::cast_to<NinePatchRect>(p_object) || Object::cast_to<StyleBoxTexture>(p_object)) && p_path == "region_rect") || (Object::cast_to<AtlasTexture>(p_object) && p_path == "region")) {
 			Button *button = EditorInspector::create_inspector_action_button(TTR("Edit Region"));
 			button->set_icon(texture_region_editor->get_editor_theme_icon(SNAME("RegionEdit")));
-			button->connect("pressed", callable_mp(this, &EditorInspectorPluginTextureRegion::_region_edit).bind(p_object));
+			button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorPluginTextureRegion::_region_edit).bind(p_object));
 			add_property_editor(p_path, button, true);
 		}
 	}

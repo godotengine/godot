@@ -342,7 +342,7 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	transition_enabled = memnew(CheckBox);
 	transition_enabled->set_text(TTR("Enabled"));
 	edit_vb->add_margin_child(TTR("Use Transition:"), transition_enabled);
-	transition_enabled->connect("pressed", callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited));
+	transition_enabled->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited));
 
 	transition_from = memnew(OptionButton);
 	edit_vb->add_margin_child(TTR("Transition From:"), transition_from);
@@ -377,7 +377,7 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 
 	hold_previous = memnew(CheckBox);
 	hold_previous->set_text(TTR("Enabled"));
-	hold_previous->connect("pressed", callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited));
+	hold_previous->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited));
 	edit_vb->add_margin_child(TTR("Hold Previous:"), hold_previous);
 
 	set_exclusive(true);
@@ -397,7 +397,7 @@ void EditorInspectorPluginAudioStreamInteractive::parse_end(Object *p_object) {
 	if (Object::cast_to<AudioStreamInteractive>(p_object)) {
 		Button *button = EditorInspector::create_inspector_action_button(TTR("Edit Transitions"));
 		button->set_icon(audio_stream_interactive_transition_editor->get_editor_theme_icon(SNAME("Blend")));
-		button->connect("pressed", callable_mp(this, &EditorInspectorPluginAudioStreamInteractive::_edit).bind(p_object));
+		button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorPluginAudioStreamInteractive::_edit).bind(p_object));
 		add_custom_control(button);
 	}
 }

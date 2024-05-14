@@ -88,7 +88,7 @@ ProjectExportTextureFormatError::ProjectExportTextureFormatError() {
 	fix_texture_format_button->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	fix_texture_format_button->set_text(TTR("Fix Import"));
 	add_child(fix_texture_format_button);
-	fix_texture_format_button->connect("pressed", callable_mp(this, &ProjectExportTextureFormatError::_on_fix_texture_format_pressed));
+	fix_texture_format_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportTextureFormatError::_on_fix_texture_format_pressed));
 }
 
 void ProjectExportDialog::_notification(int p_what) {
@@ -1251,12 +1251,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	duplicate_preset->set_tooltip_text(TTR("Duplicate"));
 	duplicate_preset->set_flat(true);
 	preset_hb->add_child(duplicate_preset);
-	duplicate_preset->connect("pressed", callable_mp(this, &ProjectExportDialog::_duplicate_preset));
+	duplicate_preset->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_duplicate_preset));
 	delete_preset = memnew(Button);
 	delete_preset->set_tooltip_text(TTR("Delete"));
 	delete_preset->set_flat(true);
 	preset_hb->add_child(delete_preset);
-	delete_preset->connect("pressed", callable_mp(this, &ProjectExportDialog::_delete_preset));
+	delete_preset->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_delete_preset));
 
 	// Preset settings.
 
@@ -1271,12 +1271,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTR("Runnable"));
 	runnable->set_tooltip_text(TTR("If checked, the preset will be available for use in one-click deploy.\nOnly one preset per platform may be marked as runnable."));
-	runnable->connect("pressed", callable_mp(this, &ProjectExportDialog::_runnable_pressed));
+	runnable->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_runnable_pressed));
 
 	advanced_options = memnew(CheckButton);
 	advanced_options->set_text(TTR("Advanced Options"));
 	advanced_options->set_tooltip_text(TTR("If checked, the advanced options will be shown."));
-	advanced_options->connect("pressed", callable_mp(this, &ProjectExportDialog::_advanced_options_pressed));
+	advanced_options->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_advanced_options_pressed));
 
 	HBoxContainer *preset_configs_container = memnew(HBoxContainer);
 	preset_configs_container->add_spacer(true);
@@ -1434,7 +1434,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	LinkButton *sec_more_info = memnew(LinkButton);
 	sec_more_info->set_text(TTR("More Info..."));
-	sec_more_info->connect("pressed", callable_mp(this, &ProjectExportDialog::_open_key_help_link));
+	sec_more_info->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_open_key_help_link));
 	sec_vb->add_child(sec_more_info);
 
 	// Script export parameters.
@@ -1484,7 +1484,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_button = add_button(TTR("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_button->set_tooltip_text(TTR("Export the project as a playable build (Godot executable and project data) for the selected preset."));
 #endif
-	export_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_project));
+	export_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_project));
 	// Disable initially before we select a valid preset
 	export_button->set_disabled(true);
 
@@ -1504,7 +1504,7 @@ ProjectExportDialog::ProjectExportDialog() {
 #else
 	export_all_button = add_button(TTR("Export All..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 #endif
-	export_all_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_all_dialog));
+	export_all_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_all_dialog));
 	export_all_button->set_disabled(true);
 
 	export_pck_zip = memnew(EditorFileDialog);
@@ -1554,7 +1554,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	download_templates->set_text(TTR("Manage Export Templates"));
 	download_templates->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	export_templates_error->add_child(download_templates);
-	download_templates->connect("pressed", callable_mp(this, &ProjectExportDialog::_open_export_template_manager));
+	download_templates->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_open_export_template_manager));
 
 	// Export project file dialog.
 
