@@ -494,7 +494,8 @@ class EditorInspector : public ScrollContainer {
 	//
 
 	LineEdit *search_box = nullptr;
-	bool show_categories = false;
+	bool show_standard_categories = false;
+	bool show_custom_categories = false;
 	bool hide_script = true;
 	bool hide_metadata = true;
 	bool use_doc_hints = false;
@@ -610,7 +611,7 @@ public:
 
 	void set_autoclear(bool p_enable);
 
-	void set_show_categories(bool p_show);
+	void set_show_categories(bool p_show_standard, bool p_show_custom);
 	void set_use_doc_hints(bool p_enable);
 	void set_hide_script(bool p_hide);
 	void set_hide_metadata(bool p_hide);

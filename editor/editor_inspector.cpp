@@ -975,13 +975,17 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 			if (inspector) {
 				const String custom_description = inspector->get_custom_property_description(p_text);
 				if (!custom_description.is_empty()) {
-					help_bit->prepend_description(custom_description);
+					help_bit->set_description(custom_description);
 				}
 			}
 		}
 
 		if (!custom_warning.is_empty()) {
-			help_bit->prepend_description("[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + custom_warning + "[/color][/b]");
+			String description = "[b][color=" + get_theme_color(SNAME("warning_color")).to_html(false) + "]" + custom_warning + "[/color][/b]";
+			if (!help_bit->get_description().is_empty()) {
+				description += "\n" + help_bit->get_description();
+			}
+			help_bit->set_description(description);
 		}
 
 		EditorHelpBitTooltip::show_tooltip(help_bit, const_cast<EditorProperty *>(this));
@@ -2857,7 +2861,11 @@ void EditorInspector::update_tree() {
 			vbox_per_path.clear();
 			editor_inspector_array_per_prefix.clear();
 
-			if (!show_categories) {
+			// `hint_script` should contain a native class name or a script path.
+			// Otherwise the category was probably added via `@export_category` or `_get_property_list()`.
+			const bool is_custom_category = p.hint_string.is_empty();
+
+			if ((is_custom_category && !show_custom_categories) || (!is_custom_category && !show_standard_categories)) {
 				continue;
 			}
 
@@ -2876,7 +2884,7 @@ void EditorInspector::update_tree() {
 				}
 				// Treat custom categories as second-level ones. Do not skip a normal category if it is followed by a custom one.
 				// Skip in the other 3 cases (normal -> normal, custom -> custom, custom -> normal).
-				if ((N->get().usage & PROPERTY_USAGE_CATEGORY) && (p.hint_string.is_empty() || !N->get().hint_string.is_empty())) {
+				if ((N->get().usage & PROPERTY_USAGE_CATEGORY) && (is_custom_category || !N->get().hint_string.is_empty())) {
 					valid = false;
 					break;
 				}
@@ -2891,10 +2899,8 @@ void EditorInspector::update_tree() {
 			main_vbox->add_child(category);
 			category_vbox = nullptr; //reset
 
-			// `hint_script` should contain a native class name or a script path.
-			// Otherwise the category was probably added via `@export_category` or `_get_property_list()`.
 			// Do not add an icon, do not change the current class (`doc_name`) for custom categories.
-			if (p.hint_string.is_empty()) {
+			if (is_custom_category) {
 				category->label = p.name;
 				category->set_tooltip_text(p.name);
 			} else {
@@ -3596,8 +3602,9 @@ void EditorInspector::set_autoclear(bool p_enable) {
 	autoclear = p_enable;
 }
 
-void EditorInspector::set_show_categories(bool p_show) {
-	show_categories = p_show;
+void EditorInspector::set_show_categories(bool p_show_standard, bool p_show_custom) {
+	show_standard_categories = p_show_standard;
+	show_custom_categories = p_show_custom;
 	update_tree();
 }
 
@@ -4151,7 +4158,7 @@ String EditorInspector::get_property_prefix() const {
 }
 
 void EditorInspector::add_custom_property_description(const String &p_class, const String &p_property, const String &p_description) {
-	const String key = vformat("property|%s|%s|", p_class, p_property);
+	const String key = vformat("property|%s|%s", p_class, p_property);
 	custom_property_descriptions[key] = p_description;
 }
 

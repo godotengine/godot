@@ -2555,7 +2555,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tile_inspector = memnew(EditorInspector);
 	tile_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
-	tile_inspector->set_show_categories(true);
+	tile_inspector->set_show_categories(false, true);
 	tile_inspector->set_use_doc_hints(true);
 	tile_inspector->set_use_folding(true);
 	tile_inspector->connect("property_selected", callable_mp(this, &TileSetAtlasSourceEditor::_inspector_property_selected));
@@ -2609,7 +2609,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	atlas_source_inspector = memnew(EditorInspector);
 	atlas_source_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
-	atlas_source_inspector->set_show_categories(true);
+	atlas_source_inspector->set_show_categories(false, true);
 	atlas_source_inspector->set_use_doc_hints(true);
 	atlas_source_inspector->add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 	middle_vbox_container->add_child(atlas_source_inspector);
