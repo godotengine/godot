@@ -934,8 +934,8 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	base_control = memnew(Control);
 	base_control->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	base_control->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	base_control->connect("draw", callable_mp(this, &GenericTilePolygonEditor::_base_control_draw));
-	base_control->connect("gui_input", callable_mp(this, &GenericTilePolygonEditor::_base_control_gui_input));
+	base_control->connect(SceneStringName(draw), callable_mp(this, &GenericTilePolygonEditor::_base_control_draw));
+	base_control->connect(SceneStringName(gui_input), callable_mp(this, &GenericTilePolygonEditor::_base_control_gui_input));
 	base_control->set_clip_contents(true);
 	base_control->set_focus_mode(Control::FOCUS_CLICK);
 	root->add_child(base_control);

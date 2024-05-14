@@ -30,7 +30,6 @@
 
 #include "marshalls.h"
 
-#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
@@ -1696,7 +1695,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 						Variant value;
 
-						if (E.name == CoreStringNames::get_singleton()->_script) {
+						if (E.name == CoreStringName(script)) {
 							Ref<Script> script = obj->get_script();
 							if (script.is_valid()) {
 								String path = script->get_path();

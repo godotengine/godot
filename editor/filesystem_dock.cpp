@@ -313,7 +313,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		_sort_file_info_list(file_list);
 
 		// Build the tree.
-		const int icon_size = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+		const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 		for (const FileInfo &fi : file_list) {
 			TreeItem *file_item = tree->create_item(subdirectory_item);
@@ -776,7 +776,7 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 }
 
 void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
-	if ((file_list_vb->is_visible_in_tree() || current_path.trim_suffix("/") == p_path.get_base_dir()) && p_preview.is_valid()) {
+	if (p_preview.is_valid()) {
 		Array uarr = p_udata;
 		int idx = uarr[0];
 		String file = uarr[1];
@@ -4023,8 +4023,8 @@ FileSystemDock::FileSystemDock() {
 	tree->connect("item_mouse_selected", callable_mp(this, &FileSystemDock::_tree_rmb_select));
 	tree->connect("empty_clicked", callable_mp(this, &FileSystemDock::_tree_empty_click));
 	tree->connect("nothing_selected", callable_mp(this, &FileSystemDock::_tree_empty_selected));
-	tree->connect("gui_input", callable_mp(this, &FileSystemDock::_tree_gui_input));
-	tree->connect("mouse_exited", callable_mp(this, &FileSystemDock::_tree_mouse_exited));
+	tree->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_tree_gui_input));
+	tree->connect(SceneStringName(mouse_exited), callable_mp(this, &FileSystemDock::_tree_mouse_exited));
 	tree->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
 
 	file_list_vb = memnew(VBoxContainer);
@@ -4053,7 +4053,7 @@ FileSystemDock::FileSystemDock() {
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	SET_DRAG_FORWARDING_GCD(files, FileSystemDock);
 	files->connect("item_clicked", callable_mp(this, &FileSystemDock::_file_list_item_clicked));
-	files->connect("gui_input", callable_mp(this, &FileSystemDock::_file_list_gui_input));
+	files->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_file_list_gui_input));
 	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
 	files->connect("empty_clicked", callable_mp(this, &FileSystemDock::_file_list_empty_clicked));
 	files->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));

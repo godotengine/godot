@@ -190,6 +190,7 @@ void MenuButton::_bind_methods() {
 	PopupMenu::Item defaults(true);
 
 	base_property_helper.set_prefix("popup/item_");
+	base_property_helper.set_array_length_getter(&MenuButton::get_item_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "checkable", PROPERTY_HINT_ENUM, "No,As Checkbox,As Radio Button"), defaults.checkable_type);

@@ -31,7 +31,6 @@
 #include "tile_map.h"
 #include "tile_map.compat.inc"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "scene/gui/control.h"
 
@@ -54,7 +53,7 @@ void TileMap::_tile_set_changed() {
 }
 
 void TileMap::_emit_changed() {
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 void TileMap::_set_tile_map_data_using_compatibility_format(int p_layer, TileMapDataFormat p_format, const Vector<int> &p_data) {
@@ -360,7 +359,7 @@ void TileMap::add_layer(int p_to_pos) {
 	for (uint32_t i = 0; i < layers.size(); i++) {
 		layers[i]->set_as_tile_map_internal_node(i);
 	}
-	new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
+	new_layer->connect(CoreStringName(changed), callable_mp(this, &TileMap::_emit_changed));
 
 	notify_property_list_changed();
 
@@ -768,7 +767,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 				new_layer->set_as_tile_map_internal_node(index);
 				new_layer->set_name(vformat("Layer%d", index));
 				new_layer->set_tile_set(tile_set);
-				new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
+				new_layer->connect(CoreStringName(changed), callable_mp(this, &TileMap::_emit_changed));
 				layers.push_back(new_layer);
 			}
 
@@ -1051,7 +1050,7 @@ void TileMap::_bind_methods() {
 
 	ADD_PROPERTY_DEFAULT("format", TileMapDataFormat::TILE_MAP_DATA_FORMAT_1);
 
-	ADD_SIGNAL(MethodInfo(CoreStringNames::get_singleton()->changed));
+	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
 
 	BIND_ENUM_CONSTANT(VISIBILITY_MODE_DEFAULT);
 	BIND_ENUM_CONSTANT(VISIBILITY_MODE_FORCE_HIDE);
@@ -1064,7 +1063,7 @@ TileMap::TileMap() {
 	new_layer->set_as_tile_map_internal_node(0);
 	new_layer->set_name("Layer0");
 	new_layer->set_tile_set(tile_set);
-	new_layer->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileMap::_emit_changed));
+	new_layer->connect(CoreStringName(changed), callable_mp(this, &TileMap::_emit_changed));
 	layers.push_back(new_layer);
 
 	if (!base_property_helper.is_initialized()) {
@@ -1073,6 +1072,7 @@ TileMap::TileMap() {
 		TileMapLayer *defaults = memnew(TileMapLayer);
 
 		base_property_helper.set_prefix("layer_");
+		base_property_helper.set_array_length_getter(&TileMap::get_layers_count);
 		base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), defaults->get_name(), &TileMap::set_layer_name, &TileMap::get_layer_name);
 		base_property_helper.register_property(PropertyInfo(Variant::BOOL, "enabled"), defaults->is_enabled(), &TileMap::set_layer_enabled, &TileMap::is_layer_enabled);
 		base_property_helper.register_property(PropertyInfo(Variant::COLOR, "modulate"), defaults->get_modulate(), &TileMap::set_layer_modulate, &TileMap::get_layer_modulate);

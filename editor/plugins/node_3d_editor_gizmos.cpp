@@ -912,7 +912,9 @@ void EditorNode3DGizmoPlugin::create_icon_material(const String &p_name, const R
 		Color color = instantiated ? instantiated_color : p_albedo;
 
 		if (!selected) {
-			color.a *= 0.85;
+			color.r *= 0.6;
+			color.g *= 0.6;
+			color.b *= 0.6;
 		}
 
 		icon->set_albedo(color);
@@ -921,9 +923,8 @@ void EditorNode3DGizmoPlugin::create_icon_material(const String &p_name, const R
 		icon->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 		icon->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		icon->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-		icon->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
-		icon->set_depth_draw_mode(StandardMaterial3D::DEPTH_DRAW_DISABLED);
-		icon->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		icon->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_SCISSOR);
+		icon->set_alpha_scissor_threshold(0.1);
 		icon->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, p_texture);
 		icon->set_flag(StandardMaterial3D::FLAG_FIXED_SIZE, true);
 		icon->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);

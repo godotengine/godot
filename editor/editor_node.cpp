@@ -4073,11 +4073,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	EditorDebuggerNode::get_singleton()->update_live_edit_root();
 
-	// Tell everything to edit this object, unless we're in the process of restoring scenes.
-	// If we are, we'll edit it after the restoration is done.
-	if (!restoring_scenes) {
-		push_item(new_scene);
-	} else {
+	if (restoring_scenes) {
 		// Initialize history for restored scenes.
 		ObjectID id = new_scene->get_instance_id();
 		if (id != editor_history.get_current()) {
@@ -7113,7 +7109,7 @@ EditorNode::EditorNode() {
 	Button *output_button = bottom_panel->add_item(TTR("Output"), log, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTR("Toggle Output Bottom Panel"), KeyModifierMask::ALT | Key::O));
 	log->set_tool_button(output_button);
 
-	center_split->connect("resized", callable_mp(this, &EditorNode::_vp_resized));
+	center_split->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_vp_resized));
 
 	native_shader_source_visualizer = memnew(EditorNativeShaderSourceVisualizer);
 	gui_base->add_child(native_shader_source_visualizer);

@@ -43,15 +43,22 @@ class PropertyListHelper {
 	};
 
 	String prefix;
+	MethodBind *array_length_getter = nullptr;
 	HashMap<String, Property> property_list;
 	Object *object = nullptr;
 
 	const Property *_get_property(const String &p_property, int *r_index) const;
 	void _call_setter(const MethodBind *p_setter, int p_index, const Variant &p_value) const;
 	Variant _call_getter(const Property *p_property, int p_index) const;
+	int _call_array_length_getter() const;
 
 public:
 	void set_prefix(const String &p_prefix);
+	template <typename G>
+	void set_array_length_getter(G p_array_length_getter) {
+		array_length_getter = create_method_bind(p_array_length_getter);
+	}
+
 	// Register property without setter/getter. Only use when you don't need PropertyListHelper for _set/_get logic.
 	void register_property(const PropertyInfo &p_info, const Variant &p_default);
 

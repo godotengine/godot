@@ -458,11 +458,11 @@ size_t b64Decode(const char* encoded, const size_t len, char** decoded)
         auto value2 = B64_INDEX[(size_t)encoded[1]];
         output[idx++] = (value1 << 2) + ((value2 & 0x30) >> 4);
 
-        if (!encoded[2] || encoded[2] == '=' || encoded[2] == '.') break;
+        if (!encoded[2] || encoded[3] < 0 || encoded[2] == '=' || encoded[2] == '.') break;
         auto value3 = B64_INDEX[(size_t)encoded[2]];
         output[idx++] = ((value2 & 0x0f) << 4) + ((value3 & 0x3c) >> 2);
 
-        if (!encoded[3] || encoded[3] == '=' || encoded[3] == '.') break;
+        if (!encoded[3] || encoded[3] < 0 || encoded[3] == '=' || encoded[3] == '.') break;
         auto value4 = B64_INDEX[(size_t)encoded[3]];
         output[idx++] = ((value3 & 0x03) << 6) + value4;
         encoded += 4;

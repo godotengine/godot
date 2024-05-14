@@ -33,7 +33,6 @@
 
 #include "variant.h"
 
-#include "core/core_string_names.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/compression.h"

@@ -31,7 +31,6 @@
 #include "editor_properties.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties_array_dict.h"
@@ -457,7 +456,7 @@ EditorPropertyLocale::EditorPropertyLocale() {
 	locale = memnew(LineEdit);
 	locale_hb->add_child(locale);
 	locale->connect("text_submitted", callable_mp(this, &EditorPropertyLocale::_locale_selected));
-	locale->connect("focus_exited", callable_mp(this, &EditorPropertyLocale::_locale_focus_exited));
+	locale->connect(SceneStringName(focus_exited), callable_mp(this, &EditorPropertyLocale::_locale_focus_exited));
 	locale->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	locale_edit = memnew(Button);
@@ -598,7 +597,7 @@ EditorPropertyPath::EditorPropertyPath() {
 	path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	path_hb->add_child(path);
 	path->connect("text_submitted", callable_mp(this, &EditorPropertyPath::_path_selected));
-	path->connect("focus_exited", callable_mp(this, &EditorPropertyPath::_path_focus_exited));
+	path->connect(SceneStringName(focus_exited), callable_mp(this, &EditorPropertyPath::_path_focus_exited));
 	path->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	path_edit = memnew(Button);
@@ -1681,8 +1680,8 @@ void EditorPropertyEasing::_bind_methods() {
 
 EditorPropertyEasing::EditorPropertyEasing() {
 	easing_draw = memnew(Control);
-	easing_draw->connect("draw", callable_mp(this, &EditorPropertyEasing::_draw_easing));
-	easing_draw->connect("gui_input", callable_mp(this, &EditorPropertyEasing::_drag_easing));
+	easing_draw->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyEasing::_draw_easing));
+	easing_draw->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyEasing::_drag_easing));
 	easing_draw->set_default_cursor_shape(Control::CURSOR_MOVE);
 	add_child(easing_draw);
 
@@ -1699,7 +1698,7 @@ EditorPropertyEasing::EditorPropertyEasing() {
 	spin->set_allow_lesser(true);
 	spin->set_allow_greater(true);
 	spin->connect("value_changed", callable_mp(this, &EditorPropertyEasing::_spin_value_changed));
-	spin->get_line_edit()->connect("focus_exited", callable_mp(this, &EditorPropertyEasing::_spin_focus_exited));
+	spin->get_line_edit()->connect(SceneStringName(focus_exited), callable_mp(this, &EditorPropertyEasing::_spin_focus_exited));
 	spin->hide();
 	add_child(spin);
 }
@@ -3000,7 +2999,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	edit = memnew(LineEdit);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->hide();
-	edit->connect(SNAME("focus_exited"), callable_mp(this, &EditorPropertyNodePath::_accept_text));
+	edit->connect(SceneStringName(focus_exited), callable_mp(this, &EditorPropertyNodePath::_accept_text));
 	edit->connect(SNAME("text_submitted"), callable_mp(this, &EditorPropertyNodePath::_text_submitted));
 	hbc->add_child(edit);
 }
@@ -3187,7 +3186,7 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 	// Changing the value of Script-type exported variables of the main script should not trigger saving/reloading properties.
 	bool is_script = false;
 	Ref<Script> s = p_resource;
-	if (get_edited_object() && s.is_valid() && get_edited_property() == CoreStringNames::get_singleton()->_script) {
+	if (get_edited_object() && s.is_valid() && get_edited_property() == CoreStringName(script)) {
 		is_script = true;
 		InspectorDock::get_singleton()->store_script_properties(get_edited_object());
 		s->call("set_instance_base_type", get_edited_object()->get_class());
@@ -3326,7 +3325,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 		EditorShaderPicker *shader_picker = memnew(EditorShaderPicker);
 		shader_picker->set_edited_material(Object::cast_to<ShaderMaterial>(p_object));
 		resource_picker = shader_picker;
-		connect(SNAME("ready"), callable_mp(this, &EditorPropertyResource::_update_preferred_shader));
+		connect(SceneStringName(ready), callable_mp(this, &EditorPropertyResource::_update_preferred_shader));
 	} else if (p_base_type == "AudioStream") {
 		EditorAudioStreamPicker *astream_picker = memnew(EditorAudioStreamPicker);
 		resource_picker = astream_picker;
@@ -3410,8 +3409,6 @@ void EditorPropertyResource::update_property() {
 					EditorNode::get_singleton()->hide_unused_editors();
 					opened_editor = false;
 				}
-
-				_update_property_bg();
 			}
 		}
 	}
@@ -3468,12 +3465,6 @@ bool EditorPropertyResource::is_colored(ColorationMode p_mode) {
 
 void EditorPropertyResource::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			if (EditorThemeManager::is_generated_theme_outdated()) {
-				_update_property_bg();
-			}
-		} break;
-
 		case NOTIFICATION_EXIT_TREE: {
 			const EditorInspector *ei = get_parent_inspector();
 			if (ei && !ei->is_main_editor_inspector()) {
@@ -3485,6 +3476,7 @@ void EditorPropertyResource::_notification(int p_what) {
 
 EditorPropertyResource::EditorPropertyResource() {
 	use_sub_inspector = bool(EDITOR_GET("interface/inspector/open_resources_in_current_inspector"));
+	has_borders = true;
 }
 
 ////////////// DEFAULT PLUGIN //////////////////////

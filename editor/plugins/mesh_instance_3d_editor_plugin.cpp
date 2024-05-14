@@ -47,7 +47,6 @@
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
-#include "scene/scene_string_names.h"
 
 void MeshInstance3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -172,14 +171,14 @@ void MeshInstance3DEditor::_create_collision_shape() {
 
 			ur->add_do_method(instance, "add_child", body, true);
 			ur->add_do_method(body, "set_owner", owner);
-			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, body);
+			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), body);
 
 			for (Ref<Shape3D> shape : shapes) {
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
 				body->add_child(cshape, true);
 				ur->add_do_method(cshape, "set_owner", owner);
-				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
+				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), cshape);
 			}
 			ur->add_do_reference(body);
 			ur->add_undo_method(instance, "remove_child", body);
@@ -191,7 +190,7 @@ void MeshInstance3DEditor::_create_collision_shape() {
 				cshape->set_transform(node->get_transform());
 				ur->add_do_method(E, "add_sibling", cshape, true);
 				ur->add_do_method(cshape, "set_owner", owner);
-				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, cshape);
+				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), cshape);
 				ur->add_do_reference(cshape);
 				ur->add_undo_method(node->get_parent(), "remove_child", cshape);
 			}
@@ -232,7 +231,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			ur->add_do_method(node, "add_child", nmi, true);
 			ur->add_do_method(nmi, "set_owner", owner);
-			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, nmi);
+			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), nmi);
 
 			ur->add_do_reference(nmi);
 			ur->add_undo_method(node, "remove_child", nmi);
@@ -509,7 +508,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 
 	ur->add_do_method(node, "add_child", mi, true);
 	ur->add_do_method(mi, "set_owner", owner);
-	ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, mi);
+	ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), mi);
 
 	ur->add_do_reference(mi);
 	ur->add_undo_method(node, "remove_child", mi);
@@ -607,7 +606,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	add_child(debug_uv_dialog);
 	debug_uv = memnew(Control);
 	debug_uv->set_custom_minimum_size(Size2(600, 600) * EDSCALE);
-	debug_uv->connect("draw", callable_mp(this, &MeshInstance3DEditor::_debug_uv_draw));
+	debug_uv->connect(SceneStringName(draw), callable_mp(this, &MeshInstance3DEditor::_debug_uv_draw));
 	debug_uv_dialog->add_child(debug_uv);
 }
 

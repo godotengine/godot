@@ -8150,3 +8150,82 @@ VisualShaderNodeRotationByAxis::VisualShaderNodeRotationByAxis() {
 
 	simple_decl = false;
 }
+
+String VisualShaderNodeReroute::get_caption() const {
+	return "Reroute";
+}
+
+int VisualShaderNodeReroute::get_input_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeReroute::PortType VisualShaderNodeReroute::get_input_port_type(int p_port) const {
+	return input_port_type;
+}
+
+String VisualShaderNodeReroute::get_input_port_name(int p_port) const {
+	return String();
+}
+
+int VisualShaderNodeReroute::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeReroute::PortType VisualShaderNodeReroute::get_output_port_type(int p_port) const {
+	return input_port_type;
+}
+
+String VisualShaderNodeReroute::get_output_port_name(int p_port) const {
+	return String();
+}
+
+String VisualShaderNodeReroute::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String code;
+	for (int i = 0; i < get_output_port_count(); i++) {
+		if (input_port_type == PORT_TYPE_SAMPLER) {
+			continue;
+		}
+
+		String input = p_input_vars[0];
+		if (input.is_empty()) {
+			code += vformat("	%s;\n", p_output_vars[i]);
+			continue;
+		}
+		code += vformat("	%s = %s;\n", p_output_vars[i], input);
+	}
+	return code;
+}
+
+void VisualShaderNodeReroute::_set_port_type(PortType p_type) {
+	input_port_type = p_type;
+	switch (p_type) {
+		case PORT_TYPE_SCALAR:
+			set_input_port_default_value(0, 0.0);
+			break;
+		case PORT_TYPE_VECTOR_2D:
+			set_input_port_default_value(0, Vector2());
+			break;
+		case PORT_TYPE_VECTOR_3D:
+			set_input_port_default_value(0, Vector3());
+			break;
+		case PORT_TYPE_VECTOR_4D:
+			set_input_port_default_value(0, Vector4());
+			break;
+		case PORT_TYPE_TRANSFORM:
+			set_input_port_default_value(0, Transform3D());
+			break;
+		default:
+			break;
+	}
+}
+
+void VisualShaderNodeReroute::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_set_port_type", "port_type"), &VisualShaderNodeReroute::_set_port_type);
+	ClassDB::bind_method(D_METHOD("get_port_type"), &VisualShaderNodeReroute::get_port_type);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "port_type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_port_type", "get_port_type");
+}
+
+VisualShaderNodeReroute::VisualShaderNodeReroute() {
+	set_input_port_default_value(0, 0.0);
+}

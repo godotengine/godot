@@ -649,6 +649,9 @@
 		<member name="interface/editor/font_antialiasing" type="int" setter="" getter="">
 			FreeType's font anti-aliasing mode used to render the editor fonts. Most fonts are not designed to look good with anti-aliasing disabled, so it's recommended to leave this enabled unless you're using a pixel art font.
 		</member>
+		<member name="interface/editor/font_disable_embedded_bitmaps" type="bool" setter="" getter="">
+			If set to [code]true[/code], embedded font bitmap loading is disabled (bitmap-only and color fonts ignore this property).
+		</member>
 		<member name="interface/editor/font_hinting" type="int" setter="" getter="">
 			The font hinting mode to use for the editor fonts. FreeType supports the following font hinting modes:
 			- [b]None:[/b] Don't use font hinting when rasterizing the font. This results in a smooth font, but it can look blurry.

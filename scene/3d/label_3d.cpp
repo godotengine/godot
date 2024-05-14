@@ -32,7 +32,6 @@
 
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 
 void Label3D::_bind_methods() {

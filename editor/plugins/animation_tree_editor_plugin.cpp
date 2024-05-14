@@ -43,7 +43,6 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
-#include "scene/scene_string_names.h"
 
 void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	if (p_tree && !p_tree->is_connected("animation_list_changed", callable_mp(this, &AnimationTreeEditor::_animation_list_changed))) {
@@ -221,7 +220,7 @@ void AnimationTreeEditor::remove_plugin(AnimationTreeNodeEditorPlugin *p_editor)
 }
 
 String AnimationTreeEditor::get_base_path() {
-	String path = SceneStringNames::get_singleton()->parameters_base_path;
+	String path = SceneStringName(parameters_base_path);
 	for (int i = 0; i < edited_path.size(); i++) {
 		path += edited_path[i] + "/";
 	}

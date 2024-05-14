@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -199,6 +200,7 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 }
 
 void FindReplaceBar::_replace() {
+	text_editor->begin_complex_operation();
 	text_editor->remove_secondary_carets();
 	bool selection_enabled = text_editor->has_selection(0);
 	Point2i selection_begin, selection_end;
@@ -210,7 +212,6 @@ void FindReplaceBar::_replace() {
 	String repl_text = get_replace_text();
 	int search_text_len = get_search_text().length();
 
-	text_editor->begin_complex_operation();
 	if (selection_enabled && is_selection_only()) {
 		// Restrict search_current() to selected region.
 		text_editor->set_caret_line(selection_begin.width, false, true, -1, 0);
@@ -249,6 +250,7 @@ void FindReplaceBar::_replace() {
 }
 
 void FindReplaceBar::_replace_all() {
+	text_editor->begin_complex_operation();
 	text_editor->remove_secondary_carets();
 	text_editor->disconnect("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
 	// Line as x so it gets priority in comparison, column as y.
@@ -278,8 +280,6 @@ void FindReplaceBar::_replace_all() {
 	int rc = 0;
 
 	replace_all_mode = true;
-
-	text_editor->begin_complex_operation();
 
 	if (selection_enabled && is_selection_only()) {
 		text_editor->set_caret_line(selection_begin.width, false, true, -1, 0);
@@ -619,6 +619,7 @@ void FindReplaceBar::_replace_text_submitted(const String &p_text) {
 		search_prev();
 	} else {
 		_replace();
+		search_next();
 	}
 }
 
@@ -709,7 +710,7 @@ FindReplaceBar::FindReplaceBar() {
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->connect("text_changed", callable_mp(this, &FindReplaceBar::_search_text_changed));
 	search_text->connect("text_submitted", callable_mp(this, &FindReplaceBar::_search_text_submitted));
-	search_text->connect("focus_exited", callable_mp(this, &FindReplaceBar::_focus_lost));
+	search_text->connect(SceneStringName(focus_exited), callable_mp(this, &FindReplaceBar::_focus_lost));
 
 	matches_label = memnew(Label);
 	hbc_button_search->add_child(matches_label);
@@ -748,7 +749,7 @@ FindReplaceBar::FindReplaceBar() {
 	replace_text->set_tooltip_text(TTR("Replace"));
 	replace_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	replace_text->connect("text_submitted", callable_mp(this, &FindReplaceBar::_replace_text_submitted));
-	replace_text->connect("focus_exited", callable_mp(this, &FindReplaceBar::_focus_lost));
+	replace_text->connect(SceneStringName(focus_exited), callable_mp(this, &FindReplaceBar::_focus_lost));
 
 	replace = memnew(Button);
 	hbc_button_replace->add_child(replace);
@@ -971,7 +972,7 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 			if (has_theme_icon(p_option.display, EditorStringName(EditorIcons))) {
 				tex = get_editor_theme_icon(p_option.display);
 			} else {
-				tex = get_editor_theme_icon(SNAME("Object"));
+				tex = EditorNode::get_singleton()->get_class_icon(p_option.display);
 			}
 		} break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
@@ -1727,7 +1728,7 @@ CodeTextEditor::CodeTextEditor() {
 	scroll->add_child(error);
 	error->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	error->set_mouse_filter(MOUSE_FILTER_STOP);
-	error->connect("gui_input", callable_mp(this, &CodeTextEditor::_error_pressed));
+	error->connect(SceneStringName(gui_input), callable_mp(this, &CodeTextEditor::_error_pressed));
 
 	// Errors
 	error_button = memnew(Button);
@@ -1788,7 +1789,7 @@ CodeTextEditor::CodeTextEditor() {
 	indentation_txt->set_tooltip_text(TTR("Indentation"));
 	indentation_txt->set_mouse_filter(MOUSE_FILTER_STOP);
 
-	text_editor->connect("gui_input", callable_mp(this, &CodeTextEditor::_text_editor_gui_input));
+	text_editor->connect(SceneStringName(gui_input), callable_mp(this, &CodeTextEditor::_text_editor_gui_input));
 	text_editor->connect("caret_changed", callable_mp(this, &CodeTextEditor::_line_col_changed));
 	text_editor->connect("text_changed", callable_mp(this, &CodeTextEditor::_text_changed));
 	text_editor->connect("code_completion_requested", callable_mp(this, &CodeTextEditor::_complete_request));

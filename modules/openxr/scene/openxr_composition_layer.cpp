@@ -38,7 +38,7 @@
 #include "scene/3d/xr_nodes.h"
 #include "scene/main/viewport.h"
 
-HashSet<SubViewport *> OpenXRCompositionLayer::viewports_in_use;
+Vector<OpenXRCompositionLayer *> OpenXRCompositionLayer::composition_layer_nodes;
 
 static const char *HOLE_PUNCH_SHADER_CODE =
 		"shader_type spatial;\n"
@@ -73,9 +73,7 @@ OpenXRCompositionLayer::~OpenXRCompositionLayer() {
 		openxr_interface->disconnect("session_stopping", callable_mp(this, &OpenXRCompositionLayer::_on_openxr_session_stopping));
 	}
 
-	if (layer_viewport) {
-		viewports_in_use.erase(layer_viewport);
-	}
+	composition_layer_nodes.erase(this);
 
 	if (openxr_layer_provider != nullptr) {
 		memdelete(openxr_layer_provider);
@@ -153,22 +151,25 @@ void OpenXRCompositionLayer::update_fallback_mesh() {
 	should_update_fallback_mesh = true;
 }
 
+bool OpenXRCompositionLayer::is_viewport_in_use(SubViewport *p_viewport) {
+	for (const OpenXRCompositionLayer *other_composition_layer : composition_layer_nodes) {
+		if (other_composition_layer != this && other_composition_layer->is_inside_tree() && other_composition_layer->get_layer_viewport() == p_viewport) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void OpenXRCompositionLayer::set_layer_viewport(SubViewport *p_viewport) {
 	if (layer_viewport == p_viewport) {
 		return;
 	}
 
-	ERR_FAIL_COND_EDMSG(viewports_in_use.has(p_viewport), RTR("Cannot use the same SubViewport with multiple OpenXR composition layers. Clear it from its current layer first."));
-
-	if (layer_viewport) {
-		viewports_in_use.erase(layer_viewport);
-	}
+	ERR_FAIL_COND_EDMSG(is_viewport_in_use(p_viewport), RTR("Cannot use the same SubViewport with multiple OpenXR composition layers. Clear it from its current layer first."));
 
 	layer_viewport = p_viewport;
 
 	if (layer_viewport) {
-		viewports_in_use.insert(layer_viewport);
-
 		SubViewport::UpdateMode update_mode = layer_viewport->get_update_mode();
 		if (update_mode == SubViewport::UPDATE_WHEN_VISIBLE || update_mode == SubViewport::UPDATE_WHEN_PARENT_VISIBLE) {
 			WARN_PRINT_ONCE("OpenXR composition layers cannot use SubViewports with UPDATE_WHEN_VISIBLE or UPDATE_WHEN_PARENT_VISIBLE. Switching to UPDATE_ALWAYS.");
@@ -306,6 +307,8 @@ void OpenXRCompositionLayer::_reset_fallback_material() {
 void OpenXRCompositionLayer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
+			composition_layer_nodes.push_back(this);
+
 			if (openxr_layer_provider) {
 				for (OpenXRExtensionWrapper *extension : OpenXRAPI::get_registered_extension_wrappers()) {
 					extension_property_values.merge(extension->get_viewport_composition_layer_extension_property_defaults());
@@ -340,7 +343,9 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 				composition_layer_extension->register_viewport_composition_layer_provider(openxr_layer_provider);
 			}
 
-			if (!fallback && layer_viewport && openxr_session_running && is_visible()) {
+			if (is_viewport_in_use(layer_viewport)) {
+				set_layer_viewport(nullptr);
+			} else if (!fallback && layer_viewport && openxr_session_running && is_visible()) {
 				openxr_layer_provider->set_viewport(layer_viewport->get_viewport_rid(), layer_viewport->get_size());
 			}
 		} break;
@@ -349,12 +354,7 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 				composition_layer_extension->unregister_viewport_composition_layer_provider(openxr_layer_provider);
 			}
 
-			// When a node is removed in the editor, we need to clear the layer viewport, because otherwise
-			// there will be issues with the tracking in viewports_in_use, since nodes deleted in the editor
-			// aren't really deleted in order to support undo.
-			if (Engine::get_singleton()->is_editor_hint() && layer_viewport) {
-				set_layer_viewport(nullptr);
-			} else if (!fallback) {
+			if (!fallback) {
 				// This will clean up existing resources.
 				openxr_layer_provider->set_viewport(RID(), Size2i());
 			}

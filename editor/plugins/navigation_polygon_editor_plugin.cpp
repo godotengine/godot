@@ -177,8 +177,8 @@ NavigationPolygonEditor::NavigationPolygonEditor() {
 void NavigationPolygonEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			button_bake->set_icon(get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
-			button_reset->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+			button_bake->set_icon(get_editor_theme_icon(SNAME("Bake")));
+			button_reset->set_icon(get_editor_theme_icon(SNAME("Reload")));
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (rebake_timer) {

@@ -863,7 +863,7 @@ TileSetEditor::TileSetEditor() {
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	sources_list->connect("item_selected", callable_mp(this, &TileSetEditor::_source_selected));
 	sources_list->connect("item_selected", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
-	sources_list->connect("visibility_changed", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
+	sources_list->connect(SceneStringName(visibility_changed), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
 	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileSetEditor::_update_sources_list).bind(-1));
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
@@ -946,7 +946,7 @@ TileSetEditor::TileSetEditor() {
 	patterns_item_list->set_max_text_lines(2);
 	patterns_item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 	patterns_item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	patterns_item_list->connect("gui_input", callable_mp(this, &TileSetEditor::_patterns_item_list_gui_input));
+	patterns_item_list->connect(SceneStringName(gui_input), callable_mp(this, &TileSetEditor::_patterns_item_list_gui_input));
 	main_vb->add_child(patterns_item_list);
 	patterns_item_list->hide();
 

@@ -2394,6 +2394,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		RS::EnvironmentBG bg_mode = environment_get_background(render_data.environment);
 		float bg_energy_multiplier = environment_get_bg_energy_multiplier(render_data.environment);
 		bg_energy_multiplier *= environment_get_bg_intensity(render_data.environment);
+		RS::EnvironmentReflectionSource reflection_source = environment_get_reflection_source(render_data.environment);
 
 		if (render_data.camera_attributes.is_valid()) {
 			bg_energy_multiplier *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(render_data.camera_attributes);
@@ -2404,7 +2405,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				clear_color.r *= bg_energy_multiplier;
 				clear_color.g *= bg_energy_multiplier;
 				clear_color.b *= bg_energy_multiplier;
-				if (environment_get_fog_enabled(render_data.environment)) {
+				if (!render_data.transparent_bg && environment_get_fog_enabled(render_data.environment)) {
 					draw_sky_fog_only = true;
 					GLES3::MaterialStorage::get_singleton()->material_set_param(sky_globals.fog_material, "clear_color", Variant(clear_color));
 				}
@@ -2414,13 +2415,13 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				clear_color.r *= bg_energy_multiplier;
 				clear_color.g *= bg_energy_multiplier;
 				clear_color.b *= bg_energy_multiplier;
-				if (environment_get_fog_enabled(render_data.environment)) {
+				if (!render_data.transparent_bg && environment_get_fog_enabled(render_data.environment)) {
 					draw_sky_fog_only = true;
 					GLES3::MaterialStorage::get_singleton()->material_set_param(sky_globals.fog_material, "clear_color", Variant(clear_color));
 				}
 			} break;
 			case RS::ENV_BG_SKY: {
-				draw_sky = true;
+				draw_sky = !render_data.transparent_bg;
 			} break;
 			case RS::ENV_BG_CANVAS: {
 				keep_color = true;
@@ -2433,8 +2434,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			default: {
 			}
 		}
+
 		// setup sky if used for ambient, reflections, or background
-		if (draw_sky || draw_sky_fog_only || environment_get_reflection_source(render_data.environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(render_data.environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
+		if (draw_sky || draw_sky_fog_only || (reflection_source == RS::ENV_REFLECTION_SOURCE_BG && bg_mode == RS::ENV_BG_SKY) || reflection_source == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(render_data.environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
 			Projection projection = render_data.cam_projection;
 			if (is_reflection_probe) {

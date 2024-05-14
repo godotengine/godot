@@ -3,12 +3,15 @@ import sys
 import re
 import glob
 import subprocess
+import contextlib
 from collections import OrderedDict
 from collections.abc import Mapping
 from enum import Enum
-from typing import Iterator
+from typing import Generator, Optional
+from io import TextIOWrapper, StringIO
 from pathlib import Path
 from os.path import normpath, basename
+
 
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
@@ -277,79 +280,6 @@ def get_version_info(module_version_string="", silent=False):
     return version_info
 
 
-_cleanup_env = None
-_cleanup_bool = False
-
-
-def write_file_if_needed(path, string):
-    """Generates a file only if it doesn't already exist or the content has changed.
-
-    Utilizes a dedicated SCons environment to ensure the files are properly removed
-    during cleanup; will not attempt to create files during cleanup.
-
-    - `path` - Path to the file in question; used to create cleanup logic.
-    - `string` - Content to compare against an existing file.
-    """
-    global _cleanup_env
-    global _cleanup_bool
-
-    if _cleanup_env is None:
-        from SCons.Environment import Environment
-
-        _cleanup_env = Environment()
-        _cleanup_bool = _cleanup_env.GetOption("clean")
-
-    _cleanup_env.Clean("#", path)
-    if _cleanup_bool:
-        return
-
-    try:
-        with open(path, "r", encoding="utf-8", newline="\n") as f:
-            if f.read() == string:
-                return
-    except FileNotFoundError:
-        pass
-
-    with open(path, "w", encoding="utf-8", newline="\n") as f:
-        f.write(string)
-
-
-def generate_version_header(module_version_string=""):
-    version_info = get_version_info(module_version_string)
-
-    version_info_header = """\
-/* THIS FILE IS GENERATED DO NOT EDIT */
-#ifndef VERSION_GENERATED_GEN_H
-#define VERSION_GENERATED_GEN_H
-#define VERSION_SHORT_NAME "{short_name}"
-#define VERSION_NAME "{name}"
-#define VERSION_MAJOR {major}
-#define VERSION_MINOR {minor}
-#define VERSION_PATCH {patch}
-#define VERSION_STATUS "{status}"
-#define VERSION_BUILD "{build}"
-#define VERSION_MODULE_CONFIG "{module_config}"
-#define VERSION_WEBSITE "{website}"
-#define VERSION_DOCS_BRANCH "{docs_branch}"
-#define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH
-#endif // VERSION_GENERATED_GEN_H
-""".format(
-        **version_info
-    )
-
-    version_hash_data = """\
-/* THIS FILE IS GENERATED DO NOT EDIT */
-#include "core/version.h"
-const char *const VERSION_HASH = "{git_hash}";
-const uint64_t VERSION_TIMESTAMP = {git_timestamp};
-""".format(
-        **version_info
-    )
-
-    write_file_if_needed("core/version_generated.gen.h", version_info_header)
-    write_file_if_needed("core/version_hash.gen.cpp", version_hash_data)
-
-
 def parse_cg_file(fname, uniforms, sizes, conditionals):
     with open(fname, "r", encoding="utf-8") as fs:
         line = fs.readline()
@@ -463,63 +393,6 @@ def is_module(path):
         if not os.path.exists(os.path.join(path, f)):
             return False
     return True
-
-
-def write_disabled_classes(class_list):
-    file_contents = ""
-
-    file_contents += "/* THIS FILE IS GENERATED DO NOT EDIT */\n"
-    file_contents += "#ifndef DISABLED_CLASSES_GEN_H\n"
-    file_contents += "#define DISABLED_CLASSES_GEN_H\n\n"
-    for c in class_list:
-        cs = c.strip()
-        if cs != "":
-            file_contents += "#define ClassDB_Disable_" + cs + " 1\n"
-    file_contents += "\n#endif\n"
-
-    write_file_if_needed("core/disabled_classes.gen.h", file_contents)
-
-
-def write_modules(modules):
-    includes_cpp = ""
-    initialize_cpp = ""
-    uninitialize_cpp = ""
-
-    for name, path in modules.items():
-        try:
-            with open(os.path.join(path, "register_types.h")):
-                includes_cpp += '#include "' + path + '/register_types.h"\n'
-                initialize_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                initialize_cpp += "\tinitialize_" + name + "_module(p_level);\n"
-                initialize_cpp += "#endif\n"
-                uninitialize_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
-                uninitialize_cpp += "\tuninitialize_" + name + "_module(p_level);\n"
-                uninitialize_cpp += "#endif\n"
-        except OSError:
-            pass
-
-    modules_cpp = """// register_module_types.gen.cpp
-/* THIS FILE IS GENERATED DO NOT EDIT */
-#include "register_module_types.h"
-
-#include "modules/modules_enabled.gen.h"
-
-%s
-
-void initialize_modules(ModuleInitializationLevel p_level) {
-%s
-}
-
-void uninitialize_modules(ModuleInitializationLevel p_level) {
-%s
-}
-""" % (
-        includes_cpp,
-        initialize_cpp,
-        uninitialize_cpp,
-    )
-
-    write_file_if_needed("modules/register_module_types.gen.cpp", modules_cpp)
 
 
 def convert_custom_modules_path(path):
@@ -1649,3 +1522,112 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
     if get_bool(original_args, "vsproj_gen_only", True):
         sys.exit()
+
+
+def generate_copyright_header(filename: str) -> str:
+    MARGIN = 70
+    TEMPLATE = """\
+/**************************************************************************/
+/*  %s*/
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+"""
+    filename = filename.split("/")[-1].ljust(MARGIN)
+    if len(filename) > MARGIN:
+        print(f'WARNING: Filename "{filename}" too large for copyright header.')
+    return TEMPLATE % filename
+
+
+@contextlib.contextmanager
+def generated_wrapper(
+    path,  # FIXME: type with `Union[str, Node, List[Node]]` when pytest conflicts are resolved
+    guard: Optional[bool] = None,
+    prefix: str = "",
+    suffix: str = "",
+) -> Generator[TextIOWrapper, None, None]:
+    """
+    Wrapper class to automatically handle copyright headers and header guards
+    for generated scripts. Meant to be invoked via `with` statement similar to
+    creating a file.
+
+    - `path`: The path of the file to be created. Can be passed a raw string, an
+    isolated SCons target, or a full SCons target list. If a target list contains
+    multiple entries, produces a warning & only creates the first entry.
+    - `guard`: Optional bool to determine if a header guard should be added. If
+    unassigned, header guards are determined by the file extension.
+    - `prefix`: Custom prefix to prepend to a header guard. Produces a warning if
+    provided a value when `guard` evaluates to `False`.
+    - `suffix`: Custom suffix to append to a header guard. Produces a warning if
+    provided a value when `guard` evaluates to `False`.
+    """
+
+    # Handle unfiltered SCons target[s] passed as path.
+    if not isinstance(path, str):
+        if isinstance(path, list):
+            if len(path) > 1:
+                print_warning(
+                    "Attempting to use generated wrapper with multiple targets; "
+                    f"will only use first entry: {path[0]}"
+                )
+            path = path[0]
+        if not hasattr(path, "get_abspath"):
+            raise TypeError(f'Expected type "str", "Node" or "List[Node]"; was passed {type(path)}.')
+        path = path.get_abspath()
+
+    path = str(path).replace("\\", "/")
+    if guard is None:
+        guard = path.endswith((".h", ".hh", ".hpp", ".inc"))
+    if not guard and (prefix or suffix):
+        print_warning(f'Trying to assign header guard prefix/suffix while `guard` is disabled: "{path}".')
+
+    header_guard = ""
+    if guard:
+        if prefix:
+            prefix += "_"
+        if suffix:
+            suffix = f"_{suffix}"
+        split = path.split("/")[-1].split(".")
+        header_guard = (f"{prefix}{split[0]}{suffix}.{'.'.join(split[1:])}".upper()
+                .replace(".", "_").replace("-", "_").replace(" ", "_").replace("__", "_"))  # fmt: skip
+
+    with open(path, "wt", encoding="utf-8", newline="\n") as file:
+        file.write(generate_copyright_header(path))
+        file.write("\n/* THIS FILE IS GENERATED. EDITS WILL BE LOST. */\n\n")
+
+        if guard:
+            file.write(f"#ifndef {header_guard}\n")
+            file.write(f"#define {header_guard}\n\n")
+
+        with StringIO(newline="\n") as str_io:
+            yield str_io
+            file.write(str_io.getvalue().strip() or "/* NO CONTENT */")
+
+        if guard:
+            file.write(f"\n\n#endif // {header_guard}")
+
+        file.write("\n")

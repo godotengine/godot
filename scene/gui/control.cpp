@@ -42,7 +42,6 @@
 #include "scene/gui/panel.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
 #include "servers/rendering_server.h"
@@ -1606,7 +1605,7 @@ void Control::_update_minimum_size() {
 	if (minsize != data.last_minimum_size) {
 		data.last_minimum_size = minsize;
 		_size_changed();
-		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
+		emit_signal(SceneStringName(minimum_size_changed));
 	}
 }
 
@@ -1770,7 +1769,7 @@ void Control::set_h_size_flags(BitField<SizeFlags> p_flags) {
 		return;
 	}
 	data.h_size_flags = p_flags;
-	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
+	emit_signal(SceneStringName(size_flags_changed));
 }
 
 BitField<Control::SizeFlags> Control::get_h_size_flags() const {
@@ -1784,7 +1783,7 @@ void Control::set_v_size_flags(BitField<SizeFlags> p_flags) {
 		return;
 	}
 	data.v_size_flags = p_flags;
-	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
+	emit_signal(SceneStringName(size_flags_changed));
 }
 
 BitField<Control::SizeFlags> Control::get_v_size_flags() const {
@@ -1799,7 +1798,7 @@ void Control::set_stretch_ratio(real_t p_ratio) {
 	}
 
 	data.expand = p_ratio;
-	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
+	emit_signal(SceneStringName(size_flags_changed));
 }
 
 real_t Control::get_stretch_ratio() const {
@@ -1811,7 +1810,7 @@ real_t Control::get_stretch_ratio() const {
 
 void Control::_call_gui_input(const Ref<InputEvent> &p_event) {
 	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
-		emit_signal(SceneStringNames::get_singleton()->gui_input, p_event); // Signal should be first, so it's possible to override an event (and then accept it).
+		emit_signal(SceneStringName(gui_input), p_event); // Signal should be first, so it's possible to override an event (and then accept it).
 	}
 	if (!is_inside_tree() || get_viewport()->is_input_handled()) {
 		return; // Input was handled, abort.
@@ -3223,7 +3222,7 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_READY: {
 #ifdef DEBUG_ENABLED
-			connect("ready", callable_mp(this, &Control::_clear_size_warning), CONNECT_DEFERRED | CONNECT_ONE_SHOT);
+			connect(SceneStringName(ready), callable_mp(this, &Control::_clear_size_warning), CONNECT_DEFERRED | CONNECT_ONE_SHOT);
 #endif
 		} break;
 
@@ -3262,7 +3261,7 @@ void Control::_notification(int p_notification) {
 			data.parent_canvas_item = get_parent_item();
 
 			if (data.parent_canvas_item) {
-				data.parent_canvas_item->connect("item_rect_changed", callable_mp(this, &Control::_size_changed));
+				data.parent_canvas_item->connect(SceneStringName(item_rect_changed), callable_mp(this, &Control::_size_changed));
 			} else {
 				// Connect viewport.
 				Viewport *viewport = get_viewport();
@@ -3273,7 +3272,7 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_EXIT_CANVAS: {
 			if (data.parent_canvas_item) {
-				data.parent_canvas_item->disconnect("item_rect_changed", callable_mp(this, &Control::_size_changed));
+				data.parent_canvas_item->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &Control::_size_changed));
 				data.parent_canvas_item = nullptr;
 			} else {
 				// Disconnect viewport.
@@ -3299,7 +3298,7 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_RESIZED: {
-			emit_signal(SceneStringNames::get_singleton()->resized);
+			emit_signal(SceneStringName(resized));
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -3309,25 +3308,25 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_MOUSE_ENTER: {
-			emit_signal(SceneStringNames::get_singleton()->mouse_entered);
+			emit_signal(SceneStringName(mouse_entered));
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
-			emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+			emit_signal(SceneStringName(mouse_exited));
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
-			emit_signal(SceneStringNames::get_singleton()->focus_entered);
+			emit_signal(SceneStringName(focus_entered));
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_FOCUS_EXIT: {
-			emit_signal(SceneStringNames::get_singleton()->focus_exited);
+			emit_signal(SceneStringName(focus_exited));
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			emit_signal(SceneStringNames::get_singleton()->theme_changed);
+			emit_signal(SceneStringName(theme_changed));
 
 			_invalidate_theme_cache();
 			_update_theme_item_cache();

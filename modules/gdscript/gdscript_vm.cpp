@@ -32,7 +32,6 @@
 #include "gdscript_function.h"
 #include "gdscript_lambda_callable.h"
 
-#include "core/core_string_names.h"
 #include "core/os/os.h"
 
 #ifdef DEBUG_ENABLED
@@ -1741,7 +1740,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						if (base_type == Variant::OBJECT) {
 							if (base_obj) {
 								MethodBind *method = ClassDB::get_method(base_class, *methodname);
-								if (*methodname == CoreStringNames::get_singleton()->_free || (method && !method->has_return())) {
+								if (*methodname == CoreStringName(free_) || (method && !method->has_return())) {
 									err_text = R"(Trying to get a return value of a method that returns "void")";
 									OPCODE_BREAK;
 								}
@@ -3097,7 +3096,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				const Variant *args[] = { &vref };
 
 				Callable::CallError ce;
-				Variant has_next = obj->callp(CoreStringNames::get_singleton()->_iter_init, args, 1, ce);
+				Variant has_next = obj->callp(CoreStringName(_iter_init), args, 1, ce);
 
 #ifdef DEBUG_ENABLED
 				if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
@@ -3113,7 +3112,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					*counter = ref[0];
 
 					GET_VARIANT_PTR(iterator, 2);
-					*iterator = obj->callp(CoreStringNames::get_singleton()->_iter_get, (const Variant **)&counter, 1, ce);
+					*iterator = obj->callp(CoreStringName(_iter_get), (const Variant **)&counter, 1, ce);
 #ifdef DEBUG_ENABLED
 					if (ce.error != Callable::CallError::CALL_OK) {
 						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type %s.)", *container);
@@ -3431,7 +3430,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				const Variant *args[] = { &vref };
 
 				Callable::CallError ce;
-				Variant has_next = obj->callp(CoreStringNames::get_singleton()->_iter_next, args, 1, ce);
+				Variant has_next = obj->callp(CoreStringName(_iter_next), args, 1, ce);
 
 #ifdef DEBUG_ENABLED
 				if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
@@ -3447,7 +3446,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					*counter = ref[0];
 
 					GET_VARIANT_PTR(iterator, 2);
-					*iterator = obj->callp(CoreStringNames::get_singleton()->_iter_get, (const Variant **)&counter, 1, ce);
+					*iterator = obj->callp(CoreStringName(_iter_get), (const Variant **)&counter, 1, ce);
 #ifdef DEBUG_ENABLED
 					if (ce.error != Callable::CallError::CALL_OK) {
 						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type %s.)", *container);

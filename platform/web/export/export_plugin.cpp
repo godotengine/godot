@@ -154,11 +154,11 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 
 	String head_include;
 	if (p_preset->get("html/export_icon")) {
-		head_include += "<link id='-gd-engine-icon' rel='icon' type='image/png' href='" + p_name + ".icon.png' />\n";
-		head_include += "<link rel='apple-touch-icon' href='" + p_name + ".apple-touch-icon.png'/>\n";
+		head_include += "<link id=\"-gd-engine-icon\" rel=\"icon\" type=\"image/png\" href=\"" + p_name + ".icon.png\" />\n";
+		head_include += "<link rel=\"apple-touch-icon\" href=\"" + p_name + ".apple-touch-icon.png\"/>\n";
 	}
 	if (p_preset->get("progressive_web_app/enabled")) {
-		head_include += "<link rel='manifest' href='" + p_name + ".manifest.json'>\n";
+		head_include += "<link rel=\"manifest\" href=\"" + p_name + ".manifest.json\">\n";
 		config["serviceWorker"] = p_name + ".service.worker.js";
 	}
 

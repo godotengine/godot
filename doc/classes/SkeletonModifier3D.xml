@@ -6,9 +6,19 @@
 	<description>
 		[SkeletonModifier3D] retrieves a target [Skeleton3D] by having a [Skeleton3D] parent.
 		If there is [AnimationMixer], modification always performs after playback process of the [AnimationMixer].
+		This node should be used to implement custom IK solvers, constraints, or skeleton physics
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="_process_modification" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Override this virtual method to implement a custom skeleton modifier. You should do things like get the [Skeleton3D]'s current pose and apply the pose here.
+				[method _process_modification] must not apply [member influence] to bone poses because the [Skeleton3D] automatically applies influence to all bone poses set by the modifier.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="active" type="bool" setter="set_active" getter="is_active" default="true">
 			If [code]true[/code], the [SkeletonModifier3D] will be processing.

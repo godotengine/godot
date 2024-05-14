@@ -31,7 +31,6 @@
 #ifndef TEST_OBJECT_H
 #define TEST_OBJECT_H
 
-#include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/object/script_language.h"
@@ -251,7 +250,7 @@ TEST_CASE("[Object] Script property setter") {
 	Variant script;
 
 	bool valid = false;
-	object.set(CoreStringNames::get_singleton()->_script, script, &valid);
+	object.set(CoreStringName(script), script, &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			object.get_script() == script,
@@ -264,7 +263,7 @@ TEST_CASE("[Object] Script property getter") {
 	object.set_script(script);
 
 	bool valid = false;
-	const Variant &actual_value = object.get(CoreStringNames::get_singleton()->_script, &valid);
+	const Variant &actual_value = object.get(CoreStringName(script), &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			actual_value == script,

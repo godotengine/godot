@@ -753,8 +753,8 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	panel->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	blend_space_draw = memnew(Control);
-	blend_space_draw->connect("gui_input", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_blend_space_gui_input));
-	blend_space_draw->connect("draw", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_blend_space_draw));
+	blend_space_draw->connect(SceneStringName(gui_input), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_blend_space_gui_input));
+	blend_space_draw->connect(SceneStringName(draw), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_blend_space_draw));
 	blend_space_draw->set_focus_mode(FOCUS_ALL);
 
 	panel->add_child(blend_space_draw);

@@ -30,9 +30,6 @@
 
 #include "visual_instance_3d.h"
 
-#include "core/core_string_names.h"
-#include "scene/scene_string_names.h"
-
 AABB VisualInstance3D::get_aabb() const {
 	AABB ret;
 	GDVIRTUAL_CALL(_get_aabb, ret);
@@ -169,11 +166,11 @@ VisualInstance3D::~VisualInstance3D() {
 
 void GeometryInstance3D::set_material_override(const Ref<Material> &p_material) {
 	if (material_override.is_valid()) {
-		material_override->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+		material_override->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
 	material_override = p_material;
 	if (material_override.is_valid()) {
-		material_override->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+		material_override->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
 	RS::get_singleton()->instance_geometry_set_material_override(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
 }
@@ -279,12 +276,12 @@ bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) 
 		return true;
 	}
 #ifndef DISABLE_DEPRECATED
-	if (p_name == SceneStringNames::get_singleton()->use_in_baked_light && bool(p_value)) {
+	if (p_name == SceneStringName(use_in_baked_light) && bool(p_value)) {
 		set_gi_mode(GI_MODE_STATIC);
 		return true;
 	}
 
-	if (p_name == SceneStringNames::get_singleton()->use_dynamic_gi && bool(p_value)) {
+	if (p_name == SceneStringName(use_dynamic_gi) && bool(p_value)) {
 		set_gi_mode(GI_MODE_DYNAMIC);
 		return true;
 	}

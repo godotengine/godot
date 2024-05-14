@@ -250,8 +250,8 @@ void AudioStreamInteractiveTransitionEditor::edit(Object *p_obj) {
 		return;
 	}
 
-	Ref<Font> header_font = get_theme_font("bold", "EditorFonts");
-	int header_font_size = get_theme_font_size("bold_size", "EditorFonts");
+	Ref<Font> header_font = get_theme_font("bold", EditorStringName(EditorFonts));
+	int header_font_size = get_theme_font_size("bold_size", EditorStringName(EditorFonts));
 
 	tree->clear();
 	rows.clear();

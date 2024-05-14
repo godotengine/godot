@@ -214,6 +214,7 @@
 			<param index="1" name="pos" type="Vector2" />
 			<param index="2" name="radius" type="float" />
 			<param index="3" name="color" type="Color" />
+			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a circle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_circle].
 			</description>
@@ -280,6 +281,7 @@
 			<param index="1" name="points" type="PackedVector2Array" />
 			<param index="2" name="colors" type="PackedColorArray" />
 			<param index="3" name="width" type="float" default="-1.0" />
+			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a 2D multiline on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_multiline] and [method CanvasItem.draw_multiline_colors].
 			</description>
@@ -356,6 +358,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="rect" type="Rect2" />
 			<param index="2" name="color" type="Color" />
+			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a rectangle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_rect].
 			</description>

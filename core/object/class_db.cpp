@@ -31,7 +31,6 @@
 #include "class_db.h"
 
 #include "core/config/engine.h"
-#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/os/mutex.h"
@@ -1554,7 +1553,7 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 	}
 
 	// The "free()" method is special, so we assume it exists and return a Callable.
-	if (p_property == CoreStringNames::get_singleton()->_free) {
+	if (p_property == CoreStringName(free_)) {
 		r_value = Callable(p_object, p_property);
 		return true;
 	}
