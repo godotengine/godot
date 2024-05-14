@@ -313,6 +313,8 @@ void ShaderTextEditor::_load_theme_settings() {
 
 	const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
 	syntax_highlighter->add_color_region("/**", "*/", doc_comment_color, false);
+	// "/**/" will be treated as the start of the "/**" region, this line is guaranteed to end the color_region.
+	syntax_highlighter->add_color_region("/**/", "", comment_color, true);
 
 	// Disabled preprocessor branches use translucent text color to be easier to distinguish from comments.
 	syntax_highlighter->set_disabled_branch_color(Color(EDITOR_GET("text_editor/theme/highlighting/text_color")) * Color(1, 1, 1, 0.5));
