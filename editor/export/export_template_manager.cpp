@@ -973,7 +973,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	mirror_options_button->get_popup()->add_item(TTR("Copy Mirror URL"), COPY_MIRROR_URL);
 	mirror_options_button->set_disabled(!downloads_available);
 	download_install_hb->add_child(mirror_options_button);
-	mirror_options_button->get_popup()->connect("id_pressed", callable_mp(this, &ExportTemplateManager::_mirror_options_button_cbk));
+	mirror_options_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ExportTemplateManager::_mirror_options_button_cbk));
 
 	download_install_hb->add_spacer();
 

@@ -1679,7 +1679,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_TESTING]), SUPPORT_TESTING);
 	support->get_popup()->set_item_checked(SUPPORT_FEATURED, true);
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, true);
-	support->get_popup()->connect("id_pressed", callable_mp(this, &EditorAssetLibrary::_support_toggled));
+	support->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorAssetLibrary::_support_toggled));
 
 	/////////
 

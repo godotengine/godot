@@ -1026,7 +1026,7 @@ CurveEditor::CurveEditor() {
 	presets_button->set_switch_on_hover(true);
 	presets_button->set_h_size_flags(SIZE_EXPAND | SIZE_SHRINK_END);
 	toolbar->add_child(presets_button);
-	presets_button->get_popup()->connect("id_pressed", callable_mp(this, &CurveEditor::_on_preset_item_selected));
+	presets_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &CurveEditor::_on_preset_item_selected));
 
 	curve_editor_rect = memnew(CurveEdit);
 	add_child(curve_editor_rect);

@@ -1094,7 +1094,7 @@ void EditorProperty::_update_popup() {
 	} else {
 		menu = memnew(PopupMenu);
 		add_child(menu);
-		menu->connect("id_pressed", callable_mp(this, &EditorProperty::menu_option));
+		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorProperty::menu_option));
 	}
 	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("property_editor/copy_value"), MENU_COPY_VALUE);
 	menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("property_editor/paste_value"), MENU_PASTE_VALUE);
@@ -1290,7 +1290,7 @@ void EditorInspectorCategory::gui_input(const Ref<InputEvent> &p_event) {
 
 EditorInspectorCategory::EditorInspectorCategory() {
 	menu = memnew(PopupMenu);
-	menu->connect("id_pressed", callable_mp(this, &EditorInspectorCategory::_handle_menu_option));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorCategory::_handle_menu_option));
 	menu->add_item(TTR("Open Documentation"), MENU_OPEN_DOCS);
 	add_child(menu);
 }
@@ -2427,7 +2427,7 @@ EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	rmb_popup->add_separator();
 	rmb_popup->add_item(TTR("Clear Array"), OPTION_CLEAR_ARRAY);
 	rmb_popup->add_item(TTR("Resize Array..."), OPTION_RESIZE_ARRAY);
-	rmb_popup->connect("id_pressed", callable_mp(this, &EditorInspectorArray::_rmb_popup_id_pressed));
+	rmb_popup->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorArray::_rmb_popup_id_pressed));
 	add_child(rmb_popup);
 
 	elements_vbox = memnew(VBoxContainer);

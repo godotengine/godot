@@ -2469,9 +2469,9 @@ void LineEdit::_generate_context_menu() {
 	menu->add_check_item(ETR("Display Control Characters"), MENU_DISPLAY_UCC);
 	menu->add_submenu_node_item(ETR("Insert Control Character"), menu_ctl, MENU_SUBMENU_INSERT_UCC);
 
-	menu->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
-	menu_dir->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
-	menu_ctl->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &LineEdit::menu_option));
+	menu_dir->connect(SceneStringName(id_pressed), callable_mp(this, &LineEdit::menu_option));
+	menu_ctl->connect(SceneStringName(id_pressed), callable_mp(this, &LineEdit::menu_option));
 
 	menu->connect(SceneStringName(focus_entered), callable_mp(this, &LineEdit::_validate_caret_can_draw));
 	menu->connect(SceneStringName(focus_exited), callable_mp(this, &LineEdit::_validate_caret_can_draw));

@@ -2422,7 +2422,7 @@ void PopupMenu::activate_item(int p_idx) {
 		hide();
 	}
 
-	emit_signal(SNAME("id_pressed"), id);
+	emit_signal(SceneStringName(id_pressed), id);
 	emit_signal(SNAME("index_pressed"), p_idx);
 }
 

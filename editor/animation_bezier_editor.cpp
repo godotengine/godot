@@ -1950,5 +1950,5 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &AnimationBezierTrackEdit::_menu_selected));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationBezierTrackEdit::_menu_selected));
 }

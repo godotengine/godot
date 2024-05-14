@@ -251,7 +251,7 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	sub_objects_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(sub_objects_menu);
 	sub_objects_menu->connect("about_to_popup", callable_mp(this, &EditorObjectSelector::_about_to_show));
-	sub_objects_menu->connect("id_pressed", callable_mp(this, &EditorObjectSelector::_id_pressed));
+	sub_objects_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorObjectSelector::_id_pressed));
 
 	set_tooltip_text(TTR("Open a list of sub-resources."));
 }

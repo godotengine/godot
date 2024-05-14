@@ -841,7 +841,7 @@ EditorPropertyArray::EditorPropertyArray() {
 
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
-	change_type->connect("id_pressed", callable_mp(this, &EditorPropertyArray::_change_type_menu));
+	change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyArray::_change_type_menu));
 	changing_type_index = -1;
 
 	subtype = Variant::NIL;
@@ -1157,7 +1157,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	paginator = nullptr;
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
-	change_type->connect("id_pressed", callable_mp(this, &EditorPropertyDictionary::_change_type_menu));
+	change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyDictionary::_change_type_menu));
 	changing_type_index = -1;
 	has_borders = true;
 }

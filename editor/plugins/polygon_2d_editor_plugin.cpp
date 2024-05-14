@@ -1434,7 +1434,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	uv_menu->get_popup()->add_item(TTR("Clear UV"), UVEDIT_UV_CLEAR);
 	uv_menu->get_popup()->add_separator();
 	uv_menu->get_popup()->add_item(TTR("Grid Settings"), UVEDIT_GRID_SETTINGS);
-	uv_menu->get_popup()->connect("id_pressed", callable_mp(this, &Polygon2DEditor::_menu_option));
+	uv_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Polygon2DEditor::_menu_option));
 
 	uv_mode_hb->add_child(memnew(VSeparator));
 
