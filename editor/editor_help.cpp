@@ -3699,12 +3699,8 @@ void EditorHelpBit::set_custom_text(const String &p_type, const String &p_name, 
 	}
 }
 
-void EditorHelpBit::prepend_description(const String &p_text) {
-	if (help_data.description.is_empty()) {
-		help_data.description = p_text;
-	} else {
-		help_data.description = p_text + "\n" + help_data.description;
-	}
+void EditorHelpBit::set_description(const String &p_text) {
+	help_data.description = p_text;
 
 	if (is_inside_tree()) {
 		_update_labels();
