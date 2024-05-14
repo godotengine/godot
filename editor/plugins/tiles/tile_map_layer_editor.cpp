@@ -1628,7 +1628,7 @@ void TileMapLayerEditorTilesPlugin::_update_fix_selected_and_hovered() {
 		hovered_tile.alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE;
 	}
 
-	// Selection if needed.
+	// Cleanup tile set selection.
 	for (RBSet<TileMapCell>::Element *E = tile_set_selection.front(); E;) {
 		RBSet<TileMapCell>::Element *N = E->next();
 		const TileMapCell *selected = &(E->get());
@@ -1640,12 +1640,15 @@ void TileMapLayerEditorTilesPlugin::_update_fix_selected_and_hovered() {
 		E = N;
 	}
 
-	if (!tile_map_selection.is_empty()) {
-		_update_selection_pattern_from_tilemap_selection();
-	} else if (tiles_bottom_panel->is_visible_in_tree()) {
-		_update_selection_pattern_from_tileset_tiles_selection();
-	} else {
-		_update_selection_pattern_from_tileset_pattern_selection();
+	// Cleanup selection.
+	for (const KeyValue<Vector2i, TileMapCell> &E : selection_pattern->get_pattern()) {
+		const Vector2i key = E.key;
+		const TileMapCell &selected = E.value;
+		if (!tile_set->has_source(selected.source_id) ||
+				!tile_set->get_source(selected.source_id)->has_tile(selected.get_atlas_coords()) ||
+				!tile_set->get_source(selected.source_id)->has_alternative_tile(selected.get_atlas_coords(), selected.alternative_tile)) {
+			selection_pattern->remove_cell(key);
+		}
 	}
 }
 
@@ -2409,7 +2412,6 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	sources_list->set_stretch_ratio(0.25);
 	sources_list->set_custom_minimum_size(Size2(70, 0) * EDSCALE);
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
-	sources_list->connect("item_selected", callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_fix_selected_and_hovered).unbind(1));
 	sources_list->connect("item_selected", callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_source_display).unbind(1));
 	sources_list->connect("item_selected", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
 	sources_list->connect("item_activated", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::display_tile_set_editor_panel).unbind(1));
@@ -3980,10 +3982,14 @@ void TileMapLayerEditor::_update_bottom_panel() {
 	}
 
 	// Update tabs visibility.
-	for (TileMapLayerSubEditorPlugin::TabData &tab_data : tabs_data) {
-		tab_data.panel->hide();
+	for (int i = 0; i < int(tabs_data.size()); i++) {
+		TileMapLayerSubEditorPlugin::TabData &tab_data = tabs_data[i];
+		if (i == tabs_bar->get_current_tab()) {
+			tab_data.panel->set_visible(!cant_edit_label->is_visible());
+		} else {
+			tab_data.panel->hide();
+		}
 	}
-	tabs_data[tabs_bar->get_current_tab()].panel->set_visible(!cant_edit_label->is_visible());
 }
 
 Vector<Vector2i> TileMapLayerEditor::get_line(const TileMapLayer *p_tile_map_layer, Vector2i p_from_cell, Vector2i p_to_cell) {
