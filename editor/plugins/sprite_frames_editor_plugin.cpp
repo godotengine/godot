@@ -1635,11 +1635,11 @@ void SpriteFramesEditor::_remove_sprite_node() {
 	if (animated_sprite->is_connected("sprite_frames_changed", callable_mp(this, &SpriteFramesEditor::_edit))) {
 		animated_sprite->disconnect("sprite_frames_changed", callable_mp(this, &SpriteFramesEditor::_edit));
 	}
-	if (animated_sprite->is_connected("animation_changed", callable_mp(this, &SpriteFramesEditor::_sync_animation))) {
-		animated_sprite->disconnect("animation_changed", callable_mp(this, &SpriteFramesEditor::_sync_animation));
+	if (animated_sprite->is_connected(SceneStringName(animation_changed), callable_mp(this, &SpriteFramesEditor::_sync_animation))) {
+		animated_sprite->disconnect(SceneStringName(animation_changed), callable_mp(this, &SpriteFramesEditor::_sync_animation));
 	}
-	if (animated_sprite->is_connected("animation_finished", callable_mp(this, &SpriteFramesEditor::_update_stop_icon))) {
-		animated_sprite->disconnect("animation_finished", callable_mp(this, &SpriteFramesEditor::_update_stop_icon));
+	if (animated_sprite->is_connected(SceneStringName(animation_finished), callable_mp(this, &SpriteFramesEditor::_update_stop_icon))) {
+		animated_sprite->disconnect(SceneStringName(animation_finished), callable_mp(this, &SpriteFramesEditor::_update_stop_icon));
 	}
 	animated_sprite = nullptr;
 }
@@ -1662,11 +1662,11 @@ void SpriteFramesEditor::_fetch_sprite_node() {
 			if (!animated_sprite->is_connected("sprite_frames_changed", callable_mp(this, &SpriteFramesEditor::_edit))) {
 				animated_sprite->connect("sprite_frames_changed", callable_mp(this, &SpriteFramesEditor::_edit));
 			}
-			if (!animated_sprite->is_connected("animation_changed", callable_mp(this, &SpriteFramesEditor::_sync_animation))) {
-				animated_sprite->connect("animation_changed", callable_mp(this, &SpriteFramesEditor::_sync_animation), CONNECT_DEFERRED);
+			if (!animated_sprite->is_connected(SceneStringName(animation_changed), callable_mp(this, &SpriteFramesEditor::_sync_animation))) {
+				animated_sprite->connect(SceneStringName(animation_changed), callable_mp(this, &SpriteFramesEditor::_sync_animation), CONNECT_DEFERRED);
 			}
-			if (!animated_sprite->is_connected("animation_finished", callable_mp(this, &SpriteFramesEditor::_update_stop_icon))) {
-				animated_sprite->connect("animation_finished", callable_mp(this, &SpriteFramesEditor::_update_stop_icon));
+			if (!animated_sprite->is_connected(SceneStringName(animation_finished), callable_mp(this, &SpriteFramesEditor::_update_stop_icon))) {
+				animated_sprite->connect(SceneStringName(animation_finished), callable_mp(this, &SpriteFramesEditor::_update_stop_icon));
 			}
 			show_node_edit = true;
 		}
@@ -2005,7 +2005,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	frame_list->set_max_text_lines(2);
 	SET_DRAG_FORWARDING_GCD(frame_list, SpriteFramesEditor);
-	frame_list->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_frame_list_gui_input));
+	frame_list->connect(SceneStringName(gui_input), callable_mp(this, &SpriteFramesEditor::_frame_list_gui_input));
 	// HACK: The item_selected signal is emitted before the Frame Duration spinbox loses focus and applies the change.
 	frame_list->connect("multi_selected", callable_mp(this, &SpriteFramesEditor::_frame_list_item_selected), CONNECT_DEFERRED);
 
@@ -2124,11 +2124,11 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_preview->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	split_sheet_preview->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	split_sheet_preview->set_mouse_filter(MOUSE_FILTER_PASS);
-	split_sheet_preview->connect("draw", callable_mp(this, &SpriteFramesEditor::_sheet_preview_draw));
-	split_sheet_preview->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_preview_input));
+	split_sheet_preview->connect(SceneStringName(draw), callable_mp(this, &SpriteFramesEditor::_sheet_preview_draw));
+	split_sheet_preview->connect(SceneStringName(gui_input), callable_mp(this, &SpriteFramesEditor::_sheet_preview_input));
 
 	split_sheet_scroll = memnew(ScrollContainer);
-	split_sheet_scroll->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_sheet_scroll_input));
+	split_sheet_scroll->connect(SceneStringName(gui_input), callable_mp(this, &SpriteFramesEditor::_sheet_scroll_input));
 	split_sheet_panel->add_child(split_sheet_scroll);
 	CenterContainer *cc = memnew(CenterContainer);
 	cc->add_child(split_sheet_preview);

@@ -33,7 +33,6 @@
 #include "editor/editor_node.h"
 #include "scene/gui/button.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/scene_string_names.h"
 
 void PackedSceneEditor::_on_open_scene_pressed() {
 	// Using deferred call because changing scene updates the Inspector and thus destroys this plugin.

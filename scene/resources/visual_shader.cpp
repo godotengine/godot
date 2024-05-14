@@ -2886,7 +2886,7 @@ void VisualShader::_update_shader() const {
 		}
 	}
 	if (previous_code != final_code) {
-		const_cast<VisualShader *>(this)->emit_signal(SNAME("changed"));
+		const_cast<VisualShader *>(this)->emit_signal(CoreStringName(changed));
 	}
 	previous_code = final_code;
 }

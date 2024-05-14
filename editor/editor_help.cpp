@@ -196,7 +196,7 @@ void EditorHelp::_update_theme_item_cache() {
 	class_desc->add_theme_font_override("normal_font", theme_cache.doc_font);
 	class_desc->add_theme_font_size_override("normal_font_size", theme_cache.doc_font_size);
 
-	class_desc->add_theme_constant_override("line_separation", get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override(SceneStringName(line_separation), get_theme_constant(SceneStringName(line_separation), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("table_h_separation", get_theme_constant(SNAME("table_h_separation"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("table_v_separation", get_theme_constant(SNAME("table_v_separation"), SNAME("EditorHelp")));
 	class_desc->add_theme_constant_override("text_highlight_h_padding", get_theme_constant(SNAME("text_highlight_h_padding"), SNAME("EditorHelp")));
@@ -2340,7 +2340,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 
 	if (class_desc->is_ready()) {
 		// call_deferred() is not enough.
-		class_desc->connect("draw", callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).bind(line), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+		class_desc->connect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).bind(line), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 	} else {
 		scroll_to = line;
 	}
@@ -3099,10 +3099,10 @@ EditorHelp::EditorHelp() {
 	class_desc->set_threaded(true);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	class_desc->connect("finished", callable_mp(this, &EditorHelp::_class_desc_finished));
+	class_desc->connect(SceneStringName(finished), callable_mp(this, &EditorHelp::_class_desc_finished));
 	class_desc->connect("meta_clicked", callable_mp(this, &EditorHelp::_class_desc_select));
-	class_desc->connect("gui_input", callable_mp(this, &EditorHelp::_class_desc_input));
-	class_desc->connect("resized", callable_mp(this, &EditorHelp::_class_desc_resized).bind(false));
+	class_desc->connect(SceneStringName(gui_input), callable_mp(this, &EditorHelp::_class_desc_input));
+	class_desc->connect(SceneStringName(resized), callable_mp(this, &EditorHelp::_class_desc_resized).bind(false));
 
 	// Added second so it opens at the bottom so it won't offset the entire widget.
 	find_bar = memnew(FindBar);
@@ -3857,8 +3857,8 @@ EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target) {
 	add_child(timer);
 
 	ERR_FAIL_NULL(p_target);
-	p_target->connect("mouse_entered", callable_mp(timer, &Timer::stop));
-	p_target->connect("mouse_exited", callable_mp(timer, &Timer::start).bind(-1));
+	p_target->connect(SceneStringName(mouse_entered), callable_mp(timer, &Timer::stop));
+	p_target->connect(SceneStringName(mouse_exited), callable_mp(timer, &Timer::start).bind(-1));
 }
 
 #if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)

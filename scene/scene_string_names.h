@@ -152,7 +152,6 @@ public:
 	StringName camera_entered;
 	StringName camera_exited;
 
-	StringName changed;
 	StringName _shader_changed;
 
 	StringName _spatial_editor_group;
@@ -166,10 +165,6 @@ public:
 	StringName rotate;
 	StringName v_offset;
 	StringName h_offset;
-
-	StringName transform_pos;
-	StringName transform_rot;
-	StringName transform_scale;
 
 	StringName _update_remote;
 	StringName _update_pairs;

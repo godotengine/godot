@@ -39,7 +39,6 @@
 #include "scene/gui/label.h"
 #include "scene/gui/rich_text_effect.h"
 #include "scene/resources/atlas_texture.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display_server.h"
 
@@ -2993,7 +2992,7 @@ void RichTextLabel::_process_line_caches() {
 	if (fit_content) {
 		update_minimum_size();
 	}
-	emit_signal(SNAME("finished"));
+	emit_signal(SceneStringName(finished));
 }
 
 void RichTextLabel::_invalidate_current_line(ItemFrame *p_frame) {

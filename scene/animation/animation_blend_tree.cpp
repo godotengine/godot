@@ -31,7 +31,6 @@
 #include "animation_blend_tree.h"
 
 #include "scene/resources/animation.h"
-#include "scene/scene_string_names.h"
 
 void AnimationNodeAnimation::set_animation(const StringName &p_name) {
 	animation = p_name;
@@ -238,11 +237,11 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 		if (process_state->tree && !p_test_only) {
 			// AnimationTree uses seek to 0 "internally" to process the first key of the animation, which is used as the start detection.
 			if (p_seek && !p_is_external_seeking && cur_playback_time == 0) {
-				process_state->tree->call_deferred(SNAME("emit_signal"), "animation_started", animation);
+				process_state->tree->call_deferred(SNAME("emit_signal"), SceneStringName(animation_started), animation);
 			}
 			// Finished.
 			if (prev_time + start_offset < anim_size && cur_playback_time >= anim_size) {
-				process_state->tree->call_deferred(SNAME("emit_signal"), "animation_finished", animation);
+				process_state->tree->call_deferred(SNAME("emit_signal"), SceneStringName(animation_finished), animation);
 			}
 		}
 	}

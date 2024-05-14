@@ -31,7 +31,6 @@
 #include "node.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
@@ -42,7 +41,6 @@
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/scene_string_names.h"
 #include "viewport.h"
 
 #include <stdint.h>

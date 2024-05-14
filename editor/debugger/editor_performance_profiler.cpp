@@ -111,7 +111,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 
 	info_message->hide();
 
-	Ref<StyleBox> graph_style_box = get_theme_stylebox(SNAME("normal"), SNAME("TextEdit"));
+	Ref<StyleBox> graph_style_box = get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit"));
 	Ref<Font> graph_font = get_theme_font(SNAME("font"), SNAME("TextEdit"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("TextEdit"));
 
@@ -276,7 +276,7 @@ void EditorPerformanceProfiler::_marker_input(const Ref<InputEvent> &p_event) {
 				} else {
 					marker_key = "";
 				}
-				Ref<StyleBox> graph_style_box = get_theme_stylebox(SNAME("normal"), SNAME("TextEdit"));
+				Ref<StyleBox> graph_style_box = get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit"));
 				rect.position += graph_style_box->get_offset();
 				rect.size -= graph_style_box->get_minimum_size();
 				Vector2 point = mb->get_position() - rect.position;
@@ -397,8 +397,8 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 
 	monitor_draw = memnew(Control);
 	monitor_draw->set_clip_contents(true);
-	monitor_draw->connect("draw", callable_mp(this, &EditorPerformanceProfiler::_monitor_draw));
-	monitor_draw->connect("gui_input", callable_mp(this, &EditorPerformanceProfiler::_marker_input));
+	monitor_draw->connect(SceneStringName(draw), callable_mp(this, &EditorPerformanceProfiler::_monitor_draw));
+	monitor_draw->connect(SceneStringName(gui_input), callable_mp(this, &EditorPerformanceProfiler::_marker_input));
 	add_child(monitor_draw);
 
 	info_message = memnew(Label);

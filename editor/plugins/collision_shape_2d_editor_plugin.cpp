@@ -43,7 +43,6 @@
 #include "scene/resources/2d/segment_shape_2d.h"
 #include "scene/resources/2d/separation_ray_shape_2d.h"
 #include "scene/resources/2d/world_boundary_shape_2d.h"
-#include "scene/scene_string_names.h"
 
 CollisionShape2DEditor::CollisionShape2DEditor() {
 	grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");

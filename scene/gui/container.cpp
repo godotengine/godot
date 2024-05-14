@@ -30,8 +30,6 @@
 
 #include "container.h"
 
-#include "scene/scene_string_names.h"
-
 void Container::_child_minsize_changed() {
 	update_minimum_size();
 	queue_sort();
@@ -45,9 +43,9 @@ void Container::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	control->connect(SNAME("size_flags_changed"), callable_mp(this, &Container::queue_sort));
-	control->connect(SNAME("minimum_size_changed"), callable_mp(this, &Container::_child_minsize_changed));
-	control->connect(SNAME("visibility_changed"), callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
+	control->connect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
+	control->connect(SceneStringName(visibility_changed), callable_mp(this, &Container::_child_minsize_changed));
 
 	update_minimum_size();
 	queue_sort();
@@ -72,9 +70,9 @@ void Container::remove_child_notify(Node *p_child) {
 		return;
 	}
 
-	control->disconnect("size_flags_changed", callable_mp(this, &Container::queue_sort));
-	control->disconnect("minimum_size_changed", callable_mp(this, &Container::_child_minsize_changed));
-	control->disconnect("visibility_changed", callable_mp(this, &Container::_child_minsize_changed));
+	control->disconnect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
+	control->disconnect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
+	control->disconnect(SceneStringName(visibility_changed), callable_mp(this, &Container::_child_minsize_changed));
 
 	update_minimum_size();
 	queue_sort();

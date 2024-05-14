@@ -273,7 +273,7 @@ void EditorPropertyArray::_create_new_property_slot() {
 	reorder_button->set_icon(get_editor_theme_icon(SNAME("TripleBar")));
 	reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
 	reorder_button->set_disabled(is_read_only());
-	reorder_button->connect(SNAME("gui_input"), callable_mp(this, &EditorPropertyArray::_reorder_button_gui_input));
+	reorder_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyArray::_reorder_button_gui_input));
 	reorder_button->connect(SNAME("button_up"), callable_mp(this, &EditorPropertyArray::_reorder_button_up));
 	reorder_button->connect(SNAME("button_down"), callable_mp(this, &EditorPropertyArray::_reorder_button_down).bind(idx));
 
@@ -832,7 +832,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_edit_pressed));
 	edit->set_toggle_mode(true);
 	SET_DRAG_FORWARDING_CD(edit, EditorPropertyArray);
-	edit->connect("draw", callable_mp(this, &EditorPropertyArray::_button_draw));
+	edit->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyArray::_button_draw));
 	add_child(edit);
 	add_focusable(edit);
 

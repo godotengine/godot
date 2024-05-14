@@ -47,7 +47,6 @@
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
-#include "scene/scene_string_names.h"
 
 void MeshInstance3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -607,7 +606,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	add_child(debug_uv_dialog);
 	debug_uv = memnew(Control);
 	debug_uv->set_custom_minimum_size(Size2(600, 600) * EDSCALE);
-	debug_uv->connect("draw", callable_mp(this, &MeshInstance3DEditor::_debug_uv_draw));
+	debug_uv->connect(SceneStringName(draw), callable_mp(this, &MeshInstance3DEditor::_debug_uv_draw));
 	debug_uv_dialog->add_child(debug_uv);
 }
 

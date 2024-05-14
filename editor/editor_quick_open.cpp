@@ -293,7 +293,7 @@ EditorQuickOpen::EditorQuickOpen() {
 
 	search_box = memnew(LineEdit);
 	search_box->connect("text_changed", callable_mp(this, &EditorQuickOpen::_text_changed));
-	search_box->connect("gui_input", callable_mp(this, &EditorQuickOpen::_sbox_input));
+	search_box->connect(SceneStringName(gui_input), callable_mp(this, &EditorQuickOpen::_sbox_input));
 	vbc->add_margin_child(TTR("Search:"), search_box);
 	register_text_enter(search_box);
 

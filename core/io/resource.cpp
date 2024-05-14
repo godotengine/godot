@@ -30,7 +30,6 @@
 
 #include "resource.h"
 
-#include "core/core_string_names.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"

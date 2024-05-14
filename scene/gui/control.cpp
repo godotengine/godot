@@ -42,7 +42,6 @@
 #include "scene/gui/panel.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
 #include "servers/rendering_server.h"
@@ -3223,7 +3222,7 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_READY: {
 #ifdef DEBUG_ENABLED
-			connect("ready", callable_mp(this, &Control::_clear_size_warning), CONNECT_DEFERRED | CONNECT_ONE_SHOT);
+			connect(SceneStringName(ready), callable_mp(this, &Control::_clear_size_warning), CONNECT_DEFERRED | CONNECT_ONE_SHOT);
 #endif
 		} break;
 
@@ -3262,7 +3261,7 @@ void Control::_notification(int p_notification) {
 			data.parent_canvas_item = get_parent_item();
 
 			if (data.parent_canvas_item) {
-				data.parent_canvas_item->connect("item_rect_changed", callable_mp(this, &Control::_size_changed));
+				data.parent_canvas_item->connect(SceneStringName(item_rect_changed), callable_mp(this, &Control::_size_changed));
 			} else {
 				// Connect viewport.
 				Viewport *viewport = get_viewport();
@@ -3273,7 +3272,7 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_EXIT_CANVAS: {
 			if (data.parent_canvas_item) {
-				data.parent_canvas_item->disconnect("item_rect_changed", callable_mp(this, &Control::_size_changed));
+				data.parent_canvas_item->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &Control::_size_changed));
 				data.parent_canvas_item = nullptr;
 			} else {
 				// Disconnect viewport.

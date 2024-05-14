@@ -387,7 +387,7 @@ void ScreenSelect::_bind_methods() {
 void ScreenSelect::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			connect("gui_input", callable_mp(this, &ScreenSelect::_handle_mouse_shortcut));
+			connect(SceneStringName(gui_input), callable_mp(this, &ScreenSelect::_handle_mouse_shortcut));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			set_icon(get_editor_theme_icon("MakeFloating"));

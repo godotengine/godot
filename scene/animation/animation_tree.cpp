@@ -34,7 +34,6 @@
 #include "animation_blend_tree.h"
 #include "core/config/engine.h"
 #include "scene/animation/animation_player.h"
-#include "scene/scene_string_names.h"
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 	Array parameters;

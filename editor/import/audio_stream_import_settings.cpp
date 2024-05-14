@@ -590,7 +590,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	color_rect->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	_player = memnew(AudioStreamPlayer);
-	_player->connect("finished", callable_mp(this, &AudioStreamImportSettingsDialog::_on_finished));
+	_player->connect(SceneStringName(finished), callable_mp(this, &AudioStreamImportSettingsDialog::_on_finished));
 	color_rect->add_child(_player);
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
@@ -600,7 +600,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 
 	_preview = memnew(ColorRect);
 	_preview->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	_preview->connect("draw", callable_mp(this, &AudioStreamImportSettingsDialog::_draw_preview));
+	_preview->connect(SceneStringName(draw), callable_mp(this, &AudioStreamImportSettingsDialog::_draw_preview));
 	_preview->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbox->add_child(_preview);
 
@@ -626,9 +626,9 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 
 	_indicator = memnew(Control);
 	_indicator->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	_indicator->connect("draw", callable_mp(this, &AudioStreamImportSettingsDialog::_draw_indicator));
-	_indicator->connect("gui_input", callable_mp(this, &AudioStreamImportSettingsDialog::_on_input_indicator));
-	_indicator->connect("mouse_exited", callable_mp(this, &AudioStreamImportSettingsDialog::_on_indicator_mouse_exited));
+	_indicator->connect(SceneStringName(draw), callable_mp(this, &AudioStreamImportSettingsDialog::_draw_indicator));
+	_indicator->connect(SceneStringName(gui_input), callable_mp(this, &AudioStreamImportSettingsDialog::_on_input_indicator));
+	_indicator->connect(SceneStringName(mouse_exited), callable_mp(this, &AudioStreamImportSettingsDialog::_on_indicator_mouse_exited));
 	_preview->add_child(_indicator);
 
 	HBoxContainer *hbox = memnew(HBoxContainer);

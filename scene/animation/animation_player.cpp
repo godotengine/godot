@@ -32,7 +32,6 @@
 #include "animation_player.compat.inc"
 
 #include "core/config/engine.h"
-#include "scene/scene_string_names.h"
 
 bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
@@ -77,7 +76,7 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 		String which = name.get_slicec('/', 1);
 		r_ret = animation_get_next(which);
 
-	} else if (name == "blend_times") {
+	} else if (p_name == SceneStringName(blend_times)) {
 		Vector<BlendKey> keys;
 		for (const KeyValue<BlendKey, double> &E : blend_times) {
 			keys.ordered_insert(E.key);

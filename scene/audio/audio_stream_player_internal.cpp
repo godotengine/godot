@@ -31,7 +31,6 @@
 #include "audio_stream_player_internal.h"
 
 #include "scene/main/node.h"
-#include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
 void AudioStreamPlayerInternal::_set_process(bool p_enabled) {
@@ -78,7 +77,7 @@ void AudioStreamPlayerInternal::process() {
 		_set_process(false);
 	}
 	if (!playbacks_to_remove.is_empty()) {
-		node->emit_signal(SNAME("finished"));
+		node->emit_signal(SceneStringName(finished));
 	}
 }
 

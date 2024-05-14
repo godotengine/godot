@@ -326,8 +326,8 @@ void ResourceImporterScene::_pre_fix_global(Node *p_scene, const HashMap<StringN
 		Ref<Animation> reset_anim;
 		for (int i = 0; i < anim_players.size(); i++) {
 			AnimationPlayer *player = cast_to<AnimationPlayer>(anim_players[i]);
-			if (player->has_animation(SNAME("RESET"))) {
-				reset_anim = player->get_animation(SNAME("RESET"));
+			if (player->has_animation(SceneStringName(RESET))) {
+				reset_anim = player->get_animation(SceneStringName(RESET));
 				break;
 			}
 		}
@@ -341,7 +341,7 @@ void ResourceImporterScene::_pre_fix_global(Node *p_scene, const HashMap<StringN
 				anim_library.instantiate();
 				anim_player->add_animation_library(StringName(), anim_library);
 			}
-			anim_library->add_animation(SNAME("RESET"), reset_anim);
+			anim_library->add_animation(SceneStringName(RESET), reset_anim);
 		}
 		TypedArray<Node> skeletons = p_scene->find_children("*", "Skeleton3D");
 		for (int i = 0; i < skeletons.size(); i++) {

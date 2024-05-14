@@ -35,7 +35,6 @@
 #include "core/error/error_macros.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"
-#include "scene/scene_string_names.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 	for (Ref<Material> pass_child = p_pass; pass_child != nullptr; pass_child = pass_child->get_next_pass()) {

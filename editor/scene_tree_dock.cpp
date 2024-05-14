@@ -4287,7 +4287,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	filter_hbc->add_child(filter);
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDock::_filter_changed));
-	filter->connect("gui_input", callable_mp(this, &SceneTreeDock::_filter_gui_input));
+	filter->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeDock::_filter_gui_input));
 	filter->get_menu()->connect("id_pressed", callable_mp(this, &SceneTreeDock::_filter_option_selected));
 	_append_filter_options_to(filter->get_menu());
 
@@ -4365,9 +4365,9 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->connect("files_dropped", callable_mp(this, &SceneTreeDock::_files_dropped));
 	scene_tree->connect("script_dropped", callable_mp(this, &SceneTreeDock::_script_dropped));
 	scene_tree->connect("nodes_dragged", callable_mp(this, &SceneTreeDock::_nodes_drag_begin));
-	scene_tree->connect("mouse_exited", callable_mp(this, &SceneTreeDock::_reset_hovering_timer));
+	scene_tree->connect(SceneStringName(mouse_exited), callable_mp(this, &SceneTreeDock::_reset_hovering_timer));
 
-	scene_tree->get_scene_tree()->connect("gui_input", callable_mp(this, &SceneTreeDock::_scene_tree_gui_input));
+	scene_tree->get_scene_tree()->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeDock::_scene_tree_gui_input));
 	scene_tree->get_scene_tree()->connect("item_icon_double_clicked", callable_mp(this, &SceneTreeDock::_focus_node));
 
 	editor_selection->connect("selection_changed", callable_mp(this, &SceneTreeDock::_selection_changed));

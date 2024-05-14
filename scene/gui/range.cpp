@@ -60,7 +60,7 @@ void Range::Shared::emit_value_changed() {
 }
 
 void Range::_changed_notify(const char *p_what) {
-	emit_signal(SNAME("changed"));
+	emit_signal(CoreStringName(changed));
 	queue_redraw();
 }
 

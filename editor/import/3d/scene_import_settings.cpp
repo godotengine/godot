@@ -411,7 +411,7 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
 
 				animation_player = Object::cast_to<AnimationPlayer>(p_node);
-				animation_player->connect(SNAME("animation_finished"), callable_mp(this, &SceneImportSettingsDialog::_animation_finished));
+				animation_player->connect(SceneStringName(animation_finished), callable_mp(this, &SceneImportSettingsDialog::_animation_finished));
 			} else if (Object::cast_to<Skeleton3D>(p_node)) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
 				skeletons.push_back(Object::cast_to<Skeleton3D>(p_node));
@@ -1111,7 +1111,7 @@ void SceneImportSettingsDialog::_scene_tree_selected() {
 void SceneImportSettingsDialog::_cleanup() {
 	skeletons.clear();
 	if (animation_player != nullptr) {
-		animation_player->disconnect(SNAME("animation_finished"), callable_mp(this, &SceneImportSettingsDialog::_animation_finished));
+		animation_player->disconnect(SceneStringName(animation_finished), callable_mp(this, &SceneImportSettingsDialog::_animation_finished));
 		animation_player = nullptr;
 	}
 	set_process(false);
@@ -1630,7 +1630,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	vp_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vp_container->set_custom_minimum_size(Size2(10, 10));
 	vp_container->set_stretch(true);
-	vp_container->connect("gui_input", callable_mp(this, &SceneImportSettingsDialog::_viewport_input));
+	vp_container->connect(SceneStringName(gui_input), callable_mp(this, &SceneImportSettingsDialog::_viewport_input));
 	vp_vb->add_child(vp_container);
 
 	base_viewport = memnew(SubViewport);

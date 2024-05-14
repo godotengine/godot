@@ -30,8 +30,6 @@
 
 #include "joint_3d.h"
 
-#include "scene/scene_string_names.h"
-
 void Joint3D::_disconnect_signals() {
 	Node *node_a = get_node_or_null(a);
 	PhysicsBody3D *body_a = Object::cast_to<PhysicsBody3D>(node_a);

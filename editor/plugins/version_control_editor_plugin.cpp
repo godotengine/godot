@@ -1252,7 +1252,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->set_custom_minimum_size(Size2(200, 100));
 	commit_message->set_line_wrapping_mode(TextEdit::LINE_WRAPPING_BOUNDARY);
 	commit_message->connect(SNAME("text_changed"), callable_mp(this, &VersionControlEditorPlugin::_update_commit_button));
-	commit_message->connect(SNAME("gui_input"), callable_mp(this, &VersionControlEditorPlugin::_commit_message_gui_input));
+	commit_message->connect(SceneStringName(gui_input), callable_mp(this, &VersionControlEditorPlugin::_commit_message_gui_input));
 	commit_area->add_child(commit_message);
 
 	ED_SHORTCUT("version_control/commit", TTR("Commit"), KeyModifierMask::CMD_OR_CTRL | Key::ENTER);

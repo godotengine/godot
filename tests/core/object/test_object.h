@@ -31,7 +31,6 @@
 #ifndef TEST_OBJECT_H
 #define TEST_OBJECT_H
 
-#include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/object/script_language.h"

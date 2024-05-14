@@ -807,7 +807,7 @@ CreateDialog::CreateDialog() {
 	search_box->set_clear_button_enabled(true);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->connect("text_changed", callable_mp(this, &CreateDialog::_text_changed));
-	search_box->connect("gui_input", callable_mp(this, &CreateDialog::_sbox_input));
+	search_box->connect(SceneStringName(gui_input), callable_mp(this, &CreateDialog::_sbox_input));
 
 	HBoxContainer *search_hb = memnew(HBoxContainer);
 	search_hb->add_child(search_box);

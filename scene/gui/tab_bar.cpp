@@ -1878,7 +1878,7 @@ void TabBar::_bind_methods() {
 TabBar::TabBar() {
 	set_size(Size2(get_size().width, get_minimum_size().height));
 	set_focus_mode(FOCUS_ALL);
-	connect("mouse_exited", callable_mp(this, &TabBar::_on_mouse_exited));
+	connect(SceneStringName(mouse_exited), callable_mp(this, &TabBar::_on_mouse_exited));
 
 	property_helper.setup_for_instance(base_property_helper, this);
 }

@@ -35,7 +35,6 @@
 #include "core/config/project_settings.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
-#include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
 #ifndef _3D_DISABLED
@@ -301,7 +300,7 @@ Error AnimationMixer::add_animation_library(const StringName &p_name, const Ref<
 	ald.library->connect(SNAME("animation_added"), callable_mp(this, &AnimationMixer::_animation_added).bind(p_name));
 	ald.library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationMixer::_animation_removed).bind(p_name));
 	ald.library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationMixer::_animation_renamed).bind(p_name));
-	ald.library->connect(SNAME("animation_changed"), callable_mp(this, &AnimationMixer::_animation_changed));
+	ald.library->connect(SceneStringName(animation_changed), callable_mp(this, &AnimationMixer::_animation_changed));
 
 	_animation_set_cache_update();
 
@@ -325,7 +324,7 @@ void AnimationMixer::remove_animation_library(const StringName &p_name) {
 	animation_libraries[at_pos].library->disconnect(SNAME("animation_added"), callable_mp(this, &AnimationMixer::_animation_added));
 	animation_libraries[at_pos].library->disconnect(SNAME("animation_removed"), callable_mp(this, &AnimationMixer::_animation_removed));
 	animation_libraries[at_pos].library->disconnect(SNAME("animation_renamed"), callable_mp(this, &AnimationMixer::_animation_renamed));
-	animation_libraries[at_pos].library->disconnect(SNAME("animation_changed"), callable_mp(this, &AnimationMixer::_animation_changed));
+	animation_libraries[at_pos].library->disconnect(SceneStringName(animation_changed), callable_mp(this, &AnimationMixer::_animation_changed));
 
 	animation_libraries.remove_at(at_pos);
 	_animation_set_cache_update();

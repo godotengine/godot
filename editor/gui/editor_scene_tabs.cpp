@@ -402,10 +402,10 @@ EditorSceneTabs::EditorSceneTabs() {
 	scene_tabs->connect("tab_button_pressed", callable_mp(this, &EditorSceneTabs::_scene_tab_script_edited));
 	scene_tabs->connect("tab_close_pressed", callable_mp(this, &EditorSceneTabs::_scene_tab_closed));
 	scene_tabs->connect("tab_hovered", callable_mp(this, &EditorSceneTabs::_scene_tab_hovered));
-	scene_tabs->connect("mouse_exited", callable_mp(this, &EditorSceneTabs::_scene_tab_exit));
-	scene_tabs->connect("gui_input", callable_mp(this, &EditorSceneTabs::_scene_tab_input));
+	scene_tabs->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorSceneTabs::_scene_tab_exit));
+	scene_tabs->connect(SceneStringName(gui_input), callable_mp(this, &EditorSceneTabs::_scene_tab_input));
 	scene_tabs->connect("active_tab_rearranged", callable_mp(this, &EditorSceneTabs::_reposition_active_tab));
-	scene_tabs->connect("resized", callable_mp(this, &EditorSceneTabs::_scene_tabs_resized));
+	scene_tabs->connect(SceneStringName(resized), callable_mp(this, &EditorSceneTabs::_scene_tabs_resized));
 
 	scene_tabs_context_menu = memnew(PopupMenu);
 	tabbar_container->add_child(scene_tabs_context_menu);

@@ -343,7 +343,7 @@ void MultiplayerSynchronizer::update_visibility(int p_for_peer) {
 #endif
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node && get_multiplayer()->has_multiplayer_peer() && is_multiplayer_authority()) {
-		emit_signal(SNAME("visibility_changed"), p_for_peer);
+		emit_signal(SceneStringName(visibility_changed), p_for_peer);
 	}
 }
 

@@ -30,7 +30,6 @@
 
 #include "marshalls.h"
 
-#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"

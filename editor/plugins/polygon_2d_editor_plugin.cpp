@@ -1534,9 +1534,9 @@ Polygon2DEditor::Polygon2DEditor() {
 	uv_panner.instantiate();
 	uv_panner->set_callbacks(callable_mp(this, &Polygon2DEditor::_uv_pan_callback), callable_mp(this, &Polygon2DEditor::_uv_zoom_callback));
 
-	uv_edit_draw->connect("draw", callable_mp(this, &Polygon2DEditor::_uv_draw));
-	uv_edit_draw->connect("gui_input", callable_mp(this, &Polygon2DEditor::_uv_input));
-	uv_edit_draw->connect("focus_exited", callable_mp(uv_panner.ptr(), &ViewPanner::release_pan_key));
+	uv_edit_draw->connect(SceneStringName(draw), callable_mp(this, &Polygon2DEditor::_uv_draw));
+	uv_edit_draw->connect(SceneStringName(gui_input), callable_mp(this, &Polygon2DEditor::_uv_input));
+	uv_edit_draw->connect(SceneStringName(focus_exited), callable_mp(uv_panner.ptr(), &ViewPanner::release_pan_key));
 	uv_edit_draw->set_focus_mode(FOCUS_CLICK);
 	uv_draw_zoom = 1.0;
 	point_drag_index = -1;
