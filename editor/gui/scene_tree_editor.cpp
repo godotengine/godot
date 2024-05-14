@@ -445,8 +445,8 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		_add_nodes(p_node->get_child(i), item);
 	}
 
+	bool valid = false;
 	if (valid_types.size()) {
-		bool valid = false;
 		for (const StringName &E : valid_types) {
 			if (p_node->is_class(E) ||
 					EditorNode::get_singleton()->is_object_of_custom_type(p_node, E)) {
@@ -466,11 +466,21 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 				}
 			}
 		}
+	} else {
+		valid = true;
+	}
 
-		if (!valid) {
-			_set_item_custom_color(item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
-			item->set_selectable(0, false);
+	if (interface_hint_string.size()) {
+		Ref<Script> scr = p_node->get_script();
+
+		if (!EditorNode::get_editor_data().script_object_implements_interface(scr, interface_hint_string)) {
+			valid = false;
 		}
+	}
+
+	if (!valid) {
+		_set_item_custom_color(item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+		item->set_selectable(0, false);
 	}
 }
 
@@ -652,8 +662,7 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	bool keep = _item_matches_all_terms(p_parent, terms);
 
 	bool selectable = keep;
-	if (keep && !valid_types.is_empty()) {
-		selectable = false;
+	if (keep) {
 		Node *n = get_node(p_parent->get_metadata(0));
 
 		for (const StringName &E : valid_types) {
@@ -673,6 +682,14 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 				if (selectable) {
 					break;
 				}
+			}
+		}
+
+		if (!interface_hint_string.is_empty()) {
+			Ref<Script> scr = n->get_script();
+
+			if (!EditorNode::get_editor_data().script_object_implements_interface(scr, interface_hint_string)) {
+				selectable = false;
 			}
 		}
 	}
@@ -1193,6 +1210,10 @@ void SceneTreeEditor::set_valid_types(const Vector<StringName> &p_valid) {
 	valid_types = p_valid;
 }
 
+void SceneTreeEditor::set_interface_hint_string(const String &p_hint) {
+	interface_hint_string = p_hint;
+}
+
 void SceneTreeEditor::set_editor_selection(EditorSelection *p_selection) {
 	editor_selection = p_selection;
 	tree->set_select_mode(Tree::SELECT_MULTI);
@@ -1672,6 +1693,49 @@ void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 		hb->add_child(label);
 		label->set_text(name);
 		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	}
+
+	show_all_nodes->show();
+}
+
+void SceneTreeDialog::set_interface_hint_string(const String &p_valid) {
+	if (p_valid.is_empty()) {
+		return;
+	}
+
+	tree->set_interface_hint_string(p_valid);
+
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	content->add_child(hbox);
+	content->move_child(hbox, 0);
+
+	{
+		Label *label = memnew(Label);
+		hbox->add_child(label);
+		label->set_text(TTR("Allowed:"));
+	}
+
+	Vector<String> interfaces = p_valid.split(",").slice(1);
+
+	HFlowContainer *hflow = memnew(HFlowContainer);
+	hbox->add_child(hflow);
+	hflow->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+	for (const StringName type : interfaces) {
+		HBoxContainer *hb = memnew(HBoxContainer);
+		hflow->add_child(hb);
+
+		TextureRect *trect = memnew(TextureRect);
+		hb->add_child(trect);
+		trect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+		trect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+		trect->set_meta("icon", EditorNode::get_singleton()->get_class_icon("Node")); // TODO: Create new icon for interfaces.
+		valid_type_icons.push_back(trect);
+
+		Label *label = memnew(Label);
+		hb->add_child(label);
+		label->set_text(type);
+		label->set_auto_translate(false);
 	}
 
 	show_all_nodes->show();

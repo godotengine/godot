@@ -2932,7 +2932,12 @@
 		<constant name="PROPERTY_HINT_PASSWORD" value="36" enum="PropertyHint">
 			Hints that a string property is a password, and every character is replaced with the secret character.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="38" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INTERFACE" value="38" enum="PropertyHint">
+			Hints that an Object property is an instance of a type that implements the specified interface.
+			The language and interfaces must be specified by a comma separated hint string, where the first token is the language name and subsequent tokens are interfaces (e.g. [code]"C#,InterfaceA"[/code]).
+			The inspector will allow any Resource or Node (if the edited object is also a Node) that implements the interface to be selected.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="39" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">

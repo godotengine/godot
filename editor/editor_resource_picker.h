@@ -31,6 +31,7 @@
 #ifndef EDITOR_RESOURCE_PICKER_H
 #define EDITOR_RESOURCE_PICKER_H
 
+#include "editor/gui/scene_tree_editor.h"
 #include "scene/gui/box_container.h"
 
 class Button;
@@ -46,6 +47,8 @@ class EditorResourcePicker : public HBoxContainer {
 	GDCLASS(EditorResourcePicker, HBoxContainer);
 
 	String base_type;
+	Vector<StringName> interface_types;
+	String interface_type_hint_string; // hint_string for exports of hint PROPERTY_HINT_INTERFACE
 	Ref<Resource> edited_resource;
 
 	bool editable = true;
@@ -126,6 +129,8 @@ protected:
 public:
 	void set_base_type(const String &p_base_type);
 	String get_base_type() const;
+	void set_interface_hint_string(const String &p_interface_hint_string);
+	String get_interface_hint_string() const;
 	Vector<String> get_allowed_types() const;
 
 	void set_edited_resource(Ref<Resource> p_resource);
@@ -209,6 +214,37 @@ protected:
 
 public:
 	EditorAudioStreamPicker();
+};
+
+class EditorInterfacePicker : public EditorResourcePicker {
+	GDCLASS(EditorInterfacePicker, EditorResourcePicker);
+
+	enum ExtraMenuOption {
+		OBJ_MENU_SELECT_NODE = 50,
+		OBJ_MENU_CLEAR_NODE = 51,
+	};
+
+	// For Node Path
+	SceneTreeDialog *scene_tree = nullptr;
+	bool is_editing_node = false; // If the base object is a Node, we can allow nodes to be set as the interface
+	Node *edited_node = nullptr; // Node representing the property. Either this or edited_resource can be set, not both.
+
+	void _node_assign();
+	void _node_selected(const NodePath &p_path);
+
+	virtual void _update_resource() override;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual void set_create_options(Object *p_menu_node) override;
+	virtual bool handle_menu_selected(int p_which) override;
+
+	void set_is_editing_node(bool p_editing_node);
+	void set_edited_property(Object *p_property);
+
+	EditorInterfacePicker();
 };
 
 #endif // EDITOR_RESOURCE_PICKER_H

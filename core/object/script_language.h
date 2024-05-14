@@ -177,6 +177,7 @@ public:
 
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) {}
 	virtual void get_members(HashSet<StringName> *p_constants) {}
+	virtual void get_interfaces(HashSet<StringName> *p_list) {}
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 

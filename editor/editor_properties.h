@@ -703,6 +703,7 @@ class EditorPropertyResource : public EditorProperty {
 
 	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect);
 	void _resource_changed(const Ref<Resource> &p_resource);
+	void _node_changed(const NodePath &p_node_path); // For interface exports
 
 	void _viewport_selected(const NodePath &p_path);
 
@@ -719,7 +720,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(Object *p_object, const String &p_path, const String &p_base_type);
+	void setup(Object *p_object, const String &p_path, const String &p_base_type, const String &p_interface_hint_string = String());
 
 	void collapse_all_folding() override;
 	void expand_all_folding() override;
