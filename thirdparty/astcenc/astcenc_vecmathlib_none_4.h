@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2019-2023 Arm Limited
+// Copyright 2019-2024 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -556,10 +556,16 @@ ASTCENC_SIMD_INLINE vmask4 operator>(vint4 a, vint4 b)
  */
 template <int s> ASTCENC_SIMD_INLINE vint4 lsl(vint4 a)
 {
-	return vint4(a.m[0] << s,
-	             a.m[1] << s,
-	             a.m[2] << s,
-	             a.m[3] << s);
+	// Cast to unsigned to avoid shift in/out of sign bit undefined behavior
+	unsigned int as0 = static_cast<unsigned int>(a.m[0]) << s;
+	unsigned int as1 = static_cast<unsigned int>(a.m[1]) << s;
+	unsigned int as2 = static_cast<unsigned int>(a.m[2]) << s;
+	unsigned int as3 = static_cast<unsigned int>(a.m[3]) << s;
+
+	return vint4(static_cast<int>(as0),
+	             static_cast<int>(as1),
+	             static_cast<int>(as2),
+	             static_cast<int>(as3));
 }
 
 /**
@@ -567,6 +573,7 @@ template <int s> ASTCENC_SIMD_INLINE vint4 lsl(vint4 a)
  */
 template <int s> ASTCENC_SIMD_INLINE vint4 lsr(vint4 a)
 {
+	// Cast to unsigned to avoid shift in/out of sign bit undefined behavior
 	unsigned int as0 = static_cast<unsigned int>(a.m[0]) >> s;
 	unsigned int as1 = static_cast<unsigned int>(a.m[1]) >> s;
 	unsigned int as2 = static_cast<unsigned int>(a.m[2]) >> s;
