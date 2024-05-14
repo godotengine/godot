@@ -471,7 +471,7 @@ EditorLog::EditorLog() {
 	search_box->set_placeholder(TTR("Filter Messages"));
 	search_box->set_clear_button_enabled(true);
 	search_box->set_visible(true);
-	search_box->connect("text_changed", callable_mp(this, &EditorLog::_search_changed));
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
 	vb_left->add_child(search_box);
 
 	VBoxContainer *vb_right = memnew(VBoxContainer);

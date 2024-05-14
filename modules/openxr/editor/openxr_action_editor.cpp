@@ -134,14 +134,14 @@ OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
 	action_name = memnew(LineEdit);
 	action_name->set_text(action->get_name());
 	action_name->set_custom_minimum_size(Size2(150.0, 0.0));
-	action_name->connect("text_changed", callable_mp(this, &OpenXRActionEditor::_on_action_name_changed));
+	action_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionEditor::_on_action_name_changed));
 	add_child(action_name);
 
 	action_localized_name = memnew(LineEdit);
 	action_localized_name->set_text(action->get_localized_name());
 	action_localized_name->set_custom_minimum_size(Size2(150.0, 0.0));
 	action_localized_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	action_localized_name->connect("text_changed", callable_mp(this, &OpenXRActionEditor::_on_action_localized_name_changed));
+	action_localized_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionEditor::_on_action_localized_name_changed));
 	add_child(action_localized_name);
 
 	action_type_button = memnew(OptionButton);

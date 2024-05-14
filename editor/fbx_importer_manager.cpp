@@ -165,7 +165,7 @@ FBXImporterManager::FBXImporterManager() {
 
 	add_child(vb);
 
-	fbx_path->connect("text_changed", callable_mp(this, &FBXImporterManager::_validate_path));
+	fbx_path->connect(SceneStringName(text_changed), callable_mp(this, &FBXImporterManager::_validate_path));
 
 	get_ok_button()->set_text(TTR("Confirm Path"));
 	get_cancel_button()->connect(SceneStringName(pressed), callable_mp(this, &FBXImporterManager::_cancel_setup));

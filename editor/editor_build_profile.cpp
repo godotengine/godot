@@ -884,7 +884,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	force_detect_classes = memnew(LineEdit);
 	main_vbc->add_margin_child(TTR("Forced Classes on Detect:"), force_detect_classes);
-	force_detect_classes->connect("text_changed", callable_mp(this, &EditorBuildProfileManager::_force_detect_classes_changed));
+	force_detect_classes->connect(SceneStringName(text_changed), callable_mp(this, &EditorBuildProfileManager::_force_detect_classes_changed));
 
 	set_title(TTR("Edit Compilation Configuration Profile"));
 

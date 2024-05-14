@@ -979,13 +979,13 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	edit_x->set_min(-1000);
 	edit_x->set_step(0.01);
 	edit_x->set_max(1000);
-	edit_x->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_pos));
+	edit_x->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_pos));
 	edit_y = memnew(SpinBox);
 	edit_hb->add_child(edit_y);
 	edit_y->set_min(-1000);
 	edit_y->set_step(0.01);
 	edit_y->set_max(1000);
-	edit_y->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_pos));
+	edit_y->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_pos));
 	open_editor = memnew(Button);
 	edit_hb->add_child(open_editor);
 	open_editor->set_text(TTR("Open Editor"));
@@ -1060,14 +1060,14 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 		min_x_value->set_step(0.01);
 	}
 
-	snap_x->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
-	snap_y->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
-	max_x_value->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
-	min_x_value->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
-	max_y_value->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
-	min_y_value->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
-	label_x->connect("text_changed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_labels_changed));
-	label_y->connect("text_changed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_labels_changed));
+	snap_x->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
+	snap_y->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
+	max_x_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
+	min_x_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
+	max_y_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
+	min_y_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
+	label_x->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_labels_changed));
+	label_y->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_labels_changed));
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);

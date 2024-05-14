@@ -671,7 +671,7 @@ EditorProfiler::EditorProfiler() {
 	cursor_metric_edit->set_value(0);
 	cursor_metric_edit->set_editable(false);
 	hb->add_child(cursor_metric_edit);
-	cursor_metric_edit->connect("value_changed", callable_mp(this, &EditorProfiler::_cursor_metric_changed));
+	cursor_metric_edit->connect(SceneStringName(value_changed), callable_mp(this, &EditorProfiler::_cursor_metric_changed));
 
 	hb->add_theme_constant_override("separation", 8 * EDSCALE);
 

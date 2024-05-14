@@ -336,9 +336,9 @@ PluginConfigDialog::PluginConfigDialog() {
 	validation_panel->set_accept_button(get_ok_button());
 
 	script_option_edit->connect(SceneStringName(item_selected), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-	name_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-	subfolder_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-	script_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	name_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	subfolder_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	script_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 }
 
 PluginConfigDialog::~PluginConfigDialog() {

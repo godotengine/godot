@@ -510,7 +510,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		configure_blender_dialog->add_child(vb);
 
-		blender_path->connect("text_changed", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_validate_path));
+		blender_path->connect(SceneStringName(text_changed), callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_validate_path));
 
 		EditorNode::get_singleton()->get_gui_base()->add_child(configure_blender_dialog);
 

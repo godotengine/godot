@@ -775,7 +775,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcut_search_box->set_placeholder(TTR("Filter by Name"));
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	top_hbox->add_child(shortcut_search_box);
-	shortcut_search_box->connect("text_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts));
+	shortcut_search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorSettingsDialog::_filter_shortcuts));
 
 	shortcut_search_by_event = memnew(EventListenerLineEdit);
 	shortcut_search_by_event->set_h_size_flags(Control::SIZE_EXPAND_FILL);
