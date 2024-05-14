@@ -39,6 +39,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_verify_dialog.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
@@ -107,7 +108,7 @@ void ProjectExportDialog::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			duplicate_preset->set_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
 			delete_preset->set_icon(presets->get_editor_theme_icon(SNAME("Remove")));
-			connect("confirmed", callable_mp(this, &ProjectExportDialog::_export_pck_zip));
+			connect("confirmed", callable_mp(this, &ProjectExportDialog::_verify_export).bind(EXPORT_PCK_ZIP));
 			_update_export_all();
 		} break;
 	}
@@ -1202,6 +1203,24 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 	exporting = false;
 }
 
+void ProjectExportDialog::_verify_export(int p_export_type) {
+	if (verify_dialog->reload(p_export_type, callable_mp(this, &ProjectExportDialog::_export_all_dialog), callable_mp(this, &ProjectExportDialog::_export_project), callable_mp(this, &ProjectExportDialog::_export_pck_zip))) {
+		verify_dialog->popup_centered();
+	} else {
+		switch (p_export_type) {
+			case EXPORT_ALL:
+				_export_all_dialog();
+				break;
+			case EXPORT:
+				_export_project();
+				break;
+			case EXPORT_PCK_ZIP:
+				_export_pck_zip();
+				break;
+		}
+	}
+}
+
 void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("set_export_path", &ProjectExportDialog::set_export_path);
 	ClassDB::bind_method("get_export_path", &ProjectExportDialog::get_export_path);
@@ -1484,7 +1503,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_button = add_button(TTR("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_button->set_tooltip_text(TTR("Export the project as a playable build (Godot executable and project data) for the selected preset."));
 #endif
-	export_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_project));
+	verify_dialog = memnew(EditorVerifyDialog);
+	add_child(verify_dialog);
+	export_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_verify_export).bind(EXPORT));
 	// Disable initially before we select a valid preset
 	export_button->set_disabled(true);
 
@@ -1504,7 +1525,7 @@ ProjectExportDialog::ProjectExportDialog() {
 #else
 	export_all_button = add_button(TTR("Export All..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 #endif
-	export_all_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_all_dialog));
+	export_all_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_verify_export).bind(EXPORT_ALL));
 	export_all_button->set_disabled(true);
 
 	export_pck_zip = memnew(EditorFileDialog);

@@ -275,6 +275,12 @@
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
 		</member>
+		<member name="application/config/export_checklists" type="Dictionary" setter="" getter="" default="{}">
+			The checklists to export either the project, the pck/zip or all the presets. Leave both this and [member application/config/export_phrase] empty to export seamlessly.
+		</member>
+		<member name="application/config/export_phrase" type="String" setter="" getter="" default="&quot;&quot;">
+			The phrase to export either the project, the pck/zip or all the presets. Leave both this and [member application/config/export_checklists] empty to export seamlessly.
+		</member>
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon as a fallback if necessary.
 		</member>

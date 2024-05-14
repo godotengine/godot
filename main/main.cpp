@@ -2931,6 +2931,8 @@ Error Main::setup2() {
 				GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 
 		GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), String());
+		GLOBAL_DEF_BASIC("application/config/export_phrase", "");
+		GLOBAL_DEF_BASIC(PropertyInfo(Variant::DICTIONARY, "application/config/export_checklists"), Dictionary());
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/macos_native_icon", PROPERTY_HINT_FILE, "*.icns"), String());
 		GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/windows_native_icon", PROPERTY_HINT_FILE, "*.ico"), String());
 
