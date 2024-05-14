@@ -159,7 +159,7 @@ OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
 
 	rem_action = memnew(Button);
 	rem_action->set_tooltip_text(TTR("Remove action"));
-	rem_action->connect("pressed", callable_mp(this, &OpenXRActionEditor::_on_remove_action));
+	rem_action->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionEditor::_on_remove_action));
 	rem_action->set_flat(true);
 	add_child(rem_action);
 }

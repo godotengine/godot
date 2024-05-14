@@ -836,7 +836,7 @@ GroupsEditor::GroupsEditor() {
 	add = memnew(Button);
 	add->set_flat(true);
 	add->set_tooltip_text(TTR("Add a new group."));
-	add->connect("pressed", callable_mp(this, &GroupsEditor::_show_add_group_dialog));
+	add->connect(SceneStringName(pressed), callable_mp(this, &GroupsEditor::_show_add_group_dialog));
 	hbc->add_child(add);
 
 	filter = memnew(LineEdit);

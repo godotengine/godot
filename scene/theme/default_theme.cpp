@@ -161,7 +161,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("normal", "Button", button_normal);
 	theme->set_stylebox("hover", "Button", button_hover);
-	theme->set_stylebox("pressed", "Button", button_pressed);
+	theme->set_stylebox(SceneStringName(pressed), "Button", button_pressed);
 	theme->set_stylebox("disabled", "Button", button_disabled);
 	theme->set_stylebox("focus", "Button", focus);
 
@@ -190,7 +190,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// MenuBar
 	theme->set_stylebox("normal", "MenuBar", button_normal);
 	theme->set_stylebox("hover", "MenuBar", button_hover);
-	theme->set_stylebox("pressed", "MenuBar", button_pressed);
+	theme->set_stylebox(SceneStringName(pressed), "MenuBar", button_pressed);
 	theme->set_stylebox("disabled", "MenuBar", button_disabled);
 
 	theme->set_font("font", "MenuBar", Ref<Font>());
@@ -233,7 +233,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("normal", "OptionButton", sb_optbutton_normal);
 	theme->set_stylebox("hover", "OptionButton", sb_optbutton_hover);
-	theme->set_stylebox("pressed", "OptionButton", sb_optbutton_pressed);
+	theme->set_stylebox(SceneStringName(pressed), "OptionButton", sb_optbutton_pressed);
 	theme->set_stylebox("disabled", "OptionButton", sb_optbutton_disabled);
 
 	Ref<StyleBox> sb_optbutton_normal_mirrored = make_flat_stylebox(style_normal_color, 2 * default_margin, default_margin, 2 * default_margin, default_margin);
@@ -267,7 +267,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// MenuButton
 
 	theme->set_stylebox("normal", "MenuButton", button_normal);
-	theme->set_stylebox("pressed", "MenuButton", button_pressed);
+	theme->set_stylebox(SceneStringName(pressed), "MenuButton", button_pressed);
 	theme->set_stylebox("hover", "MenuButton", button_hover);
 	theme->set_stylebox("disabled", "MenuButton", button_disabled);
 	theme->set_stylebox("focus", "MenuButton", focus);
@@ -293,7 +293,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	cbx_focus->set_content_margin_all(Math::round(4 * scale));
 
 	theme->set_stylebox("normal", "CheckBox", cbx_empty);
-	theme->set_stylebox("pressed", "CheckBox", cbx_empty);
+	theme->set_stylebox(SceneStringName(pressed), "CheckBox", cbx_empty);
 	theme->set_stylebox("disabled", "CheckBox", cbx_empty);
 	theme->set_stylebox("hover", "CheckBox", cbx_empty);
 	theme->set_stylebox("hover_pressed", "CheckBox", cbx_empty);
@@ -329,7 +329,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	cb_empty->set_content_margin_individual(Math::round(6 * scale), Math::round(4 * scale), Math::round(6 * scale), Math::round(4 * scale));
 
 	theme->set_stylebox("normal", "CheckButton", cb_empty);
-	theme->set_stylebox("pressed", "CheckButton", cb_empty);
+	theme->set_stylebox(SceneStringName(pressed), "CheckButton", cb_empty);
 	theme->set_stylebox("disabled", "CheckButton", cb_empty);
 	theme->set_stylebox("hover", "CheckButton", cb_empty);
 	theme->set_stylebox("hover_pressed", "CheckButton", cb_empty);
@@ -374,12 +374,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("normal", "FlatButton", flat_button_normal);
 	theme->set_stylebox("hover", "FlatButton", flat_button_normal);
-	theme->set_stylebox("pressed", "FlatButton", flat_button_pressed);
+	theme->set_stylebox(SceneStringName(pressed), "FlatButton", flat_button_pressed);
 	theme->set_stylebox("disabled", "FlatButton", flat_button_normal);
 
 	theme->set_stylebox("normal", "FlatMenuButton", flat_button_normal);
 	theme->set_stylebox("hover", "FlatMenuButton", flat_button_normal);
-	theme->set_stylebox("pressed", "FlatMenuButton", flat_button_pressed);
+	theme->set_stylebox(SceneStringName(pressed), "FlatMenuButton", flat_button_pressed);
 	theme->set_stylebox("disabled", "FlatMenuButton", flat_button_normal);
 
 	// Label
@@ -1051,7 +1051,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("bg", "ColorPickerButton", icons["mini_checkerboard"]);
 	theme->set_stylebox("normal", "ColorPickerButton", button_normal);
-	theme->set_stylebox("pressed", "ColorPickerButton", button_pressed);
+	theme->set_stylebox(SceneStringName(pressed), "ColorPickerButton", button_pressed);
 	theme->set_stylebox("hover", "ColorPickerButton", button_hover);
 	theme->set_stylebox("disabled", "ColorPickerButton", button_disabled);
 	theme->set_stylebox("focus", "ColorPickerButton", focus);

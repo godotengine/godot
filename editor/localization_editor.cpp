@@ -626,7 +626,7 @@ LocalizationEditor::LocalizationEditor() {
 		tvb->add_child(thb);
 
 		Button *addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", callable_mp(this, &LocalizationEditor::_translation_file_open));
+		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_file_open));
 		thb->add_child(addtr);
 
 		VBoxContainer *tmc = memnew(VBoxContainer);
@@ -660,7 +660,7 @@ LocalizationEditor::LocalizationEditor() {
 		tvb->add_child(thb);
 
 		Button *addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", callable_mp(this, &LocalizationEditor::_translation_res_file_open));
+		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_res_file_open));
 		thb->add_child(addtr);
 
 		VBoxContainer *tmc = memnew(VBoxContainer);
@@ -686,7 +686,7 @@ LocalizationEditor::LocalizationEditor() {
 		tvb->add_child(thb);
 
 		addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", callable_mp(this, &LocalizationEditor::_translation_res_option_file_open));
+		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_res_option_file_open));
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);
 
@@ -729,11 +729,11 @@ LocalizationEditor::LocalizationEditor() {
 		tvb->add_child(thb);
 
 		Button *addtr = memnew(Button(TTR("Add...")));
-		addtr->connect("pressed", callable_mp(this, &LocalizationEditor::_pot_file_open));
+		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_file_open));
 		thb->add_child(addtr);
 
 		pot_generate_button = memnew(Button(TTR("Generate POT")));
-		pot_generate_button->connect("pressed", callable_mp(this, &LocalizationEditor::_pot_generate_open));
+		pot_generate_button->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_generate_open));
 		thb->add_child(pot_generate_button);
 
 		translation_pot_list = memnew(Tree);
@@ -742,7 +742,7 @@ LocalizationEditor::LocalizationEditor() {
 
 		translation_pot_add_builtin = memnew(CheckBox(TTR("Add Built-in Strings to POT")));
 		translation_pot_add_builtin->set_tooltip_text(TTR("Add strings from built-in components such as certain Control nodes."));
-		translation_pot_add_builtin->connect("pressed", callable_mp(this, &LocalizationEditor::_pot_add_builtin_toggled));
+		translation_pot_add_builtin->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_add_builtin_toggled));
 		tvb->add_child(translation_pot_add_builtin);
 
 		pot_generate_dialog = memnew(EditorFileDialog);

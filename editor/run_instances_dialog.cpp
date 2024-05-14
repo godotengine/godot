@@ -281,7 +281,7 @@ RunInstancesDialog::RunInstancesDialog() {
 	enable_multiple_instances_checkbox->set_text(TTR("Enable Multiple Instances"));
 	enable_multiple_instances_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false));
 	args_gc->add_child(enable_multiple_instances_checkbox);
-	enable_multiple_instances_checkbox->connect("pressed", callable_mp(this, &RunInstancesDialog::_start_main_timer));
+	enable_multiple_instances_checkbox->connect(SceneStringName(pressed), callable_mp(this, &RunInstancesDialog::_start_main_timer));
 
 	{
 		Label *l = memnew(Label);

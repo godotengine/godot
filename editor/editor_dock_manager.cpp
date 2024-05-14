@@ -1080,7 +1080,7 @@ DockContextPopup::DockContextPopup() {
 	tab_move_left_button = memnew(Button);
 	tab_move_left_button->set_flat(true);
 	tab_move_left_button->set_focus_mode(Control::FOCUS_NONE);
-	tab_move_left_button->connect("pressed", callable_mp(this, &DockContextPopup::_tab_move_left));
+	tab_move_left_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_tab_move_left));
 	header_hb->add_child(tab_move_left_button);
 
 	Label *position_label = memnew(Label);
@@ -1092,7 +1092,7 @@ DockContextPopup::DockContextPopup() {
 	tab_move_right_button = memnew(Button);
 	tab_move_right_button->set_flat(true);
 	tab_move_right_button->set_focus_mode(Control::FOCUS_NONE);
-	tab_move_right_button->connect("pressed", callable_mp(this, &DockContextPopup::_tab_move_right));
+	tab_move_right_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_tab_move_right));
 
 	header_hb->add_child(tab_move_right_button);
 	dock_select_popup_vb->add_child(header_hb);
@@ -1115,7 +1115,7 @@ DockContextPopup::DockContextPopup() {
 	}
 	make_float_button->set_focus_mode(Control::FOCUS_NONE);
 	make_float_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	make_float_button->connect("pressed", callable_mp(this, &DockContextPopup::_float_dock));
+	make_float_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_float_dock));
 	dock_select_popup_vb->add_child(make_float_button);
 
 	dock_to_bottom_button = memnew(Button);
@@ -1123,7 +1123,7 @@ DockContextPopup::DockContextPopup() {
 	dock_to_bottom_button->set_tooltip_text(TTR("Move this dock to the bottom panel."));
 	dock_to_bottom_button->set_focus_mode(Control::FOCUS_NONE);
 	dock_to_bottom_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	dock_to_bottom_button->connect("pressed", callable_mp(this, &DockContextPopup::_move_dock_to_bottom));
+	dock_to_bottom_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_move_dock_to_bottom));
 	dock_to_bottom_button->hide();
 	dock_select_popup_vb->add_child(dock_to_bottom_button);
 
@@ -1132,6 +1132,6 @@ DockContextPopup::DockContextPopup() {
 	close_button->set_tooltip_text(TTR("Close this dock."));
 	close_button->set_focus_mode(Control::FOCUS_NONE);
 	close_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	close_button->connect("pressed", callable_mp(this, &DockContextPopup::_close_dock));
+	close_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_close_dock));
 	dock_select_popup_vb->add_child(close_button);
 }

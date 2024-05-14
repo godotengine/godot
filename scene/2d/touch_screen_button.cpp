@@ -305,7 +305,7 @@ void TouchScreenButton::_press(int p_finger_pressed) {
 		get_viewport()->push_input(iea, true);
 	}
 
-	emit_signal(SNAME("pressed"));
+	emit_signal(SceneStringName(pressed));
 	queue_redraw();
 }
 
@@ -373,7 +373,7 @@ bool TouchScreenButton::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == CoreStringName(normal)) { // Compatibility with Godot 3.x.
 		set_texture_normal(p_value);
 		return true;
-	} else if (p_name == SNAME("pressed")) { // Compatibility with Godot 3.x.
+	} else if (p_name == SceneStringName(pressed)) { // Compatibility with Godot 3.x.
 		set_texture_pressed(p_value);
 		return true;
 	}

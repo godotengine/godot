@@ -618,9 +618,9 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	zoom_hbox->add_child(zoom_out);
 	zoom_hbox->add_child(zoom_reset);
 	zoom_hbox->add_child(zoom_in);
-	zoom_in->connect("pressed", callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_in));
-	zoom_reset->connect("pressed", callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_reset));
-	zoom_out->connect("pressed", callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_out));
+	zoom_in->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_in));
+	zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_reset));
+	zoom_out->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_out));
 	zoom_bar->connect("value_changed", callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_offset_changed));
 	vbox->add_child(zoom_hbox);
 
@@ -639,13 +639,13 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	_play_button->set_flat(true);
 	hbox->add_child(_play_button);
 	_play_button->set_focus_mode(Control::FOCUS_NONE);
-	_play_button->connect("pressed", callable_mp(this, &AudioStreamImportSettingsDialog::_play));
+	_play_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_play));
 
 	_stop_button = memnew(Button);
 	_stop_button->set_flat(true);
 	hbox->add_child(_stop_button);
 	_stop_button->set_focus_mode(Control::FOCUS_NONE);
-	_stop_button->connect("pressed", callable_mp(this, &AudioStreamImportSettingsDialog::_stop));
+	_stop_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_stop));
 
 	_current_label = memnew(Label);
 	_current_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);

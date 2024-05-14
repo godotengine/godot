@@ -91,7 +91,7 @@ void StatusIndicator::_bind_methods() {
 }
 
 void StatusIndicator::_callback(MouseButton p_index, const Point2i &p_pos) {
-	emit_signal(SNAME("pressed"), p_index, p_pos);
+	emit_signal(SceneStringName(pressed), p_index, p_pos);
 }
 
 void StatusIndicator::set_icon(const Ref<Texture2D> &p_icon) {

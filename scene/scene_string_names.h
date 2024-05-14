@@ -213,6 +213,8 @@ public:
 	StringName shader_overrides_group;
 	StringName shader_overrides_group_active;
 
+	StringName pressed;
+
 #ifndef DISABLE_DEPRECATED
 	StringName use_in_baked_light;
 	StringName use_dynamic_gi;

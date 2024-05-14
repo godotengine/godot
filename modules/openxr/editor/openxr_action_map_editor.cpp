@@ -402,13 +402,13 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	add_action_set = memnew(Button);
 	add_action_set->set_text(TTR("Add Action Set"));
 	add_action_set->set_tooltip_text(TTR("Add an action set."));
-	add_action_set->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_add_action_set));
+	add_action_set->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionMapEditor::_on_add_action_set));
 	top_hb->add_child(add_action_set);
 
 	add_interaction_profile = memnew(Button);
 	add_interaction_profile->set_text(TTR("Add profile"));
 	add_interaction_profile->set_tooltip_text(TTR("Add an interaction profile."));
-	add_interaction_profile->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_add_interaction_profile));
+	add_interaction_profile->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionMapEditor::_on_add_interaction_profile));
 	top_hb->add_child(add_interaction_profile);
 
 	VSeparator *vseparator = memnew(VSeparator);
@@ -417,13 +417,13 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	save_as = memnew(Button);
 	save_as->set_text(TTR("Save"));
 	save_as->set_tooltip_text(TTR("Save this OpenXR action map."));
-	save_as->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_save_action_map));
+	save_as->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionMapEditor::_on_save_action_map));
 	top_hb->add_child(save_as);
 
 	_default = memnew(Button);
 	_default->set_text(TTR("Reset to Default"));
 	_default->set_tooltip_text(TTR("Reset to default OpenXR action map."));
-	_default->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_reset_to_default_layout));
+	_default->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionMapEditor::_on_reset_to_default_layout));
 	top_hb->add_child(_default);
 
 	tabs = memnew(TabContainer);
