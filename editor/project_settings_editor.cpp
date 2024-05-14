@@ -587,7 +587,7 @@ void ProjectSettingsEditor::_update_theme() {
 	del_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 	restart_close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
-	restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+	restart_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 	restart_icon->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
 	restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 

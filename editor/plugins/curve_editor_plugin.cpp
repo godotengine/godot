@@ -788,7 +788,7 @@ void CurveEdit::_redraw() {
 	// Draw background.
 
 	Vector2 view_size = get_rect().size;
-	draw_style_box(get_theme_stylebox(SNAME("panel"), SNAME("Tree")), Rect2(Point2(), view_size));
+	draw_style_box(get_theme_stylebox(SceneStringName(panel), SNAME("Tree")), Rect2(Point2(), view_size));
 
 	// Draw snapping grid, then primary grid.
 	draw_set_transform_matrix(_world_to_view);

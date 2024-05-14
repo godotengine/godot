@@ -1267,8 +1267,8 @@ void AnimationNodeStateMachineEditor::_update_graph() {
 void AnimationNodeStateMachineEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			panel->add_theme_style_override("panel", theme_cache.panel_style);
-			error_panel->add_theme_style_override("panel", theme_cache.error_panel_style);
+			panel->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
+			error_panel->add_theme_style_override(SceneStringName(panel), theme_cache.error_panel_style);
 			error_label->add_theme_color_override("font_color", theme_cache.error_color);
 
 			tool_select->set_icon(theme_cache.tool_icon_select);

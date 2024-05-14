@@ -152,7 +152,7 @@ void WindowWrapper::_notification(int p_what) {
 			set_process_shortcut_input(true);
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			window_background->add_theme_style_override("panel", get_theme_stylebox("PanelForeground", EditorStringName(EditorStyles)));
+			window_background->add_theme_style_override(SceneStringName(panel), get_theme_stylebox("PanelForeground", EditorStringName(EditorStyles)));
 		} break;
 	}
 }
@@ -391,7 +391,7 @@ void ScreenSelect::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			set_icon(get_editor_theme_icon("MakeFloating"));
-			popup_background->add_theme_style_override("panel", get_theme_stylebox("PanelForeground", EditorStringName(EditorStyles)));
+			popup_background->add_theme_style_override(SceneStringName(panel), get_theme_stylebox("PanelForeground", EditorStringName(EditorStyles)));
 
 			const real_t popup_height = real_t(get_theme_font_size("font_size")) * 2.0;
 			popup->set_min_size(Size2(0, popup_height * 3));

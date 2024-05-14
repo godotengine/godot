@@ -154,7 +154,7 @@ void ScriptEditorDebugger::update_tabs() {
 }
 
 void ScriptEditorDebugger::clear_style() {
-	tabs->remove_theme_style_override("panel");
+	tabs->remove_theme_style_override(SceneStringName(panel));
 }
 
 void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
@@ -857,7 +857,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			tabs->add_theme_style_override("panel", get_theme_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
+			tabs->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 
 			skip_breakpoints->set_icon(get_editor_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff")));
 			copy->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));

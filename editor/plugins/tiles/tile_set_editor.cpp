@@ -371,7 +371,7 @@ void TileSetEditor::_notification(int p_what) {
 			source_sort_button->set_icon(get_editor_theme_icon(SNAME("Sort")));
 			sources_advanced_menu_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			missing_texture_texture = get_editor_theme_icon(SNAME("TileSet"));
-			expanded_area->add_theme_style_override("panel", get_theme_stylebox("panel", "Tree"));
+			expanded_area->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), "Tree"));
 			_update_sources_list();
 		} break;
 

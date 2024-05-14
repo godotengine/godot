@@ -675,10 +675,10 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 	// Panels.
 	{
 		// Panel.
-		p_theme->set_stylebox("panel", "Panel", make_flat_stylebox(p_config.dark_color_1, 6, 4, 6, 4, p_config.corner_radius));
+		p_theme->set_stylebox(SceneStringName(panel), "Panel", make_flat_stylebox(p_config.dark_color_1, 6, 4, 6, 4, p_config.corner_radius));
 
 		// PanelContainer.
-		p_theme->set_stylebox("panel", "PanelContainer", p_config.panel_container_style);
+		p_theme->set_stylebox(SceneStringName(panel), "PanelContainer", p_config.panel_container_style);
 
 		// TooltipPanel & TooltipLabel.
 		{
@@ -693,11 +693,11 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			style_tooltip->set_content_margin_all(p_config.base_margin * EDSCALE * 0.5);
 			style_tooltip->set_bg_color(p_config.dark_color_3 * Color(0.8, 0.8, 0.8, 0.9));
 			style_tooltip->set_border_width_all(0);
-			p_theme->set_stylebox("panel", "TooltipPanel", style_tooltip);
+			p_theme->set_stylebox(SceneStringName(panel), "TooltipPanel", style_tooltip);
 		}
 
 		// PopupPanel
-		p_theme->set_stylebox("panel", "PopupPanel", p_config.popup_style);
+		p_theme->set_stylebox(SceneStringName(panel), "PopupPanel", p_config.popup_style);
 	}
 
 	// Buttons.
@@ -926,7 +926,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_icon("updown", "Tree", p_theme->get_icon(SNAME("GuiTreeUpdown"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("select_arrow", "Tree", p_theme->get_icon(SNAME("GuiDropdown"), EditorStringName(EditorIcons)));
 
-			p_theme->set_stylebox("panel", "Tree", p_config.tree_panel_style);
+			p_theme->set_stylebox(SceneStringName(panel), "Tree", p_config.tree_panel_style);
 			p_theme->set_stylebox("focus", "Tree", p_config.button_style_focus);
 			p_theme->set_stylebox("custom_button", "Tree", make_empty_stylebox());
 			p_theme->set_stylebox("custom_button_pressed", "Tree", make_empty_stylebox());
@@ -1029,7 +1029,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			style_itemlist_hover->set_bg_color(p_config.highlight_color * Color(1, 1, 1, 0.3));
 			style_itemlist_hover->set_border_width_all(0);
 
-			p_theme->set_stylebox("panel", "ItemList", style_itemlist_bg);
+			p_theme->set_stylebox(SceneStringName(panel), "ItemList", style_itemlist_bg);
 			p_theme->set_stylebox("focus", "ItemList", p_config.button_style_focus);
 			p_theme->set_stylebox("cursor", "ItemList", style_itemlist_cursor);
 			p_theme->set_stylebox("cursor_unfocused", "ItemList", style_itemlist_cursor);
@@ -1100,7 +1100,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		style_tabbar_background->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 		style_tabbar_background->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 		p_theme->set_stylebox("tabbar_background", "TabContainer", style_tabbar_background);
-		p_theme->set_stylebox("panel", "TabContainer", p_config.content_panel_style);
+		p_theme->set_stylebox(SceneStringName(panel), "TabContainer", p_config.content_panel_style);
 
 		p_theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
 		p_theme->set_stylebox("tab_hovered", "TabContainer", style_tab_hovered);
@@ -1274,7 +1274,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_font_size("title_font_size", "Window", p_theme->get_font_size(SNAME("title_size"), EditorStringName(EditorFonts)));
 
 		// AcceptDialog.
-		p_theme->set_stylebox("panel", "AcceptDialog", p_config.dialog_style);
+		p_theme->set_stylebox(SceneStringName(panel), "AcceptDialog", p_config.dialog_style);
 		p_theme->set_constant("buttons_separation", "AcceptDialog", 8 * EDSCALE);
 		// Make buttons with short texts such as "OK" easier to click/tap.
 		p_theme->set_constant("buttons_min_width", "AcceptDialog", p_config.dialogs_buttons_min_size.x * EDSCALE);
@@ -1294,7 +1294,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_color("file_disabled_color", "FileDialog", p_config.font_disabled_color);
 
 		// PopupDialog.
-		p_theme->set_stylebox("panel", "PopupDialog", p_config.popup_style);
+		p_theme->set_stylebox(SceneStringName(panel), "PopupDialog", p_config.popup_style);
 
 		// PopupMenu.
 		{
@@ -1310,7 +1310,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			} else {
 				style_popup_menu->set_border_color(p_config.dark_color_2);
 			}
-			p_theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
+			p_theme->set_stylebox(SceneStringName(panel), "PopupMenu", style_popup_menu);
 
 			Ref<StyleBoxFlat> style_menu_hover = p_config.button_style_hover->duplicate();
 			// Don't use rounded corners for hover highlights since the StyleBox touches the PopupMenu's edges.
@@ -1473,7 +1473,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 	{
 		// GraphEdit.
 
-		p_theme->set_stylebox("panel", "GraphEdit", p_config.tree_panel_style);
+		p_theme->set_stylebox(SceneStringName(panel), "GraphEdit", p_config.tree_panel_style);
 		p_theme->set_stylebox("menu_panel", "GraphEdit", make_flat_stylebox(p_config.dark_color_1 * Color(1, 1, 1, 0.6), 4, 2, 4, 2, 3));
 
 		float grid_base_brightness = p_config.dark_theme ? 1.0 : 0.0;
@@ -1513,7 +1513,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			Ref<StyleBoxFlat> style_minimap_bg = make_flat_stylebox(p_config.dark_color_1, 0, 0, 0, 0);
 			style_minimap_bg->set_border_color(p_config.dark_color_3);
 			style_minimap_bg->set_border_width_all(1);
-			p_theme->set_stylebox("panel", "GraphEditMinimap", style_minimap_bg);
+			p_theme->set_stylebox(SceneStringName(panel), "GraphEditMinimap", style_minimap_bg);
 
 			Ref<StyleBoxFlat> style_minimap_camera;
 			Ref<StyleBoxFlat> style_minimap_node;
@@ -1590,7 +1590,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 			// GraphElement.
 
-			p_theme->set_stylebox("panel", "GraphElement", gn_panel_style);
+			p_theme->set_stylebox(SceneStringName(panel), "GraphElement", gn_panel_style);
 			p_theme->set_stylebox("panel_selected", "GraphElement", gn_panel_selected_style);
 			p_theme->set_stylebox("titlebar", "GraphElement", gn_titlebar_style);
 			p_theme->set_stylebox("titlebar_selected", "GraphElement", gn_titlebar_selected_style);
@@ -1602,7 +1602,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 			Ref<StyleBoxEmpty> gn_slot_style = make_empty_stylebox(12, 0, 12, 0);
 
-			p_theme->set_stylebox("panel", "GraphNode", gn_panel_style);
+			p_theme->set_stylebox(SceneStringName(panel), "GraphNode", gn_panel_style);
 			p_theme->set_stylebox("panel_selected", "GraphNode", gn_panel_selected_style);
 			p_theme->set_stylebox("titlebar", "GraphNode", gn_titlebar_style);
 			p_theme->set_stylebox("titlebar_selected", "GraphNode", gn_titlebar_selected_style);
@@ -1644,7 +1644,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			Ref<StyleBoxFlat> graphframe_sb_selected = graphframe_sb->duplicate();
 			graphframe_sb_selected->set_border_color(gn_selected_border_color);
 
-			p_theme->set_stylebox("panel", "GraphFrame", graphframe_sb);
+			p_theme->set_stylebox(SceneStringName(panel), "GraphFrame", graphframe_sb);
 			p_theme->set_stylebox("panel_selected", "GraphFrame", graphframe_sb_selected);
 			p_theme->set_stylebox("titlebar", "GraphFrame", make_empty_stylebox(4, 4, 4, 4));
 			p_theme->set_stylebox("titlebar_selected", "GraphFrame", make_empty_stylebox(4, 4, 4, 4));
@@ -1669,7 +1669,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			Ref<StyleBox> vs_reroute_panel_style = make_empty_stylebox();
 			Ref<StyleBox> vs_reroute_titlebar_style = vs_reroute_panel_style->duplicate();
 			vs_reroute_titlebar_style->set_content_margin_all(16);
-			p_theme->set_stylebox("panel", "VSRerouteNode", vs_reroute_panel_style);
+			p_theme->set_stylebox(SceneStringName(panel), "VSRerouteNode", vs_reroute_panel_style);
 			p_theme->set_stylebox("panel_selected", "VSRerouteNode", vs_reroute_panel_style);
 			p_theme->set_stylebox("titlebar", "VSRerouteNode", vs_reroute_titlebar_style);
 			p_theme->set_stylebox("titlebar_selected", "VSRerouteNode", vs_reroute_titlebar_style);
@@ -1969,9 +1969,9 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			Ref<StyleBoxFlat> style_complex_window = p_config.window_style->duplicate();
 			style_complex_window->set_bg_color(p_config.dark_color_2);
 			style_complex_window->set_border_color(p_config.dark_color_2);
-			p_theme->set_stylebox("panel", "EditorSettingsDialog", style_complex_window);
-			p_theme->set_stylebox("panel", "ProjectSettingsEditor", style_complex_window);
-			p_theme->set_stylebox("panel", "EditorAbout", style_complex_window);
+			p_theme->set_stylebox(SceneStringName(panel), "EditorSettingsDialog", style_complex_window);
+			p_theme->set_stylebox(SceneStringName(panel), "ProjectSettingsEditor", style_complex_window);
+			p_theme->set_stylebox(SceneStringName(panel), "EditorAbout", style_complex_window);
 		}
 
 		// InspectorActionButton.
@@ -2033,11 +2033,11 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 			Ref<StyleBoxFlat> style_content_panel_odd = p_config.content_panel_style->duplicate();
 			style_content_panel_odd->set_bg_color(p_config.disabled_bg_color);
-			p_theme->set_stylebox("panel", "TabContainerOdd", style_content_panel_odd);
+			p_theme->set_stylebox(SceneStringName(panel), "TabContainerOdd", style_content_panel_odd);
 		}
 
 		// EditorValidationPanel.
-		p_theme->set_stylebox("panel", "EditorValidationPanel", p_config.tree_panel_style);
+		p_theme->set_stylebox(SceneStringName(panel), "EditorValidationPanel", p_config.tree_panel_style);
 
 		// ControlEditor.
 		{
@@ -2051,7 +2051,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			control_editor_popup_style->set_content_margin(SIDE_BOTTOM, p_config.base_margin * EDSCALE);
 			control_editor_popup_style->set_border_width_all(0);
 
-			p_theme->set_stylebox("panel", "ControlEditorPopupPanel", control_editor_popup_style);
+			p_theme->set_stylebox(SceneStringName(panel), "ControlEditorPopupPanel", control_editor_popup_style);
 		}
 	}
 
@@ -2247,7 +2247,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 	// Asset Library.
 	p_theme->set_stylebox("bg", "AssetLib", p_config.base_empty_style);
-	p_theme->set_stylebox("panel", "AssetLib", p_config.content_panel_style);
+	p_theme->set_stylebox(SceneStringName(panel), "AssetLib", p_config.content_panel_style);
 	p_theme->set_color("status_color", "AssetLib", Color(0.5, 0.5, 0.5)); // FIXME: Use a defined color instead.
 	p_theme->set_icon("dismiss", "AssetLib", p_theme->get_icon(SNAME("Close"), EditorStringName(EditorIcons)));
 
@@ -2261,7 +2261,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		// FIXME: Introduce Theme::get_font_height() / Control::get_theme_font_height() / Window::get_theme_font_height().
 		const int offset_i1 = p_theme->get_font(SNAME("tab_selected"), SNAME("TabContainer"))->get_height(p_theme->get_font_size(SNAME("tab_selected"), SNAME("TabContainer")));
 		const int offset_i2 = p_theme->get_stylebox(SNAME("tab_selected"), SNAME("TabContainer"))->get_minimum_size().height;
-		const int offset_i3 = p_theme->get_stylebox(SNAME("panel"), SNAME("TabContainer"))->get_content_margin(SIDE_TOP);
+		const int offset_i3 = p_theme->get_stylebox(SceneStringName(panel), SNAME("TabContainer"))->get_content_margin(SIDE_TOP);
 		const int invisible_top_offset = offset_i1 + offset_i2 + offset_i3;
 
 		Ref<StyleBoxFlat> invisible_top_panel_style = p_config.content_panel_style->duplicate();
@@ -2308,7 +2308,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 		// StateMachine graph.
 		{
-			p_theme->set_stylebox("panel", "GraphStateMachine", p_config.tree_panel_style);
+			p_theme->set_stylebox(SceneStringName(panel), "GraphStateMachine", p_config.tree_panel_style);
 			p_theme->set_stylebox("error_panel", "GraphStateMachine", p_config.tree_panel_style);
 			p_theme->set_color("error_color", "GraphStateMachine", p_config.error_color);
 
@@ -2554,7 +2554,7 @@ void EditorThemeManager::_populate_visual_shader_styles(const Ref<EditorTheme> &
 		ed_settings->set_initial_value("editors/visual_editors/connection_colors/sampler_color", Color(1.0, 1.0, 0.0), true);
 
 		// Node category colors (used for the node headers)
-		Ref<StyleBoxFlat> gn_panel_style = p_theme->get_stylebox("panel", "GraphNode");
+		Ref<StyleBoxFlat> gn_panel_style = p_theme->get_stylebox(SceneStringName(panel), "GraphNode");
 		Color gn_bg_color = gn_panel_style->get_bg_color();
 		ed_settings->set_initial_value("editors/visual_editors/category_colors/output_color", gn_bg_color, true);
 		ed_settings->set_initial_value("editors/visual_editors/category_colors/color_color", gn_bg_color, true);
