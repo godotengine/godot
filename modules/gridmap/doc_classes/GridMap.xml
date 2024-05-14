@@ -135,7 +135,7 @@
 			<return type="Vector3" />
 			<param index="0" name="map_position" type="Vector3i" />
 			<description>
-				Returns the position of a grid cell in the GridMap's local coordinate space. To convert the returned value into global coordinates, use [method Node3D.to_global]. See also [method map_to_local].
+				Returns the position of a grid cell in the GridMap's local coordinate space. To convert the returned value into global coordinates, use [method Node3D.to_global]. See also [method local_to_map].
 			</description>
 		</method>
 		<method name="resource_changed" deprecated="Use [signal Resource.changed] instead.">
