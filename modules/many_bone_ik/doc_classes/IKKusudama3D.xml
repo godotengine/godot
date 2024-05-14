@@ -9,15 +9,15 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_limit_cones" qualifiers="const">
-			<return type="IKLimitCone3D[]" />
+		<method name="get_open_cones" qualifiers="const">
+			<return type="IKOpenCone3D[]" />
 			<description>
 				This method returns an array of limit cones associated with the Kusudama.
 			</description>
 		</method>
-		<method name="set_limit_cones">
+		<method name="set_open_cones">
 			<return type="void" />
-			<param index="0" name="limit_cones" type="IKLimitCone3D[]" />
+			<param index="0" name="open_cones" type="IKOpenCone3D[]" />
 			<description>
 				This method sets the limit cones associated with the Kusudama.
 			</description>

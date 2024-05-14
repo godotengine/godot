@@ -247,9 +247,9 @@ struct SmallMemoryManager
 		else SAMLL_MEMORY_MEMBER_BREAH_INDEX(p_count, 5000,16)
 		else SAMLL_MEMORY_MEMBER_BREAH_INDEX(p_count, 7000,17)
 		else SAMLL_MEMORY_MEMBER_BREAH_INDEX(p_count, 8000,18)
-		else SAMLL_MEMORY_MEMBER_BREAH_INDEX(p_count, 12000,18)
-		else SAMLL_MEMORY_MEMBER_BREAH_INDEX(p_count, 15000,18)
-		else SAMLL_MEMORY_MEMBER_BREAH_INDEX(p_count, 20000,18)
+		else SAMLL_MEMORY_MEMBER_BREAH_INDEX(p_count, 12000,19)
+		else SAMLL_MEMORY_MEMBER_BREAH_INDEX(p_count, 15000,20)
+		else SAMLL_MEMORY_MEMBER_BREAH_INDEX(p_count, 20000,21)
 		
 		return -1;
 	}
@@ -358,6 +358,7 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 	ERR_FAIL_NULL(p_ptr);
 	
 	get_small_memory_manager().free_mem(p_ptr);
+ 	alloc_count.decrement();
 
 // 	uint8_t *mem = (uint8_t *)p_ptr;
 

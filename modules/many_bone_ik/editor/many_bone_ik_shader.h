@@ -40,7 +40,7 @@ uniform vec4 kusudama_color : source_color = vec4(0.58039218187332, 0.2705882489
 uniform int cone_count = 0;
 
 // 0,0,0 is the center of the kusudama. The kusudamas have their own bases that automatically get reoriented such that +y points in the direction that is the weighted average of the limitcones on the kusudama.
-// But, if you have a kusuduma with just 1 limit_cone, then in general that limit_cone should be 0,1,0 in the kusudama's basis unless the user has specifically specified otherwise.
+// But, if you have a kusuduma with just 1 open_cone, then in general that open_cone should be 0,1,0 in the kusudama's basis unless the user has specifically specified otherwise.
 
 uniform vec4 cone_sequence[30];
 

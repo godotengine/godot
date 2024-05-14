@@ -57,7 +57,7 @@ void initialize_many_bone_ik_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(IKBoneSegment3D);
 		GDREGISTER_CLASS(IKKusudama3D);
 		GDREGISTER_CLASS(IKRay3D);
-		GDREGISTER_CLASS(IKLimitCone3D);
+		GDREGISTER_CLASS(IKOpenCone3D);
 	}
 }
 

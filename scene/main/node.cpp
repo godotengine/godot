@@ -2773,50 +2773,50 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		}
 	}
 
-	for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
-		Node *current_node = node->get_node(get_path_to(N->get()));
-		ERR_CONTINUE(!current_node);
+	//for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
+	//	Node *current_node = node->get_node(get_path_to(N->get()));
+	//	ERR_CONTINUE(!current_node);
 
-		if (p_flags & DUPLICATE_SCRIPTS) {
-			bool is_valid = false;
-			Variant scr = N->get()->get(script_property_name, &is_valid);
-			if (is_valid) {
-				current_node->set(script_property_name, scr);
-			}
-			N->get()->get(CoreStringNames::get_singleton()->_master_script, &is_valid);
-			if (is_valid) {
-				current_node->set(CoreStringNames::get_singleton()->_master_script, scr);
-			}
-		}
+	//	if (p_flags & DUPLICATE_SCRIPTS) {
+	//		bool is_valid = false;
+	//		Variant scr = N->get()->get(script_property_name, &is_valid);
+	//		if (is_valid) {
+	//			current_node->set(script_property_name, scr);
+	//		}
+	//		N->get()->get(CoreStringNames::get_singleton()->_master_script, &is_valid);
+	//		if (is_valid) {
+	//			current_node->set(CoreStringNames::get_singleton()->_master_script, scr);
+	//		}
+	//	}
 
-		List<PropertyInfo> plist;
-		N->get()->get_property_list(&plist);
+	//	List<PropertyInfo> plist;
+	//	N->get()->get_property_list(&plist);
 
-		for (const PropertyInfo &E : plist) {
-			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
-				continue;
-			}
-			String name = E.name;
-			if (name == script_property_name) {
-				continue;
-			}
-			if (name == CoreStringNames::get_singleton()->_master_script) {
-				continue;
-			}
+	//	for (const PropertyInfo &E : plist) {
+	//		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+	//			continue;
+	//		}
+	//		String name = E.name;
+	//		if (name == script_property_name) {
+	//			continue;
+	//		}
+	//		if (name == CoreStringNames::get_singleton()->_master_script) {
+	//			continue;
+	//		}
 
-			Variant value = N->get()->get(name).duplicate(true);
+	//		Variant value = N->get()->get(name).duplicate(true);
 
-			if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
-				Resource *res = Object::cast_to<Resource>(value);
-				if (res) { // Duplicate only if it's a resource
-					current_node->set(name, res->duplicate());
-				}
+	//		if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
+	//			Resource *res = Object::cast_to<Resource>(value);
+	//			if (res) { // Duplicate only if it's a resource
+	//				current_node->set(name, res->duplicate());
+	//			}
 
-			} else {
-				current_node->set(name, value);
-			}
-		}
-	}
+	//		} else {
+	//			current_node->set(name, value);
+	//		}
+	//	}
+	//}
 
 	return node;
 }
@@ -2920,6 +2920,11 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 		if (is_valid) {
 			p_copy->set(script_property_name, scr);
 		}
+
+		scr = p_original->get(CoreStringNames::get_singleton()->_master_script, &is_valid);
+		if (is_valid) {
+			p_copy->set(CoreStringNames::get_singleton()->_master_script, scr);
+		}
 	}
 	for (const PropertyInfo &E : props) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
@@ -2928,6 +2933,9 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 		const StringName name = E.name;
 
 		if (name == script_property_name) {
+			continue;
+		}
+		if (name == CoreStringNames::get_singleton()->_master_script) {
 			continue;
 		}
 

@@ -106,7 +106,7 @@ void IKBone3D::update_default_constraint_transform() {
 		return;
 	}
 
-	TypedArray<IKLimitCone3D> cones = constraint->get_limit_cones();
+	TypedArray<IKOpenCone3D> cones = constraint->get_open_cones();
 	Vector3 direction;
 	if (cones.size() == 0) {
 		direction = bone_direction_transform->get_global_transform().basis.get_column(Vector3::AXIS_Y);
@@ -336,10 +336,10 @@ Transform3D IKBone3D::get_set_constraint_twist_transform() const {
 	return constraint_orientation_transform->get_global_transform();
 }
 
-float IKBone3D::calculate_total_radius_sum(const TypedArray<IKLimitCone3D> &p_cones) const {
+float IKBone3D::calculate_total_radius_sum(const TypedArray<IKOpenCone3D> &p_cones) const {
 	float total_radius_sum = 0.0f;
 	for (int32_t i = 0; i < p_cones.size(); ++i) {
-		const Ref<IKLimitCone3D> &cone = p_cones[i];
+		const Ref<IKOpenCone3D> &cone = p_cones[i];
 		if (cone.is_null()) {
 			break;
 		}
@@ -348,10 +348,10 @@ float IKBone3D::calculate_total_radius_sum(const TypedArray<IKLimitCone3D> &p_co
 	return total_radius_sum;
 }
 
-Vector3 IKBone3D::calculate_weighted_direction(const TypedArray<IKLimitCone3D> &p_cones, float p_total_radius_sum) const {
+Vector3 IKBone3D::calculate_weighted_direction(const TypedArray<IKOpenCone3D> &p_cones, float p_total_radius_sum) const {
 	Vector3 direction = Vector3();
 	for (int32_t i = 0; i < p_cones.size(); ++i) {
-		const Ref<IKLimitCone3D> &cone = p_cones[i];
+		const Ref<IKOpenCone3D> &cone = p_cones[i];
 		if (cone.is_null()) {
 			break;
 		}

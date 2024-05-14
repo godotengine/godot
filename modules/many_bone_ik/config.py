@@ -16,7 +16,7 @@ def get_doc_classes():
         "IKKusudama3D",
         "IKRay3D",
         "IKNode3D",
-        "IKLimitCone3D",
+        "IKOpenCone3D",
     ]
 
 

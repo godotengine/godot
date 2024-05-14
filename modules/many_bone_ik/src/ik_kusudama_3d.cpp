@@ -31,23 +31,23 @@
 #include "ik_kusudama_3d.h"
 
 #include "core/math/quaternion.h"
-#include "ik_limit_cone_3d.h"
+#include "ik_open_cone_3d.h"
 #include "math/ik_node_3d.h"
 
 void IKKusudama3D::_update_constraint(Ref<IKNode3D> p_limiting_axes) {
 	// Avoiding antipodal singularities by reorienting the axes.
 	Vector<Vector3> directions;
 
-	if (limit_cones.size() == 1 && limit_cones[0] != nullptr) {
-		directions.push_back(limit_cones[0]->get_control_point());
+	if (open_cones.size() == 1 && open_cones[0] != nullptr) {
+		directions.push_back(open_cones[0]->get_control_point());
 	} else {
-		for (int i = 0; i < limit_cones.size() - 1; i++) {
-			if (limit_cones[i] == nullptr || limit_cones[i + 1] == nullptr) {
+		for (int i = 0; i < open_cones.size() - 1; i++) {
+			if (open_cones[i] == nullptr || open_cones[i + 1] == nullptr) {
 				continue;
 			}
 
-			Vector3 this_control_point = limit_cones[i]->get_control_point();
-			Vector3 next_control_point = limit_cones[i + 1]->get_control_point();
+			Vector3 this_control_point = open_cones[i]->get_control_point();
+			Vector3 next_control_point = open_cones[i + 1]->get_control_point();
 
 			Quaternion this_to_next = Quaternion(this_control_point, next_control_point);
 
@@ -76,26 +76,26 @@ void IKKusudama3D::_update_constraint(Ref<IKNode3D> p_limiting_axes) {
 	Quaternion old_y_to_new_y = Quaternion(p_limiting_axes->get_global_transform().get_basis().get_column(Vector3::AXIS_Y).normalized(), p_limiting_axes->get_global_transform().get_basis().xform(new_y_ray.origin).normalized());
 	p_limiting_axes->rotate_local_with_global(old_y_to_new_y);
 
-	for (Ref<IKLimitCone3D> limit_cone : limit_cones) {
-		if (limit_cone == nullptr) {
+	for (Ref<IKOpenCone3D> open_cone : open_cones) {
+		if (open_cone == nullptr) {
 			continue;
 		}
 
-		Vector3 control_point = limit_cone->get_control_point();
-		limit_cone->set_control_point(control_point.normalized());
+		Vector3 control_point = open_cone->get_control_point();
+		open_cone->set_control_point(control_point.normalized());
 	}
 
 	update_tangent_radii();
 }
 
 void IKKusudama3D::update_tangent_radii() {
-	for (int i = 0; i < limit_cones.size(); i++) {
-		Ref<IKLimitCone3D> current = limit_cones.write[i];
-		Ref<IKLimitCone3D> next;
-		if (i < limit_cones.size() - 1) {
-			next = limit_cones.write[i + 1];
+	for (int i = 0; i < open_cones.size(); i++) {
+		Ref<IKOpenCone3D> current = open_cones.write[i];
+		Ref<IKOpenCone3D> next;
+		if (i < open_cones.size() - 1) {
+			next = open_cones.write[i + 1];
 		}
-		Ref<IKLimitCone3D> cone = limit_cones[i];
+		Ref<IKOpenCone3D> cone = open_cones[i];
 		cone->update_tangent_handles(next);
 	}
 }
@@ -157,19 +157,19 @@ void IKKusudama3D::get_swing_twist(
 	r_swing = (rotation * r_twist.inverse()).normalized();
 }
 
-void IKKusudama3D::add_limit_cone(
-		Ref<IKLimitCone3D> p_cone) {
+void IKKusudama3D::add_open_cone(
+		Ref<IKOpenCone3D> p_cone) {
 	ERR_FAIL_COND(p_cone.is_null());
 	ERR_FAIL_COND(p_cone->get_attached_to().is_null());
 	ERR_FAIL_COND(Math::is_zero_approx(p_cone->get_tangent_circle_center_next_1().length_squared()));
 	ERR_FAIL_COND(Math::is_zero_approx(p_cone->get_tangent_circle_center_next_2().length_squared()));
 	ERR_FAIL_COND(Math::is_zero_approx(p_cone->get_control_point().length_squared()));
-	limit_cones.push_back(p_cone);
+	open_cones.push_back(p_cone);
 }
 
-void IKKusudama3D::remove_limit_cone(Ref<IKLimitCone3D> limitCone) {
+void IKKusudama3D::remove_open_cone(Ref<IKOpenCone3D> limitCone) {
 	ERR_FAIL_COND(limitCone.is_null());
-	limit_cones.erase(limitCone);
+	open_cones.erase(limitCone);
 }
 
 real_t IKKusudama3D::get_min_axial_angle() {
@@ -226,9 +226,9 @@ void IKKusudama3D::enable() {
 	orientationally_constrained = true;
 }
 
-TypedArray<IKLimitCone3D> IKKusudama3D::get_limit_cones() const {
-	TypedArray<IKLimitCone3D> cones;
-	for (Ref<IKLimitCone3D> cone : limit_cones) {
+TypedArray<IKOpenCone3D> IKKusudama3D::get_open_cones() const {
+	TypedArray<IKOpenCone3D> cones;
+	for (Ref<IKOpenCone3D> cone : open_cones) {
 		cones.append(cone);
 	}
 	return cones;
@@ -240,13 +240,13 @@ Vector3 IKKusudama3D::local_point_on_path_sequence(Vector3 p_in_point, Ref<IKNod
 	point.normalize();
 	Vector3 result = point;
 
-	if (limit_cones.size() == 1) {
-		Ref<IKLimitCone3D> cone = limit_cones[0];
+	if (open_cones.size() == 1) {
+		Ref<IKOpenCone3D> cone = open_cones[0];
 		result = cone->get_control_point();
 	} else {
-		for (int i = 0; i < limit_cones.size() - 1; i++) {
-			Ref<IKLimitCone3D> next_cone = limit_cones[i + 1];
-			Ref<IKLimitCone3D> cone = limit_cones[i];
+		for (int i = 0; i < open_cones.size() - 1; i++) {
+			Ref<IKOpenCone3D> next_cone = open_cones[i + 1];
+			Ref<IKOpenCone3D> cone = open_cones[i];
 			Vector3 closestPathPoint = cone->get_closest_path_point(next_cone, point);
 			double closeDot = closestPathPoint.dot(point);
 			if (closeDot > closest_point_dot) {
@@ -281,8 +281,8 @@ Vector3 IKKusudama3D::get_local_point_in_limits(Vector3 in_point, Vector<double>
 	Vector3 closest_collision_point = in_point;
 
 	// Loop through each limit cone
-	for (int i = 0; i < limit_cones.size(); i++) {
-		Ref<IKLimitCone3D> cone = limit_cones[i];
+	for (int i = 0; i < open_cones.size(); i++) {
+		Ref<IKOpenCone3D> cone = open_cones[i];
 		Vector3 collision_point = cone->closest_to_cone(point, in_bounds);
 
 		// If the collision point is NaN, return the original point
@@ -303,9 +303,9 @@ Vector3 IKKusudama3D::get_local_point_in_limits(Vector3 in_point, Vector<double>
 
 	// If we're out of bounds of all cones, check if we're in the paths between the cones
 	if ((*in_bounds)[0] == -1) {
-		for (int i = 0; i < limit_cones.size() - 1; i++) {
-			Ref<IKLimitCone3D> currCone = limit_cones[i];
-			Ref<IKLimitCone3D> nextCone = limit_cones[i + 1];
+		for (int i = 0; i < open_cones.size() - 1; i++) {
+			Ref<IKOpenCone3D> currCone = open_cones[i];
+			Ref<IKOpenCone3D> nextCone = open_cones[i + 1];
 			Vector3 collision_point = currCone->get_on_great_tangent_triangle(nextCone, point);
 
 			// If the collision point is NaN, skip to the next iteration
@@ -334,15 +334,15 @@ Vector3 IKKusudama3D::get_local_point_in_limits(Vector3 in_point, Vector<double>
 }
 
 void IKKusudama3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_limit_cones"), &IKKusudama3D::get_limit_cones);
-	ClassDB::bind_method(D_METHOD("set_limit_cones", "limit_cones"), &IKKusudama3D::set_limit_cones);
+	ClassDB::bind_method(D_METHOD("get_open_cones"), &IKKusudama3D::get_open_cones);
+	ClassDB::bind_method(D_METHOD("set_open_cones", "open_cones"), &IKKusudama3D::set_open_cones);
 }
 
-void IKKusudama3D::set_limit_cones(TypedArray<IKLimitCone3D> p_cones) {
-	limit_cones.clear();
-	limit_cones.resize(p_cones.size());
+void IKKusudama3D::set_open_cones(TypedArray<IKOpenCone3D> p_cones) {
+	open_cones.clear();
+	open_cones.resize(p_cones.size());
 	for (int32_t i = 0; i < p_cones.size(); i++) {
-		limit_cones.write[i] = p_cones[i];
+		open_cones.write[i] = p_cones[i];
 	}
 }
 
@@ -412,8 +412,8 @@ Quaternion IKKusudama3D::clamp_to_quadrance_angle(Quaternion p_rotation, double 
 	return rotation.slerp(clamped_rotation, over_limit);
 }
 
-void IKKusudama3D::clear_limit_cones() {
-	limit_cones.clear();
+void IKKusudama3D::clear_open_cones() {
+	open_cones.clear();
 }
 
 Quaternion IKKusudama3D::get_quaternion_axis_angle(const Vector3 &p_axis, real_t p_angle) {

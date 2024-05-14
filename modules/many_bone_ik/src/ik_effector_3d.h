@@ -74,7 +74,7 @@ public:
 	void set_direction_priorities(Vector3 p_direction_priorities);
 	Vector3 get_direction_priorities() const;
 	void update_target_global_transform(Skeleton3D *p_skeleton, ManyBoneIK3D *p_modification = nullptr);
-	const float MAX_KUSUDAMA_LIMIT_CONES = 30;
+	const float MAX_KUSUDAMA_OPEN_CONES = 30;
 	float get_passthrough_factor() const;
 	void set_passthrough_factor(float p_passthrough_factor);
 	void set_target_node(Skeleton3D *p_skeleton, const NodePath &p_target_node_path);
