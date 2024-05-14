@@ -243,8 +243,8 @@ namespace Godot.SourceGenerators
         public static string SanitizeQualifiedNameForUniqueHint(this string qualifiedName)
             => qualifiedName
                 // AddSource() doesn't support angle brackets
-                .Replace("<", "(Of ")
-                .Replace(">", ")");
+                .Replace("<", "_")
+                .Replace(">", "");
 
         public static bool IsGodotExportAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ExportAttr;
@@ -358,5 +358,61 @@ namespace Godot.SourceGenerators
         public static int StartLine(this Location location)
             => location.SourceTree?.GetLineSpan(location.SourceSpan).StartLinePosition.Line
                ?? location.GetLineSpan().StartLinePosition.Line;
+
+        public static bool HasMustBeVariantAttribute(this ITypeParameterSymbol typeParameter)
+        {
+            return typeParameter.GetAttributes().Any(a => a.AttributeClass?.IsGodotMustBeVariantAttribute() ?? false);
+        }
+
+        public static bool IsVariantConstrained(this ITypeParameterSymbol symbol)
+        {
+            return symbol.HasMustBeVariantAttribute() ||
+                symbol.ConstraintTypes.OfType<INamedTypeSymbol>().Any(t => t.InheritsFrom("GodotSharp", GodotClasses.GodotObject) || t.InheritsFrom("System.Runtime", "System.Enum"));
+        }
+
+        public static bool HasTypeParameterTypeArguments(this INamedTypeSymbol typeSymbol)
+        {
+            foreach (var typeArgument in typeSymbol.TypeArguments)
+                if (typeArgument is ITypeParameterSymbol ||
+                    typeArgument is INamedTypeSymbol namedType && namedType.HasTypeParameterTypeArguments())
+                    return true;
+            return false;
+        }
+
+        public static void AppendPropertyInfo(this StringBuilder source, PropertyInfo propertyInfo, string nameFormat)
+        {
+            if (propertyInfo.VariantType.HasValue)
+            {
+                source.Append("new(type: (global::Godot.Variant.Type)")
+                    .Append((int)propertyInfo.VariantType)
+                    .Append(", ");
+            }
+            else
+            {
+                source.Append("global::Godot.Bridge.GenericUtils.PropertyInfoFromGenericType<")
+                    .Append(propertyInfo.PropertyType!.FullQualifiedNameIncludeGlobal())
+                    .Append(">(");
+            }
+
+            source.Append("name: ")
+                .Append(string.Format(nameFormat, propertyInfo.Name))
+                .Append(", hint: (global::Godot.PropertyHint)")
+                .Append((int)propertyInfo.Hint)
+                .Append(", hintString: \"")
+                .Append(propertyInfo.HintString)
+                .Append("\", usage: (global::Godot.PropertyUsageFlags)")
+                .Append((int)propertyInfo.Usage)
+                .Append(", exported: ")
+                .Append(propertyInfo.Exported ? "true" : "false");
+
+            if (propertyInfo.ClassName != null)
+            {
+                source.Append(", className: new global::Godot.StringName(\"")
+                    .Append(propertyInfo.ClassName)
+                    .Append("\")");
+            }
+
+            source.Append(")");
+        }
     }
 }

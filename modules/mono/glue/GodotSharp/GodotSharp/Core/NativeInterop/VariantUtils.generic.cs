@@ -413,4 +413,69 @@ public partial class VariantUtils
 
         return GenericConversion<T>.FromVariant(variant);
     }
+
+    public static Variant.Type TypeOf<[MustBeVariant] T>()
+    {
+        if (typeof(T) == typeof(bool)) return Variant.Type.Bool;
+        if (typeof(T) == typeof(char)) return Variant.Type.Int;
+        if (typeof(T) == typeof(sbyte)) return Variant.Type.Int;
+        if (typeof(T) == typeof(short)) return Variant.Type.Int;
+        if (typeof(T) == typeof(int)) return Variant.Type.Int;
+        if (typeof(T) == typeof(long)) return Variant.Type.Int;
+        if (typeof(T) == typeof(byte)) return Variant.Type.Int;
+        if (typeof(T) == typeof(ushort)) return Variant.Type.Int;
+        if (typeof(T) == typeof(uint)) return Variant.Type.Int;
+        if (typeof(T) == typeof(ulong)) return Variant.Type.Int;
+        if (typeof(T) == typeof(float)) return Variant.Type.Float;
+        if (typeof(T) == typeof(double)) return Variant.Type.Float;
+        if (typeof(T) == typeof(Vector2)) return Variant.Type.Vector2;
+        if (typeof(T) == typeof(Vector2I)) return Variant.Type.Vector2I;
+        if (typeof(T) == typeof(Rect2)) return Variant.Type.Rect2;
+        if (typeof(T) == typeof(Rect2I)) return Variant.Type.Rect2I;
+        if (typeof(T) == typeof(Transform2D)) return Variant.Type.Transform2D;
+        if (typeof(T) == typeof(Projection)) return Variant.Type.Projection;
+        if (typeof(T) == typeof(Vector3)) return Variant.Type.Vector3;
+        if (typeof(T) == typeof(Vector3I)) return Variant.Type.Vector3I;
+        if (typeof(T) == typeof(Basis)) return Variant.Type.Basis;
+        if (typeof(T) == typeof(Quaternion)) return Variant.Type.Quaternion;
+        if (typeof(T) == typeof(Transform3D)) return Variant.Type.Transform3D;
+        if (typeof(T) == typeof(Vector4)) return Variant.Type.Vector4;
+        if (typeof(T) == typeof(Vector4I)) return Variant.Type.Vector4I;
+        if (typeof(T) == typeof(Aabb)) return Variant.Type.Aabb;
+        if (typeof(T) == typeof(Color)) return Variant.Type.Color;
+        if (typeof(T) == typeof(Plane)) return Variant.Type.Plane;
+        if (typeof(T) == typeof(Callable)) return Variant.Type.Callable;
+        if (typeof(T) == typeof(Signal)) return Variant.Type.Signal;
+        if (typeof(T) == typeof(string)) return Variant.Type.String;
+        if (typeof(T) == typeof(byte[])) return Variant.Type.PackedByteArray;
+        if (typeof(T) == typeof(int[])) return Variant.Type.PackedInt32Array;
+        if (typeof(T) == typeof(long[])) return Variant.Type.PackedInt64Array;
+        if (typeof(T) == typeof(float[])) return Variant.Type.PackedFloat32Array;
+        if (typeof(T) == typeof(double[])) return Variant.Type.PackedFloat64Array;
+        if (typeof(T) == typeof(string[])) return Variant.Type.PackedStringArray;
+        if (typeof(T) == typeof(Vector2[])) return Variant.Type.PackedVector2Array;
+        if (typeof(T) == typeof(Vector3[])) return Variant.Type.PackedVector3Array;
+        if (typeof(T) == typeof(Color[])) return Variant.Type.PackedColorArray;
+        if (typeof(T) == typeof(StringName[])) return Variant.Type.Array;
+        if (typeof(T) == typeof(NodePath[])) return Variant.Type.Array;
+        if (typeof(T) == typeof(Rid[])) return Variant.Type.Array;
+        if (typeof(T) == typeof(StringName)) return Variant.Type.StringName;
+        if (typeof(T) == typeof(NodePath)) return Variant.Type.NodePath;
+        if (typeof(T) == typeof(Rid)) return Variant.Type.Rid;
+        if (typeof(T) == typeof(Godot.Collections.Dictionary)) return Variant.Type.Dictionary;
+        if (typeof(T) == typeof(Godot.Collections.Array)) return Variant.Type.Array;
+        if (typeof(T) == typeof(Variant)) return Variant.Type.Nil;
+        if (typeof(GodotObject).IsAssignableFrom(typeof(T))) return Variant.Type.Object;
+        if (typeof(T).IsValueType && typeof(System.Enum).IsAssignableFrom(typeof(T))) return Variant.Type.Int;
+
+        if (typeof(T).IsGenericType)
+        {
+            // I think this is OK to do w/ AOT?
+            Type genericTypeDef = typeof(T).GetGenericTypeDefinition();
+            if (typeof(Collections.Array<>) == genericTypeDef) return Variant.Type.Array;
+            if (typeof(Collections.Dictionary<,>) == genericTypeDef) return Variant.Type.Dictionary;
+        }
+
+        return Variant.Type.Nil;
+    }
 }
