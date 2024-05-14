@@ -4877,25 +4877,78 @@ void RenderingDevice::_end_frame() {
 		ERR_PRINT("Found open compute list at the end of the frame, this should never happen (further compute will likely not work).");
 	}
 
-	draw_graph.end(frames[frame].draw_command_buffer, RENDER_GRAPH_REORDER, RENDER_GRAPH_FULL_BARRIERS);
 	driver->command_buffer_end(frames[frame].setup_command_buffer);
-	driver->command_buffer_end(frames[frame].draw_command_buffer);
+
+	// The command buffer must be copied into a stack variable as the driver workarounds can change the command buffer in use.
+	RDD::CommandBufferID command_buffer = frames[frame].draw_command_buffer;
+	draw_graph.end(RENDER_GRAPH_REORDER, RENDER_GRAPH_FULL_BARRIERS, command_buffer, frames[frame].command_buffer_pool);
+	driver->command_buffer_end(command_buffer);
 	driver->end_segment();
 }
 
 void RenderingDevice::_execute_frame(bool p_present) {
+	// Check whether this frame should present the swap chains and in which queue.
 	const bool frame_can_present = p_present && !frames[frame].swap_chains_to_present.is_empty();
 	const bool separate_present_queue = main_queue != present_queue;
-	const VectorView<RDD::SemaphoreID> execute_draw_semaphore = frame_can_present && separate_present_queue ? frames[frame].draw_semaphore : VectorView<RDD::SemaphoreID>();
-	const VectorView<RDD::SwapChainID> execute_draw_swap_chains = frame_can_present && !separate_present_queue ? frames[frame].swap_chains_to_present : VectorView<RDD::SwapChainID>();
+	thread_local LocalVector<RDD::SwapChainID> swap_chains;
+	swap_chains.clear();
+
+	// Execute the setup command buffer.
 	driver->command_queue_execute_and_present(main_queue, {}, frames[frame].setup_command_buffer, frames[frame].setup_semaphore, {}, {});
-	driver->command_queue_execute_and_present(main_queue, frames[frame].setup_semaphore, frames[frame].draw_command_buffer, execute_draw_semaphore, frames[frame].draw_fence, execute_draw_swap_chains);
+
+	// Execute command buffers and use semaphores to wait on the execution of the previous one. Normally there's only one command buffer,
+	// but driver workarounds can force situations where there'll be more.
+	uint32_t command_buffer_count = 1;
+	RDG::CommandBufferPool &buffer_pool = frames[frame].command_buffer_pool;
+	if (buffer_pool.buffers_used > 0) {
+		command_buffer_count += buffer_pool.buffers_used;
+		buffer_pool.buffers_used = 0;
+	}
+
+	RDD::SemaphoreID wait_semaphore = frames[frame].setup_semaphore;
+	for (uint32_t i = 0; i < command_buffer_count; i++) {
+		RDD::CommandBufferID command_buffer;
+		RDD::SemaphoreID signal_semaphore;
+		RDD::FenceID signal_fence;
+		if (i > 0) {
+			command_buffer = buffer_pool.buffers[i - 1];
+			signal_semaphore = buffer_pool.semaphores[i - 1];
+		} else {
+			command_buffer = frames[frame].draw_command_buffer;
+			signal_semaphore = frames[frame].draw_semaphore;
+		}
+
+		bool signal_semaphore_valid;
+		if (i == (command_buffer_count - 1)) {
+			// This is the last command buffer, it should signal the fence.
+			signal_fence = frames[frame].draw_fence;
+			signal_semaphore_valid = false;
+
+			if (frame_can_present && separate_present_queue) {
+				// The semaphore is required if the frame can be presented and a separate present queue is used.
+				signal_semaphore_valid = true;
+			} else if (frame_can_present) {
+				// Just present the swap chains as part of the last command execution.
+				swap_chains = frames[frame].swap_chains_to_present;
+			}
+		} else {
+			// Semaphores always need to be signaled if it's not the last command buffer.
+			signal_semaphore_valid = true;
+		}
+
+		driver->command_queue_execute_and_present(main_queue, wait_semaphore, command_buffer, signal_semaphore_valid ? signal_semaphore : VectorView<RDD::SemaphoreID>(), signal_fence, swap_chains);
+
+		// Make the next command buffer wait on the semaphore signaled by this one.
+		wait_semaphore = signal_semaphore;
+	}
+
+	// Indicate the fence has been signaled so the next time the frame's contents need to be used, the CPU needs to wait on the work to be completed.
 	frames[frame].draw_fence_signaled = true;
 
 	if (frame_can_present) {
 		if (separate_present_queue) {
 			// Issue the presentation separately if the presentation queue is different from the main queue.
-			driver->command_queue_execute_and_present(present_queue, frames[frame].draw_semaphore, {}, {}, {}, frames[frame].swap_chains_to_present);
+			driver->command_queue_execute_and_present(present_queue, wait_semaphore, {}, {}, {}, frames[frame].swap_chains_to_present);
 		}
 
 		frames[frame].swap_chains_to_present.clear();
@@ -5044,6 +5097,9 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 		frames[i].timestamp_cpu_result_values.resize(max_timestamp_query_elements);
 		frames[i].timestamp_result_values.resize(max_timestamp_query_elements);
 		frames[i].timestamp_result_count = 0;
+
+		// Assign the main queue family and command pool to the command buffer pool.
+		frames[i].command_buffer_pool.pool = frames[i].command_pool;
 	}
 
 	// Start from frame count, so everything else is immediately old.
@@ -5055,7 +5111,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	driver->command_buffer_begin(frames[0].draw_command_buffer);
 
 	// Create draw graph and start it initialized as well.
-	draw_graph.initialize(driver, frames.size(), main_queue_family, SECONDARY_COMMAND_BUFFERS_PER_FRAME);
+	draw_graph.initialize(driver, device, frames.size(), main_queue_family, SECONDARY_COMMAND_BUFFERS_PER_FRAME);
 	draw_graph.begin();
 
 	for (uint32_t i = 0; i < frames.size(); i++) {
@@ -5388,6 +5444,11 @@ void RenderingDevice::finalize() {
 		driver->semaphore_free(frames[i].setup_semaphore);
 		driver->semaphore_free(frames[i].draw_semaphore);
 		driver->fence_free(frames[i].draw_fence);
+
+		RDG::CommandBufferPool &buffer_pool = frames[i].command_buffer_pool;
+		for (uint32_t j = 0; j < buffer_pool.buffers.size(); j++) {
+			driver->semaphore_free(buffer_pool.semaphores[j]);
+		}
 	}
 
 	if (pipeline_cache_enabled) {

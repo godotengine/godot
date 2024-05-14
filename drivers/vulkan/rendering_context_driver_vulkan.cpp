@@ -502,6 +502,9 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 		driver_device.name = String::utf8(props.deviceName);
 		driver_device.vendor = Vendor(props.vendorID);
 		driver_device.type = DeviceType(props.deviceType);
+		driver_device.workarounds = Workarounds();
+
+		_check_driver_workarounds(props, driver_device);
 
 		uint32_t queue_family_properties_count = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &queue_family_properties_count, nullptr);
@@ -513,6 +516,31 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 	}
 
 	return OK;
+}
+
+void RenderingContextDriverVulkan::_check_driver_workarounds(const VkPhysicalDeviceProperties &p_device_properties, Device &r_device) {
+	// Workaround for the Adreno 6XX family of devices.
+	//
+	// There's a known issue with the Vulkan driver in this family of devices where it'll crash if a dynamic state for drawing is
+	// used in a command buffer before a dispatch call is issued. As both dynamic scissor and viewport are basic requirements for
+	// the engine to not bake this state into the PSO, the only known way to fix this issue is to reset the command buffer entirely.
+	//
+	// As the render graph has no built in limitations of whether it'll issue compute work before anything needs to draw on the
+	// frame, and there's no guarantee that compute work will never be dependent on rasterization in the future, this workaround
+	// will end recording on the current command buffer any time a compute list is encountered after a draw list was executed.
+	// A new command buffer will be created afterwards and the appropriate synchronization primitives will be inserted.
+	//
+	// Executing this workaround has the added cost of synchronization between all the command buffers that are created as well as
+	// all the individual submissions. This performance hit is accepted for the sake of being able to support these devices without
+	// limiting the design of the renderer.
+	//
+	// This bug was fixed in driver version 512.503.0, so we only enabled it on devices older than this.
+	//
+	r_device.workarounds.avoid_compute_after_draw =
+			r_device.vendor == VENDOR_QUALCOMM &&
+			p_device_properties.deviceID >= 0x6000000 && // Adreno 6xx
+			p_device_properties.driverVersion < VK_MAKE_VERSION(512, 503, 0) &&
+			r_device.name.find("Turnip") < 0;
 }
 
 bool RenderingContextDriverVulkan::_use_validation_layers() const {
