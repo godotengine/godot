@@ -68,11 +68,11 @@ void AcceptDialog::_notification(int p_what) {
 
 				parent_visible = get_parent_visible_window();
 				if (parent_visible) {
-					parent_visible->connect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+					parent_visible->connect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
 				}
 			} else {
 				if (parent_visible) {
-					parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+					parent_visible->disconnect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
 					parent_visible = nullptr;
 				}
 			}
@@ -89,7 +89,7 @@ void AcceptDialog::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			if (parent_visible) {
-				parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+				parent_visible->disconnect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
 				parent_visible = nullptr;
 			}
 		} break;
@@ -126,7 +126,7 @@ void AcceptDialog::_ok_pressed() {
 void AcceptDialog::_cancel_pressed() {
 	Window *parent_window = parent_visible;
 	if (parent_visible) {
-		parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+		parent_visible->disconnect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
 		parent_visible = nullptr;
 	}
 
@@ -308,7 +308,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 	}
 	button->set_meta("__right_spacer", right_spacer);
 
-	button->connect("visibility_changed", callable_mp(this, &AcceptDialog::_custom_button_visibility_changed).bind(button));
+	button->connect(SceneStringName(visibility_changed), callable_mp(this, &AcceptDialog::_custom_button_visibility_changed).bind(button));
 
 	child_controls_changed();
 	if (is_visible()) {
@@ -345,7 +345,7 @@ void AcceptDialog::remove_button(Button *p_button) {
 		ERR_FAIL_COND_MSG(right_spacer->get_parent() != buttons_hbox, vformat("Cannot remove button %s as its associated spacer does not belong to this dialog.", p_button->get_name()));
 	}
 
-	p_button->disconnect("visibility_changed", callable_mp(this, &AcceptDialog::_custom_button_visibility_changed));
+	p_button->disconnect(SceneStringName(visibility_changed), callable_mp(this, &AcceptDialog::_custom_button_visibility_changed));
 	if (p_button->is_connected("pressed", callable_mp(this, &AcceptDialog::_custom_action))) {
 		p_button->disconnect("pressed", callable_mp(this, &AcceptDialog::_custom_action));
 	}

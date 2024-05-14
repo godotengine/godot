@@ -62,8 +62,8 @@ bool ResourceImporterImageFont::get_option_visibility(const String &p_path, cons
 void ResourceImporterImageFont::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "character_ranges"), Vector<String>()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "kerning_pairs"), Vector<String>()));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "columns"), 1));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rows"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "columns", PROPERTY_HINT_RANGE, "1,1024,1,or_greater"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rows", PROPERTY_HINT_RANGE, "1,1024,1,or_greater"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::RECT2I, "image_margin"), Rect2i()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::RECT2I, "character_margin"), Rect2i()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "ascent"), 0));
@@ -94,6 +94,8 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	Error err = ImageLoader::load_image(p_source_file, img);
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat("Can't load font texture: \"%s\".", p_source_file));
 
+	ERR_FAIL_COND_V_MSG(columns <= 0, ERR_FILE_CANT_READ, vformat("Columns (%d) must be positive.", columns));
+	ERR_FAIL_COND_V_MSG(rows <= 0, ERR_FILE_CANT_READ, vformat("Rows (%d) must be positive.", rows));
 	int count = columns * rows;
 	int chr_cell_width = (img->get_width() - img_margin.position.x - img_margin.size.x) / columns;
 	int chr_cell_height = (img->get_height() - img_margin.position.y - img_margin.size.y) / rows;

@@ -37,7 +37,6 @@
 #include "core/string/translation.h"
 #include "core/variant/variant_parser.h"
 #include "scene/gui/control.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
 
@@ -742,13 +741,13 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
 			focused = true;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_IN);
-			emit_signal(SNAME("focus_entered"));
+			emit_signal(SceneStringName(focus_entered));
 
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
 			focused = false;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_OUT);
-			emit_signal(SNAME("focus_exited"));
+			emit_signal(SceneStringName(focus_exited));
 		} break;
 		case DisplayServer::WINDOW_EVENT_CLOSE_REQUEST: {
 			if (exclusive_child != nullptr) {
@@ -846,7 +845,7 @@ void Window::set_visible(bool p_visible) {
 		focused = false;
 	}
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
-	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+	emit_signal(SceneStringName(visibility_changed));
 
 	RS::get_singleton()->viewport_set_active(get_viewport_rid(), visible);
 
@@ -1321,7 +1320,7 @@ void Window::_notification(int p_what) {
 			}
 			if (visible) {
 				notification(NOTIFICATION_VISIBILITY_CHANGED);
-				emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+				emit_signal(SceneStringName(visibility_changed));
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 			}
 
@@ -1337,7 +1336,7 @@ void Window::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			emit_signal(SceneStringNames::get_singleton()->theme_changed);
+			emit_signal(SceneStringName(theme_changed));
 			_invalidate_theme_cache();
 			_update_theme_item_cache();
 		} break;
@@ -1404,11 +1403,11 @@ void Window::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VP_MOUSE_ENTER: {
-			emit_signal(SceneStringNames::get_singleton()->mouse_entered);
+			emit_signal(SceneStringName(mouse_entered));
 		} break;
 
 		case NOTIFICATION_VP_MOUSE_EXIT: {
-			emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+			emit_signal(SceneStringName(mouse_exited));
 		} break;
 	}
 }
@@ -1622,7 +1621,7 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	_input_from_window(p_ev);
 
 	if (p_ev->get_device() != InputEvent::DEVICE_ID_INTERNAL && is_inside_tree()) {
-		emit_signal(SceneStringNames::get_singleton()->window_input, p_ev);
+		emit_signal(SceneStringName(window_input), p_ev);
 	}
 
 	if (is_inside_tree()) {

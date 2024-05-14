@@ -31,6 +31,7 @@
 #ifndef VARIANT_H
 #define VARIANT_H
 
+#include "core/core_string_names.h"
 #include "core/input/input_enums.h"
 #include "core/io/ip_address.h"
 #include "core/math/aabb.h"

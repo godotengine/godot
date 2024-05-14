@@ -31,7 +31,6 @@
 #include "collision_object_3d.h"
 
 #include "scene/resources/3d/shape_3d.h"
-#include "scene/scene_string_names.h"
 
 void CollisionObject3D::_notification(int p_what) {
 	switch (p_what) {
@@ -291,17 +290,17 @@ void CollisionObject3D::_apply_enabled() {
 
 void CollisionObject3D::_input_event_call(Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
 	GDVIRTUAL_CALL(_input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
-	emit_signal(SceneStringNames::get_singleton()->input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
+	emit_signal(SceneStringName(input_event), p_camera, p_input_event, p_pos, p_normal, p_shape);
 }
 
 void CollisionObject3D::_mouse_enter() {
 	GDVIRTUAL_CALL(_mouse_enter);
-	emit_signal(SceneStringNames::get_singleton()->mouse_entered);
+	emit_signal(SceneStringName(mouse_entered));
 }
 
 void CollisionObject3D::_mouse_exit() {
 	GDVIRTUAL_CALL(_mouse_exit);
-	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+	emit_signal(SceneStringName(mouse_exited));
 }
 
 void CollisionObject3D::set_body_mode(PhysicsServer3D::BodyMode p_mode) {

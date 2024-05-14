@@ -52,7 +52,6 @@
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/image_texture.h"
-#include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 
 ///////////////////////////////////
@@ -173,8 +172,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			pin->set_icon(get_editor_theme_icon(SNAME("Pin")));
 
-			tool_anim->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("Button")));
-			track_editor->get_edit_menu()->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("Button")));
+			tool_anim->add_theme_style_override("normal", get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
+			track_editor->get_edit_menu()->add_theme_style_override("normal", get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
 
 #define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_editor_theme_icon(SNAME(m_icon)))
 
@@ -984,12 +983,12 @@ void AnimationPlayerEditor::_update_animation_list_icons() {
 
 		Ref<Texture2D> icon;
 		if (anim_name == player->get_autoplay()) {
-			if (anim_name == SceneStringNames::get_singleton()->RESET) {
+			if (anim_name == SceneStringName(RESET)) {
 				icon = autoplay_reset_icon;
 			} else {
 				icon = autoplay_icon;
 			}
-		} else if (anim_name == SceneStringNames::get_singleton()->RESET) {
+		} else if (anim_name == SceneStringName(RESET)) {
 			icon = reset_icon;
 		}
 
@@ -1459,7 +1458,7 @@ void AnimationPlayerEditor::_onion_skinning_menu(int p_option) {
 			onion.enabled = !onion.enabled;
 
 			if (onion.enabled) {
-				if (get_player() && !get_player()->has_animation(SceneStringNames::get_singleton()->RESET)) {
+				if (get_player() && !get_player()->has_animation(SceneStringName(RESET))) {
 					EditorNode::get_singleton()->show_warning(TTR("Onion skinning requires a RESET animation."));
 				}
 				_start_onion_skinning(); // It will check for RESET animation anyway.
@@ -1592,7 +1591,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_1() {
 		return;
 	}
 
-	if (!onion.enabled || !is_visible() || !get_player() || !get_player()->has_animation(SceneStringNames::get_singleton()->RESET)) {
+	if (!onion.enabled || !is_visible() || !get_player() || !get_player()->has_animation(SceneStringName(RESET))) {
 		_stop_onion_skinning();
 		return;
 	}
@@ -1783,7 +1782,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_epilog() {
 }
 
 void AnimationPlayerEditor::_start_onion_skinning() {
-	if (get_player() && !get_player()->has_animation(SceneStringNames::get_singleton()->RESET)) {
+	if (get_player() && !get_player()->has_animation(SceneStringName(RESET))) {
 		onion.enabled = false;
 		onion_toggle->set_pressed_no_signal(false);
 		return;
@@ -2101,7 +2100,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	// Onion skinning.
 
-	track_editor->connect(SNAME("visibility_changed"), callable_mp(this, &AnimationPlayerEditor::_editor_visibility_changed));
+	track_editor->connect(SceneStringName(visibility_changed), callable_mp(this, &AnimationPlayerEditor::_editor_visibility_changed));
 
 	onion.capture.canvas = RS::get_singleton()->canvas_create();
 	onion.capture.canvas_item = RS::get_singleton()->canvas_item_create();

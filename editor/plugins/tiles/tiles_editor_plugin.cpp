@@ -370,8 +370,8 @@ void TileMapEditorPlugin::_edit_tile_map_layer(TileMapLayer *p_tile_map_layer, b
 
 	// Update the object IDs.
 	tile_map_layer_id = p_tile_map_layer->get_instance_id();
-	p_tile_map_layer->connect("changed", callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_changed));
-	p_tile_map_layer->connect("tree_exited", callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_removed));
+	p_tile_map_layer->connect(CoreStringName(changed), callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_changed));
+	p_tile_map_layer->connect(SceneStringName(tree_exited), callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_removed));
 
 	// Update the edited tileset.
 	Ref<TileSet> tile_set = p_tile_map_layer->get_tile_set();
@@ -406,8 +406,8 @@ void TileMapEditorPlugin::_notification(int p_notification) {
 void TileMapEditorPlugin::edit(Object *p_object) {
 	TileMapLayer *edited_layer = Object::cast_to<TileMapLayer>(ObjectDB::get_instance(tile_map_layer_id));
 	if (edited_layer) {
-		edited_layer->disconnect("changed", callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_changed));
-		edited_layer->disconnect("tree_exited", callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_removed));
+		edited_layer->disconnect(CoreStringName(changed), callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_changed));
+		edited_layer->disconnect(SceneStringName(tree_exited), callable_mp(this, &TileMapEditorPlugin::_tile_map_layer_removed));
 	}
 
 	tile_map_group_id = ObjectID();

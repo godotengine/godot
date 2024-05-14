@@ -603,7 +603,7 @@ TextEditor::TextEditor() {
 	update_settings();
 
 	code_editor->get_text_editor()->set_context_menu_enabled(false);
-	code_editor->get_text_editor()->connect("gui_input", callable_mp(this, &TextEditor::_text_edit_gui_input));
+	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &TextEditor::_text_edit_gui_input));
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);

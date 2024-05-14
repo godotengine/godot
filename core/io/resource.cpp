@@ -30,7 +30,6 @@
 
 #include "resource.h"
 
-#include "core/core_string_names.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
@@ -43,9 +42,9 @@
 void Resource::emit_changed() {
 	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
 		// Let the connection happen on the main thread, later, since signals are not thread-safe.
-		call_deferred("emit_signal", CoreStringNames::get_singleton()->changed);
+		call_deferred("emit_signal", CoreStringName(changed));
 	} else {
-		emit_signal(CoreStringNames::get_singleton()->changed);
+		emit_signal(CoreStringName(changed));
 	}
 }
 
@@ -172,8 +171,8 @@ void Resource::connect_changed(const Callable &p_callable, uint32_t p_flags) {
 		callable_mp(this, &Resource::connect_changed).call_deferred(p_callable, p_flags);
 		return;
 	}
-	if (!is_connected(CoreStringNames::get_singleton()->changed, p_callable) || p_flags & CONNECT_REFERENCE_COUNTED) {
-		connect(CoreStringNames::get_singleton()->changed, p_callable, p_flags);
+	if (!is_connected(CoreStringName(changed), p_callable) || p_flags & CONNECT_REFERENCE_COUNTED) {
+		connect(CoreStringName(changed), p_callable, p_flags);
 	}
 }
 
@@ -183,8 +182,8 @@ void Resource::disconnect_changed(const Callable &p_callable) {
 		callable_mp(this, &Resource::disconnect_changed).call_deferred(p_callable);
 		return;
 	}
-	if (is_connected(CoreStringNames::get_singleton()->changed, p_callable)) {
-		disconnect(CoreStringNames::get_singleton()->changed, p_callable);
+	if (is_connected(CoreStringName(changed), p_callable)) {
+		disconnect(CoreStringName(changed), p_callable);
 	}
 }
 

@@ -2865,21 +2865,24 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 
 void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties, bool p_remove_old) {
 	ERR_FAIL_COND_MSG(!p_node->is_inside_tree(), "_replace_node() can't be called on a node outside of tree. You might have called it twice.");
-	Node *n = p_node;
+	Node *oldnode = p_node;
 	Node *newnode = p_by_node;
 
 	if (p_keep_properties) {
-		Node *default_oldnode = Object::cast_to<Node>(ClassDB::instantiate(n->get_class()));
+		Node *default_oldnode = Object::cast_to<Node>(ClassDB::instantiate(oldnode->get_class()));
+
 		List<PropertyInfo> pinfo;
-		n->get_property_list(&pinfo);
+		oldnode->get_property_list(&pinfo);
 
 		for (const PropertyInfo &E : pinfo) {
 			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 				continue;
 			}
 
-			if (default_oldnode->get(E.name) != n->get(E.name)) {
-				newnode->set(E.name, n->get(E.name));
+			bool valid;
+			const Variant &default_val = default_oldnode->get(E.name, &valid);
+			if (!valid || default_val != oldnode->get(E.name)) {
+				newnode->set(E.name, oldnode->get(E.name));
 			}
 		}
 
@@ -2891,10 +2894,10 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 	//reconnect signals
 	List<MethodInfo> sl;
 
-	n->get_signal_list(&sl);
+	oldnode->get_signal_list(&sl);
 	for (const MethodInfo &E : sl) {
 		List<Object::Connection> cl;
-		n->get_signal_connection_list(E.name, &cl);
+		oldnode->get_signal_connection_list(E.name, &cl);
 
 		for (const Object::Connection &c : cl) {
 			if (!(c.flags & Object::CONNECT_PERSIST)) {
@@ -2904,15 +2907,15 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 		}
 	}
 
-	String newname = n->get_name();
+	String newname = oldnode->get_name();
 
 	List<Node *> to_erase;
-	for (int i = 0; i < n->get_child_count(); i++) {
-		if (n->get_child(i)->get_owner() == nullptr && n->is_owned_by_parent()) {
-			to_erase.push_back(n->get_child(i));
+	for (int i = 0; i < oldnode->get_child_count(); i++) {
+		if (oldnode->get_child(i)->get_owner() == nullptr && oldnode->is_owned_by_parent()) {
+			to_erase.push_back(oldnode->get_child(i));
 		}
 	}
-	n->replace_by(newnode, true);
+	oldnode->replace_by(newnode, true);
 
 	//small hack to make collisionshapes and other kind of nodes to work
 	for (int i = 0; i < newnode->get_child_count(); i++) {
@@ -2928,7 +2931,7 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 	_push_item(newnode);
 
 	if (p_remove_old) {
-		memdelete(n);
+		memdelete(oldnode);
 
 		while (to_erase.front()) {
 			memdelete(to_erase.front()->get());
@@ -4284,7 +4287,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	filter_hbc->add_child(filter);
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDock::_filter_changed));
-	filter->connect("gui_input", callable_mp(this, &SceneTreeDock::_filter_gui_input));
+	filter->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeDock::_filter_gui_input));
 	filter->get_menu()->connect("id_pressed", callable_mp(this, &SceneTreeDock::_filter_option_selected));
 	_append_filter_options_to(filter->get_menu());
 
@@ -4354,7 +4357,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->set_v_size_flags(SIZE_EXPAND | SIZE_FILL);
 	scene_tree->connect("rmb_pressed", callable_mp(this, &SceneTreeDock::_tree_rmb));
 
-	scene_tree->connect("node_selected", callable_mp(this, &SceneTreeDock::_node_selected), CONNECT_DEFERRED);
 	scene_tree->connect("node_renamed", callable_mp(this, &SceneTreeDock::_node_renamed), CONNECT_DEFERRED);
 	scene_tree->connect("node_prerename", callable_mp(this, &SceneTreeDock::_node_prerenamed));
 	scene_tree->connect("open", callable_mp(this, &SceneTreeDock::_load_request));
@@ -4363,9 +4365,9 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->connect("files_dropped", callable_mp(this, &SceneTreeDock::_files_dropped));
 	scene_tree->connect("script_dropped", callable_mp(this, &SceneTreeDock::_script_dropped));
 	scene_tree->connect("nodes_dragged", callable_mp(this, &SceneTreeDock::_nodes_drag_begin));
-	scene_tree->connect("mouse_exited", callable_mp(this, &SceneTreeDock::_reset_hovering_timer));
+	scene_tree->connect(SceneStringName(mouse_exited), callable_mp(this, &SceneTreeDock::_reset_hovering_timer));
 
-	scene_tree->get_scene_tree()->connect("gui_input", callable_mp(this, &SceneTreeDock::_scene_tree_gui_input));
+	scene_tree->get_scene_tree()->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeDock::_scene_tree_gui_input));
 	scene_tree->get_scene_tree()->connect("item_icon_double_clicked", callable_mp(this, &SceneTreeDock::_focus_node));
 
 	editor_selection->connect("selection_changed", callable_mp(this, &SceneTreeDock::_selection_changed));

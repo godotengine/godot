@@ -37,7 +37,6 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
-#include "core/core_string_names.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
@@ -231,7 +230,7 @@ bool GDScriptAnalyzer::has_member_name_conflict_in_native_type(const StringName 
 	if (ClassDB::has_integer_constant(p_native_type_string, p_member_name)) {
 		return true;
 	}
-	if (p_member_name == CoreStringNames::get_singleton()->_script) {
+	if (p_member_name == CoreStringName(script)) {
 		return true;
 	}
 
@@ -562,11 +561,6 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 	class_type.native_type = result.native_type;
 	p_class->set_datatype(class_type);
 
-	// Add base class to the list of dependencies.
-	if (result.kind == GDScriptParser::DataType::CLASS) {
-		parser->add_dependency(result.script_path);
-	}
-
 	// Apply annotations.
 	for (GDScriptParser::AnnotationNode *&E : p_class->annotations) {
 		resolve_annotation(E);
@@ -873,11 +867,6 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	}
 
 	p_type->set_datatype(result);
-
-	if (result.kind == GDScriptParser::DataType::CLASS || result.kind == GDScriptParser::DataType::SCRIPT) {
-		parser->add_dependency(result.script_path);
-	}
-
 	return result;
 }
 
@@ -2172,7 +2161,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			List<GDScriptParser::DataType> par_types;
 			int default_arg_count = 0;
 			BitField<MethodFlags> method_flags;
-			if (get_function_signature(p_for->list, false, list_type, CoreStringNames::get_singleton()->_iter_get, return_type, par_types, default_arg_count, method_flags)) {
+			if (get_function_signature(p_for->list, false, list_type, CoreStringName(_iter_get), return_type, par_types, default_arg_count, method_flags)) {
 				variable_type = return_type;
 				variable_type.type_source = list_type.type_source;
 			} else if (!list_type.is_hard_type()) {
@@ -4112,7 +4101,6 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 
 	if (ScriptServer::is_global_class(name)) {
 		p_identifier->set_datatype(make_global_class_meta_type(name, p_identifier));
-		parser->add_dependency(p_identifier->get_datatype().script_path);
 		return;
 	}
 
@@ -4155,7 +4143,6 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			}
 			result.is_constant = true;
 			p_identifier->set_datatype(result);
-			parser->add_dependency(autoload.path);
 			return;
 		}
 	}
@@ -4275,6 +4262,7 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 		push_error("Preloaded path must be a constant string.", p_preload->path);
 	} else {
 		p_preload->resolved_path = p_preload->path->reduced_value;
+		// TODO: Save this as script dependency.
 		if (p_preload->resolved_path.is_relative_path()) {
 			p_preload->resolved_path = parser->script_path.get_base_dir().path_join(p_preload->resolved_path);
 		}
@@ -4305,8 +4293,6 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 					push_error(vformat(R"(Could not preload resource file "%s".)", p_preload->resolved_path), p_preload->path);
 				}
 			}
-
-			parser->add_dependency(p_preload->resolved_path);
 		}
 	}
 

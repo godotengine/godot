@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CryptoKey" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A cryptographic key (RSA).
+		A cryptographic key (RSA or elliptic-curve).
 	</brief_description>
 	<description>
 		The CryptoKey class represents a cryptographic key. Keys can be loaded and saved like any other [Resource].

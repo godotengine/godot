@@ -298,6 +298,7 @@ void Button::_notification(int p_what) {
 						icon_size = Size2(icon_width, icon_height);
 					}
 					icon_size = _fit_icon_size(icon_size);
+					icon_size = icon_size.round();
 				}
 
 				if (icon_size.width > 0.0f) {
@@ -336,6 +337,7 @@ void Button::_notification(int p_what) {
 							icon_ofs.y = size.y - style_margin_bottom - icon_size.height;
 						} break;
 					}
+					icon_ofs = icon_ofs.floor();
 
 					Rect2 icon_region = Rect2(icon_ofs, icon_size);
 					draw_texture_rect(_icon, icon_region, false, icon_modulate_color);

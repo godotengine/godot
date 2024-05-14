@@ -31,7 +31,6 @@
 #include "message_queue.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 
@@ -197,7 +196,7 @@ Error CallQueue::push_notification(ObjectID p_id, int p_notification) {
 	Message *msg = memnew_placement(buffer_end, Message);
 
 	msg->type = TYPE_NOTIFICATION;
-	msg->callable = Callable(p_id, CoreStringNames::get_singleton()->notification); //name is meaningless but callable needs it
+	msg->callable = Callable(p_id, CoreStringName(notification)); //name is meaningless but callable needs it
 	//msg->target;
 	msg->notification = p_notification;
 
@@ -224,64 +223,7 @@ void CallQueue::_call_function(const Callable &p_callable, const Variant *p_args
 	}
 }
 
-Error CallQueue::_transfer_messages_to_main_queue() {
-	if (pages.size() == 0) {
-		return OK;
-	}
-
-	CallQueue *mq = MessageQueue::main_singleton;
-	DEV_ASSERT(!mq->allocator_is_custom && !allocator_is_custom); // Transferring pages is only safe if using the same alloator parameters.
-
-	mq->mutex.lock();
-
-	// Here we're transferring the data from this queue to the main one.
-	// However, it's very unlikely big amounts of messages will be queued here,
-	// so PagedArray/Pool would be overkill. Also, in most cases the data will fit
-	// an already existing page of the main queue.
-
-	// Let's see if our first (likely only) page fits the current target queue page.
-	uint32_t src_page = 0;
-	{
-		if (mq->pages_used) {
-			uint32_t dst_page = mq->pages_used - 1;
-			uint32_t dst_offset = mq->page_bytes[dst_page];
-			if (dst_offset + page_bytes[0] < uint32_t(PAGE_SIZE_BYTES)) {
-				memcpy(mq->pages[dst_page]->data + dst_offset, pages[0]->data, page_bytes[0]);
-				mq->page_bytes[dst_page] += page_bytes[0];
-				src_page++;
-			}
-		}
-	}
-
-	// Any other possibly existing source page needs to be added.
-
-	if (mq->pages_used + (pages_used - src_page) > mq->max_pages) {
-		fprintf(stderr, "Failed appending thread queue. Message queue out of memory. %s\n", mq->error_text.utf8().get_data());
-		mq->statistics();
-		mq->mutex.unlock();
-		return ERR_OUT_OF_MEMORY;
-	}
-
-	for (; src_page < pages_used; src_page++) {
-		mq->_add_page();
-		memcpy(mq->pages[mq->pages_used - 1]->data, pages[src_page]->data, page_bytes[src_page]);
-		mq->page_bytes[mq->pages_used - 1] = page_bytes[src_page];
-	}
-
-	mq->mutex.unlock();
-
-	page_bytes[0] = 0;
-	pages_used = 1;
-
-	return OK;
-}
-
 Error CallQueue::flush() {
-	// Thread overrides are not meant to be flushed, but appended to the main one.
-	if (unlikely(this == MessageQueue::thread_singleton)) {
-		return _transfer_messages_to_main_queue();
-	}
-
 	LOCK_MUTEX;
 
 	if (pages.size() == 0) {

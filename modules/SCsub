@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import modules_builders
+import methods
 import os
 
 Import("env")
@@ -12,13 +12,49 @@ env_modules.Append(CPPDEFINES=["GODOT_MODULE"])
 
 Export("env_modules")
 
-# Header with MODULE_*_ENABLED defines.
-env.Depends("modules_enabled.gen.h", Value(env.module_list))
-env.CommandNoCache(
-    "modules_enabled.gen.h",
-    Value(env.module_list),
-    env.Run(modules_builders.generate_modules_enabled),
+
+def register_module_types_builder(target, source, env):
+    modules = source[0].read()
+    mod_inc = "\n".join([f'#include "{p}/register_types.h"' for p in modules.values()])
+    mod_init = "\n".join(
+        [f"#ifdef MODULE_{n.upper()}_ENABLED\n\tinitialize_{n}_module(p_level);\n#endif" for n in modules.keys()]
+    )
+    mod_uninit = "\n".join(
+        [f"#ifdef MODULE_{n.upper()}_ENABLED\n\tuninitialize_{n}_module(p_level);\n#endif" for n in modules.keys()]
+    )
+    with methods.generated_wrapper(target) as file:
+        file.write(
+            f"""\
+#include "register_module_types.h"
+
+#include "modules/modules_enabled.gen.h"
+
+{mod_inc}
+
+void initialize_modules(ModuleInitializationLevel p_level) {{
+{mod_init}
+}}
+
+void uninitialize_modules(ModuleInitializationLevel p_level) {{
+{mod_uninit}
+}}
+"""
+        )
+
+
+register_module_types = env.CommandNoCache(
+    "register_module_types.gen.cpp", env.Value(env.modules_detected), env.Run(register_module_types_builder)
 )
+
+
+# Header with MODULE_*_ENABLED defines.
+def modules_enabled_builder(target, source, env):
+    with methods.generated_wrapper(target) as file:
+        for module in source[0].read():
+            file.write(f"#define MODULE_{module.upper()}_ENABLED\n")
+
+
+env.CommandNoCache("modules_enabled.gen.h", env.Value(env.module_list), env.Run(modules_enabled_builder))
 
 
 vs_sources = []
@@ -47,18 +83,19 @@ for name, path in env.module_list.items():
 
 # Generate header to be included in `tests/test_main.cpp` to run module-specific tests.
 if env["tests"]:
-    env.Depends("modules_tests.gen.h", test_headers)
-    env.CommandNoCache(
-        "modules_tests.gen.h",
-        test_headers,
-        env.Run(modules_builders.generate_modules_tests),
-    )
+
+    def modules_tests_builder(target, source, env):
+        with methods.generated_wrapper(target) as file:
+            for header in source:
+                file.write('#include "{}"\n'.format(os.path.normpath(header.path).replace("\\", "/")))
+
+    env.CommandNoCache("modules_tests.gen.h", test_headers, env.Run(modules_tests_builder))
 
 # libmodules.a with only register_module_types.
 # Must be last so that all libmodule_<name>.a libraries are on the right side
 # in the linker command.
 env.modules_sources = []
-env_modules.add_source_files(env.modules_sources, "register_module_types.gen.cpp")
+env_modules.add_source_files(env.modules_sources, register_module_types)
 lib = env_modules.add_library("modules", env.modules_sources)
 env.Prepend(LIBS=[lib])
 if env["vsproj"]:

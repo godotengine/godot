@@ -85,7 +85,7 @@ void DockSplitContainer::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	child_control->connect("visibility_changed", callable_mp(this, &DockSplitContainer::_update_visibility));
+	child_control->connect(SceneStringName(visibility_changed), callable_mp(this, &DockSplitContainer::_update_visibility));
 	_update_visibility();
 }
 
@@ -104,7 +104,7 @@ void DockSplitContainer::remove_child_notify(Node *p_child) {
 		return;
 	}
 
-	child_control->disconnect("visibility_changed", callable_mp(this, &DockSplitContainer::_update_visibility));
+	child_control->disconnect(SceneStringName(visibility_changed), callable_mp(this, &DockSplitContainer::_update_visibility));
 	_update_visibility();
 }
 
@@ -185,7 +185,15 @@ void EditorDockManager::_update_docks_menu() {
 }
 
 void EditorDockManager::_docks_menu_option(int p_id) {
-	focus_dock(docks_menu_docks[p_id]);
+	Control *dock = docks_menu_docks[p_id];
+	ERR_FAIL_NULL(dock);
+	ERR_FAIL_COND_MSG(!all_docks.has(dock), vformat("Menu option for unknown dock '%s'.", dock->get_name()));
+	if (all_docks[dock].enabled && all_docks[dock].open) {
+		PopupMenu *parent_menu = Object::cast_to<PopupMenu>(docks_menu->get_parent());
+		ERR_FAIL_NULL(parent_menu);
+		parent_menu->hide();
+	}
+	focus_dock(dock);
 }
 
 void EditorDockManager::_window_close_request(WindowWrapper *p_wrapper) {
@@ -272,7 +280,7 @@ void EditorDockManager::_dock_move_to_bottom(Control *p_dock) {
 
 	// Force docks moved to the bottom to appear first in the list, and give them their associated shortcut to toggle their bottom panel.
 	Button *bottom_button = EditorNode::get_bottom_panel()->add_item(all_docks[p_dock].title, p_dock, all_docks[p_dock].shortcut, true);
-	bottom_button->connect("gui_input", callable_mp(this, &EditorDockManager::_bottom_dock_button_gui_input).bind(bottom_button).bind(p_dock));
+	bottom_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorDockManager::_bottom_dock_button_gui_input).bind(bottom_button).bind(p_dock));
 	EditorNode::get_bottom_panel()->make_item_visible(p_dock);
 }
 
@@ -801,7 +809,7 @@ void EditorDockManager::register_dock_slot(DockSlot p_dock_slot, TabContainer *p
 	p_tab_container->connect("active_tab_rearranged", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
 	p_tab_container->connect("child_order_changed", callable_mp(this, &EditorDockManager::_dock_container_update_visibility).bind(p_tab_container));
 	p_tab_container->set_use_hidden_tabs_for_min_size(true);
-	p_tab_container->get_tab_bar()->connect("gui_input", callable_mp(this, &EditorDockManager::_dock_container_gui_input).bind(p_tab_container));
+	p_tab_container->get_tab_bar()->connect(SceneStringName(gui_input), callable_mp(this, &EditorDockManager::_dock_container_gui_input).bind(p_tab_container));
 	p_tab_container->hide();
 }
 
@@ -822,8 +830,9 @@ EditorDockManager::EditorDockManager() {
 	EditorNode::get_singleton()->get_gui_base()->add_child(dock_context_popup);
 
 	docks_menu = memnew(PopupMenu);
+	docks_menu->set_hide_on_item_selection(false);
 	docks_menu->connect("id_pressed", callable_mp(this, &EditorDockManager::_docks_menu_option));
-	EditorNode::get_singleton()->get_gui_base()->connect("theme_changed", callable_mp(this, &EditorDockManager::_update_docks_menu));
+	EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorDockManager::_update_docks_menu));
 }
 
 void DockContextPopup::_notification(int p_what) {
@@ -1083,9 +1092,9 @@ DockContextPopup::DockContextPopup() {
 
 	dock_select = memnew(Control);
 	dock_select->set_custom_minimum_size(Size2(128, 64) * EDSCALE);
-	dock_select->connect("gui_input", callable_mp(this, &DockContextPopup::_dock_select_input));
-	dock_select->connect("draw", callable_mp(this, &DockContextPopup::_dock_select_draw));
-	dock_select->connect("mouse_exited", callable_mp(this, &DockContextPopup::_dock_select_mouse_exited));
+	dock_select->connect(SceneStringName(gui_input), callable_mp(this, &DockContextPopup::_dock_select_input));
+	dock_select->connect(SceneStringName(draw), callable_mp(this, &DockContextPopup::_dock_select_draw));
+	dock_select->connect(SceneStringName(mouse_exited), callable_mp(this, &DockContextPopup::_dock_select_mouse_exited));
 	dock_select->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_select_popup_vb->add_child(dock_select);
 

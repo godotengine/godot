@@ -155,7 +155,6 @@
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/resources/world_2d.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 
 // 2D
@@ -590,7 +589,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CPUParticles3D);
 	GDREGISTER_CLASS(Marker3D);
 	GDREGISTER_CLASS(RootMotionView);
-	GDREGISTER_ABSTRACT_CLASS(SkeletonModifier3D);
+	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -745,6 +744,7 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeVarying);
 	GDREGISTER_CLASS(VisualShaderNodeVaryingSetter);
 	GDREGISTER_CLASS(VisualShaderNodeVaryingGetter);
+	GDREGISTER_CLASS(VisualShaderNodeReroute);
 
 	GDREGISTER_CLASS(VisualShaderNodeSDFToScreenUV);
 	GDREGISTER_CLASS(VisualShaderNodeScreenUVToSDF);

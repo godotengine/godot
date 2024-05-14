@@ -102,7 +102,7 @@ void GradientEdit::_color_changed(const Color &p_color) {
 
 void GradientEdit::set_gradient(const Ref<Gradient> &p_gradient) {
 	gradient = p_gradient;
-	gradient->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	gradient->connect(CoreStringName(changed), callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 }
 
 const Ref<Gradient> &GradientEdit::get_gradient() const {

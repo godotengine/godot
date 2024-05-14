@@ -31,7 +31,6 @@
 #include "navigation_obstacle_3d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/math/geometry_2d.h"

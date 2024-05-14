@@ -310,7 +310,7 @@ static void _applyProperty(SvgLoaderData& loaderData, SvgNode* node, Shape* vg, 
 
     //Clip transformation is applied directly to the path in the _appendClipShape function
     if (node->transform && !clip) vg->transform(*node->transform);
-    if (node->type == SvgNodeType::Doc || !node->display) return;
+    if (node->type == SvgNodeType::Doc || !node->style->display) return;
 
     //If fill property is nullptr then do nothing
     if (style->fill.paint.none) {
@@ -557,7 +557,7 @@ static bool _isValidImageMimeTypeAndEncoding(const char** href, const char** mim
 
 static unique_ptr<Picture> _imageBuildHelper(SvgLoaderData& loaderData, SvgNode* node, const Box& vBox, const string& svgPath)
 {
-    if (!node->node.image.href) return nullptr;
+    if (!node->node.image.href || !strlen(node->node.image.href)) return nullptr;
     auto picture = Picture::gen();
 
     TaskScheduler::async(false);    //force to load a picture on the same thread
@@ -782,13 +782,13 @@ static unique_ptr<Scene> _sceneBuildHelper(SvgLoaderData& loaderData, const SvgN
         // For a Symbol node, the viewBox transformation has to be applied first - see _useBuildHelper()
         if (!mask && node->transform && node->type != SvgNodeType::Symbol) scene->transform(*node->transform);
 
-        if (node->display && node->style->opacity != 0) {
+        if (node->style->display && node->style->opacity != 0) {
             auto child = node->child.data;
             for (uint32_t i = 0; i < node->child.count; ++i, ++child) {
                 if (_isGroupType((*child)->type)) {
                     if ((*child)->type == SvgNodeType::Use)
                         scene->push(_useBuildHelper(loaderData, *child, vBox, svgPath, depth + 1, isMaskWhite));
-                    else
+                    else if (!((*child)->type == SvgNodeType::Symbol && node->type != SvgNodeType::Use))
                         scene->push(_sceneBuildHelper(loaderData, *child, vBox, svgPath, false, depth + 1, isMaskWhite));
                 } else if ((*child)->type == SvgNodeType::Image) {
                     auto image = _imageBuildHelper(loaderData, *child, vBox, svgPath);

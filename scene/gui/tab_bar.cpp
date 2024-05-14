@@ -1868,6 +1868,7 @@ void TabBar::_bind_methods() {
 	Tab defaults(true);
 
 	base_property_helper.set_prefix("tab_");
+	base_property_helper.set_array_length_getter(&TabBar::get_tab_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "title"), defaults.text, &TabBar::set_tab_title, &TabBar::get_tab_title);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "tooltip"), defaults.tooltip, &TabBar::set_tab_tooltip, &TabBar::get_tab_tooltip);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &TabBar::set_tab_icon, &TabBar::get_tab_icon);
@@ -1877,7 +1878,7 @@ void TabBar::_bind_methods() {
 TabBar::TabBar() {
 	set_size(Size2(get_size().width, get_minimum_size().height));
 	set_focus_mode(FOCUS_ALL);
-	connect("mouse_exited", callable_mp(this, &TabBar::_on_mouse_exited));
+	connect(SceneStringName(mouse_exited), callable_mp(this, &TabBar::_on_mouse_exited));
 
 	property_helper.setup_for_instance(base_property_helper, this);
 }

@@ -39,6 +39,7 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
 #include "scene/resources/theme.h"
+#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 #include "servers/text_server.h"
 
@@ -864,7 +865,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_separation", "ItemList", Math::round(4 * scale));
 	theme->set_constant("v_separation", "ItemList", Math::round(4 * scale));
 	theme->set_constant("icon_margin", "ItemList", Math::round(4 * scale));
-	theme->set_constant("line_separation", "ItemList", Math::round(2 * scale));
+	theme->set_constant(SceneStringName(line_separation), "ItemList", Math::round(2 * scale));
 
 	theme->set_font("font", "ItemList", Ref<Font>());
 	theme->set_font_size("font_size", "ItemList", -1);
@@ -1125,7 +1126,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("shadow_offset_y", "RichTextLabel", Math::round(1 * scale));
 	theme->set_constant("shadow_outline_size", "RichTextLabel", Math::round(1 * scale));
 
-	theme->set_constant("line_separation", "RichTextLabel", 0);
+	theme->set_constant(SceneStringName(line_separation), "RichTextLabel", 0);
 	theme->set_constant("table_h_separation", "RichTextLabel", Math::round(3 * scale));
 	theme->set_constant("table_v_separation", "RichTextLabel", Math::round(3 * scale));
 

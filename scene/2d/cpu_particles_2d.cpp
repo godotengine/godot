@@ -35,7 +35,6 @@
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
-#include "scene/scene_string_names.h"
 
 void CPUParticles2D::set_emitting(bool p_emitting) {
 	if (emitting == p_emitting) {
@@ -997,7 +996,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 	}
 	if (!Math::is_equal_approx(time, 0.0) && active && !should_be_active) {
 		active = false;
-		emit_signal(SceneStringNames::get_singleton()->finished);
+		emit_signal(SceneStringName(finished));
 	}
 }
 

@@ -307,14 +307,14 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 
 	// Substitute Buttons
 
-	lne_search->connect("focus_entered", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_search->connect("focus_exited", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_replace->connect("focus_entered", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_replace->connect("focus_exited", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_prefix->connect("focus_entered", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_prefix->connect("focus_exited", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_suffix->connect("focus_entered", callable_mp(this, &RenameDialog::_update_substitute));
-	lne_suffix->connect("focus_exited", callable_mp(this, &RenameDialog::_update_substitute));
+	lne_search->connect(SceneStringName(focus_entered), callable_mp(this, &RenameDialog::_update_substitute));
+	lne_search->connect(SceneStringName(focus_exited), callable_mp(this, &RenameDialog::_update_substitute));
+	lne_replace->connect(SceneStringName(focus_entered), callable_mp(this, &RenameDialog::_update_substitute));
+	lne_replace->connect(SceneStringName(focus_exited), callable_mp(this, &RenameDialog::_update_substitute));
+	lne_prefix->connect(SceneStringName(focus_entered), callable_mp(this, &RenameDialog::_update_substitute));
+	lne_prefix->connect(SceneStringName(focus_exited), callable_mp(this, &RenameDialog::_update_substitute));
+	lne_suffix->connect(SceneStringName(focus_entered), callable_mp(this, &RenameDialog::_update_substitute));
+	lne_suffix->connect(SceneStringName(focus_exited), callable_mp(this, &RenameDialog::_update_substitute));
 
 	// Preview
 

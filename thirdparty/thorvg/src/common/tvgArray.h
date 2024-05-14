@@ -61,6 +61,7 @@ struct Array
 
     void push(Array<T>& rhs)
     {
+        if (rhs.count == 0) return;
         grow(rhs.count);
         memcpy(data + count, rhs.data, rhs.count * sizeof(T));
         count += rhs.count;

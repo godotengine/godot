@@ -302,7 +302,7 @@ class CommandQueueMT {
 	struct CommandBase {
 		bool sync = false;
 		virtual void call() = 0;
-		virtual ~CommandBase() = default; // Won't be called.
+		virtual ~CommandBase() = default;
 	};
 
 	struct SyncCommand : public CommandBase {
@@ -325,16 +325,14 @@ class CommandQueueMT {
 
 	/***** BASE *******/
 
-	enum {
-		DEFAULT_COMMAND_MEM_SIZE_KB = 256,
-		SYNC_SEMAPHORES = 8
-	};
+	static const uint32_t DEFAULT_COMMAND_MEM_SIZE_KB = 64;
 
 	BinaryMutex mutex;
 	LocalVector<uint8_t> command_mem;
 	ConditionVariable sync_cond_var;
 	uint32_t sync_head = 0;
 	uint32_t sync_tail = 0;
+	uint32_t sync_awaiters = 0;
 	WorkerThreadPool::TaskID pump_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	uint64_t flush_read_ptr = 0;
 
@@ -347,6 +345,15 @@ class CommandQueueMT {
 		*(uint64_t *)&command_mem[size] = alloc_size;
 		T *cmd = memnew_placement(&command_mem[size + 8], T);
 		return cmd;
+	}
+
+	_FORCE_INLINE_ void _prevent_sync_wraparound() {
+		bool safe_to_reset = !sync_awaiters;
+		bool already_sync_to_latest = sync_head == sync_tail;
+		if (safe_to_reset && already_sync_to_latest) {
+			sync_head = 0;
+			sync_tail = 0;
+		}
 	}
 
 	void _flush() {
@@ -365,8 +372,14 @@ class CommandQueueMT {
 			cmd->call();
 			if (unlikely(cmd->sync)) {
 				sync_head++;
+				unlock(); // Give an opportunity to awaiters right away.
 				sync_cond_var.notify_all();
+				lock();
 			}
+
+			// If the command involved reallocating the buffer, the address may have changed.
+			cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
+			cmd->~CommandBase();
 
 			flush_read_ptr += size;
 		}
@@ -374,15 +387,23 @@ class CommandQueueMT {
 
 		command_mem.clear();
 		flush_read_ptr = 0;
+
+		_prevent_sync_wraparound();
+
 		unlock();
 	}
 
 	_FORCE_INLINE_ void _wait_for_sync(MutexLock<BinaryMutex> &p_lock) {
+		sync_awaiters++;
 		uint32_t sync_head_goal = sync_tail;
 		do {
 			sync_cond_var.wait(p_lock);
-		} while (sync_head != sync_head_goal); // Can't use lower-than because of wraparound.
+		} while (sync_head < sync_head_goal);
+		sync_awaiters--;
+		_prevent_sync_wraparound();
 	}
+
+	void _no_op() {}
 
 public:
 	void lock();
@@ -405,8 +426,13 @@ public:
 			_flush();
 		}
 	}
+
 	void flush_all() {
 		_flush();
+	}
+
+	void sync() {
+		push_and_sync(this, &CommandQueueMT::_no_op);
 	}
 
 	void wait_and_flush() {
@@ -416,7 +442,9 @@ public:
 	}
 
 	void set_pump_task_id(WorkerThreadPool::TaskID p_task_id) {
+		lock();
 		pump_task_id = p_task_id;
+		unlock();
 	}
 
 	CommandQueueMT();

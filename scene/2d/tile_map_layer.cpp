@@ -30,7 +30,6 @@
 
 #include "tile_map_layer.h"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
@@ -1598,11 +1597,11 @@ RBSet<TerrainConstraint> TileMapLayer::_get_terrain_constraints_from_painted_cel
 void TileMapLayer::_tile_set_changed() {
 	dirty.flags[DIRTY_FLAGS_TILE_SET] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 void TileMapLayer::_renamed() {
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 void TileMapLayer::_update_notify_local_transform() {
@@ -1805,7 +1804,7 @@ void TileMapLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "navigation_enabled"), "set_navigation_enabled", "is_navigation_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
 
-	ADD_SIGNAL(MethodInfo(CoreStringNames::get_singleton()->changed));
+	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
 
 	ADD_PROPERTY_DEFAULT("tile_map_data_format", TileMapDataFormat::TILE_MAP_DATA_FORMAT_1);
 
@@ -1819,7 +1818,7 @@ void TileMapLayer::_update_self_texture_filter(RS::CanvasItemTextureFilter p_tex
 	CanvasItem::_update_self_texture_filter(p_texture_filter);
 	dirty.flags[DIRTY_FLAGS_LAYER_TEXTURE_FILTER] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 void TileMapLayer::_update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat) {
@@ -1827,7 +1826,7 @@ void TileMapLayer::_update_self_texture_repeat(RS::CanvasItemTextureRepeat p_tex
 	CanvasItem::_update_self_texture_repeat(p_texture_repeat);
 	dirty.flags[DIRTY_FLAGS_LAYER_TEXTURE_REPEAT] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 void TileMapLayer::set_as_tile_map_internal_node(int p_index) {
@@ -2502,7 +2501,7 @@ void TileMapLayer::update_internals() {
 void TileMapLayer::notify_runtime_tile_data_update() {
 	dirty.flags[TileMapLayer::DIRTY_FLAGS_LAYER_RUNTIME_UPDATE] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 Vector2i TileMapLayer::map_pattern(const Vector2i &p_position_in_tilemap, const Vector2i &p_coords_in_pattern, Ref<TileMapPattern> p_pattern) {
@@ -2537,7 +2536,7 @@ void TileMapLayer::set_enabled(bool p_enabled) {
 	enabled = p_enabled;
 	dirty.flags[DIRTY_FLAGS_LAYER_ENABLED] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 bool TileMapLayer::is_enabled() const {
@@ -2563,7 +2562,7 @@ void TileMapLayer::set_tile_set(const Ref<TileSet> &p_tile_set) {
 		tile_set->connect_changed(callable_mp(this, &TileMapLayer::_tile_set_changed));
 	}
 
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 
 	// Trigger updates for TileSet's read-only status.
 	notify_property_list_changed();
@@ -2675,7 +2674,7 @@ void TileMapLayer::set_self_modulate(const Color &p_self_modulate) {
 	CanvasItem::set_self_modulate(p_self_modulate);
 	dirty.flags[DIRTY_FLAGS_LAYER_SELF_MODULATE] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 void TileMapLayer::set_y_sort_enabled(bool p_y_sort_enabled) {
@@ -2685,7 +2684,7 @@ void TileMapLayer::set_y_sort_enabled(bool p_y_sort_enabled) {
 	CanvasItem::set_y_sort_enabled(p_y_sort_enabled);
 	dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ENABLED] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 
 	_update_notify_local_transform();
 }
@@ -2697,7 +2696,7 @@ void TileMapLayer::set_y_sort_origin(int p_y_sort_origin) {
 	y_sort_origin = p_y_sort_origin;
 	dirty.flags[DIRTY_FLAGS_LAYER_Y_SORT_ORIGIN] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 int TileMapLayer::get_y_sort_origin() const {
@@ -2711,7 +2710,7 @@ void TileMapLayer::set_z_index(int p_z_index) {
 	CanvasItem::set_z_index(p_z_index);
 	dirty.flags[DIRTY_FLAGS_LAYER_Z_INDEX] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 void TileMapLayer::set_light_mask(int p_light_mask) {
@@ -2721,7 +2720,7 @@ void TileMapLayer::set_light_mask(int p_light_mask) {
 	CanvasItem::set_light_mask(p_light_mask);
 	dirty.flags[DIRTY_FLAGS_LAYER_LIGHT_MASK] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 void TileMapLayer::set_rendering_quadrant_size(int p_size) {
@@ -2733,7 +2732,7 @@ void TileMapLayer::set_rendering_quadrant_size(int p_size) {
 
 	rendering_quadrant_size = p_size;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 int TileMapLayer::get_rendering_quadrant_size() const {
@@ -2747,7 +2746,7 @@ void TileMapLayer::set_collision_enabled(bool p_enabled) {
 	collision_enabled = p_enabled;
 	dirty.flags[DIRTY_FLAGS_LAYER_COLLISION_ENABLED] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 bool TileMapLayer::is_collision_enabled() const {
@@ -2758,7 +2757,7 @@ void TileMapLayer::set_use_kinematic_bodies(bool p_use_kinematic_bodies) {
 	use_kinematic_bodies = p_use_kinematic_bodies;
 	dirty.flags[DIRTY_FLAGS_LAYER_USE_KINEMATIC_BODIES] = p_use_kinematic_bodies;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 bool TileMapLayer::is_using_kinematic_bodies() const {
@@ -2772,7 +2771,7 @@ void TileMapLayer::set_collision_visibility_mode(TileMapLayer::DebugVisibilityMo
 	collision_visibility_mode = p_show_collision;
 	dirty.flags[DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 TileMapLayer::DebugVisibilityMode TileMapLayer::get_collision_visibility_mode() const {
@@ -2786,7 +2785,7 @@ void TileMapLayer::set_navigation_enabled(bool p_enabled) {
 	navigation_enabled = p_enabled;
 	dirty.flags[DIRTY_FLAGS_LAYER_NAVIGATION_ENABLED] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 bool TileMapLayer::is_navigation_enabled() const {
@@ -2800,7 +2799,7 @@ void TileMapLayer::set_navigation_map(RID p_map) {
 	navigation_map_override = p_map;
 	dirty.flags[DIRTY_FLAGS_LAYER_NAVIGATION_MAP] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 RID TileMapLayer::get_navigation_map() const {
@@ -2819,7 +2818,7 @@ void TileMapLayer::set_navigation_visibility_mode(TileMapLayer::DebugVisibilityM
 	navigation_visibility_mode = p_show_navigation;
 	dirty.flags[DIRTY_FLAGS_LAYER_NAVIGATION_VISIBILITY_MODE] = true;
 	_queue_internal_update();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 TileMapLayer::DebugVisibilityMode TileMapLayer::get_navigation_visibility_mode() const {

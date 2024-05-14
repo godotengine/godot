@@ -110,7 +110,7 @@ void SkeletonModifier3D::process_modification() {
 }
 
 void SkeletonModifier3D::_process_modification() {
-	//
+	GDVIRTUAL_CALL(_process_modification);
 }
 
 void SkeletonModifier3D::_notification(int p_what) {
@@ -133,6 +133,7 @@ void SkeletonModifier3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "influence", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_influence", "get_influence");
 
 	ADD_SIGNAL(MethodInfo("modification_processed"));
+	GDVIRTUAL_BIND(_process_modification);
 }
 
 SkeletonModifier3D::SkeletonModifier3D() {

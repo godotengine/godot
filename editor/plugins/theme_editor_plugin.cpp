@@ -2067,7 +2067,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_theme_item_vb->add_child(edit_theme_item_label);
 	theme_item_name = memnew(LineEdit);
 	edit_theme_item_vb->add_child(theme_item_name);
-	theme_item_name->connect("gui_input", callable_mp(this, &ThemeItemEditorDialog::_edit_theme_item_gui_input));
+	theme_item_name->connect(SceneStringName(gui_input), callable_mp(this, &ThemeItemEditorDialog::_edit_theme_item_gui_input));
 	edit_theme_item_dialog->connect("confirmed", callable_mp(this, &ThemeItemEditorDialog::_confirm_edit_theme_item));
 
 	// Import Items tab.
@@ -2386,9 +2386,25 @@ HashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, T
 
 	if (p_include_default) {
 		names.clear();
-		String default_type = p_type_name;
-		if (edited_theme->get_type_variation_base(p_type_name) != StringName()) {
-			default_type = edited_theme->get_type_variation_base(p_type_name);
+		String default_type;
+
+		{
+			const StringName variation_base = edited_theme->get_type_variation_base(p_type_name);
+			if (variation_base != StringName()) {
+				default_type = variation_base;
+			}
+		}
+
+		if (default_type.is_empty()) {
+			// If variation base was not found in the edited theme, look in the default theme.
+			const StringName variation_base = ThemeDB::get_singleton()->get_default_theme()->get_type_variation_base(p_type_name);
+			if (variation_base != StringName()) {
+				default_type = variation_base;
+			}
+		}
+
+		if (default_type.is_empty()) {
+			default_type = p_type_name;
 		}
 
 		List<ThemeDB::ThemeItemBind> theme_binds;
@@ -3134,8 +3150,8 @@ void ThemeTypeEditor::_font_item_changed(Ref<Font> p_value, String p_item_name) 
 		ur->add_undo_method(*edited_theme, "set_font", p_item_name, edited_type, Ref<Font>());
 	}
 
-	ur->add_do_method(this, "call_deferred", "_update_type_items");
-	ur->add_undo_method(this, "call_deferred", "_update_type_items");
+	ur->add_do_method(this, CoreStringName(call_deferred), "_update_type_items");
+	ur->add_undo_method(this, CoreStringName(call_deferred), "_update_type_items");
 
 	ur->commit_action();
 }
@@ -3151,8 +3167,8 @@ void ThemeTypeEditor::_icon_item_changed(Ref<Texture2D> p_value, String p_item_n
 		ur->add_undo_method(*edited_theme, "set_icon", p_item_name, edited_type, Ref<Texture2D>());
 	}
 
-	ur->add_do_method(this, "call_deferred", "_update_type_items");
-	ur->add_undo_method(this, "call_deferred", "_update_type_items");
+	ur->add_do_method(this, CoreStringName(call_deferred), "_update_type_items");
+	ur->add_undo_method(this, CoreStringName(call_deferred), "_update_type_items");
 
 	ur->commit_action();
 }
@@ -3171,8 +3187,8 @@ void ThemeTypeEditor::_stylebox_item_changed(Ref<StyleBox> p_value, String p_ite
 	ur->add_do_method(this, "_change_pinned_stylebox");
 	ur->add_undo_method(this, "_change_pinned_stylebox");
 
-	ur->add_do_method(this, "call_deferred", "_update_type_items");
-	ur->add_undo_method(this, "call_deferred", "_update_type_items");
+	ur->add_do_method(this, CoreStringName(call_deferred), "_update_type_items");
+	ur->add_undo_method(this, CoreStringName(call_deferred), "_update_type_items");
 
 	ur->commit_action();
 }
@@ -3490,7 +3506,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_variation_hb->add_child(type_variation_edit);
 	type_variation_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	type_variation_edit->connect("text_changed", callable_mp(this, &ThemeTypeEditor::_type_variation_changed));
-	type_variation_edit->connect("focus_exited", callable_mp(this, &ThemeTypeEditor::_update_type_items));
+	type_variation_edit->connect(SceneStringName(focus_exited), callable_mp(this, &ThemeTypeEditor::_update_type_items));
 	type_variation_button = memnew(Button);
 	type_variation_hb->add_child(type_variation_button);
 	type_variation_button->set_tooltip_text(TTR("Select the variation base type from a list of available types."));

@@ -39,7 +39,7 @@ bool EditorSceneExporterGLTFSettings::_set(const StringName &p_name, const Varia
 	}
 	if (p_name == StringName("image_format")) {
 		_document->set_image_format(p_value);
-		emit_signal("property_list_changed");
+		emit_signal(CoreStringName(property_list_changed));
 		return true;
 	}
 	if (p_name == StringName("lossy_quality")) {
@@ -86,7 +86,7 @@ void EditorSceneExporterGLTFSettings::_get_property_list(List<PropertyInfo> *p_l
 
 void EditorSceneExporterGLTFSettings::_on_extension_property_list_changed() {
 	generate_property_list(_document);
-	emit_signal("property_list_changed");
+	emit_signal(CoreStringName(property_list_changed));
 }
 
 bool EditorSceneExporterGLTFSettings::_set_extension_setting(const String &p_name_str, const Variant &p_value) {
@@ -136,8 +136,8 @@ void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p
 	// Add properties from all document extensions.
 	for (Ref<GLTFDocumentExtension> &extension : GLTFDocument::get_all_gltf_document_extensions()) {
 		const Callable on_prop_changed = callable_mp(this, &EditorSceneExporterGLTFSettings::_on_extension_property_list_changed);
-		if (!extension->is_connected("property_list_changed", on_prop_changed)) {
-			extension->connect("property_list_changed", on_prop_changed);
+		if (!extension->is_connected(CoreStringName(property_list_changed), on_prop_changed)) {
+			extension->connect(CoreStringName(property_list_changed), on_prop_changed);
 		}
 		const String config_prefix = get_friendly_config_prefix(extension);
 		_config_name_to_extension_map[config_prefix] = extension;

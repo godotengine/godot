@@ -787,7 +787,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	inspector = memnew(EditorInspector);
 	add_child(inspector);
 	inspector->set_autoclear(true);
-	inspector->set_show_categories(true);
+	inspector->set_show_categories(true, true);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->set_use_doc_hints(true);
 	inspector->set_hide_script(false);

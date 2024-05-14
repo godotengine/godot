@@ -805,7 +805,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 	track_name = memnew(LineEdit);
 	track_name->connect("text_submitted", callable_mp(this, &EditorAudioBus::_name_changed));
-	track_name->connect("focus_exited", callable_mp(this, &EditorAudioBus::_name_focus_exit));
+	track_name->connect(SceneStringName(focus_exited), callable_mp(this, &EditorAudioBus::_name_focus_exit));
 	vb->add_child(track_name);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -926,14 +926,14 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	vb->add_child(effects);
 	effects->connect("item_edited", callable_mp(this, &EditorAudioBus::_effect_edited));
 	effects->connect("cell_selected", callable_mp(this, &EditorAudioBus::_effect_selected));
-	effects->connect("focus_exited", callable_mp(effects, &Tree::deselect_all));
+	effects->connect(SceneStringName(focus_exited), callable_mp(effects, &Tree::deselect_all));
 	effects->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	SET_DRAG_FORWARDING_GCD(effects, EditorAudioBus);
 	effects->connect("item_mouse_selected", callable_mp(this, &EditorAudioBus::_effect_rmb));
 	effects->set_allow_rmb_select(true);
 	effects->set_focus_mode(FOCUS_CLICK);
 	effects->set_allow_reselect(true);
-	effects->connect("gui_input", callable_mp(this, &EditorAudioBus::_effects_gui_input));
+	effects->connect(SceneStringName(gui_input), callable_mp(this, &EditorAudioBus::_effects_gui_input));
 
 	send = memnew(OptionButton);
 	send->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -982,7 +982,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 void EditorAudioBusDrop::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			draw_style_box(get_theme_stylebox(SNAME("normal"), SNAME("Button")), Rect2(Vector2(), get_size()));
+			draw_style_box(get_theme_stylebox(CoreStringName(normal), SNAME("Button")), Rect2(Vector2(), get_size()));
 
 			if (hovering_drop) {
 				Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));

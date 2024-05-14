@@ -35,7 +35,6 @@
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
@@ -731,7 +730,7 @@ void GPUParticles2D::_notification(int p_what) {
 				}
 				if (time > active_time) {
 					if (active && !signal_canceled) {
-						emit_signal(SceneStringNames::get_singleton()->finished);
+						emit_signal(SceneStringName(finished));
 					}
 					active = false;
 					if (!emitting) {

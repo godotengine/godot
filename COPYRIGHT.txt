@@ -285,7 +285,7 @@ License: HarfBuzz
 
 Files: ./thirdparty/icu4c/
 Comment: International Components for Unicode
-Copyright: 1991-2021, Unicode
+Copyright: 2016-2024, Unicode, Inc.
 License: Unicode
 
 Files: ./thirdparty/jpeg-compressor/

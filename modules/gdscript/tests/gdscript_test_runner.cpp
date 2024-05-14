@@ -38,7 +38,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_globals.h"
-#include "core/core_string_names.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/os.h"
