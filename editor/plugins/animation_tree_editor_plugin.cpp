@@ -220,7 +220,7 @@ void AnimationTreeEditor::remove_plugin(AnimationTreeNodeEditorPlugin *p_editor)
 }
 
 String AnimationTreeEditor::get_base_path() {
-	String path = SceneStringName(parameters_base_path);
+	String path = Animation::PARAMETERS_BASE_PATH;
 	for (int i = 0; i < edited_path.size(); i++) {
 		path += edited_path[i] + "/";
 	}
