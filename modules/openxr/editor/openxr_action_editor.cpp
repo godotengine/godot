@@ -152,7 +152,7 @@ OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
 	action_type_button->add_item("Haptic", OpenXRAction::OPENXR_ACTION_HAPTIC);
 	action_type_button->select(int(action->get_action_type()));
 	action_type_button->set_custom_minimum_size(Size2(100.0, 0.0));
-	action_type_button->connect("item_selected", callable_mp(this, &OpenXRActionEditor::_on_item_selected));
+	action_type_button->connect(SceneStringName(item_selected), callable_mp(this, &OpenXRActionEditor::_on_item_selected));
 	add_child(action_type_button);
 
 	// maybe add dropdown to edit our toplevel paths, or do we deduce them from our suggested bindings?

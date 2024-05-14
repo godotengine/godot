@@ -221,7 +221,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		{
 			language_option_button = memnew(OptionButton);
 			language_option_button->set_fit_to_longest_item(false);
-			language_option_button->connect("item_selected", callable_mp(this, &QuickSettingsDialog::_language_selected));
+			language_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_language_selected));
 
 			for (int i = 0; i < editor_languages.size(); i++) {
 				const String &lang_value = editor_languages[i];
@@ -237,7 +237,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		{
 			theme_option_button = memnew(OptionButton);
 			theme_option_button->set_fit_to_longest_item(false);
-			theme_option_button->connect("item_selected", callable_mp(this, &QuickSettingsDialog::_theme_selected));
+			theme_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_theme_selected));
 
 			for (int i = 0; i < editor_themes.size(); i++) {
 				const String &theme_value = editor_themes[i];
@@ -260,7 +260,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		{
 			scale_option_button = memnew(OptionButton);
 			scale_option_button->set_fit_to_longest_item(false);
-			scale_option_button->connect("item_selected", callable_mp(this, &QuickSettingsDialog::_scale_selected));
+			scale_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_scale_selected));
 
 			for (int i = 0; i < editor_scales.size(); i++) {
 				const String &scale_value = editor_scales[i];
@@ -274,7 +274,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		{
 			network_mode_option_button = memnew(OptionButton);
 			network_mode_option_button->set_fit_to_longest_item(false);
-			network_mode_option_button->connect("item_selected", callable_mp(this, &QuickSettingsDialog::_network_mode_selected));
+			network_mode_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_network_mode_selected));
 
 			for (int i = 0; i < editor_network_modes.size(); i++) {
 				const String &network_mode_value = editor_network_modes[i];

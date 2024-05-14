@@ -776,7 +776,7 @@ ConnectDialog::ConnectDialog() {
 	method_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	method_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	method_tree->set_hide_root(true);
-	method_tree->connect("item_selected", callable_mp(this, &ConnectDialog::_method_selected));
+	method_tree->connect(SceneStringName(item_selected), callable_mp(this, &ConnectDialog::_method_selected));
 	method_tree->connect("item_activated", callable_mp((Window *)method_popup, &Window::hide));
 
 	empty_tree_label = memnew(Label(TTR("No method found matching given filters.")));
@@ -1641,7 +1641,7 @@ ConnectionsDock::ConnectionsDock() {
 	add_child(slot_menu);
 
 	connect_dialog->connect("connected", callable_mp(this, &ConnectionsDock::_make_or_edit_connection));
-	tree->connect("item_selected", callable_mp(this, &ConnectionsDock::_tree_item_selected));
+	tree->connect(SceneStringName(item_selected), callable_mp(this, &ConnectionsDock::_tree_item_selected));
 	tree->connect("item_activated", callable_mp(this, &ConnectionsDock::_tree_item_activated));
 	tree->connect(SceneStringName(gui_input), callable_mp(this, &ConnectionsDock::_tree_gui_input));
 

@@ -1759,10 +1759,10 @@ void ScriptEditor::_notification(int p_what) {
 			EditorNode::get_singleton()->connect("scene_saved", callable_mp(this, &ScriptEditor::_scene_saved_callback));
 			FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &ScriptEditor::_files_moved));
 			FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &ScriptEditor::_file_removed));
-			script_list->connect("item_selected", callable_mp(this, &ScriptEditor::_script_selected));
+			script_list->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_script_selected));
 
-			members_overview->connect("item_selected", callable_mp(this, &ScriptEditor::_members_overview_selected));
-			help_overview->connect("item_selected", callable_mp(this, &ScriptEditor::_help_overview_selected));
+			members_overview->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_members_overview_selected));
+			help_overview->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditor::_help_overview_selected));
 			script_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
 			list_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
 

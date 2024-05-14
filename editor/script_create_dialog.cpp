@@ -871,7 +871,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 		language_menu->select(default_language);
 	}
 
-	language_menu->connect("item_selected", callable_mp(this, &ScriptCreateDialog::_language_changed));
+	language_menu->connect(SceneStringName(item_selected), callable_mp(this, &ScriptCreateDialog::_language_changed));
 
 	/* Inherits */
 
@@ -907,7 +907,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	template_menu = memnew(OptionButton);
 	template_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	template_menu->connect("item_selected", callable_mp(this, &ScriptCreateDialog::_template_changed));
+	template_menu->connect(SceneStringName(item_selected), callable_mp(this, &ScriptCreateDialog::_template_changed));
 	template_hb->add_child(template_menu);
 
 	gc->add_child(template_hb);

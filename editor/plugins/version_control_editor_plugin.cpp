@@ -1194,7 +1194,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	unstaged_files->set_h_size_flags(Tree::SIZE_EXPAND_FILL);
 	unstaged_files->set_v_size_flags(Tree::SIZE_EXPAND_FILL);
 	unstaged_files->set_select_mode(Tree::SELECT_ROW);
-	unstaged_files->connect(SNAME("item_selected"), callable_mp(this, &VersionControlEditorPlugin::_load_diff).bind(unstaged_files));
+	unstaged_files->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_load_diff).bind(unstaged_files));
 	unstaged_files->connect(SNAME("item_activated"), callable_mp(this, &VersionControlEditorPlugin::_item_activated).bind(unstaged_files));
 	unstaged_files->connect(SNAME("button_clicked"), callable_mp(this, &VersionControlEditorPlugin::_cell_button_pressed));
 	unstaged_files->create_item();
@@ -1224,7 +1224,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	staged_files->set_h_size_flags(Tree::SIZE_EXPAND_FILL);
 	staged_files->set_v_size_flags(Tree::SIZE_EXPAND_FILL);
 	staged_files->set_select_mode(Tree::SELECT_ROW);
-	staged_files->connect(SNAME("item_selected"), callable_mp(this, &VersionControlEditorPlugin::_load_diff).bind(staged_files));
+	staged_files->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_load_diff).bind(staged_files));
 	staged_files->connect(SNAME("button_clicked"), callable_mp(this, &VersionControlEditorPlugin::_cell_button_pressed));
 	staged_files->connect(SNAME("item_activated"), callable_mp(this, &VersionControlEditorPlugin::_item_activated).bind(staged_files));
 	staged_files->create_item();
@@ -1281,7 +1281,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_list_size_button->set_item_metadata(1, 20);
 	commit_list_size_button->add_item("30");
 	commit_list_size_button->set_item_metadata(2, 30);
-	commit_list_size_button->connect(SNAME("item_selected"), callable_mp(this, &VersionControlEditorPlugin::_set_commit_list_size));
+	commit_list_size_button->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_set_commit_list_size));
 	commit_list_hbc->add_child(commit_list_size_button);
 
 	commit_list = memnew(Tree);
@@ -1294,7 +1294,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_list->set_columns(2); // Commit msg, author
 	commit_list->set_column_custom_minimum_width(0, 40);
 	commit_list->set_column_custom_minimum_width(1, 20);
-	commit_list->connect(SNAME("item_selected"), callable_mp(this, &VersionControlEditorPlugin::_load_diff).bind(commit_list));
+	commit_list->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_load_diff).bind(commit_list));
 	version_commit_dock->add_child(commit_list);
 
 	version_commit_dock->add_child(memnew(HSeparator));
@@ -1307,7 +1307,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	branch_select = memnew(OptionButton);
 	branch_select->set_tooltip_text(TTR("Branches"));
 	branch_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	branch_select->connect(SNAME("item_selected"), callable_mp(this, &VersionControlEditorPlugin::_branch_item_selected));
+	branch_select->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_branch_item_selected));
 	branch_select->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_refresh_branch_list));
 	menu_bar->add_child(branch_select);
 
@@ -1352,7 +1352,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	remote_select = memnew(OptionButton);
 	remote_select->set_tooltip_text(TTR("Remotes"));
 	remote_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	remote_select->connect(SNAME("item_selected"), callable_mp(this, &VersionControlEditorPlugin::_remote_selected));
+	remote_select->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_remote_selected));
 	remote_select->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_refresh_remote_list));
 	menu_bar->add_child(remote_select);
 
@@ -1492,7 +1492,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff_view_type_select = memnew(OptionButton);
 	diff_view_type_select->add_item(TTR("Split"), DIFF_VIEW_TYPE_SPLIT);
 	diff_view_type_select->add_item(TTR("Unified"), DIFF_VIEW_TYPE_UNIFIED);
-	diff_view_type_select->connect(SNAME("item_selected"), callable_mp(this, &VersionControlEditorPlugin::_display_diff));
+	diff_view_type_select->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_display_diff));
 	diff_heading->add_child(diff_view_type_select);
 
 	diff = memnew(RichTextLabel);

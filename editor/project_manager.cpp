@@ -1253,7 +1253,7 @@ ProjectManager::ProjectManager() {
 			filter_option->set_clip_text(true);
 			filter_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			filter_option->set_stretch_ratio(0.3);
-			filter_option->connect("item_selected", callable_mp(this, &ProjectManager::_on_order_option_changed));
+			filter_option->connect(SceneStringName(item_selected), callable_mp(this, &ProjectManager::_on_order_option_changed));
 			hb->add_child(filter_option);
 
 			Vector<String> sort_filter_titles;

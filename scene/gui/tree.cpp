@@ -2693,7 +2693,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 				c.selected = true;
 				selected_item = p_selected;
 				if (!emitted_row) {
-					emit_signal(SNAME("item_selected"));
+					emit_signal(SceneStringName(item_selected));
 					emitted_row = true;
 				}
 			} else if (c.selected) {
@@ -2717,7 +2717,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 					if (select_mode == SELECT_MULTI) {
 						emit_signal(SNAME("multi_selected"), p_current, i, true);
 					} else if (select_mode == SELECT_SINGLE) {
-						emit_signal(SNAME("item_selected"));
+						emit_signal(SceneStringName(item_selected));
 					}
 
 				} else if (select_mode == SELECT_MULTI && (selected_item != p_selected || selected_col != i)) {

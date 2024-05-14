@@ -1069,7 +1069,7 @@ void GridMapEditor::_update_theme() {
 void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			mesh_library_palette->connect("item_selected", callable_mp(this, &GridMapEditor::_item_selected_cbk));
+			mesh_library_palette->connect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
 			for (int i = 0; i < 3; i++) {
 				grid[i] = RS::get_singleton()->mesh_create();
 				grid_instance[i] = RS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world_3d()->get_scenario());

@@ -218,7 +218,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 				sources_list->set_current(i);
 				sources_list->ensure_current_is_visible();
 				if (old_selected != to_select) {
-					sources_list->emit_signal(SNAME("item_selected"), sources_list->get_current());
+					sources_list->emit_signal(SceneStringName(item_selected), sources_list->get_current());
 				}
 				break;
 			}
@@ -229,7 +229,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 	if (sources_list->get_current() < 0 && sources_list->get_item_count() > 0) {
 		sources_list->set_current(0);
 		if (old_selected != int(sources_list->get_item_metadata(0))) {
-			sources_list->emit_signal(SNAME("item_selected"), sources_list->get_current());
+			sources_list->emit_signal(SceneStringName(item_selected), sources_list->get_current());
 		}
 	}
 
@@ -861,8 +861,8 @@ TileSetEditor::TileSetEditor() {
 	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	sources_list->connect("item_selected", callable_mp(this, &TileSetEditor::_source_selected));
-	sources_list->connect("item_selected", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
+	sources_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetEditor::_source_selected));
+	sources_list->connect(SceneStringName(item_selected), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
 	sources_list->connect(SceneStringName(visibility_changed), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
 	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileSetEditor::_update_sources_list).bind(-1));

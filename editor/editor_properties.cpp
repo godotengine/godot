@@ -376,7 +376,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	option_button->set_flat(true);
 	option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	default_layout->add_child(option_button);
-	option_button->connect("item_selected", callable_mp(this, &EditorPropertyTextEnum::_option_selected));
+	option_button->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyTextEnum::_option_selected));
 
 	edit_button = memnew(Button);
 	edit_button->set_flat(true);
@@ -735,7 +735,7 @@ EditorPropertyEnum::EditorPropertyEnum() {
 	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(options);
 	add_focusable(options);
-	options->connect("item_selected", callable_mp(this, &EditorPropertyEnum::_option_selected));
+	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyEnum::_option_selected));
 }
 
 ///////////////////// FLAGS /////////////////////////

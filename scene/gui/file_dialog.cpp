@@ -1152,7 +1152,7 @@ void FileDialog::_update_option_controls() {
 			}
 			ob->select(opt.default_idx);
 			grid_options->add_child(ob);
-			ob->connect("item_selected", callable_mp(this, &FileDialog::_option_changed_item_selected).bind(opt.name));
+			ob->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_option_changed_item_selected).bind(opt.name));
 			selected_options[opt.name] = opt.default_idx;
 		}
 	}
@@ -1421,7 +1421,7 @@ FileDialog::FileDialog() {
 	hbc->add_child(drives_container);
 
 	drives = memnew(OptionButton);
-	drives->connect("item_selected", callable_mp(this, &FileDialog::_select_drive));
+	drives->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_select_drive));
 	hbc->add_child(drives);
 
 	dir = memnew(LineEdit);
@@ -1493,7 +1493,7 @@ FileDialog::FileDialog() {
 	tree->connect("nothing_selected", callable_mp(this, &FileDialog::deselect_all));
 	dir->connect("text_submitted", callable_mp(this, &FileDialog::_dir_submitted));
 	file->connect("text_submitted", callable_mp(this, &FileDialog::_file_submitted));
-	filter->connect("item_selected", callable_mp(this, &FileDialog::_filter_selected));
+	filter->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);
 	add_child(confirm_save, false, INTERNAL_MODE_FRONT);

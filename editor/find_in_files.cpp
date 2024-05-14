@@ -624,7 +624,7 @@ FindInFilesPanel::FindInFilesPanel() {
 	_results_display = memnew(Tree);
 	_results_display->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	_results_display->set_v_size_flags(SIZE_EXPAND_FILL);
-	_results_display->connect("item_selected", callable_mp(this, &FindInFilesPanel::_on_result_selected));
+	_results_display->connect(SceneStringName(item_selected), callable_mp(this, &FindInFilesPanel::_on_result_selected));
 	_results_display->connect("item_edited", callable_mp(this, &FindInFilesPanel::_on_item_edited));
 	_results_display->set_hide_root(true);
 	_results_display->set_select_mode(Tree::SELECT_ROW);

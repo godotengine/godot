@@ -606,7 +606,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 		type_menu->select(default_type);
 	}
 	current_type = default_type;
-	type_menu->connect("item_selected", callable_mp(this, &ShaderCreateDialog::_type_changed));
+	type_menu->connect(SceneStringName(item_selected), callable_mp(this, &ShaderCreateDialog::_type_changed));
 
 	// Modes.
 
@@ -616,14 +616,14 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	}
 	gc->add_child(memnew(Label(TTR("Mode:"))));
 	gc->add_child(mode_menu);
-	mode_menu->connect("item_selected", callable_mp(this, &ShaderCreateDialog::_mode_changed));
+	mode_menu->connect(SceneStringName(item_selected), callable_mp(this, &ShaderCreateDialog::_mode_changed));
 
 	// Templates.
 
 	template_menu = memnew(OptionButton);
 	gc->add_child(memnew(Label(TTR("Template:"))));
 	gc->add_child(template_menu);
-	template_menu->connect("item_selected", callable_mp(this, &ShaderCreateDialog::_template_changed));
+	template_menu->connect(SceneStringName(item_selected), callable_mp(this, &ShaderCreateDialog::_template_changed));
 
 	// Built-in Shader.
 
