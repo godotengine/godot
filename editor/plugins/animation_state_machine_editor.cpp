@@ -1269,7 +1269,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			panel->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
 			error_panel->add_theme_style_override(SceneStringName(panel), theme_cache.error_panel_style);
-			error_label->add_theme_color_override("font_color", theme_cache.error_color);
+			error_label->add_theme_color_override(SceneStringName(font_color), theme_cache.error_color);
 
 			tool_select->set_icon(theme_cache.tool_icon_select);
 			tool_create->set_icon(theme_cache.tool_icon_create);

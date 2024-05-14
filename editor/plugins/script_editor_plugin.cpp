@@ -2079,7 +2079,7 @@ void ScriptEditor::_update_script_colors() {
 	int hist_size = EDITOR_GET("text_editor/script_list/script_temperature_history_size");
 	Color hot_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	hot_color.set_s(hot_color.get_s() * 0.9);
-	Color cold_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+	Color cold_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 
 	for (int i = 0; i < script_list->get_item_count(); i++) {
 		int c = script_list->get_item_metadata(i);

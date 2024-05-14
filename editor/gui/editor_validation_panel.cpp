@@ -108,17 +108,17 @@ void EditorValidationPanel::set_message(int p_id, const String &p_text, MessageT
 
 	switch (p_type) {
 		case MSG_OK:
-			label->add_theme_color_override(SNAME("font_color"), theme_cache.valid_color);
+			label->add_theme_color_override(SceneStringName(font_color), theme_cache.valid_color);
 			break;
 		case MSG_WARNING:
-			label->add_theme_color_override(SNAME("font_color"), theme_cache.warning_color);
+			label->add_theme_color_override(SceneStringName(font_color), theme_cache.warning_color);
 			break;
 		case MSG_ERROR:
-			label->add_theme_color_override(SNAME("font_color"), theme_cache.error_color);
+			label->add_theme_color_override(SceneStringName(font_color), theme_cache.error_color);
 			valid = false;
 			break;
 		case MSG_INFO:
-			label->remove_theme_color_override(SNAME("font_color"));
+			label->remove_theme_color_override(SceneStringName(font_color));
 			break;
 	}
 }

@@ -54,15 +54,15 @@ void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputT
 	Ref<Texture2D> new_icon;
 	switch (p_type) {
 		case MESSAGE_ERROR: {
-			msg->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			msg->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			new_icon = get_editor_theme_icon(SNAME("StatusError"));
 		} break;
 		case MESSAGE_WARNING: {
-			msg->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			msg->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			new_icon = get_editor_theme_icon(SNAME("StatusWarning"));
 		} break;
 		case MESSAGE_SUCCESS: {
-			msg->add_theme_color_override("font_color", get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+			msg->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 			new_icon = get_editor_theme_icon(SNAME("StatusSuccess"));
 		} break;
 	}

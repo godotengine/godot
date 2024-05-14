@@ -99,12 +99,12 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 		p_log->set_table_column_expand(1, true);
 		for (int m = 0; m < msg_count; m++) {
 			EditorExportPlatform::ExportMessage msg = get_message(m);
-			Color color = p_log->get_theme_color(SNAME("font_color"), SNAME("Label"));
+			Color color = p_log->get_theme_color(SceneStringName(font_color), SNAME("Label"));
 			Ref<Texture> icon;
 
 			switch (msg.msg_type) {
 				case EditorExportPlatform::EXPORT_MESSAGE_INFO: {
-					color = p_log->get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
+					color = p_log->get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
 				} break;
 				case EditorExportPlatform::EXPORT_MESSAGE_WARNING: {
 					icon = p_log->get_editor_theme_icon(SNAME("Warning"));

@@ -105,7 +105,7 @@ void EditorAudioBus::_notification(int p_what) {
 
 			bus_options->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
-			audio_value_preview_label->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("TooltipLabel")));
+			audio_value_preview_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("TooltipLabel")));
 			audio_value_preview_label->add_theme_color_override("font_shadow_color", get_theme_color(SNAME("font_shadow_color"), SNAME("TooltipLabel")));
 			audio_value_preview_box->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("TooltipPanel")));
 
@@ -1419,8 +1419,8 @@ void EditorAudioMeterNotches::add_notch(float p_normalized_offset, float p_db_va
 }
 
 Size2 EditorAudioMeterNotches::get_minimum_size() const {
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	float font_height = font->get_height(font_size);
 
 	float width = 0;
@@ -1440,10 +1440,10 @@ Size2 EditorAudioMeterNotches::get_minimum_size() const {
 void EditorAudioMeterNotches::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
-	theme_cache.notch_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+	theme_cache.notch_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 
-	theme_cache.font = get_theme_font(SNAME("font"), SNAME("Label"));
-	theme_cache.font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	theme_cache.font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	theme_cache.font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 }
 
 void EditorAudioMeterNotches::_bind_methods() {

@@ -93,11 +93,11 @@ void FBXImporterManager::_validate_path(const String &p_path) {
 
 	if (success) {
 		path_status->set_text(TTR("FBX2glTF executable is valid."));
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+		path_status->add_theme_color_override(SceneStringName(font_color), path_status->get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 		get_ok_button()->set_disabled(false);
 	} else {
 		path_status->set_text(error);
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		path_status->add_theme_color_override(SceneStringName(font_color), path_status->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		get_ok_button()->set_disabled(true);
 	}
 }

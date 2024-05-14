@@ -217,12 +217,12 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 		return;
 	}
 
-	Color linecolor = get_theme_color(SNAME("font_color"), SNAME("Label"));
+	Color linecolor = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 	Color linecolor_soft = linecolor;
 	linecolor_soft.a *= 0.5;
 
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("KeyValue"));
 	Ref<Texture2D> icon_selected = get_editor_theme_icon(SNAME("KeySelected"));
 
@@ -574,7 +574,7 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			tool_blend->set_icon(get_editor_theme_icon(SNAME("EditPivot")));
 			tool_select->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));

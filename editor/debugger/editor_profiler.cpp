@@ -425,7 +425,7 @@ void EditorProfiler::_notification(int p_what) {
 			activate->set_icon(get_editor_theme_icon(SNAME("Play")));
 			clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
 
-			theme_cache.seek_line_color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+			theme_cache.seek_line_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 			theme_cache.seek_line_color.a = 0.8;
 			theme_cache.seek_line_hover_color = theme_cache.seek_line_color;
 			theme_cache.seek_line_hover_color.a = 0.4;

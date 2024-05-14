@@ -161,7 +161,7 @@ void AudioStreamInteractiveTransitionEditor::_update_transitions() {
 		return;
 	}
 	int clip_count = audio_stream_interactive->get_clip_count();
-	Color font_color = tree->get_theme_color("font_color", "Tree");
+	Color font_color = tree->get_theme_color(SceneStringName(font_color), "Tree");
 	Color font_color_default = font_color;
 	font_color_default.a *= 0.5;
 	Ref<Texture> fade_icons[5] = {

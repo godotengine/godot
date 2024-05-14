@@ -714,10 +714,10 @@ void FindInFilesPanel::stop_search() {
 void FindInFilesPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			_search_text_label->add_theme_font_override("font", get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
-			_search_text_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts)));
-			_results_display->add_theme_font_override("font", get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
-			_results_display->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts)));
+			_search_text_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
+			_search_text_label->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts)));
+			_results_display->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
+			_results_display->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts)));
 
 			// Rebuild search tree.
 			if (!_finder->get_search_text().is_empty()) {
@@ -750,7 +750,7 @@ void FindInFilesPanel::_on_result_found(const String &fpath, int line_number, in
 		file_item = E->value;
 	}
 
-	Color file_item_color = _results_display->get_theme_color(SNAME("font_color")) * Color(1, 1, 1, 0.67);
+	Color file_item_color = _results_display->get_theme_color(SceneStringName(font_color)) * Color(1, 1, 1, 0.67);
 	file_item->set_custom_color(0, file_item_color);
 	file_item->set_selectable(0, false);
 
@@ -796,8 +796,8 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 	}
 	Result r = E->value;
 	String item_text = item->get_text(_with_replace ? 1 : 0);
-	Ref<Font> font = _results_display->get_theme_font(SNAME("font"));
-	int font_size = _results_display->get_theme_font_size(SNAME("font_size"));
+	Ref<Font> font = _results_display->get_theme_font(SceneStringName(font));
+	int font_size = _results_display->get_theme_font_size(SceneStringName(font_size));
 
 	Rect2 match_rect = rect;
 	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 1;
@@ -815,7 +815,7 @@ void FindInFilesPanel::_on_item_edited() {
 	TreeItem *item = _results_display->get_selected();
 
 	// Change opacity to half if checkbox is checked, otherwise full.
-	Color use_color = _results_display->get_theme_color(SNAME("font_color"));
+	Color use_color = _results_display->get_theme_color(SceneStringName(font_color));
 	if (!item->is_checked(0)) {
 		use_color.a *= 0.5;
 	}

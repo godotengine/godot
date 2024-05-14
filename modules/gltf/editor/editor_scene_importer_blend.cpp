@@ -395,10 +395,10 @@ void EditorFileSystemImportFormatSupportQueryBlend::_validate_path(String p_path
 	path_status->set_text(error);
 
 	if (success) {
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
+		path_status->add_theme_color_override(SceneStringName(font_color), path_status->get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 		configure_blender_dialog->get_ok_button()->set_disabled(false);
 	} else {
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		path_status->add_theme_color_override(SceneStringName(font_color), path_status->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		configure_blender_dialog->get_ok_button()->set_disabled(true);
 	}
 }

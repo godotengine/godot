@@ -70,6 +70,9 @@ public:
 	StringName updated;
 
 	StringName line_separation;
+	StringName font;
+	StringName font_size;
+	StringName font_color;
 
 	StringName mouse_entered;
 	StringName mouse_exited;
