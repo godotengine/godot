@@ -2068,7 +2068,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	theme_item_name = memnew(LineEdit);
 	edit_theme_item_vb->add_child(theme_item_name);
 	theme_item_name->connect(SceneStringName(gui_input), callable_mp(this, &ThemeItemEditorDialog::_edit_theme_item_gui_input));
-	edit_theme_item_dialog->connect("confirmed", callable_mp(this, &ThemeItemEditorDialog::_confirm_edit_theme_item));
+	edit_theme_item_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ThemeItemEditorDialog::_confirm_edit_theme_item));
 
 	// Import Items tab.
 	TabContainer *import_tc = memnew(TabContainer);
@@ -2120,7 +2120,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	confirm_closing_dialog = memnew(ConfirmationDialog);
 	confirm_closing_dialog->set_autowrap(true);
 	add_child(confirm_closing_dialog);
-	confirm_closing_dialog->connect("confirmed", callable_mp(this, &ThemeItemEditorDialog::_close_dialog));
+	confirm_closing_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ThemeItemEditorDialog::_close_dialog));
 }
 
 ///////////////////////
@@ -2260,7 +2260,7 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_type_confirmation = memnew(ConfirmationDialog);
 	add_type_confirmation->set_title(TTR("Type name is empty!"));
 	add_type_confirmation->set_text(TTR("Are you sure you want to create an empty type?"));
-	add_type_confirmation->connect("confirmed", callable_mp(this, &ThemeTypeDialog::_add_type_confirmed));
+	add_type_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &ThemeTypeDialog::_add_type_confirmed));
 	add_child(add_type_confirmation);
 }
 

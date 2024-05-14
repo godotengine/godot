@@ -864,7 +864,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	confirm_dialog = memnew(ConfirmationDialog);
 	add_child(confirm_dialog);
 	confirm_dialog->set_title(TTR("Please Confirm:"));
-	confirm_dialog->connect("confirmed", callable_mp(this, &EditorBuildProfileManager::_action_confirm));
+	confirm_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorBuildProfileManager::_action_confirm));
 
 	import_profile = memnew(EditorFileDialog);
 	add_child(import_profile);

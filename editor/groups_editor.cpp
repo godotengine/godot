@@ -607,7 +607,7 @@ void GroupsEditor::_show_add_group_dialog() {
 	if (!add_group_dialog) {
 		add_group_dialog = memnew(ConfirmationDialog);
 		add_group_dialog->set_title(TTR("Create New Group"));
-		add_group_dialog->connect("confirmed", callable_mp(this, &GroupsEditor::_confirm_add));
+		add_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_add));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		add_group_dialog->add_child(vbc);
@@ -673,7 +673,7 @@ void GroupsEditor::_show_rename_group_dialog() {
 	if (!rename_group_dialog) {
 		rename_group_dialog = memnew(ConfirmationDialog);
 		rename_group_dialog->set_title(TTR("Rename Group"));
-		rename_group_dialog->connect("confirmed", callable_mp(this, &GroupsEditor::_confirm_rename));
+		rename_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_rename));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		rename_group_dialog->add_child(vbc);
@@ -729,7 +729,7 @@ void GroupsEditor::_show_rename_group_dialog() {
 void GroupsEditor::_show_remove_group_dialog() {
 	if (!remove_group_dialog) {
 		remove_group_dialog = memnew(ConfirmationDialog);
-		remove_group_dialog->connect("confirmed", callable_mp(this, &GroupsEditor::_confirm_delete));
+		remove_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_delete));
 
 		VBoxContainer *vbox = memnew(VBoxContainer);
 		remove_label = memnew(Label);

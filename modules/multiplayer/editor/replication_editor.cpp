@@ -175,7 +175,7 @@ ReplicationEditor::ReplicationEditor() {
 
 	delete_dialog = memnew(ConfirmationDialog);
 	delete_dialog->connect("canceled", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(false));
-	delete_dialog->connect("confirmed", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
+	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
 	add_child(delete_dialog);
 
 	VBoxContainer *vb = memnew(VBoxContainer);

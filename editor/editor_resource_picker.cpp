@@ -373,7 +373,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				duplicate_resources_dialog = memnew(ConfirmationDialog);
 				add_child(duplicate_resources_dialog);
 				duplicate_resources_dialog->set_title(TTR("Make Unique (Recursive)"));
-				duplicate_resources_dialog->connect("confirmed", callable_mp(this, &EditorResourcePicker::_duplicate_selected_resources));
+				duplicate_resources_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorResourcePicker::_duplicate_selected_resources));
 
 				VBoxContainer *vb = memnew(VBoxContainer);
 				duplicate_resources_dialog->add_child(vb);

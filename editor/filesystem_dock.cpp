@@ -4111,7 +4111,7 @@ FileSystemDock::FileSystemDock() {
 	add_child(overwrite_dialog);
 	overwrite_dialog->set_ok_button_text(TTR("Overwrite"));
 	overwrite_dialog->add_button(TTR("Keep Both"), true)->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_overwrite_dialog_action).bind(false));
-	overwrite_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_overwrite_dialog_action).bind(true));
+	overwrite_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileSystemDock::_overwrite_dialog_action).bind(true));
 
 	VBoxContainer *overwrite_dialog_vb = memnew(VBoxContainer);
 	overwrite_dialog->add_child(overwrite_dialog_vb);
@@ -4138,7 +4138,7 @@ FileSystemDock::FileSystemDock() {
 	duplicate_dialog->set_ok_button_text(TTR("Duplicate"));
 	add_child(duplicate_dialog);
 	duplicate_dialog->register_text_enter(duplicate_dialog_text);
-	duplicate_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_duplicate_operation_confirm));
+	duplicate_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileSystemDock::_duplicate_operation_confirm));
 
 	make_dir_dialog = memnew(DirectoryCreateDialog);
 	add_child(make_dir_dialog);
@@ -4146,7 +4146,7 @@ FileSystemDock::FileSystemDock() {
 
 	make_scene_dialog = memnew(SceneCreateDialog);
 	add_child(make_scene_dialog);
-	make_scene_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_make_scene_confirm));
+	make_scene_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileSystemDock::_make_scene_confirm));
 
 	make_script_dialog = memnew(ScriptCreateDialog);
 	make_script_dialog->set_title(TTR("Create Script"));

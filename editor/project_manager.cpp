@@ -1486,7 +1486,7 @@ ProjectManager::ProjectManager() {
 		ask_full_convert_dialog = memnew(ConfirmationDialog);
 		ask_full_convert_dialog->set_autowrap(true);
 		ask_full_convert_dialog->set_text(TTR("This option will perform full project conversion, updating scenes, resources and scripts from Godot 3 to work in Godot 4.\n\nNote that this is a best-effort conversion, i.e. it makes upgrading the project easier, but it will not open out-of-the-box and will still require manual adjustments.\n\nIMPORTANT: Make sure to backup your project before converting, as this operation makes it impossible to open it in older versions of Godot."));
-		ask_full_convert_dialog->connect("confirmed", callable_mp(this, &ProjectManager::_perform_full_project_conversion));
+		ask_full_convert_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ProjectManager::_perform_full_project_conversion));
 		add_child(ask_full_convert_dialog);
 
 		project_dialog = memnew(ProjectDialog);

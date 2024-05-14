@@ -2471,7 +2471,7 @@ EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	resize_dialog = memnew(AcceptDialog);
 	resize_dialog->set_title(TTRC("Resize Array"));
 	resize_dialog->add_cancel_button();
-	resize_dialog->connect("confirmed", callable_mp(this, &EditorInspectorArray::_resize_dialog_confirmed));
+	resize_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorInspectorArray::_resize_dialog_confirmed));
 	add_child(resize_dialog);
 
 	VBoxContainer *resize_dialog_vbox = memnew(VBoxContainer);
@@ -4292,7 +4292,7 @@ void EditorInspector::_show_add_meta_dialog() {
 		add_meta_dialog->set_ok_button_text(TTR("Add"));
 		add_child(add_meta_dialog);
 		add_meta_dialog->register_text_enter(add_meta_name);
-		add_meta_dialog->connect("confirmed", callable_mp(this, &EditorInspector::_add_meta_confirm));
+		add_meta_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorInspector::_add_meta_confirm));
 
 		validation_panel = memnew(EditorValidationPanel);
 		vbc->add_child(validation_panel);

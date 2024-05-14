@@ -41,7 +41,7 @@ void AudioStreamImportSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AudioStreamImportSettingsDialog::_preview_changed));
-			connect("confirmed", callable_mp(this, &AudioStreamImportSettingsDialog::_reimport));
+			connect(SceneStringName(confirmed), callable_mp(this, &AudioStreamImportSettingsDialog::_reimport));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

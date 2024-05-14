@@ -187,7 +187,7 @@ CPUParticles3DEditor::CPUParticles3DEditor() {
 
 	add_child(generate_aabb);
 
-	generate_aabb->connect("confirmed", callable_mp(this, &CPUParticles3DEditor::_generate_aabb));
+	generate_aabb->connect(SceneStringName(confirmed), callable_mp(this, &CPUParticles3DEditor::_generate_aabb));
 }
 
 void CPUParticles3DEditorPlugin::edit(Object *p_object) {

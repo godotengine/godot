@@ -983,7 +983,7 @@ void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 		vbox->add_child(id_input);
 		id_input->set_max(INT_MAX);
 
-		id_edit_dialog->connect("confirmed", callable_mp(this, &TileSourceInspectorPlugin::_confirm_change_id));
+		id_edit_dialog->connect(SceneStringName(confirmed), callable_mp(this, &TileSourceInspectorPlugin::_confirm_change_id));
 	}
 	edited_source = p_for_source;
 	id_input->set_value(p_for_source->get("id"));

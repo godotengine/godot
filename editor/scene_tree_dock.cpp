@@ -1597,12 +1597,12 @@ void SceneTreeDock::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			clear_inherit_confirm->connect("confirmed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM, false));
+			clear_inherit_confirm->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM, false));
 			scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			clear_inherit_confirm->disconnect("confirmed", callable_mp(this, &SceneTreeDock::_tool_selected));
+			clear_inherit_confirm->disconnect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_tool_selected));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -2453,13 +2453,13 @@ void SceneTreeDock::_shader_created(Ref<Shader> p_shader) {
 
 void SceneTreeDock::_script_creation_closed() {
 	script_create_dialog->disconnect("script_created", callable_mp(this, &SceneTreeDock::_script_created));
-	script_create_dialog->disconnect("confirmed", callable_mp(this, &SceneTreeDock::_script_creation_closed));
+	script_create_dialog->disconnect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_script_creation_closed));
 	script_create_dialog->disconnect("canceled", callable_mp(this, &SceneTreeDock::_script_creation_closed));
 }
 
 void SceneTreeDock::_shader_creation_closed() {
 	shader_create_dialog->disconnect("shader_created", callable_mp(this, &SceneTreeDock::_shader_created));
-	shader_create_dialog->disconnect("confirmed", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
+	shader_create_dialog->disconnect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_shader_creation_closed));
 	shader_create_dialog->disconnect("canceled", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
 }
 
@@ -3860,7 +3860,7 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 	}
 
 	script_create_dialog->connect("script_created", callable_mp(this, &SceneTreeDock::_script_created));
-	script_create_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_script_creation_closed));
+	script_create_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_script_creation_closed));
 	script_create_dialog->connect("canceled", callable_mp(this, &SceneTreeDock::_script_creation_closed));
 	script_create_dialog->set_inheritance_base_type("Node");
 	script_create_dialog->config(inherits, path);
@@ -3902,7 +3902,7 @@ void SceneTreeDock::attach_shader_to_selected(int p_preferred_mode) {
 	}
 
 	shader_create_dialog->connect("shader_created", callable_mp(this, &SceneTreeDock::_shader_created));
-	shader_create_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
+	shader_create_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_shader_creation_closed));
 	shader_create_dialog->connect("canceled", callable_mp(this, &SceneTreeDock::_shader_creation_closed));
 	shader_create_dialog->config(path, true, true, -1, p_preferred_mode);
 	shader_create_dialog->popup_centered();
@@ -4550,7 +4550,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	delete_dialog = memnew(ConfirmationDialog);
 	add_child(delete_dialog);
-	delete_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_delete_confirm).bind(false));
+	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_delete_confirm).bind(false));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	delete_dialog->add_child(vb);
@@ -4564,11 +4564,11 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	editable_instance_remove_dialog = memnew(ConfirmationDialog);
 	add_child(editable_instance_remove_dialog);
-	editable_instance_remove_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_toggle_editable_children_from_selection));
+	editable_instance_remove_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_toggle_editable_children_from_selection));
 
 	placeholder_editable_instance_remove_dialog = memnew(ConfirmationDialog);
 	add_child(placeholder_editable_instance_remove_dialog);
-	placeholder_editable_instance_remove_dialog->connect("confirmed", callable_mp(this, &SceneTreeDock::_toggle_placeholder_from_selection));
+	placeholder_editable_instance_remove_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_toggle_placeholder_from_selection));
 
 	new_scene_from_dialog = memnew(EditorFileDialog);
 	new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);

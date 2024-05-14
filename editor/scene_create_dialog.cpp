@@ -72,7 +72,7 @@ void SceneCreateDialog::config(const String &p_dir) {
 void SceneCreateDialog::accept_create() {
 	if (!get_ok_button()->is_disabled()) {
 		hide();
-		emit_signal(SNAME("confirmed"));
+		emit_signal(SceneStringName(confirmed));
 	}
 }
 

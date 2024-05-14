@@ -136,4 +136,6 @@ SceneStringNames::SceneStringNames() {
 	panel = StaticCString::create("panel");
 
 	item_selected = StaticCString::create("item_selected");
+
+	confirmed = StaticCString::create("confirmed");
 }

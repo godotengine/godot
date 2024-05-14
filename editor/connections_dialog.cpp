@@ -1613,7 +1613,7 @@ ConnectionsDock::ConnectionsDock() {
 
 	disconnect_all_dialog = memnew(ConfirmationDialog);
 	add_child(disconnect_all_dialog);
-	disconnect_all_dialog->connect("confirmed", callable_mp(this, &ConnectionsDock::_disconnect_all));
+	disconnect_all_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ConnectionsDock::_disconnect_all));
 	disconnect_all_dialog->set_text(TTR("Are you sure you want to remove all connections from this signal?"));
 
 	class_menu = memnew(PopupMenu);

@@ -212,7 +212,7 @@ void EditorHelpSearch::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			connect("confirmed", callable_mp(this, &EditorHelpSearch::_confirmed));
+			connect(SceneStringName(confirmed), callable_mp(this, &EditorHelpSearch::_confirmed));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {

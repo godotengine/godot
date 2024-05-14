@@ -107,7 +107,7 @@ void ProjectExportDialog::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			duplicate_preset->set_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
 			delete_preset->set_icon(presets->get_editor_theme_icon(SNAME("Remove")));
-			connect("confirmed", callable_mp(this, &ProjectExportDialog::_export_pck_zip));
+			connect(SceneStringName(confirmed), callable_mp(this, &ProjectExportDialog::_export_pck_zip));
 			_update_export_all();
 		} break;
 	}
@@ -1483,7 +1483,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	delete_confirm = memnew(ConfirmationDialog);
 	add_child(delete_confirm);
 	delete_confirm->set_ok_button_text(TTR("Delete"));
-	delete_confirm->connect("confirmed", callable_mp(this, &ProjectExportDialog::_delete_preset_confirm));
+	delete_confirm->connect(SceneStringName(confirmed), callable_mp(this, &ProjectExportDialog::_delete_preset_confirm));
 
 	// Export buttons, dialogs and errors.
 

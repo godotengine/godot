@@ -447,11 +447,11 @@ void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 void CreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
+			connect(SceneStringName(confirmed), callable_mp(this, &CreateDialog::_confirmed));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			disconnect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
+			disconnect(SceneStringName(confirmed), callable_mp(this, &CreateDialog::_confirmed));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
