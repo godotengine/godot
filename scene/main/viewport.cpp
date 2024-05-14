@@ -1511,6 +1511,7 @@ void Viewport::_gui_show_tooltip() {
 		r.size *= win_scale;
 		vr = window->get_usable_parent_rect();
 	}
+	r.size = r.size.ceil();
 	r.size = r.size.min(panel->get_max_size());
 
 	if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
