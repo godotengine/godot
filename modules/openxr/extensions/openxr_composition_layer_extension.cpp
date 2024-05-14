@@ -286,7 +286,7 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 
 	// Create our new swap chain
 	int64_t swapchain_format = openxr_api->get_color_swapchain_format();
-	const uint32_t sample_count = 3;
+	const uint32_t sample_count = 1;
 	const uint32_t array_size = 1;
 	XrSwapchainCreateFlags create_flags = 0;
 	if (p_static_image) {
