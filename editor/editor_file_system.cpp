@@ -297,20 +297,20 @@ void EditorFileSystem::_scan_filesystem() {
 		}
 	}
 
-	String update_cache = EditorPaths::get_singleton()->get_project_settings_dir().path_join("filesystem_update4");
-
-	if (FileAccess::exists(update_cache)) {
+	const String update_cache = EditorPaths::get_singleton()->get_project_settings_dir().path_join("filesystem_update4");
+	if (first_scan && FileAccess::exists(update_cache)) {
 		{
 			Ref<FileAccess> f2 = FileAccess::open(update_cache, FileAccess::READ);
 			String l = f2->get_line().strip_edges();
 			while (!l.is_empty()) {
-				file_cache.erase(l); //erase cache for this, so it gets updated
+				dep_update_list.insert(l);
+				file_cache.erase(l); // Erase cache for this, so it gets updated.
 				l = f2->get_line().strip_edges();
 			}
 		}
 
-		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		d->remove(update_cache); //bye bye update cache
+		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		d->remove(update_cache); // Bye bye update cache.
 	}
 
 	EditorProgressBG scan_progress("efs", "ScanFS", 1000);
@@ -326,6 +326,7 @@ void EditorFileSystem::_scan_filesystem() {
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	d->change_dir("res://");
 	_scan_new_dir(new_filesystem, d, sp);
+	dep_update_list.clear();
 
 	file_cache.clear(); //clear caches, no longer needed
 
@@ -946,11 +947,14 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				fi->import_modified_time = 0;
 				fi->import_valid = true;
 
-				if (ClassDB::is_parent_class(fi->type, SNAME("Script"))) {
-					_queue_update_script_class(path);
-				}
-				if (fi->type == SNAME("PackedScene")) {
-					_queue_update_scene_groups(path);
+				// Files in dep_update_list are forced for rescan to update dependencies. They don't need other updates.
+				if (!dep_update_list.has(path)) {
+					if (ClassDB::is_parent_class(fi->type, SNAME("Script"))) {
+						_queue_update_script_class(path);
+					}
+					if (fi->type == SNAME("PackedScene")) {
+						_queue_update_scene_groups(path);
+					}
 				}
 			}
 		}
