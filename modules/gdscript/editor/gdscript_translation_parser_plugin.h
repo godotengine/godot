@@ -45,6 +45,8 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 	// List of patterns used for extracting translation strings.
 	StringName tr_func = "tr";
 	StringName trn_func = "tr_n";
+	StringName atr_func = "atr";
+	StringName atrn_func = "atr_n";
 	HashSet<StringName> assignment_patterns;
 	HashSet<StringName> first_arg_patterns;
 	HashSet<StringName> second_arg_patterns;
