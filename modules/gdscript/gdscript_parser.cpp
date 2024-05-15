@@ -106,6 +106,7 @@ GDScriptParser::GDScriptParser() {
 
 		register_annotation(MethodInfo("@export_storage"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 		register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::NIL>, varray(), true);
+		register_annotation(MethodInfo("@export_enum_dynamic", PropertyInfo(Variant::STRING, "func_call")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM_DYNAMIC_LIST, Variant::NIL>, varray());
 		register_annotation(MethodInfo("@export_file", PropertyInfo(Variant::STRING, "filter")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FILE, Variant::STRING>, varray(""), true);
 		register_annotation(MethodInfo("@export_dir"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_DIR, Variant::STRING>);
 		register_annotation(MethodInfo("@export_global_file", PropertyInfo(Variant::STRING, "filter")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_GLOBAL_FILE, Variant::STRING>, varray(""), true);
@@ -4410,7 +4411,23 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
 			return false;
 		}
-	} else if (p_annotation->name == SNAME("@export_storage")) {
+	}  else if (p_annotation->name == SNAME("@export_enum_dynamic")) {
+		use_default_variable_type_check = false;
+
+		Variant::Type enum_type = Variant::STRING;
+
+		if (export_type.kind == DataType::BUILTIN && export_type.builtin_type == Variant::STRING_NAME) {
+			enum_type = Variant::STRING_NAME;
+		}
+
+		variable->export_info.type = enum_type;
+
+		if (!export_type.is_variant() && (export_type.kind != DataType::BUILTIN || export_type.builtin_type != enum_type)) {
+			Vector<Variant::Type> expected_types = { Variant::STRING_NAME, Variant::STRING };
+			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
+			return false;
+		}
+	}else if (p_annotation->name == SNAME("@export_storage")) {
 		use_default_variable_type_check = false; // Can be applied to a variable of any type.
 
 		// Save the info because the compiler uses export info for overwriting member info.

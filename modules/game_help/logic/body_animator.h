@@ -333,6 +333,194 @@ protected:
     // 混合类型
     BlendType m_BlendType = BT_Blend;
 };
+enum AnimatorAICompareType
+{
+    //[LabelText("等于")]
+    Equal,
+
+    //[LabelText("小于")]
+    Less,
+    //[LabelText("小于等于")]
+    LessEqual,
+    //[LabelText("大于")]
+    Greater,
+    //[LabelText("大于等于")]
+    GreaterEqual,
+    //[LabelText("不等于")]
+    NotEqual,
+};
+class AnimatorAIStateFloatCondition : public RefCounted
+{
+    StringName propertyName;
+    AnimatorAICompareType compareType;
+    float value;
+
+};
+// int类型
+class AnimatorAIStateIntCondition : public RefCounted
+{
+    StringName propertyName;
+    AnimatorAICompareType compareType;
+    float value;
+
+};
+// 字符串表达式
+class AnimatorAIStateStringNameCondition : public RefCounted
+{
+    StringName propertyName;
+    StringName value;
+};
+// 角色动画的条件
+class CharacterAnimatorConditionList : public RefCounted
+{
+    // 判断类型
+    enum JudgeType
+    {
+        // 只要一个属性通过就代表通过
+        Or,
+        // 必须全部满足
+        And
+    };
+
+public:
+    JudgeType judge_type;
+    bool is_include = false;
+    LocalVector<Ref<AnimatorAIStateFloatCondition>> conditions_float;
+    LocalVector<Ref<AnimatorAIStateIntCondition>> conditions_int;
+    LocalVector<Ref<AnimatorAIStateStringNameCondition>> conditions_string_names;
+    
+};
+// 角色动画的条件
+class CharacterAnimatorCondition : public RefCounted
+{
+
+public:
+    Ref<CharacterAnimatorConditionList> include_condition;
+    Ref<CharacterAnimatorConditionList> exclude_condition;
+    
+};
+class CharacterAnimatorLayer;
+enum AnimatorAIStopCheckType
+{
+    // 固定生命期
+    Life,
+    PlayCount,
+    // 通过检测条件结束
+    Condition,
+    Script,
+};
+// 动画逻辑节点
+class CharacterAnimationLogicNode : public Resource
+{
+
+
+private:
+    
+	virtual void animation_process(CharacterAnimatorLayer* animator,Blackboard* blackboard, double delta)const
+    {
+
+    }
+	virtual bool check_stop(CharacterAnimatorLayer* animator,Blackboard* blackboard)const
+    {
+        if (GDVIRTUAL_IS_OVERRIDDEN(_check_stop)) {
+            bool is_stop = false;
+            GDVIRTUAL_CALL(_check_stop, animator,blackboard, is_stop);
+            return is_stop;
+        }
+    }
+	GDVIRTUAL3(_animation_process,CharacterAnimatorLayer*,Blackboard*, double)
+	GDVIRTUAL2R(bool,_check_stop,CharacterAnimatorLayer*,Blackboard*)
+
+
+public:
+    StringName node_name;
+    // 优先级
+    int priority = 0;
+    // 播放的动画名称
+    StringName player_animation_name;
+    // 进入条件
+    Ref<CharacterAnimatorCondition> enter_condtion;
+    Ref<BlackboardPlan> blackboard_plan;
+    // 检测结束等待时间
+    float check_stop_delay_time = 0.0f;
+    // 生命期
+    float life_time = 0.0f;
+    AnimatorAIStopCheckType stop_check_type;
+    
+    // 退出检测条件
+    Ref<CharacterAnimatorCondition> stop_check_condtion;
+};
+struct SortCharacterAnimationLogicNode {
+	bool operator()(const Ref<CharacterAnimationLogicNode> &l, const Ref<CharacterAnimationLogicNode> &r) const {
+		return l.priority > r.priority;
+	}
+};
+class CharacterAnimationLogicRoot : public Resource
+{
+    void sort()
+    {
+        node_list.sort_custom<SortCharacterAnimationLogicNode>();
+    }
+    static int compare_priority(const Ref<CharacterAnimationLogicNode>& p_a, const Ref<CharacterAnimationLogicNode>& p_b)
+    {
+
+    }
+
+public:
+    bool is_need_sort = true;
+    LocalVector<Ref<CharacterAnimationLogicNode>>  node_list;
+};
+// 动画逻辑层信息
+/*
+    每一个层里面可以处理多个动画状态
+    每一个状态都有一套动画配置
+*/
+class CharacterAnimationLogicLayer : public Resource
+{
+    GDCLASS(CharacterAnimationLogicLayer, Resource);
+
+public:
+
+    void set_default_state_name(const StringName& p_default_state_name) { default_state_name = p_default_state_name; }
+    StringName get_default_state_name() { return default_state_name; }
+
+
+public:
+    //  默认状态名称
+    StringName default_state_name;
+    HashMap<StringName, Ref<CharacterAnimationLogicRoot>> state_map;
+
+};
+// 动画逻辑上下文
+struct CharacterAnimationLogicContext
+{
+    // 动画逻辑
+    Ref<CharacterAnimationLogicLayer> animation_logic;
+    // 当前状态名称
+    StringName state_name;
+    Ref<CharacterAnimationLogicRoot> curr_state_root;
+    // 当前处理的逻辑节点
+    Ref<CharacterAnimationLogicLayer>   logic;
+    // 执行时长
+    float time = 0.0f;
+    bool is_start = false;
+
+};
+
+// 时间线资源,这个主要用来Animation 对角色进行一些操控,比如播放动画,切换角色材质
+class CharacterTimelineNode : public Node3D
+{
+    GDCLASS(CharacterTimelineNode, Node3D);
+
+    class CharacterBodyMain* m_Body = nullptr;
+    AnimationPlayer* m_AnimationPlayer = nullptr;
+    Ref<Animation>  m_Animation;
+
+    void play_action(StringName p_action_name){}
+    
+    void set_float_value(StringName p_name,float value){}
+};
+
 // 动画分层
 class CharacterAnimatorLayer: public AnimationMixer
 {
@@ -340,7 +528,11 @@ class CharacterAnimatorLayer: public AnimationMixer
 
     List<Ref<CharacterAnimatorNodeBase>> play_list;
 public:
-
+    // 黑板信息
+    Ref<Blackboard>           blackboard;
+    // 逻辑上下文
+    CharacterAnimationLogicContext logic_context;
+    // 动画掩码
     Ref<CharacterAnimatorLayerConfig> config;
 
     // 处理动画
@@ -361,21 +553,6 @@ public:
     void play_animation(Ref<CharacterAnimatorNodeBase> p_node);
     ~CharacterAnimatorLayer();
 };
-
-// 时间线资源,这个主要用来Animation 对角色进行一些操控,比如播放动画,切换角色材质
-class CharacterTimelineNode : public Node3D
-{
-    GDCLASS(CharacterTimelineNode, Node3D);
-
-    class CharacterBodyMain* m_Body = nullptr;
-    AnimationPlayer* m_AnimationPlayer = nullptr;
-    Ref<Animation>  m_Animation;
-
-    void play_action(StringName p_action_name){}
-    
-    void set_float_value(StringName p_name,float value){}
-};
-
 class CharacterAnimator : public RefCounted
 {
     GDCLASS(CharacterAnimator, RefCounted);

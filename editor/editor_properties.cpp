@@ -322,9 +322,10 @@ void EditorPropertyTextEnum::update_property() {
 	}
 }
 
-void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_string_name, bool p_loose_mode) {
+void EditorPropertyTextEnum::setup(const StringName &p_get_options_func_name,const Vector<String> &p_options, bool p_string_name, bool p_loose_mode) {
 	string_name = p_string_name;
 	loose_mode = p_loose_mode;
+	get_options_func_name = p_get_options_func_name;
 
 	options.clear();
 
@@ -3693,6 +3694,21 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				Vector<String> options = p_hint_text.split(",", false);
 				editor->setup(options, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
+			}
+			else if (p_hint == PROPERTY_HINT_ENUM_DYNAMIC_LIST) {
+				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
+				Vector<String> options;
+				if(p_object->has_method(p_hint_text))
+				{
+					Array options_array = p_object->call(p_hint_text);
+					for(int i=0;i<options_array.size();i++)
+					{
+						String opt = options_array[i];
+						options.push_back(opt);
+					}
+				}
+				editor->setup(options, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
+				return editor;
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
 				return editor;
@@ -3846,7 +3862,23 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				Vector<String> options = p_hint_text.split(",", false);
 				editor->setup(options, true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
-			} else {
+			} 
+			else if (p_hint == PROPERTY_HINT_ENUM_DYNAMIC_LIST) {
+				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
+				Vector<String> options;
+				if(p_object->has_method(p_hint_text))
+				{
+					Array options_array = p_object->call(p_hint_text);
+					for(int i=0;i<options_array.size();i++)
+					{
+						String opt = options_array[i];
+						options.push_back(opt);
+					}
+				}
+				editor->setup(options, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
+				return editor;
+			}			
+			else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);
 				if (p_hint == PROPERTY_HINT_PLACEHOLDER_TEXT) {
 					editor->set_placeholder(p_hint_text);
