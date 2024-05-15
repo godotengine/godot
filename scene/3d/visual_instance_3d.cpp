@@ -276,12 +276,12 @@ bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) 
 		return true;
 	}
 #ifndef DISABLE_DEPRECATED
-	if (p_name == SceneStringName(use_in_baked_light) && bool(p_value)) {
+	if (p_name == SNAME("use_in_baked_light") && bool(p_value)) {
 		set_gi_mode(GI_MODE_STATIC);
 		return true;
 	}
 
-	if (p_name == SceneStringName(use_dynamic_gi) && bool(p_value)) {
+	if (p_name == SNAME("use_dynamic_gi") && bool(p_value)) {
 		set_gi_mode(GI_MODE_DYNAMIC);
 		return true;
 	}
