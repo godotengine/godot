@@ -119,6 +119,7 @@ void NoiseTexture2D::_set_texture_image(const Ref<Image> &p_image) {
 		} else {
 			texture = RS::get_singleton()->texture_2d_create(p_image);
 		}
+		RS::get_singleton()->texture_set_path(texture, get_path());
 	}
 	emit_changed();
 }
