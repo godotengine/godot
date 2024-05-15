@@ -85,6 +85,7 @@
 #include "servers/physics_server_3d.h"
 #include "servers/xr_server.h"
 #endif // _3D_DISABLED
+#include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 
 #ifdef TESTS_ENABLED
 #include "tests/test_main.h"
@@ -4565,6 +4566,8 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();
+
+	FramebufferCacheRD::reset();
 	Object::initialized = false; // Try to set initialized to false on clean => can improve it by creating a specific method
 	Main::versionYolo++;
 }

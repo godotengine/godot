@@ -308,6 +308,7 @@ public:
 	static RID get_cache_multipass_array(const TypedArray<RID> &p_textures, const TypedArray<RDFramebufferPass> &p_passes, uint32_t p_views = 1);
 
 	static FramebufferCacheRD *get_singleton() { return singleton; }
+	static void reset() { singleton = nullptr; }
 
 	FramebufferCacheRD();
 	~FramebufferCacheRD();
