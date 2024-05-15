@@ -80,7 +80,7 @@ struct AxisValueMap
 
   bool is_outside_axis_range (const Triple& axis_range) const
   {
-    float from_coord = coords[0].to_float ();
+    double from_coord = (double) coords[0].to_float ();
     return !axis_range.contains (from_coord);
   }
 
@@ -100,8 +100,8 @@ struct AxisValueMap
     float from_coord = coords[0].to_float ();
     float to_coord = coords[1].to_float ();
 
-    from_coord = renormalizeValue (from_coord, unmapped_range, triple_distances);
-    to_coord = renormalizeValue (to_coord, axis_range, triple_distances);
+    from_coord = renormalizeValue ((double) from_coord, unmapped_range, triple_distances);
+    to_coord = renormalizeValue ((double) to_coord, axis_range, triple_distances);
 
     coords[0].set_float (from_coord);
     coords[1].set_float (to_coord);
@@ -197,7 +197,7 @@ struct SegmentMaps : Array16Of<AxisValueMap>
     unmapped_val.set_int (unmap (val.to_int ()));
     float unmapped_max = unmapped_val.to_float ();
 
-    return Triple{unmapped_min, unmapped_middle, unmapped_max};
+    return Triple{(double) unmapped_min, (double) unmapped_middle, (double) unmapped_max};
   }
 
   bool subset (hb_subset_context_t *c, hb_tag_t axis_tag) const

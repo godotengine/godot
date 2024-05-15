@@ -299,13 +299,13 @@ struct TupleVariationHeader
         start = hb_min (peak, 0.f);
         end = hb_max (peak, 0.f);
       }
-      axis_tuples.set (*axis_tag, Triple (start, peak, end));
+      axis_tuples.set (*axis_tag, Triple ((double) start, (double) peak, (double) end));
     }
 
     return true;
   }
 
-  float calculate_scalar (hb_array_t<int> coords, unsigned int coord_count,
+  double calculate_scalar (hb_array_t<int> coords, unsigned int coord_count,
                           const hb_array_t<const F2DOT14> shared_tuples,
 			  const hb_vector_t<hb_pair_t<int,int>> *shared_tuple_active_idx = nullptr) const
   {
@@ -321,13 +321,13 @@ struct TupleVariationHeader
     {
       unsigned int index = get_index ();
       if (unlikely ((index + 1) * coord_count > shared_tuples.length))
-        return 0.f;
+        return 0.0;
       peak_tuple = shared_tuples.sub_array (coord_count * index, coord_count).arrayZ;
 
       if (shared_tuple_active_idx)
       {
 	if (unlikely (index >= shared_tuple_active_idx->length))
-	  return 0.f;
+	  return 0.0;
 	auto _ = (*shared_tuple_active_idx).arrayZ[index];
 	if (_.second != -1)
 	{
@@ -352,7 +352,7 @@ struct TupleVariationHeader
       end_tuple = get_end_tuple (coord_count).arrayZ;
     }
 
-    float scalar = 1.f;
+    double scalar = 1.0;
     for (unsigned int i = start_idx; i < end_idx; i += step)
     {
       int peak = peak_tuple[i].to_int ();
@@ -367,15 +367,15 @@ struct TupleVariationHeader
         int end = end_tuple[i].to_int ();
         if (unlikely (start > peak || peak > end ||
                       (start < 0 && end > 0 && peak))) continue;
-        if (v < start || v > end) return 0.f;
+        if (v < start || v > end) return 0.0;
         if (v < peak)
-        { if (peak != start) scalar *= (float) (v - start) / (peak - start); }
+        { if (peak != start) scalar *= (double) (v - start) / (peak - start); }
         else
-        { if (peak != end) scalar *= (float) (end - v) / (end - peak); }
+        { if (peak != end) scalar *= (double) (end - v) / (end - peak); }
       }
-      else if (!v || v < hb_min (0, peak) || v > hb_max (0, peak)) return 0.f;
+      else if (!v || v < hb_min (0, peak) || v > hb_max (0, peak)) return 0.0;
       else
-        scalar *= (float) v / peak;
+        scalar *= (double) v / peak;
     }
     return scalar;
   }
@@ -444,10 +444,10 @@ struct tuple_delta_t
 
   /* indices_length = point_count, indice[i] = 1 means point i is referenced */
   hb_vector_t<bool> indices;
-  
-  hb_vector_t<float> deltas_x;
+
+  hb_vector_t<double> deltas_x;
   /* empty for cvar tuples */
-  hb_vector_t<float> deltas_y;
+  hb_vector_t<double> deltas_y;
 
   /* compiled data: header and deltas
    * compiled point data is saved in a hashmap within tuple_variations_t cause
@@ -513,9 +513,9 @@ struct tuple_delta_t
     return *this;
   }
 
-  tuple_delta_t& operator *= (float scalar)
+  tuple_delta_t& operator *= (double scalar)
   {
-    if (scalar == 1.0f)
+    if (scalar == 1.0)
       return *this;
 
     unsigned num = indices.length;
@@ -546,18 +546,18 @@ struct tuple_delta_t
       return out;
     }
 
-    if ((tent->minimum < 0.f && tent->maximum > 0.f) ||
+    if ((tent->minimum < 0.0 && tent->maximum > 0.0) ||
         !(tent->minimum <= tent->middle && tent->middle <= tent->maximum))
       return out;
 
-    if (tent->middle == 0.f)
+    if (tent->middle == 0.0)
     {
       out.push (*this);
       return out;
     }
 
-    result_t solutions = rebase_tent (*tent, axis_limit, axis_triple_distances);
-    for (auto t : solutions)
+    rebase_tent_result_t solutions = rebase_tent (*tent, axis_limit, axis_triple_distances);
+    for (auto &t : solutions)
     {
       tuple_delta_t new_var = *this;
       if (t.second == Triple ())
@@ -729,8 +729,8 @@ struct tuple_delta_t
   { return compile_deltas (indices, deltas_x, deltas_y, compiled_deltas); }
 
   bool compile_deltas (const hb_vector_t<bool> &point_indices,
-                       const hb_vector_t<float> &x_deltas,
-                       const hb_vector_t<float> &y_deltas,
+                       const hb_vector_t<double> &x_deltas,
+                       const hb_vector_t<double> &y_deltas,
                        hb_vector_t<char> &compiled_deltas /* OUT */)
   {
     hb_vector_t<int> rounded_deltas;
@@ -1000,9 +1000,13 @@ struct tuple_delta_t
         {
           i = next_index (i, start_point, end_point);
           if (i == next) break;
-          deltas_x.arrayZ[i] = infer_delta (orig_points.arrayZ[i].x, orig_points.arrayZ[prev].x, orig_points.arrayZ[next].x,
+          deltas_x.arrayZ[i] = infer_delta ((double) orig_points.arrayZ[i].x,
+                                            (double) orig_points.arrayZ[prev].x,
+                                            (double) orig_points.arrayZ[next].x,
                                             deltas_x.arrayZ[prev], deltas_x.arrayZ[next]);
-          deltas_y.arrayZ[i] = infer_delta (orig_points.arrayZ[i].y, orig_points.arrayZ[prev].y, orig_points.arrayZ[next].y,
+          deltas_y.arrayZ[i] = infer_delta ((double) orig_points.arrayZ[i].y,
+                                            (double) orig_points.arrayZ[prev].y,
+                                            (double) orig_points.arrayZ[next].y,
                                             deltas_y.arrayZ[prev], deltas_y.arrayZ[next]);
           inferred_idxes.add (i);
           if (--unref_count == 0) goto no_more_gaps;
@@ -1020,8 +1024,8 @@ struct tuple_delta_t
       {
         if (!inferred_idxes.has (i))
         {
-          deltas_x.arrayZ[i] = 0.f;
-          deltas_y.arrayZ[i] = 0.f;
+          deltas_x.arrayZ[i] = 0.0;
+          deltas_y.arrayZ[i] = 0.0;
         }
         indices[i] = true;
       }
@@ -1031,7 +1035,7 @@ struct tuple_delta_t
 
   bool optimize (const contour_point_vector_t& contour_points,
                  bool is_composite,
-                 float tolerance = 0.5f)
+                 double tolerance = 0.5 + 1e-10)
   {
     unsigned count = contour_points.length;
     if (deltas_x.length != count ||
@@ -1062,7 +1066,7 @@ struct tuple_delta_t
 
     if (ref_count == count) return true;
 
-    hb_vector_t<float> opt_deltas_x, opt_deltas_y;
+    hb_vector_t<double> opt_deltas_x, opt_deltas_y;
     bool is_comp_glyph_wo_deltas = (is_composite && ref_count == 0);
     if (is_comp_glyph_wo_deltas)
     {
@@ -1194,16 +1198,16 @@ struct tuple_delta_t
     return compiled_points.resize (pos, false);
   }
 
-  static float infer_delta (float target_val, float prev_val, float next_val, float prev_delta, float next_delta)
+  static double infer_delta (double target_val, double prev_val, double next_val, double prev_delta, double next_delta)
   {
     if (prev_val == next_val)
-      return (prev_delta == next_delta) ? prev_delta : 0.f;
+      return (prev_delta == next_delta) ? prev_delta : 0.0;
     else if (target_val <= hb_min (prev_val, next_val))
       return (prev_val < next_val) ? prev_delta : next_delta;
     else if (target_val >= hb_max (prev_val, next_val))
       return (prev_val > next_val) ? prev_delta : next_delta;
 
-    float r = (target_val - prev_val) / (next_val - prev_val);
+    double r = (target_val - prev_val) / (next_val - prev_val);
     return prev_delta + r * (next_delta - prev_delta);
   }
 
@@ -1347,9 +1351,9 @@ struct TupleVariationData
           unsigned idx = apply_to_all ? i : indices[i];
           if (idx >= point_count) continue;
           var.indices[idx] = true;
-          var.deltas_x[idx] = static_cast<float> (deltas_x[i]);
+          var.deltas_x[idx] = deltas_x[i];
           if (is_gvar)
-            var.deltas_y[idx] = static_cast<float> (deltas_y[i]);
+            var.deltas_y[idx] = deltas_y[i];
         }
         tuple_vars.push (std::move (var));
       } while (iterator.move_to_next ());
@@ -1367,15 +1371,15 @@ struct TupleVariationData
       /* NULL offset, to keep original varidx valid, just return */
       if (&var_data == &Null (VarData))
         return true;
-  
+
       unsigned num_regions = var_data.get_region_index_count ();
       if (!tuple_vars.alloc (num_regions)) return false;
-  
+
       item_count = inner_map ? inner_map->get_population () : var_data.get_item_count ();
       if (!item_count) return true;
       unsigned row_size = var_data.get_row_size ();
       const HBUINT8 *delta_bytes = var_data.get_delta_bytes ();
-  
+
       for (unsigned r = 0; r < num_regions; r++)
       {
         /* In VarData, deltas are organized in rows, convert them into
@@ -1384,14 +1388,14 @@ struct TupleVariationData
         if (!tuple.deltas_x.resize (item_count, false) ||
             !tuple.indices.resize (item_count, false))
           return false;
-  
+
         for (unsigned i = 0; i < item_count; i++)
         {
           tuple.indices.arrayZ[i] = true;
           tuple.deltas_x.arrayZ[i] = var_data.get_item_delta_fast (inner_map ? inner_map->backward (i) : i,
                                                                    r, delta_bytes, row_size);
         }
-  
+
         unsigned region_index = var_data.get_region_index (r);
         if (region_index >= regions.length) return false;
         tuple.axis_tuples = regions.arrayZ[region_index];
@@ -1425,7 +1429,7 @@ struct TupleVariationData
         Triple *axis_limit;
         if (!normalized_axes_location.has (axis_tag, &axis_limit))
           return false;
-        TripleDistances axis_triple_distances{1.f, 1.f};
+        TripleDistances axis_triple_distances{1.0, 1.0};
         if (axes_triple_distances.has (axis_tag))
           axis_triple_distances = axes_triple_distances.get (axis_tag);
 
@@ -1503,11 +1507,11 @@ struct TupleVariationData
             return false;
           continue;
         }
-        
+
         hb_vector_t<char> compiled_point_data;
         if (!tuple_delta_t::compile_point_set (*points_set, compiled_point_data))
           return false;
-        
+
         if (!point_data_map.set (points_set, std::move (compiled_point_data)) ||
             !point_set_count_map.set (points_set, 1))
           return false;
@@ -1547,7 +1551,7 @@ struct TupleVariationData
       for (tuple_delta_t& var : tuple_vars)
         if (!var.calc_inferred_deltas (contour_points))
           return false;
-      
+
       return true;
     }
 
@@ -1874,7 +1878,7 @@ struct TupleVariationData
 
     if (!tuple_variations.serialize_var_headers (c, total_header_len))
       return_trace (false);
-    
+
     unsigned data_offset = min_size + total_header_len;
     if (!is_gvar) data_offset += 4;
     if (!c->check_assign (out->data, data_offset, HB_SERIALIZE_ERROR_INT_OVERFLOW)) return_trace (false);
@@ -2335,12 +2339,12 @@ struct item_variations_t
       /* just sanity check, this shouldn't happen */
       if (encoding.is_empty ())
         return false;
-  
+
       unsigned num_rows = encoding.items.length;
-  
+
       /* sort rows, make result deterministic */
       encoding.items.qsort (_cmp_row);
-  
+
       /* compile old to new var_idxes mapping */
       for (unsigned minor = 0; minor < num_rows; minor++)
       {

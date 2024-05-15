@@ -1254,7 +1254,7 @@ static bool match_input (hb_ot_apply_context_t *c,
 			 match_func_t match_func,
 			 const void *match_data,
 			 unsigned int *end_position,
-			 unsigned int match_positions[HB_MAX_CONTEXT_LENGTH],
+			 unsigned int *match_positions,
 			 unsigned int *p_total_component_count = nullptr)
 {
   TRACE_APPLY (nullptr);
@@ -1378,7 +1378,7 @@ static bool match_input (hb_ot_apply_context_t *c,
 }
 static inline bool ligate_input (hb_ot_apply_context_t *c,
 				 unsigned int count, /* Including the first glyph */
-				 const unsigned int match_positions[HB_MAX_CONTEXT_LENGTH], /* Including the first glyph */
+				 const unsigned int *match_positions, /* Including the first glyph */
 				 unsigned int match_end,
 				 hb_codepoint_t lig_glyph,
 				 unsigned int total_component_count)
@@ -1686,13 +1686,16 @@ static inline void recurse_lookups (context_t *c,
 
 static inline void apply_lookup (hb_ot_apply_context_t *c,
 				 unsigned int count, /* Including the first glyph */
-				 unsigned int match_positions[HB_MAX_CONTEXT_LENGTH], /* Including the first glyph */
+				 unsigned int *match_positions, /* Including the first glyph */
 				 unsigned int lookupCount,
 				 const LookupRecord lookupRecord[], /* Array of LookupRecords--in design order */
 				 unsigned int match_end)
 {
   hb_buffer_t *buffer = c->buffer;
   int end;
+
+  unsigned int *match_positions_input = match_positions;
+  unsigned int match_positions_count = count;
 
   /* All positions are distance from beginning of *output* buffer.
    * Adjust. */
@@ -1797,6 +1800,27 @@ static inline void apply_lookup (hb_ot_apply_context_t *c,
     {
       if (unlikely (delta + count > HB_MAX_CONTEXT_LENGTH))
 	break;
+      if (unlikely (delta + count > match_positions_count))
+      {
+        unsigned new_match_positions_count = hb_max (delta + count, hb_max(match_positions_count, 4u) * 1.5);
+        if (match_positions == match_positions_input)
+	{
+	  match_positions = (unsigned int *) hb_malloc (new_match_positions_count * sizeof (match_positions[0]));
+	  if (unlikely (!match_positions))
+	    break;
+	  memcpy (match_positions, match_positions_input, count * sizeof (match_positions[0]));
+	  match_positions_count = new_match_positions_count;
+	}
+	else
+	{
+	  unsigned int *new_match_positions = (unsigned int *) hb_realloc (match_positions, new_match_positions_count * sizeof (match_positions[0]));
+	  if (unlikely (!new_match_positions))
+	    break;
+	  match_positions = new_match_positions;
+	  match_positions_count = new_match_positions_count;
+	}
+      }
+
     }
     else
     {
@@ -1819,6 +1843,9 @@ static inline void apply_lookup (hb_ot_apply_context_t *c,
     for (; next < count; next++)
       match_positions[next] += delta;
   }
+
+  if (match_positions != match_positions_input)
+    hb_free (match_positions);
 
   (void) buffer->move_to (end);
 }
@@ -1920,8 +1947,18 @@ static bool context_apply_lookup (hb_ot_apply_context_t *c,
 				  const LookupRecord lookupRecord[],
 				  const ContextApplyLookupContext &lookup_context)
 {
+  if (unlikely (inputCount > HB_MAX_CONTEXT_LENGTH)) return false;
+  unsigned match_positions_stack[4];
+  unsigned *match_positions = match_positions_stack;
+  if (unlikely (inputCount > ARRAY_LENGTH (match_positions_stack)))
+  {
+    match_positions = (unsigned *) hb_malloc (hb_max (inputCount, 1u) * sizeof (match_positions[0]));
+    if (unlikely (!match_positions))
+      return false;
+  }
+
   unsigned match_end = 0;
-  unsigned match_positions[HB_MAX_CONTEXT_LENGTH];
+  bool ret = false;
   if (match_input (c,
 		   inputCount, input,
 		   lookup_context.funcs.match, lookup_context.match_data,
@@ -1932,13 +1969,18 @@ static bool context_apply_lookup (hb_ot_apply_context_t *c,
 		  inputCount, match_positions,
 		  lookupCount, lookupRecord,
 		  match_end);
-    return true;
+    ret = true;
   }
   else
   {
     c->buffer->unsafe_to_concat (c->buffer->idx, match_end);
-    return false;
+    ret = false;
   }
+
+  if (unlikely (match_positions != match_positions_stack))
+    hb_free (match_positions);
+
+  return ret;
 }
 
 template <typename Types>
@@ -3018,9 +3060,20 @@ static bool chain_context_apply_lookup (hb_ot_apply_context_t *c,
 					const LookupRecord lookupRecord[],
 					const ChainContextApplyLookupContext &lookup_context)
 {
+  if (unlikely (inputCount > HB_MAX_CONTEXT_LENGTH)) return false;
+  unsigned match_positions_stack[4];
+  unsigned *match_positions = match_positions_stack;
+  if (unlikely (inputCount > ARRAY_LENGTH (match_positions_stack)))
+  {
+    match_positions = (unsigned *) hb_malloc (hb_max (inputCount, 1u) * sizeof (match_positions[0]));
+    if (unlikely (!match_positions))
+      return false;
+  }
+
+  unsigned start_index = c->buffer->out_len;
   unsigned end_index = c->buffer->idx;
   unsigned match_end = 0;
-  unsigned match_positions[HB_MAX_CONTEXT_LENGTH];
+  bool ret = true;
   if (!(match_input (c,
 		     inputCount, input,
 		     lookup_context.funcs.match[1], lookup_context.match_data[1],
@@ -3031,17 +3084,18 @@ static bool chain_context_apply_lookup (hb_ot_apply_context_t *c,
 			   match_end, &end_index)))
   {
     c->buffer->unsafe_to_concat (c->buffer->idx, end_index);
-    return false;
+    ret = false;
+    goto done;
   }
 
-  unsigned start_index = c->buffer->out_len;
   if (!match_backtrack (c,
 			backtrackCount, backtrack,
 			lookup_context.funcs.match[0], lookup_context.match_data[0],
 			&start_index))
   {
     c->buffer->unsafe_to_concat_from_outbuffer (start_index, end_index);
-    return false;
+    ret = false;
+    goto done;
   }
 
   c->buffer->unsafe_to_break_from_outbuffer (start_index, end_index);
@@ -3049,7 +3103,12 @@ static bool chain_context_apply_lookup (hb_ot_apply_context_t *c,
 		inputCount, match_positions,
 		lookupCount, lookupRecord,
 		match_end);
-  return true;
+  done:
+
+  if (unlikely (match_positions != match_positions_stack))
+    hb_free (match_positions);
+
+  return ret;
 }
 
 template <typename Types>
@@ -4328,7 +4387,7 @@ struct hb_ot_layout_lookup_accelerator_t
 
     thiz->digest.init ();
     for (auto& subtable : hb_iter (thiz->subtables, count))
-      thiz->digest.add (subtable.digest);
+      thiz->digest.union_ (subtable.digest);
 
 #ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
     thiz->cache_user_idx = c_accelerate_subtables.cache_user_idx;

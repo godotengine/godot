@@ -86,7 +86,7 @@ struct hb_sparseset_t
   uint32_t hash () const { return s.hash (); }
 
   void add (hb_codepoint_t g) { s.add (g); }
-  bool add_range (hb_codepoint_t a, hb_codepoint_t b) { return s.add_range (a, b); }
+  bool add_range (hb_codepoint_t first, hb_codepoint_t last) { return s.add_range (first, last); }
 
   template <typename T>
   void add_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))

@@ -202,8 +202,12 @@ struct BEInt<Type, 4>
 /* Floats. */
 
 /* We want our rounding towards +infinity. */
+static inline double
+_hb_roundf (double x) { return floor (x + .5); }
+
 static inline float
 _hb_roundf (float x) { return floorf (x + .5f); }
+
 #define roundf(x) _hb_roundf(x)
 
 
