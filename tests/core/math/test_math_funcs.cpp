@@ -36,65 +36,66 @@ TEST_FORCE_LINK(test_math_funcs)
 namespace TestMathFuncs {
 
 TEST_CASE("[Math] C++ macros") {
-	CHECK(MIN(-2, 2) == -2);
-	CHECK(MIN(600, 2) == 2);
+	static_assert(MIN(-2, 2) == -2);
+	static_assert(MIN(600, 2) == 2);
 
-	CHECK(MAX(-2, 2) == 2);
-	CHECK(MAX(600, 2) == 600);
+	static_assert(MAX(-2, 2) == 2);
+	static_assert(MAX(600, 2) == 600);
 
-	CHECK(CLAMP(600, -2, 2) == 2);
-	CHECK(CLAMP(620, 600, 650) == 620);
+	static_assert(CLAMP(600, -2, 2) == 2);
+	static_assert(CLAMP(620, 600, 650) == 620);
 	// `max` is lower than `min`.
-	CHECK(CLAMP(620, 600, 50) == 50);
+	static_assert(CLAMP(620, 600, 50) == 50);
 
-	CHECK(Math::abs(-5) == 5);
-	CHECK(Math::abs(0) == 0);
-	CHECK(Math::abs(5) == 5);
+	static_assert(Math::abs(-5) == 5);
+	static_assert(Math::abs(0) == 0);
+	static_assert(Math::abs(5) == 5);
 
-	CHECK(SIGN(-5) == -1.0);
-	CHECK(SIGN(0) == 0.0);
-	CHECK(SIGN(5) == 1.0);
+	static_assert(SIGN(-5) == -1.0);
+	static_assert(SIGN(0) == 0.0);
+	static_assert(SIGN(5) == 1.0);
 	// Check that SIGN(Math::NaN) returns 0.0.
+	// FIXME: `static_assert` fails on some compilers, substitute with normal `CHECK` instead.
 	CHECK(SIGN(Math::NaN) == 0.0);
 }
 
 TEST_CASE("[Math] Power of two functions") {
-	CHECK(Math::next_power_of_2((uint32_t)0) == 0);
-	CHECK(Math::next_power_of_2((uint32_t)1) == 1);
-	CHECK(Math::next_power_of_2((uint32_t)16) == 16);
-	CHECK(Math::next_power_of_2((uint32_t)17) == 32);
-	CHECK(Math::next_power_of_2((uint32_t)65535) == 65536);
+	static_assert(Math::next_power_of_2((uint32_t)0) == 0);
+	static_assert(Math::next_power_of_2((uint32_t)1) == 1);
+	static_assert(Math::next_power_of_2((uint32_t)16) == 16);
+	static_assert(Math::next_power_of_2((uint32_t)17) == 32);
+	static_assert(Math::next_power_of_2((uint32_t)65535) == 65536);
 
-	CHECK(Math::previous_power_of_2((uint32_t)0) == 0);
-	CHECK(Math::previous_power_of_2((uint32_t)1) == 1);
-	CHECK(Math::previous_power_of_2((uint32_t)16) == 16);
-	CHECK(Math::previous_power_of_2((uint32_t)17) == 16);
-	CHECK(Math::previous_power_of_2((uint32_t)65535) == 32768);
+	static_assert(Math::previous_power_of_2((uint32_t)0) == 0);
+	static_assert(Math::previous_power_of_2((uint32_t)1) == 1);
+	static_assert(Math::previous_power_of_2((uint32_t)16) == 16);
+	static_assert(Math::previous_power_of_2((uint32_t)17) == 16);
+	static_assert(Math::previous_power_of_2((uint32_t)65535) == 32768);
 
-	CHECK(Math::closest_power_of_2((uint32_t)0) == 0);
-	CHECK(Math::closest_power_of_2((uint32_t)1) == 1);
-	CHECK(Math::closest_power_of_2((uint32_t)16) == 16);
-	CHECK(Math::closest_power_of_2((uint32_t)17) == 16);
-	CHECK(Math::closest_power_of_2((uint32_t)65535) == 65536);
+	static_assert(Math::closest_power_of_2((uint32_t)0) == 0);
+	static_assert(Math::closest_power_of_2((uint32_t)1) == 1);
+	static_assert(Math::closest_power_of_2((uint32_t)16) == 16);
+	static_assert(Math::closest_power_of_2((uint32_t)17) == 16);
+	static_assert(Math::closest_power_of_2((uint32_t)65535) == 65536);
 
-	CHECK(Math::get_shift_from_power_of_2((uint32_t)0) == -1);
-	CHECK(Math::get_shift_from_power_of_2((uint32_t)1) == 0);
-	CHECK(Math::get_shift_from_power_of_2((uint32_t)16) == 4);
-	CHECK(Math::get_shift_from_power_of_2((uint32_t)17) == -1);
-	CHECK(Math::get_shift_from_power_of_2((uint32_t)65535) == -1);
+	static_assert(Math::get_shift_from_power_of_2((uint32_t)0) == -1);
+	static_assert(Math::get_shift_from_power_of_2((uint32_t)1) == 0);
+	static_assert(Math::get_shift_from_power_of_2((uint32_t)16) == 4);
+	static_assert(Math::get_shift_from_power_of_2((uint32_t)17) == -1);
+	static_assert(Math::get_shift_from_power_of_2((uint32_t)65535) == -1);
 
-	CHECK(Math::nearest_shift((uint32_t)0) == 0);
-	CHECK(Math::nearest_shift((uint32_t)1) == 1);
-	CHECK(Math::nearest_shift((uint32_t)16) == 5);
-	CHECK(Math::nearest_shift((uint32_t)17) == 5);
-	CHECK(Math::nearest_shift((uint32_t)65535) == 16);
+	static_assert(Math::nearest_shift((uint32_t)0) == 0);
+	static_assert(Math::nearest_shift((uint32_t)1) == 1);
+	static_assert(Math::nearest_shift((uint32_t)16) == 5);
+	static_assert(Math::nearest_shift((uint32_t)17) == 5);
+	static_assert(Math::nearest_shift((uint32_t)65535) == 16);
 }
 
 TEST_CASE_TEMPLATE("[Math] abs", T, int, float, double) {
-	CHECK(Math::abs((T)-1) == (T)1);
-	CHECK(Math::abs((T)0) == (T)0);
-	CHECK(Math::abs((T)1) == (T)1);
-	CHECK(Math::abs((T)0.1) == (T)0.1);
+	static_assert(Math::abs((T)-1) == (T)1);
+	static_assert(Math::abs((T)0) == (T)0);
+	static_assert(Math::abs((T)1) == (T)1);
+	static_assert(Math::abs((T)0.1) == (T)0.1);
 }
 
 TEST_CASE_TEMPLATE("[Math] round/floor/ceil", T, float, double) {
@@ -111,26 +112,26 @@ TEST_CASE_TEMPLATE("[Math] round/floor/ceil", T, float, double) {
 }
 
 TEST_CASE_TEMPLATE("[Math] integer division round up unsigned", T, uint32_t, uint64_t) {
-	CHECK(Math::division_round_up((T)0, (T)64) == 0);
-	CHECK(Math::division_round_up((T)1, (T)64) == 1);
-	CHECK(Math::division_round_up((T)63, (T)64) == 1);
-	CHECK(Math::division_round_up((T)64, (T)64) == 1);
-	CHECK(Math::division_round_up((T)65, (T)64) == 2);
-	CHECK(Math::division_round_up((T)65, (T)1) == 65);
+	static_assert(Math::division_round_up((T)0, (T)64) == 0);
+	static_assert(Math::division_round_up((T)1, (T)64) == 1);
+	static_assert(Math::division_round_up((T)63, (T)64) == 1);
+	static_assert(Math::division_round_up((T)64, (T)64) == 1);
+	static_assert(Math::division_round_up((T)65, (T)64) == 2);
+	static_assert(Math::division_round_up((T)65, (T)1) == 65);
 }
 
 TEST_CASE_TEMPLATE("[Math] integer division round up signed", T, int32_t, int64_t) {
-	CHECK(Math::division_round_up((T)0, (T)64) == 0);
-	CHECK(Math::division_round_up((T)1, (T)64) == 1);
-	CHECK(Math::division_round_up((T)63, (T)64) == 1);
-	CHECK(Math::division_round_up((T)64, (T)64) == 1);
-	CHECK(Math::division_round_up((T)65, (T)64) == 2);
-	CHECK(Math::division_round_up((T)65, (T)1) == 65);
-	CHECK(Math::division_round_up((T)-1, (T)64) == 0);
-	CHECK(Math::division_round_up((T)-1, (T)-1) == 1);
-	CHECK(Math::division_round_up((T)-1, (T)1) == -1);
-	CHECK(Math::division_round_up((T)-1, (T)-2) == 1);
-	CHECK(Math::division_round_up((T)-4, (T)-2) == 2);
+	static_assert(Math::division_round_up((T)0, (T)64) == 0);
+	static_assert(Math::division_round_up((T)1, (T)64) == 1);
+	static_assert(Math::division_round_up((T)63, (T)64) == 1);
+	static_assert(Math::division_round_up((T)64, (T)64) == 1);
+	static_assert(Math::division_round_up((T)65, (T)64) == 2);
+	static_assert(Math::division_round_up((T)65, (T)1) == 65);
+	static_assert(Math::division_round_up((T)-1, (T)64) == 0);
+	static_assert(Math::division_round_up((T)-1, (T)-1) == 1);
+	static_assert(Math::division_round_up((T)-1, (T)1) == -1);
+	static_assert(Math::division_round_up((T)-1, (T)-2) == 1);
+	static_assert(Math::division_round_up((T)-4, (T)-2) == 2);
 }
 
 TEST_CASE_TEMPLATE("[Math] sin/cos/tan", T, float, double) {
@@ -290,12 +291,24 @@ TEST_CASE_TEMPLATE("[Math] pow/log/log2/exp/sqrt", T, float, double) {
 	CHECK(Math::sqrt((T)1.5) == doctest::Approx((T)1.224745));
 }
 
-TEST_CASE_TEMPLATE("[Math] is_nan/is_inf", T, float, double) {
-	CHECK(!Math::is_nan((T)0.0));
-	CHECK(Math::is_nan((T)Math::NaN));
+TEST_CASE_TEMPLATE("[Math] is_nan/is_inf/is_finite", T, float, double) {
+	static_assert(!Math::is_nan((T)0.0));
+	static_assert(!Math::is_nan((T)CMP_EPSILON));
+	static_assert(!Math::is_nan((T)Math::INF));
+	static_assert(!Math::is_nan((T)-Math::INF));
+	static_assert(Math::is_nan((T)Math::NaN));
 
-	CHECK(!Math::is_inf((T)0.0));
-	CHECK(Math::is_inf((T)Math::INF));
+	static_assert(!Math::is_inf((T)0.0));
+	static_assert(!Math::is_inf((T)CMP_EPSILON));
+	static_assert(Math::is_inf((T)Math::INF));
+	static_assert(Math::is_inf((T)-Math::INF));
+	static_assert(!Math::is_inf((T)Math::NaN));
+
+	static_assert(Math::is_finite((T)0.0));
+	static_assert(Math::is_finite((T)CMP_EPSILON));
+	static_assert(!Math::is_finite((T)Math::INF));
+	static_assert(!Math::is_finite((T)-Math::INF));
+	static_assert(!Math::is_finite((T)Math::NaN));
 }
 
 TEST_CASE_TEMPLATE("[Math] linear_to_db", T, float, double) {
@@ -338,49 +351,69 @@ TEST_CASE_TEMPLATE("[Math] range_step_decimals", T, float, double) {
 	CHECK(Math::range_step_decimals((T)-0.5) == 16);
 }
 
-TEST_CASE_TEMPLATE("[Math] lerp", T, float, double) {
-	CHECK(Math::lerp((T)2.0, (T)5.0, (T)-0.1) == doctest::Approx((T)1.7));
-	CHECK(Math::lerp((T)2.0, (T)5.0, (T)0.0) == doctest::Approx((T)2.0));
-	CHECK(Math::lerp((T)2.0, (T)5.0, (T)0.1) == doctest::Approx((T)2.3));
-	CHECK(Math::lerp((T)2.0, (T)5.0, (T)1.0) == doctest::Approx((T)5.0));
-	CHECK(Math::lerp((T)2.0, (T)5.0, (T)2.0) == doctest::Approx((T)8.0));
+TEST_CASE_TEMPLATE("[Math] is_equal_approx", T, float, double) {
+	static_assert(Math::is_equal_approx((T)2.0, (T)2.0));
+	static_assert(Math::is_equal_approx((T)2.0, (T)2.0 + (T)CMP_EPSILON));
+	static_assert(!Math::is_equal_approx((T)2.0, (T)2.0 + (T)CMP_EPSILON + (T)CMP_EPSILON));
 
-	CHECK(Math::lerp((T)-2.0, (T)-5.0, (T)-0.1) == doctest::Approx((T)-1.7));
-	CHECK(Math::lerp((T)-2.0, (T)-5.0, (T)0.0) == doctest::Approx((T)-2.0));
-	CHECK(Math::lerp((T)-2.0, (T)-5.0, (T)0.1) == doctest::Approx((T)-2.3));
-	CHECK(Math::lerp((T)-2.0, (T)-5.0, (T)1.0) == doctest::Approx((T)-5.0));
-	CHECK(Math::lerp((T)-2.0, (T)-5.0, (T)2.0) == doctest::Approx((T)-8.0));
+	static_assert(Math::is_equal_approx((T)-2.0, (T)-2.0));
+	static_assert(Math::is_equal_approx((T)-2.0, (T)-2.0 - (T)CMP_EPSILON));
+	static_assert(!Math::is_equal_approx((T)-2.0, (T)-2.0 - (T)CMP_EPSILON - (T)CMP_EPSILON));
+}
+
+TEST_CASE_TEMPLATE("[Math] is_zero_approx", T, float, double) {
+	static_assert(Math::is_zero_approx((T)0.0));
+	static_assert(Math::is_zero_approx((T)0.0 + ((T)CMP_EPSILON / 2)));
+	static_assert(!Math::is_zero_approx((T)0.0 + (T)CMP_EPSILON));
+
+	static_assert(Math::is_zero_approx((T)-0.0));
+	static_assert(Math::is_zero_approx((T)-0.0 - ((T)CMP_EPSILON / 2)));
+	static_assert(!Math::is_zero_approx((T)-0.0 - (T)-CMP_EPSILON));
+}
+
+TEST_CASE_TEMPLATE("[Math] lerp", T, float, double) {
+	static_assert(Math::is_equal_approx(Math::lerp((T)2.0, (T)5.0, (T)-0.1), (T)1.7));
+	static_assert(Math::is_equal_approx(Math::lerp((T)2.0, (T)5.0, (T)0.0), (T)2.0));
+	static_assert(Math::is_equal_approx(Math::lerp((T)2.0, (T)5.0, (T)0.1), (T)2.3));
+	static_assert(Math::is_equal_approx(Math::lerp((T)2.0, (T)5.0, (T)1.0), (T)5.0));
+	static_assert(Math::is_equal_approx(Math::lerp((T)2.0, (T)5.0, (T)2.0), (T)8.0));
+
+	static_assert(Math::is_equal_approx(Math::lerp((T)-2.0, (T)-5.0, (T)-0.1), (T)-1.7));
+	static_assert(Math::is_equal_approx(Math::lerp((T)-2.0, (T)-5.0, (T)0.0), (T)-2.0));
+	static_assert(Math::is_equal_approx(Math::lerp((T)-2.0, (T)-5.0, (T)0.1), (T)-2.3));
+	static_assert(Math::is_equal_approx(Math::lerp((T)-2.0, (T)-5.0, (T)1.0), (T)-5.0));
+	static_assert(Math::is_equal_approx(Math::lerp((T)-2.0, (T)-5.0, (T)2.0), (T)-8.0));
 }
 
 TEST_CASE_TEMPLATE("[Math] inverse_lerp", T, float, double) {
-	CHECK(Math::inverse_lerp((T)2.0, (T)5.0, (T)1.7) == doctest::Approx((T)-0.1));
-	CHECK(Math::inverse_lerp((T)2.0, (T)5.0, (T)2.0) == doctest::Approx((T)0.0));
-	CHECK(Math::inverse_lerp((T)2.0, (T)5.0, (T)2.3) == doctest::Approx((T)0.1));
-	CHECK(Math::inverse_lerp((T)2.0, (T)5.0, (T)5.0) == doctest::Approx((T)1.0));
-	CHECK(Math::inverse_lerp((T)2.0, (T)5.0, (T)8.0) == doctest::Approx((T)2.0));
+	static_assert(Math::is_equal_approx(Math::inverse_lerp((T)2.0, (T)5.0, (T)1.7), (T)-0.1));
+	static_assert(Math::is_equal_approx(Math::inverse_lerp((T)2.0, (T)5.0, (T)2.0), (T)0.0));
+	static_assert(Math::is_equal_approx(Math::inverse_lerp((T)2.0, (T)5.0, (T)2.3), (T)0.1));
+	static_assert(Math::is_equal_approx(Math::inverse_lerp((T)2.0, (T)5.0, (T)5.0), (T)1.0));
+	static_assert(Math::is_equal_approx(Math::inverse_lerp((T)2.0, (T)5.0, (T)8.0), (T)2.0));
 
-	CHECK(Math::inverse_lerp((T)-2.0, (T)-5.0, (T)-1.7) == doctest::Approx((T)-0.1));
-	CHECK(Math::inverse_lerp((T)-2.0, (T)-5.0, (T)-2.0) == doctest::Approx((T)0.0));
-	CHECK(Math::inverse_lerp((T)-2.0, (T)-5.0, (T)-2.3) == doctest::Approx((T)0.1));
-	CHECK(Math::inverse_lerp((T)-2.0, (T)-5.0, (T)-5.0) == doctest::Approx((T)1.0));
-	CHECK(Math::inverse_lerp((T)-2.0, (T)-5.0, (T)-8.0) == doctest::Approx((T)2.0));
+	static_assert(Math::is_equal_approx(Math::inverse_lerp((T)-2.0, (T)-5.0, (T)-1.7), (T)-0.1));
+	static_assert(Math::is_equal_approx(Math::inverse_lerp((T)-2.0, (T)-5.0, (T)-2.0), (T)0.0));
+	static_assert(Math::is_equal_approx(Math::inverse_lerp((T)-2.0, (T)-5.0, (T)-2.3), (T)0.1));
+	static_assert(Math::is_equal_approx(Math::inverse_lerp((T)-2.0, (T)-5.0, (T)-5.0), (T)1.0));
+	static_assert(Math::is_equal_approx(Math::inverse_lerp((T)-2.0, (T)-5.0, (T)-8.0), (T)2.0));
 }
 
 TEST_CASE_TEMPLATE("[Math] remap", T, float, double) {
-	CHECK(Math::remap((T)50.0, (T)100.0, (T)200.0, (T)0.0, (T)1000.0) == doctest::Approx((T)-500.0));
-	CHECK(Math::remap((T)100.0, (T)100.0, (T)200.0, (T)0.0, (T)1000.0) == doctest::Approx((T)0.0));
-	CHECK(Math::remap((T)200.0, (T)100.0, (T)200.0, (T)0.0, (T)1000.0) == doctest::Approx((T)1000.0));
-	CHECK(Math::remap((T)250.0, (T)100.0, (T)200.0, (T)0.0, (T)1000.0) == doctest::Approx((T)1500.0));
+	static_assert(Math::is_equal_approx(Math::remap((T)50.0, (T)100.0, (T)200.0, (T)0.0, (T)1000.0), (T)-500.0));
+	static_assert(Math::is_equal_approx(Math::remap((T)100.0, (T)100.0, (T)200.0, (T)0.0, (T)1000.0), (T)0.0));
+	static_assert(Math::is_equal_approx(Math::remap((T)200.0, (T)100.0, (T)200.0, (T)0.0, (T)1000.0), (T)1000.0));
+	static_assert(Math::is_equal_approx(Math::remap((T)250.0, (T)100.0, (T)200.0, (T)0.0, (T)1000.0), (T)1500.0));
 
-	CHECK(Math::remap((T)-50.0, (T)-100.0, (T)-200.0, (T)0.0, (T)1000.0) == doctest::Approx((T)-500.0));
-	CHECK(Math::remap((T)-100.0, (T)-100.0, (T)-200.0, (T)0.0, (T)1000.0) == doctest::Approx((T)0.0));
-	CHECK(Math::remap((T)-200.0, (T)-100.0, (T)-200.0, (T)0.0, (T)1000.0) == doctest::Approx((T)1000.0));
-	CHECK(Math::remap((T)-250.0, (T)-100.0, (T)-200.0, (T)0.0, (T)1000.0) == doctest::Approx((T)1500.0));
+	static_assert(Math::is_equal_approx(Math::remap((T)-50.0, (T)-100.0, (T)-200.0, (T)0.0, (T)1000.0), (T)-500.0));
+	static_assert(Math::is_equal_approx(Math::remap((T)-100.0, (T)-100.0, (T)-200.0, (T)0.0, (T)1000.0), (T)0.0));
+	static_assert(Math::is_equal_approx(Math::remap((T)-200.0, (T)-100.0, (T)-200.0, (T)0.0, (T)1000.0), (T)1000.0));
+	static_assert(Math::is_equal_approx(Math::remap((T)-250.0, (T)-100.0, (T)-200.0, (T)0.0, (T)1000.0), (T)1500.0));
 
-	CHECK(Math::remap((T)-50.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0) == doctest::Approx((T)500.0));
-	CHECK(Math::remap((T)-100.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0) == doctest::Approx((T)0.0));
-	CHECK(Math::remap((T)-200.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0) == doctest::Approx((T)-1000.0));
-	CHECK(Math::remap((T)-250.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0) == doctest::Approx((T)-1500.0));
+	static_assert(Math::is_equal_approx(Math::remap((T)-50.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0), (T)500.0));
+	static_assert(Math::is_equal_approx(Math::remap((T)-100.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0), (T)0.0));
+	static_assert(Math::is_equal_approx(Math::remap((T)-200.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0), (T)-1000.0));
+	static_assert(Math::is_equal_approx(Math::remap((T)-250.0, (T)-100.0, (T)-200.0, (T)0.0, (T)-1000.0), (T)-1500.0));
 
 	// Note: undefined behavior can happen when `p_istart == p_istop`. We don't bother testing this as it will
 	// vary between hardware and compilers properly implementing IEEE 754.
@@ -554,10 +587,10 @@ TEST_CASE("[Math] posmod") {
 }
 
 TEST_CASE("[Math] wrapi") {
-	CHECK(Math::wrapi(-30, -20, 160) == 150);
-	CHECK(Math::wrapi(30, -20, 160) == 30);
-	CHECK(Math::wrapi(300, -20, 160) == 120);
-	CHECK(Math::wrapi(300'000'000'000, -20, 160) == 120);
+	static_assert(Math::wrapi(-30, -20, 160) == 150);
+	static_assert(Math::wrapi(30, -20, 160) == 30);
+	static_assert(Math::wrapi(300, -20, 160) == 120);
+	static_assert(Math::wrapi(300'000'000'000, -20, 160) == 120);
 }
 
 TEST_CASE_TEMPLATE("[Math] wrapf", T, float, double) {
@@ -586,25 +619,25 @@ TEST_CASE_TEMPLATE("[Math] pingpong", T, float, double) {
 }
 
 TEST_CASE_TEMPLATE("[Math] deg_to_rad/rad_to_deg", T, float, double) {
-	CHECK(Math::deg_to_rad((T)180.0) == doctest::Approx((T)Math::PI));
-	CHECK(Math::deg_to_rad((T)-27.0) == doctest::Approx((T)-0.471239));
+	static_assert(Math::is_equal_approx(Math::deg_to_rad((T)180.0), (T)Math::PI));
+	static_assert(Math::is_equal_approx(Math::deg_to_rad((T)-27.0), (T)-0.471239));
 
-	CHECK(Math::rad_to_deg((T)Math::PI) == doctest::Approx((T)180.0));
-	CHECK(Math::rad_to_deg((T)-1.5) == doctest::Approx((T)-85.94366927));
+	static_assert(Math::is_equal_approx(Math::rad_to_deg((T)Math::PI), (T)180.0));
+	static_assert(Math::is_equal_approx(Math::rad_to_deg((T)-1.5), (T)-85.94366927));
 }
 
 TEST_CASE_TEMPLATE("[Math] cubic_interpolate", T, float, double) {
-	CHECK(Math::cubic_interpolate((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.0) == doctest::Approx((T)0.2));
-	CHECK(Math::cubic_interpolate((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.25) == doctest::Approx((T)0.33125));
-	CHECK(Math::cubic_interpolate((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.5) == doctest::Approx((T)0.5));
-	CHECK(Math::cubic_interpolate((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.75) == doctest::Approx((T)0.66875));
-	CHECK(Math::cubic_interpolate((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)1.0) == doctest::Approx((T)0.8));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.0), (T)0.2));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.25), (T)0.33125));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.5), (T)0.5));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.75), (T)0.66875));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)1.0), (T)0.8));
 
-	CHECK(Math::cubic_interpolate((T)20.2, (T)30.1, (T)-100.0, (T)32.0, (T)-50.0) == doctest::Approx((T)-6662732.3));
-	CHECK(Math::cubic_interpolate((T)20.2, (T)30.1, (T)-100.0, (T)32.0, (T)-5.0) == doctest::Approx((T)-9356.3));
-	CHECK(Math::cubic_interpolate((T)20.2, (T)30.1, (T)-100.0, (T)32.0, (T)0.0) == doctest::Approx((T)20.2));
-	CHECK(Math::cubic_interpolate((T)20.2, (T)30.1, (T)-100.0, (T)32.0, (T)1.0) == doctest::Approx((T)30.1));
-	CHECK(Math::cubic_interpolate((T)20.2, (T)30.1, (T)-100.0, (T)32.0, (T)4.0) == doctest::Approx((T)1853.2));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate((T)20.2, (T)30.1, (T)-100.0, (T)32.0, (T)-50.0), (T)-6662732.3));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate((T)20.2, (T)30.1, (T)-100.0, (T)32.0, (T)-5.0), (T)-9356.3));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate((T)20.2, (T)30.1, (T)-100.0, (T)32.0, (T)0.0), (T)20.2));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate((T)20.2, (T)30.1, (T)-100.0, (T)32.0, (T)1.0), (T)30.1));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate((T)20.2, (T)30.1, (T)-100.0, (T)32.0, (T)4.0), (T)1853.2));
 }
 
 TEST_CASE_TEMPLATE("[Math] cubic_interpolate_angle", T, float, double) {
@@ -616,11 +649,11 @@ TEST_CASE_TEMPLATE("[Math] cubic_interpolate_angle", T, float, double) {
 }
 
 TEST_CASE_TEMPLATE("[Math] cubic_interpolate_in_time", T, float, double) {
-	CHECK(Math::cubic_interpolate_in_time((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.0, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)0.0));
-	CHECK(Math::cubic_interpolate_in_time((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.25, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)0.1625));
-	CHECK(Math::cubic_interpolate_in_time((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.5, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)0.4));
-	CHECK(Math::cubic_interpolate_in_time((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.75, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)0.6375));
-	CHECK(Math::cubic_interpolate_in_time((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)1.0, (T)0.5, (T)0.0, (T)1.0) == doctest::Approx((T)0.8));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate_in_time((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.0, (T)0.5, (T)0.0, (T)1.0), (T)0.0));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate_in_time((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.25, (T)0.5, (T)0.0, (T)1.0), (T)0.1625));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate_in_time((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.5, (T)0.5, (T)0.0, (T)1.0), (T)0.4));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate_in_time((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)0.75, (T)0.5, (T)0.0, (T)1.0), (T)0.6375));
+	static_assert(Math::is_equal_approx(Math::cubic_interpolate_in_time((T)0.2, (T)0.8, (T)0.0, (T)1.0, (T)1.0, (T)0.5, (T)0.0, (T)1.0), (T)0.8));
 }
 
 TEST_CASE_TEMPLATE("[Math] cubic_interpolate_angle_in_time", T, float, double) {
@@ -632,11 +665,11 @@ TEST_CASE_TEMPLATE("[Math] cubic_interpolate_angle_in_time", T, float, double) {
 }
 
 TEST_CASE_TEMPLATE("[Math] bezier_interpolate", T, float, double) {
-	CHECK(Math::bezier_interpolate((T)0.0, (T)0.2, (T)0.8, (T)1.0, (T)0.0) == doctest::Approx((T)0.0));
-	CHECK(Math::bezier_interpolate((T)0.0, (T)0.2, (T)0.8, (T)1.0, (T)0.25) == doctest::Approx((T)0.2125));
-	CHECK(Math::bezier_interpolate((T)0.0, (T)0.2, (T)0.8, (T)1.0, (T)0.5) == doctest::Approx((T)0.5));
-	CHECK(Math::bezier_interpolate((T)0.0, (T)0.2, (T)0.8, (T)1.0, (T)0.75) == doctest::Approx((T)0.7875));
-	CHECK(Math::bezier_interpolate((T)0.0, (T)0.2, (T)0.8, (T)1.0, (T)1.0) == doctest::Approx((T)1.0));
+	static_assert(Math::is_equal_approx(Math::bezier_interpolate((T)0.0, (T)0.2, (T)0.8, (T)1.0, (T)0.0), (T)0.0));
+	static_assert(Math::is_equal_approx(Math::bezier_interpolate((T)0.0, (T)0.2, (T)0.8, (T)1.0, (T)0.25), (T)0.2125));
+	static_assert(Math::is_equal_approx(Math::bezier_interpolate((T)0.0, (T)0.2, (T)0.8, (T)1.0, (T)0.5), (T)0.5));
+	static_assert(Math::is_equal_approx(Math::bezier_interpolate((T)0.0, (T)0.2, (T)0.8, (T)1.0, (T)0.75), (T)0.7875));
+	static_assert(Math::is_equal_approx(Math::bezier_interpolate((T)0.0, (T)0.2, (T)0.8, (T)1.0, (T)1.0), (T)1.0));
 }
 
 } // namespace TestMathFuncs

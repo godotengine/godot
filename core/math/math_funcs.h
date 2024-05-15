@@ -217,62 +217,60 @@ _ALWAYS_INLINE_ float exp(float p_x) {
 	return std::exp(p_x);
 }
 
-_ALWAYS_INLINE_ bool is_nan(double p_val) {
-	return std::isnan(p_val);
+constexpr double abs(double p_value) {
+	return p_value == 0 ? 0.0 : (p_value < 0 ? -p_value : p_value);
+}
+constexpr float abs(float p_value) {
+	return p_value == 0 ? 0.0 : (p_value < 0 ? -p_value : p_value);
+}
+constexpr int8_t abs(int8_t p_value) {
+	return p_value > 0 ? p_value : -p_value;
+}
+constexpr int16_t abs(int16_t p_value) {
+	return p_value > 0 ? p_value : -p_value;
+}
+constexpr int32_t abs(int32_t p_value) {
+	return p_value > 0 ? p_value : -p_value;
+}
+constexpr int64_t abs(int64_t p_value) {
+	return p_value > 0 ? p_value : -p_value;
 }
 
-_ALWAYS_INLINE_ bool is_nan(float p_val) {
-	return std::isnan(p_val);
+constexpr bool is_nan(double p_val) {
+	return p_val != p_val;
+}
+constexpr bool is_nan(float p_val) {
+	return p_val != p_val;
 }
 
-_ALWAYS_INLINE_ bool is_inf(double p_val) {
-	return std::isinf(p_val);
+constexpr bool is_inf(double p_val) {
+	return abs(p_val) == INF;
 }
-
-_ALWAYS_INLINE_ bool is_inf(float p_val) {
-	return std::isinf(p_val);
+constexpr bool is_inf(float p_val) {
+	return abs(p_val) == (float)INF;
 }
 
 // These methods assume (p_num + p_den) doesn't overflow.
-_ALWAYS_INLINE_ int32_t division_round_up(int32_t p_num, int32_t p_den) {
+constexpr int32_t division_round_up(int32_t p_num, int32_t p_den) {
 	int32_t offset = (p_num < 0 && p_den < 0) ? 1 : -1;
 	return (p_num + p_den + offset) / p_den;
 }
-_ALWAYS_INLINE_ uint32_t division_round_up(uint32_t p_num, uint32_t p_den) {
+constexpr uint32_t division_round_up(uint32_t p_num, uint32_t p_den) {
 	return (p_num + p_den - 1) / p_den;
 }
-_ALWAYS_INLINE_ int64_t division_round_up(int64_t p_num, int64_t p_den) {
+constexpr int64_t division_round_up(int64_t p_num, int64_t p_den) {
 	int32_t offset = (p_num < 0 && p_den < 0) ? 1 : -1;
 	return (p_num + p_den + offset) / p_den;
 }
-_ALWAYS_INLINE_ uint64_t division_round_up(uint64_t p_num, uint64_t p_den) {
+constexpr uint64_t division_round_up(uint64_t p_num, uint64_t p_den) {
 	return (p_num + p_den - 1) / p_den;
 }
 
-_ALWAYS_INLINE_ bool is_finite(double p_val) {
-	return std::isfinite(p_val);
+constexpr bool is_finite(double p_val) {
+	return !is_nan(p_val) && !is_inf(p_val);
 }
-_ALWAYS_INLINE_ bool is_finite(float p_val) {
-	return std::isfinite(p_val);
-}
-
-_ALWAYS_INLINE_ double abs(double p_value) {
-	return std::abs(p_value);
-}
-_ALWAYS_INLINE_ float abs(float p_value) {
-	return std::abs(p_value);
-}
-_ALWAYS_INLINE_ int8_t abs(int8_t p_value) {
-	return p_value > 0 ? p_value : -p_value;
-}
-_ALWAYS_INLINE_ int16_t abs(int16_t p_value) {
-	return p_value > 0 ? p_value : -p_value;
-}
-_ALWAYS_INLINE_ int32_t abs(int32_t p_value) {
-	return std::abs(p_value);
-}
-_ALWAYS_INLINE_ int64_t abs(int64_t p_value) {
-	return std::abs(p_value);
+constexpr bool is_finite(float p_val) {
+	return !is_nan(p_val) && !is_inf(p_val);
 }
 
 _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
@@ -318,35 +316,35 @@ _ALWAYS_INLINE_ int64_t posmod(int64_t p_x, int64_t p_y) {
 	return value;
 }
 
-_ALWAYS_INLINE_ double deg_to_rad(double p_y) {
+constexpr double deg_to_rad(double p_y) {
 	return p_y * (PI / 180.0);
 }
-_ALWAYS_INLINE_ float deg_to_rad(float p_y) {
+constexpr float deg_to_rad(float p_y) {
 	return p_y * ((float)PI / 180.0f);
 }
 
-_ALWAYS_INLINE_ double rad_to_deg(double p_y) {
+constexpr double rad_to_deg(double p_y) {
 	return p_y * (180.0 / PI);
 }
-_ALWAYS_INLINE_ float rad_to_deg(float p_y) {
+constexpr float rad_to_deg(float p_y) {
 	return p_y * (180.0f / (float)PI);
 }
 
-_ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) {
+constexpr double lerp(double p_from, double p_to, double p_weight) {
 	return p_from + (p_to - p_from) * p_weight;
 }
-_ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) {
+constexpr float lerp(float p_from, float p_to, float p_weight) {
 	return p_from + (p_to - p_from) * p_weight;
 }
 
-_ALWAYS_INLINE_ double cubic_interpolate(double p_from, double p_to, double p_pre, double p_post, double p_weight) {
+constexpr double cubic_interpolate(double p_from, double p_to, double p_pre, double p_post, double p_weight) {
 	return 0.5 *
 			((p_from * 2.0) +
 					(-p_pre + p_to) * p_weight +
 					(2.0 * p_pre - 5.0 * p_from + 4.0 * p_to - p_post) * (p_weight * p_weight) +
 					(-p_pre + 3.0 * p_from - 3.0 * p_to + p_post) * (p_weight * p_weight * p_weight));
 }
-_ALWAYS_INLINE_ float cubic_interpolate(float p_from, float p_to, float p_pre, float p_post, float p_weight) {
+constexpr float cubic_interpolate(float p_from, float p_to, float p_pre, float p_post, float p_weight) {
 	return 0.5f *
 			((p_from * 2.0f) +
 					(-p_pre + p_to) * p_weight +
@@ -384,7 +382,7 @@ _ALWAYS_INLINE_ float cubic_interpolate_angle(float p_from, float p_to, float p_
 	return cubic_interpolate(from_rot, to_rot, pre_rot, post_rot, p_weight);
 }
 
-_ALWAYS_INLINE_ double cubic_interpolate_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
+constexpr double cubic_interpolate_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
 		double p_to_t, double p_pre_t, double p_post_t) {
 	/* Barry-Goldman method */
 	double t = lerp(0.0, p_to_t, p_weight);
@@ -395,7 +393,7 @@ _ALWAYS_INLINE_ double cubic_interpolate_in_time(double p_from, double p_to, dou
 	double b2 = lerp(a2, a3, p_post_t == 0 ? 1.0 : t / p_post_t);
 	return lerp(b1, b2, p_to_t == 0 ? 0.5 : t / p_to_t);
 }
-_ALWAYS_INLINE_ float cubic_interpolate_in_time(float p_from, float p_to, float p_pre, float p_post, float p_weight,
+constexpr float cubic_interpolate_in_time(float p_from, float p_to, float p_pre, float p_post, float p_weight,
 		float p_to_t, float p_pre_t, float p_post_t) {
 	/* Barry-Goldman method */
 	float t = lerp(0.0f, p_to_t, p_weight);
@@ -438,7 +436,7 @@ _ALWAYS_INLINE_ float cubic_interpolate_angle_in_time(float p_from, float p_to, 
 	return cubic_interpolate_in_time(from_rot, to_rot, pre_rot, post_rot, p_weight, p_to_t, p_pre_t, p_post_t);
 }
 
-_ALWAYS_INLINE_ double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
+constexpr double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
 	/* Formula from Wikipedia article on Bezier curves. */
 	double omt = (1.0 - p_t);
 	double omt2 = omt * omt;
@@ -448,7 +446,7 @@ _ALWAYS_INLINE_ double bezier_interpolate(double p_start, double p_control_1, do
 
 	return p_start * omt3 + p_control_1 * omt2 * p_t * 3.0 + p_control_2 * omt * t2 * 3.0 + p_end * t3;
 }
-_ALWAYS_INLINE_ float bezier_interpolate(float p_start, float p_control_1, float p_control_2, float p_end, float p_t) {
+constexpr float bezier_interpolate(float p_start, float p_control_1, float p_control_2, float p_end, float p_t) {
 	/* Formula from Wikipedia article on Bezier curves. */
 	float omt = (1.0f - p_t);
 	float omt2 = omt * omt;
@@ -459,7 +457,7 @@ _ALWAYS_INLINE_ float bezier_interpolate(float p_start, float p_control_1, float
 	return p_start * omt3 + p_control_1 * omt2 * p_t * 3.0f + p_control_2 * omt * t2 * 3.0f + p_end * t3;
 }
 
-_ALWAYS_INLINE_ double bezier_derivative(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
+constexpr double bezier_derivative(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
 	/* Formula from Wikipedia article on Bezier curves. */
 	double omt = (1.0 - p_t);
 	double omt2 = omt * omt;
@@ -468,7 +466,7 @@ _ALWAYS_INLINE_ double bezier_derivative(double p_start, double p_control_1, dou
 	double d = (p_control_1 - p_start) * 3.0 * omt2 + (p_control_2 - p_control_1) * 6.0 * omt * p_t + (p_end - p_control_2) * 3.0 * t2;
 	return d;
 }
-_ALWAYS_INLINE_ float bezier_derivative(float p_start, float p_control_1, float p_control_2, float p_end, float p_t) {
+constexpr float bezier_derivative(float p_start, float p_control_1, float p_control_2, float p_end, float p_t) {
 	/* Formula from Wikipedia article on Bezier curves. */
 	float omt = (1.0f - p_t);
 	float omt2 = omt * omt;
@@ -494,21 +492,21 @@ _ALWAYS_INLINE_ float lerp_angle(float p_from, float p_to, float p_weight) {
 	return p_from + angle_difference(p_from, p_to) * p_weight;
 }
 
-_ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) {
+constexpr double inverse_lerp(double p_from, double p_to, double p_value) {
 	return (p_value - p_from) / (p_to - p_from);
 }
-_ALWAYS_INLINE_ float inverse_lerp(float p_from, float p_to, float p_value) {
+constexpr float inverse_lerp(float p_from, float p_to, float p_value) {
 	return (p_value - p_from) / (p_to - p_from);
 }
 
-_ALWAYS_INLINE_ double remap(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) {
+constexpr double remap(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) {
 	return lerp(p_ostart, p_ostop, inverse_lerp(p_istart, p_istop, p_value));
 }
-_ALWAYS_INLINE_ float remap(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) {
+constexpr float remap(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) {
 	return lerp(p_ostart, p_ostop, inverse_lerp(p_istart, p_istop, p_value));
 }
 
-_ALWAYS_INLINE_ bool is_equal_approx(double p_left, double p_right, double p_tolerance) {
+constexpr bool is_equal_approx(double p_left, double p_right, double p_tolerance) {
 	// Check for exact equality first, required to handle "infinity" values.
 	if (p_left == p_right) {
 		return true;
@@ -516,7 +514,7 @@ _ALWAYS_INLINE_ bool is_equal_approx(double p_left, double p_right, double p_tol
 	// Then check for approximate equality.
 	return abs(p_left - p_right) < p_tolerance;
 }
-_ALWAYS_INLINE_ bool is_equal_approx(float p_left, float p_right, float p_tolerance) {
+constexpr bool is_equal_approx(float p_left, float p_right, float p_tolerance) {
 	// Check for exact equality first, required to handle "infinity" values.
 	if (p_left == p_right) {
 		return true;
@@ -525,7 +523,7 @@ _ALWAYS_INLINE_ bool is_equal_approx(float p_left, float p_right, float p_tolera
 	return abs(p_left - p_right) < p_tolerance;
 }
 
-_ALWAYS_INLINE_ bool is_equal_approx(double p_left, double p_right) {
+constexpr bool is_equal_approx(double p_left, double p_right) {
 	// Check for exact equality first, required to handle "infinity" values.
 	if (p_left == p_right) {
 		return true;
@@ -537,7 +535,7 @@ _ALWAYS_INLINE_ bool is_equal_approx(double p_left, double p_right) {
 	}
 	return abs(p_left - p_right) < tolerance;
 }
-_ALWAYS_INLINE_ bool is_equal_approx(float p_left, float p_right) {
+constexpr bool is_equal_approx(float p_left, float p_right) {
 	// Check for exact equality first, required to handle "infinity" values.
 	if (p_left == p_right) {
 		return true;
@@ -550,21 +548,21 @@ _ALWAYS_INLINE_ bool is_equal_approx(float p_left, float p_right) {
 	return abs(p_left - p_right) < tolerance;
 }
 
-_ALWAYS_INLINE_ bool is_zero_approx(double p_value) {
+constexpr bool is_zero_approx(double p_value) {
 	return abs(p_value) < CMP_EPSILON;
 }
-_ALWAYS_INLINE_ bool is_zero_approx(float p_value) {
+constexpr bool is_zero_approx(float p_value) {
 	return abs(p_value) < (float)CMP_EPSILON;
 }
 
-_ALWAYS_INLINE_ bool is_same(double p_left, double p_right) {
+constexpr bool is_same(double p_left, double p_right) {
 	return (p_left == p_right) || (is_nan(p_left) && is_nan(p_right));
 }
-_ALWAYS_INLINE_ bool is_same(float p_left, float p_right) {
+constexpr bool is_same(float p_left, float p_right) {
 	return (p_left == p_right) || (is_nan(p_left) && is_nan(p_right));
 }
 
-_ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_s) {
+constexpr double smoothstep(double p_from, double p_to, double p_s) {
 	if (is_equal_approx(p_from, p_to)) {
 		if (likely(p_from <= p_to)) {
 			return p_s <= p_from ? 0.0 : 1.0;
@@ -575,7 +573,7 @@ _ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_s) {
 	double s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0, 1.0);
 	return s * s * (3.0 - 2.0 * s);
 }
-_ALWAYS_INLINE_ float smoothstep(float p_from, float p_to, float p_s) {
+constexpr float smoothstep(float p_from, float p_to, float p_s) {
 	if (is_equal_approx(p_from, p_to)) {
 		if (likely(p_from <= p_to)) {
 			return p_s <= p_from ? 0.0f : 1.0f;
@@ -587,10 +585,10 @@ _ALWAYS_INLINE_ float smoothstep(float p_from, float p_to, float p_s) {
 	return s * s * (3.0f - 2.0f * s);
 }
 
-_ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) {
+constexpr double move_toward(double p_from, double p_to, double p_delta) {
 	return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
 }
-_ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) {
+constexpr float move_toward(float p_from, float p_to, float p_delta) {
 	return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
 }
 
@@ -651,7 +649,7 @@ _ALWAYS_INLINE_ float wrapf(float p_value, float p_min, float p_max) {
 	return result;
 }
 
-_ALWAYS_INLINE_ int64_t wrapi(int64_t p_value, int64_t p_min, int64_t p_max) {
+constexpr int64_t wrapi(int64_t p_value, int64_t p_min, int64_t p_max) {
 	int64_t range = p_max - p_min;
 	return range == 0 ? p_min : p_min + ((((p_value - p_min) % range) + range) % range);
 }
@@ -699,15 +697,12 @@ _ALWAYS_INLINE_ int fast_ftoi(float p_value) {
 	return std::rint(p_value);
 }
 
-_ALWAYS_INLINE_ uint32_t halfbits_to_floatbits(uint16_t p_half) {
-	uint16_t h_exp, h_sig;
-	uint32_t f_sgn, f_exp, f_sig;
-
-	h_exp = (p_half & 0x7c00u);
-	f_sgn = ((uint32_t)p_half & 0x8000u) << 16;
+constexpr uint32_t halfbits_to_floatbits(uint16_t p_half) {
+	uint16_t h_exp = (p_half & 0x7c00u);
+	uint32_t f_sgn = ((uint32_t)p_half & 0x8000u) << 16;
 	switch (h_exp) {
-		case 0x0000u: /* 0 or subnormal */
-			h_sig = (p_half & 0x03ffu);
+		case 0x0000u: { /* 0 or subnormal */
+			uint16_t h_sig = (p_half & 0x03ffu);
 			/* Signed zero */
 			if (h_sig == 0) {
 				return f_sgn;
@@ -718,9 +713,10 @@ _ALWAYS_INLINE_ uint32_t halfbits_to_floatbits(uint16_t p_half) {
 				h_sig <<= 1;
 				h_exp++;
 			}
-			f_exp = ((uint32_t)(127 - 15 - h_exp)) << 23;
-			f_sig = ((uint32_t)(h_sig & 0x03ffu)) << 13;
+			uint32_t f_exp = ((uint32_t)(127 - 15 - h_exp)) << 23;
+			uint32_t f_sig = ((uint32_t)(h_sig & 0x03ffu)) << 13;
 			return f_sgn + f_exp + f_sig;
+		} break;
 		case 0x7c00u: /* inf or NaN */
 			/* All-ones exponent and a copy of the significand */
 			return f_sgn + 0x7f800000u + (((uint32_t)(p_half & 0x03ffu)) << 13);
