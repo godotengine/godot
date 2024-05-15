@@ -898,6 +898,12 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 				return true;
 			}
 		}
+
+		// This prevents interactions with a port hotzone that is behind another node.
+		Rect2 graph_node_rect = Rect2(graph_node->get_position(), graph_node->get_size() * zoom);
+		if (graph_node_rect.has_point(click_pos * zoom)) {
+			break;
+		}
 	}
 
 	return false;
@@ -1026,6 +1032,12 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 					}
 					return;
 				}
+			}
+
+			// This prevents interactions with a port hotzone that is behind another node.
+			Rect2 graph_node_rect = Rect2(graph_node->get_position(), graph_node->get_size() * zoom);
+			if (graph_node_rect.has_point(click_pos * zoom)) {
+				break;
 			}
 		}
 	}
