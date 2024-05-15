@@ -195,7 +195,11 @@ AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() {
 
 void AnimationNodeStateMachinePlayback::_set_current(AnimationNodeStateMachine *p_state_machine, const StringName &p_state) {
 	current = p_state;
-	p_state_machine->process_state->tree->emit_signal("animation_playback_node_changed", p_state);
+	if (is_grouped) {
+		_get_parent_playback(p_state_machine->get_animation_tree())->emit_signal(SNAME("current_changed"), p_state, fading_from);
+	} else {
+		emit_signal(SNAME("current_changed"), p_state, fading_from);
+	}
 
 	if (current == StringName()) {
 		group_start_transition = Ref<AnimationNodeStateMachineTransition>();
@@ -1204,6 +1208,8 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_length"), &AnimationNodeStateMachinePlayback::get_current_length);
 	ClassDB::bind_method(D_METHOD("get_fading_from_node"), &AnimationNodeStateMachinePlayback::get_fading_from_node);
 	ClassDB::bind_method(D_METHOD("get_travel_path"), &AnimationNodeStateMachinePlayback::_get_travel_path);
+
+	ADD_SIGNAL(MethodInfo(SNAME("current_changed"), PropertyInfo(Variant::STRING_NAME, "node_name"), PropertyInfo(Variant::STRING_NAME, "fading_from")));
 }
 
 AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
