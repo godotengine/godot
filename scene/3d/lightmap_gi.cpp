@@ -1102,7 +1102,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 	}
 
-	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, bounces, bounce_indirect_energy, bias, max_texture_size, directional, use_texture_for_bounces, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
+	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, denoiser_range, bounces, bounce_indirect_energy, bias, max_texture_size, directional, use_texture_for_bounces, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
 
 	if (bake_err == Lightmapper::BAKE_ERROR_LIGHTMAP_TOO_SMALL) {
 		return BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL;
@@ -1450,6 +1450,14 @@ float LightmapGI::get_denoiser_strength() const {
 	return denoiser_strength;
 }
 
+void LightmapGI::set_denoiser_range(int p_denoiser_range) {
+	denoiser_range = p_denoiser_range;
+}
+
+int LightmapGI::get_denoiser_range() const {
+	return denoiser_range;
+}
+
 void LightmapGI::set_directional(bool p_enable) {
 	directional = p_enable;
 }
@@ -1593,6 +1601,9 @@ void LightmapGI::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "denoiser_strength" && !use_denoiser) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
+	if (p_property.name == "denoiser_range" && !use_denoiser) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
 }
 
 void LightmapGI::_bind_methods() {
@@ -1638,6 +1649,9 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_denoiser_strength", "denoiser_strength"), &LightmapGI::set_denoiser_strength);
 	ClassDB::bind_method(D_METHOD("get_denoiser_strength"), &LightmapGI::get_denoiser_strength);
 
+	ClassDB::bind_method(D_METHOD("set_denoiser_range", "denoiser_range"), &LightmapGI::set_denoiser_range);
+	ClassDB::bind_method(D_METHOD("get_denoiser_range"), &LightmapGI::get_denoiser_range);
+
 	ClassDB::bind_method(D_METHOD("set_interior", "enable"), &LightmapGI::set_interior);
 	ClassDB::bind_method(D_METHOD("is_interior"), &LightmapGI::is_interior);
 
@@ -1661,6 +1675,7 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "denoiser_strength", PROPERTY_HINT_RANGE, "0.001,0.2,0.001,or_greater"), "set_denoiser_strength", "get_denoiser_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "denoiser_range", PROPERTY_HINT_RANGE, "1,20"), "set_denoiser_range", "get_denoiser_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0.00001,0.1,0.00001,or_greater"), "set_bias", "get_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texel_scale", PROPERTY_HINT_RANGE, "0.01,100.0,0.01"), "set_texel_scale", "get_texel_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_texture_size", PROPERTY_HINT_RANGE, "2048,16384,1"), "set_max_texture_size", "get_max_texture_size");
