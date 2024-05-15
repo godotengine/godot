@@ -197,6 +197,7 @@ class EditorFileSystem : public Node {
 	};
 
 	HashMap<String, FileCache> file_cache;
+	HashSet<String> dep_update_list;
 
 	struct ScanProgress {
 		float low = 0;
