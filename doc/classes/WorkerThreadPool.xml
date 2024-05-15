@@ -16,9 +16,9 @@
 		    # Expensive logic...
 
 		func _process(delta):
-		    var task_id = WorkerThreadPool.add_group_task(process_enemy_ai, enemies.size())
+		    var group_id = WorkerThreadPool.add_group_task(process_enemy_ai, enemies.size())
 		    # Other code...
-		    WorkerThreadPool.wait_for_group_task_completion(task_id)
+		    WorkerThreadPool.wait_for_group_task_completion(group_id)
 		    # Other code that depends on the enemy AI already being processed.
 		[/gdscript]
 		[csharp]
