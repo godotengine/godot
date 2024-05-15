@@ -368,9 +368,9 @@ void ScreenSelect::_build_advanced_menu() {
 			button->add_theme_color_override("font_color", accent_color);
 		}
 
-		button->connect("pressed", callable_mp(this, &ScreenSelect::_emit_screen_signal).bind(i));
-		button->connect("pressed", callable_mp(static_cast<BaseButton *>(this), &ScreenSelect::set_pressed).bind(false));
-		button->connect("pressed", callable_mp(static_cast<Window *>(popup), &Popup::hide));
+		button->connect(SceneStringName(pressed), callable_mp(this, &ScreenSelect::_emit_screen_signal).bind(i));
+		button->connect(SceneStringName(pressed), callable_mp(static_cast<BaseButton *>(this), &ScreenSelect::set_pressed).bind(false));
+		button->connect(SceneStringName(pressed), callable_mp(static_cast<Window *>(popup), &Popup::hide));
 	}
 }
 

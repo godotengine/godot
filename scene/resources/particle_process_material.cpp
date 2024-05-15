@@ -630,7 +630,7 @@ void ParticleProcessMaterial::_update_shader() {
 	if (emission_shape == EMISSION_SHAPE_RING) {
 		code += "		\n";
 		code += "		float ring_spawn_angle = rand_from_seed(alt_seed) * 2.0 * pi;\n";
-		code += "		float ring_random_radius = sqrt(rand_from_seed(alt_seed) * (emission_ring_radius - emission_ring_inner_radius * emission_ring_inner_radius) + emission_ring_inner_radius * emission_ring_inner_radius);\n";
+		code += "		float ring_random_radius = sqrt(rand_from_seed(alt_seed) * (emission_ring_radius * emission_ring_radius - emission_ring_inner_radius * emission_ring_inner_radius) + emission_ring_inner_radius * emission_ring_inner_radius);\n";
 		code += "		vec3 axis = emission_ring_axis == vec3(0.0) ? vec3(0.0, 0.0, 1.0) : normalize(emission_ring_axis);\n";
 		code += "		vec3 ortho_axis = vec3(0.0);\n";
 		code += "		if (abs(axis) == vec3(1.0, 0.0, 0.0)) {\n";
@@ -991,13 +991,15 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	\n";
 	if (collision_mode == COLLISION_RIGID) {
 		code += "	if (COLLIDED) {\n";
-		code += "		if (length(VELOCITY) > 3.0) {\n";
-		code += "			TRANSFORM[3].xyz += COLLISION_NORMAL * COLLISION_DEPTH;\n";
-		code += "			VELOCITY -= COLLISION_NORMAL * dot(COLLISION_NORMAL, VELOCITY) * (1.0 + collision_bounce);\n";
-		code += "			VELOCITY = mix(VELOCITY,vec3(0.0),clamp(collision_friction, 0.0, 1.0));\n";
-		code += "		} else {\n";
-		code += "			VELOCITY = vec3(0.0);\n";
-		code += "		}\n";
+		code += "		float collision_response = dot(COLLISION_NORMAL, VELOCITY);\n";
+		code += "		float slide_to_bounce_trigger = step(2.0/clamp(collision_bounce + 1.0, 1.0, 2.0), abs(collision_response));\n";
+		code += "		TRANSFORM[3].xyz += COLLISION_NORMAL * COLLISION_DEPTH;\n";
+		code += "		// Remove all components of VELOCITY that is not tangent to COLLISION_NORMAL\n";
+		code += "		VELOCITY -= COLLISION_NORMAL * collision_response;\n";
+		code += "		// Apply friction only to VELOCITY across the surface (Effectively decouples friction and bounce behavior).\n";
+		code += "		VELOCITY = mix(VELOCITY,vec3(0.0),clamp(collision_friction, 0.0, 1.0));\n";
+		code += "		// Add bounce velocity to VELOCITY\n";
+		code += "		VELOCITY -= COLLISION_NORMAL * collision_response * (collision_bounce * slide_to_bounce_trigger);\n";
 		code += "	}\n";
 	} else if (collision_mode == COLLISION_HIDE_ON_CONTACT) {
 		code += "	if (COLLIDED) {\n";

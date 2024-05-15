@@ -879,7 +879,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 				} break;
 				case EMISSION_SHAPE_RING: {
 					real_t ring_random_angle = Math::randf() * Math_TAU;
-					real_t ring_random_radius = Math::sqrt(Math::randf() * (emission_ring_radius - emission_ring_inner_radius * emission_ring_inner_radius) + emission_ring_inner_radius * emission_ring_inner_radius);
+					real_t ring_random_radius = Math::sqrt(Math::randf() * (emission_ring_radius * emission_ring_radius - emission_ring_inner_radius * emission_ring_inner_radius) + emission_ring_inner_radius * emission_ring_inner_radius);
 					Vector3 axis = emission_ring_axis == Vector3(0.0, 0.0, 0.0) ? Vector3(0.0, 0.0, 1.0) : emission_ring_axis.normalized();
 					Vector3 ortho_axis;
 					if (axis.abs() == Vector3(1.0, 0.0, 0.0)) {

@@ -736,13 +736,13 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	activate->set_toggle_mode(true);
 	activate->set_disabled(true);
 	activate->set_text(TTR("Start"));
-	activate->connect("pressed", callable_mp(this, &EditorVisualProfiler::_activate_pressed));
+	activate->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_activate_pressed));
 	hb->add_child(activate);
 
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
 	clear_button->set_disabled(true);
-	clear_button->connect("pressed", callable_mp(this, &EditorVisualProfiler::_clear_pressed));
+	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_clear_pressed));
 	hb->add_child(clear_button);
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
@@ -757,11 +757,11 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	frame_relative = memnew(CheckBox(TTR("Fit to Frame")));
 	frame_relative->set_pressed(true);
 	hb->add_child(frame_relative);
-	frame_relative->connect("pressed", callable_mp(this, &EditorVisualProfiler::_update_plot));
+	frame_relative->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_update_plot));
 	linked = memnew(CheckBox(TTR("Linked")));
 	linked->set_pressed(true);
 	hb->add_child(linked);
-	linked->connect("pressed", callable_mp(this, &EditorVisualProfiler::_update_plot));
+	linked->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_update_plot));
 
 	hb->add_spacer();
 

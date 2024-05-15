@@ -287,13 +287,13 @@ void EditorPropertyArray::_create_new_property_slot() {
 		Button *edit_btn = memnew(Button);
 		edit_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
 		edit_btn->set_disabled(is_read_only());
-		edit_btn->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type).bind(edit_btn, idx));
+		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_change_type).bind(edit_btn, idx));
 		hbox->add_child(edit_btn);
 	} else {
 		Button *remove_btn = memnew(Button);
 		remove_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
 		remove_btn->set_disabled(is_read_only());
-		remove_btn->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(idx));
+		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(idx));
 		hbox->add_child(remove_btn);
 	}
 	property_vbox->add_child(hbox);
@@ -383,7 +383,7 @@ void EditorPropertyArray::update_property() {
 
 			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
 			button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
-			button_add_item->connect(SNAME("pressed"), callable_mp(this, &EditorPropertyArray::_add_element));
+			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
 			button_add_item->set_disabled(is_read_only());
 			vbox->add_child(button_add_item);
 
@@ -829,7 +829,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	edit = memnew(Button);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
-	edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_edit_pressed));
+	edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_edit_pressed));
 	edit->set_toggle_mode(true);
 	SET_DRAG_FORWARDING_CD(edit, EditorPropertyArray);
 	edit->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyArray::_button_draw));
@@ -901,7 +901,7 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 	Button *edit_btn = memnew(Button);
 	edit_btn->set_icon(get_editor_theme_icon(SNAME("Edit")));
 	edit_btn->set_disabled(is_read_only());
-	edit_btn->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit_btn, slots.size()));
+	edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit_btn, slots.size()));
 	hbox->add_child(edit_btn);
 	if (add_panel) {
 		add_panel->get_child(0)->add_child(hbox);
@@ -1011,7 +1011,7 @@ void EditorPropertyDictionary::update_property() {
 			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Key/Value Pair"));
 			button_add_item->set_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
 			button_add_item->set_disabled(is_read_only());
-			button_add_item->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_add_key_value));
+			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_add_key_value));
 			add_vbox->add_child(button_add_item);
 		}
 
@@ -1143,7 +1143,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	edit = memnew(Button);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
-	edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_edit_pressed));
+	edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);
 	add_focusable(edit);
@@ -1290,7 +1290,7 @@ void EditorPropertyLocalizableString::update_property() {
 			Button *edit_btn = memnew(Button);
 			edit_btn->set_icon(get_editor_theme_icon(SNAME("Remove")));
 			hbox->add_child(edit_btn);
-			edit_btn->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit_btn, remove_index));
+			edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit_btn, remove_index));
 
 			prop->update_property();
 		}
@@ -1298,7 +1298,7 @@ void EditorPropertyLocalizableString::update_property() {
 		if (page_index == max_page) {
 			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Translation"));
 			button_add_item->set_icon(get_editor_theme_icon(SNAME("Add")));
-			button_add_item->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_add_locale_popup));
+			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_add_locale_popup));
 			property_vbox->add_child(button_add_item);
 		}
 
@@ -1358,7 +1358,7 @@ EditorPropertyLocalizableString::EditorPropertyLocalizableString() {
 	edit = memnew(Button);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
-	edit->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_edit_pressed));
+	edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);
 	add_focusable(edit);

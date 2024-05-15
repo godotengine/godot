@@ -1044,7 +1044,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	SET_DRAG_FORWARDING_GCD(assign_button, EditorResourcePicker);
 	add_child(assign_button);
-	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));
+	assign_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_resource_selected));
 	assign_button->connect(SceneStringName(draw), callable_mp(this, &EditorResourcePicker::_button_draw));
 	assign_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
 
@@ -1062,7 +1062,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	edit_button = memnew(Button);
 	edit_button->set_flat(true);
 	edit_button->set_toggle_mode(true);
-	edit_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_update_menu));
+	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_update_menu));
 	add_child(edit_button);
 	edit_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
 

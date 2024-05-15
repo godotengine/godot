@@ -465,11 +465,11 @@ Path3DGizmo::Path3DGizmo(Path3D *p_path, float p_disk_size) {
 	// Connecting to a signal once, rather than plaguing the implementation with calls to `Node3DEditor::update_transform_gizmo`.
 	path->connect("curve_changed", callable_mp(this, &Path3DGizmo::_update_transform_gizmo));
 
-	Path3DEditorPlugin::singleton->curve_edit->connect("pressed", callable_mp(this, &Path3DGizmo::redraw));
-	Path3DEditorPlugin::singleton->curve_edit_curve->connect("pressed", callable_mp(this, &Path3DGizmo::redraw));
-	Path3DEditorPlugin::singleton->curve_create->connect("pressed", callable_mp(this, &Path3DGizmo::redraw));
-	Path3DEditorPlugin::singleton->curve_del->connect("pressed", callable_mp(this, &Path3DGizmo::redraw));
-	Path3DEditorPlugin::singleton->curve_close->connect("pressed", callable_mp(this, &Path3DGizmo::redraw));
+	Path3DEditorPlugin::singleton->curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
+	Path3DEditorPlugin::singleton->curve_edit_curve->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
+	Path3DEditorPlugin::singleton->curve_create->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
+	Path3DEditorPlugin::singleton->curve_del->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
+	Path3DEditorPlugin::singleton->curve_close->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
 }
 
 EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
@@ -788,12 +788,12 @@ void Path3DEditorPlugin::_update_theme() {
 void Path3DEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			curve_create->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_CREATE));
-			curve_edit_curve->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT_CURVE));
-			curve_edit_tilt->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT_TILT));
-			curve_edit->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT));
-			curve_del->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_DELETE));
-			curve_close->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_close_curve));
+			curve_create->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_CREATE));
+			curve_edit_curve->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT_CURVE));
+			curve_edit_tilt->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT_TILT));
+			curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT));
+			curve_del->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_DELETE));
+			curve_close->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_close_curve));
 
 			_update_theme();
 		} break;
@@ -875,7 +875,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_clear_points->set_theme_type_variation("FlatButton");
 	curve_clear_points->set_focus_mode(Control::FOCUS_NONE);
 	curve_clear_points->set_tooltip_text(TTR("Clear Points"));
-	curve_clear_points->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_confirm_clear_points));
+	curve_clear_points->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_confirm_clear_points));
 	topmenu_bar->add_child(curve_clear_points);
 
 	clear_points_dialog = memnew(ConfirmationDialog);

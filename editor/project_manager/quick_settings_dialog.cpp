@@ -165,7 +165,7 @@ void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Vari
 
 		if (!restart_required_button) {
 			restart_required_button = add_button(TTR("Restart Now"), !GLOBAL_GET("gui/common/swap_cancel_ok"));
-			restart_required_button->connect("pressed", callable_mp(this, &QuickSettingsDialog::_request_restart));
+			restart_required_button->connect(SceneStringName(pressed), callable_mp(this, &QuickSettingsDialog::_request_restart));
 		}
 	}
 }

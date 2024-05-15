@@ -230,7 +230,7 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 	linked->set_toggle_mode(true);
 	linked->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
 	linked->set_tooltip_text(TTR("Lock/Unlock Component Ratio"));
-	linked->connect(SNAME("pressed"), callable_mp(this, &EditorPropertyVectorN::_update_ratio));
+	linked->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyVectorN::_update_ratio));
 	linked->connect(SNAME("toggled"), callable_mp(this, &EditorPropertyVectorN::_store_link));
 	hb->add_child(linked);
 

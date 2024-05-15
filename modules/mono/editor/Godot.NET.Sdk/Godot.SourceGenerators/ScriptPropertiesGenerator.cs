@@ -172,7 +172,6 @@ namespace Godot.SourceGenerators
 
             if (godotClassProperties.Length > 0 || godotClassFields.Length > 0)
             {
-                bool isFirstEntry;
 
                 // Generate SetGodotClassPropertyValue
 
@@ -186,15 +185,13 @@ namespace Godot.SourceGenerators
                     source.Append("    protected override bool SetGodotClassPropertyValue(in godot_string_name name, ");
                     source.Append("in godot_variant value)\n    {\n");
 
-                    isFirstEntry = true;
                     foreach (var property in godotClassProperties)
                     {
                         if (property.PropertySymbol.IsReadOnly || property.PropertySymbol.SetMethod!.IsInitOnly)
                             continue;
 
                         GeneratePropertySetter(property.PropertySymbol.Name,
-                            property.PropertySymbol.Type, property.Type, source, isFirstEntry);
-                        isFirstEntry = false;
+                            property.PropertySymbol.Type, property.Type, source);
                     }
 
                     foreach (var field in godotClassFields)
@@ -203,8 +200,7 @@ namespace Godot.SourceGenerators
                             continue;
 
                         GeneratePropertySetter(field.FieldSymbol.Name,
-                            field.FieldSymbol.Type, field.Type, source, isFirstEntry);
-                        isFirstEntry = false;
+                            field.FieldSymbol.Type, field.Type, source);
                     }
 
                     source.Append("        return base.SetGodotClassPropertyValue(name, value);\n");
@@ -222,22 +218,19 @@ namespace Godot.SourceGenerators
                     source.Append("    protected override bool GetGodotClassPropertyValue(in godot_string_name name, ");
                     source.Append("out godot_variant value)\n    {\n");
 
-                    isFirstEntry = true;
                     foreach (var property in godotClassProperties)
                     {
                         if (property.PropertySymbol.IsWriteOnly)
                             continue;
 
                         GeneratePropertyGetter(property.PropertySymbol.Name,
-                            property.PropertySymbol.Type, property.Type, source, isFirstEntry);
-                        isFirstEntry = false;
+                            property.PropertySymbol.Type, property.Type, source);
                     }
 
                     foreach (var field in godotClassFields)
                     {
                         GeneratePropertyGetter(field.FieldSymbol.Name,
-                            field.FieldSymbol.Type, field.Type, source, isFirstEntry);
-                        isFirstEntry = false;
+                            field.FieldSymbol.Type, field.Type, source);
                     }
 
                     source.Append("        return base.GetGodotClassPropertyValue(name, out value);\n");
@@ -318,14 +311,10 @@ namespace Godot.SourceGenerators
             string propertyMemberName,
             ITypeSymbol propertyTypeSymbol,
             MarshalType propertyMarshalType,
-            StringBuilder source,
-            bool isFirstEntry
+            StringBuilder source
         )
         {
             source.Append("        ");
-
-            if (!isFirstEntry)
-                source.Append("else ");
 
             source.Append("if (name == PropertyName.")
                 .Append(propertyMemberName)
@@ -343,14 +332,10 @@ namespace Godot.SourceGenerators
             string propertyMemberName,
             ITypeSymbol propertyTypeSymbol,
             MarshalType propertyMarshalType,
-            StringBuilder source,
-            bool isFirstEntry
+            StringBuilder source
         )
         {
             source.Append("        ");
-
-            if (!isFirstEntry)
-                source.Append("else ");
 
             source.Append("if (name == PropertyName.")
                 .Append(propertyMemberName)

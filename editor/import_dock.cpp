@@ -798,7 +798,7 @@ ImportDock::ImportDock() {
 	import = memnew(Button);
 	import->set_text(TTR("Reimport"));
 	import->set_disabled(true);
-	import->connect("pressed", callable_mp(this, &ImportDock::_reimport_pressed));
+	import->connect(SceneStringName(pressed), callable_mp(this, &ImportDock::_reimport_pressed));
 	if (!DisplayServer::get_singleton()->get_swap_cancel_ok()) {
 		advanced_spacer = hb->add_spacer();
 		advanced = memnew(Button);
@@ -818,7 +818,7 @@ ImportDock::ImportDock() {
 
 	advanced->hide();
 	advanced_spacer->hide();
-	advanced->connect("pressed", callable_mp(this, &ImportDock::_advanced_options));
+	advanced->connect(SceneStringName(pressed), callable_mp(this, &ImportDock::_advanced_options));
 
 	reimport_confirm = memnew(ConfirmationDialog);
 	content->add_child(reimport_confirm);

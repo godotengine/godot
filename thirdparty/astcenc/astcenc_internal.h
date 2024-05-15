@@ -326,10 +326,10 @@ struct partition_info
 	uint8_t partition_texel_count[BLOCK_MAX_PARTITIONS];
 
 	/** @brief The partition of each texel in the block. */
-	uint8_t partition_of_texel[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS uint8_t partition_of_texel[BLOCK_MAX_TEXELS];
 
 	/** @brief The list of texels in each partition. */
-	uint8_t texels_of_partition[BLOCK_MAX_PARTITIONS][BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS uint8_t texels_of_partition[BLOCK_MAX_PARTITIONS][BLOCK_MAX_TEXELS];
 };
 
 /**
@@ -367,19 +367,19 @@ struct decimation_info
 	 * @brief The number of weights that contribute to each texel.
 	 * Value is between 1 and 4.
 	 */
-	uint8_t texel_weight_count[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS uint8_t texel_weight_count[BLOCK_MAX_TEXELS];
 
 	/**
 	 * @brief The weight index of the N weights that are interpolated for each texel.
 	 * Stored transposed to improve vectorization.
 	 */
-	uint8_t texel_weights_tr[4][BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS uint8_t texel_weights_tr[4][BLOCK_MAX_TEXELS];
 
 	/**
 	 * @brief The bilinear contribution of the N weights that are interpolated for each texel.
 	 * Value is between 0 and 16, stored transposed to improve vectorization.
 	 */
-	uint8_t texel_weight_contribs_int_tr[4][BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS uint8_t texel_weight_contribs_int_tr[4][BLOCK_MAX_TEXELS];
 
 	/**
 	 * @brief The bilinear contribution of the N weights that are interpolated for each texel.
@@ -388,13 +388,13 @@ struct decimation_info
 	ASTCENC_ALIGNAS float texel_weight_contribs_float_tr[4][BLOCK_MAX_TEXELS];
 
 	/** @brief The number of texels that each stored weight contributes to. */
-	uint8_t weight_texel_count[BLOCK_MAX_WEIGHTS];
+	ASTCENC_ALIGNAS uint8_t weight_texel_count[BLOCK_MAX_WEIGHTS];
 
 	/**
 	 * @brief The list of texels that use a specific weight index.
 	 * Stored transposed to improve vectorization.
 	 */
-	uint8_t weight_texels_tr[BLOCK_MAX_TEXELS][BLOCK_MAX_WEIGHTS];
+	ASTCENC_ALIGNAS uint8_t weight_texels_tr[BLOCK_MAX_TEXELS][BLOCK_MAX_WEIGHTS];
 
 	/**
 	 * @brief The bilinear contribution to the N texels that use each weight.
@@ -732,7 +732,11 @@ struct block_size_descriptor
  *
  * The @c data_[rgba] fields store the image data in an encoded SoA float form designed for easy
  * vectorization. Input data is converted to float and stored as values between 0 and 65535. LDR
- * data is stored as direct UNORM data, HDR data is stored as LNS data.
+ * data is stored as direct UNORM data, HDR data is stored as LNS data. They are allocated SIMD
+ * elements over-size to allow vectorized stores of unaligned and partial SIMD lanes (e.g. in a
+ * 6x6x6 block the final row write will read elements 210-217 (vec8) or 214-217 (vec4), which is
+ * two elements above the last real data element). The overspill values are never written to memory,
+ * and would be benign, but the padding avoids hitting undefined behavior.
  *
  * The @c rgb_lns and @c alpha_lns fields that assigned a per-texel use of HDR are only used during
  * decompression. The current compressor will always use HDR endpoint formats when in HDR mode.
@@ -740,16 +744,16 @@ struct block_size_descriptor
 struct image_block
 {
 	/** @brief The input (compress) or output (decompress) data for the red color component. */
-	ASTCENC_ALIGNAS float data_r[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS float data_r[BLOCK_MAX_TEXELS + ASTCENC_SIMD_WIDTH - 1];
 
 	/** @brief The input (compress) or output (decompress) data for the green color component. */
-	ASTCENC_ALIGNAS float data_g[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS float data_g[BLOCK_MAX_TEXELS + ASTCENC_SIMD_WIDTH - 1];
 
 	/** @brief The input (compress) or output (decompress) data for the blue color component. */
-	ASTCENC_ALIGNAS float data_b[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS float data_b[BLOCK_MAX_TEXELS + ASTCENC_SIMD_WIDTH - 1];
 
 	/** @brief The input (compress) or output (decompress) data for the alpha color component. */
-	ASTCENC_ALIGNAS float data_a[BLOCK_MAX_TEXELS];
+	ASTCENC_ALIGNAS float data_a[BLOCK_MAX_TEXELS + ASTCENC_SIMD_WIDTH - 1];
 
 	/** @brief The number of texels in the block. */
 	uint8_t texel_count;
@@ -957,7 +961,7 @@ struct ASTCENC_ALIGNAS compression_working_buffers
 	 *
 	 * For two planes, second plane starts at @c WEIGHTS_PLANE2_OFFSET offsets.
 	 */
-	uint8_t dec_weights_uquant[WEIGHTS_MAX_BLOCK_MODES * BLOCK_MAX_WEIGHTS];
+	ASTCENC_ALIGNAS uint8_t dec_weights_uquant[WEIGHTS_MAX_BLOCK_MODES * BLOCK_MAX_WEIGHTS];
 
 	/** @brief Error of the best encoding combination for each block mode. */
 	ASTCENC_ALIGNAS float errors_of_best_combination[WEIGHTS_MAX_BLOCK_MODES];
@@ -1111,7 +1115,7 @@ struct symbolic_compressed_block
 	 *
 	 * If dual plane, the second plane starts at @c weights[WEIGHTS_PLANE2_OFFSET].
 	 */
-	uint8_t weights[BLOCK_MAX_WEIGHTS];
+	ASTCENC_ALIGNAS uint8_t weights[BLOCK_MAX_WEIGHTS];
 
 	/**
 	 * @brief Get the weight quantization used by this block mode.

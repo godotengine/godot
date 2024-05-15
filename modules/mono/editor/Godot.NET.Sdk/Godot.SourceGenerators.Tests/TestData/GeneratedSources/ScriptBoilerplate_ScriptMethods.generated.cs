@@ -54,7 +54,7 @@ partial class ScriptBoilerplate
         if (method == MethodName._Process) {
            return true;
         }
-        else if (method == MethodName.Bazz) {
+        if (method == MethodName.Bazz) {
            return true;
         }
         return base.HasGodotClassMethod(method);

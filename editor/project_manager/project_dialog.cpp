@@ -462,7 +462,7 @@ void ProjectDialog::ok_pressed() {
 		ConfirmationDialog *cd = memnew(ConfirmationDialog);
 		cd->set_title(TTR("Warning: This folder is not empty"));
 		cd->set_text(TTR("You are about to create a Godot project in a non-empty folder.\nThe entire contents of this folder will be imported as project resources!\n\nAre you sure you wish to continue?"));
-		cd->get_ok_button()->connect("pressed", callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
+		cd->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
 		get_parent()->add_child(cd);
 		cd->popup_centered();
 		return;
@@ -855,7 +855,7 @@ ProjectDialog::ProjectDialog() {
 
 	project_browse = memnew(Button);
 	project_browse->set_text(TTR("Browse"));
-	project_browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_project_path));
+	project_browse->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_browse_project_path));
 	pphb->add_child(project_browse);
 
 	// install status icon
@@ -865,7 +865,7 @@ ProjectDialog::ProjectDialog() {
 
 	install_browse = memnew(Button);
 	install_browse->set_text(TTR("Browse"));
-	install_browse->connect("pressed", callable_mp(this, &ProjectDialog::_browse_install_path));
+	install_browse->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_browse_install_path));
 	iphb->add_child(install_browse);
 
 	msg = memnew(Label);
@@ -900,7 +900,7 @@ ProjectDialog::ProjectDialog() {
 	rs_button->set_disabled(true);
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "forward_plus");
-	rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
+	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
 	rvb->add_child(rs_button);
 	if (default_renderer_type == "forward_plus") {
 		rs_button->set_pressed(true);
@@ -912,7 +912,7 @@ ProjectDialog::ProjectDialog() {
 	rs_button->set_disabled(true);
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "mobile");
-	rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
+	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
 	rvb->add_child(rs_button);
 	if (default_renderer_type == "mobile") {
 		rs_button->set_pressed(true);
@@ -924,7 +924,7 @@ ProjectDialog::ProjectDialog() {
 	rs_button->set_disabled(true);
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "gl_compatibility");
-	rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
+	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
 	rvb->add_child(rs_button);
 #if defined(GLES3_ENABLED)
 	if (default_renderer_type == "gl_compatibility") {

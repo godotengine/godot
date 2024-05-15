@@ -288,6 +288,9 @@ opts.Add("ccflags", "Custom flags for both the C and C++ compilers")
 opts.Add("cxxflags", "Custom flags for the C++ compiler")
 opts.Add("cflags", "Custom flags for the C compiler")
 opts.Add("linkflags", "Custom flags for the linker")
+opts.Add("asflags", "Custom flags for the assembler")
+opts.Add("arflags", "Custom flags for the archive tool")
+opts.Add("rcflags", "Custom flags for Windows resource compiler")
 
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
@@ -534,6 +537,9 @@ env.Append(CCFLAGS=env.get("ccflags", "").split())
 env.Append(CXXFLAGS=env.get("cxxflags", "").split())
 env.Append(CFLAGS=env.get("cflags", "").split())
 env.Append(LINKFLAGS=env.get("linkflags", "").split())
+env.Append(ASFLAGS=env.get("asflags", "").split())
+env.Append(ARFLAGS=env.get("arflags", "").split())
+env.Append(RCFLAGS=env.get("rcflags", "").split())
 
 # Feature build profile
 env.disabled_classes = []
@@ -615,22 +621,12 @@ if methods.using_gcc(env):
             "Couldn't detect compiler version, skipping version checks. "
             "Build may fail if the compiler doesn't support C++17 fully."
         )
-    # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
-    # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
-    elif cc_version_major == 8 and cc_version_minor < 4:
+    elif cc_version_major < 9:
         print_error(
-            "Detected GCC 8 version < 8.4, which is not supported due to a "
-            "regression in its C++17 guaranteed copy elision support. Use a "
-            'newer GCC version, or Clang 6 or later by passing "use_llvm=yes" '
-            "to the SCons command line."
-        )
-        Exit(255)
-    elif cc_version_major < 7:
-        print_error(
-            "Detected GCC version older than 7, which does not fully support "
-            "C++17. Supported versions are GCC 7, 9 and later. Use a newer GCC "
-            'version, or Clang 6 or later by passing "use_llvm=yes" to the '
-            "SCons command line."
+            "Detected GCC version older than 9, which does not fully support "
+            "C++17, or has bugs when compiling Godot. Supported versions are 9 "
+            "and later. Use a newer GCC version, or Clang 6 or later by passing "
+            '"use_llvm=yes" to the SCons command line.'
         )
         Exit(255)
     elif cc_version_metadata1 == "win32":

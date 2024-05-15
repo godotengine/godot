@@ -120,7 +120,7 @@ NodeDock::NodeDock() {
 	connections_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	connections_button->set_clip_text(true);
 	mode_hb->add_child(connections_button);
-	connections_button->connect("pressed", callable_mp(this, &NodeDock::show_connections));
+	connections_button->connect(SceneStringName(pressed), callable_mp(this, &NodeDock::show_connections));
 
 	groups_button = memnew(Button);
 	groups_button->set_theme_type_variation("FlatButton");
@@ -130,7 +130,7 @@ NodeDock::NodeDock() {
 	groups_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	groups_button->set_clip_text(true);
 	mode_hb->add_child(groups_button);
-	groups_button->connect("pressed", callable_mp(this, &NodeDock::show_groups));
+	groups_button->connect(SceneStringName(pressed), callable_mp(this, &NodeDock::show_groups));
 
 	connections = memnew(ConnectionsDock);
 	add_child(connections);

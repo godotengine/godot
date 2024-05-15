@@ -242,14 +242,14 @@ MaterialEditor::MaterialEditor() {
 	sphere_switch->set_toggle_mode(true);
 	sphere_switch->set_pressed(true);
 	vb_shape->add_child(sphere_switch);
-	sphere_switch->connect("pressed", callable_mp(this, &MaterialEditor::_on_sphere_switch_pressed));
+	sphere_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_sphere_switch_pressed));
 
 	box_switch = memnew(Button);
 	box_switch->set_theme_type_variation("PreviewLightButton");
 	box_switch->set_toggle_mode(true);
 	box_switch->set_pressed(false);
 	vb_shape->add_child(box_switch);
-	box_switch->connect("pressed", callable_mp(this, &MaterialEditor::_on_box_switch_pressed));
+	box_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_box_switch_pressed));
 
 	layout_3d->add_spacer();
 
@@ -261,14 +261,14 @@ MaterialEditor::MaterialEditor() {
 	light_1_switch->set_toggle_mode(true);
 	light_1_switch->set_pressed(true);
 	vb_light->add_child(light_1_switch);
-	light_1_switch->connect("pressed", callable_mp(this, &MaterialEditor::_on_light_1_switch_pressed));
+	light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_light_1_switch_pressed));
 
 	light_2_switch = memnew(Button);
 	light_2_switch->set_theme_type_variation("PreviewLightButton");
 	light_2_switch->set_toggle_mode(true);
 	light_2_switch->set_pressed(true);
 	vb_light->add_child(light_2_switch);
-	light_2_switch->connect("pressed", callable_mp(this, &MaterialEditor::_on_light_2_switch_pressed));
+	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_light_2_switch_pressed));
 
 	if (EditorSettings::get_singleton()->get_project_metadata("inspector_options", "material_preview_on_sphere", true)) {
 		box_instance->hide();

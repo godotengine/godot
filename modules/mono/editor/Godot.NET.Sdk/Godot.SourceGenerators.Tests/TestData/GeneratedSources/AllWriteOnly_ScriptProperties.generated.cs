@@ -25,7 +25,7 @@ partial class AllWriteOnly
             this.WriteOnlyProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
             return true;
         }
-        else if (name == PropertyName._writeOnlyBackingField) {
+        if (name == PropertyName._writeOnlyBackingField) {
             this._writeOnlyBackingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
             return true;
         }

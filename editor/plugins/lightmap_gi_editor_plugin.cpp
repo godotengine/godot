@@ -177,7 +177,7 @@ LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 	bake->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
 	bake->set_text(TTR("Bake Lightmaps"));
 	bake->hide();
-	bake->connect("pressed", Callable(this, "_bake"));
+	bake->connect(SceneStringName(pressed), Callable(this, "_bake"));
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake);
 	lightmap = nullptr;
 
