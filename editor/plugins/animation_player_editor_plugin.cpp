@@ -1987,7 +1987,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_toggle->set_theme_type_variation("FlatButton");
 	onion_toggle->set_toggle_mode(true);
 	onion_toggle->set_tooltip_text(TTR("Enable Onion Skinning"));
-	onion_toggle->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu).bind(ONION_SKINNING_ENABLE));
+	onion_toggle->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu).bind(ONION_SKINNING_ENABLE));
 	hb->add_child(onion_toggle);
 
 	onion_skinning = memnew(MenuButton);
@@ -2018,7 +2018,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	pin->set_toggle_mode(true);
 	pin->set_tooltip_text(TTR("Pin AnimationPlayer"));
 	hb->add_child(pin);
-	pin->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_pin_pressed));
+	pin->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_pin_pressed));
 
 	file = memnew(EditorFileDialog);
 	add_child(file);
@@ -2074,13 +2074,13 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	blend_editor.next->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	blend_vb->add_margin_child(TTR("Next (Auto Queue):"), blend_editor.next);
 
-	autoplay->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
+	autoplay->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
 	autoplay->set_toggle_mode(true);
-	play->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_play_pressed));
-	play_from->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_play_from_pressed));
-	play_bw->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_play_bw_pressed));
-	play_bw_from->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_play_bw_from_pressed));
-	stop->connect(SNAME("pressed"), callable_mp(this, &AnimationPlayerEditor::_stop_pressed));
+	play->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_play_pressed));
+	play_from->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_play_from_pressed));
+	play_bw->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_play_bw_pressed));
+	play_bw_from->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_play_bw_from_pressed));
+	stop->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_stop_pressed));
 
 	animation->connect(SNAME("item_selected"), callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 

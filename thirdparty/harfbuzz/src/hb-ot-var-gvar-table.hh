@@ -102,9 +102,8 @@ struct glyph_variations_t
       }
 
       bool is_composite_glyph = false;
-#ifdef HB_EXPERIMENTAL_API
       is_composite_glyph = plan->composite_new_gids.has (new_gid);
-#endif
+
       if (!p->decompile_tuple_variations (all_contour_points->length, true /* is_gvar */,
                                           iterator, &(plan->axes_old_index_tag_map),
                                           shared_indices, shared_tuples,
@@ -120,9 +119,7 @@ struct glyph_variations_t
   {
     unsigned count = plan->new_to_old_gid_list.length;
     bool iup_optimize = false;
-#ifdef HB_EXPERIMENTAL_API
     iup_optimize = plan->flags & HB_SUBSET_FLAGS_OPTIMIZE_IUP_DELTAS;
-#endif
     for (unsigned i = 0; i < count; i++)
     {
       hb_codepoint_t new_gid = plan->new_to_old_gid_list[i].first;

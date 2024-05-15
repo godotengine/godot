@@ -216,7 +216,7 @@ License: Apache-2.0
 
 Files: ./thirdparty/enet/
 Comment: ENet
-Copyright: 2002-2020, Lee Salzman
+Copyright: 2002-2024, Lee Salzman
 License: Expat
 
 Files: ./thirdparty/etcpak/

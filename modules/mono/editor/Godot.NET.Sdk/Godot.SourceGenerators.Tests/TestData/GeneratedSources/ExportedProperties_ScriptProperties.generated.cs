@@ -293,275 +293,275 @@ partial class ExportedProperties
             this.NotGenerateComplexLamdaProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.NotGenerateLamdaNoFieldProperty) {
+        if (name == PropertyName.NotGenerateLamdaNoFieldProperty) {
             this.NotGenerateLamdaNoFieldProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.NotGenerateComplexReturnProperty) {
+        if (name == PropertyName.NotGenerateComplexReturnProperty) {
             this.NotGenerateComplexReturnProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.NotGenerateReturnsProperty) {
+        if (name == PropertyName.NotGenerateReturnsProperty) {
             this.NotGenerateReturnsProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.FullPropertyString) {
+        if (name == PropertyName.FullPropertyString) {
             this.FullPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.FullPropertyString_Complex) {
+        if (name == PropertyName.FullPropertyString_Complex) {
             this.FullPropertyString_Complex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.LamdaPropertyString) {
+        if (name == PropertyName.LamdaPropertyString) {
             this.LamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyBoolean) {
+        if (name == PropertyName.PropertyBoolean) {
             this.PropertyBoolean = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyChar) {
+        if (name == PropertyName.PropertyChar) {
             this.PropertyChar = global::Godot.NativeInterop.VariantUtils.ConvertTo<char>(value);
             return true;
         }
-        else if (name == PropertyName.PropertySByte) {
+        if (name == PropertyName.PropertySByte) {
             this.PropertySByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<sbyte>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyInt16) {
+        if (name == PropertyName.PropertyInt16) {
             this.PropertyInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<short>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyInt32) {
+        if (name == PropertyName.PropertyInt32) {
             this.PropertyInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyInt64) {
+        if (name == PropertyName.PropertyInt64) {
             this.PropertyInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<long>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyByte) {
+        if (name == PropertyName.PropertyByte) {
             this.PropertyByte = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyUInt16) {
+        if (name == PropertyName.PropertyUInt16) {
             this.PropertyUInt16 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ushort>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyUInt32) {
+        if (name == PropertyName.PropertyUInt32) {
             this.PropertyUInt32 = global::Godot.NativeInterop.VariantUtils.ConvertTo<uint>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyUInt64) {
+        if (name == PropertyName.PropertyUInt64) {
             this.PropertyUInt64 = global::Godot.NativeInterop.VariantUtils.ConvertTo<ulong>(value);
             return true;
         }
-        else if (name == PropertyName.PropertySingle) {
+        if (name == PropertyName.PropertySingle) {
             this.PropertySingle = global::Godot.NativeInterop.VariantUtils.ConvertTo<float>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyDouble) {
+        if (name == PropertyName.PropertyDouble) {
             this.PropertyDouble = global::Godot.NativeInterop.VariantUtils.ConvertTo<double>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyString) {
+        if (name == PropertyName.PropertyString) {
             this.PropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyVector2) {
+        if (name == PropertyName.PropertyVector2) {
             this.PropertyVector2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyVector2I) {
+        if (name == PropertyName.PropertyVector2I) {
             this.PropertyVector2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2I>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyRect2) {
+        if (name == PropertyName.PropertyRect2) {
             this.PropertyRect2 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyRect2I) {
+        if (name == PropertyName.PropertyRect2I) {
             this.PropertyRect2I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rect2I>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyTransform2D) {
+        if (name == PropertyName.PropertyTransform2D) {
             this.PropertyTransform2D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform2D>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyVector3) {
+        if (name == PropertyName.PropertyVector3) {
             this.PropertyVector3 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyVector3I) {
+        if (name == PropertyName.PropertyVector3I) {
             this.PropertyVector3I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3I>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyBasis) {
+        if (name == PropertyName.PropertyBasis) {
             this.PropertyBasis = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Basis>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyQuaternion) {
+        if (name == PropertyName.PropertyQuaternion) {
             this.PropertyQuaternion = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Quaternion>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyTransform3D) {
+        if (name == PropertyName.PropertyTransform3D) {
             this.PropertyTransform3D = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Transform3D>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyVector4) {
+        if (name == PropertyName.PropertyVector4) {
             this.PropertyVector4 = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyVector4I) {
+        if (name == PropertyName.PropertyVector4I) {
             this.PropertyVector4I = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector4I>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyProjection) {
+        if (name == PropertyName.PropertyProjection) {
             this.PropertyProjection = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Projection>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyAabb) {
+        if (name == PropertyName.PropertyAabb) {
             this.PropertyAabb = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Aabb>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyColor) {
+        if (name == PropertyName.PropertyColor) {
             this.PropertyColor = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyPlane) {
+        if (name == PropertyName.PropertyPlane) {
             this.PropertyPlane = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Plane>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyCallable) {
+        if (name == PropertyName.PropertyCallable) {
             this.PropertyCallable = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
             return true;
         }
-        else if (name == PropertyName.PropertySignal) {
+        if (name == PropertyName.PropertySignal) {
             this.PropertySignal = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Signal>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyEnum) {
+        if (name == PropertyName.PropertyEnum) {
             this.PropertyEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyEnum>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyFlagsEnum) {
+        if (name == PropertyName.PropertyFlagsEnum) {
             this.PropertyFlagsEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::ExportedProperties.MyFlagsEnum>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyByteArray) {
+        if (name == PropertyName.PropertyByteArray) {
             this.PropertyByteArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<byte[]>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyInt32Array) {
+        if (name == PropertyName.PropertyInt32Array) {
             this.PropertyInt32Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<int[]>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyInt64Array) {
+        if (name == PropertyName.PropertyInt64Array) {
             this.PropertyInt64Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<long[]>(value);
             return true;
         }
-        else if (name == PropertyName.PropertySingleArray) {
+        if (name == PropertyName.PropertySingleArray) {
             this.PropertySingleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<float[]>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyDoubleArray) {
+        if (name == PropertyName.PropertyDoubleArray) {
             this.PropertyDoubleArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<double[]>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyStringArray) {
+        if (name == PropertyName.PropertyStringArray) {
             this.PropertyStringArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyStringArrayEnum) {
+        if (name == PropertyName.PropertyStringArrayEnum) {
             this.PropertyStringArrayEnum = global::Godot.NativeInterop.VariantUtils.ConvertTo<string[]>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyVector2Array) {
+        if (name == PropertyName.PropertyVector2Array) {
             this.PropertyVector2Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector2[]>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyVector3Array) {
+        if (name == PropertyName.PropertyVector3Array) {
             this.PropertyVector3Array = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Vector3[]>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyColorArray) {
+        if (name == PropertyName.PropertyColorArray) {
             this.PropertyColorArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Color[]>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotObjectOrDerivedArray) {
+        if (name == PropertyName.PropertyGodotObjectOrDerivedArray) {
             this.PropertyGodotObjectOrDerivedArray = global::Godot.NativeInterop.VariantUtils.ConvertToSystemArrayOfGodotObject<global::Godot.GodotObject>(value);
             return true;
         }
-        else if (name == PropertyName.field_StringNameArray) {
+        if (name == PropertyName.field_StringNameArray) {
             this.field_StringNameArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName[]>(value);
             return true;
         }
-        else if (name == PropertyName.field_NodePathArray) {
+        if (name == PropertyName.field_NodePathArray) {
             this.field_NodePathArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath[]>(value);
             return true;
         }
-        else if (name == PropertyName.field_RidArray) {
+        if (name == PropertyName.field_RidArray) {
             this.field_RidArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid[]>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyVariant) {
+        if (name == PropertyName.PropertyVariant) {
             this.PropertyVariant = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Variant>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotObjectOrDerived) {
+        if (name == PropertyName.PropertyGodotObjectOrDerived) {
             this.PropertyGodotObjectOrDerived = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.GodotObject>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotResourceTexture) {
+        if (name == PropertyName.PropertyGodotResourceTexture) {
             this.PropertyGodotResourceTexture = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Texture>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyStringName) {
+        if (name == PropertyName.PropertyStringName) {
             this.PropertyStringName = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.StringName>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyNodePath) {
+        if (name == PropertyName.PropertyNodePath) {
             this.PropertyNodePath = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.NodePath>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyRid) {
+        if (name == PropertyName.PropertyRid) {
             this.PropertyRid = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Rid>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotDictionary) {
+        if (name == PropertyName.PropertyGodotDictionary) {
             this.PropertyGodotDictionary = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Dictionary>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotArray) {
+        if (name == PropertyName.PropertyGodotArray) {
             this.PropertyGodotArray = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Collections.Array>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotGenericDictionary) {
+        if (name == PropertyName.PropertyGodotGenericDictionary) {
             this.PropertyGodotGenericDictionary = global::Godot.NativeInterop.VariantUtils.ConvertToDictionary<string, bool>(value);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotGenericArray) {
+        if (name == PropertyName.PropertyGodotGenericArray) {
             this.PropertyGodotGenericArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<int>(value);
             return true;
         }
-        else if (name == PropertyName._notGeneratePropertyString) {
+        if (name == PropertyName._notGeneratePropertyString) {
             this._notGeneratePropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName._notGeneratePropertyInt) {
+        if (name == PropertyName._notGeneratePropertyInt) {
             this._notGeneratePropertyInt = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
             return true;
         }
-        else if (name == PropertyName._fullPropertyString) {
+        if (name == PropertyName._fullPropertyString) {
             this._fullPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName._fullPropertyStringComplex) {
+        if (name == PropertyName._fullPropertyStringComplex) {
             this._fullPropertyStringComplex = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
-        else if (name == PropertyName._lamdaPropertyString) {
+        if (name == PropertyName._lamdaPropertyString) {
             this._lamdaPropertyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
@@ -575,275 +575,275 @@ partial class ExportedProperties
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.NotGenerateComplexLamdaProperty);
             return true;
         }
-        else if (name == PropertyName.NotGenerateLamdaNoFieldProperty) {
+        if (name == PropertyName.NotGenerateLamdaNoFieldProperty) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.NotGenerateLamdaNoFieldProperty);
             return true;
         }
-        else if (name == PropertyName.NotGenerateComplexReturnProperty) {
+        if (name == PropertyName.NotGenerateComplexReturnProperty) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.NotGenerateComplexReturnProperty);
             return true;
         }
-        else if (name == PropertyName.NotGenerateReturnsProperty) {
+        if (name == PropertyName.NotGenerateReturnsProperty) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.NotGenerateReturnsProperty);
             return true;
         }
-        else if (name == PropertyName.FullPropertyString) {
+        if (name == PropertyName.FullPropertyString) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.FullPropertyString);
             return true;
         }
-        else if (name == PropertyName.FullPropertyString_Complex) {
+        if (name == PropertyName.FullPropertyString_Complex) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.FullPropertyString_Complex);
             return true;
         }
-        else if (name == PropertyName.LamdaPropertyString) {
+        if (name == PropertyName.LamdaPropertyString) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.LamdaPropertyString);
             return true;
         }
-        else if (name == PropertyName.PropertyBoolean) {
+        if (name == PropertyName.PropertyBoolean) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(this.PropertyBoolean);
             return true;
         }
-        else if (name == PropertyName.PropertyChar) {
+        if (name == PropertyName.PropertyChar) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<char>(this.PropertyChar);
             return true;
         }
-        else if (name == PropertyName.PropertySByte) {
+        if (name == PropertyName.PropertySByte) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<sbyte>(this.PropertySByte);
             return true;
         }
-        else if (name == PropertyName.PropertyInt16) {
+        if (name == PropertyName.PropertyInt16) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<short>(this.PropertyInt16);
             return true;
         }
-        else if (name == PropertyName.PropertyInt32) {
+        if (name == PropertyName.PropertyInt32) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.PropertyInt32);
             return true;
         }
-        else if (name == PropertyName.PropertyInt64) {
+        if (name == PropertyName.PropertyInt64) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long>(this.PropertyInt64);
             return true;
         }
-        else if (name == PropertyName.PropertyByte) {
+        if (name == PropertyName.PropertyByte) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<byte>(this.PropertyByte);
             return true;
         }
-        else if (name == PropertyName.PropertyUInt16) {
+        if (name == PropertyName.PropertyUInt16) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<ushort>(this.PropertyUInt16);
             return true;
         }
-        else if (name == PropertyName.PropertyUInt32) {
+        if (name == PropertyName.PropertyUInt32) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<uint>(this.PropertyUInt32);
             return true;
         }
-        else if (name == PropertyName.PropertyUInt64) {
+        if (name == PropertyName.PropertyUInt64) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<ulong>(this.PropertyUInt64);
             return true;
         }
-        else if (name == PropertyName.PropertySingle) {
+        if (name == PropertyName.PropertySingle) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float>(this.PropertySingle);
             return true;
         }
-        else if (name == PropertyName.PropertyDouble) {
+        if (name == PropertyName.PropertyDouble) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<double>(this.PropertyDouble);
             return true;
         }
-        else if (name == PropertyName.PropertyString) {
+        if (name == PropertyName.PropertyString) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.PropertyString);
             return true;
         }
-        else if (name == PropertyName.PropertyVector2) {
+        if (name == PropertyName.PropertyVector2) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2>(this.PropertyVector2);
             return true;
         }
-        else if (name == PropertyName.PropertyVector2I) {
+        if (name == PropertyName.PropertyVector2I) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2I>(this.PropertyVector2I);
             return true;
         }
-        else if (name == PropertyName.PropertyRect2) {
+        if (name == PropertyName.PropertyRect2) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2>(this.PropertyRect2);
             return true;
         }
-        else if (name == PropertyName.PropertyRect2I) {
+        if (name == PropertyName.PropertyRect2I) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rect2I>(this.PropertyRect2I);
             return true;
         }
-        else if (name == PropertyName.PropertyTransform2D) {
+        if (name == PropertyName.PropertyTransform2D) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform2D>(this.PropertyTransform2D);
             return true;
         }
-        else if (name == PropertyName.PropertyVector3) {
+        if (name == PropertyName.PropertyVector3) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3>(this.PropertyVector3);
             return true;
         }
-        else if (name == PropertyName.PropertyVector3I) {
+        if (name == PropertyName.PropertyVector3I) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3I>(this.PropertyVector3I);
             return true;
         }
-        else if (name == PropertyName.PropertyBasis) {
+        if (name == PropertyName.PropertyBasis) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Basis>(this.PropertyBasis);
             return true;
         }
-        else if (name == PropertyName.PropertyQuaternion) {
+        if (name == PropertyName.PropertyQuaternion) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Quaternion>(this.PropertyQuaternion);
             return true;
         }
-        else if (name == PropertyName.PropertyTransform3D) {
+        if (name == PropertyName.PropertyTransform3D) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Transform3D>(this.PropertyTransform3D);
             return true;
         }
-        else if (name == PropertyName.PropertyVector4) {
+        if (name == PropertyName.PropertyVector4) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4>(this.PropertyVector4);
             return true;
         }
-        else if (name == PropertyName.PropertyVector4I) {
+        if (name == PropertyName.PropertyVector4I) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector4I>(this.PropertyVector4I);
             return true;
         }
-        else if (name == PropertyName.PropertyProjection) {
+        if (name == PropertyName.PropertyProjection) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Projection>(this.PropertyProjection);
             return true;
         }
-        else if (name == PropertyName.PropertyAabb) {
+        if (name == PropertyName.PropertyAabb) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Aabb>(this.PropertyAabb);
             return true;
         }
-        else if (name == PropertyName.PropertyColor) {
+        if (name == PropertyName.PropertyColor) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color>(this.PropertyColor);
             return true;
         }
-        else if (name == PropertyName.PropertyPlane) {
+        if (name == PropertyName.PropertyPlane) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Plane>(this.PropertyPlane);
             return true;
         }
-        else if (name == PropertyName.PropertyCallable) {
+        if (name == PropertyName.PropertyCallable) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.PropertyCallable);
             return true;
         }
-        else if (name == PropertyName.PropertySignal) {
+        if (name == PropertyName.PropertySignal) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Signal>(this.PropertySignal);
             return true;
         }
-        else if (name == PropertyName.PropertyEnum) {
+        if (name == PropertyName.PropertyEnum) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyEnum>(this.PropertyEnum);
             return true;
         }
-        else if (name == PropertyName.PropertyFlagsEnum) {
+        if (name == PropertyName.PropertyFlagsEnum) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::ExportedProperties.MyFlagsEnum>(this.PropertyFlagsEnum);
             return true;
         }
-        else if (name == PropertyName.PropertyByteArray) {
+        if (name == PropertyName.PropertyByteArray) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<byte[]>(this.PropertyByteArray);
             return true;
         }
-        else if (name == PropertyName.PropertyInt32Array) {
+        if (name == PropertyName.PropertyInt32Array) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int[]>(this.PropertyInt32Array);
             return true;
         }
-        else if (name == PropertyName.PropertyInt64Array) {
+        if (name == PropertyName.PropertyInt64Array) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<long[]>(this.PropertyInt64Array);
             return true;
         }
-        else if (name == PropertyName.PropertySingleArray) {
+        if (name == PropertyName.PropertySingleArray) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<float[]>(this.PropertySingleArray);
             return true;
         }
-        else if (name == PropertyName.PropertyDoubleArray) {
+        if (name == PropertyName.PropertyDoubleArray) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<double[]>(this.PropertyDoubleArray);
             return true;
         }
-        else if (name == PropertyName.PropertyStringArray) {
+        if (name == PropertyName.PropertyStringArray) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(this.PropertyStringArray);
             return true;
         }
-        else if (name == PropertyName.PropertyStringArrayEnum) {
+        if (name == PropertyName.PropertyStringArrayEnum) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string[]>(this.PropertyStringArrayEnum);
             return true;
         }
-        else if (name == PropertyName.PropertyVector2Array) {
+        if (name == PropertyName.PropertyVector2Array) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector2[]>(this.PropertyVector2Array);
             return true;
         }
-        else if (name == PropertyName.PropertyVector3Array) {
+        if (name == PropertyName.PropertyVector3Array) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Vector3[]>(this.PropertyVector3Array);
             return true;
         }
-        else if (name == PropertyName.PropertyColorArray) {
+        if (name == PropertyName.PropertyColorArray) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Color[]>(this.PropertyColorArray);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotObjectOrDerivedArray) {
+        if (name == PropertyName.PropertyGodotObjectOrDerivedArray) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFromSystemArrayOfGodotObject(this.PropertyGodotObjectOrDerivedArray);
             return true;
         }
-        else if (name == PropertyName.field_StringNameArray) {
+        if (name == PropertyName.field_StringNameArray) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName[]>(this.field_StringNameArray);
             return true;
         }
-        else if (name == PropertyName.field_NodePathArray) {
+        if (name == PropertyName.field_NodePathArray) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath[]>(this.field_NodePathArray);
             return true;
         }
-        else if (name == PropertyName.field_RidArray) {
+        if (name == PropertyName.field_RidArray) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid[]>(this.field_RidArray);
             return true;
         }
-        else if (name == PropertyName.PropertyVariant) {
+        if (name == PropertyName.PropertyVariant) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Variant>(this.PropertyVariant);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotObjectOrDerived) {
+        if (name == PropertyName.PropertyGodotObjectOrDerived) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.GodotObject>(this.PropertyGodotObjectOrDerived);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotResourceTexture) {
+        if (name == PropertyName.PropertyGodotResourceTexture) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Texture>(this.PropertyGodotResourceTexture);
             return true;
         }
-        else if (name == PropertyName.PropertyStringName) {
+        if (name == PropertyName.PropertyStringName) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.StringName>(this.PropertyStringName);
             return true;
         }
-        else if (name == PropertyName.PropertyNodePath) {
+        if (name == PropertyName.PropertyNodePath) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.NodePath>(this.PropertyNodePath);
             return true;
         }
-        else if (name == PropertyName.PropertyRid) {
+        if (name == PropertyName.PropertyRid) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Rid>(this.PropertyRid);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotDictionary) {
+        if (name == PropertyName.PropertyGodotDictionary) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Dictionary>(this.PropertyGodotDictionary);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotArray) {
+        if (name == PropertyName.PropertyGodotArray) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Collections.Array>(this.PropertyGodotArray);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotGenericDictionary) {
+        if (name == PropertyName.PropertyGodotGenericDictionary) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFromDictionary(this.PropertyGodotGenericDictionary);
             return true;
         }
-        else if (name == PropertyName.PropertyGodotGenericArray) {
+        if (name == PropertyName.PropertyGodotGenericArray) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFromArray(this.PropertyGodotGenericArray);
             return true;
         }
-        else if (name == PropertyName._notGeneratePropertyString) {
+        if (name == PropertyName._notGeneratePropertyString) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this._notGeneratePropertyString);
             return true;
         }
-        else if (name == PropertyName._notGeneratePropertyInt) {
+        if (name == PropertyName._notGeneratePropertyInt) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this._notGeneratePropertyInt);
             return true;
         }
-        else if (name == PropertyName._fullPropertyString) {
+        if (name == PropertyName._fullPropertyString) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this._fullPropertyString);
             return true;
         }
-        else if (name == PropertyName._fullPropertyStringComplex) {
+        if (name == PropertyName._fullPropertyStringComplex) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this._fullPropertyStringComplex);
             return true;
         }
-        else if (name == PropertyName._lamdaPropertyString) {
+        if (name == PropertyName._lamdaPropertyString) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this._lamdaPropertyString);
             return true;
         }

@@ -85,6 +85,7 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 	OS::ProcessID ssh_pid = 0;
 	int menu_options = 0;
 
+	void _fix_privacy_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist);
 	void _fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary);
 	void _make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data);
 

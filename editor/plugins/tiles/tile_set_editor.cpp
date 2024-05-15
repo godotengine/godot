@@ -877,7 +877,7 @@ TileSetEditor::TileSetEditor() {
 	sources_delete_button = memnew(Button);
 	sources_delete_button->set_theme_type_variation("FlatButton");
 	sources_delete_button->set_disabled(true);
-	sources_delete_button->connect("pressed", callable_mp(this, &TileSetEditor::_source_delete_pressed));
+	sources_delete_button->connect(SceneStringName(pressed), callable_mp(this, &TileSetEditor::_source_delete_pressed));
 	sources_bottom_actions->add_child(sources_delete_button);
 
 	sources_add_button = memnew(MenuButton);
@@ -1019,7 +1019,7 @@ bool TileSourceInspectorPlugin::parse_property(Object *p_object, const Variant::
 		Button *button = memnew(Button(TTR("Edit")));
 		button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hbox->add_child(button);
-		button->connect("pressed", callable_mp(this, &TileSourceInspectorPlugin::_show_id_edit_dialog).bind(p_object));
+		button->connect(SceneStringName(pressed), callable_mp(this, &TileSourceInspectorPlugin::_show_id_edit_dialog).bind(p_object));
 
 		ep->add_child(hbox);
 		add_property_editor(p_path, ep);

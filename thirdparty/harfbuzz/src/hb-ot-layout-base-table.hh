@@ -125,6 +125,20 @@ struct BaseCoordFormat3
     auto *out = c->serializer->embed (*this);
     if (unlikely (!out)) return_trace (false);
 
+    if (!c->plan->pinned_at_default)
+    {
+      unsigned var_idx = (this+deviceTable).get_variation_index ();
+      if (var_idx != VarIdx::NO_VARIATION)
+      {
+        hb_pair_t<unsigned, int> *v;
+        if (!c->plan->base_variation_idx_map.has (var_idx, &v))
+          return_trace (false);
+        
+        if (unlikely (!c->serializer->check_assign (out->coordinate, coordinate + hb_second (*v),
+                                                    HB_SERIALIZE_ERROR_INT_OVERFLOW)))
+          return_trace (false);
+      }
+    }
     return_trace (out->deviceTable.serialize_copy (c->serializer, deviceTable,
                                                    this, 0,
                                                    hb_serialize_context_t::Head,
@@ -401,11 +415,12 @@ struct BaseLangSysRecord
 
   bool has_data () const { return baseLangSysTag; }
 
-  const MinMax &get_min_max () const { return this+minMax; }
+  const MinMax &get_min_max (const void* base) const { return base+minMax; }
 
-  void collect_variation_indices (const hb_subset_plan_t* plan,
+  void collect_variation_indices (const void* base,
+                                  const hb_subset_plan_t* plan,
                                   hb_set_t& varidx_set /* OUT */) const
-  { (this+minMax).collect_variation_indices (plan, varidx_set); }
+  { (base+minMax).collect_variation_indices (plan, varidx_set); }
 
   bool subset (hb_subset_context_t *c,
                const void *base) const
@@ -438,7 +453,7 @@ struct BaseScript
   const MinMax &get_min_max (hb_tag_t language_tag) const
   {
     const BaseLangSysRecord& record = baseLangSysRecords.bsearch (language_tag);
-    return record.has_data () ? record.get_min_max () : this+defaultMinMax;
+    return record.has_data () ? record.get_min_max (this) : this+defaultMinMax;
   }
 
   const BaseCoord &get_base_coord (int baseline_tag_index) const
@@ -454,7 +469,7 @@ struct BaseScript
     (this+defaultMinMax).collect_variation_indices (plan, varidx_set);
     
     for (const BaseLangSysRecord& _ : baseLangSysRecords)
-      _.collect_variation_indices (plan, varidx_set);
+      _.collect_variation_indices (this, plan, varidx_set);
   }
 
   bool subset (hb_subset_context_t *c) const
@@ -705,6 +720,46 @@ struct BASE
     (this+vAxis).collect_variation_indices (plan, varidx_set);
   }
 
+  bool subset_varstore (hb_subset_context_t *c,
+                        BASE *out /* OUT */) const
+  {
+    TRACE_SUBSET (this);
+    if (!c->serializer->allocate_size<Offset32To<ItemVariationStore>> (Offset32To<ItemVariationStore>::static_size))
+        return_trace (false);
+    if (!c->plan->normalized_coords)
+      return_trace (out->varStore.serialize_subset (c, varStore, this, c->plan->base_varstore_inner_maps.as_array ()));
+
+    if (c->plan->all_axes_pinned)
+      return_trace (true);
+
+    item_variations_t item_vars;
+    if (!item_vars.instantiate (this+varStore, c->plan, true, true,
+                                c->plan->base_varstore_inner_maps.as_array ()))
+      return_trace (false);
+
+    if (!out->varStore.serialize_serialize (c->serializer,
+                                            item_vars.has_long_word (),
+                                            c->plan->axis_tags,
+                                            item_vars.get_region_list (),
+                                            item_vars.get_vardata_encodings ()))
+      return_trace (false);
+
+    const hb_map_t &varidx_map = item_vars.get_varidx_map ();
+    /* base_variation_idx_map in the plan is old_varidx->(varidx, delta)
+     * mapping, new varidx is generated for subsetting, we need to remap this
+     * after instancing */
+    for (auto _ : c->plan->base_variation_idx_map.iter_ref ())
+    {
+      uint32_t varidx = _.second.first;
+      uint32_t *new_varidx;
+      if (varidx_map.has (varidx, &new_varidx))
+        _.second.first = *new_varidx;
+      else
+        _.second.first = HB_OT_LAYOUT_NO_VARIATIONS_INDEX;
+    }
+    return_trace (true);
+  }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -712,18 +767,14 @@ struct BASE
     if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
 
     out->version = version;
+    if (has_var_store () && !subset_varstore (c, out))
+        return_trace (false);
+
     if (hAxis && !out->hAxis.serialize_subset (c, hAxis, this))
       return_trace (false);
 
     if (vAxis && !out->vAxis.serialize_subset (c, vAxis, this))
       return_trace (false);
-
-    if (has_var_store ())
-    {
-      if (!c->serializer->allocate_size<Offset32To<ItemVariationStore>> (Offset32To<ItemVariationStore>::static_size))
-        return_trace (false);
-      return_trace (out->varStore.serialize_subset (c, varStore, this, c->plan->base_varstore_inner_maps.as_array ()));
-    }
 
     return_trace (true);
   }

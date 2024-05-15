@@ -276,8 +276,8 @@ void GDScriptEditorTranslationParserPlugin::_assess_call(const GDScriptParser::C
 	id_ctx_plural.resize(3);
 	bool extract_id_ctx_plural = true;
 
-	if (function_name == tr_func) {
-		// Extract from tr(id, ctx).
+	if (function_name == tr_func || function_name == atr_func) {
+		// Extract from `tr(id, ctx)` or `atr(id, ctx)`.
 		for (int i = 0; i < p_call->arguments.size(); i++) {
 			if (_is_constant_string(p_call->arguments[i])) {
 				id_ctx_plural.write[i] = p_call->arguments[i]->reduced_value;
@@ -289,8 +289,8 @@ void GDScriptEditorTranslationParserPlugin::_assess_call(const GDScriptParser::C
 		if (extract_id_ctx_plural) {
 			ids_ctx_plural->push_back(id_ctx_plural);
 		}
-	} else if (function_name == trn_func) {
-		// Extract from tr_n(id, plural, n, ctx).
+	} else if (function_name == trn_func || function_name == atrn_func) {
+		// Extract from `tr_n(id, plural, n, ctx)` or `atr_n(id, plural, n, ctx)`.
 		Vector<int> indices;
 		indices.push_back(0);
 		indices.push_back(3);

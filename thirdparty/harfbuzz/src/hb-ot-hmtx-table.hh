@@ -410,7 +410,8 @@ struct hmtxvmtx
 									font->coords, font->num_coords,
 									store_cache));
 
-      return _glyf_get_advance_with_var_unscaled (font, glyph, T::tableTag == HB_OT_TAG_vmtx);
+      unsigned glyf_advance = _glyf_get_advance_with_var_unscaled (font, glyph, T::tableTag == HB_OT_TAG_vmtx);
+      return glyf_advance ? glyf_advance : advance;
 #else
       return advance;
 #endif

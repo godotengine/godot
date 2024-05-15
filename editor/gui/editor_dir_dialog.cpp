@@ -213,7 +213,7 @@ EditorDirDialog::EditorDirDialog() {
 
 	makedir = memnew(Button(TTR("Create Folder")));
 	hb->add_child(makedir);
-	makedir->connect("pressed", callable_mp(this, &EditorDirDialog::_make_dir));
+	makedir->connect(SceneStringName(pressed), callable_mp(this, &EditorDirDialog::_make_dir));
 
 	tree = memnew(Tree);
 	vb->add_child(tree);
@@ -224,7 +224,7 @@ EditorDirDialog::EditorDirDialog() {
 	set_ok_button_text(TTR("Move"));
 
 	copy = add_button(TTR("Copy"), !DisplayServer::get_singleton()->get_swap_cancel_ok());
-	copy->connect("pressed", callable_mp(this, &EditorDirDialog::_copy_pressed));
+	copy->connect(SceneStringName(pressed), callable_mp(this, &EditorDirDialog::_copy_pressed));
 
 	makedialog = memnew(DirectoryCreateDialog);
 	add_child(makedialog);

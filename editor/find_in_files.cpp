@@ -367,7 +367,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 		Button *folder_button = memnew(Button);
 		folder_button->set_text("...");
-		folder_button->connect("pressed", callable_mp(this, &FindInFilesDialog::_on_folder_button_pressed));
+		folder_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesDialog::_on_folder_button_pressed));
 		hbc->add_child(folder_button);
 
 		_folder_dialog = memnew(FileDialog);
@@ -603,19 +603,19 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		_refresh_button = memnew(Button);
 		_refresh_button->set_text(TTR("Refresh"));
-		_refresh_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_refresh_button_clicked));
+		_refresh_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_refresh_button_clicked));
 		_refresh_button->hide();
 		hbc->add_child(_refresh_button);
 
 		_cancel_button = memnew(Button);
 		_cancel_button->set_text(TTR("Cancel"));
-		_cancel_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_cancel_button_clicked));
+		_cancel_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_cancel_button_clicked));
 		_cancel_button->hide();
 		hbc->add_child(_cancel_button);
 
 		_close_button = memnew(Button);
 		_close_button->set_text(TTR("Close"));
-		_close_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_close_button_clicked));
+		_close_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_close_button_clicked));
 		hbc->add_child(_close_button);
 
 		vbc->add_child(hbc);
@@ -649,7 +649,7 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		_replace_all_button = memnew(Button);
 		_replace_all_button->set_text(TTR("Replace all (no undo)"));
-		_replace_all_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_replace_all_clicked));
+		_replace_all_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_replace_all_clicked));
 		_replace_container->add_child(_replace_all_button);
 
 		_replace_container->hide();

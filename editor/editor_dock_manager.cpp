@@ -59,12 +59,13 @@ void DockSplitContainer::_update_visibility() {
 	}
 	is_updating = true;
 	bool any_visible = false;
-	for (int i = 0; i < 2; i++) {
-		Control *split = get_containable_child(i);
-		if (split && split->is_visible()) {
-			any_visible = true;
-			break;
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i, false));
+		if (!c || !c->is_visible() || c->is_set_as_top_level()) {
+			continue;
 		}
+		any_visible = c;
+		break;
 	}
 	set_visible(any_visible);
 	is_updating = false;
@@ -74,10 +75,13 @@ void DockSplitContainer::add_child_notify(Node *p_child) {
 	SplitContainer::add_child_notify(p_child);
 
 	Control *child_control = nullptr;
-	for (int i = 0; i < 2; i++) {
-		Control *split = get_containable_child(i);
-		if (p_child == split) {
-			child_control = split;
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i, false));
+		if (!c || c->is_set_as_top_level()) {
+			continue;
+		}
+		if (p_child == c) {
+			child_control = c;
 			break;
 		}
 	}
@@ -93,10 +97,13 @@ void DockSplitContainer::remove_child_notify(Node *p_child) {
 	SplitContainer::remove_child_notify(p_child);
 
 	Control *child_control = nullptr;
-	for (int i = 0; i < 2; i++) {
-		Control *split = get_containable_child(i);
-		if (p_child == split) {
-			child_control = split;
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i, false));
+		if (!c || c->is_set_as_top_level()) {
+			continue;
+		}
+		if (p_child == c) {
+			child_control = c;
 			break;
 		}
 	}
@@ -1073,7 +1080,7 @@ DockContextPopup::DockContextPopup() {
 	tab_move_left_button = memnew(Button);
 	tab_move_left_button->set_flat(true);
 	tab_move_left_button->set_focus_mode(Control::FOCUS_NONE);
-	tab_move_left_button->connect("pressed", callable_mp(this, &DockContextPopup::_tab_move_left));
+	tab_move_left_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_tab_move_left));
 	header_hb->add_child(tab_move_left_button);
 
 	Label *position_label = memnew(Label);
@@ -1085,7 +1092,7 @@ DockContextPopup::DockContextPopup() {
 	tab_move_right_button = memnew(Button);
 	tab_move_right_button->set_flat(true);
 	tab_move_right_button->set_focus_mode(Control::FOCUS_NONE);
-	tab_move_right_button->connect("pressed", callable_mp(this, &DockContextPopup::_tab_move_right));
+	tab_move_right_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_tab_move_right));
 
 	header_hb->add_child(tab_move_right_button);
 	dock_select_popup_vb->add_child(header_hb);
@@ -1108,7 +1115,7 @@ DockContextPopup::DockContextPopup() {
 	}
 	make_float_button->set_focus_mode(Control::FOCUS_NONE);
 	make_float_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	make_float_button->connect("pressed", callable_mp(this, &DockContextPopup::_float_dock));
+	make_float_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_float_dock));
 	dock_select_popup_vb->add_child(make_float_button);
 
 	dock_to_bottom_button = memnew(Button);
@@ -1116,7 +1123,7 @@ DockContextPopup::DockContextPopup() {
 	dock_to_bottom_button->set_tooltip_text(TTR("Move this dock to the bottom panel."));
 	dock_to_bottom_button->set_focus_mode(Control::FOCUS_NONE);
 	dock_to_bottom_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	dock_to_bottom_button->connect("pressed", callable_mp(this, &DockContextPopup::_move_dock_to_bottom));
+	dock_to_bottom_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_move_dock_to_bottom));
 	dock_to_bottom_button->hide();
 	dock_select_popup_vb->add_child(dock_to_bottom_button);
 
@@ -1125,6 +1132,6 @@ DockContextPopup::DockContextPopup() {
 	close_button->set_tooltip_text(TTR("Close this dock."));
 	close_button->set_focus_mode(Control::FOCUS_NONE);
 	close_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	close_button->connect("pressed", callable_mp(this, &DockContextPopup::_close_dock));
+	close_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_close_dock));
 	dock_select_popup_vb->add_child(close_button);
 }

@@ -516,7 +516,7 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
 	add_button->set_disabled(true);
-	add_button->connect("pressed", callable_mp(this, &GroupSettingsEditor::_add_group));
+	add_button->connect(SceneStringName(pressed), callable_mp(this, &GroupSettingsEditor::_add_group));
 	hbc->add_child(add_button);
 
 	tree = memnew(Tree);

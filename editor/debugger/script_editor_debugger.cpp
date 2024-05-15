@@ -849,8 +849,8 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 void ScriptEditorDebugger::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			le_set->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
-			le_clear->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
+			le_set->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
+			le_clear->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
 			error_tree->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
@@ -1826,7 +1826,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		skip_breakpoints->set_theme_type_variation("FlatButton");
 		hbc->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip_text(TTR("Skip Breakpoints"));
-		skip_breakpoints->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
+		skip_breakpoints->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1834,7 +1834,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		copy->set_theme_type_variation("FlatButton");
 		hbc->add_child(copy);
 		copy->set_tooltip_text(TTR("Copy Error"));
-		copy->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_copy));
+		copy->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_copy));
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1843,14 +1843,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(step);
 		step->set_tooltip_text(TTR("Step Into"));
 		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
-		step->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_step));
+		step->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_step));
 
 		next = memnew(Button);
 		next->set_theme_type_variation("FlatButton");
 		hbc->add_child(next);
 		next->set_tooltip_text(TTR("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
-		next->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_next));
+		next->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_next));
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1859,14 +1859,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip_text(TTR("Break"));
 		dobreak->set_shortcut(ED_GET_SHORTCUT("debugger/break"));
-		dobreak->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_break));
+		dobreak->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_break));
 
 		docontinue = memnew(Button);
 		docontinue->set_theme_type_variation("FlatButton");
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip_text(TTR("Continue"));
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
-		docontinue->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_continue));
+		docontinue->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_continue));
 
 		HSplitContainer *parent_sc = memnew(HSplitContainer);
 		vbc->add_child(parent_sc);
@@ -1952,13 +1952,13 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		expand_all_button = memnew(Button);
 		expand_all_button->set_text(TTR("Expand All"));
 		expand_all_button->set_disabled(true);
-		expand_all_button->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_expand_errors_list));
+		expand_all_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_expand_errors_list));
 		error_hbox->add_child(expand_all_button);
 
 		collapse_all_button = memnew(Button);
 		collapse_all_button->set_text(TTR("Collapse All"));
 		collapse_all_button->set_disabled(true);
-		collapse_all_button->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_collapse_errors_list));
+		collapse_all_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_collapse_errors_list));
 		error_hbox->add_child(collapse_all_button);
 
 		Control *space = memnew(Control);
@@ -1969,7 +1969,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		clear_button->set_text(TTR("Clear"));
 		clear_button->set_h_size_flags(0);
 		clear_button->set_disabled(true);
-		clear_button->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_clear_errors_list));
+		clear_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_clear_errors_list));
 		error_hbox->add_child(clear_button);
 
 		error_tree = memnew(Tree);
@@ -2044,8 +2044,8 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		vmem_export->set_tooltip_text(TTR("Export list to a CSV file"));
 		vmem_hb->add_child(vmem_export);
 		vmem_vb->add_child(vmem_hb);
-		vmem_refresh->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
-		vmem_export->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_video_mem_export));
+		vmem_refresh->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
+		vmem_export->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_export));
 
 		VBoxContainer *vmmc = memnew(VBoxContainer);
 		vmem_tree = memnew(Tree);
@@ -2114,7 +2114,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		HBoxContainer *buttons = memnew(HBoxContainer);
 
 		export_csv = memnew(Button(TTR("Export measures as CSV")));
-		export_csv->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_export_csv));
+		export_csv->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_export_csv));
 		buttons->add_child(export_csv);
 
 		misc->add_child(buttons);

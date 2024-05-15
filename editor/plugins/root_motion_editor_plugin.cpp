@@ -202,11 +202,11 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	assign = memnew(Button);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
-	assign->connect("pressed", callable_mp(this, &EditorPropertyRootMotion::_node_assign));
+	assign->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyRootMotion::_node_assign));
 	hbc->add_child(assign);
 
 	clear = memnew(Button);
-	clear->connect("pressed", callable_mp(this, &EditorPropertyRootMotion::_node_clear));
+	clear->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyRootMotion::_node_clear));
 	hbc->add_child(clear);
 
 	filter_dialog = memnew(ConfirmationDialog);

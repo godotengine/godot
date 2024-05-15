@@ -41,7 +41,7 @@ partial class MixedReadOnlyWriteOnly
             this.WriteOnlyProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
             return true;
         }
-        else if (name == PropertyName._writeOnlyBackingField) {
+        if (name == PropertyName._writeOnlyBackingField) {
             this._writeOnlyBackingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
             return true;
         }
@@ -55,19 +55,19 @@ partial class MixedReadOnlyWriteOnly
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.ReadOnlyAutoProperty);
             return true;
         }
-        else if (name == PropertyName.ReadOnlyProperty) {
+        if (name == PropertyName.ReadOnlyProperty) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.ReadOnlyProperty);
             return true;
         }
-        else if (name == PropertyName.InitOnlyAutoProperty) {
+        if (name == PropertyName.InitOnlyAutoProperty) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.InitOnlyAutoProperty);
             return true;
         }
-        else if (name == PropertyName.ReadOnlyField) {
+        if (name == PropertyName.ReadOnlyField) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.ReadOnlyField);
             return true;
         }
-        else if (name == PropertyName._writeOnlyBackingField) {
+        if (name == PropertyName._writeOnlyBackingField) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(this._writeOnlyBackingField);
             return true;
         }

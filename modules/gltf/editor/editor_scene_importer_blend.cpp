@@ -493,7 +493,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		blender_path_browse = memnew(Button);
 		blender_path_browse->set_text(TTR("Browse"));
-		blender_path_browse->connect("pressed", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_browse_install));
+		blender_path_browse->connect(SceneStringName(pressed), callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_browse_install));
 		hb->add_child(blender_path_browse);
 
 		hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);

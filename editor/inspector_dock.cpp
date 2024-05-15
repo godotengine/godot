@@ -649,14 +649,14 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_new_button->set_theme_type_variation("FlatMenuButton");
 	resource_new_button->set_tooltip_text(TTR("Create a new resource in memory and edit it."));
 	general_options_hb->add_child(resource_new_button);
-	resource_new_button->connect("pressed", callable_mp(this, &InspectorDock::_new_resource));
+	resource_new_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_new_resource));
 	resource_new_button->set_focus_mode(Control::FOCUS_NONE);
 
 	resource_load_button = memnew(Button);
 	resource_load_button->set_theme_type_variation("FlatMenuButton");
 	resource_load_button->set_tooltip_text(TTR("Load an existing resource from disk and edit it."));
 	general_options_hb->add_child(resource_load_button);
-	resource_load_button->connect("pressed", callable_mp(this, &InspectorDock::_open_resource_selector));
+	resource_load_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_open_resource_selector));
 	resource_load_button->set_focus_mode(Control::FOCUS_NONE);
 
 	resource_save_button = memnew(MenuButton);
@@ -692,14 +692,14 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	general_options_hb->add_child(backward_button);
 	backward_button->set_tooltip_text(TTR("Go to previous edited object in history."));
 	backward_button->set_disabled(true);
-	backward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_back));
+	backward_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_edit_back));
 
 	forward_button = memnew(Button);
 	forward_button->set_flat(true);
 	general_options_hb->add_child(forward_button);
 	forward_button->set_tooltip_text(TTR("Go to next edited object in history."));
 	forward_button->set_disabled(true);
-	forward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_forward));
+	forward_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_edit_forward));
 
 	history_menu = memnew(MenuButton);
 	history_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -722,7 +722,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	open_docs_button->set_tooltip_text(TTR("Open documentation for this object."));
 	open_docs_button->set_shortcut(ED_SHORTCUT("property_editor/open_help", TTR("Open Documentation")));
 	subresource_hb->add_child(open_docs_button);
-	open_docs_button->connect("pressed", callable_mp(this, &InspectorDock::_menu_option).bind(OBJECT_REQUEST_HELP));
+	open_docs_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_menu_option).bind(OBJECT_REQUEST_HELP));
 
 	new_resource_dialog = memnew(CreateDialog);
 	EditorNode::get_singleton()->get_gui_base()->add_child(new_resource_dialog);
@@ -751,7 +751,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	add_child(info);
 	info->set_clip_text(true);
 	info->hide();
-	info->connect("pressed", callable_mp(this, &InspectorDock::_info_pressed));
+	info->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_info_pressed));
 
 	unique_resources_confirmation = memnew(ConfirmationDialog);
 	add_child(unique_resources_confirmation);

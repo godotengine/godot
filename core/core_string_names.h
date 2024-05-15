@@ -60,9 +60,6 @@ public:
 	StringName _iter_get;
 	StringName get_rid;
 	StringName _to_string;
-#ifdef TOOLS_ENABLED
-	StringName _sections_unfolded;
-#endif
 	StringName _custom_features;
 
 	StringName x;
@@ -91,8 +88,6 @@ public:
 	StringName call;
 	StringName call_deferred;
 	StringName bind;
-	StringName unbind;
-	StringName emit;
 	StringName notification;
 	StringName property_list_changed;
 };
