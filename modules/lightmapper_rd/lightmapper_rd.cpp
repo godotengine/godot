@@ -428,6 +428,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 					SWAP(edge.a, edge.b);
 					SWAP(edge.na, edge.nb);
 					SWAP(uv2.a, uv2.b);
+					SWAP(uv2.indices.x, uv2.indices.y);
 					SWAP(edge_indices.x, edge_indices.y);
 				}
 
