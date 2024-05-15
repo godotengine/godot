@@ -287,6 +287,9 @@ opts.Add("ccflags", "Custom flags for both the C and C++ compilers")
 opts.Add("cxxflags", "Custom flags for the C++ compiler")
 opts.Add("cflags", "Custom flags for the C compiler")
 opts.Add("linkflags", "Custom flags for the linker")
+opts.Add("asflags", "Custom flags for the assembler")
+opts.Add("arflags", "Custom flags for the archive tool")
+opts.Add("rcflags", "Custom flags for Windows resource compiler")
 
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
@@ -533,6 +536,9 @@ env.Append(CCFLAGS=env.get("ccflags", "").split())
 env.Append(CXXFLAGS=env.get("cxxflags", "").split())
 env.Append(CFLAGS=env.get("cflags", "").split())
 env.Append(LINKFLAGS=env.get("linkflags", "").split())
+env.Append(ASFLAGS=env.get("asflags", "").split())
+env.Append(ARFLAGS=env.get("arflags", "").split())
+env.Append(RCFLAGS=env.get("rcflags", "").split())
 
 # Feature build profile
 env.disabled_classes = []
