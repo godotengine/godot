@@ -3774,13 +3774,13 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 
 #endif
 
-	// Bind descriptor sets.
-
+#ifdef DEBUG_ENABLED
 	for (uint32_t i = 0; i < dl->state.set_count; i++) {
 		if (dl->state.sets[i].pipeline_expected_format == 0) {
-			continue; // Nothing expected by this pipeline.
+			// Nothing expected by this pipeline.
+			continue;
 		}
-#ifdef DEBUG_ENABLED
+
 		if (dl->state.sets[i].pipeline_expected_format != dl->state.sets[i].uniform_set_format) {
 			if (dl->state.sets[i].uniform_set_format == 0) {
 				ERR_FAIL_MSG("Uniforms were never supplied for set (" + itos(i) + ") at the time of drawing, which are required by the pipeline.");
@@ -3791,9 +3791,22 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + ", which was just freed) are not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(dl->state.pipeline_shader));
 			}
 		}
-#endif
-		draw_graph.add_draw_list_uniform_set_prepare_for_use(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
 	}
+#endif
+
+	// Prepare descriptor sets if the API doesn't use pipeline barriers.
+	if (!driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
+		for (uint32_t i = 0; i < dl->state.set_count; i++) {
+			if (dl->state.sets[i].pipeline_expected_format == 0) {
+				// Nothing expected by this pipeline.
+				continue;
+			}
+
+			draw_graph.add_draw_list_uniform_set_prepare_for_use(dl->state.pipeline_shader_driver_id, dl->state.sets[i].uniform_set_driver_id, i);
+		}
+	}
+
+	// Bind descriptor sets.
 	for (uint32_t i = 0; i < dl->state.set_count; i++) {
 		if (dl->state.sets[i].pipeline_expected_format == 0) {
 			continue; // Nothing expected by this pipeline.
@@ -4167,13 +4180,13 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 
 #endif
 
-	// Bind descriptor sets.
-
+#ifdef DEBUG_ENABLED
 	for (uint32_t i = 0; i < cl->state.set_count; i++) {
 		if (cl->state.sets[i].pipeline_expected_format == 0) {
-			continue; // Nothing expected by this pipeline.
+			// Nothing expected by this pipeline.
+			continue;
 		}
-#ifdef DEBUG_ENABLED
+
 		if (cl->state.sets[i].pipeline_expected_format != cl->state.sets[i].uniform_set_format) {
 			if (cl->state.sets[i].uniform_set_format == 0) {
 				ERR_FAIL_MSG("Uniforms were never supplied for set (" + itos(i) + ") at the time of drawing, which are required by the pipeline.");
@@ -4184,9 +4197,22 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + ", which was just freed) are not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(cl->state.pipeline_shader));
 			}
 		}
-#endif
-		draw_graph.add_compute_list_uniform_set_prepare_for_use(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
 	}
+#endif
+
+	// Prepare descriptor sets if the API doesn't use pipeline barriers.
+	if (!driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
+		for (uint32_t i = 0; i < cl->state.set_count; i++) {
+			if (cl->state.sets[i].pipeline_expected_format == 0) {
+				// Nothing expected by this pipeline.
+				continue;
+			}
+
+			draw_graph.add_compute_list_uniform_set_prepare_for_use(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
+		}
+	}
+
+	// Bind descriptor sets.
 	for (uint32_t i = 0; i < cl->state.set_count; i++) {
 		if (cl->state.sets[i].pipeline_expected_format == 0) {
 			continue; // Nothing expected by this pipeline.
@@ -4261,16 +4287,16 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 
 #endif
 
-	// Bind descriptor sets.
-
+#ifdef DEBUG_ENABLED
 	for (uint32_t i = 0; i < cl->state.set_count; i++) {
 		if (cl->state.sets[i].pipeline_expected_format == 0) {
-			continue; // Nothing expected by this pipeline.
+			// Nothing expected by this pipeline.
+			continue;
 		}
-#ifdef DEBUG_ENABLED
+
 		if (cl->state.sets[i].pipeline_expected_format != cl->state.sets[i].uniform_set_format) {
 			if (cl->state.sets[i].uniform_set_format == 0) {
-				ERR_FAIL_MSG("Uniforms were never supplied for set (" + itos(i) + ") at the time of drawing, which are required by the pipeline");
+				ERR_FAIL_MSG("Uniforms were never supplied for set (" + itos(i) + ") at the time of drawing, which are required by the pipeline.");
 			} else if (uniform_set_owner.owns(cl->state.sets[i].uniform_set)) {
 				UniformSet *us = uniform_set_owner.get_or_null(cl->state.sets[i].uniform_set);
 				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + "):\n" + _shader_uniform_debug(us->shader_id, us->shader_set) + "\nare not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(cl->state.pipeline_shader));
@@ -4278,9 +4304,22 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + ", which was just freed) are not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(cl->state.pipeline_shader));
 			}
 		}
-#endif
-		draw_graph.add_compute_list_uniform_set_prepare_for_use(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
 	}
+#endif
+
+	// Prepare descriptor sets if the API doesn't use pipeline barriers.
+	if (!driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
+		for (uint32_t i = 0; i < cl->state.set_count; i++) {
+			if (cl->state.sets[i].pipeline_expected_format == 0) {
+				// Nothing expected by this pipeline.
+				continue;
+			}
+
+			draw_graph.add_compute_list_uniform_set_prepare_for_use(cl->state.pipeline_shader_driver_id, cl->state.sets[i].uniform_set_driver_id, i);
+		}
+	}
+
+	// Bind descriptor sets.
 	for (uint32_t i = 0; i < cl->state.set_count; i++) {
 		if (cl->state.sets[i].pipeline_expected_format == 0) {
 			continue; // Nothing expected by this pipeline.
