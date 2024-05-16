@@ -363,11 +363,12 @@ if methods.get_cmdline_bool("fast_unsafe", env_base["target"] == "debug"):
 if env_base["use_precise_math_checks"]:
     env_base.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
 
-if not env_base.File("#main/splash_editor.png").exists():
-    # Force disabling editor splash if missing.
-    env_base["no_editor_splash"] = True
-if env_base["no_editor_splash"]:
-    env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
+if env_base["tools"]:
+    if not env_base.File("#main/splash_editor.png").exists():
+        # Force disabling editor splash if missing.
+        env_base["no_editor_splash"] = True
+    if env_base["no_editor_splash"]:
+        env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
 
 if not env_base["deprecated"]:
     env_base.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
