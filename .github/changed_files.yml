@@ -22,6 +22,7 @@ clangd:
   - "!**/thirdparty/**"
   - "!**/*-so_wrap.{h,c}"
   - "!drivers/{apple*,core*,d3d12,metal,wasapi,windows,winmidi,xaudio2}/**"
+  - "!editor/settings/gdextension/cpp_scons/template/**"
   - "!editor/shader/shader_baker/shader_baker_export_plugin_platform_{d3d12,metal}.{h,cpp}"
   - "!modules/camera/camera_{android,macos,win}.{h,cpp}"
   - "!modules/openxr/extensions/platform/openxr_{android,metal}_extension.{h,cpp}"
