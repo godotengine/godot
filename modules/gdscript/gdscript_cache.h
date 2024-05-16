@@ -65,6 +65,7 @@ private:
 
 public:
 	Status get_status() const;
+	String get_path() const;
 	uint32_t get_source_hash() const;
 	GDScriptParser *get_parser();
 	GDScriptAnalyzer *get_analyzer();
@@ -82,6 +83,7 @@ class GDScriptCache {
 	HashMap<String, Ref<GDScript>> full_gdscript_cache;
 	HashMap<String, Ref<GDScript>> static_gdscript_cache;
 	HashMap<String, HashSet<String>> dependencies;
+	HashMap<String, HashSet<String>> parser_inverse_dependencies;
 
 	friend class GDScript;
 	friend class GDScriptParserRef;
