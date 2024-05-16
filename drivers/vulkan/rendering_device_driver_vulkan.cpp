@@ -999,6 +999,10 @@ Error RenderingDeviceDriverVulkan::_initialize_allocator() {
 	allocator_info.physicalDevice = physical_device;
 	allocator_info.device = vk_device;
 	allocator_info.instance = context_driver->instance_get();
+	const bool use_1_3_features = physical_device_properties.apiVersion >= VK_API_VERSION_1_3;
+	if (use_1_3_features) {
+		allocator_info.flags |= VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT;
+	}
 	VkResult err = vmaCreateAllocator(&allocator_info, &allocator);
 	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vmaCreateAllocator failed with error " + itos(err) + ".");
 
