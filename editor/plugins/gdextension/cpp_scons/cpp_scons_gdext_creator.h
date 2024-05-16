@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  plugin_config_dialog.h                                                */
+/*  cpp_scons_gdext_creator.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,63 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PLUGIN_CONFIG_DIALOG_H
-#define PLUGIN_CONFIG_DIALOG_H
+#ifndef CPP_SCONS_GDEXT_CREATOR_H
+#define CPP_SCONS_GDEXT_CREATOR_H
 
-#include "scene/gui/check_box.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/text_edit.h"
-#include "scene/gui/texture_rect.h"
+#include "../gdextension_creator_plugin.h"
 
-class ConfigFile;
-class EditorValidationPanel;
-
-class PluginConfigDialog : public ConfirmationDialog {
-	GDCLASS(PluginConfigDialog, ConfirmationDialog);
-
-	enum {
-		MSG_ID_PLUGIN,
-		MSG_ID_SUBFOLDER,
-		MSG_ID_SCRIPT,
-		MSG_ID_ACTIVE,
+class CppSconsGDExtensionCreator : public GDExtensionCreatorPlugin {
+	// Keep this in sync with get_language_variations().
+	enum LanguageVariation {
+		LANG_VAR_GDEXT_ONLY,
+		LANG_VAR_GDEXT_MODULE,
 	};
 
-	LineEdit *name_edit = nullptr;
-	LineEdit *subfolder_edit = nullptr;
-	TextEdit *desc_edit = nullptr;
-	LineEdit *author_edit = nullptr;
-	LineEdit *version_edit = nullptr;
-	OptionButton *script_option_edit = nullptr;
-	LineEdit *script_edit = nullptr;
-	CheckBox *active_edit = nullptr;
+	// Used by _process_template.
+	bool strip_module_defines = false;
+	String base_name;
+	String library_name;
+	String example_node_name = "ExampleNode";
+	String res_path;
+	String updir_dots;
 
-	LocalVector<Control *> plugin_edit_hidden_controls;
+	bool does_git_exist = false;
+	bool does_scons_exist = false;
 
-	EditorValidationPanel *validation_panel = nullptr;
-
-	bool _edit_mode = false;
-
-	void _clear_fields();
-	void _on_confirmed();
-	void _on_canceled();
-	void _on_required_text_changed();
-	void _create_script_for_plugin(const String &p_plugin_path, Ref<ConfigFile> p_config_file, int p_script_lang_index);
-	String _get_subfolder();
-
-	static String _to_absolute_plugin_path(const String &p_plugin_name);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
+	void _git_clone_godot_cpp(const String &p_parent_path, bool p_compile);
+	String _process_template(const String &p_contents);
+	void _write_common_files_and_dirs();
+	void _write_gdext_only_files();
+	void _write_gdext_module_files();
+	void _write_file(const String &p_file_path, const String &p_contents);
+	void _ensure_file_contains(const String &p_file_path, const String &p_new_contents);
 
 public:
-	void config(const String &p_config_path);
-
-	PluginConfigDialog();
-	~PluginConfigDialog();
+	void create_gdextension(const String &p_path, const String &p_base_name, const String &p_library_name, int p_variation_index, bool p_compile) override;
+	void setup_creator() override;
+	PackedStringArray get_language_variations() const override;
+	Dictionary get_validation_messages(const String &p_path, const String &p_base_name, const String &p_library_name, int p_variation_index, bool p_compile) override;
 };
 
-#endif // PLUGIN_CONFIG_DIALOG_H
+#endif // CPP_SCONS_GDEXT_CREATOR_H
