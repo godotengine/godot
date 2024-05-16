@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ExampleNode" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		GDExtension example node.
+	</brief_description>
+	<description>
+		An example node that demonstrates how to create a node in [GDExtension], which can be compiled and loaded by [GDExtensionManager]. This example node can also be compiled as an engine module, if that option was selected in the editor when creating the GDExtension.
+	</description>
+	<tutorials>
+		<link title="The GDExtension system">$DOCS_URL/tutorials/scripting/gdextension/index.html</link>
+		<link title="GDExtension C++ (godot-cpp)">$DOCS_URL/tutorials/scripting/cpp/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="print_hello" qualifiers="const">
+			<return type="void" />
+			<description>
+				Prints either [code]"Hello, World! From GDExtension."[/code] if compiled as GDExtension or [code]"Hello, World! From a module."[/code] if compiled as a module, determined by the [code]#if[/code] directives in the C++ code. If neither a module nor extension, the code does not compile.
+			</description>
+		</method>
+		<method name="return_hello" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns either [code]"Hello, World! From GDExtension."[/code] if compiled as GDExtension or [code]"Hello, World! From a module."[/code] if compiled as a module, determined by the [code]#if[/code] directives in the C++ code. If neither a module nor extension, the code does not compile.
+			</description>
+		</method>
+	</methods>
+</class>
