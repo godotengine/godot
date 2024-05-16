@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef TOOLS_ENABLED
+#include "editor/plugins/editor_plugin.h"
+#include "editor/unity_link_server_editor_plugin.h"
+#endif
 #include "register_types.h"
 
 
@@ -79,16 +83,17 @@ static DataTableManager * data_table_manager = nullptr;
 static PathManager* path_manager = nullptr;
 
 void initialize_game_help_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
 #ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR)
+	{
 		Ref<CSV_EditorImportPlugin> mp3_import;
 		mp3_import.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(mp3_import);
 		
-		EditorPlugins::add_by_type<UnityLinkServerEditorPlugin>();
+		UnityLinkServerEditorPluginRegister::initialize();
+	}
 #endif
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 	data_table_manager = memnew(DataTableManager);
 	path_manager = memnew(PathManager);
 
@@ -143,6 +148,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<MObstacle>();
 	ClassDB::register_class<MBrushLayers>();
 	ClassDB::register_class<MTerrainMaterial>();
+	}
 
 
 

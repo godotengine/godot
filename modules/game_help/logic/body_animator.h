@@ -400,6 +400,7 @@ public:
     
 };
 class CharacterAnimatorLayer;
+class CharacterAnimationLogicNode;
 enum AnimatorAIStopCheckType
 {
     // 固定生命期
@@ -409,63 +410,11 @@ enum AnimatorAIStopCheckType
     Condition,
     Script,
 };
-// 动画逻辑节点
-class CharacterAnimationLogicNode : public Resource
-{
-
-
-private:
-    
-	virtual void animation_process(CharacterAnimatorLayer* animator,Blackboard* blackboard, double delta)const
-    {
-
-    }
-	virtual bool check_stop(CharacterAnimatorLayer* animator,Blackboard* blackboard)const
-    {
-        if (GDVIRTUAL_IS_OVERRIDDEN(_check_stop)) {
-            bool is_stop = false;
-            GDVIRTUAL_CALL(_check_stop, animator,blackboard, is_stop);
-            return is_stop;
-        }
-    }
-	GDVIRTUAL3(_animation_process,CharacterAnimatorLayer*,Blackboard*, double)
-	GDVIRTUAL2R(bool,_check_stop,CharacterAnimatorLayer*,Blackboard*)
-
-
-public:
-    StringName node_name;
-    // 优先级
-    int priority = 0;
-    // 播放的动画名称
-    StringName player_animation_name;
-    // 进入条件
-    Ref<CharacterAnimatorCondition> enter_condtion;
-    Ref<BlackboardPlan> blackboard_plan;
-    // 检测结束等待时间
-    float check_stop_delay_time = 0.0f;
-    // 生命期
-    float life_time = 0.0f;
-    AnimatorAIStopCheckType stop_check_type;
-    
-    // 退出检测条件
-    Ref<CharacterAnimatorCondition> stop_check_condtion;
-};
-struct SortCharacterAnimationLogicNode {
-	bool operator()(const Ref<CharacterAnimationLogicNode> &l, const Ref<CharacterAnimationLogicNode> &r) const {
-		return l.priority > r.priority;
-	}
-};
 class CharacterAnimationLogicRoot : public Resource
 {
-    void sort()
-    {
-        node_list.sort_custom<SortCharacterAnimationLogicNode>();
-    }
-    static int compare_priority(const Ref<CharacterAnimationLogicNode>& p_a, const Ref<CharacterAnimationLogicNode>& p_b)
-    {
-
-    }
-
+    GDCLASS(CharacterAnimationLogicRoot,Resource)
+public:
+    void sort();
 public:
     bool is_need_sort = true;
     LocalVector<Ref<CharacterAnimationLogicNode>>  node_list;
@@ -511,6 +460,11 @@ struct CharacterAnimationLogicContext
 class CharacterTimelineNode : public Node3D
 {
     GDCLASS(CharacterTimelineNode, Node3D);
+    static void _bind_methods()
+    {
+
+    }
+    public:
 
     class CharacterBodyMain* m_Body = nullptr;
     AnimationPlayer* m_AnimationPlayer = nullptr;
@@ -525,6 +479,10 @@ class CharacterTimelineNode : public Node3D
 class CharacterAnimatorLayer: public AnimationMixer
 {
     GDCLASS(CharacterAnimatorLayer, AnimationMixer);
+    static void bind_methods()
+    {
+
+    }
 
     List<Ref<CharacterAnimatorNodeBase>> play_list;
 public:
@@ -553,6 +511,47 @@ public:
     void play_animation(Ref<CharacterAnimatorNodeBase> p_node);
     ~CharacterAnimatorLayer();
 };
+// 动画逻辑节点
+class CharacterAnimationLogicNode : public Resource
+{
+    GDCLASS(CharacterAnimationLogicNode,Resource)
+
+
+public:
+    struct SortCharacterAnimationLogicNode {
+        bool operator()(const Ref<CharacterAnimationLogicNode> &l, const Ref<CharacterAnimationLogicNode> &r) const {
+            return l->priority > r->priority;
+        }
+    };
+private:
+    
+	virtual void process(CharacterAnimatorLayer* animator,Blackboard* blackboard, double delta);
+	virtual bool check_stop(CharacterAnimatorLayer* animator,Blackboard* blackboard);
+
+private:
+	GDVIRTUAL3(_animation_process,CharacterAnimatorLayer*,Blackboard*, double)
+	GDVIRTUAL2R(bool,_check_stop,CharacterAnimatorLayer*,Blackboard*)
+
+
+public:
+    StringName node_name;
+    // 优先级
+    int priority = 0;
+    // 播放的动画名称
+    StringName player_animation_name;
+    // 进入条件
+    Ref<CharacterAnimatorCondition> enter_condtion;
+    Ref<BlackboardPlan> blackboard_plan;
+    // 检测结束等待时间
+    float check_stop_delay_time = 0.0f;
+    // 生命期
+    float life_time = 0.0f;
+    AnimatorAIStopCheckType stop_check_type;
+    
+    // 退出检测条件
+    Ref<CharacterAnimatorCondition> stop_check_condtion;
+};
+
 class CharacterAnimator : public RefCounted
 {
     GDCLASS(CharacterAnimator, RefCounted);

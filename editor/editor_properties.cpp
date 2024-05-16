@@ -322,10 +322,9 @@ void EditorPropertyTextEnum::update_property() {
 	}
 }
 
-void EditorPropertyTextEnum::setup(const StringName &p_get_options_func_name,const Vector<String> &p_options, bool p_string_name, bool p_loose_mode) {
+void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_string_name, bool p_loose_mode) {
 	string_name = p_string_name;
 	loose_mode = p_loose_mode;
-	get_options_func_name = p_get_options_func_name;
 
 	options.clear();
 

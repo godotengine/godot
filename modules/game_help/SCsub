@@ -29,3 +29,6 @@ env_game_help.add_source_files(env.modules_sources, "yaml/detail/*.cpp")
 
 env_game_help.add_source_files(env.modules_sources, "yaml/c4/*.cpp")
 
+
+if env.editor_build:
+    env_game_help.add_source_files(env.modules_sources, "editor/*.cpp")
