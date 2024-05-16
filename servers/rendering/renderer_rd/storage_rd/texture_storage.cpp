@@ -1457,6 +1457,23 @@ void TextureStorage::texture_set_detect_roughness_callback(RID p_texture, RS::Te
 }
 
 void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
+	List<RID> textures;
+	texture_owner.get_owned_list(&textures);
+
+	for (List<RID>::Element *E = textures.front(); E; E = E->next()) {
+		Texture *t = texture_owner.get_or_null(E->get());
+		if (!t) {
+			continue;
+		}
+		RS::TextureInfo tinfo;
+		tinfo.path = t->path;
+		tinfo.format = t->format;
+		tinfo.width = t->width;
+		tinfo.height = t->height;
+		tinfo.depth = t->depth;
+		tinfo.bytes = Image::get_image_data_size(t->width, t->height, t->format, t->mipmaps);
+		r_info->push_back(tinfo);
+	}
 }
 
 void TextureStorage::texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {
@@ -3042,6 +3059,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		texture_2d_placeholder_initialize(rt->texture);
 		Texture *tex = get_texture(rt->texture);
 		tex->is_render_target = true;
+		tex->path = "Render Target (Internal)";
 	}
 
 	_clear_render_target(rt);
