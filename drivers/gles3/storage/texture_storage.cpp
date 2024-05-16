@@ -1391,7 +1391,7 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 		tinfo.format = t->format;
 		tinfo.width = t->alloc_width;
 		tinfo.height = t->alloc_height;
-		tinfo.depth = 0;
+		tinfo.depth = t->depth;
 		tinfo.bytes = t->total_data_size;
 		r_info->push_back(tinfo);
 	}
