@@ -1,0 +1,22 @@
+# GDExtension generated files
+*.gen.*
+.sconsign*.dblite
+bin/
+compile_commands.json
+src/gen/
+
+# Compiled files
+*.bc
+*.creator
+*.creator.user
+*.dblite
+*.exp
+*.files
+*.idb
+*.includes
+*.lib
+*.o
+*.os
+*.pdb
+*.pyc
+*.so
