@@ -280,6 +280,7 @@ private:
 	int y_sort_origin = 0;
 	int rendering_quadrant_size = 16;
 
+	bool use_lazy_load = false;
 	bool collision_enabled = true;
 	bool use_kinematic_bodies = false;
 	DebugVisibilityMode collision_visibility_mode = DEBUG_VISIBILITY_MODE_DEFAULT;
@@ -438,6 +439,7 @@ public:
 	Vector2i get_coords_for_body_rid(RID p_physics_body) const; // For finding tiles from collision.
 
 	// --- Runtime ---
+	void lazy_wakeup_load();
 	void update_internals();
 	void notify_runtime_tile_data_update();
 	GDVIRTUAL1R(bool, _use_tile_data_runtime_update, Vector2i);
@@ -471,7 +473,9 @@ public:
 	void set_rendering_quadrant_size(int p_size);
 	int get_rendering_quadrant_size() const;
 
+	void set_lazy_load(bool p_enabled);
 	void set_collision_enabled(bool p_enabled);
+	bool is_lazy_load() const;
 	bool is_collision_enabled() const;
 	void set_use_kinematic_bodies(bool p_use_kinematic_bodies);
 	bool is_using_kinematic_bodies() const;

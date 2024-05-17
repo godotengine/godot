@@ -1639,6 +1639,15 @@ void TileMapLayer::_deferred_internal_update() {
 }
 
 void TileMapLayer::_internal_update(bool p_force_cleanup) {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		// If its in engine (Not running the game) ignore lazy load since it blocks the display of
+		// tilemaps in engine.
+		if (use_lazy_load) {
+			pending_update = false;
+			return;
+		}
+	}
+	
 	// Find TileData that need a runtime modification.
 	// This may add cells to the dirty list if a runtime modification has been notified.
 	_build_runtime_update_tile_data(p_force_cleanup);
@@ -1705,7 +1714,7 @@ void TileMapLayer::_notification(int p_what) {
 
 		case TileMap::NOTIFICATION_EXIT_CANVAS: {
 			dirty.flags[DIRTY_FLAGS_LAYER_IN_CANVAS] = true;
-			// Update immediately on exiting, and force cleanup.
+			//Update immediately on exiting, and force cleanup.
 			_internal_update(true);
 		} break;
 
@@ -1750,6 +1759,7 @@ void TileMapLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_coords_for_body_rid", "body"), &TileMapLayer::get_coords_for_body_rid);
 
 	// --- Runtime ---
+	ClassDB::bind_method(D_METHOD("lazy_wakeup_load"), &TileMapLayer::lazy_wakeup_load);
 	ClassDB::bind_method(D_METHOD("update_internals"), &TileMapLayer::update_internals);
 	ClassDB::bind_method(D_METHOD("notify_runtime_tile_data_update"), &TileMapLayer::notify_runtime_tile_data_update, DEFVAL(-1));
 
@@ -1775,7 +1785,9 @@ void TileMapLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rendering_quadrant_size", "size"), &TileMapLayer::set_rendering_quadrant_size);
 	ClassDB::bind_method(D_METHOD("get_rendering_quadrant_size"), &TileMapLayer::get_rendering_quadrant_size);
 
+	ClassDB::bind_method(D_METHOD("set_lazy_load", "enabled"), &TileMapLayer::set_lazy_load);
 	ClassDB::bind_method(D_METHOD("set_collision_enabled", "enabled"), &TileMapLayer::set_collision_enabled);
+	ClassDB::bind_method(D_METHOD("is_lazy_load"), &TileMapLayer::is_lazy_load);
 	ClassDB::bind_method(D_METHOD("is_collision_enabled"), &TileMapLayer::is_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_use_kinematic_bodies", "use_kinematic_bodies"), &TileMapLayer::set_use_kinematic_bodies);
 	ClassDB::bind_method(D_METHOD("is_using_kinematic_bodies"), &TileMapLayer::is_using_kinematic_bodies);
@@ -1797,6 +1809,7 @@ void TileMapLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tile_set", "get_tile_set");
 	ADD_GROUP("Rendering", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_lazy_load"), "set_lazy_load", "is_lazy_load");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "y_sort_origin"), "set_y_sort_origin", "get_y_sort_origin");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rendering_quadrant_size"), "set_rendering_quadrant_size", "get_rendering_quadrant_size");
 	ADD_GROUP("Physics", "");
@@ -2501,6 +2514,11 @@ void TileMapLayer::update_internals() {
 	_internal_update(false);
 }
 
+void TileMapLayer::lazy_wakeup_load() {
+	use_lazy_load = false;
+	_internal_update(false);
+}
+
 void TileMapLayer::notify_runtime_tile_data_update() {
 	dirty.flags[TileMapLayer::DIRTY_FLAGS_LAYER_RUNTIME_UPDATE] = true;
 	_queue_internal_update();
@@ -2750,6 +2768,14 @@ void TileMapLayer::set_collision_enabled(bool p_enabled) {
 	dirty.flags[DIRTY_FLAGS_LAYER_COLLISION_ENABLED] = true;
 	_queue_internal_update();
 	emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+void TileMapLayer::set_lazy_load(bool p_enabled) {
+	use_lazy_load = p_enabled;
+}
+
+bool TileMapLayer::is_lazy_load() const {
+	return use_lazy_load;
 }
 
 bool TileMapLayer::is_collision_enabled() const {
