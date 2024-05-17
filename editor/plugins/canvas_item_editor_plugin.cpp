@@ -5732,11 +5732,10 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 		Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
 		if (texture != nullptr || scene != nullptr) {
-			bool root_node_selected = EditorNode::get_singleton()->get_editor_selection()->is_selected(EditorNode::get_singleton()->get_edited_scene());
-			String desc = TTR("Drag and drop to add as child of selected node.") + "\n" + TTR("Hold Alt when dropping to add as child of root node.");
-			if (!root_node_selected) {
-				desc += "\n" + TTR("Hold Shift when dropping to add as sibling of selected node.");
-			}
+			String desc = TTR("Drag and drop to add as sibling of selected node (except when root is selected).") +
+					"\n" + TTR("Hold Shift when dropping to add as child of selected node.") +
+					"\n" + TTR("Hold Alt when dropping to add as child of root node.");
+
 			if (texture != nullptr) {
 				Sprite2D *sprite = memnew(Sprite2D);
 				sprite->set_texture(texture);
@@ -6099,11 +6098,12 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
 	if (selected_nodes.size() > 0) {
 		Node *selected_node = selected_nodes.front()->get();
-		target_node = selected_node;
 		if (is_alt) {
 			target_node = root_node;
-		} else if (is_shift && selected_node != root_node) {
-			target_node = selected_node->get_parent();
+		} else if (is_shift) {
+			target_node = selected_node;
+		} else { // Default behavior.
+			target_node = (selected_node != root_node) ? selected_node->get_parent() : root_node;
 		}
 	} else {
 		if (root_node) {
