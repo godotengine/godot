@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-EnsureSConsVersion(3, 0, 0)
+EnsureSConsVersion(3, 1, 2)
 EnsurePythonVersion(3, 6)
 
 # System
