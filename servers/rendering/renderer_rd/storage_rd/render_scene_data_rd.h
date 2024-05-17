@@ -48,7 +48,7 @@ public:
 	Transform3D cam_transform;
 	Projection cam_projection;
 	Vector2 taa_jitter;
-	uint32_t taa_frame_count = 0;
+	float taa_jitter_fraction = 0.0f;
 	uint32_t camera_visible_layers;
 	bool cam_orthogonal = false;
 
