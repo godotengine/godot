@@ -35,7 +35,6 @@
 #include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/resources/image_texture.h"
 
 void EditorRunNative::_notification(int p_what) {
 	switch (p_what) {
@@ -49,17 +48,26 @@ void EditorRunNative::_notification(int p_what) {
 			if (changed) {
 				PopupMenu *popup = remote_debug->get_popup();
 				popup->clear();
-				for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
-					Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
+				for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
+					Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
+					Ref<EditorExportPlatform> eep = preset->get_platform();
 					if (eep.is_null()) {
 						continue;
 					}
+					int platform_idx = -1;
+					for (int j = 0; j < EditorExport::get_singleton()->get_export_platform_count(); j++) {
+						if (eep->get_name() == EditorExport::get_singleton()->get_export_platform(j)->get_name()) {
+							platform_idx = j;
+						}
+					}
 					int dc = MIN(eep->get_options_count(), 9000);
-					if (dc > 0) {
+					bool needs_templates;
+					String error;
+					if (dc > 0 && preset->is_runnable() && eep->can_export(preset, error, needs_templates)) {
 						popup->add_icon_item(eep->get_run_icon(), eep->get_name(), -1);
 						popup->set_item_disabled(-1, true);
 						for (int j = 0; j < dc; j++) {
-							popup->add_icon_item(eep->get_option_icon(j), eep->get_option_label(j), 10000 * i + j);
+							popup->add_icon_item(eep->get_option_icon(j), eep->get_option_label(j), 10000 * platform_idx + j);
 							popup->set_item_tooltip(-1, eep->get_option_tooltip(j));
 							popup->set_item_indent(-1, 2);
 						}

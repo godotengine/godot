@@ -58,6 +58,8 @@ jobs:
             tests: true
             # Skip 2GiB artifact speeding up action.
             artifact: false
+            # Test our oldest supported SCons/Python versions on one arbitrary editor build.
+            legacy-scons: true
 
           - name: Editor with ThreadSanitizer (target=editor, tests=yes, dev_build=yes, use_tsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-thread-sanitizer
@@ -115,8 +117,17 @@ jobs:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Setup python and scons
+      - name: Setup Python and SCons
+        if: ${{ ! matrix.legacy-scons }}
         uses: ./.github/actions/godot-deps
+
+      - name: Setup Python and SCons (legacy versions)
+        if: ${{ matrix.legacy-scons }}
+        uses: ./.github/actions/godot-deps
+        with:
+          # Sync with Ensure*Version in SConstruct.
+          python-version: 3.6
+          scons-version: 3.1.2
 
       - name: Setup GCC problem matcher
         uses: ammaraskar/gcc-problem-matcher@master

@@ -69,6 +69,12 @@ private:
 		Ref<StyleBox> disabled_mirrored;
 		Ref<StyleBox> focus;
 
+		Size2 max_style_size;
+		float style_margin_left = 0;
+		float style_margin_right = 0;
+		float style_margin_top = 0;
+		float style_margin_bottom = 0;
+
 		Color font_color;
 		Color font_focus_color;
 		Color font_pressed_color;
@@ -100,10 +106,13 @@ private:
 	void _texture_changed();
 
 protected:
+	virtual void _update_theme_item_cache() override;
+
 	void _set_internal_margin(Side p_side, float p_value);
 	virtual void _queue_update_size_cache();
 
 	Ref<StyleBox> _get_current_stylebox() const;
+	Size2 _get_largest_stylebox_size() const;
 	void _notification(int p_what);
 	static void _bind_methods();
 

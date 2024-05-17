@@ -125,8 +125,18 @@ repos:
         language: node
         entry: jsdoc
         files: ^platform/web/js/engine/(engine|config|features)\.js$
-        args: [--template, platform/web/js/jsdoc2rst/, --destination, '', -d, dry-run]
-        additional_dependencies: ["jsdoc@4.0.2"]
+        args:
+          - --template
+          - platform/web/js/jsdoc2rst/
+          - platform/web/js/engine/engine.js
+          - platform/web/js/engine/config.js
+          - platform/web/js/engine/features.js
+          - --destination
+          - ''
+          - -d
+          - dry-run
+        pass_filenames: false
+        additional_dependencies: ['jsdoc@^4.0.3']
 
       - id: copyright-headers
         name: copyright-headers

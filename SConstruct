@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-EnsureSConsVersion(3, 0, 0)
+EnsureSConsVersion(3, 1, 2)
 EnsurePythonVersion(3, 6)
 
 # System
@@ -366,7 +366,7 @@ if env["platform"] in platform_opts:
         opts.Add(opt)
 
 # Update the environment to take platform-specific options into account.
-opts.Update(env, {**ARGUMENTS, **env})
+opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
 
 # Detect modules.
 modules_detected = OrderedDict()
@@ -426,7 +426,7 @@ for name, path in modules_detected.items():
 env.modules_detected = modules_detected
 
 # Update the environment again after all the module options are added.
-opts.Update(env, {**ARGUMENTS, **env})
+opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
 Help(opts.GenerateHelpText(env))
 
 # add default include paths

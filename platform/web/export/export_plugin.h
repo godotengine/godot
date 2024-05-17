@@ -58,6 +58,7 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 	HTTPServerState server_state = HTTP_SERVER_STATE_OFF;
 
 	Ref<EditorHTTPServer> server;
+	int menu_options = 0;
 
 	String _get_template_name(bool p_extension, bool p_thread_support, bool p_debug) const {
 		String name = "web";

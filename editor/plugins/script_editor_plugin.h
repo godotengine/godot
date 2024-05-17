@@ -450,6 +450,8 @@ class ScriptEditor : public PanelContainer {
 	void _update_help_overview();
 	void _help_overview_selected(int p_idx);
 
+	void _update_online_doc();
+
 	void _find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Script>> &used);
 
 	void _tree_changed();

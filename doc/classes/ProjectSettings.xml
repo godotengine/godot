@@ -554,10 +554,10 @@
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or subclass member variable that would shadow a variable that is inherited from a parent class.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_expression" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling an expression that may have no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_ternary" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a ternary expression that has no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a ternary expression that may have no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/static_called_on_instance" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a static method from an instance of a class instead of from the class directly.
