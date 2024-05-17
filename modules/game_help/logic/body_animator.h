@@ -9,6 +9,7 @@
 #include "scene/3d/physics/character_body_3d.h"
 #include "body_part.h"
 #include "animation_help.h"
+#include "body_animator_logic.h"
 
 
 #include "modules/limboai/bt/bt_player.h"
@@ -333,83 +334,8 @@ protected:
     // 混合类型
     BlendType m_BlendType = BT_Blend;
 };
-enum AnimatorAICompareType
-{
-    //[LabelText("等于")]
-    Equal,
-
-    //[LabelText("小于")]
-    Less,
-    //[LabelText("小于等于")]
-    LessEqual,
-    //[LabelText("大于")]
-    Greater,
-    //[LabelText("大于等于")]
-    GreaterEqual,
-    //[LabelText("不等于")]
-    NotEqual,
-};
-class AnimatorAIStateFloatCondition : public RefCounted
-{
-    StringName propertyName;
-    AnimatorAICompareType compareType;
-    float value;
-
-};
-// int类型
-class AnimatorAIStateIntCondition : public RefCounted
-{
-    StringName propertyName;
-    AnimatorAICompareType compareType;
-    float value;
-
-};
-// 字符串表达式
-class AnimatorAIStateStringNameCondition : public RefCounted
-{
-    StringName propertyName;
-    StringName value;
-};
-// 角色动画的条件
-class CharacterAnimatorConditionList : public RefCounted
-{
-    // 判断类型
-    enum JudgeType
-    {
-        // 只要一个属性通过就代表通过
-        Or,
-        // 必须全部满足
-        And
-    };
-
-public:
-    JudgeType judge_type;
-    bool is_include = false;
-    LocalVector<Ref<AnimatorAIStateFloatCondition>> conditions_float;
-    LocalVector<Ref<AnimatorAIStateIntCondition>> conditions_int;
-    LocalVector<Ref<AnimatorAIStateStringNameCondition>> conditions_string_names;
-    
-};
-// 角色动画的条件
-class CharacterAnimatorCondition : public RefCounted
-{
-
-public:
-    Ref<CharacterAnimatorConditionList> include_condition;
-    Ref<CharacterAnimatorConditionList> exclude_condition;
-    
-};
 class CharacterAnimatorLayer;
 class CharacterAnimationLogicNode;
-enum AnimatorAIStopCheckType
-{
-    // 固定生命期
-    Life,
-    PlayCount,
-    // 通过检测条件结束
-    Condition,
-    Script,
-};
 class CharacterAnimationLogicRoot : public Resource
 {
     GDCLASS(CharacterAnimationLogicRoot,Resource)
@@ -511,18 +437,45 @@ public:
     void play_animation(Ref<CharacterAnimatorNodeBase> p_node);
     ~CharacterAnimatorLayer();
 };
+
 // 动画逻辑节点
 class CharacterAnimationLogicNode : public Resource
 {
     GDCLASS(CharacterAnimationLogicNode,Resource)
+    static void _bind_methods()
+    {
 
+    }
 
 public:
+
+    enum AnimatorAIStopCheckType
+    {
+        // 固定生命期
+        Life,
+        PlayCount,
+        // 通过检测条件结束
+        Condition,
+        Script,
+    };
     struct SortCharacterAnimationLogicNode {
         bool operator()(const Ref<CharacterAnimationLogicNode> &l, const Ref<CharacterAnimationLogicNode> &r) const {
             return l->priority > r->priority;
         }
     };
+
+public:
+    void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) 
+    {
+         blackboard_plan = p_blackboard_plan; 
+         if(p_blackboard_plan.is_valid() )
+         {
+            if(enter_condtion.is_valid()){
+             enter_condtion->blackboard_plan = p_blackboard_plan;
+            }
+         }
+    }
+    Ref<BlackboardPlan> get_blackboard_plan() { return blackboard_plan; }
 private:
     
 	virtual void process(CharacterAnimatorLayer* animator,Blackboard* blackboard, double delta);
@@ -551,6 +504,7 @@ public:
     // 退出检测条件
     Ref<CharacterAnimatorCondition> stop_check_condtion;
 };
+
 
 class CharacterAnimator : public RefCounted
 {

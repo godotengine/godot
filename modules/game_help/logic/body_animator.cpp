@@ -1,30 +1,7 @@
 #include "body_animator.h"
 #include "body_main.h"
 
-////////////////////////////////////////// CharacterAnimationLogicRoot /////////////////////////////////////////
-void CharacterAnimationLogicRoot::sort()
-{
-    node_list.sort_custom<CharacterAnimationLogicNode::SortCharacterAnimationLogicNode>();
-}
 
-//////////////////////////////////////////////// CharacterAnimationLogicNode /////////////////////////////////////////
-void CharacterAnimationLogicNode::process(CharacterAnimatorLayer* animator,Blackboard* blackboard, double delta)
-{
-    if (GDVIRTUAL_IS_OVERRIDDEN(_animation_process)) {
-        GDVIRTUAL_CALL(_animation_process, animator,blackboard, delta);
-        return ;
-    }
-
-}
-bool CharacterAnimationLogicNode::check_stop(CharacterAnimatorLayer* animator,Blackboard* blackboard)
-{
-    if (GDVIRTUAL_IS_OVERRIDDEN(_check_stop)) {
-        bool is_stop = false;
-        GDVIRTUAL_CALL(_check_stop, animator,blackboard, is_stop);
-        return is_stop;
-    }
-    return true;
-}
 
 void CharacterBoneMap::init_skeleton_bone_map()
 {
