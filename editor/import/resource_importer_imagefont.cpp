@@ -158,17 +158,16 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 								c++; // Skip "+".
 								continue;
 							}
-						} else if (range[c] == '0') {
-							if ((c <= range.length() - 2) && range[c + 1] == 'x') {
-								token = String();
-								if (step == STEP_START_BEGIN) {
-									step = STEP_START_READ_HEX;
-								} else {
-									step = STEP_END_READ_HEX;
-								}
-								c++; // Skip "x".
-								continue;
+						} else if (range[c] == '0' && (c <= range.length() - 2) && range[c + 1] == 'x') {
+							// Read hexadecimal value, start.
+							token = String();
+							if (step == STEP_START_BEGIN) {
+								step = STEP_START_READ_HEX;
+							} else {
+								step = STEP_END_READ_HEX;
 							}
+							c++; // Skip "x".
+							continue;
 						} else if (range[c] == '\'' || range[c] == '\"') {
 							if ((c <= range.length() - 3) && (range[c + 2] == '\'' || range[c + 2] == '\"')) {
 								token = String();
@@ -184,14 +183,13 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 							}
 						} else if (is_digit(range[c])) {
 							// Read decimal value, start.
-							c++;
 							token = String();
+							token += range[c];
 							if (step == STEP_START_BEGIN) {
 								step = STEP_START_READ_DEC;
 							} else {
 								step = STEP_END_READ_DEC;
 							}
-							token += range[c];
 							continue;
 						}
 						[[fallthrough]];
@@ -254,9 +252,19 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 					} break;
 				}
 			}
+			if (step == STEP_START_READ_HEX) {
+				start = token.hex_to_int();
+			} else if (step == STEP_START_READ_DEC) {
+				start = token.to_int();
+			} else if (step == STEP_END_READ_HEX) {
+				end = token.hex_to_int();
+			} else if (step == STEP_END_READ_DEC) {
+				end = token.to_int();
+			}
 			if (end == -1) {
 				end = start;
 			}
+
 			if (start == -1) {
 				WARN_PRINT(vformat("Invalid range: \"%s\"", range));
 				continue;
