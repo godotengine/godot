@@ -22,7 +22,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup python and scons
+      - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
       # Checkout godot-cpp
@@ -47,7 +47,7 @@ jobs:
           cp -f godot-api/gdextension_interface.h godot-cpp/gdextension/
           cp -f godot-api/extension_api.json godot-cpp/gdextension/
 
-      # TODO: Add caching to the scons build and store it for CI via the godot-cache
+      # TODO: Add caching to the SCons build and store it for CI via the godot-cache
       # action.
 
       # Build godot-cpp test extension

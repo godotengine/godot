@@ -70,7 +70,7 @@ Size2 CheckButton::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();
 	const Size2 tex_size = get_icon_size();
 	if (tex_size.width > 0 || tex_size.height > 0) {
-		const Size2 padding = _get_current_stylebox()->get_minimum_size();
+		const Size2 padding = _get_largest_stylebox_size();
 		Size2 content_size = minsize - padding;
 		if (content_size.width > 0 && tex_size.width > 0) {
 			content_size.width += MAX(0, theme_cache.h_separation);

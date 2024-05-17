@@ -1881,6 +1881,10 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 					case Node::CALL:
 						// Fine.
 						break;
+					case Node::PRELOAD:
+						// `preload` is a function-like keyword.
+						push_warning(expression, GDScriptWarning::RETURN_VALUE_DISCARDED, "preload");
+						break;
 					case Node::LAMBDA:
 						// Standalone lambdas can't be used, so make this an error.
 						push_error("Standalone lambdas cannot be accessed. Consider assigning it to a variable.", expression);

@@ -3154,9 +3154,6 @@ Error RenderingDevice::screen_create(DisplayServer::WindowID p_screen) {
 	RDD::SwapChainID swap_chain = driver->swap_chain_create(surface);
 	ERR_FAIL_COND_V_MSG(swap_chain.id == 0, ERR_CANT_CREATE, "Unable to create swap chain.");
 
-	Error err = driver->swap_chain_resize(main_queue, swap_chain, _get_swap_chain_desired_count());
-	ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Unable to resize the new swap chain.");
-
 	screen_swap_chains[p_screen] = swap_chain;
 
 	return OK;

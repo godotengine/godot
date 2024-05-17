@@ -79,6 +79,15 @@ Control *FileSystemList::make_custom_tooltip(const String &p_text) const {
 }
 
 void FileSystemList::_line_editor_submit(const String &p_text) {
+	if (popup_edit_commited) {
+		return; // Already processed by _text_editor_popup_modal_close
+	}
+
+	if (popup_editor->get_hide_reason() == Popup::HIDE_REASON_CANCELED) {
+		return; // ESC pressed, app focus lost, or forced close from code.
+	}
+
+	popup_edit_commited = true; // End edit popup processing.
 	popup_editor->hide();
 
 	emit_signal(SNAME("item_edited"));
@@ -127,6 +136,7 @@ bool FileSystemList::edit_selected() {
 	line_editor->set_text(name);
 	line_editor->select(0, name.rfind("."));
 
+	popup_edit_commited = false; // Start edit popup processing.
 	popup_editor->popup();
 	popup_editor->child_controls_changed();
 	line_editor->grab_focus();
@@ -138,8 +148,12 @@ String FileSystemList::get_edit_text() {
 }
 
 void FileSystemList::_text_editor_popup_modal_close() {
+	if (popup_edit_commited) {
+		return; // Already processed by _text_editor_popup_modal_close
+	}
+
 	if (popup_editor->get_hide_reason() == Popup::HIDE_REASON_CANCELED) {
-		return;
+		return; // ESC pressed, app focus lost, or forced close from code.
 	}
 
 	_line_editor_submit(line_editor->get_text());

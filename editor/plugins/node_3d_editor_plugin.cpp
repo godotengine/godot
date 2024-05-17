@@ -4593,11 +4593,12 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
 	if (selected_nodes.size() > 0) {
 		Node *selected_node = selected_nodes.front()->get();
-		target_node = selected_node;
 		if (is_alt) {
 			target_node = root_node;
-		} else if (is_shift && selected_node != root_node) {
-			target_node = selected_node->get_parent();
+		} else if (is_shift) {
+			target_node = selected_node;
+		} else { // Default behavior.
+			target_node = (selected_node != root_node) ? selected_node->get_parent() : root_node;
 		}
 	} else {
 		if (root_node) {
