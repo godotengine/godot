@@ -534,7 +534,6 @@ void Label::_notification(int p_what) {
 
 			bool has_settings = settings.is_valid();
 
-			Size2 string_size;
 			Ref<StyleBox> style = theme_cache.normal_style;
 			Color font_color = has_settings ? settings->get_font_color() : theme_cache.font_color;
 			Color font_shadow_color = has_settings ? settings->get_shadow_color() : theme_cache.font_shadow_color;

@@ -48,6 +48,7 @@ struct [[nodiscard]] Vector4i {
 	};
 
 	union {
+		// NOLINTBEGIN(modernize-use-default-member-init)
 		struct {
 			int32_t x;
 			int32_t y;
@@ -56,6 +57,7 @@ struct [[nodiscard]] Vector4i {
 		};
 
 		int32_t coord[4] = { 0 };
+		// NOLINTEND(modernize-use-default-member-init)
 	};
 
 	_FORCE_INLINE_ const int32_t &operator[](int p_axis) const {
@@ -134,14 +136,11 @@ struct [[nodiscard]] Vector4i {
 	operator String() const;
 	operator Vector4() const;
 
-	_FORCE_INLINE_ Vector4i() {}
+	constexpr Vector4i() :
+			x(0), y(0), z(0), w(0) {}
 	Vector4i(const Vector4 &p_vec4);
-	_FORCE_INLINE_ Vector4i(int32_t p_x, int32_t p_y, int32_t p_z, int32_t p_w) {
-		x = p_x;
-		y = p_y;
-		z = p_z;
-		w = p_w;
-	}
+	constexpr Vector4i(int32_t p_x, int32_t p_y, int32_t p_z, int32_t p_w) :
+			x(p_x), y(p_y), z(p_z), w(p_w) {}
 };
 
 int64_t Vector4i::length_squared() const {
