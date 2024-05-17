@@ -5,13 +5,13 @@ inputs:
     description: The cache base name (job name by default).
     default: "${{github.job}}"
   scons-cache:
-    description: The scons cache path.
+    description: The SCons cache path.
     default: "${{github.workspace}}/.scons-cache/"
 runs:
   using: "composite"
   steps:
-    # Upload cache on completion and check it out now
-    - name: Load .scons_cache directory
+    # Upload cache on completion and check it out now.
+    - name: Load SCons cache directory
       uses: actions/cache@v4
       with:
         path: ${{inputs.scons-cache}}
