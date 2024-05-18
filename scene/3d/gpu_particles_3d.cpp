@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "gpu_particles_3d.h"
+#include "gpu_particles_3d.compat.inc"
 
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/resources/curve_texture.h"
@@ -91,9 +92,30 @@ void GPUParticles3D::set_one_shot(bool p_one_shot) {
 
 	if (is_emitting()) {
 		if (!one_shot) {
-			RenderingServer::get_singleton()->particles_restart(particles);
+			restart();
 		}
 	}
+}
+
+void GPUParticles3D::set_use_fixed_seed(bool p_use_fixed_seed) {
+	if (p_use_fixed_seed == use_fixed_seed) {
+		return;
+	}
+	use_fixed_seed = p_use_fixed_seed;
+	notify_property_list_changed();
+}
+
+bool GPUParticles3D::get_use_fixed_seed() const {
+	return use_fixed_seed;
+}
+
+void GPUParticles3D::set_seed(uint32_t p_seed) {
+	seed = p_seed;
+	RS::get_singleton()->particles_set_seed(particles, p_seed);
+}
+
+uint32_t GPUParticles3D::get_seed() const {
+	return seed;
 }
 
 void GPUParticles3D::set_pre_process_time(double p_time) {
@@ -397,7 +419,10 @@ PackedStringArray GPUParticles3D::get_configuration_warnings() const {
 	return warnings;
 }
 
-void GPUParticles3D::restart() {
+void GPUParticles3D::restart(bool p_keep_seed) {
+	if (!p_keep_seed && !use_fixed_seed) {
+		set_seed(Math::rand());
+	}
 	RenderingServer::get_singleton()->particles_restart(particles);
 	RenderingServer::get_singleton()->particles_set_emitting(particles, true);
 
@@ -426,6 +451,13 @@ void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 			return;
 		}
 	}
+	if (p_property.name == "seed" && !use_fixed_seed) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+}
+
+void GPUParticles3D::request_particles_process(real_t p_requested_process_time) {
+	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time);
 }
 
 void GPUParticles3D::emit_particle(const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -728,6 +760,12 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_base_size"), &GPUParticles3D::get_collision_base_size);
 	ClassDB::bind_method(D_METHOD("get_interp_to_end"), &GPUParticles3D::get_interp_to_end);
 
+	ClassDB::bind_method(D_METHOD("set_use_fixed_seed", "use_fixed_seed"), &GPUParticles3D::set_use_fixed_seed);
+	ClassDB::bind_method(D_METHOD("get_use_fixed_seed"), &GPUParticles3D::get_use_fixed_seed);
+
+	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &GPUParticles3D::set_seed);
+	ClassDB::bind_method(D_METHOD("get_seed"), &GPUParticles3D::get_seed);
+
 	ClassDB::bind_method(D_METHOD("set_draw_order", "order"), &GPUParticles3D::set_draw_order);
 
 	ClassDB::bind_method(D_METHOD("get_draw_order"), &GPUParticles3D::get_draw_order);
@@ -741,7 +779,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skin", "skin"), &GPUParticles3D::set_skin);
 	ClassDB::bind_method(D_METHOD("get_skin"), &GPUParticles3D::get_skin);
 
-	ClassDB::bind_method(D_METHOD("restart"), &GPUParticles3D::restart);
+	ClassDB::bind_method(D_METHOD("restart", "keep_seed"), &GPUParticles3D::restart, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("capture_aabb"), &GPUParticles3D::capture_aabb);
 
 	ClassDB::bind_method(D_METHOD("set_sub_emitter", "path"), &GPUParticles3D::set_sub_emitter);
@@ -763,6 +801,8 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_amount_ratio", "ratio"), &GPUParticles3D::set_amount_ratio);
 	ClassDB::bind_method(D_METHOD("get_amount_ratio"), &GPUParticles3D::get_amount_ratio);
 
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &GPUParticles3D::request_particles_process);
+
 	ADD_SIGNAL(MethodInfo("finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting", PROPERTY_HINT_ONESHOT), "set_emitting", "is_emitting");
@@ -778,9 +818,12 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "explosiveness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_explosiveness_ratio", "get_explosiveness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_randomness_ratio", "get_randomness_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_fixed_seed"), "set_use_fixed_seed", "get_use_fixed_seed");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed", PROPERTY_HINT_RANGE, "0," + itos(UINT32_MAX) + ",1"), "set_seed", "get_seed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1,suffix:FPS"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interpolate"), "set_interpolate", "get_interpolate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
+
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater,suffix:m"), "set_collision_base_size", "get_collision_base_size");
 	ADD_GROUP("Drawing", "");
@@ -843,6 +886,8 @@ GPUParticles3D::GPUParticles3D() {
 	set_speed_scale(1);
 	set_collision_base_size(collision_base_size);
 	set_transform_align(TRANSFORM_ALIGN_DISABLED);
+	set_use_fixed_seed(false);
+	set_seed(0);
 }
 
 GPUParticles3D::~GPUParticles3D() {
