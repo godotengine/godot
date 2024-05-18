@@ -3035,6 +3035,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+			dropping_tooltip_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			surface->connect(SceneStringName(draw), callable_mp(this, &Node3DEditorViewport::_draw));
 			surface->connect(SceneStringName(gui_input), callable_mp(this, &Node3DEditorViewport::_sinput));
 			surface->connect(SceneStringName(mouse_entered), callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
@@ -3050,6 +3051,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			dropping_tooltip_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			view_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			preview_camera->set_icon(get_editor_theme_icon(SNAME("Camera3D")));
 			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
@@ -4298,6 +4300,9 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 }
 
 void Node3DEditorViewport::_remove_preview_node() {
+	dropping_tooltip_label->hide();
+	dropping_tooltip_label_desc->hide();
+
 	set_message("");
 	if (preview_node->get_parent()) {
 		for (int i = preview_node->get_child_count() - 1; i >= 0; i--) {
@@ -4398,8 +4403,8 @@ void Node3DEditorViewport::_reset_preview_material() const {
 }
 
 void Node3DEditorViewport::_remove_preview_material() {
-	preview_material_label->hide();
-	preview_material_label_desc->hide();
+	dropping_tooltip_label->hide();
+	dropping_tooltip_label_desc->hide();
 
 	spatial_editor->set_preview_material(Ref<Material>());
 	spatial_editor->set_preview_reset_material(Ref<Material>());
@@ -4597,17 +4602,31 @@ void Node3DEditorViewport::_perform_drop_data() {
 }
 
 bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	Dictionary d = p_data;
+	Vector<String> files;
+	if (!d.has("type") || (String(d["type"]) != "files")) {
+		dropping_tooltip_label->hide();
+	} else {
+		files = d["files"];
+	}
+
 	preview_node_viewport_pos = p_point;
 
 	bool can_instantiate = false;
 	bool is_cyclical_dep = false;
 	String error_file;
 
-	if (!preview_node->is_inside_tree() && spatial_editor->get_preview_material().is_null()) {
-		Dictionary d = p_data;
-		if (d.has("type") && (String(d["type"]) == "files")) {
-			Vector<String> files = d["files"];
+	enum {
+		SCENE = 1 << 0,
+		TEXTURE = 1 << 1,
+		AUDIO = 1 << 2,
+		MESH = 1 << 3,
+		MATERIAL = 1 << 4
+	};
+	int instantiate_type = 0;
 
+	if (!preview_node->is_inside_tree() && spatial_editor->get_preview_material().is_null()) {
+		if (!files.is_empty()) {
 			// Track whether a type other than PackedScene is valid to stop checking them and only
 			// continue to check if the rest of the scenes are valid (don't have cyclic dependencies).
 			bool is_other_valid = false;
@@ -4644,6 +4663,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 							break;
 						}
 						memdelete(instantiated_scene);
+						instantiate_type |= SCENE;
 					} else if (!is_other_valid && mat.is_valid()) {
 						Ref<BaseMaterial3D> base_mat = res;
 						Ref<ShaderMaterial> shader_mat = res;
@@ -4654,19 +4674,23 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 
 						spatial_editor->set_preview_material(mat);
 						is_other_valid = true;
+						instantiate_type |= MATERIAL;
 						continue;
 					} else if (!is_other_valid && mesh.is_valid()) {
 						// Let the mesh pass.
 						is_other_valid = true;
+						instantiate_type |= MESH;
 					} else if (!is_other_valid && tex.is_valid()) {
 						Ref<StandardMaterial3D> new_mat = memnew(StandardMaterial3D);
 						new_mat->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, tex);
 
 						spatial_editor->set_preview_material(new_mat);
 						is_other_valid = true;
+						instantiate_type |= TEXTURE;
 						continue;
 					} else if (!is_other_valid && audio.is_valid()) {
 						is_other_valid = true;
+						instantiate_type |= AUDIO;
 					} else {
 						continue;
 					}
@@ -4689,19 +4713,43 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 		return false;
 	}
 
+	String title = "";
+	String desc = "";
+
+	if (files.size() > 1) {
+		title = TTR("Dropping multiple Files ...");
+		desc = TTR("Modifier keys will change how the file is being dropped depending on its type.");
+	} else if (instantiate_type & SCENE || instantiate_type & MESH || instantiate_type & AUDIO) {
+		title = TTR("Dropping a Scene, Mesh or Audio file ...");
+		desc = TTR("Default: added as sibling of selected node (except when root is selected).") +
+				"\n" + TTR("Hold Shift: added as child of selected node.") +
+				"\n" + TTR("Hold Alt: added as child of root node.");
+	} else if (instantiate_type & MATERIAL || instantiate_type & TEXTURE) {
+		title = TTR("Dropping a Material...");
+		Key ctrl_key = (OS::get_singleton()->has_feature("macos") ||
+							   OS::get_singleton()->has_feature("web_macos") ||
+							   OS::get_singleton()->has_feature("web_ios"))
+				? Key::META
+				: Key::CTRL;
+		desc = vformat(TTR("Default: placed in Geometry's Material Override slot.") +
+						"\n" + TTR("Hold %s: placed in Mesh's Surface Material Override slot."),
+				find_keycode_name(ctrl_key));
+	}
+
+	dropping_tooltip_label->set_text(title);
+	dropping_tooltip_label_desc->set_text(desc);
+	dropping_tooltip_label->show();
+	dropping_tooltip_label_desc->show();
+
 	if (can_instantiate) {
 		update_preview_node = true;
 		return true;
 	}
 
 	if (spatial_editor->get_preview_material().is_valid()) {
-		preview_material_label->show();
-		preview_material_label_desc->show();
-
 		ObjectID new_preview_material_target = _select_ray(p_point);
 		return _apply_preview_material(new_preview_material_target, p_point);
 	}
-
 	return false;
 }
 
@@ -5424,23 +5472,20 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	zoom_limit_label->hide();
 	bottom_center_vbox->add_child(zoom_limit_label);
 
-	preview_material_label = memnew(Label);
-	preview_material_label->set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_LEFT);
-	preview_material_label->set_offset(Side::SIDE_TOP, -70 * EDSCALE);
-	preview_material_label->set_text(TTR("Overriding material..."));
-	preview_material_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1, 1));
-	preview_material_label->hide();
-	surface->add_child(preview_material_label);
+	dropping_tooltip_label = memnew(Label);
+	dropping_tooltip_label->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1));
+	dropping_tooltip_label->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
+	dropping_tooltip_label->hide();
+	vbox->add_child(dropping_tooltip_label);
 
-	preview_material_label_desc = memnew(Label);
-	preview_material_label_desc->set_anchors_and_offsets_preset(LayoutPreset::PRESET_BOTTOM_LEFT);
-	preview_material_label_desc->set_offset(Side::SIDE_TOP, -50 * EDSCALE);
-	Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
-	preview_material_label_desc->set_text(vformat(TTR("Drag and drop to override the material of any geometry node.\nHold %s when dropping to override a specific surface."), find_keycode_name(key)));
-	preview_material_label_desc->add_theme_color_override(SceneStringName(font_color), Color(0.8, 0.8, 0.8, 1));
-	preview_material_label_desc->add_theme_constant_override("line_spacing", 0);
-	preview_material_label_desc->hide();
-	surface->add_child(preview_material_label_desc);
+	//TODO: MacOS ALT/CTRL changed to Cmd
+	dropping_tooltip_label_desc = memnew(Label);
+	dropping_tooltip_label_desc->add_theme_color_override("font_color", Color(0.6f, 0.6f, 0.6f, 1));
+	dropping_tooltip_label_desc->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
+	dropping_tooltip_label_desc->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
+	dropping_tooltip_label_desc->add_theme_constant_override("line_spacing", 0);
+	dropping_tooltip_label_desc->hide();
+	vbox->add_child(dropping_tooltip_label_desc);
 
 	frame_time_gradient = memnew(Gradient);
 	// The color is set when the theme changes.

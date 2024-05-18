@@ -247,8 +247,8 @@ private:
 	Label *locked_label = nullptr;
 	Label *zoom_limit_label = nullptr;
 
-	Label *preview_material_label = nullptr;
-	Label *preview_material_label_desc = nullptr;
+	Label *dropping_tooltip_label = nullptr;
+	Label *dropping_tooltip_label_desc = nullptr;
 
 	VBoxContainer *top_right_vbox = nullptr;
 	VBoxContainer *bottom_center_vbox = nullptr;
