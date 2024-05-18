@@ -2196,11 +2196,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			if (globals->has_setting("display/window/size/window_width_override") &&
 					globals->has_setting("display/window/size/window_height_override")) {
-				int desired_width = globals->get("display/window/size/window_width_override");
+				int desired_width = GLOBAL_GET("display/window/size/window_width_override");
 				if (desired_width > 0) {
 					window_size.width = desired_width;
 				}
-				int desired_height = globals->get("display/window/size/window_height_override");
+				int desired_height = GLOBAL_GET("display/window/size/window_height_override");
 				if (desired_height > 0) {
 					window_size.height = desired_height;
 				}
