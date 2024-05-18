@@ -414,6 +414,10 @@ void GPUParticles2D::_texture_changed() {
 	}
 }
 
+RID GPUParticles2D::get_rid() const {
+	return particles;
+}
+
 void GPUParticles2D::set_sub_emitter(const NodePath &p_path) {
 	if (is_inside_tree()) {
 		RS::get_singleton()->particles_set_subemitter(particles, RID());
@@ -808,6 +812,8 @@ void GPUParticles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_amount_ratio", "ratio"), &GPUParticles2D::set_amount_ratio);
 	ClassDB::bind_method(D_METHOD("get_amount_ratio"), &GPUParticles2D::get_amount_ratio);
+
+	ClassDB::bind_method(D_METHOD("get_rid"), &GPUParticles2D::get_rid);
 
 	ADD_SIGNAL(MethodInfo("finished"));
 

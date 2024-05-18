@@ -57,6 +57,11 @@ public:
 		MAX_DRAW_PASSES = 4
 	};
 
+	enum ParticlesSeedMode {
+		PARTICLES_SEED_MODE_RANDOM = RenderingServer::PARTICLES_SEED_MODE_RANDOM,
+		PARTICLES_SEED_MODE_CUSTOM = RenderingServer::PARTICLES_SEED_MODE_CUSTOM,
+	};
+
 private:
 	RID particles;
 
@@ -78,6 +83,8 @@ private:
 	bool interpolate = true;
 	NodePath sub_emitter;
 	real_t collision_base_size = 0.01;
+	uint32_t seed;
+	ParticlesSeedMode seed_mode = PARTICLES_SEED_MODE_RANDOM;
 
 	bool trail_enabled = false;
 	double trail_lifetime = 0.3;
@@ -177,6 +184,14 @@ public:
 
 	void restart();
 
+	RID get_rid() const;
+
+	void set_seed_mode(ParticlesSeedMode p_mode);
+	ParticlesSeedMode get_seed_mode() const;
+
+	void set_seed(uint32_t p_seed);
+	uint32_t get_seed() const;
+
 	enum EmitFlags {
 		EMIT_FLAG_POSITION = RS::PARTICLES_EMIT_FLAG_POSITION,
 		EMIT_FLAG_ROTATION_SCALE = RS::PARTICLES_EMIT_FLAG_ROTATION_SCALE,
@@ -197,5 +212,6 @@ public:
 VARIANT_ENUM_CAST(GPUParticles3D::DrawOrder)
 VARIANT_ENUM_CAST(GPUParticles3D::TransformAlign)
 VARIANT_ENUM_CAST(GPUParticles3D::EmitFlags)
+VARIANT_ENUM_CAST(GPUParticles3D::ParticlesSeedMode)
 
 #endif // GPU_PARTICLES_3D_H

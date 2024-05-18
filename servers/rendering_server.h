@@ -714,6 +714,7 @@ public:
 	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) = 0;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) = 0;
 	virtual void particles_set_pre_process_time(RID p_particles, double p_time) = 0;
+	virtual void particles_set_request_process_time(RID p_particles, real_t request_process_time) = 0;
 	virtual void particles_set_explosiveness_ratio(RID p_particles, float p_ratio) = 0;
 	virtual void particles_set_randomness_ratio(RID p_particles, float p_ratio) = 0;
 	virtual void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) = 0;
@@ -724,6 +725,7 @@ public:
 	virtual void particles_set_interpolate(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_collision_base_size(RID p_particles, float p_size) = 0;
+	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) = 0;
 
 	enum ParticlesTransformAlign {
 		PARTICLES_TRANSFORM_ALIGN_DISABLED,
@@ -758,6 +760,11 @@ public:
 		PARTICLES_DRAW_ORDER_LIFETIME,
 		PARTICLES_DRAW_ORDER_REVERSE_LIFETIME,
 		PARTICLES_DRAW_ORDER_VIEW_DEPTH,
+	};
+
+	enum ParticlesSeedMode {
+		PARTICLES_SEED_MODE_RANDOM,
+		PARTICLES_SEED_MODE_CUSTOM,
 	};
 
 	virtual void particles_set_draw_order(RID p_particles, ParticlesDrawOrder p_order) = 0;
@@ -1810,6 +1817,7 @@ VARIANT_ENUM_CAST(RenderingServer::DecalFilter);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesMode);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesTransformAlign);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesDrawOrder);
+VARIANT_ENUM_CAST(RenderingServer::ParticlesSeedMode);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesEmitFlags);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesCollisionType);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesCollisionHeightfieldResolution);

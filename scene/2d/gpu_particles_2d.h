@@ -166,6 +166,8 @@ public:
 	void set_sub_emitter(const NodePath &p_path);
 	NodePath get_sub_emitter() const;
 
+	RID get_rid() const;
+
 	enum EmitFlags {
 		EMIT_FLAG_POSITION = RS::PARTICLES_EMIT_FLAG_POSITION,
 		EMIT_FLAG_ROTATION_SCALE = RS::PARTICLES_EMIT_FLAG_ROTATION_SCALE,
