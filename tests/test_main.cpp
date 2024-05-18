@@ -121,6 +121,7 @@
 #include "tests/scene/test_text_edit.h"
 #include "tests/scene/test_theme.h"
 #include "tests/scene/test_timer.h"
+#include "tests/scene/test_tree.h"
 #include "tests/scene/test_viewport.h"
 #include "tests/scene/test_visual_shader.h"
 #include "tests/scene/test_window.h"
