@@ -140,7 +140,6 @@ public:
 	// Merging.
 	bool is_mergeable_with(Node *p_other, bool p_shadows_only) const;
 	bool merge_meshes(Vector<Variant> p_list, bool p_use_global_space, bool p_check_compatibility, bool p_shadows_only);
-	bool split_by_surface(Vector<Variant> p_destination_mesh_instances);
 
 	virtual AABB get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;

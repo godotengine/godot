@@ -302,7 +302,7 @@ void MergeGroup::_split_mesh_by_surface(MeshInstance *p_mi, int p_num_surfaces) 
 
 	_node_changed(parent);
 
-	p_mi->split_by_surface(siblings);
+	MergingTool::wrapped_split_by_surface(*p_mi, siblings, Mesh::STORAGE_MODE_CPU);
 
 	// Failed to split.
 	if (parent->get_child_count() <= first_sibling_id) {
@@ -827,7 +827,7 @@ void MergeGroup::_merge_list(const LocalVector<MeshInstance *> &p_mis, bool p_sh
 		varlist.push_back(Variant(p_mis[n]));
 	}
 
-	if (!merged->merge_meshes(varlist, false, false, p_shadows)) {
+	if (!MergingTool::wrapped_merge_meshes(*merged, varlist, false, false, p_shadows, Mesh::STORAGE_MODE_CPU)) {
 		_log("MERGE_MESHES failed.");
 		_delete_node(merged);
 		return;
