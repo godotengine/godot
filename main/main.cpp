@@ -4295,9 +4295,6 @@ void Main::cleanup(bool p_force) {
 	if (globals) {
 		memdelete(globals);
 	}
-	if (engine) {
-		memdelete(engine);
-	}
 
 	if (OS::get_singleton()->is_restart_on_exit_set()) {
 		//attempt to restart with arguments
@@ -4314,6 +4311,10 @@ void Main::cleanup(bool p_force) {
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	unregister_core_types();
+
+	if (engine) {
+		memdelete(engine);
+	}
 
 	OS::get_singleton()->benchmark_end_measure("Shutdown", "Total");
 	OS::get_singleton()->benchmark_dump();
