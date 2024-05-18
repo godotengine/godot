@@ -2467,6 +2467,12 @@ FRAGMENT_SHADER_CODE
 	frag_color.rgb = mix(pow((frag_color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), frag_color.rgb * (1.0 / 12.92), vec3(lessThan(frag_color.rgb, vec3(0.04045))));
 #endif
 
+	// Write to the final output once and only once.
+	// Use a temporary in the rest of the shader.
+	// This is for drivers that have a performance drop
+	// when the output is read during the shader.
+	gl_FragColor = frag_color;
+
 #else // not RENDER_DEPTH
 //depth render
 #ifdef USE_RGBA_SHADOWS
@@ -2474,10 +2480,8 @@ FRAGMENT_SHADER_CODE
 	highp float depth = ((position_interp.z / position_interp.w) + 1.0) * 0.5 + 0.0; // bias
 	highp vec4 comp = fract(depth * vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0));
 	comp -= comp.xxyz * vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);
-	frag_color = comp;
+	gl_FragColor = comp;
 
 #endif
 #endif
-
-	gl_FragColor = frag_color;
 }

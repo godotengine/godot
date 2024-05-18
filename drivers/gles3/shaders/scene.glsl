@@ -2453,13 +2453,13 @@ FRAGMENT_SHADER_CODE
 #endif //ubershader-runtime
 #endif //SHADELESS //ubershader-runtime
 
+#endif //USE_MULTIPLE_RENDER_TARGETS //ubershader-runtime
+
 	// Write to the final output once and only once.
 	// Use a temporary in the rest of the shader.
 	// This is for drivers that have a performance drop
 	// when the output is read during the shader.
 	frag_color_final = frag_color;
-
-#endif //USE_MULTIPLE_RENDER_TARGETS //ubershader-runtime
 
 #endif //RENDER_DEPTH //ubershader-runtime
 }
