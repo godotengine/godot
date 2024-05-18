@@ -441,6 +441,12 @@ TEST_CASE_TEMPLATE("[Math] move_toward", T, float, double) {
 	CHECK(Math::move_toward(-2.0, -5.0, 4.0) == doctest::Approx((T)-5.0));
 }
 
+TEST_CASE_TEMPLATE("[Math] move_toward_smooth", T, float, double) {
+	CHECK(Math::move_toward_smooth(2.0, 5.0, 0.7) == doctest::Approx((T)3.51024));
+	CHECK(Math::move_toward_smooth(-2.0, 3.0, 0.8) == doctest::Approx((T)0.753355));
+	CHECK(Math::move_toward_smooth(-1.0, -4.0, 6.0) == doctest::Approx((T)-3.99256));
+}
+
 TEST_CASE_TEMPLATE("[Math] rotate_toward", T, float, double) {
 	// Rotate toward.
 	CHECK(Math::rotate_toward((T)0.0, (T)Math_PI * (T)0.75, (T)1.5) == doctest::Approx((T)1.5));

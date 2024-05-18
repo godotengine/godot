@@ -481,6 +481,13 @@ public:
 		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
 	}
 
+	static _ALWAYS_INLINE_ double move_toward_smooth(double p_from, double p_to, double p_delta) {
+		return Math::lerp(p_from, p_to, -Math::expm1(-p_delta));
+	}
+	static _ALWAYS_INLINE_ float move_toward_smooth(float p_from, float p_to, float p_delta) {
+		return Math::lerp(p_from, p_to, -Math::expm1(-p_delta));
+	}
+
 	static _ALWAYS_INLINE_ double rotate_toward(double p_from, double p_to, double p_delta) {
 		double difference = Math::angle_difference(p_from, p_to);
 		double abs_difference = Math::abs(difference);
