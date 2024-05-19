@@ -101,7 +101,6 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
-		register_annotation(MethodInfo("@export_storage"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 		register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::NIL>, varray(), true);
 		register_annotation(MethodInfo("@export_file", PropertyInfo(Variant::STRING, "filter")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FILE, Variant::STRING>, varray(""), true);
 		register_annotation(MethodInfo("@export_dir"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_DIR, Variant::STRING>);
@@ -121,6 +120,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, Variant::INT>);
 		register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
 		register_annotation(MethodInfo("@export_flags_avoidance"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_AVOIDANCE, Variant::INT>);
+		register_annotation(MethodInfo("@export_storage"), AnnotationInfo::VARIABLE, &GDScriptParser::export_storage_annotation);
 		register_annotation(MethodInfo("@export_custom", PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CLASS_IS_ENUM, "PropertyHint"), PropertyInfo(Variant::STRING, "hint_string"), PropertyInfo(Variant::INT, "usage", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CLASS_IS_BITFIELD, "PropertyUsageFlags")), AnnotationInfo::VARIABLE, &GDScriptParser::export_custom_annotation, varray(PROPERTY_USAGE_DEFAULT));
 		// Export grouping annotations.
 		register_annotation(MethodInfo("@export_category", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::STANDALONE, &GDScriptParser::export_group_annotations<PROPERTY_USAGE_CATEGORY>);
@@ -4299,7 +4299,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 			case GDScriptParser::DataType::BUILTIN:
 				variable->export_info.type = export_type.builtin_type;
 				variable->export_info.hint = PROPERTY_HINT_NONE;
-				variable->export_info.hint_string = Variant::get_type_name(export_type.builtin_type);
+				variable->export_info.hint_string = String();
 				break;
 			case GDScriptParser::DataType::NATIVE:
 				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
@@ -4400,12 +4400,6 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
 			return false;
 		}
-	} else if (p_annotation->name == SNAME("@export_storage")) {
-		use_default_variable_type_check = false; // Can be applied to a variable of any type.
-
-		// Save the info because the compiler uses export info for overwriting member info.
-		variable->export_info = export_type.to_property_info(variable->identifier->name);
-		variable->export_info.usage |= PROPERTY_USAGE_STORAGE;
 	}
 
 	if (use_default_variable_type_check) {
@@ -4425,10 +4419,37 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 		if (variable->export_info.hint) {
 			hint_prefix += "/" + itos(variable->export_info.hint);
 		}
+		variable->export_info.type = original_export_type_builtin;
 		variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
 		variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
-		variable->export_info.type = original_export_type_builtin;
+		variable->export_info.usage = PROPERTY_USAGE_DEFAULT;
+		variable->export_info.class_name = StringName();
 	}
+
+	return true;
+}
+
+// For `@export_storage` and `@export_custom`, there is no need to check the variable type, argument values,
+// or handle array exports in a special way, so they are implemented as separate methods.
+
+bool GDScriptParser::export_storage_annotation(const AnnotationNode *p_annotation, Node *p_node, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
+
+	VariableNode *variable = static_cast<VariableNode *>(p_node);
+	if (variable->is_static) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to a static variable.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	if (variable->exported) {
+		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
+		return false;
+	}
+
+	variable->exported = true;
+
+	// Save the info because the compiler uses export info for overwriting member info.
+	variable->export_info = variable->get_datatype().to_property_info(variable->identifier->name);
+	variable->export_info.usage |= PROPERTY_USAGE_STORAGE;
 
 	return true;
 }
@@ -4438,6 +4459,10 @@ bool GDScriptParser::export_custom_annotation(const AnnotationNode *p_annotation
 	ERR_FAIL_COND_V_MSG(p_annotation->resolved_arguments.size() < 2, false, R"(Annotation "@export_custom" requires 2 arguments.)");
 
 	VariableNode *variable = static_cast<VariableNode *>(p_node);
+	if (variable->is_static) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to a static variable.)", p_annotation->name), p_annotation);
+		return false;
+	}
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
 		return false;
