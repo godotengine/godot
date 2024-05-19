@@ -1468,7 +1468,7 @@ void Viewport::_vp_unhandled_input(const Ref<InputEvent> &p_ev) {
 }
 
 Vector2 Viewport::get_mouse_position() const {
-	return (get_final_transform().affine_inverse() * _get_input_pre_xform()).xform(Input::get_singleton()->get_mouse_position() - _get_window_offset());
+	return last_mousepos;
 }
 
 void Viewport::warp_mouse(const Vector2 &p_pos) {
@@ -2879,6 +2879,11 @@ void Viewport::_post_gui_grab_click_focus() {
 void Viewport::input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(!is_inside_tree());
 
+	Ref<InputEventMouse> ev_mm = p_event;
+	if (ev_mm.is_valid()) {
+		last_mousepos = ev_mm->get_position();
+	}
+
 	local_input_handled = false;
 
 	if (!is_input_handled()) {
@@ -3681,6 +3686,8 @@ Viewport::Viewport() {
 	local_input_handled = false;
 	handle_input_locally = true;
 	physics_last_id = 0; //ensures first time there will be a check
+
+	last_mousepos = Vector2(Math_INF, Math_INF);
 }
 
 Viewport::~Viewport() {

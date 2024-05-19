@@ -215,6 +215,7 @@ private:
 	Size2 size_override_margin;
 
 	Rect2 last_vp_rect;
+	Vector2 last_mousepos;
 
 	bool transparent_bg;
 	bool vflip;
