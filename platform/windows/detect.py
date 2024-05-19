@@ -248,10 +248,10 @@ def get_doc_path():
 def get_flags():
     arch = detect_build_env_arch() or detect_arch()
 
-    return [
-        ("arch", arch),
-        ("supported", ["mono"]),
-    ]
+    return {
+        "arch": arch,
+        "supported": ["mono"],
+    }
 
 
 def build_res_file(target, source, env: "SConsEnvironment"):

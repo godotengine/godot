@@ -65,10 +65,10 @@ def get_doc_path():
 
 
 def get_flags():
-    return [
-        ("arch", detect_arch()),
-        ("supported", ["mono"]),
-    ]
+    return {
+        "arch": detect_arch(),
+        "supported": ["mono"],
+    }
 
 
 def configure(env: "SConsEnvironment"):
