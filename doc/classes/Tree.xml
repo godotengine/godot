@@ -655,13 +655,13 @@
 			[StyleBox] used for the cursor, when the [Tree] is not being focused.
 		</theme_item>
 		<theme_item name="custom_button" data_type="style" type="StyleBox">
-			Default [StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell.
+			Default [StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when button is enabled with [method TreeItem.set_custom_as_button].
 		</theme_item>
 		<theme_item name="custom_button_hover" data_type="style" type="StyleBox">
-			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's hovered.
+			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode button cell when it's hovered.
 		</theme_item>
 		<theme_item name="custom_button_pressed" data_type="style" type="StyleBox">
-			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's pressed.
+			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode button cell when it's pressed.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
 			The focused style for the [Tree], drawn on top of everything.
