@@ -990,6 +990,14 @@
 				Returns the shape data.
 			</description>
 		</method>
+		<method name="shape_get_margin" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="shape" type="RID" />
+			<description>
+				Returns the collision margin for the shape.
+				[b]Note:[/b] This is not used in Godot Physics, so will always return [code]0[/code].
+			</description>
+		</method>
 		<method name="shape_get_type" qualifiers="const">
 			<return type="int" enum="PhysicsServer3D.ShapeType" />
 			<param index="0" name="shape" type="RID" />
@@ -1003,6 +1011,15 @@
 			<param index="1" name="data" type="Variant" />
 			<description>
 				Sets the shape data that defines its shape and size. The data to be passed depends on the kind of shape created [method shape_get_type].
+			</description>
+		</method>
+		<method name="shape_set_margin">
+			<return type="void" />
+			<param index="0" name="shape" type="RID" />
+			<param index="1" name="margin" type="float" />
+			<description>
+				Sets the collision margin for the shape.
+				[b]Note:[/b] This is not used in Godot Physics.
 			</description>
 		</method>
 		<method name="slider_joint_get_param" qualifiers="const">
