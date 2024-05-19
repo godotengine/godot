@@ -2220,9 +2220,14 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				}
 			}
 
+			// Add a tab for every recursion depth, except this one and it's parent
+			String tab_str = String("\t");
+			String tab_depth = tab_str.repeat(std::max(0, p_recursion_count));
+			String tab_parent_depth = tab_str.repeat(std::max(0, p_recursion_count - 1));
+
 			//store as generic object
 
-			p_store_string_func(p_store_string_ud, "Object(" + obj->get_class() + ",");
+			p_store_string_func(p_store_string_ud, "Object(" + obj->get_class() + ",\n" + tab_depth);
 
 			List<PropertyInfo> props;
 			obj->get_property_list(&props);
@@ -2234,15 +2239,15 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (first) {
 						first = false;
 					} else {
-						p_store_string_func(p_store_string_ud, ",");
+						p_store_string_func(p_store_string_ud, ",\n" + tab_depth);
 					}
 
-					p_store_string_func(p_store_string_ud, "\"" + E.name + "\":");
+					p_store_string_func(p_store_string_ud, "\"" + E.name + "\": ");
 					write(obj->get(E.name), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud, p_recursion_count, p_compat);
 				}
 			}
 
-			p_store_string_func(p_store_string_ud, ")\n");
+			p_store_string_func(p_store_string_ud, ",\n" + tab_parent_depth + ")");
 		} break;
 
 		case Variant::DICTIONARY: {

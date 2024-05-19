@@ -1909,6 +1909,54 @@ TEST_CASE("[Variant] Writer recursive dictionary on keys") {
 }
 #endif
 
+TEST_CASE("[Variant] Writer prints one Object with correct spacing and tabbing") {
+	Object o1 = Object();
+	Variant v1 = &o1;
+
+	String o_str;
+	VariantWriter::write_to_string(v1, o_str);
+
+	// encode newlines and tabs for readable exception messages
+	String o_str_enc = o_str.replace("\t", "\\t").replace("\n", "\\n");
+
+	String expected_str = "Object(Object,\n\t\"script\": null,\n)";
+	String expected_str_enc = expected_str.replace("\t", "\\t").replace("\n", "\\n");
+
+	CHECK(o_str == expected_str);
+	CHECK(o_str_enc == expected_str_enc);
+}
+
+TEST_CASE("[Variant] Writer prints nested Objects with correct spacing and tabbing") {
+	Object o1 = Object();
+	Object o2 = Object();
+	Object o3 = Object();
+
+	o1.set_meta("o2", &o2);
+	o2.set_meta("o3", &o3);
+
+	Variant v1 = &o1;
+
+	String o_str;
+	VariantWriter::write_to_string(v1, o_str);
+
+	// encode newlines and tabs for readable exception messages
+	String o_str_enc = o_str.replace("\t", "\\t").replace("\n", "\\n");
+
+	String expected_str = "Object(Object,\n"
+						  "\t\"script\": null,\n"
+						  "\t\"metadata/o2\": Object(Object,\n"
+						  "\t\t\"script\": null,\n"
+						  "\t\t\"metadata/o3\": Object(Object,\n"
+						  "\t\t\t\"script\": null,\n"
+						  "\t\t),\n"
+						  "\t),\n"
+						  ")";
+	String expected_str_enc = expected_str.replace("\t", "\\t").replace("\n", "\\n");
+
+	CHECK(o_str == expected_str);
+	CHECK(o_str_enc == expected_str_enc);
+}
+
 TEST_CASE("[Variant] Basic comparison") {
 	CHECK_EQ(Variant(1), Variant(1));
 	CHECK_FALSE(Variant(1) != Variant(1));
