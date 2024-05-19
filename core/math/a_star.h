@@ -120,7 +120,7 @@ class AStar3D : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_to_id);
+	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_end_id);
 	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
@@ -176,7 +176,7 @@ class AStar2D : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_to_id);
+	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_end_id);
 	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
