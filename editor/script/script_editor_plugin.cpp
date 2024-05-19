@@ -765,7 +765,11 @@ void ScriptEditor::_mark_built_in_scripts_as_saved(const String &p_parent_path) 
 		if (scr.is_valid()) {
 			trigger_live_script_reload(scr->get_path());
 			clear_docs_from_script(scr);
-			scr->reload(true);
+			if (scr->is_tool()) {
+				scr->get_language()->reload_tool_script(edited_res, true);
+			} else {
+				scr->reload(true);
+			}
 			update_docs_from_script(scr);
 		}
 	}
