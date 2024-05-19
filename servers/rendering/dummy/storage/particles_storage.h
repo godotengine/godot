@@ -51,7 +51,7 @@ public:
 	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) override {}
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) override {}
 	virtual void particles_set_pre_process_time(RID p_particles, double p_time) override {}
-	virtual void particles_set_request_process_time(RID p_particles, real_t request_process_time) override {}
+	virtual void particles_request_process_time(RID p_particles, real_t request_process_time) override {}
 	virtual void particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) override {}
 	virtual void particles_set_randomness_ratio(RID p_particles, real_t p_ratio) override {}
 	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) override {}

@@ -224,7 +224,7 @@ void ParticlesStorage::particles_set_pre_process_time(RID p_particles, double p_
 	particles->pre_process_time = p_time;
 }
 
-void ParticlesStorage::particles_set_request_process_time(RID p_particles, real_t p_request_process_time) {
+void ParticlesStorage::particles_request_process_time(RID p_particles, real_t p_request_process_time) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 	particles->request_process_time = p_request_process_time;

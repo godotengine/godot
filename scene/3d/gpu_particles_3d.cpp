@@ -118,7 +118,7 @@ uint32_t GPUParticles3D::get_seed() const {
 	return seed;
 }
 
-RID GPUParticles3D::get_rid() const {
+RID GPUParticles3D::get_particles_rid() const {
 	return particles;
 }
 
@@ -439,6 +439,10 @@ void GPUParticles3D::restart() {
 	set_process_internal(true);
 }
 
+void GPUParticles3D::request_process_time(real_t p_process_time) const {
+	RenderingServer::get_singleton()->particles_request_process_time(get_particles_rid(), p_process_time);
+}
+
 AABB GPUParticles3D::capture_aabb() const {
 	return RS::get_singleton()->particles_get_current_aabb(particles);
 }
@@ -455,6 +459,10 @@ void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		return;
 	}
+}
+
+void GPUParticles3D::request_particles_process(real_t process_time) {
+	RS::get_singleton()->particles_request_process_time(particles, process_time);
 }
 
 void GPUParticles3D::emit_particle(const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -715,8 +723,6 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &GPUParticles3D::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles3D::set_collision_base_size);
 	ClassDB::bind_method(D_METHOD("set_interp_to_end", "interp"), &GPUParticles3D::set_interp_to_end);
-	ClassDB::bind_method(D_METHOD("set_seed_mode", "mode"), &GPUParticles3D::set_seed_mode);
-	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &GPUParticles3D::set_seed);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles3D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles3D::get_amount);
@@ -755,6 +761,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_skin"), &GPUParticles3D::get_skin);
 
 	ClassDB::bind_method(D_METHOD("restart"), &GPUParticles3D::restart);
+	ClassDB::bind_method(D_METHOD("request_process_time", "time"), &GPUParticles3D::request_process_time);
 	ClassDB::bind_method(D_METHOD("capture_aabb"), &GPUParticles3D::capture_aabb);
 
 	ClassDB::bind_method(D_METHOD("set_sub_emitter", "path"), &GPUParticles3D::set_sub_emitter);
@@ -776,7 +783,8 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_amount_ratio", "ratio"), &GPUParticles3D::set_amount_ratio);
 	ClassDB::bind_method(D_METHOD("get_amount_ratio"), &GPUParticles3D::get_amount_ratio);
 
-	ClassDB::bind_method(D_METHOD("get_rid"), &GPUParticles3D::get_rid);
+	ClassDB::bind_method(D_METHOD("get_particles_rid"), &GPUParticles3D::get_particles_rid);
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &GPUParticles3D::request_particles_process);
 
 	ADD_SIGNAL(MethodInfo("finished"));
 
@@ -794,7 +802,7 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "explosiveness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_explosiveness_ratio", "get_explosiveness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_randomness_ratio", "get_randomness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed_mode", PROPERTY_HINT_ENUM, "Random,Custom"), "set_seed_mode", "get_seed_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed", PROPERTY_HINT_RANGE, "1,1000000,1"), "set_seed", "get_seed");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed", PROPERTY_HINT_RANGE, "0," + itos(UINT32_MAX) + ",1"), "set_seed", "get_seed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1,suffix:FPS"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interpolate"), "set_interpolate", "get_interpolate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");

@@ -43,6 +43,10 @@ public:
 		DRAW_ORDER_LIFETIME,
 		DRAW_ORDER_REVERSE_LIFETIME,
 	};
+	enum ParticlesSeedMode {
+		PARTICLES_SEED_MODE_RANDOM = RenderingServer::PARTICLES_SEED_MODE_RANDOM,
+		PARTICLES_SEED_MODE_CUSTOM = RenderingServer::PARTICLES_SEED_MODE_CUSTOM,
+	};
 
 private:
 	RID particles;
@@ -66,6 +70,8 @@ private:
 	float interp_to_end_factor = 0;
 	Vector3 previous_velocity;
 	Vector2 previous_position;
+	uint32_t seed;
+	ParticlesSeedMode seed_mode = PARTICLES_SEED_MODE_RANDOM;
 #ifdef TOOLS_ENABLED
 	bool show_visibility_rect = false;
 #endif
@@ -119,6 +125,7 @@ public:
 	void set_trail_sections(int p_sections);
 	void set_trail_section_subdivisions(int p_subdivisions);
 	void set_interp_to_end(float p_interp);
+	void request_particles_process(real_t process_time);
 
 #ifdef TOOLS_ENABLED
 	void set_show_visibility_rect(bool p_show_visibility_rect);
@@ -135,6 +142,7 @@ public:
 	bool get_use_local_coordinates() const;
 	Ref<Material> get_process_material() const;
 	double get_speed_scale() const;
+	void request_process_time() const;
 
 	real_t get_collision_base_size() const;
 	bool is_trail_enabled() const;
@@ -166,7 +174,13 @@ public:
 	void set_sub_emitter(const NodePath &p_path);
 	NodePath get_sub_emitter() const;
 
-	RID get_rid() const;
+	void set_seed_mode(ParticlesSeedMode p_mode);
+	ParticlesSeedMode get_seed_mode() const;
+
+	void set_seed(uint32_t p_seed);
+	uint32_t get_seed() const;
+
+	RID get_particles_rid() const;
 
 	enum EmitFlags {
 		EMIT_FLAG_POSITION = RS::PARTICLES_EMIT_FLAG_POSITION,
@@ -188,5 +202,6 @@ public:
 
 VARIANT_ENUM_CAST(GPUParticles2D::DrawOrder)
 VARIANT_ENUM_CAST(GPUParticles2D::EmitFlags)
+VARIANT_ENUM_CAST(GPUParticles2D::ParticlesSeedMode)
 
 #endif // GPU_PARTICLES_2D_H

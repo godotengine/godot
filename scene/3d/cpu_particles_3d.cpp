@@ -534,6 +534,27 @@ AABB CPUParticles3D::capture_aabb() const {
 	return RS::get_singleton()->multimesh_get_aabb(multimesh);
 }
 
+void CPUParticles3D::set_seed_mode(ParticlesSeedMode p_seed_mode) {
+	seed_mode = p_seed_mode;
+	notify_property_list_changed();
+}
+
+CPUParticles3D::ParticlesSeedMode CPUParticles3D::get_seed_mode() const {
+	return seed_mode;
+}
+
+void CPUParticles3D::set_seed(uint32_t p_seed) {
+	seed = p_seed;
+}
+
+uint32_t CPUParticles3D::get_seed() const {
+	return seed;
+}
+
+void CPUParticles3D::request_particles_process(real_t p_requested_process_time) {
+	_requested_process_time = p_requested_process_time;
+}
+
 void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
 		p_property.usage = PROPERTY_USAGE_NONE;
@@ -561,6 +582,11 @@ void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 
 	if (p_property.name.begins_with("scale_curve_") && !split_scale) {
 		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (p_property.name == "seed" && seed_mode == PARTICLES_SEED_MODE_RANDOM) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		return;
 	}
 }
 
@@ -607,25 +633,27 @@ void CPUParticles3D::_update_internal() {
 
 	bool processed = false;
 
-	if (time == 0 && pre_process_time > 0.0) {
-		double frame_time;
-		if (fixed_fps > 0) {
-			frame_time = 1.0 / fixed_fps;
-		} else {
-			frame_time = 1.0 / 30.0;
-		}
-
-		double todo = pre_process_time;
-
-		while (todo >= 0) {
-			_particles_process(frame_time);
-			processed = true;
-			todo -= frame_time;
-		}
+	double frame_time;
+	if (fixed_fps > 0) {
+		frame_time = 1.0 / fixed_fps;
+	} else {
+		frame_time = 1.0 / 30.0;
 	}
+	double todo = _requested_process_time;
+	_requested_process_time = 0.;
+	if (time == 0 && pre_process_time > 0.0) {
+		todo += pre_process_time;
+	}
+	real_t tmp_speed = speed_scale;
+	speed_scale = 1.0;
+	while (todo > 0) {
+		_particles_process(frame_time);
+		todo -= frame_time;
+	}
+	speed_scale = tmp_speed;
+	todo = 0.0;
 
 	if (fixed_fps > 0) {
-		double frame_time = 1.0 / fixed_fps;
 		double decr = frame_time;
 
 		double ldelta = delta;
@@ -634,7 +662,7 @@ void CPUParticles3D::_update_internal() {
 		} else if (ldelta <= 0.0) { //unlikely but..
 			ldelta = 0.001;
 		}
-		double todo = frame_remainder + ldelta;
+		todo = frame_remainder + ldelta;
 
 		while (todo >= frame_time) {
 			_particles_process(frame_time);
@@ -698,12 +726,12 @@ void CPUParticles3D::_particles_process(double p_delta) {
 		double restart_phase = double(i) / double(pcount);
 
 		if (randomness_ratio > 0.0) {
-			uint32_t seed = cycle;
+			uint32_t _seed = cycle;
 			if (restart_phase >= system_phase) {
-				seed -= uint32_t(1);
+				_seed -= uint32_t(1);
 			}
-			seed *= uint32_t(pcount);
-			seed += uint32_t(i);
+			_seed *= uint32_t(pcount);
+			_seed += uint32_t(i);
 			double random = double(idhash(seed) % uint32_t(65536)) / 65536.0;
 			restart_phase += randomness_ratio * random * 1.0 / double(pcount);
 		}
@@ -765,27 +793,31 @@ void CPUParticles3D::_particles_process(double p_delta) {
 				tex_anim_offset = curve_parameters[PARAM_ANGLE]->sample(tv);
 			}
 
-			p.seed = Math::rand();
+			if (seed_mode == ParticlesSeedMode::PARTICLES_SEED_MODE_RANDOM) {
+				seed = Math::rand();
+			}
 
-			p.angle_rand = Math::randf();
-			p.scale_rand = Math::randf();
-			p.hue_rot_rand = Math::randf();
-			p.anim_offset_rand = Math::randf();
+			p.seed = seed;
+			uint32_t _seed = seed + uint32_t(1) + i + cycle;
+			p.angle_rand = rand_from_seed(_seed);
+			p.scale_rand = rand_from_seed(_seed);
+			p.hue_rot_rand = rand_from_seed(_seed);
+			p.anim_offset_rand = rand_from_seed(_seed);
 
 			if (color_initial_ramp.is_valid()) {
-				p.start_color_rand = color_initial_ramp->get_color_at_offset(Math::randf());
+				p.start_color_rand = color_initial_ramp->get_color_at_offset(rand_from_seed(_seed));
 			} else {
 				p.start_color_rand = Color(1, 1, 1, 1);
 			}
 
 			if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-				real_t angle1_rad = Math::atan2(direction.y, direction.x) + Math::deg_to_rad((Math::randf() * 2.0 - 1.0) * spread);
+				real_t angle1_rad = Math::atan2(direction.y, direction.x) + Math::deg_to_rad((rand_from_seed(_seed) * 2.0 - 1.0) * spread);
 				Vector3 rot = Vector3(Math::cos(angle1_rad), Math::sin(angle1_rad), 0.0);
-				p.velocity = rot * Math::lerp(parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], parameters_max[PARAM_INITIAL_LINEAR_VELOCITY], (real_t)Math::randf());
+				p.velocity = rot * Math::lerp(parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], parameters_max[PARAM_INITIAL_LINEAR_VELOCITY], rand_from_seed(_seed));
 			} else {
 				//initiate velocity spread in 3D
-				real_t angle1_rad = Math::deg_to_rad((Math::randf() * (real_t)2.0 - (real_t)1.0) * spread);
-				real_t angle2_rad = Math::deg_to_rad((Math::randf() * (real_t)2.0 - (real_t)1.0) * ((real_t)1.0 - flatness) * spread);
+				real_t angle1_rad = Math::deg_to_rad((rand_from_seed(_seed) * (real_t)2.0 - (real_t)1.0) * spread);
+				real_t angle2_rad = Math::deg_to_rad((rand_from_seed(_seed) * (real_t)2.0 - (real_t)1.0) * ((real_t)1.0 - flatness) * spread);
 
 				Vector3 direction_xz = Vector3(Math::sin(angle1_rad), 0, Math::cos(angle1_rad));
 				Vector3 direction_yz = Vector3(0, Math::sin(angle2_rad), Math::cos(angle2_rad));
@@ -805,14 +837,14 @@ void CPUParticles3D::_particles_process(double p_delta) {
 				binormal.normalize();
 				Vector3 normal = binormal.cross(direction_nrm);
 				spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;
-				p.velocity = spread_direction * Math::lerp(parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], parameters_max[PARAM_INITIAL_LINEAR_VELOCITY], (real_t)Math::randf());
+				p.velocity = spread_direction * Math::lerp(parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], parameters_max[PARAM_INITIAL_LINEAR_VELOCITY], rand_from_seed(_seed));
 			}
 
 			real_t base_angle = tex_angle * Math::lerp(parameters_min[PARAM_ANGLE], parameters_max[PARAM_ANGLE], p.angle_rand);
 			p.custom[0] = Math::deg_to_rad(base_angle); //angle
 			p.custom[1] = 0.0; //phase
 			p.custom[2] = tex_anim_offset * Math::lerp(parameters_min[PARAM_ANIM_OFFSET], parameters_max[PARAM_ANIM_OFFSET], p.anim_offset_rand); //animation offset (0-1)
-			p.custom[3] = (1.0 - Math::randf() * lifetime_randomness);
+			p.custom[3] = (1.0 - rand_from_seed(_seed) * lifetime_randomness);
 			p.transform = Transform3D();
 			p.time = 0;
 			p.lifetime = lifetime * p.custom[3];
@@ -823,20 +855,20 @@ void CPUParticles3D::_particles_process(double p_delta) {
 					//do none
 				} break;
 				case EMISSION_SHAPE_SPHERE: {
-					real_t s = 2.0 * Math::randf() - 1.0;
-					real_t t = Math_TAU * Math::randf();
-					real_t x = Math::randf();
+					real_t s = 2.0 * rand_from_seed(_seed) - 1.0;
+					real_t t = Math_TAU * rand_from_seed(_seed);
+					real_t x = rand_from_seed(_seed);
 					real_t radius = emission_sphere_radius * Math::sqrt(1.0 - s * s);
 					p.transform.origin = Vector3(0, 0, 0).lerp(Vector3(radius * Math::cos(t), radius * Math::sin(t), emission_sphere_radius * s), x);
 				} break;
 				case EMISSION_SHAPE_SPHERE_SURFACE: {
-					real_t s = 2.0 * Math::randf() - 1.0;
-					real_t t = Math_TAU * Math::randf();
+					real_t s = 2.0 * rand_from_seed(_seed) - 1.0;
+					real_t t = Math_TAU * rand_from_seed(_seed);
 					real_t radius = emission_sphere_radius * Math::sqrt(1.0 - s * s);
 					p.transform.origin = Vector3(radius * Math::cos(t), radius * Math::sin(t), emission_sphere_radius * s);
 				} break;
 				case EMISSION_SHAPE_BOX: {
-					p.transform.origin = Vector3(Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0) * emission_box_extents;
+					p.transform.origin = Vector3(rand_from_seed(_seed) * 2.0 - 1.0, rand_from_seed(_seed) * 2.0 - 1.0, rand_from_seed(_seed) * 2.0 - 1.0) * emission_box_extents;
 				} break;
 				case EMISSION_SHAPE_POINTS:
 				case EMISSION_SHAPE_DIRECTED_POINTS: {
@@ -878,8 +910,8 @@ void CPUParticles3D::_particles_process(double p_delta) {
 					}
 				} break;
 				case EMISSION_SHAPE_RING: {
-					real_t ring_random_angle = Math::randf() * Math_TAU;
-					real_t ring_random_radius = Math::sqrt(Math::randf() * (emission_ring_radius * emission_ring_radius - emission_ring_inner_radius * emission_ring_inner_radius) + emission_ring_inner_radius * emission_ring_inner_radius);
+					real_t ring_random_angle = rand_from_seed(_seed) * Math_TAU;
+					real_t ring_random_radius = Math::sqrt(rand_from_seed(_seed) * (emission_ring_radius * emission_ring_radius - emission_ring_inner_radius * emission_ring_inner_radius) + emission_ring_inner_radius * emission_ring_inner_radius);
 					Vector3 axis = emission_ring_axis == Vector3(0.0, 0.0, 0.0) ? Vector3(0.0, 0.0, 1.0) : emission_ring_axis.normalized();
 					Vector3 ortho_axis;
 					if (axis.abs() == Vector3(1.0, 0.0, 0.0)) {
@@ -890,7 +922,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 					ortho_axis = ortho_axis.normalized();
 					ortho_axis.rotate(axis, ring_random_angle);
 					ortho_axis = ortho_axis.normalized();
-					p.transform.origin = ortho_axis * ring_random_radius + (Math::randf() * emission_ring_height - emission_ring_height / 2.0) * axis;
+					p.transform.origin = ortho_axis * ring_random_radius + (rand_from_seed(_seed) * emission_ring_height - emission_ring_height / 2.0) * axis;
 				} break;
 				case EMISSION_SHAPE_MAX: { // Max value for validity check.
 					break;
@@ -1464,7 +1496,14 @@ void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &CPUParticles3D::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &CPUParticles3D::get_mesh);
 
+	ClassDB::bind_method(D_METHOD("set_seed_mode", "mode"), &CPUParticles3D::set_seed_mode);
+	ClassDB::bind_method(D_METHOD("get_seed_mode"), &CPUParticles3D::get_seed_mode);
+
+	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &CPUParticles3D::set_seed);
+	ClassDB::bind_method(D_METHOD("get_seed"), &CPUParticles3D::get_seed);
+
 	ClassDB::bind_method(D_METHOD("restart"), &CPUParticles3D::restart);
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &CPUParticles3D::request_particles_process);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
@@ -1472,6 +1511,9 @@ void CPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,exp,suffix:s"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,600.0,0.01,exp,suffix:s"), "set_pre_process_time", "get_pre_process_time");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed_mode", PROPERTY_HINT_ENUM, "Random,Custom"), "set_seed_mode", "get_seed_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed", PROPERTY_HINT_RANGE, "1,1000000,1"), "set_seed", "get_seed");
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "explosiveness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_explosiveness_ratio", "get_explosiveness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_randomness_ratio", "get_randomness_ratio");
@@ -1487,6 +1529,9 @@ void CPUParticles3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_VIEW_DEPTH);
+
+	BIND_ENUM_CONSTANT(PARTICLES_SEED_MODE_RANDOM)
+	BIND_ENUM_CONSTANT(PARTICLES_SEED_MODE_CUSTOM)
 
 	////////////////////////////////
 

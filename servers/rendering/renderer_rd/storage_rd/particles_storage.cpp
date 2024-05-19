@@ -363,7 +363,7 @@ void ParticlesStorage::particles_set_pre_process_time(RID p_particles, double p_
 	particles->pre_process_time = p_time;
 }
 
-void ParticlesStorage::particles_set_request_process_time(RID p_particles, real_t p_request_process_time) {
+void ParticlesStorage::particles_request_process_time(RID p_particles, real_t p_request_process_time) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 	particles->request_process_time = p_request_process_time;
@@ -1516,32 +1516,21 @@ void ParticlesStorage::update_particles() {
 		}
 
 		bool zero_time_scale = Engine::get_singleton()->get_time_scale() <= 0.0;
-
-		if (particles->clear && particles->pre_process_time > 0.0) {
-			double frame_time;
-			if (fixed_fps > 0) {
-				frame_time = 1.0 / fixed_fps;
-			} else {
-				frame_time = 1.0 / 30.0;
-			}
-
-			double todo = particles->pre_process_time;
-
-			while (todo >= 0) {
-				_particles_process(particles, frame_time);
-				todo -= frame_time;
-			}
+		double todo = particles->request_process_time;
+		if (particles->clear) {
+			todo += particles->pre_process_time;
 		}
 
-		if (particles->request_process_time > 0.0) {
+		if (todo > 0.0) {
 			double frame_time;
 			if (fixed_fps > 0) {
 				frame_time = 1.0 / fixed_fps;
 			} else {
 				frame_time = 1.0 / 30.0;
 			}
-			double todo = particles->request_process_time;
+
 			float tmp_scale = particles->speed_scale;
+			// we need this otherwise the speed scale of the particle system influences the TODO.
 			particles->speed_scale = 1.0;
 			while (todo >= 0) {
 				_particles_process(particles, frame_time);
@@ -1567,7 +1556,7 @@ void ParticlesStorage::update_particles() {
 			} else if (delta <= 0.0) { //unlikely but..
 				delta = 0.001;
 			}
-			double todo = particles->frame_remainder + delta;
+			todo = particles->frame_remainder + delta;
 
 			while (todo >= frame_time || particles->clear) {
 				_particles_process(particles, frame_time);

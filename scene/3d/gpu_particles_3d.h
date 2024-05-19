@@ -184,13 +184,16 @@ public:
 
 	void restart();
 
-	RID get_rid() const;
+	RID get_particles_rid() const;
+
+	void request_process_time(real_t p_process_time) const;
 
 	void set_seed_mode(ParticlesSeedMode p_mode);
 	ParticlesSeedMode get_seed_mode() const;
 
 	void set_seed(uint32_t p_seed);
 	uint32_t get_seed() const;
+	void request_particles_process(real_t process_time);
 
 	enum EmitFlags {
 		EMIT_FLAG_POSITION = RS::PARTICLES_EMIT_FLAG_POSITION,

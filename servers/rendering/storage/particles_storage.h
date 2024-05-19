@@ -53,7 +53,7 @@ public:
 	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) = 0;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) = 0;
 	virtual void particles_set_pre_process_time(RID p_particles, double p_time) = 0;
-	virtual void particles_set_request_process_time(RID p_particles, real_t p_request_process_time) = 0;
+	virtual void particles_request_process_time(RID p_particles, real_t p_request_process_time) = 0;
 	virtual void particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) = 0;
 	virtual void particles_set_randomness_ratio(RID p_particles, real_t p_ratio) = 0;
 	virtual void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) = 0;
