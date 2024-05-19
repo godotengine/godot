@@ -1399,7 +1399,7 @@ msgid "%d replaced."
 msgstr "%d remplacé."
 
 msgid "No match"
-msgstr "Aucune concordance"
+msgstr "Aucune correspondance"
 
 msgid "%d match"
 msgid_plural "%d matches"
@@ -2078,7 +2078,7 @@ msgid ""
 "Git commit date: %s\n"
 "Click to copy the version number."
 msgstr ""
-"Date de la validation : %s\n"
+"Date de la validation Git : %s\n"
 "Cliquez pour copier le numéro de version."
 
 msgid "Godot Engine contributors"
@@ -2187,7 +2187,7 @@ msgid "(and %s more files)"
 msgstr "(et %s fichiers supplémentaires)"
 
 msgid "Success!"
-msgstr "Ça marche !"
+msgstr "Succès!"
 
 msgid "Asset:"
 msgstr "Ressource :"
@@ -2333,7 +2333,7 @@ msgid "Load"
 msgstr "Charger"
 
 msgid "Load an existing Bus Layout."
-msgstr "Charger un agencement de tranport existant."
+msgstr "Chargez une disposition de bus existante."
 
 msgid "Save As"
 msgstr "Enregistrer sous"
@@ -9883,7 +9883,7 @@ msgid "Bookmarks"
 msgstr "Signets"
 
 msgid "Go To"
-msgstr "Atteindre"
+msgstr "Aller à"
 
 msgid "Delete Line"
 msgstr "Supprimer ligne"
