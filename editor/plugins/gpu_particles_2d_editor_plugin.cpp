@@ -33,6 +33,7 @@
 #include "canvas_item_editor_plugin.h"
 #include "core/io/image_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
@@ -370,7 +371,7 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	toolbar->hide();
 
 	menu = memnew(MenuButton);
-	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
+	menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("particles/restart_emission"), MENU_RESTART);
 	menu->get_popup()->add_item(TTR("Generate Visibility Rect"), MENU_GENERATE_VISIBILITY_RECT);
 	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
 	//	menu->get_popup()->add_item(TTR("Clear Emission Mask"), MENU_CLEAR_EMISSION_MASK);
