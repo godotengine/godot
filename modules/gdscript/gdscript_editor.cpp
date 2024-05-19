@@ -2088,6 +2088,12 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 		found = false;
 	}
 
+	// If the found type was not fully analyzed we analyze it now.
+	if (found && r_type.type.kind == GDScriptParser::DataType::CLASS && !r_type.type.class_type->resolved_body) {
+		Error err;
+		Ref<GDScriptParserRef> r = GDScriptCache::get_parser(r_type.type.script_path, GDScriptParserRef::FULLY_SOLVED, err);
+	}
+
 	// Check type hint last. For collections we want chance to get the actual value first
 	// This way we can detect types from the content of dictionaries and arrays
 	if (!found && p_expression->get_datatype().is_hard_type()) {
