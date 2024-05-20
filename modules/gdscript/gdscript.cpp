@@ -987,7 +987,7 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == GDScriptLanguage::get_singleton()->strings._script_source) {
 		set_source_code(p_value);
-		reload();
+		reload(true);
 		return true;
 	}
 
