@@ -59,7 +59,7 @@ int WebRTCMultiplayerPeer::get_packet_channel() const {
 
 MultiplayerPeer::TransferMode WebRTCMultiplayerPeer::get_packet_mode() const {
 	ERR_FAIL_INDEX_V(next_packet_channel, channels_modes.size(), TRANSFER_MODE_RELIABLE);
-	return channels_modes[next_packet_channel];
+	return channels_modes.get(next_packet_channel);
 }
 
 bool WebRTCMultiplayerPeer::is_server() const {
@@ -308,18 +308,18 @@ Error WebRTCMultiplayerPeer::add_peer(Ref<WebRTCPeerConnection> p_peer, int p_pe
 	cfg["ordered"] = true;
 
 	cfg["id"] = 1;
-	peer->channels[CH_RELIABLE] = p_peer->create_data_channel("reliable", cfg);
-	ERR_FAIL_COND_V(peer->channels[CH_RELIABLE].is_null(), FAILED);
+	peer->channels.get(CH_RELIABLE) = p_peer->create_data_channel("reliable", cfg);
+	ERR_FAIL_COND_V(peer->channels.get(CH_RELIABLE).is_null(), FAILED);
 
 	cfg["id"] = 2;
 	cfg["maxPacketLifetime"] = p_unreliable_lifetime;
-	peer->channels[CH_ORDERED] = p_peer->create_data_channel("ordered", cfg);
-	ERR_FAIL_COND_V(peer->channels[CH_ORDERED].is_null(), FAILED);
+	peer->channels.get(CH_ORDERED) = p_peer->create_data_channel("ordered", cfg);
+	ERR_FAIL_COND_V(peer->channels.get(CH_ORDERED).is_null(), FAILED);
 
 	cfg["id"] = 3;
 	cfg["ordered"] = false;
-	peer->channels[CH_UNRELIABLE] = p_peer->create_data_channel("unreliable", cfg);
-	ERR_FAIL_COND_V(peer->channels[CH_UNRELIABLE].is_null(), FAILED);
+	peer->channels.get(CH_UNRELIABLE) = p_peer->create_data_channel("unreliable", cfg);
+	ERR_FAIL_COND_V(peer->channels.get(CH_UNRELIABLE).is_null(), FAILED);
 
 	for (const Dictionary &dict : channels_config) {
 		Ref<WebRTCDataChannel> ch = p_peer->create_data_channel(String::num_int64(dict["id"]), dict);
@@ -400,8 +400,8 @@ Error WebRTCMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_si
 		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, "Invalid target peer: " + itos(target_peer) + ".");
 
 		ERR_FAIL_COND_V_MSG(E->value->channels.size() <= ch, ERR_INVALID_PARAMETER, vformat("Unable to send packet on channel %d, max channels: %d", ch, E->value->channels.size()));
-		ERR_FAIL_COND_V(E->value->channels[ch].is_null(), ERR_BUG);
-		return E->value->channels[ch]->put_packet(p_buffer, p_buffer_size);
+		ERR_FAIL_COND_V(E->value->channels.get(ch).is_null(), ERR_BUG);
+		return E->value->channels.get(ch)->put_packet(p_buffer, p_buffer_size);
 
 	} else {
 		int exclude = -target_peer;
@@ -413,8 +413,8 @@ Error WebRTCMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_si
 			}
 
 			ERR_CONTINUE_MSG(F.value->channels.size() <= ch, vformat("Unable to send packet on channel %d, max channels: %d", ch, F.value->channels.size()));
-			ERR_CONTINUE(F.value->channels[ch].is_null());
-			F.value->channels[ch]->put_packet(p_buffer, p_buffer_size);
+			ERR_CONTINUE(F.value->channels.get(ch).is_null());
+			F.value->channels.get(ch)->put_packet(p_buffer, p_buffer_size);
 		}
 	}
 	return OK;

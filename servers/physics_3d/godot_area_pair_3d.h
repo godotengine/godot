@@ -44,6 +44,7 @@ class GodotAreaPair3D : public GodotConstraint3D {
 	bool colliding = false;
 	bool process_collision = false;
 	bool has_space_override = false;
+	bool body_has_attached_area = false;
 
 public:
 	virtual bool setup(real_t p_step) override;
@@ -83,6 +84,7 @@ class GodotAreaSoftBodyPair3D : public GodotConstraint3D {
 	bool colliding = false;
 	bool process_collision = false;
 	bool has_space_override = false;
+	bool body_has_attached_area = false;
 
 public:
 	virtual bool setup(real_t p_step) override;

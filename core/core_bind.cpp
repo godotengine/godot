@@ -145,17 +145,17 @@ void ResourceLoader::_bind_methods() {
 	BIND_ENUM_CONSTANT(CACHE_MODE_IGNORE);
 	BIND_ENUM_CONSTANT(CACHE_MODE_REUSE);
 	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE);
+	BIND_ENUM_CONSTANT(CACHE_MODE_IGNORE_DEEP);
+	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE_DEEP);
 }
 
 ////// ResourceSaver //////
 
 Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags) {
-	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + p_path + "'.");
 	return ::ResourceSaver::save(p_resource, p_path, p_flags);
 }
 
 Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
-	ERR_FAIL_COND_V_MSG(p_resource.is_null(), Vector<String>(), "It's not a reference to a valid Resource object.");
 	List<String> exts;
 	::ResourceSaver::get_recognized_extensions(p_resource, &exts);
 	Vector<String> ret;
@@ -257,7 +257,7 @@ String OS::get_executable_path() const {
 	return ::OS::get_singleton()->get_executable_path();
 }
 
-Error OS::shell_open(String p_uri) {
+Error OS::shell_open(const String &p_uri) {
 	if (p_uri.begins_with("res://")) {
 		WARN_PRINT("Attempting to open an URL with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_open()`.");
 	} else if (p_uri.begins_with("user://")) {
@@ -266,7 +266,7 @@ Error OS::shell_open(String p_uri) {
 	return ::OS::get_singleton()->shell_open(p_uri);
 }
 
-Error OS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+Error OS::shell_show_in_file_manager(const String &p_path, bool p_open_folder) {
 	if (p_path.begins_with("res://")) {
 		WARN_PRINT("Attempting to explore file path with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_file_manager()`.");
 	} else if (p_path.begins_with("user://")) {
@@ -281,8 +281,8 @@ String OS::read_string_from_stdin() {
 
 int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
 	List<String> args;
-	for (int i = 0; i < p_arguments.size(); i++) {
-		args.push_back(p_arguments[i]);
+	for (const String &arg : p_arguments) {
+		args.push_back(arg);
 	}
 	String pipe;
 	int exitcode = 0;
@@ -294,10 +294,18 @@ int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r
 	return exitcode;
 }
 
+Dictionary OS::execute_with_pipe(const String &p_path, const Vector<String> &p_arguments) {
+	List<String> args;
+	for (const String &arg : p_arguments) {
+		args.push_back(arg);
+	}
+	return ::OS::get_singleton()->execute_with_pipe(p_path, args);
+}
+
 int OS::create_instance(const Vector<String> &p_arguments) {
 	List<String> args;
-	for (int i = 0; i < p_arguments.size(); i++) {
-		args.push_back(p_arguments[i]);
+	for (const String &arg : p_arguments) {
+		args.push_back(arg);
 	}
 	::OS::ProcessID pid = 0;
 	Error err = ::OS::get_singleton()->create_instance(args, &pid);
@@ -309,8 +317,8 @@ int OS::create_instance(const Vector<String> &p_arguments) {
 
 int OS::create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console) {
 	List<String> args;
-	for (int i = 0; i < p_arguments.size(); i++) {
-		args.push_back(p_arguments[i]);
+	for (const String &arg : p_arguments) {
+		args.push_back(arg);
 	}
 	::OS::ProcessID pid = 0;
 	Error err = ::OS::get_singleton()->create_process(p_path, args, &pid, p_open_console);
@@ -326,6 +334,10 @@ Error OS::kill(int p_pid) {
 
 bool OS::is_process_running(int p_pid) const {
 	return ::OS::get_singleton()->is_process_running(p_pid);
+}
+
+int OS::get_process_exit_code(int p_pid) const {
+	return ::OS::get_singleton()->get_process_exit_code(p_pid);
 }
 
 int OS::get_process_id() const {
@@ -585,12 +597,14 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
 	ClassDB::bind_method(D_METHOD("read_string_from_stdin"), &OS::read_string_from_stdin);
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("execute_with_pipe", "path", "arguments"), &OS::execute_with_pipe);
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
 	ClassDB::bind_method(D_METHOD("shell_show_in_file_manager", "file_or_dir_path", "open_folder"), &OS::shell_show_in_file_manager, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
+	ClassDB::bind_method(D_METHOD("get_process_exit_code", "pid"), &OS::get_process_exit_code);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
 
 	ClassDB::bind_method(D_METHOD("has_environment", "variable"), &OS::has_environment);
@@ -662,6 +676,7 @@ void OS::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_VULKAN);
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_OPENGL3);
+	BIND_ENUM_CONSTANT(RENDERING_DRIVER_D3D12);
 
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_DESKTOP);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_DCIM);
@@ -1039,6 +1054,10 @@ Vector<Vector3> Geometry3D::clip_polygon(const Vector<Vector3> &p_points, const 
 	return ::Geometry3D::clip_polygon(p_points, p_plane);
 }
 
+Vector<int32_t> Geometry3D::tetrahedralize_delaunay(const Vector<Vector3> &p_points) {
+	return ::Geometry3D::tetrahedralize_delaunay(p_points);
+}
+
 void Geometry3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("compute_convex_mesh_points", "planes"), &Geometry3D::compute_convex_mesh_points);
 	ClassDB::bind_method(D_METHOD("build_box_planes", "extents"), &Geometry3D::build_box_planes);
@@ -1060,6 +1079,7 @@ void Geometry3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("segment_intersects_convex", "from", "to", "planes"), &Geometry3D::segment_intersects_convex);
 
 	ClassDB::bind_method(D_METHOD("clip_polygon", "points", "plane"), &Geometry3D::clip_polygon);
+	ClassDB::bind_method(D_METHOD("tetrahedralize_delaunay", "points"), &Geometry3D::tetrahedralize_delaunay);
 }
 
 ////// Marshalls //////
@@ -1369,11 +1389,11 @@ Variant ClassDB::instantiate(const StringName &p_class) const {
 	}
 }
 
-bool ClassDB::class_has_signal(StringName p_class, StringName p_signal) const {
+bool ClassDB::class_has_signal(const StringName &p_class, const StringName &p_signal) const {
 	return ::ClassDB::has_signal(p_class, p_signal);
 }
 
-Dictionary ClassDB::class_get_signal(StringName p_class, StringName p_signal) const {
+Dictionary ClassDB::class_get_signal(const StringName &p_class, const StringName &p_signal) const {
 	MethodInfo signal;
 	if (::ClassDB::get_signal(p_class, p_signal, &signal)) {
 		return signal.operator Dictionary();
@@ -1382,7 +1402,7 @@ Dictionary ClassDB::class_get_signal(StringName p_class, StringName p_signal) co
 	}
 }
 
-TypedArray<Dictionary> ClassDB::class_get_signal_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::class_get_signal_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<MethodInfo> signals;
 	::ClassDB::get_signal_list(p_class, &signals, p_no_inheritance);
 	TypedArray<Dictionary> ret;
@@ -1394,7 +1414,7 @@ TypedArray<Dictionary> ClassDB::class_get_signal_list(StringName p_class, bool p
 	return ret;
 }
 
-TypedArray<Dictionary> ClassDB::class_get_property_list(StringName p_class, bool p_no_inheritance) const {
+TypedArray<Dictionary> ClassDB::class_get_property_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<PropertyInfo> plist;
 	::ClassDB::get_property_list(p_class, &plist, p_no_inheritance);
 	TypedArray<Dictionary> ret;
@@ -1422,11 +1442,24 @@ Error ClassDB::class_set_property(Object *p_object, const StringName &p_property
 	return OK;
 }
 
-bool ClassDB::class_has_method(StringName p_class, StringName p_method, bool p_no_inheritance) const {
+Variant ClassDB::class_get_property_default_value(const StringName &p_class, const StringName &p_property) const {
+	bool valid;
+	Variant ret = ::ClassDB::class_get_default_property_value(p_class, p_property, &valid);
+	if (valid) {
+		return ret;
+	}
+	return Variant();
+}
+
+bool ClassDB::class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance) const {
 	return ::ClassDB::has_method(p_class, p_method, p_no_inheritance);
 }
 
-TypedArray<Dictionary> ClassDB::class_get_method_list(StringName p_class, bool p_no_inheritance) const {
+int ClassDB::class_get_method_argument_count(const StringName &p_class, const StringName &p_method, bool p_no_inheritance) const {
+	return ::ClassDB::get_method_argument_count(p_class, p_method, nullptr, p_no_inheritance);
+}
+
+TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<MethodInfo> methods;
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
 	TypedArray<Dictionary> ret;
@@ -1507,9 +1540,37 @@ StringName ClassDB::class_get_integer_constant_enum(const StringName &p_class, c
 	return ::ClassDB::get_integer_constant_enum(p_class, p_name, p_no_inheritance);
 }
 
-bool ClassDB::is_class_enabled(StringName p_class) const {
+bool ClassDB::is_class_enum_bitfield(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance) const {
+	return ::ClassDB::is_enum_bitfield(p_class, p_enum, p_no_inheritance);
+}
+
+bool ClassDB::is_class_enabled(const StringName &p_class) const {
 	return ::ClassDB::is_class_enabled(p_class);
 }
+
+#ifdef TOOLS_ENABLED
+void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	bool first_argument_is_class = false;
+	if (p_idx == 0) {
+		first_argument_is_class = (pf == "get_inheriters_from_class" || pf == "get_parent_class" ||
+				pf == "class_exists" || pf == "can_instantiate" || pf == "instantiate" ||
+				pf == "class_has_signal" || pf == "class_get_signal" || pf == "class_get_signal_list" ||
+				pf == "class_get_property_list" || pf == "class_get_property" || pf == "class_set_property" ||
+				pf == "class_has_method" || pf == "class_get_method_list" ||
+				pf == "class_get_integer_constant_list" || pf == "class_has_integer_constant" || pf == "class_get_integer_constant" ||
+				pf == "class_has_enum" || pf == "class_get_enum_list" || pf == "class_get_enum_constants" || pf == "class_get_integer_constant_enum" ||
+				pf == "is_class_enabled" || pf == "is_class_enum_bitfield");
+	}
+	if (first_argument_is_class || pf == "is_parent_class") {
+		for (const String &E : get_class_list()) {
+			r_options->push_back(E.quote());
+		}
+	}
+
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
 
 void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("get_class_list"), &ClassDB::get_class_list);
@@ -1528,7 +1589,11 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_get_property", "object", "property"), &ClassDB::class_get_property);
 	::ClassDB::bind_method(D_METHOD("class_set_property", "object", "property", "value"), &ClassDB::class_set_property);
 
+	::ClassDB::bind_method(D_METHOD("class_get_property_default_value", "class", "property"), &ClassDB::class_get_property_default_value);
+
 	::ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &ClassDB::class_has_method, DEFVAL(false));
+
+	::ClassDB::bind_method(D_METHOD("class_get_method_argument_count", "class", "method", "no_inheritance"), &ClassDB::class_get_method_argument_count, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("class_get_method_list", "class", "no_inheritance"), &ClassDB::class_get_method_list, DEFVAL(false));
 
@@ -1541,6 +1606,8 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_get_enum_list", "class", "no_inheritance"), &ClassDB::class_get_enum_list, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &ClassDB::class_get_enum_constants, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &ClassDB::class_get_integer_constant_enum, DEFVAL(false));
+
+	::ClassDB::bind_method(D_METHOD("is_class_enum_bitfield", "class", "enum", "no_inheritance"), &ClassDB::is_class_enum_bitfield, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
 }
@@ -1717,6 +1784,18 @@ bool Engine::is_printing_error_messages() const {
 	return ::Engine::get_singleton()->is_printing_error_messages();
 }
 
+#ifdef TOOLS_ENABLED
+void Engine::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if (p_idx == 0 && (pf == "has_singleton" || pf == "get_singleton" || pf == "unregister_singleton")) {
+		for (const String &E : get_singleton_list()) {
+			r_options->push_back(E.quote());
+		}
+	}
+	Object::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
+
 void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_ticks_per_second", "physics_ticks_per_second"), &Engine::set_physics_ticks_per_second);
 	ClassDB::bind_method(D_METHOD("get_physics_ticks_per_second"), &Engine::get_physics_ticks_per_second);
@@ -1842,7 +1921,7 @@ void EngineDebugger::send_message(const String &p_msg, const Array &p_data) {
 
 Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
 	Callable &capture = *(Callable *)p_user;
-	if (capture.is_null()) {
+	if (!capture.is_valid()) {
 		return FAILED;
 	}
 	Variant cmd = p_cmd, data = p_data;

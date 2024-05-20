@@ -19,14 +19,14 @@ namespace embree
       typedef QuadMIntersector1MoellerTrumbore<M,filter> Precalculations;
         
       /*! Intersect a ray with the M quads and updates the hit. */
-      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive& quad)
+      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, RayQueryContext* context, const Primitive& quad)
       {
         STAT3(normal.trav_prims,1,1,1);
         pre.intersect(ray,context,quad.v0,quad.v1,quad.v2,quad.v3,quad.geomID(),quad.primID());
       }
         
       /*! Test if the ray is occluded by one of M quads. */
-      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive& quad)
+      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, RayQueryContext* context, const Primitive& quad)
       {
         STAT3(shadow.trav_prims,1,1,1);
         return pre.occluded(ray,context, quad.v0,quad.v1,quad.v2,quad.v3,quad.geomID(),quad.primID());
@@ -46,7 +46,7 @@ namespace embree
       typedef QuadMIntersectorKMoellerTrumbore<M,K,filter> Precalculations;
 
       /*! Intersects K rays with M triangles. */
-      static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, IntersectContext* context, const QuadMv<M>& quad)
+      static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, RayQueryContext* context, const QuadMv<M>& quad)
       {
         for (size_t i=0; i<QuadMv<M>::max_size(); i++)
         {
@@ -61,7 +61,7 @@ namespace embree
       }
 
       /*! Test for K rays if they are occluded by any of the M triangles. */
-      static __forceinline vbool<K> occluded(const vbool<K>& valid_i, Precalculations& pre, RayK<K>& ray, IntersectContext* context, const QuadMv<M>& quad)
+      static __forceinline vbool<K> occluded(const vbool<K>& valid_i, Precalculations& pre, RayK<K>& ray, RayQueryContext* context, const QuadMv<M>& quad)
       {
         vbool<K> valid0 = valid_i;
 
@@ -80,14 +80,14 @@ namespace embree
       }
       
       /*! Intersect a ray with M triangles and updates the hit. */
-      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const QuadMv<M>& quad)
+      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const QuadMv<M>& quad)
       {
         STAT3(normal.trav_prims,1,1,1);
         pre.intersect1(ray,k,context,quad.v0,quad.v1,quad.v2,quad.v3,quad.geomID(),quad.primID());
       }
 
       /*! Test if the ray is occluded by one of the M triangles. */
-      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const QuadMv<M>& quad)
+      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const QuadMv<M>& quad)
       {
         STAT3(shadow.trav_prims,1,1,1);
         return pre.occluded1(ray,k,context,quad.v0,quad.v1,quad.v2,quad.v3,quad.geomID(),quad.primID());
@@ -102,14 +102,14 @@ namespace embree
       typedef QuadMIntersector1Pluecker<M,filter> Precalculations;
         
       /*! Intersect a ray with the M quads and updates the hit. */
-      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive& quad)
+      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, RayQueryContext* context, const Primitive& quad)
       {
         STAT3(normal.trav_prims,1,1,1);
         pre.intersect(ray,context,quad.v0,quad.v1,quad.v2,quad.v3,quad.geomID(),quad.primID());
       }
         
       /*! Test if the ray is occluded by one of M quads. */
-      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive& quad)
+      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, RayQueryContext* context, const Primitive& quad)
       {
         STAT3(shadow.trav_prims,1,1,1);
         return pre.occluded(ray,context, quad.v0,quad.v1,quad.v2,quad.v3,quad.geomID(),quad.primID());
@@ -129,7 +129,7 @@ namespace embree
       typedef QuadMIntersectorKPluecker<M,K,filter> Precalculations;
 
       /*! Intersects K rays with M triangles. */
-      static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, IntersectContext* context, const QuadMv<M>& quad)
+      static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, RayQueryContext* context, const QuadMv<M>& quad)
       {
         for (size_t i=0; i<QuadMv<M>::max_size(); i++)
         {
@@ -144,7 +144,7 @@ namespace embree
       }
 
       /*! Test for K rays if they are occluded by any of the M triangles. */
-      static __forceinline vbool<K> occluded(const vbool<K>& valid_i, Precalculations& pre, RayK<K>& ray, IntersectContext* context, const QuadMv<M>& quad)
+      static __forceinline vbool<K> occluded(const vbool<K>& valid_i, Precalculations& pre, RayK<K>& ray, RayQueryContext* context, const QuadMv<M>& quad)
       {
         vbool<K> valid0 = valid_i;
 
@@ -163,14 +163,14 @@ namespace embree
       }
       
       /*! Intersect a ray with M triangles and updates the hit. */
-      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const QuadMv<M>& quad)
+      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const QuadMv<M>& quad)
       {
         STAT3(normal.trav_prims,1,1,1);
         pre.intersect1(ray,k,context,quad.v0,quad.v1,quad.v2,quad.v3,quad.geomID(),quad.primID());
       }
 
       /*! Test if the ray is occluded by one of the M triangles. */
-      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const QuadMv<M>& quad)
+      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const QuadMv<M>& quad)
       {
         STAT3(shadow.trav_prims,1,1,1);
         return pre.occluded1(ray,k,context,quad.v0,quad.v1,quad.v2,quad.v3,quad.geomID(),quad.primID());

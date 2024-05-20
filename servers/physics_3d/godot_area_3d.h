@@ -107,10 +107,10 @@ class GodotArea3D : public GodotCollisionObject3D {
 
 public:
 	void set_monitor_callback(const Callable &p_callback);
-	_FORCE_INLINE_ bool has_monitor_callback() const { return !monitor_callback.is_null(); }
+	_FORCE_INLINE_ bool has_monitor_callback() const { return monitor_callback.is_valid(); }
 
 	void set_area_monitor_callback(const Callable &p_callback);
-	_FORCE_INLINE_ bool has_area_monitor_callback() const { return !area_monitor_callback.is_null(); }
+	_FORCE_INLINE_ bool has_area_monitor_callback() const { return area_monitor_callback.is_valid(); }
 
 	_FORCE_INLINE_ void add_body_to_query(GodotBody3D *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 	_FORCE_INLINE_ void remove_body_from_query(GodotBody3D *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
@@ -204,7 +204,7 @@ void GodotArea3D::add_body_to_query(GodotBody3D *p_body, uint32_t p_body_shape, 
 void GodotArea3D::remove_body_from_query(GodotBody3D *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
 	BodyKey bk(p_body, p_body_shape, p_area_shape);
 	monitored_bodies[bk].dec();
-	if (!monitor_query_list.in_list()) {
+	if (get_space() && !monitor_query_list.in_list()) {
 		_queue_monitor_update();
 	}
 }
@@ -220,7 +220,7 @@ void GodotArea3D::add_area_to_query(GodotArea3D *p_area, uint32_t p_area_shape, 
 void GodotArea3D::remove_area_from_query(GodotArea3D *p_area, uint32_t p_area_shape, uint32_t p_self_shape) {
 	BodyKey bk(p_area, p_area_shape, p_self_shape);
 	monitored_areas[bk].dec();
-	if (!monitor_query_list.in_list()) {
+	if (get_space() && !monitor_query_list.in_list()) {
 		_queue_monitor_update();
 	}
 }

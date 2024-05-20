@@ -14,6 +14,8 @@ SConscript("coreaudio/SCsub")
 SConscript("pulseaudio/SCsub")
 if env["platform"] == "windows":
     SConscript("wasapi/SCsub")
+    if not env.msvc:
+        SConscript("backtrace/SCsub")
 if env["xaudio2"]:
     SConscript("xaudio2/SCsub")
 
@@ -25,6 +27,8 @@ SConscript("winmidi/SCsub")
 # Graphics drivers
 if env["vulkan"]:
     SConscript("vulkan/SCsub")
+if env["d3d12"]:
+    SConscript("d3d12/SCsub")
 if env["opengl3"]:
     SConscript("gl_context/SCsub")
     SConscript("gles3/SCsub")

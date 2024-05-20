@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,14 +60,14 @@ GlCanvas::~GlCanvas()
 }
 
 
-Result GlCanvas::target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t h) noexcept
+Result GlCanvas::target(int32_t id, uint32_t w, uint32_t h) noexcept
 {
 #ifdef THORVG_GL_RASTER_SUPPORT
     //We know renderer type, avoid dynamic_cast for performance.
     auto renderer = static_cast<GlRenderer*>(Canvas::pImpl->renderer);
     if (!renderer) return Result::MemoryCorruption;
 
-    if (!renderer->target(buffer, stride, w, h)) return Result::Unknown;
+    if (!renderer->target(id, w, h)) return Result::Unknown;
 
     //Paints must be updated again with this new target.
     Canvas::pImpl->needRefresh();

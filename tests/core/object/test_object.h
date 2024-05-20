@@ -31,7 +31,6 @@
 #ifndef TEST_OBJECT_H
 #define TEST_OBJECT_H
 
-#include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/object/script_language.h"
@@ -95,6 +94,12 @@ public:
 	bool has_method(const StringName &p_method) const override {
 		return false;
 	}
+	int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
+	}
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 		return Variant();
 	}
@@ -136,7 +141,7 @@ TEST_CASE("[Object] Core getters") {
 			inheritance_list.size() == 1,
 			"The inheritance list should consist of Object only");
 	CHECK_MESSAGE(
-			inheritance_list[0] == "Object",
+			inheritance_list.front()->get() == "Object",
 			"The inheritance list should consist of Object only");
 }
 
@@ -245,7 +250,7 @@ TEST_CASE("[Object] Script property setter") {
 	Variant script;
 
 	bool valid = false;
-	object.set(CoreStringNames::get_singleton()->_script, script, &valid);
+	object.set(CoreStringName(script), script, &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			object.get_script() == script,
@@ -258,7 +263,7 @@ TEST_CASE("[Object] Script property getter") {
 	object.set_script(script);
 
 	bool valid = false;
-	const Variant &actual_value = object.get(CoreStringNames::get_singleton()->_script, &valid);
+	const Variant &actual_value = object.get(CoreStringName(script), &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			actual_value == script,

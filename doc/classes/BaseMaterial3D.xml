@@ -57,19 +57,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)">
+		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)" keywords="albedo_colour, diffuse_color, diffuse_colour">
 			The material's base color.
 			[b]Note:[/b] If [member detail_enabled] is [code]true[/code] and a [member detail_albedo] texture is specified, [member albedo_color] will [i]not[/i] modulate the detail texture. This can be used to color partial areas of a material by not specifying an albedo texture and using a transparent [member detail_albedo] texture instead.
 		</member>
-		<member name="albedo_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+		<member name="albedo_texture" type="Texture2D" setter="set_texture" getter="get_texture" keywords="diffuse_texture">
 			Texture to multiply by [member albedo_color]. Used for basic texturing of objects.
 			If the texture appears unexpectedly too dark or too bright, check [member albedo_texture_force_srgb].
 		</member>
-		<member name="albedo_texture_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
+		<member name="albedo_texture_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false" keywords="diffuse_texture_force_srgb">
 			If [code]true[/code], forces a conversion of the [member albedo_texture] from sRGB color space to linear color space. See also [member vertex_color_is_srgb].
 			This should only be enabled when needed (typically when using a [ViewportTexture] as [member albedo_texture]). If [member albedo_texture_force_srgb] is [code]true[/code] when it shouldn't be, the texture will appear to be too dark. If [member albedo_texture_force_srgb] is [code]false[/code] when it shouldn't be, the texture will appear to be too bright.
 		</member>
-		<member name="albedo_texture_msdf" type="bool" setter="set_flag" getter="get_flag" default="false">
+		<member name="albedo_texture_msdf" type="bool" setter="set_flag" getter="get_flag" default="false" keywords="diffuse_texture_force_srgb">
 			Enables multichannel signed distance field rendering shader. Use [member msdf_pixel_range] and [member msdf_outline_size] to configure MSDF parameters.
 		</member>
 		<member name="alpha_antialiasing_edge" type="float" setter="set_alpha_antialiasing_edge" getter="get_alpha_antialiasing_edge">
@@ -81,7 +81,7 @@
 		<member name="alpha_hash_scale" type="float" setter="set_alpha_hash_scale" getter="get_alpha_hash_scale">
 			The hashing scale for Alpha Hash. Recommended values between [code]0[/code] and [code]2[/code].
 		</member>
-		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold">
+		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold" keywords="alpha_test_threshold">
 			Threshold at which the alpha scissor will discard values. Higher values will result in more pixels being discarded. If the material becomes too opaque at a distance, try increasing [member alpha_scissor_threshold]. If the material disappears at a distance, try decreasing [member alpha_scissor_threshold].
 		</member>
 		<member name="anisotropy" type="float" setter="set_anisotropy" getter="get_anisotropy" default="0.0">
@@ -125,6 +125,7 @@
 		</member>
 		<member name="billboard_mode" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="BaseMaterial3D.BillboardMode" default="0">
 			Controls how the object faces the camera. See [enum BillboardMode].
+			[b]Note:[/b] When billboarding is enabled and the material also casts shadows, billboards will face [b]the[/b] camera in the scene when rendering shadows. In scenes with multiple cameras, the intended shadow cannot be determined and this will result in undefined behavior. See [url=https://github.com/godotengine/godot/pull/72638]GitHub Pull Request #72638[/url] for details.
 			[b]Note:[/b] Billboard mode is not suitable for VR because the left-right vector of the camera is not horizontal when the screen is attached to your head instead of on the table. See [url=https://github.com/godotengine/godot/issues/41567]GitHub issue #41567[/url] for details.
 		</member>
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="BaseMaterial3D.BlendMode" default="0">
@@ -383,7 +384,7 @@
 			If [code]true[/code], enables subsurface scattering transmittance. Only effective if [member subsurf_scatter_enabled] is [code]true[/code]. See also [member backlight_enabled].
 		</member>
 		<member name="subsurf_scatter_transmittance_texture" type="Texture2D" setter="set_texture" getter="get_texture">
-			The texture to use for multiplying the intensity of the subsurface scattering transmitteance intensity. See also [member subsurf_scatter_texture]. Ignored if [member subsurf_scatter_skin_mode] is [code]true[/code].
+			The texture to use for multiplying the intensity of the subsurface scattering transmittance intensity. See also [member subsurf_scatter_texture]. Ignored if [member subsurf_scatter_skin_mode] is [code]true[/code].
 		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
 			Filter flags for the texture. See [enum TextureFilter] for options.
@@ -501,22 +502,22 @@
 			Represents the size of the [enum TextureParam] enum.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST" value="0" enum="TextureFilter">
-			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
+			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR" value="1" enum="TextureFilter">
-			The texture filter blends between the nearest 4 pixels. Use this when you want to avoid a pixelated style, but do not want mipmaps.
+			The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="2" enum="TextureFilter">
-			The texture filter reads from the nearest pixel in the nearest mipmap. The fastest way to read from textures with mipmaps.
+			The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look pixelated from up close, and smooth from a distance.
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="3" enum="TextureFilter">
-			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps. Use this for most cases as mipmaps are important to smooth out pixels that are far from the camera.
+			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look smooth from up close, and smooth from a distance.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="4" enum="TextureFilter">
-			The texture filter reads from the nearest pixel, but selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+			The texture filter reads from the nearest pixel and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look pixelated from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="TextureFilter">
-			The texture filter blends between the nearest 4 pixels and selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera. This is the slowest of the filtering options, but results in the highest quality texturing. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+			The texture filter blends between the nearest 4 pixels and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look smooth from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
 		</constant>
 		<constant name="TEXTURE_FILTER_MAX" value="6" enum="TextureFilter">
 			Represents the size of the [enum TextureFilter] enum.
@@ -533,7 +534,7 @@
 		<constant name="TRANSPARENCY_ALPHA" value="1" enum="Transparency">
 			The material will use the texture's alpha values for transparency. This is the slowest to render, and disables shadow casting.
 		</constant>
-		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency">
+		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency" keywords="TRANSPARENCY_ALPHA_TEST">
 			The material will cut off all values below a threshold, the rest will remain opaque. The opaque portions will be rendered in the depth prepass. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_HASH" value="3" enum="Transparency">
@@ -607,6 +608,9 @@
 		</constant>
 		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
 			The color of the object is multiplied by the background.
+		</constant>
+		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4" enum="BlendMode">
+			The color of the object is added to the background and the alpha channel is used to mask out the background. This is effectively a hybrid of the blend mix and add modes, useful for effects like fire where you want the flame to add but the smoke to mix. By default, this works with unshaded materials using premultiplied textures. For shaded materials, use the [code]PREMUL_ALPHA_FACTOR[/code] built-in so that lighting can be modulated as well.
 		</constant>
 		<constant name="ALPHA_ANTIALIASING_OFF" value="0" enum="AlphaAntiAliasing">
 			Disables Alpha AntiAliasing for the material.
@@ -737,7 +741,7 @@
 			The object's X axis will always face the camera.
 		</constant>
 		<constant name="BILLBOARD_PARTICLES" value="3" enum="BillboardMode">
-			Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes. Enables [code]particles_anim_*[/code] properties.
+			Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes (flipbook animation). Enables [code]particles_anim_*[/code] properties.
 			The [member ParticleProcessMaterial.anim_speed_min] or [member CPUParticles3D.anim_speed_min] should also be set to a value bigger than zero for the animation to play.
 		</constant>
 		<constant name="TEXTURE_CHANNEL_RED" value="0" enum="TextureChannel">

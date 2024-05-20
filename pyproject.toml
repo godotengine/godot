@@ -1,0 +1,16 @@
+[tool.mypy]
+ignore_missing_imports = true
+disallow_any_generics = true
+no_implicit_optional = true
+pretty = true
+show_column_numbers = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+namespace_packages = true
+explicit_package_bases = true
+exclude = ["thirdparty/"]
+
+[tool.black]
+line-length = 120
+extend-exclude = ".*thirdparty/.*"

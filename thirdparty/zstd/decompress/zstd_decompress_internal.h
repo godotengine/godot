@@ -153,6 +153,7 @@ struct ZSTD_DCtx_s
     size_t litSize;
     size_t rleSize;
     size_t staticSize;
+    int isFrameDecompression;
 #if DYNAMIC_BMI2 != 0
     int bmi2;                     /* == 1 if the CPU supports BMI2 and 0 otherwise. CPU support is determined dynamically once per context lifetime. */
 #endif
@@ -166,6 +167,7 @@ struct ZSTD_DCtx_s
     ZSTD_DDictHashSet* ddictSet;                    /* Hash set for multiple ddicts */
     ZSTD_refMultipleDDicts_e refMultipleDDicts;     /* User specified: if == 1, will allow references to multiple DDicts. Default == 0 (disabled) */
     int disableHufAsm;
+    int maxBlockSizeParam;
 
     /* streaming */
     ZSTD_dStreamStage streamStage;

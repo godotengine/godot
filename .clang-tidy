@@ -2,7 +2,6 @@
 Checks: 'clang-diagnostic-*,clang-analyzer-*,-*,cppcoreguidelines-pro-type-member-init,modernize-redundant-void-arg,modernize-use-bool-literals,modernize-use-default-member-init,modernize-use-nullptr,readability-braces-around-statements,readability-redundant-member-init'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
-AnalyzeTemporaryDtors: false
 FormatStyle: none
 CheckOptions:
   - key:             cert-dcl16-c.NewSuffixes
@@ -44,4 +43,3 @@ CheckOptions:
   - key:             readability-braces-around-statements.ShortStatementLines
     value:           '0'
 ...
-

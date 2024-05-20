@@ -18,13 +18,15 @@
 # Sami <sami@httpster.io>, 2023.
 # Kasper <kasper.bjorkgren@gmail.com>, 2023.
 # Mitja <mitja.leino@hotmail.com>, 2023.
+# Aku <akulaku.ap@gmail.com>, 2023.
+# Jonni Lehtiranta <jonni.lehtiranta@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-10-02 14:32+0000\n"
-"Last-Translator: Mitja <mitja.leino@hotmail.com>\n"
+"PO-Revision-Date: 2024-01-02 09:06+0000\n"
+"Last-Translator: Jonni Lehtiranta <jonni.lehtiranta@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -32,7 +34,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
+
+msgid "Main Thread"
+msgstr "Pääsäie"
 
 msgid "Unset"
 msgstr "Asettamaton"
@@ -56,10 +61,10 @@ msgid "Mouse Wheel Down"
 msgstr "Hiiren rulla alas"
 
 msgid "Mouse Wheel Left"
-msgstr "Rullan vasen painike"
+msgstr "Hiiren rulla vasemmalle"
 
 msgid "Mouse Wheel Right"
-msgstr "Rullan oikea painike"
+msgstr "Hiiren rulla oikealle"
 
 msgid "Mouse Thumb Button 1"
 msgstr "Hiiren peukalopainike 1"
@@ -74,37 +79,37 @@ msgid "Double Click"
 msgstr "Kaksoisnapsautus"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
-msgstr "Hiiren liike sijainnissa (%s) ja kiihtyvyydellä (%s)"
+msgstr "Hiiren liike sijainnissa (%s) nopeudella (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
-msgstr "Vasemman tatin X-akseli, Tatti 0 X-akseli"
+msgstr "Vasemman tatin X-akseli, tattiohjaimen 0 X-akseli"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
-msgstr "Vasemman tatin Y-akseli, Tatti 0 Y-akseli"
+msgstr "Vasemman tatin Y-akseli, tattiohjaimen 0 Y-akseli"
 
 msgid "Right Stick X-Axis, Joystick 1 X-Axis"
-msgstr "Oikean tatin X-akseli, Tatti 1 X-akseli"
+msgstr "Oikean tatin X-akseli, tattiohjaimen 1 X-akseli"
 
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
-msgstr "Oikean tatin Y-akseli, Tatti 1 Y-akseli"
+msgstr "Oikean tatin Y-akseli, tattiohjaimen 1 Y-akseli"
 
 msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
-msgstr "Tatti 2 X-akseli, vasen liipasin, Sony L2, Xbox LT"
+msgstr "Tattiohjaimen 2 X-akseli, vasen liipasin, Sony L2, Xbox LT"
 
 msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
-msgstr "Tatti 2 Y-akseli, oikea liipasin, Sony R2, Xbox RT"
+msgstr "Tattiohjaimen 2 Y-akseli, oikea liipasin, Sony R2, Xbox RT"
 
 msgid "Joystick 3 X-Axis"
-msgstr "Tatti 3 X-akseli"
+msgstr "Tattiohjaimen 3 X-akseli"
 
 msgid "Joystick 3 Y-Axis"
-msgstr "Tatti 3 Y-akseli"
+msgstr "Tattiohjaimen 3 Y-akseli"
 
 msgid "Joystick 4 X-Axis"
-msgstr "Tatti 4 X-akseli"
+msgstr "Tattiohjaimen 4 X-akseli"
 
 msgid "Joystick 4 Y-Axis"
-msgstr "Tatti 4 Y-akseli"
+msgstr "Tattiohjaimen 4 Y-akseli"
 
 msgid "Unknown Joypad Axis"
 msgstr "Tuntematon Peliohjaimen Akseli"
@@ -180,12 +185,6 @@ msgstr "Ohjaimen painike %d"
 
 msgid "Pressure:"
 msgstr "Paine:"
-
-msgid "canceled"
-msgstr "peruutettu"
-
-msgid "touched"
-msgstr "kosketettu"
 
 msgid "released"
 msgstr "julkaistu"
@@ -431,14 +430,6 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
-msgid "Example: %s"
-msgstr "Esimerkki: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d kohde"
-msgstr[1] "%d kohdetta"
-
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -449,17 +440,11 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Toiminto nimellä '%s' on jo olemassa."
 
-msgid "Cannot Revert - Action is same as initial"
-msgstr "Ei voida palauttaa - Toimenpide sama kuin alkuperäinen"
-
 msgid "Revert Action"
 msgstr "Palauta toimenpide"
 
 msgid "Add Event"
 msgstr "Lisää tapahtuma"
-
-msgid "Remove Action"
-msgstr "Poista toimenpide"
 
 msgid "Cannot Remove Action"
 msgstr "Ei voida poistaa toimenpidettä"
@@ -469,9 +454,6 @@ msgstr "Muokkaa tapahtumaa"
 
 msgid "Remove Event"
 msgstr "Poista tapahtuma"
-
-msgid "Filter by name..."
-msgstr "Suodata nimellä..."
 
 msgid "Clear All"
 msgstr "Tyhjennä kaikki"
@@ -539,6 +521,9 @@ msgstr "Animaatio: Monista avaimet"
 msgid "Animation Delete Keys"
 msgstr "Animaatio: Poista avaimet"
 
+msgid "Focus"
+msgstr "Kohdista"
+
 msgid "Select All Keys"
 msgstr "Valitse Kaikki Avaimet"
 
@@ -548,8 +533,38 @@ msgstr "Poista Avainten Valinnat"
 msgid "Animation Change Transition"
 msgstr "Animaatio: Muuta siirtymää"
 
+msgid "Animation Change Position3D"
+msgstr "Animaatio: Muuta Position3D"
+
+msgid "Animation Change Rotation3D"
+msgstr "Animaatio: Muuta Rotation3D"
+
+msgid "Animation Change Scale3D"
+msgstr "Animaatio: Muuta Scale3D"
+
 msgid "Animation Change Keyframe Value"
 msgstr "Animaatio: Muuta avainruudun arvoa"
+
+msgid "Animation Change Call"
+msgstr "Animaatio: Muuta Kutsua"
+
+msgid "Animation Multi Change Transition"
+msgstr "Animaatio: muuta monta siirtymää"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Animaatio: muuta monta 3D-sijaintia"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Animaatio: muuta monta 3D-kiertoa"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Animaatio: muuta monta 3D-skaalausta"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "Animaatio: muuta monen avainruudun arvoa"
+
+msgid "Animation Multi Change Call"
+msgstr "Animaatio: muuta monta funktiokutsua"
 
 msgid "Change Animation Length"
 msgstr "Muuta animaation pituutta"
@@ -566,21 +581,6 @@ msgid "Can't change loop mode on animation embedded in another scene."
 msgstr ""
 "Ei voida vaihtaa toisto moodia animaatiolta, joka upotettu toiseen "
 "kohtaukseen."
-
-msgid "Property Track"
-msgstr "Ominaisuusraita"
-
-msgid "Call Method Track"
-msgstr "Metodikutsuraita"
-
-msgid "Bezier Curve Track"
-msgstr "Bezier-käyräraita"
-
-msgid "Audio Playback Track"
-msgstr "Äänentoistoraita"
-
-msgid "Animation Playback Track"
-msgstr "Animaatiotoistoraita"
 
 msgid "Animation length (frames)"
 msgstr "Animaation pituus (kuvaruutuina)"
@@ -599,6 +599,9 @@ msgstr "Funktiot:"
 
 msgid "Audio Clips:"
 msgstr "Äänileikkeet:"
+
+msgid "Animation Clips:"
+msgstr "Animaatio Leikkeet:"
 
 msgid "Change Track Path"
 msgstr "Muuta raidan polkua"
@@ -626,6 +629,9 @@ msgstr "Aika (s):"
 
 msgid "Position:"
 msgstr "Sijainti:"
+
+msgid "Rotation:"
+msgstr "Kierto:"
 
 msgid "Scale:"
 msgstr "Skaalaus:"
@@ -669,6 +675,9 @@ msgstr "Alku/alut:"
 msgid "End (s):"
 msgstr "Lopput/loput:"
 
+msgid "Animation Clip:"
+msgstr "Animaatio Klipit:"
+
 msgid "Toggle Track Enabled"
 msgstr "Aseta raita päälle"
 
@@ -705,9 +714,6 @@ msgstr "Leikkaa kierron interpolointi"
 msgid "Wrap Loop Interp"
 msgstr "Kiedo kierron interpolointi"
 
-msgid "Insert Key"
-msgstr "Lisää avainruutu"
-
 msgid "Duplicate Key(s)"
 msgstr "Kahdenna avainruudut"
 
@@ -739,6 +745,11 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "Poista animaatioraita"
 
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Pidä Shift-näppäintä pohjassa painaessasi avain kuvaketta ohittaaksesi tämän "
+"dialogin."
+
 msgid "Create new track for %s and insert key?"
 msgstr "Luo kohteelle %s uusi raita ja lisää avain?"
 
@@ -769,6 +780,14 @@ msgstr "Vaihda animaation askelta"
 msgid "Rearrange Tracks"
 msgstr "Järjestele uudelleen raidat"
 
+msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
+msgstr "Muodonsulautusraitojen muunnos toimii vain MeshInstance3D-solmuille."
+
+msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
+msgstr ""
+"Sijainti/Kierto/Koko 3D raidat vaikuttavat ainoastaan 3D-pohjaisilla "
+"solmuilla."
+
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
 "-AudioStreamPlayer\n"
@@ -794,6 +813,9 @@ msgstr "Lisää Bezier-raita"
 
 msgid "Track path is invalid, so can't add a key."
 msgstr "Raidan polku on virheellinen, joten ei voida lisätä avainruutua."
+
+msgid "Track is not of type Node3D, can't insert key"
+msgstr "Raita ei ole Node3D-tyyppinen, joten ei voida lisätä avainruutua"
 
 msgid "Add Position Key"
 msgstr "Lisää Sijainti Avain"
@@ -828,6 +850,9 @@ msgstr "Kierto"
 msgid "Scale"
 msgstr "Skaalaa"
 
+msgid "BlendShape"
+msgstr "Muodonsulautus"
+
 msgid "Methods"
 msgstr "Metodit"
 
@@ -843,15 +868,77 @@ msgstr "Leikepöytä on tyhjä!"
 msgid "Paste Tracks"
 msgstr "Liitä raidat"
 
+msgid "Animation Scale Keys"
+msgstr "Animaatio: Skaalaa avaimia"
+
+msgid "Make Easing Keys"
+msgstr "Tee sulavan siirtymän avaimia"
+
+msgid "Animation Add RESET Keys"
+msgstr "Animaatio: Lisää RESET avaimet"
+
+msgid "Bake Animation as Linear Keys"
+msgstr "Animaatio: Tallenna lineaarisina avainruutuina"
+
 msgid ""
-"This option does not work for Bezier editing, as it's only a single track."
-msgstr "Tämä valinta ei käy Bezier-editoinnille, koska se on vain yksi raita."
+"This animation belongs to an imported scene, so changes to imported tracks "
+"will not be saved.\n"
+"\n"
+"To modify this animation, navigate to the scene's Advanced Import settings "
+"and select the animation.\n"
+"Some options, including looping, are available here. To add custom tracks, "
+"enable \"Save To File\" and\n"
+"\"Keep Custom Tracks\"."
+msgstr ""
+"Tämä animaatio kuuluu tuotuun kohtaukseen, joten tuotujen raitojen muutoksia "
+"ei tallenneta.\n"
+"\n"
+"Muokataksesi tätä animaatiota, mene kohtauksen Edistyneet Tuonti asetuksiin "
+"ja valitse animaatio.\n"
+"Jotkut asetukset, mukaanlukien silmukointi, ovat saatavilla täältä. "
+"Lisätäksesi mukautettuja raitoja, valitse \"Tallenna Tiedostoon\" ja\n"
+"\"Pidä Mukautetut Raidat\"."
+
+msgid ""
+"Some AnimationPlayerEditor's options are disabled since this is the dummy "
+"AnimationPlayer for preview.\n"
+"\n"
+"The dummy player is forced active, non-deterministic and doesn't have the "
+"root motion track. Furthermore, the original node is inactive temporary."
+msgstr ""
+"Jotkin AnimationPlayerEditorin asetukset on poistettu käytöstä, koska tämä on "
+"esikatselun varten tarkoitettu dummy AnimationPlayer.\n"
+"\n"
+"Tämä dummy soitin on pakotettu aktiiviseksi, epädeterministiseksi, eikä sillä "
+"ole juuri liike raitaa. Lisäksi alkuperäinen solmu on väliaikaisesti ei-"
+"aktiivinen."
+
+msgid "AnimationPlayer is inactive. The playback will not be processed."
+msgstr "AnimationPlayer or inaktiivinen. Toistoa ei prosessoida."
 
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Valitse AnimationPlayer solmu luodaksesi ja muokataksesi animaatioita."
 
+msgid "Imported Scene"
+msgstr "Tuotu Kohtaus"
+
 msgid "Warning: Editing imported animation"
 msgstr "Varoitus: muokataan tuotua animaatiota"
+
+msgid "Dummy Player"
+msgstr "Dummy Soitin"
+
+msgid "Warning: Editing dummy AnimationPlayer"
+msgstr "Varoitus: Muokataan dummy AnimaatioSoitinta"
+
+msgid "Inactive Player"
+msgstr "Ei-aktiivinen soitin"
+
+msgid "Warning: AnimationPlayer is inactive"
+msgstr "Varoitus: AnimationPlayer ei ole aktiivinen"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "Vaihda käyrä- ja raitamuokkaimen välillä."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Näytä raidat vain puussa valituista solmuista."
@@ -877,21 +964,6 @@ msgstr "Muokkaa"
 msgid "Animation properties."
 msgstr "Animaation ominaisuudet."
 
-msgid "Copy Tracks"
-msgstr "Kopioi raidat"
-
-msgid "Scale Selection"
-msgstr "Skaalaa valintaa"
-
-msgid "Scale From Cursor"
-msgstr "Skaalaa kursorista"
-
-msgid "Duplicate Selection"
-msgstr "Kahdenna valinta"
-
-msgid "Duplicate Transposed"
-msgstr "Kahdenna käänteisesti"
-
 msgid "Delete Selection"
 msgstr "Poista valitut"
 
@@ -903,12 +975,6 @@ msgstr "Mene edelliseen askeleeseen"
 
 msgid "Apply Reset"
 msgstr "Tee palautus"
-
-msgid "Optimize Animation (no undo)"
-msgstr "Optimoi animaatio (ei kumoamista)"
-
-msgid "Clean-Up Animation (no undo)"
-msgstr "Siivoa animaatio (ei kumoamista)"
 
 msgid "Pick a node to animate:"
 msgstr "Valitse animoitava solmu:"
@@ -961,6 +1027,10 @@ msgid "Sine"
 msgstr "Sini"
 
 msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Viides potenssi"
+
+msgctxt "Transition Type"
 msgid "Quart"
 msgstr "Vartti"
 
@@ -975,6 +1045,10 @@ msgstr "Expo"
 msgctxt "Transition Type"
 msgid "Elastic"
 msgstr "Joustava"
+
+msgctxt "Transition Type"
+msgid "Circ"
+msgstr "Ympyränkaari"
 
 msgctxt "Transition Type"
 msgid "Bounce"
@@ -1013,6 +1087,9 @@ msgstr "Liukuman Tyyppi:"
 msgid "FPS:"
 msgstr "FPS:"
 
+msgid "3D Pos/Rot/Scl Track:"
+msgstr "3D Sijanti/Kierto/Koko Raita:"
+
 msgid "Blendshape Track:"
 msgstr "Sulautus Raita:"
 
@@ -1050,8 +1127,8 @@ msgstr[1] "%d osumaa"
 
 msgid "%d of %d match"
 msgid_plural "%d of %d matches"
-msgstr[0] "%d osuma."
-msgstr[1] "%d osumaa."
+msgstr[0] "%d osuma %d osumasta"
+msgstr[1] "%d osumaa %d osumasta"
 
 msgid "Match Case"
 msgstr "Huomioi kirjainkoko"
@@ -1067,6 +1144,13 @@ msgstr "Korvaa kaikki"
 
 msgid "Selection Only"
 msgstr "Pelkkä valinta"
+
+msgid "Hide"
+msgstr "Piilota"
+
+msgctxt "Indentation"
+msgid "Tabs"
+msgstr "Tabulaattorit"
 
 msgid "Toggle Scripts Panel"
 msgstr "Näytä/piilota skriptipaneeli"
@@ -1088,6 +1172,9 @@ msgstr "Varoitukset"
 
 msgid "Line and column numbers."
 msgstr "Rivi- ja sarakenumerot."
+
+msgid "Indentation"
+msgstr "Sisennys"
 
 msgid "Method in target node must be specified."
 msgstr "Kohdesolmun metodi täytyy määrittää."
@@ -1147,6 +1234,9 @@ msgstr "Lisää ylimääräinen argumentti kutsulle:"
 msgid "Extra Call Arguments:"
 msgstr "Ylimääräiset argumentit:"
 
+msgid "Unbind Signal Arguments:"
+msgstr "Vapauta Signaalin Argumentit:"
+
 msgid "Receiver Method:"
 msgstr "Vastaanottava metodi:"
 
@@ -1175,15 +1265,6 @@ msgstr "Sulje"
 
 msgid "Connect"
 msgstr "Yhdistä"
-
-msgid "Class:"
-msgstr "Luokka:"
-
-msgid "Signal:"
-msgstr "Signaali:"
-
-msgid "No description."
-msgstr "Ei kuvausta."
 
 msgid "Connect '%s' to '%s'"
 msgstr "Yhdistä '%s' ja '%s'"
@@ -1251,9 +1332,6 @@ msgstr "Tämä luokka on merkitty vanhentuneeksi."
 msgid "This class is marked as experimental."
 msgstr "Tämä luokka on merkitty kokeelliseksi."
 
-msgid "No description available for %s."
-msgstr "%s kuvaus ei ole saatavilla."
-
 msgid "Favorites:"
 msgstr "Suosikit:"
 
@@ -1287,9 +1365,6 @@ msgstr "Tallenna haara kohtauksena"
 msgid "Copy Node Path"
 msgstr "Kopioi solmun polku"
 
-msgid "Instance:"
-msgstr "Ilmentymä:"
-
 msgid ""
 "This node has been instantiated from a PackedScene file:\n"
 "%s\n"
@@ -1305,6 +1380,12 @@ msgstr "Aseta näkyvyys"
 msgid "Updating assets on target device:"
 msgstr "Päivitetään resursseja kohde laitteella:"
 
+msgid "Syncing headers"
+msgstr "Valmistellaan headereitä"
+
+msgid "Decompressing remote file system"
+msgstr "Puretaan etäistä tiedostojärjestelmää"
+
 msgid "Scanning for local changes"
 msgstr "Skannataan lookaleja muutoksia"
 
@@ -1313,6 +1394,9 @@ msgstr "Lähetetään lista muuttuneista tiedostoista:"
 
 msgid "Sending file:"
 msgstr "Lähetetään tiedosto:"
+
+msgid "ms"
+msgstr "ms"
 
 msgid "Monitors"
 msgstr "Monitoroijat"
@@ -1402,9 +1486,6 @@ msgstr "Jatketaan suoritusta."
 msgid "Bytes:"
 msgstr "Tavu(j)a:"
 
-msgid "Warning:"
-msgstr "Varoitus:"
-
 msgid "Error:"
 msgstr "Virhe:"
 
@@ -1471,8 +1552,14 @@ msgstr "Keskeytä"
 msgid "Continue"
 msgstr "Jatka"
 
+msgid "Thread:"
+msgstr "Säie:"
+
 msgid "Stack Frames"
 msgstr "Pinokehykset"
+
+msgid "Filter Stack Variables"
+msgstr "Suodata Pinomuuttujia"
 
 msgid "Breakpoints"
 msgstr "Keskeytyskohdat"
@@ -1638,39 +1725,41 @@ msgid "Resources Without Explicit Ownership:"
 msgstr "Resurssit, joilla ei ole selvää omistajaa:"
 
 msgid "Folder name cannot be empty."
-msgstr "Hakemiston nimi ei voi olla tyhjä."
+msgstr "Kansion nimi ei voi olla tyhjä."
 
 msgid "Folder name contains invalid characters."
-msgstr "Hakemiston nimi sisältää virheellisiä kirjainmerkkejä."
+msgstr "Kansion nimi sisältää virheellisiä kirjainmerkkejä."
+
+msgid "Folder name cannot begin or end with a space."
+msgstr "Kansion nimi ei voi alkaa tai loppua välilyönnillä."
+
+msgid "Folder name cannot begin with a dot."
+msgstr "Kansion nimi ei voi alkaa pisteellä."
 
 msgid "File with that name already exists."
 msgstr "Tällä nimellä löytyy jo tiedosto."
 
 msgid "Folder with that name already exists."
-msgstr "Tällä nimellä löytyy jo hakemisto."
+msgstr "Tällä nimellä löytyy jo kansio."
 
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr ""
-"Hakemisto nimissä käyttämällä kauttaviivoja syntyy alikansioita "
-"rekursiivisesti."
+"Kansion nimissä käyttämällä kauttaviivoja syntyy alikansioita rekursiivisesti."
 
 msgid "Could not create folder."
 msgstr "Kansiota ei voitu luoda."
 
 msgid "Create new folder in %s:"
-msgstr "Luo uusi hakemisto kohteeseen: %s:"
+msgstr "Luo uusi kansio kohteeseen: %s:"
 
 msgid "Create Folder"
 msgstr "Luo kansio"
 
 msgid "Folder name is valid."
-msgstr "Hakemiston nimi on validi."
+msgstr "Kansion nimi on validi."
 
 msgid "Thanks from the Godot community!"
 msgstr "Kiitos Godot-yhteisöltä!"
-
-msgid "Click to copy."
-msgstr "Napsauta kopioidaksesi."
 
 msgid "Godot Engine contributors"
 msgstr "Godot moottorin kehittäjät"
@@ -1700,20 +1789,11 @@ msgstr "Kultasponsorit"
 msgid "Silver Sponsors"
 msgstr "Hopeasponsorit"
 
-msgid "Bronze Sponsors"
-msgstr "Pronssisponsorit"
+msgid "Platinum Members"
+msgstr "Platina Jäsenet"
 
-msgid "Mini Sponsors"
-msgstr "Minisponsorit"
-
-msgid "Gold Donors"
-msgstr "Kultalahjoittajat"
-
-msgid "Silver Donors"
-msgstr "Hopealahjoittajat"
-
-msgid "Bronze Donors"
-msgstr "Pronssilahjoittajat"
+msgid "Gold Members"
+msgstr "Kulta Jäsenet"
 
 msgid "Donors"
 msgstr "Lahjoittajat"
@@ -1750,6 +1830,14 @@ msgstr "Virhe avattaessa \"%s\" asset-tiedostoa (se ei ole ZIP-muodossa)."
 msgid "%s (already exists)"
 msgstr "%s (on jo olemassa)"
 
+msgid "%d file conflicts with your project and won't be installed"
+msgid_plural "%d files conflict with your project and won't be installed"
+msgstr[0] "%d tiedosto on ristiriidassa projektisi kanssa eikä sitä asenneta"
+msgstr[1] "%d tiedostoa on ristiriidassa projektisi kanssa eikä niitä asenneta"
+
+msgid "Select Install Folder"
+msgstr "Valitse Asennus Kansio"
+
 msgid "Uncompressing Assets"
 msgstr "Puretaan assetteja"
 
@@ -1759,11 +1847,20 @@ msgstr "Seuraavien tiedostojen purku assetista \"%s\" epäonnistui:"
 msgid "(and %s more files)"
 msgstr "(ja vielä %s tiedostoa)"
 
-msgid "Asset \"%s\" installed successfully!"
-msgstr "Asset \"%s\" asennettu onnistuneesti!"
-
 msgid "Success!"
 msgstr "Onnistui!"
+
+msgid "Asset:"
+msgstr "Resurssi:"
+
+msgid "Change Install Folder"
+msgstr "Muuta Asennus Kansiota"
+
+msgid "No files conflict with your project"
+msgstr "Yksikään tiedosto ei ole ristiriidassa projektisi kanssa"
+
+msgid "Installation preview:"
+msgstr "Asennuksen esikatselu:"
 
 msgid "Install"
 msgstr "Asenna"
@@ -1897,35 +1994,14 @@ msgstr "Luo uusi ääniväylän asettelu."
 msgid "Audio Bus Layout"
 msgstr "Ääniväylän asettelu"
 
-msgid "Invalid name."
-msgstr "Virheellinen nimi."
-
-msgid "Cannot begin with a digit."
-msgstr "Ei voi alkaa numerolla."
-
-msgid "Valid characters:"
-msgstr "Kelvolliset merkit:"
-
-msgid "Must not collide with an existing engine class name."
-msgstr "Ei saa mennä päällekkäin olemassa olevan engine-luokkanimen kanssa."
-
-msgid "Must not collide with an existing global script class name."
-msgstr ""
-"Ei saa mennä päällekkäin olemassa olevan globaalin skripti luokan nimen "
-"kanssa."
-
-msgid "Must not collide with an existing built-in type name."
-msgstr ""
-"Ei saa mennä päällekkäin olemassa olevan sisäänrakennetun tyypin nimen kanssa."
-
-msgid "Must not collide with an existing global constant name."
-msgstr "Ei saa mennä päällekkäin olemassa olevan globaalin vakion nimen kanssa."
-
 msgid "Autoload '%s' already exists!"
 msgstr "Automaattisesti ladattava '%s' on jo olemassa!"
 
 msgid "Rename Autoload"
 msgstr "Nimeä automaattisesti ladattava uudelleen"
+
+msgid "Toggle Autoload Globals"
+msgstr "Aseta Globaalien Automaattilataus"
 
 msgid "Move Autoload"
 msgstr "Siirrä automaattisesti ladattavaa"
@@ -1939,17 +2015,20 @@ msgstr "Ota käyttöön"
 msgid "Rearrange Autoloads"
 msgstr "Järjestele uudelleen automaattiset lataukset"
 
+msgid "Can't add Autoload:"
+msgstr "Ei voida lisätä Automaattisesti Ladattavaa:"
+
 msgid "%s is an invalid path. File does not exist."
 msgstr "%s on virheellinen polku. Tiedostoa ei ole olemassa."
 
 msgid "%s is an invalid path. Not in resource path (res://)."
 msgstr "%s on virheellinen polku. Ei löydy resurssipolusta (res://)."
 
+msgid "Add Autoload"
+msgstr "Lisää Automaattisesti Ladattava"
+
 msgid "Path:"
 msgstr "Polku:"
-
-msgid "Set path or press \"%s\" to create a script."
-msgstr "Aseta polku tai paina \"%s\" luodaksesi skriptin."
 
 msgid "Node Name:"
 msgstr "Solmun nimi:"
@@ -2005,6 +2084,25 @@ msgstr "Navigaatio, 2D ja 3D."
 msgid "XR (AR and VR)."
 msgstr "XR (AR and VR)."
 
+msgid "Vulkan back-end of RenderingDevice."
+msgstr "RenderingDevicen Vulkan-backend."
+
+msgid ""
+"TrueType, OpenType, Type 1, and WOFF1 font format support using FreeType "
+"library (if disabled, WOFF2 support is also disabled)."
+msgstr ""
+"TrueType-, OpenType-, Type 1- ja WOFF-fonttien tuki FreeType-kirjastoa "
+"käyttäen (jos kytketty pois, WOFF2-tuki kytkeytyy myös pois)."
+
+msgid "WOFF2 font format support using FreeType and Brotli libraries."
+msgstr "WOFF2-fonttien tuki FreeType- ja Brotli-kirjastoja käyttäen."
+
+msgid "General Features:"
+msgstr "Pääominaisuudet:"
+
+msgid "Text Rendering and Font Options:"
+msgstr "Tekstin piirtämisen ja fontin valinnat:"
+
 msgid "File saving failed."
 msgstr "Virhe tallennettaessa tiedostoa."
 
@@ -2035,9 +2133,6 @@ msgstr "Tunnista Projektista"
 msgid "Actions:"
 msgstr "Toiminnot:"
 
-msgid "Configure Engine Build Profile:"
-msgstr "Konfiguroi Moottorin Profiili:"
-
 msgid "Please Confirm:"
 msgstr "Ole hyvä ja vahvista:"
 
@@ -2047,8 +2142,12 @@ msgstr "Lataa Profiili"
 msgid "Export Profile"
 msgstr "Vie profiili"
 
-msgid "Edit Build Configuration Profile"
-msgstr "Muokkaa Rakennusmäärityksen Profiilia"
+msgid ""
+"Failed to execute command \"%s\":\n"
+"%s."
+msgstr ""
+"Ei voitu suorittaa komentoa \"%s\":\n"
+"%s."
 
 msgid "Filter Commands"
 msgstr "Suodata Komentoja"
@@ -2070,6 +2169,12 @@ msgstr "[tyhjä]"
 
 msgid "[unsaved]"
 msgstr "[tallentamaton]"
+
+msgid "%s - Godot Engine"
+msgstr "%s - Godot Pelimoottori"
+
+msgid "Dock Position"
+msgstr "Telakan sijainti"
 
 msgid "3D Editor"
 msgstr "3D-editori"
@@ -2210,12 +2315,6 @@ msgstr "Tuo profiileja"
 msgid "Manage Editor Feature Profiles"
 msgstr "Hallinnoi editorin ominaisuusprofiileja"
 
-msgid "Restart"
-msgstr "Käynnistä uudelleen"
-
-msgid "Save & Restart"
-msgstr "Tallenna & käynnistä uudelleen"
-
 msgid "ScanSources"
 msgstr "Selaa lähdetiedostoja"
 
@@ -2227,6 +2326,19 @@ msgstr ""
 
 msgid "(Re)Importing Assets"
 msgstr "Tuodaan (uudelleen) assetteja"
+
+msgid "Import resources of type: %s"
+msgstr "Tuo tyypin: %s resursseja"
+
+msgid "No return value."
+msgstr "Ei palautus arvoa."
+
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr ""
+"Tämä arvo on kokonaisluku joka tulkitaan bittimaskina ao. lippujen summana."
+
+msgid "Deprecated"
+msgstr "Vanhentunut"
 
 msgid "Experimental"
 msgstr "Kokeellinen"
@@ -2255,11 +2367,59 @@ msgstr ""
 "Tämä metodi ei tarvitse instanssia ollakseen kutsuttavissa.\n"
 "Sitä voidaan kutsua suoraan käyttämällä luokan nimeä."
 
+msgid "Constructors"
+msgstr "Rakentajat"
+
+msgid "Operators"
+msgstr "Operaattorit"
+
+msgid "Method Descriptions"
+msgstr "Metodien kuvaukset"
+
+msgid "Constructor Descriptions"
+msgstr "Rakentaja Kuvaukset"
+
+msgid "Operator Descriptions"
+msgstr "Operaattori Kuvaukset"
+
 msgid "Error codes returned:"
 msgstr "Palautetut virhe koodit:"
 
+msgid "There is currently no description for this method."
+msgstr "Tällä metodilla ei ole kuvausta tällä hetkellä."
+
+msgid "There is currently no description for this constructor."
+msgstr "Tällä rakentajalla ei ole kuvausta tällä hetkellä."
+
+msgid "There is currently no description for this operator."
+msgstr "Tälle operaattorille ei tällä hetkellä löydy kuvausta."
+
+msgid ""
+"There is currently no description for this method. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Tälle metodille ei vielä löydy kuvausta. Voit auttaa meitä [color=$color]"
+"[url=$url]kirjoittamalla sellaisen[/url][/color]!"
+
+msgid ""
+"There is currently no description for this constructor. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Tälle rakentajalle ei vielä löydy kuvausta. Voit auttaa meitä [color=$color]"
+"[url=$url]kirjoittamalla sellaisen[/url][/color]!"
+
+msgid ""
+"There is currently no description for this operator. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Tälle operaattorille ei vielä löydy kuvausta. Voit auttaa meitä [color=$color]"
+"[url=$url]kirjoittamalla sellaisen[/url][/color]!"
+
 msgid "Top"
 msgstr "Alku"
+
+msgid "Class:"
+msgstr "Luokka:"
 
 msgid "Inherits:"
 msgstr "Perii:"
@@ -2267,24 +2427,25 @@ msgstr "Perii:"
 msgid "Inherited by:"
 msgstr "Perivät:"
 
-msgid ""
-"This class is marked as deprecated. It will be removed in future versions."
-msgstr ""
-"Tämä luokka on merkattu vanhentuneeksi. Se tullaan poistamaan tulevissa "
-"versioissa."
-
-msgid ""
-"This class is marked as experimental. It is subject to likely change or "
-"possible removal in future versions. Use at your own discretion."
-msgstr ""
-"Tämä luokka on merkitty kokeelliseksi. Se tulee todennäköisesti muuttumaan "
-"tai mahdollisesti poistamaan tuleviss versioissa. Käytä omalla vastuulla."
-
 msgid "Description"
 msgstr "Kuvaus"
 
 msgid "There is currently no description for this class."
 msgstr "Tälle luokalle ei tällä hetkellä löydy kuvausta."
+
+msgid ""
+"There is currently no description for this class. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Tälle luokalle ei vielä löydy kuvausta. Voit auttaa meitä [color=$color]"
+"[url=$url]kirjoittamalla sellaisen[/url][/color]!"
+
+msgid ""
+"There are notable differences when using this API with C#. See [url=%s]C# API "
+"differences to GDScript[/url] for more information."
+msgstr ""
+"Tämän APIn käytössä on huomattavia eroja C# kanssa. Katso tarkemmin [url=%s] "
+"C# API erot GDScriptiin[/url]."
 
 msgid "Online Tutorials"
 msgstr "Online-oppaat"
@@ -2298,8 +2459,8 @@ msgstr "ylikirjoittaa %s:"
 msgid "default:"
 msgstr "oletus:"
 
-msgid "Constructors"
-msgstr "Rakentajat"
+msgid "property:"
+msgstr "ominaisuus:"
 
 msgid "Theme Properties"
 msgstr "Teeman ominaisuudet"
@@ -2313,6 +2474,9 @@ msgstr "Vakiot"
 msgid "Fonts"
 msgstr "Fontit"
 
+msgid "Font Sizes"
+msgstr "Fontti Koot"
+
 msgid "Icons"
 msgstr "Kuvakkeet"
 
@@ -2322,8 +2486,18 @@ msgstr "Tyylit"
 msgid "Enumerations"
 msgstr "Luettelot"
 
+msgid "Annotations"
+msgstr "Annotaatiot"
+
 msgid "There is currently no description for this annotation."
 msgstr "Tälle annotaatiolla ei löydy tällä hetkellä kuvausta."
+
+msgid ""
+"There is currently no description for this annotation. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Tälle annotaatiolle ei vielä löydy kuvausta. Voit auttaa meitä [color=$color]"
+"[url=$url]kirjoittamalla sellaisen[/url][/color]!"
 
 msgid "Property Descriptions"
 msgstr "Ominaisuuksien kuvaukset"
@@ -2341,50 +2515,26 @@ msgstr ""
 "Tälle ominaisuudelle ei vielä löydy kuvausta. Voit auttaa meitä [color=$color]"
 "[url=$url]kirjoittamalla sellaisen[/url][/color]!"
 
-msgid "Method Descriptions"
-msgstr "Metodien kuvaukset"
+msgid "Editor"
+msgstr "Editori"
 
-msgid "%d match."
-msgstr "%d osuma."
+msgid "No description available."
+msgstr "Kuvaus ei ole saatavilla."
+
+msgid "Metadata:"
+msgstr "Metadata:"
+
+msgid "Property:"
+msgstr "Ominaisuus:"
+
+msgid "Method:"
+msgstr "Metodi:"
+
+msgid "Signal:"
+msgstr "Signaali:"
 
 msgid "%d matches."
 msgstr "%d osumaa."
-
-msgid "Search Help"
-msgstr "Etsi ohjeesta"
-
-msgid "Case Sensitive"
-msgstr "Merkkikokoriippuvainen"
-
-msgid "Show Hierarchy"
-msgstr "Näytä hierarkia"
-
-msgid "Display All"
-msgstr "Näytä kaikki"
-
-msgid "Classes Only"
-msgstr "Vain luokat"
-
-msgid "Methods Only"
-msgstr "Vain metodit"
-
-msgid "Signals Only"
-msgstr "Vain signaalit"
-
-msgid "Constants Only"
-msgstr "Vain vakiot"
-
-msgid "Properties Only"
-msgstr "Vain ominaisuudet"
-
-msgid "Theme Properties Only"
-msgstr "Vain teeman ominaisuudet"
-
-msgid "Member Type"
-msgstr "Jäsenen tyyppi"
-
-msgid "Class"
-msgstr "Luokka"
 
 msgid "Method"
 msgstr "Metodi"
@@ -2401,14 +2551,69 @@ msgstr "Ominaisuus"
 msgid "Theme Property"
 msgstr "Teeman ominaisuus"
 
+msgid "Annotation"
+msgstr "Annotaatio"
+
+msgid "Search Help"
+msgstr "Etsi ohjeesta"
+
+msgid "Case Sensitive"
+msgstr "Merkkikokoriippuvainen"
+
+msgid "Show Hierarchy"
+msgstr "Näytä hierarkia"
+
+msgid "Display All"
+msgstr "Näytä kaikki"
+
+msgid "Classes Only"
+msgstr "Vain luokat"
+
+msgid "Constructors Only"
+msgstr "Vain Rakentajat"
+
+msgid "Methods Only"
+msgstr "Vain metodit"
+
+msgid "Operators Only"
+msgstr "Vain Operaattorit"
+
+msgid "Signals Only"
+msgstr "Vain signaalit"
+
+msgid "Annotations Only"
+msgstr "Vain Annotaatiot"
+
+msgid "Constants Only"
+msgstr "Vain vakiot"
+
+msgid "Properties Only"
+msgstr "Vain ominaisuudet"
+
+msgid "Theme Properties Only"
+msgstr "Vain teeman ominaisuudet"
+
+msgid "Member Type"
+msgstr "Jäsenen tyyppi"
+
+msgid "(constructors)"
+msgstr "(rakentajat)"
+
+msgid "Class"
+msgstr "Luokka"
+
 msgid "This member is marked as deprecated."
 msgstr "Tämä jäsen on merkattu vanhentuneeksi."
 
 msgid "This member is marked as experimental."
 msgstr "Tämä jäsen on merkattu kokeelliseksi."
 
-msgid "Property:"
-msgstr "Ominaisuus:"
+msgid "Pin Value"
+msgstr "Kiinnitä Arvo"
+
+msgid "Pin Value [Disabled because '%s' is editor-only]"
+msgstr ""
+"Kiinnitä Arvo [Poistettu käytöstä, koska '%s' on käytössä vain editorissa]"
 
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
@@ -2418,7 +2623,7 @@ msgstr ""
 msgid "(%d change)"
 msgid_plural "(%d changes)"
 msgstr[0] "(%d muutos)"
-msgstr[1] "(d% muutosta)"
+msgstr[1] "(%d muutosta)"
 
 msgid "Add element to property array with prefix %s."
 msgstr "Lisää elementti ominaisuus listaan etuliitteellä %s."
@@ -2430,6 +2635,12 @@ msgid "Move element %d to position %d in property array with prefix %s."
 msgstr ""
 "Siirrä elementti %d positioon %d ominaisuustaulukossa, jossa on etuliitte %s."
 
+msgid "Clear Property Array with Prefix %s"
+msgstr "Tyhjennä ominaisuustaulukko, jossa on etuliite %s"
+
+msgid "Resize Property Array with Prefix %s"
+msgstr "Muuta ominaisuustaulukon kokoa, jossa on etuliite %s"
+
 msgid "Element %d: %s%d*"
 msgstr "Elementti: %d: %s%d*"
 
@@ -2439,11 +2650,29 @@ msgstr "Siirrä ylös"
 msgid "Move Down"
 msgstr "Siirrä alas"
 
+msgid "Insert New Before"
+msgstr "Lisää Uusi Ennen"
+
+msgid "Insert New After"
+msgstr "Lisää Uusi Jälkeen"
+
+msgid "Clear Array"
+msgstr "Tyhjennä Taulukko"
+
+msgid "Resize Array..."
+msgstr "Muuta Taulukon Kokoa..."
+
 msgid "Add Element"
 msgstr "Lisää Elementti"
 
 msgid "Resize Array"
 msgstr "Muuta taulukon kokoa"
+
+msgid "New Size:"
+msgstr "Uusi Koko:"
+
+msgid "Element %s"
+msgstr "Elementti %s"
 
 msgid "Add Metadata"
 msgstr "Lisää Metadata"
@@ -2451,8 +2680,11 @@ msgstr "Lisää Metadata"
 msgid "Set %s"
 msgstr "Aseta %s"
 
-msgid "Pinned %s"
-msgstr "Kiinnitetty %s"
+msgid "Set Multiple: %s"
+msgstr "Aseta Usea: %s"
+
+msgid "Remove metadata %s"
+msgstr "Poista metadata %s"
 
 msgid "Unpinned %s"
 msgstr "Poistettu kiinnitys %s"
@@ -2463,14 +2695,29 @@ msgstr "Lisää metadataa %s"
 msgid "Metadata name can't be empty."
 msgstr "Metadatan nimi ei voi olla tyhjä."
 
+msgid "Metadata name must be a valid identifier."
+msgstr "Metadatan nimen täytyy olla kelvollinen tunniste."
+
+msgid "Metadata with name \"%s\" already exists."
+msgstr "Metadata nimellä \"%s\" on jo olemassa."
+
 msgid "Names starting with _ are reserved for editor-only metadata."
 msgstr "_ alkavat nimet ovat varattu vain editorin metadatalle."
 
 msgid "Name:"
 msgstr "Nimi:"
 
+msgid "Metadata name is valid."
+msgstr "Metadatan nimi on kelvollinen."
+
 msgid "Add Metadata Property for \"%s\""
 msgstr "Lisää Metadata Ominaisuus \"%s\""
+
+msgid "Copy Value"
+msgstr "Kopioi Arvo"
+
+msgid "Paste Value"
+msgstr "Liitä Arvo"
 
 msgid "Copy Property Path"
 msgstr "Kopioi ominaisuuden polku"
@@ -2481,11 +2728,20 @@ msgstr "Luodaan meshien esikatseluita"
 msgid "Thumbnail..."
 msgstr "Pienoiskuva..."
 
+msgid "Select existing layout:"
+msgstr "Valitse olemassa oleva asettelu:"
+
 msgid "Or enter new layout name"
 msgstr "Tai syötä uusi asettelun nimi"
 
 msgid "Changed Locale Filter Mode"
 msgstr "Vaihdettu kielisuodattimen tila"
+
+msgid "[Default]"
+msgstr "[Oletus]"
+
+msgid "Select a Locale"
+msgstr "Valitse Alueasetus"
 
 msgid "Show All Locales"
 msgstr "Näytä kaikki kielialueet"
@@ -2498,6 +2754,26 @@ msgstr "Muokkaa suodattimia"
 
 msgid "Language:"
 msgstr "Kieli:"
+
+msgctxt "Locale"
+msgid "Script:"
+msgstr "Skripti:"
+
+msgid "Country:"
+msgstr "Maa:"
+
+msgid "Language"
+msgstr "Kieli"
+
+msgctxt "Locale"
+msgid "Script"
+msgstr "kirjoitusjärjestelmä"
+
+msgid "Country"
+msgstr "Maa"
+
+msgid "Variant"
+msgstr "Variantti"
 
 msgid "Filter Messages"
 msgstr "Suodata Viestejä"
@@ -2514,6 +2790,18 @@ msgstr ""
 "Yhdistä duplikaatti viestit yhdeksi logi tietueeksi. Näytä esiintymien "
 "lukumäärä."
 
+msgid "Toggle visibility of standard output messages."
+msgstr "Näytä/piilota tavalliset tulosteviestit."
+
+msgid "Toggle visibility of errors."
+msgstr "Piilota/näytä virheet."
+
+msgid "Toggle visibility of warnings."
+msgstr "Piilota/näytä varoitukset."
+
+msgid "Toggle visibility of editor messages."
+msgstr "Piilota/näytä editorin viestit."
+
 msgid "Unnamed Project"
 msgstr "Nimetön projekti"
 
@@ -2529,14 +2817,8 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Pyörii kun editorin ikkuna päivittyy."
 
-msgid "Imported resources can't be saved."
-msgstr "Tuotuja resursseja ei voida tallentaa."
-
 msgid "OK"
 msgstr "OK"
-
-msgid "Error saving resource!"
-msgstr "Virhe tallennettaessa resurssia!"
 
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
@@ -2545,20 +2827,15 @@ msgstr ""
 "Resurssia ei voida tallentaa, koska se ei kuulu muokattavana olevaan "
 "kohtaukseen. Tee siitä ensin yksilöllinen."
 
+msgid ""
+"This resource can't be saved because it was imported from another file. Make "
+"it unique first."
+msgstr ""
+"Resurssia ei voida tallentaa, koska se tuotiin toisesta tiedostosta. Tee "
+"siitä ensin uniikki."
+
 msgid "Save Resource As..."
 msgstr "Tallenna resurssi nimellä..."
-
-msgid "Can't open file for writing:"
-msgstr "Ei voida avata tiedostoa kirjoitettavaksi:"
-
-msgid "Requested file format unknown:"
-msgstr "Pyydetty tiedostomuoto tuntematon:"
-
-msgid "Error while saving."
-msgstr "Virhe tallennettaessa."
-
-msgid "Scene file '%s' appears to be invalid/corrupt."
-msgstr "Kohtaus tiedosto '%s' näyttää olevan viallinen/korruptoitunut."
 
 msgid "Saving Scene"
 msgstr "Tallennetaan kohtaus"
@@ -2569,21 +2846,8 @@ msgstr "Analysoidaan"
 msgid "Creating Thumbnail"
 msgstr "Luodaan pienoiskuvaa"
 
-msgid "This operation can't be done without a tree root."
-msgstr "Tätä toimintoa ei voi tehdä ilman että puun juuri on olemassa."
-
-msgid ""
-"Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
-"be satisfied."
-msgstr ""
-"En voinut tallentaa kohtausta. Todennäköisiä riippuvuuksia (instanssit tai "
-"periytyminen) ei voitu täyttää."
-
 msgid "Save scene before running..."
 msgstr "Tallenna kohtaus ennen suorittamista..."
-
-msgid "Could not save one or more scenes!"
-msgstr "Yhtä tai useampaa kohtausta ei voitu tallentaa!"
 
 msgid "Save All Scenes"
 msgstr "Tallenna kaikki kohtaukset"
@@ -2591,11 +2855,11 @@ msgstr "Tallenna kaikki kohtaukset"
 msgid "Can't overwrite scene that is still open!"
 msgstr "Ei voi ylikirjoittaa kohtausta, joka on vielä auki!"
 
-msgid "Can't load MeshLibrary for merging!"
-msgstr "Ei voitu ladata MeshLibrary resurssia yhdistämistä varten!"
+msgid "Merge With Existing"
+msgstr "Yhdistä olemassaolevaan"
 
-msgid "Error saving MeshLibrary!"
-msgstr "Virhe tallennettaessa MeshLibrary resurssia!"
+msgid "Apply MeshInstance Transforms"
+msgstr "Käytä MeshInstance muunnoksia"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -2632,14 +2896,29 @@ msgstr ""
 "työnkulun."
 
 msgid ""
+"This resource belongs to a scene that was instantiated or inherited.\n"
+"Changes to it must be made inside the original scene."
+msgstr ""
+"Tämä resurssi kuuluu kohtaukseen, joka on instansoitu tai peritty.\n"
+"Muutokset siihen täytyy tehdä alkuperäisessä kohtauksessa."
+
+msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
 "Tämä resurssi on tuotu, joten sitä ei voi muokata. Vaihda asetukset tuonti-"
 "paneelista ja tuo se uudelleen."
 
-msgid "Changes may be lost!"
-msgstr "Muutokset saatetaan menettää!"
+msgid ""
+"This scene was imported, so changes to it won't be kept.\n"
+"Instantiating or inheriting it will allow you to make changes to it.\n"
+"Please read the documentation relevant to importing scenes to better "
+"understand this workflow."
+msgstr ""
+"Tämä kohtaus on tuotu, joten siihen tehtyjä muutoksia ei säilytetä.\n"
+"Sen instansiointi tai periminen mahdollistaa muutosten tekemisen siihen.\n"
+"Lue kohtausten tuontiin liittyvä dokumentaatio, jotta ymmärrät paremmin tämän "
+"työnkulun."
 
 msgid "This object is read-only."
 msgstr "Tämä objecti on vain luettava."
@@ -2655,9 +2934,6 @@ msgstr "Nopea avauskohtaus..."
 
 msgid "Quick Open Script..."
 msgstr "Skriptin pika-avaus..."
-
-msgid "%s no longer exists! Please specify a new save location."
-msgstr "%s ei ole enää olemassa! Ole hyvä ja määrittele uusi tallennussijainti."
 
 msgid ""
 "The current scene has no root node, but %d modified external resource(s) were "
@@ -2685,8 +2961,14 @@ msgstr "Ei voida kumota hiiren painikkeiden ollessa painettuina."
 msgid "Nothing to undo."
 msgstr "Ei ole mitään kumottavaa."
 
+msgid "Global Undo: %s"
+msgstr "Globaali Kumoa: %s"
+
 msgid "Remote Undo: %s"
 msgstr "Etäkumoaminen: %s"
+
+msgid "Scene Undo: %s"
+msgstr "Kumoa Kohtauksessa: %s"
 
 msgid "Can't redo while mouse buttons are pressed."
 msgstr "Ei voida tehdä uudelleen hiiren painikkeiden ollessa painettuina."
@@ -2694,8 +2976,14 @@ msgstr "Ei voida tehdä uudelleen hiiren painikkeiden ollessa painettuina."
 msgid "Nothing to redo."
 msgstr "Ei ole mitään uudelleen tehtävää."
 
+msgid "Global Redo: %s"
+msgstr "Globaali Tee Uudelleen: %s"
+
 msgid "Remote Redo: %s"
 msgstr "Etä Tee Uudelleen: %s"
+
+msgid "Scene Redo: %s"
+msgstr "Kohtaus Tee Uudelleen: %s"
 
 msgid "Can't reload a scene that was never saved."
 msgstr "Ei voi ladata uudelleen kohtausta, jota ei ole koskaan tallennettu."
@@ -2714,10 +3002,16 @@ msgstr ""
 msgid "Save & Reload"
 msgstr "Tallenna & Lataa Uudelleen"
 
+msgid "Save modified resources before reloading?"
+msgstr "Tallennetaanko muokatut resurssit ennen uudelleen lataamista?"
+
 msgid "Save & Quit"
 msgstr "Tallenna ja lopeta"
 
-msgid "Save changes to the following scene(s) before quitting?"
+msgid "Save modified resources before closing?"
+msgstr "Tallennetaanko muokatut resurssit ennen sulkemista?"
+
+msgid "Save changes to the following scene(s) before reloading?"
 msgstr ""
 "Tallenna muutokset seuraavaan kohtaukseen (seuraaviin kohtauksiin) ennen "
 "lopettamista?"
@@ -2727,27 +3021,17 @@ msgstr ""
 "Tallenna muutokset seuraavaan kohtaukseen (seuraaviin kohtauksiin) ennen "
 "Projekti Managerin avaamista?"
 
-msgid ""
-"This option is deprecated. Situations where refresh must be forced are now "
-"considered a bug. Please report."
-msgstr ""
-"Tämä ominaisuus on wanhentunut. Tilanteita joissa virkistys täytyy pakottaa "
-"pidetään nykyään bugeina. Ole hyvä ja raportoi."
-
 msgid "Pick a Main Scene"
 msgstr "Valitse pääkohtaus"
-
-msgid "This operation can't be done without a scene."
-msgstr "Tätä toimintoa ei voi tehdä ilman kohtausta."
 
 msgid "Export Mesh Library"
 msgstr "Vie mesh-kirjasto"
 
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
-msgstr "Lisäosan '%s' aktivointi epäonnistui, virheellinen asetustiedosto."
+msgstr "Liitännäisen '%s' aktivointi epäonnistui, virheellinen asetustiedosto."
 
 msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr "Skriptikenttää ei löytynyt lisäosan tiedostosta: '%s'."
+msgstr "Skriptikenttää ei löytynyt liitännäisen tiedostosta: '%s'."
 
 msgid "Unable to load addon script from path: '%s'."
 msgstr "Virhe ladattaessa lisäosaa polusta: '%s'."
@@ -2762,38 +3046,17 @@ msgstr ""
 "Lisäosa '%s' poistetaan käytöstä tulevien virheiden estämiseksi."
 
 msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr "Virhe ladattaessa lisäosaa polusta: '%s'. Tyyppi ei ole EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Virhe ladattaessa lisäosaa polusta: '%s'. Skripti ei ole työkalu-tilassa."
-
-msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
 "Kohtaus '%s' tuotiin automaattisesti, joten sitä ei voi muuttaa.\n"
 "Jos siihen halutaan tehdä muutoksia, voidaan luoda uusi peritty kohtaus."
 
-msgid ""
-"Error loading scene, it must be inside the project path. Use 'Import' to open "
-"the scene, then save it inside the project path."
-msgstr ""
-"Virhe kohtauksen lataamisessa, sen on oltava projektipolun sisällä. Avaa "
-"kohtaus 'Tuo' -toiminnolla ja tallenna se sitten projektipolun sisäpuolelle."
-
 msgid "Scene '%s' has broken dependencies:"
 msgstr "Kohtaus '%s' on rikkonut riippuvuuksia:"
 
 msgid "Clear Recent Scenes"
 msgstr "Tyhjennä viimeisimmät kohtaukset"
-
-msgid "There is no defined scene to run."
-msgstr "Suoritettavaa kohtausta ei ole määritetty."
-
-msgid "%s - Godot Engine"
-msgstr "%s - Godot Pelimoottori"
 
 msgid ""
 "No main scene has ever been defined, select one?\n"
@@ -2822,23 +3085,51 @@ msgstr ""
 "Voit muuttaa sitä myöhemmin \"Projektiasetukset\" -kohdassa 'sovellus' -"
 "luokassa."
 
+msgid "Default"
+msgstr "Oletus"
+
 msgid "Save Layout"
 msgstr "Tallenna asettelu"
 
 msgid "Delete Layout"
 msgstr "Poista asettelu"
 
-msgid "Default"
-msgstr "Oletus"
+msgid "This scene was never saved."
+msgstr "Tätä kohtausta ei koskaan tallennettu."
+
+msgid "%d second ago"
+msgid_plural "%d seconds ago"
+msgstr[0] "%d sekuntti sitten"
+msgstr[1] "%d sekunttia sitten"
+
+msgid "%d minute ago"
+msgid_plural "%d minutes ago"
+msgstr[0] "%d minuutti sitten"
+msgstr[1] "%d minuuttia sitten"
+
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] "%d tunti sitten"
+msgstr[1] "%d tuntia sitten"
+
+msgid ""
+"Scene \"%s\" has unsaved changes.\n"
+"Last saved: %s."
+msgstr ""
+"Kohtauksessa \"%s\" on tallentamattomia muutoksia.\n"
+"Viimeksi tallennettu: %s."
 
 msgid "Save & Close"
 msgstr "Tallenna ja sulje"
 
+msgid "Save before closing?"
+msgstr "Tallenna ennen sulkemista?"
+
 msgid "%d more files or folders"
-msgstr "Vielä %d tiedostoa tai hakemistoa"
+msgstr "Vielä %d tiedostoa tai kansiota"
 
 msgid "%d more folders"
-msgstr "Vielä %d hakemistoa"
+msgstr "Vielä %d kansiota"
 
 msgid "%d more files"
 msgstr "Vielä %d tiedostoa"
@@ -2849,11 +3140,17 @@ msgstr ""
 "Tiedostoon '%s' kirjoittaminen epäonnistui, tiedosto käytössä, lukossa tai "
 "käyttöoikeudet ovat puutteelliset."
 
+msgid "Forward+"
+msgstr "Eteenpäin+"
+
+msgid "Mobile"
+msgstr "Mobiili"
+
+msgid "Compatibility"
+msgstr "Yhteensopivuus"
+
 msgid "Pan View"
 msgstr "Panorointinäkymä"
-
-msgid "Dock Position"
-msgstr "Telakan sijainti"
 
 msgid "Distraction Free Mode"
 msgstr "Häiriötön tila"
@@ -2869,6 +3166,15 @@ msgstr "Toiminnot kohtaus tiedostoille."
 
 msgid "Copy Text"
 msgstr "Kopioi teksti"
+
+msgid "Next Scene Tab"
+msgstr "Seuraava Kohtaus Välilehti"
+
+msgid "Previous Scene Tab"
+msgstr "Edellinen Kohtaus Välilehti"
+
+msgid "Command Palette"
+msgstr "Komentorivi"
 
 msgid "New Scene"
 msgstr "Uusi kohtaus"
@@ -2888,6 +3194,9 @@ msgstr "Avaa viimeaikainen"
 msgid "Save Scene"
 msgstr "Tallenna kohtaus"
 
+msgid "Export As..."
+msgstr "Vie..."
+
 msgid "MeshLibrary..."
 msgstr "Mesh-kirjastoksi..."
 
@@ -2897,17 +3206,17 @@ msgstr "Sulje kohtaus"
 msgid "Quit"
 msgstr "Lopeta"
 
+msgid "Editor Settings..."
+msgstr "Editorin asetukset..."
+
 msgid "Project"
 msgstr "Projekti"
 
-msgid "Project Settings..."
-msgstr "Projektin asetukset..."
+msgid "Project Settings"
+msgstr "Projektin Asetukset"
 
 msgid "Version Control"
 msgstr "Versionhallinta"
-
-msgid "Export..."
-msgstr "Vie..."
 
 msgid "Install Android Build Template..."
 msgstr "Asenna Androidin käännösmalli..."
@@ -2927,11 +3236,8 @@ msgstr "Lataa uudelleen nykyinen projekti"
 msgid "Quit to Project List"
 msgstr "Poistu projektiluetteloon"
 
-msgid "Editor"
-msgstr "Editori"
-
-msgid "Editor Settings..."
-msgstr "Editorin asetukset..."
+msgid "Command Palette..."
+msgstr "Komentopaletti..."
 
 msgid "Editor Layout"
 msgstr "Editorin ulkoasu"
@@ -2966,9 +3272,6 @@ msgstr "Ohje"
 msgid "Online Documentation"
 msgstr "Online-dokumentaatio"
 
-msgid "Questions & Answers"
-msgstr "Kysymykset & vastaukset"
-
 msgid "Community"
 msgstr "Yhteisö"
 
@@ -2987,29 +3290,20 @@ msgstr "Ehdota ominaisuutta"
 msgid "Send Docs Feedback"
 msgstr "Lähetä palautetta ohjeesta"
 
-msgid "About Godot"
-msgstr "Tietoja Godotista"
-
 msgid "Support Godot Development"
 msgstr "Tue Godotin kehitystä"
 
-msgid "Forward+"
-msgstr "Eteenpäin+"
-
-msgid "Mobile"
-msgstr "Mobiili"
-
-msgid "Compatibility"
-msgstr "Yhteensopivuus"
+msgid "Save & Restart"
+msgstr "Tallenna & käynnistä uudelleen"
 
 msgid "Update Continuously"
 msgstr "Päivitä jatkuvasti"
 
+msgid "Update When Changed"
+msgstr "Päivitä Muuttuessa"
+
 msgid "Hide Update Spinner"
 msgstr "Piilota päivitysanimaatio"
-
-msgid "FileSystem"
-msgstr "Tiedostojärjestelmä"
 
 msgid "Inspector"
 msgstr "Tarkastaja"
@@ -3017,11 +3311,8 @@ msgstr "Tarkastaja"
 msgid "Node"
 msgstr "Solmu"
 
-msgid "Expand Bottom Panel"
-msgstr "Laajenna alapaneeli"
-
-msgid "Output"
-msgstr "Tuloste"
+msgid "History"
+msgstr "Historia"
 
 msgid "Don't Save"
 msgstr "Älä tallenna"
@@ -3035,16 +3326,8 @@ msgstr "Hallinnoi malleja"
 msgid "Install from file"
 msgstr "Asenna tiedostosta"
 
-msgid ""
-"The Android build template is already installed in this project and it won't "
-"be overwritten.\n"
-"Remove the \"res://android/build\" directory manually before attempting this "
-"operation again."
-msgstr ""
-"Androidin käännösmalli on jo asennettu tähän projektiin, eikä sitä "
-"ylikirjoiteta.\n"
-"Poista \"res://android/build\" hakemisto käsin ennen kuin yrität tätä "
-"toimenpidettä uudelleen."
+msgid "Select Android sources file"
+msgstr "Valitse android-lähdetiedosto"
 
 msgid "Show in File Manager"
 msgstr "Näytä tiedostonhallinnassa"
@@ -3057,12 +3340,6 @@ msgstr "Mallipaketti"
 
 msgid "Export Library"
 msgstr "Vie kirjasto"
-
-msgid "Merge With Existing"
-msgstr "Yhdistä olemassaolevaan"
-
-msgid "Apply MeshInstance Transforms"
-msgstr "Käytä MeshInstance muunnoksia"
 
 msgid "Open & Run a Script"
 msgstr "Avaa ja suorita skripti"
@@ -3079,6 +3356,9 @@ msgstr "Lataa uudelleen"
 
 msgid "Resave"
 msgstr "Tallenna uudelleen"
+
+msgid "Version Control Settings..."
+msgstr "Versionhallintajärjestelmän Asetukset..."
 
 msgid "New Inherited"
 msgstr "Uusi peritty"
@@ -3107,35 +3387,17 @@ msgstr "Avaa seuraava editori"
 msgid "Open the previous Editor"
 msgstr "Avaa edellinen editori"
 
-msgid "Ok"
-msgstr "Ok"
-
 msgid "Warning!"
 msgstr "Varoitus!"
-
-msgid "Main Script:"
-msgstr "Pääskripti:"
-
-msgid "Edit Plugin"
-msgstr "Muokkaa liitännäistä"
-
-msgid "Installed Plugins:"
-msgstr "Asennetut lisäosat:"
-
-msgid "Version"
-msgstr "Versio"
-
-msgid "Author"
-msgstr "Tekijä"
-
-msgid "Status"
-msgstr "Tila"
 
 msgid "Edit Text:"
 msgstr "Muokkaa tekstiä:"
 
 msgid "On"
 msgstr "Päällä"
+
+msgid "Renaming layer %d:"
+msgstr "Uudelleen nimetään kerros %d:"
 
 msgid "No name provided."
 msgstr "Nimeä ei annettu."
@@ -3149,11 +3411,35 @@ msgstr "Bitti %d, arvo %d"
 msgid "Rename"
 msgstr "Nimeä uudelleen"
 
+msgid "Rename layer"
+msgstr "Uudelleen nimeä kerros"
+
+msgid "Layer %d"
+msgstr "Kerros %d"
+
+msgid "No Named Layers"
+msgstr "Ei nimettyjä kerroksia"
+
+msgid "Edit Layer Names"
+msgstr "Muokkaa Kerroksien Nimiä"
+
+msgid "<empty>"
+msgstr "<tyhjä>"
+
 msgid "Assign..."
 msgstr "Aseta..."
 
+msgid "Copy as Text"
+msgstr "Kopioi Tekstinä"
+
+msgid "Show Node in Tree"
+msgstr "Näytä Solmu Puussa"
+
 msgid "Invalid RID"
 msgstr "Virheellinen RID"
+
+msgid "Recursion detected, unable to assign resource to property."
+msgstr "Rekursio havaittu, resurssin sijoittaminen ominaisuuteen epäonnistui."
 
 msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
@@ -3179,20 +3465,35 @@ msgstr "Valitse näyttöruutu"
 msgid "Selected node is not a Viewport!"
 msgstr "Valittu solmu ei ole Viewport!"
 
-msgid "Size:"
-msgstr "Koko:"
-
-msgid "Remove Item"
-msgstr "Poista"
-
 msgid "New Key:"
 msgstr "Uusi avain:"
 
 msgid "New Value:"
 msgstr "Uusi arvo:"
 
+msgid "%s (size %s)"
+msgstr "%s (koko %s)"
+
+msgid "Size:"
+msgstr "Koko:"
+
+msgid "Remove Item"
+msgstr "Poista"
+
+msgid "Dictionary (size %d)"
+msgstr "Sanakirja (koko %d)"
+
 msgid "Add Key/Value Pair"
 msgstr "Lisää avain/arvopari"
+
+msgid "Localizable String (size %d)"
+msgstr "Käännettävä String (koko %d)"
+
+msgid "Add Translation"
+msgstr "Lisää Käännös"
+
+msgid "Lock/Unlock Component Ratio"
+msgstr "Lukitse/Vapauta Komponentin Suhteellisuus"
 
 msgid ""
 "The selected resource (%s) does not match any type expected for this property "
@@ -3201,11 +3502,20 @@ msgstr ""
 "Valittu resurssi (%s) ei vastaa mitään odotettua tyyppiä tälle ominaisuudelle "
 "(%s)."
 
-msgid "Quick Load"
-msgstr "Pikalataus"
+msgid "Load..."
+msgstr "Lataa..."
+
+msgid "Inspect"
+msgstr "Tarkastele"
 
 msgid "Make Unique"
 msgstr "Tee yksilölliseksi"
+
+msgid "Make Unique (Recursive)"
+msgstr "Tee yksilölliseksi (Rekursiivisesti)"
+
+msgid "Save As..."
+msgstr "Tallenna nimellä..."
 
 msgid "Show in FileSystem"
 msgstr "Näytä tiedostojärjestelmässä"
@@ -3213,14 +3523,23 @@ msgstr "Näytä tiedostojärjestelmässä"
 msgid "Convert to %s"
 msgstr "Muunna muotoon %s"
 
+msgid "Select resources to make unique:"
+msgstr "Valitse yksilölliseksi tehtävät resurssit:"
+
 msgid "New %s"
 msgstr "Uusi %s"
 
-msgid "New Script"
-msgstr "Uusi skripti"
+msgid "New Script..."
+msgstr "Uusi skripti..."
 
-msgid "Extend Script"
-msgstr "Laajenna skriptiä"
+msgid "Extend Script..."
+msgstr "Laajenna Skriptiä..."
+
+msgid "No Remote Debug export presets configured."
+msgstr "Ei Etädebuggaus vientiasetuksia konfiguroitu."
+
+msgid "Remote Debug"
+msgstr "Etä-Debuggaus"
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -3231,11 +3550,26 @@ msgstr ""
 "Ole hyvä ja lisää ajettava esiasetus Vienti-valikosta tai määrittele olemassa "
 "oleva esiasetus ajettavaksi."
 
+msgid "Project Run"
+msgstr "Aja Projekti"
+
 msgid "Write your logic in the _run() method."
 msgstr "Kirjoita logiikka _run() metodiin."
 
 msgid "There is an edited scene already."
 msgstr "Muokattu kohtaus on jo olemassa."
+
+msgid "Undo: %s"
+msgstr "Kumoa: %s"
+
+msgid "Redo: %s"
+msgstr "Tee uudelleen: %s"
+
+msgid "Edit Built-in Action: %s"
+msgstr "Muokkaa Sisäänrakennettua Toimintoa: %s"
+
+msgid "Edit Shortcut: %s"
+msgstr "Muokkaa Pikanäppäintä: %s"
 
 msgid "Common"
 msgstr "Yleinen"
@@ -3246,6 +3580,9 @@ msgstr "Editorin asetukset"
 msgid "General"
 msgstr "Yleistä"
 
+msgid "Filter Settings"
+msgstr "Suodata Asetuksia"
+
 msgid "The editor must be restarted for changes to take effect."
 msgstr "Editori täytyy käynnistää uudelleen, jotta muutokset tulevat voimaan."
 
@@ -3254,6 +3591,75 @@ msgstr "Pikanäppäimet"
 
 msgid "Binding"
 msgstr "Sidonta"
+
+msgid "Left Stick Left, Joystick 0 Left"
+msgstr "Vasen Sauva Vasemmalle, Tatti 0 Vasemmalle"
+
+msgid "Left Stick Right, Joystick 0 Right"
+msgstr "Vasen Sauva Oikealle, Tatti 0 Oikealle"
+
+msgid "Left Stick Up, Joystick 0 Up"
+msgstr "Vasen Sauva Ylös, Tatti 0 Ylös"
+
+msgid "Left Stick Down, Joystick 0 Down"
+msgstr "Vasen Sauva Alas, Tatti 0 Alas"
+
+msgid "Right Stick Left, Joystick 1 Left"
+msgstr "Oikea Sauva Vasemmalle, Tatti 1 Vasemmalle"
+
+msgid "Right Stick Right, Joystick 1 Right"
+msgstr "Oikea Sauva Oikealle, Tatti 1 Oikealle"
+
+msgid "Right Stick Up, Joystick 1 Up"
+msgstr "Oikea Sauva Ylös, Tatti 1 Ylös"
+
+msgid "Right Stick Down, Joystick 1 Down"
+msgstr "Oikea Sauva Alas, Tatti 1 Alas"
+
+msgid "Joystick 2 Left"
+msgstr "Tatti 2 Vasemmalle"
+
+msgid "Left Trigger, Sony L2, Xbox LT, Joystick 2 Right"
+msgstr "Vasen liipaisin, Sony L2, Xbox LT, tattiohjain 2 oikea"
+
+msgid "Joystick 2 Up"
+msgstr "Tatti 2 Ylös"
+
+msgid "Right Trigger, Sony R2, Xbox RT, Joystick 2 Down"
+msgstr "Oikea liipaisin, Sony L2, Xbox LT, tattiohjain 2 alas"
+
+msgid "Joystick 3 Left"
+msgstr "Tatti 3 Vasemmalle"
+
+msgid "Joystick 3 Right"
+msgstr "Tatti 3 Oikealle"
+
+msgid "Joystick 3 Up"
+msgstr "Tatti 3 Ylös"
+
+msgid "Joystick 3 Down"
+msgstr "Tatti 3 Alas"
+
+msgid "Joystick 4 Left"
+msgstr "Tatti 4 Vasemmalle"
+
+msgid "Joystick 4 Right"
+msgstr "Tatti 4 Oikealle"
+
+msgid "Joystick 4 Up"
+msgstr "Tatti 4 Ylös"
+
+msgid "Joystick 4 Down"
+msgstr "Tatti 4 Alas"
+
+msgid "or"
+msgstr "tai"
+
+msgid "Unicode"
+msgstr "Unicode"
+
+msgid "Joypad Axis %d %s (%s)"
+msgstr "Ohjaimen Akseli %d %s (%s)"
 
 msgid "All Devices"
 msgstr "Kaikki laitteet"
@@ -3264,17 +3670,20 @@ msgstr "Laite"
 msgid "Project export for platform:"
 msgstr "Projektin vienti alustalle:"
 
+msgid "Completed with warnings."
+msgstr "Valmistunut virheillä."
+
 msgid "Completed successfully."
 msgstr "Paketti asennettu onnistuneesti."
 
 msgid "Failed."
 msgstr "Epäonnistui."
 
+msgid "Storing File: %s"
+msgstr "Varastoidaan Tiedostoa: %s"
+
 msgid "Storing File:"
 msgstr "Varastoidaan tiedostoa:"
-
-msgid "No export template found at the expected path:"
-msgstr "Vientimallia ei löytynyt odotetusta polusta:"
 
 msgid "Could not open file to read from path \"%s\"."
 msgstr "Ei voitu avata luettavaksi tiedostoa polulta \"%s\"."
@@ -3282,8 +3691,23 @@ msgstr "Ei voitu avata luettavaksi tiedostoa polulta \"%s\"."
 msgid "Packing"
 msgstr "Pakataan"
 
+msgid "Cannot create file \"%s\"."
+msgstr "Tiedostoa ei voida luoda: \"%s\"."
+
 msgid "Failed to export project files."
 msgstr "Ei voitu viedä projektin tiedostoja."
+
+msgid "Can't open file for writing at path \"%s\"."
+msgstr "Ei voida avata tiedostoa kirjoitettavaksi polusta: \"%s\"."
+
+msgid "Can't open file for reading-writing at path \"%s\"."
+msgstr "Ei voida avata tiedostoa luettavaksi-kirjoitettavaksi polusta \"%s\"."
+
+msgid "Can't create encrypted file."
+msgstr "Ei voida luoda salattua tiedostoa."
+
+msgid "Can't open encrypted file to write."
+msgstr "Ei voida avata salattua tiedostoa kirjoitettavaksi."
 
 msgid "Can't open file to read from path \"%s\"."
 msgstr "Ei voida avata tiedostoa luettavaksi polulta \"%s\"."
@@ -3306,6 +3730,9 @@ msgstr "Vientimallin kopiointi epäonnistui."
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
 "32-bittisissä vienneissä sisällytetty PCK ei voi olla suurempi kuin 4 Gt."
+
+msgid "Plugin \"%s\" is not supported on \"%s\""
+msgstr "Liitännäistä \"%s\" ei ole tuettu alustalla \"%s\""
 
 msgid "Open the folder containing these templates."
 msgstr "Avaa kansio, joka sisältää nämä vientimallit."
@@ -3376,33 +3803,6 @@ msgid ""
 msgstr ""
 "Tälle versiolle ei löytynyt ladattavia linkkejä. Suora lataaminen on "
 "mahdollista vain virallisilla versioilla."
-
-msgid "Disconnected"
-msgstr "Yhteys katkaistu"
-
-msgid "Resolving"
-msgstr "Selvitetään yhteyttä"
-
-msgid "Can't Resolve"
-msgstr "Yhteyden selvittäminen epäonnistui"
-
-msgid "Connecting..."
-msgstr "Yhdistetään..."
-
-msgid "Can't Connect"
-msgstr "Ei voitu yhdistää"
-
-msgid "Connected"
-msgstr "Yhdistetty"
-
-msgid "Requesting..."
-msgstr "Pyydetään..."
-
-msgid "Downloading"
-msgstr "Ladataan"
-
-msgid "Connection Error"
-msgstr "Yhteysvirhe"
 
 msgid "Can't open the export templates file."
 msgstr "Vientimallien tiedostoa ei voida avata."
@@ -3502,14 +3902,34 @@ msgstr ""
 "Mallien lataus jatkuu.\n"
 "Saatat kokea lyhyitä editorin jähmettymisiä niiden tullessa valmiiksi."
 
+msgid ""
+"Target platform requires '%s' texture compression. Enable 'Import %s' to fix."
+msgstr ""
+"Kohdealusta tarvitsee '%s' tekstuuripakkausta. Kytke 'Import %s' päälle."
+
+msgid "Fix Import"
+msgstr "Korjaa Tuonti"
+
 msgid "Runnable"
 msgstr "Suoritettava"
+
+msgid "Delete preset '%s'?"
+msgstr "Poista esiasetus '%s'?"
+
+msgid "Resources to exclude:"
+msgstr "Pois jätettävät resurssit:"
 
 msgid "Resources to export:"
 msgstr "Vietävät resurssit:"
 
-msgid "Delete preset '%s'?"
-msgstr "Poista esiasetus '%s'?"
+msgid "(Inherited)"
+msgstr "(Peritty)"
+
+msgid "Export With Debug"
+msgstr "Vie debugaten"
+
+msgid "%s Export"
+msgstr "%s Vie"
 
 msgid "Release"
 msgstr "Julkaisuversio"
@@ -3533,6 +3953,9 @@ msgstr ""
 "Jos päällä, esiasetus on käytettävissä yhden napsautuksen käyttöönotossa.\n"
 "Kutakin alustaa kohden voidaan merkitä ajettavaksi vain yksi esiasetus."
 
+msgid "Advanced Options"
+msgstr "Edistyneet asetukset"
+
 msgid "Export Path"
 msgstr "Vientipolku"
 
@@ -3551,8 +3974,21 @@ msgstr "Vie valitut kohtaukset (ja riippuvuudet)"
 msgid "Export selected resources (and dependencies)"
 msgstr "Vie valitut resurssit (ja riippuvuudet)"
 
+msgid "Export all resources in the project except resources checked below"
+msgstr "Vie kaikki muut projektin resurssit, paitsi alla merkatut"
+
+msgid "Export as dedicated server"
+msgstr "Vie palvelinohjelmistoksi"
+
 msgid "Export Mode:"
 msgstr "Vientitila:"
+
+msgid ""
+"\"Strip Visuals\" will replace the following resources with placeholders:"
+msgstr "\"Riisu kuvitukset\" korvaa seuraavat resurssit paikanvaraajilla:"
+
+msgid "Strip Visuals"
+msgstr "Riisu kuvitukset"
 
 msgid "Keep"
 msgstr "Pidä"
@@ -3581,8 +4017,34 @@ msgstr "Mukautettu (pilkulla erotettu):"
 msgid "Feature List:"
 msgstr "Ominaisuuslista:"
 
+msgid "Encryption"
+msgstr "Salaus"
+
+msgid "Encrypt Exported PCK"
+msgstr "Salaa viety PCK-tiedosto"
+
+msgid "Encrypt Index (File Names and Info)"
+msgstr "Salaa indeksi (tiedostonimet ja info)"
+
+msgid ""
+"Filters to include files/folders\n"
+"(comma-separated, e.g: *.tscn, *.tres, scenes/*)"
+msgstr ""
+"Suodattimet tiedostojen ja kansioiden sisällyttämiseksi\n"
+"(pilkulla erotettuna, esim. *.json, *.txt, docs/*)"
+
+msgid ""
+"Filters to exclude files/folders\n"
+"(comma-separated, e.g: *.ctex, *.import, music/*)"
+msgstr ""
+"Suodattimet tiedostojen ja kansioiden pois jättämiseksi\n"
+"(pilkulla erotettuna, esim. *.ctex, *.import, music/*)"
+
 msgid "Invalid Encryption Key (must be 64 hexadecimal characters long)"
 msgstr "Virheellinen salausavain (oltava 64 heksadesimaalimerkkiä pitkä)"
+
+msgid "Encryption Key (256-bits as hexadecimal):"
+msgstr "Salausavain (256-bittinen heksadesimaalina):"
 
 msgid ""
 "Note: Encryption key needs to be stored in the binary,\n"
@@ -3594,11 +4056,17 @@ msgstr ""
 msgid "More Info..."
 msgstr "Lisää Tietoa..."
 
+msgid "Export PCK/ZIP..."
+msgstr "Vie PCK/ZIP..."
+
 msgid "Export Project..."
 msgstr "Vie projekti..."
 
 msgid "Export All"
 msgstr "Vie kaikki"
+
+msgid "Choose an export mode:"
+msgstr "Valitse vienti tila:"
 
 msgid "Export All..."
 msgstr "Vie kaikki..."
@@ -3609,14 +4077,26 @@ msgstr "ZIP-tiedosto"
 msgid "Export templates for this platform are missing:"
 msgstr "Tälle alustalle ei löytynyt vientipohjia:"
 
+msgid "Project Export"
+msgstr "Projektin Vienti"
+
 msgid "Manage Export Templates"
 msgstr "Hallinnoi vientimalleja"
 
-msgid "Export With Debug"
-msgstr "Vie debugaten"
+msgid "Path to FBX2glTF executable is empty."
+msgstr "Polku FBX2glTF-sovellukseen on tyhjä."
+
+msgid "Error executing this file (wrong version or architecture)."
+msgstr "Virhe suorittaessa tätä tiedostoa (väärä versio tai arkkitehtuuri)."
+
+msgid "Click this link to download FBX2glTF"
+msgstr "Paina tästä ladataksesi FBX2glTF"
 
 msgid "Browse"
 msgstr "Selaa"
+
+msgid "Confirm Path"
+msgstr "Varmista Polku"
 
 msgid "Favorites"
 msgstr "Suosikit"
@@ -3649,6 +4129,15 @@ msgstr "Virhe siirrettäessä:"
 msgid "Error duplicating:"
 msgstr "Virhe kahdennettaessa:"
 
+msgid "Failed to save resource at %s: %s"
+msgstr "Resurssin tallentaminen epäonnistui kohteessa %s: %s"
+
+msgid "Failed to load resource at %s: %s"
+msgstr "Resurssin lataaminen epäonnistui kohteesta %s: %s"
+
+msgid "Unable to update dependencies for:"
+msgstr "Ei voida päivittää riippuvuuksia:"
+
 msgid ""
 "This filename begins with a dot rendering the file invisible to the editor.\n"
 "If you want to rename it anyway, use your operating system's file manager."
@@ -3672,11 +4161,20 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "Tällä nimellä löytyy jo kansio tai tiedosto."
 
+msgid "Name begins with a dot."
+msgstr "Nimi alkaa pisteellä."
+
 msgid ""
 "The following files or folders conflict with items in the target location "
 "'%s':"
 msgstr ""
 "Seuraavat tiedostot tai kansiot ovat ristiriidassa kohdesijainnissa '%s':"
+
+msgid "Do you wish to overwrite them or rename the copied files?"
+msgstr "Haluatko ylikirjoittaa tai uudelleen nimetä kopioidut tiedostot?"
+
+msgid "Do you wish to overwrite them or rename the moved files?"
+msgstr "Haluatko ylikirjoittaa tai uudelleen nimetä siirretyt tiedostot?"
 
 msgid "Duplicating file:"
 msgstr "Kahdennetaan tiedosto:"
@@ -3687,17 +4185,56 @@ msgstr "Kahdennetaan kansio:"
 msgid "New Inherited Scene"
 msgstr "Uusi peritty kohtaus"
 
-msgid "Set As Main Scene"
-msgstr "Aseta pääkohtaukseksi"
+msgid "Set as Main Scene"
+msgstr "Aseta Pääkohtaukseksi"
 
 msgid "Open Scenes"
 msgstr "Avaa kohtaukset"
+
+msgid "Instantiate"
+msgstr "Luo ilmentymä"
 
 msgid "Edit Dependencies..."
 msgstr "Muokkaa riippuvuuksia..."
 
 msgid "View Owners..."
 msgstr "Tarkastele omistajia..."
+
+msgid "Create New"
+msgstr "Luo Uusi"
+
+msgid "Folder..."
+msgstr "Kansio..."
+
+msgid "Scene..."
+msgstr "Kohtaus..."
+
+msgid "Script..."
+msgstr "Skripti..."
+
+msgid "Resource..."
+msgstr "Resurssi..."
+
+msgid "TextFile..."
+msgstr "Tekstitiedosto..."
+
+msgid "Expand Folder"
+msgstr "Laajenna Kansio"
+
+msgid "Expand Hierarchy"
+msgstr "Laajenna Hierarkia"
+
+msgid "Collapse Hierarchy"
+msgstr "Supista Hierarkia"
+
+msgid "Set Folder Color..."
+msgstr "Aseta Kansion Väri..."
+
+msgid "Default (Reset)"
+msgstr "Oletus (Resetoi)"
+
+msgid "Move/Duplicate To..."
+msgstr "Siirrä/Kahdenna Kohteeseen..."
 
 msgid "Add to Favorites"
 msgstr "Lisää suosikkeihin"
@@ -3708,20 +4245,20 @@ msgstr "Poista suosikeista"
 msgid "Reimport"
 msgstr "Tuo uudelleen"
 
-msgid "Open in File Manager"
-msgstr "Avaa tiedostonhallinnassa"
-
 msgid "New Folder..."
 msgstr "Uusi kansio..."
 
 msgid "New Scene..."
 msgstr "Uusi kohtaus..."
 
-msgid "New Script..."
-msgstr "Uusi skripti..."
-
 msgid "New Resource..."
 msgstr "Uusi resurssi..."
+
+msgid "New TextFile..."
+msgstr "Uusi Tekstitiedosto..."
+
+msgid "Sort Files"
+msgstr "Lajittele Tiedostot"
 
 msgid "Sort by Name (Ascending)"
 msgstr "Lajittele nimen mukaan (nouseva)"
@@ -3744,17 +4281,59 @@ msgstr "Lajittele ensiksi muokatun mukaan"
 msgid "Copy Path"
 msgstr "Kopioi polku"
 
+msgid "Copy UID"
+msgstr "Kopioi UID"
+
 msgid "Duplicate..."
 msgstr "Kahdenna..."
 
 msgid "Rename..."
 msgstr "Nimeä uudelleen..."
 
+msgid "Open in File Manager"
+msgstr "Avaa tiedostonhallinnassa"
+
+msgid "Open in External Program"
+msgstr "Avaa Ulkopuolisessa Ohjelmassa"
+
+msgid "Red"
+msgstr "Punainen"
+
+msgid "Orange"
+msgstr "Oranssi"
+
+msgid "Yellow"
+msgstr "Keltainen"
+
+msgid "Green"
+msgstr "Vihreä"
+
+msgid "Teal"
+msgstr "Sinivihreä"
+
+msgid "Blue"
+msgstr "Sininen"
+
+msgid "Purple"
+msgstr "Violetti"
+
+msgid "Pink"
+msgstr "Pinkki"
+
+msgid "Gray"
+msgstr "Harmaa"
+
+msgid "Go to previous selected folder/file."
+msgstr "Siirry edelliseen kansioon/tiedostoon."
+
+msgid "Go to next selected folder/file."
+msgstr "Siirry seuraavaan kansioon/tiedostoon."
+
 msgid "Re-Scan Filesystem"
 msgstr "Skannaa tiedostojärjestelmä uudelleen"
 
-msgid "Toggle Split Mode"
-msgstr "Aseta jaettu tila"
+msgid "Filter Files"
+msgstr "Suodata Tiedostoja"
 
 msgid ""
 "Scanning Files,\n"
@@ -3765,6 +4344,9 @@ msgstr ""
 
 msgid "Overwrite"
 msgstr "Ylikirjoita"
+
+msgid "Keep Both"
+msgstr "Pidä Molemmat"
 
 msgid "Create Script"
 msgstr "Luo skripti"
@@ -3800,8 +4382,23 @@ msgstr "Korvaa..."
 msgid "Replace in Files"
 msgstr "Korvaa tiedostoissa"
 
+msgid "Replace all (no undo)"
+msgstr "Korvaa kaikki (ei voi kumota)"
+
 msgid "Searching..."
 msgstr "Haetaan..."
+
+msgid "%d match in %d file"
+msgstr "%d osuma %d tiedostossa"
+
+msgid "%d matches in %d file"
+msgstr "%d osumaa %d tiedostossa"
+
+msgid "%d matches in %d files"
+msgstr "%d osumaa %d tiedostossa"
+
+msgid "Rename Group"
+msgstr "Nimeä ryhmä uudelleen"
 
 msgid "Add to Group"
 msgstr "Lisää ryhmään"
@@ -3809,50 +4406,33 @@ msgstr "Lisää ryhmään"
 msgid "Remove from Group"
 msgstr "Poista ryhmästä"
 
-msgid "Invalid group name."
-msgstr "Virheellinen ryhmän nimi."
+msgid "Global"
+msgstr "Globaali"
 
-msgid "Group name already exists."
-msgstr "Ryhmän nimi on jo olemassa."
-
-msgid "Rename Group"
-msgstr "Nimeä ryhmä uudelleen"
-
-msgid "Delete Group"
-msgstr "Poista ryhmä"
-
-msgid "Groups"
-msgstr "Ryhmät"
-
-msgid "Nodes Not in Group"
-msgstr "Ryhmään kuulumattomat solmut"
-
-msgid "Nodes in Group"
-msgstr "Ryhmään kuuluvat solmut"
-
-msgid "Empty groups will be automatically removed."
-msgstr "Tyhjät ryhmät poistetaan automaattisesti."
-
-msgid "Group Editor"
-msgstr "Ryhmäeditori"
-
-msgid "Manage Groups"
-msgstr "Hallinnoi ryhmiä"
+msgid "Expand Bottom Panel"
+msgstr "Laajenna alapaneeli"
 
 msgid "Move"
 msgstr "Siirrä"
-
-msgid "Please select a base directory first."
-msgstr "Ole hyvä ja valitse ensin päähakemisto."
-
-msgid "Choose a Directory"
-msgstr "Valitse hakemisto"
 
 msgid "Network"
 msgstr "Verkko"
 
 msgid "Select Current Folder"
 msgstr "Valitse nykyinen kansio"
+
+msgid "Cannot save file with an empty filename."
+msgstr "Ei voida tallentaa tiedostoa tyhjällä tiedostonimellä."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "Ei voida tallentaa tiedostoa jonka nimi alkaa pisteellä."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Tiedosto \"%s\" on jo olemassa.\n"
+"Haluatko ylikirjoittaa sen?"
 
 msgid "Select This Folder"
 msgstr "Valitse tämä kansio"
@@ -3870,13 +4450,19 @@ msgid "Open File(s)"
 msgstr "Avaa tiedosto(t)"
 
 msgid "Open a Directory"
-msgstr "Avaa hakemisto"
+msgstr "Avaa Hakemisto"
 
 msgid "Open a File or Directory"
-msgstr "Avaa tiedosto tai hakemisto"
+msgstr "Avaa Tiedosto tai Hakemisto"
 
 msgid "Save a File"
 msgstr "Tallenna tiedosto"
+
+msgid "Could not create folder. File with that name already exists."
+msgstr "Ei voitu luoda kansiota. Tällä nimellä löytyy jo tiedosto."
+
+msgid "Favorited folder does not exist anymore and will be removed."
+msgstr "Suosikiksi asetettua kansiota ei ole enää olemassa ja se poistetaan."
 
 msgid "Go Back"
 msgstr "Mene taaksepäin"
@@ -3924,13 +4510,24 @@ msgid "Toggle the visibility of hidden files."
 msgstr "Aseta piilotiedostojen näyttäminen."
 
 msgid "Directories & Files:"
-msgstr "Hakemistot ja tiedostot:"
+msgstr "Hakemistot ja Tiedostot:"
 
 msgid "Preview:"
 msgstr "Esikatselu:"
 
 msgid "File:"
 msgstr "Tiedosto:"
+
+msgid ""
+"Remove the selected files? For safety only files and empty directories can be "
+"deleted from here. (Cannot be undone.)\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
+msgstr ""
+"Poista valitut tiedostot projektista? Turvallisuuden takia vain tiedostoja ja "
+"tyhjiä hakemistoja voidaan poistaa täältä. (Ei voida kumota.)\n"
+"Riippuen tiedostojärjestelmäsi asetuksista, tiedostot siirretään joko "
+"järjestelmän roskakoriin tai poistetaan pysyvästi."
 
 msgid "No sub-resources found."
 msgstr "Aliresursseja ei löydetty."
@@ -3944,11 +4541,44 @@ msgstr "Käynnistä projekti."
 msgid "Play the edited scene."
 msgstr "Toista muokattu kohtaus."
 
+msgid "Play a custom scene."
+msgstr "Toista mukautettu kohtaus."
+
+msgid "Reload the played scene."
+msgstr "Uudelleenlataa toistettu kohtaus."
+
 msgid "Quick Run Scene..."
 msgstr "Kohtauksen pikakäynnistys..."
 
+msgid "Run the project's default scene."
+msgstr "Aja projektin oletus kohtaus."
+
 msgid "Run Project"
 msgstr "Aja projekti"
+
+msgid "Pause the running project's execution for debugging."
+msgstr "Pysäytä projektin suorittaminen virheenkorjausta varten."
+
+msgid "Pause Running Project"
+msgstr "Pysäytä Ajossa Oleva Projekti"
+
+msgid "Stop the currently running project."
+msgstr "Pysäytä tällä hetkellä ajossa oleva projekti."
+
+msgid "Stop Running Project"
+msgstr "Lopeta Ajossa Oleva Projekti"
+
+msgid "Run the currently edited scene."
+msgstr "Aja tällä hetkellä muokattu kohtaus."
+
+msgid "Run Current Scene"
+msgstr "Aja Nykyinen Kohtaus"
+
+msgid "Run a specific scene."
+msgstr "Aja tietty kohtaus."
+
+msgid "Run Specific Scene"
+msgstr "Aja Tietty Kohtaus"
 
 msgid "Play This Scene"
 msgstr "Toista tämä kohtaus"
@@ -3981,14 +4611,23 @@ msgstr ""
 "Pidä %s pohjassa pyöristääksesi kokonaislukuun.\n"
 "Pidä Shift pohjassa tarkempia muutoksia varten."
 
+msgid "No notifications."
+msgstr "Ei ilmoituksia."
+
+msgid "Show notifications."
+msgstr "Näytä ilmoitukset."
+
+msgid "Silence the notifications."
+msgstr "Hiljennä ilmoitukset."
+
 msgid "Toggle Visible"
 msgstr "Aseta näkyvyys"
 
 msgid "Unlock Node"
 msgstr "Poista solmun lukitus"
 
-msgid "Button Group"
-msgstr "Painikeryhmä"
+msgid "Disable Scene Unique Name"
+msgstr "Poista Kohtauksen Uniikki Nimi Käytöstä"
 
 msgid "(Connecting From)"
 msgstr "(Yhdistetään paikasta)"
@@ -3998,8 +4637,8 @@ msgstr "Solmun konfiguroinnin varoitus:"
 
 msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
-msgstr[0] "Solmulla on yksi yhteys"
-msgstr[1] "Solmulla on {num} yhteyttä"
+msgstr[0] "Solmulla on yksi yhteys."
+msgstr[1] "Solmulla on {num} yhteyttä."
 
 msgid "Node is in this group:"
 msgid_plural "Node is in the following groups:"
@@ -4009,8 +4648,8 @@ msgstr[1] "Solmu kuuluu seuraaviin ryhmiin:"
 msgid "Click to show signals dock."
 msgstr "Napsauta näyttääksesi signaalitelakan."
 
-msgid "Open in Editor"
-msgstr "Avaa editorissa"
+msgid "This script is a custom type."
+msgstr "Tämän skriptin tyyppi on mukautettu."
 
 msgid "Open Script:"
 msgstr "Avaa skripti:"
@@ -4023,11 +4662,27 @@ msgstr ""
 "Napsauta lukituksen avaamiseksi."
 
 msgid ""
+"Children are not selectable.\n"
+"Click to make them selectable."
+msgstr ""
+"Alisolmut eivät ole valittavissa.\n"
+"Napsauta niiden tekemiseksi valittavaksi."
+
+msgid ""
 "AnimationPlayer is pinned.\n"
 "Click to unpin."
 msgstr ""
 "AnimationPlayer on kiinnitetty.\n"
 "Napsauta kiinnityksen poistamiseksi."
+
+msgid "Open in Editor"
+msgstr "Avaa editorissa"
+
+msgid "Instance:"
+msgstr "Ilmentymä:"
+
+msgid "\"%s\" is not a known filter."
+msgstr "\"%s\" ei ole tunnettu suodatin."
 
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Virheellinen solmun nimi, seuraavat merkit eivät ole sallittuja:"
@@ -4038,17 +4693,20 @@ msgstr "Kohtauspuu (solmut):"
 msgid "Node Configuration Warning!"
 msgstr "Solmun konfigurointivaroitus!"
 
+msgid "Allowed:"
+msgstr "Sallittu:"
+
 msgid "Select a Node"
 msgstr "Valitse solmu"
 
-msgid "Offset:"
-msgstr "Siirtymä:"
+msgid "Show All"
+msgstr "Näytä Kaikki"
 
-msgid "Pre-render Configurations"
-msgstr "Esi-renderöi Konfiguraatiot"
+msgid "The Beginning"
+msgstr "Alku"
 
-msgid "Add configuration"
-msgstr "Lisää konfiguraatio"
+msgid "Pre-Import Scene"
+msgstr "Esituo Kohtaus"
 
 msgid "Importing Scene..."
 msgstr "Tuodaan kohtausta..."
@@ -4072,6 +4730,121 @@ msgstr "Virhe ajettaessa tuonnin jälkeistä skriptiä:"
 msgid "Saving..."
 msgstr "Tallennetaan..."
 
+msgid "<Unnamed Material>"
+msgstr "<Nimeämätön Materiaali>"
+
+msgid "Import ID: %s"
+msgstr "Tuonti ID: %s"
+
+msgid ""
+"Type: %s\n"
+"Import ID: %s"
+msgstr ""
+"Tyyppi: %s\n"
+"Tuonti ID: %s"
+
+msgid "Error opening scene"
+msgstr "Virhe kohtauksen avaamisessa"
+
+msgid "Advanced Import Settings for AnimationLibrary '%s'"
+msgstr "Edistyneet Tuonti Asetukset AnimaatioKirjastolle '%s'"
+
+msgid "Advanced Import Settings for Scene '%s'"
+msgstr "Edistyneet Tuonti Asetukset Kohtaukselle '%s'"
+
+msgid "Select folder where animations will save on import"
+msgstr "Valitse kansio mihin animaation tallennetaan tuonnin yhteydessä"
+
+msgid "Warning: File exists"
+msgstr "Varoitus: Tiedosto on olemassa"
+
+msgid "Existing file with the same name will be replaced."
+msgstr "Olemassa oleva tiedosto samalla nimellä tullaan korvaamaan."
+
+msgid "Will create new file"
+msgstr "Luo uuden tiedoston"
+
+msgid "Already Saving"
+msgstr "Jo Tallentamassa"
+
+msgid "Existing file with the same name will be replaced on import."
+msgstr ""
+"Olemassa oleva tiedosto samalla nimellä tullaan korvaamaan tuonnin yhteydessä."
+
+msgid "Will save to new file"
+msgstr "Tallentaa uuteen tiedostoon"
+
+msgid "Set Paths"
+msgstr "Aseta Polut"
+
+msgid "Set paths to save animations as resource files on Reimport"
+msgstr ""
+"Aseta polut tallentaaksesi animaatiot resurssitiedostoina uudelleen tuonnissa"
+
+msgid "Actions..."
+msgstr "Toiminnot..."
+
+msgid "Set Animation Save Paths"
+msgstr "Aseta Animaatioiden Tallennus Polut"
+
+msgid "Materials"
+msgstr "Materiaalit"
+
+msgid "Selected Animation Play/Pause"
+msgstr "Valittu Animaation Toista/Pysäytä"
+
+msgid "Status"
+msgstr "Tila"
+
+msgid "Save Extension:"
+msgstr "Tallenna Laajennus:"
+
+msgid "Text Resource"
+msgstr "Teksti Resurssi"
+
+msgid "Binary Resource"
+msgstr "Binääri Resurssi"
+
+msgid "Enable looping."
+msgstr "Kytke silmukka."
+
+msgid "Offset:"
+msgstr "Siirtymä:"
+
+msgid "Loop:"
+msgstr "Silmukka:"
+
+msgid "BPM:"
+msgstr "Iskua Minuutissa:"
+
+msgid "Beat Count:"
+msgstr "Tahtien Määrä:"
+
+msgid "Music Playback:"
+msgstr "Toista Musiikki:"
+
+msgid "New Configuration"
+msgstr "Uusi Konfiguraatio"
+
+msgid ""
+"Warning: Multiple configurations have identical settings. Duplicates will be "
+"ignored."
+msgstr ""
+"Varoitus: Useassa konfiguraatiossa on identtiset asetukset. Duplikaatit "
+"tullaan jättämään huomiotta."
+
+msgid "Advanced Import Settings for '%s'"
+msgstr "Edistyneet Tuonti Asetukset '%s':lle"
+
+msgid "Pre-render Configurations"
+msgstr "Esi-renderöi Konfiguraatiot"
+
+msgid "Configuration:"
+msgstr "Konfiguraatio:"
+
+msgid "Add configuration"
+msgstr "Lisää konfiguraatio"
+
 msgid "2D/3D (Auto-Detect)"
 msgstr "2D/3D (Automaattinen-Tunnistus)"
 
@@ -4081,31 +4854,8 @@ msgstr "2D"
 msgid "3D"
 msgstr "3D"
 
-msgid ""
-"Type: %s\n"
-"Import ID: %s"
-msgstr ""
-"Tyyppi: %s\n"
-"Tuonti ID: %s"
-
-msgid "Already Saving"
-msgstr "Jo Tallentamassa"
-
-msgid "Set paths to save animations as resource files on Reimport"
-msgstr ""
-"Aseta polut tallentaaksesi animaatiot resurssitiedostoina uudelleen tuonnissa"
-
-msgid "Actions..."
-msgstr "Toiminnot..."
-
-msgid "Materials"
-msgstr "Materiaalit"
-
 msgid "Importer:"
 msgstr "Tuoja:"
-
-msgid "Keep File (No Import)"
-msgstr "Pidä tiedosto (ei tuontia)"
 
 msgid "%d Files"
 msgstr "%d tiedostoa"
@@ -4134,12 +4884,40 @@ msgstr "Tuo nimellä:"
 msgid "Preset"
 msgstr "Esivalinta"
 
+msgid "Advanced..."
+msgstr "Edistyneet..."
+
+msgid ""
+"WARNING: Assets exist that use this resource. They may stop loading properly "
+"after changing type."
+msgstr ""
+"VAROITUS: Tällä resurssilla on sitä käyttäviä assetteja. Ne voivat lakata "
+"latautumasta kunnolla tyypin muuttamisen jälkeen."
+
 msgid ""
 "Select a resource file in the filesystem or in the inspector to adjust import "
 "settings."
 msgstr ""
 "Valitse resurssitiedosto tiedostojärjestelmästä tai tarkastelijasta "
 "säätääksesi tuontiasetuksia."
+
+msgid "Keyboard Keys"
+msgstr "Näppäimistön Näppäimet"
+
+msgid "Mouse Buttons"
+msgstr "Hiiren Painikkeet"
+
+msgid "Joypad Buttons"
+msgstr "Ohjaimen Painikkeet"
+
+msgid "Joypad Axes"
+msgstr "Ohjaimen Akselit"
+
+msgid "Manual Selection"
+msgstr "Manuaalinen Valinta"
+
+msgid "Filter Inputs"
+msgstr "Suodata Syötteitä"
 
 msgid "Additional Options"
 msgstr "Lisäasetukset"
@@ -4150,8 +4928,17 @@ msgstr "Laite:"
 msgid "Failed to load resource."
 msgstr "Resurssin lataaminen epäonnistui."
 
+msgid "(Current)"
+msgstr "(Nykyinen)"
+
 msgid "Raw"
 msgstr "Raaka"
+
+msgid "Capitalized"
+msgstr "Isot alkukirjaimet"
+
+msgid "Localization not available for current language."
+msgstr "Lokalisointi ei ole saatavilla nykyiselle kielelle."
 
 msgid "Copy Properties"
 msgstr "Kopioi ominaisuudet"
@@ -4171,9 +4958,6 @@ msgstr "Lataa olemassaoleva resurssi levyltä ja muokkaa sitä."
 msgid "Save the currently edited resource."
 msgstr "Tallenna tällä hetkellä muokattu resurssi."
 
-msgid "Save As..."
-msgstr "Tallenna nimellä..."
-
 msgid "Extra resource options."
 msgstr "Ylimääräiset resurssivalinnat."
 
@@ -4186,14 +4970,26 @@ msgstr "Kopioi resurssi"
 msgid "Make Resource Built-In"
 msgstr "Tee resurssista sisäänrakennettu"
 
+msgid "Go to previous edited object in history."
+msgstr "Mene edelliseen editoituun objektiin historiassa."
+
+msgid "Go to next edited object in history."
+msgstr "Mene seuraavaan editoituun objektiin historiassa."
+
 msgid "History of recently edited objects."
 msgstr "Viimeisimmin muokatut objektit."
 
 msgid "Open documentation for this object."
 msgstr "Avaa dokumentaatio tälle objektille."
 
+msgid "Filter Properties"
+msgstr "Suodata Ominaisuuksia"
+
 msgid "Manage object properties."
 msgstr "Hallitse objektin ominaisuuksia."
+
+msgid "This cannot be undone. Are you sure?"
+msgstr "Tätä ei voi kumota. Oletko varma?"
 
 msgid "Add %d Translations"
 msgstr "Lisää %d käännöstä"
@@ -4216,6 +5012,12 @@ msgstr "Poista resurssin korvaavuus"
 msgid "Remove Resource Remap Option"
 msgstr "Poista resurssin korvaavuusvalinta"
 
+msgid "Removed"
+msgstr "Poistettu"
+
+msgid "%s cannot be found."
+msgstr "%s ei löytynyt."
+
 msgid "Translations"
 msgstr "Käännökset"
 
@@ -4234,38 +5036,23 @@ msgstr "Korvaavuudet kielikohtaisesti:"
 msgid "Locale"
 msgstr "Kielialue"
 
+msgid "POT Generation"
+msgstr "POT Generointi"
+
+msgid "Generate POT"
+msgstr "Generoi POT"
+
 msgid "Set %s on %d nodes"
 msgstr "Aseta %s %d solmuun"
 
+msgid "%s (%d Selected)"
+msgstr "%s (%d Valittu)"
+
+msgid "Groups"
+msgstr "Ryhmät"
+
 msgid "Select a single node to edit its signals and groups."
 msgstr "Valitse yksittäinen solmu muokataksesi sen signaaleja ja ryhmiä."
-
-msgid "Edit a Plugin"
-msgstr "Muokkaa liitännäistä"
-
-msgid "Create a Plugin"
-msgstr "Luo liitännäinen"
-
-msgid "Update"
-msgstr "Päivitä"
-
-msgid "Plugin Name:"
-msgstr "Liitännäisen nimi:"
-
-msgid "Subfolder:"
-msgstr "Alikansio:"
-
-msgid "Author:"
-msgstr "Tekijä:"
-
-msgid "Version:"
-msgstr "Versio:"
-
-msgid "Script Name:"
-msgstr "Skriptin nimi:"
-
-msgid "Activate now?"
-msgstr "Aktivoi nyt?"
 
 msgid "Create Polygon"
 msgstr "Luo polygoni"
@@ -4303,14 +5090,15 @@ msgstr "Lisää animaatio"
 msgid "Add %s"
 msgstr "Lisää %s"
 
-msgid "Load..."
-msgstr "Lataa..."
-
 msgid "Move Node Point"
 msgstr "Siirrä solmupistettä"
 
 msgid "Change BlendSpace1D Labels"
 msgstr "Muuta BlendSpace1D nimikkeitä"
+
+msgid "This type of node can't be used. Only animation nodes are allowed."
+msgstr ""
+"Tämän tyyppistä solmua ei voi käyttää. Vain animaatio solmut ovat sallittuja."
 
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr ""
@@ -4344,6 +5132,9 @@ msgstr "Valitse ja siirrä pisteitä, luo pisteitä hiiren oikealla napilla."
 
 msgid "Enable snap and show grid."
 msgstr "Aseta tarttuminen ja näytä ruudukko."
+
+msgid "Sync:"
+msgstr "Synkronoi:"
 
 msgid "Blend:"
 msgstr "Sulautus:"
@@ -4386,6 +5177,12 @@ msgstr "Poista pisteet ja kolmiot."
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Luo sulautuskolmiot automaattisesti (manuaalisen sijaan)"
+
+msgid "Parameter Changed: %s"
+msgstr "Parametri Muutettu: %s"
+
+msgid "Inspect Filters"
+msgstr "Tarkastele Suodattimia"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Lähtösolmua ei voida lisätä sulautuspuuhun."
@@ -4437,6 +5234,9 @@ msgstr "Äänileikkeet"
 msgid "Functions"
 msgstr "Funktiot"
 
+msgid "Inspect Filtered Tracks:"
+msgstr "Tarkastele Suodatettuja Raitoja:"
+
 msgid "Edit Filtered Tracks:"
 msgstr "Muokkaa suodatettuja raitoja:"
 
@@ -4449,8 +5249,34 @@ msgstr "Lisää solmu..."
 msgid "Enable Filtering"
 msgstr "Kytke suodatus"
 
+msgid "Library Name:"
+msgstr "Kirjaston Nimi:"
+
 msgid "Animation name can't be empty."
 msgstr "Animaation nimi ei voi olla tyhjä."
+
+msgid "Animation name contains invalid characters: '/', ':', ',' or '['."
+msgstr ""
+"Animaation nimi sisältää virheellisiä kirjainmerkkejä: '/', ':', ',' tai '['."
+
+msgid "Animation with the same name already exists."
+msgstr "Animaatio on jo olemassa samalla nimellä."
+
+msgid "Enter a library name."
+msgstr "Syötä kirjaston nimi."
+
+msgid "Library name contains invalid characters: '/', ':', ',' or '['."
+msgstr ""
+"Kirjaston nimi sisältää virheellisiä kirjainmerkkejä: '/', ':', ',' tai '['."
+
+msgid "Library with the same name already exists."
+msgstr "Tällä nimellä löytyy jo kirjasto."
+
+msgid "Animation name is valid."
+msgstr "Animaation nimi kelpaa."
+
+msgid "Library name is valid."
+msgstr "Kirjaton nimi kelpaa."
 
 msgid "Add Animation to Library: %s"
 msgstr "Lisää Animaatio Kirjastoon: %s"
@@ -4461,14 +5287,51 @@ msgstr "Lisää Animaatio Kirjasto: %s"
 msgid "Load Animation"
 msgstr "Lataa animaatio"
 
-msgid "Invalid AnimationLibrary file."
-msgstr "Virheellinen AnimaatioKirjasto tiedosto."
+msgid ""
+"This animation library can't be saved because it does not belong to the "
+"edited scene. Make it unique first."
+msgstr ""
+"Tätä animaatio kirjastoa ei voida tallentaa, koska se ei kuulu muokattavana "
+"olevaan kohtaukseen. Tee siitä ensin yksilöllinen."
 
-msgid "Invalid Animation file."
-msgstr "Virheellinen Animaatio tiedosto."
+msgid ""
+"This animation library can't be saved because it was imported from another "
+"file. Make it unique first."
+msgstr ""
+"Tätä animaatio kirjastoa ei voida tallentaa, koska se on tuotu toisesta "
+"tiedostosta. Tee siitä ensin yksilöllinen."
+
+msgid "Save Library"
+msgstr "Tallenna Kirjasto"
+
+msgid ""
+"This animation can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
+msgstr ""
+"Tätä animaatiota ei voida tallentaa, koska se ei kuulu muokattavana olevaan "
+"kohtaukseen. Tee siitä ensin yksilöllinen."
+
+msgid ""
+"This animation can't be saved because it was imported from another file. Make "
+"it unique first."
+msgstr ""
+"Tätä animaatiota ei voida tallentaa, koska se on tuotu toisesta tiedostosta. "
+"Tee siitä ensin yksilöllinen."
+
+msgid "Save Animation"
+msgstr "Tallenna Animaatio"
+
+msgid "Make Animation Unique: %s"
+msgstr "Tee Animaatiosta Yksilöllinen: %s"
+
+msgid "Save Animation library to File: %s"
+msgstr "Tallenna Animaatio kirjasto Tiedostoon: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "Tallenna Animaatio Tiedostoon: %s"
+
+msgid "Load Animation into Library: %s"
+msgstr "Lataa Animaatio Kirjastoon: %s"
 
 msgid "Rename Animation Library: %s"
 msgstr "Uudelleennimeä Animaatio Kirjasto: %s"
@@ -4481,6 +5344,9 @@ msgstr "Nimeä Animaatio Uudelleen: %s"
 
 msgid "Animation Name:"
 msgstr "Animaation nimi:"
+
+msgid "No animation resource in clipboard!"
+msgstr "Ei animaatio resurssia leikepöydällä!"
 
 msgid "Pasted Animation"
 msgstr "Liitetty animaatio"
@@ -4500,35 +5366,8 @@ msgstr "[sisäänrakennettu]"
 msgid "[imported]"
 msgstr "[tuotu]"
 
-msgid "Add Animation to Library"
-msgstr "Lisää Animaatio Kirjastoon"
-
-msgid "Load animation from file and add to library"
-msgstr "Lataa animaatio tiedostosta ja lisää kirjastoon"
-
-msgid "Paste Animation to Library from clipboard"
-msgstr "Liitä Animaatio Kirjastoon Leikepöydältä"
-
-msgid "Save animation library to resource on disk"
-msgstr "Tallenna animaatio kirjasto resurssiksi levylle"
-
-msgid "Remove animation library"
-msgstr "Poista animaatio kirjasto"
-
-msgid "Copy animation to clipboard"
-msgstr "Kopioi animaatio leikepöydälle"
-
-msgid "Save animation to resource on disk"
-msgstr "Tallenna animaatio resurssiksi levylle"
-
-msgid "Remove animation from Library"
-msgstr "Poista animaatio Kirjastosta"
-
 msgid "Edit Animation Libraries"
 msgstr "Muokkaa Animaatio Kirjastoja"
-
-msgid "Add Library"
-msgstr "Lisää Kirjasto"
 
 msgid "Load Library"
 msgstr "Lataa Kirjasto"
@@ -4574,6 +5413,9 @@ msgstr "Muuta sulautusaikaa"
 
 msgid "[Global] (create)"
 msgstr "[Globaali] (luo)"
+
+msgid "Duplicated Animation Name:"
+msgstr "Monistetun Animaation Nimi:"
 
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr "Toista valittu animaatio takaperin nykyisestä kohdasta. (A)"
@@ -4656,20 +5498,26 @@ msgstr "Kiinnitä AnimationPlayer"
 msgid "Error!"
 msgstr "Virhe!"
 
+msgid "Cross-Animation Blend Times"
+msgstr "Lomittautuvien animaatioiden sulautusajat"
+
 msgid "Blend Times:"
 msgstr "Sulautusajat:"
 
 msgid "Next (Auto Queue):"
 msgstr "Seuraava (automaattinen jono):"
 
-msgid "Cross-Animation Blend Times"
-msgstr "Lomittautuvien animaatioiden sulautusajat"
-
 msgid "Move Node"
 msgstr "Siirrä solmua"
 
 msgid "Transition exists!"
 msgstr "Siirtymä on olemassa!"
+
+msgid "Edit %s"
+msgstr "Muokkaa %s"
+
+msgid "Add Node and Transition"
+msgstr "Lisää Solmu ja Siirtymä"
 
 msgid "Add Transition"
 msgstr "Lisää siirtymä"
@@ -4713,11 +5561,17 @@ msgstr "Toistotila:"
 msgid "Delete Selected"
 msgstr "Poista valitut"
 
+msgid "Delete All"
+msgstr "Poista Kaikki"
+
 msgid "Root"
 msgstr "Juuri"
 
-msgid "AnimationTree"
-msgstr "AnimaatioPuu"
+msgid "Author"
+msgstr "Tekijä"
+
+msgid "Version:"
+msgstr "Versio:"
 
 msgid "Contents:"
 msgstr "Sisällöt:"
@@ -4776,9 +5630,6 @@ msgstr "Epäonnistui:"
 msgid "Bad download hash, assuming file has been tampered with."
 msgstr "Latauksessa väärä hajautuskoodi, oletetaan että tiedostoa on näpelöity."
 
-msgid "Expected:"
-msgstr "Odotettiin:"
-
 msgid "Got:"
 msgstr "Saatiin:"
 
@@ -4788,6 +5639,9 @@ msgstr "SHA-256 hajautusarvon tarkistus epäonnistui"
 msgid "Asset Download Error:"
 msgstr "Assettien latausvirhe:"
 
+msgid "Ready to install!"
+msgstr "Valmiina asennukseen!"
+
 msgid "Downloading (%s / %s)..."
 msgstr "Ladataan (%s / %s)..."
 
@@ -4796,6 +5650,12 @@ msgstr "Ladataan..."
 
 msgid "Resolving..."
 msgstr "Selvitetään..."
+
+msgid "Connecting..."
+msgstr "Yhdistetään..."
+
+msgid "Requesting..."
+msgstr "Pyydetään..."
 
 msgid "Error making request"
 msgstr "Virhe pyynnön luonnissa"
@@ -4830,14 +5690,27 @@ msgstr "Lisenssi (A-Z)"
 msgid "License (Z-A)"
 msgstr "Lisenssi (Z-A)"
 
-msgid "Official"
-msgstr "Virallinen"
-
 msgid "Testing"
 msgstr "Testaus"
 
 msgid "Loading..."
 msgstr "Ladataan..."
+
+msgctxt "Pagination"
+msgid "First"
+msgstr "Ensimmäinen"
+
+msgctxt "Pagination"
+msgid "Previous"
+msgstr "Edellinen"
+
+msgctxt "Pagination"
+msgid "Next"
+msgstr "Seuraava"
+
+msgctxt "Pagination"
+msgid "Last"
+msgstr "Viimeinen"
 
 msgid "All"
 msgstr "Kaikki"
@@ -4866,6 +5739,9 @@ msgstr "Assettien zip-tiedosto"
 msgid "Audio Preview Play/Pause"
 msgstr "Äänen esikuuntelun toisto/keskeytys"
 
+msgid "Bone Picker:"
+msgstr "Luu Valitsin:"
+
 msgid "Preview"
 msgstr "Esikatselu"
 
@@ -4889,6 +5765,9 @@ msgstr "Kierron välistys:"
 
 msgid "Scale Step:"
 msgstr "Skaalauksen välistys:"
+
+msgid "Move Node(s) to Position"
+msgstr "Siirrä Solmu(t) Sijaintiin"
 
 msgid "Move Vertical Guide"
 msgstr "Siirrä pystysuoraa apuviivaa"
@@ -4947,6 +5826,24 @@ msgstr "Lukittu"
 msgid "Grouped"
 msgstr "Ryhmitetty"
 
+msgid "Add Node Here..."
+msgstr "Lisää Solmu Tähän..."
+
+msgid "Instantiate Scene Here..."
+msgstr "Luo Kohtaus Esiintymä Tähän..."
+
+msgid "Paste Node(s) Here"
+msgstr "Liitä Solmu(t) Tähän"
+
+msgid "Move Node(s) Here"
+msgstr "Siirrä Solmu(t) Tähän"
+
+msgid "px"
+msgstr "px"
+
+msgid "units"
+msgstr "yksiköt"
+
 msgid "Scaling:"
 msgstr "Skaalataan:"
 
@@ -4984,6 +5881,9 @@ msgstr "Liitä asento"
 msgid "Clear Guides"
 msgstr "Poista apuviivat"
 
+msgid "Cancel Transformation"
+msgstr "Peruuta muunnos"
+
 msgid "Zoom to 3.125%"
 msgstr "Aseta lähennystasoksi 3.125%"
 
@@ -5017,23 +5917,6 @@ msgstr "Aseta lähennystasoksi 1600%"
 msgid "Select Mode"
 msgstr "Valintatila"
 
-msgid "Drag: Rotate selected node around pivot."
-msgstr "Vedä: kierrä valittua solmua kääntökeskiön ympäri."
-
-msgid "Alt+Drag: Move selected node."
-msgstr "Alt+Vedä: Siirrä valittua solmua."
-
-msgid "Alt+Drag: Scale selected node."
-msgstr "Alt+Vedä: Skaalaa valittua solmua."
-
-msgid "V: Set selected node's pivot position."
-msgstr "V: Aseta nykyisen solmun kääntökeskiön sijainti."
-
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+Hiiren oikea painike: Näytä lista kaikista napsautetussa kohdassa "
-"olevista solmuista, mukaan lukien lukituista."
-
 msgid "RMB: Add node at position clicked."
 msgstr "Hiiren oikea painike: Lisää solmu napsautettuun paikkaan."
 
@@ -5048,9 +5931,6 @@ msgstr "Skaalaustila"
 
 msgid "Shift: Scale proportionally."
 msgstr "Shift: Skalaa suhteellisesti."
-
-msgid "Click to change object's rotation pivot."
-msgstr "Klikkaa vaihtaaksesi objektin kääntökeskiötä."
 
 msgid "Pan Mode"
 msgstr "Panorointitila"
@@ -5085,12 +5965,6 @@ msgstr "Suhteellinen tarttuminen"
 msgid "Use Pixel Snap"
 msgstr "Tartu pikseleihin"
 
-msgid "Smart Snapping"
-msgstr "Älykäs tarttuminen"
-
-msgid "Configure Snap..."
-msgstr "Määrittele tarttuminen..."
-
 msgid "Snap to Parent"
 msgstr "Tartu isäntään"
 
@@ -5109,8 +5983,17 @@ msgstr "Tartu muihin solmuihin"
 msgid "Snap to Guides"
 msgstr "Tartu apuviivoihin"
 
+msgid "Smart Snapping"
+msgstr "Älykäs tarttuminen"
+
+msgid "Configure Snap..."
+msgstr "Määrittele tarttuminen..."
+
 msgid "Lock Selected Node(s)"
 msgstr "Lukitse valitut solmut"
+
+msgid "Unlock selected node, allowing selection and movement."
+msgstr "Poista valitun solmun lukitus, sallien valinnan ja liikuttamisen."
 
 msgid "Unlock Selected Node(s)"
 msgstr "Vapauta valitut solmut"
@@ -5133,9 +6016,6 @@ msgstr "Näkymä"
 msgid "Show"
 msgstr "Näytä"
 
-msgid "Hide"
-msgstr "Piilota"
-
 msgid "Toggle Grid"
 msgstr "Ruudukon Tila"
 
@@ -5157,8 +6037,8 @@ msgstr "Näytä origo"
 msgid "Show Viewport"
 msgstr "Näytä näyttöruutu"
 
-msgid "Show Group And Lock Icons"
-msgstr "Näytä ryhmityksen ja lukituksen kuvakkeet"
+msgid "Gizmos"
+msgstr "Vempaimet"
 
 msgid "Center Selection"
 msgstr "Keskitä valintaan"
@@ -5168,6 +6048,18 @@ msgstr "Rajaa valintaan"
 
 msgid "Preview Canvas Scale"
 msgstr "Esikatsele kankaan skaalausta"
+
+msgid "Project theme"
+msgstr "Projektin teema"
+
+msgid "Editor theme"
+msgstr "Editorin teema"
+
+msgid "Default theme"
+msgstr "Oletusteema"
+
+msgid "Preview Theme"
+msgstr "Esikatsele Teema"
 
 msgid "Translation mask for inserting keys."
 msgstr "Siirrosmaski avainruutujen lisäämiseen."
@@ -5180,6 +6072,9 @@ msgstr "Skaalausmaski avainruutujen lisäämiseen."
 
 msgid "Insert keys (based on mask)."
 msgstr "Lisää avainruutuja (maskiin perustuen)."
+
+msgid "Insert Key"
+msgstr "Lisää avainruutu"
 
 msgid ""
 "Auto insert keys when objects are translated, rotated or scaled (based on "
@@ -5217,6 +6112,9 @@ msgstr "Jaa ruudukon välistys kahdella"
 msgid "Adding %s..."
 msgstr "Lisätään %s..."
 
+msgid "Hold Shift when dropping to add as sibling of selected node."
+msgstr "Pidä Vaihtonäppäin pohjassa lisätäksesi valitun solmun sisarena."
+
 msgid "Cannot instantiate multiple nodes without root."
 msgstr "Ei voida luoda ilmentymiä useasta solmusta ilman juurta."
 
@@ -5226,11 +6124,35 @@ msgstr "Luo solmu"
 msgid "Change Default Type"
 msgstr "Muuta oletustyyppiä"
 
+msgid "Set Target Position"
+msgstr "Aseta kohdesijainti"
+
 msgid "Set Handle"
 msgstr "Aseta kahva"
 
+msgid "This node doesn't have a control parent."
+msgstr "Tällä solmulla ei ole control vanhempaa."
+
+msgid "This node is a child of a container."
+msgstr "Tämä solmu on containerin lapsi."
+
+msgid "Use container properties for positioning."
+msgstr "Käytä containerin ominaisuuksia sijoittamiseen."
+
+msgid "Collapse positioning hint."
+msgstr "Piilota sijainnin vihje."
+
+msgid "Expand positioning hint."
+msgstr "Laajenna sijainnin vihje."
+
 msgid "Fill"
 msgstr "Täytä"
+
+msgid "Shrink Begin"
+msgstr "Kutista Alkuun"
+
+msgid "Shrink Center"
+msgstr "Kutista Keskelle"
 
 msgid "Custom"
 msgstr "Räätälöity"
@@ -5286,11 +6208,20 @@ msgstr "Laaja oikealla"
 msgid "Full Rect"
 msgstr "Täysi ruutu"
 
+msgid "Horizontal alignment"
+msgstr "Vaakasuora kohdistus"
+
+msgid "Vertical alignment"
+msgstr "Pystysuuntainen kohdistus"
+
+msgid "Restart"
+msgstr "Käynnistä uudelleen"
+
 msgid "Load Emission Mask"
 msgstr "Lataa emissiomaski"
 
-msgid "Generated Point Count:"
-msgstr "Luotujen pisteiden määrä:"
+msgid "CPUParticles2D"
+msgstr "CPUPartikkelit2D"
 
 msgid "Emission Mask"
 msgstr "Emissiomaski"
@@ -5304,11 +6235,32 @@ msgstr "Reunapikselit"
 msgid "Directed Border Pixels"
 msgstr "Suunnatut reunapikselit"
 
+msgid "Centered"
+msgstr "Keskitetty"
+
+msgid "Capture Colors from Pixel"
+msgstr "Nappaa Värit Pikselistä"
+
+msgid "Generate Visibility AABB"
+msgstr "Kartoita näkyvä alue"
+
+msgid "CPUParticles3D"
+msgstr "CPUPartikkelit3D"
+
+msgid "Generate AABB"
+msgstr "Generoi AABB"
+
 msgid "Create Emission Points From Node"
 msgstr "Luo säteilypisteet solmusta"
 
+msgid "Generation Time (sec):"
+msgstr "Luontiaika (s):"
+
 msgid "Load Curve Preset"
 msgstr "Lataa käyrän esiasetus"
+
+msgid "Add Curve Point"
+msgstr "Lisää Käyrän Piste"
 
 msgid "Remove Curve Point"
 msgstr "Poista käyrän piste"
@@ -5327,6 +6279,9 @@ msgstr "Hidasta lopussa"
 
 msgid "Smoothstep"
 msgstr "Pehmeä askellus"
+
+msgid "Toggle Grid Snap"
+msgstr "Vaihda Ruudukon Tartunta Päälle/Pois"
 
 msgid "Debug with External Editor"
 msgstr "Debuggaa ulkoisella editorilla"
@@ -5383,13 +6338,6 @@ msgstr "Näytä Reitit"
 msgid "Visible Navigation"
 msgstr "Näkyvä navigaatio"
 
-msgid ""
-"When this option is enabled, navigation meshes and polygons will be visible "
-"in the running project."
-msgstr ""
-"Kun tämä on valittuna, navigointiverkot ja polygonit ovat näkyvillä peliä "
-"ajettaessa."
-
 msgid "Synchronize Scene Changes"
 msgstr "Synkronoi kohtauksen muutokset"
 
@@ -5418,19 +6366,58 @@ msgstr ""
 "Mikäli peliä ajetaan etälaitteella, tämä on tehokkaampaa kun "
 "verkkolevyvalinta on päällä."
 
-msgid "Run Multiple Instances"
-msgstr "Suorita Useampi Instanssi"
+msgid ""
+"When this option is enabled, the editor debug server will stay open and "
+"listen for new sessions started outside of the editor itself."
+msgstr ""
+"Kun tämä on valittu, editorin debug palvelin pysyy avoinna ja kuuntelee uusia "
+"sessioita, jotka on avattu editorin ulkopuolella."
 
-msgid "Run %d Instance"
-msgid_plural "Run %d Instances"
-msgstr[0] "Aja %d instanssi"
-msgstr[1] "Aja %d instanssia"
+msgid "Edit Plugin"
+msgstr "Muokkaa liitännäistä"
+
+msgid "Installed Plugins:"
+msgstr "Asennetut Liitännäiset:"
+
+msgid "Create New Plugin"
+msgstr "Luo Uusi Liitännäinen"
+
+msgid "Version"
+msgstr "Versio"
+
+msgid "Size: %s"
+msgstr "Koko: %s"
+
+msgid "Type: %s"
+msgstr "Tyyppi: %s"
+
+msgid "Dimensions: %d × %d"
+msgstr "Mitat: %d × %d"
+
+msgid "Overrides (%d)"
+msgstr "Ylikirjoittaa (%d)"
+
+msgctxt "Locale"
+msgid "Add Script"
+msgstr "Lisää Skripti"
+
+msgid "Add Locale"
+msgstr "Lisää Kielialue"
+
+msgid "Variation Coordinates (%d)"
+msgstr "Vaihtelu Koordinaatit (%d)"
+
+msgid "No supported features"
+msgstr "Ei tuettuja ominaisuuksia"
 
 msgid "Add Feature"
 msgstr "Lisää Ominaisuus"
 
 msgid " - Variation"
 msgstr " - Vaihtelu"
+
+msgid "Unable to preview font"
+msgstr "Fontin esikatselu ei onnistu"
 
 msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr "Muuta AudioStreamPlayer3D solmun suuntausta"
@@ -5459,6 +6446,9 @@ msgstr "Muuta sylinterimuodon korkeutta"
 msgid "Change Particles AABB"
 msgstr "Muuta partikkelien AABB"
 
+msgid "Change Radius"
+msgstr "Muuta Sädettä"
+
 msgid "Change Light Radius"
 msgstr "Muuta valon sädettä"
 
@@ -5471,17 +6461,17 @@ msgstr "Muunna CPUParticles2D solmuksi"
 msgid "Generate Visibility Rect"
 msgstr "Kartoita näkyvä alue"
 
-msgid "Clear Emission Mask"
-msgstr "Tyhjennä emissiomaski"
-
-msgid "Generation Time (sec):"
-msgstr "Luontiaika (s):"
+msgid "GPUParticles2D"
+msgstr "GPUPartikkelit2D"
 
 msgid "The geometry's faces don't contain any area."
 msgstr "Geometrian tahkot eivät sisällä mitään alaa."
 
 msgid "The geometry doesn't contain any faces."
 msgstr "Geometria ei sisällä yhtään tahkoja."
+
+msgid "\"%s\" doesn't inherit from Node3D."
+msgstr "\"%s\" ei periydy Node3D solmusta."
 
 msgid "\"%s\" doesn't contain geometry."
 msgstr "\"%s\" ei sisällä geometriaa."
@@ -5507,8 +6497,32 @@ msgstr "Tilavuus"
 msgid "Emission Source:"
 msgstr "Emission lähde:"
 
-msgid "Generate Visibility AABB"
-msgstr "Kartoita näkyvä alue"
+msgid "Convert to CPUParticles3D"
+msgstr "Muunna CPUParticles3D:ksi"
+
+msgid "GPUParticles3D"
+msgstr "GPUPartikkelit3D"
+
+msgid "Low"
+msgstr "Alhainen"
+
+msgid "Moderate"
+msgstr "Kohtalainen"
+
+msgid "High"
+msgstr "Korkea"
+
+msgid "Cell size: %s"
+msgstr "Solun koko: %s"
+
+msgid "Reverse Gradient"
+msgstr "Käänteinen Liukuväri"
+
+msgid "Reverse/Mirror Gradient"
+msgstr "Käänteinen/Peilattu Liukuväri"
+
+msgid "Configure"
+msgstr "Määrittele"
 
 msgid "Create Occluder Polygon"
 msgstr "Luo peittopolygoni"
@@ -5534,41 +6548,14 @@ msgstr "LightMapin kehitys"
 msgid "Select lightmap bake file:"
 msgstr "Valitse lightmapin kehitystiedosto:"
 
-msgid "Mesh is empty!"
-msgstr "Mesh on tyhjä!"
-
 msgid "Couldn't create a Trimesh collision shape."
 msgstr "Ei voitu luoda konkaavia törmäysmuotoa."
-
-msgid "Create Static Trimesh Body"
-msgstr "Luo konkaavi staattinen kappale"
-
-msgid "This doesn't work on scene root!"
-msgstr "Tämä ei toimi kohtauksen juuressa!"
-
-msgid "Create Trimesh Static Shape"
-msgstr "Luo staattinen konkaavi muoto"
-
-msgid "Can't create a single convex collision shape for the scene root."
-msgstr "Kohtauksen juurelle ei voi luoda yhtään kuperaa törmäysmuotoa."
-
-msgid "Couldn't create a single convex collision shape."
-msgstr "Ei voitu luoda yksittäistä konveksia törmäysmuotoa."
-
-msgid "Create Simplified Convex Shape"
-msgstr "Luo pelkistetty konveksi muoto"
-
-msgid "Create Single Convex Shape"
-msgstr "Luo yksittäinen konveksi muoto"
-
-msgid "Can't create multiple convex collision shapes for the scene root."
-msgstr "Ei voi luoda useita kuperia törmäysmuotoja kohtauksen juurelle."
 
 msgid "Couldn't create any collision shapes."
 msgstr "Yhtään törmäysmuotoa ei voitu luoda."
 
-msgid "Create Multiple Convex Shapes"
-msgstr "Luo useita konvekseja muotoja"
+msgid "Mesh is empty!"
+msgstr "Mesh on tyhjä!"
 
 msgid "Create Navigation Mesh"
 msgstr "Luo navigointiverkko"
@@ -5603,54 +6590,6 @@ msgstr "Luo ääriviivat"
 msgid "Mesh"
 msgstr "Mesh"
 
-msgid "Create Trimesh Static Body"
-msgstr "Luo konkaavi staattinen kappale"
-
-msgid "Create Trimesh Collision Sibling"
-msgstr "Luo konkaavi törmäysmuoto sisareksi"
-
-msgid ""
-"Creates a polygon-based collision shape.\n"
-"This is the most accurate (but slowest) option for collision detection."
-msgstr ""
-"Luo polygonipohjaisen törmäysmuodon.\n"
-"Tämä on tarkin (mutta hitain) vaihtoehto törmäystunnistukselle."
-
-msgid "Create Single Convex Collision Sibling"
-msgstr "Luo yksittäisen konveksin törmäyksen sisar"
-
-msgid ""
-"Creates a single convex collision shape.\n"
-"This is the fastest (but least accurate) option for collision detection."
-msgstr ""
-"Luo yksittäisen konveksin törmäysmuodon.\n"
-"Tämä on nopein (mutta epätarkin) vaihtoehto törmäystunnistukselle."
-
-msgid "Create Simplified Convex Collision Sibling"
-msgstr "Luo pelkistetty konveksin törmäyksen sisar"
-
-msgid ""
-"Creates a simplified convex collision shape.\n"
-"This is similar to single collision shape, but can result in a simpler "
-"geometry in some cases, at the cost of accuracy."
-msgstr ""
-"Luo pelkistetyn konveksin törmäysmuodon.\n"
-"Tämä on samankaltainen kuin yksittäinen törmäysmuoto, mutta voi johtaa "
-"joissakin tapauksissa yksinkertaisempaan geometriaan tarkkuuden "
-"kustannuksella."
-
-msgid "Create Multiple Convex Collision Siblings"
-msgstr "Luo useita konvekseja törmäysmuotojen sisaria"
-
-msgid ""
-"Creates a polygon-based collision shape.\n"
-"This is a performance middle-ground between a single convex collision and a "
-"polygon-based collision."
-msgstr ""
-"Luo polygonipohjaisen törmäysmuodon.\n"
-"Tämä on suorituskyvyltään yksittäisen konveksin törmäyksen ja "
-"polygonipohjaisen törmäyksen välimaastoa."
-
 msgid "Create Outline Mesh..."
 msgstr "Luo ääriviivoista Mesh..."
 
@@ -5668,6 +6607,39 @@ msgstr "Luo ääriviivoista Mesh"
 
 msgid "Outline Size:"
 msgstr "Ääriviivojen koko:"
+
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"Luo polygonipohjaisen törmäysmuodon.\n"
+"Tämä on tarkin (mutta hitain) vaihtoehto törmäystunnistukselle."
+
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+"Luo yksittäisen konveksin törmäysmuodon.\n"
+"Tämä on nopein (mutta epätarkin) vaihtoehto törmäystunnistukselle."
+
+msgid ""
+"Creates a simplified convex collision shape.\n"
+"This is similar to single collision shape, but can result in a simpler "
+"geometry in some cases, at the cost of accuracy."
+msgstr ""
+"Luo pelkistetyn konveksin törmäysmuodon.\n"
+"Tämä on samankaltainen kuin yksittäinen törmäysmuoto, mutta voi johtaa "
+"joissakin tapauksissa yksinkertaisempaan geometriaan tarkkuuden "
+"kustannuksella."
+
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between a single convex collision and a "
+"polygon-based collision."
+msgstr ""
+"Luo polygonipohjaisen törmäysmuodon.\n"
+"Tämä on suorituskyvyltään yksittäisen konveksin törmäyksen ja "
+"polygonipohjaisen törmäyksen välimaastoa."
 
 msgid "UV Channel Debug"
 msgstr "UV-kanavan debuggaus"
@@ -5846,8 +6818,35 @@ msgstr "Animaation avainnus on pois päältä (avainta ei lisätty)."
 msgid "Animation Key Inserted."
 msgstr "Animaatioavain lisätty."
 
+msgid "X: %s\n"
+msgstr "X: %s\n"
+
+msgid "Y: %s\n"
+msgstr "Y: %s\n"
+
+msgid "Z: %s\n"
+msgstr "Z: %s\n"
+
+msgid "Size: %s (%.1fMP)\n"
+msgstr "Koko: %s (%.1fMP)\n"
+
 msgid "Objects: %d\n"
 msgstr "Objektit: %d\n"
+
+msgid "Primitives: %d\n"
+msgstr "Alkeiskappaleet: %d\n"
+
+msgid "Draw Calls: %d"
+msgstr "Piirtokutsuja: %d"
+
+msgid "CPU Time: %s ms"
+msgstr "CPU Aika: %s ms"
+
+msgid "GPU Time: %s ms"
+msgstr "GPU Aika: %s ms"
+
+msgid "FPS: %d"
+msgstr "FPS: %d"
 
 msgid "Top View."
 msgstr "Pintanäkymä."
@@ -5888,6 +6887,15 @@ msgstr "Siirretään:"
 msgid "Rotating %s degrees."
 msgstr "Kierto %s astetta."
 
+msgid "Translating %s."
+msgstr "Siirretään %s."
+
+msgid "Rotating %f degrees."
+msgstr "Kieretään %f astetta."
+
+msgid "Scaling %s."
+msgstr "Skaalataan %s."
+
 msgid "Auto Orthogonal Enabled"
 msgstr "Automaattinen ortogonaalinen päällä"
 
@@ -5903,11 +6911,17 @@ msgstr "Näytä rautalankamalli"
 msgid "Display Overdraw"
 msgstr "Näytä ylipiirto"
 
+msgid "Display Lighting"
+msgstr "Näytä Valaistus"
+
 msgid "Display Unshaded"
 msgstr "Näytä sävyttämätön"
 
 msgid "Normal Buffer"
 msgstr "Normaalipuskuri"
+
+msgid "Display Advanced..."
+msgstr "Näytä Edistyneet..."
 
 msgid "View Environment"
 msgstr "Näytä ympäristö"
@@ -5915,8 +6929,14 @@ msgstr "Näytä ympäristö"
 msgid "View Gizmos"
 msgstr "Näytä vempaimet"
 
+msgid "View Grid"
+msgstr "Näytä ruudukko"
+
 msgid "View Information"
 msgstr "Näytä tiedot"
+
+msgid "View Frame Time"
+msgstr "Näytä Ruudun Aika"
 
 msgid "Half Resolution"
 msgstr "Puolikas näyttötarkkuus"
@@ -5954,9 +6974,6 @@ msgstr "Liikkumisen nopeussäädin"
 msgid "Freelook Slow Modifier"
 msgstr "Liikkumisen hitauskerroin"
 
-msgid "Cancel Transformation"
-msgstr "Peruuta muunnos"
-
 msgid "Toggle Camera Preview"
 msgstr "Aseta kameran esikatselu"
 
@@ -5992,11 +7009,28 @@ msgstr "Tarraa solmut lattiaan"
 msgid "Couldn't find a solid floor to snap the selection to."
 msgstr "Ei löydetty kiinteää lattiaa, johon kohdistaa valinta."
 
+msgid "Add Preview Sun to Scene"
+msgstr "Lisää Esikatselu Aurinko Kohtaukseen"
+
+msgid "Add Preview Environment to Scene"
+msgstr "Lisää Esikatselu Ympäristö Kohtaukseen"
+
+msgid "Preview disabled."
+msgstr "Esikatselu poistettu käytöstä."
+
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+Hiiren oikea painike: Näytä lista kaikista napsautetussa kohdassa "
+"olevista solmuista, mukaan lukien lukituista."
+
 msgid "Use Local Space"
 msgstr "Käytä paikallisavaruutta"
 
 msgid "Use Snap"
 msgstr "Käytä tarttumista"
+
+msgid "Edit Sun and Environment settings."
+msgstr "Muokkaa Auringon ja Ympäristön asetuksia."
 
 msgid "Bottom View"
 msgstr "Alanäkymä"
@@ -6082,14 +7116,8 @@ msgstr "3 Näyttöruutua (Alt)"
 msgid "4 Viewports"
 msgstr "4 Näyttöruutua"
 
-msgid "Gizmos"
-msgstr "Vempaimet"
-
 msgid "View Origin"
 msgstr "Näytä origo"
-
-msgid "View Grid"
-msgstr "Näytä ruudukko"
 
 msgid "Settings..."
 msgstr "Asetukset..."
@@ -6108,9 +7136,6 @@ msgstr "Muutettaessa kokoa (%):"
 
 msgid "Viewport Settings"
 msgstr "Näyttöruudun asetukset"
-
-msgid "Perspective FOV (deg.):"
-msgstr "Näkökentän perspektiivi (asteina):"
 
 msgid "View Z-Near:"
 msgstr "Pienin etäisyys:"
@@ -6139,8 +7164,41 @@ msgstr "Esi"
 msgid "Post"
 msgstr "Jälki"
 
+msgid "Preview Sun"
+msgstr "Esikatselu Aurinko"
+
+msgid "Sun Direction"
+msgstr "Auringon Suunta"
+
+msgid "Sun Color"
+msgstr "Auringon Väri"
+
+msgid "Sun Energy"
+msgstr "Auringon Energia"
+
+msgid "Shadow Max Distance"
+msgstr "Varjojen Maksimi Etäisyys"
+
+msgid "Add Sun to Scene"
+msgstr "Lisää Aurinko Kohtaukseen"
+
+msgid "Preview Environment"
+msgstr "Esikatsele Ympäristöä"
+
+msgid "Sky Color"
+msgstr "Taivaan Väri"
+
+msgid "Ground Color"
+msgstr "Maan Väri"
+
+msgid "Sky Energy"
+msgstr "Taivaan Energia"
+
 msgid "Glow"
 msgstr "Hehku"
+
+msgid "Post Process"
+msgstr "Jälkikäsittely"
 
 msgid "Add Environment to Scene"
 msgstr "Lisää Ympäristö Kohtaukseen"
@@ -6169,32 +7227,20 @@ msgstr "Siirrä tulo-ohjainta käyrällä"
 msgid "Move Out-Control in Curve"
 msgstr "Siirrä lähtöohjainta käyrällä"
 
-msgid "Select Points"
-msgstr "Valitse pisteet"
-
-msgid "Shift+Drag: Select Control Points"
-msgstr "Shift+vedä: Valitse ohjauspisteitä"
-
-msgid "Click: Add Point"
-msgstr "Napsauta: lisää piste"
-
-msgid "Left Click: Split Segment (in curve)"
-msgstr "Vasen painallus: Puolita osa (käyrässä)"
-
 msgid "Right Click: Delete Point"
 msgstr "Oikea painallus: poista piste"
 
 msgid "Select Control Points (Shift+Drag)"
 msgstr "Valitse ohjauspisteitä (Shift+vedä)"
 
-msgid "Add Point (in empty space)"
-msgstr "Lisää piste (tyhjyydessä)"
-
 msgid "Delete Point"
 msgstr "Poista piste"
 
 msgid "Close Curve"
 msgstr "Sulje käyrä"
+
+msgid "Please Confirm..."
+msgstr "Ole hyvä ja vahvista..."
 
 msgid "Mirror Handle Angles"
 msgstr "Peilaa kahvojen kulmat"
@@ -6225,6 +7271,70 @@ msgstr "Puolita osa (käyrässä)"
 
 msgid "Move Joint"
 msgstr "Siirrä liitosta"
+
+msgid "Plugin name cannot be blank."
+msgstr "Liitännäisen nimi ei voi olla tyhjä."
+
+msgid "Subfolder name is not a valid folder name."
+msgstr "Alikansion nimi ei ole kelvollinen kansion nimi."
+
+msgid "Edit a Plugin"
+msgstr "Muokkaa liitännäistä"
+
+msgid "Create a Plugin"
+msgstr "Luo liitännäinen"
+
+msgid "Plugin Name:"
+msgstr "Liitännäisen nimi:"
+
+msgid "Required. This name will be displayed in the list of plugins."
+msgstr "Vaadittu. Tämä nimi näkyy lisäosien listauksessa."
+
+msgid "Subfolder:"
+msgstr "Alikansio:"
+
+msgid ""
+"Optional. The folder name should generally use `snake_case` naming (avoid "
+"spaces and special characters).\n"
+"If left empty, the folder will be named after the plugin name converted to "
+"`snake_case`."
+msgstr ""
+"Valinnainen. Kansion nimen tulisi normaalisti käyttää `snake_case`-nimeämistä "
+"(vältä välilyöntejä ja erikoismerkkejä).\n"
+"Jos tämä jätetään tyhjäksi, kansio tullaan nimeämään liitännäisen nimellä, "
+"joka on käännetty `snake_case` muotoon."
+
+msgid ""
+"Optional. This description should be kept relatively short (up to 5 lines).\n"
+"It will display when hovering the plugin in the list of plugins."
+msgstr ""
+"Valinnainen. Tämä kuvaus tulisi pitää kohtalaisen lyhyenä (5 riviin asti).\n"
+"Kuvaus näkyy, kun hiirtä pidetään liitännäisen kohdalla listauksessa."
+
+msgid "Author:"
+msgstr "Tekijä:"
+
+msgid "Optional. The author's username, full name, or organization name."
+msgstr "Valinnainen. Tekijän käyttäjänimi, koko nimi tai organisaation nimi."
+
+msgid ""
+"Optional. A human-readable version identifier used for informational purposes "
+"only."
+msgstr ""
+"Valinnainen. Ihmisen luettavissa oleva versiotunniste, jota käytetään vain "
+"tiedotustarkoituksiin."
+
+msgid "Script Name:"
+msgstr "Skriptin nimi:"
+
+msgid "Activate now?"
+msgstr "Aktivoi nyt?"
+
+msgid "Plugin name is valid."
+msgstr "Lisäkkeen nimi kelpaa."
+
+msgid "Subfolder name is valid."
+msgstr "Alikansion nimi kelpaa."
 
 msgid ""
 "The skeleton property of the Polygon2D does not point to a Skeleton2D node"
@@ -6294,12 +7404,6 @@ msgstr "Polygonit"
 
 msgid "Bones"
 msgstr "Luut"
-
-msgid "Move Points"
-msgstr "Siirrä pisteitä"
-
-msgid "Shift: Move All"
-msgstr "Shift: Siirrä kaikkia"
 
 msgid "Move Polygon"
 msgstr "Siirrä polygonia"
@@ -6401,20 +7505,8 @@ msgstr "Ei voida avata tiedostoa '%s'. Se on voitu siirtää tai tuhota."
 msgid "Close and save changes?"
 msgstr "Sulje ja tallenna muutokset?"
 
-msgid "Error writing TextFile:"
-msgstr "Virhe kirjoitettaessa teksitiedostoa:"
-
-msgid "Error saving file!"
-msgstr "Virhe tallennettaessa tiedostoa!"
-
-msgid "Error while saving theme."
-msgstr "Virhe tallennettaessa teemaa."
-
 msgid "Error Saving"
 msgstr "Virhe tallennettaessa"
-
-msgid "Error importing theme."
-msgstr "Virhe tuotaessa teemaa."
 
 msgid "Error Importing"
 msgstr "Virhe tuonnissa"
@@ -6425,23 +7517,27 @@ msgstr "Uusi tekstitiedosto..."
 msgid "Open File"
 msgstr "Avaa tiedosto"
 
-msgid "Could not load file at:"
-msgstr "Ei voitu ladata tiedostoa:"
-
 msgid "Save File As..."
 msgstr "Tallenna tiedosto nimellä..."
 
+msgid "Cannot run the edited file because it's not a script."
+msgstr "Ei voida suorittaa muokattua tiedostoa, koska se ei ole skripti."
+
+msgid "Cannot run the script because it contains errors, check the output log."
+msgstr ""
+"Ei voida suorittaa skriptiä, koska se sisältää virheitä, tarkasta logit."
+
 msgid "Import Theme"
 msgstr "Tuo teema"
-
-msgid "Error while saving theme"
-msgstr "Virhe tallennettaessa teemaa"
 
 msgid "Error saving"
 msgstr "Virhe tallennettaessa"
 
 msgid "Save Theme As..."
 msgstr "Tallenna teema nimellä..."
+
+msgid "Unsaved file."
+msgstr "Tallentamaton tiedosto."
 
 msgid "%s Class Reference"
 msgstr "%s luokan referenssi"
@@ -6451,6 +7547,9 @@ msgstr "Etsi seuraava"
 
 msgid "Find Previous"
 msgstr "Etsi edellinen"
+
+msgid "Filter Scripts"
+msgstr "Suodata Skriptejä"
 
 msgid "Toggle alphabetical sorting of the method list."
 msgstr "Käytä metodilistalla aakkosellista järjestystä."
@@ -6485,14 +7584,14 @@ msgstr "Edellinen historiassa"
 msgid "History Next"
 msgstr "Seuraava historiassa"
 
-msgid "Theme"
-msgstr "Teema"
-
 msgid "Import Theme..."
 msgstr "Tuo teema..."
 
 msgid "Reload Theme"
 msgstr "Lataa teema uudelleen"
+
+msgid "Theme"
+msgstr "Teema"
 
 msgid "Save Theme"
 msgstr "Tallenna teema"
@@ -6534,14 +7633,17 @@ msgstr ""
 "Seuraavat tiedostot ovat uudempia levyllä.\n"
 "Mikä toimenpide tulisi suorittaa?:"
 
-msgid "Search Results"
-msgstr "Haun tulokset"
-
 msgid "Clear Recent Scripts"
 msgstr "Tyhjennä viimeisimmät skriptit"
 
 msgid "Standard"
 msgstr "Standardi"
+
+msgid "Plain Text"
+msgstr "Yksinkertainen Teksti"
+
+msgid "JSON"
+msgstr "JSON"
 
 msgid "Connections to method:"
 msgstr "Yhteydet metodiin:"
@@ -6552,6 +7654,9 @@ msgstr "Lähde"
 msgid "Target"
 msgstr "Kohde"
 
+msgid "Error at (%d, %d):"
+msgstr "Virhe kohteessa (%d, %d):"
+
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
 msgstr ""
@@ -6559,9 +7664,6 @@ msgstr ""
 
 msgid "[Ignore]"
 msgstr "[Sivuuta]"
-
-msgid "Line"
-msgstr "Rivi"
 
 msgid "Go to Function"
 msgstr "Mene funktioon"
@@ -6571,6 +7673,12 @@ msgstr "Hae symboli"
 
 msgid "Pick Color"
 msgstr "Poimi väri"
+
+msgid "Line"
+msgstr "Rivi"
+
+msgid "Folding"
+msgstr "Taittaminen"
 
 msgid "Uppercase"
 msgstr "Isot kirjaimet"
@@ -6596,6 +7704,9 @@ msgstr "Mene"
 msgid "Delete Line"
 msgstr "Poista rivi"
 
+msgid "Unindent"
+msgstr "Vähennä sisennystä"
+
 msgid "Toggle Comment"
 msgstr "Lisää tai poista kommentit"
 
@@ -6607,6 +7718,9 @@ msgstr "Laskosta kaikki rivit"
 
 msgid "Unfold All Lines"
 msgstr "Avaa kaikki rivit"
+
+msgid "Duplicate Selection"
+msgstr "Kahdenna valinta"
 
 msgid "Evaluate Selection"
 msgstr "Laske valinnan tulos"
@@ -6668,9 +7782,6 @@ msgstr "Varjostin Editori"
 msgid "Save File"
 msgstr "Tallenna Tiedosto"
 
-msgid "Save File As"
-msgstr "Tallenna Tiedosto Nimellä"
-
 msgid "Open File in Inspector"
 msgstr "Avaa Tiedosto Ttarkastelijassa"
 
@@ -6698,6 +7809,12 @@ msgstr "Ylikirjoita lepoasento"
 msgid "Create physical bones"
 msgstr "Luo fyysiset luut"
 
+msgid "Skeleton3D"
+msgstr "Luuranko3D"
+
+msgid "Create Physical Skeleton"
+msgstr "Luo Fyysinen Luuranko"
+
 msgid "Play IK"
 msgstr "Toista IK"
 
@@ -6719,12 +7836,6 @@ msgstr "Luo LightOccluder2D"
 msgid "LightOccluder2D Preview"
 msgstr "LightOccluder2D esikatselu"
 
-msgid "Can't convert a Sprite2D from a foreign scene."
-msgstr "Ei voida muuntaa Sprite2D:tä vieraasta kohtauksesta."
-
-msgid "Can't convert a sprite using animation frames to mesh."
-msgstr "Ei voida muuntaa spriteä meshiin animaatioruutuja käyttäen."
-
 msgid "Invalid geometry, can't replace by mesh."
 msgstr "Virheellinen geometria, ei voida korvata meshillä."
 
@@ -6745,6 +7856,9 @@ msgstr "Virheellinen geometria, ei voida luoda valopeitettä."
 
 msgid "Create LightOccluder2D Sibling"
 msgstr "Luo LightOccluder2D solmun sisar"
+
+msgid "Sprite2D"
+msgstr "Sprite2D"
 
 msgid "Simplification:"
 msgstr "Yksinkertaistus:"
@@ -6776,12 +7890,6 @@ msgstr "Kuvaa ei voitu ladata"
 msgid "ERROR: Couldn't load frame resource!"
 msgstr "VIRHE: Ei voitu ladata ruudun resurssia!"
 
-msgid "Resource clipboard is empty or not a texture!"
-msgstr "Resurssileikepöytä on tyhjä tai ei sisällä tekstuuria!"
-
-msgid "Paste Frame"
-msgstr "Liitä ruutu"
-
 msgid "Add Empty"
 msgstr "Lisää tyhjä"
 
@@ -6800,8 +7908,14 @@ msgstr "(tyhjä)"
 msgid "Animations:"
 msgstr "Animaatiot:"
 
+msgid "Filter Animations"
+msgstr "Suodata Animaatioita"
+
 msgid "Delete Animation"
 msgstr "Poista Animaatio"
+
+msgid "This resource does not have any animations."
+msgstr "Tällä resurssilla ei ole yhtään animaatiota."
 
 msgid "Animation Frames:"
 msgstr "Animaatioruudut:"
@@ -6812,17 +7926,71 @@ msgstr "Palauta oletuslähennystaso"
 msgid "Add frame from file"
 msgstr "Lisää kehys tiedostosta"
 
+msgid "Add frames from sprite sheet"
+msgstr "Lisää ruudut sprite-arkista"
+
+msgid "Delete Frame"
+msgstr "Poista Ruutu"
+
+msgid "Insert Empty (Before Selected)"
+msgstr "Syötä tyhjä (Valinnan Edelle)"
+
+msgid "Insert Empty (After Selected)"
+msgstr "Syötä tyhjä (Valinna Jälkeen)"
+
+msgid "Move Frame Left"
+msgstr "Siirrä Ruutua Vasemmalle"
+
+msgid "Move Frame Right"
+msgstr "Siirrä Ruutua Oikealle"
+
 msgid "Select Frames"
 msgstr "Valitse ruudut"
+
+msgid "Frame Order"
+msgstr "Ruutu Järjestys"
+
+msgid "By Row"
+msgstr "Rivin Perusteella"
+
+msgid "Left to Right, Top to Bottom"
+msgstr "Vasemmalta Oikealla, Ylhäältä Alas"
+
+msgid "Left to Right, Bottom to Top"
+msgstr "Vasemmalta Oikealla, Alhaalta Ylös"
+
+msgid "Right to Left, Top to Bottom"
+msgstr "Oikealta Vasemmalle, Ylhäältä Alas"
+
+msgid "Right to Left, Bottom to Top"
+msgstr "Oikealta Vasemmalle, Alhaalta Ylös"
+
+msgid "By Column"
+msgstr "Sarakkeen Mukaan"
+
+msgid "Horizontal"
+msgstr "Vaakasuora"
+
+msgid "Vertical"
+msgstr "Pystysuora"
 
 msgid "Size"
 msgstr "Koko"
 
+msgid "Separation"
+msgstr "Erotus"
+
+msgid "Offset"
+msgstr "Poikkeama"
+
 msgid "Create Frames from Sprite Sheet"
 msgstr "Luo ruudut sprite-arkista"
 
-msgid "SpriteFrames"
-msgstr "Sprite kehykset"
+msgid "Warnings should be fixed to prevent errors."
+msgstr "Varoitukset tulisi korjata virheiden välttämisen vuoksi."
+
+msgid "Memory: %s"
+msgstr "Muisti: %s"
 
 msgid "Set Region Rect"
 msgstr "Aseta alueen suorakulmio"
@@ -6900,9 +8068,6 @@ msgid "{num} currently selected"
 msgid_plural "{num} currently selected"
 msgstr[0] "{num} tällä hetkellä valittuna"
 msgstr[1] "{num} tällä hetkellä valittuna"
-
-msgid "Nothing was selected for the import."
-msgstr "Mitään ei ollut valittuna tuontia varten."
 
 msgid "Importing Theme Items"
 msgstr "Teeman osien tuonti"
@@ -7166,6 +8331,9 @@ msgstr "Lisää osan tyyppi"
 msgid "Add Type"
 msgstr "Lisää tyyppi"
 
+msgid "Override All Default Theme Items"
+msgstr "Ylikirjoita Kaikki Oletus Teeman Osat"
+
 msgid "Set Variation Base Type"
 msgstr "Aseta muunnoksen kantatyyppi"
 
@@ -7302,6 +8470,9 @@ msgstr "Virheellinen tiedosto, ei ole PackedScene resurssi."
 msgid "Reload the scene to reflect its most actual state."
 msgstr "Lataa kohtaus uudelleen vastaamaan sen todellisinta tilaa."
 
+msgid "Next Line After Column"
+msgstr "Seuraa Rivi Sarakkeen Jälkeen"
+
 msgid "Rotate Right"
 msgstr "Kierrä oikealle"
 
@@ -7314,11 +8485,35 @@ msgstr "Käännä vaakasuorasti"
 msgid "Flip Vertically"
 msgstr "Käännä pystysuorasti"
 
+msgid "Index: %d"
+msgstr "Indeksi: %d"
+
+msgid "Shift: Draw rectangle."
+msgstr "Vaihtonäppäin: Piirrä suorakulmio."
+
+msgid "Bucket"
+msgstr "Ämpäri"
+
+msgid "Eraser"
+msgstr "Pyyhin"
+
+msgid "Place Random Tile"
+msgstr "Aseta Satunnainen Laatta"
+
 msgid "Scattering:"
 msgstr "Hajonta:"
 
 msgid "Tiles"
 msgstr "Laatat"
+
+msgid "Toggle grid visibility."
+msgstr "Aseta ruudukon näkyvyys."
+
+msgid "From Coords"
+msgstr "Koordinaateista"
+
+msgid "Global actions:"
+msgstr "Globaalit toiminnot:"
 
 msgid "Atlas"
 msgstr "Atlas"
@@ -7326,11 +8521,26 @@ msgstr "Atlas"
 msgid "Physics"
 msgstr "Fysiikka"
 
+msgid "Physics Layer %d"
+msgstr "Fysiikka Kerros %d"
+
+msgid "No physics layers"
+msgstr "Ei fysiikka kerroksia"
+
+msgid "Navigation Layer %d"
+msgstr "Navigointi Kerros %d"
+
+msgid "Custom Data %d"
+msgstr "Mukautettu Data %d"
+
+msgid "Select tiles."
+msgstr "Valitse laatat."
+
 msgid "Yes"
 msgstr "Kyllä"
 
-msgid "TileSet"
-msgstr "LaattaValikoima"
+msgid "Tile properties:"
+msgstr "Laatan ominaisuudet:"
 
 msgid "Error"
 msgstr "Virhe"
@@ -7368,6 +8578,9 @@ msgstr "Haluatko poistaa etäsäilön %s?"
 msgid "Apply"
 msgstr "Käytä"
 
+msgid "Connect to VCS"
+msgstr "Yhdistä versionhallintajärjestelmään"
+
 msgid "Remote Login"
 msgstr "Etäkirjautuminen"
 
@@ -7397,6 +8610,9 @@ msgstr "Havaitse uudet muutokset"
 
 msgid "Discard all changes"
 msgstr "Hylkää kaikki muutokset"
+
+msgid "Permanentally delete my changes"
+msgstr "Poista muutokseni pysyvästi"
 
 msgid "Stage all changes"
 msgstr "Valmistele kaikki muutokset"
@@ -7518,6 +8734,9 @@ msgstr "Totuusarvo"
 msgid "Sampler"
 msgstr "Sampleri"
 
+msgid "[default]"
+msgstr "[oletus]"
+
 msgid "Add Input Port"
 msgstr "Lisää tuloportti"
 
@@ -7530,17 +8749,20 @@ msgstr "Poista tuloportti"
 msgid "Remove Output Port"
 msgstr "Poista lähtöportti"
 
+msgid "Set Parameter Name"
+msgstr "Aseta Parametrin Nimi"
+
 msgid "Set Input Default Port"
 msgstr "Aseta oletustuloportti"
 
 msgid "Add Node to Visual Shader"
 msgstr "Lisää solmu visuaaliseen sävyttimeen"
 
-msgid "Node(s) Moved"
-msgstr "Solmu(t) siirretty"
-
 msgid "Visual Shader Input Type Changed"
 msgstr "Visuaalisen sävyttimen syötteen tyyppi vaihdettu"
+
+msgid "Set Constant: %s"
+msgstr "Aseta Vakio: %s"
 
 msgid "Vertex"
 msgstr "Kärkipiste"
@@ -7705,6 +8927,9 @@ msgstr "Palauttaa parametrien arkustangentin."
 msgid "Returns the inverse hyperbolic tangent of the parameter."
 msgstr "Palauttaa parametrin käänteisen hyperbolisen tangentin."
 
+msgid "Returns the result of bitwise NOT (~a) operation on the integer."
+msgstr "Palauttaa bitti-EI (~a) operaation tuloksen kokonaisluvulle."
+
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
 msgstr ""
@@ -7843,6 +9068,13 @@ msgstr "Palauttaa parametrin hyperbolisen tangentin."
 msgid "Finds the truncated value of the parameter."
 msgstr "Hakee parametrin katkaistun arvon."
 
+msgid "Returns the result of bitwise AND (a & b) operation for two integers."
+msgstr "Palauttaa bitti-konjunktion (a & b) tuloksen kahdelle kokonaisluvulle."
+
+msgid "Returns the result of bitwise OR (a | b) operation for two integers."
+msgstr ""
+"Palauttaa bitti-TAI (a | b) operaation tuloksen kahdelle kokonaisluvulle."
+
 msgid "Perform the cubic texture lookup."
 msgstr "Suorittaa kuutiollisen tekstuurin haun."
 
@@ -7880,6 +9112,12 @@ msgstr "Laskee muunnoksen käänteismatriisin."
 
 msgid "Calculates the transpose of a transform."
 msgstr "Laskee muunnoksen transpoosin."
+
+msgid "Sums two transforms."
+msgstr "Laske yhteen kaksi transformaatiota."
+
+msgid "Subtracts two transforms."
+msgstr "Vähennä toisistaan kaksi transformaatiota."
 
 msgid "Multiplies vector by transform."
 msgstr "Kertoo vektorin muunnoksella."
@@ -8039,113 +9277,14 @@ msgstr ""
 "lähtöportteja. Tämä tarkoittaa koodin lisäämistä suoraan vertex/fragment/"
 "light funktioiden sisään, älä käytä sitä kirjoittaaksesi funktioesittelyitä."
 
+msgid "Edit Visual Property: %s"
+msgstr "Muokkaa Visuaalista Ominaisuutta: %s"
+
 msgid "Visual Shader Mode Changed"
 msgstr "Visuaalisen sävyttimen tila vaihdettu"
 
-msgid "The path specified doesn't exist."
-msgstr "Määritelty polku ei ole olemassa."
-
-msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Virhe avattaessa pakettitiedostoa (se ei ole ZIP-muodossa)."
-
-msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
-msgstr ""
-"Virheellinen \".zip\" projektitiedosto; se ei sisällä \"project.godot\" "
-"tiedostoa."
-
-msgid "Please choose an empty folder."
-msgstr "Ole hyvä ja valitse tyhjä kansio."
-
-msgid "This directory already contains a Godot project."
-msgstr "Tämä hakemisto sisältää jo Godot-projektin."
-
-msgid "New Game Project"
-msgstr "Uusi peliprojekti"
-
-msgid "Imported Project"
-msgstr "Tuotu projekti"
-
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Ole hyvä ja valitse \"project.godot\"- tai \".zip\"-tiedosto."
-
-msgid "Invalid project name."
-msgstr "Virheellinen projektin nimi."
-
-msgid "Couldn't create folder."
-msgstr "Kansiota ei voitu luoda."
-
-msgid "There is already a folder in this path with the specified name."
-msgstr "Polusta löytyy jo kansio annetulla nimellä."
-
-msgid "It would be a good idea to name your project."
-msgstr "Olisi hyvä idea antaa projektillesi nimi."
-
-msgid "Invalid project path (changed anything?)."
-msgstr "Virheellinen projektin polku (muuttuiko mikään?)."
-
-msgid "Couldn't create project.godot in project path."
-msgstr "Tiedoston project.godot luonti projektin polkuun epäonnistui."
-
-msgid "Error opening package file, not in ZIP format."
-msgstr "Virhe avattaessa pakettitiedostoa, ei ZIP-muodossa."
-
-msgid "The following files failed extraction from package:"
-msgstr "Seuraavien tiedostojen purku paketista epäonnistui:"
-
-msgid "Package installed successfully!"
-msgstr "Paketti asennettu onnistuneesti!"
-
-msgid "Rename Project"
-msgstr "Nimetä projekti"
-
-msgid "Import Existing Project"
-msgstr "Tuo olemassaoleva projekti"
-
-msgid "Import & Edit"
-msgstr "Tuo ja muokkaa"
-
-msgid "Create New Project"
-msgstr "Luo uusi projekti"
-
-msgid "Create & Edit"
-msgstr "Luo ja muokkaa"
-
-msgid "Install Project:"
-msgstr "Asenna projekti:"
-
-msgid "Install & Edit"
-msgstr "Asenna ja muokkaa"
-
-msgid "Project Name:"
-msgstr "Projektin nimi:"
-
-msgid "Project Path:"
-msgstr "Projektin polku:"
-
-msgid "Project Installation Path:"
-msgstr "Projektin asennuspolku:"
-
-msgid "Renderer:"
-msgstr "Renderöijä:"
-
-msgid "Error: Project is missing on the filesystem."
-msgstr "Virhe: projekti puuttuu tiedostojärjestelmästä."
-
-msgid "Missing Project"
-msgstr "Puuttuva projekti"
-
-msgid "Local"
-msgstr "Paikallinen"
-
-msgid "Local Projects"
-msgstr "Paikalliset projektit"
-
-msgid "Asset Library Projects"
-msgstr "Asset-kirjaston projektit"
-
-msgid "Can't open project at '%s'."
-msgstr "Ei voida avata projektia kohteesta '%s'."
+msgid "Are you sure to run %d projects at once?"
+msgstr "Haluatko varmasti suorittaa %d projektia yhdenaikaisesti?"
 
 msgid ""
 "The selected project \"%s\" does not specify its supported Godot version in "
@@ -8205,28 +9344,6 @@ msgstr ""
 "Projektin asetukset on luotu uudemmalla versiolla, jonka asetukset eivät ole "
 "yhteensopivia tämän version kanssa."
 
-msgid ""
-"Can't run project: no main scene defined.\n"
-"Please edit the project and set the main scene in the Project Settings under "
-"the \"Application\" category."
-msgstr ""
-"Projektia ei voi suorittaa: pääkohtausta ei ole määritetty.\n"
-"Muokkaa projektia ja määritä pääkohtaus projektin asetuksissa kategoriassa "
-"\"Sovellus\"."
-
-msgid ""
-"Can't run project: Assets need to be imported.\n"
-"Please edit the project to trigger the initial import."
-msgstr ""
-"Projektia ei voi ajaa: Assetit täytyy tuoda uudelleen.\n"
-"Muokkaa projektia käynnistääksesi uudelleentuonnin."
-
-msgid "Are you sure to run %d projects at once?"
-msgstr "Haluatko varmasti suorittaa %d projektia yhdenaikaisesti?"
-
-msgid "Tag name can't be empty."
-msgstr "Tagin nimi ei voi olla tyhjä."
-
 msgid "Remove %d projects from the list?"
 msgstr "Poista %d projektia listasta?"
 
@@ -8240,20 +9357,15 @@ msgstr ""
 "Poista kaikki puuttuvat projektit listalta?\n"
 "Projektikansioiden sisältöjä ei muuteta."
 
-msgid ""
-"Language changed.\n"
-"The interface will update after restarting the editor or project manager."
-msgstr ""
-"Kieli vaihdettu.\n"
-"Käyttöliittymä päivittyy, kun editori tai projektinhallinta käynnistetään "
-"uudelleen."
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "Projektin tallennus epäonnistui kohteessa '%s'. (virhe %d)."
 
-msgid ""
-"Are you sure to scan %s folders for existing Godot projects?\n"
-"This could take a while."
-msgstr ""
-"Haluatko varmasti etsiä %s kansiosta olemassa olevia Godot-projekteja?\n"
-"Tämä saattaa kestää hetken."
+msgid "Tag name can't be empty."
+msgstr "Tagin nimi ei voi olla tyhjä."
+
+msgctxt "Application"
+msgid "Project Manager"
+msgstr "Projektinhallinta"
 
 msgid "New Project"
 msgstr "Uusi projekti"
@@ -8279,8 +9391,17 @@ msgstr ""
 "Suodattaaksesi projektit nimen ja koko polun mukaan, haussa tulee olla mukana "
 "vähintään yksi `/` merkki."
 
+msgid "Create New Project"
+msgstr "Luo uusi projekti"
+
+msgid "Import Existing Project"
+msgstr "Tuo olemassaoleva projekti"
+
 msgid "Edit Project"
 msgstr "Muokkaa projektia"
+
+msgid "Rename Project"
+msgstr "Nimetä projekti"
 
 msgid "Remove Project"
 msgstr "Poista projekti"
@@ -8288,30 +9409,83 @@ msgstr "Poista projekti"
 msgid "Remove Missing"
 msgstr "Poista puuttuva"
 
-msgid "About"
-msgstr "Tietoja"
-
-msgid "Restart Now"
-msgstr "Käynnistä uudelleen nyt"
-
 msgid "Select a Folder to Scan"
 msgstr "Valitse tutkittava kansio"
 
 msgid "Remove All"
 msgstr "Poista kaikki"
 
-msgid "Also delete project contents (no undo!)"
-msgstr "Poista myös projektien sisältö (ei voi kumota!)"
+msgid "Create New Tag"
+msgstr "Luo Uusi Tagi"
 
-msgid "Can't run project"
-msgstr "Projektia ei voida käynnistää"
+msgid "It would be a good idea to name your project."
+msgstr "Olisi hyvä idea antaa projektillesi nimi."
 
 msgid ""
-"You currently don't have any projects.\n"
-"Would you like to explore official example projects in the Asset Library?"
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
-"Sinulla ei ole tällä hetkellä yhtään projekteja.\n"
-"Haluaisitko selata virallisia esimerkkiprojekteja Asset-kirjastosta?"
+"Virheellinen \".zip\" projektitiedosto; se ei sisällä \"project.godot\" "
+"tiedostoa."
+
+msgid "The path specified doesn't exist."
+msgstr "Määritelty polku ei ole olemassa."
+
+msgid "Couldn't create project.godot in project path."
+msgstr "Tiedoston project.godot luonti projektin polkuun epäonnistui."
+
+msgid "Error opening package file, not in ZIP format."
+msgstr "Virhe avattaessa pakettitiedostoa, ei ZIP-muodossa."
+
+msgid "The following files failed extraction from package:"
+msgstr "Seuraavien tiedostojen purku paketista epäonnistui:"
+
+msgid ""
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
+msgstr ""
+"Projektin polusta '%s' epäonnistui (virhe %d). Se saattaa puuttua tai olla "
+"vioittunut."
+
+msgid "New Game Project"
+msgstr "Uusi peliprojekti"
+
+msgid "Import & Edit"
+msgstr "Tuo ja muokkaa"
+
+msgid "Create & Edit"
+msgstr "Luo ja muokkaa"
+
+msgid "Install Project:"
+msgstr "Asenna projekti:"
+
+msgid "Install & Edit"
+msgstr "Asenna ja muokkaa"
+
+msgid "Project Name:"
+msgstr "Projektin nimi:"
+
+msgid "Project Path:"
+msgstr "Projektin polku:"
+
+msgid "Project Installation Path:"
+msgstr "Projektin asennuspolku:"
+
+msgid "Renderer:"
+msgstr "Renderöijä:"
+
+msgid "Version Control Metadata:"
+msgstr "Versionhallinnan Metadata:"
+
+msgid "Error: Project is missing on the filesystem."
+msgstr "Virhe: projekti puuttuu tiedostojärjestelmästä."
+
+msgid "Missing Project"
+msgstr "Puuttuva projekti"
+
+msgid "Restart Now"
+msgstr "Käynnistä uudelleen nyt"
+
+msgid "Add Project Setting"
+msgstr "Lisää Projektin Asetus"
 
 msgid "Delete Item"
 msgstr "Poista kohde"
@@ -8364,11 +9538,23 @@ msgstr "Pääte:"
 msgid "Use Regular Expressions"
 msgstr "Käytä säännöllisiä lausekkeita"
 
-msgid "Advanced Options"
-msgstr "Edistyneet asetukset"
-
 msgid "Substitute"
 msgstr "Korvike"
+
+msgid "Node name."
+msgstr "Solmun nimi."
+
+msgid "Node's parent name, if available."
+msgstr "Solmun yläsolmun nimi, jos saatavilla."
+
+msgid "Node type."
+msgstr "Solmun tyyppi."
+
+msgid "Current scene name."
+msgstr "Nykyisen kohtauksen nimi."
+
+msgid "Root node name."
+msgstr "Juurisolmun nimi."
 
 msgid ""
 "Sequential integer counter.\n"
@@ -8383,8 +9569,14 @@ msgstr "Per taso -laskuri"
 msgid "If set, the counter restarts for each group of child nodes."
 msgstr "Jos asetettu, laskuri alkaa alusta jokaiselle alisolmujen ryhmälle."
 
+msgid "Initial value for the counter."
+msgstr "Laskurin alkuarvo."
+
 msgid "Step"
 msgstr "Askel"
+
+msgid "Amount by which counter is incremented for each node."
+msgstr "Lukumäärä, jolla laskuria kasvatetaan kullekin solmulle."
 
 msgid "Padding"
 msgstr "Täyte"
@@ -8429,11 +9621,23 @@ msgstr "Merkissä %s"
 msgid "Reparent Node"
 msgstr "Vaihda solmun isäntää"
 
+msgid "Select new parent:"
+msgstr "Valitse uusi vanhempi:"
+
 msgid "Keep Global Transform"
 msgstr "Pidä globaali muunnos"
 
 msgid "Reparent"
 msgstr "Uusi isäntä"
+
+msgid "File name invalid."
+msgstr "Tiedosto nimi ei kelpaa."
+
+msgid "Invalid root node name characters have been replaced."
+msgstr "Virheelliset merkit on korvattu juuri solmun nimestä."
+
+msgid "Root Type:"
+msgstr "Juuren Tyyppi:"
 
 msgid "2D Scene"
 msgstr "2D-kohtaus"
@@ -8444,8 +9648,17 @@ msgstr "3D-kohtaus"
 msgid "User Interface"
 msgstr "Käyttöliittymä"
 
+msgid "Root Name:"
+msgstr "Juuren Nimi:"
+
+msgid "Root node valid."
+msgstr "Juurisolmu validi."
+
 msgid "Error loading scene from %s"
 msgstr "Virhe ladattaessa kohtausta kohteesta %s"
+
+msgid "Error instantiating scene from %s"
+msgstr "Virhe luodessa ilmentymää kohteesta %s"
 
 msgid "Replace with Branch Scene"
 msgstr "Korvaa haaranäkymällä"
@@ -8455,12 +9668,6 @@ msgstr "Irrota skripti"
 
 msgid "This operation can't be done on the tree root."
 msgstr "Tätä toimenpidettä ei voi tehdä puun juurelle."
-
-msgid "Move Node In Parent"
-msgstr "Siirrä solmu isännän alle"
-
-msgid "Move Nodes In Parent"
-msgstr "Siirrä solmut isännän alle"
 
 msgid "Duplicate Node(s)"
 msgstr "Kahdenna solmu(t)"
@@ -8478,9 +9685,6 @@ msgstr "Instantioidut kohtaukset eivät voi muuttua juuriksi"
 
 msgid "Make node as Root"
 msgstr "Tee solmusta juurisolmu"
-
-msgid "Delete %d nodes and any children?"
-msgstr "Poista %d solmua ja kaikki alisolmut?"
 
 msgid "Delete %d nodes?"
 msgstr "Poista %d solmua?"
@@ -8536,16 +9740,17 @@ msgstr ""
 "\"editable_instance\" ominaisuuden poistaminen käytöstä palauttaa kaikki "
 "solmun ominaisuudet oletusarvoihin."
 
-msgid ""
-"Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"\"Lataa paikanpitäjäksi\" ominaisuuden ottaminen käyttöön poistaa "
-"\"Muokattavat alisolmut\" ominaisuuden käytöstä ja palauttaa kaikki solmun "
-"ominaisuudet oletusarvoihin."
-
 msgid "Make Local"
 msgstr "Tee paikallinen"
+
+msgid "Enable Scene Unique Name(s)"
+msgstr "Käytä Kohtauksen Uniikkeja Nimiä"
+
+msgid "Unique names already used by another node in the scene:"
+msgstr "Uniikki nimi on jo toisen solmun käytössä:"
+
+msgid "Disable Scene Unique Name(s)"
+msgstr "Ota Kohtauksen Uniikit Nimet Pois Käytöstä"
 
 msgid "New Scene Root"
 msgstr "Uusi kohtauksen pääkansio"
@@ -8567,9 +9772,6 @@ msgstr "Ei voi käyttää solmuja, joista nykyinen kohtaus periytyy!"
 
 msgid "Attach Script"
 msgstr "Liitä skripti"
-
-msgid "Cut Node(s)"
-msgstr "Leikkaa solmu(t)"
 
 msgid "Remove Node(s)"
 msgstr "Poista solmu(t)"
@@ -8596,14 +9798,14 @@ msgstr "Virhe kohtauksen kopioimisessa sen tallentamiseksi."
 msgid "Sub-Resources"
 msgstr "Aliresurssit"
 
+msgid "Access as Unique Name"
+msgstr "Käytä Uniikilla Nimellä"
+
 msgid "Clear Inheritance"
 msgstr "Poista perintä"
 
 msgid "Editable Children"
 msgstr "Muokattavat alisolmut"
-
-msgid "Load As Placeholder"
-msgstr "Lataa paikanpitäjäksi"
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"
@@ -8617,11 +9819,29 @@ msgstr ""
 msgid "Can't paste root node into the same scene."
 msgstr "Pääsolmua ei voi liittää samaan kohtaukseen."
 
-msgid "Reparent to New Node"
-msgstr "Vaihda solmulle uusi isäntä"
+msgid "Paste Node(s) as Child of %s"
+msgstr "Liitä solmu(t) %s Jälkeläisinä"
+
+msgid "<Unnamed> at %s"
+msgstr "<Nimeämätön> kohtessa %s"
+
+msgid "Add Child Node..."
+msgstr "Lisää Alisolmu..."
+
+msgid "Instantiate Child Scene..."
+msgstr "Luo Alikohtauksen Esiintymä..."
+
+msgid "Change Type..."
+msgstr "Muuta Tyyppiä..."
+
+msgid "Attach Script..."
+msgstr "Liitä Skripti..."
 
 msgid "Make Scene Root"
 msgstr "Tee kohtauksen juuri"
+
+msgid "Toggle Access as Unique Name"
+msgstr "Vaihda Käyttö Yksilöllisellä Nimellä"
 
 msgid "Delete (No Confirm)"
 msgstr "Poista (ei varmistusta)"
@@ -8647,6 +9867,9 @@ msgstr ""
 "änkyttämisen aina, kun se päivittyy.\n"
 "Vaihda takaisin Paikallinen kohtauspuu -telakkaan suorituskyvyn "
 "parantamiseksi."
+
+msgid "Local"
+msgstr "Paikallinen"
 
 msgid "Delete Related Animation Tracks"
 msgstr "Poista Liittyvät Animaatioraidat"
@@ -8686,6 +9909,12 @@ msgstr "Avaa skripti / Valitse sijainti"
 
 msgid "Open Script"
 msgstr "Avaa skripti"
+
+msgid "Inherit %s"
+msgstr "Perii %s"
+
+msgid "Inherit"
+msgstr "Peri"
 
 msgid "Invalid path."
 msgstr "Virheellinen polku."
@@ -8740,8 +9969,11 @@ msgstr "Virheellinen kantapolku."
 msgid "Wrong extension chosen."
 msgstr "Valittu väärä tiedostopääte."
 
-msgid "Global shader parameter '%s' already exists'"
-msgstr "Globaali varjostin parametri '%s' on jo olemassa"
+msgid "Mode:"
+msgstr "Tila:"
+
+msgid "Select Screen"
+msgstr "Valitse Näyttö"
 
 msgid "Change Cylinder Radius"
 msgstr "Muuta sylinterin sädettä"
@@ -8755,37 +9987,8 @@ msgstr "Muuta toruksen sisäsädettä"
 msgid "Change Torus Outer Radius"
 msgstr "Muuta toruksen ulkosädettä"
 
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
-"Virheellinen tyyppiargumentti convert() metodille, käytä TYPE_* vakioita."
-
-msgid "Step argument is zero!"
-msgstr "Askeleen argumentti on nolla!"
-
-msgid "Not a script with an instance"
-msgstr "Ei ole skripti, jolla on ilmentymä"
-
-msgid "Not based on a script"
-msgstr "Ei pohjaudu skriptiin"
-
-msgid "Not based on a resource file"
-msgstr "Ei pohjaudu resurssitiedostoon"
-
-msgid "Invalid instance dictionary format (missing @path)"
-msgstr "Virheellinen ilmentymän sanakirjaformaatti (puuttuu @path)"
-
-msgid "Invalid instance dictionary format (can't load script at @path)"
-msgstr ""
-"Virheellinen ilmentymän sanakirjaformaatti (ei voida ladata skriptiä polusta "
-"@path)"
-
-msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr ""
-"Virheellinen ilmentymän sanakirjaformaatti (virheellinen skripti kohdassa "
-"@path)"
-
-msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr "Virheellinen ilmentymän sanakirja (virheelliset aliluokat)"
+msgid "Path to Blender installation is valid."
+msgstr "Polku Blender asennukseen on kelvollinen."
 
 msgid "Next Plane"
 msgstr "Seuraava taso"
@@ -8881,6 +10084,9 @@ msgstr "Aloita kehitys"
 msgid "Class name can't be a reserved keyword"
 msgstr "Luokan nimi ei voi olla varattu avainsana"
 
+msgid "Class name must be a valid identifier"
+msgstr "Metodin nimen täytyy olla kelvollinen tunniste"
+
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Ei tarpeeksi tavuja tavujen purkamiseksi tai virheellinen formaatti."
 
@@ -8905,6 +10111,9 @@ msgstr "Verkkoprofiloija"
 msgid "Add from path"
 msgstr "Lisää polusta"
 
+msgid "Invalid property path: '%s'"
+msgstr "Virheellinen ominaisuus polku: '%s'"
+
 msgid "Delete Property?"
 msgstr "Poista ominaisuus?"
 
@@ -8913,35 +10122,53 @@ msgstr ""
 "Tälle solmulle täytyy asettaa tai luoda NavigationMesh resurssi, jotta se "
 "toimisi."
 
+msgid "Error saving file %s: %s"
+msgstr "Virhe tallennettaessa tiedostoa %s: %s"
+
+msgid "Error loading %s: %s."
+msgstr "Virhe ladatessa %s: %s."
+
 msgid "Add action"
 msgstr "Lisää toiminto"
 
 msgid "Add binding"
 msgstr "Lisää sidos"
 
-msgid "Package name is missing."
-msgstr "Paketin nimi puuttuu."
+msgid "Pose"
+msgstr "Asento"
 
-msgid "Package segments must be of non-zero length."
-msgstr "Paketin osioiden pituuksien täytyy olla nollasta poikkeavia."
+msgid "Haptic"
+msgstr "Haptinen"
 
-msgid "The character '%s' is not allowed in Android application package names."
-msgstr "Merkki '%s' ei ole sallittu Android-sovellusten pakettien nimissä."
-
-msgid "A digit cannot be the first character in a package segment."
-msgstr "Paketin osion ensimmäinen merkki ei voi olla numero."
-
-msgid "The character '%s' cannot be the first character in a package segment."
-msgstr "Merkki '%s' ei voi olla paketin osion ensimmäinen merkki."
-
-msgid "The package must have at least one '.' separator."
-msgstr "Paketilla on oltava ainakin yksi '.' erotinmerkki."
+msgid "Unknown"
+msgstr "Tuntematon"
 
 msgid "Invalid public key for APK expansion."
 msgstr "Virheellinen julkinen avain APK-laajennosta varten."
 
 msgid "Invalid package name:"
 msgstr "Virheellinen paketin nimi:"
+
+msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+"\"Min SDK\" tulisi olla validi kokonaisluku, annettu \"%s\" ei ole validi."
+
+msgid ""
+"\"Min SDK\" cannot be lower than %d, which is the version needed by the Godot "
+"library."
+msgstr ""
+"\"Min SDK\" ei voi olla pienempi kuin %d, koska vähintään tämä versio on "
+"vaadittu Godotin kirjastolle."
+
+msgid ""
+"\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+"\"Kohde SDK\" tulisi olla validi kokonaisluku, annettu \"%s\" ei ole validi."
+
+msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
+msgstr ""
+"\"Target SDK\" version on oltava suurempi tai yhtä suuri kuin \"Min SDK\" "
+"versionumeron."
 
 msgid "Select device from the list"
 msgstr "Valitse laite listasta"
@@ -8966,6 +10193,9 @@ msgstr "Ajetaan laitteella..."
 
 msgid "Could not execute on device."
 msgstr "Ei voitu suorittaa laitteella."
+
+msgid "Exporting to Android when using C#/.NET is experimental."
+msgstr "Androidille vienti C#/.NET-käytössä on kokeellinen."
 
 msgid ""
 "Android build template not installed in the project. Install it from the "
@@ -9016,6 +10246,11 @@ msgstr "'build-tools' hakemisto puuttuu!"
 
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Android SDK build-tools apksigner-komentoa ei löydy."
+
+msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
+msgstr ""
+"\"Min Sdk\" versionumeron on oltava suurempi tai yhtä suuri kuin %d \"%s\" "
+"renderöijälle."
 
 msgid ""
 "'apksigner' could not be found. Please check that the command is available in "
@@ -9071,20 +10306,6 @@ msgstr ""
 msgid "Unsupported export format!"
 msgstr "Vientiformaatti ei ole tuettu!"
 
-msgid ""
-"Android build version mismatch: Template installed: %s, Godot version: %s. "
-"Please reinstall Android build template from 'Project' menu."
-msgstr ""
-"Androidin käännösversion epäyhteensopivuus: Malli asennettu: %s, Godotin "
-"versio: %s. Ole hyvä ja uudelleenasenna Androidin käännösmalli 'Projekti'-"
-"valikosta."
-
-msgid ""
-"Unable to overwrite res://android/build/res/*.xml files with project name."
-msgstr ""
-"Ei voitu ylikirjoittaa res://android/build/res/*.xml tiedostoja projektin "
-"nimellä."
-
 msgid "Could not export project files to gradle project."
 msgstr "Ei voitu viedä projektitiedostoja gradle-projektiksi."
 
@@ -9094,23 +10315,8 @@ msgstr "Ei voitu kirjoittaa laajennuspakettitiedostoa!"
 msgid "Building Android Project (gradle)"
 msgstr "Käännetään Android-projektia (gradle)"
 
-msgid ""
-"Building of Android project failed, check output for the error. Alternatively "
-"visit docs.godotengine.org for Android build documentation."
-msgstr ""
-"Android-projektin käännös epäonnistui, tarkista virhe tulosteesta. "
-"Vaihtoehtoisesti, lue docs.godotengine.org sivustolta Androidin "
-"käännösdokumentaatio."
-
 msgid "Moving output"
 msgstr "Siirretään tulostetta"
-
-msgid ""
-"Unable to copy and rename export file, check gradle project directory for "
-"outputs."
-msgstr ""
-"Vientitiedoston kopiointi ja uudelleennimeäminen ei onnistu, tarkista "
-"tulosteet gradle-projektin hakemistosta."
 
 msgid "Package not found: \"%s\"."
 msgstr "Pakettia ei löytynyt: \"%s\"."
@@ -9145,11 +10351,17 @@ msgstr "Ei voitu purkaa väliaikaista unaligned APK:ta."
 msgid "Invalid Identifier:"
 msgstr "Virheellinen Identifier osio:"
 
-msgid "Identifier is missing."
-msgstr "Tunniste puuttuu."
+msgid "Export Icons"
+msgstr "Vie Kuvakkeet"
 
-msgid "The character '%s' is not allowed in Identifier."
-msgstr "Merkki '%s' ei ole sallittu Identifier osiossa."
+msgid "Could not open file \"%s\"."
+msgstr "Ei voitu avata tiedostoa \"%s\"."
+
+msgid "Failed to open executable file \"%s\"."
+msgstr "Käynnistystiedoston \"%s\" avaus epäonnistui."
+
+msgid "Could not create temp directory:"
+msgstr "Ei voitu luoda väliaikaista hakemistoa:"
 
 msgid "Can't get filesystem access."
 msgstr "Ei saada pääsyä tiedostojärjestelmään."
@@ -9225,6 +10437,14 @@ msgstr ""
 msgid "Could not start xcrun executable."
 msgstr "xcrun-käynnistystiedostoa ei voitu käynnistää."
 
+msgid "Cannot sign file %s."
+msgstr "Tiedostoa %s ei voida allekirjoittaa."
+
+msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
+msgstr ""
+"Suhteelliset symboliset linkit eivät ole tuettuja tässä käyttöjärjestelmässä, "
+"viety \"%s\" saattaa olla rikkinäinen!"
+
 msgid "Could not start hdiutil executable."
 msgstr "hkiutil-käynnistystiedostoa ei voitu käynnistää."
 
@@ -9240,6 +10460,12 @@ msgid ""
 msgstr ""
 "Suhteelliset symboliset linkit eivät ole tuettuja tässä käyttöjärjestelmässä, "
 "viety projekti saattaa olla rikkinäinen!"
+
+msgid "Could not created symlink \"%s\" -> \"%s\"."
+msgstr "Ei voitu lukea symbolista linkkiä \"%s\" -> \"%s\"."
+
+msgid "Could not open \"%s\"."
+msgstr "Ei voitu avata \"%s\"."
 
 msgid "Making PKG"
 msgstr "Tehdään PKG"
@@ -9303,20 +10529,38 @@ msgstr "Ei voitu lukea tiedostoa: \"%s\"."
 msgid "Could not read HTML shell: \"%s\"."
 msgstr "Ei voitu lukea HTML tulkkia: \"%s\"."
 
+msgid "Run in Browser"
+msgstr "Suorita selaimessa"
+
+msgid "Stop HTTP Server"
+msgstr "Pysäytä HTTP-palvelin"
+
+msgid "Run exported HTML in the system's default browser."
+msgstr "Suorita viety HTML järjestelmän oletusselaimessa."
+
 msgid "Could not create HTTP server directory: %s."
 msgstr "Ei voitu luoda HTTP-palvelimen hakemistoa: %s."
 
 msgid "Error starting HTTP server: %d."
 msgstr "Virhe käynnistettäessä HTTP-palvelinta: %d."
 
-msgid "Stop HTTP Server"
-msgstr "Pysäytä HTTP-palvelin"
+msgid "Icon size \"%d\" is missing."
+msgstr "Kuvake koko \"%d\" puuttuu."
 
-msgid "Run in Browser"
-msgstr "Suorita selaimessa"
+msgid "Failed to rename temporary file \"%s\"."
+msgstr "Väliaikaisen tiedoston \"%s\" uudelleen nimeäminen epäonnistui."
 
-msgid "Run exported HTML in the system's default browser."
-msgstr "Suorita viety HTML järjestelmän oletusselaimessa."
+msgid "Invalid icon path."
+msgstr "Virheellinen kuvake polku."
+
+msgid "Invalid file version."
+msgstr "Virheellinen tiedoston versio."
+
+msgid "Invalid product version."
+msgstr "Virheellinen tuotteen versio."
+
+msgid "Invalid icon file \"%s\"."
+msgstr "Kelvoton kuvake tiedosto \"%s\"."
 
 msgid "No identity found."
 msgstr "Identiteettiä ei löytynyt."
@@ -9326,6 +10570,60 @@ msgstr "Virheellinen Identifier osio."
 
 msgid "Failed to remove temporary file \"%s\"."
 msgstr "Väliaikaista tiedosta ei voida poistaa: \"%s\"."
+
+msgid ""
+"Only one visible CanvasModulate is allowed per canvas.\n"
+"When there are more than one, only one of them will be active. Which one is "
+"undefined."
+msgstr ""
+"Vain yksi näkyvä CanvasModulate on sallittu per piirtoalusta.\n"
+"Kun niitä on useampi kuin yksi, vain yksi on aktiivinen. Mikä näistä on "
+"aktiivinen ei ole määritelty."
+
+msgid ""
+"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"CPUParticles2D animaatio edellyttää CanvasItemMaterial käyttöä niin että "
+"\"Particles Animation\" on kytketty päälle."
+
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+"Materiaalia partikkeleiden käsittelemiseksi ei ole määritetty, joten mitään "
+"ei tapahdu."
+
+msgid ""
+"Particles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+"Particles2D animaatio edellyttää CanvasItemMaterial käyttöä niin että "
+"\"Particles Animation\" on kytketty päälle."
+
+msgid ""
+"A texture with the shape of the light must be supplied to the \"Texture\" "
+"property."
+msgstr ""
+"Tekstuuri, jolta löytyy valon muoto, täytyy antaa \"texture\" ominaisuudelle."
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr ""
+"Jotta tämä peittäjä toimisi, sille on asetettava (tai piirrettävä) "
+"peittopolygoni."
+
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
+msgstr "Tämän peittäjän peittopolygoni on tyhjä. Ole hyvä ja piirrä polygoni."
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"ParallaxLayer solmu toimii ainoastaan, jos se on ParallaxBackground solmun "
+"alla."
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr "PathFollow2D toimii ainoastaan ollessaan asetettuna Path2D solmun alle."
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
@@ -9365,27 +10663,6 @@ msgstr ""
 "CollisionShape2D solmun kautta. Ole hyvä ja käytä sen sijaan "
 "CollisionPolygon2D solmua."
 
-msgid ""
-"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"CPUParticles2D animaatio edellyttää CanvasItemMaterial käyttöä niin että "
-"\"Particles Animation\" on kytketty päälle."
-
-msgid ""
-"A material to process the particles is not assigned, so no behavior is "
-"imprinted."
-msgstr ""
-"Materiaalia partikkeleiden käsittelemiseksi ei ole määritetty, joten mitään "
-"ei tapahdu."
-
-msgid ""
-"Particles2D animation requires the usage of a CanvasItemMaterial with "
-"\"Particles Animation\" enabled."
-msgstr ""
-"Particles2D animaatio edellyttää CanvasItemMaterial käyttöä niin että "
-"\"Particles Animation\" on kytketty päälle."
-
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Solmujen A ja B tulee olla PhysicsBody2D tyyppisiä"
 
@@ -9400,30 +10677,6 @@ msgstr "Liitos ei ole yhdistetty kahteen PhysicsBody2D solmuun"
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "Solmujen A ja B tulee olla eri PhysicsBody2D solmut"
-
-msgid ""
-"A texture with the shape of the light must be supplied to the \"Texture\" "
-"property."
-msgstr ""
-"Tekstuuri, jolta löytyy valon muoto, täytyy antaa \"texture\" ominaisuudelle."
-
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
-"Jotta tämä peittäjä toimisi, sille on asetettava (tai piirrettävä) "
-"peittopolygoni."
-
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
-msgstr "Tämän peittäjän peittopolygoni on tyhjä. Ole hyvä ja piirrä polygoni."
-
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"ParallaxLayer solmu toimii ainoastaan, jos se on ParallaxBackground solmun "
-"alla."
-
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr "PathFollow2D toimii ainoastaan ollessaan asetettuna Path2D solmun alle."
 
 msgid ""
 "A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
@@ -9449,6 +10702,14 @@ msgstr ""
 "Tältä luulta puuttuu kunnollinen lepoasento (REST). Mene Skeleton2D solmuun "
 "ja aseta sellainen."
 
+msgid "Nothing is visible because no mesh has been assigned."
+msgstr "Mitään ei näy, koska meshiä ei ole asetettu."
+
+msgid "Nothing is visible because meshes have not been assigned to draw passes."
+msgstr ""
+"Mitään ei näy, koska mesheille ei ole asetettu piirtopyyhkäisyjä (draw "
+"passes)."
+
 msgid ""
 "CollisionPolygon3D only serves to provide a collision shape to a "
 "CollisionObject3D derived node.\n"
@@ -9471,14 +10732,6 @@ msgstr ""
 "Käytä sitä ainoastaan Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, "
 "jne. alla antaaksesi niille muodon."
 
-msgid "Nothing is visible because no mesh has been assigned."
-msgstr "Mitään ei näy, koska meshiä ei ole asetettu."
-
-msgid "Nothing is visible because meshes have not been assigned to draw passes."
-msgstr ""
-"Mitään ei näy, koska mesheille ei ole asetettu piirtopyyhkäisyjä (draw "
-"passes)."
-
 msgid "This body will be ignored until you set a mesh."
 msgstr "Tämä kappale sivuutetaan, kunnes asetat meshin."
 
@@ -9496,7 +10749,7 @@ msgid "Finishing Plot"
 msgstr "Viimeistellään piirto"
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
-msgstr "BlendTree solmusta '%' ei löytynyt animaatiota: '%s'"
+msgstr "BlendTree solmusta '%s', ei löytynyt animaatiota: '%s'"
 
 msgid "Animation not found: '%s'"
 msgstr "Animaatio ei löytynyt: '%s'"
@@ -9507,27 +10760,8 @@ msgstr "Mitään ei ole yhdistetty syötteeseen '%s' solmussa '%s'."
 msgid "No root AnimationNode for the graph is set."
 msgstr "Graafille ei ole asetettu AnimationNode juurisolmua."
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Väri: #%s\n"
-"Vasen hiirenkorva: Aseta väri\n"
-"Oikea hiirenkorva: Poista esiasetus"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Väri: #%s\n"
-"Vasen hiiren painike: Aseta väri"
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Vaihda heksadesimaali- ja koodiarvojen välillä."
-
-msgid "Add current color as a preset."
-msgstr "Lisää nykyinen väri esiasetukseksi."
 
 msgid ""
 "Container by itself serves no purpose unless a script configures its children "
@@ -9547,12 +10781,6 @@ msgstr ""
 "\"Ignore\". Ratkaistaksesi tämän, laita Mouse Filter asetukseksi \"Stop\" tai "
 "\"Pass\"."
 
-msgid "Alert!"
-msgstr "Huomio!"
-
-msgid "Please Confirm..."
-msgstr "Ole hyvä ja vahvista..."
-
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "Jos \"Exp Edit\" on päällä, \"Min Value\" täytyy olla suurempi kuin 0."
 
@@ -9564,9 +10792,6 @@ msgstr ""
 "ScrollContainer on tarkoitettu toimimaan yhdellä alikontrollilla.\n"
 "Käytä alisolmuna jotakin säilöä (VBox, HBox, jne), tai Control solmua ja "
 "aseta haluttu minimikoko käsin."
-
-msgid "(Other)"
-msgstr "(Muu)"
 
 msgid ""
 "Very low timer wait times (< 0.05 seconds) may behave in significantly "
@@ -9586,9 +10811,6 @@ msgid ""
 msgstr ""
 "Näyttöruudun koko on oltava suurempi tai yhtä suuri kuin kaksi pikseliä "
 "kummassakin suunnassa, jotta mitään renderöidään."
-
-msgid "Unsupported BMFont texture format."
-msgstr "Ei tuettu BMFont tekstuuri formaatti."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"
@@ -9625,17 +10847,98 @@ msgstr "Virheellinen vertailufunktio tälle tyypille."
 msgid "2D Mode"
 msgstr "2D Tila"
 
-msgid "Varying may not be assigned in the '%s' function."
-msgstr "Varying tyyppiä ei voi sijoittaa '%s' funktiossa."
+msgid "Invalid arguments for the built-in function: \"%s(%s)\"."
+msgstr "Virheelliset argumentit sisäänrakennetulle funktiolle \"%s(%s)\"."
 
-msgid "Assignment to function."
-msgstr "Sijoitus funktiolle."
+msgid "Recursion is not allowed."
+msgstr "Rekursio ei ole sallittu."
 
-msgid "Assignment to uniform."
-msgstr "Sijoitus uniformille."
+msgid "Cannot convert from '%s' to '%s'."
+msgstr "Ei voida muuntaa muodosta '%s' muotoon '%s'."
+
+msgid "Expected ')' in expression."
+msgstr "Odotettu ')' merkkiä lausekkeessa."
+
+msgid "No matching constructor found for: '%s'."
+msgstr "Vastaavaa rakentaa ei löytynyt: '%s':lle."
+
+msgid "No matching function found for: '%s'."
+msgstr "Vastaavaa funktiota ei löytynyt: '%s':lle."
+
+msgid "Unknown identifier in expression: '%s'."
+msgstr "Tuntematon tunniste lausekkeessa: '%s'."
 
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+msgid "Unexpected end of expression."
+msgstr "Lausekkeen odottamaton loppu."
+
+msgid "Invalid arguments to operator '%s': '%s'."
+msgstr "Virheelliset argumentit operaattorille '%s': '%s'"
+
+msgid "'%s' is not allowed outside of a loop."
+msgstr "'%s' ei ole sallittu loopin ulkopuolella."
+
+msgid "The middle expression is expected to be a boolean operator."
+msgstr "Keskimmäisen lausekkeen odotetaan olevan tootusarvo operaattori."
+
+msgid "Expected data type."
+msgstr "Odotettu data tyyppi."
+
+msgid "A '%s' data type is not allowed here."
+msgstr "Data tyyppi '%s' ei ole sallittu tässä."
+
+msgid "Duplicated hint: '%s'."
+msgstr "Monistettu vihje: '%s'"
+
+msgid "Can only specify '%s' once."
+msgstr "'%s' voidaan määrittää vain kerran."
+
+msgid "The instance index can't be negative."
+msgstr "Ilmentymän indeksi ei voi olla negatiivinen."
+
+msgid "Group needs to be opened before."
+msgstr "Ryhmä täytyy avata ensin."
+
+msgid "Expected an identifier after type."
+msgstr "Odotettu tunnistetta tyypin jälkeen."
+
+msgid "Expected a valid data type for argument."
+msgstr "Odotettu kelvollista data tyyppiä argumentiksi."
+
+msgid "Void type not allowed as argument."
+msgstr "Void tyyppi ei ole sallittu argumentti."
+
+msgid "Expected an identifier for argument name."
+msgstr "Odotettu tunnistetta argumentin nimeksi."
+
+msgid "Function '%s' expects no arguments."
+msgstr "Funktio '%s' ei odota argumentteja."
+
+msgid "Expected a '%s'."
+msgstr "Odotettiin: '%s'."
+
+msgid "Expected a '%s' or '%s'."
+msgstr "Odotettu '%s' tai '%s'."
+
+msgid "Expected a '%s' after '%s'."
+msgstr "Odotettiin '%s' '%s' jälkeen."
+
+msgid "Redefinition of '%s'."
+msgstr "Uudelleen määritetty '%s'."
+
+msgid "Invalid argument name."
+msgstr "Virheellinen argumentin nimi."
+
+msgid "Missing condition."
+msgstr "Ehto puuttuu."
+
+msgid "Condition evaluation error."
+msgstr "Virhe ehdon arvioinnissa."
+
+msgid "The const '%s' is declared but never used."
+msgstr "Vakio '%s' on määritelty, mutta ei käytetty."
 
 msgid "The local variable '%s' is declared but never used."
 msgstr "Lokaali muuttuja '%s' on määritelty, mutta ei käytetty."

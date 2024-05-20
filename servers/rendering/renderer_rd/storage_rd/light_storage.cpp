@@ -668,7 +668,9 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 					light_data.blend_splits = (smode != RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL) && light->directional_blend_splits;
 					for (int j = 0; j < 4; j++) {
 						Rect2 atlas_rect = light_instance->shadow_transform[j].atlas_rect;
-						Projection matrix = light_instance->shadow_transform[j].camera;
+						Projection correction;
+						correction.set_depth_correction(false, true, false);
+						Projection matrix = correction * light_instance->shadow_transform[j].camera;
 						float split = light_instance->shadow_transform[MIN(limit, j)].split;
 
 						Projection bias;
@@ -967,7 +969,9 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				Projection bias;
 				bias.set_light_bias();
 
-				Projection cm = light_instance->shadow_transform[0].camera;
+				Projection correction;
+				correction.set_depth_correction(false, true, false);
+				Projection cm = correction * light_instance->shadow_transform[0].camera;
 				Projection shadow_mtx = bias * cm * modelview;
 				RendererRD::MaterialStorage::store_camera(shadow_mtx, light_data.shadow_matrix);
 
@@ -996,15 +1000,15 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 	//update without barriers
 	if (omni_light_count) {
-		RD::get_singleton()->buffer_update(omni_light_buffer, 0, sizeof(LightData) * omni_light_count, omni_lights, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+		RD::get_singleton()->buffer_update(omni_light_buffer, 0, sizeof(LightData) * omni_light_count, omni_lights);
 	}
 
 	if (spot_light_count) {
-		RD::get_singleton()->buffer_update(spot_light_buffer, 0, sizeof(LightData) * spot_light_count, spot_lights, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+		RD::get_singleton()->buffer_update(spot_light_buffer, 0, sizeof(LightData) * spot_light_count, spot_lights);
 	}
 
 	if (r_directional_light_count) {
-		RD::get_singleton()->buffer_update(directional_light_buffer, 0, sizeof(DirectionalLightData) * r_directional_light_count, directional_lights, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+		RD::get_singleton()->buffer_update(directional_light_buffer, 0, sizeof(DirectionalLightData) * r_directional_light_count, directional_lights);
 	}
 }
 
@@ -1119,6 +1123,14 @@ void LightStorage::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers
 	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
+void LightStorage::reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->reflection_mask = p_layers;
+	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
+}
+
 void LightStorage::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_NULL(reflection_probe);
@@ -1166,6 +1178,13 @@ uint32_t LightStorage::reflection_probe_get_cull_mask(RID p_probe) const {
 	ERR_FAIL_NULL_V(reflection_probe, 0);
 
 	return reflection_probe->cull_mask;
+}
+
+uint32_t LightStorage::reflection_probe_get_reflection_mask(RID p_probe) const {
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL_V(reflection_probe, 0);
+
+	return reflection_probe->reflection_mask;
 }
 
 Vector3 LightStorage::reflection_probe_get_size(RID p_probe) const {
@@ -1355,6 +1374,17 @@ void LightStorage::reflection_probe_instance_set_transform(RID p_instance, const
 	rpi->dirty = true;
 }
 
+bool LightStorage::reflection_probe_has_atlas_index(RID p_instance) {
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL_V(rpi, false);
+
+	if (rpi->atlas.is_null()) {
+		return false;
+	}
+
+	return rpi->atlas_index >= 0;
+}
+
 void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(rpi);
@@ -1368,6 +1398,14 @@ void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
 	atlas->reflections.write[rpi->atlas_index].owner = RID();
 
 	// TODO investigate if this is enough? shouldn't we be freeing our textures and framebuffers?
+
+	if (rpi->rendering) {
+		// We were cancelled mid rendering, trigger refresh.
+		rpi->rendering = false;
+		rpi->dirty = true;
+		rpi->processing_layer = 1;
+		rpi->processing_side = 0;
+	}
 
 	rpi->atlas_index = -1;
 	rpi->atlas = RID();
@@ -1520,11 +1558,10 @@ bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
 	ERR_FAIL_COND_V(!rpi->rendering, false);
-	ERR_FAIL_COND_V(rpi->atlas.is_null(), false);
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	if (!atlas || rpi->atlas_index == -1) {
-		//does not belong to an atlas anymore, cancel (was removed from atlas or atlas changed while rendering)
+		// Does not belong to an atlas anymore, cancel (was removed from atlas or atlas changed while rendering).
 		rpi->rendering = false;
 		return false;
 	}
@@ -1669,6 +1706,8 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 	for (uint32_t i = 0; i < reflection_count; i++) {
 		ReflectionProbeInstance *rpi = reflection_sort[i].probe_instance;
 
+		rpi->last_pass = RSG::rasterizer->get_frame_number();
+
 		if (using_forward_ids) {
 			forward_id_storage->map_forward_id(FORWARD_ID_TYPE_REFLECTION_PROBE, rpi->forward_id, i, rpi->last_pass);
 		}
@@ -1679,7 +1718,7 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 
 		Vector3 extents = probe->size / 2;
 
-		rpi->cull_mask = probe->cull_mask;
+		rpi->cull_mask = probe->reflection_mask;
 
 		reflection_ubo.box_extents[0] = extents.x;
 		reflection_ubo.box_extents[1] = extents.y;
@@ -1691,7 +1730,7 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 		reflection_ubo.box_offset[0] = origin_offset.x;
 		reflection_ubo.box_offset[1] = origin_offset.y;
 		reflection_ubo.box_offset[2] = origin_offset.z;
-		reflection_ubo.mask = probe->cull_mask;
+		reflection_ubo.mask = probe->reflection_mask;
 
 		reflection_ubo.intensity = probe->intensity;
 		reflection_ubo.ambient_mode = probe->ambient_mode;
@@ -1717,12 +1756,10 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 
 		// hook for subclass to do further processing.
 		RendererSceneRenderRD::get_singleton()->setup_added_reflection_probe(transform, extents);
-
-		rpi->last_pass = RSG::rasterizer->get_frame_number();
 	}
 
 	if (reflection_count) {
-		RD::get_singleton()->buffer_update(reflection_buffer, 0, reflection_count * sizeof(ReflectionData), reflections, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+		RD::get_singleton()->buffer_update(reflection_buffer, 0, reflection_count * sizeof(ReflectionData), reflections);
 	}
 }
 
@@ -1988,7 +2025,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 	for (int i = 0; i < 4; i++) {
 		//clear subdivisions
 		shadow_atlas->quadrants[i].shadows.clear();
-		shadow_atlas->quadrants[i].shadows.resize(1 << shadow_atlas->quadrants[i].subdivision);
+		shadow_atlas->quadrants[i].shadows.resize(int64_t(shadow_atlas->quadrants[i].subdivision * shadow_atlas->quadrants[i].subdivision));
 	}
 
 	//erase shadow atlas reference from lights

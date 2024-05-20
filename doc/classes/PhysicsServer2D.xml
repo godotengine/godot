@@ -52,7 +52,8 @@
 		<method name="area_create">
 			<return type="RID" />
 			<description>
-				Creates a 2D area object in the physics server, and returns the [RID] that identifies it. Use [method area_add_shape] to add shapes to it, use [method area_set_transform] to set its transform, and use [method area_set_space] to add the area to a space.
+				Creates a 2D area object in the physics server, and returns the [RID] that identifies it. The default settings for the created area include a collision layer and mask set to [code]1[/code], and [code]monitorable[/code] set to [code]false[/code].
+				Use [method area_add_shape] to add shapes to it, use [method area_set_transform] to set its transform, and use [method area_set_space] to add the area to a space. If you want the area to be detectable use [method area_set_monitorable].
 			</description>
 		</method>
 		<method name="area_get_canvas_instance_id" qualifiers="const">
@@ -369,7 +370,8 @@
 		<method name="body_create">
 			<return type="RID" />
 			<description>
-				Creates a 2D body object in the physics server, and returns the [RID] that identifies it. Use [method body_add_shape] to add shapes to it, use [method body_set_state] to set its transform, and use [method body_set_space] to add the body to a space.
+				Creates a 2D body object in the physics server, and returns the [RID] that identifies it. The default settings for the created area include a collision layer and mask set to [code]1[/code], and body mode set to [constant BODY_MODE_RIGID].
+				Use [method body_add_shape] to add shapes to it, use [method body_set_state] to set its transform, and use [method body_set_space] to add the body to a space.
 			</description>
 		</method>
 		<method name="body_get_canvas_instance_id" qualifiers="const">
@@ -501,7 +503,7 @@
 			<return type="bool" />
 			<param index="0" name="body" type="RID" />
 			<description>
-				Returns [code]true[/code] if the body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Returns [code]true[/code] if the body is omitting the standard force integration. See [method body_set_omit_force_integration].
 			</description>
 		</method>
 		<method name="body_remove_collision_exception">
@@ -592,11 +594,12 @@
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="userdata" type="Variant" default="null" />
 			<description>
-				Sets the function used to calculate physics for the body, if that body allows it (see [method body_set_omit_force_integration]).
-				The force integration function takes the following two parameters:
-				1. a [PhysicsDirectBodyState2D] [code]state[/code]: used to retrieve and modify the body's state,
-				2. a [Variant] [param userdata]: optional user data.
-				[b]Note:[/b] This callback is currently not called in Godot Physics.
+				Sets the body's custom force integration callback function to [param callable]. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the custom callback.
+				The function [param callable] will be called every physics tick, before the standard force integration (see [method body_set_omit_force_integration]). It can be used for example to update the body's linear and angular velocity based on contact with other bodies.
+				If [param userdata] is not [code]null[/code], the function [param callable] must take the following two parameters:
+				1. [code]state[/code]: a [PhysicsDirectBodyState2D] used to retrieve and modify the body's state,
+				2. [code skip-lint]userdata[/code]: a [Variant]; its value will be the [param userdata] passed into this method.
+				If [param userdata] is [code]null[/code], then [param callable] must take only the [code]state[/code] parameter.
 			</description>
 		</method>
 		<method name="body_set_max_contacts_reported">
@@ -620,7 +623,8 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Sets whether the body uses a callback function to calculate its own physics (see [method body_set_force_integration_callback]).
+				Sets whether the body omits the standard force integration. If [param enable] is [code]true[/code], the body will not automatically use applied forces, torques, and damping to update the body's linear and angular velocity. In this case, [method body_set_force_integration_callback] can be used to manually update the linear and angular velocity instead.
+				This method is called when the property [member RigidBody2D.custom_integrator] is set.
 			</description>
 		</method>
 		<method name="body_set_param">

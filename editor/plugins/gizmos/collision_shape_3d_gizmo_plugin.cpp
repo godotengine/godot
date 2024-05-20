@@ -36,20 +36,20 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/gizmos/gizmo_3d_helper.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/collision_shape_3d.h"
-#include "scene/resources/box_shape_3d.h"
-#include "scene/resources/capsule_shape_3d.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
-#include "scene/resources/convex_polygon_shape_3d.h"
-#include "scene/resources/cylinder_shape_3d.h"
-#include "scene/resources/height_map_shape_3d.h"
-#include "scene/resources/separation_ray_shape_3d.h"
-#include "scene/resources/sphere_shape_3d.h"
-#include "scene/resources/world_boundary_shape_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/resources/3d/box_shape_3d.h"
+#include "scene/resources/3d/capsule_shape_3d.h"
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
+#include "scene/resources/3d/cylinder_shape_3d.h"
+#include "scene/resources/3d/height_map_shape_3d.h"
+#include "scene/resources/3d/separation_ray_shape_3d.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
+#include "scene/resources/3d/world_boundary_shape_3d.h"
 
 CollisionShape3DGizmoPlugin::CollisionShape3DGizmoPlugin() {
 	helper.instantiate();
-	const Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
+	const Color gizmo_color = SceneTree::get_singleton()->get_debug_collisions_color();
 	create_material("shape_material", gizmo_color);
 	const float gizmo_value = gizmo_color.get_v();
 	const Color gizmo_color_disabled = Color(gizmo_value, gizmo_value, gizmo_value, 0.65);

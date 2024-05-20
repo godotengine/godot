@@ -61,6 +61,7 @@ public:
 			BLEND_MODE_ADD,
 			BLEND_MODE_SUB,
 			BLEND_MODE_MUL,
+			BLEND_MODE_PREMULT_ALPHA,
 			BLEND_MODE_ALPHA_TO_COVERAGE
 		};
 
@@ -119,6 +120,7 @@ public:
 		bool uses_discard = false;
 		bool uses_roughness = false;
 		bool uses_normal = false;
+		bool uses_tangent = false;
 		bool uses_particle_trails = false;
 
 		bool unshaded = false;

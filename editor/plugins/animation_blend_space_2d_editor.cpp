@@ -36,11 +36,11 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/button.h"
@@ -125,7 +125,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			classes.sort_custom<StringName::AlphCompare>();
 
 			ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
-			menu->add_submenu_item(TTR("Add Animation"), "animations");
+			menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 
 			List<StringName> names;
 			tree->get_animation_list(&names);
@@ -807,9 +807,9 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 			open_editor->set_icon(get_editor_theme_icon(SNAME("Edit")));
 			auto_triangles->set_icon(get_editor_theme_icon(SNAME("AutoTriangle")));
 			interpolation->clear();
-			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), "", 0);
-			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), "", 1);
-			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackCapture")), "", 2);
+			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), TTR("Continuous"), 0);
+			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), TTR("Discrete"), 1);
+			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackCapture")), TTR("Capture"), 2);
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -888,7 +888,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(tool_blend);
 	tool_blend->set_pressed(true);
 	tool_blend->set_tooltip_text(TTR("Set the blending position within the space"));
-	tool_blend->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(3));
+	tool_blend->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(3));
 
 	tool_select = memnew(Button);
 	tool_select->set_theme_type_variation("FlatButton");
@@ -896,7 +896,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_select->set_button_group(bg);
 	top_hb->add_child(tool_select);
 	tool_select->set_tooltip_text(TTR("Select and move points, create points with RMB."));
-	tool_select->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(0));
+	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(0));
 
 	tool_create = memnew(Button);
 	tool_create->set_theme_type_variation("FlatButton");
@@ -904,7 +904,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_create->set_button_group(bg);
 	top_hb->add_child(tool_create);
 	tool_create->set_tooltip_text(TTR("Create points."));
-	tool_create->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(1));
+	tool_create->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(1));
 
 	tool_triangle = memnew(Button);
 	tool_triangle->set_theme_type_variation("FlatButton");
@@ -912,7 +912,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_triangle->set_button_group(bg);
 	top_hb->add_child(tool_triangle);
 	tool_triangle->set_tooltip_text(TTR("Create triangles by connecting points."));
-	tool_triangle->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(2));
+	tool_triangle->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(2));
 
 	tool_erase_sep = memnew(VSeparator);
 	top_hb->add_child(tool_erase_sep);
@@ -920,7 +920,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_erase->set_theme_type_variation("FlatButton");
 	top_hb->add_child(tool_erase);
 	tool_erase->set_tooltip_text(TTR("Erase points and triangles."));
-	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_erase_selected));
+	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_erase_selected));
 	tool_erase->set_disabled(true);
 
 	top_hb->add_child(memnew(VSeparator));
@@ -928,7 +928,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	auto_triangles = memnew(Button);
 	auto_triangles->set_theme_type_variation("FlatButton");
 	top_hb->add_child(auto_triangles);
-	auto_triangles->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled));
+	auto_triangles->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled));
 	auto_triangles->set_toggle_mode(true);
 	auto_triangles->set_tooltip_text(TTR("Generate blend triangles automatically (instead of manually)"));
 
@@ -940,7 +940,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(snap);
 	snap->set_pressed(true);
 	snap->set_tooltip_text(TTR("Enable snap and show grid."));
-	snap->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_snap_toggled));
+	snap->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_snap_toggled));
 
 	snap_x = memnew(SpinBox);
 	top_hb->add_child(snap_x);
@@ -989,7 +989,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	open_editor = memnew(Button);
 	edit_hb->add_child(open_editor);
 	open_editor->set_text(TTR("Open Editor"));
-	open_editor->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_open_editor), CONNECT_DEFERRED);
+	open_editor->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_open_editor), CONNECT_DEFERRED);
 	edit_hb->hide();
 	open_editor->hide();
 
@@ -1030,8 +1030,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	panel->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	blend_space_draw = memnew(Control);
-	blend_space_draw->connect("gui_input", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_blend_space_gui_input));
-	blend_space_draw->connect("draw", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_blend_space_draw));
+	blend_space_draw->connect(SceneStringName(gui_input), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_blend_space_gui_input));
+	blend_space_draw->connect(SceneStringName(draw), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_blend_space_draw));
 	blend_space_draw->set_focus_mode(FOCUS_ALL);
 
 	panel->add_child(blend_space_draw);
@@ -1073,7 +1073,6 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	add_child(error_panel);
 	error_label = memnew(Label);
 	error_panel->add_child(error_label);
-	error_label->set_text("eh");
 
 	set_custom_minimum_size(Size2(0, 300 * EDSCALE));
 
@@ -1082,8 +1081,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	menu->connect("id_pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_add_menu_type));
 
 	animations_menu = memnew(PopupMenu);
+	animations_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	menu->add_child(animations_menu);
-	animations_menu->set_name("animations");
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_add_animation_type));
 
 	open_file = memnew(EditorFileDialog);

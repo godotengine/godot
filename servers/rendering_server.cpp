@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "rendering_server.h"
+#include "rendering_server.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
@@ -82,28 +83,19 @@ static PackedInt64Array to_int_array(const Vector<ObjectID> &ids) {
 }
 
 PackedInt64Array RenderingServer::_instances_cull_aabb_bind(const AABB &p_aabb, RID p_scenario) const {
-	if (RSG::threaded) {
-		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
-	}
 	Vector<ObjectID> ids = instances_cull_aabb(p_aabb, p_scenario);
 	return to_int_array(ids);
 }
 
 PackedInt64Array RenderingServer::_instances_cull_ray_bind(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario) const {
-	if (RSG::threaded) {
-		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
-	}
 	Vector<ObjectID> ids = instances_cull_ray(p_from, p_to, p_scenario);
 	return to_int_array(ids);
 }
 
 PackedInt64Array RenderingServer::_instances_cull_convex_bind(const TypedArray<Plane> &p_convex, RID p_scenario) const {
-	if (RSG::threaded) {
-		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
-	}
 	Vector<Plane> planes;
 	for (int i = 0; i < p_convex.size(); ++i) {
-		Variant v = p_convex[i];
+		const Variant &v = p_convex[i];
 		ERR_FAIL_COND_V(v.get_type() != Variant::PLANE, PackedInt64Array());
 		planes.push_back(v);
 	}
@@ -339,7 +331,7 @@ void _get_axis_angle(const Vector3 &p_normal, const Vector4 &p_tangent, float &r
 	if (d < 0.0) {
 		r_angle = CLAMP((1.0 - r_angle / Math_PI) * 0.5, 0.0, 0.49999);
 	} else {
-		r_angle = (r_angle / Math_PI) * 0.5 + 0.5;
+		r_angle = CLAMP((r_angle / Math_PI) * 0.5 + 0.5, 0.500008, 1.0);
 	}
 }
 
@@ -400,7 +392,14 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 		max_val = max_val.abs().max(min_val.abs());
 		max_val2 = max_val2.abs().max(min_val2.abs());
 
-		r_uv_scale = Vector4(max_val.x, max_val.y, max_val2.x, max_val2.y) * Vector4(2.0, 2.0, 2.0, 2.0);
+		if (min_val.x >= 0.0 && min_val2.x >= 0.0 && max_val.x <= 1.0 && max_val2.x <= 1.0 &&
+				min_val.y >= 0.0 && min_val2.y >= 0.0 && max_val.y <= 1.0 && max_val2.y <= 1.0) {
+			// When all channels are in the 0-1 range, we will compress to 16-bit without scaling to
+			// preserve the bits as best as possible.
+			r_uv_scale = Vector4(0.0, 0.0, 0.0, 0.0);
+		} else {
+			r_uv_scale = Vector4(max_val.x, max_val.y, max_val2.x, max_val2.y) * Vector4(2.0, 2.0, 2.0, 2.0);
+		}
 	}
 
 	for (int ai = 0; ai < RS::ARRAY_MAX; ai++) {
@@ -441,25 +440,22 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 					const Vector3 *src = array.ptr();
 
-					// Setting vertices means regenerating the AABB.
-					AABB aabb;
+					r_aabb = AABB();
 
 					if (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 						// First we need to generate the AABB for the entire surface.
 						for (int i = 0; i < p_vertex_array_len; i++) {
 							if (i == 0) {
-								aabb = AABB(src[i], SMALL_VEC3);
+								r_aabb = AABB(src[i], SMALL_VEC3);
 							} else {
-								aabb.expand_to(src[i]);
+								r_aabb.expand_to(src[i]);
 							}
 						}
 
-						bool using_normals_tangents = (p_format & RS::ARRAY_FORMAT_NORMAL) && (p_format & RS::ARRAY_FORMAT_TANGENT);
-
-						if (!using_normals_tangents) {
+						if (!(p_format & RS::ARRAY_FORMAT_NORMAL)) {
 							// Early out if we are only setting vertex positions.
 							for (int i = 0; i < p_vertex_array_len; i++) {
-								Vector3 pos = (src[i] - aabb.position) / aabb.size;
+								Vector3 pos = (src[i] - r_aabb.position) / r_aabb.size;
 								uint16_t vector[4] = {
 									(uint16_t)CLAMP(pos.x * 65535, 0, 65535),
 									(uint16_t)CLAMP(pos.y * 65535, 0, 65535),
@@ -474,12 +470,13 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 						// Validate normal and tangent arrays.
 						ERR_FAIL_COND_V(p_arrays[RS::ARRAY_NORMAL].get_type() != Variant::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
-						Variant::Type tangent_type = p_arrays[RS::ARRAY_TANGENT].get_type();
-						ERR_FAIL_COND_V(tangent_type != Variant::PACKED_FLOAT32_ARRAY && tangent_type != Variant::PACKED_FLOAT64_ARRAY, ERR_INVALID_PARAMETER);
 
 						Vector<Vector3> normal_array = p_arrays[RS::ARRAY_NORMAL];
 						ERR_FAIL_COND_V(normal_array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
 						const Vector3 *normal_src = normal_array.ptr();
+
+						Variant::Type tangent_type = p_arrays[RS::ARRAY_TANGENT].get_type();
+						ERR_FAIL_COND_V(tangent_type != Variant::PACKED_FLOAT32_ARRAY && tangent_type != Variant::PACKED_FLOAT64_ARRAY && tangent_type != Variant::NIL, ERR_INVALID_PARAMETER);
 
 						// We need a different version if using double precision tangents.
 						if (tangent_type == Variant::PACKED_FLOAT32_ARRAY) {
@@ -507,7 +504,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 								// Store vertex position + angle.
 								{
-									Vector3 pos = (src[i] - aabb.position) / aabb.size;
+									Vector3 pos = (src[i] - r_aabb.position) / r_aabb.size;
 									uint16_t vector[4] = {
 										(uint16_t)CLAMP(pos.x * 65535, 0, 65535),
 										(uint16_t)CLAMP(pos.y * 65535, 0, 65535),
@@ -518,7 +515,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 									memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(uint16_t) * 4);
 								}
 							}
-						} else { // PACKED_FLOAT64_ARRAY
+						} else if (tangent_type == Variant::PACKED_FLOAT64_ARRAY) {
 							Vector<double> tangent_array = p_arrays[RS::ARRAY_TANGENT];
 							ERR_FAIL_COND_V(tangent_array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
 							const double *tangent_src = tangent_array.ptr();
@@ -543,7 +540,42 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 								// Store vertex position + angle.
 								{
-									Vector3 pos = (src[i] - aabb.position) / aabb.size;
+									Vector3 pos = (src[i] - r_aabb.position) / r_aabb.size;
+									uint16_t vector[4] = {
+										(uint16_t)CLAMP(pos.x * 65535, 0, 65535),
+										(uint16_t)CLAMP(pos.y * 65535, 0, 65535),
+										(uint16_t)CLAMP(pos.z * 65535, 0, 65535),
+										(uint16_t)CLAMP(angle * 65535, 0, 65535)
+									};
+
+									memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(uint16_t) * 4);
+								}
+							}
+						} else { // No tangent array.
+							// Set data for vertex, normal, and tangent.
+							for (int i = 0; i < p_vertex_array_len; i++) {
+								float angle;
+								Vector3 axis;
+								// Generate an arbitrary vector that is tangential to normal.
+								// This assumes that the normal is never (0,0,0).
+								Vector3 tan = Vector3(normal_src[i].z, -normal_src[i].x, normal_src[i].y).cross(normal_src[i].normalized()).normalized();
+								Vector4 tangent = Vector4(tan.x, tan.y, tan.z, 1.0);
+								_get_axis_angle(normal_src[i], tangent, angle, axis);
+
+								// Store axis.
+								{
+									Vector2 res = axis.octahedron_encode();
+									uint16_t vector[2] = {
+										(uint16_t)CLAMP(res.x * 65535, 0, 65535),
+										(uint16_t)CLAMP(res.y * 65535, 0, 65535),
+									};
+
+									memcpy(&vw[p_offsets[RS::ARRAY_NORMAL] + i * p_normal_stride], vector, 4);
+								}
+
+								// Store vertex position + angle.
+								{
+									Vector3 pos = (src[i] - r_aabb.position) / r_aabb.size;
 									uint16_t vector[4] = {
 										(uint16_t)CLAMP(pos.x * 65535, 0, 65535),
 										(uint16_t)CLAMP(pos.y * 65535, 0, 65535),
@@ -562,14 +594,12 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 							memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, sizeof(float) * 3);
 
 							if (i == 0) {
-								aabb = AABB(src[i], SMALL_VEC3);
+								r_aabb = AABB(src[i], SMALL_VEC3);
 							} else {
-								aabb.expand_to(src[i]);
+								r_aabb.expand_to(src[i]);
 							}
 						}
 					}
-
-					r_aabb = aabb;
 				}
 
 			} break;
@@ -598,7 +628,8 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				// If using compression we store tangent while storing vertices.
 				if (!(p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES)) {
 					Variant::Type type = p_arrays[ai].get_type();
-					ERR_FAIL_COND_V(type != Variant::PACKED_FLOAT32_ARRAY && type != Variant::PACKED_FLOAT64_ARRAY, ERR_INVALID_PARAMETER);
+					ERR_FAIL_COND_V(type != Variant::PACKED_FLOAT32_ARRAY && type != Variant::PACKED_FLOAT64_ARRAY && type != Variant::NIL, ERR_INVALID_PARAMETER);
+
 					if (type == Variant::PACKED_FLOAT32_ARRAY) {
 						Vector<float> array = p_arrays[ai];
 						ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
@@ -620,7 +651,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 
 							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
 						}
-					} else { // PACKED_FLOAT64_ARRAY
+					} else if (type == Variant::PACKED_FLOAT64_ARRAY) {
 						Vector<double> array = p_arrays[ai];
 						ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
 						const double *src_ptr = array.ptr();
@@ -628,6 +659,31 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 						for (int i = 0; i < p_vertex_array_len; i++) {
 							const Vector3 src(src_ptr[i * 4 + 0], src_ptr[i * 4 + 1], src_ptr[i * 4 + 2]);
 							Vector2 res = src.octahedron_tangent_encode(src_ptr[i * 4 + 3]);
+							uint16_t vector[2] = {
+								(uint16_t)CLAMP(res.x * 65535, 0, 65535),
+								(uint16_t)CLAMP(res.y * 65535, 0, 65535),
+							};
+
+							if (vector[0] == 0 && vector[1] == 65535) {
+								// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+								// So we sanitize here.
+								vector[0] = 65535;
+							}
+
+							memcpy(&vw[p_offsets[ai] + i * p_normal_stride], vector, 4);
+						}
+					} else { // No tangent array.
+						ERR_FAIL_COND_V(p_arrays[RS::ARRAY_NORMAL].get_type() != Variant::PACKED_VECTOR3_ARRAY, ERR_INVALID_PARAMETER);
+
+						Vector<Vector3> normal_array = p_arrays[RS::ARRAY_NORMAL];
+						ERR_FAIL_COND_V(normal_array.size() != p_vertex_array_len, ERR_INVALID_PARAMETER);
+						const Vector3 *normal_src = normal_array.ptr();
+						// Set data for tangent.
+						for (int i = 0; i < p_vertex_array_len; i++) {
+							// Generate an arbitrary vector that is tangential to normal.
+							// This assumes that the normal is never (0,0,0).
+							Vector3 tan = Vector3(normal_src[i].z, -normal_src[i].x, normal_src[i].y).cross(normal_src[i].normalized()).normalized();
+							Vector2 res = tan.octahedron_tangent_encode(1.0);
 							uint16_t vector[2] = {
 								(uint16_t)CLAMP(res.x * 65535, 0, 65535),
 								(uint16_t)CLAMP(res.y * 65535, 0, 65535),
@@ -673,8 +729,11 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				if (p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						Vector2 vec = src[i];
-						// Normalize into 0-1 from possible range -uv_scale - uv_scale.
-						vec = vec / (Vector2(r_uv_scale.x, r_uv_scale.y)) + Vector2(0.5, 0.5);
+						if (!r_uv_scale.is_zero_approx()) {
+							// Normalize into 0-1 from possible range -uv_scale - uv_scale.
+							vec = vec / (Vector2(r_uv_scale.x, r_uv_scale.y)) + Vector2(0.5, 0.5);
+						}
+
 						uint16_t uv[2] = { (uint16_t)CLAMP(vec.x * 65535, 0, 65535), (uint16_t)CLAMP(vec.y * 65535, 0, 65535) };
 						memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 4);
 					}
@@ -698,8 +757,10 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				if (p_format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						Vector2 vec = src[i];
-						// Normalize into 0-1 from possible range -uv_scale - uv_scale.
-						vec = vec / (Vector2(r_uv_scale.z, r_uv_scale.w)) + Vector2(0.5, 0.5);
+						if (!r_uv_scale.is_zero_approx()) {
+							// Normalize into 0-1 from possible range -uv_scale - uv_scale.
+							vec = vec / (Vector2(r_uv_scale.z, r_uv_scale.w)) + Vector2(0.5, 0.5);
+						}
 						uint16_t uv[2] = { (uint16_t)CLAMP(vec.x * 65535, 0, 65535), (uint16_t)CLAMP(vec.y * 65535, 0, 65535) };
 						memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], uv, 4);
 					}
@@ -834,7 +895,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				ERR_FAIL_COND_V(p_arrays[ai].get_type() != Variant::PACKED_INT32_ARRAY, ERR_INVALID_PARAMETER);
 
 				Vector<int> indices = p_arrays[ai];
-				ERR_FAIL_COND_V(indices.size() == 0, ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(indices.is_empty(), ERR_INVALID_PARAMETER);
 				ERR_FAIL_COND_V(indices.size() != p_index_array_len, ERR_INVALID_PARAMETER);
 
 				/* determine whether using 16 or 32 bits indices */
@@ -1126,10 +1187,15 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 					array_len = v3.size();
 				} break;
 				default: {
-					ERR_FAIL_V(ERR_INVALID_DATA);
+					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Vertex array must be a PackedVector2Array or PackedVector3Array.");
 				} break;
 			}
 			ERR_FAIL_COND_V(array_len == 0, ERR_INVALID_DATA);
+		} else if (i == RS::ARRAY_NORMAL) {
+			if (p_arrays[RS::ARRAY_TANGENT].get_type() == Variant::NIL) {
+				// We must use tangents if using normals.
+				format |= (1ULL << RS::ARRAY_TANGENT);
+			}
 		} else if (i == RS::ARRAY_BONES) {
 			switch (p_arrays[i].get_type()) {
 				case Variant::PACKED_INT32_ARRAY: {
@@ -1142,7 +1208,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 					}
 				} break;
 				default: {
-					ERR_FAIL_V(ERR_INVALID_DATA);
+					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Bones array must be a PackedInt32Array.");
 				} break;
 			}
 		} else if (i == RS::ARRAY_INDEX) {
@@ -1159,6 +1225,10 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 				if (arr[j].get_type() != Variant::NIL) {
 					bsformat |= (1 << j);
 				}
+			}
+			if (bsformat & RS::ARRAY_FORMAT_NORMAL) {
+				// We must use tangents if using normals.
+				bsformat |= RS::ARRAY_FORMAT_TANGENT;
 			}
 
 			ERR_FAIL_COND_V_MSG(bsformat != (format & RS::ARRAY_FORMAT_BLEND_SHAPE_MASK), ERR_INVALID_PARAMETER, "Blend shape format must match the main array format for Vertex, Normal and Tangent arrays.");
@@ -1198,7 +1268,6 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 		// If using normals or tangents, then we need all three.
 		ERR_FAIL_COND_V_MSG(!(format & RS::ARRAY_FORMAT_VERTEX), ERR_INVALID_PARAMETER, "Can't use compression flag 'ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using normals or tangents without vertex array.");
 		ERR_FAIL_COND_V_MSG(!(format & RS::ARRAY_FORMAT_NORMAL), ERR_INVALID_PARAMETER, "Can't use compression flag 'ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using tangents without normal array.");
-		ERR_FAIL_COND_V_MSG(!(format & RS::ARRAY_FORMAT_TANGENT), ERR_INVALID_PARAMETER, "Can't use compression flag 'ARRAY_FLAG_COMPRESS_ATTRIBUTES' while using normals without tangent array.");
 	}
 
 	int vertex_array_size = (vertex_element_size + normal_element_size) * array_len;
@@ -1255,7 +1324,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 			float distance = E;
 			ERR_CONTINUE(distance <= 0.0);
 			Vector<int> indices = p_lods[E];
-			ERR_CONTINUE(indices.size() == 0);
+			ERR_CONTINUE(indices.is_empty());
 			uint32_t index_count = indices.size();
 			ERR_CONTINUE(index_count >= (uint32_t)index_array_len); // Should be smaller..
 
@@ -1314,7 +1383,7 @@ void RenderingServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_p
 	mesh_add_surface(p_mesh, sd);
 }
 
-Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len, const AABB &p_aabb) const {
+Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len, const AABB &p_aabb, const Vector4 &p_uv_scale) const {
 	uint32_t offsets[RS::ARRAY_MAX];
 
 	uint32_t vertex_elem_size;
@@ -1359,10 +1428,8 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 						Vector3 *w = arr_3d.ptrw();
 
 						if (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
-							bool using_normals_tangents = (p_format & RS::ARRAY_FORMAT_NORMAL) && (p_format & RS::ARRAY_FORMAT_TANGENT);
-
 							// We only have vertices to read, so just read them and skip everything else.
-							if (!using_normals_tangents) {
+							if (!(p_format & RS::ARRAY_FORMAT_NORMAL)) {
 								for (int j = 0; j < p_vertex_len; j++) {
 									const uint16_t *v = reinterpret_cast<const uint16_t *>(&r[j * vertex_elem_size + offsets[i]]);
 									Vector3 vec = Vector3(float(v[0]) / 65535.0, float(v[1]) / 65535.0, float(v[2]) / 65535.0);
@@ -1472,7 +1539,12 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 				if (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					for (int j = 0; j < p_vertex_len; j++) {
 						const uint16_t *v = reinterpret_cast<const uint16_t *>(&ar[j * attrib_elem_size + offsets[i]]);
-						w[j] = Vector2(float(v[0]) / 65535.0, float(v[1]) / 65535.0);
+						Vector2 vec = Vector2(float(v[0]) / 65535.0, float(v[1]) / 65535.0);
+						if (!p_uv_scale.is_zero_approx()) {
+							vec = (vec - Vector2(0.5, 0.5)) * Vector2(p_uv_scale.x, p_uv_scale.y);
+						}
+
+						w[j] = vec;
 					}
 				} else {
 					for (int j = 0; j < p_vertex_len; j++) {
@@ -1492,7 +1564,11 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 				if (p_format & ARRAY_FLAG_COMPRESS_ATTRIBUTES) {
 					for (int j = 0; j < p_vertex_len; j++) {
 						const uint16_t *v = reinterpret_cast<const uint16_t *>(&ar[j * attrib_elem_size + offsets[i]]);
-						w[j] = Vector2(float(v[0]) / 65535.0, float(v[1]) / 65535.0);
+						Vector2 vec = Vector2(float(v[0]) / 65535.0, float(v[1]) / 65535.0);
+						if (!p_uv_scale.is_zero_approx()) {
+							vec = (vec - Vector2(0.5, 0.5)) * Vector2(p_uv_scale.z, p_uv_scale.w);
+						}
+						w[j] = vec;
 					}
 				} else {
 					for (int j = 0; j < p_vertex_len; j++) {
@@ -1689,7 +1765,7 @@ TypedArray<Array> RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mes
 		for (uint32_t i = 0; i < blend_shape_count; i++) {
 			Vector<uint8_t> bs_data = blend_shape_data.slice(i * divisor, (i + 1) * divisor);
 			Vector<uint8_t> unused;
-			blend_shape_array.set(i, _get_array_from_surface(bs_format, bs_data, unused, unused, sd.vertex_count, unused, 0, sd.aabb));
+			blend_shape_array.set(i, _get_array_from_surface(bs_format, bs_data, unused, unused, sd.vertex_count, unused, 0, sd.aabb, sd.uv_scale));
 		}
 
 		return blend_shape_array;
@@ -1703,7 +1779,7 @@ Array RenderingServer::mesh_create_arrays_from_surface_data(const SurfaceData &p
 	Vector<uint8_t> attrib_data = p_data.attribute_data;
 	Vector<uint8_t> skin_data = p_data.skin_data;
 
-	ERR_FAIL_COND_V(vertex_data.size() == 0 && (p_data.format & RS::ARRAY_FORMAT_VERTEX), Array());
+	ERR_FAIL_COND_V(vertex_data.is_empty() && (p_data.format & RS::ARRAY_FORMAT_VERTEX), Array());
 	int vertex_len = p_data.vertex_count;
 
 	Vector<uint8_t> index_data = p_data.index_data;
@@ -1711,7 +1787,7 @@ Array RenderingServer::mesh_create_arrays_from_surface_data(const SurfaceData &p
 
 	uint64_t format = p_data.format;
 
-	return _get_array_from_surface(format, vertex_data, attrib_data, skin_data, vertex_len, index_data, index_len, p_data.aabb);
+	return _get_array_from_surface(format, vertex_data, attrib_data, skin_data, vertex_len, index_data, index_len, p_data.aabb, p_data.uv_scale);
 }
 #if 0
 Array RenderingServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surface) const {
@@ -1723,6 +1799,14 @@ Array RenderingServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_su
 	return arr;
 }
 #endif
+
+Rect2 RenderingServer::debug_canvas_item_get_rect(RID p_item) {
+#ifdef TOOLS_ENABLED
+	return _debug_canvas_item_get_rect(p_item);
+#else
+	return Rect2();
+#endif
+}
 
 int RenderingServer::global_shader_uniform_type_get_shader_datatype(GlobalShaderParameterType p_type) {
 	switch (p_type) {
@@ -2058,10 +2142,10 @@ void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const St
 	}
 
 	if (warn_on_surface_upgrade) {
-		if (p_path.is_empty()) {
-			WARN_PRINT("A surface uses an old surface format and needs to be upgraded. The upgrade happens automatically at load time every time until the mesh is saved again or re-imported. Once saved (or re-imported), this mesh will be incompatible with earlier versions of Godot.");
-		} else {
-			WARN_PRINT("A surface of " + p_path + " uses an old surface format and needs to be upgraded. The upgrade happens automatically at load time every time until the mesh is saved again or re-imported. Once saved (or re-imported), this mesh will be incompatible with earlier versions of Godot.");
+		WARN_PRINT_ONCE_ED("At least one surface uses an old surface format and needs to be upgraded. The upgrade happens automatically at load time every time until the mesh is saved again or re-imported. Once saved (or re-imported), this mesh will be incompatible with earlier versions of Godot.");
+
+		if (!p_path.is_empty()) {
+			WARN_PRINT("A surface of " + p_path + " uses an old surface format and needs to be upgraded.");
 		}
 	}
 #endif
@@ -2070,49 +2154,70 @@ void RenderingServer::fix_surface_compatibility(SurfaceData &p_surface, const St
 		// The only difference for now is that Version 1 uses interleaved vertex positions while version 2 does not.
 		// I.e. PNTPNTPNT -> PPPNTNTNT.
 
-		int vertex_size = 0;
-		int normal_size = 0;
-		int tangent_size = 0;
-		if (p_surface.format & ARRAY_FORMAT_VERTEX) {
-			if (p_surface.format & ARRAY_FLAG_USE_2D_VERTICES) {
-				vertex_size = sizeof(float) * 2;
-			} else {
-				vertex_size = sizeof(float) * 3;
+		if (p_surface.vertex_data.size() > 0 && p_surface.vertex_count > 0) {
+			int vertex_size = 0;
+			int normal_size = 0;
+			int tangent_size = 0;
+			if (p_surface.format & ARRAY_FORMAT_VERTEX) {
+				if (p_surface.format & ARRAY_FLAG_USE_2D_VERTICES) {
+					vertex_size = sizeof(float) * 2;
+				} else {
+					vertex_size = sizeof(float) * 3;
+				}
 			}
-		}
-		if (p_surface.format & ARRAY_FORMAT_NORMAL) {
-			normal_size += sizeof(uint16_t) * 2;
-		}
-		if (p_surface.format & ARRAY_FORMAT_TANGENT) {
-			tangent_size = sizeof(uint16_t) * 2;
-		}
-		int stride = p_surface.vertex_data.size() / p_surface.vertex_count;
-		int position_stride = vertex_size;
-		int normal_tangent_stride = normal_size + tangent_size;
-
-		p_surface.vertex_data = _convert_surface_version_1_to_surface_version_2(p_surface.format, p_surface.vertex_data, p_surface.vertex_count, stride, vertex_size, normal_size, position_stride, normal_tangent_stride);
-
-		if (p_surface.blend_shape_data.size() > 0) {
-			// The size of one blend shape.
-			int divisor = (vertex_size + normal_size + tangent_size) * p_surface.vertex_count;
-			ERR_FAIL_COND((p_surface.blend_shape_data.size() % divisor) != 0);
-
-			uint32_t blend_shape_count = p_surface.blend_shape_data.size() / divisor;
-
-			Vector<uint8_t> new_blend_shape_data;
-			for (uint32_t i = 0; i < blend_shape_count; i++) {
-				Vector<uint8_t> bs_data = p_surface.blend_shape_data.slice(i * divisor, (i + 1) * divisor);
-				Vector<uint8_t> blend_shape = _convert_surface_version_1_to_surface_version_2(p_surface.format, bs_data, p_surface.vertex_count, stride, vertex_size, normal_size, position_stride, normal_tangent_stride);
-				new_blend_shape_data.append_array(blend_shape);
+			if (p_surface.format & ARRAY_FORMAT_NORMAL) {
+				normal_size += sizeof(uint16_t) * 2;
 			}
+			if (p_surface.format & ARRAY_FORMAT_TANGENT) {
+				tangent_size = sizeof(uint16_t) * 2;
+			}
+			int stride = p_surface.vertex_data.size() / p_surface.vertex_count;
+			int position_stride = vertex_size;
+			int normal_tangent_stride = normal_size + tangent_size;
 
-			ERR_FAIL_COND(p_surface.blend_shape_data.size() != new_blend_shape_data.size());
+			p_surface.vertex_data = _convert_surface_version_1_to_surface_version_2(p_surface.format, p_surface.vertex_data, p_surface.vertex_count, stride, vertex_size, normal_size, position_stride, normal_tangent_stride);
 
-			p_surface.blend_shape_data = new_blend_shape_data;
+			if (p_surface.blend_shape_data.size() > 0) {
+				// The size of one blend shape.
+				int divisor = (vertex_size + normal_size + tangent_size) * p_surface.vertex_count;
+				ERR_FAIL_COND((p_surface.blend_shape_data.size() % divisor) != 0);
+
+				uint32_t blend_shape_count = p_surface.blend_shape_data.size() / divisor;
+
+				Vector<uint8_t> new_blend_shape_data;
+				for (uint32_t i = 0; i < blend_shape_count; i++) {
+					Vector<uint8_t> bs_data = p_surface.blend_shape_data.slice(i * divisor, (i + 1) * divisor);
+					Vector<uint8_t> blend_shape = _convert_surface_version_1_to_surface_version_2(p_surface.format, bs_data, p_surface.vertex_count, stride, vertex_size, normal_size, position_stride, normal_tangent_stride);
+					new_blend_shape_data.append_array(blend_shape);
+				}
+
+				ERR_FAIL_COND(p_surface.blend_shape_data.size() != new_blend_shape_data.size());
+
+				p_surface.blend_shape_data = new_blend_shape_data;
+			}
 		}
 	}
 	p_surface.format &= ~(ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 	p_surface.format |= ARRAY_FLAG_FORMAT_CURRENT_VERSION & (ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+}
+#endif
+
+#ifdef TOOLS_ENABLED
+void RenderingServer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if (p_idx == 0) {
+		if (pf == "global_shader_parameter_set" || pf == "global_shader_parameter_set_override" ||
+				pf == "global_shader_parameter_get" || pf == "global_shader_parameter_get_type" || pf == "global_shader_parameter_remove") {
+			for (const StringName &E : global_shader_parameter_get_list()) {
+				r_options->push_back(E.operator String().quote());
+			}
+		} else if (pf == "has_os_feature") {
+			for (const String E : { "\"rgtc\"", "\"s3tc\"", "\"bptc\"", "\"etc\"", "\"etc2\"", "\"astc\"" }) {
+				r_options->push_back(E);
+			}
+		}
+	}
+	Object::get_argument_options(p_function, p_idx, r_options);
 }
 #endif
 
@@ -2320,6 +2425,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("multimesh_instance_set_custom_data", "multimesh", "index", "custom_data"), &RenderingServer::multimesh_instance_set_custom_data);
 	ClassDB::bind_method(D_METHOD("multimesh_get_mesh", "multimesh"), &RenderingServer::multimesh_get_mesh);
 	ClassDB::bind_method(D_METHOD("multimesh_get_aabb", "multimesh"), &RenderingServer::multimesh_get_aabb);
+	ClassDB::bind_method(D_METHOD("multimesh_set_custom_aabb", "multimesh", "aabb"), &RenderingServer::multimesh_set_custom_aabb);
+	ClassDB::bind_method(D_METHOD("multimesh_get_custom_aabb", "multimesh"), &RenderingServer::multimesh_get_custom_aabb);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_get_transform", "multimesh", "index"), &RenderingServer::multimesh_instance_get_transform);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_get_transform_2d", "multimesh", "index"), &RenderingServer::multimesh_instance_get_transform_2d);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_get_color", "multimesh", "index"), &RenderingServer::multimesh_instance_get_color);
@@ -2444,6 +2551,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_enable_box_projection", "probe", "enable"), &RenderingServer::reflection_probe_set_enable_box_projection);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_enable_shadows", "probe", "enable"), &RenderingServer::reflection_probe_set_enable_shadows);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_cull_mask", "probe", "layers"), &RenderingServer::reflection_probe_set_cull_mask);
+	ClassDB::bind_method(D_METHOD("reflection_probe_set_reflection_mask", "probe", "layers"), &RenderingServer::reflection_probe_set_reflection_mask);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_resolution", "probe", "resolution"), &RenderingServer::reflection_probe_set_resolution);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_mesh_lod_threshold", "probe", "pixels"), &RenderingServer::reflection_probe_set_mesh_lod_threshold);
 
@@ -2651,6 +2759,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("camera_set_cull_mask", "camera", "layers"), &RenderingServer::camera_set_cull_mask);
 	ClassDB::bind_method(D_METHOD("camera_set_environment", "camera", "env"), &RenderingServer::camera_set_environment);
 	ClassDB::bind_method(D_METHOD("camera_set_camera_attributes", "camera", "effects"), &RenderingServer::camera_set_camera_attributes);
+	ClassDB::bind_method(D_METHOD("camera_set_compositor", "camera", "compositor"), &RenderingServer::camera_set_compositor);
 	ClassDB::bind_method(D_METHOD("camera_set_use_vertical_aspect", "camera", "enable"), &RenderingServer::camera_set_use_vertical_aspect);
 
 	/* VIEWPORT */
@@ -2669,6 +2778,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_fsr_sharpness", "viewport", "sharpness"), &RenderingServer::viewport_set_fsr_sharpness);
 	ClassDB::bind_method(D_METHOD("viewport_set_texture_mipmap_bias", "viewport", "mipmap_bias"), &RenderingServer::viewport_set_texture_mipmap_bias);
 	ClassDB::bind_method(D_METHOD("viewport_set_update_mode", "viewport", "update_mode"), &RenderingServer::viewport_set_update_mode);
+	ClassDB::bind_method(D_METHOD("viewport_get_update_mode", "viewport"), &RenderingServer::viewport_get_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_clear_mode", "viewport", "clear_mode"), &RenderingServer::viewport_set_clear_mode);
 	ClassDB::bind_method(D_METHOD("viewport_get_render_target", "viewport"), &RenderingServer::viewport_get_render_target);
 	ClassDB::bind_method(D_METHOD("viewport_get_texture", "viewport"), &RenderingServer::viewport_get_texture);
@@ -2714,6 +2824,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_get_measured_render_time_gpu", "viewport"), &RenderingServer::viewport_get_measured_render_time_gpu);
 
 	ClassDB::bind_method(D_METHOD("viewport_set_vrs_mode", "viewport", "mode"), &RenderingServer::viewport_set_vrs_mode);
+	ClassDB::bind_method(D_METHOD("viewport_set_vrs_update_mode", "viewport", "mode"), &RenderingServer::viewport_set_vrs_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_vrs_texture", "viewport", "texture"), &RenderingServer::viewport_set_vrs_texture);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_BILINEAR);
@@ -2722,7 +2833,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_DISABLED);
-	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_ONCE); // Then goes to disabled); must be manually updated.
+	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_ONCE); // Then goes to disabled, must be manually updated.
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_WHEN_VISIBLE); // Default
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_ALWAYS);
@@ -2768,6 +2879,7 @@ void RenderingServer::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_VISIBLE);
 	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_SHADOW);
+	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_CANVAS);
 	BIND_ENUM_CONSTANT(VIEWPORT_RENDER_INFO_TYPE_MAX);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DISABLED);
@@ -2803,6 +2915,11 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_VRS_XR);
 	BIND_ENUM_CONSTANT(VIEWPORT_VRS_MAX);
 
+	BIND_ENUM_CONSTANT(VIEWPORT_VRS_UPDATE_DISABLED);
+	BIND_ENUM_CONSTANT(VIEWPORT_VRS_UPDATE_ONCE); // Then goes to disabled, must be manually updated.
+	BIND_ENUM_CONSTANT(VIEWPORT_VRS_UPDATE_ALWAYS);
+	BIND_ENUM_CONSTANT(VIEWPORT_VRS_UPDATE_MAX);
+
 	/* SKY API */
 
 	ClassDB::bind_method(D_METHOD("sky_create"), &RenderingServer::sky_create);
@@ -2815,6 +2932,32 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SKY_MODE_QUALITY);
 	BIND_ENUM_CONSTANT(SKY_MODE_INCREMENTAL);
 	BIND_ENUM_CONSTANT(SKY_MODE_REALTIME);
+
+	/* COMPOSITOR EFFECT API */
+
+	ClassDB::bind_method(D_METHOD("compositor_effect_create"), &RenderingServer::compositor_effect_create);
+	ClassDB::bind_method(D_METHOD("compositor_effect_set_enabled", "effect", "enabled"), &RenderingServer::compositor_effect_set_enabled);
+	ClassDB::bind_method(D_METHOD("compositor_effect_set_callback", "effect", "callback_type", "callback"), &RenderingServer::compositor_effect_set_callback);
+	ClassDB::bind_method(D_METHOD("compositor_effect_set_flag", "effect", "flag", "set"), &RenderingServer::compositor_effect_set_flag);
+
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_COLOR);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_NEEDS_ROUGHNESS);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_FLAG_NEEDS_SEPARATE_SPECULAR);
+
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_OPAQUE);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_OPAQUE);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_SKY);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT);
+	BIND_ENUM_CONSTANT(COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY);
+
+	/* COMPOSITOR */
+
+	ClassDB::bind_method(D_METHOD("compositor_create"), &RenderingServer::compositor_create);
+
+	ClassDB::bind_method(D_METHOD("compositor_set_compositor_effects", "compositor", "effects"), &RenderingServer::compositor_set_compositor_effects);
 
 	/* ENVIRONMENT */
 
@@ -2832,7 +2975,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "use_1d_color_correction", "color_correction"), &RenderingServer::environment_set_adjustment);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance"), &RenderingServer::environment_set_ssr);
 	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "power", "detail", "horizon", "sharpness", "light_affect", "ao_channel_affect"), &RenderingServer::environment_set_ssao);
-	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect"), &RenderingServer::environment_set_fog);
+	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect", "fog_mode"), &RenderingServer::environment_set_fog, DEFVAL(RS::ENV_FOG_MODE_EXPONENTIAL));
 	ClassDB::bind_method(D_METHOD("environment_set_sdfgi", "env", "enable", "cascades", "min_cell_size", "y_scale", "use_occlusion", "bounce_feedback", "read_sky", "energy", "normal_bias", "probe_bias"), &RenderingServer::environment_set_sdfgi);
 	ClassDB::bind_method(D_METHOD("environment_set_volumetric_fog", "env", "enable", "density", "albedo", "emission", "emission_energy", "anisotropy", "length", "p_detail_spread", "gi_inject", "temporal_reprojection", "temporal_reprojection_amount", "ambient_inject", "sky_affect"), &RenderingServer::environment_set_volumetric_fog);
 
@@ -2874,6 +3017,9 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_GLOW_BLEND_MODE_SOFTLIGHT);
 	BIND_ENUM_CONSTANT(ENV_GLOW_BLEND_MODE_REPLACE);
 	BIND_ENUM_CONSTANT(ENV_GLOW_BLEND_MODE_MIX);
+
+	BIND_ENUM_CONSTANT(ENV_FOG_MODE_EXPONENTIAL);
+	BIND_ENUM_CONSTANT(ENV_FOG_MODE_DEPTH);
 
 	BIND_ENUM_CONSTANT(ENV_TONE_MAPPER_LINEAR);
 	BIND_ENUM_CONSTANT(ENV_TONE_MAPPER_REINHARD);
@@ -2956,6 +3102,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("scenario_set_environment", "scenario", "environment"), &RenderingServer::scenario_set_environment);
 	ClassDB::bind_method(D_METHOD("scenario_set_fallback_environment", "scenario", "environment"), &RenderingServer::scenario_set_fallback_environment);
 	ClassDB::bind_method(D_METHOD("scenario_set_camera_attributes", "scenario", "effects"), &RenderingServer::scenario_set_camera_attributes);
+	ClassDB::bind_method(D_METHOD("scenario_set_compositor", "scenario", "compositor"), &RenderingServer::scenario_set_compositor);
 
 	/* INSTANCE */
 
@@ -3041,6 +3188,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("canvas_create"), &RenderingServer::canvas_create);
 	ClassDB::bind_method(D_METHOD("canvas_set_item_mirroring", "canvas", "item", "mirroring"), &RenderingServer::canvas_set_item_mirroring);
+	ClassDB::bind_method(D_METHOD("canvas_set_item_repeat", "item", "repeat_size", "repeat_times"), &RenderingServer::canvas_set_item_repeat);
 	ClassDB::bind_method(D_METHOD("canvas_set_modulate", "canvas", "color"), &RenderingServer::canvas_set_modulate);
 	ClassDB::bind_method(D_METHOD("canvas_set_disable_scale", "disable"), &RenderingServer::canvas_set_disable_scale);
 
@@ -3073,14 +3221,17 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_set_modulate", "item", "color"), &RenderingServer::canvas_item_set_modulate);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_self_modulate", "item", "color"), &RenderingServer::canvas_item_set_self_modulate);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_draw_behind_parent", "item", "enabled"), &RenderingServer::canvas_item_set_draw_behind_parent);
+	ClassDB::bind_method(D_METHOD("canvas_item_set_interpolated", "item", "interpolated"), &RenderingServer::canvas_item_set_interpolated);
+	ClassDB::bind_method(D_METHOD("canvas_item_reset_physics_interpolation", "item"), &RenderingServer::canvas_item_reset_physics_interpolation);
+	ClassDB::bind_method(D_METHOD("canvas_item_transform_physics_interpolation", "item", "transform"), &RenderingServer::canvas_item_transform_physics_interpolation);
 
 	/* Primitives */
 
 	ClassDB::bind_method(D_METHOD("canvas_item_add_line", "item", "from", "to", "color", "width", "antialiased"), &RenderingServer::canvas_item_add_line, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_polyline", "item", "points", "colors", "width", "antialiased"), &RenderingServer::canvas_item_add_polyline, DEFVAL(-1.0), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("canvas_item_add_multiline", "item", "points", "colors", "width"), &RenderingServer::canvas_item_add_multiline, DEFVAL(-1.0));
-	ClassDB::bind_method(D_METHOD("canvas_item_add_rect", "item", "rect", "color"), &RenderingServer::canvas_item_add_rect);
-	ClassDB::bind_method(D_METHOD("canvas_item_add_circle", "item", "pos", "radius", "color"), &RenderingServer::canvas_item_add_circle);
+	ClassDB::bind_method(D_METHOD("canvas_item_add_multiline", "item", "points", "colors", "width", "antialiased"), &RenderingServer::canvas_item_add_multiline, DEFVAL(-1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("canvas_item_add_rect", "item", "rect", "color", "antialiased"), &RenderingServer::canvas_item_add_rect, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("canvas_item_add_circle", "item", "pos", "radius", "color", "antialiased"), &RenderingServer::canvas_item_add_circle, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_texture_rect", "item", "rect", "texture", "tile", "modulate", "transpose"), &RenderingServer::canvas_item_add_texture_rect, DEFVAL(false), DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_msdf_texture_rect_region", "item", "rect", "texture", "src_rect", "modulate", "outline_size", "px_range", "scale"), &RenderingServer::canvas_item_add_msdf_texture_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(1.0), DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_lcd_texture_rect_region", "item", "rect", "texture", "src_rect", "modulate"), &RenderingServer::canvas_item_add_lcd_texture_rect_region);
@@ -3107,6 +3258,8 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("canvas_item_set_visibility_notifier", "item", "enable", "area", "enter_callable", "exit_callable"), &RenderingServer::canvas_item_set_visibility_notifier);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_canvas_group_mode", "item", "mode", "clear_margin", "fit_empty", "fit_margin", "blur_mipmaps"), &RenderingServer::canvas_item_set_canvas_group_mode, DEFVAL(5.0), DEFVAL(false), DEFVAL(0.0), DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("debug_canvas_item_get_rect", "item"), &RenderingServer::debug_canvas_item_get_rect);
 
 	BIND_ENUM_CONSTANT(NINE_PATCH_STRETCH);
 	BIND_ENUM_CONSTANT(NINE_PATCH_TILE);
@@ -3154,6 +3307,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_color", "light", "color"), &RenderingServer::canvas_light_set_shadow_color);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_smooth", "light", "smooth"), &RenderingServer::canvas_light_set_shadow_smooth);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_blend_mode", "light", "mode"), &RenderingServer::canvas_light_set_blend_mode);
+	ClassDB::bind_method(D_METHOD("canvas_light_set_interpolated", "light", "interpolated"), &RenderingServer::canvas_light_set_interpolated);
+	ClassDB::bind_method(D_METHOD("canvas_light_reset_physics_interpolation", "light"), &RenderingServer::canvas_light_reset_physics_interpolation);
+	ClassDB::bind_method(D_METHOD("canvas_light_transform_physics_interpolation", "light", "transform"), &RenderingServer::canvas_light_transform_physics_interpolation);
 
 	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_POINT);
 	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_DIRECTIONAL);
@@ -3176,6 +3332,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_set_as_sdf_collision", "occluder", "enable"), &RenderingServer::canvas_light_occluder_set_as_sdf_collision);
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_set_transform", "occluder", "transform"), &RenderingServer::canvas_light_occluder_set_transform);
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_set_light_mask", "occluder", "mask"), &RenderingServer::canvas_light_occluder_set_light_mask);
+	ClassDB::bind_method(D_METHOD("canvas_light_occluder_set_interpolated", "occluder", "interpolated"), &RenderingServer::canvas_light_occluder_set_interpolated);
+	ClassDB::bind_method(D_METHOD("canvas_light_occluder_reset_physics_interpolation", "occluder"), &RenderingServer::canvas_light_occluder_reset_physics_interpolation);
+	ClassDB::bind_method(D_METHOD("canvas_light_occluder_transform_physics_interpolation", "occluder", "transform"), &RenderingServer::canvas_light_occluder_transform_physics_interpolation);
 
 	/* CANVAS LIGHT OCCLUDER POLYGON */
 
@@ -3252,7 +3411,6 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_default_clear_color"), &RenderingServer::get_default_clear_color);
 	ClassDB::bind_method(D_METHOD("set_default_clear_color", "color"), &RenderingServer::set_default_clear_color);
 
-	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &RenderingServer::has_feature);
 	ClassDB::bind_method(D_METHOD("has_os_feature", "feature"), &RenderingServer::has_os_feature);
 	ClassDB::bind_method(D_METHOD("set_debug_generate_wireframes", "generate"), &RenderingServer::set_debug_generate_wireframes);
 
@@ -3270,9 +3428,6 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RENDERING_INFO_BUFFER_MEM_USED);
 	BIND_ENUM_CONSTANT(RENDERING_INFO_VIDEO_MEM_USED);
 
-	BIND_ENUM_CONSTANT(FEATURE_SHADERS);
-	BIND_ENUM_CONSTANT(FEATURE_MULTITHREADED);
-
 	ADD_SIGNAL(MethodInfo("frame_pre_draw"));
 	ADD_SIGNAL(MethodInfo("frame_post_draw"));
 
@@ -3281,7 +3436,15 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rendering_device"), &RenderingServer::get_rendering_device);
 	ClassDB::bind_method(D_METHOD("create_local_rendering_device"), &RenderingServer::create_local_rendering_device);
 
+	ClassDB::bind_method(D_METHOD("is_on_render_thread"), &RenderingServer::is_on_render_thread);
 	ClassDB::bind_method(D_METHOD("call_on_render_thread", "callable"), &RenderingServer::call_on_render_thread);
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &RenderingServer::has_feature);
+
+	BIND_ENUM_CONSTANT(FEATURE_SHADERS);
+	BIND_ENUM_CONSTANT(FEATURE_MULTITHREADED);
+#endif
 }
 
 void RenderingServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry3D::MeshData &p_mesh_data) {
@@ -3380,15 +3543,15 @@ void RenderingServer::init() {
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug", false);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/strip_debug.release", true);
 
-	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/roughness_layers", 8); // Assumes a 256x256 cubemap
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/reflections/sky_reflections/roughness_layers", PROPERTY_HINT_RANGE, "1,32,1"), 8); // Assumes a 256x256 cubemap
 	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/texture_array_reflections", true);
 	GLOBAL_DEF("rendering/reflections/sky_reflections/texture_array_reflections.mobile", false);
-	GLOBAL_DEF_RST("rendering/reflections/sky_reflections/ggx_samples", 32);
-	GLOBAL_DEF("rendering/reflections/sky_reflections/ggx_samples.mobile", 16);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/reflections/sky_reflections/ggx_samples", PROPERTY_HINT_RANGE, "0,256,1"), 32);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/reflections/sky_reflections/ggx_samples.mobile", PROPERTY_HINT_RANGE, "0,128,1"), 16);
 	GLOBAL_DEF("rendering/reflections/sky_reflections/fast_filter_high_quality", false);
-	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size", 256);
-	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_size.mobile", 128);
-	GLOBAL_DEF("rendering/reflections/reflection_atlas/reflection_count", 64);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/reflections/reflection_atlas/reflection_size", PROPERTY_HINT_RANGE, "0,4096,1"), 256);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/reflections/reflection_atlas/reflection_size.mobile", PROPERTY_HINT_RANGE, "0,2048,1"), 128);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/reflections/reflection_atlas/reflection_count", PROPERTY_HINT_RANGE, "0,256,1"), 64);
 
 	GLOBAL_DEF("rendering/global_illumination/gi/use_half_resolution", false);
 
@@ -3435,7 +3598,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), DECAL_FILTER_LINEAR_MIPMAPS);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/light_projectors/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
 
-	GLOBAL_DEF_RST("rendering/occlusion_culling/occlusion_rays_per_thread", 512);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/occlusion_culling/occlusion_rays_per_thread", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), 512);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slow)"), 1);
 	GLOBAL_DEF("rendering/environment/glow/upscale_mode.mobile", 0);
@@ -3446,7 +3609,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"), 0.05);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"), 0.01);
 
-	GLOBAL_DEF("rendering/limits/global_shader_variables/buffer_size", 65536);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/limits/global_shader_variables/buffer_size", PROPERTY_HINT_RANGE, "1,1048576,1"), 65536);
 
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lightmapping/probe_capture/update_speed", PROPERTY_HINT_RANGE, "0.001,256,0.001"), 15);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/lightmapping/primitive_meshes/texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2);
@@ -3461,7 +3624,6 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/spatial_indexer/update_iterations_per_frame", PROPERTY_HINT_RANGE, "0,1024,1"), 10);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/spatial_indexer/threaded_cull_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"), 1000);
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/forward_renderer/threaded_render_minimum_instances", PROPERTY_HINT_RANGE, "32,65536,1"), 500);
 
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/limits/cluster_builder/max_clustered_elements", PROPERTY_HINT_RANGE, "32,8192,1"), 512);
 

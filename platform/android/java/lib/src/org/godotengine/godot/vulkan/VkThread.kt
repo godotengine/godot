@@ -142,7 +142,7 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 	fun onSurfaceChanged(width: Int, height: Int) {
 		lock.withLock {
 			hasSurface = true
-			surfaceChanged = true;
+			surfaceChanged = true
 			this.width = width
 			this.height = height
 
@@ -179,7 +179,7 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 						// blocking the thread lifecycle by holding onto the lock.
 						if (eventQueue.isNotEmpty()) {
 							event = eventQueue.removeAt(0)
-							break;
+							break
 						}
 
 						if (readyToDraw) {
@@ -199,7 +199,7 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 							}
 
 							// Break out of the loop so drawing can occur without holding onto the lock.
-							break;
+							break
 						} else if (rendererResumed) {
 							// If we aren't ready to draw but are resumed, that means we either lost a surface
 							// or the app was paused.

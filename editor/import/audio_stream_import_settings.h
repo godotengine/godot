@@ -31,7 +31,7 @@
 #ifndef AUDIO_STREAM_IMPORT_SETTINGS_H
 #define AUDIO_STREAM_IMPORT_SETTINGS_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/dialogs.h"
@@ -40,8 +40,8 @@
 
 class CheckBox;
 
-class AudioStreamImportSettings : public ConfirmationDialog {
-	GDCLASS(AudioStreamImportSettings, ConfirmationDialog);
+class AudioStreamImportSettingsDialog : public ConfirmationDialog {
+	GDCLASS(AudioStreamImportSettingsDialog, ConfirmationDialog);
 
 	CheckBox *bpm_enabled = nullptr;
 	SpinBox *bpm_edit = nullptr;
@@ -81,7 +81,7 @@ class AudioStreamImportSettings : public ConfirmationDialog {
 
 	void _audio_changed();
 
-	static AudioStreamImportSettings *singleton;
+	static AudioStreamImportSettingsDialog *singleton;
 
 	void _settings_changed();
 
@@ -109,9 +109,9 @@ protected:
 public:
 	void edit(const String &p_path, const String &p_importer, const Ref<AudioStream> &p_stream);
 
-	static AudioStreamImportSettings *get_singleton() { return singleton; }
+	static AudioStreamImportSettingsDialog *get_singleton() { return singleton; }
 
-	AudioStreamImportSettings();
+	AudioStreamImportSettingsDialog();
 };
 
 #endif // AUDIO_STREAM_IMPORT_SETTINGS_H

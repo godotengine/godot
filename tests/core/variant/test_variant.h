@@ -980,45 +980,45 @@ TEST_CASE("[Variant] Assignment To Vec2 from Bool,Int,Float,String,Vec2i,Vec3,Ve
 	CHECK(basis_v.get_type() == Variant::VECTOR2);
 
 	Variant aabb_v = AABB();
-	string_v = "Hello";
-	aabb_v = string_v;
-	CHECK(aabb_v == Variant("Hello"));
-	string_v = "Hello there";
-	aabb_v = string_v;
-	CHECK(aabb_v.get_type() == Variant::STRING);
+	vec2_v = Vector2(2.2f, 3.5f);
+	aabb_v = vec2_v;
+	CHECK(aabb_v == Variant(Vector2(2.2f, 3.5f)));
+	vec2_v = Vector2(-5.4f, -7.9f);
+	aabb_v = vec2_v;
+	CHECK(aabb_v.get_type() == Variant::VECTOR2);
 
 	Variant quaternion_v = Quaternion();
-	string_v = "Hello";
-	quaternion_v = string_v;
-	CHECK(quaternion_v == Variant("Hello"));
-	string_v = "Hello there";
-	quaternion_v = string_v;
-	CHECK(quaternion_v.get_type() == Variant::STRING);
+	vec2_v = Vector2(2.2f, 3.5f);
+	quaternion_v = vec2_v;
+	CHECK(quaternion_v == Variant(Vector2(2.2f, 3.5f)));
+	vec2_v = Vector2(-5.4f, -7.9f);
+	quaternion_v = vec2_v;
+	CHECK(quaternion_v.get_type() == Variant::VECTOR2);
 
 	Variant projection_v = Projection();
-	string_v = "Hello";
-	projection_v = string_v;
-	CHECK(projection_v == Variant("Hello"));
-	string_v = "Hello there";
-	projection_v = string_v;
-	CHECK(projection_v.get_type() == Variant::STRING);
+	vec2_v = Vector2(2.2f, 3.5f);
+	projection_v = vec2_v;
+	CHECK(projection_v == Variant(Vector2(2.2f, 3.5f)));
+	vec2_v = Vector2(-5.4f, -7.9f);
+	projection_v = vec2_v;
+	CHECK(projection_v.get_type() == Variant::VECTOR2);
 
 	Variant rid_v = RID();
-	string_v = "Hello";
-	rid_v = string_v;
-	CHECK(rid_v == Variant("Hello"));
-	string_v = "Hello there";
-	rid_v = string_v;
-	CHECK(rid_v.get_type() == Variant::STRING);
+	vec2_v = Vector2(2.2f, 3.5f);
+	rid_v = vec2_v;
+	CHECK(rid_v == Variant(Vector2(2.2f, 3.5f)));
+	vec2_v = Vector2(-5.4f, -7.9f);
+	rid_v = vec2_v;
+	CHECK(rid_v.get_type() == Variant::VECTOR2);
 
 	Object obj_one = Object();
 	Variant object_v = &obj_one;
-	string_v = "Hello";
-	object_v = string_v;
-	CHECK(object_v == Variant("Hello"));
-	string_v = "Hello there";
-	object_v = string_v;
-	CHECK(object_v.get_type() == Variant::STRING);
+	vec2_v = Vector2(2.2f, 3.5f);
+	object_v = vec2_v;
+	CHECK(object_v == Variant(Vector2(2.2f, 3.5f)));
+	vec2_v = Vector2(-5.4f, -7.9f);
+	object_v = vec2_v;
+	CHECK(object_v.get_type() == Variant::VECTOR2);
 }
 
 TEST_CASE("[Variant] Assignment To Vec2i from Bool,Int,Float,String,Vec2,Vec3,Vec3i,Vec4,Vec4i,Rect2,Rect2i,Trans2d,Trans3d,Color,Call,Plane,Basis,AABB,Quant,Proj,RID,and Object") {
@@ -2033,6 +2033,10 @@ TEST_CASE("[Variant] Identity comparison") {
 	Variant packed_color_array = PackedColorArray();
 	CHECK(packed_color_array.identity_compare(packed_color_array));
 	CHECK_FALSE(packed_color_array.identity_compare(PackedColorArray()));
+
+	Variant packed_vector4_array = PackedVector4Array();
+	CHECK(packed_vector4_array.identity_compare(packed_vector4_array));
+	CHECK_FALSE(packed_vector4_array.identity_compare(PackedVector4Array()));
 
 	Variant packed_float32_array = PackedFloat32Array();
 	CHECK(packed_float32_array.identity_compare(packed_float32_array));

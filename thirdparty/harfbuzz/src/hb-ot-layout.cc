@@ -87,7 +87,7 @@ using OT::Layout::GPOS;
 bool
 hb_ot_layout_has_kerning (hb_face_t *face)
 {
-  return face->table.kern->has_data ();
+  return face->table.kern->table->has_data ();
 }
 
 /**
@@ -103,7 +103,7 @@ hb_ot_layout_has_kerning (hb_face_t *face)
 bool
 hb_ot_layout_has_machine_kerning (hb_face_t *face)
 {
-  return face->table.kern->has_state_machine ();
+  return face->table.kern->table->has_state_machine ();
 }
 
 /**
@@ -123,7 +123,7 @@ hb_ot_layout_has_machine_kerning (hb_face_t *face)
 bool
 hb_ot_layout_has_cross_kerning (hb_face_t *face)
 {
-  return face->table.kern->has_cross_stream ();
+  return face->table.kern->table->has_cross_stream ();
 }
 
 void
@@ -132,7 +132,7 @@ hb_ot_layout_kern (const hb_ot_shape_plan_t *plan,
 		   hb_buffer_t  *buffer)
 {
   hb_blob_t *blob = font->face->table.kern.get_blob ();
-  const AAT::kern& kern = *blob->as<AAT::kern> ();
+  const auto& kern = *font->face->table.kern;
 
   AAT::hb_aat_apply_context_t c (plan, font, buffer, blob);
 
@@ -1308,11 +1308,16 @@ hb_ot_layout_collect_features_map (hb_face_t      *face,
   unsigned int count = l.get_feature_indexes (0, nullptr, nullptr);
   feature_map->alloc (count);
 
-  for (unsigned int i = 0; i < count; i++)
+  /* Loop in reverse, such that earlier entries win. That emulates
+   * a linear search, which seems to be what other implementations do.
+   * We found that with arialuni_t.ttf, the "ur" language system has
+   * duplicate features, and the earlier ones work but not later ones.
+   */
+  for (unsigned int i = count; i; i--)
   {
     unsigned feature_index = 0;
     unsigned feature_count = 1;
-    l.get_feature_indexes (i, &feature_count, &feature_index);
+    l.get_feature_indexes (i - 1, &feature_count, &feature_index);
     if (!feature_count)
       break;
     hb_tag_t feature_tag = g.get_feature_tag (feature_index);
@@ -2122,7 +2127,7 @@ hb_ot_layout_get_font_extents (hb_font_t         *font,
 			       hb_tag_t           language_tag,
 			       hb_font_extents_t *extents)
 {
-  hb_position_t min, max;
+  hb_position_t min = 0, max = 0;
   if (font->face->table.BASE->get_min_max (font, direction, script_tag, language_tag, HB_TAG_NONE,
 					   &min, &max))
   {

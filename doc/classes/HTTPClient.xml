@@ -156,9 +156,9 @@
 				[/gdscript]
 				[csharp]
 				var fields = new Godot.Collections.Dictionary { { "username", "user" }, { "password", "pass" } };
-				string queryString = new HTTPClient().QueryStringFromDict(fields);
+				string queryString = new HttpClient().QueryStringFromDict(fields);
 				string[] headers = { "Content-Type: application/x-www-form-urlencoded", $"Content-Length: {queryString.Length}" };
-				var result = new HTTPClient().Request(HTTPClient.Method.Post, "index.php", headers, queryString);
+				var result = new HttpClient().Request(HttpClient.Method.Post, "index.php", headers, queryString);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] The [param body] parameter is ignored if [param method] is [constant HTTPClient.METHOD_GET]. This is because GET methods can't contain request data. As a workaround, you can pass request data as a query string in the URL. See [method String.uri_encode] for an example.
@@ -322,11 +322,11 @@
 		<constant name="RESPONSE_NOT_MODIFIED" value="304" enum="ResponseCode">
 			HTTP status code [code]304 Not Modified[/code]. A conditional GET or HEAD request has been received and would have resulted in a 200 OK response if it were not for the fact that the condition evaluated to [code]false[/code].
 		</constant>
-		<constant name="RESPONSE_USE_PROXY" value="305" enum="ResponseCode" is_deprecated="true">
-			[i]Deprecated.[/i] HTTP status code [code]305 Use Proxy[/code].
+		<constant name="RESPONSE_USE_PROXY" value="305" enum="ResponseCode" deprecated="Many clients ignore this response code for security reasons. It is also deprecated by the HTTP standard.">
+			HTTP status code [code]305 Use Proxy[/code].
 		</constant>
-		<constant name="RESPONSE_SWITCH_PROXY" value="306" enum="ResponseCode" is_deprecated="true">
-			[i]Deprecated.[/i] HTTP status code [code]306 Switch Proxy[/code].
+		<constant name="RESPONSE_SWITCH_PROXY" value="306" enum="ResponseCode" deprecated="Many clients ignore this response code for security reasons. It is also deprecated by the HTTP standard.">
+			HTTP status code [code]306 Switch Proxy[/code].
 		</constant>
 		<constant name="RESPONSE_TEMPORARY_REDIRECT" value="307" enum="ResponseCode">
 			HTTP status code [code]307 Temporary Redirect[/code]. The target resource resides temporarily under a different URI and the user agent MUST NOT change the request method if it performs an automatic redirection to that URI.

@@ -9,6 +9,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_begin_handle_action" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="secondary" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="_commit_handle" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="id" type="int" />

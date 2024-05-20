@@ -297,6 +297,19 @@ TEST_CASE("[String] Contains") {
 	CHECK(!s.contains(String("\\char_test.tscn")));
 }
 
+TEST_CASE("[String] Contains case insensitive") {
+	String s = "C:\\Godot\\project\\string_test.tscn";
+	CHECK(s.containsn("Godot"));
+	CHECK(s.containsn("godot"));
+	CHECK(s.containsn(String("Project\\string_test")));
+	CHECK(s.containsn(String("\\string_Test.tscn")));
+
+	CHECK(!s.containsn("Godoh"));
+	CHECK(!s.containsn("godoh"));
+	CHECK(!s.containsn(String("project\\string test")));
+	CHECK(!s.containsn(String("\\char_test.tscn")));
+}
+
 TEST_CASE("[String] Test chr") {
 	CHECK(String::chr('H') == "H");
 	CHECK(String::chr(0x3012)[0] == 0x3012);
@@ -336,6 +349,16 @@ TEST_CASE("[String] Natural compare function test") {
 	CHECK(a.naturalnocasecmp_to("img10.png") < 0);
 }
 
+TEST_CASE("[String] File compare function test") {
+	String a = "_img2.png";
+	String b = "img2.png";
+
+	CHECK(a.nocasecmp_to("img10.png") > 0);
+	CHECK_MESSAGE(a.filenocasecmp_to("img10.png") < 0, "Should sort before letters.");
+	CHECK_MESSAGE(a.filenocasecmp_to(".img10.png") > 0, "Should sort after period.");
+	CHECK(b.filenocasecmp_to("img3.png") < 0);
+}
+
 TEST_CASE("[String] hex_encode_buffer") {
 	static const uint8_t u8str[] = { 0x45, 0xE3, 0x81, 0x8A, 0x8F, 0xE3 };
 	String s = String::hex_encode_buffer(u8str, 6);
@@ -350,18 +373,37 @@ TEST_CASE("[String] Substr") {
 
 TEST_CASE("[String] Find") {
 	String s = "Pretty Woman Woman";
-	CHECK(s.find("tty") == 3);
-	CHECK(s.find("Wo", 9) == 13);
-	CHECK(s.find("Revenge of the Monster Truck") == -1);
-	CHECK(s.rfind("man") == 15);
+	MULTICHECK_STRING_EQ(s, find, "tty", 3);
+	MULTICHECK_STRING_EQ(s, find, "Revenge of the Monster Truck", -1);
+	MULTICHECK_STRING_INT_EQ(s, find, "Wo", 9, 13);
+	MULTICHECK_STRING_EQ(s, find, "", -1);
+	MULTICHECK_STRING_EQ(s, find, "Pretty Woman Woman", 0);
+	MULTICHECK_STRING_EQ(s, find, "WOMAN", -1);
+	MULTICHECK_STRING_INT_EQ(s, find, "", 9, -1);
+
+	MULTICHECK_STRING_EQ(s, rfind, "", -1);
+	MULTICHECK_STRING_EQ(s, rfind, "foo", -1);
+	MULTICHECK_STRING_EQ(s, rfind, "Pretty Woman Woman", 0);
+	MULTICHECK_STRING_EQ(s, rfind, "man", 15);
+	MULTICHECK_STRING_EQ(s, rfind, "WOMAN", -1);
+	MULTICHECK_STRING_INT_EQ(s, rfind, "", 15, -1);
 }
 
-TEST_CASE("[String] Find no case") {
+TEST_CASE("[String] Find case insensitive") {
 	String s = "Pretty Whale Whale";
-	CHECK(s.findn("WHA") == 7);
-	CHECK(s.findn("WHA", 9) == 13);
-	CHECK(s.findn("Revenge of the Monster SawFish") == -1);
-	CHECK(s.rfindn("WHA") == 13);
+	MULTICHECK_STRING_EQ(s, findn, "WHA", 7);
+	MULTICHECK_STRING_INT_EQ(s, findn, "WHA", 9, 13);
+	MULTICHECK_STRING_EQ(s, findn, "Revenge of the Monster SawFish", -1);
+	MULTICHECK_STRING_EQ(s, findn, "", -1);
+	MULTICHECK_STRING_EQ(s, findn, "wha", 7);
+	MULTICHECK_STRING_EQ(s, findn, "Wha", 7);
+	MULTICHECK_STRING_INT_EQ(s, findn, "", 3, -1);
+
+	MULTICHECK_STRING_EQ(s, rfindn, "WHA", 13);
+	MULTICHECK_STRING_EQ(s, rfindn, "", -1);
+	MULTICHECK_STRING_EQ(s, rfindn, "wha", 13);
+	MULTICHECK_STRING_EQ(s, rfindn, "Wha", 13);
+	MULTICHECK_STRING_INT_EQ(s, rfindn, "", 13, -1);
 }
 
 TEST_CASE("[String] Find MK") {
@@ -382,11 +424,9 @@ TEST_CASE("[String] Find MK") {
 
 TEST_CASE("[String] Find and replace") {
 	String s = "Happy Birthday, Anna!";
-	s = s.replace("Birthday", "Halloween");
-	CHECK(s == "Happy Halloween, Anna!");
-
-	s = s.replace_first("H", "W");
-	CHECK(s == "Wappy Halloween, Anna!");
+	MULTICHECK_STRING_STRING_EQ(s, replace, "Birthday", "Halloween", "Happy Halloween, Anna!");
+	MULTICHECK_STRING_STRING_EQ(s, replace_first, "y", "Y", "HappY Birthday, Anna!");
+	MULTICHECK_STRING_STRING_EQ(s, replacen, "Y", "Y", "HappY BirthdaY, Anna!");
 }
 
 TEST_CASE("[String] Insertion") {
@@ -456,79 +496,167 @@ TEST_CASE("[String] Number to string") {
 }
 
 TEST_CASE("[String] String to integer") {
-	static const char *nums[4] = { "1237461283", "- 22", "0", " - 1123412" };
-	static const int num[4] = { 1237461283, -22, 0, -1123412 };
+	static const char *nums[14] = { "1237461283", "- 22", "0", " - 1123412", "", "10_000_000", "-1_2_3_4", "10__000", "  1  2  34 ", "-0", "007", "--45", "---46", "-7-2" };
+	static const int num[14] = { 1237461283, -22, 0, -1123412, 0, 10000000, -1234, 10000, 1234, 0, 7, 45, -46, -72 };
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 14; i++) {
 		CHECK(String(nums[i]).to_int() == num[i]);
 	}
+	CHECK(String("0b1011").to_int() == 1011); // Looks like a binary number, but to_int() handles this as a base-10 number, "b" is just ignored.
+	CHECK(String("0x1012").to_int() == 1012); // Looks like a hexadecimal number, but to_int() handles this as a base-10 number, "x" is just ignored.
+
+	ERR_PRINT_OFF
+	CHECK(String("999999999999999999999999999999999999999999999999999999999").to_int() == INT64_MAX); // Too large, largest possible is returned.
+	CHECK(String("-999999999999999999999999999999999999999999999999999999999").to_int() == INT64_MIN); // Too small, smallest possible is returned.
+	ERR_PRINT_ON
 }
 
 TEST_CASE("[String] Hex to integer") {
-	static const char *nums[4] = { "0xFFAE", "22", "0", "AADDAD" };
-	static const int64_t num[4] = { 0xFFAE, 0x22, 0, 0xAADDAD };
+	static const char *nums[12] = { "0xFFAE", "22", "0", "AADDAD", "0x7FFFFFFFFFFFFFFF", "-0xf", "", "000", "000f", "0xaA", "-ff", "-" };
+	static const int64_t num[12] = { 0xFFAE, 0x22, 0, 0xAADDAD, 0x7FFFFFFFFFFFFFFF, -0xf, 0, 0, 0xf, 0xaa, -0xff, 0x0 };
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 12; i++) {
 		CHECK(String(nums[i]).hex_to_int() == num[i]);
 	}
+
+	// Invalid hex strings should return 0.
+	static const char *invalid_nums[15] = { "qwerty", "QWERTY", "0xqwerty", "0x00qwerty", "qwerty00", "0x", "0x__", "__", "x12", "+", " ff", "ff ", "f f", "+ff", "--0x78" };
+
+	ERR_PRINT_OFF
+	for (int i = 0; i < 15; i++) {
+		CHECK(String(invalid_nums[i]).hex_to_int() == 0);
+	}
+
+	CHECK(String("0xFFFFFFFFFFFFFFFFFFFFFFF").hex_to_int() == INT64_MAX); // Too large, largest possible is returned.
+	CHECK(String("-0xFFFFFFFFFFFFFFFFFFFFFFF").hex_to_int() == INT64_MIN); // Too small, smallest possible is returned.
+	ERR_PRINT_ON
+}
+
+TEST_CASE("[String] Bin to integer") {
+	static const char *nums[10] = { "", "0", "0b0", "0b1", "0b", "1", "0b1010", "-0b11", "-1010", "0b0111111111111111111111111111111111111111111111111111111111111111" };
+	static const int64_t num[10] = { 0, 0, 0, 1, 0, 1, 10, -3, -10, 0x7FFFFFFFFFFFFFFF };
+
+	for (int i = 0; i < 10; i++) {
+		CHECK(String(nums[i]).bin_to_int() == num[i]);
+	}
+
+	// Invalid bin strings should return 0. The long "0x11...11" is just too long for a 64 bit int.
+	static const char *invalid_nums[16] = { "qwerty", "QWERTY", "0bqwerty", "0b00qwerty", "qwerty00", "0x__", "0b__", "__", "b12", "+", "-", "0x12ab", " 11", "11 ", "1 1", "--0b11" };
+
+	for (int i = 0; i < 16; i++) {
+		CHECK(String(invalid_nums[i]).bin_to_int() == 0);
+	}
+
+	ERR_PRINT_OFF
+	CHECK(String("0b111111111111111111111111111111111111111111111111111111111111111111111111111111111").bin_to_int() == INT64_MAX); // Too large, largest possible is returned.
+	CHECK(String("-0b111111111111111111111111111111111111111111111111111111111111111111111111111111111").bin_to_int() == INT64_MIN); // Too small, smallest possible is returned.
+	ERR_PRINT_ON
 }
 
 TEST_CASE("[String] String to float") {
-	static const char *nums[4] = { "-12348298412.2", "0.05", "2.0002", " -0.0001" };
-	static const double num[4] = { -12348298412.2, 0.05, 2.0002, -0.0001 };
+	static const char *nums[12] = { "-12348298412.2", "0.05", "2.0002", " -0.0001", "0", "000", "123", "0.0", "000.000", "000.007", "234__", "3..14" };
+	static const double num[12] = { -12348298412.2, 0.05, 2.0002, -0.0001, 0.0, 0.0, 123.0, 0.0, 0.0, 0.007, 234.0, 3.0 };
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 12; i++) {
 		CHECK(!(ABS(String(nums[i]).to_float() - num[i]) > 0.00001));
 	}
+
+	// Invalid float strings should return 0.
+	static const char *invalid_nums[6] = { "qwerty", "qwerty123", "0xffff", "0b1010", "--3.13", "__345" };
+
+	for (int i = 0; i < 6; i++) {
+		CHECK(String(invalid_nums[i]).to_float() == 0);
+	}
+
+	// Very large exponents.
+	CHECK(String("1e308").to_float() == 1e308);
+	CHECK(String("-1e308").to_float() == -1e308);
+
+	// Exponent is so high that value is INFINITY/-INFINITY.
+	CHECK(String("1e309").to_float() == INFINITY);
+	CHECK(String("1e511").to_float() == INFINITY);
+	CHECK(String("-1e309").to_float() == -INFINITY);
+	CHECK(String("-1e511").to_float() == -INFINITY);
+
+	// Exponent is so high that a warning message is printed. Value is INFINITY/-INFINITY.
+	ERR_PRINT_OFF
+	CHECK(String("1e512").to_float() == INFINITY);
+	CHECK(String("-1e512").to_float() == -INFINITY);
+	ERR_PRINT_ON
 }
 
 TEST_CASE("[String] Slicing") {
 	String s = "Mars,Jupiter,Saturn,Uranus";
-
 	const char *slices[4] = { "Mars", "Jupiter", "Saturn", "Uranus" };
-	for (int i = 0; i < s.get_slice_count(","); i++) {
-		CHECK(s.get_slice(",", i) == slices[i]);
-	}
+	MULTICHECK_GET_SLICE(s, ",", slices);
+}
+
+TEST_CASE("[String] Begins with") {
+	// Test cases for true:
+	MULTICHECK_STRING_EQ(String("res://foobar"), begins_with, "res://", true);
+	MULTICHECK_STRING_EQ(String("abc"), begins_with, "abc", true);
+	MULTICHECK_STRING_EQ(String("abc"), begins_with, "", true);
+	MULTICHECK_STRING_EQ(String(""), begins_with, "", true);
+
+	// Test cases for false:
+	MULTICHECK_STRING_EQ(String("res"), begins_with, "res://", false);
+	MULTICHECK_STRING_EQ(String("abcdef"), begins_with, "foo", false);
+	MULTICHECK_STRING_EQ(String("abc"), begins_with, "ax", false);
+	MULTICHECK_STRING_EQ(String(""), begins_with, "abc", false);
+
+	// Test "const char *" version also with nullptr.
+	String s("foo");
+	bool state = s.begins_with(nullptr) == false;
+	CHECK_MESSAGE(state, "nullptr check failed");
+
+	String empty("");
+	state = empty.begins_with(nullptr) == false;
+	CHECK_MESSAGE(state, "nullptr check with empty string failed");
+}
+
+TEST_CASE("[String] Ends with") {
+	// Test cases for true:
+	MULTICHECK_STRING_EQ(String("res://foobar"), ends_with, "foobar", true);
+	MULTICHECK_STRING_EQ(String("abc"), ends_with, "abc", true);
+	MULTICHECK_STRING_EQ(String("abc"), ends_with, "", true);
+	MULTICHECK_STRING_EQ(String(""), ends_with, "", true);
+
+	// Test cases for false:
+	MULTICHECK_STRING_EQ(String("res"), ends_with, "res://", false);
+	MULTICHECK_STRING_EQ(String("abcdef"), ends_with, "foo", false);
+	MULTICHECK_STRING_EQ(String("abc"), ends_with, "ax", false);
+	MULTICHECK_STRING_EQ(String(""), ends_with, "abc", false);
+
+	// Test "const char *" version also with nullptr.
+	String s("foo");
+	bool state = s.ends_with(nullptr) == false;
+	CHECK_MESSAGE(state, "nullptr check failed");
+
+	String empty("");
+	state = empty.ends_with(nullptr) == false;
+	CHECK_MESSAGE(state, "nullptr check with empty string failed");
 }
 
 TEST_CASE("[String] Splitting") {
 	String s = "Mars,Jupiter,Saturn,Uranus";
-	Vector<String> l;
-
 	const char *slices_l[3] = { "Mars", "Jupiter", "Saturn,Uranus" };
+	MULTICHECK_SPLIT(s, split, ",", true, 2, slices_l, 3);
+
 	const char *slices_r[3] = { "Mars,Jupiter", "Saturn", "Uranus" };
-	const char *slices_3[4] = { "t", "e", "s", "t" };
-
-	l = s.split(",", true, 2);
-	CHECK(l.size() == 3);
-	for (int i = 0; i < l.size(); i++) {
-		CHECK(l[i] == slices_l[i]);
-	}
-
-	l = s.rsplit(",", true, 2);
-	CHECK(l.size() == 3);
-	for (int i = 0; i < l.size(); i++) {
-		CHECK(l[i] == slices_r[i]);
-	}
+	MULTICHECK_SPLIT(s, rsplit, ",", true, 2, slices_r, 3);
 
 	s = "test";
-	l = s.split();
-	CHECK(l.size() == 4);
-	for (int i = 0; i < l.size(); i++) {
-		CHECK(l[i] == slices_3[i]);
-	}
+	const char *slices_3[4] = { "t", "e", "s", "t" };
+	MULTICHECK_SPLIT(s, split, "", true, 0, slices_3, 4);
 
 	s = "";
-	l = s.split();
-	CHECK(l.size() == 1);
-	CHECK(l[0] == "");
-
-	l = s.split("", false);
-	CHECK(l.size() == 0);
+	const char *slices_4[1] = { "" };
+	MULTICHECK_SPLIT(s, split, "", true, 0, slices_4, 1);
+	MULTICHECK_SPLIT(s, split, "", false, 0, slices_4, 0);
 
 	s = "Mars Jupiter Saturn Uranus";
 	const char *slices_s[4] = { "Mars", "Jupiter", "Saturn", "Uranus" };
-	l = s.split_spaces();
+	Vector<String> l = s.split_spaces();
 	for (int i = 0; i < l.size(); i++) {
 		CHECK(l[i] == slices_s[i]);
 	}
@@ -569,58 +697,6 @@ TEST_CASE("[String] Splitting") {
 	for (int i = 0; i < ii.size(); i++) {
 		CHECK(ii[i] == slices_i[i]);
 	}
-}
-
-struct test_27_data {
-	char const *data;
-	char const *part;
-	bool expected;
-};
-
-TEST_CASE("[String] Begins with") {
-	test_27_data tc[] = {
-		{ "res://foobar", "res://", true },
-		{ "res", "res://", false },
-		{ "abc", "abc", true }
-	};
-	size_t count = sizeof(tc) / sizeof(tc[0]);
-	bool state = true;
-	for (size_t i = 0; state && i < count; ++i) {
-		String s = tc[i].data;
-		state = s.begins_with(tc[i].part) == tc[i].expected;
-		if (state) {
-			String sb = tc[i].part;
-			state = s.begins_with(sb) == tc[i].expected;
-		}
-		CHECK(state);
-		if (!state) {
-			break;
-		}
-	};
-	CHECK(state);
-}
-
-TEST_CASE("[String] Ends with") {
-	test_27_data tc[] = {
-		{ "res://foobar", "foobar", true },
-		{ "res", "res://", false },
-		{ "abc", "abc", true }
-	};
-	size_t count = sizeof(tc) / sizeof(tc[0]);
-	bool state = true;
-	for (size_t i = 0; state && i < count; ++i) {
-		String s = tc[i].data;
-		state = s.ends_with(tc[i].part) == tc[i].expected;
-		if (state) {
-			String sb = tc[i].part;
-			state = s.ends_with(sb) == tc[i].expected;
-		}
-		CHECK(state);
-		if (!state) {
-			break;
-		}
-	};
-	CHECK(state);
 }
 
 TEST_CASE("[String] format") {
@@ -1237,39 +1313,54 @@ TEST_CASE("[String] Capitalize against many strings") {
 	input = "snake_case_function( snake_case_arg )";
 	output = "Snake Case Function( Snake Case Arg )";
 	CHECK(input.capitalize() == output);
+
+	input = U"словоСлово_слово слово";
+	output = U"Слово Слово Слово Слово";
+	CHECK(input.capitalize() == output);
+
+	input = U"λέξηΛέξη_λέξη λέξη";
+	output = U"Λέξη Λέξη Λέξη Λέξη";
+	CHECK(input.capitalize() == output);
+
+	input = U"բառԲառ_բառ բառ";
+	output = U"Բառ Բառ Բառ Բառ";
+	CHECK(input.capitalize() == output);
 }
 
 struct StringCasesTestCase {
-	const char *input;
-	const char *camel_case;
-	const char *pascal_case;
-	const char *snake_case;
+	const char32_t *input;
+	const char32_t *camel_case;
+	const char32_t *pascal_case;
+	const char32_t *snake_case;
 };
 
 TEST_CASE("[String] Checking case conversion methods") {
 	StringCasesTestCase test_cases[] = {
 		/* clang-format off */
-		{ "2D",                "2d",              "2d",              "2d"                },
-		{ "2d",                "2d",              "2d",              "2d"                },
-		{ "2db",               "2Db",             "2Db",             "2_db"              },
-		{ "Vector3",           "vector3",         "Vector3",         "vector_3"          },
-		{ "sha256",            "sha256",          "Sha256",          "sha_256"           },
-		{ "Node2D",            "node2d",          "Node2d",          "node_2d"           },
-		{ "RichTextLabel",     "richTextLabel",   "RichTextLabel",   "rich_text_label"   },
-		{ "HTML5",             "html5",           "Html5",           "html_5"            },
-		{ "Node2DPosition",    "node2dPosition",  "Node2dPosition",  "node_2d_position"  },
-		{ "Number2Digits",     "number2Digits",   "Number2Digits",   "number_2_digits"   },
-		{ "get_property_list", "getPropertyList", "GetPropertyList", "get_property_list" },
-		{ "get_camera_2d",     "getCamera2d",     "GetCamera2d",     "get_camera_2d"     },
-		{ "_physics_process",  "physicsProcess",  "PhysicsProcess",  "_physics_process"  },
-		{ "bytes2var",         "bytes2Var",       "Bytes2Var",       "bytes_2_var"       },
-		{ "linear2db",         "linear2Db",       "Linear2Db",       "linear_2_db"       },
-		{ "sha256sum",         "sha256Sum",       "Sha256Sum",       "sha_256_sum"       },
-		{ "camelCase",         "camelCase",       "CamelCase",       "camel_case"        },
-		{ "PascalCase",        "pascalCase",      "PascalCase",      "pascal_case"       },
-		{ "snake_case",        "snakeCase",       "SnakeCase",       "snake_case"        },
-		{ "Test TEST test",    "testTestTest",    "TestTestTest",    "test_test_test"    },
-		{ nullptr,             nullptr,           nullptr,           nullptr             },
+		{ U"2D",                     U"2d",                   U"2d",                   U"2d"                      },
+		{ U"2d",                     U"2d",                   U"2d",                   U"2d"                      },
+		{ U"2db",                    U"2Db",                  U"2Db",                  U"2_db"                    },
+		{ U"Vector3",                U"vector3",              U"Vector3",              U"vector_3"                },
+		{ U"sha256",                 U"sha256",               U"Sha256",               U"sha_256"                 },
+		{ U"Node2D",                 U"node2d",               U"Node2d",               U"node_2d"                 },
+		{ U"RichTextLabel",          U"richTextLabel",        U"RichTextLabel",        U"rich_text_label"         },
+		{ U"HTML5",                  U"html5",                U"Html5",                U"html_5"                  },
+		{ U"Node2DPosition",         U"node2dPosition",       U"Node2dPosition",       U"node_2d_position"        },
+		{ U"Number2Digits",          U"number2Digits",        U"Number2Digits",        U"number_2_digits"         },
+		{ U"get_property_list",      U"getPropertyList",      U"GetPropertyList",      U"get_property_list"       },
+		{ U"get_camera_2d",          U"getCamera2d",          U"GetCamera2d",          U"get_camera_2d"           },
+		{ U"_physics_process",       U"physicsProcess",       U"PhysicsProcess",       U"_physics_process"        },
+		{ U"bytes2var",              U"bytes2Var",            U"Bytes2Var",            U"bytes_2_var"             },
+		{ U"linear2db",              U"linear2Db",            U"Linear2Db",            U"linear_2_db"             },
+		{ U"sha256sum",              U"sha256Sum",            U"Sha256Sum",            U"sha_256_sum"             },
+		{ U"camelCase",              U"camelCase",            U"CamelCase",            U"camel_case"              },
+		{ U"PascalCase",             U"pascalCase",           U"PascalCase",           U"pascal_case"             },
+		{ U"snake_case",             U"snakeCase",            U"SnakeCase",            U"snake_case"              },
+		{ U"Test TEST test",         U"testTestTest",         U"TestTestTest",         U"test_test_test"          },
+		{ U"словоСлово_слово слово", U"словоСловоСловоСлово", U"СловоСловоСловоСлово", U"слово_слово_слово_слово" },
+		{ U"λέξηΛέξη_λέξη λέξη",     U"λέξηΛέξηΛέξηΛέξη",     U"ΛέξηΛέξηΛέξηΛέξη",     U"λέξη_λέξη_λέξη_λέξη"     },
+		{ U"բառԲառ_բառ բառ",         U"բառԲառԲառԲառ",         U"ԲառԲառԲառԲառ",         U"բառ_բառ_բառ_բառ"         },
+		{ nullptr,                   nullptr,                 nullptr,                 nullptr                    },
 		/* clang-format on */
 	};
 
@@ -1399,39 +1490,62 @@ TEST_CASE("[String] Cyrillic to_lower()") {
 }
 
 TEST_CASE("[String] Count and countn functionality") {
-#define COUNT_TEST(x)             \
-	{                             \
-		bool success = x;         \
-		state = state && success; \
-	}
+	String s = String("");
+	MULTICHECK_STRING_EQ(s, count, "Test", 0);
 
-	bool state = true;
+	s = "Test";
+	MULTICHECK_STRING_EQ(s, count, "", 0);
 
-	COUNT_TEST(String("").count("Test") == 0);
-	COUNT_TEST(String("Test").count("") == 0);
-	COUNT_TEST(String("Test").count("test") == 0);
-	COUNT_TEST(String("Test").count("TEST") == 0);
-	COUNT_TEST(String("TEST").count("TEST") == 1);
-	COUNT_TEST(String("Test").count("Test") == 1);
-	COUNT_TEST(String("aTest").count("Test") == 1);
-	COUNT_TEST(String("Testa").count("Test") == 1);
-	COUNT_TEST(String("TestTestTest").count("Test") == 3);
-	COUNT_TEST(String("TestTestTest").count("TestTest") == 1);
-	COUNT_TEST(String("TestGodotTestGodotTestGodot").count("Test") == 3);
+	s = "Test";
+	MULTICHECK_STRING_EQ(s, count, "test", 0);
 
-	COUNT_TEST(String("TestTestTestTest").count("Test", 4, 8) == 1);
-	COUNT_TEST(String("TestTestTestTest").count("Test", 4, 12) == 2);
-	COUNT_TEST(String("TestTestTestTest").count("Test", 4, 16) == 3);
-	COUNT_TEST(String("TestTestTestTest").count("Test", 4) == 3);
+	s = "Test";
+	MULTICHECK_STRING_EQ(s, count, "TEST", 0);
 
-	COUNT_TEST(String("Test").countn("test") == 1);
-	COUNT_TEST(String("Test").countn("TEST") == 1);
-	COUNT_TEST(String("testTest-Testatest").countn("tEst") == 4);
-	COUNT_TEST(String("testTest-TeStatest").countn("tEsT", 4, 16) == 2);
+	s = "TEST";
+	MULTICHECK_STRING_EQ(s, count, "TEST", 1);
 
-	CHECK(state);
+	s = "Test";
+	MULTICHECK_STRING_EQ(s, count, "Test", 1);
 
-#undef COUNT_TEST
+	s = "aTest";
+	MULTICHECK_STRING_EQ(s, count, "Test", 1);
+
+	s = "Testa";
+	MULTICHECK_STRING_EQ(s, count, "Test", 1);
+
+	s = "TestTestTest";
+	MULTICHECK_STRING_EQ(s, count, "Test", 3);
+
+	s = "TestTestTest";
+	MULTICHECK_STRING_EQ(s, count, "TestTest", 1);
+
+	s = "TestGodotTestGodotTestGodot";
+	MULTICHECK_STRING_EQ(s, count, "Test", 3);
+
+	s = "TestTestTestTest";
+	MULTICHECK_STRING_INT_INT_EQ(s, count, "Test", 4, 8, 1);
+
+	s = "TestTestTestTest";
+	MULTICHECK_STRING_INT_INT_EQ(s, count, "Test", 4, 12, 2);
+
+	s = "TestTestTestTest";
+	MULTICHECK_STRING_INT_INT_EQ(s, count, "Test", 4, 16, 3);
+
+	s = "TestTestTestTest";
+	MULTICHECK_STRING_INT_EQ(s, count, "Test", 4, 3);
+
+	s = "Test";
+	MULTICHECK_STRING_EQ(s, countn, "test", 1);
+
+	s = "Test";
+	MULTICHECK_STRING_EQ(s, countn, "TEST", 1);
+
+	s = "testTest-Testatest";
+	MULTICHECK_STRING_EQ(s, countn, "tEst", 4);
+
+	s = "testTest-TeStatest";
+	MULTICHECK_STRING_INT_INT_EQ(s, countn, "tEsT", 4, 16, 2);
 }
 
 TEST_CASE("[String] Bigrams") {
@@ -1604,9 +1718,19 @@ TEST_CASE("[String] Strip edges") {
 
 TEST_CASE("[String] Trim") {
 	String s = "aaaTestbbb";
-	CHECK(s.trim_prefix("aaa") == "Testbbb");
-	CHECK(s.trim_suffix("bbb") == "aaaTest");
-	CHECK(s.trim_suffix("Test") == s);
+	MULTICHECK_STRING_EQ(s, trim_prefix, "aaa", "Testbbb");
+	MULTICHECK_STRING_EQ(s, trim_prefix, "Test", s);
+	MULTICHECK_STRING_EQ(s, trim_prefix, "", s);
+	MULTICHECK_STRING_EQ(s, trim_prefix, "aaaTestbbb", "");
+	MULTICHECK_STRING_EQ(s, trim_prefix, "bbb", s);
+	MULTICHECK_STRING_EQ(s, trim_prefix, "AAA", s);
+
+	MULTICHECK_STRING_EQ(s, trim_suffix, "bbb", "aaaTest");
+	MULTICHECK_STRING_EQ(s, trim_suffix, "Test", s);
+	MULTICHECK_STRING_EQ(s, trim_suffix, "", s);
+	MULTICHECK_STRING_EQ(s, trim_suffix, "aaaTestbbb", "");
+	MULTICHECK_STRING_EQ(s, trim_suffix, "aaa", s);
+	MULTICHECK_STRING_EQ(s, trim_suffix, "BBB", s);
 }
 
 TEST_CASE("[String] Right/Left") {

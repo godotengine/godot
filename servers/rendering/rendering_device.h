@@ -32,8 +32,16 @@
 #define RENDERING_DEVICE_H
 
 #include "core/object/class_db.h"
+#include "core/object/worker_thread_pool.h"
+#include "core/os/thread_safe.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/oa_hash_map.h"
+#include "core/templates/rid_owner.h"
 #include "core/variant/typed_array.h"
 #include "servers/display_server.h"
+#include "servers/rendering/rendering_device_commons.h"
+#include "servers/rendering/rendering_device_driver.h"
+#include "servers/rendering/rendering_device_graph.h"
 
 class RDTextureFormat;
 class RDTextureView;
@@ -50,80 +58,18 @@ class RDPipelineColorBlendState;
 class RDFramebufferPass;
 class RDPipelineSpecializationConstant;
 
-class RenderingDevice : public Object {
+class RenderingDevice : public RenderingDeviceCommons {
 	GDCLASS(RenderingDevice, Object)
+
+	_THREAD_SAFE_CLASS_
 public:
-	enum DeviceFamily {
-		DEVICE_UNKNOWN,
-		DEVICE_OPENGL,
-		DEVICE_VULKAN,
-		DEVICE_DIRECTX
-	};
-
-	// This enum matches VkPhysicalDeviceType (except for `DEVICE_TYPE_MAX`).
-	// Unlike VkPhysicalDeviceType, DeviceType is exposed to the scripting API.
-	enum DeviceType {
-		DEVICE_TYPE_OTHER,
-		DEVICE_TYPE_INTEGRATED_GPU,
-		DEVICE_TYPE_DISCRETE_GPU,
-		DEVICE_TYPE_VIRTUAL_GPU,
-		DEVICE_TYPE_CPU,
-		DEVICE_TYPE_MAX,
-	};
-
-	enum DriverResource {
-		DRIVER_RESOURCE_VULKAN_DEVICE = 0,
-		DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE,
-		DRIVER_RESOURCE_VULKAN_INSTANCE,
-		DRIVER_RESOURCE_VULKAN_QUEUE,
-		DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX,
-		DRIVER_RESOURCE_VULKAN_IMAGE,
-		DRIVER_RESOURCE_VULKAN_IMAGE_VIEW,
-		DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT,
-		DRIVER_RESOURCE_VULKAN_SAMPLER,
-		DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET,
-		DRIVER_RESOURCE_VULKAN_BUFFER,
-		DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE,
-		DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE,
-		//next driver continue enum from 1000 to keep order
-	};
-
-	enum ShaderStage {
-		SHADER_STAGE_VERTEX,
-		SHADER_STAGE_FRAGMENT,
-		SHADER_STAGE_TESSELATION_CONTROL,
-		SHADER_STAGE_TESSELATION_EVALUATION,
-		SHADER_STAGE_COMPUTE,
-		SHADER_STAGE_MAX,
-		SHADER_STAGE_VERTEX_BIT = (1 << SHADER_STAGE_VERTEX),
-		SHADER_STAGE_FRAGMENT_BIT = (1 << SHADER_STAGE_FRAGMENT),
-		SHADER_STAGE_TESSELATION_CONTROL_BIT = (1 << SHADER_STAGE_TESSELATION_CONTROL),
-		SHADER_STAGE_TESSELATION_EVALUATION_BIT = (1 << SHADER_STAGE_TESSELATION_EVALUATION),
-		SHADER_STAGE_COMPUTE_BIT = (1 << SHADER_STAGE_COMPUTE),
-	};
-
 	enum ShaderLanguage {
 		SHADER_LANGUAGE_GLSL,
 		SHADER_LANGUAGE_HLSL
 	};
 
-	enum SubgroupOperations {
-		SUBGROUP_BASIC_BIT = 1,
-		SUBGROUP_VOTE_BIT = 2,
-		SUBGROUP_ARITHMETIC_BIT = 4,
-		SUBGROUP_BALLOT_BIT = 8,
-		SUBGROUP_SHUFFLE_BIT = 16,
-		SUBGROUP_SHUFFLE_RELATIVE_BIT = 32,
-		SUBGROUP_CLUSTERED_BIT = 64,
-		SUBGROUP_QUAD_BIT = 128,
-	};
-
-	struct Capabilities {
-		// main device info
-		DeviceFamily device_family = DEVICE_UNKNOWN;
-		uint32_t version_major = 1.0;
-		uint32_t version_minor = 0.0;
-	};
+	typedef int64_t DrawListID;
+	typedef int64_t ComputeListID;
 
 	typedef String (*ShaderSPIRVGetCacheKeyFunction)(const RenderingDevice *p_render_device);
 	typedef Vector<uint8_t> (*ShaderCompileToSPIRVFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, const RenderingDevice *p_render_device);
@@ -138,6 +84,10 @@ private:
 
 	static RenderingDevice *singleton;
 
+	RenderingContextDriver *context = nullptr;
+	RenderingDeviceDriver *driver = nullptr;
+	RenderingContextDriver::Device device;
+
 protected:
 	static void _bind_methods();
 
@@ -146,433 +96,245 @@ protected:
 	static void _bind_compatibility_methods();
 #endif
 
-	Capabilities device_capabilities;
-
+	/***************************/
+	/**** ID INFRASTRUCTURE ****/
+	/***************************/
 public:
 	//base numeric ID for all types
 	enum {
-		INVALID_ID = -1,
 		INVALID_FORMAT_ID = -1
 	};
 
-	/*****************/
-	/**** GENERIC ****/
-	/*****************/
-
-	enum CompareOperator {
-		COMPARE_OP_NEVER,
-		COMPARE_OP_LESS,
-		COMPARE_OP_EQUAL,
-		COMPARE_OP_LESS_OR_EQUAL,
-		COMPARE_OP_GREATER,
-		COMPARE_OP_NOT_EQUAL,
-		COMPARE_OP_GREATER_OR_EQUAL,
-		COMPARE_OP_ALWAYS,
-		COMPARE_OP_MAX //not an actual operator, just the amount of operators :D
+	enum IDType {
+		ID_TYPE_FRAMEBUFFER_FORMAT,
+		ID_TYPE_VERTEX_FORMAT,
+		ID_TYPE_DRAW_LIST,
+		ID_TYPE_COMPUTE_LIST = 4,
+		ID_TYPE_MAX,
+		ID_BASE_SHIFT = 58, // 5 bits for ID types.
+		ID_MASK = (ID_BASE_SHIFT - 1),
 	};
 
-	enum DataFormat {
-		DATA_FORMAT_R4G4_UNORM_PACK8,
-		DATA_FORMAT_R4G4B4A4_UNORM_PACK16,
-		DATA_FORMAT_B4G4R4A4_UNORM_PACK16,
-		DATA_FORMAT_R5G6B5_UNORM_PACK16,
-		DATA_FORMAT_B5G6R5_UNORM_PACK16,
-		DATA_FORMAT_R5G5B5A1_UNORM_PACK16,
-		DATA_FORMAT_B5G5R5A1_UNORM_PACK16,
-		DATA_FORMAT_A1R5G5B5_UNORM_PACK16,
-		DATA_FORMAT_R8_UNORM,
-		DATA_FORMAT_R8_SNORM,
-		DATA_FORMAT_R8_USCALED,
-		DATA_FORMAT_R8_SSCALED,
-		DATA_FORMAT_R8_UINT,
-		DATA_FORMAT_R8_SINT,
-		DATA_FORMAT_R8_SRGB,
-		DATA_FORMAT_R8G8_UNORM,
-		DATA_FORMAT_R8G8_SNORM,
-		DATA_FORMAT_R8G8_USCALED,
-		DATA_FORMAT_R8G8_SSCALED,
-		DATA_FORMAT_R8G8_UINT,
-		DATA_FORMAT_R8G8_SINT,
-		DATA_FORMAT_R8G8_SRGB,
-		DATA_FORMAT_R8G8B8_UNORM,
-		DATA_FORMAT_R8G8B8_SNORM,
-		DATA_FORMAT_R8G8B8_USCALED,
-		DATA_FORMAT_R8G8B8_SSCALED,
-		DATA_FORMAT_R8G8B8_UINT,
-		DATA_FORMAT_R8G8B8_SINT,
-		DATA_FORMAT_R8G8B8_SRGB,
-		DATA_FORMAT_B8G8R8_UNORM,
-		DATA_FORMAT_B8G8R8_SNORM,
-		DATA_FORMAT_B8G8R8_USCALED,
-		DATA_FORMAT_B8G8R8_SSCALED,
-		DATA_FORMAT_B8G8R8_UINT,
-		DATA_FORMAT_B8G8R8_SINT,
-		DATA_FORMAT_B8G8R8_SRGB,
-		DATA_FORMAT_R8G8B8A8_UNORM,
-		DATA_FORMAT_R8G8B8A8_SNORM,
-		DATA_FORMAT_R8G8B8A8_USCALED,
-		DATA_FORMAT_R8G8B8A8_SSCALED,
-		DATA_FORMAT_R8G8B8A8_UINT,
-		DATA_FORMAT_R8G8B8A8_SINT,
-		DATA_FORMAT_R8G8B8A8_SRGB,
-		DATA_FORMAT_B8G8R8A8_UNORM,
-		DATA_FORMAT_B8G8R8A8_SNORM,
-		DATA_FORMAT_B8G8R8A8_USCALED,
-		DATA_FORMAT_B8G8R8A8_SSCALED,
-		DATA_FORMAT_B8G8R8A8_UINT,
-		DATA_FORMAT_B8G8R8A8_SINT,
-		DATA_FORMAT_B8G8R8A8_SRGB,
-		DATA_FORMAT_A8B8G8R8_UNORM_PACK32,
-		DATA_FORMAT_A8B8G8R8_SNORM_PACK32,
-		DATA_FORMAT_A8B8G8R8_USCALED_PACK32,
-		DATA_FORMAT_A8B8G8R8_SSCALED_PACK32,
-		DATA_FORMAT_A8B8G8R8_UINT_PACK32,
-		DATA_FORMAT_A8B8G8R8_SINT_PACK32,
-		DATA_FORMAT_A8B8G8R8_SRGB_PACK32,
-		DATA_FORMAT_A2R10G10B10_UNORM_PACK32,
-		DATA_FORMAT_A2R10G10B10_SNORM_PACK32,
-		DATA_FORMAT_A2R10G10B10_USCALED_PACK32,
-		DATA_FORMAT_A2R10G10B10_SSCALED_PACK32,
-		DATA_FORMAT_A2R10G10B10_UINT_PACK32,
-		DATA_FORMAT_A2R10G10B10_SINT_PACK32,
-		DATA_FORMAT_A2B10G10R10_UNORM_PACK32,
-		DATA_FORMAT_A2B10G10R10_SNORM_PACK32,
-		DATA_FORMAT_A2B10G10R10_USCALED_PACK32,
-		DATA_FORMAT_A2B10G10R10_SSCALED_PACK32,
-		DATA_FORMAT_A2B10G10R10_UINT_PACK32,
-		DATA_FORMAT_A2B10G10R10_SINT_PACK32,
-		DATA_FORMAT_R16_UNORM,
-		DATA_FORMAT_R16_SNORM,
-		DATA_FORMAT_R16_USCALED,
-		DATA_FORMAT_R16_SSCALED,
-		DATA_FORMAT_R16_UINT,
-		DATA_FORMAT_R16_SINT,
-		DATA_FORMAT_R16_SFLOAT,
-		DATA_FORMAT_R16G16_UNORM,
-		DATA_FORMAT_R16G16_SNORM,
-		DATA_FORMAT_R16G16_USCALED,
-		DATA_FORMAT_R16G16_SSCALED,
-		DATA_FORMAT_R16G16_UINT,
-		DATA_FORMAT_R16G16_SINT,
-		DATA_FORMAT_R16G16_SFLOAT,
-		DATA_FORMAT_R16G16B16_UNORM,
-		DATA_FORMAT_R16G16B16_SNORM,
-		DATA_FORMAT_R16G16B16_USCALED,
-		DATA_FORMAT_R16G16B16_SSCALED,
-		DATA_FORMAT_R16G16B16_UINT,
-		DATA_FORMAT_R16G16B16_SINT,
-		DATA_FORMAT_R16G16B16_SFLOAT,
-		DATA_FORMAT_R16G16B16A16_UNORM,
-		DATA_FORMAT_R16G16B16A16_SNORM,
-		DATA_FORMAT_R16G16B16A16_USCALED,
-		DATA_FORMAT_R16G16B16A16_SSCALED,
-		DATA_FORMAT_R16G16B16A16_UINT,
-		DATA_FORMAT_R16G16B16A16_SINT,
-		DATA_FORMAT_R16G16B16A16_SFLOAT,
-		DATA_FORMAT_R32_UINT,
-		DATA_FORMAT_R32_SINT,
-		DATA_FORMAT_R32_SFLOAT,
-		DATA_FORMAT_R32G32_UINT,
-		DATA_FORMAT_R32G32_SINT,
-		DATA_FORMAT_R32G32_SFLOAT,
-		DATA_FORMAT_R32G32B32_UINT,
-		DATA_FORMAT_R32G32B32_SINT,
-		DATA_FORMAT_R32G32B32_SFLOAT,
-		DATA_FORMAT_R32G32B32A32_UINT,
-		DATA_FORMAT_R32G32B32A32_SINT,
-		DATA_FORMAT_R32G32B32A32_SFLOAT,
-		DATA_FORMAT_R64_UINT,
-		DATA_FORMAT_R64_SINT,
-		DATA_FORMAT_R64_SFLOAT,
-		DATA_FORMAT_R64G64_UINT,
-		DATA_FORMAT_R64G64_SINT,
-		DATA_FORMAT_R64G64_SFLOAT,
-		DATA_FORMAT_R64G64B64_UINT,
-		DATA_FORMAT_R64G64B64_SINT,
-		DATA_FORMAT_R64G64B64_SFLOAT,
-		DATA_FORMAT_R64G64B64A64_UINT,
-		DATA_FORMAT_R64G64B64A64_SINT,
-		DATA_FORMAT_R64G64B64A64_SFLOAT,
-		DATA_FORMAT_B10G11R11_UFLOAT_PACK32,
-		DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32,
-		DATA_FORMAT_D16_UNORM,
-		DATA_FORMAT_X8_D24_UNORM_PACK32,
-		DATA_FORMAT_D32_SFLOAT,
-		DATA_FORMAT_S8_UINT,
-		DATA_FORMAT_D16_UNORM_S8_UINT,
-		DATA_FORMAT_D24_UNORM_S8_UINT,
-		DATA_FORMAT_D32_SFLOAT_S8_UINT,
-		DATA_FORMAT_BC1_RGB_UNORM_BLOCK,
-		DATA_FORMAT_BC1_RGB_SRGB_BLOCK,
-		DATA_FORMAT_BC1_RGBA_UNORM_BLOCK,
-		DATA_FORMAT_BC1_RGBA_SRGB_BLOCK,
-		DATA_FORMAT_BC2_UNORM_BLOCK,
-		DATA_FORMAT_BC2_SRGB_BLOCK,
-		DATA_FORMAT_BC3_UNORM_BLOCK,
-		DATA_FORMAT_BC3_SRGB_BLOCK,
-		DATA_FORMAT_BC4_UNORM_BLOCK,
-		DATA_FORMAT_BC4_SNORM_BLOCK,
-		DATA_FORMAT_BC5_UNORM_BLOCK,
-		DATA_FORMAT_BC5_SNORM_BLOCK,
-		DATA_FORMAT_BC6H_UFLOAT_BLOCK,
-		DATA_FORMAT_BC6H_SFLOAT_BLOCK,
-		DATA_FORMAT_BC7_UNORM_BLOCK,
-		DATA_FORMAT_BC7_SRGB_BLOCK,
-		DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK,
-		DATA_FORMAT_ETC2_R8G8B8_SRGB_BLOCK,
-		DATA_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK,
-		DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK,
-		DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK,
-		DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK,
-		DATA_FORMAT_EAC_R11_UNORM_BLOCK,
-		DATA_FORMAT_EAC_R11_SNORM_BLOCK,
-		DATA_FORMAT_EAC_R11G11_UNORM_BLOCK,
-		DATA_FORMAT_EAC_R11G11_SNORM_BLOCK,
-		DATA_FORMAT_ASTC_4x4_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_4x4_SRGB_BLOCK,
-		DATA_FORMAT_ASTC_5x4_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_5x4_SRGB_BLOCK,
-		DATA_FORMAT_ASTC_5x5_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_5x5_SRGB_BLOCK,
-		DATA_FORMAT_ASTC_6x5_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_6x5_SRGB_BLOCK,
-		DATA_FORMAT_ASTC_6x6_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_6x6_SRGB_BLOCK,
-		DATA_FORMAT_ASTC_8x5_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_8x5_SRGB_BLOCK,
-		DATA_FORMAT_ASTC_8x6_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_8x6_SRGB_BLOCK,
-		DATA_FORMAT_ASTC_8x8_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_8x8_SRGB_BLOCK,
-		DATA_FORMAT_ASTC_10x5_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_10x5_SRGB_BLOCK,
-		DATA_FORMAT_ASTC_10x6_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_10x6_SRGB_BLOCK,
-		DATA_FORMAT_ASTC_10x8_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_10x8_SRGB_BLOCK,
-		DATA_FORMAT_ASTC_10x10_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_10x10_SRGB_BLOCK,
-		DATA_FORMAT_ASTC_12x10_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_12x10_SRGB_BLOCK,
-		DATA_FORMAT_ASTC_12x12_UNORM_BLOCK,
-		DATA_FORMAT_ASTC_12x12_SRGB_BLOCK,
-		DATA_FORMAT_G8B8G8R8_422_UNORM,
-		DATA_FORMAT_B8G8R8G8_422_UNORM,
-		DATA_FORMAT_G8_B8_R8_3PLANE_420_UNORM,
-		DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM,
-		DATA_FORMAT_G8_B8_R8_3PLANE_422_UNORM,
-		DATA_FORMAT_G8_B8R8_2PLANE_422_UNORM,
-		DATA_FORMAT_G8_B8_R8_3PLANE_444_UNORM,
-		DATA_FORMAT_R10X6_UNORM_PACK16,
-		DATA_FORMAT_R10X6G10X6_UNORM_2PACK16,
-		DATA_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16,
-		DATA_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16,
-		DATA_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16,
-		DATA_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16,
-		DATA_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16,
-		DATA_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16,
-		DATA_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16,
-		DATA_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16,
-		DATA_FORMAT_R12X4_UNORM_PACK16,
-		DATA_FORMAT_R12X4G12X4_UNORM_2PACK16,
-		DATA_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16,
-		DATA_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16,
-		DATA_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16,
-		DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16,
-		DATA_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16,
-		DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16,
-		DATA_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16,
-		DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16,
-		DATA_FORMAT_G16B16G16R16_422_UNORM,
-		DATA_FORMAT_B16G16R16G16_422_UNORM,
-		DATA_FORMAT_G16_B16_R16_3PLANE_420_UNORM,
-		DATA_FORMAT_G16_B16R16_2PLANE_420_UNORM,
-		DATA_FORMAT_G16_B16_R16_3PLANE_422_UNORM,
-		DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM,
-		DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
-		DATA_FORMAT_MAX
+private:
+	HashMap<RID, HashSet<RID>> dependency_map; // IDs to IDs that depend on it.
+	HashMap<RID, HashSet<RID>> reverse_dependency_map; // Same as above, but in reverse.
+
+	void _add_dependency(RID p_id, RID p_depends_on);
+	void _free_dependencies(RID p_id);
+
+private:
+	/***************************/
+	/**** BUFFER MANAGEMENT ****/
+	/***************************/
+
+	// These are temporary buffers on CPU memory that hold
+	// the information until the CPU fetches it and places it
+	// either on GPU buffers, or images (textures). It ensures
+	// updates are properly synchronized with whatever the
+	// GPU is doing.
+	//
+	// The logic here is as follows, only 3 of these
+	// blocks are created at the beginning (one per frame)
+	// they can each belong to a frame (assigned to current when
+	// used) and they can only be reused after the same frame is
+	// recycled.
+	//
+	// When CPU requires to allocate more than what is available,
+	// more of these buffers are created. If a limit is reached,
+	// then a fence will ensure will wait for blocks allocated
+	// in previous frames are processed. If that fails, then
+	// another fence will ensure everything pending for the current
+	// frame is processed (effectively stalling).
+	//
+	// See the comments in the code to understand better how it works.
+
+	struct StagingBufferBlock {
+		RDD::BufferID driver_id;
+		uint64_t frame_used = 0;
+		uint32_t fill_amount = 0;
 	};
 
-	/*****************/
-	/**** BARRIER ****/
-	/*****************/
+	Vector<StagingBufferBlock> staging_buffer_blocks;
+	int staging_buffer_current = 0;
+	uint32_t staging_buffer_block_size = 0;
+	uint64_t staging_buffer_max_size = 0;
+	bool staging_buffer_used = false;
 
-	enum BarrierMask {
-		BARRIER_MASK_VERTEX = 1,
-		BARRIER_MASK_FRAGMENT = 8,
-		BARRIER_MASK_COMPUTE = 2,
-		BARRIER_MASK_TRANSFER = 4,
-
-		BARRIER_MASK_RASTER = BARRIER_MASK_VERTEX | BARRIER_MASK_FRAGMENT, // 9,
-		BARRIER_MASK_ALL_BARRIERS = 0x7FFF, // all flags set
-		BARRIER_MASK_NO_BARRIER = 0x8000,
+	enum StagingRequiredAction {
+		STAGING_REQUIRED_ACTION_NONE,
+		STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL,
+		STAGING_REQUIRED_ACTION_STALL_PREVIOUS
 	};
+
+	Error _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, StagingRequiredAction &r_required_action, bool p_can_segment = true);
+	void _staging_buffer_execute_required_action(StagingRequiredAction p_required_action);
+	Error _insert_staging_block();
+
+	struct Buffer {
+		RDD::BufferID driver_id;
+		uint32_t size = 0;
+		BitField<RDD::BufferUsageBits> usage;
+		RDG::ResourceTracker *draw_tracker = nullptr;
+	};
+
+	Buffer *_get_buffer_from_owner(RID p_buffer);
+	Error _buffer_update(Buffer *p_buffer, RID p_buffer_id, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_use_draw_queue = false, uint32_t p_required_align = 32);
+
+	RID_Owner<Buffer> uniform_buffer_owner;
+	RID_Owner<Buffer> storage_buffer_owner;
+	RID_Owner<Buffer> texture_buffer_owner;
+
+public:
+	Error buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size);
+	Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data);
+	Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size);
+	Vector<uint8_t> buffer_get_data(RID p_buffer, uint32_t p_offset = 0, uint32_t p_size = 0); // This causes stall, only use to retrieve large buffers for saving.
 
 	/*****************/
 	/**** TEXTURE ****/
 	/*****************/
 
-	enum TextureType {
-		TEXTURE_TYPE_1D,
-		TEXTURE_TYPE_2D,
-		TEXTURE_TYPE_3D,
-		TEXTURE_TYPE_CUBE,
-		TEXTURE_TYPE_1D_ARRAY,
-		TEXTURE_TYPE_2D_ARRAY,
-		TEXTURE_TYPE_CUBE_ARRAY,
-		TEXTURE_TYPE_MAX
-	};
+	// In modern APIs, the concept of textures may not exist;
+	// instead there is the image (the memory pretty much,
+	// the view (how the memory is interpreted) and the
+	// sampler (how it's sampled from the shader).
+	//
+	// Texture here includes the first two stages, but
+	// It's possible to create textures sharing the image
+	// but with different views. The main use case for this
+	// is textures that can be read as both SRGB/Linear,
+	// or slices of a texture (a mipmap, a layer, a 3D slice)
+	// for a framebuffer to render into it.
 
-	enum TextureSamples {
-		TEXTURE_SAMPLES_1,
-		TEXTURE_SAMPLES_2,
-		TEXTURE_SAMPLES_4,
-		TEXTURE_SAMPLES_8,
-		TEXTURE_SAMPLES_16,
-		TEXTURE_SAMPLES_32,
-		TEXTURE_SAMPLES_64,
-		TEXTURE_SAMPLES_MAX
-	};
+	struct Texture {
+		RDD::TextureID driver_id;
 
-	enum TextureUsageBits {
-		TEXTURE_USAGE_SAMPLING_BIT = (1 << 0),
-		TEXTURE_USAGE_COLOR_ATTACHMENT_BIT = (1 << 1),
-		TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT = (1 << 2),
-		TEXTURE_USAGE_STORAGE_BIT = (1 << 3),
-		TEXTURE_USAGE_STORAGE_ATOMIC_BIT = (1 << 4),
-		TEXTURE_USAGE_CPU_READ_BIT = (1 << 5),
-		TEXTURE_USAGE_CAN_UPDATE_BIT = (1 << 6),
-		TEXTURE_USAGE_CAN_COPY_FROM_BIT = (1 << 7),
-		TEXTURE_USAGE_CAN_COPY_TO_BIT = (1 << 8),
-		TEXTURE_USAGE_INPUT_ATTACHMENT_BIT = (1 << 9),
-		TEXTURE_USAGE_VRS_ATTACHMENT_BIT = (1 << 10),
-	};
+		TextureType type = TEXTURE_TYPE_MAX;
+		DataFormat format = DATA_FORMAT_MAX;
+		TextureSamples samples = TEXTURE_SAMPLES_MAX;
+		TextureSliceType slice_type = TEXTURE_SLICE_MAX;
+		Rect2i slice_rect;
+		uint32_t width = 0;
+		uint32_t height = 0;
+		uint32_t depth = 0;
+		uint32_t layers = 0;
+		uint32_t mipmaps = 0;
+		uint32_t usage_flags = 0;
+		uint32_t base_mipmap = 0;
+		uint32_t base_layer = 0;
 
-	enum TextureSwizzle {
-		TEXTURE_SWIZZLE_IDENTITY,
-		TEXTURE_SWIZZLE_ZERO,
-		TEXTURE_SWIZZLE_ONE,
-		TEXTURE_SWIZZLE_R,
-		TEXTURE_SWIZZLE_G,
-		TEXTURE_SWIZZLE_B,
-		TEXTURE_SWIZZLE_A,
-		TEXTURE_SWIZZLE_MAX
-	};
+		Vector<DataFormat> allowed_shared_formats;
 
-	struct TextureFormat {
-		DataFormat format;
-		uint32_t width;
-		uint32_t height;
-		uint32_t depth;
-		uint32_t array_layers;
-		uint32_t mipmaps;
-		TextureType texture_type;
-		TextureSamples samples;
-		uint32_t usage_bits;
-		Vector<DataFormat> shareable_formats;
 		bool is_resolve_buffer = false;
+		bool has_initial_data = false;
 
-		bool operator==(const TextureFormat &b) const {
-			if (format != b.format) {
-				return false;
-			} else if (width != b.width) {
-				return false;
-			} else if (height != b.height) {
-				return false;
-			} else if (depth != b.depth) {
-				return false;
-			} else if (array_layers != b.array_layers) {
-				return false;
-			} else if (mipmaps != b.mipmaps) {
-				return false;
-			} else if (texture_type != b.texture_type) {
-				return false;
-			} else if (samples != b.samples) {
-				return false;
-			} else if (usage_bits != b.usage_bits) {
-				return false;
-			} else if (shareable_formats != b.shareable_formats) {
-				return false;
-			} else {
-				return true;
-			}
-		}
+		BitField<RDD::TextureAspectBits> read_aspect_flags;
+		BitField<RDD::TextureAspectBits> barrier_aspect_flags;
+		bool bound = false; // Bound to framebuffer.
+		RID owner;
 
-		TextureFormat() {
-			format = DATA_FORMAT_R8_UNORM;
-			width = 1;
-			height = 1;
-			depth = 1;
-			array_layers = 1;
-			mipmaps = 1;
-			texture_type = TEXTURE_TYPE_2D;
-			samples = TEXTURE_SAMPLES_1;
-			usage_bits = 0;
+		RDG::ResourceTracker *draw_tracker = nullptr;
+		HashMap<Rect2i, RDG::ResourceTracker *> slice_trackers;
+
+		RDD::TextureSubresourceRange barrier_range() const {
+			RDD::TextureSubresourceRange r;
+			r.aspect = barrier_aspect_flags;
+			r.base_mipmap = base_mipmap;
+			r.mipmap_count = mipmaps;
+			r.base_layer = base_layer;
+			r.layer_count = layers;
+			return r;
 		}
 	};
 
+	RID_Owner<Texture> texture_owner;
+	uint32_t texture_upload_region_size_px = 0;
+
+	Vector<uint8_t> _texture_get_data(Texture *tex, uint32_t p_layer, bool p_2d = false);
+	Error _texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_use_setup_queue, bool p_validate_can_update);
+
+public:
 	struct TextureView {
-		DataFormat format_override;
-		TextureSwizzle swizzle_r;
-		TextureSwizzle swizzle_g;
-		TextureSwizzle swizzle_b;
-		TextureSwizzle swizzle_a;
+		DataFormat format_override = DATA_FORMAT_MAX; // // Means, use same as format.
+		TextureSwizzle swizzle_r = TEXTURE_SWIZZLE_R;
+		TextureSwizzle swizzle_g = TEXTURE_SWIZZLE_G;
+		TextureSwizzle swizzle_b = TEXTURE_SWIZZLE_B;
+		TextureSwizzle swizzle_a = TEXTURE_SWIZZLE_A;
 
-		bool operator==(const TextureView &p_view) const {
-			if (format_override != p_view.format_override) {
+		bool operator==(const TextureView &p_other) const {
+			if (format_override != p_other.format_override) {
 				return false;
-			} else if (swizzle_r != p_view.swizzle_r) {
+			} else if (swizzle_r != p_other.swizzle_r) {
 				return false;
-			} else if (swizzle_g != p_view.swizzle_g) {
+			} else if (swizzle_g != p_other.swizzle_g) {
 				return false;
-			} else if (swizzle_b != p_view.swizzle_b) {
+			} else if (swizzle_b != p_other.swizzle_b) {
 				return false;
-			} else if (swizzle_a != p_view.swizzle_a) {
+			} else if (swizzle_a != p_other.swizzle_a) {
 				return false;
 			} else {
 				return true;
 			}
 		}
-
-		TextureView() {
-			format_override = DATA_FORMAT_MAX; //means, use same as format
-			swizzle_r = TEXTURE_SWIZZLE_R;
-			swizzle_g = TEXTURE_SWIZZLE_G;
-			swizzle_b = TEXTURE_SWIZZLE_B;
-			swizzle_a = TEXTURE_SWIZZLE_A;
-		}
 	};
 
-	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>()) = 0;
-	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture) = 0;
-	virtual RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_flags, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers) = 0;
+	RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
+	RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
+	RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers);
+	RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
+	Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
+	Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer); // CPU textures will return immediately, while GPU textures will most likely force a flush
 
-	enum TextureSliceType {
-		TEXTURE_SLICE_2D,
-		TEXTURE_SLICE_CUBEMAP,
-		TEXTURE_SLICE_3D,
-		TEXTURE_SLICE_2D_ARRAY,
+	bool texture_is_format_supported_for_usage(DataFormat p_format, BitField<TextureUsageBits> p_usage) const;
+	bool texture_is_shared(RID p_texture);
+	bool texture_is_valid(RID p_texture);
+	TextureFormat texture_get_format(RID p_texture);
+	Size2i texture_size(RID p_texture);
+#ifndef DISABLE_DEPRECATED
+	uint64_t texture_get_native_handle(RID p_texture);
+#endif
+
+	Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer);
+	Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers);
+	Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture);
+
+	/************************/
+	/**** DRAW LISTS (I) ****/
+	/************************/
+
+	enum InitialAction {
+		INITIAL_ACTION_LOAD,
+		INITIAL_ACTION_CLEAR,
+		INITIAL_ACTION_DISCARD,
+		INITIAL_ACTION_MAX,
+#ifndef DISABLE_DEPRECATED
+		INITIAL_ACTION_CLEAR_REGION = INITIAL_ACTION_CLEAR,
+		INITIAL_ACTION_CLEAR_REGION_CONTINUE = INITIAL_ACTION_CLEAR,
+		INITIAL_ACTION_KEEP = INITIAL_ACTION_LOAD,
+		INITIAL_ACTION_DROP = INITIAL_ACTION_DISCARD,
+		INITIAL_ACTION_CONTINUE = INITIAL_ACTION_LOAD,
+#endif
 	};
 
-	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0) = 0;
-
-	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
-	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer) = 0; // CPU textures will return immediately, while GPU textures will most likely force a flush
-
-	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, BitField<RenderingDevice::TextureUsageBits> p_usage) const = 0;
-	virtual bool texture_is_shared(RID p_texture) = 0;
-	virtual bool texture_is_valid(RID p_texture) = 0;
-	virtual TextureFormat texture_get_format(RID p_texture) = 0;
-	virtual Size2i texture_size(RID p_texture) = 0;
-	virtual uint64_t texture_get_native_handle(RID p_texture) = 0;
-
-	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
-	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
-	virtual Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
+	enum FinalAction {
+		FINAL_ACTION_STORE,
+		FINAL_ACTION_DISCARD,
+		FINAL_ACTION_MAX,
+#ifndef DISABLE_DEPRECATED
+		FINAL_ACTION_READ = FINAL_ACTION_STORE,
+		FINAL_ACTION_CONTINUE = FINAL_ACTION_STORE,
+#endif
+	};
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
 	/*********************/
+
+	// In modern APIs, generally, framebuffers work similar to how they
+	// do in OpenGL, with the exception that
+	// the "format" (RDD::RenderPassID) is not dynamic
+	// and must be more or less the same as the one
+	// used for the render pipelines.
 
 	struct AttachmentFormat {
 		enum { UNUSED_ATTACHMENT = 0xFFFFFFFF };
@@ -586,14 +348,7 @@ public:
 		}
 	};
 
-	typedef int64_t FramebufferFormatID;
-
-	// This ID is warranted to be unique for the same formats, does not need to be freed
-	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format, uint32_t p_view_count = 1) = 0;
 	struct FramebufferPass {
-		enum {
-			ATTACHMENT_UNUSED = -1
-		};
 		Vector<int32_t> color_attachments;
 		Vector<int32_t> input_attachments;
 		Vector<int32_t> resolve_attachments;
@@ -602,193 +357,483 @@ public:
 		int32_t vrs_attachment = ATTACHMENT_UNUSED; // density map for VRS, only used if supported
 	};
 
-	virtual FramebufferFormatID framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, uint32_t p_view_count = 1) = 0;
-	virtual FramebufferFormatID framebuffer_format_create_empty(TextureSamples p_samples = TEXTURE_SAMPLES_1) = 0;
-	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format, uint32_t p_pass = 0) = 0;
+	typedef int64_t FramebufferFormatID;
 
-	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1) = 0;
-	virtual RID framebuffer_create_multipass(const Vector<RID> &p_texture_attachments, const Vector<FramebufferPass> &p_passes, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1) = 0;
-	virtual RID framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples = TEXTURE_SAMPLES_1, FramebufferFormatID p_format_check = INVALID_ID) = 0;
-	virtual bool framebuffer_is_valid(RID p_framebuffer) const = 0;
-	virtual void framebuffer_set_invalidation_callback(RID p_framebuffer, InvalidationCallback p_callback, void *p_userdata) = 0;
+private:
+	struct FramebufferFormatKey {
+		Vector<AttachmentFormat> attachments;
+		Vector<FramebufferPass> passes;
+		uint32_t view_count = 1;
 
-	virtual FramebufferFormatID framebuffer_get_format(RID p_framebuffer) = 0;
+		bool operator<(const FramebufferFormatKey &p_key) const {
+			if (view_count != p_key.view_count) {
+				return view_count < p_key.view_count;
+			}
+
+			uint32_t pass_size = passes.size();
+			uint32_t key_pass_size = p_key.passes.size();
+			if (pass_size != key_pass_size) {
+				return pass_size < key_pass_size;
+			}
+			const FramebufferPass *pass_ptr = passes.ptr();
+			const FramebufferPass *key_pass_ptr = p_key.passes.ptr();
+
+			for (uint32_t i = 0; i < pass_size; i++) {
+				{ // Compare color attachments.
+					uint32_t attachment_size = pass_ptr[i].color_attachments.size();
+					uint32_t key_attachment_size = key_pass_ptr[i].color_attachments.size();
+					if (attachment_size != key_attachment_size) {
+						return attachment_size < key_attachment_size;
+					}
+					const int32_t *pass_attachment_ptr = pass_ptr[i].color_attachments.ptr();
+					const int32_t *key_pass_attachment_ptr = key_pass_ptr[i].color_attachments.ptr();
+
+					for (uint32_t j = 0; j < attachment_size; j++) {
+						if (pass_attachment_ptr[j] != key_pass_attachment_ptr[j]) {
+							return pass_attachment_ptr[j] < key_pass_attachment_ptr[j];
+						}
+					}
+				}
+				{ // Compare input attachments.
+					uint32_t attachment_size = pass_ptr[i].input_attachments.size();
+					uint32_t key_attachment_size = key_pass_ptr[i].input_attachments.size();
+					if (attachment_size != key_attachment_size) {
+						return attachment_size < key_attachment_size;
+					}
+					const int32_t *pass_attachment_ptr = pass_ptr[i].input_attachments.ptr();
+					const int32_t *key_pass_attachment_ptr = key_pass_ptr[i].input_attachments.ptr();
+
+					for (uint32_t j = 0; j < attachment_size; j++) {
+						if (pass_attachment_ptr[j] != key_pass_attachment_ptr[j]) {
+							return pass_attachment_ptr[j] < key_pass_attachment_ptr[j];
+						}
+					}
+				}
+				{ // Compare resolve attachments.
+					uint32_t attachment_size = pass_ptr[i].resolve_attachments.size();
+					uint32_t key_attachment_size = key_pass_ptr[i].resolve_attachments.size();
+					if (attachment_size != key_attachment_size) {
+						return attachment_size < key_attachment_size;
+					}
+					const int32_t *pass_attachment_ptr = pass_ptr[i].resolve_attachments.ptr();
+					const int32_t *key_pass_attachment_ptr = key_pass_ptr[i].resolve_attachments.ptr();
+
+					for (uint32_t j = 0; j < attachment_size; j++) {
+						if (pass_attachment_ptr[j] != key_pass_attachment_ptr[j]) {
+							return pass_attachment_ptr[j] < key_pass_attachment_ptr[j];
+						}
+					}
+				}
+				{ // Compare preserve attachments.
+					uint32_t attachment_size = pass_ptr[i].preserve_attachments.size();
+					uint32_t key_attachment_size = key_pass_ptr[i].preserve_attachments.size();
+					if (attachment_size != key_attachment_size) {
+						return attachment_size < key_attachment_size;
+					}
+					const int32_t *pass_attachment_ptr = pass_ptr[i].preserve_attachments.ptr();
+					const int32_t *key_pass_attachment_ptr = key_pass_ptr[i].preserve_attachments.ptr();
+
+					for (uint32_t j = 0; j < attachment_size; j++) {
+						if (pass_attachment_ptr[j] != key_pass_attachment_ptr[j]) {
+							return pass_attachment_ptr[j] < key_pass_attachment_ptr[j];
+						}
+					}
+				}
+				if (pass_ptr[i].depth_attachment != key_pass_ptr[i].depth_attachment) {
+					return pass_ptr[i].depth_attachment < key_pass_ptr[i].depth_attachment;
+				}
+			}
+
+			int as = attachments.size();
+			int bs = p_key.attachments.size();
+			if (as != bs) {
+				return as < bs;
+			}
+
+			const AttachmentFormat *af_a = attachments.ptr();
+			const AttachmentFormat *af_b = p_key.attachments.ptr();
+			for (int i = 0; i < as; i++) {
+				const AttachmentFormat &a = af_a[i];
+				const AttachmentFormat &b = af_b[i];
+				if (a.format != b.format) {
+					return a.format < b.format;
+				}
+				if (a.samples != b.samples) {
+					return a.samples < b.samples;
+				}
+				if (a.usage_flags != b.usage_flags) {
+					return a.usage_flags < b.usage_flags;
+				}
+			}
+
+			return false; // Equal.
+		}
+	};
+
+	RDD::RenderPassID _render_pass_create(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, InitialAction p_initial_action, FinalAction p_final_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, uint32_t p_view_count = 1, Vector<TextureSamples> *r_samples = nullptr);
+
+	// This is a cache and it's never freed, it ensures
+	// IDs for a given format are always unique.
+	RBMap<FramebufferFormatKey, FramebufferFormatID> framebuffer_format_cache;
+	struct FramebufferFormat {
+		const RBMap<FramebufferFormatKey, FramebufferFormatID>::Element *E;
+		RDD::RenderPassID render_pass; // Here for constructing shaders, never used, see section (7.2. Render Pass Compatibility from Vulkan spec).
+		Vector<TextureSamples> pass_samples;
+		uint32_t view_count = 1; // Number of views.
+	};
+
+	HashMap<FramebufferFormatID, FramebufferFormat> framebuffer_formats;
+
+	struct Framebuffer {
+		FramebufferFormatID format_id;
+		struct VersionKey {
+			InitialAction initial_color_action;
+			FinalAction final_color_action;
+			InitialAction initial_depth_action;
+			FinalAction final_depth_action;
+			uint32_t view_count;
+
+			bool operator<(const VersionKey &p_key) const {
+				if (initial_color_action == p_key.initial_color_action) {
+					if (final_color_action == p_key.final_color_action) {
+						if (initial_depth_action == p_key.initial_depth_action) {
+							if (final_depth_action == p_key.final_depth_action) {
+								return view_count < p_key.view_count;
+							} else {
+								return final_depth_action < p_key.final_depth_action;
+							}
+						} else {
+							return initial_depth_action < p_key.initial_depth_action;
+						}
+					} else {
+						return final_color_action < p_key.final_color_action;
+					}
+				} else {
+					return initial_color_action < p_key.initial_color_action;
+				}
+			}
+		};
+
+		uint32_t storage_mask = 0;
+		Vector<RID> texture_ids;
+		InvalidationCallback invalidated_callback = nullptr;
+		void *invalidated_callback_userdata = nullptr;
+
+		struct Version {
+			RDD::FramebufferID framebuffer;
+			RDD::RenderPassID render_pass; // This one is owned.
+			uint32_t subpass_count = 1;
+		};
+
+		RBMap<VersionKey, Version> framebuffers;
+		Size2 size;
+		uint32_t view_count;
+	};
+
+	RID_Owner<Framebuffer> framebuffer_owner;
+
+public:
+	// This ID is warranted to be unique for the same formats, does not need to be freed
+	FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format, uint32_t p_view_count = 1);
+	FramebufferFormatID framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, uint32_t p_view_count = 1);
+	FramebufferFormatID framebuffer_format_create_empty(TextureSamples p_samples = TEXTURE_SAMPLES_1);
+	TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format, uint32_t p_pass = 0);
+
+	RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1);
+	RID framebuffer_create_multipass(const Vector<RID> &p_texture_attachments, const Vector<FramebufferPass> &p_passes, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1);
+	RID framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples = TEXTURE_SAMPLES_1, FramebufferFormatID p_format_check = INVALID_ID);
+	bool framebuffer_is_valid(RID p_framebuffer) const;
+	void framebuffer_set_invalidation_callback(RID p_framebuffer, InvalidationCallback p_callback, void *p_userdata);
+
+	FramebufferFormatID framebuffer_get_format(RID p_framebuffer);
 
 	/*****************/
 	/**** SAMPLER ****/
 	/*****************/
+private:
+	RID_Owner<RDD::SamplerID> sampler_owner;
 
-	enum SamplerFilter {
-		SAMPLER_FILTER_NEAREST,
-		SAMPLER_FILTER_LINEAR,
-	};
-
-	enum SamplerRepeatMode {
-		SAMPLER_REPEAT_MODE_REPEAT,
-		SAMPLER_REPEAT_MODE_MIRRORED_REPEAT,
-		SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE,
-		SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER,
-		SAMPLER_REPEAT_MODE_MIRROR_CLAMP_TO_EDGE,
-		SAMPLER_REPEAT_MODE_MAX
-	};
-
-	enum SamplerBorderColor {
-		SAMPLER_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
-		SAMPLER_BORDER_COLOR_INT_TRANSPARENT_BLACK,
-		SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
-		SAMPLER_BORDER_COLOR_INT_OPAQUE_BLACK,
-		SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
-		SAMPLER_BORDER_COLOR_INT_OPAQUE_WHITE,
-		SAMPLER_BORDER_COLOR_MAX
-	};
-
-	struct SamplerState {
-		SamplerFilter mag_filter;
-		SamplerFilter min_filter;
-		SamplerFilter mip_filter;
-		SamplerRepeatMode repeat_u;
-		SamplerRepeatMode repeat_v;
-		SamplerRepeatMode repeat_w;
-		float lod_bias;
-		bool use_anisotropy;
-		float anisotropy_max;
-		bool enable_compare;
-		CompareOperator compare_op;
-		float min_lod;
-		float max_lod;
-		SamplerBorderColor border_color;
-		bool unnormalized_uvw;
-
-		SamplerState() {
-			mag_filter = SAMPLER_FILTER_NEAREST;
-			min_filter = SAMPLER_FILTER_NEAREST;
-			mip_filter = SAMPLER_FILTER_NEAREST;
-			repeat_u = SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-			repeat_v = SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-			repeat_w = SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-			lod_bias = 0;
-			use_anisotropy = false;
-			anisotropy_max = 1.0;
-			enable_compare = false;
-			compare_op = COMPARE_OP_ALWAYS;
-			min_lod = 0;
-			max_lod = 1e20; //something very large should do
-			border_color = SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
-			unnormalized_uvw = false;
-		}
-	};
-
-	virtual RID sampler_create(const SamplerState &p_state) = 0;
-	virtual bool sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_sampler_filter) const = 0;
+public:
+	RID sampler_create(const SamplerState &p_state);
+	bool sampler_is_format_supported_for_filter(DataFormat p_format, SamplerFilter p_sampler_filter) const;
 
 	/**********************/
 	/**** VERTEX ARRAY ****/
 	/**********************/
 
-	enum VertexFrequency {
-		VERTEX_FREQUENCY_VERTEX,
-		VERTEX_FREQUENCY_INSTANCE,
-	};
-
-	struct VertexAttribute {
-		uint32_t location; //shader location
-		uint32_t offset;
-		DataFormat format;
-		uint32_t stride;
-		VertexFrequency frequency;
-		VertexAttribute() {
-			location = 0;
-			offset = 0;
-			stride = 0;
-			format = DATA_FORMAT_MAX;
-			frequency = VERTEX_FREQUENCY_VERTEX;
-		}
-	};
-	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_as_storage = false) = 0;
-
 	typedef int64_t VertexFormatID;
 
-	// This ID is warranted to be unique for the same formats, does not need to be freed
-	virtual VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_formats) = 0;
-	virtual RID vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers, const Vector<uint64_t> &p_offsets = Vector<uint64_t>()) = 0;
+private:
+	// Vertex buffers in Vulkan are similar to how
+	// they work in OpenGL, except that instead of
+	// an attribute index, there is a buffer binding
+	// index (for binding the buffers in real-time)
+	// and a location index (what is used in the shader).
+	//
+	// This mapping is done here internally, and it's not
+	// exposed.
 
-	enum IndexBufferFormat {
-		INDEX_BUFFER_FORMAT_UINT16,
-		INDEX_BUFFER_FORMAT_UINT32,
+	RID_Owner<Buffer> vertex_buffer_owner;
+
+	struct VertexDescriptionKey {
+		Vector<VertexAttribute> vertex_formats;
+
+		bool operator==(const VertexDescriptionKey &p_key) const {
+			int vdc = vertex_formats.size();
+			int vdck = p_key.vertex_formats.size();
+
+			if (vdc != vdck) {
+				return false;
+			} else {
+				const VertexAttribute *a_ptr = vertex_formats.ptr();
+				const VertexAttribute *b_ptr = p_key.vertex_formats.ptr();
+				for (int i = 0; i < vdc; i++) {
+					const VertexAttribute &a = a_ptr[i];
+					const VertexAttribute &b = b_ptr[i];
+
+					if (a.location != b.location) {
+						return false;
+					}
+					if (a.offset != b.offset) {
+						return false;
+					}
+					if (a.format != b.format) {
+						return false;
+					}
+					if (a.stride != b.stride) {
+						return false;
+					}
+					if (a.frequency != b.frequency) {
+						return false;
+					}
+				}
+				return true; // They are equal.
+			}
+		}
+
+		uint32_t hash() const {
+			int vdc = vertex_formats.size();
+			uint32_t h = hash_murmur3_one_32(vdc);
+			const VertexAttribute *ptr = vertex_formats.ptr();
+			for (int i = 0; i < vdc; i++) {
+				const VertexAttribute &vd = ptr[i];
+				h = hash_murmur3_one_32(vd.location, h);
+				h = hash_murmur3_one_32(vd.offset, h);
+				h = hash_murmur3_one_32(vd.format, h);
+				h = hash_murmur3_one_32(vd.stride, h);
+				h = hash_murmur3_one_32(vd.frequency, h);
+			}
+			return hash_fmix32(h);
+		}
 	};
 
-	virtual RID index_buffer_create(uint32_t p_size_indices, IndexBufferFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_restart_indices = false) = 0;
-	virtual RID index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count) = 0;
+	struct VertexDescriptionHash {
+		static _FORCE_INLINE_ uint32_t hash(const VertexDescriptionKey &p_key) {
+			return p_key.hash();
+		}
+	};
+
+	// This is a cache and it's never freed, it ensures that
+	// ID used for a specific format always remain the same.
+	HashMap<VertexDescriptionKey, VertexFormatID, VertexDescriptionHash> vertex_format_cache;
+
+	struct VertexDescriptionCache {
+		Vector<VertexAttribute> vertex_formats;
+		RDD::VertexFormatID driver_id;
+	};
+
+	HashMap<VertexFormatID, VertexDescriptionCache> vertex_formats;
+
+	struct VertexArray {
+		RID buffer;
+		VertexFormatID description;
+		int vertex_count = 0;
+		uint32_t max_instances_allowed = 0;
+
+		Vector<RDD::BufferID> buffers; // Not owned, just referenced.
+		Vector<RDG::ResourceTracker *> draw_trackers; // Not owned, just referenced.
+		Vector<uint64_t> offsets;
+		HashSet<RID> untracked_buffers;
+	};
+
+	RID_Owner<VertexArray> vertex_array_owner;
+
+	struct IndexBuffer : public Buffer {
+		uint32_t max_index = 0; // Used for validation.
+		uint32_t index_count = 0;
+		IndexBufferFormat format = INDEX_BUFFER_FORMAT_UINT16;
+		bool supports_restart_indices = false;
+	};
+
+	RID_Owner<IndexBuffer> index_buffer_owner;
+
+	struct IndexArray {
+		uint32_t max_index = 0; // Remember the maximum index here too, for validation.
+		RDD::BufferID driver_id; // Not owned, inherited from index buffer.
+		RDG::ResourceTracker *draw_tracker = nullptr; // Not owned, inherited from index buffer.
+		uint32_t offset = 0;
+		uint32_t indices = 0;
+		IndexBufferFormat format = INDEX_BUFFER_FORMAT_UINT16;
+		bool supports_restart_indices = false;
+	};
+
+	RID_Owner<IndexArray> index_array_owner;
+
+public:
+	RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_as_storage = false);
+
+	// This ID is warranted to be unique for the same formats, does not need to be freed
+	VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_descriptions);
+	RID vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers, const Vector<uint64_t> &p_offsets = Vector<uint64_t>());
+
+	RID index_buffer_create(uint32_t p_size_indices, IndexBufferFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_restart_indices = false);
+	RID index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count);
 
 	/****************/
 	/**** SHADER ****/
 	/****************/
 
-	const Capabilities *get_device_capabilities() const { return &device_capabilities; };
+	// Some APIs (e.g., Vulkan) specifies a really complex behavior for the application
+	// in order to tell when descriptor sets need to be re-bound (or not).
+	// "When binding a descriptor set (see Descriptor Set Binding) to set
+	//  number N, if the previously bound descriptor sets for sets zero
+	//  through N-1 were all bound using compatible pipeline layouts,
+	//  then performing this binding does not disturb any of the lower numbered sets.
+	//  If, additionally, the previous bound descriptor set for set N was
+	//  bound using a pipeline layout compatible for set N, then the bindings
+	//  in sets numbered greater than N are also not disturbed."
+	// As a result, we need to figure out quickly when something is no longer "compatible".
+	// in order to avoid costly rebinds.
 
-	enum Features {
-		SUPPORTS_MULTIVIEW,
-		SUPPORTS_FSR_HALF_FLOAT,
-		SUPPORTS_ATTACHMENT_VRS,
-		// If not supported, a fragment shader with only side effets (i.e., writes  to buffers, but doesn't output to attachments), may be optimized down to no-op by the GPU driver.
-		SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS,
+private:
+	struct UniformSetFormat {
+		Vector<ShaderUniform> uniforms;
+
+		_FORCE_INLINE_ bool operator<(const UniformSetFormat &p_other) const {
+			if (uniforms.size() != p_other.uniforms.size()) {
+				return uniforms.size() < p_other.uniforms.size();
+			}
+			for (int i = 0; i < uniforms.size(); i++) {
+				if (uniforms[i] < p_other.uniforms[i]) {
+					return true;
+				} else if (p_other.uniforms[i] < uniforms[i]) {
+					return false;
+				}
+			}
+			return false;
+		}
 	};
-	virtual bool has_feature(const Features p_feature) const = 0;
 
-	virtual Vector<uint8_t> shader_compile_spirv_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language = SHADER_LANGUAGE_GLSL, String *r_error = nullptr, bool p_allow_cache = true);
-	virtual String shader_get_spirv_cache_key() const;
+	// Always grows, never shrinks, ensuring unique IDs, but we assume
+	// the amount of formats will never be a problem, as the amount of shaders
+	// in a game is limited.
+	RBMap<UniformSetFormat, uint32_t> uniform_set_format_cache;
+
+	// Shaders in Vulkan are just pretty much
+	// precompiled blocks of SPIR-V bytecode. They
+	// are most likely not really compiled to host
+	// assembly until a pipeline is created.
+	//
+	// When supplying the shaders, this implementation
+	// will use the reflection abilities of glslang to
+	// understand and cache everything required to
+	// create and use the descriptor sets (Vulkan's
+	// biggest pain).
+	//
+	// Additionally, hashes are created for every set
+	// to do quick validation and ensuring the user
+	// does not submit something invalid.
+
+	struct Shader : public ShaderDescription {
+		String name; // Used for debug.
+		RDD::ShaderID driver_id;
+		uint32_t layout_hash = 0;
+		BitField<RDD::PipelineStageBits> stage_bits;
+		Vector<uint32_t> set_formats;
+	};
+
+	String _shader_uniform_debug(RID p_shader, int p_set = -1);
+
+	RID_Owner<Shader> shader_owner;
+
+#ifndef DISABLE_DEPRECATED
+public:
+	enum BarrierMask{
+		BARRIER_MASK_VERTEX = 1,
+		BARRIER_MASK_FRAGMENT = 8,
+		BARRIER_MASK_COMPUTE = 2,
+		BARRIER_MASK_TRANSFER = 4,
+
+		BARRIER_MASK_RASTER = BARRIER_MASK_VERTEX | BARRIER_MASK_FRAGMENT, // 9,
+		BARRIER_MASK_ALL_BARRIERS = 0x7FFF, // all flags set
+		BARRIER_MASK_NO_BARRIER = 0x8000,
+	};
+
+	void barrier(BitField<BarrierMask> p_from = BARRIER_MASK_ALL_BARRIERS, BitField<BarrierMask> p_to = BARRIER_MASK_ALL_BARRIERS);
+	void full_barrier();
+	void draw_command_insert_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
+	Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const Vector<RID> &p_storage_textures = Vector<RID>());
+	Error draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids);
+	Vector<int64_t> _draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const TypedArray<RID> &p_storage_textures = TypedArray<RID>());
+	Vector<int64_t> _draw_list_switch_to_next_pass_split(uint32_t p_splits);
+
+private:
+	void _draw_list_end_bind_compat_81356(BitField<BarrierMask> p_post_barrier);
+	void _compute_list_end_bind_compat_81356(BitField<BarrierMask> p_post_barrier);
+	void _barrier_bind_compat_81356(BitField<BarrierMask> p_from, BitField<BarrierMask> p_to);
+	void _draw_list_end_bind_compat_84976(BitField<BarrierMask> p_post_barrier);
+	void _compute_list_end_bind_compat_84976(BitField<BarrierMask> p_post_barrier);
+	InitialAction _convert_initial_action_84976(InitialAction p_old_initial_action);
+	FinalAction _convert_final_action_84976(FinalAction p_old_final_action);
+	DrawListID _draw_list_begin_bind_compat_84976(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const TypedArray<RID> &p_storage_textures);
+	ComputeListID _compute_list_begin_bind_compat_84976(bool p_allow_draw_overlap);
+	Error _buffer_update_bind_compat_84976(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier);
+	Error _buffer_clear_bind_compat_84976(RID p_buffer, uint32_t p_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier);
+	Error _texture_update_bind_compat_84976(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier);
+	Error _texture_copy_bind_compat_84976(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, BitField<BarrierMask> p_post_barrier);
+	Error _texture_clear_bind_compat_84976(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, BitField<BarrierMask> p_post_barrier);
+	Error _texture_resolve_multisample_bind_compat_84976(RID p_from_texture, RID p_to_texture, BitField<BarrierMask> p_post_barrier);
+	FramebufferFormatID _screen_get_framebuffer_format_bind_compat_87340() const;
+#endif
+
+public:
+	RenderingContextDriver *get_context_driver() const { return context; }
+
+	const RDD::Capabilities &get_device_capabilities() const { return driver->get_capabilities(); }
+
+	bool has_feature(const Features p_feature) const;
+
+	Vector<uint8_t> shader_compile_spirv_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language = SHADER_LANGUAGE_GLSL, String *r_error = nullptr, bool p_allow_cache = true);
+	String shader_get_spirv_cache_key() const;
 
 	static void shader_set_compile_to_spirv_function(ShaderCompileToSPIRVFunction p_function);
 	static void shader_set_spirv_cache_function(ShaderCacheFunction p_function);
 	static void shader_set_get_cache_key_function(ShaderSPIRVGetCacheKeyFunction p_function);
 
-	struct ShaderStageSPIRVData {
-		ShaderStage shader_stage;
-		Vector<uint8_t> spir_v;
+	String shader_get_binary_cache_key() const;
+	Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
 
-		ShaderStageSPIRVData() {
-			shader_stage = SHADER_STAGE_VERTEX;
-		}
-	};
+	RID shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
+	RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID());
+	RID shader_create_placeholder();
 
-	virtual String shader_get_binary_cache_key() const = 0;
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "") = 0;
-
-	virtual RID shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
-	virtual RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID()) = 0;
-	virtual RID shader_create_placeholder() = 0;
-
-	virtual uint64_t shader_get_vertex_input_attribute_mask(RID p_shader) = 0;
+	uint64_t shader_get_vertex_input_attribute_mask(RID p_shader);
 
 	/******************/
 	/**** UNIFORMS ****/
 	/******************/
 
-	enum UniformType {
-		UNIFORM_TYPE_SAMPLER, //for sampling only (sampler GLSL type)
-		UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, // for sampling only, but includes a texture, (samplerXX GLSL type), first a sampler then a texture
-		UNIFORM_TYPE_TEXTURE, //only texture, (textureXX GLSL type)
-		UNIFORM_TYPE_IMAGE, // storage image (imageXX GLSL type), for compute mostly
-		UNIFORM_TYPE_TEXTURE_BUFFER, // buffer texture (or TBO, textureBuffer type)
-		UNIFORM_TYPE_SAMPLER_WITH_TEXTURE_BUFFER, // buffer texture with a sampler(or TBO, samplerBuffer type)
-		UNIFORM_TYPE_IMAGE_BUFFER, //texel buffer, (imageBuffer type), for compute mostly
-		UNIFORM_TYPE_UNIFORM_BUFFER, //regular uniform buffer (or UBO).
-		UNIFORM_TYPE_STORAGE_BUFFER, //storage buffer ("buffer" qualifier) like UBO, but supports storage, for compute mostly
-		UNIFORM_TYPE_INPUT_ATTACHMENT, //used for sub-pass read/write, for mobile mostly
-		UNIFORM_TYPE_MAX
-	};
-
 	enum StorageBufferUsage {
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = 1,
 	};
 
-	virtual RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>()) = 0;
-	virtual RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<StorageBufferUsage> p_usage = 0) = 0;
-	virtual RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>()) = 0;
+	RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
+	RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<StorageBufferUsage> p_usage = 0);
+	RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 
 	struct Uniform {
-		UniformType uniform_type;
-		int binding; // Binding index as specified in shader.
+		UniformType uniform_type = UNIFORM_TYPE_IMAGE;
+		uint32_t binding = 0; // Binding index as specified in shader.
 
 	private:
 		// In most cases only one ID is provided per binding, so avoid allocating memory unnecessarily for performance.
@@ -846,465 +891,452 @@ public:
 			binding = p_binding;
 			ids = p_ids;
 		}
-		_FORCE_INLINE_ Uniform() {
-			uniform_type = UNIFORM_TYPE_IMAGE;
-			binding = 0;
-		}
+		_FORCE_INLINE_ Uniform() = default;
 	};
 
-	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) = 0;
-	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
-	virtual void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata) = 0;
+private:
+	static const uint32_t MAX_UNIFORM_SETS = 16;
+	static const uint32_t MAX_PUSH_CONSTANT_SIZE = 128;
 
-	virtual Error buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
-	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
-	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
-	virtual Vector<uint8_t> buffer_get_data(RID p_buffer, uint32_t p_offset = 0, uint32_t p_size = 0) = 0; // This causes stall, only use to retrieve large buffers for saving.
+	// This structure contains the descriptor set. They _need_ to be allocated
+	// for a shader (and will be erased when this shader is erased), but should
+	// work for other shaders as long as the hash matches. This covers using
+	// them in shader variants.
+	//
+	// Keep also in mind that you can share buffers between descriptor sets, so
+	// the above restriction is not too serious.
 
-	/******************************************/
-	/**** PIPELINE SPECIALIZATION CONSTANT ****/
-	/******************************************/
-
-	enum PipelineSpecializationConstantType {
-		PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL,
-		PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT,
-		PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT,
-	};
-
-	struct PipelineSpecializationConstant {
-		PipelineSpecializationConstantType type;
-		uint32_t constant_id;
-		union {
-			uint32_t int_value;
-			float float_value;
-			bool bool_value;
+	struct UniformSet {
+		uint32_t format = 0;
+		RID shader_id;
+		uint32_t shader_set = 0;
+		RDD::UniformSetID driver_id;
+		struct AttachableTexture {
+			uint32_t bind = 0;
+			RID texture;
 		};
 
-		PipelineSpecializationConstant() {
-			type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
-			constant_id = 0;
-			int_value = 0;
-		}
+		LocalVector<AttachableTexture> attachable_textures; // Used for validation.
+		Vector<RDG::ResourceTracker *> draw_trackers;
+		Vector<RDG::ResourceUsage> draw_trackers_usage;
+		HashMap<RID, RDG::ResourceUsage> untracked_usage;
+		InvalidationCallback invalidated_callback = nullptr;
+		void *invalidated_callback_userdata = nullptr;
 	};
 
-	/*************************/
-	/**** RENDER PIPELINE ****/
-	/*************************/
+	RID_Owner<UniformSet> uniform_set_owner;
 
-	enum RenderPrimitive {
-		RENDER_PRIMITIVE_POINTS,
-		RENDER_PRIMITIVE_LINES,
-		RENDER_PRIMITIVE_LINES_WITH_ADJACENCY,
-		RENDER_PRIMITIVE_LINESTRIPS,
-		RENDER_PRIMITIVE_LINESTRIPS_WITH_ADJACENCY,
-		RENDER_PRIMITIVE_TRIANGLES,
-		RENDER_PRIMITIVE_TRIANGLES_WITH_ADJACENCY,
-		RENDER_PRIMITIVE_TRIANGLE_STRIPS,
-		RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_AJACENCY,
-		RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_RESTART_INDEX,
-		RENDER_PRIMITIVE_TESSELATION_PATCH,
-		RENDER_PRIMITIVE_MAX
+public:
+	RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
+	bool uniform_set_is_valid(RID p_uniform_set);
+	void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata);
+
+	/*******************/
+	/**** PIPELINES ****/
+	/*******************/
+
+	// Render pipeline contains ALL the
+	// information required for drawing.
+	// This includes all the rasterizer state
+	// as well as shader used, framebuffer format,
+	// etc.
+	// While the pipeline is just a single object
+	// (VkPipeline) a lot of values are also saved
+	// here to do validation (vulkan does none by
+	// default) and warn the user if something
+	// was not supplied as intended.
+private:
+	struct RenderPipeline {
+		// Cached values for validation.
+#ifdef DEBUG_ENABLED
+		struct Validation {
+			FramebufferFormatID framebuffer_format;
+			uint32_t render_pass = 0;
+			uint32_t dynamic_state = 0;
+			VertexFormatID vertex_format;
+			bool uses_restart_indices = false;
+			uint32_t primitive_minimum = 0;
+			uint32_t primitive_divisor = 0;
+		} validation;
+#endif
+		// Actual pipeline.
+		RID shader;
+		RDD::ShaderID shader_driver_id;
+		uint32_t shader_layout_hash = 0;
+		Vector<uint32_t> set_formats;
+		RDD::PipelineID driver_id;
+		BitField<RDD::PipelineStageBits> stage_bits;
+		uint32_t push_constant_size = 0;
 	};
 
-	//disable optimization, tessellate control points
+	RID_Owner<RenderPipeline> render_pipeline_owner;
 
-	enum PolygonCullMode {
-		POLYGON_CULL_DISABLED,
-		POLYGON_CULL_FRONT,
-		POLYGON_CULL_BACK,
+	bool pipeline_cache_enabled = false;
+	size_t pipeline_cache_size = 0;
+	String pipeline_cache_file_path;
+	WorkerThreadPool::TaskID pipeline_cache_save_task = WorkerThreadPool::INVALID_TASK_ID;
+
+	Vector<uint8_t> _load_pipeline_cache();
+	void _update_pipeline_cache(bool p_closing = false);
+	static void _save_pipeline_cache(void *p_data);
+
+	struct ComputePipeline {
+		RID shader;
+		RDD::ShaderID shader_driver_id;
+		uint32_t shader_layout_hash = 0;
+		Vector<uint32_t> set_formats;
+		RDD::PipelineID driver_id;
+		uint32_t push_constant_size = 0;
+		uint32_t local_group_size[3] = { 0, 0, 0 };
 	};
 
-	enum PolygonFrontFace {
-		POLYGON_FRONT_FACE_CLOCKWISE,
-		POLYGON_FRONT_FACE_COUNTER_CLOCKWISE,
-	};
+	RID_Owner<ComputePipeline> compute_pipeline_owner;
 
-	enum StencilOperation {
-		STENCIL_OP_KEEP,
-		STENCIL_OP_ZERO,
-		STENCIL_OP_REPLACE,
-		STENCIL_OP_INCREMENT_AND_CLAMP,
-		STENCIL_OP_DECREMENT_AND_CLAMP,
-		STENCIL_OP_INVERT,
-		STENCIL_OP_INCREMENT_AND_WRAP,
-		STENCIL_OP_DECREMENT_AND_WRAP,
-		STENCIL_OP_MAX //not an actual operator, just the amount of operators :D
-	};
+public:
+	RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags = 0, uint32_t p_for_render_pass = 0, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>());
+	bool render_pipeline_is_valid(RID p_pipeline);
 
-	enum LogicOperation {
-		LOGIC_OP_CLEAR,
-		LOGIC_OP_AND,
-		LOGIC_OP_AND_REVERSE,
-		LOGIC_OP_COPY,
-		LOGIC_OP_AND_INVERTED,
-		LOGIC_OP_NO_OP,
-		LOGIC_OP_XOR,
-		LOGIC_OP_OR,
-		LOGIC_OP_NOR,
-		LOGIC_OP_EQUIVALENT,
-		LOGIC_OP_INVERT,
-		LOGIC_OP_OR_REVERSE,
-		LOGIC_OP_COPY_INVERTED,
-		LOGIC_OP_OR_INVERTED,
-		LOGIC_OP_NAND,
-		LOGIC_OP_SET,
-		LOGIC_OP_MAX //not an actual operator, just the amount of operators :D
-	};
+	RID compute_pipeline_create(RID p_shader, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>());
+	bool compute_pipeline_is_valid(RID p_pipeline);
 
-	enum BlendFactor {
-		BLEND_FACTOR_ZERO,
-		BLEND_FACTOR_ONE,
-		BLEND_FACTOR_SRC_COLOR,
-		BLEND_FACTOR_ONE_MINUS_SRC_COLOR,
-		BLEND_FACTOR_DST_COLOR,
-		BLEND_FACTOR_ONE_MINUS_DST_COLOR,
-		BLEND_FACTOR_SRC_ALPHA,
-		BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-		BLEND_FACTOR_DST_ALPHA,
-		BLEND_FACTOR_ONE_MINUS_DST_ALPHA,
-		BLEND_FACTOR_CONSTANT_COLOR,
-		BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR,
-		BLEND_FACTOR_CONSTANT_ALPHA,
-		BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA,
-		BLEND_FACTOR_SRC_ALPHA_SATURATE,
-		BLEND_FACTOR_SRC1_COLOR,
-		BLEND_FACTOR_ONE_MINUS_SRC1_COLOR,
-		BLEND_FACTOR_SRC1_ALPHA,
-		BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,
-		BLEND_FACTOR_MAX
-	};
-
-	enum BlendOperation {
-		BLEND_OP_ADD,
-		BLEND_OP_SUBTRACT,
-		BLEND_OP_REVERSE_SUBTRACT,
-		BLEND_OP_MINIMUM,
-		BLEND_OP_MAXIMUM, //yes this one is an actual operator
-		BLEND_OP_MAX //not an actual operator, just the amount of operators :D
-	};
-
-	struct PipelineRasterizationState {
-		bool enable_depth_clamp;
-		bool discard_primitives;
-		bool wireframe;
-		PolygonCullMode cull_mode;
-		PolygonFrontFace front_face;
-		bool depth_bias_enabled;
-		float depth_bias_constant_factor;
-		float depth_bias_clamp;
-		float depth_bias_slope_factor;
-		float line_width;
-		uint32_t patch_control_points;
-		PipelineRasterizationState() {
-			enable_depth_clamp = false;
-			discard_primitives = false;
-			wireframe = false;
-			cull_mode = POLYGON_CULL_DISABLED;
-			front_face = POLYGON_FRONT_FACE_CLOCKWISE;
-			depth_bias_enabled = false;
-			depth_bias_constant_factor = 0;
-			depth_bias_clamp = 0;
-			depth_bias_slope_factor = 0;
-			line_width = 1.0;
-			patch_control_points = 1;
-		}
-	};
-
-	struct PipelineMultisampleState {
-		TextureSamples sample_count;
-		bool enable_sample_shading;
-		float min_sample_shading;
-		Vector<uint32_t> sample_mask;
-		bool enable_alpha_to_coverage;
-		bool enable_alpha_to_one;
-
-		PipelineMultisampleState() {
-			sample_count = TEXTURE_SAMPLES_1;
-			enable_sample_shading = false;
-			min_sample_shading = 0;
-			enable_alpha_to_coverage = false;
-			enable_alpha_to_one = false;
-		}
-	};
-
-	struct PipelineDepthStencilState {
-		bool enable_depth_test;
-		bool enable_depth_write;
-		CompareOperator depth_compare_operator;
-		bool enable_depth_range;
-		float depth_range_min;
-		float depth_range_max;
-		bool enable_stencil;
-
-		struct StencilOperationState {
-			StencilOperation fail;
-			StencilOperation pass;
-			StencilOperation depth_fail;
-			CompareOperator compare;
-			uint32_t compare_mask;
-			uint32_t write_mask;
-			uint32_t reference;
-
-			StencilOperationState() {
-				fail = STENCIL_OP_ZERO;
-				pass = STENCIL_OP_ZERO;
-				depth_fail = STENCIL_OP_ZERO;
-				compare = COMPARE_OP_ALWAYS;
-				compare_mask = 0;
-				write_mask = 0;
-				reference = 0;
-			}
-		};
-
-		StencilOperationState front_op;
-		StencilOperationState back_op;
-
-		PipelineDepthStencilState() {
-			enable_depth_test = false;
-			enable_depth_write = false;
-			depth_compare_operator = COMPARE_OP_ALWAYS;
-			enable_depth_range = false;
-			depth_range_min = 0;
-			depth_range_max = 0;
-			enable_stencil = false;
-		}
-	};
-
-	struct PipelineColorBlendState {
-		bool enable_logic_op;
-		LogicOperation logic_op;
-		struct Attachment {
-			bool enable_blend;
-			BlendFactor src_color_blend_factor;
-			BlendFactor dst_color_blend_factor;
-			BlendOperation color_blend_op;
-			BlendFactor src_alpha_blend_factor;
-			BlendFactor dst_alpha_blend_factor;
-			BlendOperation alpha_blend_op;
-			bool write_r;
-			bool write_g;
-			bool write_b;
-			bool write_a;
-			Attachment() {
-				enable_blend = false;
-				src_color_blend_factor = BLEND_FACTOR_ZERO;
-				dst_color_blend_factor = BLEND_FACTOR_ZERO;
-				color_blend_op = BLEND_OP_ADD;
-				src_alpha_blend_factor = BLEND_FACTOR_ZERO;
-				dst_alpha_blend_factor = BLEND_FACTOR_ZERO;
-				alpha_blend_op = BLEND_OP_ADD;
-				write_r = true;
-				write_g = true;
-				write_b = true;
-				write_a = true;
-			}
-		};
-
-		static PipelineColorBlendState create_disabled(int p_attachments = 1) {
-			PipelineColorBlendState bs;
-			for (int i = 0; i < p_attachments; i++) {
-				bs.attachments.push_back(Attachment());
-			}
-			return bs;
-		}
-
-		static PipelineColorBlendState create_blend(int p_attachments = 1) {
-			PipelineColorBlendState bs;
-			for (int i = 0; i < p_attachments; i++) {
-				Attachment ba;
-				ba.enable_blend = true;
-				ba.src_color_blend_factor = BLEND_FACTOR_SRC_ALPHA;
-				ba.dst_color_blend_factor = BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-				ba.src_alpha_blend_factor = BLEND_FACTOR_SRC_ALPHA;
-				ba.dst_alpha_blend_factor = BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-
-				bs.attachments.push_back(ba);
-			}
-			return bs;
-		}
-
-		Vector<Attachment> attachments; //one per render target texture
-		Color blend_constant;
-
-		PipelineColorBlendState() {
-			enable_logic_op = false;
-			logic_op = LOGIC_OP_CLEAR;
-		}
-	};
-
-	enum PipelineDynamicStateFlags {
-		DYNAMIC_STATE_LINE_WIDTH = (1 << 0),
-		DYNAMIC_STATE_DEPTH_BIAS = (1 << 1),
-		DYNAMIC_STATE_BLEND_CONSTANTS = (1 << 2),
-		DYNAMIC_STATE_DEPTH_BOUNDS = (1 << 3),
-		DYNAMIC_STATE_STENCIL_COMPARE_MASK = (1 << 4),
-		DYNAMIC_STATE_STENCIL_WRITE_MASK = (1 << 5),
-		DYNAMIC_STATE_STENCIL_REFERENCE = (1 << 6),
-	};
-
-	virtual bool render_pipeline_is_valid(RID p_pipeline) = 0;
-	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags = 0, uint32_t p_for_render_pass = 0, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>()) = 0;
-
-	/**************************/
-	/**** COMPUTE PIPELINE ****/
-	/**************************/
-
-	virtual RID compute_pipeline_create(RID p_shader, const Vector<PipelineSpecializationConstant> &p_specialization_constants = Vector<PipelineSpecializationConstant>()) = 0;
-	virtual bool compute_pipeline_is_valid(RID p_pipeline) = 0;
-
+private:
 	/****************/
 	/**** SCREEN ****/
 	/****************/
+	HashMap<DisplayServer::WindowID, RDD::SwapChainID> screen_swap_chains;
+	HashMap<DisplayServer::WindowID, RDD::FramebufferID> screen_framebuffers;
 
-	virtual int screen_get_width(DisplayServer::WindowID p_screen = 0) const = 0;
-	virtual int screen_get_height(DisplayServer::WindowID p_screen = 0) const = 0;
-	virtual FramebufferFormatID screen_get_framebuffer_format() const = 0;
+	uint32_t _get_swap_chain_desired_count() const;
 
-	/********************/
-	/**** DRAW LISTS ****/
-	/********************/
+public:
+	Error screen_create(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
+	Error screen_prepare_for_drawing(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
+	int screen_get_width(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
+	int screen_get_height(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
+	FramebufferFormatID screen_get_framebuffer_format(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID) const;
+	Error screen_free(DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
 
-	enum InitialAction {
-		INITIAL_ACTION_CLEAR, // Start rendering and clear the whole framebuffer.
-		INITIAL_ACTION_CLEAR_REGION, // Start rendering and clear the framebuffer in the specified region.
-		INITIAL_ACTION_CLEAR_REGION_CONTINUE, // Continue rendering and clear the framebuffer in the specified region. Framebuffer must have been left in `FINAL_ACTION_CONTINUE` state as the final action previously.
-		INITIAL_ACTION_KEEP, // Start rendering, but keep attached color texture contents. If the framebuffer was previously used to read in a shader, this will automatically insert a layout transition.
-		INITIAL_ACTION_DROP, // Start rendering, ignore what is there; write above it. In general, this is the fastest option when you will be writing every single pixel and you don't need a clear color.
-		INITIAL_ACTION_CONTINUE, // Continue rendering. Framebuffer must have been left in `FINAL_ACTION_CONTINUE` state as the final action previously.
-		INITIAL_ACTION_MAX
+	/*************************/
+	/**** DRAW LISTS (II) ****/
+	/*************************/
+
+private:
+	// Draw list contains both the command buffer
+	// used for drawing as well as a LOT of
+	// information used for validation. This
+	// validation is cheap so most of it can
+	// also run in release builds.
+
+	struct DrawList {
+		Rect2i viewport;
+		bool viewport_set = false;
+
+		struct SetState {
+			uint32_t pipeline_expected_format = 0;
+			uint32_t uniform_set_format = 0;
+			RDD::UniformSetID uniform_set_driver_id;
+			RID uniform_set;
+			bool bound = false;
+		};
+
+		struct State {
+			SetState sets[MAX_UNIFORM_SETS];
+			uint32_t set_count = 0;
+			RID pipeline;
+			RID pipeline_shader;
+			RDD::ShaderID pipeline_shader_driver_id;
+			uint32_t pipeline_shader_layout_hash = 0;
+			RID vertex_array;
+			RID index_array;
+			uint32_t draw_count = 0;
+		} state;
+
+#ifdef DEBUG_ENABLED
+		struct Validation {
+			bool active = true; // Means command buffer was not closed, so you can keep adding things.
+			// Actual render pass values.
+			uint32_t dynamic_state = 0;
+			VertexFormatID vertex_format = INVALID_ID;
+			uint32_t vertex_array_size = 0;
+			uint32_t vertex_max_instances_allowed = 0xFFFFFFFF;
+			bool index_buffer_uses_restart_indices = false;
+			uint32_t index_array_count = 0;
+			uint32_t index_array_max_index = 0;
+			Vector<uint32_t> set_formats;
+			Vector<bool> set_bound;
+			Vector<RID> set_rids;
+			// Last pipeline set values.
+			bool pipeline_active = false;
+			uint32_t pipeline_dynamic_state = 0;
+			VertexFormatID pipeline_vertex_format = INVALID_ID;
+			RID pipeline_shader;
+			bool pipeline_uses_restart_indices = false;
+			uint32_t pipeline_primitive_divisor = 0;
+			uint32_t pipeline_primitive_minimum = 0;
+			uint32_t pipeline_push_constant_size = 0;
+			bool pipeline_push_constant_supplied = false;
+		} validation;
+#else
+		struct Validation {
+			uint32_t vertex_array_size = 0;
+			uint32_t index_array_count = 0;
+		} validation;
+#endif
 	};
 
-	enum FinalAction {
-		FINAL_ACTION_READ, // Store the texture for reading and make it read-only if it has the `TEXTURE_USAGE_SAMPLING_BIT` bit (only applies to color, depth and stencil attachments).
-		FINAL_ACTION_DISCARD, // Discard the texture data and make it read-only if it has the `TEXTURE_USAGE_SAMPLING_BIT` bit (only applies to color, depth and stencil attachments).
-		FINAL_ACTION_CONTINUE, // Store the texture and continue for further processing. Similar to `FINAL_ACTION_READ`, but does not make the texture read-only if it has the `TEXTURE_USAGE_SAMPLING_BIT` bit.
-		FINAL_ACTION_MAX
-	};
+	DrawList *draw_list = nullptr;
+	uint32_t draw_list_subpass_count = 0;
+	RDD::RenderPassID draw_list_render_pass;
+	RDD::FramebufferID draw_list_vkframebuffer;
+#ifdef DEBUG_ENABLED
+	FramebufferFormatID draw_list_framebuffer_format = INVALID_ID;
+#endif
+	uint32_t draw_list_current_subpass = 0;
 
-	typedef int64_t DrawListID;
+	Vector<RID> draw_list_bound_textures;
 
-	virtual DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color()) = 0;
-	virtual DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const Vector<RID> &p_storage_textures = Vector<RID>()) = 0;
-	virtual Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const Vector<RID> &p_storage_textures = Vector<RID>()) = 0;
+	void _draw_list_insert_clear_region(DrawList *p_draw_list, Framebuffer *p_framebuffer, Point2i p_viewport_offset, Point2i p_viewport_size, bool p_clear_color, const Vector<Color> &p_clear_colors, bool p_clear_depth, float p_depth, uint32_t p_stencil);
+	Error _draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, RDD::FramebufferID *r_framebuffer, RDD::RenderPassID *r_render_pass, uint32_t *r_subpass_count);
+	Error _draw_list_render_pass_begin(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i p_viewport_offset, Point2i p_viewport_size, RDD::FramebufferID p_framebuffer_driver_id, RDD::RenderPassID p_render_pass);
+	void _draw_list_set_viewport(Rect2i p_rect);
+	void _draw_list_set_scissor(Rect2i p_rect);
+	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
+	Error _draw_list_allocate(const Rect2i &p_viewport, uint32_t p_subpass);
+	void _draw_list_free(Rect2i *r_last_viewport = nullptr);
 
-	virtual void draw_list_set_blend_constants(DrawListID p_list, const Color &p_color) = 0;
-	virtual void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline) = 0;
-	virtual void draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index) = 0;
-	virtual void draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array) = 0;
-	virtual void draw_list_bind_index_array(DrawListID p_list, RID p_index_array) = 0;
-	virtual void draw_list_set_line_width(DrawListID p_list, float p_width) = 0;
-	virtual void draw_list_set_push_constant(DrawListID p_list, const void *p_data, uint32_t p_data_size) = 0;
+public:
+	DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
+	DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
 
-	virtual void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1, uint32_t p_procedural_vertices = 0) = 0;
+	void draw_list_set_blend_constants(DrawListID p_list, const Color &p_color);
+	void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
+	void draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index);
+	void draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array);
+	void draw_list_bind_index_array(DrawListID p_list, RID p_index_array);
+	void draw_list_set_line_width(DrawListID p_list, float p_width);
+	void draw_list_set_push_constant(DrawListID p_list, const void *p_data, uint32_t p_data_size);
 
-	virtual void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) = 0;
-	virtual void draw_list_disable_scissor(DrawListID p_list) = 0;
+	void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1, uint32_t p_procedural_vertices = 0);
 
-	virtual uint32_t draw_list_get_current_pass() = 0;
-	virtual DrawListID draw_list_switch_to_next_pass() = 0;
-	virtual Error draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids) = 0;
+	void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect);
+	void draw_list_disable_scissor(DrawListID p_list);
 
-	virtual void draw_list_end(BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
+	uint32_t draw_list_get_current_pass();
+	DrawListID draw_list_switch_to_next_pass();
 
+	void draw_list_end();
+
+private:
 	/***********************/
 	/**** COMPUTE LISTS ****/
 	/***********************/
 
-	typedef int64_t ComputeListID;
+	struct ComputeList {
+		struct SetState {
+			uint32_t pipeline_expected_format = 0;
+			uint32_t uniform_set_format = 0;
+			RDD::UniformSetID uniform_set_driver_id;
+			RID uniform_set;
+			bool bound = false;
+		};
 
-	virtual ComputeListID compute_list_begin(bool p_allow_draw_overlap = false) = 0;
-	virtual void compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline) = 0;
-	virtual void compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index) = 0;
-	virtual void compute_list_set_push_constant(ComputeListID p_list, const void *p_data, uint32_t p_data_size) = 0;
-	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) = 0;
-	virtual void compute_list_dispatch_threads(ComputeListID p_list, uint32_t p_x_threads, uint32_t p_y_threads, uint32_t p_z_threads) = 0;
-	virtual void compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset) = 0;
-	virtual void compute_list_add_barrier(ComputeListID p_list) = 0;
+		struct State {
+			SetState sets[MAX_UNIFORM_SETS];
+			uint32_t set_count = 0;
+			RID pipeline;
+			RID pipeline_shader;
+			RDD::ShaderID pipeline_shader_driver_id;
+			uint32_t pipeline_shader_layout_hash = 0;
+			uint32_t local_group_size[3] = { 0, 0, 0 };
+			uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE] = {};
+			uint32_t push_constant_size = 0;
+			uint32_t dispatch_count = 0;
+		} state;
 
-	virtual void compute_list_end(BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
+#ifdef DEBUG_ENABLED
+		struct Validation {
+			bool active = true; // Means command buffer was not closed, so you can keep adding things.
+			Vector<uint32_t> set_formats;
+			Vector<bool> set_bound;
+			Vector<RID> set_rids;
+			// Last pipeline set values.
+			bool pipeline_active = false;
+			RID pipeline_shader;
+			uint32_t invalid_set_from = 0;
+			uint32_t pipeline_push_constant_size = 0;
+			bool pipeline_push_constant_supplied = false;
+		} validation;
+#endif
+	};
 
-	virtual void barrier(BitField<BarrierMask> p_from = BARRIER_MASK_ALL_BARRIERS, BitField<BarrierMask> p_to = BARRIER_MASK_ALL_BARRIERS) = 0;
-	virtual void full_barrier() = 0;
+	ComputeList *compute_list = nullptr;
+	ComputeList::State compute_list_barrier_state;
 
-	/***************/
-	/**** FREE! ****/
-	/***************/
+public:
+	ComputeListID compute_list_begin();
+	void compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline);
+	void compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index);
+	void compute_list_set_push_constant(ComputeListID p_list, const void *p_data, uint32_t p_data_size);
+	void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
+	void compute_list_dispatch_threads(ComputeListID p_list, uint32_t p_x_threads, uint32_t p_y_threads, uint32_t p_z_threads);
+	void compute_list_dispatch_indirect(ComputeListID p_list, RID p_buffer, uint32_t p_offset);
+	void compute_list_add_barrier(ComputeListID p_list);
 
-	virtual void free(RID p_id) = 0;
+	void compute_list_end();
+
+private:
+	/***********************/
+	/**** COMMAND GRAPH ****/
+	/***********************/
+
+	bool _texture_make_mutable(Texture *p_texture, RID p_texture_id);
+	bool _buffer_make_mutable(Buffer *p_buffer, RID p_buffer_id);
+	bool _vertex_array_make_mutable(VertexArray *p_vertex_array, RID p_resource_id, RDG::ResourceTracker *p_resource_tracker);
+	bool _index_array_make_mutable(IndexArray *p_index_array, RDG::ResourceTracker *p_resource_tracker);
+	bool _uniform_set_make_mutable(UniformSet *p_uniform_set, RID p_resource_id, RDG::ResourceTracker *p_resource_tracker);
+	bool _dependency_make_mutable(RID p_id, RID p_resource_id, RDG::ResourceTracker *p_resource_tracker);
+	bool _dependencies_make_mutable(RID p_id, RDG::ResourceTracker *p_resource_tracker);
+
+	RenderingDeviceGraph draw_graph;
+
+	/**************************/
+	/**** QUEUE MANAGEMENT ****/
+	/**************************/
+
+	RDD::CommandQueueFamilyID main_queue_family;
+	RDD::CommandQueueFamilyID present_queue_family;
+	RDD::CommandQueueID main_queue;
+	RDD::CommandQueueID present_queue;
+
+	/**************************/
+	/**** FRAME MANAGEMENT ****/
+	/**************************/
+
+	// This is the frame structure. There are normally
+	// 3 of these (used for triple buffering), or 2
+	// (double buffering). They are cycled constantly.
+	//
+	// It contains two command buffers, one that is
+	// used internally for setting up (creating stuff)
+	// and another used mostly for drawing.
+	//
+	// They also contains a list of things that need
+	// to be disposed of when deleted, which can't
+	// happen immediately due to the asynchronous
+	// nature of the GPU. They will get deleted
+	// when the frame is cycled.
+
+	struct Frame {
+		// List in usage order, from last to free to first to free.
+		List<Buffer> buffers_to_dispose_of;
+		List<Texture> textures_to_dispose_of;
+		List<Framebuffer> framebuffers_to_dispose_of;
+		List<RDD::SamplerID> samplers_to_dispose_of;
+		List<Shader> shaders_to_dispose_of;
+		List<UniformSet> uniform_sets_to_dispose_of;
+		List<RenderPipeline> render_pipelines_to_dispose_of;
+		List<ComputePipeline> compute_pipelines_to_dispose_of;
+
+		RDD::CommandPoolID command_pool;
+
+		// Used at the beginning of every frame for set-up.
+		// Used for filling up newly created buffers with data provided on creation.
+		// Primarily intended to be accessed by worker threads.
+		// Ideally this command buffer should use an async transfer queue.
+		RDD::CommandBufferID setup_command_buffer;
+
+		// The main command buffer for drawing and compute.
+		// Primarily intended to be used by the main thread to do most stuff.
+		RDD::CommandBufferID draw_command_buffer;
+
+		// Signaled by the setup submission. Draw must wait on this semaphore.
+		RDD::SemaphoreID setup_semaphore;
+
+		// Signaled by the draw submission. Present must wait on this semaphore.
+		RDD::SemaphoreID draw_semaphore;
+
+		// Signaled by the draw submission. Must wait on this fence before beginning
+		// command recording for the frame.
+		RDD::FenceID draw_fence;
+		bool draw_fence_signaled = false;
+
+		// Swap chains prepared for drawing during the frame that must be presented.
+		LocalVector<RDD::SwapChainID> swap_chains_to_present;
+
+		// Extra command buffer pool used for driver workarounds.
+		RDG::CommandBufferPool command_buffer_pool;
+
+		struct Timestamp {
+			String description;
+			uint64_t value = 0;
+		};
+
+		RDD::QueryPoolID timestamp_pool;
+
+		TightLocalVector<String> timestamp_names;
+		TightLocalVector<uint64_t> timestamp_cpu_values;
+		uint32_t timestamp_count = 0;
+		TightLocalVector<String> timestamp_result_names;
+		TightLocalVector<uint64_t> timestamp_cpu_result_values;
+		TightLocalVector<uint64_t> timestamp_result_values;
+		uint32_t timestamp_result_count = 0;
+		uint64_t index = 0;
+	};
+
+	uint32_t max_timestamp_query_elements = 0;
+
+	int frame = 0;
+	TightLocalVector<Frame> frames;
+	uint64_t frames_drawn = 0;
+
+	void _free_pending_resources(int p_frame);
+
+	uint64_t texture_memory = 0;
+	uint64_t buffer_memory = 0;
+
+	void _free_internal(RID p_id);
+	void _begin_frame();
+	void _end_frame();
+	void _execute_frame(bool p_present);
+	void _stall_for_previous_frames();
+	void _flush_and_stall_for_all_frames();
+
+	template <typename T>
+	void _free_rids(T &p_owner, const char *p_type);
+
+#ifdef DEV_ENABLED
+	HashMap<RID, String> resource_names;
+#endif
+
+public:
+	Error initialize(RenderingContextDriver *p_context, DisplayServer::WindowID p_main_window = DisplayServer::INVALID_WINDOW_ID);
+	void finalize();
+
+	void free(RID p_id);
 
 	/****************/
 	/**** Timing ****/
 	/****************/
 
-	virtual void capture_timestamp(const String &p_name) = 0;
-	virtual uint32_t get_captured_timestamps_count() const = 0;
-	virtual uint64_t get_captured_timestamps_frame() const = 0;
-	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const = 0;
-	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const = 0;
-	virtual String get_captured_timestamp_name(uint32_t p_index) const = 0;
+	void capture_timestamp(const String &p_name);
+	uint32_t get_captured_timestamps_count() const;
+	uint64_t get_captured_timestamps_frame() const;
+	uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const;
+	uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const;
+	String get_captured_timestamp_name(uint32_t p_index) const;
 
 	/****************/
 	/**** LIMITS ****/
 	/****************/
 
-	enum Limit {
-		LIMIT_MAX_BOUND_UNIFORM_SETS,
-		LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS,
-		LIMIT_MAX_TEXTURES_PER_UNIFORM_SET,
-		LIMIT_MAX_SAMPLERS_PER_UNIFORM_SET,
-		LIMIT_MAX_STORAGE_BUFFERS_PER_UNIFORM_SET,
-		LIMIT_MAX_STORAGE_IMAGES_PER_UNIFORM_SET,
-		LIMIT_MAX_UNIFORM_BUFFERS_PER_UNIFORM_SET,
-		LIMIT_MAX_DRAW_INDEXED_INDEX,
-		LIMIT_MAX_FRAMEBUFFER_HEIGHT,
-		LIMIT_MAX_FRAMEBUFFER_WIDTH,
-		LIMIT_MAX_TEXTURE_ARRAY_LAYERS,
-		LIMIT_MAX_TEXTURE_SIZE_1D,
-		LIMIT_MAX_TEXTURE_SIZE_2D,
-		LIMIT_MAX_TEXTURE_SIZE_3D,
-		LIMIT_MAX_TEXTURE_SIZE_CUBE,
-		LIMIT_MAX_TEXTURES_PER_SHADER_STAGE,
-		LIMIT_MAX_SAMPLERS_PER_SHADER_STAGE,
-		LIMIT_MAX_STORAGE_BUFFERS_PER_SHADER_STAGE,
-		LIMIT_MAX_STORAGE_IMAGES_PER_SHADER_STAGE,
-		LIMIT_MAX_UNIFORM_BUFFERS_PER_SHADER_STAGE,
-		LIMIT_MAX_PUSH_CONSTANT_SIZE,
-		LIMIT_MAX_UNIFORM_BUFFER_SIZE,
-		LIMIT_MAX_VERTEX_INPUT_ATTRIBUTE_OFFSET,
-		LIMIT_MAX_VERTEX_INPUT_ATTRIBUTES,
-		LIMIT_MAX_VERTEX_INPUT_BINDINGS,
-		LIMIT_MAX_VERTEX_INPUT_BINDING_STRIDE,
-		LIMIT_MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT,
-		LIMIT_MAX_COMPUTE_SHARED_MEMORY_SIZE,
-		LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_X,
-		LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Y,
-		LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Z,
-		LIMIT_MAX_COMPUTE_WORKGROUP_INVOCATIONS,
-		LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_X,
-		LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Y,
-		LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z,
-		LIMIT_MAX_VIEWPORT_DIMENSIONS_X,
-		LIMIT_MAX_VIEWPORT_DIMENSIONS_Y,
-		LIMIT_SUBGROUP_SIZE,
-		LIMIT_SUBGROUP_MIN_SIZE,
-		LIMIT_SUBGROUP_MAX_SIZE,
-		LIMIT_SUBGROUP_IN_SHADERS, // Set flags using SHADER_STAGE_VERTEX_BIT, SHADER_STAGE_FRAGMENT_BIT, etc.
-		LIMIT_SUBGROUP_OPERATIONS,
-		LIMIT_VRS_TEXEL_WIDTH,
-		LIMIT_VRS_TEXEL_HEIGHT,
-	};
+	uint64_t limit_get(Limit p_limit) const;
 
-	virtual uint64_t limit_get(Limit p_limit) const = 0;
+	void swap_buffers();
 
-	//methods below not exposed, used by RenderingDeviceRD
-	virtual void prepare_screen_for_drawing() = 0;
+	uint32_t get_frame_delay() const;
 
-	virtual void swap_buffers() = 0;
-
-	virtual uint32_t get_frame_delay() const = 0;
-
-	virtual void submit() = 0;
-	virtual void sync() = 0;
+	void submit();
+	void sync();
 
 	enum MemoryType {
 		MEMORY_TEXTURES,
@@ -1312,33 +1344,34 @@ public:
 		MEMORY_TOTAL
 	};
 
-	virtual uint64_t get_memory_usage(MemoryType p_type) const = 0;
+	uint64_t get_memory_usage(MemoryType p_type) const;
 
-	virtual RenderingDevice *create_local_device() = 0;
+	RenderingDevice *create_local_device();
 
-	virtual void set_resource_name(RID p_id, const String p_name) = 0;
+	void set_resource_name(RID p_id, const String &p_name);
 
-	virtual void draw_command_begin_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1)) = 0;
-	virtual void draw_command_insert_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1)) = 0;
-	virtual void draw_command_end_label() = 0;
+	void draw_command_begin_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
+	void draw_command_end_label();
 
-	virtual String get_device_vendor_name() const = 0;
-	virtual String get_device_name() const = 0;
-	virtual RenderingDevice::DeviceType get_device_type() const = 0;
-	virtual String get_device_api_version() const = 0;
-	virtual String get_device_pipeline_cache_uuid() const = 0;
+	String get_device_vendor_name() const;
+	String get_device_name() const;
+	DeviceType get_device_type() const;
+	String get_device_api_name() const;
+	String get_device_api_version() const;
+	String get_device_pipeline_cache_uuid() const;
 
-	virtual uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0) = 0;
+	uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0);
 
 	static RenderingDevice *get_singleton();
+
 	RenderingDevice();
+	~RenderingDevice();
 
-protected:
-	static const char *shader_stage_names[RenderingDevice::SHADER_STAGE_MAX];
+private:
+	/*****************/
+	/**** BINDERS ****/
+	/*****************/
 
-	static const uint32_t MAX_UNIFORM_SETS = 16;
-
-	//binders to script API
 	RID _texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data = Array());
 	RID _texture_create_shared(const Ref<RDTextureView> &p_view, RID p_with_texture);
 	RID _texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
@@ -1348,7 +1381,9 @@ protected:
 	FramebufferFormatID _framebuffer_format_create_multipass(const TypedArray<RDAttachmentFormat> &p_attachments, const TypedArray<RDFramebufferPass> &p_passes, uint32_t p_view_count);
 	RID _framebuffer_create(const TypedArray<RID> &p_textures, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1);
 	RID _framebuffer_create_multipass(const TypedArray<RID> &p_textures, const TypedArray<RDFramebufferPass> &p_passes, FramebufferFormatID p_format_check = INVALID_ID, uint32_t p_view_count = 1);
+
 	RID _sampler_create(const Ref<RDSamplerState> &p_state);
+
 	VertexFormatID _vertex_format_create(const TypedArray<RDVertexAttribute> &p_vertex_formats);
 	RID _vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers, const Vector<int64_t> &p_offsets = Vector<int64_t>());
 
@@ -1358,56 +1393,13 @@ protected:
 
 	RID _uniform_set_create(const TypedArray<RDUniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
 
-	Error _buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
+	Error _buffer_update_bind(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data);
 
 	RID _render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags, uint32_t p_for_render_pass, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
 	RID _compute_pipeline_create(RID p_shader, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants);
 
-	DrawListID _draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const TypedArray<RID> &p_storage_textures = TypedArray<RID>());
-	Vector<int64_t> _draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const TypedArray<RID> &p_storage_textures = TypedArray<RID>());
 	void _draw_list_set_push_constant(DrawListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
 	void _compute_list_set_push_constant(ComputeListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
-	Vector<int64_t> _draw_list_switch_to_next_pass_split(uint32_t p_splits);
-
-	struct SpirvReflectionData {
-		BitField<ShaderStage> stages_mask;
-		uint64_t vertex_input_mask;
-		uint32_t fragment_output_mask;
-		bool is_compute;
-		uint32_t compute_local_size[3];
-		uint32_t push_constant_size;
-		BitField<ShaderStage> push_constant_stages_mask;
-
-		struct Uniform {
-			UniformType type;
-			uint32_t binding;
-			BitField<ShaderStage> stages_mask;
-			uint32_t length; // Size of arrays (in total elements), or ubos (in bytes * total elements).
-			bool writable;
-		};
-		Vector<Vector<Uniform>> uniforms;
-
-		struct SpecializationConstant {
-			PipelineSpecializationConstantType type;
-			uint32_t constant_id;
-			union {
-				uint32_t int_value;
-				float float_value;
-				bool bool_value;
-			};
-			BitField<ShaderStage> stages_mask;
-		};
-		Vector<SpecializationConstant> specialization_constants;
-	};
-
-	Error _reflect_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, SpirvReflectionData &r_reflection_data);
-
-#ifndef DISABLE_DEPRECATED
-	BitField<BarrierMask> _convert_barrier_mask_81356(BitField<BarrierMask> p_old_barrier);
-	void _draw_list_end_bind_compat_81356(BitField<BarrierMask> p_post_barrier);
-	void _compute_list_end_bind_compat_81356(BitField<BarrierMask> p_post_barrier);
-	void _barrier_bind_compat_81356(BitField<BarrierMask> p_from, BitField<BarrierMask> p_to);
-#endif
 };
 
 VARIANT_ENUM_CAST(RenderingDevice::DeviceType)
@@ -1416,7 +1408,6 @@ VARIANT_ENUM_CAST(RenderingDevice::ShaderStage)
 VARIANT_ENUM_CAST(RenderingDevice::ShaderLanguage)
 VARIANT_ENUM_CAST(RenderingDevice::CompareOperator)
 VARIANT_ENUM_CAST(RenderingDevice::DataFormat)
-VARIANT_BITFIELD_CAST(RenderingDevice::BarrierMask);
 VARIANT_ENUM_CAST(RenderingDevice::TextureType)
 VARIANT_ENUM_CAST(RenderingDevice::TextureSamples)
 VARIANT_BITFIELD_CAST(RenderingDevice::TextureUsageBits)
@@ -1443,6 +1434,10 @@ VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
 VARIANT_ENUM_CAST(RenderingDevice::Limit)
 VARIANT_ENUM_CAST(RenderingDevice::MemoryType)
 VARIANT_ENUM_CAST(RenderingDevice::Features)
+
+#ifndef DISABLE_DEPRECATED
+VARIANT_BITFIELD_CAST(RenderingDevice::BarrierMask);
+#endif
 
 typedef RenderingDevice RD;
 

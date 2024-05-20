@@ -33,6 +33,7 @@
 #include "display_server_macos.h"
 #include "godot_menu_item.h"
 #include "key_mapping_macos.h"
+#include "native_menu_macos.h"
 
 @implementation GodotMenuDelegate
 
@@ -40,16 +41,16 @@
 }
 
 - (void)menuNeedsUpdate:(NSMenu *)menu {
-	if (DisplayServer::get_singleton()) {
-		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-		ds->menu_open(menu);
+	if (NativeMenu::get_singleton()) {
+		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
+		nmenu->_menu_open(menu);
 	}
 }
 
 - (void)menuDidClose:(NSMenu *)menu {
-	if (DisplayServer::get_singleton()) {
-		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-		ds->menu_close(menu);
+	if (NativeMenu::get_singleton()) {
+		NativeMenuMacOS *nmenu = (NativeMenuMacOS *)NativeMenu::get_singleton();
+		nmenu->_menu_close(menu);
 	}
 }
 
@@ -64,7 +65,7 @@
 
 			value->hover_callback.callp(args, 1, ret, ce);
 			if (ce.error != Callable::CallError::CALL_OK) {
-				ERR_PRINT(vformat(RTR("Failed to execute menu hover callback: %s."), Variant::get_callable_error_text(value->hover_callback, args, 1, ce)));
+				ERR_PRINT(vformat("Failed to execute menu hover callback: %s.", Variant::get_callable_error_text(value->hover_callback, args, 1, ce)));
 			}
 		}
 	}
@@ -89,7 +90,7 @@
 
 						value->key_callback.callp(args, 1, ret, ce);
 						if (ce.error != Callable::CallError::CALL_OK) {
-							ERR_PRINT(vformat(RTR("Failed to execute menu key callback: %s."), Variant::get_callable_error_text(value->key_callback, args, 1, ce)));
+							ERR_PRINT(vformat("Failed to execute menu key callback: %s.", Variant::get_callable_error_text(value->key_callback, args, 1, ce)));
 						}
 					} else {
 						// Otherwise redirect event to the engine.

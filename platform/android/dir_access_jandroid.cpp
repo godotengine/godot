@@ -218,7 +218,7 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 	}
 }
 
-Error DirAccessJAndroid::make_dir_recursive(String p_dir) {
+Error DirAccessJAndroid::make_dir_recursive(const String &p_dir) {
 	// Check if the directory exists already
 	if (dir_exists(p_dir)) {
 		return ERR_ALREADY_EXISTS;
@@ -319,6 +319,14 @@ void DirAccessJAndroid::setup(jobject p_dir_access_handler) {
 	_rename = env->GetMethodID(cls, "rename", "(ILjava/lang/String;Ljava/lang/String;)Z");
 	_remove = env->GetMethodID(cls, "remove", "(ILjava/lang/String;)Z");
 	_current_is_hidden = env->GetMethodID(cls, "isCurrentHidden", "(II)Z");
+}
+
+void DirAccessJAndroid::terminate() {
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	env->DeleteGlobalRef(cls);
+	env->DeleteGlobalRef(dir_access_handler);
 }
 
 DirAccessJAndroid::DirAccessJAndroid() {

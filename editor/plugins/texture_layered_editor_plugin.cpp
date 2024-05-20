@@ -223,7 +223,7 @@ TextureLayeredEditor::TextureLayeredEditor() {
 	texture_rect = memnew(Control);
 	texture_rect->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	add_child(texture_rect);
-	texture_rect->connect("draw", callable_mp(this, &TextureLayeredEditor::_texture_rect_draw));
+	texture_rect->connect(SceneStringName(draw), callable_mp(this, &TextureLayeredEditor::_texture_rect_draw));
 
 	layer = memnew(SpinBox);
 	layer->set_step(1);

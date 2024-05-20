@@ -43,7 +43,7 @@
 /*  CharProxy                                                            */
 /*************************************************************************/
 
-template <class T>
+template <typename T>
 class CharProxy {
 	friend class Char16String;
 	friend class CharString;
@@ -198,6 +198,7 @@ class String {
 
 	bool _base_is_subsequence_of(const String &p_string, bool case_insensitive) const;
 	int _count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const;
+	int _count(const char *p_string, int p_from, int p_to, bool p_case_insensitive) const;
 	String _camelcase_to_underscore() const;
 
 public:
@@ -265,6 +266,9 @@ public:
 	signed char nocasecmp_to(const String &p_str) const;
 	signed char naturalcasecmp_to(const String &p_str) const;
 	signed char naturalnocasecmp_to(const String &p_str) const;
+	// Special sorting for file names. Names starting with `_` are put before all others except those starting with `.`, otherwise natural comparison is used.
+	signed char filecasecmp_to(const String &p_str) const;
+	signed char filenocasecmp_to(const String &p_str) const;
 
 	const char32_t *get_data() const;
 	/* standard size stuff */
@@ -285,25 +289,31 @@ public:
 	int find(const char *p_str, int p_from = 0) const; ///< return <0 if failed
 	int find_char(const char32_t &p_char, int p_from = 0) const; ///< return <0 if failed
 	int findn(const String &p_str, int p_from = 0) const; ///< return <0 if failed, case insensitive
+	int findn(const char *p_str, int p_from = 0) const; ///< return <0 if failed
 	int rfind(const String &p_str, int p_from = -1) const; ///< return <0 if failed
+	int rfind(const char *p_str, int p_from = -1) const; ///< return <0 if failed
 	int rfindn(const String &p_str, int p_from = -1) const; ///< return <0 if failed, case insensitive
+	int rfindn(const char *p_str, int p_from = -1) const; ///< return <0 if failed
 	int findmk(const Vector<String> &p_keys, int p_from = 0, int *r_key = nullptr) const; ///< return <0 if failed
 	bool match(const String &p_wildcard) const;
 	bool matchn(const String &p_wildcard) const;
 	bool begins_with(const String &p_string) const;
 	bool begins_with(const char *p_string) const;
 	bool ends_with(const String &p_string) const;
+	bool ends_with(const char *p_string) const;
 	bool is_enclosed_in(const String &p_string) const;
 	bool is_subsequence_of(const String &p_string) const;
 	bool is_subsequence_ofn(const String &p_string) const;
 	bool is_quoted() const;
 	Vector<String> bigrams() const;
 	float similarity(const String &p_string) const;
-	String format(const Variant &values, String placeholder = "{_}") const;
+	String format(const Variant &values, const String &placeholder = "{_}") const;
 	String replace_first(const String &p_key, const String &p_with) const;
+	String replace_first(const char *p_key, const char *p_with) const;
 	String replace(const String &p_key, const String &p_with) const;
 	String replace(const char *p_key, const char *p_with) const;
 	String replacen(const String &p_key, const String &p_with) const;
+	String replacen(const char *p_key, const char *p_with) const;
 	String repeat(int p_count) const;
 	String reverse() const;
 	String insert(int p_at_pos, const String &p_string) const;
@@ -311,11 +321,13 @@ public:
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
 	String trim_prefix(const String &p_prefix) const;
+	String trim_prefix(const char *p_prefix) const;
 	String trim_suffix(const String &p_suffix) const;
+	String trim_suffix(const char *p_suffix) const;
 	String lpad(int min_length, const String &character = " ") const;
 	String rpad(int min_length, const String &character = " ") const;
 	String sprintf(const Array &values, bool *error) const;
-	String quote(String quotechar = "\"") const;
+	String quote(const String &quotechar = "\"") const;
 	String unquote() const;
 	static String num(double p_num, int p_decimals = -1);
 	static String num_scientific(double p_num);
@@ -349,19 +361,23 @@ public:
 	String to_snake_case() const;
 
 	String get_with_code_lines() const;
-	int get_slice_count(String p_splitter) const;
-	String get_slice(String p_splitter, int p_slice) const;
+	int get_slice_count(const String &p_splitter) const;
+	int get_slice_count(const char *p_splitter) const;
+	String get_slice(const String &p_splitter, int p_slice) const;
+	String get_slice(const char *p_splitter, int p_slice) const;
 	String get_slicec(char32_t p_splitter, int p_slice) const;
 
 	Vector<String> split(const String &p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
+	Vector<String> split(const char *p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
 	Vector<String> rsplit(const String &p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
+	Vector<String> rsplit(const char *p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
 	Vector<String> split_spaces() const;
 	Vector<double> split_floats(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<float> split_floats_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
 	Vector<int> split_ints(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<int> split_ints_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
 
-	String join(Vector<String> parts) const;
+	String join(const Vector<String> &parts) const;
 
 	static char32_t char_uppercase(char32_t p_char);
 	static char32_t char_lowercase(char32_t p_char);
@@ -369,7 +385,9 @@ public:
 	String to_lower() const;
 
 	int count(const String &p_string, int p_from = 0, int p_to = 0) const;
+	int count(const char *p_string, int p_from = 0, int p_to = 0) const;
 	int countn(const String &p_string, int p_from = 0, int p_to = 0) const;
+	int countn(const char *p_string, int p_from = 0, int p_to = 0) const;
 
 	String left(int p_len) const;
 	String right(int p_len) const;
@@ -390,7 +408,7 @@ public:
 	static String utf8(const char *p_utf8, int p_len = -1);
 
 	Char16String utf16() const;
-	Error parse_utf16(const char16_t *p_utf16, int p_len = -1);
+	Error parse_utf16(const char16_t *p_utf16, int p_len = -1, bool p_default_little_endian = true);
 	static String utf16(const char16_t *p_utf16, int p_len = -1);
 
 	static uint32_t hash(const char32_t *p_cstr, int p_len); /* hash the string */
@@ -411,6 +429,8 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 	_FORCE_INLINE_ bool contains(const char *p_str) const { return find(p_str) != -1; }
 	_FORCE_INLINE_ bool contains(const String &p_str) const { return find(p_str) != -1; }
+	_FORCE_INLINE_ bool containsn(const char *p_str) const { return findn(p_str) != -1; }
+	_FORCE_INLINE_ bool containsn(const String &p_str) const { return findn(p_str) != -1; }
 
 	// path functions
 	bool is_absolute_path() const;
@@ -437,7 +457,7 @@ public:
 	String property_name_encode() const;
 
 	// node functions
-	static String get_invalid_node_name_characters();
+	static String get_invalid_node_name_characters(bool p_allow_internal = false);
 	String validate_node_name() const;
 	String validate_identifier() const;
 	String validate_filename() const;
@@ -499,6 +519,12 @@ struct NaturalNoCaseComparator {
 	}
 };
 
+struct FileNoCaseComparator {
+	bool operator()(const String &p_a, const String &p_b) const {
+		return p_a.filenocasecmp_to(p_b) < 0;
+	}
+};
+
 template <typename L, typename R>
 _FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
 	while (true) {
@@ -556,6 +582,43 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 String RTR(const String &p_text, const String &p_context = "");
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
 
+/**
+ * "Extractable TRanslate". Used for strings that can appear inside an exported
+ * project (such as the ones in nodes like `FileDialog`), which are made possible
+ * to add in the POT generator. A translation context can optionally be specified
+ * to disambiguate between identical source strings in translations.
+ * When placeholders are desired, use vformat(ETR("Example: %s"), some_string)`.
+ * If a string mentions a quantity (and may therefore need a dynamic plural form),
+ * use `ETRN()` instead of `ETR()`.
+ *
+ * NOTE: This function is for string extraction only, and will just return the
+ * string it was given. The translation itself should be done internally by nodes
+ * with `atr()` instead.
+ */
+_FORCE_INLINE_ String ETR(const String &p_text, const String &p_context = "") {
+	return p_text;
+}
+
+/**
+ * "Extractable TRanslate for N items". Used for strings that can appear inside an
+ * exported project (such as the ones in nodes like `FileDialog`), which are made
+ * possible to add in the POT generator. A translation context can optionally be
+ * specified to disambiguate between identical source strings in translations.
+ * Use `ETR()` if the string doesn't need dynamic plural form. When placeholders
+ * are desired, use `vformat(ETRN("%d item", "%d items", some_integer), some_integer)`.
+ * The placeholder must be present in both strings to avoid run-time warnings in `vformat()`.
+ *
+ * NOTE: This function is for string extraction only, and will just return the
+ * string it was given. The translation itself should be done internally by nodes
+ * with `atr()` instead.
+ */
+_FORCE_INLINE_ String ETRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "") {
+	if (p_n == 1) {
+		return p_text;
+	}
+	return p_text_plural;
+}
+
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
 
 _FORCE_INLINE_ void sarray_add_str(Vector<String> &arr) {
@@ -565,13 +628,13 @@ _FORCE_INLINE_ void sarray_add_str(Vector<String> &arr, const String &p_str) {
 	arr.push_back(p_str);
 }
 
-template <class... P>
+template <typename... P>
 _FORCE_INLINE_ void sarray_add_str(Vector<String> &arr, const String &p_str, P... p_args) {
 	arr.push_back(p_str);
 	sarray_add_str(arr, p_args...);
 }
 
-template <class... P>
+template <typename... P>
 _FORCE_INLINE_ Vector<String> sarray(P... p_args) {
 	Vector<String> arr;
 	sarray_add_str(arr, p_args...);

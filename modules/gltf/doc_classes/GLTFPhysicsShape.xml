@@ -4,10 +4,12 @@
 		Represents a GLTF physics shape.
 	</brief_description>
 	<description>
-		Represents a physics shape as defined by the [code]OMI_collider[/code] GLTF extension. This class is an intermediary between the GLTF data and Godot's nodes, and it's abstracted in a way that allows adding support for different GLTF physics extensions in the future.
+		Represents a physics shape as defined by the [code]OMI_physics_shape[/code] or [code]OMI_collider[/code] GLTF extensions. This class is an intermediary between the GLTF data and Godot's nodes, and it's abstracted in a way that allows adding support for different GLTF physics extensions in the future.
 	</description>
 	<tutorials>
-		<link title="OMI_collider GLTF extension">https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_collider</link>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+		<link title="OMI_physics_shape GLTF extension">https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_physics_shape</link>
+		<link title="OMI_collider GLTF extension">https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/Archived/OMI_collider</link>
 	</tutorials>
 	<methods>
 		<method name="from_dictionary" qualifiers="static">
@@ -21,13 +23,20 @@
 			<return type="GLTFPhysicsShape" />
 			<param index="0" name="shape_node" type="CollisionShape3D" />
 			<description>
-				Create a new GLTFPhysicsShape instance from the given Godot [CollisionShape3D] node.
+				Creates a new GLTFPhysicsShape instance from the given Godot [CollisionShape3D] node.
+			</description>
+		</method>
+		<method name="from_resource" qualifiers="static">
+			<return type="GLTFPhysicsShape" />
+			<param index="0" name="shape_resource" type="Shape3D" />
+			<description>
+				Creates a new GLTFPhysicsShape instance from the given Godot [Shape3D] resource.
 			</description>
 		</method>
 		<method name="to_dictionary" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Serializes this GLTFPhysicsShape instance into a [Dictionary].
+				Serializes this GLTFPhysicsShape instance into a [Dictionary] in the format defined by [code]OMI_physics_shape[/code].
 			</description>
 		</method>
 		<method name="to_node">
@@ -35,6 +44,13 @@
 			<param index="0" name="cache_shapes" type="bool" default="false" />
 			<description>
 				Converts this GLTFPhysicsShape instance into a Godot [CollisionShape3D] node.
+			</description>
+		</method>
+		<method name="to_resource">
+			<return type="Shape3D" />
+			<param index="0" name="cache_shapes" type="bool" default="false" />
+			<description>
+				Converts this GLTFPhysicsShape instance into a Godot [Shape3D] resource.
 			</description>
 		</method>
 	</methods>

@@ -2,19 +2,7 @@
  *  HMAC_DRBG implementation (NIST SP 800-90)
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 /*
@@ -52,9 +40,9 @@ void mbedtls_hmac_drbg_init(mbedtls_hmac_drbg_context *ctx)
 /*
  * HMAC_DRBG update, using optional additional data (10.1.2.2)
  */
-int mbedtls_hmac_drbg_update_ret(mbedtls_hmac_drbg_context *ctx,
-                                 const unsigned char *additional,
-                                 size_t add_len)
+int mbedtls_hmac_drbg_update(mbedtls_hmac_drbg_context *ctx,
+                             const unsigned char *additional,
+                             size_t add_len)
 {
     size_t md_len = mbedtls_md_get_size(ctx->md_ctx.md_info);
     unsigned char rounds = (additional != NULL && add_len != 0) ? 2 : 1;
@@ -103,15 +91,6 @@ exit:
     return ret;
 }
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-void mbedtls_hmac_drbg_update(mbedtls_hmac_drbg_context *ctx,
-                              const unsigned char *additional,
-                              size_t add_len)
-{
-    (void) mbedtls_hmac_drbg_update_ret(ctx, additional, add_len);
-}
-#endif /* MBEDTLS_DEPRECATED_REMOVED */
-
 /*
  * Simplified HMAC_DRBG initialisation (for use with deterministic ECDSA)
  */
@@ -140,7 +119,7 @@ int mbedtls_hmac_drbg_seed_buf(mbedtls_hmac_drbg_context *ctx,
     }
     memset(ctx->V, 0x01, mbedtls_md_get_size(md_info));
 
-    if ((ret = mbedtls_hmac_drbg_update_ret(ctx, data, data_len)) != 0) {
+    if ((ret = mbedtls_hmac_drbg_update(ctx, data, data_len)) != 0) {
         return ret;
     }
 
@@ -212,7 +191,7 @@ static int hmac_drbg_reseed_core(mbedtls_hmac_drbg_context *ctx,
     }
 
     /* 2. Update state */
-    if ((ret = mbedtls_hmac_drbg_update_ret(ctx, seed, seedlen)) != 0) {
+    if ((ret = mbedtls_hmac_drbg_update(ctx, seed, seedlen)) != 0) {
         goto exit;
     }
 
@@ -357,8 +336,8 @@ int mbedtls_hmac_drbg_random_with_add(void *p_rng,
 
     /* 2. Use additional data if any */
     if (additional != NULL && add_len != 0) {
-        if ((ret = mbedtls_hmac_drbg_update_ret(ctx,
-                                                additional, add_len)) != 0) {
+        if ((ret = mbedtls_hmac_drbg_update(ctx,
+                                            additional, add_len)) != 0) {
             goto exit;
         }
     }
@@ -384,8 +363,8 @@ int mbedtls_hmac_drbg_random_with_add(void *p_rng,
     }
 
     /* 6. Update */
-    if ((ret = mbedtls_hmac_drbg_update_ret(ctx,
-                                            additional, add_len)) != 0) {
+    if ((ret = mbedtls_hmac_drbg_update(ctx,
+                                        additional, add_len)) != 0) {
         goto exit;
     }
 
@@ -454,6 +433,9 @@ int mbedtls_hmac_drbg_write_seed_file(mbedtls_hmac_drbg_context *ctx, const char
         return MBEDTLS_ERR_HMAC_DRBG_FILE_IO_ERROR;
     }
 
+    /* Ensure no stdio buffering of secrets, as such buffers cannot be wiped. */
+    mbedtls_setbuf(f, NULL);
+
     if ((ret = mbedtls_hmac_drbg_random(ctx, buf, sizeof(buf))) != 0) {
         goto exit;
     }
@@ -484,6 +466,9 @@ int mbedtls_hmac_drbg_update_seed_file(mbedtls_hmac_drbg_context *ctx, const cha
         return MBEDTLS_ERR_HMAC_DRBG_FILE_IO_ERROR;
     }
 
+    /* Ensure no stdio buffering of secrets, as such buffers cannot be wiped. */
+    mbedtls_setbuf(f, NULL);
+
     n = fread(buf, 1, sizeof(buf), f);
     if (fread(&c, 1, 1, f) != 0) {
         ret = MBEDTLS_ERR_HMAC_DRBG_INPUT_TOO_BIG;
@@ -496,7 +481,7 @@ int mbedtls_hmac_drbg_update_seed_file(mbedtls_hmac_drbg_context *ctx, const cha
     fclose(f);
     f = NULL;
 
-    ret = mbedtls_hmac_drbg_update_ret(ctx, buf, n);
+    ret = mbedtls_hmac_drbg_update(ctx, buf, n);
 
 exit:
     mbedtls_platform_zeroize(buf, sizeof(buf));
@@ -513,7 +498,7 @@ exit:
 
 #if defined(MBEDTLS_SELF_TEST)
 
-#if !defined(MBEDTLS_SHA1_C)
+#if !defined(MBEDTLS_MD_CAN_SHA1)
 /* Dummy checkup routine */
 int mbedtls_hmac_drbg_self_test(int verbose)
 {
@@ -642,7 +627,7 @@ int mbedtls_hmac_drbg_self_test(int verbose)
 
     return 0;
 }
-#endif /* MBEDTLS_SHA1_C */
+#endif /* MBEDTLS_MD_CAN_SHA1 */
 #endif /* MBEDTLS_SELF_TEST */
 
 #endif /* MBEDTLS_HMAC_DRBG_C */

@@ -38,6 +38,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Messenger;
@@ -147,6 +148,13 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@CallSuper
 	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		godot.onConfigurationChanged(newConfig);
+	}
+
+	@CallSuper
+	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		if (resultCallback != null) {
@@ -172,7 +180,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@Override
 	public void onCreate(Bundle icicle) {
-		BenchmarkUtils.beginBenchmarkMeasure("GodotFragment::onCreate");
+		BenchmarkUtils.beginBenchmarkMeasure("Startup", "GodotFragment::onCreate");
 		super.onCreate(icicle);
 
 		final Activity activity = getActivity();
@@ -180,7 +188,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 		godot = new Godot(requireContext());
 		performEngineInitialization();
-		BenchmarkUtils.endBenchmarkMeasure("GodotFragment::onCreate");
+		BenchmarkUtils.endBenchmarkMeasure("Startup", "GodotFragment::onCreate");
 	}
 
 	private void performEngineInitialization() {
@@ -268,6 +276,32 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 		}
 
 		godot.onPause(this);
+	}
+
+	@Override
+	public void onStop() {
+		super.onStop();
+		if (!godot.isInitialized()) {
+			if (null != mDownloaderClientStub) {
+				mDownloaderClientStub.disconnect(getActivity());
+			}
+			return;
+		}
+
+		godot.onStop(this);
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+		if (!godot.isInitialized()) {
+			if (null != mDownloaderClientStub) {
+				mDownloaderClientStub.connect(getActivity());
+			}
+			return;
+		}
+
+		godot.onStart(this);
 	}
 
 	@Override

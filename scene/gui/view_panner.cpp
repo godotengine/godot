@@ -43,12 +43,14 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 		if (scroll_vec != Vector2() && mb->is_pressed()) {
 			if (control_scheme == SCROLL_PANS) {
 				if (mb->is_ctrl_pressed()) {
-					// Compute the zoom factor.
-					float zoom_factor = mb->get_factor() <= 0 ? 1.0 : mb->get_factor();
-					zoom_factor = ((scroll_zoom_factor - 1.0) * zoom_factor) + 1.0;
-					float zoom = (scroll_vec.x + scroll_vec.y) > 0 ? 1.0 / scroll_zoom_factor : scroll_zoom_factor;
-					zoom_callback.call(zoom, mb->get_position(), p_event);
-					return true;
+					if (scroll_vec.y != 0) {
+						// Compute the zoom factor.
+						float zoom_factor = mb->get_factor() <= 0 ? 1.0 : mb->get_factor();
+						zoom_factor = ((scroll_zoom_factor - 1.0) * zoom_factor) + 1.0;
+						float zoom = scroll_vec.y > 0 ? 1.0 / scroll_zoom_factor : scroll_zoom_factor;
+						zoom_callback.call(zoom, mb->get_position(), p_event);
+						return true;
+					}
 				} else {
 					Vector2 panning = scroll_vec * mb->get_factor();
 					if (pan_axis == PAN_AXIS_HORIZONTAL) {
@@ -73,11 +75,11 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 					}
 					pan_callback.call(-panning * scroll_speed, p_event);
 					return true;
-				} else if (!mb->is_shift_pressed()) {
+				} else if (!mb->is_shift_pressed() && scroll_vec.y != 0) {
 					// Compute the zoom factor.
 					float zoom_factor = mb->get_factor() <= 0 ? 1.0 : mb->get_factor();
 					zoom_factor = ((scroll_zoom_factor - 1.0) * zoom_factor) + 1.0;
-					float zoom = (scroll_vec.x + scroll_vec.y) > 0 ? 1.0 / scroll_zoom_factor : scroll_zoom_factor;
+					float zoom = scroll_vec.y > 0 ? 1.0 / scroll_zoom_factor : scroll_zoom_factor;
 					zoom_callback.call(zoom, mb->get_position(), p_event);
 					return true;
 				}
@@ -125,6 +127,17 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
+		if (pan_gesture->is_ctrl_pressed()) {
+			// Zoom gesture.
+			float pan_zoom_factor = 1.02f;
+			float zoom_direction = pan_gesture->get_delta().x - pan_gesture->get_delta().y;
+			if (zoom_direction == 0.f) {
+				return true;
+			}
+			float zoom = zoom_direction < 0 ? 1.0 / pan_zoom_factor : pan_zoom_factor;
+			zoom_callback.call(zoom, pan_gesture->get_position(), p_event);
+			return true;
+		}
 		pan_callback.call(-pan_gesture->get_delta() * scroll_speed, p_event);
 	}
 

@@ -143,10 +143,12 @@ void Node2D::_update_transform() {
 
 void Node2D::reparent(Node *p_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD;
-	Transform2D temp = get_global_transform();
-	Node::reparent(p_parent);
 	if (p_keep_global_transform) {
+		Transform2D temp = get_global_transform();
+		Node::reparent(p_parent);
 		set_global_transform(temp);
+	} else {
+		Node::reparent(p_parent);
 	}
 }
 

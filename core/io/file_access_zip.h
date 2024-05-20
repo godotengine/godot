@@ -61,11 +61,11 @@ private:
 
 public:
 	void close_handle(unzFile p_file) const;
-	unzFile get_file_handle(String p_file) const;
+	unzFile get_file_handle(const String &p_file) const;
 
-	Error add_package(String p_name);
+	Error add_package(const String &p_name);
 
-	bool file_exists(String p_name) const;
+	bool file_exists(const String &p_name) const;
 
 	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) override;
 	Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file) override;
@@ -100,6 +100,7 @@ public:
 
 	virtual Error get_error() const override; ///< get last error
 
+	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override;
 	virtual void store_8(uint8_t p_dest) override; ///< store a byte
 

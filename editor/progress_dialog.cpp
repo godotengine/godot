@@ -30,11 +30,10 @@
 
 #include "progress_dialog.h"
 
-#include "core/object/message_queue.h"
 #include "core/os/os.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/editor_scale.h"
+#include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "servers/display_server.h"
 
@@ -97,15 +96,8 @@ void BackgroundProgress::_end_task(const String &p_task) {
 	tasks.erase(p_task);
 }
 
-void BackgroundProgress::_bind_methods() {
-	ClassDB::bind_method("_add_task", &BackgroundProgress::_add_task);
-	ClassDB::bind_method("_task_step", &BackgroundProgress::_task_step);
-	ClassDB::bind_method("_end_task", &BackgroundProgress::_end_task);
-	ClassDB::bind_method("_update", &BackgroundProgress::_update);
-}
-
 void BackgroundProgress::add_task(const String &p_task, const String &p_label, int p_steps) {
-	MessageQueue::get_singleton()->push_call(this, "_add_task", p_task, p_label, p_steps);
+	callable_mp(this, &BackgroundProgress::_add_task).call_deferred(p_task, p_label, p_steps);
 }
 
 void BackgroundProgress::task_step(const String &p_task, int p_step) {
@@ -117,7 +109,7 @@ void BackgroundProgress::task_step(const String &p_task, int p_step) {
 	}
 
 	if (no_updates) {
-		MessageQueue::get_singleton()->push_call(this, "_update");
+		callable_mp(this, &BackgroundProgress::_update).call_deferred();
 	}
 
 	{
@@ -127,7 +119,7 @@ void BackgroundProgress::task_step(const String &p_task, int p_step) {
 }
 
 void BackgroundProgress::end_task(const String &p_task) {
-	MessageQueue::get_singleton()->push_call(this, "_end_task", p_task);
+	callable_mp(this, &BackgroundProgress::_end_task).call_deferred(p_task);
 }
 
 ////////////////////////////////////////////////
@@ -147,6 +139,13 @@ void ProgressDialog::_popup() {
 	main->set_offset(SIDE_BOTTOM, -style->get_margin(SIDE_BOTTOM));
 
 	if (!is_inside_tree()) {
+		for (Window *window : host_windows) {
+			if (window->has_focus()) {
+				popup_exclusive_centered(window, ms);
+				return;
+			}
+		}
+		// No host window found, use main window.
 		EditorInterface::get_singleton()->popup_dialog_centered(this, ms);
 	}
 }
@@ -226,11 +225,13 @@ void ProgressDialog::end_task(const String &p_task) {
 	}
 }
 
-void ProgressDialog::_cancel_pressed() {
-	canceled = true;
+void ProgressDialog::add_host_window(Window *p_window) {
+	ERR_FAIL_NULL(p_window);
+	host_windows.push_back(p_window);
 }
 
-void ProgressDialog::_bind_methods() {
+void ProgressDialog::_cancel_pressed() {
+	canceled = true;
 }
 
 ProgressDialog::ProgressDialog() {
@@ -249,5 +250,5 @@ ProgressDialog::ProgressDialog() {
 	cancel_hb->add_child(cancel);
 	cancel->set_text(TTR("Cancel"));
 	cancel_hb->add_spacer();
-	cancel->connect("pressed", callable_mp(this, &ProgressDialog::_cancel_pressed));
+	cancel->connect(SceneStringName(pressed), callable_mp(this, &ProgressDialog::_cancel_pressed));
 }

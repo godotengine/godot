@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -11,6 +12,7 @@ using Directory = GodotTools.Utils.Directory;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
 using Path = System.IO.Path;
+using System.Globalization;
 
 namespace GodotTools.Export
 {
@@ -73,7 +75,7 @@ namespace GodotTools.Export
             };
         }
 
-        private string _maybeLastExportError;
+        private string? _maybeLastExportError;
 
         // With this method we can override how a file is exported in the PCK
         public override void _ExportFile(string path, string type, string[] features)
@@ -87,6 +89,13 @@ namespace GodotTools.Export
                 throw new ArgumentException(
                     $"Resource of type {Internal.CSharpLanguageType} has an invalid file extension: {path}",
                     nameof(path));
+
+            if (!ProjectContainsDotNet())
+            {
+                _maybeLastExportError = $"This project contains C# files but no solution file was found at the following path: {GodotSharpDirs.ProjectSlnPath}\n" +
+                    "A solution file is required for projects with C# files. Please ensure that the solution file exists in the specified location and try again.";
+                throw new InvalidOperationException($"{path} is a C# file but no solution file exists.");
+            }
 
             // TODO: What if the source file is not part of the game's C# project?
 
@@ -135,7 +144,7 @@ namespace GodotTools.Export
             if (!ProjectContainsDotNet())
                 return;
 
-            if (!DeterminePlatformFromFeatures(features, out string platform))
+            if (!DeterminePlatformFromFeatures(features, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
 
             if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
@@ -194,13 +203,13 @@ namespace GodotTools.Export
                     BundleOutputs = false,
                     IncludeDebugSymbols = publishConfig.IncludeDebugSymbols,
                     RidOS = OS.DotNetOS.iOSSimulator,
-                    UseTempDir = true,
+                    UseTempDir = false,
                 });
             }
 
             List<string> outputPaths = new();
 
-            bool embedBuildResults = (bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android;
+            bool embedBuildResults = ((bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android) && platform != OS.Platforms.MacOS;
 
             foreach (PublishConfig config in targets)
             {
@@ -276,7 +285,7 @@ namespace GodotTools.Export
                             if (platform == OS.Platforms.iOS)
                             {
                                 // Exclude dsym folders.
-                                return !dir.EndsWith(".dsym", StringComparison.InvariantCultureIgnoreCase);
+                                return !dir.EndsWith(".dsym", StringComparison.OrdinalIgnoreCase);
                             }
 
                             return true;
@@ -296,7 +305,7 @@ namespace GodotTools.Export
                             if (platform == OS.Platforms.iOS)
                             {
                                 // Don't recurse into dsym folders.
-                                return !dir.EndsWith(".dsym", StringComparison.InvariantCultureIgnoreCase);
+                                return !dir.EndsWith(".dsym", StringComparison.OrdinalIgnoreCase);
                             }
 
                             return true;
@@ -312,13 +321,13 @@ namespace GodotTools.Export
                                     byte[] fileData = File.ReadAllBytes(path);
                                     string hash = Convert.ToBase64String(SHA512.HashData(fileData));
 
-                                    manifest.Append($"{filePath}\t{hash}\n");
+                                    manifest.Append(CultureInfo.InvariantCulture, $"{filePath}\t{hash}\n");
 
                                     AddFile($"res://.godot/mono/publish/{arch}/{filePath}", fileData, false);
                                 }
                                 else
                                 {
-                                    if (platform == OS.Platforms.iOS && path.EndsWith(".dat"))
+                                    if (platform == OS.Platforms.iOS && path.EndsWith(".dat", StringComparison.OrdinalIgnoreCase))
                                     {
                                         AddIosBundleFile(path);
                                     }
@@ -327,7 +336,7 @@ namespace GodotTools.Export
                                         AddSharedObject(path, tags: null,
                                             Path.Join(projectDataDirName,
                                                 Path.GetRelativePath(publishOutputDir,
-                                                    Path.GetDirectoryName(path))));
+                                                    Path.GetDirectoryName(path)!)));
                                     }
                                 }
                             }
@@ -361,7 +370,7 @@ namespace GodotTools.Export
                 }
 
                 var xcFrameworkPath = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig,
-                    $"{GodotSharpDirs.ProjectAssemblyName}.xcframework");
+                    $"{GodotSharpDirs.ProjectAssemblyName}_aot.xcframework");
                 if (!BuildManager.GenerateXCFrameworkBlocking(outputPaths,
                         Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig, xcFrameworkPath)))
                 {
@@ -389,10 +398,10 @@ namespace GodotTools.Export
                 if (filterDir(dir))
                 {
                     addEntry(dir, false);
-                }
-                else if (recurseDir(dir))
-                {
-                    RecursePublishContents(dir, filterDir, filterFile, recurseDir, addEntry);
+                    if (recurseDir(dir))
+                    {
+                        RecursePublishContents(dir, filterDir, filterFile, recurseDir, addEntry);
+                    }
                 }
             }
         }
@@ -450,7 +459,7 @@ namespace GodotTools.Export
             }
         }
 
-        private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, out string platform)
+        private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, [NotNullWhen(true)] out string? platform)
         {
             foreach (var feature in features)
             {

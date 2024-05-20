@@ -866,7 +866,7 @@ int TDefaultIoResolverBase::resolveInOutLocation(EShLanguage stage, TVarEntryInf
     }
 
     // no locations added if already present, a built-in variable, or a variable with SPIR-V decorate
-    if (type.getQualifier().hasLocation() || type.isBuiltIn() || type.getQualifier().hasSprivDecorate()) {
+    if (type.getQualifier().hasLocation() || type.isBuiltIn() || type.getQualifier().hasSpirvDecorate()) {
         return ent.newLocation = -1;
     }
 
@@ -953,7 +953,7 @@ int TDefaultGlslIoResolver::resolveInOutLocation(EShLanguage stage, TVarEntryInf
         return ent.newLocation = type.getQualifier().layoutLocation;
     }
     // no locations added if already present, a built-in variable, or a variable with SPIR-V decorate
-    if (type.isBuiltIn() || type.getQualifier().hasSprivDecorate()) {
+    if (type.isBuiltIn() || type.getQualifier().hasSpirvDecorate()) {
         return ent.newLocation = -1;
     }
     // no locations on blocks of built-in variables

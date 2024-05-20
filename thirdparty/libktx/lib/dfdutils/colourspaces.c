@@ -36,7 +36,7 @@ sPrimaryMapping primaryMap[] = {
  * @param[in] latitude tolerance to use while matching. A suitable value might be 0.002
  *                 but it depends on the application.
  */
-khr_df_primaries_e findMapping(Primaries *p, float latitude) {
+khr_df_primaries_e findMapping(const Primaries *p, float latitude) {
     unsigned int i;
     for (i = 0; i < sizeof(primaryMap)/sizeof(sPrimaryMapping); ++i) {
         if (primaryMap[i].primaries.Rx - p->Rx <= latitude && p->Rx - primaryMap[i].primaries.Rx <= latitude &&
@@ -48,4 +48,24 @@ khr_df_primaries_e findMapping(Primaries *p, float latitude) {
     }
     /* No match */
     return KHR_DF_PRIMARIES_UNSPECIFIED;
+}
+
+/**
+ * @brief Get the primaries corresponding to a KDFS primaries enum.
+ *
+ * @param[in]   primaries   the enum identifying the KDFS primaries.
+ * @param[out]  p           pointer to a Primaries struct that will
+ *                          be filled with the primary values.
+ */
+bool getPrimaries(khr_df_primaries_e primaries, Primaries *p) {
+    unsigned int i;
+    for (i = 0; i < sizeof(primaryMap)/sizeof(sPrimaryMapping); ++i) {
+        if (primaryMap[i].dfPrimaryEnum == primaries) {
+            *p = primaryMap[i].primaries;
+            return true;
+        }
+    }
+
+    /* No match */
+    return false;
 }

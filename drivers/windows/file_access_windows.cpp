@@ -32,6 +32,7 @@
 
 #include "file_access_windows.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
@@ -41,13 +42,14 @@
 #include <windows.h>
 
 #include <errno.h>
+#include <io.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tchar.h>
 #include <wchar.h>
 
 #ifdef _MSC_VER
-#define S_ISREG(m) ((m)&_S_IFREG)
+#define S_ISREG(m) ((m) & _S_IFREG)
 #endif
 
 void FileAccessWindows::check_errors() const {
@@ -60,12 +62,12 @@ void FileAccessWindows::check_errors() const {
 
 bool FileAccessWindows::is_path_invalid(const String &p_path) {
 	// Check for invalid operating system file.
-	String fname = p_path;
+	String fname = p_path.get_file().to_lower();
+
 	int dot = fname.find(".");
 	if (dot != -1) {
 		fname = fname.substr(0, dot);
 	}
-	fname = fname.to_lower();
 	return invalid_files.has(fname);
 }
 
@@ -120,19 +122,63 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	// Windows is case insensitive, but all other platforms are sensitive to it
 	// To ease cross-platform development, we issue a warning if users try to access
 	// a file using the wrong case (which *works* on Windows, but won't on other
-	// platforms).
-	if (p_mode_flags == READ) {
-		WIN32_FIND_DATAW d;
-		HANDLE fnd = FindFirstFileW((LPCWSTR)(path.utf16().get_data()), &d);
-		if (fnd != INVALID_HANDLE_VALUE) {
-			String fname = String::utf16((const char16_t *)(d.cFileName));
-			if (!fname.is_empty()) {
-				String base_file = path.get_file();
-				if (base_file != fname && base_file.findn(fname) == 0) {
-					WARN_PRINT("Case mismatch opening requested file '" + base_file + "', stored as '" + fname + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
+	// platforms), we only check for relative paths, or paths in res:// or user://,
+	// other paths aren't likely to be portable anyway.
+	if (p_mode_flags == READ && (p_path.is_relative_path() || get_access_type() != ACCESS_FILESYSTEM)) {
+		String base_path = path;
+		String working_path;
+		String proper_path;
+
+		if (get_access_type() == ACCESS_RESOURCES) {
+			if (ProjectSettings::get_singleton()) {
+				working_path = ProjectSettings::get_singleton()->get_resource_path();
+				if (!working_path.is_empty()) {
+					base_path = working_path.path_to_file(base_path);
 				}
 			}
+			proper_path = "res://";
+		} else if (get_access_type() == ACCESS_USERDATA) {
+			working_path = OS::get_singleton()->get_user_data_dir();
+			if (!working_path.is_empty()) {
+				base_path = working_path.path_to_file(base_path);
+			}
+			proper_path = "user://";
+		}
+
+		WIN32_FIND_DATAW d;
+		Vector<String> parts = base_path.split("/");
+
+		bool mismatch = false;
+
+		for (const String &part : parts) {
+			working_path = working_path.path_join(part);
+
+			// Skip if relative.
+			if (part == "." || part == "..") {
+				proper_path = proper_path.path_join(part);
+				continue;
+			}
+
+			HANDLE fnd = FindFirstFileW((LPCWSTR)(working_path.utf16().get_data()), &d);
+
+			if (fnd == INVALID_HANDLE_VALUE) {
+				mismatch = false;
+				break;
+			}
+
+			const String fname = String::utf16((const char16_t *)(d.cFileName));
+
 			FindClose(fnd);
+
+			if (!mismatch) {
+				mismatch = (part != fname && part.findn(fname) == 0);
+			}
+
+			proper_path = proper_path.path_join(fname);
+		}
+
+		if (mismatch) {
+			WARN_PRINT("Case mismatch opening requested file '" + p_path + "', stored as '" + proper_path + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
 		}
 	}
 #endif
@@ -284,6 +330,72 @@ uint8_t FileAccessWindows::get_8() const {
 	return b;
 }
 
+uint16_t FileAccessWindows::get_16() const {
+	ERR_FAIL_NULL_V(f, 0);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == WRITE) {
+			fflush(f);
+		}
+		prev_op = READ;
+	}
+
+	uint16_t b = 0;
+	if (fread(&b, 1, 2, f) != 2) {
+		check_errors();
+	}
+
+	if (big_endian) {
+		b = BSWAP16(b);
+	}
+
+	return b;
+}
+
+uint32_t FileAccessWindows::get_32() const {
+	ERR_FAIL_NULL_V(f, 0);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == WRITE) {
+			fflush(f);
+		}
+		prev_op = READ;
+	}
+
+	uint32_t b = 0;
+	if (fread(&b, 1, 4, f) != 4) {
+		check_errors();
+	}
+
+	if (big_endian) {
+		b = BSWAP32(b);
+	}
+
+	return b;
+}
+
+uint64_t FileAccessWindows::get_64() const {
+	ERR_FAIL_NULL_V(f, 0);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == WRITE) {
+			fflush(f);
+		}
+		prev_op = READ;
+	}
+
+	uint64_t b = 0;
+	if (fread(&b, 1, 8, f) != 8) {
+		check_errors();
+	}
+
+	if (big_endian) {
+		b = BSWAP64(b);
+	}
+
+	return b;
+}
+
 uint64_t FileAccessWindows::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_NULL_V(f, -1);
@@ -301,6 +413,24 @@ uint64_t FileAccessWindows::get_buffer(uint8_t *p_dst, uint64_t p_length) const 
 
 Error FileAccessWindows::get_error() const {
 	return last_error;
+}
+
+Error FileAccessWindows::resize(int64_t p_length) {
+	ERR_FAIL_NULL_V_MSG(f, FAILED, "File must be opened before use.");
+	errno_t res = _chsize_s(_fileno(f), p_length);
+	switch (res) {
+		case 0:
+			return OK;
+		case EACCES:
+		case EBADF:
+			return ERR_FILE_CANT_OPEN;
+		case ENOSPC:
+			return ERR_OUT_OF_MEMORY;
+		case EINVAL:
+			return ERR_INVALID_PARAMETER;
+		default:
+			return FAILED;
+	}
 }
 
 void FileAccessWindows::flush() {
@@ -324,6 +454,63 @@ void FileAccessWindows::store_8(uint8_t p_dest) {
 		prev_op = WRITE;
 	}
 	fwrite(&p_dest, 1, 1, f);
+}
+
+void FileAccessWindows::store_16(uint16_t p_dest) {
+	ERR_FAIL_NULL(f);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == READ) {
+			if (last_error != ERR_FILE_EOF) {
+				fseek(f, 0, SEEK_CUR);
+			}
+		}
+		prev_op = WRITE;
+	}
+
+	if (big_endian) {
+		p_dest = BSWAP16(p_dest);
+	}
+
+	fwrite(&p_dest, 1, 2, f);
+}
+
+void FileAccessWindows::store_32(uint32_t p_dest) {
+	ERR_FAIL_NULL(f);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == READ) {
+			if (last_error != ERR_FILE_EOF) {
+				fseek(f, 0, SEEK_CUR);
+			}
+		}
+		prev_op = WRITE;
+	}
+
+	if (big_endian) {
+		p_dest = BSWAP32(p_dest);
+	}
+
+	fwrite(&p_dest, 1, 4, f);
+}
+
+void FileAccessWindows::store_64(uint64_t p_dest) {
+	ERR_FAIL_NULL(f);
+
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == READ) {
+			if (last_error != ERR_FILE_EOF) {
+				fseek(f, 0, SEEK_CUR);
+			}
+		}
+		prev_op = WRITE;
+	}
+
+	if (big_endian) {
+		p_dest = BSWAP64(p_dest);
+	}
+
+	fwrite(&p_dest, 1, 8, f);
 }
 
 void FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {

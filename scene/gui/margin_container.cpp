@@ -37,13 +37,7 @@ Size2 MarginContainer::get_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
-			continue;
-		}
-		if (!c->is_visible()) {
+		if (!c || !c->is_visible() || c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -103,11 +97,8 @@ void MarginContainer::_notification(int p_what) {
 			Size2 s = get_size();
 
 			for (int i = 0; i < get_child_count(); i++) {
-				Control *c = Object::cast_to<Control>(get_child(i));
+				Control *c = as_sortable_control(get_child(i));
 				if (!c) {
-					continue;
-				}
-				if (c->is_set_as_top_level()) {
 					continue;
 				}
 

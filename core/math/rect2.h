@@ -51,7 +51,7 @@ struct _NO_DISCARD_ Rect2 {
 
 	_FORCE_INLINE_ Vector2 get_center() const { return position + (size * 0.5f); }
 
-	inline bool intersects(const Rect2 &p_rect, const bool p_include_borders = false) const {
+	inline bool intersects(const Rect2 &p_rect, bool p_include_borders = false) const {
 #ifdef MATH_CHECKS
 		if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {
 			ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
@@ -152,14 +152,12 @@ struct _NO_DISCARD_ Rect2 {
 			return Rect2();
 		}
 
-		new_rect.position.x = MAX(p_rect.position.x, position.x);
-		new_rect.position.y = MAX(p_rect.position.y, position.y);
+		new_rect.position = p_rect.position.max(position);
 
 		Point2 p_rect_end = p_rect.position + p_rect.size;
 		Point2 end = position + size;
 
-		new_rect.size.x = MIN(p_rect_end.x, end.x) - new_rect.position.x;
-		new_rect.size.y = MIN(p_rect_end.y, end.y) - new_rect.position.y;
+		new_rect.size = p_rect_end.min(end) - new_rect.position;
 
 		return new_rect;
 	}
@@ -172,11 +170,9 @@ struct _NO_DISCARD_ Rect2 {
 #endif
 		Rect2 new_rect;
 
-		new_rect.position.x = MIN(p_rect.position.x, position.x);
-		new_rect.position.y = MIN(p_rect.position.y, position.y);
+		new_rect.position = p_rect.position.min(position);
 
-		new_rect.size.x = MAX(p_rect.position.x + p_rect.size.x, position.x + size.x);
-		new_rect.size.y = MAX(p_rect.position.y + p_rect.size.y, position.y + size.y);
+		new_rect.size = (p_rect.position + p_rect.size).max(position + size);
 
 		new_rect.size = new_rect.size - new_rect.position; // Make relative again.
 
@@ -282,7 +278,11 @@ struct _NO_DISCARD_ Rect2 {
 	}
 
 	_FORCE_INLINE_ Rect2 abs() const {
-		return Rect2(Point2(position.x + MIN(size.x, (real_t)0), position.y + MIN(size.y, (real_t)0)), size.abs());
+		return Rect2(position + size.minf(0), size.abs());
+	}
+
+	_FORCE_INLINE_ Rect2 round() const {
+		return Rect2(position.round(), size.round());
 	}
 
 	Vector2 get_support(const Vector2 &p_normal) const {
@@ -307,14 +307,14 @@ struct _NO_DISCARD_ Rect2 {
 			i_f = i;
 
 			Vector2 r = (b - a);
-			float l = r.length();
+			const real_t l = r.length();
 			if (l == 0.0f) {
 				continue;
 			}
 
 			// Check inside.
 			Vector2 tg = r.orthogonal();
-			float s = tg.dot(center) - tg.dot(a);
+			const real_t s = tg.dot(center) - tg.dot(a);
 			if (s < 0.0f) {
 				side_plus++;
 			} else {
@@ -330,8 +330,8 @@ struct _NO_DISCARD_ Rect2 {
 			Vector2 t13 = (position - a) * ir;
 			Vector2 t24 = (end - a) * ir;
 
-			float tmin = MAX(MIN(t13.x, t24.x), MIN(t13.y, t24.y));
-			float tmax = MIN(MAX(t13.x, t24.x), MAX(t13.y, t24.y));
+			const real_t tmin = MAX(MIN(t13.x, t24.x), MIN(t13.y, t24.y));
+			const real_t tmax = MIN(MAX(t13.x, t24.x), MAX(t13.y, t24.y));
 
 			// if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
 			if (tmax < 0 || tmin > tmax || tmin >= l) {

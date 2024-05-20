@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,17 +34,21 @@
 /* External Class Implementation                                        */
 /************************************************************************/
 
+RawLoader::RawLoader() : ImageLoader(FileType::Raw)
+{
+}
+
+
 RawLoader::~RawLoader()
 {
-    if (copy && content) {
-        free((void*)content);
-        content = nullptr;
-    }
+    if (copy) free(surface.buf32);
 }
 
 
 bool RawLoader::open(const uint32_t* data, uint32_t w, uint32_t h, bool copy)
 {
+    if (!LoadModule::read()) return true;
+
     if (!data || w == 0 || h == 0) return false;
 
     this->w = (float)w;
@@ -52,13 +56,19 @@ bool RawLoader::open(const uint32_t* data, uint32_t w, uint32_t h, bool copy)
     this->copy = copy;
 
     if (copy) {
-        content = (uint32_t*)malloc(sizeof(uint32_t) * w * h);
-        if (!content) return false;
-        memcpy((void*)content, data, sizeof(uint32_t) * w * h);
+        surface.buf32 = (uint32_t*)malloc(sizeof(uint32_t) * w * h);
+        if (!surface.buf32) return false;
+        memcpy((void*)surface.buf32, data, sizeof(uint32_t) * w * h);
     }
-    else content = const_cast<uint32_t*>(data);
+    else surface.buf32 = const_cast<uint32_t*>(data);
 
-    cs = ColorSpace::ARGB8888;
+    //setup the surface
+    surface.stride = w;
+    surface.w = w;
+    surface.h = h;
+    surface.cs = ColorSpace::ARGB8888;
+    surface.channelSize = sizeof(uint32_t);
+    surface.premultiplied = true;
 
     return true;
 }
@@ -66,30 +76,7 @@ bool RawLoader::open(const uint32_t* data, uint32_t w, uint32_t h, bool copy)
 
 bool RawLoader::read()
 {
+    LoadModule::read();
+
     return true;
-}
-
-
-bool RawLoader::close()
-{
-    return true;
-}
-
-
-unique_ptr<Surface> RawLoader::bitmap()
-{
-    if (!content) return nullptr;
-
-    //TODO: It's better to keep this surface instance in the loader side
-    auto surface = new Surface;
-    surface->buf32 = content;
-    surface->stride = static_cast<uint32_t>(w);
-    surface->w = static_cast<uint32_t>(w);
-    surface->h = static_cast<uint32_t>(h);
-    surface->cs = cs;
-    surface->channelSize = sizeof(uint32_t);
-    surface->premultiplied = true;
-    surface->owner = true;
-
-    return unique_ptr<Surface>(surface);
 }

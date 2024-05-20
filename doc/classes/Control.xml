@@ -457,7 +457,7 @@
 		<method name="get_theme_color" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a [Color] from the first matching [Theme] in the tree if that [Theme] has a color item with the specified [param name] and [param theme_type]. If [param theme_type] is omitted the class name of the current control is used as the type, or [member theme_type_variation] if it is defined. If the type is a class name its parent classes are also checked, in order of inheritance. If the type is a variation its base types are checked, in order of dependency, then the control's class name and its parent classes are checked.
 				For the current control its local overrides are considered first (see [method add_theme_color_override]), then its assigned [member theme]. After the current control, each parent control and its assigned [member theme] are considered; controls without a [member theme] assigned are skipped. If no matching [Theme] is found in the tree, the custom project [Theme] (see [member ProjectSettings.gui/theme/custom]) and the default [Theme] are used (see [ThemeDB]).
@@ -484,7 +484,7 @@
 		<method name="get_theme_constant" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a constant from the first matching [Theme] in the tree if that [Theme] has a constant item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
@@ -514,7 +514,7 @@
 		<method name="get_theme_font" qualifiers="const">
 			<return type="Font" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a [Font] from the first matching [Theme] in the tree if that [Theme] has a font item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
@@ -523,7 +523,7 @@
 		<method name="get_theme_font_size" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a font size from the first matching [Theme] in the tree if that [Theme] has a font size item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
@@ -532,7 +532,7 @@
 		<method name="get_theme_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns an icon from the first matching [Theme] in the tree if that [Theme] has an icon item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
@@ -541,7 +541,7 @@
 		<method name="get_theme_stylebox" qualifiers="const">
 			<return type="StyleBox" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a [StyleBox] from the first matching [Theme] in the tree if that [Theme] has a stylebox item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
@@ -590,7 +590,7 @@
 		<method name="has_theme_color" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a color item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
@@ -607,7 +607,7 @@
 		<method name="has_theme_constant" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a constant item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
@@ -624,7 +624,7 @@
 		<method name="has_theme_font" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
@@ -641,7 +641,7 @@
 		<method name="has_theme_font_size" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font size item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
@@ -658,7 +658,7 @@
 		<method name="has_theme_icon" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has an icon item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
@@ -675,7 +675,7 @@
 		<method name="has_theme_stylebox" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="theme_type" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a stylebox item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
@@ -937,29 +937,28 @@
 		<member name="anchor_top" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
 			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
-		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true">
+		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" deprecated="Use [member Node.auto_translate_mode] instead.">
 			Toggles if any text should automatically change to its translated version depending on the current locale.
-			Also decides if the node's strings should be parsed for POT generation.
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
 			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered and won't receive input.
 		</member>
 		<member name="custom_minimum_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2(0, 0)">
-			The minimum size of the node's bounding rectangle. If you set it to a value greater than (0, 0), the node's bounding rectangle will always have at least this size, even if its content is smaller. If it's set to (0, 0), the node sizes automatically to fit its content, be it a texture or child nodes.
+			The minimum size of the node's bounding rectangle. If you set it to a value greater than [code](0, 0)[/code], the node's bounding rectangle will always have at least this size. Note that [Control] nodes have their internal minimum size returned by [method get_minimum_size]. It depends on the control's contents, like text, textures, or style boxes. The actual minimum size is the maximum value of this property and the internal minimum size (see [method get_combined_minimum_size]).
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode" default="0">
 			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard, gamepad, and mouse signals.
 		</member>
-		<member name="focus_neighbor_bottom" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
+		<member name="focus_neighbor_bottom" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)" keywords="focus_neighbour_bottom">
 			Tells Godot which node it should give focus to if the user presses the down arrow on the keyboard or down on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_down] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.
 		</member>
-		<member name="focus_neighbor_left" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
+		<member name="focus_neighbor_left" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)" keywords="focus_neighbour_left">
 			Tells Godot which node it should give focus to if the user presses the left arrow on the keyboard or left on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_left] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the left of this one.
 		</member>
-		<member name="focus_neighbor_right" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
+		<member name="focus_neighbor_right" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)" keywords="focus_neighbour_right">
 			Tells Godot which node it should give focus to if the user presses the right arrow on the keyboard or right on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_right] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the right of this one.
 		</member>
-		<member name="focus_neighbor_top" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
+		<member name="focus_neighbor_top" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)" keywords="focus_neighbour_top">
 			Tells Godot which node it should give focus to if the user presses the top arrow on the keyboard or top on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_up] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the top of this one.
 		</member>
 		<member name="focus_next" type="NodePath" setter="set_focus_next" getter="get_focus_next" default="NodePath(&quot;&quot;)">
@@ -1013,6 +1012,7 @@
 			Distance between the node's top edge and its parent control, based on [member anchor_top].
 			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
 		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 		<member name="pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2(0, 0)">
 			By default, the node's pivot is its top-left corner. When you change its [member rotation] or [member scale], it will rotate or scale around this pivot. Set this property to [member size] / 2 to pivot around the Control's center.
 		</member>
@@ -1104,13 +1104,13 @@
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse cursor enters the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+				Emitted when the mouse cursor enters the control's (or any child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
 				[b]Note:[/b] [member CanvasItem.z_index] doesn't affect, which Control receives the signal.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse cursor leaves the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+				Emitted when the mouse cursor leaves the control's (and all child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
 				[b]Note:[/b] [member CanvasItem.z_index] doesn't affect, which Control receives the signal.
 				[b]Note:[/b] If you want to check whether the mouse truly left the area, ignoring any top nodes, you can use code like this:
 				[codeblock]
@@ -1150,12 +1150,24 @@
 			Sent when the node changes size. Use [member size] to get the new size.
 		</constant>
 		<constant name="NOTIFICATION_MOUSE_ENTER" value="41">
-			Sent when the mouse cursor enters the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
-			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect, which Control receives the notification.
+			Sent when the mouse cursor enters the control's (or any child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
+			See also [constant NOTIFICATION_MOUSE_ENTER_SELF].
 		</constant>
 		<constant name="NOTIFICATION_MOUSE_EXIT" value="42">
+			Sent when the mouse cursor leaves the control's (and all child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
+			See also [constant NOTIFICATION_MOUSE_EXIT_SELF].
+		</constant>
+		<constant name="NOTIFICATION_MOUSE_ENTER_SELF" value="60" experimental="The reason this notification is sent may change in the future.">
+			Sent when the mouse cursor enters the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
+			See also [constant NOTIFICATION_MOUSE_ENTER].
+		</constant>
+		<constant name="NOTIFICATION_MOUSE_EXIT_SELF" value="61" experimental="The reason this notification is sent may change in the future.">
 			Sent when the mouse cursor leaves the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
-			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect, which Control receives the notification.
+			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
+			See also [constant NOTIFICATION_MOUSE_EXIT].
 		</constant>
 		<constant name="NOTIFICATION_FOCUS_ENTER" value="43">
 			Sent when the node grabs focus.
@@ -1170,12 +1182,22 @@
 			- One of the node's theme property overrides is changed.
 			- The node enters the scene tree.
 			[b]Note:[/b] As an optimization, this notification won't be sent from changes that occur while this node is outside of the scene tree. Instead, all of the theme item updates can be applied at once when the node enters the scene tree.
+			[b]Note:[/b] This notification is received alongside [constant Node.NOTIFICATION_ENTER_TREE], so if you are instantiating a scene, the child nodes will not be initialized yet. You can use it to setup theming for this node, child nodes created from script, or if you want to access child nodes added in the editor, make sure the node is ready using [method Node.is_node_ready].
+			[codeblock]
+			func _notification(what):
+			    if what == NOTIFICATION_THEME_CHANGED:
+			        if not is_node_ready():
+			            await ready # Wait until ready signal.
+			        $Label.add_theme_color_override("font_color", Color.YELLOW)
+			[/codeblock]
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_BEGIN" value="47">
-			Sent when this node is inside a [ScrollContainer] which has begun being scrolled.
+			Sent when this node is inside a [ScrollContainer] which has begun being scrolled when dragging the scrollable area [i]with a touch event[/i]. This notification is [i]not[/i] sent when scrolling by dragging the scrollbar, scrolling with the mouse wheel or scrolling with keyboard/gamepad events.
+			[b]Note:[/b] This signal is only emitted on Android or iOS, or on desktop/web platforms when [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is enabled.
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_END" value="48">
-			Sent when this node is inside a [ScrollContainer] which has stopped being scrolled.
+			Sent when this node is inside a [ScrollContainer] which has stopped being scrolled when dragging the scrollable area [i]with a touch event[/i]. This notification is [i]not[/i] sent when scrolling by dragging the scrollbar, scrolling with the mouse wheel or scrolling with keyboard/gamepad events.
+			[b]Note:[/b] This signal is only emitted on Android or iOS, or on desktop/web platforms when [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is enabled.
 		</constant>
 		<constant name="NOTIFICATION_LAYOUT_DIRECTION_CHANGED" value="49">
 			Sent when control layout direction is changed.
@@ -1318,6 +1340,7 @@
 		</constant>
 		<constant name="MOUSE_FILTER_IGNORE" value="2" enum="MouseFilter">
 			The control will not receive mouse movement input events and mouse button input events if clicked on through [method _gui_input]. The control will also not receive the [signal mouse_entered] nor [signal mouse_exited] signals. This will not block other controls from receiving these events or firing the signals. Ignored events will not be handled automatically.
+			[b]Note:[/b] If the control has received [signal mouse_entered] but not [signal mouse_exited], changing the [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] will cause [signal mouse_exited] to be emitted.
 		</constant>
 		<constant name="GROW_DIRECTION_BEGIN" value="0" enum="GrowDirection">
 			The control will grow to the left or top to make up if its minimum size is changed to be greater than its current size on the respective axis.

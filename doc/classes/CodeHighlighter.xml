@@ -16,9 +16,8 @@
 			<param index="2" name="color" type="Color" />
 			<param index="3" name="line_only" type="bool" default="false" />
 			<description>
-				Adds a color region such as comments or strings.
-				Both the start and end keys must be symbols. Only the start key has to be unique.
-				[param line_only] denotes if the region should continue until the end of the line or carry over on to the next line. If the end key is blank this is automatically set to [code]true[/code].
+				Adds a color region (such as for comments or strings) from [param start_key] to [param end_key]. Both keys should be symbols, and [param start_key] must not be shared with other delimiters.
+				If [param line_only] is [code]true[/code] or [param end_key] is an empty [String], the region does not carry over to the next line.
 			</description>
 		</method>
 		<method name="add_keyword_color">

@@ -11,7 +11,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_propagate_input_event" qualifiers="virtual const">
+		<method name="_propagate_input_event" qualifiers="virtual const" experimental="">
 			<return type="bool" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>

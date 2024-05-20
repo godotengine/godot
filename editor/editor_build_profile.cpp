@@ -36,10 +36,10 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_property_name_processor.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/themes/editor_scale.h"
 
 const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	// This maps to SCons build options.
@@ -383,7 +383,7 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 
 	switch (p_action) {
 		case ACTION_RESET: {
-			confirm_dialog->set_text("Reset the edited profile?");
+			confirm_dialog->set_text(TTR("Reset the edited profile?"));
 			confirm_dialog->popup_centered();
 		} break;
 		case ACTION_LOAD: {
@@ -404,11 +404,11 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 			export_profile->set_current_file(profile_path->get_text());
 		} break;
 		case ACTION_NEW: {
-			confirm_dialog->set_text("Create a new profile?");
+			confirm_dialog->set_text(TTR("Create a new profile?"));
 			confirm_dialog->popup_centered();
 		} break;
 		case ACTION_DETECT: {
-			confirm_dialog->set_text("This will scan all files in the current project to detect used classes.");
+			confirm_dialog->set_text(TTR("This will scan all files in the current project to detect used classes."));
 			confirm_dialog->popup_centered();
 		} break;
 		case ACTION_MAX: {
@@ -481,7 +481,7 @@ void EditorBuildProfileManager::_detect_classes() {
 			String l = f->get_line();
 			Vector<String> fields = l.split("::");
 			if (fields.size() == 4) {
-				String path = fields[0];
+				const String &path = fields[0];
 				DetectedFile df;
 				df.timestamp = fields[1].to_int();
 				df.md5 = fields[2];
@@ -593,15 +593,19 @@ void EditorBuildProfileManager::_action_confirm() {
 	}
 }
 
+void EditorBuildProfileManager::_hide_requested() {
+	_cancel_pressed(); // From AcceptDialog.
+}
+
 void EditorBuildProfileManager::_fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected) {
 	TreeItem *class_item = class_list->create_item(p_parent);
 	class_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class, "Node"));
-	String text = p_class;
+	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class));
+	const String &text = p_class;
 
 	bool disabled = edited->is_class_disabled(p_class);
 	if (disabled) {
-		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("disabled_font_color"), EditorStringName(Editor)));
+		class_item->set_custom_color(0, class_list->get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	}
 
 	class_item->set_text(0, text);
@@ -646,21 +650,10 @@ void EditorBuildProfileManager::_class_list_item_selected() {
 
 	Variant md = item->get_metadata(0);
 	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
-		String text = description_bit->get_class_description(md);
-		if (!text.is_empty()) {
-			// Display both class name and description, since the help bit may be displayed
-			// far away from the location (especially if the dialog was resized to be taller).
-			description_bit->set_text(vformat("[b]%s[/b]: %s", md, text));
-			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
-		} else {
-			// Use nested `vformat()` as translators shouldn't interfere with BBCode tags.
-			description_bit->set_text(vformat(TTR("No description available for %s."), vformat("[b]%s[/b]", md)));
-			description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 0.5));
-		}
+		description_bit->parse_symbol("class|" + md.operator String() + "|");
 	} else if (md.get_type() == Variant::INT) {
 		String build_option_description = EditorBuildProfile::get_build_option_description(EditorBuildProfile::BuildOption((int)md));
-		description_bit->set_text(vformat("[b]%s[/b]: %s", TTR(item->get_text(0)), TTRGET(build_option_description)));
-		description_bit->get_rich_text()->set_self_modulate(Color(1, 1, 1, 1));
+		description_bit->set_custom_text(TTR(item->get_text(0)), String(), TTRGET(build_option_description));
 	}
 }
 
@@ -823,19 +816,19 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	profile_actions[ACTION_NEW] = memnew(Button(TTR("New")));
 	path_hbc->add_child(profile_actions[ACTION_NEW]);
-	profile_actions[ACTION_NEW]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_NEW));
+	profile_actions[ACTION_NEW]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_NEW));
 
 	profile_actions[ACTION_LOAD] = memnew(Button(TTR("Load")));
 	path_hbc->add_child(profile_actions[ACTION_LOAD]);
-	profile_actions[ACTION_LOAD]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_LOAD));
+	profile_actions[ACTION_LOAD]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_LOAD));
 
 	profile_actions[ACTION_SAVE] = memnew(Button(TTR("Save")));
 	path_hbc->add_child(profile_actions[ACTION_SAVE]);
-	profile_actions[ACTION_SAVE]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE));
+	profile_actions[ACTION_SAVE]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE));
 
 	profile_actions[ACTION_SAVE_AS] = memnew(Button(TTR("Save As")));
 	path_hbc->add_child(profile_actions[ACTION_SAVE_AS]);
-	profile_actions[ACTION_SAVE_AS]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE_AS));
+	profile_actions[ACTION_SAVE_AS]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_SAVE_AS));
 
 	main_vbc->add_margin_child(TTR("Profile:"), path_hbc);
 
@@ -845,25 +838,27 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	profile_actions[ACTION_RESET] = memnew(Button(TTR("Reset to Defaults")));
 	profiles_hbc->add_child(profile_actions[ACTION_RESET]);
-	profile_actions[ACTION_RESET]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_RESET));
+	profile_actions[ACTION_RESET]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_RESET));
 
 	profile_actions[ACTION_DETECT] = memnew(Button(TTR("Detect from Project")));
 	profiles_hbc->add_child(profile_actions[ACTION_DETECT]);
-	profile_actions[ACTION_DETECT]->connect("pressed", callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_DETECT));
+	profile_actions[ACTION_DETECT]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_DETECT));
 
 	main_vbc->add_margin_child(TTR("Actions:"), profiles_hbc);
 
 	class_list = memnew(Tree);
+	class_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	class_list->set_hide_root(true);
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	class_list->connect("cell_selected", callable_mp(this, &EditorBuildProfileManager::_class_list_item_selected));
 	class_list->connect("item_edited", callable_mp(this, &EditorBuildProfileManager::_class_list_item_edited), CONNECT_DEFERRED);
 	class_list->connect("item_collapsed", callable_mp(this, &EditorBuildProfileManager::_class_list_item_collapsed));
 	// It will be displayed once the user creates or chooses a profile.
-	main_vbc->add_margin_child(TTR("Configure Engine Build Profile:"), class_list, true);
+	main_vbc->add_margin_child(TTR("Configure Engine Compilation Profile:"), class_list, true);
 
 	description_bit = memnew(EditorHelpBit);
-	description_bit->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
+	description_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
+	description_bit->connect("request_hide", callable_mp(this, &EditorBuildProfileManager::_hide_requested));
 	main_vbc->add_margin_child(TTR("Description:"), description_bit, false);
 
 	confirm_dialog = memnew(ConfirmationDialog);
@@ -874,7 +869,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	import_profile = memnew(EditorFileDialog);
 	add_child(import_profile);
 	import_profile->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	import_profile->add_filter("*.build", TTR("Engine Build Profile"));
+	import_profile->add_filter("*.build", TTR("Engine Compilation Profile"));
 	import_profile->connect("files_selected", callable_mp(this, &EditorBuildProfileManager::_import_profile));
 	import_profile->set_title(TTR("Load Profile"));
 	import_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -882,16 +877,16 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	export_profile = memnew(EditorFileDialog);
 	add_child(export_profile);
 	export_profile->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	export_profile->add_filter("*.build", TTR("Engine Build Profile"));
+	export_profile->add_filter("*.build", TTR("Engine Compilation Profile"));
 	export_profile->connect("file_selected", callable_mp(this, &EditorBuildProfileManager::_export_profile));
 	export_profile->set_title(TTR("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
 	force_detect_classes = memnew(LineEdit);
-	main_vbc->add_margin_child(TTR("Forced classes on detect:"), force_detect_classes);
+	main_vbc->add_margin_child(TTR("Forced Classes on Detect:"), force_detect_classes);
 	force_detect_classes->connect("text_changed", callable_mp(this, &EditorBuildProfileManager::_force_detect_classes_changed));
 
-	set_title(TTR("Edit Build Configuration Profile"));
+	set_title(TTR("Edit Compilation Configuration Profile"));
 
 	singleton = this;
 }

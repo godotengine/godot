@@ -13,6 +13,8 @@ denoise = "#define MODE_DENOISE";
 
 #VERSION_DEFINES
 
+#extension GL_EXT_samplerless_texture_functions : enable
+
 // One 2D local group focusing in one layer at a time, though all
 // in parallel (no barriers) makes more sense than a 3D local group
 // as this can take more advantage of the cache for each group.
@@ -74,6 +76,7 @@ layout(set = 1, binding = 3) uniform DenoiseParams {
 	float albedo_bandwidth;
 	float normal_bandwidth;
 
+	int half_search_window;
 	float filter_strength;
 }
 denoise_params;
@@ -152,7 +155,7 @@ uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out
 
 	uint iters = 0;
 	while (all(greaterThanEqual(icell, ivec3(0))) && all(lessThan(icell, ivec3(bake_params.grid_size))) && (iters < 1000)) {
-		uvec2 cell_data = texelFetch(usampler3D(grid, linear_sampler), icell, 0).xy;
+		uvec2 cell_data = texelFetch(grid, icell, 0).xy;
 		uint triangle_count = cell_data.x;
 		if (triangle_count > 0) {
 			uint hit = RAY_MISS;
@@ -264,7 +267,16 @@ uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out
 			break;
 		}
 
-		bvec3 mask = lessThanEqual(side.xyz, min(side.yzx, side.zxy));
+		// There should be only one axis updated at a time for DDA to work properly.
+		bvec3 mask = bvec3(true, false, false);
+		float m = side.x;
+		if (side.y < m) {
+			m = side.y;
+			mask = bvec3(false, true, false);
+		}
+		if (side.z < m) {
+			mask = bvec3(false, false, true);
+		}
 		side += vec3(mask) * delta;
 		icell += ivec3(vec3(mask)) * step;
 		iters++;
@@ -838,10 +850,10 @@ void main() {
 
 	// Half the size of the patch window around each pixel that is weighted to compute the denoised pixel.
 	// A value of 1 represents a 3x3 window, a value of 2 a 5x5 window, etc.
-	const int HALF_PATCH_WINDOW = 4;
+	const int HALF_PATCH_WINDOW = 3;
 
 	// Half the size of the search window around each pixel that is denoised and weighted to compute the denoised pixel.
-	const int HALF_SEARCH_WINDOW = 10;
+	const int HALF_SEARCH_WINDOW = denoise_params.half_search_window;
 
 	// For all of the following sigma values, smaller values will give less weight to pixels that have a bigger distance
 	// in the feature being evaluated. Therefore, smaller values are likely to cause more noise to appear, but will also

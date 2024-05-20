@@ -78,8 +78,8 @@
 	</methods>
 	<members>
 		<member name="colors" type="PackedColorArray" setter="set_colors" getter="get_colors" default="PackedColorArray(0, 0, 0, 1, 1, 1, 1, 1)">
-			Gradient's colors returned as a [PackedColorArray].
-			[b]Note:[/b] This property returns a copy, modifying the return value does not update the gradient. To update the gradient use [method set_color] method (for updating colors individually) or assign to this property directly (for bulk-updating all colors at once).
+			Gradient's colors as a [PackedColorArray].
+			[b]Note:[/b] Setting this property updates all colors at once. To update any color individually use [method set_color].
 		</member>
 		<member name="interpolation_color_space" type="int" setter="set_interpolation_color_space" getter="get_interpolation_color_space" enum="Gradient.ColorSpace" default="0">
 			The color space used to interpolate between points of the gradient. It does not affect the returned colors, which will always be in sRGB space. See [enum ColorSpace] for available modes.
@@ -89,8 +89,8 @@
 			The algorithm used to interpolate between points of the gradient. See [enum InterpolationMode] for available modes.
 		</member>
 		<member name="offsets" type="PackedFloat32Array" setter="set_offsets" getter="get_offsets" default="PackedFloat32Array(0, 1)">
-			Gradient's offsets returned as a [PackedFloat32Array].
-			[b]Note:[/b] This property returns a copy, modifying the return value does not update the gradient. To update the gradient use [method set_offset] method (for updating offsets individually) or assign to this property directly (for bulk-updating all offsets at once).
+			Gradient's offsets as a [PackedFloat32Array].
+			[b]Note:[/b] Setting this property updates all offsets at once. To update any offset individually use [method set_offset].
 		</member>
 	</members>
 	<constants>

@@ -32,14 +32,13 @@
 
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_settings.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
-
-#include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
 
 void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	if (panner->gui_input(p_event)) {
@@ -502,8 +501,7 @@ Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p
 	// Clamp.
 	if (p_clamp) {
 		Vector2i size = tile_set_atlas_source->get_atlas_grid_size();
-		ret.x = CLAMP(ret.x, 0, size.x - 1);
-		ret.y = CLAMP(ret.y, 0, size.y - 1);
+		ret = ret.clamp(Vector2i(), size - Vector2i(1, 1));
 	}
 
 	return ret;
@@ -576,8 +574,13 @@ void TileAtlasView::_update_theme_item_cache() {
 
 void TileAtlasView::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				break;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 		} break;
 
@@ -611,7 +614,7 @@ TileAtlasView::TileAtlasView() {
 	button_center_view = memnew(Button);
 	button_center_view->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
 	button_center_view->set_grow_direction_preset(Control::PRESET_TOP_RIGHT);
-	button_center_view->connect("pressed", callable_mp(this, &TileAtlasView::_center_view));
+	button_center_view->connect(SceneStringName(pressed), callable_mp(this, &TileAtlasView::_center_view));
 	button_center_view->set_flat(true);
 	button_center_view->set_disabled(true);
 	button_center_view->set_tooltip_text(TTR("Center View"));
@@ -624,8 +627,8 @@ TileAtlasView::TileAtlasView() {
 	center_container = memnew(CenterContainer);
 	center_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	center_container->set_anchors_preset(Control::PRESET_CENTER);
-	center_container->connect("gui_input", callable_mp(this, &TileAtlasView::gui_input));
-	center_container->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
+	center_container->connect(SceneStringName(gui_input), callable_mp(this, &TileAtlasView::gui_input));
+	center_container->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 	center_container->set_focus_mode(FOCUS_CLICK);
 	panel->add_child(center_container);
 
@@ -661,14 +664,14 @@ TileAtlasView::TileAtlasView() {
 	base_tiles_root_control = memnew(Control);
 	base_tiles_root_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	base_tiles_root_control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	base_tiles_root_control->connect("gui_input", callable_mp(this, &TileAtlasView::_base_tiles_root_control_gui_input));
+	base_tiles_root_control->connect(SceneStringName(gui_input), callable_mp(this, &TileAtlasView::_base_tiles_root_control_gui_input));
 	left_vbox->add_child(base_tiles_root_control);
 
 	background_left = memnew(Control);
 	background_left->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	background_left->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT);
 	background_left->set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
-	background_left->connect("draw", callable_mp(this, &TileAtlasView::_draw_background_left));
+	background_left->connect(SceneStringName(draw), callable_mp(this, &TileAtlasView::_draw_background_left));
 	base_tiles_root_control->add_child(background_left);
 
 	base_tiles_drawing_root = memnew(Control);
@@ -679,19 +682,19 @@ TileAtlasView::TileAtlasView() {
 	base_tiles_draw = memnew(Control);
 	base_tiles_draw->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_draw->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	base_tiles_draw->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles));
+	base_tiles_draw->connect(SceneStringName(draw), callable_mp(this, &TileAtlasView::_draw_base_tiles));
 	base_tiles_drawing_root->add_child(base_tiles_draw);
 
 	base_tiles_texture_grid = memnew(Control);
 	base_tiles_texture_grid->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_texture_grid->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	base_tiles_texture_grid->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles_texture_grid));
+	base_tiles_texture_grid->connect(SceneStringName(draw), callable_mp(this, &TileAtlasView::_draw_base_tiles_texture_grid));
 	base_tiles_drawing_root->add_child(base_tiles_texture_grid);
 
 	base_tiles_shape_grid = memnew(Control);
 	base_tiles_shape_grid->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	base_tiles_shape_grid->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	base_tiles_shape_grid->connect("draw", callable_mp(this, &TileAtlasView::_draw_base_tiles_shape_grid));
+	base_tiles_shape_grid->connect(SceneStringName(draw), callable_mp(this, &TileAtlasView::_draw_base_tiles_shape_grid));
 	base_tiles_drawing_root->add_child(base_tiles_shape_grid);
 
 	// Alternative tiles.
@@ -704,14 +707,14 @@ TileAtlasView::TileAtlasView() {
 	alternative_tiles_root_control = memnew(Control);
 	alternative_tiles_root_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	alternative_tiles_root_control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	alternative_tiles_root_control->connect("gui_input", callable_mp(this, &TileAtlasView::_alternative_tiles_root_control_gui_input));
+	alternative_tiles_root_control->connect(SceneStringName(gui_input), callable_mp(this, &TileAtlasView::_alternative_tiles_root_control_gui_input));
 	right_vbox->add_child(alternative_tiles_root_control);
 
 	background_right = memnew(Control);
 	background_right->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	background_right->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT);
 	background_right->set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
-	background_right->connect("draw", callable_mp(this, &TileAtlasView::_draw_background_right));
+	background_right->connect(SceneStringName(draw), callable_mp(this, &TileAtlasView::_draw_background_right));
 	alternative_tiles_root_control->add_child(background_right);
 
 	alternative_tiles_drawing_root = memnew(Control);
@@ -722,7 +725,7 @@ TileAtlasView::TileAtlasView() {
 	alternatives_draw = memnew(Control);
 	alternatives_draw->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	alternatives_draw->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	alternatives_draw->connect("draw", callable_mp(this, &TileAtlasView::_draw_alternatives));
+	alternatives_draw->connect(SceneStringName(draw), callable_mp(this, &TileAtlasView::_draw_alternatives));
 	alternative_tiles_drawing_root->add_child(alternatives_draw);
 }
 

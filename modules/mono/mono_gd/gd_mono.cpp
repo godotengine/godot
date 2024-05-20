@@ -53,13 +53,6 @@
 #include <dlfcn.h>
 #endif
 
-// TODO mobile
-#if 0
-#ifdef IOS_ENABLED
-#include "support/ios_support.h"
-#endif
-#endif
-
 GDMono *GDMono::singleton = nullptr;
 
 namespace {
@@ -395,6 +388,7 @@ void GDMono::initialize() {
 
 		if (godot_plugins_initialize != nullptr) {
 			is_native_aot = true;
+			runtime_initialized = true;
 		} else {
 			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 		}
@@ -555,12 +549,6 @@ GDMono::GDMono() {
 
 GDMono::~GDMono() {
 	finalizing_scripts_domain = true;
-
-	if (is_runtime_initialized()) {
-		if (GDMonoCache::godot_api_cache_updated) {
-			GDMonoCache::managed_callbacks.DisposablesTracker_OnGodotShuttingDown();
-		}
-	}
 
 	if (hostfxr_dll_handle) {
 		OS::get_singleton()->close_dynamic_library(hostfxr_dll_handle);
