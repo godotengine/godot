@@ -1029,3 +1029,43 @@ void CharacterAnimator::_bind_methods()
 
     ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "animation_layer_arrays"), "set_animation_layer_arrays", "get_animation_layer_arrays");
 }
+
+
+//////////////////////////////////////////////// CharacterAnimationLogicNode /////////////////////////////////////////
+void CharacterAnimationLogicNode::process(CharacterAnimatorLayer* animator,Blackboard* blackboard, double delta)
+{
+    if (GDVIRTUAL_IS_OVERRIDDEN(_animation_process)) {
+        GDVIRTUAL_CALL(_animation_process, animator,blackboard, delta);
+        return ;
+    }
+
+}
+bool CharacterAnimationLogicNode::check_stop(CharacterAnimatorLayer* animator,Blackboard* blackboard)
+{
+    auto context = animator->_get_logic_context();
+    if(context->time < check_stop_delay_time)
+    {
+        return false;
+    }
+    if (GDVIRTUAL_IS_OVERRIDDEN(_check_stop)) {
+        bool is_stop = false;
+        GDVIRTUAL_CALL(_check_stop, animator,blackboard, is_stop);
+        return is_stop;
+    }
+    if(stop_check_type == Life)
+    {
+        return (life_time >= context->time);
+    }
+    else if(stop_check_type == PlayCount)
+    {
+        return (context->play_count >= play_count);
+    }
+    else 
+    {
+        if(stop_check_condtion.is_valid())
+        {
+            return stop_check_condtion->is_enable(blackboard,true);
+        }
+    }
+    return true;
+}

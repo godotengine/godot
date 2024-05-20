@@ -335,37 +335,6 @@ protected:
     BlendType m_BlendType = BT_Blend;
 };
 class CharacterAnimatorLayer;
-class CharacterAnimationLogicNode;
-class CharacterAnimationLogicRoot : public Resource
-{
-    GDCLASS(CharacterAnimationLogicRoot,Resource)
-public:
-    void sort();
-public:
-    bool is_need_sort = true;
-    LocalVector<Ref<CharacterAnimationLogicNode>>  node_list;
-};
-// 动画逻辑层信息
-/*
-    每一个层里面可以处理多个动画状态
-    每一个状态都有一套动画配置
-*/
-class CharacterAnimationLogicLayer : public Resource
-{
-    GDCLASS(CharacterAnimationLogicLayer, Resource);
-
-public:
-
-    void set_default_state_name(const StringName& p_default_state_name) { default_state_name = p_default_state_name; }
-    StringName get_default_state_name() { return default_state_name; }
-
-
-public:
-    //  默认状态名称
-    StringName default_state_name;
-    HashMap<StringName, Ref<CharacterAnimationLogicRoot>> state_map;
-
-};
 // 动画逻辑上下文
 struct CharacterAnimationLogicContext
 {
@@ -379,6 +348,7 @@ struct CharacterAnimationLogicContext
     // 执行时长
     float time = 0.0f;
     bool is_start = false;
+    int play_count = 1;
 
 };
 
@@ -433,6 +403,10 @@ public:
          m_Animator = p_animator; 
          config = _config;
     }
+    CharacterAnimationLogicContext* _get_logic_context()
+    {
+        return &logic_context;
+    }
 
     void play_animation(Ref<CharacterAnimatorNodeBase> p_node);
     ~CharacterAnimatorLayer();
@@ -456,11 +430,19 @@ public:
         PlayCount,
         // 通过检测条件结束
         Condition,
-        Script,
     };
     struct SortCharacterAnimationLogicNode {
         bool operator()(const Ref<CharacterAnimationLogicNode> &l, const Ref<CharacterAnimationLogicNode> &r) const {
-            return l->priority > r->priority;
+            int lp = 0;
+            int rp = 0;
+            if(l.is_valid()){
+                lp = l->priority;
+            }
+            if(r.is_valid()){
+                rp = r->priority;
+            }
+
+            return lp > lp;
         }
     };
 
@@ -476,6 +458,91 @@ public:
          }
     }
     Ref<BlackboardPlan> get_blackboard_plan() { return blackboard_plan; }
+
+    void set_node_name(StringName p_node_name) { node_name = p_node_name; }
+    StringName get_node_name() { return node_name; }
+
+    void set_priority(int p_priority) { priority = p_priority; }
+    int get_priority() { return priority; }
+
+    void set_player_animation_name(StringName p_player_animation_name) { player_animation_name = p_player_animation_name; }
+    StringName get_player_animation_name() { return player_animation_name; }
+
+    void set_enter_condtion(const Ref<CharacterAnimatorCondition>& p_enter_condtion) { enter_condtion = p_enter_condtion; }
+    Ref<CharacterAnimatorCondition> get_enter_condtion() { return enter_condtion; }
+
+    void set_check_stop_delay_time(float p_check_stop_delay_time) { check_stop_delay_time = p_check_stop_delay_time; }
+    float get_check_stop_delay_time() { return check_stop_delay_time; }
+
+    void set_life_time(float p_life_time) { life_time = p_life_time; }
+    float get_life_time() { return life_time; }
+
+    void set_stop_check_type(AnimatorAIStopCheckType p_stop_check_type) { stop_check_type = p_stop_check_type; }
+    AnimatorAIStopCheckType get_stop_check_type() { return stop_check_type; }
+
+    void set_stop_check_condtion(const Ref<CharacterAnimatorCondition>& p_stop_check_condtion) { stop_check_condtion = p_stop_check_condtion; }
+    Ref<CharacterAnimatorCondition> get_stop_check_condtion() { return stop_check_condtion; }
+    
+    void init_blackboard()
+    {
+        if(blackboard_plan.is_null())
+        {
+            return ;
+        }
+        if(!blackboard_plan->has_var("OldForward"))
+            blackboard_plan->add_var("OldForward",BBVariable(Variant::VECTOR3,Vector3()));
+
+        if(!blackboard_plan->has_var("CurrForward"))
+            blackboard_plan->add_var("CurrForward",BBVariable(Variant::VECTOR3,Vector3()));
+
+        if(!blackboard_plan->has_var("MoveTarget"))
+            blackboard_plan->add_var("MoveTarget",BBVariable(Variant::VECTOR3,Vector3()));
+
+        if(!blackboard_plan->has_var("CurrState"))
+            blackboard_plan->add_var("CurrState",BBVariable(Variant::STRING_NAME,StringName()));
+
+        if(!blackboard_plan->has_var("HorizontalMovement"))
+            blackboard_plan->add_var("HorizontalMovement",BBVariable(Variant::FLOAT,0.0f));
+
+        if(!blackboard_plan->has_var("VerticalMovement"))
+            blackboard_plan->add_var("VerticalMovement",BBVariable(Variant::FLOAT,0.0f));
+        
+        if(!blackboard_plan->has_var("Pitch"))
+            blackboard_plan->add_var("Pitch",BBVariable(Variant::FLOAT,0.0f));
+        if(!blackboard_plan->has_var("Yaw"))
+            blackboard_plan->add_var("Yaw",BBVariable(Variant::FLOAT,0.0f));
+        if(!blackboard_plan->has_var("Speed"))
+            blackboard_plan->add_var("Speed",BBVariable(Variant::FLOAT,0.0f));
+        
+        // 是否使用能力
+        if(!blackboard_plan->has_var("IsAbility"))
+            blackboard_plan->add_var("IsAbility",BBVariable(Variant::BOOL,false));
+        if(!blackboard_plan->has_var("AbilityIndex"))
+            blackboard_plan->add_var("AbilityIndex",BBVariable(Variant::INT,0));
+        if(!blackboard_plan->has_var("AbilityIntData"))
+            blackboard_plan->add_var("AbilityIntData",BBVariable(Variant::INT,0));
+        if(!blackboard_plan->has_var("AbilityFloatData"))
+            blackboard_plan->add_var("AbilityFloatData",BBVariable(Variant::FLOAT,0.0f));
+        
+        if(!blackboard_plan->has_var("IsGround"))
+            blackboard_plan->add_var("IsGround",BBVariable(Variant::BOOL,false));
+        if(!blackboard_plan->has_var("IsMoving"))
+            blackboard_plan->add_var("IsMoving",BBVariable(Variant::BOOL,false));
+        
+        if(!blackboard_plan->has_var("IsJump"))
+            blackboard_plan->add_var("IsJump",BBVariable(Variant::BOOL,false));
+        if(!blackboard_plan->has_var("IsCrouch"))
+            blackboard_plan->add_var("IsCrouch",BBVariable(Variant::BOOL,false));
+        if(!blackboard_plan->has_var("IsAttack"))
+            blackboard_plan->add_var("IsAttack",BBVariable(Variant::BOOL,false));
+        if(!blackboard_plan->has_var("IsDead"))
+            blackboard_plan->add_var("IsDead",BBVariable(Variant::BOOL,false));
+        if(!blackboard_plan->has_var("LegIndex"))
+            blackboard_plan->add_var("LegIndex",BBVariable(Variant::INT,0));
+        
+        
+    }
+
 private:
     
 	virtual void process(CharacterAnimatorLayer* animator,Blackboard* blackboard, double delta);
@@ -497,9 +564,10 @@ public:
     Ref<BlackboardPlan> blackboard_plan;
     // 检测结束等待时间
     float check_stop_delay_time = 0.0f;
+    AnimatorAIStopCheckType stop_check_type;
     // 生命期
     float life_time = 0.0f;
-    AnimatorAIStopCheckType stop_check_type;
+    int play_count = 1;
     
     // 退出检测条件
     Ref<CharacterAnimatorCondition> stop_check_condtion;
@@ -556,6 +624,7 @@ public:
     }
 
 };
+VARIANT_ENUM_CAST(CharacterAnimationLogicNode::AnimatorAIStopCheckType)
 VARIANT_ENUM_CAST(CharacterAnimatorLayerConfig::BlendType)
 VARIANT_ENUM_CAST(CharacterAnimatorNode2D::BlendType)
 #endif

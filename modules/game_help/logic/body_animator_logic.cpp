@@ -22,27 +22,21 @@ void AnimatorAIStateConditionBase::_bind_methods()
 }
 
 
+
+void CharacterAnimatorCondition::_bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("set_include_condition", "include_condition"), &CharacterAnimatorCondition::set_include_condition);
+    ClassDB::bind_method(D_METHOD("get_include_condition"), &CharacterAnimatorCondition::get_include_condition);
+
+    ClassDB::bind_method(D_METHOD("set_exclude_condition", "exclude_condition"), &CharacterAnimatorCondition::set_exclude_condition);
+    ClassDB::bind_method(D_METHOD("get_exclude_condition"), &CharacterAnimatorCondition::get_exclude_condition);
+
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "include_condition", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorConditionList"), "set_include_condition", "get_include_condition");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "exclude_condition",PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorConditionList"), "set_exclude_condition", "get_exclude_condition");
+
+}
 ////////////////////////////////////////// CharacterAnimationLogicRoot /////////////////////////////////////////
 void CharacterAnimationLogicRoot::sort()
 {
     node_list.sort_custom<CharacterAnimationLogicNode::SortCharacterAnimationLogicNode>();
-}
-
-//////////////////////////////////////////////// CharacterAnimationLogicNode /////////////////////////////////////////
-void CharacterAnimationLogicNode::process(CharacterAnimatorLayer* animator,Blackboard* blackboard, double delta)
-{
-    if (GDVIRTUAL_IS_OVERRIDDEN(_animation_process)) {
-        GDVIRTUAL_CALL(_animation_process, animator,blackboard, delta);
-        return ;
-    }
-
-}
-bool CharacterAnimationLogicNode::check_stop(CharacterAnimatorLayer* animator,Blackboard* blackboard)
-{
-    if (GDVIRTUAL_IS_OVERRIDDEN(_check_stop)) {
-        bool is_stop = false;
-        GDVIRTUAL_CALL(_check_stop, animator,blackboard, is_stop);
-        return is_stop;
-    }
-    return true;
 }

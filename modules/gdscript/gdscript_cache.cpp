@@ -289,6 +289,7 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 		script->set_binary_tokens_source(buffer);
 	} else {
 		r_error = script->load_source_code(remapped_path);
+		ERR_FAIL_COND_V_MSG(r_error, Ref<GDScript>(), "Attempt to open script '" + p_path + "' resulted in error '" + p_path + "'.");
 	}
 
 	if (r_error) {

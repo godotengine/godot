@@ -334,6 +334,16 @@ void BlackboardPlan::populate_blackboard(const Ref<Blackboard> &p_blackboard, bo
 	}
 }
 
+void BlackboardPlan::get_property_names_by_type(Variant::Type p_type,Array p_result)
+{
+	for (const Pair<StringName, BBVariable> &p : var_list) {
+		if(p.second.get_type() == p_type)
+		{
+			//rs.app
+			p_result.push_back(p.first);
+		}
+	}
+}
 void BlackboardPlan::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_prefetch_nodepath_vars", "enable"), &BlackboardPlan::set_prefetch_nodepath_vars);
 	ClassDB::bind_method(D_METHOD("is_prefetching_nodepath_vars"), &BlackboardPlan::is_prefetching_nodepath_vars);

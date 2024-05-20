@@ -113,6 +113,17 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 	//ClassDB::register_class<BTPlaySkill>();
 
 	
+	ClassDB::register_abstract_class<AnimatorAIStateConditionBase>();
+	ClassDB::register_class<AnimatorAIStateFloatCondition>();
+	ClassDB::register_class<AnimatorAIStateIntCondition>();
+	ClassDB::register_class<AnimatorAIStateStringNameCondition>();
+
+	
+	ClassDB::register_class<CharacterAnimatorConditionList>();
+	ClassDB::register_class<CharacterAnimatorCondition>();
+	ClassDB::register_class<CharacterAnimationLogicNode>();
+
+	
 	ClassDB::register_class<CharacterAnimatorNodeBase>();
 	ClassDB::register_class<CharacterAnimatorMask>();
 	ClassDB::register_class<CharacterBoneMap>();

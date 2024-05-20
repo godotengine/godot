@@ -75,6 +75,21 @@ void CharacterBodyMain::clear_all()
         
     }
 }
+void CharacterBodyMain::_notification( int p_notification )
+{
+	switch (p_notification) {
+		case NOTIFICATION_PROCESS: {
+            // 更新玩家位置
+            GDVIRTUAL_CALL(_update_player_position);
+            // 更新動畫
+            if(animator.is_valid())
+            {
+                animator->update_animation(get_process_delta_time());
+            }
+		} break;
+    }
+
+}
 // 初始化身體
 void CharacterBodyMain::init_main_body(String p_skeleton_file_path,StringName p_animation_group)
 {

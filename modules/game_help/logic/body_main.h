@@ -37,6 +37,7 @@ public:
     // 初始化身體
     void init_main_body(String p_skeleton_file_path,StringName p_animation_group);
     void clear_all();
+    void _notification( int p_notification );
     CharacterBodyMain();
     ~CharacterBodyMain();
 
@@ -139,6 +140,45 @@ public:
     {
         return animator;
     }
+
+    void set_speed(float p_speed)
+    {
+        Ref<Blackboard> blackboard = _get_blackboard();
+        blackboard->set_var(StringName("Speed"),p_speed);
+
+    }
+
+    void set_is_moveing(bool p_is_moveing)
+    {
+        Ref<Blackboard> blackboard = _get_blackboard();
+        blackboard->set_var(StringName("IsMoveing"),p_is_moveing);
+    }
+
+    void set_move_target(const Vector3& target)
+    {
+        Ref<Blackboard> blackboard = _get_blackboard();
+        blackboard->set_var(StringName("MoveTarget"),target);
+
+    }
+    // 设置是否蹲下
+    void set_is_jump(bool p_is_jump)
+    {
+        Ref<Blackboard> blackboard = _get_blackboard();
+        blackboard->set_var(StringName("IsJump"),p_is_jump);
+    }
+
+    // 更新角色的朝向
+    void update_forward(const Vector3 & old_forward,const Vector3& curr_forward,Blackboard * p_blocakboard)
+    {
+        Quaternion old_quat = Quaternion(old_forward,curr_forward);
+        Vector3 angle = old_quat.get_euler();
+        p_blocakboard->set_var(StringName("Pitch"),angle.x);
+        p_blocakboard->set_var(StringName("Yaw"),angle.y);
+
+        p_blocakboard->set_var(StringName("OldForward"),old_forward);
+        p_blocakboard->set_var(StringName("CurrForward"),curr_forward);
+    }
+	GDVIRTUAL0(_update_player_position)
 public:
     
 	virtual void input(const Ref<InputEvent> &p_event) override

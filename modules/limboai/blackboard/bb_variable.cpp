@@ -172,13 +172,16 @@ BBVariable::BBVariable(const BBVariable &p_var) {
 	}
 }
 
-BBVariable::BBVariable(Variant::Type p_type, PropertyHint p_hint, const String &p_hint_string) {
+BBVariable::BBVariable(Variant::Type p_type, const Variant &p_value,PropertyHint p_hint, const String &p_hint_string) {
 	data = memnew(Data);
 	data->refcount.init();
 
 	set_type(p_type);
 	data->hint = p_hint;
 	data->hint_string = p_hint_string;
+	if(p_value.get_type() != Variant::NIL) {
+		data->value = p_value;
+	}
 }
 
 BBVariable::~BBVariable() {

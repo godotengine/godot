@@ -1215,6 +1215,9 @@ void ProjectSettings::refresh_global_class_list() {
 		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
 			continue;
 		}
+		if(!FileAccess::exists(c["path"])) {
+			continue;
+		}
 		ScriptServer::add_global_class(c["class"], c["base"], c["language"], c["path"]);
 	}
 }
@@ -1335,6 +1338,9 @@ void ProjectSettings::load_scene_groups_cache() {
 		List<String> scene_paths;
 		cf->get_sections(&scene_paths);
 		for (const String &E : scene_paths) {
+			if(!FileAccess::exists(E)) {
+				continue;
+			}
 			Array scene_groups = cf->get_value(E, "groups", Array());
 			HashSet<StringName> cache;
 			for (const Variant &scene_group : scene_groups) {

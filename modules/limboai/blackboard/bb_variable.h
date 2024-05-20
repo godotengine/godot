@@ -77,7 +77,7 @@ public:
 	void operator=(const BBVariable &p_var);
 
 	BBVariable(const BBVariable &p_var);
-	BBVariable(Variant::Type p_type = Variant::Type::NIL, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "");
+	BBVariable(Variant::Type p_type = Variant::Type::NIL,const Variant &p_value = Variant(), PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "");
 	~BBVariable();
 };
 
