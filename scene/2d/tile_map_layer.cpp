@@ -603,6 +603,7 @@ void TileMapLayer::_rendering_occluders_update_cell(CellData &r_cell_data) {
 						rs->canvas_light_occluder_set_polygon(occluder, tile_data->get_occluder(occlusion_layer_index, flip_h, flip_v, transpose)->get_rid());
 						rs->canvas_light_occluder_attach_to_canvas(occluder, get_canvas());
 						rs->canvas_light_occluder_set_light_mask(occluder, tile_set->get_occlusion_layer_light_mask(occlusion_layer_index));
+						rs->canvas_light_occluder_set_as_sdf_collision(occluder, tile_set->get_occlusion_layer_sdf_collision(occlusion_layer_index));
 					} else {
 						// Clear occluder.
 						if (occluder.is_valid()) {
