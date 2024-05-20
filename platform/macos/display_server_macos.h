@@ -422,6 +422,10 @@ public:
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
 
+	virtual bool simulate_mouse_click(MouseButton p_button, BitField<KeyModifierMask> p_modifiers, bool p_pressed) override;
+	virtual bool simulate_keypress(Key p_keycode, BitField<KeyModifierMask> p_modifiers, bool p_pressed) override;
+	virtual bool simulate_unicode_input(const String &p_text) override;
+
 	virtual void process_events() override;
 	virtual void force_process_and_drop_events() override;
 

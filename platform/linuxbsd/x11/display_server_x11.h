@@ -371,6 +371,8 @@ class DisplayServerX11 : public DisplayServer {
 	void _poll_events();
 	void _check_pending_events(LocalVector<XEvent> &r_events);
 
+	unsigned int _find_free_keycode() const;
+
 	static Bool _predicate_all_events(Display *display, XEvent *event, XPointer arg);
 	static Bool _predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg);
 	static Bool _predicate_clipboard_incr(Display *display, XEvent *event, XPointer arg);
@@ -522,6 +524,10 @@ public:
 	virtual String keyboard_get_layout_name(int p_index) const override;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
+
+	virtual bool simulate_mouse_click(MouseButton p_button, BitField<KeyModifierMask> p_modifiers, bool p_pressed) override;
+	virtual bool simulate_keypress(Key p_keycode, BitField<KeyModifierMask> p_modifiers, bool p_pressed) override;
+	virtual bool simulate_unicode_input(const String &p_text) override;
 
 	virtual void process_events() override;
 

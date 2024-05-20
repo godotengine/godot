@@ -121,6 +121,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
+		case FEATURE_INPUT_SIMULATION:
 			return true;
 		default:
 			return false;
@@ -5514,6 +5515,176 @@ void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
 	} else {
 		ERR_PRINT("Unknown tablet driver " + p_driver + ".");
 	}
+}
+
+bool DisplayServerWindows::_simulate_modifiers_press(BitField<KeyModifierMask> p_modifiers) {
+	bool ok = true;
+	if (p_modifiers.has_flag(KeyModifierMask::SHIFT)) {
+		INPUT event;
+		ZeroMemory(&event, sizeof(INPUT));
+		event.type = INPUT_KEYBOARD;
+		event.ki.wVk = VK_LSHIFT;
+		event.ki.wScan = 0x2A;
+		ok = ok && (SendInput(1, &event, sizeof(event)) != 0);
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::ALT)) {
+		INPUT event;
+		ZeroMemory(&event, sizeof(INPUT));
+		event.type = INPUT_KEYBOARD;
+		event.ki.wVk = VK_MENU;
+		event.ki.wScan = 0x38;
+		ok = ok && (SendInput(1, &event, sizeof(event)) != 0);
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::META)) {
+		INPUT event;
+		ZeroMemory(&event, sizeof(INPUT));
+		event.type = INPUT_KEYBOARD;
+		event.ki.wVk = VK_LWIN;
+		event.ki.wScan = 0x5B;
+		ok = ok && (SendInput(1, &event, sizeof(event)) != 0);
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::CTRL) || p_modifiers.has_flag(KeyModifierMask::CMD_OR_CTRL)) {
+		INPUT event;
+		ZeroMemory(&event, sizeof(INPUT));
+		event.type = INPUT_KEYBOARD;
+		event.ki.wVk = VK_LCONTROL;
+		event.ki.wScan = 0x1D;
+		ok = ok && (SendInput(1, &event, sizeof(event)) != 0);
+	}
+	return ok;
+}
+
+bool DisplayServerWindows::_simulate_modifiers_release(BitField<KeyModifierMask> p_modifiers) {
+	bool ok = true;
+	if (p_modifiers.has_flag(KeyModifierMask::CTRL) || p_modifiers.has_flag(KeyModifierMask::CMD_OR_CTRL)) {
+		INPUT event;
+		ZeroMemory(&event, sizeof(INPUT));
+		event.type = INPUT_KEYBOARD;
+		event.ki.wVk = VK_LCONTROL;
+		event.ki.wScan = 0x1D;
+		event.ki.dwFlags = KEYEVENTF_KEYUP;
+		ok = ok && (SendInput(1, &event, sizeof(event)) != 0);
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::META)) {
+		INPUT event;
+		ZeroMemory(&event, sizeof(INPUT));
+		event.type = INPUT_KEYBOARD;
+		event.ki.wVk = VK_LWIN;
+		event.ki.wScan = 0x5B;
+		event.ki.dwFlags = KEYEVENTF_KEYUP;
+		ok = ok && (SendInput(1, &event, sizeof(event)) != 0);
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::ALT)) {
+		INPUT event;
+		ZeroMemory(&event, sizeof(INPUT));
+		event.type = INPUT_KEYBOARD;
+		event.ki.wVk = VK_MENU;
+		event.ki.wScan = 0x38;
+		event.ki.dwFlags = KEYEVENTF_KEYUP;
+		ok = ok && (SendInput(1, &event, sizeof(event)) != 0);
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::SHIFT)) {
+		INPUT event;
+		ZeroMemory(&event, sizeof(INPUT));
+		event.type = INPUT_KEYBOARD;
+		event.ki.wVk = VK_LSHIFT;
+		event.ki.wScan = 0x2A;
+		event.ki.dwFlags = KEYEVENTF_KEYUP;
+		ok = ok && (SendInput(1, &event, sizeof(event)) != 0);
+	}
+	return ok;
+}
+
+bool DisplayServerWindows::simulate_mouse_click(MouseButton p_button, BitField<KeyModifierMask> p_modifiers, bool p_pressed) {
+	bool ok = _simulate_modifiers_press(p_modifiers);
+
+	INPUT event;
+	ZeroMemory(&event, sizeof(INPUT));
+	event.type = INPUT_MOUSE;
+
+	switch (p_button) {
+		case MouseButton::LEFT: {
+			event.mi.dwFlags |= (p_pressed ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP);
+		} break;
+		case MouseButton::RIGHT: {
+			event.mi.dwFlags |= (p_pressed ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP);
+		} break;
+		case MouseButton::MIDDLE: {
+			event.mi.dwFlags |= (p_pressed ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP);
+		} break;
+		case MouseButton::MB_XBUTTON1: {
+			event.mi.dwFlags |= (p_pressed ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP);
+			event.mi.mouseData = 1;
+		} break;
+		case MouseButton::MB_XBUTTON2: {
+			event.mi.dwFlags |= (p_pressed ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP);
+			event.mi.mouseData = 2;
+		} break;
+		case MouseButton::WHEEL_UP: {
+			event.mi.dwFlags |= MOUSEEVENTF_WHEEL;
+			event.mi.mouseData = -120;
+		} break;
+		case MouseButton::WHEEL_DOWN: {
+			event.mi.dwFlags |= MOUSEEVENTF_WHEEL;
+			event.mi.mouseData = 120;
+		} break;
+		case MouseButton::WHEEL_LEFT: {
+			event.mi.dwFlags |= MOUSEEVENTF_HWHEEL;
+			event.mi.mouseData = -120;
+		} break;
+		case MouseButton::WHEEL_RIGHT: {
+			event.mi.dwFlags |= MOUSEEVENTF_HWHEEL;
+			event.mi.mouseData = 120;
+		} break;
+		default:
+			break;
+	}
+
+	ok = ok && (SendInput(1, &event, sizeof(event)) != 0);
+	ok = ok && _simulate_modifiers_release(p_modifiers);
+	return ok;
+}
+
+bool DisplayServerWindows::simulate_keypress(Key p_keycode, BitField<KeyModifierMask> p_modifiers, bool p_pressed) {
+	bool ok = _simulate_modifiers_press(p_modifiers);
+
+	INPUT event;
+	ZeroMemory(&event, sizeof(INPUT));
+	event.type = INPUT_KEYBOARD;
+
+	unsigned int win_keycode = KeyMappingWindows::get_vk(p_keycode & KeyModifierMask::CODE_MASK);
+	unsigned int win_scancode = KeyMappingWindows::get_scancode(p_keycode & KeyModifierMask::CODE_MASK);
+	if (win_scancode == 0) {
+		win_scancode = 0xE0 << 8 | KeyMappingWindows::get_scancode_ext(p_keycode & KeyModifierMask::CODE_MASK);
+		event.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+	}
+	event.ki.wVk = win_keycode;
+	event.ki.wScan = win_scancode;
+
+	if (!p_pressed) {
+		event.ki.dwFlags |= KEYEVENTF_KEYUP;
+	}
+
+	ok = ok && (SendInput(1, &event, sizeof(event)) != 0);
+
+	ok = ok && _simulate_modifiers_release(p_modifiers);
+	return ok;
+}
+
+bool DisplayServerWindows::simulate_unicode_input(const String &p_text) {
+	Char16String text16 = p_text.utf16();
+	bool ok = true;
+	for (int i = 0; i < text16.length(); i++) {
+		INPUT event;
+		ZeroMemory(&event, sizeof(INPUT));
+		event.type = INPUT_KEYBOARD;
+		event.ki.wScan = text16[i];
+		event.ki.dwFlags = KEYEVENTF_UNICODE;
+		ok = ok && (SendInput(1, &event, sizeof(event)) != 0);
+		event.ki.dwFlags |= KEYEVENTF_KEYUP;
+		ok = ok && (SendInput(1, &event, sizeof(event)) != 0);
+	}
+	return ok;
 }
 
 DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {

@@ -140,6 +140,7 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_CLIPBOARD_PRIMARY:
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_SCREEN_CAPTURE:
+		case FEATURE_INPUT_SIMULATION:
 			return true;
 		default: {
 		}
@@ -3285,6 +3286,78 @@ Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
 	}
 	return (Key)(key | modifiers);
 }
+
+bool DisplayServerX11::simulate_mouse_click(MouseButton p_button, BitField<KeyModifierMask> p_modifiers, bool p_pressed) {
+	XEvent event;
+	memset(&event, 0, sizeof(event));
+	event.xbutton.button = (unsigned int)p_button;
+	event.xbutton.same_screen = True;
+	event.xbutton.subwindow = DefaultRootWindow(x11_display);
+	while (event.xbutton.subwindow) {
+		event.xbutton.window = event.xbutton.subwindow;
+		XQueryPointer(x11_display, event.xbutton.window, &event.xbutton.root, &event.xbutton.subwindow, &event.xbutton.x_root, &event.xbutton.y_root, &event.xbutton.x, &event.xbutton.y, &event.xbutton.state);
+	}
+	event.xbutton.type = p_pressed ? ButtonPress : ButtonRelease;
+	event.xbutton.state = 0;
+	if (p_modifiers.has_flag(KeyModifierMask::SHIFT)) {
+		event.xkey.state |= ShiftMask;
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::CTRL) || p_modifiers.has_flag(KeyModifierMask::CMD_OR_CTRL)) {
+		event.xkey.state |= ControlMask;
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::ALT)) {
+		event.xkey.state |= Mod1Mask;
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::META)) {
+		event.xkey.state |= Mod4Mask;
+	}
+
+	bool ok = (XSendEvent(x11_display, PointerWindow, True, ButtonPressMask | ButtonReleaseMask, &event) == 0);
+	XSync(x11_display, False);
+	return ok;
+}
+
+bool DisplayServerX11::simulate_keypress(Key p_keycode, BitField<KeyModifierMask> p_modifiers, bool p_pressed) {
+	unsigned int xlib_keycode = KeyMappingX11::get_xlibcode(p_keycode & KeyModifierMask::CODE_MASK);
+
+	Window focused_window;
+	int focus_ret_state;
+	XGetInputFocus(x11_display, &focused_window, &focus_ret_state);
+
+	XEvent event;
+	memset(&event, 0, sizeof(event));
+	event.xkey.type = p_pressed ? KeyPress : KeyRelease;
+	event.xkey.keycode = xlib_keycode;
+	event.xkey.root = DefaultRootWindow(x11_display);
+	event.xkey.window = focused_window;
+	event.xkey.display = x11_display;
+	XQueryPointer(x11_display, event.xkey.window, &event.xkey.root, &event.xkey.subwindow, &event.xkey.x_root, &event.xkey.y_root, &event.xkey.x, &event.xkey.y, &event.xkey.state);
+	event.xkey.same_screen = True;
+	event.xkey.state = 0;
+	if (p_modifiers.has_flag(KeyModifierMask::SHIFT)) {
+		event.xkey.state |= ShiftMask;
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::CTRL) || p_modifiers.has_flag(KeyModifierMask::CMD_OR_CTRL)) {
+		event.xkey.state |= ControlMask;
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::ALT)) {
+		event.xkey.state |= Mod1Mask;
+	}
+	if (p_modifiers.has_flag(KeyModifierMask::META)) {
+		event.xkey.state |= Mod4Mask;
+	}
+
+	bool ok = (XSendEvent(x11_display, focused_window, True, KeyPressMask | KeyReleaseMask, &event) == 0);
+	XSync(x11_display, False);
+
+	return ok;
+}
+
+bool DisplayServerX11::simulate_unicode_input(const String &p_text) {
+	// TODO
+	return false;
+}
+
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
 	Atom actual_type = None;
 	int actual_format = 0;
