@@ -206,26 +206,13 @@ bool FileAccessEncrypted::eof_reached() const {
 	return eofed;
 }
 
-uint8_t FileAccessEncrypted::get_8() const {
-	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
-	if (pos >= get_length()) {
-		eofed = true;
-		return 0;
-	}
-
-	uint8_t b = data[pos];
-	pos++;
-	return b;
-}
-
 uint64_t FileAccessEncrypted::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_COND_V_MSG(writing, -1, "File has not been opened in read mode.");
 
 	uint64_t to_copy = MIN(p_length, get_length() - pos);
-	for (uint64_t i = 0; i < to_copy; i++) {
-		p_dst[i] = data[pos++];
-	}
+	memcpy(p_dst, data.ptr() + pos, to_copy);
+	pos += to_copy;
 
 	if (to_copy < p_length) {
 		eofed = true;
@@ -242,35 +229,18 @@ void FileAccessEncrypted::store_buffer(const uint8_t *p_src, uint64_t p_length) 
 	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 	ERR_FAIL_COND(!p_src && p_length > 0);
 
-	if (pos < get_length()) {
-		for (uint64_t i = 0; i < p_length; i++) {
-			store_8(p_src[i]);
-		}
-	} else if (pos == get_length()) {
+	if (pos + p_length >= get_length()) {
 		data.resize(pos + p_length);
-		for (uint64_t i = 0; i < p_length; i++) {
-			data.write[pos + i] = p_src[i];
-		}
-		pos += p_length;
 	}
+
+	memcpy(data.ptrw() + pos, p_src, p_length);
+	pos += p_length;
 }
 
 void FileAccessEncrypted::flush() {
 	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
 
 	// encrypted files keep data in memory till close()
-}
-
-void FileAccessEncrypted::store_8(uint8_t p_dest) {
-	ERR_FAIL_COND_MSG(!writing, "File has not been opened in write mode.");
-
-	if (pos < get_length()) {
-		data.write[pos] = p_dest;
-		pos++;
-	} else if (pos == get_length()) {
-		data.push_back(p_dest);
-		pos++;
-	}
 }
 
 bool FileAccessEncrypted::file_exists(const String &p_name) {
