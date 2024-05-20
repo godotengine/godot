@@ -3009,6 +3009,12 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		Point2 pos = mb->get_position();
+		bool no_mod_key_pressed = !mb->is_alt_pressed() && !mb->is_shift_pressed() && !mb->is_command_or_control_pressed();
+		if (mb->is_double_click() && !moving_selection && no_mod_key_pressed) {
+			int x = pos.x - timeline->get_name_limit();
+			float ofs = x / timeline->get_zoom_scale() + timeline->get_value();
+			emit_signal(SNAME("timeline_changed"), ofs, false);
+		}
 
 		if (!read_only) {
 			if (check_rect.has_point(pos)) {
@@ -7755,6 +7761,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bezier_edit->set_timeline(timeline);
 	bezier_edit->hide();
 	bezier_edit->set_v_size_flags(SIZE_EXPAND_FILL);
+	bezier_edit->connect("timeline_changed", callable_mp(this, &AnimationTrackEditor::_timeline_changed));
 
 	timeline_vbox->set_custom_minimum_size(Size2(0, 150) * EDSCALE);
 
