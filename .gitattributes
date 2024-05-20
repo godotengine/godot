@@ -5,6 +5,13 @@ thirdparty/* linguist-vendored
 
 # Normalize EOL for all files that Git considers text files
 * text=auto eol=lf
+# Except for Windows-only / Visual Studio files
+*.bat eol=crlf
+*.sln eol=crlf
+*.csproj eol=crlf
+misc/msvs/*.template eol=crlf
+# And some test files where the EOL matters
+*.test.txt -text
 
 # The above only works properly for Git 2.10+, so for older versions
 # we need to manually list the binary files we don't want modified.

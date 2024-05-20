@@ -6,7 +6,7 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2015             *
- * by the Xiph.Org Foundation http://www.xiph.org/                  *
+ * by the Xiph.Org Foundation https://xiph.org/                     *
  *                                                                  *
  ********************************************************************
 
@@ -19,7 +19,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <ogg/ogg.h>
 #include "vorbis/codec.h"
 #include "codec_internal.h"
@@ -30,8 +29,8 @@
 #include "misc.h"
 #include "os.h"
 
-#define GENERAL_VENDOR_STRING "Xiph.Org libVorbis 1.3.6"
-#define ENCODE_VENDOR_STRING "Xiph.Org libVorbis I 20180316 (Now 100% fewer shells)"
+#define GENERAL_VENDOR_STRING "Xiph.Org libVorbis 1.3.7"
+#define ENCODE_VENDOR_STRING "Xiph.Org libVorbis I 20200704 (Reducing Environment)"
 
 /* helpers */
 static void _v_writestring(oggpack_buffer *o,const char *s, int bytes){
@@ -45,6 +44,10 @@ static void _v_readstring(oggpack_buffer *o,char *buf,int bytes){
   while(bytes--){
     *buf++=oggpack_read(o,8);
   }
+}
+
+static int _v_toupper(int c) {
+  return (c >= 'a' && c <= 'z') ? (c & ~('a' - 'A')) : c;
 }
 
 void vorbis_comment_init(vorbis_comment *vc){
@@ -78,7 +81,7 @@ void vorbis_comment_add_tag(vorbis_comment *vc, const char *tag, const char *con
 static int tagcompare(const char *s1, const char *s2, int n){
   int c=0;
   while(c < n){
-    if(toupper(s1[c]) != toupper(s2[c]))
+    if(_v_toupper(s1[c]) != _v_toupper(s2[c]))
       return !0;
     c++;
   }
@@ -203,6 +206,7 @@ void vorbis_info_clear(vorbis_info *vi){
 
 static int _vorbis_unpack_info(vorbis_info *vi,oggpack_buffer *opb){
   codec_setup_info     *ci=vi->codec_setup;
+  int bs;
   if(!ci)return(OV_EFAULT);
 
   vi->version=oggpack_read(opb,32);
@@ -215,8 +219,12 @@ static int _vorbis_unpack_info(vorbis_info *vi,oggpack_buffer *opb){
   vi->bitrate_nominal=(ogg_int32_t)oggpack_read(opb,32);
   vi->bitrate_lower=(ogg_int32_t)oggpack_read(opb,32);
 
-  ci->blocksizes[0]=1<<oggpack_read(opb,4);
-  ci->blocksizes[1]=1<<oggpack_read(opb,4);
+  bs = oggpack_read(opb,4);
+  if(bs<0)goto err_out;
+  ci->blocksizes[0]=1<<bs;
+  bs = oggpack_read(opb,4);
+  if(bs<0)goto err_out;
+  ci->blocksizes[1]=1<<bs;
 
   if(vi->rate<1)goto err_out;
   if(vi->channels<1)goto err_out;

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="UndoRedo" inherits="Object" version="4.0">
+<class name="UndoRedo" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Helper to manage undo/redo operations in the editor or custom tools.
+		Provides a high-level interface for implementing undo and redo operations.
 	</brief_description>
 	<description>
-		Helper to manage undo/redo operations in the editor or custom tools. It works by registering methods and property changes inside "actions".
-		Common behavior is to create an action, then add do/undo calls to functions or property changes, then committing the action.
-		Here's an example on how to add an action to the Godot editor's own [UndoRedo], from a plugin:
+		UndoRedo works by registering methods and property changes inside "actions". You can create an action, then provide ways to do and undo this action using function calls and property changes, then commit the action.
+		When an action is committed, all of the [code]do_*[/code] methods will run. If the [method undo] method is used, the [code]undo_*[/code] methods will run. If the [method redo] method is used, once again, all of the [code]do_*[/code] methods will run.
+		Here's an example on how to add an action:
 		[codeblocks]
 		[gdscript]
-		var undo_redo = get_undo_redo() # Method of EditorPlugin.
+		var undo_redo = UndoRedo.new()
 
 		func do_something():
 		    pass # Put your code here.
@@ -17,21 +17,21 @@
 		func undo_something():
 		    pass # Put here the code that reverts what's done by "do_something()".
 
-		func _on_MyButton_pressed():
+		func _on_my_button_pressed():
 		    var node = get_node("MyNode2D")
 		    undo_redo.create_action("Move the node")
-		    undo_redo.add_do_method(self, "do_something")
-		    undo_redo.add_undo_method(self, "undo_something")
+		    undo_redo.add_do_method(do_something)
+		    undo_redo.add_undo_method(undo_something)
 		    undo_redo.add_do_property(node, "position", Vector2(100,100))
 		    undo_redo.add_undo_property(node, "position", node.position)
 		    undo_redo.commit_action()
 		[/gdscript]
 		[csharp]
-		public UndoRedo UndoRedo;
+		private UndoRedo _undoRedo;
 
 		public override void _Ready()
 		{
-		    UndoRedo = GetUndoRedo(); // Method of EditorPlugin.
+		    _undoRedo = new UndoRedo();
 		}
 
 		public void DoSomething()
@@ -47,192 +47,221 @@
 		private void OnMyButtonPressed()
 		{
 		    var node = GetNode&lt;Node2D&gt;("MyNode2D");
-		    UndoRedo.CreateAction("Move the node");
-		    UndoRedo.AddDoMethod(this, nameof(DoSomething));
-		    UndoRedo.AddUndoMethod(this, nameof(UndoSomething));
-		    UndoRedo.AddDoProperty(node, "position", new Vector2(100, 100));
-		    UndoRedo.AddUndoProperty(node, "position", node.Position);
-		    UndoRedo.CommitAction();
+		    _undoRedo.CreateAction("Move the node");
+		    _undoRedo.AddDoMethod(new Callable(this, MethodName.DoSomething));
+		    _undoRedo.AddUndoMethod(new Callable(this, MethodName.UndoSomething));
+		    _undoRedo.AddDoProperty(node, "position", new Vector2(100, 100));
+		    _undoRedo.AddUndoProperty(node, "position", node.Position);
+		    _undoRedo.CommitAction();
 		}
 		[/csharp]
 		[/codeblocks]
-		[method create_action], [method add_do_method], [method add_undo_method], [method add_do_property], [method add_undo_property], and [method commit_action] should be called one after the other, like in the example. Not doing so could lead to crashes.
+		Before calling any of the [code]add_(un)do_*[/code] methods, you need to first call [method create_action]. Afterwards you need to call [method commit_action].
 		If you don't need to register a method, you can leave [method add_do_method] and [method add_undo_method] out; the same goes for properties. You can also register more than one method/property.
+		If you are making an [EditorPlugin] and want to integrate into the editor's undo history, use [EditorUndoRedoManager] instead.
+		If you are registering multiple properties/method which depend on one another, be aware that by default undo operation are called in the same order they have been added. Therefore instead of grouping do operation with their undo operations it is better to group do on one side and undo on the other as shown below.
+		[codeblocks]
+		[gdscript]
+		undo_redo.create_action("Add object")
+
+		# DO
+		undo_redo.add_do_method(_create_object)
+		undo_redo.add_do_method(_add_object_to_singleton)
+
+		# UNDO
+		undo_redo.add_undo_method(_remove_object_from_singleton)
+		undo_redo.add_undo_method(_destroy_that_object)
+
+		undo_redo.commit_action()
+		[/gdscript]
+		[csharp]
+		_undo_redo.CreateAction("Add object");
+
+		// DO
+		_undo_redo.AddDoMethod(new Callable(this, MethodName.CreateObject));
+		_undo_redo.AddDoMethod(new Callable(this, MethodName.AddObjectToSingleton));
+
+		// UNDO
+		_undo_redo.AddUndoMethod(new Callable(this, MethodName.RemoveObjectFromSingleton));
+		_undo_redo.AddUndoMethod(new Callable(this, MethodName.DestroyThatObject));
+
+		_undo_redo.CommitAction();
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="add_do_method" qualifiers="vararg">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="method" type="StringName">
-			</argument>
+		<method name="add_do_method">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
-				Register a method that will be called when the action is committed.
+				Register a [Callable] that will be called when the action is committed.
 			</description>
 		</method>
 		<method name="add_do_property">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="property" type="StringName">
-			</argument>
-			<argument index="2" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="property" type="StringName" />
+			<param index="2" name="value" type="Variant" />
 			<description>
-				Register a property value change for "do".
+				Register a [param property] that would change its value to [param value] when the action is committed.
 			</description>
 		</method>
 		<method name="add_do_reference">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
 			<description>
-				Register a reference for "do" that will be erased if the "do" history is lost. This is useful mostly for new nodes created for the "do" call. Do not use for resources.
+				Register a reference to an object that will be erased if the "do" history is deleted. This is useful for objects added by the "do" action and removed by the "undo" action.
+				When the "do" history is deleted, if the object is a [RefCounted], it will be unreferenced. Otherwise, it will be freed. Do not use for resources.
+				[codeblock]
+				var node = Node2D.new()
+				undo_redo.create_action("Add node")
+				undo_redo.add_do_method(add_child.bind(node))
+				undo_redo.add_do_reference(node)
+				undo_redo.add_undo_method(remove_child.bind(node))
+				undo_redo.commit_action()
+				[/codeblock]
 			</description>
 		</method>
-		<method name="add_undo_method" qualifiers="vararg">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="method" type="StringName">
-			</argument>
+		<method name="add_undo_method">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
-				Register a method that will be called when the action is undone.
+				Register a [Callable] that will be called when the action is undone.
 			</description>
 		</method>
 		<method name="add_undo_property">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="property" type="StringName">
-			</argument>
-			<argument index="2" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="property" type="StringName" />
+			<param index="2" name="value" type="Variant" />
 			<description>
-				Register a property value change for "undo".
+				Register a [param property] that would change its value to [param value] when the action is undone.
 			</description>
 		</method>
 		<method name="add_undo_reference">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
 			<description>
-				Register a reference for "undo" that will be erased if the "undo" history is lost. This is useful mostly for nodes removed with the "do" call (not the "undo" call!).
+				Register a reference to an object that will be erased if the "undo" history is deleted. This is useful for objects added by the "undo" action and removed by the "do" action.
+				When the "undo" history is deleted, if the object is a [RefCounted], it will be unreferenced. Otherwise, it will be freed. Do not use for resources.
+				[codeblock]
+				var node = $Node2D
+				undo_redo.create_action("Remove node")
+				undo_redo.add_do_method(remove_child.bind(node))
+				undo_redo.add_undo_method(add_child.bind(node))
+				undo_redo.add_undo_reference(node)
+				undo_redo.commit_action()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="clear_history">
-			<return type="void">
-			</return>
-			<argument index="0" name="increase_version" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<param index="0" name="increase_version" type="bool" default="true" />
 			<description>
 				Clear the undo/redo history and associated references.
-				Passing [code]false[/code] to [code]increase_version[/code] will prevent the version number to be increased from this.
+				Passing [code]false[/code] to [param increase_version] will prevent the version number from increasing when the history is cleared.
 			</description>
 		</method>
 		<method name="commit_action">
-			<return type="void">
-			</return>
-			<argument index="0" name="execute" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<param index="0" name="execute" type="bool" default="true" />
 			<description>
-				Commit the action. If [code]execute[/code] is true (default), all "do" methods/properties are called/set when this function is called.
+				Commit the action. If [param execute] is [code]true[/code] (which it is by default), all "do" methods/properties are called/set when this function is called.
 			</description>
 		</method>
 		<method name="create_action">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="merge_mode" type="int" enum="UndoRedo.MergeMode" default="0">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="merge_mode" type="int" enum="UndoRedo.MergeMode" default="0" />
+			<param index="2" name="backward_undo_ops" type="bool" default="false" />
 			<description>
 				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property], and [method add_undo_property], then commit the action with [method commit_action].
-				The way actions are merged is dictated by the [code]merge_mode[/code] argument. See [enum MergeMode] for details.
+				The way actions are merged is dictated by [param merge_mode]. See [enum MergeMode] for details.
+				The way undo operation are ordered in actions is dictated by [param backward_undo_ops]. When [param backward_undo_ops] is [code]false[/code] undo option are ordered in the same order they were added. Which means the first operation to be added will be the first to be undone.
+			</description>
+		</method>
+		<method name="end_force_keep_in_merge_ends">
+			<return type="void" />
+			<description>
+				Stops marking operations as to be processed even if the action gets merged with another in the [constant MERGE_ENDS] mode. See [method start_force_keep_in_merge_ends].
 			</description>
 		</method>
 		<method name="get_action_name">
-			<return type="String">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
+			<return type="String" />
+			<param index="0" name="id" type="int" />
 			<description>
 				Gets the action name from its index.
 			</description>
 		</method>
 		<method name="get_current_action">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Gets the index of the current action.
 			</description>
 		</method>
 		<method name="get_current_action_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Gets the name of the current action, equivalent to [code]get_action_name(get_current_action())[/code].
 			</description>
 		</method>
 		<method name="get_history_count">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
-				Return how many elements are in the history.
+				Returns how many elements are in the history.
 			</description>
 		</method>
 		<method name="get_version" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Gets the version. Every time a new action is committed, the [UndoRedo]'s version number is increased automatically.
 				This is useful mostly to check if something changed from a saved version.
 			</description>
 		</method>
-		<method name="has_redo">
-			<return type="bool">
-			</return>
+		<method name="has_redo" qualifiers="const">
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if a "redo" action is available.
 			</description>
 		</method>
-		<method name="has_undo">
-			<return type="bool">
-			</return>
+		<method name="has_undo" qualifiers="const">
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if an "undo" action is available.
 			</description>
 		</method>
 		<method name="is_committing_action" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the [UndoRedo] is currently committing the action, i.e. running its "do" method or property change (see [method commit_action]).
 			</description>
 		</method>
 		<method name="redo">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Redo the last action.
 			</description>
 		</method>
+		<method name="start_force_keep_in_merge_ends">
+			<return type="void" />
+			<description>
+				Marks the next "do" and "undo" operations to be processed even if the action gets merged with another in the [constant MERGE_ENDS] mode. Return to normal operation using [method end_force_keep_in_merge_ends].
+			</description>
+		</method>
 		<method name="undo">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Undo the last action.
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="max_steps" type="int" setter="set_max_steps" getter="get_max_steps" default="0">
+			The maximum number of steps that can be stored in the undo/redo history. If the number of stored steps exceeds this limit, older steps are removed from history and can no longer be reached by calling [method undo]. A value of [code]0[/code] or lower means no limit.
+		</member>
+	</members>
 	<signals>
 		<signal name="version_changed">
 			<description>
@@ -245,10 +274,10 @@
 			Makes "do"/"undo" operations stay in separate actions.
 		</constant>
 		<constant name="MERGE_ENDS" value="1" enum="MergeMode">
-			Makes so that the action's "do" operation is from the first action created and the "undo" operation is from the last subsequent action with the same name.
+			Merges this action with the previous one if they have the same name. Keeps only the first action's "undo" operations and the last action's "do" operations. Useful for sequential changes to a single value.
 		</constant>
 		<constant name="MERGE_ALL" value="2" enum="MergeMode">
-			Makes subsequent actions with the same name be merged into one.
+			Merges this action with the previous one if they have the same name.
 		</constant>
 	</constants>
 </class>

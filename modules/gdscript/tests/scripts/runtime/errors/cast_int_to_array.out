@@ -1,0 +1,6 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR
+>> on function: test()
+>> runtime/errors/cast_int_to_array.gd
+>> 4
+>> Invalid cast: could not convert value to 'Array'.

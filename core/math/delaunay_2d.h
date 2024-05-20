@@ -1,43 +1,45 @@
-/*************************************************************************/
-/*  delaunay_2d.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  delaunay_2d.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef DELAUNAY_2D_H
 #define DELAUNAY_2D_H
 
 #include "core/math/rect2.h"
+#include "core/templates/vector.h"
 
 class Delaunay2D {
 public:
 	struct Triangle {
 		int points[3];
-		bool bad = false;
+		Vector2 circum_center;
+		real_t circum_radius_squared;
 		Triangle() {}
 		Triangle(int p_a, int p_b, int p_c) {
 			points[0] = p_a;
@@ -47,117 +49,109 @@ public:
 	};
 
 	struct Edge {
-		int edge[2];
+		int points[2];
 		bool bad = false;
 		Edge() {}
 		Edge(int p_a, int p_b) {
-			edge[0] = p_a;
-			edge[1] = p_b;
+			// Store indices in a sorted manner to avoid having to check both orientations later.
+			if (p_a > p_b) {
+				points[0] = p_b;
+				points[1] = p_a;
+			} else {
+				points[0] = p_a;
+				points[1] = p_b;
+			}
 		}
 	};
 
-	static bool circum_circle_contains(const Vector<Vector2> &p_vertices, const Triangle &p_triangle, int p_vertex) {
-		Vector2 p1 = p_vertices[p_triangle.points[0]];
-		Vector2 p2 = p_vertices[p_triangle.points[1]];
-		Vector2 p3 = p_vertices[p_triangle.points[2]];
+	static Triangle create_triangle(const Vector<Vector2> &p_vertices, int p_a, int p_b, int p_c) {
+		Triangle triangle = Triangle(p_a, p_b, p_c);
 
-		real_t ab = p1.x * p1.x + p1.y * p1.y;
-		real_t cd = p2.x * p2.x + p2.y * p2.y;
-		real_t ef = p3.x * p3.x + p3.y * p3.y;
+		// Get the values of the circumcircle and store them inside the triangle object.
+		Vector2 a = p_vertices[p_b] - p_vertices[p_a];
+		Vector2 b = p_vertices[p_c] - p_vertices[p_a];
 
-		Vector2 circum(
-				(ab * (p3.y - p2.y) + cd * (p1.y - p3.y) + ef * (p2.y - p1.y)) / (p1.x * (p3.y - p2.y) + p2.x * (p1.y - p3.y) + p3.x * (p2.y - p1.y)),
-				(ab * (p3.x - p2.x) + cd * (p1.x - p3.x) + ef * (p2.x - p1.x)) / (p1.y * (p3.x - p2.x) + p2.y * (p1.x - p3.x) + p3.y * (p2.x - p1.x)));
+		Vector2 O = (b * a.length_squared() - a * b.length_squared()).orthogonal() / (a.cross(b) * 2.0f);
 
-		circum *= 0.5;
-		float r = p1.distance_squared_to(circum);
-		float d = p_vertices[p_vertex].distance_squared_to(circum);
-		return d <= r;
-	}
+		triangle.circum_radius_squared = O.length_squared();
+		triangle.circum_center = O + p_vertices[p_a];
 
-	static bool edge_compare(const Vector<Vector2> &p_vertices, const Edge &p_a, const Edge &p_b) {
-		if (p_vertices[p_a.edge[0]].is_equal_approx(p_vertices[p_b.edge[0]]) && p_vertices[p_a.edge[1]].is_equal_approx(p_vertices[p_b.edge[1]])) {
-			return true;
-		}
-
-		if (p_vertices[p_a.edge[0]].is_equal_approx(p_vertices[p_b.edge[1]]) && p_vertices[p_a.edge[1]].is_equal_approx(p_vertices[p_b.edge[0]])) {
-			return true;
-		}
-
-		return false;
+		return triangle;
 	}
 
 	static Vector<Triangle> triangulate(const Vector<Vector2> &p_points) {
 		Vector<Vector2> points = p_points;
 		Vector<Triangle> triangles;
 
-		Rect2 rect;
-		for (int i = 0; i < p_points.size(); i++) {
-			if (i == 0) {
-				rect.position = p_points[i];
-			} else {
-				rect.expand_to(p_points[i]);
-			}
+		int point_count = p_points.size();
+		if (point_count <= 2) {
+			return triangles;
 		}
 
-		float delta_max = MAX(rect.size.width, rect.size.height);
-		Vector2 center = rect.position + rect.size * 0.5;
+		// Get a bounding rectangle.
+		Rect2 rect = Rect2(p_points[0], Size2());
+		for (int i = 1; i < point_count; i++) {
+			rect.expand_to(p_points[i]);
+		}
 
-		points.push_back(Vector2(center.x - 20 * delta_max, center.y - delta_max));
-		points.push_back(Vector2(center.x, center.y + 20 * delta_max));
-		points.push_back(Vector2(center.x + 20 * delta_max, center.y - delta_max));
+		real_t delta_max = MAX(rect.size.width, rect.size.height);
+		Vector2 center = rect.get_center();
 
-		triangles.push_back(Triangle(p_points.size() + 0, p_points.size() + 1, p_points.size() + 2));
+		// Construct a bounding triangle around the rectangle.
+		points.push_back(Vector2(center.x - delta_max * 16, center.y - delta_max));
+		points.push_back(Vector2(center.x, center.y + delta_max * 16));
+		points.push_back(Vector2(center.x + delta_max * 16, center.y - delta_max));
 
-		for (int i = 0; i < p_points.size(); i++) {
+		Triangle bounding_triangle = create_triangle(points, point_count + 0, point_count + 1, point_count + 2);
+		triangles.push_back(bounding_triangle);
+
+		for (int i = 0; i < point_count; i++) {
 			Vector<Edge> polygon;
 
-			for (int j = 0; j < triangles.size(); j++) {
-				if (circum_circle_contains(points, triangles[j], i)) {
-					triangles.write[j].bad = true;
+			// Save the edges of the triangles whose circumcircles contain the i-th vertex. Delete the triangles themselves.
+			for (int j = triangles.size() - 1; j >= 0; j--) {
+				if (points[i].distance_squared_to(triangles[j].circum_center) < triangles[j].circum_radius_squared) {
 					polygon.push_back(Edge(triangles[j].points[0], triangles[j].points[1]));
 					polygon.push_back(Edge(triangles[j].points[1], triangles[j].points[2]));
 					polygon.push_back(Edge(triangles[j].points[2], triangles[j].points[0]));
+
+					triangles.remove_at(j);
 				}
 			}
 
-			for (int j = 0; j < triangles.size(); j++) {
-				if (triangles[j].bad) {
-					triangles.remove(j);
-					j--;
-				}
-			}
-
-			for (int j = 0; j < polygon.size(); j++) {
-				for (int k = j + 1; k < polygon.size(); k++) {
-					if (edge_compare(points, polygon[j], polygon[k])) {
-						polygon.write[j].bad = true;
-						polygon.write[k].bad = true;
-					}
-				}
-			}
-
+			// Create a triangle for every unique edge.
 			for (int j = 0; j < polygon.size(); j++) {
 				if (polygon[j].bad) {
 					continue;
 				}
-				triangles.push_back(Triangle(polygon[j].edge[0], polygon[j].edge[1], i));
+
+				for (int k = j + 1; k < polygon.size(); k++) {
+					// Compare the edges.
+					if (polygon[k].points[0] == polygon[j].points[0] && polygon[k].points[1] == polygon[j].points[1]) {
+						polygon.write[j].bad = true;
+						polygon.write[k].bad = true;
+
+						break; // Since no more than two triangles can share an edge, no more than two edges can share vertices.
+					}
+				}
+
+				// Create triangles out of good edges.
+				if (!polygon[j].bad) {
+					triangles.push_back(create_triangle(points, polygon[j].points[0], polygon[j].points[1], i));
+				}
 			}
 		}
 
+		// Filter out the triangles containing vertices of the bounding triangle.
+		int preserved_count = 0;
+		Triangle *triangles_ptrw = triangles.ptrw();
 		for (int i = 0; i < triangles.size(); i++) {
-			bool invalid = false;
-			for (int j = 0; j < 3; j++) {
-				if (triangles[i].points[j] >= p_points.size()) {
-					invalid = true;
-					break;
-				}
-			}
-			if (invalid) {
-				triangles.remove(i);
-				i--;
+			if (!(triangles[i].points[0] >= point_count || triangles[i].points[1] >= point_count || triangles[i].points[2] >= point_count)) {
+				triangles_ptrw[preserved_count] = triangles[i];
+				preserved_count++;
 			}
 		}
+		triangles.resize(preserved_count);
 
 		return triangles;
 	}

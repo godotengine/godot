@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsServer3DManager" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A singleton for managing [PhysicsServer3D] implementations.
+	</brief_description>
+	<description>
+		[PhysicsServer3DManager] is the API for registering [PhysicsServer3D] implementations and for setting the default implementation.
+		[b]Note:[/b] It is not possible to switch physics servers at runtime. This class is only used on startup at the server initialization level, by Godot itself and possibly by GDExtensions.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="register_server">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="create_callback" type="Callable" />
+			<description>
+				Register a [PhysicsServer3D] implementation by passing a [param name] and a [Callable] that returns a [PhysicsServer3D] object.
+			</description>
+		</method>
+		<method name="set_default_server">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="priority" type="int" />
+			<description>
+				Set the default [PhysicsServer3D] implementation to the one identified by [param name], if [param priority] is greater than the priority of the current default implementation.
+			</description>
+		</method>
+	</methods>
+</class>

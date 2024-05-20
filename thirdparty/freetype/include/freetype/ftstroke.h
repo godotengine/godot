@@ -4,7 +4,7 @@
  *
  *   FreeType path stroker (specification).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -293,7 +293,7 @@ FT_BEGIN_HEADER
    *
    *   miter_limit ::
    *     The maximum reciprocal sine of half-angle at the miter join,
-   *     expressed as 16.16 fixed point value.
+   *     expressed as 16.16 fixed-point value.
    *
    * @note:
    *   The `radius` is expressed in the same units as the outline

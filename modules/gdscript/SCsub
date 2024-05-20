@@ -7,8 +7,10 @@ env_gdscript = env_modules.Clone()
 
 env_gdscript.add_source_files(env.modules_sources, "*.cpp")
 
-if env["tools"]:
+if env.editor_build:
     env_gdscript.add_source_files(env.modules_sources, "./editor/*.cpp")
+
+    SConscript("editor/script_templates/SCsub")
 
     # Those two modules are required for the language server protocol
     if env["module_jsonrpc_enabled"] and env["module_websocket_enabled"]:
@@ -17,6 +19,9 @@ if env["tools"]:
         # Using a define in the disabled case, to avoid having an extra define
         # in regular builds where all modules are enabled.
         env_gdscript.Append(CPPDEFINES=["GDSCRIPT_NO_LSP"])
+        # Also needed in main env to unexpose --lsp-port option.
+        env.Append(CPPDEFINES=["GDSCRIPT_NO_LSP"])
+
 
 if env["tests"]:
     env_gdscript.Append(CPPDEFINES=["TESTS_ENABLED"])

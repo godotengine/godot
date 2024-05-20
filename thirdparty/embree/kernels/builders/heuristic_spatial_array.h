@@ -241,7 +241,7 @@ namespace embree
           SpatialBinner binner(empty); 
           const SpatialBinMapping<SPATIAL_BINS> mapping(set);
           binner.bin2(splitterFactory,prims0,set.begin(),set.end(),mapping);
-          /* todo: best spatial split not exeeding the extended range does not provide any benefit ?*/
+          /* todo: best spatial split not exceeding the extended range does not provide any benefit ?*/
           return binner.best(mapping,logBlockSize); //,set.ext_size());
         }
 
@@ -256,7 +256,7 @@ namespace embree
                                      binner.bin2(splitterFactory,prims0,r.begin(),r.end(),_mapping);
                                      return binner; },
                                    [&] (const SpatialBinner& b0, const SpatialBinner& b1) -> SpatialBinner { return SpatialBinner::reduce(b0,b1); });
-          /* todo: best spatial split not exeeding the extended range does not provide any benefit ?*/
+          /* todo: best spatial split not exceeding the extended range does not provide any benefit ?*/
           return binner.best(mapping,logBlockSize); //,set.ext_size());
         }
 
@@ -286,6 +286,7 @@ namespace embree
                 //int bin0 = split.mapping.bin(prims0[i].lower)[split.dim];
                 //int bin1 = split.mapping.bin(prims0[i].upper)[split.dim];
                 //if (unlikely(bin0 < split.pos && bin1 >= split.pos))
+
                 if (unlikely(prims0[i].lower[split.dim] < fpos && prims0[i].upper[split.dim] > fpos))
                 {
                   assert(splits > 1);
@@ -384,8 +385,8 @@ namespace embree
           new (&lset) PrimInfoExtRange(begin,center,center,local_left);
           new (&rset) PrimInfoExtRange(center,end,end,local_right);
 
-          assert(area(lset.geomBounds) >= 0.0f);
-          assert(area(rset.geomBounds) >= 0.0f);
+          assert(!lset.geomBounds.empty() && area(lset.geomBounds) >= 0.0f);
+          assert(!rset.geomBounds.empty() && area(rset.geomBounds) >= 0.0f);
           return std::pair<size_t,size_t>(left_weight,right_weight);
         }
 
@@ -410,7 +411,7 @@ namespace embree
                                               begin,end,local_left,local_right,
                                               [&] (const PrimRef& ref) {
                                                 const Vec3fa c = ref.bounds().center();
-                                                return any(((vint4)mapping.bin(c) < vSplitPos) & vSplitMask); 
+                                                return any(((vint4)mapping.bin(c) < vSplitPos) & vSplitMask);
                                               },
                                               [] (PrimInfo& pinfo,const PrimRef& ref) { pinfo.add_center2(ref,ref.lower.u >> (32-RESERVED_NUM_SPATIAL_SPLITS_GEOMID_BITS)); });
 
@@ -419,8 +420,8 @@ namespace embree
           
           new (&lset) PrimInfoExtRange(begin,center,center,local_left);
           new (&rset) PrimInfoExtRange(center,end,end,local_right);
-          assert(area(lset.geomBounds) >= 0.0f);
-          assert(area(rset.geomBounds) >= 0.0f);
+          assert(!lset.geomBounds.empty() && area(lset.geomBounds) >= 0.0f);
+          assert(!rset.geomBounds.empty() && area(rset.geomBounds) >= 0.0f);
           return std::pair<size_t,size_t>(left_weight,right_weight);
         }
 

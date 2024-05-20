@@ -4,7 +4,7 @@
  *
  *   FreeType error code handling (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -29,7 +29,7 @@
    *
    * @description:
    *   The header file `fterrors.h` (which is automatically included by
-   *   `freetype.h` defines the handling of FreeType's enumeration
+   *   `freetype.h`) defines the handling of FreeType's enumeration
    *   constants.  It can also be used to generate error message strings
    *   with a small macro trick explained below.
    *
@@ -280,6 +280,8 @@ FT_BEGIN_HEADER
    */
   FT_EXPORT( const char* )
   FT_Error_String( FT_Error  error_code );
+
+  /* */
 
 FT_END_HEADER
 

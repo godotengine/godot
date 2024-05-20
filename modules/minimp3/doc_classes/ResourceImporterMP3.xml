@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterMP3" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Imports an MP3 audio file for playback.
+	</brief_description>
+	<description>
+		MP3 is a lossy audio format, with worse audio quality compared to [ResourceImporterOggVorbis] at a given bitrate.
+		In most cases, it's recommended to use Ogg Vorbis over MP3. However, if you're using an MP3 sound source with no higher quality source available, then it's recommended to use the MP3 file directly to avoid double lossy compression.
+		MP3 requires more CPU to decode than [ResourceImporterWAV]. If you need to play a lot of simultaneous sounds, it's recommended to use WAV for those sounds instead, especially if targeting low-end devices.
+	</description>
+	<tutorials>
+		<link title="Importing audio samples">$DOCS_URL/tutorials/assets_pipeline/importing_audio_samples.html</link>
+	</tutorials>
+	<members>
+		<member name="bar_beats" type="int" setter="" getter="" default="4">
+			The number of bars within a single beat in the audio track. This is only relevant for music that wishes to make use of interactive music functionality (not implemented yet), not sound effects.
+			A more convenient editor for [member bar_beats] is provided in the [b]Advanced Import Settings[/b] dialog, as it lets you preview your changes without having to reimport the audio.
+		</member>
+		<member name="beat_count" type="int" setter="" getter="" default="0">
+			The beat count of the audio track. This is only relevant for music that wishes to make use of interactive music functionality (not implemented yet), not sound effects.
+			A more convenient editor for [member beat_count] is provided in the [b]Advanced Import Settings[/b] dialog, as it lets you preview your changes without having to reimport the audio.
+		</member>
+		<member name="bpm" type="float" setter="" getter="" default="0">
+			The Beats Per Minute of the audio track. This should match the BPM measure that was used to compose the track. This is only relevant for music that wishes to make use of interactive music functionality (not implemented yet), not sound effects.
+			A more convenient editor for [member bpm] is provided in the [b]Advanced Import Settings[/b] dialog, as it lets you preview your changes without having to reimport the audio.
+		</member>
+		<member name="loop" type="bool" setter="" getter="" default="false">
+			If enabled, the audio will begin playing at the beginning after playback ends by reaching the end of the audio.
+			[b]Note:[/b] In [AudioStreamPlayer], the [signal AudioStreamPlayer.finished] signal won't be emitted for looping audio when it reaches the end of the audio file, as the audio will keep playing indefinitely.
+		</member>
+		<member name="loop_offset" type="float" setter="" getter="" default="0">
+			Determines where audio will start to loop after playback reaches the end of the audio. This can be used to only loop a part of the audio file, which is useful for some ambient sounds or music. The value is determined in seconds relative to the beginning of the audio. A value of [code]0.0[/code] will loop the entire audio file.
+			Only has an effect if [member loop] is [code]true[/code].
+			A more convenient editor for [member loop_offset] is provided in the [b]Advanced Import Settings[/b] dialog, as it lets you preview your changes without having to reimport the audio.
+		</member>
+	</members>
+</class>

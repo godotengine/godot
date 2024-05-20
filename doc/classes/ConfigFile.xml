@@ -1,221 +1,231 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConfigFile" inherits="RefCounted" version="4.0">
+<class name="ConfigFile" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Helper class to handle INI-style files.
 	</brief_description>
 	<description>
 		This helper class can be used to store [Variant] values on the filesystem using INI-style formatting. The stored values are identified by a section and a key:
-		[codeblock]
+		[codeblock lang=text]
 		[section]
 		some_key=42
 		string_example="Hello World3D!"
 		a_vector=Vector3(1, 0, 2)
 		[/codeblock]
 		The stored data can be saved to or parsed from a file, though ConfigFile objects can also be used directly without accessing the filesystem.
-		The following example shows how to parse an INI-style file from the system, read its contents and store new values in it:
+		The following example shows how to create a simple [ConfigFile] and save it on disc:
 		[codeblocks]
 		[gdscript]
+		# Create new ConfigFile object.
 		var config = ConfigFile.new()
-		var err = config.load("user://settings.cfg")
-		if err == OK: # If not, something went wrong with the file loading
-		    # Look for the display/width pair, and default to 1024 if missing
-		    var screen_width = config.get_value("display", "width", 1024)
-		    # Store a variable if and only if it hasn't been defined yet
-		    if not config.has_section_key("audio", "mute"):
-		        config.set_value("audio", "mute", false)
-		    # Save the changes by overwriting the previous file
-		    config.save("user://settings.cfg")
+
+		# Store some values.
+		config.set_value("Player1", "player_name", "Steve")
+		config.set_value("Player1", "best_score", 10)
+		config.set_value("Player2", "player_name", "V3geta")
+		config.set_value("Player2", "best_score", 9001)
+
+		# Save it to a file (overwrite if already exists).
+		config.save("user://scores.cfg")
 		[/gdscript]
 		[csharp]
+		// Create new ConfigFile object.
 		var config = new ConfigFile();
-		Error err = config.Load("user://settings.cfg");
-		if (err == Error.Ok) // If not, something went wrong with the file loading
+
+		// Store some values.
+		config.SetValue("Player1", "player_name", "Steve");
+		config.SetValue("Player1", "best_score", 10);
+		config.SetValue("Player2", "player_name", "V3geta");
+		config.SetValue("Player2", "best_score", 9001);
+
+		// Save it to a file (overwrite if already exists).
+		config.Save("user://scores.cfg");
+		[/csharp]
+		[/codeblocks]
+		This example shows how the above file could be loaded:
+		[codeblocks]
+		[gdscript]
+		var score_data = {}
+		var config = ConfigFile.new()
+
+		# Load data from a file.
+		var err = config.load("user://scores.cfg")
+
+		# If the file didn't load, ignore it.
+		if err != OK:
+		    return
+
+		# Iterate over all sections.
+		for player in config.get_sections():
+		    # Fetch the data for each section.
+		    var player_name = config.get_value(player, "player_name")
+		    var player_score = config.get_value(player, "best_score")
+		    score_data[player_name] = player_score
+		[/gdscript]
+		[csharp]
+		var score_data = new Godot.Collections.Dictionary();
+		var config = new ConfigFile();
+
+		// Load data from a file.
+		Error err = config.Load("user://scores.cfg");
+
+		// If the file didn't load, ignore it.
+		if (err != Error.Ok)
 		{
-		    // Look for the display/width pair, and default to 1024 if missing
-		    int screenWidth = (int)config.GetValue("display", "width", 1024);
-		    // Store a variable if and only if it hasn't been defined yet
-		    if (!config.HasSectionKey("audio", "mute"))
-		    {
-		        config.SetValue("audio", "mute", false);
-		    }
-		    // Save the changes by overwriting the previous file
-		    config.Save("user://settings.cfg");
+		    return;
+		}
+
+		// Iterate over all sections.
+		foreach (String player in config.GetSections())
+		{
+		    // Fetch the data for each section.
+		    var player_name = (String)config.GetValue(player, "player_name");
+		    var player_score = (int)config.GetValue(player, "best_score");
+		    score_data[player_name] = player_score;
 		}
 		[/csharp]
 		[/codeblocks]
+		Any operation that mutates the ConfigFile such as [method set_value], [method clear], or [method erase_section], only changes what is loaded in memory. If you want to write the change to a file, you have to save the changes with [method save], [method save_encrypted], or [method save_encrypted_pass].
 		Keep in mind that section and property names can't contain spaces. Anything after a space will be ignored on save and on load.
 		ConfigFiles can also contain manually written comment lines starting with a semicolon ([code];[/code]). Those lines will be ignored when parsing the file. Note that comments will be lost when saving the ConfigFile. This can still be useful for dedicated server configuration files, which are typically never overwritten without explicit user action.
+		[b]Note:[/b] The file extension given to a ConfigFile does not have any impact on its formatting or behavior. By convention, the [code].cfg[/code] extension is used here, but any other extension such as [code].ini[/code] is also valid. Since neither [code].cfg[/code] nor [code].ini[/code] are standardized, Godot's ConfigFile formatting may differ from files written by other programs.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
+				Removes the entire contents of the config.
+			</description>
+		</method>
+		<method name="encode_to_text" qualifiers="const">
+			<return type="String" />
+			<description>
+				Obtain the text version of this config file (the same text that would be written to a file).
 			</description>
 		</method>
 		<method name="erase_section">
-			<return type="void">
-			</return>
-			<argument index="0" name="section" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="section" type="String" />
 			<description>
 				Deletes the specified section along with all the key-value pairs inside. Raises an error if the section does not exist.
 			</description>
 		</method>
 		<method name="erase_section_key">
-			<return type="void">
-			</return>
-			<argument index="0" name="section" type="String">
-			</argument>
-			<argument index="1" name="key" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="section" type="String" />
+			<param index="1" name="key" type="String" />
 			<description>
 				Deletes the specified key in a section. Raises an error if either the section or the key do not exist.
 			</description>
 		</method>
 		<method name="get_section_keys" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
-			<argument index="0" name="section" type="String">
-			</argument>
+			<return type="PackedStringArray" />
+			<param index="0" name="section" type="String" />
 			<description>
 				Returns an array of all defined key identifiers in the specified section. Raises an error and returns an empty array if the section does not exist.
 			</description>
 		</method>
 		<method name="get_sections" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns an array of all defined section identifiers.
 			</description>
 		</method>
 		<method name="get_value" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="section" type="String">
-			</argument>
-			<argument index="1" name="key" type="String">
-			</argument>
-			<argument index="2" name="default" type="Variant" default="null">
-			</argument>
+			<return type="Variant" />
+			<param index="0" name="section" type="String" />
+			<param index="1" name="key" type="String" />
+			<param index="2" name="default" type="Variant" default="null" />
 			<description>
-				Returns the current value for the specified section and key. If either the section or the key do not exist, the method returns the fallback [code]default[/code] value. If [code]default[/code] is not specified or set to [code]null[/code], an error is also raised.
+				Returns the current value for the specified section and key. If either the section or the key do not exist, the method returns the fallback [param default] value. If [param default] is not specified or set to [code]null[/code], an error is also raised.
 			</description>
 		</method>
 		<method name="has_section" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="section" type="String">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="section" type="String" />
 			<description>
 				Returns [code]true[/code] if the specified section exists.
 			</description>
 		</method>
 		<method name="has_section_key" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="section" type="String">
-			</argument>
-			<argument index="1" name="key" type="String">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="section" type="String" />
+			<param index="1" name="key" type="String" />
 			<description>
 				Returns [code]true[/code] if the specified section-key pair exists.
 			</description>
 		</method>
 		<method name="load">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<returns_error number="0"/>
+			<returns_error number="12"/>
+			<param index="0" name="path" type="String" />
 			<description>
 				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
-				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="load_encrypted">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="key" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="key" type="PackedByteArray" />
 			<description>
-				Loads the encrypted config file specified as a parameter, using the provided [code]key[/code] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
-				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				Loads the encrypted config file specified as a parameter, using the provided [param key] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="load_encrypted_pass">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="password" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="password" type="String" />
 			<description>
-				Loads the encrypted config file specified as a parameter, using the provided [code]password[/code] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
-				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				Loads the encrypted config file specified as a parameter, using the provided [param password] to decrypt it. The file's contents are parsed and loaded in the [ConfigFile] object which the method was called on.
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="parse">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="data" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="data" type="String" />
 			<description>
 				Parses the passed string as the contents of a config file. The string is parsed and loaded in the ConfigFile object which the method was called on.
-				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="save">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
 			<description>
 				Saves the contents of the [ConfigFile] object to the file specified as a parameter. The output file uses an INI-style structure.
-				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="save_encrypted">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="key" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="key" type="PackedByteArray" />
 			<description>
-				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [code]key[/code] to encrypt it. The output file uses an INI-style structure.
-				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param key] to encrypt it. The output file uses an INI-style structure.
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="save_encrypted_pass">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="password" type="String">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="password" type="String" />
 			<description>
-				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [code]password[/code] to encrypt it. The output file uses an INI-style structure.
-				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+				Saves the contents of the [ConfigFile] object to the AES-256 encrypted file specified as a parameter, using the provided [param password] to encrypt it. The output file uses an INI-style structure.
+				Returns [constant OK] on success, or one of the other [enum Error] values if the operation failed.
 			</description>
 		</method>
 		<method name="set_value">
-			<return type="void">
-			</return>
-			<argument index="0" name="section" type="String">
-			</argument>
-			<argument index="1" name="key" type="String">
-			</argument>
-			<argument index="2" name="value" type="Variant">
-			</argument>
+			<return type="void" />
+			<param index="0" name="section" type="String" />
+			<param index="1" name="key" type="String" />
+			<param index="2" name="value" type="Variant" />
 			<description>
 				Assigns a value to the specified key of the specified section. If either the section or the key do not exist, they are created. Passing a [code]null[/code] value deletes the specified key if it exists, and deletes the section if it ends up empty once the key has been removed.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

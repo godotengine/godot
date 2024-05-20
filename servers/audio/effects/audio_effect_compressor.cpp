@@ -1,38 +1,38 @@
-/*************************************************************************/
-/*  audio_effect_compressor.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_effect_compressor.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_effect_compressor.h"
 #include "servers/audio_server.h"
 
 void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-	float threshold = Math::db2linear(base->threshold);
+	float threshold = Math::db_to_linear(base->threshold);
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
 
 	float ratatcoef = exp(-1 / (0.00001f * sample_rate));
@@ -42,7 +42,7 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 	float atcoef = exp(-1 / (attime * sample_rate));
 	float relcoef = exp(-1 / (reltime * sample_rate));
 
-	float makeup = Math::db2linear(base->gain);
+	float makeup = Math::db_to_linear(base->gain);
 
 	float mix = base->mix;
 	float gr_meter_decay = exp(1 / (1 * sample_rate));
@@ -59,12 +59,12 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 	for (int i = 0; i < p_frame_count; i++) {
 		AudioFrame s = src[i];
 		//convert to positive
-		s.l = Math::abs(s.l);
-		s.r = Math::abs(s.r);
+		s.left = Math::abs(s.left);
+		s.right = Math::abs(s.right);
 
-		float peak = MAX(s.l, s.r);
+		float peak = MAX(s.left, s.right);
 
-		float overdb = 2.08136898f * Math::linear2db(peak / threshold);
+		float overdb = 2.08136898f * Math::linear_to_db(peak / threshold);
 
 		if (overdb < 0.0) { //we only care about what goes over to compress
 			overdb = 0.0;
@@ -94,7 +94,7 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 		}
 
 		float gr = -overdb * (cratio - 1) / cratio;
-		float grv = Math::db2linear(gr);
+		float grv = Math::db_to_linear(gr);
 
 		runmax = maxover + relcoef * (runmax - maxover); // highest peak for setting att/rel decays in reltime
 		maxover = runmax;
@@ -184,15 +184,15 @@ StringName AudioEffectCompressor::get_sidechain() const {
 	return sidechain;
 }
 
-void AudioEffectCompressor::_validate_property(PropertyInfo &property) const {
-	if (property.name == "sidechain") {
+void AudioEffectCompressor::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "sidechain") {
 		String buses = "";
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 			buses += ",";
 			buses += AudioServer::get_singleton()->get_bus_name(i);
 		}
 
-		property.hint_string = buses;
+		p_property.hint_string = buses;
 	}
 }
 
@@ -221,8 +221,8 @@ void AudioEffectCompressor::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "threshold", PROPERTY_HINT_RANGE, "-60,0,0.1"), "set_threshold", "get_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_RANGE, "1,48,0.1"), "set_ratio", "get_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gain", PROPERTY_HINT_RANGE, "-20,20,0.1"), "set_gain", "get_gain");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attack_us", PROPERTY_HINT_RANGE, "20,2000,1"), "set_attack_us", "get_attack_us");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "release_ms", PROPERTY_HINT_RANGE, "20,2000,1"), "set_release_ms", "get_release_ms");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attack_us", PROPERTY_HINT_RANGE, U"20,2000,1,suffix:\u00B5s"), "set_attack_us", "get_attack_us");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "release_ms", PROPERTY_HINT_RANGE, "20,2000,1,suffix:ms"), "set_release_ms", "get_release_ms");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mix", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_mix", "get_mix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "sidechain", PROPERTY_HINT_ENUM), "set_sidechain", "get_sidechain");
 }

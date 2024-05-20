@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeFloatOp" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeFloatOp" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A floating-point scalar operator to be used within the visual shader graph.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeFloatOp.Operator" default="0">
 			An operator to be applied to the inputs. See [enum Operator] for options.
@@ -45,6 +43,9 @@
 		</constant>
 		<constant name="OP_STEP" value="9" enum="Operator">
 			Generates a step function by comparing [code]b[/code](x) to [code]a[/code](edge). Returns 0.0 if [code]x[/code] is smaller than [code]edge[/code] and otherwise 1.0. Translates to [code]step(a, b)[/code] in the Godot Shader Language.
+		</constant>
+		<constant name="OP_ENUM_SIZE" value="10" enum="Operator">
+			Represents the size of the [enum Operator] enum.
 		</constant>
 	</constants>
 </class>

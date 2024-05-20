@@ -54,8 +54,8 @@ static void TransformColor_SSE2(const VP8LMultipliers* const m,
   const __m128i mults_rb = MK_CST_16(CST_5b(m->green_to_red_),
                                      CST_5b(m->green_to_blue_));
   const __m128i mults_b2 = MK_CST_16(CST_5b(m->red_to_blue_), 0);
-  const __m128i mask_ag = _mm_set1_epi32(0xff00ff00);  // alpha-green masks
-  const __m128i mask_rb = _mm_set1_epi32(0x00ff00ff);  // red-blue masks
+  const __m128i mask_ag = _mm_set1_epi32((int)0xff00ff00);  // alpha-green masks
+  const __m128i mask_rb = _mm_set1_epi32(0x00ff00ff);       // red-blue masks
   int i;
   for (i = 0; i + 4 <= num_pixels; i += 4) {
     const __m128i in = _mm_loadu_si128((__m128i*)&argb_data[i]); // argb
@@ -232,76 +232,55 @@ static void AddVectorEq_SSE2(const uint32_t* a, uint32_t* out, int size) {
 //------------------------------------------------------------------------------
 // Entropy
 
-// Checks whether the X or Y contribution is worth computing and adding.
-// Used in loop unrolling.
-#define ANALYZE_X_OR_Y(x_or_y, j)                                           \
-  do {                                                                      \
-    if ((x_or_y)[i + (j)] != 0) retval -= VP8LFastSLog2((x_or_y)[i + (j)]); \
-  } while (0)
-
-// Checks whether the X + Y contribution is worth computing and adding.
-// Used in loop unrolling.
-#define ANALYZE_XY(j)                  \
-  do {                                 \
-    if (tmp[j] != 0) {                 \
-      retval -= VP8LFastSLog2(tmp[j]); \
-      ANALYZE_X_OR_Y(X, j);            \
-    }                                  \
-  } while (0)
+// TODO(https://crbug.com/webp/499): this function produces different results
+// from the C code due to use of double/float resulting in output differences
+// when compared to -noasm.
+#if !(defined(WEBP_HAVE_SLOW_CLZ_CTZ) || defined(__i386__) || defined(_M_IX86))
 
 static float CombinedShannonEntropy_SSE2(const int X[256], const int Y[256]) {
   int i;
-  double retval = 0.;
-  int sumX, sumXY;
-  int32_t tmp[4];
-  __m128i zero = _mm_setzero_si128();
-  // Sums up X + Y, 4 ints at a time (and will merge it at the end for sumXY).
-  __m128i sumXY_128 = zero;
-  __m128i sumX_128 = zero;
+  float retval = 0.f;
+  int sumX = 0, sumXY = 0;
+  const __m128i zero = _mm_setzero_si128();
 
-  for (i = 0; i < 256; i += 4) {
-    const __m128i x = _mm_loadu_si128((const __m128i*)(X + i));
-    const __m128i y = _mm_loadu_si128((const __m128i*)(Y + i));
-
-    // Check if any X is non-zero: this actually provides a speedup as X is
-    // usually sparse.
-    if (_mm_movemask_epi8(_mm_cmpeq_epi32(x, zero)) != 0xFFFF) {
-      const __m128i xy_128 = _mm_add_epi32(x, y);
-      sumXY_128 = _mm_add_epi32(sumXY_128, xy_128);
-
-      sumX_128 = _mm_add_epi32(sumX_128, x);
-
-      // Analyze the different X + Y.
-      _mm_storeu_si128((__m128i*)tmp, xy_128);
-
-      ANALYZE_XY(0);
-      ANALYZE_XY(1);
-      ANALYZE_XY(2);
-      ANALYZE_XY(3);
-    } else {
-      // X is fully 0, so only deal with Y.
-      sumXY_128 = _mm_add_epi32(sumXY_128, y);
-
-      ANALYZE_X_OR_Y(Y, 0);
-      ANALYZE_X_OR_Y(Y, 1);
-      ANALYZE_X_OR_Y(Y, 2);
-      ANALYZE_X_OR_Y(Y, 3);
+  for (i = 0; i < 256; i += 16) {
+    const __m128i x0 = _mm_loadu_si128((const __m128i*)(X + i +  0));
+    const __m128i y0 = _mm_loadu_si128((const __m128i*)(Y + i +  0));
+    const __m128i x1 = _mm_loadu_si128((const __m128i*)(X + i +  4));
+    const __m128i y1 = _mm_loadu_si128((const __m128i*)(Y + i +  4));
+    const __m128i x2 = _mm_loadu_si128((const __m128i*)(X + i +  8));
+    const __m128i y2 = _mm_loadu_si128((const __m128i*)(Y + i +  8));
+    const __m128i x3 = _mm_loadu_si128((const __m128i*)(X + i + 12));
+    const __m128i y3 = _mm_loadu_si128((const __m128i*)(Y + i + 12));
+    const __m128i x4 = _mm_packs_epi16(_mm_packs_epi32(x0, x1),
+                                       _mm_packs_epi32(x2, x3));
+    const __m128i y4 = _mm_packs_epi16(_mm_packs_epi32(y0, y1),
+                                       _mm_packs_epi32(y2, y3));
+    const int32_t mx = _mm_movemask_epi8(_mm_cmpgt_epi8(x4, zero));
+    int32_t my = _mm_movemask_epi8(_mm_cmpgt_epi8(y4, zero)) | mx;
+    while (my) {
+      const int32_t j = BitsCtz(my);
+      int xy;
+      if ((mx >> j) & 1) {
+        const int x = X[i + j];
+        sumXY += x;
+        retval -= VP8LFastSLog2(x);
+      }
+      xy = X[i + j] + Y[i + j];
+      sumX += xy;
+      retval -= VP8LFastSLog2(xy);
+      my &= my - 1;
     }
   }
-
-  // Sum up sumX_128 to get sumX.
-  _mm_storeu_si128((__m128i*)tmp, sumX_128);
-  sumX = tmp[3] + tmp[2] + tmp[1] + tmp[0];
-
-  // Sum up sumXY_128 to get sumXY.
-  _mm_storeu_si128((__m128i*)tmp, sumXY_128);
-  sumXY = tmp[3] + tmp[2] + tmp[1] + tmp[0];
-
   retval += VP8LFastSLog2(sumX) + VP8LFastSLog2(sumXY);
-  return (float)retval;
+  return retval;
 }
-#undef ANALYZE_X_OR_Y
-#undef ANALYZE_XY
+
+#else
+
+#define DONT_USE_COMBINED_SHANNON_ENTROPY_SSE2_FUNC   // won't be faster
+
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -397,7 +376,7 @@ static void BundleColorMap_SSE2(const uint8_t* const row, int width, int xbits,
       break;
     }
     case 2: {
-      const __m128i mask_or = _mm_set1_epi32(0xff000000);
+      const __m128i mask_or = _mm_set1_epi32((int)0xff000000);
       const __m128i mul_cst = _mm_set1_epi16(0x0104);
       const __m128i mask_mul = _mm_set1_epi16(0x0f00);
       for (x = 0; x + 16 <= width; x += 16, dst += 4) {
@@ -448,7 +427,7 @@ static WEBP_INLINE void Average2_m128i(const __m128i* const a0,
 static void PredictorSub0_SSE2(const uint32_t* in, const uint32_t* upper,
                                int num_pixels, uint32_t* out) {
   int i;
-  const __m128i black = _mm_set1_epi32(ARGB_BLACK);
+  const __m128i black = _mm_set1_epi32((int)ARGB_BLACK);
   for (i = 0; i + 4 <= num_pixels; i += 4) {
     const __m128i src = _mm_loadu_si128((const __m128i*)&in[i]);
     const __m128i res = _mm_sub_epi8(src, black);
@@ -460,20 +439,22 @@ static void PredictorSub0_SSE2(const uint32_t* in, const uint32_t* upper,
   (void)upper;
 }
 
-#define GENERATE_PREDICTOR_1(X, IN)                                           \
-static void PredictorSub##X##_SSE2(const uint32_t* in, const uint32_t* upper, \
-                                   int num_pixels, uint32_t* out) {           \
-  int i;                                                                      \
-  for (i = 0; i + 4 <= num_pixels; i += 4) {                                  \
-    const __m128i src = _mm_loadu_si128((const __m128i*)&in[i]);              \
-    const __m128i pred = _mm_loadu_si128((const __m128i*)&(IN));              \
-    const __m128i res = _mm_sub_epi8(src, pred);                              \
-    _mm_storeu_si128((__m128i*)&out[i], res);                                 \
-  }                                                                           \
-  if (i != num_pixels) {                                                      \
-    VP8LPredictorsSub_C[(X)](in + i, upper + i, num_pixels - i, out + i);     \
-  }                                                                           \
-}
+#define GENERATE_PREDICTOR_1(X, IN)                                         \
+  static void PredictorSub##X##_SSE2(const uint32_t* const in,              \
+                                     const uint32_t* const upper,           \
+                                     int num_pixels, uint32_t* const out) { \
+    int i;                                                                  \
+    for (i = 0; i + 4 <= num_pixels; i += 4) {                              \
+      const __m128i src = _mm_loadu_si128((const __m128i*)&in[i]);          \
+      const __m128i pred = _mm_loadu_si128((const __m128i*)&(IN));          \
+      const __m128i res = _mm_sub_epi8(src, pred);                          \
+      _mm_storeu_si128((__m128i*)&out[i], res);                             \
+    }                                                                       \
+    if (i != num_pixels) {                                                  \
+      VP8LPredictorsSub_C[(X)](in + i, WEBP_OFFSET_PTR(upper, i),           \
+                               num_pixels - i, out + i);                    \
+    }                                                                       \
+  }
 
 GENERATE_PREDICTOR_1(1, in[i - 1])       // Predictor1: L
 GENERATE_PREDICTOR_1(2, upper[i])        // Predictor2: T
@@ -657,7 +638,9 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8LEncDspInitSSE2(void) {
   VP8LCollectColorRedTransforms = CollectColorRedTransforms_SSE2;
   VP8LAddVector = AddVector_SSE2;
   VP8LAddVectorEq = AddVectorEq_SSE2;
+#if !defined(DONT_USE_COMBINED_SHANNON_ENTROPY_SSE2_FUNC)
   VP8LCombinedShannonEntropy = CombinedShannonEntropy_SSE2;
+#endif
   VP8LVectorMismatch = VectorMismatch_SSE2;
   VP8LBundleColorMap = BundleColorMap_SSE2;
 

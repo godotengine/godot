@@ -4,7 +4,7 @@
  *
  *   TrueType name ID definitions (specification only).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -591,7 +591,7 @@ FT_BEGIN_HEADER
 #define TT_MS_LANGID_MALAY_MALAYSIA                    0x043E
 #define TT_MS_LANGID_MALAY_BRUNEI_DARUSSALAM           0x083E
 #define TT_MS_LANGID_KAZAKH_KAZAKHSTAN                 0x043F
-#define TT_MS_LANGID_KYRGYZ_KYRGYZSTAN /* Cyrillic*/   0x0440
+#define TT_MS_LANGID_KYRGYZ_KYRGYZSTAN /* Cyrillic */  0x0440
 #define TT_MS_LANGID_KISWAHILI_KENYA                   0x0441
 #define TT_MS_LANGID_TURKMEN_TURKMENISTAN              0x0442
 #define TT_MS_LANGID_UZBEK_UZBEKISTAN_LATIN            0x0443

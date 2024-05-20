@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MovieWriter" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract class for non-real-time video recording encoders.
+	</brief_description>
+	<description>
+		Godot can record videos with non-real-time simulation. Like the [code]--fixed-fps[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], this forces the reported [code]delta[/code] in [method Node._process] functions to be identical across frames, regardless of how long it actually took to render the frame. This can be used to record high-quality videos with perfect frame pacing regardless of your hardware's capabilities.
+		Godot has 2 built-in [MovieWriter]s:
+		- AVI container with MJPEG for video and uncompressed audio ([code].avi[/code] file extension). Lossy compression, medium file sizes, fast encoding. The lossy compression quality can be adjusted by changing [member ProjectSettings.editor/movie_writer/mjpeg_quality]. The resulting file can be viewed in most video players, but it must be converted to another format for viewing on the web or by Godot with [VideoStreamPlayer]. MJPEG does not support transparency. AVI output is currently limited to a file of 4 GB in size at most.
+		- PNG image sequence for video and WAV for audio ([code].png[/code] file extension). Lossless compression, large file sizes, slow encoding. Designed to be encoded to a video file with another tool such as [url=https://ffmpeg.org/]FFmpeg[/url] after recording. Transparency is currently not supported, even if the root viewport is set to be transparent.
+		If you need to encode to a different format or pipe a stream through third-party software, you can extend the [MovieWriter] class to create your own movie writers. This should typically be done using GDExtension for performance reasons.
+		[b]Editor usage:[/b] A default movie file path can be specified in [member ProjectSettings.editor/movie_writer/movie_file]. Alternatively, for running single scenes, a [code]movie_file[/code] metadata can be added to the root node, specifying the path to a movie file that will be used when recording that scene. Once a path is set, click the video reel icon in the top-right corner of the editor to enable Movie Maker mode, then run any scene as usual. The engine will start recording as soon as the splash screen is finished, and it will only stop recording when the engine quits. Click the video reel icon again to disable Movie Maker mode. Note that toggling Movie Maker mode does not affect project instances that are already running.
+		[b]Note:[/b] MovieWriter is available for use in both the editor and exported projects, but it is [i]not[/i] designed for use by end users to record videos while playing. Players wishing to record gameplay videos should install tools such as [url=https://obsproject.com/]OBS Studio[/url] or [url=https://www.maartenbaert.be/simplescreenrecorder/]SimpleScreenRecorder[/url] instead.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_audio_mix_rate" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Called when the audio sample rate used for recording the audio is requested by the engine. The value returned must be specified in Hz. Defaults to 48000 Hz if [method _get_audio_mix_rate] is not overridden.
+			</description>
+		</method>
+		<method name="_get_audio_speaker_mode" qualifiers="virtual const">
+			<return type="int" enum="AudioServer.SpeakerMode" />
+			<description>
+				Called when the audio speaker mode used for recording the audio is requested by the engine. This can affect the number of output channels in the resulting audio file/stream. Defaults to [constant AudioServer.SPEAKER_MODE_STEREO] if [method _get_audio_speaker_mode] is not overridden.
+			</description>
+		</method>
+		<method name="_handles_file" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Called when the engine determines whether this [MovieWriter] is able to handle the file at [param path]. Must return [code]true[/code] if this [MovieWriter] is able to handle the given file path, [code]false[/code] otherwise. Typically, [method _handles_file] is overridden as follows to allow the user to record a file at any path with a given file extension:
+				[codeblock]
+				func _handles_file(path):
+				    # Allows specifying an output file with a `.mkv` file extension (case-insensitive),
+				    # either in the Project Settings or with the `--write-movie &lt;path&gt;` command line argument.
+				    return path.get_extension().to_lower() == "mkv"
+				[/codeblock]
+			</description>
+		</method>
+		<method name="_write_begin" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="movie_size" type="Vector2i" />
+			<param index="1" name="fps" type="int" />
+			<param index="2" name="base_path" type="String" />
+			<description>
+				Called once before the engine starts writing video and audio data. [param movie_size] is the width and height of the video to save. [param fps] is the number of frames per second specified in the project settings or using the [code]--fixed-fps &lt;fps&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
+			</description>
+		</method>
+		<method name="_write_end" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the engine finishes writing. This occurs when the engine quits by pressing the window manager's close button, or when [method SceneTree.quit] is called.
+				[b]Note:[/b] Pressing [kbd]Ctrl + C[/kbd] on the terminal running the editor/project does [i]not[/i] result in [method _write_end] being called.
+			</description>
+		</method>
+		<method name="_write_frame" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="frame_image" type="Image" />
+			<param index="1" name="audio_frame_block" type="const void*" />
+			<description>
+				Called at the end of every rendered frame. The [param frame_image] and [param audio_frame_block] function arguments should be written to.
+			</description>
+		</method>
+		<method name="add_writer" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="writer" type="MovieWriter" />
+			<description>
+				Adds a writer to be usable by the engine. The supported file extensions can be set by overriding [method _handles_file].
+				[b]Note:[/b] [method add_writer] must be called early enough in the engine initialization to work, as movie writing is designed to start at the same time as the rest of the engine.
+			</description>
+		</method>
+	</methods>
+</class>

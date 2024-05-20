@@ -1,64 +1,122 @@
-/*************************************************************************/
-/*  xr_nodes.h                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  xr_nodes.h                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef XR_NODES_H
 #define XR_NODES_H
 
 #include "scene/3d/camera_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/resources/mesh.h"
 #include "servers/xr/xr_positional_tracker.h"
-
-/**
-	@author Bastiaan Olij <mux213@gmail.com>
-**/
 
 /*
 	XRCamera is a subclass of camera which will register itself with its parent XROrigin and as a result is automatically positioned
 */
+
 class XRCamera3D : public Camera3D {
 	GDCLASS(XRCamera3D, Camera3D);
 
 protected:
-	void _notification(int p_what);
+	// The name and pose for our HMD tracker is currently the only hardcoded bit.
+	// If we ever are able to support multiple HMDs we may need to make this settable.
+	StringName tracker_name = "head";
+	StringName pose_name = "default";
+	Ref<XRPositionalTracker> tracker;
+
+	void _bind_tracker();
+	void _unbind_tracker();
+	void _changed_tracker(const StringName &p_tracker_name, int p_tracker_type);
+	void _removed_tracker(const StringName &p_tracker_name, int p_tracker_type);
+	void _pose_changed(const Ref<XRPose> &p_pose);
 
 public:
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const override;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
-	virtual Vector3 project_position(const Point2 &p_point, float p_z_depth) const override;
+	virtual Vector3 project_position(const Point2 &p_point, real_t p_z_depth) const override;
 	virtual Vector<Plane> get_frustum() const override;
 
-	XRCamera3D() {}
-	~XRCamera3D() {}
+	XRCamera3D();
+	~XRCamera3D();
+};
+
+/*
+	XRNode3D is a helper node that implements binding to a tracker.
+
+	It must be a child node of our XROrigin node
+*/
+
+class XRNode3D : public Node3D {
+	GDCLASS(XRNode3D, Node3D);
+
+private:
+	StringName tracker_name;
+	StringName pose_name = "default";
+	bool has_tracking_data = false;
+	bool show_when_tracked = false;
+
+protected:
+	Ref<XRPositionalTracker> tracker;
+
+	static void _bind_methods();
+
+	virtual void _bind_tracker();
+	virtual void _unbind_tracker();
+	void _changed_tracker(const StringName &p_tracker_name, int p_tracker_type);
+	void _removed_tracker(const StringName &p_tracker_name, int p_tracker_type);
+
+	void _pose_changed(const Ref<XRPose> &p_pose);
+	void _pose_lost_tracking(const Ref<XRPose> &p_pose);
+	void _set_has_tracking_data(bool p_has_tracking_data);
+
+public:
+	void _validate_property(PropertyInfo &p_property) const;
+	void set_tracker(const StringName &p_tracker_name);
+	StringName get_tracker() const;
+
+	void set_pose_name(const StringName &p_pose);
+	StringName get_pose_name() const;
+
+	bool get_is_active() const;
+	bool get_has_tracking_data() const;
+
+	void set_show_when_tracked(bool p_show);
+	bool get_show_when_tracked() const;
+
+	void trigger_haptic_pulse(const String &p_action_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0);
+
+	Ref<XRPose> get_pose();
+
+	PackedStringArray get_configuration_warnings() const override;
+
+	XRNode3D();
+	~XRNode3D();
 };
 
 /*
@@ -67,37 +125,29 @@ public:
 	It must be a child node of our XROrigin node
 */
 
-class XRController3D : public Node3D {
-	GDCLASS(XRController3D, Node3D);
+class XRController3D : public XRNode3D {
+	GDCLASS(XRController3D, XRNode3D);
 
 private:
-	int controller_id = 1;
-	bool is_active = true;
-	int button_states = 0;
-	Ref<Mesh> mesh;
-
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual void _bind_tracker() override;
+	virtual void _unbind_tracker() override;
+
+	void _button_pressed(const String &p_name);
+	void _button_released(const String &p_name);
+	void _input_float_changed(const String &p_name, float p_value);
+	void _input_vector2_changed(const String &p_name, Vector2 p_value);
+	void _profile_changed(const String &p_role);
+
 public:
-	void set_controller_id(int p_controller_id);
-	int get_controller_id() const;
-	String get_controller_name() const;
+	bool is_button_pressed(const StringName &p_name) const;
+	Variant get_input(const StringName &p_name) const;
+	float get_float(const StringName &p_name) const;
+	Vector2 get_vector2(const StringName &p_name) const;
 
-	int get_joystick_id() const;
-	bool is_button_pressed(int p_button) const;
-	float get_joystick_axis(int p_axis) const;
-
-	real_t get_rumble() const;
-	void set_rumble(real_t p_rumble);
-
-	bool get_is_active() const;
 	XRPositionalTracker::TrackerHand get_tracker_hand() const;
-
-	Ref<Mesh> get_mesh() const;
-
-	TypedArray<String> get_configuration_warnings() const override;
 
 	XRController3D() {}
 	~XRController3D() {}
@@ -108,32 +158,18 @@ public:
 	It must be a child node of our XROrigin3D node
 */
 
-class XRAnchor3D : public Node3D {
-	GDCLASS(XRAnchor3D, Node3D);
+class XRAnchor3D : public XRNode3D {
+	GDCLASS(XRAnchor3D, XRNode3D);
 
 private:
-	int anchor_id = 1;
-	bool is_active = true;
 	Vector3 size;
-	Ref<Mesh> mesh;
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void set_anchor_id(int p_anchor_id);
-	int get_anchor_id() const;
-	String get_anchor_name() const;
-
-	bool get_is_active() const;
 	Vector3 get_size() const;
-
 	Plane get_plane() const;
-
-	Ref<Mesh> get_mesh() const;
-
-	TypedArray<String> get_configuration_warnings() const override;
 
 	XRAnchor3D() {}
 	~XRAnchor3D() {}
@@ -147,27 +183,31 @@ public:
 	Our camera and controllers will always be child nodes and thus place relative to this origin point.
 	This node will automatically locate any camera child nodes and update its position while our XRController3D node will handle tracked controllers.
 */
+
 class XROrigin3D : public Node3D {
 	GDCLASS(XROrigin3D, Node3D);
 
 private:
-	XRCamera3D *tracked_camera = nullptr;
+	bool current = false;
+	static Vector<XROrigin3D *> origin_nodes; // all origin nodes in tree
+
+	void _set_current(bool p_enabled, bool p_update_others);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
-	void set_tracked_camera(XRCamera3D *p_tracked_camera);
-	void clear_tracked_camera_if(XRCamera3D *p_tracked_camera);
+	real_t get_world_scale() const;
+	void set_world_scale(real_t p_world_scale);
 
-	float get_world_scale() const;
-	void set_world_scale(float p_world_scale);
+	void set_current(bool p_enabled);
+	bool is_current() const;
 
 	XROrigin3D() {}
 	~XROrigin3D() {}
 };
 
-#endif /* XR_NODES_H */
+#endif // XR_NODES_H

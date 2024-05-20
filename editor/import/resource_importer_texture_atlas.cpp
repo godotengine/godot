@@ -1,43 +1,46 @@
-/*************************************************************************/
-/*  resource_importer_texture_atlas.cpp                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  resource_importer_texture_atlas.cpp                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "resource_importer_texture_atlas.h"
 
 #include "atlas_import_failed.xpm"
+#include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/math/geometry_2d.h"
 #include "editor/editor_atlas_packer.h"
+#include "scene/resources/atlas_texture.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/mesh_texture.h"
 
 String ResourceImporterTextureAtlas::get_importer_name() const {
 	return "texture_atlas";
@@ -59,7 +62,13 @@ String ResourceImporterTextureAtlas::get_resource_type() const {
 	return "Texture2D";
 }
 
-bool ResourceImporterTextureAtlas::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterTextureAtlas::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+	if (p_option == "crop_to_region" && int(p_options["import_mode"]) != IMPORT_MODE_REGION) {
+		return false;
+	} else if (p_option == "trim_alpha_border_from_region" && int(p_options["import_mode"]) != IMPORT_MODE_REGION) {
+		return false;
+	}
+
 	return true;
 }
 
@@ -71,33 +80,30 @@ String ResourceImporterTextureAtlas::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterTextureAtlas::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterTextureAtlas::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "atlas_file", PROPERTY_HINT_SAVE_FILE, "*.png"), ""));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_mode", PROPERTY_HINT_ENUM, "Region,Mesh2D"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_mode", PROPERTY_HINT_ENUM, "Region,Mesh2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "crop_to_region"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "trim_alpha_border_from_region"), true));
 }
 
 String ResourceImporterTextureAtlas::get_option_group_file() const {
 	return "atlas_file";
 }
 
-Error ResourceImporterTextureAtlas::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterTextureAtlas::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	/* If this happens, it's because the atlas_file field was not filled, so just import a broken texture */
 
 	//use an xpm because it's size independent, the editor images are vector and size dependent
 	//it's a simple hack
 	Ref<Image> broken = memnew(Image((const char **)atlas_import_failed_xpm));
-	Ref<ImageTexture> broken_texture;
-	broken_texture.instantiate();
-	broken_texture->create_from_image(broken);
-
-	String target_file = p_save_path + ".tex";
-
-	ResourceSaver::save(target_file, broken_texture);
+	ResourceSaver::save(ImageTexture::create_from_image(broken), p_save_path + ".tex");
 
 	return OK;
 }
 
-static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_transposed, Ref<Image> p_image, const Ref<Image> &p_src_image) {
+// FIXME: Rasterization has issues, see https://github.com/godotengine/godot/issues/68350#issuecomment-1305610290
+static void _plot_triangle(Vector2i *p_vertices, const Vector2i &p_offset, bool p_transposed, Ref<Image> p_image, const Ref<Image> &p_src_image) {
 	int width = p_image->get_width();
 	int height = p_image->get_height();
 	int src_width = p_src_image->get_width();
@@ -107,8 +113,8 @@ static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_
 	int y[3];
 
 	for (int j = 0; j < 3; j++) {
-		x[j] = vertices[j].x;
-		y[j] = vertices[j].y;
+		x[j] = p_vertices[j].x;
+		y[j] = p_vertices[j].y;
 	}
 
 	// sort the points vertically
@@ -130,10 +136,10 @@ static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_
 	double dx_low = double(x[2] - x[1]) / (y[2] - y[1] + 1);
 	double xf = x[0];
 	double xt = x[0] + dx_upper; // if y[0] == y[1], special case
-	int max_y = MIN(y[2], height - p_offset.y - 1);
-	for (int yi = y[0]; yi <= max_y; yi++) {
+	int max_y = MIN(y[2], p_transposed ? (width - p_offset.x - 1) : (height - p_offset.y - 1));
+	for (int yi = y[0]; yi < max_y; yi++) {
 		if (yi >= 0) {
-			for (int xi = (xf > 0 ? int(xf) : 0); xi <= (xt < width ? xt : width - 1); xi++) {
+			for (int xi = (xf > 0 ? int(xf) : 0); xi < (xt <= src_width ? xt : src_width); xi++) {
 				int px = xi, py = yi;
 				int sx = px, sy = py;
 				sx = CLAMP(sx, 0, src_width - 1);
@@ -155,7 +161,7 @@ static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_
 				p_image->set_pixel(px, py, color);
 			}
 
-			for (int xi = (xf < width ? int(xf) : width - 1); xi >= (xt > 0 ? xt : 0); xi--) {
+			for (int xi = (xf < src_width ? int(xf) : src_width - 1); xi >= (xt > 0 ? xt : 0); xi--) {
 				int px = xi, py = yi;
 				int sx = px, sy = py;
 				sx = CLAMP(sx, 0, src_width - 1);
@@ -186,8 +192,8 @@ static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_
 	}
 }
 
-Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file, const Map<String, Map<StringName, Variant>> &p_source_file_options, const Map<String, String> &p_base_paths) {
-	ERR_FAIL_COND_V(p_source_file_options.size() == 0, ERR_BUG); //should never happen
+Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file, const HashMap<String, HashMap<StringName, Variant>> &p_source_file_options, const HashMap<String, String> &p_base_paths) {
+	ERR_FAIL_COND_V(p_source_file_options.is_empty(), ERR_BUG); //should never happen
 
 	Vector<EditorAtlasPacker::Chart> charts;
 	Vector<PackData> pack_data_files;
@@ -195,10 +201,10 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 	pack_data_files.resize(p_source_file_options.size());
 
 	int idx = 0;
-	for (const Map<String, Map<StringName, Variant>>::Element *E = p_source_file_options.front(); E; E = E->next(), idx++) {
+	for (const KeyValue<String, HashMap<StringName, Variant>> &E : p_source_file_options) {
 		PackData &pack_data = pack_data_files.write[idx];
-		const String &source = E->key();
-		const Map<StringName, Variant> &options = E->get();
+		const String &source = E.key;
+		const HashMap<StringName, Variant> &options = E.value;
 
 		Ref<Image> image;
 		image.instantiate();
@@ -211,17 +217,21 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 		if (mode == IMPORT_MODE_REGION) {
 			pack_data.is_mesh = false;
+			pack_data.is_cropped = options["crop_to_region"];
 
 			EditorAtlasPacker::Chart chart;
 
-			//clip a region from the image
-			Rect2 used_rect = image->get_used_rect();
+			Rect2i used_rect = Rect2i(Vector2i(), image->get_size());
+			if (options["trim_alpha_border_from_region"]) {
+				// Clip a region from the image.
+				used_rect = image->get_used_rect();
+			}
 			pack_data.region = used_rect;
 
 			chart.vertices.push_back(used_rect.position);
-			chart.vertices.push_back(used_rect.position + Vector2(used_rect.size.x, 0));
-			chart.vertices.push_back(used_rect.position + Vector2(used_rect.size.x, used_rect.size.y));
-			chart.vertices.push_back(used_rect.position + Vector2(0, used_rect.size.y));
+			chart.vertices.push_back(used_rect.position + Vector2i(used_rect.size.x, 0));
+			chart.vertices.push_back(used_rect.position + Vector2i(used_rect.size.x, used_rect.size.y));
+			chart.vertices.push_back(used_rect.position + Vector2i(0, used_rect.size.y));
 			EditorAtlasPacker::Chart::Face f;
 			f.vertex[0] = 0;
 			f.vertex[1] = 1;
@@ -242,7 +252,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			Ref<BitMap> bit_map;
 			bit_map.instantiate();
 			bit_map->create_from_image_alpha(image);
-			Vector<Vector<Vector2>> polygons = bit_map->clip_opaque_to_polygons(Rect2(0, 0, image->get_width(), image->get_height()));
+			Vector<Vector<Vector2>> polygons = bit_map->clip_opaque_to_polygons(Rect2(Vector2(), image->get_size()));
 
 			for (int j = 0; j < polygons.size(); j++) {
 				EditorAtlasPacker::Chart chart;
@@ -264,16 +274,21 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 				pack_data.chart_vertices.push_back(polygons[j]);
 			}
 		}
+		idx++;
 	}
+
+	const int max_width = (int)GLOBAL_GET("editor/import/atlas_max_width");
 
 	//pack the charts
 	int atlas_width, atlas_height;
-	EditorAtlasPacker::chart_pack(charts, atlas_width, atlas_height);
+	EditorAtlasPacker::chart_pack(charts, atlas_width, atlas_height, max_width);
+
+	if (atlas_height > max_width * 2) {
+		WARN_PRINT(vformat(TTR("%s: Atlas texture significantly larger on one axis (%d), consider changing the `editor/import/atlas_max_width` Project Setting to allow a wider texture, making the result more even in size."), p_group_file, atlas_height));
+	}
 
 	//blit the atlas
-	Ref<Image> new_atlas;
-	new_atlas.instantiate();
-	new_atlas->create(atlas_width, atlas_height, false, Image::FORMAT_RGBA8);
+	Ref<Image> new_atlas = Image::create_empty(atlas_width, atlas_height, false, Image::FORMAT_RGBA8);
 
 	for (int i = 0; i < pack_data_files.size(); i++) {
 		PackData &pack_data = pack_data_files.write[i];
@@ -298,20 +313,16 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 	//update cache if existing, else create
 	Ref<Texture2D> cache;
-	if (ResourceCache::has(p_group_file)) {
-		Resource *resptr = ResourceCache::get(p_group_file);
-		cache.reference_ptr(resptr);
-	} else {
-		Ref<ImageTexture> res_cache;
-		res_cache.instantiate();
-		res_cache->create_from_image(new_atlas);
+	cache = ResourceCache::get_ref(p_group_file);
+	if (!cache.is_valid()) {
+		Ref<ImageTexture> res_cache = ImageTexture::create_from_image(new_atlas);
 		res_cache->set_path(p_group_file);
 		cache = res_cache;
 	}
 
 	//save the images
 	idx = 0;
-	for (const Map<String, Map<StringName, Variant>>::Element *E = p_source_file_options.front(); E; E = E->next(), idx++) {
+	for (const KeyValue<String, HashMap<StringName, Variant>> &E : p_source_file_options) {
 		PackData &pack_data = pack_data_files.write[idx];
 
 		Ref<Texture2D> texture;
@@ -324,7 +335,10 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			atlas_texture.instantiate();
 			atlas_texture->set_atlas(cache);
 			atlas_texture->set_region(Rect2(offset, pack_data.region.size));
-			atlas_texture->set_margin(Rect2(pack_data.region.position, Size2(pack_data.image->get_width(), pack_data.image->get_height()) - pack_data.region.size));
+
+			if (!pack_data.is_cropped) {
+				atlas_texture->set_margin(Rect2(pack_data.region.position, pack_data.image->get_size() - pack_data.region.size));
+			}
 
 			texture = atlas_texture;
 		} else {
@@ -381,11 +395,11 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			mesh_texture->set_mesh(mesh);
 
 			texture = mesh_texture;
-			//mesh
 		}
 
-		String save_path = p_base_paths[E->key()] + ".res";
-		ResourceSaver::save(save_path, texture);
+		String save_path = p_base_paths[E.key] + ".res";
+		ResourceSaver::save(texture, save_path);
+		idx++;
 	}
 
 	return OK;

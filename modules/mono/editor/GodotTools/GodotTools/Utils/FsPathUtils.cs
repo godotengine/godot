@@ -1,8 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Godot;
 using GodotTools.Core;
-using JetBrains.Annotations;
 
 namespace GodotTools.Utils
 {
@@ -30,8 +30,7 @@ namespace GodotTools.Utils
             return childPathNorm.PathStartsWithAlreadyNorm(parentPathNorm);
         }
 
-        [CanBeNull]
-        public static string LocalizePathWithCaseChecked(string path)
+        public static string? LocalizePathWithCaseChecked(string path)
         {
             string pathNorm = path.NormalizePath() + Path.DirectorySeparatorChar;
             string resourcePathNorm = ResourcePath.NormalizePath() + Path.DirectorySeparatorChar;

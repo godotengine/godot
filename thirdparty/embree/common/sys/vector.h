@@ -8,6 +8,8 @@
 
 namespace embree
 {
+  class Device;
+  
    template<typename T, typename allocator>
     class vector_t
     {
@@ -25,6 +27,12 @@ namespace embree
       template<typename M>
       __forceinline explicit vector_t (M alloc, size_t sz) 
       : alloc(alloc), size_active(0), size_alloced(0), items(nullptr) { internal_resize_init(sz); }
+
+      __forceinline vector_t (Device* alloc)
+        : vector_t(alloc,0) {}
+
+      __forceinline vector_t(void* data, size_t bytes)
+        : size_active(0), size_alloced(bytes/sizeof(T)), items((T*)data) {}
     
       __forceinline ~vector_t() {
         clear();
@@ -63,6 +71,10 @@ namespace embree
         size_alloced = other.size_alloced; other.size_alloced = 0;
         items = other.items; other.items = nullptr;
         return *this;
+      }
+
+      __forceinline allocator& getAlloc() {
+	return alloc;
       }
 
       /********************** Iterators  ****************************/
@@ -127,14 +139,15 @@ namespace embree
       {
         assert(!empty());
         size_active--;
-        alloc.destroy(&items[size_active]);
+        items[size_active].~T();
       }
 
       __forceinline void clear() 
       {
         /* destroy elements */
-        for (size_t i=0; i<size_active; i++)
-          alloc.destroy(&items[i]);
+        for (size_t i=0; i<size_active; i++){
+          items[i].~T();
+        }
         
         /* free memory */
         alloc.deallocate(items,size_alloced); 
@@ -178,8 +191,9 @@ namespace embree
         /* destroy elements */
         if (new_active < size_active) 
         {
-          for (size_t i=new_active; i<size_active; i++)
-            alloc.destroy(&items[i]);
+          for (size_t i=new_active; i<size_active; i++){
+            items[i].~T();
+          }
           size_active = new_active;
         }
 
@@ -195,7 +209,7 @@ namespace embree
         items = alloc.allocate(new_alloced);
         for (size_t i=0; i<size_active; i++) {
           ::new (&items[i]) T(std::move(old_items[i]));
-          alloc.destroy(&old_items[i]);
+          old_items[i].~T();
         }
 
         for (size_t i=size_active; i<new_active; i++) {
@@ -212,6 +226,10 @@ namespace embree
         /* do nothing if container already large enough */
         if (new_alloced <= size_alloced) 
           return size_alloced;
+
+        /* if current size is 0 allocate exact requested size */
+        if (size_alloced == 0)
+          return new_alloced;
 
         /* resize to next power of 2 otherwise */
         size_t new_size_alloced = size_alloced;
@@ -235,8 +253,12 @@ namespace embree
   /*! vector class that performs aligned allocations */
   template<typename T>
     using avector = vector_t<T,aligned_allocator<T,std::alignment_of<T>::value> >;
-  
+
   /*! vector class that performs OS allocations */
   template<typename T>
     using ovector = vector_t<T,os_allocator<T> >;
+
+  /*! vector class with externally managed data buffer */
+  template<typename T>
+    using evector = vector_t<T,no_allocator<T>>;
 }

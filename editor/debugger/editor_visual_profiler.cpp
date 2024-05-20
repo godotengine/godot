@@ -1,38 +1,40 @@
-/*************************************************************************/
-/*  editor_visual_profiler.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_visual_profiler.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_visual_profiler.h"
 
 #include "core/os/os.h"
-#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/resources/image_texture.h"
 
 void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 	++last_metric;
@@ -41,7 +43,6 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 	}
 
 	frame_metrics.write[last_metric] = p_metric;
-	//	_make_metric_ptrs(frame_metrics.write[last_metric]);
 
 	List<String> stack;
 	for (int i = 0; i < frame_metrics[last_metric].areas.size(); i++) {
@@ -67,8 +68,9 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 	}
 
 	updating_frame = true;
+	clear_button->set_disabled(false);
 	cursor_metric_edit->set_max(frame_metrics[last_metric].frame_number);
-	cursor_metric_edit->set_min(MAX(frame_metrics[last_metric].frame_number - frame_metrics.size(), 0));
+	cursor_metric_edit->set_min(MAX(int64_t(frame_metrics[last_metric].frame_number) - frame_metrics.size(), 0));
 
 	if (!seeking) {
 		cursor_metric_edit->set_value(frame_metrics[last_metric].frame_number);
@@ -93,8 +95,8 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 }
 
 void EditorVisualProfiler::clear() {
-	int metric_size = EditorSettings::get_singleton()->get("debugger/profiler_frame_history_size");
-	metric_size = CLAMP(metric_size, 60, 1024);
+	int metric_size = EDITOR_GET("debugger/profiler_frame_history_size");
+	metric_size = CLAMP(metric_size, 60, 10000);
 	frame_metrics.clear();
 	frame_metrics.resize(metric_size);
 	last_metric = -1;
@@ -114,7 +116,7 @@ String EditorVisualProfiler::_get_time_as_text(float p_time) {
 	int dmode = display_mode->get_selected();
 
 	if (dmode == DISPLAY_FRAME_TIME) {
-		return TS->format_number(rtos(p_time)) + " " + RTR("ms");
+		return TS->format_number(String::num(p_time, 2)) + " " + TTR("ms");
 	} else if (dmode == DISPLAY_FRAME_PERCENT) {
 		return TS->format_number(String::num(p_time * 100 / graph_limit, 2)) + " " + TS->percent_sign();
 	}
@@ -123,11 +125,11 @@ String EditorVisualProfiler::_get_time_as_text(float p_time) {
 }
 
 Color EditorVisualProfiler::_get_color_from_signature(const StringName &p_signature) const {
-	Color bc = get_theme_color(SNAME("error_color"), SNAME("Editor"));
+	Color bc = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
 	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
 	Color c;
 	c.set_hsv(rot, bc.get_s(), bc.get_v());
-	return c.lerp(get_theme_color(SNAME("base_color"), SNAME("Editor")), 0.07);
+	return c.lerp(get_theme_color(SNAME("base_color"), EditorStringName(Editor)), 0.07);
 }
 
 void EditorVisualProfiler::_item_selected() {
@@ -144,12 +146,12 @@ void EditorVisualProfiler::_item_selected() {
 }
 
 void EditorVisualProfiler::_update_plot() {
-	int w = graph->get_size().width;
-	int h = graph->get_size().height;
+	const int w = graph->get_size().width;
+	const int h = graph->get_size().height;
 
 	bool reset_texture = false;
 
-	int desired_len = w * h * 4;
+	const int desired_len = w * h * 4;
 
 	if (graph_image.size() != desired_len) {
 		reset_texture = true;
@@ -157,12 +159,13 @@ void EditorVisualProfiler::_update_plot() {
 	}
 
 	uint8_t *wr = graph_image.ptrw();
+	const Color background_color = get_theme_color("dark_color_2", EditorStringName(Editor));
 
-	//clear
+	// Clear the previous frame and set the background color.
 	for (int i = 0; i < desired_len; i += 4) {
-		wr[i + 0] = 0;
-		wr[i + 1] = 0;
-		wr[i + 2] = 0;
+		wr[i + 0] = Math::fast_ftoi(background_color.r * 255);
+		wr[i + 1] = Math::fast_ftoi(background_color.g * 255);
+		wr[i + 2] = Math::fast_ftoi(background_color.b * 255);
 		wr[i + 3] = 255;
 	}
 
@@ -260,9 +263,9 @@ void EditorVisualProfiler::_update_plot() {
 				uint8_t r, g, b;
 
 				if (column_cpu[j].a == 0) {
-					r = 0;
-					g = 0;
-					b = 0;
+					r = Math::fast_ftoi(background_color.r * 255);
+					g = Math::fast_ftoi(background_color.g * 255);
+					b = Math::fast_ftoi(background_color.b * 255);
 				} else {
 					r = CLAMP((column_cpu[j].r / column_cpu[j].a) * 255.0, 0, 255);
 					g = CLAMP((column_cpu[j].g / column_cpu[j].a) * 255.0, 0, 255);
@@ -280,9 +283,9 @@ void EditorVisualProfiler::_update_plot() {
 				uint8_t r, g, b;
 
 				if (column_gpu[j].a == 0) {
-					r = 0;
-					g = 0;
-					b = 0;
+					r = Math::fast_ftoi(background_color.r * 255);
+					g = Math::fast_ftoi(background_color.g * 255);
+					b = Math::fast_ftoi(background_color.b * 255);
 				} else {
 					r = CLAMP((column_gpu[j].r / column_gpu[j].a) * 255.0, 0, 255);
 					g = CLAMP((column_gpu[j].g / column_gpu[j].a) * 255.0, 0, 255);
@@ -298,27 +301,25 @@ void EditorVisualProfiler::_update_plot() {
 		}
 	}
 
-	Ref<Image> img;
-	img.instantiate();
-	img->create(w, h, false, Image::FORMAT_RGBA8, graph_image);
+	Ref<Image> img = Image::create_from_data(w, h, false, Image::FORMAT_RGBA8, graph_image);
 
 	if (reset_texture) {
 		if (graph_texture.is_null()) {
 			graph_texture.instantiate();
 		}
-		graph_texture->create_from_image(img);
+		graph_texture->set_image(img);
 	}
 
 	graph_texture->update(img);
 
 	graph->set_texture(graph_texture);
-	graph->update();
+	graph->queue_redraw();
 }
 
 void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 	int cursor_metric = _get_cursor_index();
 
-	Ref<Texture> track_icon = get_theme_icon(SNAME("TrackColor"), SNAME("EditorIcons"));
+	Ref<Texture> track_icon = get_editor_theme_icon(SNAME("TrackColor"));
 
 	ERR_FAIL_INDEX(cursor_metric, frame_metrics.size());
 
@@ -370,8 +371,8 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 			float total_gpu = E->get_metadata(2);
 			total_cpu += cpu_time;
 			total_gpu += gpu_time;
-			E->set_metadata(1, cpu_time);
-			E->set_metadata(2, gpu_time);
+			E->set_metadata(1, total_cpu);
+			E->set_metadata(2, total_gpu);
 		}
 
 		category->set_icon(0, track_icon);
@@ -407,29 +408,36 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 
 void EditorVisualProfiler::_activate_pressed() {
 	if (activate->is_pressed()) {
-		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
+		activate->set_icon(get_editor_theme_icon(SNAME("Stop")));
 		activate->set_text(TTR("Stop"));
 		_clear_pressed(); //always clear on start
+		clear_button->set_disabled(false);
 	} else {
-		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+		activate->set_icon(get_editor_theme_icon(SNAME("Play")));
 		activate->set_text(TTR("Start"));
 	}
 	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
 void EditorVisualProfiler::_clear_pressed() {
+	clear_button->set_disabled(true);
 	clear();
 	_update_plot();
 }
 
 void EditorVisualProfiler::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		if (is_layout_rtl()) {
-			activate->set_icon(get_theme_icon(SNAME("PlayBackwards"), SNAME("EditorIcons")));
-		} else {
-			activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
-		}
-		clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_layout_rtl()) {
+				activate->set_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
+			} else {
+				activate->set_icon(get_editor_theme_icon(SNAME("Play")));
+			}
+			clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
+		} break;
 	}
 }
 
@@ -437,8 +445,11 @@ void EditorVisualProfiler::_graph_tex_draw() {
 	if (last_metric < 0) {
 		return;
 	}
+
 	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	const Color color = get_theme_color(SNAME("font_color"), EditorStringName(Editor));
+
 	if (seeking) {
 		int max_frames = frame_metrics.size();
 		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number - max_frames + 1);
@@ -448,10 +459,9 @@ void EditorVisualProfiler::_graph_tex_draw() {
 
 		int half_width = graph->get_size().x / 2;
 		int cur_x = frame * half_width / max_frames;
-		//cur_x /= 2.0;
 
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.8));
-		graph->draw_line(Vector2(cur_x + half_width, 0), Vector2(cur_x + half_width, graph->get_size().y), Color(1, 1, 1, 0.8));
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), color * Color(1, 1, 1));
+		graph->draw_line(Vector2(cur_x + half_width, 0), Vector2(cur_x + half_width, graph->get_size().y), color * Color(1, 1, 1));
 	}
 
 	if (graph_height_cpu > 0) {
@@ -459,10 +469,10 @@ void EditorVisualProfiler::_graph_tex_draw() {
 
 		int half_width = graph->get_size().x / 2;
 
-		graph->draw_line(Vector2(0, frame_y), Vector2(half_width, frame_y), Color(1, 1, 1, 0.3));
+		graph->draw_line(Vector2(0, frame_y), Vector2(half_width, frame_y), color * Color(1, 1, 1, 0.5));
 
-		String limit_str = String::num(graph_limit, 2);
-		graph->draw_string(font, Vector2(half_width - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.6));
+		const String limit_str = String::num(graph_limit, 2) + " ms";
+		graph->draw_string(font, Vector2(half_width - font->get_string_size(limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 2, frame_y - 2), limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
 	}
 
 	if (graph_height_gpu > 0) {
@@ -470,32 +480,19 @@ void EditorVisualProfiler::_graph_tex_draw() {
 
 		int half_width = graph->get_size().x / 2;
 
-		graph->draw_line(Vector2(half_width, frame_y), Vector2(graph->get_size().x, frame_y), Color(1, 1, 1, 0.3));
+		graph->draw_line(Vector2(half_width, frame_y), Vector2(graph->get_size().x, frame_y), color * Color(1, 1, 1, 0.5));
 
-		String limit_str = String::num(graph_limit, 2);
-		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.6));
+		const String limit_str = String::num(graph_limit, 2) + " ms";
+		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 2, frame_y - 2), limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
 	}
 
-	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x, font->get_ascent(font_size) + 2), "CPU:", HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
-	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
-
-	/*
-	if (hover_metric != -1 && frame_metrics[hover_metric].valid) {
-		int max_frames = frame_metrics.size();
-		int frame = frame_metrics[hover_metric].frame_number - (frame_metrics[last_metric].frame_number - max_frames + 1);
-		if (frame < 0)
-			frame = 0;
-
-		int cur_x = frame * graph->get_size().x / max_frames;
-
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.4));
-	}
-*/
+	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, font->get_ascent(font_size) + 2), "CPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1));
+	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1));
 }
 
 void EditorVisualProfiler::_graph_tex_mouse_exit() {
 	hover_metric = -1;
-	graph->update();
+	graph->queue_redraw();
 }
 
 void EditorVisualProfiler::_cursor_metric_changed(double) {
@@ -503,7 +500,7 @@ void EditorVisualProfiler::_cursor_metric_changed(double) {
 		return;
 	}
 
-	graph->update();
+	graph->queue_redraw();
 	_update_frame();
 }
 
@@ -517,7 +514,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseMotion> mm = p_ev;
 
 	if (
-			(mb.is_valid() && mb->get_button_index() == MOUSE_BUTTON_LEFT && mb->is_pressed()) ||
+			(mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) ||
 			(mm.is_valid())) {
 		int half_w = graph->get_size().width / 2;
 		int x = me->get_position().x;
@@ -549,7 +546,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			hover_metric = -1;
 		}
 
-		if (mb.is_valid() || mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+		if (mb.is_valid() || mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			//cursor_metric=x;
 			updating_frame = true;
 
@@ -619,7 +616,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			}
 		}
 
-		graph->update();
+		graph->queue_redraw();
 	}
 }
 
@@ -643,7 +640,7 @@ int EditorVisualProfiler::_get_cursor_index() const {
 
 void EditorVisualProfiler::disable_seeking() {
 	seeking = false;
-	graph->update();
+	graph->queue_redraw();
 }
 
 void EditorVisualProfiler::_combo_changed(int) {
@@ -655,8 +652,23 @@ void EditorVisualProfiler::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
 }
 
+void EditorVisualProfiler::_update_button_text() {
+	if (activate->is_pressed()) {
+		activate->set_icon(get_editor_theme_icon(SNAME("Stop")));
+		activate->set_text(TTR("Stop"));
+	} else {
+		activate->set_icon(get_editor_theme_icon(SNAME("Play")));
+		activate->set_text(TTR("Start"));
+	}
+}
+
 void EditorVisualProfiler::set_enabled(bool p_enable) {
 	activate->set_disabled(!p_enable);
+}
+
+void EditorVisualProfiler::set_pressed(bool p_pressed) {
+	activate->set_pressed(p_pressed);
+	_update_button_text();
 }
 
 bool EditorVisualProfiler::is_profiling() {
@@ -722,19 +734,21 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	add_child(hb);
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
+	activate->set_disabled(true);
 	activate->set_text(TTR("Start"));
-	activate->connect("pressed", callable_mp(this, &EditorVisualProfiler::_activate_pressed));
+	activate->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_activate_pressed));
 	hb->add_child(activate);
 
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
-	clear_button->connect("pressed", callable_mp(this, &EditorVisualProfiler::_clear_pressed));
+	clear_button->set_disabled(true);
+	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_clear_pressed));
 	hb->add_child(clear_button);
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
 
 	display_mode = memnew(OptionButton);
-	display_mode->add_item(TTR("Frame Time (msec)"));
+	display_mode->add_item(TTR("Frame Time (ms)"));
 	display_mode->add_item(TTR("Frame %"));
 	display_mode->connect("item_selected", callable_mp(this, &EditorVisualProfiler::_combo_changed));
 
@@ -743,11 +757,11 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	frame_relative = memnew(CheckBox(TTR("Fit to Frame")));
 	frame_relative->set_pressed(true);
 	hb->add_child(frame_relative);
-	frame_relative->connect("pressed", callable_mp(this, &EditorVisualProfiler::_update_plot));
+	frame_relative->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_update_plot));
 	linked = memnew(CheckBox(TTR("Linked")));
 	linked->set_pressed(true);
 	hb->add_child(linked);
-	linked->connect("pressed", callable_mp(this, &EditorVisualProfiler::_update_plot));
+	linked->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_update_plot));
 
 	hb->add_spacer();
 
@@ -778,49 +792,35 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	variables->set_column_title(1, TTR("CPU"));
 	variables->set_column_expand(1, false);
 	variables->set_column_clip_content(1, true);
-	variables->set_column_custom_minimum_width(1, 60 * EDSCALE);
+	variables->set_column_custom_minimum_width(1, 75 * EDSCALE);
 	variables->set_column_title(2, TTR("GPU"));
 	variables->set_column_expand(2, false);
 	variables->set_column_clip_content(2, true);
-	variables->set_column_custom_minimum_width(2, 60 * EDSCALE);
+	variables->set_column_custom_minimum_width(2, 75 * EDSCALE);
 	variables->connect("cell_selected", callable_mp(this, &EditorVisualProfiler::_item_selected));
 
 	graph = memnew(TextureRect);
-	graph->set_expand(true);
+	graph->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
-	//graph->set_ignore_mouse(false);
-	graph->connect("draw", callable_mp(this, &EditorVisualProfiler::_graph_tex_draw));
-	graph->connect("gui_input", callable_mp(this, &EditorVisualProfiler::_graph_tex_input));
-	graph->connect("mouse_exited", callable_mp(this, &EditorVisualProfiler::_graph_tex_mouse_exit));
+	graph->connect(SceneStringName(draw), callable_mp(this, &EditorVisualProfiler::_graph_tex_draw));
+	graph->connect(SceneStringName(gui_input), callable_mp(this, &EditorVisualProfiler::_graph_tex_input));
+	graph->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorVisualProfiler::_graph_tex_mouse_exit));
 
 	h_split->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	int metric_size = CLAMP(int(EDITOR_DEF("debugger/profiler_frame_history_size", 600)), 60, 1024);
+	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 10000);
 	frame_metrics.resize(metric_size);
-	last_metric = -1;
-	//cursor_metric=-1;
-	hover_metric = -1;
-
-	//display_mode=DISPLAY_FRAME_TIME;
 
 	frame_delay = memnew(Timer);
 	frame_delay->set_wait_time(0.1);
 	frame_delay->set_one_shot(true);
 	add_child(frame_delay);
-	frame_delay->connect("timeout", callable_mp(this, &EditorVisualProfiler::_update_frame), make_binds(false));
+	frame_delay->connect("timeout", callable_mp(this, &EditorVisualProfiler::_update_frame).bind(false));
 
 	plot_delay = memnew(Timer);
 	plot_delay->set_wait_time(0.1);
 	plot_delay->set_one_shot(true);
 	add_child(plot_delay);
 	plot_delay->connect("timeout", callable_mp(this, &EditorVisualProfiler::_update_plot));
-
-	seeking = false;
-	graph_height_cpu = 1;
-	graph_height_gpu = 1;
-
-	graph_limit = 1000 / 60.0;
-
-	//activate->set_disabled(true);
 }

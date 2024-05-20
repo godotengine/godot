@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  oa_hash_map.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  oa_hash_map.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef OA_HASH_MAP_H
 #define OA_HASH_MAP_H
@@ -50,9 +50,9 @@
  *
  * The assignment operator copy the pairs from one map to the other.
  */
-template <class TKey, class TValue,
-		class Hasher = HashMapHasherDefault,
-		class Comparator = HashMapComparatorDefault<TKey>>
+template <typename TKey, typename TValue,
+		typename Hasher = HashMapHasherDefault,
+		typename Comparator = HashMapComparatorDefault<TKey>>
 class OAHashMap {
 private:
 	TValue *values = nullptr;
@@ -145,7 +145,7 @@ private:
 		uint32_t old_capacity = capacity;
 
 		// Capacity can't be 0.
-		capacity = MAX(1, p_new_capacity);
+		capacity = MAX(1u, p_new_capacity);
 
 		TKey *old_keys = keys;
 		TValue *old_values = values;
@@ -246,13 +246,17 @@ public:
 		return false;
 	}
 
-	/**
-	 * returns true if the value was found, false otherwise.
-	 *
-	 * if r_data is not nullptr then the value will be written to the object
-	 * it points to.
-	 */
-	TValue *lookup_ptr(const TKey &p_key) const {
+	const TValue *lookup_ptr(const TKey &p_key) const {
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
+
+		if (exists) {
+			return &values[pos];
+		}
+		return nullptr;
+	}
+
+	TValue *lookup_ptr(const TKey &p_key) {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 
@@ -306,7 +310,7 @@ public:
 		bool valid;
 
 		const TKey *key;
-		TValue *value;
+		TValue *value = nullptr;
 
 	private:
 		uint32_t pos;
@@ -353,7 +357,7 @@ public:
 		(*this) = p_other;
 	}
 
-	OAHashMap &operator=(const OAHashMap &p_other) {
+	void operator=(const OAHashMap &p_other) {
 		if (capacity != 0) {
 			clear();
 		}
@@ -363,12 +367,11 @@ public:
 		for (Iterator it = p_other.iter(); it.valid; it = p_other.next_iter(it)) {
 			set(*it.key, *it.value);
 		}
-		return *this;
 	}
 
 	OAHashMap(uint32_t p_initial_capacity = 64) {
 		// Capacity can't be 0.
-		capacity = MAX(1, p_initial_capacity);
+		capacity = MAX(1u, p_initial_capacity);
 
 		keys = static_cast<TKey *>(Memory::alloc_static(sizeof(TKey) * capacity));
 		values = static_cast<TValue *>(Memory::alloc_static(sizeof(TValue) * capacity));

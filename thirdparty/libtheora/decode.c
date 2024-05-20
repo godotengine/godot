@@ -11,7 +11,7 @@
  ********************************************************************
 
   function:
-    last mod: $Id: decode.c 16581 2009-09-25 22:56:16Z gmaxwell $
+    last mod: $Id$
 
  ********************************************************************/
 
@@ -118,7 +118,7 @@ static const unsigned char OC_INTERNAL_DCT_TOKEN_EXTRA_BITS[15]={
 
 /*Whether or not an internal token needs any additional extra bits.*/
 #define OC_DCT_TOKEN_NEEDS_MORE(token) \
- (token<(sizeof(OC_INTERNAL_DCT_TOKEN_EXTRA_BITS)/ \
+ (token<(int)(sizeof(OC_INTERNAL_DCT_TOKEN_EXTRA_BITS)/ \
   sizeof(*OC_INTERNAL_DCT_TOKEN_EXTRA_BITS)))
 
 /*This token (OC_DCT_REPEAT_RUN3_TOKEN) requires more than 8 extra bits.*/
@@ -129,7 +129,7 @@ static const unsigned char OC_INTERNAL_DCT_TOKEN_EXTRA_BITS[15]={
    is not yet available everywhere; this should be equivalent.*/
 #define OC_DCT_EOB_FINISH (~(size_t)0>>1)
 
-/*The location of the (6) run legth bits in the code word.
+/*The location of the (6) run length bits in the code word.
   These are placed at index 0 and given 8 bits (even though 6 would suffice)
    because it may be faster to extract the lower byte on some platforms.*/
 #define OC_DCT_CW_RLEN_SHIFT (0)
@@ -297,8 +297,6 @@ static const ogg_int32_t OC_DCT_CODE_WORD[92]={
 
 
 static int oc_sb_run_unpack(oc_pack_buf *_opb){
-  long bits;
-  int ret;
   /*Coding scheme:
        Codeword            Run Length
      0                       1
@@ -308,32 +306,26 @@ static int oc_sb_run_unpack(oc_pack_buf *_opb){
      11110xxx                10-17
      111110xxxx              18-33
      111111xxxxxxxxxxxx      34-4129*/
-  bits=oc_pack_read1(_opb);
-  if(bits==0)return 1;
-  bits=oc_pack_read(_opb,2);
-  if((bits&2)==0)return 2+(int)bits;
-  else if((bits&1)==0){
-    bits=oc_pack_read1(_opb);
-    return 4+(int)bits;
+  static const ogg_int16_t OC_SB_RUN_TREE[22]={
+    4,
+     -(1<<8|1),-(1<<8|1),-(1<<8|1),-(1<<8|1),
+     -(1<<8|1),-(1<<8|1),-(1<<8|1),-(1<<8|1),
+     -(3<<8|2),-(3<<8|2),-(3<<8|3),-(3<<8|3),
+     -(4<<8|4),-(4<<8|5),-(4<<8|2<<4|6-6),17,
+      2,
+       -(2<<8|2<<4|10-6),-(2<<8|2<<4|14-6),-(2<<8|4<<4|18-6),-(2<<8|12<<4|34-6)
+  };
+  int ret;
+  ret=oc_huff_token_decode(_opb,OC_SB_RUN_TREE);
+  if(ret>=0x10){
+    int offs;
+    offs=ret&0x1F;
+    ret=6+offs+(int)oc_pack_read(_opb,ret-offs>>4);
   }
-  bits=oc_pack_read(_opb,3);
-  if((bits&4)==0)return 6+(int)bits;
-  else if((bits&2)==0){
-    ret=10+((bits&1)<<2);
-    bits=oc_pack_read(_opb,2);
-    return ret+(int)bits;
-  }
-  else if((bits&1)==0){
-    bits=oc_pack_read(_opb,4);
-    return 18+(int)bits;
-  }
-  bits=oc_pack_read(_opb,12);
-  return 34+(int)bits;
+  return ret;
 }
 
 static int oc_block_run_unpack(oc_pack_buf *_opb){
-  long bits;
-  long bits2;
   /*Coding scheme:
      Codeword             Run Length
      0x                      1-2
@@ -342,25 +334,36 @@ static int oc_block_run_unpack(oc_pack_buf *_opb){
      1110xx                  7-10
      11110xx                 11-14
      11111xxxx               15-30*/
-  bits=oc_pack_read(_opb,2);
-  if((bits&2)==0)return 1+(int)bits;
-  else if((bits&1)==0){
-    bits=oc_pack_read1(_opb);
-    return 3+(int)bits;
-  }
-  bits=oc_pack_read(_opb,2);
-  if((bits&2)==0)return 5+(int)bits;
-  else if((bits&1)==0){
-    bits=oc_pack_read(_opb,2);
-    return 7+(int)bits;
-  }
-  bits=oc_pack_read(_opb,3);
-  if((bits&4)==0)return 11+bits;
-  bits2=oc_pack_read(_opb,2);
-  return 15+((bits&3)<<2)+bits2;
+  static const ogg_int16_t OC_BLOCK_RUN_TREE[61]={
+    5,
+     -(2<<8|1),-(2<<8|1),-(2<<8|1),-(2<<8|1),
+     -(2<<8|1),-(2<<8|1),-(2<<8|1),-(2<<8|1),
+     -(2<<8|2),-(2<<8|2),-(2<<8|2),-(2<<8|2),
+     -(2<<8|2),-(2<<8|2),-(2<<8|2),-(2<<8|2),
+     -(3<<8|3),-(3<<8|3),-(3<<8|3),-(3<<8|3),
+     -(3<<8|4),-(3<<8|4),-(3<<8|4),-(3<<8|4),
+     -(4<<8|5),-(4<<8|5),-(4<<8|6),-(4<<8|6),
+     33,       36,       39,       44,
+      1,-(1<<8|7),-(1<<8|8),
+      1,-(1<<8|9),-(1<<8|10),
+      2,-(2<<8|11),-(2<<8|12),-(2<<8|13),-(2<<8|14),
+      4,
+       -(4<<8|15),-(4<<8|16),-(4<<8|17),-(4<<8|18),
+       -(4<<8|19),-(4<<8|20),-(4<<8|21),-(4<<8|22),
+       -(4<<8|23),-(4<<8|24),-(4<<8|25),-(4<<8|26),
+       -(4<<8|27),-(4<<8|28),-(4<<8|29),-(4<<8|30)
+  };
+  return oc_huff_token_decode(_opb,OC_BLOCK_RUN_TREE);
 }
 
 
+
+void oc_dec_accel_init_c(oc_dec_ctx *_dec){
+# if defined(OC_DEC_USE_VTABLE)
+  _dec->opt_vtable.dc_unpredict_mcu_plane=
+   oc_dec_dc_unpredict_mcu_plane_c;
+# endif
+}
 
 static int oc_dec_init(oc_dec_ctx *_dec,const th_info *_info,
  const th_setup_info *_setup){
@@ -371,7 +374,7 @@ static int oc_dec_init(oc_dec_ctx *_dec,const th_info *_info,
   ret=oc_state_init(&_dec->state,_info,3);
   if(ret<0)return ret;
   ret=oc_huff_trees_copy(_dec->huff_tables,
-   (const oc_huff_node *const *)_setup->huff_tables);
+   (const ogg_int16_t *const *)_setup->huff_tables);
   if(ret<0){
     oc_state_clear(&_dec->state);
     return ret;
@@ -406,6 +409,7 @@ static int oc_dec_init(oc_dec_ctx *_dec,const th_info *_info,
   }
   memcpy(_dec->state.loop_filter_limits,_setup->qinfo.loop_filter_limits,
    sizeof(_dec->state.loop_filter_limits));
+  oc_dec_accel_init(_dec);
   _dec->pp_level=OC_PP_LEVEL_DISABLED;
   _dec->dc_qis=NULL;
   _dec->variances=NULL;
@@ -413,7 +417,6 @@ static int oc_dec_init(oc_dec_ctx *_dec,const th_info *_info,
   _dec->stripe_cb.ctx=NULL;
   _dec->stripe_cb.stripe_decoded=NULL;
 #if defined(HAVE_CAIRO)
-  _dec->telemetry=0;
   _dec->telemetry_bits=0;
   _dec->telemetry_qi=0;
   _dec->telemetry_mbmode=0;
@@ -504,6 +507,7 @@ static void oc_dec_mark_all_intra(oc_dec_ctx *_dec){
           fragi=sb_maps[sbi][quadi][bi];
           if(fragi>=0){
             frags[fragi].coded=1;
+            frags[fragi].refi=OC_FRAME_SELF;
             frags[fragi].mb_mode=OC_MODE_INTRA;
             coded_fragis[ncoded_fragis++]=fragi;
           }
@@ -595,6 +599,7 @@ static void oc_dec_coded_sb_flags_unpack(oc_dec_ctx *_dec){
 static void oc_dec_coded_flags_unpack(oc_dec_ctx *_dec){
   const oc_sb_map   *sb_maps;
   const oc_sb_flags *sb_flags;
+  signed char       *mb_modes;
   oc_fragment       *frags;
   unsigned           nsbs;
   unsigned           sbi;
@@ -617,6 +622,7 @@ static void oc_dec_coded_flags_unpack(oc_dec_ctx *_dec){
   else flag=0;
   sb_maps=(const oc_sb_map *)_dec->state.sb_maps;
   sb_flags=_dec->state.sb_flags;
+  mb_modes=_dec->state.mb_modes;
   frags=_dec->state.frags;
   sbi=nsbs=run_count=0;
   coded_fragis=_dec->state.coded_fragis;
@@ -627,7 +633,9 @@ static void oc_dec_coded_flags_unpack(oc_dec_ctx *_dec){
     for(;sbi<nsbs;sbi++){
       int quadi;
       for(quadi=0;quadi<4;quadi++)if(sb_flags[sbi].quad_valid&1<<quadi){
+        int quad_coded;
         int bi;
+        quad_coded=0;
         for(bi=0;bi<4;bi++){
           ptrdiff_t fragi;
           fragi=sb_maps[sbi][quadi][bi];
@@ -645,9 +653,13 @@ static void oc_dec_coded_flags_unpack(oc_dec_ctx *_dec){
             }
             if(coded)coded_fragis[ncoded_fragis++]=fragi;
             else *(uncoded_fragis-++nuncoded_fragis)=fragi;
+            quad_coded|=coded;
             frags[fragi].coded=coded;
+            frags[fragi].refi=OC_FRAME_NONE;
           }
         }
+        /*Remember if there's a coded luma block in this macro block.*/
+        if(!pli)mb_modes[sbi<<2|quadi]=quad_coded;
       }
     }
     _dec->state.ncoded_fragis[pli]=ncoded_fragis-prev_ncoded_fragis;
@@ -659,33 +671,39 @@ static void oc_dec_coded_flags_unpack(oc_dec_ctx *_dec){
 }
 
 
+/*Coding scheme:
+   Codeword            Mode Index
+   0                       0
+   10                      1
+   110                     2
+   1110                    3
+   11110                   4
+   111110                  5
+   1111110                 6
+   1111111                 7*/
+static const ogg_int16_t OC_VLC_MODE_TREE[26]={
+  4,
+   -(1<<8|0),-(1<<8|0),-(1<<8|0),-(1<<8|0),
+   -(1<<8|0),-(1<<8|0),-(1<<8|0),-(1<<8|0),
+   -(2<<8|1),-(2<<8|1),-(2<<8|1),-(2<<8|1),
+   -(3<<8|2),-(3<<8|2),-(4<<8|3),17,
+    3,
+     -(1<<8|4),-(1<<8|4),-(1<<8|4),-(1<<8|4),
+     -(2<<8|5),-(2<<8|5),-(3<<8|6),-(3<<8|7)
+};
 
-typedef int (*oc_mode_unpack_func)(oc_pack_buf *_opb);
-
-static int oc_vlc_mode_unpack(oc_pack_buf *_opb){
-  long val;
-  int  i;
-  for(i=0;i<7;i++){
-    val=oc_pack_read1(_opb);
-    if(!val)break;
-  }
-  return i;
-}
-
-static int oc_clc_mode_unpack(oc_pack_buf *_opb){
-  long val;
-  val=oc_pack_read(_opb,3);
-  return (int)val;
-}
+static const ogg_int16_t OC_CLC_MODE_TREE[9]={
+  3,
+   -(3<<8|0),-(3<<8|1),-(3<<8|2),-(3<<8|3),
+   -(3<<8|4),-(3<<8|5),-(3<<8|6),-(3<<8|7)
+};
 
 /*Unpacks the list of macro block modes for INTER frames.*/
 static void oc_dec_mb_modes_unpack(oc_dec_ctx *_dec){
-  const oc_mb_map     *mb_maps;
   signed char         *mb_modes;
-  const oc_fragment   *frags;
   const unsigned char *alphabet;
   unsigned char        scheme0_alphabet[8];
-  oc_mode_unpack_func  mode_unpack;
+  const ogg_int16_t   *mode_tree;
   size_t               nmbs;
   size_t               mbi;
   long                 val;
@@ -707,65 +725,80 @@ static void oc_dec_mb_modes_unpack(oc_dec_ctx *_dec){
     alphabet=scheme0_alphabet;
   }
   else alphabet=OC_MODE_ALPHABETS[mode_scheme-1];
-  if(mode_scheme==7)mode_unpack=oc_clc_mode_unpack;
-  else mode_unpack=oc_vlc_mode_unpack;
+  mode_tree=mode_scheme==7?OC_CLC_MODE_TREE:OC_VLC_MODE_TREE;
   mb_modes=_dec->state.mb_modes;
-  mb_maps=(const oc_mb_map *)_dec->state.mb_maps;
   nmbs=_dec->state.nmbs;
-  frags=_dec->state.frags;
   for(mbi=0;mbi<nmbs;mbi++){
-    if(mb_modes[mbi]!=OC_MODE_INVALID){
-      int bi;
-      /*Check for a coded luma block in this macro block.*/
-      for(bi=0;bi<4&&!frags[mb_maps[mbi][0][bi]].coded;bi++);
-      /*We found one, decode a mode.*/
-      if(bi<4)mb_modes[mbi]=alphabet[(*mode_unpack)(&_dec->opb)];
-      /*There were none: INTER_NOMV is forced.*/
-      else mb_modes[mbi]=OC_MODE_INTER_NOMV;
+    if(mb_modes[mbi]>0){
+      /*We have a coded luma block; decode a mode.*/
+      mb_modes[mbi]=alphabet[oc_huff_token_decode(&_dec->opb,mode_tree)];
     }
+    /*For other valid macro blocks, INTER_NOMV is forced, but we rely on the
+       fact that OC_MODE_INTER_NOMV is already 0.*/
   }
 }
 
 
 
-typedef int (*oc_mv_comp_unpack_func)(oc_pack_buf *_opb);
+static const ogg_int16_t OC_VLC_MV_COMP_TREE[101]={
+  5,
+   -(3<<8|32+0),-(3<<8|32+0),-(3<<8|32+0),-(3<<8|32+0),
+   -(3<<8|32+1),-(3<<8|32+1),-(3<<8|32+1),-(3<<8|32+1),
+   -(3<<8|32-1),-(3<<8|32-1),-(3<<8|32-1),-(3<<8|32-1),
+   -(4<<8|32+2),-(4<<8|32+2),-(4<<8|32-2),-(4<<8|32-2),
+   -(4<<8|32+3),-(4<<8|32+3),-(4<<8|32-3),-(4<<8|32-3),
+   33,          36,          39,          42,
+   45,          50,          55,          60,
+   65,          74,          83,          92,
+    1,-(1<<8|32+4),-(1<<8|32-4),
+    1,-(1<<8|32+5),-(1<<8|32-5),
+    1,-(1<<8|32+6),-(1<<8|32-6),
+    1,-(1<<8|32+7),-(1<<8|32-7),
+    2,-(2<<8|32+8),-(2<<8|32-8),-(2<<8|32+9),-(2<<8|32-9),
+    2,-(2<<8|32+10),-(2<<8|32-10),-(2<<8|32+11),-(2<<8|32-11),
+    2,-(2<<8|32+12),-(2<<8|32-12),-(2<<8|32+13),-(2<<8|32-13),
+    2,-(2<<8|32+14),-(2<<8|32-14),-(2<<8|32+15),-(2<<8|32-15),
+    3,
+     -(3<<8|32+16),-(3<<8|32-16),-(3<<8|32+17),-(3<<8|32-17),
+     -(3<<8|32+18),-(3<<8|32-18),-(3<<8|32+19),-(3<<8|32-19),
+    3,
+     -(3<<8|32+20),-(3<<8|32-20),-(3<<8|32+21),-(3<<8|32-21),
+     -(3<<8|32+22),-(3<<8|32-22),-(3<<8|32+23),-(3<<8|32-23),
+    3,
+     -(3<<8|32+24),-(3<<8|32-24),-(3<<8|32+25),-(3<<8|32-25),
+     -(3<<8|32+26),-(3<<8|32-26),-(3<<8|32+27),-(3<<8|32-27),
+    3,
+     -(3<<8|32+28),-(3<<8|32-28),-(3<<8|32+29),-(3<<8|32-29),
+     -(3<<8|32+30),-(3<<8|32-30),-(3<<8|32+31),-(3<<8|32-31)
+};
 
-static int oc_vlc_mv_comp_unpack(oc_pack_buf *_opb){
-  long bits;
-  int  mask;
-  int  mv;
-  bits=oc_pack_read(_opb,3);
-  switch(bits){
-    case  0:return 0;
-    case  1:return 1;
-    case  2:return -1;
-    case  3:
-    case  4:{
-      mv=(int)(bits-1);
-      bits=oc_pack_read1(_opb);
-    }break;
-    /*case  5:
-    case  6:
-    case  7:*/
-    default:{
-      mv=1<<bits-3;
-      bits=oc_pack_read(_opb,bits-2);
-      mv+=(int)(bits>>1);
-      bits&=1;
-    }break;
-  }
-  mask=-(int)bits;
-  return mv+mask^mask;
-}
+static const ogg_int16_t OC_CLC_MV_COMP_TREE[65]={
+  6,
+   -(6<<8|32 +0),-(6<<8|32 -0),-(6<<8|32 +1),-(6<<8|32 -1),
+   -(6<<8|32 +2),-(6<<8|32 -2),-(6<<8|32 +3),-(6<<8|32 -3),
+   -(6<<8|32 +4),-(6<<8|32 -4),-(6<<8|32 +5),-(6<<8|32 -5),
+   -(6<<8|32 +6),-(6<<8|32 -6),-(6<<8|32 +7),-(6<<8|32 -7),
+   -(6<<8|32 +8),-(6<<8|32 -8),-(6<<8|32 +9),-(6<<8|32 -9),
+   -(6<<8|32+10),-(6<<8|32-10),-(6<<8|32+11),-(6<<8|32-11),
+   -(6<<8|32+12),-(6<<8|32-12),-(6<<8|32+13),-(6<<8|32-13),
+   -(6<<8|32+14),-(6<<8|32-14),-(6<<8|32+15),-(6<<8|32-15),
+   -(6<<8|32+16),-(6<<8|32-16),-(6<<8|32+17),-(6<<8|32-17),
+   -(6<<8|32+18),-(6<<8|32-18),-(6<<8|32+19),-(6<<8|32-19),
+   -(6<<8|32+20),-(6<<8|32-20),-(6<<8|32+21),-(6<<8|32-21),
+   -(6<<8|32+22),-(6<<8|32-22),-(6<<8|32+23),-(6<<8|32-23),
+   -(6<<8|32+24),-(6<<8|32-24),-(6<<8|32+25),-(6<<8|32-25),
+   -(6<<8|32+26),-(6<<8|32-26),-(6<<8|32+27),-(6<<8|32-27),
+   -(6<<8|32+28),-(6<<8|32-28),-(6<<8|32+29),-(6<<8|32-29),
+   -(6<<8|32+30),-(6<<8|32-30),-(6<<8|32+31),-(6<<8|32-31)
+};
 
-static int oc_clc_mv_comp_unpack(oc_pack_buf *_opb){
-  long bits;
-  int  mask;
-  int  mv;
-  bits=oc_pack_read(_opb,6);
-  mv=(int)bits>>1;
-  mask=-((int)bits&1);
-  return mv+mask^mask;
+
+static oc_mv oc_mv_unpack(oc_pack_buf *_opb,const ogg_int16_t *_tree){
+  int dx;
+  int dy;
+  dx=oc_huff_token_decode(_opb,_tree)-32;
+  dy=oc_huff_token_decode(_opb,_tree)-32;
+  return OC_MV(dx,dy);
 }
 
 /*Unpacks the list of motion vectors for INTER frames, and propagtes the macro
@@ -774,105 +807,93 @@ static void oc_dec_mv_unpack_and_frag_modes_fill(oc_dec_ctx *_dec){
   const oc_mb_map        *mb_maps;
   const signed char      *mb_modes;
   oc_set_chroma_mvs_func  set_chroma_mvs;
-  oc_mv_comp_unpack_func  mv_comp_unpack;
+  const ogg_int16_t      *mv_comp_tree;
   oc_fragment            *frags;
   oc_mv                  *frag_mvs;
   const unsigned char    *map_idxs;
   int                     map_nidxs;
-  oc_mv                   last_mv[2];
+  oc_mv                   last_mv;
+  oc_mv                   prior_mv;
   oc_mv                   cbmvs[4];
   size_t                  nmbs;
   size_t                  mbi;
   long                    val;
   set_chroma_mvs=OC_SET_CHROMA_MVS_TABLE[_dec->state.info.pixel_fmt];
   val=oc_pack_read1(&_dec->opb);
-  mv_comp_unpack=val?oc_clc_mv_comp_unpack:oc_vlc_mv_comp_unpack;
+  mv_comp_tree=val?OC_CLC_MV_COMP_TREE:OC_VLC_MV_COMP_TREE;
   map_idxs=OC_MB_MAP_IDXS[_dec->state.info.pixel_fmt];
   map_nidxs=OC_MB_MAP_NIDXS[_dec->state.info.pixel_fmt];
-  memset(last_mv,0,sizeof(last_mv));
+  prior_mv=last_mv=0;
   frags=_dec->state.frags;
   frag_mvs=_dec->state.frag_mvs;
   mb_maps=(const oc_mb_map *)_dec->state.mb_maps;
   mb_modes=_dec->state.mb_modes;
   nmbs=_dec->state.nmbs;
   for(mbi=0;mbi<nmbs;mbi++){
-    int          mb_mode;
+    int mb_mode;
     mb_mode=mb_modes[mbi];
     if(mb_mode!=OC_MODE_INVALID){
-      oc_mv        mbmv;
-      ptrdiff_t    fragi;
-      int          coded[13];
-      int          codedi;
-      int          ncoded;
-      int          mapi;
-      int          mapii;
-      /*Search for at least one coded fragment.*/
-      ncoded=mapii=0;
-      do{
-        mapi=map_idxs[mapii];
-        fragi=mb_maps[mbi][mapi>>2][mapi&3];
-        if(frags[fragi].coded)coded[ncoded++]=mapi;
-      }
-      while(++mapii<map_nidxs);
-      if(ncoded<=0)continue;
-      switch(mb_mode){
-        case OC_MODE_INTER_MV_FOUR:{
-          oc_mv       lbmvs[4];
-          int         bi;
-          /*Mark the tail of the list, so we don't accidentally go past it.*/
-          coded[ncoded]=-1;
-          for(bi=codedi=0;bi<4;bi++){
-            if(coded[codedi]==bi){
-              codedi++;
-              fragi=mb_maps[mbi][0][bi];
-              frags[fragi].mb_mode=mb_mode;
-              lbmvs[bi][0]=(signed char)(*mv_comp_unpack)(&_dec->opb);
-              lbmvs[bi][1]=(signed char)(*mv_comp_unpack)(&_dec->opb);
-              memcpy(frag_mvs[fragi],lbmvs[bi],sizeof(lbmvs[bi]));
-            }
-            else lbmvs[bi][0]=lbmvs[bi][1]=0;
+      oc_mv     mbmv;
+      ptrdiff_t fragi;
+      int       mapi;
+      int       mapii;
+      int       refi;
+      if(mb_mode==OC_MODE_INTER_MV_FOUR){
+        oc_mv lbmvs[4];
+        int   bi;
+        prior_mv=last_mv;
+        for(bi=0;bi<4;bi++){
+          fragi=mb_maps[mbi][0][bi];
+          if(frags[fragi].coded){
+            frags[fragi].refi=OC_FRAME_PREV;
+            frags[fragi].mb_mode=OC_MODE_INTER_MV_FOUR;
+            lbmvs[bi]=last_mv=oc_mv_unpack(&_dec->opb,mv_comp_tree);
+            frag_mvs[fragi]=lbmvs[bi];
           }
-          if(codedi>0){
-            memcpy(last_mv[1],last_mv[0],sizeof(last_mv[1]));
-            memcpy(last_mv[0],lbmvs[coded[codedi-1]],sizeof(last_mv[0]));
-          }
-          if(codedi<ncoded){
-            (*set_chroma_mvs)(cbmvs,(const oc_mv *)lbmvs);
-            for(;codedi<ncoded;codedi++){
-              mapi=coded[codedi];
-              bi=mapi&3;
-              fragi=mb_maps[mbi][mapi>>2][bi];
-              frags[fragi].mb_mode=mb_mode;
-              memcpy(frag_mvs[fragi],cbmvs[bi],sizeof(cbmvs[bi]));
-            }
-          }
-        }break;
-        case OC_MODE_INTER_MV:{
-          memcpy(last_mv[1],last_mv[0],sizeof(last_mv[1]));
-          mbmv[0]=last_mv[0][0]=(signed char)(*mv_comp_unpack)(&_dec->opb);
-          mbmv[1]=last_mv[0][1]=(signed char)(*mv_comp_unpack)(&_dec->opb);
-        }break;
-        case OC_MODE_INTER_MV_LAST:memcpy(mbmv,last_mv[0],sizeof(mbmv));break;
-        case OC_MODE_INTER_MV_LAST2:{
-          memcpy(mbmv,last_mv[1],sizeof(mbmv));
-          memcpy(last_mv[1],last_mv[0],sizeof(last_mv[1]));
-          memcpy(last_mv[0],mbmv,sizeof(last_mv[0]));
-        }break;
-        case OC_MODE_GOLDEN_MV:{
-          mbmv[0]=(signed char)(*mv_comp_unpack)(&_dec->opb);
-          mbmv[1]=(signed char)(*mv_comp_unpack)(&_dec->opb);
-        }break;
-        default:memset(mbmv,0,sizeof(mbmv));break;
-      }
-      /*4MV mode fills in the fragments itself.
-        For all other modes we can use this common code.*/
-      if(mb_mode!=OC_MODE_INTER_MV_FOUR){
-        for(codedi=0;codedi<ncoded;codedi++){
-          mapi=coded[codedi];
-          fragi=mb_maps[mbi][mapi>>2][mapi&3];
-          frags[fragi].mb_mode=mb_mode;
-          memcpy(frag_mvs[fragi],mbmv,sizeof(mbmv));
+          else lbmvs[bi]=0;
         }
+        (*set_chroma_mvs)(cbmvs,lbmvs);
+        for(mapii=4;mapii<map_nidxs;mapii++){
+          mapi=map_idxs[mapii];
+          bi=mapi&3;
+          fragi=mb_maps[mbi][mapi>>2][bi];
+          if(frags[fragi].coded){
+            frags[fragi].refi=OC_FRAME_PREV;
+            frags[fragi].mb_mode=OC_MODE_INTER_MV_FOUR;
+            frag_mvs[fragi]=cbmvs[bi];
+          }
+        }
+      }
+      else{
+        switch(mb_mode){
+          case OC_MODE_INTER_MV:{
+            prior_mv=last_mv;
+            last_mv=mbmv=oc_mv_unpack(&_dec->opb,mv_comp_tree);
+          }break;
+          case OC_MODE_INTER_MV_LAST:mbmv=last_mv;break;
+          case OC_MODE_INTER_MV_LAST2:{
+            mbmv=prior_mv;
+            prior_mv=last_mv;
+            last_mv=mbmv;
+          }break;
+          case OC_MODE_GOLDEN_MV:{
+            mbmv=oc_mv_unpack(&_dec->opb,mv_comp_tree);
+          }break;
+          default:mbmv=0;break;
+        }
+        /*Fill in the MVs for the fragments.*/
+        refi=OC_FRAME_FOR_MODE(mb_mode);
+        mapii=0;
+        do{
+          mapi=map_idxs[mapii];
+          fragi=mb_maps[mbi][mapi>>2][mapi&3];
+          if(frags[fragi].coded){
+            frags[fragi].refi=refi;
+            frags[fragi].mb_mode=mb_mode;
+            frag_mvs[fragi]=mbmv;
+          }
+        }
+        while(++mapii<map_nidxs);
       }
     }
   }
@@ -1181,6 +1202,9 @@ static void oc_dec_residual_tokens_unpack(oc_dec_ctx *_dec){
 
 
 static int oc_dec_postprocess_init(oc_dec_ctx *_dec){
+  /*musl libc malloc()/realloc() calls might use floating point, so make sure
+     we've cleared the MMX state for them.*/
+  oc_restore_fpu(&_dec->state);
   /*pp_level 0: disabled; free any memory used and return*/
   if(_dec->pp_level<=OC_PP_LEVEL_DISABLED){
     if(_dec->dc_qis!=NULL){
@@ -1301,34 +1325,16 @@ static int oc_dec_postprocess_init(oc_dec_ctx *_dec){
 }
 
 
-
-typedef struct{
-  int                 bounding_values[256];
-  ptrdiff_t           ti[3][64];
-  ptrdiff_t           eob_runs[3][64];
-  const ptrdiff_t    *coded_fragis[3];
-  const ptrdiff_t    *uncoded_fragis[3];
-  ptrdiff_t           ncoded_fragis[3];
-  ptrdiff_t           nuncoded_fragis[3];
-  const ogg_uint16_t *dequant[3][3][2];
-  int                 fragy0[3];
-  int                 fragy_end[3];
-  int                 pred_last[3][3];
-  int                 mcu_nvfrags;
-  int                 loop_filter;
-  int                 pp_level;
-}oc_dec_pipeline_state;
-
-
-
 /*Initialize the main decoding pipeline.*/
 static void oc_dec_pipeline_init(oc_dec_ctx *_dec,
  oc_dec_pipeline_state *_pipe){
   const ptrdiff_t *coded_fragis;
   const ptrdiff_t *uncoded_fragis;
+  int              flimit;
   int              pli;
   int              qii;
   int              qti;
+  int              zzi;
   /*If chroma is sub-sampled in the vertical direction, we have to decode two
      super block rows of Y' for each super block row of Cb and Cr.*/
   _pipe->mcu_nvfrags=4<<!(_dec->state.info.pixel_fmt&2);
@@ -1360,8 +1366,9 @@ static void oc_dec_pipeline_init(oc_dec_ctx *_dec,
   /*Set the previous DC predictor to 0 for all color planes and frame types.*/
   memset(_pipe->pred_last,0,sizeof(_pipe->pred_last));
   /*Initialize the bounding value array for the loop filter.*/
-  _pipe->loop_filter=!oc_state_loop_filter_init(&_dec->state,
-   _pipe->bounding_values);
+  flimit=_dec->state.loop_filter_limits[_dec->state.qis[0]];
+  _pipe->loop_filter=flimit!=0;
+  if(flimit!=0)oc_loop_filter_init(&_dec->state,_pipe->bounding_values,flimit);
   /*Initialize any buffers needed for post-processing.
     We also save the current post-processing level, to guard against the user
      changing it from a callback.*/
@@ -1374,13 +1381,15 @@ static void oc_dec_pipeline_init(oc_dec_ctx *_dec,
      _dec->state.ref_frame_bufs[_dec->state.ref_frame_idx[OC_FRAME_SELF]],
      sizeof(_dec->pp_frame_buf[0])*3);
   }
+  /*Clear down the DCT coefficient buffer for the first block.*/
+  for(zzi=0;zzi<64;zzi++)_pipe->dct_coeffs[zzi]=0;
 }
 
 /*Undo the DC prediction in a single plane of an MCU (one or two super block
    rows).
   As a side effect, the number of coded and uncoded fragments in this plane of
    the MCU is also computed.*/
-static void oc_dec_dc_unpredict_mcu_plane(oc_dec_ctx *_dec,
+void oc_dec_dc_unpredict_mcu_plane_c(oc_dec_ctx *_dec,
  oc_dec_pipeline_state *_pipe,int _pli){
   const oc_fragment_plane *fplane;
   oc_fragment             *frags;
@@ -1408,9 +1417,9 @@ static void oc_dec_dc_unpredict_mcu_plane(oc_dec_ctx *_dec,
          predictor for the same reference frame.*/
       for(fragx=0;fragx<nhfrags;fragx++,fragi++){
         if(frags[fragi].coded){
-          int ref;
-          ref=OC_FRAME_FOR_MODE(frags[fragi].mb_mode);
-          pred_last[ref]=frags[fragi].dc+=pred_last[ref];
+          int refi;
+          refi=frags[fragi].refi;
+          pred_last[refi]=frags[fragi].dc+=pred_last[refi];
           ncoded_fragis++;
         }
       }
@@ -1423,27 +1432,24 @@ static void oc_dec_dc_unpredict_mcu_plane(oc_dec_ctx *_dec,
       u_frags=frags-nhfrags;
       l_ref=-1;
       ul_ref=-1;
-      u_ref=u_frags[fragi].coded?OC_FRAME_FOR_MODE(u_frags[fragi].mb_mode):-1;
+      u_ref=u_frags[fragi].refi;
       for(fragx=0;fragx<nhfrags;fragx++,fragi++){
         int ur_ref;
         if(fragx+1>=nhfrags)ur_ref=-1;
-        else{
-          ur_ref=u_frags[fragi+1].coded?
-           OC_FRAME_FOR_MODE(u_frags[fragi+1].mb_mode):-1;
-        }
+        else ur_ref=u_frags[fragi+1].refi;
         if(frags[fragi].coded){
           int pred;
-          int ref;
-          ref=OC_FRAME_FOR_MODE(frags[fragi].mb_mode);
+          int refi;
+          refi=frags[fragi].refi;
           /*We break out a separate case based on which of our neighbors use
              the same reference frames.
             This is somewhat faster than trying to make a generic case which
              handles all of them, since it reduces lots of poorly predicted
              jumps to one switch statement, and also lets a number of the
              multiplications be optimized out by strength reduction.*/
-          switch((l_ref==ref)|(ul_ref==ref)<<1|
-           (u_ref==ref)<<2|(ur_ref==ref)<<3){
-            default:pred=pred_last[ref];break;
+          switch((l_ref==refi)|(ul_ref==refi)<<1|
+           (u_ref==refi)<<2|(ur_ref==refi)<<3){
+            default:pred=pred_last[refi];break;
             case  1:
             case  3:pred=frags[fragi-1].dc;break;
             case  2:pred=u_frags[fragi-1].dc;break;
@@ -1455,6 +1461,7 @@ static void oc_dec_dc_unpredict_mcu_plane(oc_dec_ctx *_dec,
             case  9:
             case 11:
             case 13:{
+              /*The TI compiler mis-compiles this line.*/
               pred=(75*frags[fragi-1].dc+53*u_frags[fragi+1].dc)/128;
             }break;
             case 10:pred=(u_frags[fragi-1].dc+u_frags[fragi+1].dc)/2;break;
@@ -1476,9 +1483,9 @@ static void oc_dec_dc_unpredict_mcu_plane(oc_dec_ctx *_dec,
               else if(abs(pred-p1)>128)pred=p1;
             }break;
           }
-          pred_last[ref]=frags[fragi].dc+=pred;
+          pred_last[refi]=frags[fragi].dc+=pred;
           ncoded_fragis++;
-          l_ref=ref;
+          l_ref=refi;
         }
         else l_ref=-1;
         ul_ref=u_ref;
@@ -1495,7 +1502,7 @@ static void oc_dec_dc_unpredict_mcu_plane(oc_dec_ctx *_dec,
 /*Reconstructs all coded fragments in a single MCU (one or two super block
    rows).
   This requires that each coded fragment have a proper macro block mode and
-   motion vector (if not in INTRA mode), and have it's DC value decoded, with
+   motion vector (if not in INTRA mode), and have its DC value decoded, with
    the DC prediction process reversed, and the number of coded and uncoded
    fragments in this plane of the MCU be counted.
   The token lists for each color plane and coefficient should also be filled
@@ -1522,16 +1529,11 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
   eob_runs=_pipe->eob_runs[_pli];
   for(qti=0;qti<2;qti++)dc_quant[qti]=_pipe->dequant[_pli][0][qti][0];
   for(fragii=0;fragii<ncoded_fragis;fragii++){
-    /*This array is made one element larger because the zig-zag index array
-       uses the final element as a dumping ground for out-of-range indices
-       to protect us from buffer overflow.*/
-    OC_ALIGN8(ogg_int16_t dct_coeffs[65]);
     const ogg_uint16_t *ac_quant;
     ptrdiff_t           fragi;
     int                 last_zzi;
     int                 zzi;
     fragi=coded_fragis[fragii];
-    for(zzi=0;zzi<64;zzi++)dct_coeffs[zzi]=0;
     qti=frags[fragi].mb_mode!=OC_MODE_INTRA;
     ac_quant=_pipe->dequant[_pli][frags[fragi].qii][qti];
     /*Decode the AC coefficients.*/
@@ -1568,18 +1570,19 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
         eob_runs[zzi]=eob;
         ti[zzi]=lti;
         zzi+=rlen;
-        dct_coeffs[dct_fzig_zag[zzi]]=(ogg_int16_t)(coeff*(int)ac_quant[zzi]);
+        _pipe->dct_coeffs[dct_fzig_zag[zzi]]=
+         (ogg_int16_t)(coeff*(int)ac_quant[zzi]);
         zzi+=!eob;
       }
     }
     /*TODO: zzi should be exactly 64 here.
       If it's not, we should report some kind of warning.*/
     zzi=OC_MINI(zzi,64);
-    dct_coeffs[0]=(ogg_int16_t)frags[fragi].dc;
+    _pipe->dct_coeffs[0]=(ogg_int16_t)frags[fragi].dc;
     /*last_zzi is always initialized.
       If your compiler thinks otherwise, it is dumb.*/
     oc_state_frag_recon(&_dec->state,fragi,_pli,
-     dct_coeffs,last_zzi,dc_quant[qti]);
+     _pipe->dct_coeffs,last_zzi,dc_quant[qti]);
   }
   _pipe->coded_fragis[_pli]+=ncoded_fragis;
   /*Right now the reconstructed MCU has only the coded blocks in it.*/
@@ -1593,9 +1596,14 @@ static void oc_dec_frags_recon_mcu_plane(oc_dec_ctx *_dec,
      code, and the hard case (high bitrate, high resolution) is handled
      correctly.*/
   /*Copy the uncoded blocks from the previous reference frame.*/
-  _pipe->uncoded_fragis[_pli]-=_pipe->nuncoded_fragis[_pli];
-  oc_state_frag_copy_list(&_dec->state,_pipe->uncoded_fragis[_pli],
-   _pipe->nuncoded_fragis[_pli],OC_FRAME_SELF,OC_FRAME_PREV,_pli);
+  if(_pipe->nuncoded_fragis[_pli]>0){
+    _pipe->uncoded_fragis[_pli]-=_pipe->nuncoded_fragis[_pli];
+    oc_frag_copy_list(&_dec->state,
+     _dec->state.ref_frame_data[OC_FRAME_SELF],
+     _dec->state.ref_frame_data[OC_FRAME_PREV],
+     _dec->state.ref_ystride[_pli],_pipe->uncoded_fragis[_pli],
+     _pipe->nuncoded_fragis[_pli],_dec->state.frag_buf_offs);
+  }
 }
 
 /*Filter a horizontal block edge.*/
@@ -1953,9 +1961,9 @@ static void oc_dec_dering_frag_rows(oc_dec_ctx *_dec,th_img_plane *_img,
 th_dec_ctx *th_decode_alloc(const th_info *_info,const th_setup_info *_setup){
   oc_dec_ctx *dec;
   if(_info==NULL||_setup==NULL)return NULL;
-  dec=_ogg_malloc(sizeof(*dec));
+  dec=oc_aligned_malloc(sizeof(*dec),16);
   if(dec==NULL||oc_dec_init(dec,_info,_setup)<0){
-    _ogg_free(dec);
+    oc_aligned_free(dec);
     return NULL;
   }
   dec->state.curframe_num=0;
@@ -1965,7 +1973,7 @@ th_dec_ctx *th_decode_alloc(const th_info *_info,const th_setup_info *_setup){
 void th_decode_free(th_dec_ctx *_dec){
   if(_dec!=NULL){
     oc_dec_clear(_dec);
-    _ogg_free(_dec);
+    oc_aligned_free(_dec);
   }
 }
 
@@ -2013,28 +2021,24 @@ int th_decode_ctl(th_dec_ctx *_dec,int _req,void *_buf,
   case TH_DECCTL_SET_TELEMETRY_MBMODE:{
     if(_dec==NULL||_buf==NULL)return TH_EFAULT;
     if(_buf_sz!=sizeof(int))return TH_EINVAL;
-    _dec->telemetry=1;
     _dec->telemetry_mbmode=*(int *)_buf;
     return 0;
   }break;
   case TH_DECCTL_SET_TELEMETRY_MV:{
     if(_dec==NULL||_buf==NULL)return TH_EFAULT;
     if(_buf_sz!=sizeof(int))return TH_EINVAL;
-    _dec->telemetry=1;
     _dec->telemetry_mv=*(int *)_buf;
     return 0;
   }break;
   case TH_DECCTL_SET_TELEMETRY_QI:{
     if(_dec==NULL||_buf==NULL)return TH_EFAULT;
     if(_buf_sz!=sizeof(int))return TH_EINVAL;
-    _dec->telemetry=1;
     _dec->telemetry_qi=*(int *)_buf;
     return 0;
   }break;
   case TH_DECCTL_SET_TELEMETRY_BITS:{
     if(_dec==NULL||_buf==NULL)return TH_EFAULT;
     if(_buf_sz!=sizeof(int))return TH_EINVAL;
-    _dec->telemetry=1;
     _dec->telemetry_bits=*(int *)_buf;
     return 0;
   }break;
@@ -2047,63 +2051,751 @@ int th_decode_ctl(th_dec_ctx *_dec,int _req,void *_buf,
    buffers (i.e., decoding did not start on a key frame).
   We initialize them to a solid gray here.*/
 static void oc_dec_init_dummy_frame(th_dec_ctx *_dec){
-  th_info *info;
-  size_t   yplane_sz;
-  size_t   cplane_sz;
-  int      yhstride;
-  int      yheight;
-  int      chstride;
-  int      cheight;
+  th_info   *info;
+  size_t     yplane_sz;
+  size_t     cplane_sz;
+  ptrdiff_t  yoffset;
+  int        yhstride;
+  int        yheight;
+  int        chstride;
+  int        cheight;
   _dec->state.ref_frame_idx[OC_FRAME_GOLD]=0;
   _dec->state.ref_frame_idx[OC_FRAME_PREV]=0;
-  _dec->state.ref_frame_idx[OC_FRAME_SELF]=1;
+  _dec->state.ref_frame_idx[OC_FRAME_SELF]=0;
+  _dec->state.ref_frame_data[OC_FRAME_GOLD]=
+   _dec->state.ref_frame_data[OC_FRAME_PREV]=
+   _dec->state.ref_frame_data[OC_FRAME_SELF]=
+   _dec->state.ref_frame_bufs[0][0].data;
+  memcpy(_dec->pp_frame_buf,_dec->state.ref_frame_bufs[0],
+   sizeof(_dec->pp_frame_buf[0])*3);
   info=&_dec->state.info;
-  yhstride=info->frame_width+2*OC_UMV_PADDING;
+  yhstride=abs(_dec->state.ref_ystride[0]);
   yheight=info->frame_height+2*OC_UMV_PADDING;
-  chstride=yhstride>>!(info->pixel_fmt&1);
+  chstride=abs(_dec->state.ref_ystride[1]);
   cheight=yheight>>!(info->pixel_fmt&2);
-  yplane_sz=yhstride*(size_t)yheight;
+  yplane_sz=yhstride*(size_t)yheight+16;
   cplane_sz=chstride*(size_t)cheight;
-  memset(_dec->state.ref_frame_data[0],0x80,yplane_sz+2*cplane_sz);
+  yoffset=yhstride*(ptrdiff_t)(yheight-OC_UMV_PADDING-1)+OC_UMV_PADDING;
+  memset(_dec->state.ref_frame_data[0]-yoffset,0x80,yplane_sz+2*cplane_sz);
 }
+
+#if defined(HAVE_CAIRO)
+static void oc_render_telemetry(th_dec_ctx *_dec,th_ycbcr_buffer _ycbcr,
+ int _telemetry){
+  /*Stuff the plane into cairo.*/
+  cairo_surface_t *cs;
+  unsigned char   *data;
+  unsigned char   *y_row;
+  unsigned char   *u_row;
+  unsigned char   *v_row;
+  unsigned char   *rgb_row;
+  int              cstride;
+  int              w;
+  int              h;
+  int              x;
+  int              y;
+  int              hdec;
+  int              vdec;
+  w=_ycbcr[0].width;
+  h=_ycbcr[0].height;
+  hdec=!(_dec->state.info.pixel_fmt&1);
+  vdec=!(_dec->state.info.pixel_fmt&2);
+  /*Lazy data buffer init.
+    We could try to re-use the post-processing buffer, which would save
+     memory, but complicate the allocation logic there.
+    I don't think anyone cares about memory usage when using telemetry; it is
+     not meant for embedded devices.*/
+  if(_dec->telemetry_frame_data==NULL){
+    _dec->telemetry_frame_data=_ogg_malloc(
+     (w*h+2*(w>>hdec)*(h>>vdec))*sizeof(*_dec->telemetry_frame_data));
+    if(_dec->telemetry_frame_data==NULL)return;
+  }
+  cs=cairo_image_surface_create(CAIRO_FORMAT_RGB24,w,h);
+  /*Sadly, no YUV support in Cairo (yet); convert into the RGB buffer.*/
+  data=cairo_image_surface_get_data(cs);
+  if(data==NULL){
+    cairo_surface_destroy(cs);
+    return;
+  }
+  cstride=cairo_image_surface_get_stride(cs);
+  y_row=_ycbcr[0].data;
+  u_row=_ycbcr[1].data;
+  v_row=_ycbcr[2].data;
+  rgb_row=data;
+  for(y=0;y<h;y++){
+    for(x=0;x<w;x++){
+      int r;
+      int g;
+      int b;
+      r=(1904000*y_row[x]+2609823*v_row[x>>hdec]-363703744)/1635200;
+      g=(3827562*y_row[x]-1287801*u_row[x>>hdec]
+       -2672387*v_row[x>>hdec]+447306710)/3287200;
+      b=(952000*y_row[x]+1649289*u_row[x>>hdec]-225932192)/817600;
+      rgb_row[4*x+0]=OC_CLAMP255(b);
+      rgb_row[4*x+1]=OC_CLAMP255(g);
+      rgb_row[4*x+2]=OC_CLAMP255(r);
+    }
+    y_row+=_ycbcr[0].stride;
+    u_row+=_ycbcr[1].stride&-((y&1)|!vdec);
+    v_row+=_ycbcr[2].stride&-((y&1)|!vdec);
+    rgb_row+=cstride;
+  }
+  /*Draw coded identifier for each macroblock (stored in Hilbert order).*/
+  {
+    cairo_t           *c;
+    const oc_fragment *frags;
+    oc_mv             *frag_mvs;
+    const signed char *mb_modes;
+    oc_mb_map         *mb_maps;
+    size_t             nmbs;
+    size_t             mbi;
+    int                row2;
+    int                col2;
+    int                qim[3]={0,0,0};
+    if(_dec->state.nqis==2){
+      int bqi;
+      bqi=_dec->state.qis[0];
+      if(_dec->state.qis[1]>bqi)qim[1]=1;
+      if(_dec->state.qis[1]<bqi)qim[1]=-1;
+    }
+    if(_dec->state.nqis==3){
+      int bqi;
+      int cqi;
+      int dqi;
+      bqi=_dec->state.qis[0];
+      cqi=_dec->state.qis[1];
+      dqi=_dec->state.qis[2];
+      if(cqi>bqi&&dqi>bqi){
+        if(dqi>cqi){
+          qim[1]=1;
+          qim[2]=2;
+        }
+        else{
+          qim[1]=2;
+          qim[2]=1;
+        }
+      }
+      else if(cqi<bqi&&dqi<bqi){
+        if(dqi<cqi){
+          qim[1]=-1;
+          qim[2]=-2;
+        }
+        else{
+          qim[1]=-2;
+          qim[2]=-1;
+        }
+      }
+      else{
+        if(cqi<bqi)qim[1]=-1;
+        else qim[1]=1;
+        if(dqi<bqi)qim[2]=-1;
+        else qim[2]=1;
+      }
+    }
+    c=cairo_create(cs);
+    frags=_dec->state.frags;
+    frag_mvs=_dec->state.frag_mvs;
+    mb_modes=_dec->state.mb_modes;
+    mb_maps=_dec->state.mb_maps;
+    nmbs=_dec->state.nmbs;
+    row2=0;
+    col2=0;
+    for(mbi=0;mbi<nmbs;mbi++){
+      float x;
+      float y;
+      int   bi;
+      y=h-(row2+((col2+1>>1)&1))*16-16;
+      x=(col2>>1)*16;
+      cairo_set_line_width(c,1.);
+      /*Keyframe (all intra) red box.*/
+      if(_dec->state.frame_type==OC_INTRA_FRAME){
+        if(_dec->telemetry_mbmode&0x02){
+          cairo_set_source_rgba(c,1.,0,0,.5);
+          cairo_rectangle(c,x+2.5,y+2.5,11,11);
+          cairo_stroke_preserve(c);
+          cairo_set_source_rgba(c,1.,0,0,.25);
+          cairo_fill(c);
+        }
+      }
+      else{
+        ptrdiff_t fragi;
+        int       frag_mvx;
+        int       frag_mvy;
+        for(bi=0;bi<4;bi++){
+          fragi=mb_maps[mbi][0][bi];
+          if(fragi>=0&&frags[fragi].coded){
+            frag_mvx=OC_MV_X(frag_mvs[fragi]);
+            frag_mvy=OC_MV_Y(frag_mvs[fragi]);
+            break;
+          }
+        }
+        if(bi<4){
+          switch(mb_modes[mbi]){
+            case OC_MODE_INTRA:{
+              if(_dec->telemetry_mbmode&0x02){
+                cairo_set_source_rgba(c,1.,0,0,.5);
+                cairo_rectangle(c,x+2.5,y+2.5,11,11);
+                cairo_stroke_preserve(c);
+                cairo_set_source_rgba(c,1.,0,0,.25);
+                cairo_fill(c);
+              }
+            }break;
+            case OC_MODE_INTER_NOMV:{
+              if(_dec->telemetry_mbmode&0x01){
+                cairo_set_source_rgba(c,0,0,1.,.5);
+                cairo_rectangle(c,x+2.5,y+2.5,11,11);
+                cairo_stroke_preserve(c);
+                cairo_set_source_rgba(c,0,0,1.,.25);
+                cairo_fill(c);
+              }
+            }break;
+            case OC_MODE_INTER_MV:{
+              if(_dec->telemetry_mbmode&0x04){
+                cairo_rectangle(c,x+2.5,y+2.5,11,11);
+                cairo_set_source_rgba(c,0,1.,0,.5);
+                cairo_stroke(c);
+              }
+              if(_dec->telemetry_mv&0x04){
+                cairo_move_to(c,x+8+frag_mvx,y+8-frag_mvy);
+                cairo_set_source_rgba(c,1.,1.,1.,.9);
+                cairo_set_line_width(c,3.);
+                cairo_line_to(c,x+8+frag_mvx*.66,y+8-frag_mvy*.66);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,2.);
+                cairo_line_to(c,x+8+frag_mvx*.33,y+8-frag_mvy*.33);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,1.);
+                cairo_line_to(c,x+8,y+8);
+                cairo_stroke(c);
+              }
+            }break;
+            case OC_MODE_INTER_MV_LAST:{
+              if(_dec->telemetry_mbmode&0x08){
+                cairo_rectangle(c,x+2.5,y+2.5,11,11);
+                cairo_set_source_rgba(c,0,1.,0,.5);
+                cairo_move_to(c,x+13.5,y+2.5);
+                cairo_line_to(c,x+2.5,y+8);
+                cairo_line_to(c,x+13.5,y+13.5);
+                cairo_stroke(c);
+              }
+              if(_dec->telemetry_mv&0x08){
+                cairo_move_to(c,x+8+frag_mvx,y+8-frag_mvy);
+                cairo_set_source_rgba(c,1.,1.,1.,.9);
+                cairo_set_line_width(c,3.);
+                cairo_line_to(c,x+8+frag_mvx*.66,y+8-frag_mvy*.66);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,2.);
+                cairo_line_to(c,x+8+frag_mvx*.33,y+8-frag_mvy*.33);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,1.);
+                cairo_line_to(c,x+8,y+8);
+                cairo_stroke(c);
+              }
+            }break;
+            case OC_MODE_INTER_MV_LAST2:{
+              if(_dec->telemetry_mbmode&0x10){
+                cairo_rectangle(c,x+2.5,y+2.5,11,11);
+                cairo_set_source_rgba(c,0,1.,0,.5);
+                cairo_move_to(c,x+8,y+2.5);
+                cairo_line_to(c,x+2.5,y+8);
+                cairo_line_to(c,x+8,y+13.5);
+                cairo_move_to(c,x+13.5,y+2.5);
+                cairo_line_to(c,x+8,y+8);
+                cairo_line_to(c,x+13.5,y+13.5);
+                cairo_stroke(c);
+              }
+              if(_dec->telemetry_mv&0x10){
+                cairo_move_to(c,x+8+frag_mvx,y+8-frag_mvy);
+                cairo_set_source_rgba(c,1.,1.,1.,.9);
+                cairo_set_line_width(c,3.);
+                cairo_line_to(c,x+8+frag_mvx*.66,y+8-frag_mvy*.66);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,2.);
+                cairo_line_to(c,x+8+frag_mvx*.33,y+8-frag_mvy*.33);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,1.);
+                cairo_line_to(c,x+8,y+8);
+                cairo_stroke(c);
+              }
+            }break;
+            case OC_MODE_GOLDEN_NOMV:{
+              if(_dec->telemetry_mbmode&0x20){
+                cairo_set_source_rgba(c,1.,1.,0,.5);
+                cairo_rectangle(c,x+2.5,y+2.5,11,11);
+                cairo_stroke_preserve(c);
+                cairo_set_source_rgba(c,1.,1.,0,.25);
+                cairo_fill(c);
+              }
+            }break;
+            case OC_MODE_GOLDEN_MV:{
+              if(_dec->telemetry_mbmode&0x40){
+                cairo_rectangle(c,x+2.5,y+2.5,11,11);
+                cairo_set_source_rgba(c,1.,1.,0,.5);
+                cairo_stroke(c);
+              }
+              if(_dec->telemetry_mv&0x40){
+                cairo_move_to(c,x+8+frag_mvx,y+8-frag_mvy);
+                cairo_set_source_rgba(c,1.,1.,1.,.9);
+                cairo_set_line_width(c,3.);
+                cairo_line_to(c,x+8+frag_mvx*.66,y+8-frag_mvy*.66);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,2.);
+                cairo_line_to(c,x+8+frag_mvx*.33,y+8-frag_mvy*.33);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,1.);
+                cairo_line_to(c,x+8,y+8);
+                cairo_stroke(c);
+              }
+            }break;
+            case OC_MODE_INTER_MV_FOUR:{
+              if(_dec->telemetry_mbmode&0x80){
+                cairo_rectangle(c,x+2.5,y+2.5,4,4);
+                cairo_rectangle(c,x+9.5,y+2.5,4,4);
+                cairo_rectangle(c,x+2.5,y+9.5,4,4);
+                cairo_rectangle(c,x+9.5,y+9.5,4,4);
+                cairo_set_source_rgba(c,0,1.,0,.5);
+                cairo_stroke(c);
+              }
+              /*4mv is odd, coded in raster order.*/
+              fragi=mb_maps[mbi][0][0];
+              if(frags[fragi].coded&&_dec->telemetry_mv&0x80){
+                frag_mvx=OC_MV_X(frag_mvs[fragi]);
+                frag_mvx=OC_MV_Y(frag_mvs[fragi]);
+                cairo_move_to(c,x+4+frag_mvx,y+12-frag_mvy);
+                cairo_set_source_rgba(c,1.,1.,1.,.9);
+                cairo_set_line_width(c,3.);
+                cairo_line_to(c,x+4+frag_mvx*.66,y+12-frag_mvy*.66);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,2.);
+                cairo_line_to(c,x+4+frag_mvx*.33,y+12-frag_mvy*.33);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,1.);
+                cairo_line_to(c,x+4,y+12);
+                cairo_stroke(c);
+              }
+              fragi=mb_maps[mbi][0][1];
+              if(frags[fragi].coded&&_dec->telemetry_mv&0x80){
+                frag_mvx=OC_MV_X(frag_mvs[fragi]);
+                frag_mvx=OC_MV_Y(frag_mvs[fragi]);
+                cairo_move_to(c,x+12+frag_mvx,y+12-frag_mvy);
+                cairo_set_source_rgba(c,1.,1.,1.,.9);
+                cairo_set_line_width(c,3.);
+                cairo_line_to(c,x+12+frag_mvx*.66,y+12-frag_mvy*.66);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,2.);
+                cairo_line_to(c,x+12+frag_mvx*.33,y+12-frag_mvy*.33);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,1.);
+                cairo_line_to(c,x+12,y+12);
+                cairo_stroke(c);
+              }
+              fragi=mb_maps[mbi][0][2];
+              if(frags[fragi].coded&&_dec->telemetry_mv&0x80){
+                frag_mvx=OC_MV_X(frag_mvs[fragi]);
+                frag_mvx=OC_MV_Y(frag_mvs[fragi]);
+                cairo_move_to(c,x+4+frag_mvx,y+4-frag_mvy);
+                cairo_set_source_rgba(c,1.,1.,1.,.9);
+                cairo_set_line_width(c,3.);
+                cairo_line_to(c,x+4+frag_mvx*.66,y+4-frag_mvy*.66);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,2.);
+                cairo_line_to(c,x+4+frag_mvx*.33,y+4-frag_mvy*.33);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,1.);
+                cairo_line_to(c,x+4,y+4);
+                cairo_stroke(c);
+              }
+              fragi=mb_maps[mbi][0][3];
+              if(frags[fragi].coded&&_dec->telemetry_mv&0x80){
+                frag_mvx=OC_MV_X(frag_mvs[fragi]);
+                frag_mvx=OC_MV_Y(frag_mvs[fragi]);
+                cairo_move_to(c,x+12+frag_mvx,y+4-frag_mvy);
+                cairo_set_source_rgba(c,1.,1.,1.,.9);
+                cairo_set_line_width(c,3.);
+                cairo_line_to(c,x+12+frag_mvx*.66,y+4-frag_mvy*.66);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,2.);
+                cairo_line_to(c,x+12+frag_mvx*.33,y+4-frag_mvy*.33);
+                cairo_stroke_preserve(c);
+                cairo_set_line_width(c,1.);
+                cairo_line_to(c,x+12,y+4);
+                cairo_stroke(c);
+              }
+            }break;
+          }
+        }
+      }
+      /*qii illustration.*/
+      if(_dec->telemetry_qi&0x2){
+        cairo_set_line_cap(c,CAIRO_LINE_CAP_SQUARE);
+        for(bi=0;bi<4;bi++){
+          ptrdiff_t fragi;
+          int       qiv;
+          int       xp;
+          int       yp;
+          xp=x+(bi&1)*8;
+          yp=y+8-(bi&2)*4;
+          fragi=mb_maps[mbi][0][bi];
+          if(fragi>=0&&frags[fragi].coded){
+            qiv=qim[frags[fragi].qii];
+            cairo_set_line_width(c,3.);
+            cairo_set_source_rgba(c,0.,0.,0.,.5);
+            switch(qiv){
+              /*Double plus:*/
+              case 2:{
+                if((bi&1)^((bi&2)>>1)){
+                  cairo_move_to(c,xp+2.5,yp+1.5);
+                  cairo_line_to(c,xp+2.5,yp+3.5);
+                  cairo_move_to(c,xp+1.5,yp+2.5);
+                  cairo_line_to(c,xp+3.5,yp+2.5);
+                  cairo_move_to(c,xp+5.5,yp+4.5);
+                  cairo_line_to(c,xp+5.5,yp+6.5);
+                  cairo_move_to(c,xp+4.5,yp+5.5);
+                  cairo_line_to(c,xp+6.5,yp+5.5);
+                  cairo_stroke_preserve(c);
+                  cairo_set_source_rgba(c,0.,1.,1.,1.);
+                }
+                else{
+                  cairo_move_to(c,xp+5.5,yp+1.5);
+                  cairo_line_to(c,xp+5.5,yp+3.5);
+                  cairo_move_to(c,xp+4.5,yp+2.5);
+                  cairo_line_to(c,xp+6.5,yp+2.5);
+                  cairo_move_to(c,xp+2.5,yp+4.5);
+                  cairo_line_to(c,xp+2.5,yp+6.5);
+                  cairo_move_to(c,xp+1.5,yp+5.5);
+                  cairo_line_to(c,xp+3.5,yp+5.5);
+                  cairo_stroke_preserve(c);
+                  cairo_set_source_rgba(c,0.,1.,1.,1.);
+                }
+              }break;
+              /*Double minus:*/
+              case -2:{
+                cairo_move_to(c,xp+2.5,yp+2.5);
+                cairo_line_to(c,xp+5.5,yp+2.5);
+                cairo_move_to(c,xp+2.5,yp+5.5);
+                cairo_line_to(c,xp+5.5,yp+5.5);
+                cairo_stroke_preserve(c);
+                cairo_set_source_rgba(c,1.,1.,1.,1.);
+              }break;
+              /*Plus:*/
+              case 1:{
+                if((bi&2)==0)yp-=2;
+                if((bi&1)==0)xp-=2;
+                cairo_move_to(c,xp+4.5,yp+2.5);
+                cairo_line_to(c,xp+4.5,yp+6.5);
+                cairo_move_to(c,xp+2.5,yp+4.5);
+                cairo_line_to(c,xp+6.5,yp+4.5);
+                cairo_stroke_preserve(c);
+                cairo_set_source_rgba(c,.1,1.,.3,1.);
+                break;
+              }
+              /*Fall through.*/
+              /*Minus:*/
+              case -1:{
+                cairo_move_to(c,xp+2.5,yp+4.5);
+                cairo_line_to(c,xp+6.5,yp+4.5);
+                cairo_stroke_preserve(c);
+                cairo_set_source_rgba(c,1.,.3,.1,1.);
+              }break;
+              default:continue;
+            }
+            cairo_set_line_width(c,1.);
+            cairo_stroke(c);
+          }
+        }
+      }
+      col2++;
+      if((col2>>1)>=_dec->state.nhmbs){
+        col2=0;
+        row2+=2;
+      }
+    }
+    /*Bit usage indicator[s]:*/
+    if(_dec->telemetry_bits){
+      int widths[6];
+      int fpsn;
+      int fpsd;
+      int mult;
+      int fullw;
+      int padw;
+      int i;
+      fpsn=_dec->state.info.fps_numerator;
+      fpsd=_dec->state.info.fps_denominator;
+      mult=(_dec->telemetry_bits>=0xFF?1:_dec->telemetry_bits);
+      fullw=250.f*h*fpsd*mult/fpsn;
+      padw=w-24;
+      /*Header and coded block bits.*/
+      if(_dec->telemetry_frame_bytes<0||
+       _dec->telemetry_frame_bytes==OC_LOTS_OF_BITS){
+        _dec->telemetry_frame_bytes=0;
+      }
+      if(_dec->telemetry_coding_bytes<0||
+       _dec->telemetry_coding_bytes>_dec->telemetry_frame_bytes){
+        _dec->telemetry_coding_bytes=0;
+      }
+      if(_dec->telemetry_mode_bytes<0||
+       _dec->telemetry_mode_bytes>_dec->telemetry_frame_bytes){
+        _dec->telemetry_mode_bytes=0;
+      }
+      if(_dec->telemetry_mv_bytes<0||
+       _dec->telemetry_mv_bytes>_dec->telemetry_frame_bytes){
+        _dec->telemetry_mv_bytes=0;
+      }
+      if(_dec->telemetry_qi_bytes<0||
+       _dec->telemetry_qi_bytes>_dec->telemetry_frame_bytes){
+        _dec->telemetry_qi_bytes=0;
+      }
+      if(_dec->telemetry_dc_bytes<0||
+       _dec->telemetry_dc_bytes>_dec->telemetry_frame_bytes){
+        _dec->telemetry_dc_bytes=0;
+      }
+      widths[0]=padw*
+       (_dec->telemetry_frame_bytes-_dec->telemetry_coding_bytes)/fullw;
+      widths[1]=padw*
+       (_dec->telemetry_coding_bytes-_dec->telemetry_mode_bytes)/fullw;
+      widths[2]=padw*
+       (_dec->telemetry_mode_bytes-_dec->telemetry_mv_bytes)/fullw;
+      widths[3]=padw*(_dec->telemetry_mv_bytes-_dec->telemetry_qi_bytes)/fullw;
+      widths[4]=padw*(_dec->telemetry_qi_bytes-_dec->telemetry_dc_bytes)/fullw;
+      widths[5]=padw*(_dec->telemetry_dc_bytes)/fullw;
+      for(i=0;i<6;i++)if(widths[i]>w)widths[i]=w;
+      cairo_set_source_rgba(c,.0,.0,.0,.6);
+      cairo_rectangle(c,10,h-33,widths[0]+1,5);
+      cairo_rectangle(c,10,h-29,widths[1]+1,5);
+      cairo_rectangle(c,10,h-25,widths[2]+1,5);
+      cairo_rectangle(c,10,h-21,widths[3]+1,5);
+      cairo_rectangle(c,10,h-17,widths[4]+1,5);
+      cairo_rectangle(c,10,h-13,widths[5]+1,5);
+      cairo_fill(c);
+      cairo_set_source_rgb(c,1,0,0);
+      cairo_rectangle(c,10.5,h-32.5,widths[0],4);
+      cairo_fill(c);
+      cairo_set_source_rgb(c,0,1,0);
+      cairo_rectangle(c,10.5,h-28.5,widths[1],4);
+      cairo_fill(c);
+      cairo_set_source_rgb(c,0,0,1);
+      cairo_rectangle(c,10.5,h-24.5,widths[2],4);
+      cairo_fill(c);
+      cairo_set_source_rgb(c,.6,.4,.0);
+      cairo_rectangle(c,10.5,h-20.5,widths[3],4);
+      cairo_fill(c);
+      cairo_set_source_rgb(c,.3,.3,.3);
+      cairo_rectangle(c,10.5,h-16.5,widths[4],4);
+      cairo_fill(c);
+      cairo_set_source_rgb(c,.5,.5,.8);
+      cairo_rectangle(c,10.5,h-12.5,widths[5],4);
+      cairo_fill(c);
+    }
+    /*Master qi indicator[s]:*/
+    if(_dec->telemetry_qi&0x1){
+      cairo_text_extents_t extents;
+      char                 buffer[10];
+      int                  p;
+      int                  y;
+      p=0;
+      y=h-7.5;
+      if(_dec->state.qis[0]>=10)buffer[p++]=48+_dec->state.qis[0]/10;
+      buffer[p++]=48+_dec->state.qis[0]%10;
+      if(_dec->state.nqis>=2){
+        buffer[p++]=' ';
+        if(_dec->state.qis[1]>=10)buffer[p++]=48+_dec->state.qis[1]/10;
+        buffer[p++]=48+_dec->state.qis[1]%10;
+      }
+      if(_dec->state.nqis==3){
+        buffer[p++]=' ';
+        if(_dec->state.qis[2]>=10)buffer[p++]=48+_dec->state.qis[2]/10;
+        buffer[p++]=48+_dec->state.qis[2]%10;
+      }
+      buffer[p++]='\0';
+      cairo_select_font_face(c,"sans",
+       CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_BOLD);
+      cairo_set_font_size(c,18);
+      cairo_text_extents(c,buffer,&extents);
+      cairo_set_source_rgb(c,1,1,1);
+      cairo_move_to(c,w-extents.x_advance-10,y);
+      cairo_show_text(c,buffer);
+      cairo_set_source_rgb(c,0,0,0);
+      cairo_move_to(c,w-extents.x_advance-10,y);
+      cairo_text_path(c,buffer);
+      cairo_set_line_width(c,.8);
+      cairo_set_line_join(c,CAIRO_LINE_JOIN_ROUND);
+      cairo_stroke(c);
+    }
+    cairo_destroy(c);
+  }
+  /*Out of the Cairo plane into the telemetry YUV buffer.*/
+  _ycbcr[0].data=_dec->telemetry_frame_data;
+  _ycbcr[0].stride=_ycbcr[0].width;
+  _ycbcr[1].data=_ycbcr[0].data+h*_ycbcr[0].stride;
+  _ycbcr[1].stride=_ycbcr[1].width;
+  _ycbcr[2].data=_ycbcr[1].data+(h>>vdec)*_ycbcr[1].stride;
+  _ycbcr[2].stride=_ycbcr[2].width;
+  y_row=_ycbcr[0].data;
+  u_row=_ycbcr[1].data;
+  v_row=_ycbcr[2].data;
+  rgb_row=data;
+  /*This is one of the few places it's worth handling chroma on a
+     case-by-case basis.*/
+  switch(_dec->state.info.pixel_fmt){
+    case TH_PF_420:{
+      for(y=0;y<h;y+=2){
+        unsigned char *y_row2;
+        unsigned char *rgb_row2;
+        y_row2=y_row+_ycbcr[0].stride;
+        rgb_row2=rgb_row+cstride;
+        for(x=0;x<w;x+=2){
+          int y;
+          int u;
+          int v;
+          y=(65481*rgb_row[4*x+2]+128553*rgb_row[4*x+1]
+           +24966*rgb_row[4*x+0]+4207500)/255000;
+          y_row[x]=OC_CLAMP255(y);
+          y=(65481*rgb_row[4*x+6]+128553*rgb_row[4*x+5]
+           +24966*rgb_row[4*x+4]+4207500)/255000;
+          y_row[x+1]=OC_CLAMP255(y);
+          y=(65481*rgb_row2[4*x+2]+128553*rgb_row2[4*x+1]
+           +24966*rgb_row2[4*x+0]+4207500)/255000;
+          y_row2[x]=OC_CLAMP255(y);
+          y=(65481*rgb_row2[4*x+6]+128553*rgb_row2[4*x+5]
+           +24966*rgb_row2[4*x+4]+4207500)/255000;
+          y_row2[x+1]=OC_CLAMP255(y);
+          u=(-8372*(rgb_row[4*x+2]+rgb_row[4*x+6]
+           +rgb_row2[4*x+2]+rgb_row2[4*x+6])
+           -16436*(rgb_row[4*x+1]+rgb_row[4*x+5]
+           +rgb_row2[4*x+1]+rgb_row2[4*x+5])
+           +24808*(rgb_row[4*x+0]+rgb_row[4*x+4]
+           +rgb_row2[4*x+0]+rgb_row2[4*x+4])+29032005)/225930;
+          v=(39256*(rgb_row[4*x+2]+rgb_row[4*x+6]
+           +rgb_row2[4*x+2]+rgb_row2[4*x+6])
+           -32872*(rgb_row[4*x+1]+rgb_row[4*x+5]
+            +rgb_row2[4*x+1]+rgb_row2[4*x+5])
+           -6384*(rgb_row[4*x+0]+rgb_row[4*x+4]
+            +rgb_row2[4*x+0]+rgb_row2[4*x+4])+45940035)/357510;
+          u_row[x>>1]=OC_CLAMP255(u);
+          v_row[x>>1]=OC_CLAMP255(v);
+        }
+        y_row+=_ycbcr[0].stride<<1;
+        u_row+=_ycbcr[1].stride;
+        v_row+=_ycbcr[2].stride;
+        rgb_row+=cstride<<1;
+      }
+    }break;
+    case TH_PF_422:{
+      for(y=0;y<h;y++){
+        for(x=0;x<w;x+=2){
+          int y;
+          int u;
+          int v;
+          y=(65481*rgb_row[4*x+2]+128553*rgb_row[4*x+1]
+           +24966*rgb_row[4*x+0]+4207500)/255000;
+          y_row[x]=OC_CLAMP255(y);
+          y=(65481*rgb_row[4*x+6]+128553*rgb_row[4*x+5]
+           +24966*rgb_row[4*x+4]+4207500)/255000;
+          y_row[x+1]=OC_CLAMP255(y);
+          u=(-16744*(rgb_row[4*x+2]+rgb_row[4*x+6])
+           -32872*(rgb_row[4*x+1]+rgb_row[4*x+5])
+           +49616*(rgb_row[4*x+0]+rgb_row[4*x+4])+29032005)/225930;
+          v=(78512*(rgb_row[4*x+2]+rgb_row[4*x+6])
+           -65744*(rgb_row[4*x+1]+rgb_row[4*x+5])
+           -12768*(rgb_row[4*x+0]+rgb_row[4*x+4])+45940035)/357510;
+          u_row[x>>1]=OC_CLAMP255(u);
+          v_row[x>>1]=OC_CLAMP255(v);
+        }
+        y_row+=_ycbcr[0].stride;
+        u_row+=_ycbcr[1].stride;
+        v_row+=_ycbcr[2].stride;
+        rgb_row+=cstride;
+      }
+    }break;
+    /*case TH_PF_444:*/
+    default:{
+      for(y=0;y<h;y++){
+        for(x=0;x<w;x++){
+          int y;
+          int u;
+          int v;
+          y=(65481*rgb_row[4*x+2]+128553*rgb_row[4*x+1]
+           +24966*rgb_row[4*x+0]+4207500)/255000;
+          u=(-33488*rgb_row[4*x+2]-65744*rgb_row[4*x+1]
+           +99232*rgb_row[4*x+0]+29032005)/225930;
+          v=(157024*rgb_row[4*x+2]-131488*rgb_row[4*x+1]
+           -25536*rgb_row[4*x+0]+45940035)/357510;
+          y_row[x]=OC_CLAMP255(y);
+          u_row[x]=OC_CLAMP255(u);
+          v_row[x]=OC_CLAMP255(v);
+        }
+        y_row+=_ycbcr[0].stride;
+        u_row+=_ycbcr[1].stride;
+        v_row+=_ycbcr[2].stride;
+        rgb_row+=cstride;
+      }
+    }break;
+  }
+  /*Finished.
+    Destroy the surface.*/
+  cairo_surface_destroy(cs);
+}
+#endif
 
 int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
  ogg_int64_t *_granpos){
   int ret;
   if(_dec==NULL||_op==NULL)return TH_EFAULT;
   /*A completely empty packet indicates a dropped frame and is treated exactly
-     like an inter frame with no coded blocks.
-    Only proceed if we have a non-empty packet.*/
-  if(_op->bytes!=0){
-    oc_dec_pipeline_state pipe;
-    th_ycbcr_buffer       stripe_buf;
-    int                   stripe_fragy;
-    int                   refi;
-    int                   pli;
-    int                   notstart;
-    int                   notdone;
+     like an inter frame with no coded blocks.*/
+  if(_op->bytes==0){
+    _dec->state.frame_type=OC_INTER_FRAME;
+    _dec->state.ntotal_coded_fragis=0;
+  }
+  else{
     oc_pack_readinit(&_dec->opb,_op->packet,_op->bytes);
+    ret=oc_dec_frame_header_unpack(_dec);
+    if(ret<0)return ret;
+    if(_dec->state.frame_type==OC_INTRA_FRAME)oc_dec_mark_all_intra(_dec);
+    else oc_dec_coded_flags_unpack(_dec);
+  }
+  /*If there have been no reference frames, and we need one, initialize one.*/
+  if(_dec->state.frame_type!=OC_INTRA_FRAME&&
+   (_dec->state.ref_frame_idx[OC_FRAME_GOLD]<0||
+   _dec->state.ref_frame_idx[OC_FRAME_PREV]<0)){
+    oc_dec_init_dummy_frame(_dec);
+  }
+  /*If this was an inter frame with no coded blocks...*/
+  if(_dec->state.ntotal_coded_fragis<=0){
+    /*Just update the granule position and return.*/
+    _dec->state.granpos=(_dec->state.keyframe_num+_dec->state.granpos_bias<<
+     _dec->state.info.keyframe_granule_shift)
+     +(_dec->state.curframe_num-_dec->state.keyframe_num);
+    _dec->state.curframe_num++;
+    if(_granpos!=NULL)*_granpos=_dec->state.granpos;
+    return TH_DUPFRAME;
+  }
+  else{
+    th_ycbcr_buffer stripe_buf;
+    int             stripe_fragy;
+    int             refi;
+    int             pli;
+    int             notstart;
+    int             notdone;
+#ifdef HAVE_CAIRO
+    int             telemetry;
+    /*Save the current telemetry state.
+      This prevents it from being modified in the middle of decoding this
+       frame, which could cause us to skip calls to the striped decoding
+       callback.*/
+    telemetry=_dec->telemetry_mbmode||_dec->telemetry_mv||
+     _dec->telemetry_qi||_dec->telemetry_bits;
+#endif
+    /*Select a free buffer to use for the reconstructed version of this frame.*/
+    for(refi=0;refi==_dec->state.ref_frame_idx[OC_FRAME_GOLD]||
+     refi==_dec->state.ref_frame_idx[OC_FRAME_PREV];refi++);
+    _dec->state.ref_frame_idx[OC_FRAME_SELF]=refi;
+    _dec->state.ref_frame_data[OC_FRAME_SELF]=
+     _dec->state.ref_frame_bufs[refi][0].data;
 #if defined(HAVE_CAIRO)
     _dec->telemetry_frame_bytes=_op->bytes;
 #endif
-    ret=oc_dec_frame_header_unpack(_dec);
-    if(ret<0)return ret;
-    /*Select a free buffer to use for the reconstructed version of this
-       frame.*/
-    if(_dec->state.frame_type!=OC_INTRA_FRAME&&
-     (_dec->state.ref_frame_idx[OC_FRAME_GOLD]<0||
-     _dec->state.ref_frame_idx[OC_FRAME_PREV]<0)){
-      /*No reference frames yet!*/
-      oc_dec_init_dummy_frame(_dec);
-      refi=_dec->state.ref_frame_idx[OC_FRAME_SELF];
-    }
-    else{
-      for(refi=0;refi==_dec->state.ref_frame_idx[OC_FRAME_GOLD]||
-       refi==_dec->state.ref_frame_idx[OC_FRAME_PREV];refi++);
-      _dec->state.ref_frame_idx[OC_FRAME_SELF]=refi;
-    }
     if(_dec->state.frame_type==OC_INTRA_FRAME){
-      oc_dec_mark_all_intra(_dec);
       _dec->state.keyframe_num=_dec->state.curframe_num;
 #if defined(HAVE_CAIRO)
       _dec->telemetry_coding_bytes=
@@ -2112,7 +2804,6 @@ int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
 #endif
     }
     else{
-      oc_dec_coded_flags_unpack(_dec);
 #if defined(HAVE_CAIRO)
       _dec->telemetry_coding_bytes=oc_pack_bytes_left(&_dec->opb);
 #endif
@@ -2160,15 +2851,15 @@ int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
       An application callback allows further application processing (blitting
        to video memory, color conversion, etc.) to also use the data while it's
        in cache.*/
-    oc_dec_pipeline_init(_dec,&pipe);
+    oc_dec_pipeline_init(_dec,&_dec->pipe);
     oc_ycbcr_buffer_flip(stripe_buf,_dec->pp_frame_buf);
     notstart=0;
     notdone=1;
-    for(stripe_fragy=0;notdone;stripe_fragy+=pipe.mcu_nvfrags){
+    for(stripe_fragy=0;notdone;stripe_fragy+=_dec->pipe.mcu_nvfrags){
       int avail_fragy0;
       int avail_fragy_end;
       avail_fragy0=avail_fragy_end=_dec->state.fplanes[0].nvfrags;
-      notdone=stripe_fragy+pipe.mcu_nvfrags<avail_fragy_end;
+      notdone=stripe_fragy+_dec->pipe.mcu_nvfrags<avail_fragy_end;
       for(pli=0;pli<3;pli++){
         oc_fragment_plane *fplane;
         int                frag_shift;
@@ -2179,45 +2870,46 @@ int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
         /*Compute the first and last fragment row of the current MCU for this
            plane.*/
         frag_shift=pli!=0&&!(_dec->state.info.pixel_fmt&2);
-        pipe.fragy0[pli]=stripe_fragy>>frag_shift;
-        pipe.fragy_end[pli]=OC_MINI(fplane->nvfrags,
-         pipe.fragy0[pli]+(pipe.mcu_nvfrags>>frag_shift));
-        oc_dec_dc_unpredict_mcu_plane(_dec,&pipe,pli);
-        oc_dec_frags_recon_mcu_plane(_dec,&pipe,pli);
+        _dec->pipe.fragy0[pli]=stripe_fragy>>frag_shift;
+        _dec->pipe.fragy_end[pli]=OC_MINI(fplane->nvfrags,
+         _dec->pipe.fragy0[pli]+(_dec->pipe.mcu_nvfrags>>frag_shift));
+        oc_dec_dc_unpredict_mcu_plane(_dec,&_dec->pipe,pli);
+        oc_dec_frags_recon_mcu_plane(_dec,&_dec->pipe,pli);
         sdelay=edelay=0;
-        if(pipe.loop_filter){
+        if(_dec->pipe.loop_filter){
           sdelay+=notstart;
           edelay+=notdone;
-          oc_state_loop_filter_frag_rows(&_dec->state,pipe.bounding_values,
-           refi,pli,pipe.fragy0[pli]-sdelay,pipe.fragy_end[pli]-edelay);
+          oc_state_loop_filter_frag_rows(&_dec->state,
+           _dec->pipe.bounding_values,OC_FRAME_SELF,pli,
+           _dec->pipe.fragy0[pli]-sdelay,_dec->pipe.fragy_end[pli]-edelay);
         }
         /*To fill the borders, we have an additional two pixel delay, since a
            fragment in the next row could filter its top edge, using two pixels
            from a fragment in this row.
           But there's no reason to delay a full fragment between the two.*/
         oc_state_borders_fill_rows(&_dec->state,refi,pli,
-         (pipe.fragy0[pli]-sdelay<<3)-(sdelay<<1),
-         (pipe.fragy_end[pli]-edelay<<3)-(edelay<<1));
+         (_dec->pipe.fragy0[pli]-sdelay<<3)-(sdelay<<1),
+         (_dec->pipe.fragy_end[pli]-edelay<<3)-(edelay<<1));
         /*Out-of-loop post-processing.*/
         pp_offset=3*(pli!=0);
-        if(pipe.pp_level>=OC_PP_LEVEL_DEBLOCKY+pp_offset){
+        if(_dec->pipe.pp_level>=OC_PP_LEVEL_DEBLOCKY+pp_offset){
           /*Perform de-blocking in one plane.*/
           sdelay+=notstart;
           edelay+=notdone;
           oc_dec_deblock_frag_rows(_dec,_dec->pp_frame_buf,
            _dec->state.ref_frame_bufs[refi],pli,
-           pipe.fragy0[pli]-sdelay,pipe.fragy_end[pli]-edelay);
-          if(pipe.pp_level>=OC_PP_LEVEL_DERINGY+pp_offset){
+           _dec->pipe.fragy0[pli]-sdelay,_dec->pipe.fragy_end[pli]-edelay);
+          if(_dec->pipe.pp_level>=OC_PP_LEVEL_DERINGY+pp_offset){
             /*Perform de-ringing in one plane.*/
             sdelay+=notstart;
             edelay+=notdone;
             oc_dec_dering_frag_rows(_dec,_dec->pp_frame_buf,pli,
-             pipe.fragy0[pli]-sdelay,pipe.fragy_end[pli]-edelay);
+             _dec->pipe.fragy0[pli]-sdelay,_dec->pipe.fragy_end[pli]-edelay);
           }
         }
         /*If no post-processing is done, we still need to delay a row for the
            loop filter, thanks to the strange filtering order VP3 chose.*/
-        else if(pipe.loop_filter){
+        else if(_dec->pipe.loop_filter){
           sdelay+=notstart;
           edelay+=notdone;
         }
@@ -2226,11 +2918,16 @@ int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
            doubled, but luma might have more post-processing filters enabled
            than chroma, so we don't know up front which one is the limiting
            factor.*/
-        avail_fragy0=OC_MINI(avail_fragy0,pipe.fragy0[pli]-sdelay<<frag_shift);
+        avail_fragy0=OC_MINI(avail_fragy0,
+         _dec->pipe.fragy0[pli]-sdelay<<frag_shift);
         avail_fragy_end=OC_MINI(avail_fragy_end,
-         pipe.fragy_end[pli]-edelay<<frag_shift);
+         _dec->pipe.fragy_end[pli]-edelay<<frag_shift);
       }
+#ifdef HAVE_CAIRO
+      if(_dec->stripe_cb.stripe_decoded!=NULL&&!telemetry){
+#else
       if(_dec->stripe_cb.stripe_decoded!=NULL){
+#endif
         /*The callback might want to use the FPU, so let's make sure they can.
           We violate all kinds of ABI restrictions by not doing this until
            now, but none of them actually matter since we don't use floating
@@ -2252,692 +2949,44 @@ int th_decode_packetin(th_dec_ctx *_dec,const ogg_packet *_op,
       _dec->state.ref_frame_idx[OC_FRAME_GOLD]=
        _dec->state.ref_frame_idx[OC_FRAME_PREV]=
        _dec->state.ref_frame_idx[OC_FRAME_SELF];
+      _dec->state.ref_frame_data[OC_FRAME_GOLD]=
+       _dec->state.ref_frame_data[OC_FRAME_PREV]=
+       _dec->state.ref_frame_data[OC_FRAME_SELF];
     }
     else{
       /*Otherwise, just replace the previous reference frame.*/
       _dec->state.ref_frame_idx[OC_FRAME_PREV]=
        _dec->state.ref_frame_idx[OC_FRAME_SELF];
+      _dec->state.ref_frame_data[OC_FRAME_PREV]=
+       _dec->state.ref_frame_data[OC_FRAME_SELF];
     }
     /*Restore the FPU before dump_frame, since that _does_ use the FPU (for PNG
        gamma values, if nothing else).*/
     oc_restore_fpu(&_dec->state);
+#ifdef HAVE_CAIRO
+    /*If telemetry ioctls are active, we need to draw to the output buffer.*/
+    if(telemetry){
+      oc_render_telemetry(_dec,stripe_buf,telemetry);
+      oc_ycbcr_buffer_flip(_dec->pp_frame_buf,stripe_buf);
+      /*If we had a striped decoding callback, we skipped calling it above
+         (because the telemetry wasn't rendered yet).
+        Call it now with the whole frame.*/
+      if(_dec->stripe_cb.stripe_decoded!=NULL){
+        (*_dec->stripe_cb.stripe_decoded)(_dec->stripe_cb.ctx,
+         stripe_buf,0,_dec->state.fplanes[0].nvfrags);
+      }
+    }
+#endif
 #if defined(OC_DUMP_IMAGES)
-    /*Don't dump images for dropped frames.*/
+    /*We only dump images if there were some coded blocks.*/
     oc_state_dump_frame(&_dec->state,OC_FRAME_SELF,"dec");
 #endif
     return 0;
-  }
-  else{
-    if(_dec->state.ref_frame_idx[OC_FRAME_GOLD]<0||
-     _dec->state.ref_frame_idx[OC_FRAME_PREV]<0){
-      int refi;
-      /*No reference frames yet!*/
-      oc_dec_init_dummy_frame(_dec);
-      refi=_dec->state.ref_frame_idx[OC_FRAME_PREV];
-      _dec->state.ref_frame_idx[OC_FRAME_SELF]=refi;
-      memcpy(_dec->pp_frame_buf,_dec->state.ref_frame_bufs[refi],
-       sizeof(_dec->pp_frame_buf[0])*3);
-    }
-    /*Just update the granule position and return.*/
-    _dec->state.granpos=(_dec->state.keyframe_num+_dec->state.granpos_bias<<
-     _dec->state.info.keyframe_granule_shift)
-     +(_dec->state.curframe_num-_dec->state.keyframe_num);
-    _dec->state.curframe_num++;
-    if(_granpos!=NULL)*_granpos=_dec->state.granpos;
-    return TH_DUPFRAME;
   }
 }
 
 int th_decode_ycbcr_out(th_dec_ctx *_dec,th_ycbcr_buffer _ycbcr){
   if(_dec==NULL||_ycbcr==NULL)return TH_EFAULT;
   oc_ycbcr_buffer_flip(_ycbcr,_dec->pp_frame_buf);
-#if defined(HAVE_CAIRO)
-  /*If telemetry ioctls are active, we need to draw to the output buffer.
-    Stuff the plane into cairo.*/
-  if(_dec->telemetry){
-    cairo_surface_t *cs;
-    unsigned char   *data;
-    unsigned char   *y_row;
-    unsigned char   *u_row;
-    unsigned char   *v_row;
-    unsigned char   *rgb_row;
-    int              cstride;
-    int              w;
-    int              h;
-    int              x;
-    int              y;
-    int              hdec;
-    int              vdec;
-    w=_ycbcr[0].width;
-    h=_ycbcr[0].height;
-    hdec=!(_dec->state.info.pixel_fmt&1);
-    vdec=!(_dec->state.info.pixel_fmt&2);
-    /*Lazy data buffer init.
-      We could try to re-use the post-processing buffer, which would save
-       memory, but complicate the allocation logic there.
-      I don't think anyone cares about memory usage when using telemetry; it is
-       not meant for embedded devices.*/
-    if(_dec->telemetry_frame_data==NULL){
-      _dec->telemetry_frame_data=_ogg_malloc(
-       (w*h+2*(w>>hdec)*(h>>vdec))*sizeof(*_dec->telemetry_frame_data));
-      if(_dec->telemetry_frame_data==NULL)return 0;
-    }
-    cs=cairo_image_surface_create(CAIRO_FORMAT_RGB24,w,h);
-    /*Sadly, no YUV support in Cairo (yet); convert into the RGB buffer.*/
-    data=cairo_image_surface_get_data(cs);
-    if(data==NULL){
-      cairo_surface_destroy(cs);
-      return 0;
-    }
-    cstride=cairo_image_surface_get_stride(cs);
-    y_row=_ycbcr[0].data;
-    u_row=_ycbcr[1].data;
-    v_row=_ycbcr[2].data;
-    rgb_row=data;
-    for(y=0;y<h;y++){
-      for(x=0;x<w;x++){
-        int r;
-        int g;
-        int b;
-        r=(1904000*y_row[x]+2609823*v_row[x>>hdec]-363703744)/1635200;
-        g=(3827562*y_row[x]-1287801*u_row[x>>hdec]
-         -2672387*v_row[x>>hdec]+447306710)/3287200;
-        b=(952000*y_row[x]+1649289*u_row[x>>hdec]-225932192)/817600;
-        rgb_row[4*x+0]=OC_CLAMP255(b);
-        rgb_row[4*x+1]=OC_CLAMP255(g);
-        rgb_row[4*x+2]=OC_CLAMP255(r);
-      }
-      y_row+=_ycbcr[0].stride;
-      u_row+=_ycbcr[1].stride&-((y&1)|!vdec);
-      v_row+=_ycbcr[2].stride&-((y&1)|!vdec);
-      rgb_row+=cstride;
-    }
-    /*Draw coded identifier for each macroblock (stored in Hilbert order).*/
-    {
-      cairo_t           *c;
-      const oc_fragment *frags;
-      oc_mv             *frag_mvs;
-      const signed char *mb_modes;
-      oc_mb_map         *mb_maps;
-      size_t             nmbs;
-      size_t             mbi;
-      int                row2;
-      int                col2;
-      int                qim[3]={0,0,0};
-      if(_dec->state.nqis==2){
-        int bqi;
-        bqi=_dec->state.qis[0];
-        if(_dec->state.qis[1]>bqi)qim[1]=1;
-        if(_dec->state.qis[1]<bqi)qim[1]=-1;
-      }
-      if(_dec->state.nqis==3){
-        int bqi;
-        int cqi;
-        int dqi;
-        bqi=_dec->state.qis[0];
-        cqi=_dec->state.qis[1];
-        dqi=_dec->state.qis[2];
-        if(cqi>bqi&&dqi>bqi){
-          if(dqi>cqi){
-            qim[1]=1;
-            qim[2]=2;
-          }
-          else{
-            qim[1]=2;
-            qim[2]=1;
-          }
-        }
-        else if(cqi<bqi&&dqi<bqi){
-          if(dqi<cqi){
-            qim[1]=-1;
-            qim[2]=-2;
-          }
-          else{
-            qim[1]=-2;
-            qim[2]=-1;
-          }
-        }
-        else{
-          if(cqi<bqi)qim[1]=-1;
-          else qim[1]=1;
-          if(dqi<bqi)qim[2]=-1;
-          else qim[2]=1;
-        }
-      }
-      c=cairo_create(cs);
-      frags=_dec->state.frags;
-      frag_mvs=_dec->state.frag_mvs;
-      mb_modes=_dec->state.mb_modes;
-      mb_maps=_dec->state.mb_maps;
-      nmbs=_dec->state.nmbs;
-      row2=0;
-      col2=0;
-      for(mbi=0;mbi<nmbs;mbi++){
-        float x;
-        float y;
-        int   bi;
-        y=h-(row2+((col2+1>>1)&1))*16-16;
-        x=(col2>>1)*16;
-        cairo_set_line_width(c,1.);
-        /*Keyframe (all intra) red box.*/
-        if(_dec->state.frame_type==OC_INTRA_FRAME){
-          if(_dec->telemetry_mbmode&0x02){
-            cairo_set_source_rgba(c,1.,0,0,.5);
-            cairo_rectangle(c,x+2.5,y+2.5,11,11);
-            cairo_stroke_preserve(c);
-            cairo_set_source_rgba(c,1.,0,0,.25);
-            cairo_fill(c);
-          }
-        }
-        else{
-          const signed char *frag_mv;
-          ptrdiff_t          fragi;
-          for(bi=0;bi<4;bi++){
-            fragi=mb_maps[mbi][0][bi];
-            if(fragi>=0&&frags[fragi].coded){
-              frag_mv=frag_mvs[fragi];
-              break;
-            }
-          }
-          if(bi<4){
-            switch(mb_modes[mbi]){
-              case OC_MODE_INTRA:{
-                if(_dec->telemetry_mbmode&0x02){
-                  cairo_set_source_rgba(c,1.,0,0,.5);
-                  cairo_rectangle(c,x+2.5,y+2.5,11,11);
-                  cairo_stroke_preserve(c);
-                  cairo_set_source_rgba(c,1.,0,0,.25);
-                  cairo_fill(c);
-                }
-              }break;
-              case OC_MODE_INTER_NOMV:{
-                if(_dec->telemetry_mbmode&0x01){
-                  cairo_set_source_rgba(c,0,0,1.,.5);
-                  cairo_rectangle(c,x+2.5,y+2.5,11,11);
-                  cairo_stroke_preserve(c);
-                  cairo_set_source_rgba(c,0,0,1.,.25);
-                  cairo_fill(c);
-                }
-              }break;
-              case OC_MODE_INTER_MV:{
-                if(_dec->telemetry_mbmode&0x04){
-                  cairo_rectangle(c,x+2.5,y+2.5,11,11);
-                  cairo_set_source_rgba(c,0,1.,0,.5);
-                  cairo_stroke(c);
-                }
-                if(_dec->telemetry_mv&0x04){
-                  cairo_move_to(c,x+8+frag_mv[0],y+8-frag_mv[1]);
-                  cairo_set_source_rgba(c,1.,1.,1.,.9);
-                  cairo_set_line_width(c,3.);
-                  cairo_line_to(c,x+8+frag_mv[0]*.66,y+8-frag_mv[1]*.66);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,2.);
-                  cairo_line_to(c,x+8+frag_mv[0]*.33,y+8-frag_mv[1]*.33);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,1.);
-                  cairo_line_to(c,x+8,y+8);
-                  cairo_stroke(c);
-                }
-              }break;
-              case OC_MODE_INTER_MV_LAST:{
-                if(_dec->telemetry_mbmode&0x08){
-                  cairo_rectangle(c,x+2.5,y+2.5,11,11);
-                  cairo_set_source_rgba(c,0,1.,0,.5);
-                  cairo_move_to(c,x+13.5,y+2.5);
-                  cairo_line_to(c,x+2.5,y+8);
-                  cairo_line_to(c,x+13.5,y+13.5);
-                  cairo_stroke(c);
-                }
-                if(_dec->telemetry_mv&0x08){
-                  cairo_move_to(c,x+8+frag_mv[0],y+8-frag_mv[1]);
-                  cairo_set_source_rgba(c,1.,1.,1.,.9);
-                  cairo_set_line_width(c,3.);
-                  cairo_line_to(c,x+8+frag_mv[0]*.66,y+8-frag_mv[1]*.66);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,2.);
-                  cairo_line_to(c,x+8+frag_mv[0]*.33,y+8-frag_mv[1]*.33);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,1.);
-                  cairo_line_to(c,x+8,y+8);
-                  cairo_stroke(c);
-                }
-              }break;
-              case OC_MODE_INTER_MV_LAST2:{
-                if(_dec->telemetry_mbmode&0x10){
-                  cairo_rectangle(c,x+2.5,y+2.5,11,11);
-                  cairo_set_source_rgba(c,0,1.,0,.5);
-                  cairo_move_to(c,x+8,y+2.5);
-                  cairo_line_to(c,x+2.5,y+8);
-                  cairo_line_to(c,x+8,y+13.5);
-                  cairo_move_to(c,x+13.5,y+2.5);
-                  cairo_line_to(c,x+8,y+8);
-                  cairo_line_to(c,x+13.5,y+13.5);
-                  cairo_stroke(c);
-                }
-                if(_dec->telemetry_mv&0x10){
-                  cairo_move_to(c,x+8+frag_mv[0],y+8-frag_mv[1]);
-                  cairo_set_source_rgba(c,1.,1.,1.,.9);
-                  cairo_set_line_width(c,3.);
-                  cairo_line_to(c,x+8+frag_mv[0]*.66,y+8-frag_mv[1]*.66);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,2.);
-                  cairo_line_to(c,x+8+frag_mv[0]*.33,y+8-frag_mv[1]*.33);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,1.);
-                  cairo_line_to(c,x+8,y+8);
-                  cairo_stroke(c);
-                }
-              }break;
-              case OC_MODE_GOLDEN_NOMV:{
-                if(_dec->telemetry_mbmode&0x20){
-                  cairo_set_source_rgba(c,1.,1.,0,.5);
-                  cairo_rectangle(c,x+2.5,y+2.5,11,11);
-                  cairo_stroke_preserve(c);
-                  cairo_set_source_rgba(c,1.,1.,0,.25);
-                  cairo_fill(c);
-                }
-              }break;
-              case OC_MODE_GOLDEN_MV:{
-                if(_dec->telemetry_mbmode&0x40){
-                  cairo_rectangle(c,x+2.5,y+2.5,11,11);
-                  cairo_set_source_rgba(c,1.,1.,0,.5);
-                  cairo_stroke(c);
-                }
-                if(_dec->telemetry_mv&0x40){
-                  cairo_move_to(c,x+8+frag_mv[0],y+8-frag_mv[1]);
-                  cairo_set_source_rgba(c,1.,1.,1.,.9);
-                  cairo_set_line_width(c,3.);
-                  cairo_line_to(c,x+8+frag_mv[0]*.66,y+8-frag_mv[1]*.66);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,2.);
-                  cairo_line_to(c,x+8+frag_mv[0]*.33,y+8-frag_mv[1]*.33);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,1.);
-                  cairo_line_to(c,x+8,y+8);
-                  cairo_stroke(c);
-                }
-              }break;
-              case OC_MODE_INTER_MV_FOUR:{
-                if(_dec->telemetry_mbmode&0x80){
-                  cairo_rectangle(c,x+2.5,y+2.5,4,4);
-                  cairo_rectangle(c,x+9.5,y+2.5,4,4);
-                  cairo_rectangle(c,x+2.5,y+9.5,4,4);
-                  cairo_rectangle(c,x+9.5,y+9.5,4,4);
-                  cairo_set_source_rgba(c,0,1.,0,.5);
-                  cairo_stroke(c);
-                }
-                /*4mv is odd, coded in raster order.*/
-                fragi=mb_maps[mbi][0][0];
-                if(frags[fragi].coded&&_dec->telemetry_mv&0x80){
-                  frag_mv=frag_mvs[fragi];
-                  cairo_move_to(c,x+4+frag_mv[0],y+12-frag_mv[1]);
-                  cairo_set_source_rgba(c,1.,1.,1.,.9);
-                  cairo_set_line_width(c,3.);
-                  cairo_line_to(c,x+4+frag_mv[0]*.66,y+12-frag_mv[1]*.66);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,2.);
-                  cairo_line_to(c,x+4+frag_mv[0]*.33,y+12-frag_mv[1]*.33);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,1.);
-                  cairo_line_to(c,x+4,y+12);
-                  cairo_stroke(c);
-                }
-                fragi=mb_maps[mbi][0][1];
-                if(frags[fragi].coded&&_dec->telemetry_mv&0x80){
-                  frag_mv=frag_mvs[fragi];
-                  cairo_move_to(c,x+12+frag_mv[0],y+12-frag_mv[1]);
-                  cairo_set_source_rgba(c,1.,1.,1.,.9);
-                  cairo_set_line_width(c,3.);
-                  cairo_line_to(c,x+12+frag_mv[0]*.66,y+12-frag_mv[1]*.66);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,2.);
-                  cairo_line_to(c,x+12+frag_mv[0]*.33,y+12-frag_mv[1]*.33);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,1.);
-                  cairo_line_to(c,x+12,y+12);
-                  cairo_stroke(c);
-                }
-                fragi=mb_maps[mbi][0][2];
-                if(frags[fragi].coded&&_dec->telemetry_mv&0x80){
-                  frag_mv=frag_mvs[fragi];
-                  cairo_move_to(c,x+4+frag_mv[0],y+4-frag_mv[1]);
-                  cairo_set_source_rgba(c,1.,1.,1.,.9);
-                  cairo_set_line_width(c,3.);
-                  cairo_line_to(c,x+4+frag_mv[0]*.66,y+4-frag_mv[1]*.66);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,2.);
-                  cairo_line_to(c,x+4+frag_mv[0]*.33,y+4-frag_mv[1]*.33);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,1.);
-                  cairo_line_to(c,x+4,y+4);
-                  cairo_stroke(c);
-                }
-                fragi=mb_maps[mbi][0][3];
-                if(frags[fragi].coded&&_dec->telemetry_mv&0x80){
-                  frag_mv=frag_mvs[fragi];
-                  cairo_move_to(c,x+12+frag_mv[0],y+4-frag_mv[1]);
-                  cairo_set_source_rgba(c,1.,1.,1.,.9);
-                  cairo_set_line_width(c,3.);
-                  cairo_line_to(c,x+12+frag_mv[0]*.66,y+4-frag_mv[1]*.66);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,2.);
-                  cairo_line_to(c,x+12+frag_mv[0]*.33,y+4-frag_mv[1]*.33);
-                  cairo_stroke_preserve(c);
-                  cairo_set_line_width(c,1.);
-                  cairo_line_to(c,x+12,y+4);
-                  cairo_stroke(c);
-                }
-              }break;
-            }
-          }
-        }
-        /*qii illustration.*/
-        if(_dec->telemetry_qi&0x2){
-          cairo_set_line_cap(c,CAIRO_LINE_CAP_SQUARE);
-          for(bi=0;bi<4;bi++){
-            ptrdiff_t fragi;
-            int       qiv;
-            int       xp;
-            int       yp;
-            xp=x+(bi&1)*8;
-            yp=y+8-(bi&2)*4;
-            fragi=mb_maps[mbi][0][bi];
-            if(fragi>=0&&frags[fragi].coded){
-              qiv=qim[frags[fragi].qii];
-              cairo_set_line_width(c,3.);
-              cairo_set_source_rgba(c,0.,0.,0.,.5);
-              switch(qiv){
-                /*Double plus:*/
-                case 2:{
-                  if((bi&1)^((bi&2)>>1)){
-                    cairo_move_to(c,xp+2.5,yp+1.5);
-                    cairo_line_to(c,xp+2.5,yp+3.5);
-                    cairo_move_to(c,xp+1.5,yp+2.5);
-                    cairo_line_to(c,xp+3.5,yp+2.5);
-                    cairo_move_to(c,xp+5.5,yp+4.5);
-                    cairo_line_to(c,xp+5.5,yp+6.5);
-                    cairo_move_to(c,xp+4.5,yp+5.5);
-                    cairo_line_to(c,xp+6.5,yp+5.5);
-                    cairo_stroke_preserve(c);
-                    cairo_set_source_rgba(c,0.,1.,1.,1.);
-                  }
-                  else{
-                    cairo_move_to(c,xp+5.5,yp+1.5);
-                    cairo_line_to(c,xp+5.5,yp+3.5);
-                    cairo_move_to(c,xp+4.5,yp+2.5);
-                    cairo_line_to(c,xp+6.5,yp+2.5);
-                    cairo_move_to(c,xp+2.5,yp+4.5);
-                    cairo_line_to(c,xp+2.5,yp+6.5);
-                    cairo_move_to(c,xp+1.5,yp+5.5);
-                    cairo_line_to(c,xp+3.5,yp+5.5);
-                    cairo_stroke_preserve(c);
-                    cairo_set_source_rgba(c,0.,1.,1.,1.);
-                  }
-                }break;
-                /*Double minus:*/
-                case -2:{
-                  cairo_move_to(c,xp+2.5,yp+2.5);
-                  cairo_line_to(c,xp+5.5,yp+2.5);
-                  cairo_move_to(c,xp+2.5,yp+5.5);
-                  cairo_line_to(c,xp+5.5,yp+5.5);
-                  cairo_stroke_preserve(c);
-                  cairo_set_source_rgba(c,1.,1.,1.,1.);
-                }break;
-                /*Plus:*/
-                case 1:{
-                  if(bi&2==0)yp-=2;
-                  if(bi&1==0)xp-=2;
-                  cairo_move_to(c,xp+4.5,yp+2.5);
-                  cairo_line_to(c,xp+4.5,yp+6.5);
-                  cairo_move_to(c,xp+2.5,yp+4.5);
-                  cairo_line_to(c,xp+6.5,yp+4.5);
-                  cairo_stroke_preserve(c);
-                  cairo_set_source_rgba(c,.1,1.,.3,1.);
-                  break;
-                }
-                /*Fall through.*/
-                /*Minus:*/
-                case -1:{
-                  cairo_move_to(c,xp+2.5,yp+4.5);
-                  cairo_line_to(c,xp+6.5,yp+4.5);
-                  cairo_stroke_preserve(c);
-                  cairo_set_source_rgba(c,1.,.3,.1,1.);
-                }break;
-                default:continue;
-              }
-              cairo_set_line_width(c,1.);
-              cairo_stroke(c);
-            }
-          }
-        }
-        col2++;
-        if((col2>>1)>=_dec->state.nhmbs){
-          col2=0;
-          row2+=2;
-        }
-      }
-      /*Bit usage indicator[s]:*/
-      if(_dec->telemetry_bits){
-        int widths[6];
-        int fpsn;
-        int fpsd;
-        int mult;
-        int fullw;
-        int padw;
-        int i;
-        fpsn=_dec->state.info.fps_numerator;
-        fpsd=_dec->state.info.fps_denominator;
-        mult=(_dec->telemetry_bits>=0xFF?1:_dec->telemetry_bits);
-        fullw=250.f*h*fpsd*mult/fpsn;
-        padw=w-24;
-        /*Header and coded block bits.*/
-        if(_dec->telemetry_frame_bytes<0||
-         _dec->telemetry_frame_bytes==OC_LOTS_OF_BITS){
-          _dec->telemetry_frame_bytes=0;
-        }
-        if(_dec->telemetry_coding_bytes<0||
-         _dec->telemetry_coding_bytes>_dec->telemetry_frame_bytes){
-          _dec->telemetry_coding_bytes=0;
-        }
-        if(_dec->telemetry_mode_bytes<0||
-         _dec->telemetry_mode_bytes>_dec->telemetry_frame_bytes){
-          _dec->telemetry_mode_bytes=0;
-        }
-        if(_dec->telemetry_mv_bytes<0||
-         _dec->telemetry_mv_bytes>_dec->telemetry_frame_bytes){
-          _dec->telemetry_mv_bytes=0;
-        }
-        if(_dec->telemetry_qi_bytes<0||
-         _dec->telemetry_qi_bytes>_dec->telemetry_frame_bytes){
-          _dec->telemetry_qi_bytes=0;
-        }
-        if(_dec->telemetry_dc_bytes<0||
-         _dec->telemetry_dc_bytes>_dec->telemetry_frame_bytes){
-          _dec->telemetry_dc_bytes=0;
-        }
-        widths[0]=padw*(_dec->telemetry_frame_bytes-_dec->telemetry_coding_bytes)/fullw;
-        widths[1]=padw*(_dec->telemetry_coding_bytes-_dec->telemetry_mode_bytes)/fullw;
-        widths[2]=padw*(_dec->telemetry_mode_bytes-_dec->telemetry_mv_bytes)/fullw;
-        widths[3]=padw*(_dec->telemetry_mv_bytes-_dec->telemetry_qi_bytes)/fullw;
-        widths[4]=padw*(_dec->telemetry_qi_bytes-_dec->telemetry_dc_bytes)/fullw;
-        widths[5]=padw*(_dec->telemetry_dc_bytes)/fullw;
-        for(i=0;i<6;i++)if(widths[i]>w)widths[i]=w;
-        cairo_set_source_rgba(c,.0,.0,.0,.6);
-        cairo_rectangle(c,10,h-33,widths[0]+1,5);
-        cairo_rectangle(c,10,h-29,widths[1]+1,5);
-        cairo_rectangle(c,10,h-25,widths[2]+1,5);
-        cairo_rectangle(c,10,h-21,widths[3]+1,5);
-        cairo_rectangle(c,10,h-17,widths[4]+1,5);
-        cairo_rectangle(c,10,h-13,widths[5]+1,5);
-        cairo_fill(c);
-        cairo_set_source_rgb(c,1,0,0);
-        cairo_rectangle(c,10.5,h-32.5,widths[0],4);
-        cairo_fill(c);
-        cairo_set_source_rgb(c,0,1,0);
-        cairo_rectangle(c,10.5,h-28.5,widths[1],4);
-        cairo_fill(c);
-        cairo_set_source_rgb(c,0,0,1);
-        cairo_rectangle(c,10.5,h-24.5,widths[2],4);
-        cairo_fill(c);
-        cairo_set_source_rgb(c,.6,.4,.0);
-        cairo_rectangle(c,10.5,h-20.5,widths[3],4);
-        cairo_fill(c);
-        cairo_set_source_rgb(c,.3,.3,.3);
-        cairo_rectangle(c,10.5,h-16.5,widths[4],4);
-        cairo_fill(c);
-        cairo_set_source_rgb(c,.5,.5,.8);
-        cairo_rectangle(c,10.5,h-12.5,widths[5],4);
-        cairo_fill(c);
-      }
-      /*Master qi indicator[s]:*/
-      if(_dec->telemetry_qi&0x1){
-        cairo_text_extents_t extents;
-        char                 buffer[10];
-        int                  p;
-        int                  y;
-        p=0;
-        y=h-7.5;
-        if(_dec->state.qis[0]>=10)buffer[p++]=48+_dec->state.qis[0]/10;
-        buffer[p++]=48+_dec->state.qis[0]%10;
-        if(_dec->state.nqis>=2){
-          buffer[p++]=' ';
-          if(_dec->state.qis[1]>=10)buffer[p++]=48+_dec->state.qis[1]/10;
-          buffer[p++]=48+_dec->state.qis[1]%10;
-        }
-        if(_dec->state.nqis==3){
-          buffer[p++]=' ';
-          if(_dec->state.qis[2]>=10)buffer[p++]=48+_dec->state.qis[2]/10;
-          buffer[p++]=48+_dec->state.qis[2]%10;
-        }
-        buffer[p++]='\0';
-        cairo_select_font_face(c,"sans",
-         CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_BOLD);
-        cairo_set_font_size(c,18);
-        cairo_text_extents(c,buffer,&extents);
-        cairo_set_source_rgb(c,1,1,1);
-        cairo_move_to(c,w-extents.x_advance-10,y);
-        cairo_show_text(c,buffer);
-        cairo_set_source_rgb(c,0,0,0);
-        cairo_move_to(c,w-extents.x_advance-10,y);
-        cairo_text_path(c,buffer);
-        cairo_set_line_width(c,.8);
-        cairo_set_line_join(c,CAIRO_LINE_JOIN_ROUND);
-        cairo_stroke(c);
-      }
-      cairo_destroy(c);
-    }
-    /*Out of the Cairo plane into the telemetry YUV buffer.*/
-    _ycbcr[0].data=_dec->telemetry_frame_data;
-    _ycbcr[0].stride=_ycbcr[0].width;
-    _ycbcr[1].data=_ycbcr[0].data+h*_ycbcr[0].stride;
-    _ycbcr[1].stride=_ycbcr[1].width;
-    _ycbcr[2].data=_ycbcr[1].data+(h>>vdec)*_ycbcr[1].stride;
-    _ycbcr[2].stride=_ycbcr[2].width;
-    y_row=_ycbcr[0].data;
-    u_row=_ycbcr[1].data;
-    v_row=_ycbcr[2].data;
-    rgb_row=data;
-    /*This is one of the few places it's worth handling chroma on a
-       case-by-case basis.*/
-    switch(_dec->state.info.pixel_fmt){
-      case TH_PF_420:{
-        for(y=0;y<h;y+=2){
-          unsigned char *y_row2;
-          unsigned char *rgb_row2;
-          y_row2=y_row+_ycbcr[0].stride;
-          rgb_row2=rgb_row+cstride;
-          for(x=0;x<w;x+=2){
-            int y;
-            int u;
-            int v;
-            y=(65481*rgb_row[4*x+2]+128553*rgb_row[4*x+1]
-             +24966*rgb_row[4*x+0]+4207500)/255000;
-            y_row[x]=OC_CLAMP255(y);
-            y=(65481*rgb_row[4*x+6]+128553*rgb_row[4*x+5]
-             +24966*rgb_row[4*x+4]+4207500)/255000;
-            y_row[x+1]=OC_CLAMP255(y);
-            y=(65481*rgb_row2[4*x+2]+128553*rgb_row2[4*x+1]
-             +24966*rgb_row2[4*x+0]+4207500)/255000;
-            y_row2[x]=OC_CLAMP255(y);
-            y=(65481*rgb_row2[4*x+6]+128553*rgb_row2[4*x+5]
-             +24966*rgb_row2[4*x+4]+4207500)/255000;
-            y_row2[x+1]=OC_CLAMP255(y);
-            u=(-8372*(rgb_row[4*x+2]+rgb_row[4*x+6]
-             +rgb_row2[4*x+2]+rgb_row2[4*x+6])
-             -16436*(rgb_row[4*x+1]+rgb_row[4*x+5]
-             +rgb_row2[4*x+1]+rgb_row2[4*x+5])
-             +24808*(rgb_row[4*x+0]+rgb_row[4*x+4]
-             +rgb_row2[4*x+0]+rgb_row2[4*x+4])+29032005)/225930;
-            v=(39256*(rgb_row[4*x+2]+rgb_row[4*x+6]
-             +rgb_row2[4*x+2]+rgb_row2[4*x+6])
-             -32872*(rgb_row[4*x+1]+rgb_row[4*x+5]
-              +rgb_row2[4*x+1]+rgb_row2[4*x+5])
-             -6384*(rgb_row[4*x+0]+rgb_row[4*x+4]
-              +rgb_row2[4*x+0]+rgb_row2[4*x+4])+45940035)/357510;
-            u_row[x>>1]=OC_CLAMP255(u);
-            v_row[x>>1]=OC_CLAMP255(v);
-          }
-          y_row+=_ycbcr[0].stride<<1;
-          u_row+=_ycbcr[1].stride;
-          v_row+=_ycbcr[2].stride;
-          rgb_row+=cstride<<1;
-        }
-      }break;
-      case TH_PF_422:{
-        for(y=0;y<h;y++){
-          for(x=0;x<w;x+=2){
-            int y;
-            int u;
-            int v;
-            y=(65481*rgb_row[4*x+2]+128553*rgb_row[4*x+1]
-             +24966*rgb_row[4*x+0]+4207500)/255000;
-            y_row[x]=OC_CLAMP255(y);
-            y=(65481*rgb_row[4*x+6]+128553*rgb_row[4*x+5]
-             +24966*rgb_row[4*x+4]+4207500)/255000;
-            y_row[x+1]=OC_CLAMP255(y);
-            u=(-16744*(rgb_row[4*x+2]+rgb_row[4*x+6])
-             -32872*(rgb_row[4*x+1]+rgb_row[4*x+5])
-             +49616*(rgb_row[4*x+0]+rgb_row[4*x+4])+29032005)/225930;
-            v=(78512*(rgb_row[4*x+2]+rgb_row[4*x+6])
-             -65744*(rgb_row[4*x+1]+rgb_row[4*x+5])
-             -12768*(rgb_row[4*x+0]+rgb_row[4*x+4])+45940035)/357510;
-            u_row[x>>1]=OC_CLAMP255(u);
-            v_row[x>>1]=OC_CLAMP255(v);
-          }
-          y_row+=_ycbcr[0].stride;
-          u_row+=_ycbcr[1].stride;
-          v_row+=_ycbcr[2].stride;
-          rgb_row+=cstride;
-        }
-      }break;
-      /*case TH_PF_444:*/
-      default:{
-        for(y=0;y<h;y++){
-          for(x=0;x<w;x++){
-            int y;
-            int u;
-            int v;
-            y=(65481*rgb_row[4*x+2]+128553*rgb_row[4*x+1]
-             +24966*rgb_row[4*x+0]+4207500)/255000;
-            u=(-33488*rgb_row[4*x+2]-65744*rgb_row[4*x+1]
-             +99232*rgb_row[4*x+0]+29032005)/225930;
-            v=(157024*rgb_row[4*x+2]-131488*rgb_row[4*x+1]
-             -25536*rgb_row[4*x+0]+45940035)/357510;
-            y_row[x]=OC_CLAMP255(y);
-            u_row[x]=OC_CLAMP255(u);
-            v_row[x]=OC_CLAMP255(v);
-          }
-          y_row+=_ycbcr[0].stride;
-          u_row+=_ycbcr[1].stride;
-          v_row+=_ycbcr[2].stride;
-          rgb_row+=cstride;
-        }
-      }break;
-    }
-    /*Finished.
-      Destroy the surface.*/
-    cairo_surface_destroy(cs);
-  }
-#endif
   return 0;
 }

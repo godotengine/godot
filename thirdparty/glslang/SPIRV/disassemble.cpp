@@ -43,6 +43,7 @@
 #include <stack>
 #include <sstream>
 #include <cstring>
+#include <utility>
 
 #include "disassemble.h"
 #include "doc.h"
@@ -53,6 +54,9 @@ namespace spv {
         #include "GLSL.std.450.h"
         #include "GLSL.ext.AMD.h"
         #include "GLSL.ext.NV.h"
+        #include "GLSL.ext.ARM.h"
+        #include "NonSemanticShaderDebugInfo100.h"
+        #include "GLSL.ext.QCOM.h"
     }
 }
 const char* GlslStd450DebugNames[spv::GLSLstd450Count];
@@ -61,6 +65,7 @@ namespace spv {
 
 static const char* GLSLextAMDGetDebugNames(const char*, unsigned);
 static const char* GLSLextNVGetDebugNames(const char*, unsigned);
+static const char* NonSemanticShaderDebugInfo100GetDebugNames(unsigned);
 
 static void Kill(std::ostream& out, const char* message)
 {
@@ -75,6 +80,7 @@ enum ExtInstSet {
     GLSLextNVInst,
     OpenCLExtInst,
     NonSemanticDebugPrintfExtInst,
+    NonSemanticShaderDebugInfo100
 };
 
 // Container class for a single instance of a SPIR-V stream, with methods for disassembly.
@@ -100,6 +106,7 @@ protected:
     void outputMask(OperandClass operandClass, unsigned mask);
     void disassembleImmediates(int numOperands);
     void disassembleIds(int numOperands);
+    std::pair<int, std::string> decodeString();
     int disassembleString();
     void disassembleInstruction(Id resultId, Id typeId, Op opCode, int numOperands);
 
@@ -290,31 +297,44 @@ void SpirvStream::disassembleIds(int numOperands)
     }
 }
 
-// return the number of operands consumed by the string
-int SpirvStream::disassembleString()
+// decode string from words at current position (non-consuming)
+std::pair<int, std::string> SpirvStream::decodeString()
 {
-    int startWord = word;
-
-    out << " \"";
-
-    const char* wordString;
+    std::string res;
+    int wordPos = word;
+    char c;
     bool done = false;
+
     do {
-        unsigned int content = stream[word];
-        wordString = (const char*)&content;
+        unsigned int content = stream[wordPos];
         for (int charCount = 0; charCount < 4; ++charCount) {
-            if (*wordString == 0) {
+            c = content & 0xff;
+            content >>= 8;
+            if (c == '\0') {
                 done = true;
                 break;
             }
-            out << *(wordString++);
+            res += c;
         }
-        ++word;
-    } while (! done);
+        ++wordPos;
+    } while(! done);
 
+    return std::make_pair(wordPos - word, res);
+}
+
+// return the number of operands consumed by the string
+int SpirvStream::disassembleString()
+{
+    out << " \"";
+
+    std::pair<int, std::string> decoderes = decodeString();
+
+    out << decoderes.second;
     out << "\"";
 
-    return word - startWord;
+    word += decoderes.first;
+
+    return decoderes.first;
 }
 
 void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, int numOperands)
@@ -331,7 +351,7 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
             nextNestedControl = 0;
         }
     } else if (opCode == OpExtInstImport) {
-        idDescriptor[resultId] = (const char*)(&stream[word]);
+        idDescriptor[resultId] = decodeString().second;
     }
     else {
         if (resultId != 0 && idDescriptor[resultId].size() == 0) {
@@ -428,7 +448,7 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
             --numOperands;
             // Get names for printing "(XXX)" for readability, *after* this id
             if (opCode == OpName)
-                idDescriptor[stream[word - 1]] = (const char*)(&stream[word]);
+                idDescriptor[stream[word - 1]] = decodeString().second;
             break;
         case OperandVariableIds:
             disassembleIds(numOperands);
@@ -486,6 +506,8 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
                     extInstSet = OpenCLExtInst;
                 } else if (strcmp("NonSemantic.DebugPrintf", name) == 0) {
                     extInstSet = NonSemanticDebugPrintfExtInst;
+                } else if (strcmp("NonSemantic.Shader.DebugInfo.100", name) == 0) {
+                    extInstSet = NonSemanticShaderDebugInfo100;
                 } else if (strcmp(spv::E_SPV_AMD_shader_ballot, name) == 0 ||
                            strcmp(spv::E_SPV_AMD_shader_trinary_minmax, name) == 0 ||
                            strcmp(spv::E_SPV_AMD_shader_explicit_vertex_parameter, name) == 0 ||
@@ -494,7 +516,7 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
                 } else if (strcmp(spv::E_SPV_NV_sample_mask_override_coverage, name) == 0 ||
                           strcmp(spv::E_SPV_NV_geometry_shader_passthrough, name) == 0 ||
                           strcmp(spv::E_SPV_NV_viewport_array2, name) == 0 ||
-                          strcmp(spv::E_SPV_NVX_multiview_per_view_attributes, name) == 0 || 
+                          strcmp(spv::E_SPV_NVX_multiview_per_view_attributes, name) == 0 ||
                           strcmp(spv::E_SPV_NV_fragment_shader_barycentric, name) == 0 ||
                           strcmp(spv::E_SPV_NV_mesh_shader, name) == 0) {
                     extInstSet = GLSLextNVInst;
@@ -511,6 +533,8 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
                     out << "(" << GLSLextNVGetDebugNames(name, entrypoint) << ")";
                 } else if (extInstSet == NonSemanticDebugPrintfExtInst) {
                     out << "(DebugPrintf)";
+                } else if (extInstSet == NonSemanticShaderDebugInfo100) {
+                    out << "(" << NonSemanticShaderDebugInfo100GetDebugNames(entrypoint) << ")";
                 }
             }
             break;
@@ -731,6 +755,59 @@ static const char* GLSLextNVGetDebugNames(const char* name, unsigned entrypoint)
         default:                                    return "Bad";
         }
     }
+    return "Bad";
+}
+
+static const char* NonSemanticShaderDebugInfo100GetDebugNames(unsigned entrypoint)
+{
+    switch (entrypoint) {
+        case NonSemanticShaderDebugInfo100DebugInfoNone:                        return "DebugInfoNone";
+        case NonSemanticShaderDebugInfo100DebugCompilationUnit:                 return "DebugCompilationUnit";
+        case NonSemanticShaderDebugInfo100DebugTypeBasic:                       return "DebugTypeBasic";
+        case NonSemanticShaderDebugInfo100DebugTypePointer:                     return "DebugTypePointer";
+        case NonSemanticShaderDebugInfo100DebugTypeQualifier:                   return "DebugTypeQualifier";
+        case NonSemanticShaderDebugInfo100DebugTypeArray:                       return "DebugTypeArray";
+        case NonSemanticShaderDebugInfo100DebugTypeVector:                      return "DebugTypeVector";
+        case NonSemanticShaderDebugInfo100DebugTypedef:                         return "DebugTypedef";
+        case NonSemanticShaderDebugInfo100DebugTypeFunction:                    return "DebugTypeFunction";
+        case NonSemanticShaderDebugInfo100DebugTypeEnum:                        return "DebugTypeEnum";
+        case NonSemanticShaderDebugInfo100DebugTypeComposite:                   return "DebugTypeComposite";
+        case NonSemanticShaderDebugInfo100DebugTypeMember:                      return "DebugTypeMember";
+        case NonSemanticShaderDebugInfo100DebugTypeInheritance:                 return "DebugTypeInheritance";
+        case NonSemanticShaderDebugInfo100DebugTypePtrToMember:                 return "DebugTypePtrToMember";
+        case NonSemanticShaderDebugInfo100DebugTypeTemplate:                    return "DebugTypeTemplate";
+        case NonSemanticShaderDebugInfo100DebugTypeTemplateParameter:           return "DebugTypeTemplateParameter";
+        case NonSemanticShaderDebugInfo100DebugTypeTemplateTemplateParameter:   return "DebugTypeTemplateTemplateParameter";
+        case NonSemanticShaderDebugInfo100DebugTypeTemplateParameterPack:       return "DebugTypeTemplateParameterPack";
+        case NonSemanticShaderDebugInfo100DebugGlobalVariable:                  return "DebugGlobalVariable";
+        case NonSemanticShaderDebugInfo100DebugFunctionDeclaration:             return "DebugFunctionDeclaration";
+        case NonSemanticShaderDebugInfo100DebugFunction:                        return "DebugFunction";
+        case NonSemanticShaderDebugInfo100DebugLexicalBlock:                    return "DebugLexicalBlock";
+        case NonSemanticShaderDebugInfo100DebugLexicalBlockDiscriminator:       return "DebugLexicalBlockDiscriminator";
+        case NonSemanticShaderDebugInfo100DebugScope:                           return "DebugScope";
+        case NonSemanticShaderDebugInfo100DebugNoScope:                         return "DebugNoScope";
+        case NonSemanticShaderDebugInfo100DebugInlinedAt:                       return "DebugInlinedAt";
+        case NonSemanticShaderDebugInfo100DebugLocalVariable:                   return "DebugLocalVariable";
+        case NonSemanticShaderDebugInfo100DebugInlinedVariable:                 return "DebugInlinedVariable";
+        case NonSemanticShaderDebugInfo100DebugDeclare:                         return "DebugDeclare";
+        case NonSemanticShaderDebugInfo100DebugValue:                           return "DebugValue";
+        case NonSemanticShaderDebugInfo100DebugOperation:                       return "DebugOperation";
+        case NonSemanticShaderDebugInfo100DebugExpression:                      return "DebugExpression";
+        case NonSemanticShaderDebugInfo100DebugMacroDef:                        return "DebugMacroDef";
+        case NonSemanticShaderDebugInfo100DebugMacroUndef:                      return "DebugMacroUndef";
+        case NonSemanticShaderDebugInfo100DebugImportedEntity:                  return "DebugImportedEntity";
+        case NonSemanticShaderDebugInfo100DebugSource:                          return "DebugSource";
+        case NonSemanticShaderDebugInfo100DebugFunctionDefinition:              return "DebugFunctionDefinition";
+        case NonSemanticShaderDebugInfo100DebugSourceContinued:                 return "DebugSourceContinued";
+        case NonSemanticShaderDebugInfo100DebugLine:                            return "DebugLine";
+        case NonSemanticShaderDebugInfo100DebugNoLine:                          return "DebugNoLine";
+        case NonSemanticShaderDebugInfo100DebugBuildIdentifier:                 return "DebugBuildIdentifier";
+        case NonSemanticShaderDebugInfo100DebugStoragePath:                     return "DebugStoragePath";
+        case NonSemanticShaderDebugInfo100DebugEntryPoint:                      return "DebugEntryPoint";
+        case NonSemanticShaderDebugInfo100DebugTypeMatrix:                      return "DebugTypeMatrix";
+        default:                                                                return "Bad";
+    }
+
     return "Bad";
 }
 

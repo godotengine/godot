@@ -7,38 +7,46 @@ env_text_server_adv = env_modules.Clone()
 
 
 def make_icu_data(target, source, env):
-    import os
-
     dst = target[0].srcnode().abspath
 
-    g = open(dst, "w", encoding="utf-8")
+    with open(dst, "w", encoding="utf-8", newline="\n") as g:
+        g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+        g.write("/* (C) 2016 and later: Unicode, Inc. and others. */\n")
+        g.write("/* License & terms of use: https://www.unicode.org/copyright.html */\n")
+        g.write("#ifndef _ICU_DATA_H\n")
+        g.write("#define _ICU_DATA_H\n")
+        g.write('#include "unicode/utypes.h"\n')
+        g.write('#include "unicode/udata.h"\n')
+        g.write('#include "unicode/uversion.h"\n')
 
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("/* (C) 2016 and later: Unicode, Inc. and others. */\n")
-    g.write("/* License & terms of use: http://www.unicode.org/copyright.html */\n")
-    g.write("#ifndef _ICU_DATA_H\n")
-    g.write("#define _ICU_DATA_H\n")
-    g.write('#include "unicode/utypes.h"\n')
-    g.write('#include "unicode/udata.h"\n')
-    g.write('#include "unicode/uversion.h"\n')
+        with open(source[0].srcnode().abspath, "rb") as f:
+            buf = f.read()
 
-    f = open(source[0].srcnode().abspath, "rb")
-    buf = f.read()
-    import os.path
+        g.write('extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = ' + str(len(buf)) + ";\n")
+        g.write('extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {\n')
+        for i in range(len(buf)):
+            g.write("\t" + str(buf[i]) + ",\n")
 
-    g.write('extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = ' + str(len(buf)) + ";\n")
-    g.write('extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {\n')
-    for i in range(len(buf)):
-        g.write("\t" + str(buf[i]) + ",\n")
-
-    g.write("};\n")
-    g.write("#endif")
+        g.write("};\n")
+        g.write("#endif")
 
 
 # Thirdparty source files
 
 thirdparty_obj = []
-freetype_enabled = env.module_check_dependencies("text_server_adv", ["freetype"])
+freetype_enabled = "freetype" in env.module_list
+msdfgen_enabled = "msdfgen" in env.module_list
+
+if "svg" in env.module_list:
+    env_text_server_adv.Prepend(
+        CPPPATH=[
+            "#thirdparty/thorvg/inc",
+            "#thirdparty/thorvg/src/common",
+            "#thirdparty/thorvg/src/renderer",
+        ]
+    )
+    # Enable ThorVG static object linking.
+    env_text_server_adv.Append(CPPDEFINES=["TVG_STATIC"])
 
 if env["builtin_harfbuzz"]:
     env_harfbuzz = env_modules.Clone()
@@ -50,17 +58,21 @@ if env["builtin_harfbuzz"]:
         "src/hb-aat-map.cc",
         "src/hb-blob.cc",
         "src/hb-buffer-serialize.cc",
+        "src/hb-buffer-verify.cc",
         "src/hb-buffer.cc",
+        # "src/hb-cairo-utils.cc",
+        # "src/hb-cairo.cc",
         "src/hb-common.cc",
-        #'src/hb-coretext.cc',
-        #'src/hb-directwrite.cc',
+        # "src/hb-coretext.cc",
+        # "src/hb-directwrite.cc",
         "src/hb-draw.cc",
+        "src/hb-face-builder.cc",
         "src/hb-face.cc",
         "src/hb-fallback-shape.cc",
         "src/hb-font.cc",
-        #'src/hb-gdi.cc',
-        #'src/hb-glib.cc',
-        #'src/hb-gobject-structs.cc',
+        # "src/hb-gdi.cc",
+        # "src/hb-glib.cc",
+        # "src/hb-gobject-structs.cc",
         "src/hb-icu.cc",
         "src/hb-map.cc",
         "src/hb-number.cc",
@@ -75,23 +87,26 @@ if env["builtin_harfbuzz"]:
         "src/hb-ot-meta.cc",
         "src/hb-ot-metrics.cc",
         "src/hb-ot-name.cc",
-        "src/hb-ot-shape-complex-arabic.cc",
-        "src/hb-ot-shape-complex-default.cc",
-        "src/hb-ot-shape-complex-hangul.cc",
-        "src/hb-ot-shape-complex-hebrew.cc",
-        "src/hb-ot-shape-complex-indic-table.cc",
-        "src/hb-ot-shape-complex-indic.cc",
-        "src/hb-ot-shape-complex-khmer.cc",
-        "src/hb-ot-shape-complex-myanmar.cc",
-        "src/hb-ot-shape-complex-syllabic.cc",
-        "src/hb-ot-shape-complex-thai.cc",
-        "src/hb-ot-shape-complex-use.cc",
-        "src/hb-ot-shape-complex-vowel-constraints.cc",
+        "src/hb-ot-shaper-arabic.cc",
+        "src/hb-ot-shaper-default.cc",
+        "src/hb-ot-shaper-hangul.cc",
+        "src/hb-ot-shaper-hebrew.cc",
+        "src/hb-ot-shaper-indic-table.cc",
+        "src/hb-ot-shaper-indic.cc",
+        "src/hb-ot-shaper-khmer.cc",
+        "src/hb-ot-shaper-myanmar.cc",
+        "src/hb-ot-shaper-syllabic.cc",
+        "src/hb-ot-shaper-thai.cc",
+        "src/hb-ot-shaper-use.cc",
+        "src/hb-ot-shaper-vowel-constraints.cc",
         "src/hb-ot-shape-fallback.cc",
         "src/hb-ot-shape-normalize.cc",
         "src/hb-ot-shape.cc",
         "src/hb-ot-tag.cc",
         "src/hb-ot-var.cc",
+        "src/hb-outline.cc",
+        "src/hb-paint-extents.cc",
+        "src/hb-paint.cc",
         "src/hb-set.cc",
         "src/hb-shape-plan.cc",
         "src/hb-shape.cc",
@@ -102,59 +117,55 @@ if env["builtin_harfbuzz"]:
         "src/hb-subset-cff1.cc",
         "src/hb-subset-cff2.cc",
         "src/hb-subset-input.cc",
+        "src/hb-subset-instancer-iup.cc",
+        "src/hb-subset-instancer-solver.cc",
         "src/hb-subset-plan.cc",
+        "src/hb-subset-repacker.cc",
         "src/hb-subset.cc",
         "src/hb-ucd.cc",
         "src/hb-unicode.cc",
-        #'src/hb-uniscribe.cc'
+        # "src/hb-uniscribe.cc",
     ]
 
     if freetype_enabled:
         thirdparty_sources += [
             "src/hb-ft.cc",
-            "src/hb-graphite2.cc",
         ]
+        if env["graphite"]:
+            thirdparty_sources += [
+                "src/hb-graphite2.cc",
+            ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_harfbuzz.Append(
-        CPPPATH=[
-            "#thirdparty/harfbuzz/src",
-            "#thirdparty/icu4c/common/",
-        ]
-    )
+    env_harfbuzz.Prepend(CPPPATH=["#thirdparty/harfbuzz/src"])
 
-    if freetype_enabled:
-        env_harfbuzz.Append(
-            CPPPATH=[
-                "#thirdparty/freetype/include",
-                "#thirdparty/graphite/include",
-            ]
-        )
-
-    if env["platform"] == "android" or env["platform"] == "linuxbsd":
-        env_harfbuzz.Append(CCFLAGS=["-DHAVE_PTHREAD"])
-
-    if env["platform"] == "javascript":
-        if env["threads_enabled"]:
-            env_harfbuzz.Append(CCFLAGS=["-DHAVE_PTHREAD"])
-        else:
-            env_harfbuzz.Append(CCFLAGS=["-DHB_NO_MT"])
-
-    env_harfbuzz.Append(
-        CCFLAGS=[
-            "-DHAVE_ICU_BUILTIN",
-            "-DHAVE_ICU",
-        ]
-    )
+    env_harfbuzz.Append(CCFLAGS=["-DHAVE_ICU"])
+    if env["builtin_icu4c"]:
+        env_harfbuzz.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
+        env_harfbuzz.Append(CCFLAGS=["-DU_HAVE_LIB_SUFFIX=1", "-DU_LIB_SUFFIX_C_NAME=_godot", "-DHAVE_ICU_BUILTIN"])
 
     if freetype_enabled:
         env_harfbuzz.Append(
             CCFLAGS=[
                 "-DHAVE_FREETYPE",
-                "-DHAVE_GRAPHITE2",
-                "-DGRAPHITE2_STATIC",
             ]
         )
+        if env["graphite"]:
+            env_harfbuzz.Append(
+                CCFLAGS=[
+                    "-DHAVE_GRAPHITE2",
+                ]
+            )
+        if env["builtin_freetype"]:
+            env_harfbuzz.Prepend(CPPPATH=["#thirdparty/freetype/include"])
+        if env["builtin_graphite"] and env["graphite"]:
+            env_harfbuzz.Prepend(CPPPATH=["#thirdparty/graphite/include"])
+            env_harfbuzz.Append(CCFLAGS=["-DGRAPHITE2_STATIC"])
+
+    if env["platform"] in ["android", "linuxbsd", "web"]:
+        env_harfbuzz.Append(CCFLAGS=["-DHAVE_PTHREAD"])
+
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/harfbuzz/src"])
 
     lib = env_harfbuzz.add_library("harfbuzz_builtin", thirdparty_sources)
     thirdparty_obj += lib
@@ -173,7 +184,7 @@ if env["builtin_harfbuzz"]:
         env.Append(LIBS=[lib])
 
 
-if env["builtin_graphite"] and freetype_enabled:
+if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
     env_graphite = env_modules.Clone()
     env_graphite.disable_warnings()
 
@@ -217,7 +228,7 @@ if env["builtin_graphite"] and freetype_enabled:
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_graphite.Append(CPPPATH=["#thirdparty/graphite/src", "#thirdparty/graphite/include"])
+    env_graphite.Prepend(CPPPATH=["#thirdparty/graphite/src", "#thirdparty/graphite/include"])
     env_graphite.Append(
         CCFLAGS=[
             "-DGRAPHITE2_STATIC",
@@ -243,7 +254,7 @@ if env["builtin_graphite"] and freetype_enabled:
         env.Append(LIBS=[lib])
 
 
-if env["builtin_icu"]:
+if env["builtin_icu4c"]:
     env_icu = env_modules.Clone()
     env_icu.disable_warnings()
 
@@ -270,6 +281,7 @@ if env["builtin_icu"]:
         "common/dictionarydata.cpp",
         "common/dtintrv.cpp",
         "common/edits.cpp",
+        "common/emojiprops.cpp",
         "common/errorcode.cpp",
         "common/filteredbrk.cpp",
         "common/filterednormalizer2.cpp",
@@ -291,7 +303,9 @@ if env["builtin_icu"]:
         "common/locresdata.cpp",
         "common/locutil.cpp",
         "common/lsr.cpp",
+        "common/lstmbe.cpp",
         "common/messagepattern.cpp",
+        "common/mlbe.cpp",
         "common/normalizer2.cpp",
         "common/normalizer2impl.cpp",
         "common/normlzr.cpp",
@@ -387,6 +401,8 @@ if env["builtin_icu"]:
         "common/uloc.cpp",
         "common/uloc_keytype.cpp",
         "common/uloc_tag.cpp",
+        "common/ulocale.cpp",
+        "common/ulocbuilder.cpp",
         "common/umapfile.cpp",
         "common/umath.cpp",
         "common/umutablecptrie.cpp",
@@ -445,18 +461,23 @@ if env["builtin_icu"]:
         "common/uvectr32.cpp",
         "common/uvectr64.cpp",
         "common/wintz.cpp",
+        "i18n/scriptset.cpp",
+        "i18n/ucln_in.cpp",
+        "i18n/uspoof.cpp",
+        "i18n/uspoof_impl.cpp",
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    icu_data_name = "icudt69l.dat"
+    icu_data_name = "icudt75l.dat"
 
-    if env_icu["tools"]:
+    if env.editor_build:
         env_icu.Depends("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name)
         env_icu.Command("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name, make_icu_data)
+        env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/"])
     else:
         thirdparty_sources += ["icu_data/icudata_stub.cpp"]
 
-    env_icu.Append(CPPPATH=["#thirdparty/icu4c/common/"])
+    env_icu.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
     env_icu.Append(
         CXXFLAGS=[
             "-DU_STATIC_IMPLEMENTATION",
@@ -468,15 +489,25 @@ if env["builtin_icu"]:
             "-DUCONFIG_NO_IDNA",
             "-DUCONFIG_NO_FILE_IO",
             "-DUCONFIG_NO_TRANSLITERATION",
+            "-DUCONFIG_NO_REGULAR_EXPRESSIONS",
             "-DPKGDATA_MODE=static",
+            "-DU_ENABLE_DYLOAD=0",
+            "-DU_HAVE_LIB_SUFFIX=1",
+            "-DU_LIB_SUFFIX_C_NAME=_godot",
             "-DICU_DATA_NAME=" + icu_data_name,
         ]
     )
     env_text_server_adv.Append(
         CXXFLAGS=[
+            "-DU_HAVE_LIB_SUFFIX=1",
+            "-DU_LIB_SUFFIX_C_NAME=_godot",
             "-DICU_DATA_NAME=" + icu_data_name,
         ]
     )
+    if env.editor_build:
+        env_text_server_adv.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
+
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
 
     lib = env_icu.add_library("icu_builtin", thirdparty_sources)
     thirdparty_obj += lib
@@ -499,23 +530,20 @@ if env["builtin_icu"]:
 
 module_obj = []
 
-if env_text_server_adv["tools"]:
-    env_text_server_adv.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
+if env["builtin_msdfgen"] and msdfgen_enabled:
+    # Treat msdfgen headers as system headers to avoid raising warnings. Not supported on MSVC.
+    env_text_server_adv.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
+    if not env.msvc:
+        env_text_server_adv.Append(CPPFLAGS=["-isystem", Dir("#thirdparty/msdfgen").path])
+    else:
+        env_text_server_adv.Prepend(CPPPATH=["#thirdparty/msdfgen"])
 
-env_text_server_adv.Append(
-    CPPPATH=[
-        "#thirdparty/harfbuzz/src",
-        "#thirdparty/icu4c/common/",
-    ]
-)
+if env["builtin_freetype"] and freetype_enabled:
+    env_text_server_adv.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/freetype/include"])
 
-if freetype_enabled:
-    env_text_server_adv.Append(
-        CPPPATH=[
-            "#thirdparty/freetype/include",
-            "#thirdparty/graphite/include",
-        ]
-    )
+if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/graphite/include"])
 
 env_text_server_adv.add_source_files(module_obj, "*.cpp")
 env.modules_sources += module_obj

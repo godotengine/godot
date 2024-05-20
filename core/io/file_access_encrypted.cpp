@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  file_access_encrypted.cpp                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  file_access_encrypted.cpp                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "file_access_encrypted.h"
 
@@ -36,7 +36,7 @@
 
 #include <stdio.h>
 
-Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic) {
+Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic) {
 	ERR_FAIL_COND_V_MSG(file != nullptr, ERR_ALREADY_IN_USE, "Can't open file while another file from path '" + file->get_path_absolute() + "' is open.");
 	ERR_FAIL_COND_V(p_key.size() != 32, ERR_INVALID_PARAMETER);
 
@@ -99,46 +99,27 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 	return OK;
 }
 
-Error FileAccessEncrypted::open_and_parse_password(FileAccess *p_base, const String &p_key, Mode p_mode) {
+Error FileAccessEncrypted::open_and_parse_password(Ref<FileAccess> p_base, const String &p_key, Mode p_mode) {
 	String cs = p_key.md5_text();
 	ERR_FAIL_COND_V(cs.length() != 32, ERR_INVALID_PARAMETER);
-	Vector<uint8_t> key;
-	key.resize(32);
+	Vector<uint8_t> key_md5;
+	key_md5.resize(32);
 	for (int i = 0; i < 32; i++) {
-		key.write[i] = cs[i];
+		key_md5.write[i] = cs[i];
 	}
 
-	return open_and_parse(p_base, key, p_mode);
+	return open_and_parse(p_base, key_md5, p_mode);
 }
 
-Error FileAccessEncrypted::_open(const String &p_path, int p_mode_flags) {
+Error FileAccessEncrypted::open_internal(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessEncrypted::close() {
-	if (!file) {
+void FileAccessEncrypted::_close() {
+	if (file.is_null()) {
 		return;
 	}
 
-	_release();
-
-	file->close();
-	memdelete(file);
-
-	file = nullptr;
-}
-
-void FileAccessEncrypted::release() {
-	if (!file) {
-		return;
-	}
-
-	_release();
-
-	file = nullptr;
-}
-
-void FileAccessEncrypted::_release() {
 	if (writing) {
 		Vector<uint8_t> compressed;
 		uint64_t len = data.size();
@@ -176,6 +157,8 @@ void FileAccessEncrypted::_release() {
 		file->store_buffer(compressed.ptr(), compressed.size());
 		data.clear();
 	}
+
+	file.unref();
 }
 
 bool FileAccessEncrypted::is_open() const {
@@ -183,7 +166,7 @@ bool FileAccessEncrypted::is_open() const {
 }
 
 String FileAccessEncrypted::get_path() const {
-	if (file) {
+	if (file.is_valid()) {
 		return file->get_path();
 	} else {
 		return "";
@@ -191,7 +174,7 @@ String FileAccessEncrypted::get_path() const {
 }
 
 String FileAccessEncrypted::get_path_absolute() const {
-	if (file) {
+	if (file.is_valid()) {
 		return file->get_path_absolute();
 	} else {
 		return "";
@@ -291,11 +274,10 @@ void FileAccessEncrypted::store_8(uint8_t p_dest) {
 }
 
 bool FileAccessEncrypted::file_exists(const String &p_name) {
-	FileAccess *fa = FileAccess::open(p_name, FileAccess::READ);
-	if (!fa) {
+	Ref<FileAccess> fa = FileAccess::open(p_name, FileAccess::READ);
+	if (fa.is_null()) {
 		return false;
 	}
-	memdelete(fa);
 	return true;
 }
 
@@ -303,17 +285,52 @@ uint64_t FileAccessEncrypted::_get_modified_time(const String &p_file) {
 	return 0;
 }
 
-uint32_t FileAccessEncrypted::_get_unix_permissions(const String &p_file) {
+BitField<FileAccess::UnixPermissionFlags> FileAccessEncrypted::_get_unix_permissions(const String &p_file) {
+	if (file.is_valid()) {
+		return file->_get_unix_permissions(p_file);
+	}
 	return 0;
 }
 
-Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
-	ERR_PRINT("Setting UNIX permissions on encrypted files is not implemented yet.");
-	return ERR_UNAVAILABLE;
+Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) {
+	if (file.is_valid()) {
+		return file->_set_unix_permissions(p_file, p_permissions);
+	}
+	return FAILED;
+}
+
+bool FileAccessEncrypted::_get_hidden_attribute(const String &p_file) {
+	if (file.is_valid()) {
+		return file->_get_hidden_attribute(p_file);
+	}
+	return false;
+}
+
+Error FileAccessEncrypted::_set_hidden_attribute(const String &p_file, bool p_hidden) {
+	if (file.is_valid()) {
+		return file->_set_hidden_attribute(p_file, p_hidden);
+	}
+	return FAILED;
+}
+
+bool FileAccessEncrypted::_get_read_only_attribute(const String &p_file) {
+	if (file.is_valid()) {
+		return file->_get_read_only_attribute(p_file);
+	}
+	return false;
+}
+
+Error FileAccessEncrypted::_set_read_only_attribute(const String &p_file, bool p_ro) {
+	if (file.is_valid()) {
+		return file->_set_read_only_attribute(p_file, p_ro);
+	}
+	return FAILED;
+}
+
+void FileAccessEncrypted::close() {
+	_close();
 }
 
 FileAccessEncrypted::~FileAccessEncrypted() {
-	if (file) {
-		close();
-	}
+	_close();
 }

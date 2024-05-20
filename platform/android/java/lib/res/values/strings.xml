@@ -12,6 +12,9 @@
     <string name="text_button_resume">Resume Download</string>
     <string name="text_button_cancel">Cancel</string>
     <string name="text_button_cancel_verify">Cancel Verification</string>
+    <string name="text_error_title">Error!</string>
+    <string name="error_engine_setup_message">Unable to setup the Godot Engine! Aborting…</string>
+    <string name="error_missing_vulkan_requirements_message">Warning - this device does not meet the requirements for Vulkan support</string>
 
     <!-- APK Expansion Strings -->
 
@@ -46,7 +49,7 @@
     <string name="state_failed_unlicensed">Download failed because you may not have purchased this app</string>
     <string name="state_failed_fetching_url">Download failed because the resources could not be found</string>
     <string name="state_failed_sdcard_full">Download failed because the external storage is full</string>
-    <string name="state_failed_cancelled">Download cancelled</string>
+    <string name="state_failed_cancelled">Download canceled</string>
     <string name="state_failed">Download failed</string>
 
     <string name="kilobytes_per_second">%1$s KB/s</string>

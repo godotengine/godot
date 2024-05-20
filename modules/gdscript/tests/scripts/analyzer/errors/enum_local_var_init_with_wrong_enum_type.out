@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot assign a value of type "enum_local_var_init_with_wrong_enum_type.gd.MyOtherEnum" as "enum_local_var_init_with_wrong_enum_type.gd.MyEnum".

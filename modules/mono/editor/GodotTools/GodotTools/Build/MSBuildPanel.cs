@@ -1,181 +1,308 @@
 using System;
+using System.IO;
 using Godot;
 using GodotTools.Internals;
-using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 
 namespace GodotTools.Build
 {
-    public class MSBuildPanel : VBoxContainer
+    public partial class MSBuildPanel : MarginContainer, ISerializationListener
     {
-        public BuildOutputView BuildOutputView { get; private set; }
+        [Signal]
+        public delegate void BuildStateChangedEventHandler();
 
-        private Button errorsBtn;
-        private Button warningsBtn;
-        private Button viewLogBtn;
+#nullable disable
+        private MenuButton _buildMenuButton;
+        private Button _openLogsFolderButton;
 
-        private void WarningsToggled(bool pressed)
+        private BuildProblemsView _problemsView;
+        private BuildOutputView _outputView;
+#nullable enable
+
+        public BuildInfo? LastBuildInfo { get; private set; }
+        public bool IsBuildingOngoing { get; private set; }
+        public BuildResult? BuildResult { get; private set; }
+
+        private readonly object _pendingBuildLogTextLock = new object();
+        private string _pendingBuildLogText = string.Empty;
+
+        public Texture2D? GetBuildStateIcon()
         {
-            BuildOutputView.WarningsVisible = pressed;
-            BuildOutputView.UpdateIssuesList();
+            if (IsBuildingOngoing)
+                return GetThemeIcon("Stop", "EditorIcons");
+
+            if (_problemsView.WarningCount > 0 && _problemsView.ErrorCount > 0)
+                return GetThemeIcon("ErrorWarning", "EditorIcons");
+
+            if (_problemsView.WarningCount > 0)
+                return GetThemeIcon("Warning", "EditorIcons");
+
+            if (_problemsView.ErrorCount > 0)
+                return GetThemeIcon("Error", "EditorIcons");
+
+            return null;
         }
 
-        private void ErrorsToggled(bool pressed)
+        private enum BuildMenuOptions
         {
-            BuildOutputView.ErrorsVisible = pressed;
-            BuildOutputView.UpdateIssuesList();
+            BuildProject,
+            RebuildProject,
+            CleanProject,
         }
 
-        [UsedImplicitly]
-        public void BuildSolution()
-        {
-            if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
-                return; // No solution to build
-
-            try
-            {
-                // Make sure our packages are added to the fallback folder
-                NuGetUtils.AddBundledPackagesToFallbackFolder(NuGetUtils.GodotFallbackFolderPath);
-            }
-            catch (Exception e)
-            {
-                GD.PushError("Failed to setup Godot NuGet Offline Packages: " + e.Message);
-            }
-
-            if (!BuildManager.BuildProjectBlocking("Debug"))
-                return; // Build failed
-
-            // Notify running game for hot-reload
-            Internal.EditorDebuggerNodeReloadScripts();
-
-            // Hot-reload in the editor
-            GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();
-
-            if (Internal.IsAssembliesReloadingNeeded())
-                Internal.ReloadAssemblies(softReload: false);
-        }
-
-        [UsedImplicitly]
-        private void RebuildSolution()
-        {
-            if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
-                return; // No solution to build
-
-            try
-            {
-                // Make sure our packages are added to the fallback folder
-                NuGetUtils.AddBundledPackagesToFallbackFolder(NuGetUtils.GodotFallbackFolderPath);
-            }
-            catch (Exception e)
-            {
-                GD.PushError("Failed to setup Godot NuGet Offline Packages: " + e.Message);
-            }
-
-            if (!BuildManager.BuildProjectBlocking("Debug", targets: new[] {"Rebuild"}))
-                return; // Build failed
-
-            // Notify running game for hot-reload
-            Internal.EditorDebuggerNodeReloadScripts();
-
-            // Hot-reload in the editor
-            GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();
-
-            if (Internal.IsAssembliesReloadingNeeded())
-                Internal.ReloadAssemblies(softReload: false);
-        }
-
-        [UsedImplicitly]
-        private void CleanSolution()
-        {
-            if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
-                return; // No solution to build
-
-            BuildManager.BuildProjectBlocking("Debug", targets: new[] {"Clean"});
-        }
-
-        private void ViewLogToggled(bool pressed) => BuildOutputView.LogVisible = pressed;
-
-        private void BuildMenuOptionPressed(int id)
+        private void BuildMenuOptionPressed(long id)
         {
             switch ((BuildMenuOptions)id)
             {
-                case BuildMenuOptions.BuildSolution:
-                    BuildSolution();
+                case BuildMenuOptions.BuildProject:
+                    BuildProject();
                     break;
-                case BuildMenuOptions.RebuildSolution:
-                    RebuildSolution();
+
+                case BuildMenuOptions.RebuildProject:
+                    RebuildProject();
                     break;
-                case BuildMenuOptions.CleanSolution:
-                    CleanSolution();
+
+                case BuildMenuOptions.CleanProject:
+                    CleanProject();
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(id), id, "Invalid build menu option");
             }
         }
 
-        private enum BuildMenuOptions
+        public void BuildProject()
         {
-            BuildSolution,
-            RebuildSolution,
-            CleanSolution
+            if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
+                return; // No project to build.
+
+            if (!BuildManager.BuildProjectBlocking("Debug"))
+                return; // Build failed.
+
+            // Notify running game for hot-reload.
+            Internal.EditorDebuggerNodeReloadScripts();
+
+            // Hot-reload in the editor.
+            GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();
+
+            if (Internal.IsAssembliesReloadingNeeded())
+            {
+                BuildManager.UpdateLastValidBuildDateTime();
+                Internal.ReloadAssemblies(softReload: false);
+            }
+        }
+
+        private void RebuildProject()
+        {
+            if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
+                return; // No project to build.
+
+            if (!BuildManager.BuildProjectBlocking("Debug", rebuild: true))
+                return; // Build failed.
+
+            // Notify running game for hot-reload.
+            Internal.EditorDebuggerNodeReloadScripts();
+
+            // Hot-reload in the editor.
+            GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();
+
+            if (Internal.IsAssembliesReloadingNeeded())
+            {
+                BuildManager.UpdateLastValidBuildDateTime();
+                Internal.ReloadAssemblies(softReload: false);
+            }
+        }
+
+        private void CleanProject()
+        {
+            if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
+                return; // No project to build.
+
+            _ = BuildManager.CleanProjectBlocking("Debug");
+        }
+
+        private void OpenLogsFolder() => OS.ShellOpen(
+            $"file://{GodotSharpDirs.LogsDirPathFor("Debug")}"
+        );
+
+        private void BuildLaunchFailed(BuildInfo buildInfo, string cause)
+        {
+            IsBuildingOngoing = false;
+            BuildResult = Build.BuildResult.Error;
+
+            _problemsView.Clear();
+            _outputView.Clear();
+
+            var diagnostic = new BuildDiagnostic
+            {
+                Type = BuildDiagnostic.DiagnosticType.Error,
+                Message = cause,
+            };
+
+            _problemsView.SetDiagnostics(new[] { diagnostic });
+
+            EmitSignal(SignalName.BuildStateChanged);
+        }
+
+        private void BuildStarted(BuildInfo buildInfo)
+        {
+            LastBuildInfo = buildInfo;
+            IsBuildingOngoing = true;
+            BuildResult = null;
+
+            _problemsView.Clear();
+            _outputView.Clear();
+
+            _problemsView.UpdateProblemsView();
+
+            EmitSignal(SignalName.BuildStateChanged);
+        }
+
+        private void BuildFinished(BuildResult result)
+        {
+            IsBuildingOngoing = false;
+            BuildResult = result;
+
+            string csvFile = Path.Combine(LastBuildInfo!.LogsDirPath, BuildManager.MsBuildIssuesFileName);
+            _problemsView.SetDiagnosticsFromFile(csvFile);
+
+            _problemsView.UpdateProblemsView();
+
+            EmitSignal(SignalName.BuildStateChanged);
+        }
+
+        private void UpdateBuildLogText()
+        {
+            lock (_pendingBuildLogTextLock)
+            {
+                _outputView.Append(_pendingBuildLogText);
+                _pendingBuildLogText = string.Empty;
+            }
+        }
+
+        private void StdOutputReceived(string? text)
+        {
+            lock (_pendingBuildLogTextLock)
+            {
+                if (_pendingBuildLogText.Length == 0)
+                    CallDeferred(nameof(UpdateBuildLogText));
+                _pendingBuildLogText += text + "\n";
+            }
+        }
+
+        private void StdErrorReceived(string? text)
+        {
+            lock (_pendingBuildLogTextLock)
+            {
+                if (_pendingBuildLogText.Length == 0)
+                    CallDeferred(nameof(UpdateBuildLogText));
+                _pendingBuildLogText += text + "\n";
+            }
         }
 
         public override void _Ready()
         {
             base._Ready();
 
-            RectMinSize = new Vector2(0, 228) * EditorScale;
-            SizeFlagsVertical = (int)SizeFlags.ExpandFill;
+            var bottomPanelStylebox = EditorInterface.Singleton.GetBaseControl().GetThemeStylebox("BottomPanel", "EditorStyles");
+            AddThemeConstantOverride("margin_top", -(int)bottomPanelStylebox.ContentMarginTop);
+            AddThemeConstantOverride("margin_left", -(int)bottomPanelStylebox.ContentMarginLeft);
+            AddThemeConstantOverride("margin_right", -(int)bottomPanelStylebox.ContentMarginRight);
 
-            var toolBarHBox = new HBoxContainer {SizeFlagsHorizontal = (int)SizeFlags.ExpandFill};
-            AddChild(toolBarHBox);
+            var tabs = new TabContainer();
+            AddChild(tabs);
 
-            var buildMenuBtn = new MenuButton {Text = "Build", Icon = GetThemeIcon("Play", "EditorIcons")};
-            toolBarHBox.AddChild(buildMenuBtn);
+            var tabActions = new HBoxContainer
+            {
+                SizeFlagsVertical = SizeFlags.ExpandFill,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                Alignment = BoxContainer.AlignmentMode.End,
+            };
+            tabActions.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+            tabs.GetTabBar().AddChild(tabActions);
 
-            var buildMenu = buildMenuBtn.GetPopup();
-            buildMenu.AddItem("Build Solution".TTR(), (int)BuildMenuOptions.BuildSolution);
-            buildMenu.AddItem("Rebuild Solution".TTR(), (int)BuildMenuOptions.RebuildSolution);
-            buildMenu.AddItem("Clean Solution".TTR(), (int)BuildMenuOptions.CleanSolution);
+            _buildMenuButton = new MenuButton
+            {
+                TooltipText = "Build".TTR(),
+                Flat = true,
+            };
+            tabActions.AddChild(_buildMenuButton);
+
+            var buildMenu = _buildMenuButton.GetPopup();
+            buildMenu.AddItem("Build Project".TTR(), (int)BuildMenuOptions.BuildProject);
+            buildMenu.AddItem("Rebuild Project".TTR(), (int)BuildMenuOptions.RebuildProject);
+            buildMenu.AddItem("Clean Project".TTR(), (int)BuildMenuOptions.CleanProject);
             buildMenu.IdPressed += BuildMenuOptionPressed;
 
-            errorsBtn = new Button
+            _openLogsFolderButton = new Button
             {
-                HintTooltip = "Show Errors".TTR(),
-                Icon = GetThemeIcon("StatusError", "EditorIcons"),
-                ExpandIcon = false,
-                ToggleMode = true,
-                Pressed = true,
-                FocusMode = FocusModeEnum.None
+                TooltipText = "Show Logs in File Manager".TTR(),
+                Flat = true,
             };
-            errorsBtn.Toggled += ErrorsToggled;
-            toolBarHBox.AddChild(errorsBtn);
+            _openLogsFolderButton.Pressed += OpenLogsFolder;
+            tabActions.AddChild(_openLogsFolderButton);
 
-            warningsBtn = new Button
+            _problemsView = new BuildProblemsView();
+            tabs.AddChild(_problemsView);
+
+            _outputView = new BuildOutputView();
+            tabs.AddChild(_outputView);
+
+            UpdateTheme();
+
+            AddBuildEventListeners();
+        }
+
+        public override void _Notification(int what)
+        {
+            base._Notification(what);
+
+            if (what == NotificationThemeChanged)
             {
-                HintTooltip = "Show Warnings".TTR(),
-                Icon = GetThemeIcon("NodeWarning", "EditorIcons"),
-                ExpandIcon = false,
-                ToggleMode = true,
-                Pressed = true,
-                FocusMode = FocusModeEnum.None
-            };
-            warningsBtn.Toggled += WarningsToggled;
-            toolBarHBox.AddChild(warningsBtn);
+                UpdateTheme();
+            }
+        }
 
-            viewLogBtn = new Button
-            {
-                Text = "Show Output".TTR(),
-                ToggleMode = true,
-                Pressed = true,
-                FocusMode = FocusModeEnum.None
-            };
-            viewLogBtn.Toggled += ViewLogToggled;
-            toolBarHBox.AddChild(viewLogBtn);
+        private void UpdateTheme()
+        {
+            // Nodes will be null until _Ready is called.
+            if (_buildMenuButton == null)
+                return;
 
-            BuildOutputView = new BuildOutputView();
-            AddChild(BuildOutputView);
+            _buildMenuButton.Icon = GetThemeIcon("BuildCSharp", "EditorIcons");
+            _openLogsFolderButton.Icon = GetThemeIcon("Filesystem", "EditorIcons");
+        }
+
+        private void AddBuildEventListeners()
+        {
+            BuildManager.BuildLaunchFailed += BuildLaunchFailed;
+            BuildManager.BuildStarted += BuildStarted;
+            BuildManager.BuildFinished += BuildFinished;
+            // StdOutput/Error can be received from different threads, so we need to use CallDeferred.
+            BuildManager.StdOutputReceived += StdOutputReceived;
+            BuildManager.StdErrorReceived += StdErrorReceived;
+        }
+
+        public void OnBeforeSerialize()
+        {
+            // In case it didn't update yet. We don't want to have to serialize any pending output.
+            UpdateBuildLogText();
+
+            // NOTE:
+            // Currently, GodotTools is loaded in its own load context. This load context is not reloaded, but the script still are.
+            // Until that changes, we need workarounds like this one because events keep strong references to disposed objects.
+            BuildManager.BuildLaunchFailed -= BuildLaunchFailed;
+            BuildManager.BuildStarted -= BuildStarted;
+            BuildManager.BuildFinished -= BuildFinished;
+            // StdOutput/Error can be received from different threads, so we need to use CallDeferred
+            BuildManager.StdOutputReceived -= StdOutputReceived;
+            BuildManager.StdErrorReceived -= StdErrorReceived;
+        }
+
+        public void OnAfterDeserialize()
+        {
+            AddBuildEventListeners(); // Re-add them.
         }
     }
 }

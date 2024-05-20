@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TLSOptions" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		TLS configuration for clients and servers.
+	</brief_description>
+	<description>
+		TLSOptions abstracts the configuration options for the [StreamPeerTLS] and [PacketPeerDTLS] classes.
+		Objects of this class cannot be instantiated directly, and one of the static methods [method client], [method client_unsafe], or [method server] should be used instead.
+		[codeblocks]
+		[gdscript]
+		# Create a TLS client configuration which uses our custom trusted CA chain.
+		var client_trusted_cas = load("res://my_trusted_cas.crt")
+		var client_tls_options = TLSOptions.client(client_trusted_cas)
+
+		# Create a TLS server configuration.
+		var server_certs = load("res://my_server_cas.crt")
+		var server_key = load("res://my_server_key.key")
+		var server_tls_options = TLSOptions.server(server_key, server_certs)
+		[/gdscript]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="client" qualifiers="static">
+			<return type="TLSOptions" />
+			<param index="0" name="trusted_chain" type="X509Certificate" default="null" />
+			<param index="1" name="common_name_override" type="String" default="&quot;&quot;" />
+			<description>
+				Creates a TLS client configuration which validates certificates and their common names (fully qualified domain names).
+				You can specify a custom [param trusted_chain] of certification authorities (the default CA list will be used if [code]null[/code]), and optionally provide a [param common_name_override] if you expect the certificate to have a common name other than the server FQDN.
+				[b]Note:[/b] On the Web platform, TLS verification is always enforced against the CA list of the web browser. This is considered a security feature.
+			</description>
+		</method>
+		<method name="client_unsafe" qualifiers="static">
+			<return type="TLSOptions" />
+			<param index="0" name="trusted_chain" type="X509Certificate" default="null" />
+			<description>
+				Creates an [b]unsafe[/b] TLS client configuration where certificate validation is optional. You can optionally provide a valid [param trusted_chain], but the common name of the certificates will never be checked. Using this configuration for purposes other than testing [b]is not recommended[/b].
+				[b]Note:[/b] On the Web platform, TLS verification is always enforced against the CA list of the web browser. This is considered a security feature.
+			</description>
+		</method>
+		<method name="server" qualifiers="static">
+			<return type="TLSOptions" />
+			<param index="0" name="key" type="CryptoKey" />
+			<param index="1" name="certificate" type="X509Certificate" />
+			<description>
+				Creates a TLS server configuration using the provided [param key] and [param certificate].
+				[b]Note:[/b] The [param certificate] should include the full certificate chain up to the signing CA (certificates file can be concatenated using a general purpose text editor).
+			</description>
+		</method>
+	</methods>
+</class>

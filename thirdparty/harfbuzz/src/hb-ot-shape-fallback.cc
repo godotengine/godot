@@ -92,7 +92,7 @@ recategorize_combining_class (hb_codepoint_t u,
     case HB_MODIFIED_COMBINING_CLASS_CCC15: /* tsere */
     case HB_MODIFIED_COMBINING_CLASS_CCC16: /* segol */
     case HB_MODIFIED_COMBINING_CLASS_CCC17: /* patah */
-    case HB_MODIFIED_COMBINING_CLASS_CCC18: /* qamats */
+    case HB_MODIFIED_COMBINING_CLASS_CCC18: /* qamats & qamats qatan */
     case HB_MODIFIED_COMBINING_CLASS_CCC20: /* qubuts */
     case HB_MODIFIED_COMBINING_CLASS_CCC22: /* meteg */
       return HB_UNICODE_COMBINING_CLASS_BELOW;
@@ -104,7 +104,7 @@ recategorize_combining_class (hb_codepoint_t u,
       return HB_UNICODE_COMBINING_CLASS_ABOVE_RIGHT;
 
     case HB_MODIFIED_COMBINING_CLASS_CCC25: /* sin dot */
-    case HB_MODIFIED_COMBINING_CLASS_CCC19: /* holam */
+    case HB_MODIFIED_COMBINING_CLASS_CCC19: /* holam & holam haser for vav */
       return HB_UNICODE_COMBINING_CLASS_ABOVE_LEFT;
 
     case HB_MODIFIED_COMBINING_CLASS_CCC26: /* point varika */
@@ -446,6 +446,9 @@ _hb_ot_shape_fallback_mark_position (const hb_ot_shape_plan_t *plan,
   return;
 #endif
 
+  if (!buffer->message (font, "start fallback mark"))
+    return;
+
   _hb_buffer_assert_gsubgpos_vars (buffer);
 
   unsigned int start = 0;
@@ -457,6 +460,8 @@ _hb_ot_shape_fallback_mark_position (const hb_ot_shape_plan_t *plan,
       start = i;
     }
   position_cluster (plan, font, buffer, start, count, adjust_offsets_when_zeroing);
+
+  (void) buffer->message (font, "end fallback mark");
 }
 
 
@@ -497,6 +502,9 @@ _hb_ot_shape_fallback_kern (const hb_ot_shape_plan_t *plan,
       !font->has_glyph_v_kerning_func ())
     return;
 
+  if (!buffer->message (font, "start fallback kern"))
+    return;
+
   bool reverse = HB_DIRECTION_IS_BACKWARD (buffer->props.direction);
 
   if (reverse)
@@ -508,6 +516,8 @@ _hb_ot_shape_fallback_kern (const hb_ot_shape_plan_t *plan,
 
   if (reverse)
     buffer->reverse ();
+
+  (void) buffer->message (font, "end fallback kern");
 #endif
 }
 
@@ -525,6 +535,15 @@ _hb_ot_shape_fallback_spaces (const hb_ot_shape_plan_t *plan HB_UNUSED,
   for (unsigned int i = 0; i < count; i++)
     if (_hb_glyph_info_is_unicode_space (&info[i]) && !_hb_glyph_info_ligated (&info[i]))
     {
+      /* If font had no ASCII space and we used the invisible glyph, give it a 1/4 EM default advance. */
+      if (buffer->invisible && info[i].codepoint == buffer->invisible)
+      {
+        if (horizontal)
+	  pos[i].x_advance = +font->x_scale / 4;
+        else
+	  pos[i].y_advance = -font->y_scale / 4;
+      }
+
       hb_unicode_funcs_t::space_t space_type = _hb_glyph_info_get_unicode_space_fallback_type (&info[i]);
       hb_codepoint_t glyph;
       typedef hb_unicode_funcs_t t;

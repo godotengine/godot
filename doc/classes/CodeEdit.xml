@@ -1,197 +1,210 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CodeEdit" inherits="TextEdit" version="4.0">
+<class name="CodeEdit" inherits="TextEdit" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		A multiline text editor designed for editing code.
 	</brief_description>
 	<description>
-		[b]Note[/b]: By default [CodeEdit] always use left-to-right text direction to correctly display source code.
+		CodeEdit is a specialized [TextEdit] designed for editing plain text code files. It has many features commonly found in code editors such as line numbers, line folding, code completion, indent management, and string/comment management.
+		[b]Note:[/b] Regardless of locale, [CodeEdit] will by default always use left-to-right text direction to correctly display source code.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="_confirm_code_completion" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="replace" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="replace" type="bool" />
 			<description>
-				Override this method to define how the selected entry should be inserted. If [code]replace[/code] is true, any existing text should be replaced.
+				Override this method to define how the selected entry should be inserted. If [param replace] is [code]true[/code], any existing text should be replaced.
 			</description>
 		</method>
-		<method name="_filter_code_completion_candidates" qualifiers="virtual">
-			<return type="Array">
-			</return>
-			<argument index="0" name="candidates" type="Array">
-			</argument>
+		<method name="_filter_code_completion_candidates" qualifiers="virtual const">
+			<return type="Dictionary[]" />
+			<param index="0" name="candidates" type="Dictionary[]" />
 			<description>
-				Override this method to define what items in [code]candidates[/code] should be displayed.
-				Both [code]candidates[/code] and the return is a [Array] of [Dictionary], see [method get_code_completion_option] for [Dictionary] content.
+				Override this method to define what items in [param candidates] should be displayed.
+				Both [param candidates] and the return is a [Array] of [Dictionary], see [method get_code_completion_option] for [Dictionary] content.
 			</description>
 		</method>
 		<method name="_request_code_completion" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="force" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="force" type="bool" />
 			<description>
-				Override this method to define what happens when the user requests code completion. If [code]force[/code] is true, any checks should be bypassed.
+				Override this method to define what happens when the user requests code completion. If [param force] is [code]true[/code], any checks should be bypassed.
+			</description>
+		</method>
+		<method name="add_auto_brace_completion_pair">
+			<return type="void" />
+			<param index="0" name="start_key" type="String" />
+			<param index="1" name="end_key" type="String" />
+			<description>
+				Adds a brace pair.
+				Both the start and end keys must be symbols. Only the start key has to be unique.
 			</description>
 		</method>
 		<method name="add_code_completion_option">
-			<return type="void">
-			</return>
-			<argument index="0" name="type" type="int" enum="CodeEdit.CodeCompletionKind">
-			</argument>
-			<argument index="1" name="display_text" type="String">
-			</argument>
-			<argument index="2" name="insert_text" type="String">
-			</argument>
-			<argument index="3" name="text_color" type="Color" default="Color(1, 1, 1, 1)">
-			</argument>
-			<argument index="4" name="icon" type="Resource" default="null">
-			</argument>
-			<argument index="5" name="value" type="Variant" default="0">
-			</argument>
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="CodeEdit.CodeCompletionKind" />
+			<param index="1" name="display_text" type="String" />
+			<param index="2" name="insert_text" type="String" />
+			<param index="3" name="text_color" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="icon" type="Resource" default="null" />
+			<param index="5" name="value" type="Variant" default="null" />
+			<param index="6" name="location" type="int" default="1024" />
 			<description>
 				Submits an item to the queue of potential candidates for the autocomplete menu. Call [method update_code_completion_options] to update the list.
-				[b]Note[/b]: This list will replace all current candidates.
+				[param location] indicates location of the option relative to the location of the code completion query. See [enum CodeEdit.CodeCompletionLocation] for how to set this value.
+				[b]Note:[/b] This list will replace all current candidates.
 			</description>
 		</method>
 		<method name="add_comment_delimiter">
-			<return type="void">
-			</return>
-			<argument index="0" name="start_key" type="String">
-			</argument>
-			<argument index="1" name="end_key" type="String">
-			</argument>
-			<argument index="2" name="line_only" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<param index="0" name="start_key" type="String" />
+			<param index="1" name="end_key" type="String" />
+			<param index="2" name="line_only" type="bool" default="false" />
 			<description>
-				Adds a comment delimiter.
-				Both the start and end keys must be symbols. Only the start key has to be unique.
-				Line only denotes if the region should continue until the end of the line or carry over on to the next line. If the end key is blank this is automatically set to [code]true[/code].
+				Adds a comment delimiter from [param start_key] to [param end_key]. Both keys should be symbols, and [param start_key] must not be shared with other delimiters.
+				If [param line_only] is [code]true[/code] or [param end_key] is an empty [String], the region does not carry over to the next line.
 			</description>
 		</method>
 		<method name="add_string_delimiter">
-			<return type="void">
-			</return>
-			<argument index="0" name="start_key" type="String">
-			</argument>
-			<argument index="1" name="end_key" type="String">
-			</argument>
-			<argument index="2" name="line_only" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<param index="0" name="start_key" type="String" />
+			<param index="1" name="end_key" type="String" />
+			<param index="2" name="line_only" type="bool" default="false" />
 			<description>
-				Adds a string delimiter.
-				Both the start and end keys must be symbols. Only the start key has to be unique.
-				Line only denotes if the region should continue until the end of the line or carry over on to the next line. If the end key is blank this is automatically set to [code]true[/code].
+				Defines a string delimiter from [param start_key] to [param end_key]. Both keys should be symbols, and [param start_key] must not be shared with other delimiters.
+				If [param line_only] is [code]true[/code] or [param end_key] is an empty [String], the region does not carry over to the next line.
 			</description>
 		</method>
 		<method name="can_fold_line" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Returns if the given line is foldable, that is, it has indented lines right below it or a comment / string block.
 			</description>
 		</method>
 		<method name="cancel_code_completion">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Cancels the autocomplete menu.
 			</description>
 		</method>
 		<method name="clear_bookmarked_lines">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
+				Clears all bookmarked lines.
 			</description>
 		</method>
 		<method name="clear_breakpointed_lines">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
+				Clears all breakpointed lines.
 			</description>
 		</method>
 		<method name="clear_comment_delimiters">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all comment delimiters.
 			</description>
 		</method>
 		<method name="clear_executing_lines">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
+				Clears all executed lines.
 			</description>
 		</method>
 		<method name="clear_string_delimiters">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Removes all string delimiters.
 			</description>
 		</method>
 		<method name="confirm_code_completion">
-			<return type="void">
-			</return>
-			<argument index="0" name="replace" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<param index="0" name="replace" type="bool" default="false" />
 			<description>
-				Inserts the selected entry into the text. If [code]replace[/code] is true, any existing text is replaced rather then merged.
+				Inserts the selected entry into the text. If [param replace] is [code]true[/code], any existing text is replaced rather than merged.
+			</description>
+		</method>
+		<method name="convert_indent">
+			<return type="void" />
+			<param index="0" name="from_line" type="int" default="-1" />
+			<param index="1" name="to_line" type="int" default="-1" />
+			<description>
+				Converts the indents of lines between [param from_line] and [param to_line] to tabs or spaces as set by [member indent_use_spaces].
+				Values of [code]-1[/code] convert the entire text.
+			</description>
+		</method>
+		<method name="create_code_region">
+			<return type="void" />
+			<description>
+				Creates a new code region with the selection. At least one single line comment delimiter have to be defined (see [method add_comment_delimiter]).
+				A code region is a part of code that is highlighted when folded and can help organize your script.
+				Code region start and end tags can be customized (see [method set_code_region_tags]).
+				Code regions are delimited using start and end tags (respectively [code]region[/code] and [code]endregion[/code] by default) preceded by one line comment delimiter. (eg. [code]#region[/code] and [code]#endregion[/code])
+			</description>
+		</method>
+		<method name="delete_lines">
+			<return type="void" />
+			<description>
+				Deletes all lines that are selected or have a caret on them.
 			</description>
 		</method>
 		<method name="do_indent">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Perform an indent as if the user activated the "ui_text_indent" action.
 			</description>
 		</method>
-		<method name="do_unindent">
-			<return type="void">
-			</return>
+		<method name="duplicate_lines">
+			<return type="void" />
 			<description>
-				Perform an unindent as if the user activated the "ui_text_unindent" action.
+				Duplicates all lines currently selected with any caret. Duplicates the entire line beneath the current one no matter where the caret is within the line.
+			</description>
+		</method>
+		<method name="duplicate_selection">
+			<return type="void" />
+			<description>
+				Duplicates all selected text and duplicates all lines with a caret on them.
 			</description>
 		</method>
 		<method name="fold_all_lines">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Folds all lines that are possible to be folded (see [method can_fold_line]).
 			</description>
 		</method>
 		<method name="fold_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Folds the given line, if possible (see [method can_fold_line]).
 			</description>
 		</method>
-		<method name="get_bookmarked_lines" qualifiers="const">
-			<return type="Array">
-			</return>
+		<method name="get_auto_brace_completion_close_key" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="open_key" type="String" />
 			<description>
+				Gets the matching auto brace close key for [param open_key].
+			</description>
+		</method>
+		<method name="get_bookmarked_lines" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+				Gets all bookmarked lines.
 			</description>
 		</method>
 		<method name="get_breakpointed_lines" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="PackedInt32Array" />
 			<description>
+				Gets all breakpointed lines.
 			</description>
 		</method>
 		<method name="get_code_completion_option" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="Dictionary" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Gets the completion option at [code]index[/code]. The return [Dictionary] has the following key-values:
+				Gets the completion option at [param index]. The return [Dictionary] has the following key-values:
 				[code]kind[/code]: [enum CodeCompletionKind]
 				[code]display_text[/code]: Text that is shown on the autocomplete menu.
 				[code]insert_text[/code]: Text that is to be inserted when this item is selected.
@@ -201,449 +214,527 @@
 			</description>
 		</method>
 		<method name="get_code_completion_options" qualifiers="const">
-			<return type="Dictionary[]">
-			</return>
+			<return type="Dictionary[]" />
 			<description>
 				Gets all completion options, see [method get_code_completion_option] for return content.
 			</description>
 		</method>
 		<method name="get_code_completion_selected_index" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Gets the index of the current selected completion option.
 			</description>
 		</method>
+		<method name="get_code_region_end_tag" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the code region end tag (without comment delimiter).
+			</description>
+		</method>
+		<method name="get_code_region_start_tag" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the code region start tag (without comment delimiter).
+			</description>
+		</method>
 		<method name="get_delimiter_end_key" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="delimiter_index" type="int">
-			</argument>
+			<return type="String" />
+			<param index="0" name="delimiter_index" type="int" />
 			<description>
 				Gets the end key for a string or comment region index.
 			</description>
 		</method>
 		<method name="get_delimiter_end_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="column" type="int">
-			</argument>
+			<return type="Vector2" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
 			<description>
-				If [code]line[/code] [code]column[/code] is in a string or comment, returns the end position of the region. If not or no end could be found, both [Vector2] values will be [code]-1[/code].
+				If [param line] [param column] is in a string or comment, returns the end position of the region. If not or no end could be found, both [Vector2] values will be [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_delimiter_start_key" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="delimiter_index" type="int">
-			</argument>
+			<return type="String" />
+			<param index="0" name="delimiter_index" type="int" />
 			<description>
 				Gets the start key for a string or comment region index.
 			</description>
 		</method>
 		<method name="get_delimiter_start_position" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="column" type="int">
-			</argument>
+			<return type="Vector2" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
 			<description>
-				If [code]line[/code] [code]column[/code] is in a string or comment, returns the start position of the region. If not or no start could be found, both [Vector2] values will be [code]-1[/code].
+				If [param line] [param column] is in a string or comment, returns the start position of the region. If not or no start could be found, both [Vector2] values will be [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_executing_lines" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="PackedInt32Array" />
 			<description>
+				Gets all executing lines.
 			</description>
 		</method>
 		<method name="get_folded_lines" qualifiers="const">
-			<return type="int[]">
-			</return>
+			<return type="int[]" />
 			<description>
-				Return all lines that are current folded.
+				Returns all lines that are current folded.
 			</description>
 		</method>
 		<method name="get_text_for_code_completion" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the full text with char [code]0xFFFF[/code] at the caret location.
 			</description>
 		</method>
-		<method name="has_comment_delimiter" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="start_key" type="String">
-			</argument>
+		<method name="get_text_for_symbol_lookup" qualifiers="const">
+			<return type="String" />
 			<description>
-				Returns [code]true[/code] if comment [code]start_key[/code] exists.
+				Returns the full text with char [code]0xFFFF[/code] at the cursor location.
+			</description>
+		</method>
+		<method name="get_text_with_cursor_char" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
+			<description>
+				Returns the full text with char [code]0xFFFF[/code] at the specified location.
+			</description>
+		</method>
+		<method name="has_auto_brace_completion_close_key" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="close_key" type="String" />
+			<description>
+				Returns [code]true[/code] if close key [param close_key] exists.
+			</description>
+		</method>
+		<method name="has_auto_brace_completion_open_key" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="open_key" type="String" />
+			<description>
+				Returns [code]true[/code] if open key [param open_key] exists.
+			</description>
+		</method>
+		<method name="has_comment_delimiter" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="start_key" type="String" />
+			<description>
+				Returns [code]true[/code] if comment [param start_key] exists.
 			</description>
 		</method>
 		<method name="has_string_delimiter" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="start_key" type="String">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="start_key" type="String" />
 			<description>
-				Returns [code]true[/code] if string [code]start_key[/code] exists.
+				Returns [code]true[/code] if string [param start_key] exists.
 			</description>
 		</method>
 		<method name="indent_lines">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Indents selected lines, or in the case of no selection the caret line by one.
 			</description>
 		</method>
 		<method name="is_in_comment" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="column" type="int" default="-1">
-			</argument>
+			<return type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" default="-1" />
 			<description>
-				Return delimiter index if [code]line[/code] [code]column[/code] is in a comment. If [code]column[/code] is not provided, will return delimiter index if the entire [code]line[/code] is a comment. Otherwise [code]-1[/code].
+				Returns delimiter index if [param line] [param column] is in a comment. If [param column] is not provided, will return delimiter index if the entire [param line] is a comment. Otherwise [code]-1[/code].
 			</description>
 		</method>
 		<method name="is_in_string" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="column" type="int" default="-1">
-			</argument>
+			<return type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" default="-1" />
 			<description>
-				Return the delimiter index if [code]line[/code] [code]column[/code] is in a string. If [code]column[/code] is not provided, will return the delimiter index if the entire [code]line[/code] is a string. Otherwise [code]-1[/code].
+				Returns the delimiter index if [param line] [param column] is in a string. If [param column] is not provided, will return the delimiter index if the entire [param line] is a string. Otherwise [code]-1[/code].
 			</description>
 		</method>
 		<method name="is_line_bookmarked" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
 			<description>
+				Returns whether the line at the specified index is bookmarked or not.
 			</description>
 		</method>
 		<method name="is_line_breakpointed" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
 			<description>
+				Returns whether the line at the specified index is breakpointed or not.
+			</description>
+		</method>
+		<method name="is_line_code_region_end" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns whether the line at the specified index is a code region end.
+			</description>
+		</method>
+		<method name="is_line_code_region_start" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns whether the line at the specified index is a code region start.
 			</description>
 		</method>
 		<method name="is_line_executing" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
 			<description>
+				Returns whether the line at the specified index is marked as executing or not.
 			</description>
 		</method>
 		<method name="is_line_folded" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Returns whether the line at the specified index is folded or not.
 			</description>
 		</method>
-		<method name="remove_comment_delimiter">
-			<return type="void">
-			</return>
-			<argument index="0" name="start_key" type="String">
-			</argument>
+		<method name="move_lines_down">
+			<return type="void" />
 			<description>
-				Removes the comment delimiter with [code]start_key[/code].
+				Moves all lines down that are selected or have a caret on them.
+			</description>
+		</method>
+		<method name="move_lines_up">
+			<return type="void" />
+			<description>
+				Moves all lines up that are selected or have a caret on them.
+			</description>
+		</method>
+		<method name="remove_comment_delimiter">
+			<return type="void" />
+			<param index="0" name="start_key" type="String" />
+			<description>
+				Removes the comment delimiter with [param start_key].
 			</description>
 		</method>
 		<method name="remove_string_delimiter">
-			<return type="void">
-			</return>
-			<argument index="0" name="start_key" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="start_key" type="String" />
 			<description>
-				Removes the string delimiter with [code]start_key[/code].
+				Removes the string delimiter with [param start_key].
 			</description>
 		</method>
 		<method name="request_code_completion">
-			<return type="void">
-			</return>
-			<argument index="0" name="force" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<param index="0" name="force" type="bool" default="false" />
 			<description>
-				Emits [signal request_code_completion], if [code]force[/code] is true will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path or signal.
+				Emits [signal code_completion_requested], if [param force] is [code]true[/code] will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path, or signal.
 			</description>
 		</method>
 		<method name="set_code_completion_selected_index">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Sets the current selected completion option.
 			</description>
 		</method>
 		<method name="set_code_hint">
-			<return type="void">
-			</return>
-			<argument index="0" name="code_hint" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="code_hint" type="String" />
 			<description>
 				Sets the code hint text. Pass an empty string to clear.
 			</description>
 		</method>
 		<method name="set_code_hint_draw_below">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_below" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="draw_below" type="bool" />
 			<description>
 				Sets if the code hint should draw below the text.
 			</description>
 		</method>
-		<method name="set_line_as_bookmarked">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="bookmarked" type="bool">
-			</argument>
+		<method name="set_code_region_tags">
+			<return type="void" />
+			<param index="0" name="start" type="String" default="&quot;region&quot;" />
+			<param index="1" name="end" type="String" default="&quot;endregion&quot;" />
 			<description>
+				Sets the code region start and end tags (without comment delimiter).
+			</description>
+		</method>
+		<method name="set_line_as_bookmarked">
+			<return type="void" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="bookmarked" type="bool" />
+			<description>
+				Sets the line as bookmarked.
 			</description>
 		</method>
 		<method name="set_line_as_breakpoint">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="breakpointed" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="breakpointed" type="bool" />
 			<description>
+				Sets the line as breakpointed.
 			</description>
 		</method>
 		<method name="set_line_as_executing">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
-			<argument index="1" name="executing" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="executing" type="bool" />
 			<description>
+				Sets the line as executing.
+			</description>
+		</method>
+		<method name="set_symbol_lookup_word_as_valid">
+			<return type="void" />
+			<param index="0" name="valid" type="bool" />
+			<description>
+				Sets the symbol emitted by [signal symbol_validate] as a valid lookup.
 			</description>
 		</method>
 		<method name="toggle_foldable_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Toggle the folding of the code block at the given line.
 			</description>
 		</method>
-		<method name="unfold_all_lines">
-			<return type="void">
-			</return>
+		<method name="toggle_foldable_lines_at_carets">
+			<return type="void" />
 			<description>
+				Toggle the folding of the code block on all lines with a caret on them.
+			</description>
+		</method>
+		<method name="unfold_all_lines">
+			<return type="void" />
+			<description>
+				Unfolds all lines, folded or not.
 			</description>
 		</method>
 		<method name="unfold_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Unfolds all lines that were previously folded.
 			</description>
 		</method>
 		<method name="unindent_lines">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Unindents selected lines, or in the case of no selection the caret line by one.
+				Unindents selected lines, or in the case of no selection the caret line by one. Same as performing "ui_text_unindent" action.
 			</description>
 		</method>
 		<method name="update_code_completion_options">
-			<return type="void">
-			</return>
-			<argument index="0" name="force" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="force" type="bool" />
 			<description>
-				Submits all completion options added with [method add_code_completion_option]. Will try to force the autoccomplete menu to popup, if [code]force[/code] is [code]true[/code].
-				[b]Note[/b]: This will replace all current candidates.
+				Submits all completion options added with [method add_code_completion_option]. Will try to force the autocomplete menu to popup, if [param force] is [code]true[/code].
+				[b]Note:[/b] This will replace all current candidates.
 			</description>
 		</method>
 	</methods>
 	<members>
+		<member name="auto_brace_completion_enabled" type="bool" setter="set_auto_brace_completion_enabled" getter="is_auto_brace_completion_enabled" default="false">
+			Sets whether brace pairs should be autocompleted.
+		</member>
+		<member name="auto_brace_completion_highlight_matching" type="bool" setter="set_highlight_matching_braces_enabled" getter="is_highlight_matching_braces_enabled" default="false">
+			Highlight mismatching brace pairs.
+		</member>
+		<member name="auto_brace_completion_pairs" type="Dictionary" setter="set_auto_brace_completion_pairs" getter="get_auto_brace_completion_pairs" default="{ &quot;\&quot;&quot;: &quot;\&quot;&quot;, &quot;&apos;&quot;: &quot;&apos;&quot;, &quot;(&quot;: &quot;)&quot;, &quot;[&quot;: &quot;]&quot;, &quot;{&quot;: &quot;}&quot; }">
+			Sets the brace pairs to be autocompleted.
+		</member>
 		<member name="code_completion_enabled" type="bool" setter="set_code_completion_enabled" getter="is_code_completion_enabled" default="false">
 			Sets whether code completion is allowed.
 		</member>
-		<member name="code_completion_prefixes" type="String[]" setter="set_code_completion_prefixes" getter="get_code_comletion_prefixes" default="[]">
+		<member name="code_completion_prefixes" type="String[]" setter="set_code_completion_prefixes" getter="get_code_completion_prefixes" default="[]">
 			Sets prefixes that will trigger code completion.
 		</member>
 		<member name="delimiter_comments" type="String[]" setter="set_comment_delimiters" getter="get_comment_delimiters" default="[]">
 			Sets the comment delimiters. All existing comment delimiters will be removed.
 		</member>
-		<member name="delimiter_strings" type="String[]" setter="set_string_delimiters" getter="get_string_delimiters" default="[]">
+		<member name="delimiter_strings" type="String[]" setter="set_string_delimiters" getter="get_string_delimiters" default="[&quot;&apos; &apos;&quot;, &quot;\&quot; \&quot;&quot;]">
 			Sets the string delimiters. All existing string delimiters will be removed.
 		</member>
-		<member name="draw_bookmarks" type="bool" setter="set_draw_bookmarks_gutter" getter="is_drawing_bookmarks_gutter" default="false">
+		<member name="gutters_draw_bookmarks" type="bool" setter="set_draw_bookmarks_gutter" getter="is_drawing_bookmarks_gutter" default="false">
+			Sets if bookmarked should be drawn in the gutter. This gutter is shared with breakpoints and executing lines.
 		</member>
-		<member name="draw_breakpoints_gutter" type="bool" setter="set_draw_breakpoints_gutter" getter="is_drawing_breakpoints_gutter" default="false">
+		<member name="gutters_draw_breakpoints_gutter" type="bool" setter="set_draw_breakpoints_gutter" getter="is_drawing_breakpoints_gutter" default="false">
+			Sets if breakpoints should be drawn in the gutter. This gutter is shared with bookmarks and executing lines.
 		</member>
-		<member name="draw_executing_lines" type="bool" setter="set_draw_executing_lines_gutter" getter="is_drawing_executing_lines_gutter" default="false">
+		<member name="gutters_draw_executing_lines" type="bool" setter="set_draw_executing_lines_gutter" getter="is_drawing_executing_lines_gutter" default="false">
+			Sets if executing lines should be marked in the gutter. This gutter is shared with breakpoints and bookmarks lines.
 		</member>
-		<member name="draw_fold_gutter" type="bool" setter="set_draw_fold_gutter" getter="is_drawing_fold_gutter" default="false">
+		<member name="gutters_draw_fold_gutter" type="bool" setter="set_draw_fold_gutter" getter="is_drawing_fold_gutter" default="false">
+			Sets if foldable lines icons should be drawn in the gutter.
 		</member>
-		<member name="draw_line_numbers" type="bool" setter="set_draw_line_numbers" getter="is_draw_line_numbers_enabled" default="false">
+		<member name="gutters_draw_line_numbers" type="bool" setter="set_draw_line_numbers" getter="is_draw_line_numbers_enabled" default="false">
+			Sets if line numbers should be drawn in the gutter.
+		</member>
+		<member name="gutters_zero_pad_line_numbers" type="bool" setter="set_line_numbers_zero_padded" getter="is_line_numbers_zero_padded" default="false">
+			Sets if line numbers drawn in the gutter are zero padded.
 		</member>
 		<member name="indent_automatic" type="bool" setter="set_auto_indent_enabled" getter="is_auto_indent_enabled" default="false">
 			Sets whether automatic indent are enabled, this will add an extra indent if a prefix or brace is found.
 		</member>
-		<member name="indent_automatic_prefixes" type="String[]" setter="set_auto_indent_prefixes" getter="get_auto_indent_prefixes" default="[&quot;(&quot;, &quot;:&quot;, &quot;[&quot;, &quot;{&quot;]">
+		<member name="indent_automatic_prefixes" type="String[]" setter="set_auto_indent_prefixes" getter="get_auto_indent_prefixes" default="[&quot;:&quot;, &quot;{&quot;, &quot;[&quot;, &quot;(&quot;]">
 			Prefixes to trigger an automatic indent.
 		</member>
 		<member name="indent_size" type="int" setter="set_indent_size" getter="get_indent_size" default="4">
-			Size of tabs, if [code]indent_use_spaces[/code] is enabled the amount of spaces to use.
+			Size of the tabulation indent (one [kbd]Tab[/kbd] press) in characters. If [member indent_use_spaces] is enabled the number of spaces to use.
 		</member>
 		<member name="indent_use_spaces" type="bool" setter="set_indent_using_spaces" getter="is_indent_using_spaces" default="false">
 			Use spaces instead of tabs for indentation.
 		</member>
-		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" override="true" enum="Control.LayoutDirection" default="2" />
-		<member name="line_folding" type="bool" setter="set_line_folding_enabled" getter="is_line_folding_enabled" default="true">
+		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" overrides="Control" enum="Control.LayoutDirection" default="2" />
+		<member name="line_folding" type="bool" setter="set_line_folding_enabled" getter="is_line_folding_enabled" default="false">
 			Sets whether line folding is allowed.
 		</member>
-		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" override="true" default="[]" />
-		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" override="true" enum="Control.TextDirection" default="1" />
-		<member name="zero_pad_line_numbers" type="bool" setter="set_line_numbers_zero_padded" getter="is_line_numbers_zero_padded" default="false">
+		<member name="line_length_guidelines" type="int[]" setter="set_line_length_guidelines" getter="get_line_length_guidelines" default="[]">
+			Draws vertical lines at the provided columns. The first entry is considered a main hard guideline and is draw more prominently.
 		</member>
+		<member name="symbol_lookup_on_click" type="bool" setter="set_symbol_lookup_on_click_enabled" getter="is_symbol_lookup_on_click_enabled" default="false">
+			Set when a validated word from [signal symbol_validate] is clicked, the [signal symbol_lookup] should be emitted.
+		</member>
+		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" overrides="TextEdit" enum="Control.TextDirection" default="1" />
 	</members>
 	<signals>
 		<signal name="breakpoint_toggled">
-			<argument index="0" name="line" type="int">
-			</argument>
+			<param index="0" name="line" type="int" />
 			<description>
+				Emitted when a breakpoint is added or removed from a line. If the line is moved via backspace a removed is emitted at the old line.
 			</description>
 		</signal>
-		<signal name="request_code_completion">
+		<signal name="code_completion_requested">
 			<description>
 				Emitted when the user requests code completion.
+			</description>
+		</signal>
+		<signal name="symbol_lookup">
+			<param index="0" name="symbol" type="String" />
+			<param index="1" name="line" type="int" />
+			<param index="2" name="column" type="int" />
+			<description>
+				Emitted when the user has clicked on a valid symbol.
+			</description>
+		</signal>
+		<signal name="symbol_validate">
+			<param index="0" name="symbol" type="String" />
+			<description>
+				Emitted when the user hovers over a symbol. The symbol should be validated and responded to, by calling [method set_symbol_lookup_word_as_valid].
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="KIND_CLASS" value="0" enum="CodeCompletionKind">
+			Marks the option as a class.
 		</constant>
 		<constant name="KIND_FUNCTION" value="1" enum="CodeCompletionKind">
+			Marks the option as a function.
 		</constant>
 		<constant name="KIND_SIGNAL" value="2" enum="CodeCompletionKind">
+			Marks the option as a Godot signal.
 		</constant>
 		<constant name="KIND_VARIABLE" value="3" enum="CodeCompletionKind">
+			Marks the option as a variable.
 		</constant>
 		<constant name="KIND_MEMBER" value="4" enum="CodeCompletionKind">
+			Marks the option as a member.
 		</constant>
 		<constant name="KIND_ENUM" value="5" enum="CodeCompletionKind">
+			Marks the option as an enum entry.
 		</constant>
 		<constant name="KIND_CONSTANT" value="6" enum="CodeCompletionKind">
+			Marks the option as a constant.
 		</constant>
 		<constant name="KIND_NODE_PATH" value="7" enum="CodeCompletionKind">
+			Marks the option as a Godot node path.
 		</constant>
 		<constant name="KIND_FILE_PATH" value="8" enum="CodeCompletionKind">
+			Marks the option as a file path.
 		</constant>
 		<constant name="KIND_PLAIN_TEXT" value="9" enum="CodeCompletionKind">
+			Marks the option as unclassified or plain text.
+		</constant>
+		<constant name="LOCATION_LOCAL" value="0" enum="CodeCompletionLocation">
+			The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
+		</constant>
+		<constant name="LOCATION_PARENT_MASK" value="256" enum="CodeCompletionLocation">
+			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. [code]0[/code] for the local class, [code]1[/code] for the parent, [code]2[/code] for the grandparent, etc.) to store the depth of an option in the class or a parent class.
+		</constant>
+		<constant name="LOCATION_OTHER_USER_CODE" value="512" enum="CodeCompletionLocation">
+			The option is from user code which is not local and not in a derived class (e.g. Autoload Singletons).
+		</constant>
+		<constant name="LOCATION_OTHER" value="1024" enum="CodeCompletionLocation">
+			The option is from other engine code, not covered by the other enum constants - e.g. built-in classes.
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="background_color" type="Color" default="Color(0, 0, 0, 0)">
+		<theme_item name="bookmark_color" data_type="color" type="Color" default="Color(0.5, 0.64, 1, 0.8)">
+			[Color] of the bookmark icon for bookmarked lines.
 		</theme_item>
-		<theme_item name="bookmark" type="Texture2D">
+		<theme_item name="brace_mismatch_color" data_type="color" type="Color" default="Color(1, 0.2, 0.2, 1)">
+			[Color] of the text to highlight mismatched braces.
 		</theme_item>
-		<theme_item name="bookmark_color" type="Color" default="Color(0.5, 0.64, 1, 0.8)">
+		<theme_item name="breakpoint_color" data_type="color" type="Color" default="Color(0.9, 0.29, 0.3, 1)">
+			[Color] of the breakpoint icon for bookmarked lines.
 		</theme_item>
-		<theme_item name="brace_mismatch_color" type="Color" default="Color(1, 0.2, 0.2, 1)">
+		<theme_item name="code_folding_color" data_type="color" type="Color" default="Color(0.8, 0.8, 0.8, 0.8)">
+			[Color] for all icons related to line folding.
 		</theme_item>
-		<theme_item name="breakpoint" type="Texture2D">
+		<theme_item name="completion_background_color" data_type="color" type="Color" default="Color(0.17, 0.16, 0.2, 1)">
+			Sets the background [Color] for the code completion popup.
 		</theme_item>
-		<theme_item name="breakpoint_color" type="Color" default="Color(0.9, 0.29, 0.3, 1)">
+		<theme_item name="completion_existing_color" data_type="color" type="Color" default="Color(0.87, 0.87, 0.87, 0.13)">
+			Background highlight [Color] for matching text in code completion options.
 		</theme_item>
-		<theme_item name="can_fold" type="Texture2D">
+		<theme_item name="completion_scroll_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.29)">
+			[Color] of the scrollbar in the code completion popup.
 		</theme_item>
-		<theme_item name="caret_background_color" type="Color" default="Color(0, 0, 0, 1)">
+		<theme_item name="completion_scroll_hovered_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.4)">
+			[Color] of the scrollbar in the code completion popup when hovered.
 		</theme_item>
-		<theme_item name="caret_color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="completion_selected_color" data_type="color" type="Color" default="Color(0.26, 0.26, 0.27, 1)">
+			Background highlight [Color] for the current selected option item in the code completion popup.
 		</theme_item>
-		<theme_item name="code_folding_color" type="Color" default="Color(0.8, 0.8, 0.8, 0.8)">
+		<theme_item name="executing_line_color" data_type="color" type="Color" default="Color(0.98, 0.89, 0.27, 1)">
+			[Color] of the executing icon for executing lines.
 		</theme_item>
-		<theme_item name="completion" type="StyleBox">
+		<theme_item name="folded_code_region_color" data_type="color" type="Color" default="Color(0.68, 0.46, 0.77, 0.2)">
+			[Color] of background line highlight for folded code region.
 		</theme_item>
-		<theme_item name="completion_background_color" type="Color" default="Color(0.17, 0.16, 0.2, 1)">
+		<theme_item name="line_length_guideline_color" data_type="color" type="Color" default="Color(0.3, 0.5, 0.8, 0.1)">
+			[Color] of the main line length guideline, secondary guidelines will have 50% alpha applied.
 		</theme_item>
-		<theme_item name="completion_existing_color" type="Color" default="Color(0.87, 0.87, 0.87, 0.13)">
+		<theme_item name="line_number_color" data_type="color" type="Color" default="Color(0.67, 0.67, 0.67, 0.4)">
+			Sets the [Color] of line numbers.
 		</theme_item>
-		<theme_item name="completion_font_color" type="Color" default="Color(0.67, 0.67, 0.67, 1)">
+		<theme_item name="completion_lines" data_type="constant" type="int" default="7">
+			Max number of options to display in the code completion popup at any one time.
 		</theme_item>
-		<theme_item name="completion_lines" type="int" default="7">
+		<theme_item name="completion_max_width" data_type="constant" type="int" default="50">
+			Max width of options in the code completion popup. Options longer than this will be cut off.
 		</theme_item>
-		<theme_item name="completion_max_width" type="int" default="50">
+		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="6">
+			Width of the scrollbar in the code completion popup.
 		</theme_item>
-		<theme_item name="completion_scroll_color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="bookmark" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw in the bookmark gutter for bookmarked lines.
 		</theme_item>
-		<theme_item name="completion_scroll_width" type="int" default="3">
+		<theme_item name="breakpoint" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw in the breakpoint gutter for breakpointed lines.
 		</theme_item>
-		<theme_item name="completion_selected_color" type="Color" default="Color(0.26, 0.26, 0.27, 1)">
+		<theme_item name="can_fold" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw in the line folding gutter when a line can be folded.
 		</theme_item>
-		<theme_item name="current_line_color" type="Color" default="Color(0.25, 0.25, 0.26, 0.8)">
+		<theme_item name="can_fold_code_region" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw in the line folding gutter when a code region can be folded.
 		</theme_item>
-		<theme_item name="executing_line" type="Texture2D">
+		<theme_item name="executing_line" data_type="icon" type="Texture2D">
+			Icon to draw in the executing gutter for executing lines.
 		</theme_item>
-		<theme_item name="executing_line_color" type="Color" default="Color(0.98, 0.89, 0.27, 1)">
+		<theme_item name="folded" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw in the line folding gutter when a line is folded and can be unfolded.
 		</theme_item>
-		<theme_item name="focus" type="StyleBox">
+		<theme_item name="folded_code_region" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw in the line folding gutter when a code region is folded and can be unfolded.
 		</theme_item>
-		<theme_item name="folded" type="Texture2D">
+		<theme_item name="folded_eol_icon" data_type="icon" type="Texture2D">
+			Sets a custom [Texture2D] to draw at the end of a folded line.
 		</theme_item>
-		<theme_item name="folded_eol_icon" type="Texture2D">
-		</theme_item>
-		<theme_item name="font" type="Font">
-		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
-		</theme_item>
-		<theme_item name="font_outline_color" type="Color" default="Color(1, 1, 1, 1)">
-			The tint of text outline of the [CodeEdit].
-		</theme_item>
-		<theme_item name="font_readonly_color" type="Color" default="Color(0.88, 0.88, 0.88, 0.5)">
-		</theme_item>
-		<theme_item name="font_selected_color" type="Color" default="Color(0, 0, 0, 1)">
-		</theme_item>
-		<theme_item name="font_size" type="int">
-			Font size of the [CodeEdit]'s text.
-		</theme_item>
-		<theme_item name="line_number_color" type="Color" default="Color(0.67, 0.67, 0.67, 0.4)">
-		</theme_item>
-		<theme_item name="line_spacing" type="int" default="4">
-		</theme_item>
-		<theme_item name="normal" type="StyleBox">
-		</theme_item>
-		<theme_item name="outline_size" type="int" default="0">
-			The size of the text outline.
-		</theme_item>
-		<theme_item name="read_only" type="StyleBox">
-		</theme_item>
-		<theme_item name="safe_line_number_color" type="Color" default="Color(0.67, 0.78, 0.67, 0.6)">
-		</theme_item>
-		<theme_item name="selection_color" type="Color" default="Color(0.49, 0.49, 0.49, 1)">
-		</theme_item>
-		<theme_item name="space" type="Texture2D">
-		</theme_item>
-		<theme_item name="tab" type="Texture2D">
-		</theme_item>
-		<theme_item name="word_highlighted_color" type="Color" default="Color(0.8, 0.9, 0.9, 0.15)">
+		<theme_item name="completion" data_type="style" type="StyleBox">
+			[StyleBox] for the code completion popup.
 		</theme_item>
 	</theme_items>
 </class>

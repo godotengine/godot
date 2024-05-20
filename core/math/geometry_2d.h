@@ -1,45 +1,46 @@
-/*************************************************************************/
-/*  geometry_2d.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  geometry_2d.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef GEOMETRY_2D_H
 #define GEOMETRY_2D_H
 
 #include "core/math/delaunay_2d.h"
-#include "core/math/rect2.h"
+#include "core/math/math_funcs.h"
 #include "core/math/triangulate.h"
-#include "core/object/object.h"
+#include "core/math/vector2.h"
+#include "core/math/vector2i.h"
+#include "core/math/vector3.h"
+#include "core/math/vector3i.h"
 #include "core/templates/vector.h"
 
 class Geometry2D {
-	Geometry2D();
-
 public:
 	static real_t get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2, Vector2 &c1, Vector2 &c2) {
 		Vector2 d1 = q1 - p1; // Direction vector of segment S1.
@@ -50,31 +51,31 @@ public:
 		real_t f = d2.dot(r);
 		real_t s, t;
 		// Check if either or both segments degenerate into points.
-		if (a <= CMP_EPSILON && e <= CMP_EPSILON) {
+		if (a <= (real_t)CMP_EPSILON && e <= (real_t)CMP_EPSILON) {
 			// Both segments degenerate into points.
 			c1 = p1;
 			c2 = p2;
 			return Math::sqrt((c1 - c2).dot(c1 - c2));
 		}
-		if (a <= CMP_EPSILON) {
+		if (a <= (real_t)CMP_EPSILON) {
 			// First segment degenerates into a point.
 			s = 0.0;
 			t = f / e; // s = 0 => t = (b*s + f) / e = f / e
-			t = CLAMP(t, 0.0, 1.0);
+			t = CLAMP(t, 0.0f, 1.0f);
 		} else {
 			real_t c = d1.dot(r);
-			if (e <= CMP_EPSILON) {
+			if (e <= (real_t)CMP_EPSILON) {
 				// Second segment degenerates into a point.
 				t = 0.0;
-				s = CLAMP(-c / a, 0.0, 1.0); // t = 0 => s = (b*t - c) / a = -c / a
+				s = CLAMP(-c / a, 0.0f, 1.0f); // t = 0 => s = (b*t - c) / a = -c / a
 			} else {
 				// The general nondegenerate case starts here.
 				real_t b = d1.dot(d2);
 				real_t denom = a * e - b * b; // Always nonnegative.
 				// If segments not parallel, compute closest point on L1 to L2 and
 				// clamp to segment S1. Else pick arbitrary s (here 0).
-				if (denom != 0.0) {
-					s = CLAMP((b * f - c * e) / denom, 0.0, 1.0);
+				if (denom != 0.0f) {
+					s = CLAMP((b * f - c * e) / denom, 0.0f, 1.0f);
 				} else {
 					s = 0.0;
 				}
@@ -85,12 +86,12 @@ public:
 				//If t in [0,1] done. Else clamp t, recompute s for the new value
 				// of t using s = Dot((P2 + D2*t) - P1,D1) / Dot(D1,D1)= (t*b - c) / a
 				// and clamp s to [0, 1].
-				if (t < 0.0) {
+				if (t < 0.0f) {
 					t = 0.0;
-					s = CLAMP(-c / a, 0.0, 1.0);
-				} else if (t > 1.0) {
+					s = CLAMP(-c / a, 0.0f, 1.0f);
+				} else if (t > 1.0f) {
 					t = 1.0;
-					s = CLAMP((b - c) / a, 0.0, 1.0);
+					s = CLAMP((b - c) / a, 0.0f, 1.0f);
 				}
 			}
 		}
@@ -103,19 +104,23 @@ public:
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20) {
+		if (l2 < 1e-20f) {
 			return p_segment[0]; // Both points are the same, just give any.
 		}
 
 		real_t d = n.dot(p) / l2;
 
-		if (d <= 0.0) {
+		if (d <= 0.0f) {
 			return p_segment[0]; // Before first point.
-		} else if (d >= 1.0) {
+		} else if (d >= 1.0f) {
 			return p_segment[1]; // After first point.
 		} else {
 			return p_segment[0] + n * d; // Inside.
 		}
+	}
+
+	static real_t get_distance_to_segment(const Vector2 &p_point, const Vector2 *p_segment) {
+		return p_point.distance_to(get_closest_point_to_segment(p_point, p_segment));
 	}
 
 	static bool is_point_in_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) {
@@ -136,7 +141,7 @@ public:
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20) {
+		if (l2 < 1e-20f) {
 			return p_segment[0]; // Both points are the same, just give any.
 		}
 
@@ -183,18 +188,25 @@ public:
 		C = Vector2(C.x * Bn.x + C.y * Bn.y, C.y * Bn.x - C.x * Bn.y);
 		D = Vector2(D.x * Bn.x + D.y * Bn.y, D.y * Bn.x - D.x * Bn.y);
 
-		if ((C.y < 0 && D.y < 0) || (C.y >= 0 && D.y >= 0)) {
+		// Fail if C x B and D x B have the same sign (segments don't intersect).
+		if ((C.y < (real_t)-CMP_EPSILON && D.y < (real_t)-CMP_EPSILON) || (C.y > (real_t)CMP_EPSILON && D.y > (real_t)CMP_EPSILON)) {
+			return false;
+		}
+
+		// Fail if segments are parallel or colinear.
+		// (when A x B == zero, i.e (C - D) x B == zero, i.e C x B == D x B)
+		if (Math::is_equal_approx(C.y, D.y)) {
 			return false;
 		}
 
 		real_t ABpos = D.x + (C.x - D.x) * D.y / (D.y - C.y);
 
 		// Fail if segment C-D crosses line A-B outside of segment A-B.
-		if (ABpos < 0 || ABpos > 1.0) {
+		if ((ABpos < 0) || (ABpos > 1)) {
 			return false;
 		}
 
-		// (4) Apply the discovered position to line A-B in the original coordinate system.
+		// Apply the discovered position to line A-B in the original coordinate system.
 		if (r_result) {
 			*r_result = p_from_a + B * ABpos;
 		}
@@ -239,6 +251,28 @@ public:
 			return res2;
 		}
 		return -1;
+	}
+
+	static bool segment_intersects_rect(const Vector2 &p_from, const Vector2 &p_to, const Rect2 &p_rect) {
+		if (p_rect.has_point(p_from) || p_rect.has_point(p_to)) {
+			return true;
+		}
+
+		const Vector2 rect_points[4] = {
+			p_rect.position,
+			p_rect.position + Vector2(p_rect.size.x, 0),
+			p_rect.position + p_rect.size,
+			p_rect.position + Vector2(0, p_rect.size.y)
+		};
+
+		// Check if any of the rect's edges intersect the segment.
+		for (int i = 0; i < 4; i++) {
+			if (segment_intersects_segment(p_from, p_to, rect_points[i], rect_points[(i + 1) % 4], nullptr)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	enum PolyBooleanOperation {
@@ -298,10 +332,12 @@ public:
 		Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(p_points);
 		Vector<int> triangles;
 
+		triangles.resize(3 * tr.size());
+		int *ptr = triangles.ptrw();
 		for (int i = 0; i < tr.size(); i++) {
-			triangles.push_back(tr[i].points[0]);
-			triangles.push_back(tr[i].points[1]);
-			triangles.push_back(tr[i].points[2]);
+			*ptr++ = tr[i].points[0];
+			*ptr++ = tr[i].points[1];
+			*ptr++ = tr[i].points[2];
 		}
 		return triangles;
 	}
@@ -341,10 +377,8 @@ public:
 		Vector2 further_away_opposite(1e20, 1e20);
 
 		for (int i = 0; i < c; i++) {
-			further_away.x = MAX(p[i].x, further_away.x);
-			further_away.y = MAX(p[i].y, further_away.y);
-			further_away_opposite.x = MIN(p[i].x, further_away_opposite.x);
-			further_away_opposite.y = MIN(p[i].y, further_away_opposite.y);
+			further_away = further_away.max(p[i]);
+			further_away_opposite = further_away_opposite.min(p[i]);
 		}
 
 		// Make point outside that won't intersect with points in segment from p_point.
@@ -354,8 +388,14 @@ public:
 		for (int i = 0; i < c; i++) {
 			const Vector2 &v1 = p[i];
 			const Vector2 &v2 = p[(i + 1) % c];
-			if (segment_intersects_segment(v1, v2, p_point, further_away, nullptr)) {
+
+			Vector2 res;
+			if (segment_intersects_segment(v1, v2, p_point, further_away, &res)) {
 				intersections++;
+				if (res.is_equal_approx(p_point)) {
+					// Point is in one of the polygon edges.
+					return true;
+				}
 			}
 		}
 
@@ -447,10 +487,9 @@ public:
 		return points;
 	}
 
-	static Vector<Vector<Vector2>> decompose_polygon_in_convex(Vector<Point2> polygon);
+	static Vector<Vector<Vector2>> decompose_polygon_in_convex(const Vector<Point2> &polygon);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
-	static Vector<Point2i> pack_rects(const Vector<Size2i> &p_sizes, const Size2i &p_atlas_size);
 	static Vector<Vector3i> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);
 
 private:

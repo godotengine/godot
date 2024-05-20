@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  image_loader_png.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  image_loader_png.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "image_loader_png.h"
 
@@ -36,21 +36,19 @@
 
 #include <string.h>
 
-Error ImageLoaderPNG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
+Error ImageLoaderPNG::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	const uint64_t buffer_size = f->get_length();
 	Vector<uint8_t> file_buffer;
 	Error err = file_buffer.resize(buffer_size);
 	if (err) {
-		f->close();
 		return err;
 	}
 	{
 		uint8_t *writer = file_buffer.ptrw();
 		f->get_buffer(writer, buffer_size);
-		f->close();
 	}
 	const uint8_t *reader = file_buffer.ptr();
-	return PNGDriverCommon::png_to_image(reader, buffer_size, p_force_linear, p_image);
+	return PNGDriverCommon::png_to_image(reader, buffer_size, p_flags & FLAG_FORCE_LINEAR, p_image);
 }
 
 void ImageLoaderPNG::get_recognized_extensions(List<String> *p_extensions) const {
@@ -68,12 +66,14 @@ Ref<Image> ImageLoaderPNG::load_mem_png(const uint8_t *p_png, int p_size) {
 	return img;
 }
 
+Ref<Image> ImageLoaderPNG::unpack_mem_png(const uint8_t *p_png, int p_size) {
+	ERR_FAIL_COND_V(p_size < 4, Ref<Image>());
+	ERR_FAIL_COND_V(p_png[0] != 'P' || p_png[1] != 'N' || p_png[2] != 'G' || p_png[3] != ' ', Ref<Image>());
+	return load_mem_png(&p_png[4], p_size - 4);
+}
+
 Ref<Image> ImageLoaderPNG::lossless_unpack_png(const Vector<uint8_t> &p_data) {
-	const int len = p_data.size();
-	ERR_FAIL_COND_V(len < 4, Ref<Image>());
-	const uint8_t *r = p_data.ptr();
-	ERR_FAIL_COND_V(r[0] != 'P' || r[1] != 'N' || r[2] != 'G' || r[3] != ' ', Ref<Image>());
-	return load_mem_png(&r[4], len - 4);
+	return unpack_mem_png(p_data.ptr(), p_data.size());
 }
 
 Vector<uint8_t> ImageLoaderPNG::lossless_pack_png(const Ref<Image> &p_image) {
@@ -101,6 +101,7 @@ Vector<uint8_t> ImageLoaderPNG::lossless_pack_png(const Ref<Image> &p_image) {
 
 ImageLoaderPNG::ImageLoaderPNG() {
 	Image::_png_mem_loader_func = load_mem_png;
+	Image::_png_mem_unpacker_func = unpack_mem_png;
 	Image::png_unpacker = lossless_unpack_png;
 	Image::png_packer = lossless_pack_png;
 }

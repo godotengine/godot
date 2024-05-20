@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  texture_button.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  texture_button.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "texture_button.h"
 
@@ -37,7 +37,7 @@
 Size2 TextureButton::get_minimum_size() const {
 	Size2 rscale = Control::get_minimum_size();
 
-	if (!expand) {
+	if (!ignore_texture_size) {
 		if (normal.is_null()) {
 			if (pressed.is_null()) {
 				if (hover.is_null()) {
@@ -64,10 +64,10 @@ Size2 TextureButton::get_minimum_size() const {
 bool TextureButton::has_point(const Point2 &p_point) const {
 	if (click_mask.is_valid()) {
 		Point2 point = p_point;
-		Rect2 rect = Rect2();
+		Rect2 rect;
 		Size2 mask_size = click_mask->get_size();
 
-		if (_position_rect.has_no_area()) {
+		if (!_position_rect.has_area()) {
 			rect.size = mask_size;
 		} else if (_tile) {
 			// if the stretch mode is tile we offset the point to keep it inside the mask size
@@ -103,8 +103,8 @@ bool TextureButton::has_point(const Point2 &p_point) const {
 			point *= scale;
 
 			// finally, we need to check if the point is inside a rectangle with a position >= 0,0 and a size <= mask_size
-			rect.position = Point2(MAX(0, _texture_region.position.x), MAX(0, _texture_region.position.y));
-			rect.size = Size2(MIN(mask_size.x, _texture_region.size.x), MIN(mask_size.y, _texture_region.size.y));
+			rect.position = _texture_region.position.maxf(0);
+			rect.size = mask_size.min(_texture_region.size);
 		}
 
 		if (!rect.has_point(point)) {
@@ -112,7 +112,7 @@ bool TextureButton::has_point(const Point2 &p_point) const {
 		}
 
 		Point2i p = point;
-		return click_mask->get_bit(p);
+		return click_mask->get_bitv(p);
 	}
 
 	return Control::has_point(p_point);
@@ -170,55 +170,60 @@ void TextureButton::_notification(int p_what) {
 
 			Point2 ofs;
 			Size2 size;
+			bool draw_focus = (has_focus() && focused.is_valid());
+
+			// If no other texture is valid, try using focused texture.
+			bool draw_focus_only = draw_focus && !texdraw.is_valid();
+			if (draw_focus_only) {
+				texdraw = focused;
+			}
 
 			if (texdraw.is_valid()) {
 				size = texdraw->get_size();
 				_texture_region = Rect2(Point2(), texdraw->get_size());
 				_tile = false;
-				if (expand) {
-					switch (stretch_mode) {
-						case STRETCH_KEEP:
-							size = texdraw->get_size();
-							break;
-						case STRETCH_SCALE:
-							size = get_size();
-							break;
-						case STRETCH_TILE:
-							size = get_size();
-							_tile = true;
-							break;
-						case STRETCH_KEEP_CENTERED:
-							ofs = (get_size() - texdraw->get_size()) / 2;
-							size = texdraw->get_size();
-							break;
-						case STRETCH_KEEP_ASPECT_CENTERED:
-						case STRETCH_KEEP_ASPECT: {
-							Size2 _size = get_size();
-							float tex_width = texdraw->get_width() * _size.height / texdraw->get_height();
-							float tex_height = _size.height;
+				switch (stretch_mode) {
+					case STRETCH_KEEP:
+						size = texdraw->get_size();
+						break;
+					case STRETCH_SCALE:
+						size = get_size();
+						break;
+					case STRETCH_TILE:
+						size = get_size();
+						_tile = true;
+						break;
+					case STRETCH_KEEP_CENTERED:
+						ofs = (get_size() - texdraw->get_size()) / 2;
+						size = texdraw->get_size();
+						break;
+					case STRETCH_KEEP_ASPECT_CENTERED:
+					case STRETCH_KEEP_ASPECT: {
+						Size2 _size = get_size();
+						float tex_width = texdraw->get_width() * _size.height / texdraw->get_height();
+						float tex_height = _size.height;
 
-							if (tex_width > _size.width) {
-								tex_width = _size.width;
-								tex_height = texdraw->get_height() * tex_width / texdraw->get_width();
-							}
+						if (tex_width > _size.width) {
+							tex_width = _size.width;
+							tex_height = texdraw->get_height() * tex_width / texdraw->get_width();
+						}
 
-							if (stretch_mode == STRETCH_KEEP_ASPECT_CENTERED) {
-								ofs.x = (_size.width - tex_width) / 2;
-								ofs.y = (_size.height - tex_height) / 2;
-							}
-							size.width = tex_width;
-							size.height = tex_height;
-						} break;
-						case STRETCH_KEEP_ASPECT_COVERED: {
-							size = get_size();
-							Size2 tex_size = texdraw->get_size();
-							Size2 scale_size(size.width / tex_size.width, size.height / tex_size.height);
-							float scale = scale_size.width > scale_size.height ? scale_size.width : scale_size.height;
-							Size2 scaled_tex_size = tex_size * scale;
-							Point2 ofs2 = ((scaled_tex_size - size) / scale).abs() / 2.0f;
-							_texture_region = Rect2(ofs2, size / scale);
-						} break;
-					}
+						if (stretch_mode == STRETCH_KEEP_ASPECT_CENTERED) {
+							ofs.x = (_size.width - tex_width) / 2;
+							ofs.y = (_size.height - tex_height) / 2;
+						}
+						size.width = tex_width;
+						size.height = tex_height;
+					} break;
+					case STRETCH_KEEP_ASPECT_COVERED: {
+						size = get_size();
+						Size2 tex_size = texdraw->get_size();
+						Size2 scale_size(size.width / tex_size.width, size.height / tex_size.height);
+						float scale = scale_size.width > scale_size.height ? scale_size.width : scale_size.height;
+						Size2 scaled_tex_size = tex_size * scale;
+						Point2 ofs2 = ((scaled_tex_size - size) / scale).abs() / 2.0f;
+						_texture_region = Rect2(ofs2, size / scale);
+					} break;
 				}
 
 				_position_rect = Rect2(ofs, size);
@@ -226,7 +231,9 @@ void TextureButton::_notification(int p_what) {
 				size.width *= hflip ? -1.0f : 1.0f;
 				size.height *= vflip ? -1.0f : 1.0f;
 
-				if (_tile) {
+				if (draw_focus_only) {
+					// Do nothing, we only needed to calculate the rectangle.
+				} else if (_tile) {
 					draw_texture_rect(texdraw, Rect2(ofs, size), _tile);
 				} else {
 					draw_texture_rect_region(texdraw, Rect2(ofs, size), _texture_region);
@@ -235,7 +242,7 @@ void TextureButton::_notification(int p_what) {
 				_position_rect = Rect2();
 			}
 
-			if (has_focus() && focused.is_valid()) {
+			if (draw_focus) {
 				draw_texture_rect(focused, Rect2(ofs, size), false);
 			};
 		} break;
@@ -243,36 +250,36 @@ void TextureButton::_notification(int p_what) {
 }
 
 void TextureButton::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_normal_texture", "texture"), &TextureButton::set_normal_texture);
-	ClassDB::bind_method(D_METHOD("set_pressed_texture", "texture"), &TextureButton::set_pressed_texture);
-	ClassDB::bind_method(D_METHOD("set_hover_texture", "texture"), &TextureButton::set_hover_texture);
-	ClassDB::bind_method(D_METHOD("set_disabled_texture", "texture"), &TextureButton::set_disabled_texture);
-	ClassDB::bind_method(D_METHOD("set_focused_texture", "texture"), &TextureButton::set_focused_texture);
+	ClassDB::bind_method(D_METHOD("set_texture_normal", "texture"), &TextureButton::set_texture_normal);
+	ClassDB::bind_method(D_METHOD("set_texture_pressed", "texture"), &TextureButton::set_texture_pressed);
+	ClassDB::bind_method(D_METHOD("set_texture_hover", "texture"), &TextureButton::set_texture_hover);
+	ClassDB::bind_method(D_METHOD("set_texture_disabled", "texture"), &TextureButton::set_texture_disabled);
+	ClassDB::bind_method(D_METHOD("set_texture_focused", "texture"), &TextureButton::set_texture_focused);
 	ClassDB::bind_method(D_METHOD("set_click_mask", "mask"), &TextureButton::set_click_mask);
-	ClassDB::bind_method(D_METHOD("set_expand", "expand"), &TextureButton::set_expand);
+	ClassDB::bind_method(D_METHOD("set_ignore_texture_size", "ignore"), &TextureButton::set_ignore_texture_size);
 	ClassDB::bind_method(D_METHOD("set_stretch_mode", "mode"), &TextureButton::set_stretch_mode);
 	ClassDB::bind_method(D_METHOD("set_flip_h", "enable"), &TextureButton::set_flip_h);
 	ClassDB::bind_method(D_METHOD("is_flipped_h"), &TextureButton::is_flipped_h);
 	ClassDB::bind_method(D_METHOD("set_flip_v", "enable"), &TextureButton::set_flip_v);
 	ClassDB::bind_method(D_METHOD("is_flipped_v"), &TextureButton::is_flipped_v);
 
-	ClassDB::bind_method(D_METHOD("get_normal_texture"), &TextureButton::get_normal_texture);
-	ClassDB::bind_method(D_METHOD("get_pressed_texture"), &TextureButton::get_pressed_texture);
-	ClassDB::bind_method(D_METHOD("get_hover_texture"), &TextureButton::get_hover_texture);
-	ClassDB::bind_method(D_METHOD("get_disabled_texture"), &TextureButton::get_disabled_texture);
-	ClassDB::bind_method(D_METHOD("get_focused_texture"), &TextureButton::get_focused_texture);
+	ClassDB::bind_method(D_METHOD("get_texture_normal"), &TextureButton::get_texture_normal);
+	ClassDB::bind_method(D_METHOD("get_texture_pressed"), &TextureButton::get_texture_pressed);
+	ClassDB::bind_method(D_METHOD("get_texture_hover"), &TextureButton::get_texture_hover);
+	ClassDB::bind_method(D_METHOD("get_texture_disabled"), &TextureButton::get_texture_disabled);
+	ClassDB::bind_method(D_METHOD("get_texture_focused"), &TextureButton::get_texture_focused);
 	ClassDB::bind_method(D_METHOD("get_click_mask"), &TextureButton::get_click_mask);
-	ClassDB::bind_method(D_METHOD("get_expand"), &TextureButton::get_expand);
+	ClassDB::bind_method(D_METHOD("get_ignore_texture_size"), &TextureButton::get_ignore_texture_size);
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &TextureButton::get_stretch_mode);
 
 	ADD_GROUP("Textures", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_texture", "get_normal_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_pressed_texture", "get_pressed_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_hover", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_hover_texture", "get_hover_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_disabled", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_disabled_texture", "get_disabled_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_focused", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_focused_texture", "get_focused_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_normal", "get_texture_normal");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_pressed", "get_texture_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_hover", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_hover", "get_texture_hover");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_disabled", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_disabled", "get_texture_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_focused", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_focused", "get_texture_focused");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_click_mask", PROPERTY_HINT_RESOURCE_TYPE, "BitMap"), "set_click_mask", "get_click_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand", PROPERTY_HINT_RESOURCE_TYPE, "bool"), "set_expand", "get_expand");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_texture_size", PROPERTY_HINT_RESOURCE_TYPE, "bool"), "set_ignore_texture_size", "get_ignore_texture_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h", PROPERTY_HINT_RESOURCE_TYPE, "bool"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v", PROPERTY_HINT_RESOURCE_TYPE, "bool"), "set_flip_v", "is_flipped_v");
@@ -286,48 +293,43 @@ void TextureButton::_bind_methods() {
 	BIND_ENUM_CONSTANT(STRETCH_KEEP_ASPECT_COVERED);
 }
 
-void TextureButton::set_normal_texture(const Ref<Texture2D> &p_normal) {
-	normal = p_normal;
-	update();
-	minimum_size_changed();
+void TextureButton::set_texture_normal(const Ref<Texture2D> &p_normal) {
+	_set_texture(&normal, p_normal);
 }
 
-void TextureButton::set_pressed_texture(const Ref<Texture2D> &p_pressed) {
-	pressed = p_pressed;
-	update();
-	minimum_size_changed();
+void TextureButton::set_texture_pressed(const Ref<Texture2D> &p_pressed) {
+	_set_texture(&pressed, p_pressed);
 }
 
-void TextureButton::set_hover_texture(const Ref<Texture2D> &p_hover) {
-	hover = p_hover;
-	update();
-	minimum_size_changed();
+void TextureButton::set_texture_hover(const Ref<Texture2D> &p_hover) {
+	_set_texture(&hover, p_hover);
 }
 
-void TextureButton::set_disabled_texture(const Ref<Texture2D> &p_disabled) {
-	disabled = p_disabled;
-	update();
+void TextureButton::set_texture_disabled(const Ref<Texture2D> &p_disabled) {
+	_set_texture(&disabled, p_disabled);
 }
 
 void TextureButton::set_click_mask(const Ref<BitMap> &p_click_mask) {
+	if (click_mask == p_click_mask) {
+		return;
+	}
 	click_mask = p_click_mask;
-	update();
-	minimum_size_changed();
+	_texture_changed();
 }
 
-Ref<Texture2D> TextureButton::get_normal_texture() const {
+Ref<Texture2D> TextureButton::get_texture_normal() const {
 	return normal;
 }
 
-Ref<Texture2D> TextureButton::get_pressed_texture() const {
+Ref<Texture2D> TextureButton::get_texture_pressed() const {
 	return pressed;
 }
 
-Ref<Texture2D> TextureButton::get_hover_texture() const {
+Ref<Texture2D> TextureButton::get_texture_hover() const {
 	return hover;
 }
 
-Ref<Texture2D> TextureButton::get_disabled_texture() const {
+Ref<Texture2D> TextureButton::get_texture_disabled() const {
 	return disabled;
 }
 
@@ -335,27 +337,57 @@ Ref<BitMap> TextureButton::get_click_mask() const {
 	return click_mask;
 }
 
-Ref<Texture2D> TextureButton::get_focused_texture() const {
+Ref<Texture2D> TextureButton::get_texture_focused() const {
 	return focused;
 };
 
-void TextureButton::set_focused_texture(const Ref<Texture2D> &p_focused) {
+void TextureButton::set_texture_focused(const Ref<Texture2D> &p_focused) {
 	focused = p_focused;
 };
 
-bool TextureButton::get_expand() const {
-	return expand;
+void TextureButton::_set_texture(Ref<Texture2D> *p_destination, const Ref<Texture2D> &p_texture) {
+	DEV_ASSERT(p_destination);
+	Ref<Texture2D> &destination = *p_destination;
+	if (destination == p_texture) {
+		return;
+	}
+	if (destination.is_valid()) {
+		destination->disconnect_changed(callable_mp(this, &TextureButton::_texture_changed));
+	}
+	destination = p_texture;
+	if (destination.is_valid()) {
+		// Pass `CONNECT_REFERENCE_COUNTED` to avoid early disconnect in case the same texture is assigned to different "slots".
+		destination->connect_changed(callable_mp(this, &TextureButton::_texture_changed), CONNECT_REFERENCE_COUNTED);
+	}
+	_texture_changed();
 }
 
-void TextureButton::set_expand(bool p_expand) {
-	expand = p_expand;
-	minimum_size_changed();
-	update();
+void TextureButton::_texture_changed() {
+	queue_redraw();
+	update_minimum_size();
+}
+
+bool TextureButton::get_ignore_texture_size() const {
+	return ignore_texture_size;
+}
+
+void TextureButton::set_ignore_texture_size(bool p_ignore) {
+	if (ignore_texture_size == p_ignore) {
+		return;
+	}
+
+	ignore_texture_size = p_ignore;
+	update_minimum_size();
+	queue_redraw();
 }
 
 void TextureButton::set_stretch_mode(StretchMode p_stretch_mode) {
+	if (stretch_mode == p_stretch_mode) {
+		return;
+	}
+
 	stretch_mode = p_stretch_mode;
-	update();
+	queue_redraw();
 }
 
 TextureButton::StretchMode TextureButton::get_stretch_mode() const {
@@ -363,8 +395,12 @@ TextureButton::StretchMode TextureButton::get_stretch_mode() const {
 }
 
 void TextureButton::set_flip_h(bool p_flip) {
+	if (hflip == p_flip) {
+		return;
+	}
+
 	hflip = p_flip;
-	update();
+	queue_redraw();
 }
 
 bool TextureButton::is_flipped_h() const {
@@ -372,8 +408,12 @@ bool TextureButton::is_flipped_h() const {
 }
 
 void TextureButton::set_flip_v(bool p_flip) {
+	if (vflip == p_flip) {
+		return;
+	}
+
 	vflip = p_flip;
-	update();
+	queue_redraw();
 }
 
 bool TextureButton::is_flipped_v() const {

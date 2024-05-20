@@ -1,74 +1,62 @@
 name: 🤖 Android Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 env:
+  # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
-  SCONSFLAGS: platform=android verbose=yes warnings=extra werror=yes debug_symbols=no --jobs=2 module_text_server_fb_enabled=yes
-  SCONS_CACHE_LIMIT: 4096
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-android
+  cancel-in-progress: true
 
 jobs:
   android-template:
     runs-on: "ubuntu-20.04"
-
-    name: Template (target=release, tools=no)
+    name: Template (target=template_release)
 
     steps:
-      - uses: actions/checkout@v2
-
-      # Azure repositories are not reliable, we need to prevent azure giving us packages.
-      - name: Make apt sources.list use the default Ubuntu repositories
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/*
-          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
-          sudo apt-get update
-
-      - name: Set up Java 8
-        uses: actions/setup-java@v1
+      - uses: actions/checkout@v4
         with:
-          java-version: 8
+          submodules: recursive
 
-      # Upload cache on completion and check it out now
-      - name: Load .scons_cache directory
-        id: android-template-cache
-        uses: actions/cache@v2
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
         with:
-          path: ${{github.workspace}}/.scons_cache/
-          key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-          restore-keys: |
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
-            ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
+          distribution: temurin
+          java-version: 17
 
-      # Use python 3.x release (works cross platform)
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v2
+      - name: Setup Godot build cache
+        uses: ./.github/actions/godot-cache
+        continue-on-error: true
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      - name: Compilation (arm32)
+        uses: ./.github/actions/godot-build
         with:
-          # Semantic version range syntax or exact version of a Python version
-          python-version: '3.x'
-          # Optional - x64 or x86 architecture, defaults to x64
-          architecture: 'x64'
+          sconsflags: ${{ env.SCONSFLAGS }} arch=arm32
+          platform: android
+          target: template_release
+          tests: false
 
-      - name: Configuring Python packages
-        run: |
-          python -c "import sys; print(sys.version)"
-          python -m pip install scons
-          python --version
-          scons --version
+      - name: Compilation (arm64)
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }} arch=arm64
+          platform: android
+          target: template_release
+          tests: false
 
-      - name: Compilation
-        env:
-          SCONS_CACHE: ${{github.workspace}}/.scons_cache/
+      - name: Generate Godot templates
         run: |
-          scons target=release tools=no android_arch=armv7
-          scons target=release tools=no android_arch=arm64v8
           cd platform/android/java
           ./gradlew generateGodotTemplates
           cd ../../..
           ls -l bin/
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ${{ github.job }}
-          path: bin/*
-          retention-days: 14
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact

@@ -205,10 +205,6 @@ namespace basist
 		{
 			uint8_t m_bytes[16];
 			uint32_t m_dwords[4];
-
-#ifndef __EMSCRIPTEN__
-			uint64_t m_qwords[2];
-#endif
 		};
 	};
 

@@ -4,7 +4,7 @@
  *
  *   The FreeType BDF services (specification).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,

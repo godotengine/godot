@@ -4,7 +4,7 @@
  *
  *   Auxiliary functions for PostScript fonts (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -84,7 +84,6 @@
 
     table->max_elems = count;
     table->init      = 0xDEADBEEFUL;
-    table->num_elems = 0;
     table->block     = NULL;
     table->capacity  = 0;
     table->cursor    = 0;
@@ -99,45 +98,31 @@
   }
 
 
-  static void
-  shift_elements( PS_Table  table,
-                  FT_Byte*  old_base )
-  {
-    FT_PtrDist  delta  = table->block - old_base;
-    FT_Byte**   offset = table->elements;
-    FT_Byte**   limit  = offset + table->max_elems;
-
-
-    for ( ; offset < limit; offset++ )
-    {
-      if ( offset[0] )
-        offset[0] += delta;
-    }
-  }
-
-
   static FT_Error
-  reallocate_t1_table( PS_Table   table,
-                       FT_Offset  new_size )
+  ps_table_realloc( PS_Table   table,
+                    FT_Offset  new_size )
   {
     FT_Memory  memory   = table->memory;
     FT_Byte*   old_base = table->block;
     FT_Error   error;
 
 
-    /* allocate new base block */
-    if ( FT_ALLOC( table->block, new_size ) )
-    {
-      table->block = old_base;
+    /* (re)allocate the base block */
+    if ( FT_REALLOC( table->block, table->capacity, new_size ) )
       return error;
-    }
 
-    /* copy elements and shift offsets */
-    if ( old_base )
+    /* rebase offsets if necessary */
+    if ( old_base && table->block != old_base )
     {
-      FT_MEM_COPY( table->block, old_base, table->capacity );
-      shift_elements( table, old_base );
-      FT_FREE( old_base );
+      FT_Byte**   offset = table->elements;
+      FT_Byte**   limit  = offset + table->max_elems;
+
+
+      for ( ; offset < limit; offset++ )
+      {
+        if ( *offset )
+          *offset = table->block + ( *offset - old_base );
+      }
     }
 
     table->capacity = new_size;
@@ -204,7 +189,7 @@
         new_size  = FT_PAD_CEIL( new_size, 1024 );
       }
 
-      error = reallocate_t1_table( table, new_size );
+      error = ps_table_realloc( table, new_size );
       if ( error )
         return error;
 
@@ -234,32 +219,12 @@
    * @InOut:
    *   table ::
    *     The target table.
-   *
-   * @Note:
-   *   This function does NOT release the heap's memory block.  It is up
-   *   to the caller to clean it, or reference it in its own structures.
    */
   FT_LOCAL_DEF( void )
   ps_table_done( PS_Table  table )
   {
-    FT_Memory  memory = table->memory;
-    FT_Error   error;
-    FT_Byte*   old_base = table->block;
-
-
-    /* should never fail, because rec.cursor <= rec.size */
-    if ( !old_base )
-      return;
-
-    if ( FT_ALLOC( table->block, table->cursor ) )
-      return;
-    FT_MEM_COPY( table->block, old_base, table->cursor );
-    shift_elements( table, old_base );
-
-    table->capacity = table->cursor;
-    FT_FREE( old_base );
-
-    FT_UNUSED( error );
+    /* no problem if shrinking fails */
+    ps_table_realloc( table, table->cursor );
   }
 
 
@@ -269,7 +234,7 @@
     FT_Memory  memory = table->memory;
 
 
-    if ( (FT_ULong)table->init == 0xDEADBEEFUL )
+    if ( table->init == 0xDEADBEEFUL )
     {
       FT_FREE( table->block );
       FT_FREE( table->elements );
@@ -552,7 +517,7 @@
 
     if ( *cur == '<' )                              /* <...> */
     {
-      if ( cur + 1 < limit && *(cur + 1) == '<' )   /* << */
+      if ( cur + 1 < limit && *( cur + 1 ) == '<' ) /* << */
       {
         cur++;
         cur++;
@@ -595,10 +560,10 @@
     if ( cur < limit && cur == parser->cursor )
     {
       FT_ERROR(( "ps_parser_skip_PS_token:"
-                 " current token is `%c' which is self-delimiting\n"
-                 "                        "
-                 " but invalid at this point\n",
+                 " current token is `%c' which is self-delimiting\n",
                  *cur ));
+      FT_ERROR(( "                        "
+                 " but invalid at this point\n" ));
 
       error = FT_THROW( Invalid_File_Format );
     }
@@ -979,7 +944,7 @@
     }
 
     len = (FT_UInt)( cur - *cursor );
-    if ( cur >= limit || FT_ALLOC( result, len + 1 ) )
+    if ( cur >= limit || FT_QALLOC( result, len + 1 ) )
       return 0;
 
     /* now copy the string */
@@ -1098,7 +1063,6 @@
     {
       FT_Byte*    q      = (FT_Byte*)objects[idx] + field->offset;
       FT_Long     val;
-      FT_String*  string = NULL;
 
 
       skip_spaces( &cur, limit );
@@ -1148,8 +1112,9 @@
       case T1_FIELD_TYPE_STRING:
       case T1_FIELD_TYPE_KEY:
         {
-          FT_Memory  memory = parser->memory;
-          FT_UInt    len    = (FT_UInt)( limit - cur );
+          FT_Memory   memory = parser->memory;
+          FT_UInt     len    = (FT_UInt)( limit - cur );
+          FT_String*  string = NULL;
 
 
           if ( cur >= limit )
@@ -1175,8 +1140,8 @@
           else
           {
             FT_ERROR(( "ps_parser_load_field:"
-                       " expected a name or string\n"
-                       "                     "
+                       " expected a name or string\n" ));
+            FT_ERROR(( "                     "
                        " but found token of type %d instead\n",
                        token.type ));
             error = FT_THROW( Invalid_File_Format );
@@ -1190,10 +1155,9 @@
             FT_TRACE0(( "ps_parser_load_field: overwriting field %s\n",
                         field->ident ));
             FT_FREE( *(FT_String**)q );
-            *(FT_String**)q = NULL;
           }
 
-          if ( FT_ALLOC( string, len + 1 ) )
+          if ( FT_QALLOC( string, len + 1 ) )
             goto Exit;
 
           FT_MEM_COPY( string, cur, len );
@@ -1248,7 +1212,7 @@
           FT_UInt    i;
 
 
-          if ( FT_NEW_ARRAY( temp, max_objects * 4 ) )
+          if ( FT_QNEW_ARRAY( temp, max_objects * 4 ) )
             goto Exit;
 
           for ( i = 0; i < 4; i++ )
@@ -1258,14 +1222,14 @@
             if ( result < 0 || (FT_UInt)result < max_objects )
             {
               FT_ERROR(( "ps_parser_load_field:"
-                         " expected %d integer%s in the %s subarray\n"
-                         "                     "
-                         " of /FontBBox in the /Blend dictionary\n",
+                         " expected %d integer%s in the %s subarray\n",
                          max_objects, max_objects > 1 ? "s" : "",
                          i == 0 ? "first"
                                 : ( i == 1 ? "second"
                                            : ( i == 2 ? "third"
                                                       : "fourth" ) ) ));
+              FT_ERROR(( "                     "
+                         " of /FontBBox in the /Blend dictionary\n" ));
               error = FT_THROW( Invalid_File_Format );
 
               FT_FREE( temp );

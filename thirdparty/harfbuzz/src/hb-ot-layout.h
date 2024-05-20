@@ -255,6 +255,15 @@ hb_ot_layout_script_select_language (hb_face_t      *face,
 				     unsigned int   *language_index /* OUT */);
 
 HB_EXTERN hb_bool_t
+hb_ot_layout_script_select_language2 (hb_face_t      *face,
+				     hb_tag_t        table_tag,
+				     unsigned int    script_index,
+				     unsigned int    language_count,
+				     const hb_tag_t *language_tags,
+				     unsigned int   *language_index /* OUT */,
+				     hb_tag_t       *chosen_language /* OUT */);
+
+HB_EXTERN hb_bool_t
 hb_ot_layout_language_get_required_feature_index (hb_face_t    *face,
 						  hb_tag_t      table_tag,
 						  unsigned int  script_index,
@@ -316,6 +325,13 @@ hb_ot_layout_collect_features (hb_face_t      *face,
 			       hb_set_t       *feature_indexes /* OUT */);
 
 HB_EXTERN void
+hb_ot_layout_collect_features_map (hb_face_t      *face,
+				   hb_tag_t        table_tag,
+				   unsigned        script_index,
+				   unsigned        language_index,
+				   hb_map_t       *feature_map /* OUT */);
+
+HB_EXTERN void
 hb_ot_layout_collect_lookups (hb_face_t      *face,
 			      hb_tag_t        table_tag,
 			      const hb_tag_t *scripts,
@@ -332,31 +348,6 @@ hb_ot_layout_lookup_collect_glyphs (hb_face_t    *face,
 				    hb_set_t     *glyphs_after,  /* OUT.  May be NULL */
 				    hb_set_t     *glyphs_output  /* OUT.  May be NULL */);
 
-#ifdef HB_NOT_IMPLEMENTED
-typedef struct
-{
-  const hb_codepoint_t *before,
-  unsigned int          before_length,
-  const hb_codepoint_t *input,
-  unsigned int          input_length,
-  const hb_codepoint_t *after,
-  unsigned int          after_length,
-} hb_ot_layout_glyph_sequence_t;
-
-typedef hb_bool_t
-(*hb_ot_layout_glyph_sequence_func_t) (hb_font_t    *font,
-				       hb_tag_t      table_tag,
-				       unsigned int  lookup_index,
-				       const hb_ot_layout_glyph_sequence_t *sequence,
-				       void         *user_data);
-
-HB_EXTERN void
-Xhb_ot_layout_lookup_enumerate_sequences (hb_face_t    *face,
-					 hb_tag_t      table_tag,
-					 unsigned int  lookup_index,
-					 hb_ot_layout_glyph_sequence_func_t callback,
-					 void         *user_data);
-#endif
 
 /* Variations support */
 
@@ -411,34 +402,12 @@ hb_ot_layout_lookups_substitute_closure (hb_face_t      *face,
 					 hb_set_t       *glyphs);
 
 
-#ifdef HB_NOT_IMPLEMENTED
-/* Note: You better have GDEF when using this API, or marks won't do much. */
-HB_EXTERN hb_bool_t
-Xhb_ot_layout_lookup_substitute (hb_font_t            *font,
-				unsigned int          lookup_index,
-				const hb_ot_layout_glyph_sequence_t *sequence,
-				unsigned int          out_size,
-				hb_codepoint_t       *glyphs_out,   /* OUT */
-				unsigned int         *clusters_out, /* OUT */
-				unsigned int         *out_length    /* OUT */);
-#endif
-
-
 /*
  * GPOS
  */
 
 HB_EXTERN hb_bool_t
 hb_ot_layout_has_positioning (hb_face_t *face);
-
-#ifdef HB_NOT_IMPLEMENTED
-/* Note: You better have GDEF when using this API, or marks won't do much. */
-HB_EXTERN hb_bool_t
-Xhb_ot_layout_lookup_position (hb_font_t            *font,
-			      unsigned int          lookup_index,
-			      const hb_ot_layout_glyph_sequence_t *sequence,
-			      hb_glyph_position_t  *positions /* IN / OUT */);
-#endif
 
 /* Optical 'size' feature info.  Returns true if found.
  * https://docs.microsoft.com/en-us/typography/opentype/spec/features_pt#size */
@@ -450,6 +419,16 @@ hb_ot_layout_get_size_params (hb_face_t       *face,
 			      unsigned int    *range_start,       /* OUT.  May be NULL */
 			      unsigned int    *range_end          /* OUT.  May be NULL */);
 
+HB_EXTERN hb_position_t
+hb_ot_layout_lookup_get_optical_bound (hb_font_t      *font,
+				       unsigned        lookup_index,
+				       hb_direction_t  direction,
+				       hb_codepoint_t  glyph);
+
+
+/*
+ * GSUB/GPOS
+ */
 
 HB_EXTERN hb_bool_t
 hb_ot_layout_feature_get_name_ids (hb_face_t       *face,
@@ -470,9 +449,24 @@ hb_ot_layout_feature_get_characters (hb_face_t      *face,
 				     unsigned int   *char_count    /* IN/OUT.  May be NULL */,
 				     hb_codepoint_t *characters    /* OUT.     May be NULL */);
 
+
 /*
  * BASE
  */
+
+HB_EXTERN hb_bool_t
+hb_ot_layout_get_font_extents (hb_font_t         *font,
+			       hb_direction_t     direction,
+			       hb_tag_t           script_tag,
+			       hb_tag_t           language_tag,
+			       hb_font_extents_t *extents);
+
+HB_EXTERN hb_bool_t
+hb_ot_layout_get_font_extents2 (hb_font_t         *font,
+				hb_direction_t     direction,
+				hb_script_t        script,
+				hb_language_t      language,
+				hb_font_extents_t *extents);
 
 /**
  * hb_ot_layout_baseline_tag_t:
@@ -487,9 +481,11 @@ hb_ot_layout_feature_get_characters (hb_face_t      *face,
  * if the direction is horizontal or vertical, respectively.
  * @HB_OT_LAYOUT_BASELINE_TAG_IDEO_FACE_TOP_OR_RIGHT: Ideographic character face top or right edge,
  * if the direction is horizontal or vertical, respectively.
+ * @HB_OT_LAYOUT_BASELINE_TAG_IDEO_FACE_CENTRAL: The center of the ideographic character face. Since: 4.0.0
  * @HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_BOTTOM_OR_LEFT: Ideographic em-box bottom or left edge,
  * if the direction is horizontal or vertical, respectively.
  * @HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_TOP_OR_RIGHT: Ideographic em-box top or right edge baseline,
+ * @HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_CENTRAL: The center of the ideographic em-box. Since: 4.0.0
  * if the direction is horizontal or vertical, respectively.
  * @HB_OT_LAYOUT_BASELINE_TAG_MATH: The baseline about which mathematical characters are centered.
  * In vertical writing mode when mathematical characters rotated 90 degrees clockwise, are centered.
@@ -503,13 +499,18 @@ typedef enum {
   HB_OT_LAYOUT_BASELINE_TAG_HANGING			= HB_TAG ('h','a','n','g'),
   HB_OT_LAYOUT_BASELINE_TAG_IDEO_FACE_BOTTOM_OR_LEFT	= HB_TAG ('i','c','f','b'),
   HB_OT_LAYOUT_BASELINE_TAG_IDEO_FACE_TOP_OR_RIGHT	= HB_TAG ('i','c','f','t'),
+  HB_OT_LAYOUT_BASELINE_TAG_IDEO_FACE_CENTRAL		= HB_TAG ('I','c','f','c'),
   HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_BOTTOM_OR_LEFT	= HB_TAG ('i','d','e','o'),
   HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_TOP_OR_RIGHT	= HB_TAG ('i','d','t','p'),
+  HB_OT_LAYOUT_BASELINE_TAG_IDEO_EMBOX_CENTRAL		= HB_TAG ('I','d','c','e'),
   HB_OT_LAYOUT_BASELINE_TAG_MATH			= HB_TAG ('m','a','t','h'),
 
   /*< private >*/
   _HB_OT_LAYOUT_BASELINE_TAG_MAX_VALUE = HB_TAG_MAX_SIGNED /*< skip >*/
 } hb_ot_layout_baseline_tag_t;
+
+HB_EXTERN hb_ot_layout_baseline_tag_t
+hb_ot_layout_get_horizontal_baseline_tag_for_script (hb_script_t script);
 
 HB_EXTERN hb_bool_t
 hb_ot_layout_get_baseline (hb_font_t                   *font,
@@ -518,6 +519,30 @@ hb_ot_layout_get_baseline (hb_font_t                   *font,
 			   hb_tag_t                     script_tag,
 			   hb_tag_t                     language_tag,
 			   hb_position_t               *coord        /* OUT.  May be NULL. */);
+
+HB_EXTERN hb_bool_t
+hb_ot_layout_get_baseline2 (hb_font_t                   *font,
+			    hb_ot_layout_baseline_tag_t  baseline_tag,
+			    hb_direction_t               direction,
+			    hb_script_t                  script,
+			    hb_language_t                language,
+			    hb_position_t               *coord        /* OUT.  May be NULL. */);
+
+HB_EXTERN void
+hb_ot_layout_get_baseline_with_fallback (hb_font_t                   *font,
+					 hb_ot_layout_baseline_tag_t  baseline_tag,
+					 hb_direction_t               direction,
+					 hb_tag_t                     script_tag,
+					 hb_tag_t                     language_tag,
+					 hb_position_t               *coord        /* OUT */);
+
+HB_EXTERN void
+hb_ot_layout_get_baseline_with_fallback2 (hb_font_t                   *font,
+					  hb_ot_layout_baseline_tag_t  baseline_tag,
+					  hb_direction_t               direction,
+					  hb_script_t                  script,
+					  hb_language_t                language,
+					  hb_position_t               *coord        /* OUT */);
 
 HB_END_DECLS
 

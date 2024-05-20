@@ -1,0 +1,6 @@
+GDTEST_OK
+>> WARNING
+>> Line: 6
+>> UNSAFE_METHOD_ACCESS
+>> The method "free()" is not present on the inferred type "Variant" (but may be present on a subtype).
+Ok

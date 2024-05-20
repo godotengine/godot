@@ -1,40 +1,42 @@
-/*************************************************************************/
-/*  code_completion.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  code_completion.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "code_completion.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/script_language.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/control.h"
 #include "scene/main/node.h"
+#include "scene/theme/theme_db.h"
 
 namespace gdmono {
 
@@ -120,8 +122,8 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 		} break;
 		case CompletionKind::NODE_PATHS: {
 			{
-				// AutoLoads
-				Map<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+				// Autoloads.
+				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
 				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 					const ProjectSettings::AutoloadInfo &info = E.value;
@@ -139,12 +141,12 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			}
 		} break;
 		case CompletionKind::RESOURCE_PATHS: {
-			if (bool(EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths"))) {
+			if (bool(EDITOR_GET("text_editor/completion/complete_file_paths"))) {
 				_get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), suggestions);
 			}
 		} break;
 		case CompletionKind::SCENE_PATHS: {
-			DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 			List<String> directories;
 			directories.push_back(dir_access->get_current_dir());
 
@@ -155,16 +157,16 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 				dir_access->list_dir_begin();
 				String filename = dir_access->get_next();
 
-				while (filename != "") {
+				while (!filename.is_empty()) {
 					if (filename == "." || filename == "..") {
 						filename = dir_access->get_next();
 						continue;
 					}
 
 					if (dir_access->dir_exists(filename)) {
-						directories.push_back(dir_access->get_current_dir().plus_file(filename));
+						directories.push_back(dir_access->get_current_dir().path_join(filename));
 					} else if (filename.ends_with(".tscn") || filename.ends_with(".scn")) {
-						suggestions.push_back(quoted(dir_access->get_current_dir().plus_file(filename)));
+						suggestions.push_back(quoted(dir_access->get_current_dir().path_join(filename)));
 					}
 
 					filename = dir_access->get_next();
@@ -172,7 +174,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			}
 		} break;
 		case CompletionKind::SHADER_PARAMS: {
-			print_verbose("Shared params completion for C# not implemented.");
+			print_verbose("Shader uniforms completion for C# is not implemented yet.");
 		} break;
 		case CompletionKind::SIGNALS: {
 			Ref<Script> script = ResourceLoader::load(p_script_file.simplify_path());
@@ -195,7 +197,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			Node *base = _try_find_owner_node_in_tree(script);
 			if (base && Object::cast_to<Control>(base)) {
 				List<StringName> sn;
-				Theme::get_default()->get_color_list(base->get_class(), &sn);
+				ThemeDB::get_singleton()->get_default_theme()->get_color_list(base->get_class(), &sn);
 
 				for (const StringName &E : sn) {
 					suggestions.push_back(quoted(E));
@@ -207,7 +209,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			Node *base = _try_find_owner_node_in_tree(script);
 			if (base && Object::cast_to<Control>(base)) {
 				List<StringName> sn;
-				Theme::get_default()->get_constant_list(base->get_class(), &sn);
+				ThemeDB::get_singleton()->get_default_theme()->get_constant_list(base->get_class(), &sn);
 
 				for (const StringName &E : sn) {
 					suggestions.push_back(quoted(E));
@@ -219,7 +221,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			Node *base = _try_find_owner_node_in_tree(script);
 			if (base && Object::cast_to<Control>(base)) {
 				List<StringName> sn;
-				Theme::get_default()->get_font_list(base->get_class(), &sn);
+				ThemeDB::get_singleton()->get_default_theme()->get_font_list(base->get_class(), &sn);
 
 				for (const StringName &E : sn) {
 					suggestions.push_back(quoted(E));
@@ -231,7 +233,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			Node *base = _try_find_owner_node_in_tree(script);
 			if (base && Object::cast_to<Control>(base)) {
 				List<StringName> sn;
-				Theme::get_default()->get_font_size_list(base->get_class(), &sn);
+				ThemeDB::get_singleton()->get_default_theme()->get_font_size_list(base->get_class(), &sn);
 
 				for (const StringName &E : sn) {
 					suggestions.push_back(quoted(E));
@@ -243,7 +245,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 			Node *base = _try_find_owner_node_in_tree(script);
 			if (base && Object::cast_to<Control>(base)) {
 				List<StringName> sn;
-				Theme::get_default()->get_stylebox_list(base->get_class(), &sn);
+				ThemeDB::get_singleton()->get_default_theme()->get_stylebox_list(base->get_class(), &sn);
 
 				for (const StringName &E : sn) {
 					suggestions.push_back(quoted(E));

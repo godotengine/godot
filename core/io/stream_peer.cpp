@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  stream_peer.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  stream_peer.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "stream_peer.h"
 
@@ -98,7 +98,7 @@ Array StreamPeer::_get_partial_data(int p_bytes) {
 	Error err = get_partial_data(&w[0], p_bytes, received);
 
 	if (err != OK) {
-		data.resize(0);
+		data.clear();
 	} else if (received != data.size()) {
 		data.resize(received);
 	}
@@ -410,6 +410,54 @@ void StreamPeer::_bind_methods() {
 
 ////////////////////////////////
 
+Error StreamPeerExtension::get_data(uint8_t *r_buffer, int p_bytes) {
+	Error err;
+	int received = 0;
+	if (GDVIRTUAL_CALL(_get_data, r_buffer, p_bytes, &received, err)) {
+		return err;
+	}
+	WARN_PRINT_ONCE("StreamPeerExtension::_get_data is unimplemented!");
+	return FAILED;
+}
+
+Error StreamPeerExtension::get_partial_data(uint8_t *r_buffer, int p_bytes, int &r_received) {
+	Error err;
+	if (GDVIRTUAL_CALL(_get_partial_data, r_buffer, p_bytes, &r_received, err)) {
+		return err;
+	}
+	WARN_PRINT_ONCE("StreamPeerExtension::_get_partial_data is unimplemented!");
+	return FAILED;
+}
+
+Error StreamPeerExtension::put_data(const uint8_t *p_data, int p_bytes) {
+	Error err;
+	int sent = 0;
+	if (GDVIRTUAL_CALL(_put_data, p_data, p_bytes, &sent, err)) {
+		return err;
+	}
+	WARN_PRINT_ONCE("StreamPeerExtension::_put_data is unimplemented!");
+	return FAILED;
+}
+
+Error StreamPeerExtension::put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) {
+	Error err;
+	if (GDVIRTUAL_CALL(_put_data, p_data, p_bytes, &r_sent, err)) {
+		return err;
+	}
+	WARN_PRINT_ONCE("StreamPeerExtension::_put_partial_data is unimplemented!");
+	return FAILED;
+}
+
+void StreamPeerExtension::_bind_methods() {
+	GDVIRTUAL_BIND(_get_data, "r_buffer", "r_bytes", "r_received");
+	GDVIRTUAL_BIND(_get_partial_data, "r_buffer", "r_bytes", "r_received");
+	GDVIRTUAL_BIND(_put_data, "p_data", "p_bytes", "r_sent");
+	GDVIRTUAL_BIND(_put_partial_data, "p_data", "p_bytes", "r_sent");
+	GDVIRTUAL_BIND(_get_available_bytes);
+}
+
+////////////////////////////////
+
 void StreamPeerBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("seek", "position"), &StreamPeerBuffer::seek);
 	ClassDB::bind_method(D_METHOD("get_size"), &StreamPeerBuffer::get_size);
@@ -506,7 +554,7 @@ Vector<uint8_t> StreamPeerBuffer::get_data_array() const {
 }
 
 void StreamPeerBuffer::clear() {
-	data.resize(0);
+	data.clear();
 	pointer = 0;
 }
 

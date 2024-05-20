@@ -129,32 +129,9 @@ hb_glib_unicode_compose (hb_unicode_funcs_t *ufuncs HB_UNUSED,
 {
 #if GLIB_CHECK_VERSION(2,29,12)
   return g_unichar_compose (a, b, ab);
+#else
+  return false;
 #endif
-
-  /* We don't ifdef-out the fallback code such that compiler always
-   * sees it and makes sure it's compilable. */
-
-  gchar utf8[12];
-  gchar *normalized;
-  int len;
-  hb_bool_t ret;
-
-  len = g_unichar_to_utf8 (a, utf8);
-  len += g_unichar_to_utf8 (b, utf8 + len);
-  normalized = g_utf8_normalize (utf8, len, G_NORMALIZE_NFC);
-  len = g_utf8_strlen (normalized, -1);
-  if (unlikely (!len))
-    return false;
-
-  if (len == 1) {
-    *ab = g_utf8_get_char (normalized);
-    ret = true;
-  } else {
-    ret = false;
-  }
-
-  g_free (normalized);
-  return ret;
 }
 
 static hb_bool_t
@@ -166,61 +143,13 @@ hb_glib_unicode_decompose (hb_unicode_funcs_t *ufuncs HB_UNUSED,
 {
 #if GLIB_CHECK_VERSION(2,29,12)
   return g_unichar_decompose (ab, a, b);
+#else
+  return false;
 #endif
-
-  /* We don't ifdef-out the fallback code such that compiler always
-   * sees it and makes sure it's compilable. */
-
-  gchar utf8[6];
-  gchar *normalized;
-  int len;
-  hb_bool_t ret;
-
-  len = g_unichar_to_utf8 (ab, utf8);
-  normalized = g_utf8_normalize (utf8, len, G_NORMALIZE_NFD);
-  len = g_utf8_strlen (normalized, -1);
-  if (unlikely (!len))
-    return false;
-
-  if (len == 1) {
-    *a = g_utf8_get_char (normalized);
-    *b = 0;
-    ret = *a != ab;
-  } else if (len == 2) {
-    *a = g_utf8_get_char (normalized);
-    *b = g_utf8_get_char (g_utf8_next_char (normalized));
-    /* Here's the ugly part: if ab decomposes to a single character and
-     * that character decomposes again, we have to detect that and undo
-     * the second part :-(. */
-    gchar *recomposed = g_utf8_normalize (normalized, -1, G_NORMALIZE_NFC);
-    hb_codepoint_t c = g_utf8_get_char (recomposed);
-    if (c != ab && c != *a) {
-      *a = c;
-      *b = 0;
-    }
-    g_free (recomposed);
-    ret = true;
-  } else {
-    /* If decomposed to more than two characters, take the last one,
-     * and recompose the rest to get the first component. */
-    gchar *end = g_utf8_offset_to_pointer (normalized, len - 1);
-    gchar *recomposed;
-    *b = g_utf8_get_char (end);
-    recomposed = g_utf8_normalize (normalized, end - normalized, G_NORMALIZE_NFC);
-    /* We expect that recomposed has exactly one character now. */
-    *a = g_utf8_get_char (recomposed);
-    g_free (recomposed);
-    ret = true;
-  }
-
-  g_free (normalized);
-  return ret;
 }
 
 
-#if HB_USE_ATEXIT
-static void free_static_glib_funcs ();
-#endif
+static inline void free_static_glib_funcs ();
 
 static struct hb_glib_unicode_funcs_lazy_loader_t : hb_unicode_funcs_lazy_loader_t<hb_glib_unicode_funcs_lazy_loader_t>
 {
@@ -237,21 +166,17 @@ static struct hb_glib_unicode_funcs_lazy_loader_t : hb_unicode_funcs_lazy_loader
 
     hb_unicode_funcs_make_immutable (funcs);
 
-#if HB_USE_ATEXIT
-    atexit (free_static_glib_funcs);
-#endif
+    hb_atexit (free_static_glib_funcs);
 
     return funcs;
   }
 } static_glib_funcs;
 
-#if HB_USE_ATEXIT
-static
+static inline
 void free_static_glib_funcs ()
 {
   static_glib_funcs.free_instance ();
 }
-#endif
 
 /**
  * hb_glib_get_unicode_funcs:

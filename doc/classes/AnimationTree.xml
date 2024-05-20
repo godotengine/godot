@@ -1,70 +1,57 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationTree" inherits="Node" version="4.0">
+<class name="AnimationTree" inherits="AnimationMixer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A node to be used for advanced animation transitions in an [AnimationPlayer].
+		A node used for advanced animation transitions in an [AnimationPlayer].
 	</brief_description>
 	<description>
-		Note: When linked with an [AnimationPlayer], several properties and methods of the corresponding [AnimationPlayer] will not function as expected. Playback and transitions should be handled using only the [AnimationTree] and its constituent [AnimationNode](s). The [AnimationPlayer] node should be used solely for adding, deleting, and editing animations.
+		A node used for advanced animation transitions in an [AnimationPlayer].
+		[b]Note:[/b] When linked with an [AnimationPlayer], several properties and methods of the corresponding [AnimationPlayer] will not function as expected. Playback and transitions should be handled using only the [AnimationTree] and its constituent [AnimationNode](s). The [AnimationPlayer] node should be used solely for adding, deleting, and editing animations.
 	</description>
 	<tutorials>
-		<link title="Using AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
-		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<methods>
-		<method name="advance">
-			<return type="void">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
+		<method name="get_process_callback" qualifiers="const" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
+			<return type="int" enum="AnimationTree.AnimationProcessCallback" />
 			<description>
-				Manually advance the animations by the specified time (in seconds).
+				Returns the process notification in which to update animations.
 			</description>
 		</method>
-		<method name="get_root_motion_transform" qualifiers="const">
-			<return type="Transform3D">
-			</return>
+		<method name="set_process_callback" deprecated="Use [member AnimationMixer.callback_mode_process] instead.">
+			<return type="void" />
+			<param index="0" name="mode" type="int" enum="AnimationTree.AnimationProcessCallback" />
 			<description>
-				Retrieve the motion of the [member root_motion_track] as a [Transform3D] that can be used elsewhere. If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_TRANSFORM3D], returns an identity transformation. See also [member root_motion_track] and [RootMotionView].
-			</description>
-		</method>
-		<method name="rename_parameter">
-			<return type="void">
-			</return>
-			<argument index="0" name="old_name" type="String">
-			</argument>
-			<argument index="1" name="new_name" type="String">
-			</argument>
-			<description>
+				Sets the process notification in which to update animations.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="active" type="bool" setter="set_active" getter="is_active" default="false">
-			If [code]true[/code], the [AnimationTree] will be processing.
+		<member name="advance_expression_base_node" type="NodePath" setter="set_advance_expression_base_node" getter="get_advance_expression_base_node" default="NodePath(&quot;.&quot;)">
+			The path to the [Node] used to evaluate the [AnimationNode] [Expression] if one is not explicitly specified internally.
 		</member>
 		<member name="anim_player" type="NodePath" setter="set_animation_player" getter="get_animation_player" default="NodePath(&quot;&quot;)">
 			The path to the [AnimationPlayer] used for animating.
 		</member>
-		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="AnimationTree.AnimationProcessCallback" default="1">
-			The process mode of this [AnimationTree]. See [enum AnimationProcessCallback] for available modes.
-		</member>
-		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">
-			The path to the Animation track used for root motion. Paths must be valid scene-tree paths to a node, and must be specified starting from the parent node of the node that will reproduce the animation. To specify a track that controls properties or bones, append its name after the path, separated by [code]":"[/code]. For example, [code]"character/skeleton:ankle"[/code] or [code]"character/mesh:transform/local"[/code].
-			If the track has type [constant Animation.TYPE_TRANSFORM3D], the transformation will be cancelled visually, and the animation will appear to stay in place. See also [method get_root_motion_transform] and [RootMotionView].
-		</member>
-		<member name="tree_root" type="AnimationNode" setter="set_tree_root" getter="get_tree_root">
-			The root animation node of this [AnimationTree]. See [AnimationNode].
+		<member name="callback_mode_discrete" type="int" setter="set_callback_mode_discrete" getter="get_callback_mode_discrete" overrides="AnimationMixer" enum="AnimationMixer.AnimationCallbackModeDiscrete" default="2" />
+		<member name="deterministic" type="bool" setter="set_deterministic" getter="is_deterministic" overrides="AnimationMixer" default="true" />
+		<member name="tree_root" type="AnimationRootNode" setter="set_tree_root" getter="get_tree_root">
+			The root animation node of this [AnimationTree]. See [AnimationRootNode].
 		</member>
 	</members>
+	<signals>
+		<signal name="animation_player_changed">
+			<description>
+				Emitted when the [member anim_player] is changed.
+			</description>
+		</signal>
+	</signals>
 	<constants>
-		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback">
-			The animations will progress during the physics frame (i.e. [method Node._physics_process]).
+		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].">
 		</constant>
-		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback">
-			The animations will progress during the idle frame (i.e. [method Node._process]).
+		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_IDLE].">
 		</constant>
-		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback">
-			The animations will only progress manually (see [method advance]).
+		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL].">
 		</constant>
 	</constants>
 </class>

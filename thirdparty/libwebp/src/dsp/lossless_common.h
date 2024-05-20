@@ -16,9 +16,9 @@
 #ifndef WEBP_DSP_LOSSLESS_COMMON_H_
 #define WEBP_DSP_LOSSLESS_COMMON_H_
 
-#include "src/webp/types.h"
-
+#include "src/dsp/cpu.h"
 #include "src/utils/utils.h"
+#include "src/webp/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -166,7 +166,7 @@ uint32_t VP8LSubPixels(uint32_t a, uint32_t b) {
 }
 
 //------------------------------------------------------------------------------
-// Transform-related functions use din both encoding and decoding.
+// Transform-related functions used in both encoding and decoding.
 
 // Macros used to create a batch predictor that iteratively uses a
 // one-pixel predictor.
@@ -179,21 +179,8 @@ static void PREDICTOR_ADD(const uint32_t* in, const uint32_t* upper, \
   int x;                                                             \
   assert(upper != NULL);                                             \
   for (x = 0; x < num_pixels; ++x) {                                 \
-    const uint32_t pred = (PREDICTOR)(out[x - 1], upper + x);        \
+    const uint32_t pred = (PREDICTOR)(&out[x - 1], upper + x);       \
     out[x] = VP8LAddPixels(in[x], pred);                             \
-  }                                                                  \
-}
-
-// It subtracts the prediction from the input pixel and stores the residual
-// in the output pixel.
-#define GENERATE_PREDICTOR_SUB(PREDICTOR, PREDICTOR_SUB)             \
-static void PREDICTOR_SUB(const uint32_t* in, const uint32_t* upper, \
-                          int num_pixels, uint32_t* out) {           \
-  int x;                                                             \
-  assert(upper != NULL);                                             \
-  for (x = 0; x < num_pixels; ++x) {                                 \
-    const uint32_t pred = (PREDICTOR)(in[x - 1], upper + x);         \
-    out[x] = VP8LSubPixels(in[x], pred);                             \
   }                                                                  \
 }
 

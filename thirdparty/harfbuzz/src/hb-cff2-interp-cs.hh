@@ -35,37 +35,27 @@ using namespace OT;
 
 struct blend_arg_t : number_t
 {
-  void init ()
-  {
-    number_t::init ();
-    deltas.init ();
-  }
-
-  void fini ()
-  {
-    number_t::fini ();
-    deltas.fini_deep ();
-  }
-
   void set_int (int v) { reset_blends (); number_t::set_int (v); }
   void set_fixed (int32_t v) { reset_blends (); number_t::set_fixed (v); }
   void set_real (double v) { reset_blends (); number_t::set_real (v); }
 
   void set_blends (unsigned int numValues_, unsigned int valueIndex_,
-		   unsigned int numBlends, hb_array_t<const blend_arg_t> blends_)
+		   hb_array_t<const blend_arg_t> blends_)
   {
     numValues = numValues_;
     valueIndex = valueIndex_;
-    deltas.resize (numBlends);
+    unsigned numBlends = blends_.length;
+    if (unlikely (!deltas.resize_exact (numBlends)))
+      return;
     for (unsigned int i = 0; i < numBlends; i++)
-      deltas[i] = blends_[i];
+      deltas.arrayZ[i] = blends_.arrayZ[i];
   }
 
   bool blending () const { return deltas.length > 0; }
   void reset_blends ()
   {
     numValues = valueIndex = 0;
-    deltas.resize (0);
+    deltas.shrink (0);
   }
 
   unsigned int numValues;
@@ -73,30 +63,25 @@ struct blend_arg_t : number_t
   hb_vector_t<number_t> deltas;
 };
 
-typedef interp_env_t<blend_arg_t> BlendInterpEnv;
 typedef biased_subrs_t<CFF2Subrs>   cff2_biased_subrs_t;
 
-struct cff2_cs_interp_env_t : cs_interp_env_t<blend_arg_t, CFF2Subrs>
+template <typename ELEM>
+struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
 {
   template <typename ACC>
-  void init (const byte_str_t &str, ACC &acc, unsigned int fd,
-	     const int *coords_=nullptr, unsigned int num_coords_=0)
+  cff2_cs_interp_env_t (const hb_ubytes_t &str, ACC &acc, unsigned int fd,
+			const int *coords_=nullptr, unsigned int num_coords_=0)
+    : SUPER (str, acc.globalSubrs, acc.privateDicts[fd].localSubrs)
   {
-    SUPER::init (str, acc.globalSubrs, acc.privateDicts[fd].localSubrs);
-
     coords = coords_;
     num_coords = num_coords_;
     varStore = acc.varStore;
-    seen_blend = false;
-    seen_vsindex_ = false;
-    scalars.init ();
     do_blend = num_coords && coords && varStore->size;
     set_ivs (acc.privateDicts[fd].ivs);
   }
 
   void fini ()
   {
-    scalars.fini ();
     SUPER::fini ();
   }
 
@@ -112,18 +97,14 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<blend_arg_t, CFF2Subrs>
       return OpCode_return;
   }
 
-  const blend_arg_t& eval_arg (unsigned int i)
+  const ELEM& eval_arg (unsigned int i)
   {
-    blend_arg_t  &arg = argStack[i];
-    blend_arg (arg);
-    return arg;
+    return SUPER::argStack[i];
   }
 
-  const blend_arg_t& pop_arg ()
+  const ELEM& pop_arg ()
   {
-    blend_arg_t  &arg = argStack.pop ();
-    blend_arg (arg);
-    return arg;
+    return SUPER::argStack.pop ();
   }
 
   void process_blend ()
@@ -133,11 +114,11 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<blend_arg_t, CFF2Subrs>
       region_count = varStore->varStore.get_region_index_count (get_ivs ());
       if (do_blend)
       {
-	if (unlikely (!scalars.resize (region_count)))
-	  set_error ();
+	if (unlikely (!scalars.resize_exact (region_count)))
+	  SUPER::set_error ();
 	else
-	  varStore->varStore.get_scalars (get_ivs (), coords, num_coords,
-					  &scalars[0], region_count);
+	  varStore->varStore.get_region_scalars (get_ivs (), coords, num_coords,
+						 &scalars[0], region_count);
       }
       seen_blend = true;
     }
@@ -145,10 +126,10 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<blend_arg_t, CFF2Subrs>
 
   void process_vsindex ()
   {
-    unsigned int  index = argStack.pop_uint ();
+    unsigned int  index = SUPER::argStack.pop_uint ();
     if (unlikely (seen_vsindex () || seen_blend))
     {
-      set_error ();
+     SUPER::set_error ();
     }
     else
     {
@@ -163,51 +144,52 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<blend_arg_t, CFF2Subrs>
   void	 set_ivs (unsigned int ivs_) { ivs = ivs_; }
   bool	 seen_vsindex () const { return seen_vsindex_; }
 
-  protected:
-  void blend_arg (blend_arg_t &arg)
+  double blend_deltas (hb_array_t<const ELEM> deltas) const
   {
-    if (do_blend && arg.blending ())
+    double v = 0;
+    if (do_blend)
     {
-      if (likely (scalars.length == arg.deltas.length))
+      if (likely (scalars.length == deltas.length))
       {
-	double v = arg.to_real ();
-	for (unsigned int i = 0; i < scalars.length; i++)
-	{
-	  v += (double)scalars[i] * arg.deltas[i].to_real ();
-	}
-	arg.set_real (v);
-	arg.deltas.resize (0);
+        unsigned count = scalars.length;
+	for (unsigned i = 0; i < count; i++)
+	  v += (double) scalars.arrayZ[i] * deltas.arrayZ[i].to_real ();
       }
     }
+    return v;
   }
+
+  bool have_coords () const { return num_coords; }
 
   protected:
   const int     *coords;
   unsigned int  num_coords;
-  const	 CFF2VariationStore *varStore;
+  const	 CFF2ItemVariationStore *varStore;
   unsigned int  region_count;
   unsigned int  ivs;
   hb_vector_t<float>  scalars;
   bool	  do_blend;
-  bool	  seen_vsindex_;
-  bool	  seen_blend;
+  bool	  seen_vsindex_ = false;
+  bool	  seen_blend = false;
 
-  typedef cs_interp_env_t<blend_arg_t, CFF2Subrs> SUPER;
+  typedef cs_interp_env_t<ELEM, CFF2Subrs> SUPER;
 };
-template <typename OPSET, typename PARAM, typename PATH=path_procs_null_t<cff2_cs_interp_env_t, PARAM>>
-struct cff2_cs_opset_t : cs_opset_t<blend_arg_t, OPSET, cff2_cs_interp_env_t, PARAM, PATH>
+template <typename OPSET, typename PARAM, typename ELEM, typename PATH=path_procs_null_t<cff2_cs_interp_env_t<ELEM>, PARAM>>
+struct cff2_cs_opset_t : cs_opset_t<ELEM, OPSET, cff2_cs_interp_env_t<ELEM>, PARAM, PATH>
 {
-  static void process_op (op_code_t op, cff2_cs_interp_env_t &env, PARAM& param)
+  static void process_op (op_code_t op, cff2_cs_interp_env_t<ELEM> &env, PARAM& param)
   {
     switch (op) {
       case OpCode_callsubr:
       case OpCode_callgsubr:
-	/* a subroutine number shoudln't be a blended value */
+	/* a subroutine number shouldn't be a blended value */
+#if 0
 	if (unlikely (env.argStack.peek ().blending ()))
 	{
 	  env.set_error ();
 	  break;
 	}
+#endif
 	SUPER::process_op (op, env, param);
 	break;
 
@@ -216,11 +198,13 @@ struct cff2_cs_opset_t : cs_opset_t<blend_arg_t, OPSET, cff2_cs_interp_env_t, PA
 	break;
 
       case OpCode_vsindexcs:
+#if 0
 	if (unlikely (env.argStack.peek ().blending ()))
 	{
 	  env.set_error ();
 	  break;
 	}
+#endif
 	OPSET::process_vsindex (env, param);
 	break;
 
@@ -229,7 +213,29 @@ struct cff2_cs_opset_t : cs_opset_t<blend_arg_t, OPSET, cff2_cs_interp_env_t, PA
     }
   }
 
-  static void process_blend (cff2_cs_interp_env_t &env, PARAM& param)
+  template <typename T = ELEM,
+	    hb_enable_if (hb_is_same (T, blend_arg_t))>
+  static void process_arg_blend (cff2_cs_interp_env_t<ELEM> &env,
+				 ELEM &arg,
+				 const hb_array_t<const ELEM> blends,
+				 unsigned n, unsigned i)
+  {
+    if (env.have_coords ())
+      arg.set_int (round (arg.to_real () + env.blend_deltas (blends)));
+    else
+      arg.set_blends (n, i, blends);
+  }
+  template <typename T = ELEM,
+	    hb_enable_if (!hb_is_same (T, blend_arg_t))>
+  static void process_arg_blend (cff2_cs_interp_env_t<ELEM> &env,
+				 ELEM &arg,
+				 const hb_array_t<const ELEM> blends,
+				 unsigned n, unsigned i)
+  {
+    arg.set_real (arg.to_real () + env.blend_deltas (blends));
+  }
+
+  static void process_blend (cff2_cs_interp_env_t<ELEM> &env, PARAM& param)
   {
     unsigned int n, k;
 
@@ -246,26 +252,26 @@ struct cff2_cs_opset_t : cs_opset_t<blend_arg_t, OPSET, cff2_cs_interp_env_t, PA
     }
     for (unsigned int i = 0; i < n; i++)
     {
-      const hb_array_t<const blend_arg_t>	blends = env.argStack.get_subarray (start + n + (i * k));
-      env.argStack[start + i].set_blends (n, i, k, blends);
+      const hb_array_t<const ELEM> blends = env.argStack.sub_array (start + n + (i * k), k);
+      process_arg_blend (env, env.argStack[start + i], blends, n, i);
     }
 
     /* pop off blend values leaving default values now adorned with blend values */
     env.argStack.pop (k * n);
   }
 
-  static void process_vsindex (cff2_cs_interp_env_t &env, PARAM& param)
+  static void process_vsindex (cff2_cs_interp_env_t<ELEM> &env, PARAM& param)
   {
     env.process_vsindex ();
     env.clear_args ();
   }
 
   private:
-  typedef cs_opset_t<blend_arg_t, OPSET, cff2_cs_interp_env_t, PARAM, PATH>  SUPER;
+  typedef cs_opset_t<ELEM, OPSET, cff2_cs_interp_env_t<ELEM>, PARAM, PATH>  SUPER;
 };
 
-template <typename OPSET, typename PARAM>
-struct cff2_cs_interpreter_t : cs_interpreter_t<cff2_cs_interp_env_t, OPSET, PARAM> {};
+template <typename OPSET, typename PARAM, typename ELEM>
+using cff2_cs_interpreter_t = cs_interpreter_t<cff2_cs_interp_env_t<ELEM>, OPSET, PARAM>;
 
 } /* namespace CFF */
 

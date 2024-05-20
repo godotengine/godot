@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScriptCreateDialog" inherits="ConfirmationDialog" version="4.0">
+<class name="ScriptCreateDialog" inherits="ConfirmationDialog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		The Editor's popup dialog for creating new [Script] files.
+		Godot editor's popup dialog for creating new [Script] files.
 	</brief_description>
 	<description>
 		The [ScriptCreateDialog] creates script files according to a given template for a given scripting language. The standard use is to configure its fields prior to calling one of the [method Window.popup] methods.
@@ -28,34 +28,27 @@
 	</tutorials>
 	<methods>
 		<method name="config">
-			<return type="void">
-			</return>
-			<argument index="0" name="inherits" type="String">
-			</argument>
-			<argument index="1" name="path" type="String">
-			</argument>
-			<argument index="2" name="built_in_enabled" type="bool" default="true">
-			</argument>
-			<argument index="3" name="load_enabled" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<param index="0" name="inherits" type="String" />
+			<param index="1" name="path" type="String" />
+			<param index="2" name="built_in_enabled" type="bool" default="true" />
+			<param index="3" name="load_enabled" type="bool" default="true" />
 			<description>
 				Prefills required fields to configure the ScriptCreateDialog for use.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" override="true" default="false" />
-		<member name="title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Attach Node Script&quot;" />
+		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
+		<member name="ok_button_text" type="String" setter="set_ok_button_text" getter="get_ok_button_text" overrides="AcceptDialog" default="&quot;Create&quot;" />
+		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Attach Node Script&quot;" />
 	</members>
 	<signals>
 		<signal name="script_created">
-			<argument index="0" name="script" type="Script">
-			</argument>
+			<param index="0" name="script" type="Script" />
 			<description>
 				Emitted when the user clicks the OK button.
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

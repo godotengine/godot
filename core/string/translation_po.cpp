@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  translation_po.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  translation_po.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "translation_po.h"
 
@@ -35,14 +35,14 @@
 #ifdef DEBUG_TRANSLATION_PO
 void TranslationPO::print_translation_map() {
 	Error err;
-	FileAccess *file = FileAccess::open("translation_map_print_test.txt", FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open("translation_map_print_test.txt", FileAccess::WRITE, &err);
 	if (err != OK) {
 		ERR_PRINT("Failed to open translation_map_print_test.txt");
 		return;
 	}
 
-	file->store_line("NPlural : " + String::num_int64(this->get_plural_forms()));
-	file->store_line("Plural rule : " + this->get_plural_rule());
+	file->store_line("NPlural : " + String::num_int64(get_plural_forms()));
+	file->store_line("Plural rule : " + get_plural_rule());
 	file->store_line("");
 
 	List<StringName> context_l;
@@ -62,7 +62,6 @@ void TranslationPO::print_translation_map() {
 			file->store_line("");
 		}
 	}
-	file->close();
 }
 #endif
 
@@ -71,21 +70,14 @@ Dictionary TranslationPO::_get_messages() const {
 
 	Dictionary d;
 
-	List<StringName> context_l;
-	translation_map.get_key_list(&context_l);
-	for (const StringName &ctx : context_l) {
-		const HashMap<StringName, Vector<StringName>> &id_str_map = translation_map[ctx];
-
+	for (const KeyValue<StringName, HashMap<StringName, Vector<StringName>>> &E : translation_map) {
 		Dictionary d2;
-		List<StringName> id_l;
-		id_str_map.get_key_list(&id_l);
-		// Save list of id and strs associated with a context in a temporary dictionary.
-		for (List<StringName>::Element *E2 = id_l.front(); E2; E2 = E2->next()) {
-			StringName id = E2->get();
-			d2[id] = id_str_map[id];
+
+		for (const KeyValue<StringName, Vector<StringName>> &E2 : E.value) {
+			d2[E2.key] = E2.value;
 		}
 
-		d[ctx] = d2;
+		d[E.key] = d2;
 	}
 
 	return d;
@@ -109,6 +101,23 @@ void TranslationPO::_set_messages(const Dictionary &p_messages) {
 
 		translation_map[ctx] = temp_map;
 	}
+}
+
+Vector<String> TranslationPO::get_translated_message_list() const {
+	Vector<String> msgs;
+	for (const KeyValue<StringName, HashMap<StringName, Vector<StringName>>> &E : translation_map) {
+		if (E.key != StringName()) {
+			continue;
+		}
+
+		for (const KeyValue<StringName, Vector<StringName>> &E2 : E.value) {
+			for (const StringName &E3 : E2.value) {
+				msgs.push_back(E3);
+			}
+		}
+	}
+
+	return msgs;
 }
 
 Vector<String> TranslationPO::_get_message_list() const {
@@ -245,11 +254,6 @@ StringName TranslationPO::get_plural_message(const StringName &p_src_text, const
 	}
 	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please report this bug.");
 
-	if (translation_map[p_context][p_src_text].size() == 1) {
-		WARN_PRINT("Source string \"" + String(p_src_text) + "\" doesn't have plural translations. Use singular translation API for such as tr(), TTR() to translate \"" + String(p_src_text) + "\"");
-		return translation_map[p_context][p_src_text][0];
-	}
-
 	int plural_index = _get_plural_index(p_n);
 	ERR_FAIL_COND_V_MSG(plural_index < 0 || translation_map[p_context][p_src_text].size() < plural_index + 1, StringName(), "Plural index returned or number of plural translations is not valid. Please report this bug.");
 
@@ -275,31 +279,24 @@ void TranslationPO::get_message_list(List<StringName> *r_messages) const {
 	// OptimizedTranslation uses this function to get the list of msgid.
 	// Return all the keys of translation_map under "" context.
 
-	List<StringName> context_l;
-	translation_map.get_key_list(&context_l);
-
-	for (const StringName &E : context_l) {
-		if (String(E) != "") {
+	for (const KeyValue<StringName, HashMap<StringName, Vector<StringName>>> &E : translation_map) {
+		if (E.key != StringName()) {
 			continue;
 		}
 
-		List<StringName> msgid_l;
-		translation_map[E].get_key_list(&msgid_l);
-
-		for (List<StringName>::Element *E2 = msgid_l.front(); E2; E2 = E2->next()) {
-			r_messages->push_back(E2->get());
+		for (const KeyValue<StringName, Vector<StringName>> &E2 : E.value) {
+			r_messages->push_back(E2.key);
 		}
 	}
 }
 
 int TranslationPO::get_message_count() const {
-	List<StringName> context_l;
-	translation_map.get_key_list(&context_l);
-
 	int count = 0;
-	for (const StringName &E : context_l) {
-		count += translation_map[E].size();
+
+	for (const KeyValue<StringName, HashMap<StringName, Vector<StringName>>> &E : translation_map) {
+		count += E.value.size();
 	}
+
 	return count;
 }
 

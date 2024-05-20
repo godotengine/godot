@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WebRTCDataChannelExtension" inherits="WebRTCDataChannel" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_close" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_available_packet_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_buffered_amount" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_id" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_label" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_max_packet_life_time" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_max_packet_size" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_max_retransmits" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_packet" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="r_buffer" type="const uint8_t **" />
+			<param index="1" name="r_buffer_size" type="int32_t*" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_protocol" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_ready_state" qualifiers="virtual const">
+			<return type="int" enum="WebRTCDataChannel.ChannelState" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_write_mode" qualifiers="virtual const">
+			<return type="int" enum="WebRTCDataChannel.WriteMode" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_negotiated" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_ordered" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_poll" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<description>
+			</description>
+		</method>
+		<method name="_put_packet" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="p_buffer" type="const uint8_t*" />
+			<param index="1" name="p_buffer_size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_write_mode" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="p_write_mode" type="int" enum="WebRTCDataChannel.WriteMode" />
+			<description>
+			</description>
+		</method>
+		<method name="_was_string_packet" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

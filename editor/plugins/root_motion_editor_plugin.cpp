@@ -1,35 +1,42 @@
-/*************************************************************************/
-/*  root_motion_editor_plugin.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  root_motion_editor_plugin.cpp                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "root_motion_editor_plugin.h"
+
 #include "editor/editor_node.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/3d/skeleton_3d.h"
+#include "scene/animation/animation_mixer.h"
+#include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/tree.h"
 #include "scene/main/window.h"
 
 void EditorPropertyRootMotion::_confirmed() {
@@ -45,35 +52,31 @@ void EditorPropertyRootMotion::_confirmed() {
 }
 
 void EditorPropertyRootMotion::_node_assign() {
-	NodePath current = get_edited_object()->get(get_edited_property());
-
-	AnimationTree *atree = Object::cast_to<AnimationTree>(get_edited_object());
-	if (!atree->has_node(atree->get_animation_player())) {
-		EditorNode::get_singleton()->show_warning(TTR("AnimationTree has no path set to an AnimationPlayer"));
-		return;
-	}
-	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(atree->get_node(atree->get_animation_player()));
-	if (!player) {
-		EditorNode::get_singleton()->show_warning(TTR("Path to AnimationPlayer is invalid"));
+	AnimationMixer *mixer = Object::cast_to<AnimationMixer>(get_edited_object());
+	if (!mixer) {
+		EditorNode::get_singleton()->show_warning(TTR("Path to AnimationMixer is invalid"));
 		return;
 	}
 
-	Node *base = player->get_node(player->get_root());
+	Node *base = mixer->get_node(mixer->get_root_node());
 
 	if (!base) {
-		EditorNode::get_singleton()->show_warning(TTR("Animation player has no valid root node path, so unable to retrieve track names."));
+		EditorNode::get_singleton()->show_warning(TTR("AnimationMixer has no valid root node path, so unable to retrieve track names."));
 		return;
 	}
 
-	Set<String> paths;
+	HashSet<String> paths;
 	{
 		List<StringName> animations;
-		player->get_animation_list(&animations);
+		mixer->get_animation_list(&animations);
 
 		for (const StringName &E : animations) {
-			Ref<Animation> anim = player->get_animation(E);
+			Ref<Animation> anim = mixer->get_animation(E);
 			for (int i = 0; i < anim->get_track_count(); i++) {
-				paths.insert(anim->track_get_path(i));
+				String pathname = anim->track_get_path(i).get_concatenated_names();
+				if (!paths.has(pathname)) {
+					paths.insert(pathname);
+				}
 			}
 		}
 	}
@@ -81,15 +84,15 @@ void EditorPropertyRootMotion::_node_assign() {
 	filters->clear();
 	TreeItem *root = filters->create_item();
 
-	Map<String, TreeItem *> parenthood;
+	HashMap<String, TreeItem *> parenthood;
 
-	for (Set<String>::Element *E = paths.front(); E; E = E->next()) {
-		NodePath path = E->get();
+	for (const String &E : paths) {
+		NodePath path = E;
 		TreeItem *ti = nullptr;
 		String accum;
 		for (int i = 0; i < path.get_name_count(); i++) {
 			String name = path.get_name(i);
-			if (accum != String()) {
+			if (!accum.is_empty()) {
 				accum += "/";
 			}
 			accum += name;
@@ -122,72 +125,39 @@ void EditorPropertyRootMotion::_node_assign() {
 			continue; //no node, can't edit
 		}
 
-		if (path.get_subname_count()) {
-			String concat = path.get_concatenated_subnames();
+		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
+		if (skeleton) {
+			HashMap<int, TreeItem *> items;
+			items.insert(-1, ti);
+			Ref<Texture> bone_icon = get_editor_theme_icon(SNAME("Bone"));
+			Vector<int> bones_to_process = skeleton->get_parentless_bones();
+			while (bones_to_process.size() > 0) {
+				int current_bone_idx = bones_to_process[0];
+				bones_to_process.erase(current_bone_idx);
 
-			Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
-			if (skeleton && skeleton->find_bone(concat) != -1) {
-				//path in skeleton
-				const String &bone = concat;
-				int idx = skeleton->find_bone(bone);
-				List<String> bone_path;
-				while (idx != -1) {
-					bone_path.push_front(skeleton->get_bone_name(idx));
-					idx = skeleton->get_bone_parent(idx);
+				Vector<int> current_bone_child_bones = skeleton->get_bone_children(current_bone_idx);
+				int child_bone_size = current_bone_child_bones.size();
+				for (int i = 0; i < child_bone_size; i++) {
+					bones_to_process.push_back(current_bone_child_bones[i]);
 				}
 
-				accum += ":";
-				for (List<String>::Element *F = bone_path.front(); F; F = F->next()) {
-					if (F != bone_path.front()) {
-						accum += "/";
-					}
+				const int parent_idx = skeleton->get_bone_parent(current_bone_idx);
+				TreeItem *parent_item = items.find(parent_idx)->value;
 
-					accum += F->get();
-					if (!parenthood.has(accum)) {
-						ti = filters->create_item(ti);
-						parenthood[accum] = ti;
-						ti->set_text(0, F->get());
-						ti->set_selectable(0, true);
-						ti->set_editable(0, false);
-						ti->set_icon(0, get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons")));
-						ti->set_metadata(0, accum);
-					} else {
-						ti = parenthood[accum];
-					}
-				}
+				TreeItem *joint_item = filters->create_item(parent_item);
+				items.insert(current_bone_idx, joint_item);
 
-				ti->set_selectable(0, true);
-				ti->set_text(0, concat);
-				ti->set_icon(0, get_theme_icon(SNAME("BoneAttachment3D"), SNAME("EditorIcons")));
-				ti->set_metadata(0, path);
-				if (path == current) {
-					ti->select(0);
-				}
-
-			} else {
-				//just a property
-				ti = filters->create_item(ti);
-				ti->set_text(0, concat);
-				ti->set_selectable(0, true);
-				ti->set_metadata(0, path);
-				if (path == current) {
-					ti->select(0);
-				}
-			}
-		} else {
-			if (ti) {
-				//just a node, likely call or animation track
-				ti->set_selectable(0, true);
-				ti->set_metadata(0, path);
-				if (path == current) {
-					ti->select(0);
-				}
+				joint_item->set_text(0, skeleton->get_bone_name(current_bone_idx));
+				joint_item->set_icon(0, bone_icon);
+				joint_item->set_selectable(0, true);
+				joint_item->set_metadata(0, accum + ":" + skeleton->get_bone_name(current_bone_idx));
+				joint_item->set_collapsed(true);
 			}
 		}
 	}
 
 	filters->ensure_cursor_is_visible();
-	filter_dialog->popup_centered_ratio();
+	filter_dialog->popup_centered(Size2(500, 500) * EDSCALE);
 }
 
 void EditorPropertyRootMotion::_node_clear() {
@@ -196,9 +166,8 @@ void EditorPropertyRootMotion::_node_clear() {
 }
 
 void EditorPropertyRootMotion::update_property() {
-	NodePath p = get_edited_object()->get(get_edited_property());
-
-	assign->set_tooltip(p);
+	NodePath p = get_edited_property_value();
+	assign->set_tooltip_text(p);
 	if (p == NodePath()) {
 		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(TTR("Assign..."));
@@ -206,26 +175,8 @@ void EditorPropertyRootMotion::update_property() {
 		return;
 	}
 
-	Node *base_node = nullptr;
-	if (base_hint != NodePath()) {
-		if (get_tree()->get_root()->has_node(base_hint)) {
-			base_node = get_tree()->get_root()->get_node(base_hint);
-		}
-	} else {
-		base_node = Object::cast_to<Node>(get_edited_object());
-	}
-
-	if (!base_node || !base_node->has_node(p)) {
-		assign->set_icon(Ref<Texture2D>());
-		assign->set_text(p);
-		return;
-	}
-
-	Node *target_node = base_node->get_node(p);
-	ERR_FAIL_COND(!target_node);
-
-	assign->set_text(target_node->get_name());
-	assign->set_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
+	assign->set_icon(Ref<Texture2D>());
+	assign->set_text(p);
 }
 
 void EditorPropertyRootMotion::setup(const NodePath &p_base_hint) {
@@ -233,9 +184,12 @@ void EditorPropertyRootMotion::setup(const NodePath &p_base_hint) {
 }
 
 void EditorPropertyRootMotion::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<Texture2D> t = get_theme_icon(SNAME("Clear"), SNAME("EditorIcons"));
-		clear->set_icon(t);
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			Ref<Texture2D> t = get_editor_theme_icon(SNAME("Clear"));
+			clear->set_icon(t);
+		} break;
 	}
 }
 
@@ -248,11 +202,11 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	assign = memnew(Button);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
-	assign->connect("pressed", callable_mp(this, &EditorPropertyRootMotion::_node_assign));
+	assign->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyRootMotion::_node_assign));
 	hbc->add_child(assign);
 
 	clear = memnew(Button);
-	clear->connect("pressed", callable_mp(this, &EditorPropertyRootMotion::_node_clear));
+	clear->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyRootMotion::_node_clear));
 	hbc->add_child(clear);
 
 	filter_dialog = memnew(ConfirmationDialog);
@@ -262,6 +216,7 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 
 	filters = memnew(Tree);
 	filter_dialog->add_child(filters);
+	filters->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	filters->set_v_size_flags(SIZE_EXPAND_FILL);
 	filters->set_hide_root(true);
 	filters->connect("item_activated", callable_mp(this, &EditorPropertyRootMotion::_confirmed));
@@ -271,26 +226,15 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 //////////////////////////
 
 bool EditorInspectorRootMotionPlugin::can_handle(Object *p_object) {
-	return true; //can handle everything
+	return true; // Can handle everything.
 }
 
-void EditorInspectorRootMotionPlugin::parse_begin(Object *p_object) {
-	//do none
-}
-
-bool EditorInspectorRootMotionPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
-	if (p_path == "root_motion_track" && p_object->is_class("AnimationTree") && p_type == Variant::NODE_PATH) {
+bool EditorInspectorRootMotionPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+	if (p_path == "root_motion_track" && p_object->is_class("AnimationMixer") && p_type == Variant::NODE_PATH) {
 		EditorPropertyRootMotion *editor = memnew(EditorPropertyRootMotion);
-		if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && p_hint_text != String()) {
-			editor->setup(p_hint_text);
-		}
 		add_property_editor(p_path, editor);
 		return true;
 	}
 
-	return false; //can be overridden, although it will most likely be last anyway
-}
-
-void EditorInspectorRootMotionPlugin::parse_end() {
-	//do none
+	return false;
 }

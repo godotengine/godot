@@ -1,41 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StaticBody3D" inherits="PhysicsBody3D" version="4.0">
+<class name="StaticBody3D" inherits="PhysicsBody3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Static body for 3D physics.
+		A 3D physics body that can't be moved by external forces. When moved manually, it doesn't affect other bodies in its path.
 	</brief_description>
 	<description>
-		Static body for 3D physics. A static body is a simple body that can't be moved by external forces or contacts. It is ideal for implementing objects in the environment, such as walls or platforms. In contrast to [RigidBody3D], they don't consume any CPU resources as long as they don't move.
-		They however have extra functionalities to move and affect other bodies:
-		[b]Constant velocity:[/b] [member constant_linear_velocity] and [member constant_angular_velocity] can be set for the static body, so even if it doesn't move, it affects other bodies as if it was moving (this is useful for simulating conveyor belts or conveyor wheels).
-		[b]Transform change:[/b] Static bodies can be also moved by code. Unless [member kinematic_motion] is enabled, they are just teleported in this case and don't affect other bodies on their path.
-		[b]Kinematic motion:[/b] Static bodies can have [member kinematic_motion] enabled to make them kinematic bodies that can be moved by code and push other bodies on their path.
+		A static 3D physics body. It can't be moved by external forces or contacts, but can be moved manually by other means such as code, [AnimationMixer]s (with [member AnimationMixer.callback_mode_process] set to [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS]), and [RemoteTransform3D].
+		When [StaticBody3D] is moved, it is teleported to its new position without affecting other physics bodies in its path. If this is not desired, use [AnimatableBody3D] instead.
+		[StaticBody3D] is useful for completely static objects like floors and walls, as well as moving surfaces like conveyor belts and circular revolving platforms (by using [member constant_linear_velocity] and [member constant_angular_velocity]).
 	</description>
 	<tutorials>
-		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
-		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="constant_angular_velocity" type="Vector3" setter="set_constant_angular_velocity" getter="get_constant_angular_velocity" default="Vector3(0, 0, 0)">
-			The body's constant angular velocity. This does not rotate the body (unless [member kinematic_motion] is enabled), but affects other bodies that touch it, as if it were rotating.
+			The body's constant angular velocity. This does not rotate the body, but affects touching bodies, as if it were rotating.
 		</member>
 		<member name="constant_linear_velocity" type="Vector3" setter="set_constant_linear_velocity" getter="get_constant_linear_velocity" default="Vector3(0, 0, 0)">
-			The body's constant linear velocity. This does not move the body (unless [member kinematic_motion] is enabled), but affects other bodies that touch it, as if it were moving.
-		</member>
-		<member name="kinematic_motion" type="bool" setter="set_kinematic_motion_enabled" getter="is_kinematic_motion_enabled" default="false">
-			If [code]true[/code], the body will act the same as a [RigidBody3D] in [constant RigidBody3D.MODE_KINEMATIC] mode.
-			When the body is moved manually, either from code or from an [AnimationPlayer] (with [member AnimationPlayer.playback_process_mode] set to [code]physics[/code]), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
+			The body's constant linear velocity. This does not move the body, but affects touching bodies, as if it were moving.
 		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 			The physics material override for the body.
 			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
 		</member>
-		<member name="sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled" default="false">
-			If [code]true[/code] and [member kinematic_motion] is enabled, the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do [b]not[/b] use together with [method PhysicsBody3D.move_and_collide].
-		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

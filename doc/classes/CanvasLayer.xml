@@ -1,22 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasLayer" inherits="Node" version="4.0">
+<class name="CanvasLayer" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Canvas drawing layer.
+		A node used for independent rendering of objects within a 2D scene.
 	</brief_description>
 	<description>
-		Canvas drawing layer. [CanvasItem] nodes that are direct or indirect children of a [CanvasLayer] will be drawn in that layer. The layer is a numeric index that defines the draw order. The default 2D scene renders with index 0, so a [CanvasLayer] with index -1 will be drawn below, and one with index 1 will be drawn above. This is very useful for HUDs (in layer 1+ or above), or backgrounds (in layer -1 or below).
+		[CanvasItem]-derived nodes that are direct or indirect children of a [CanvasLayer] will be drawn in that layer. The layer is a numeric index that defines the draw order. The default 2D scene renders with index [code]0[/code], so a [CanvasLayer] with index [code]-1[/code] will be drawn below, and a [CanvasLayer] with index [code]1[/code] will be drawn above. This order will hold regardless of the [member CanvasItem.z_index] of the nodes within each layer.
+		[CanvasLayer]s can be hidden and they can also optionally follow the viewport. This makes them useful for HUDs like health bar overlays (on layers [code]1[/code] and higher) or backgrounds (on layers [code]-1[/code] and lower).
+		[b]Note:[/b] Embedded [Window]s are placed on layer [code]1024[/code]. [CanvasItem]s on layers [code]1025[/code] and higher appear in front of embedded windows.
+		[b]Note:[/b] Each [CanvasLayer] is drawn on one specific [Viewport] and cannot be shared between multiple [Viewport]s, see [member custom_viewport]. When using multiple [Viewport]s, for example in a split-screen game, you need create an individual [CanvasLayer] for each [Viewport] you want it to be drawn on.
 	</description>
 	<tutorials>
-		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
-		<link title="Canvas layers">https://docs.godotengine.org/en/latest/tutorials/2d/canvas_layers.html</link>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="Viewport and canvas transforms">$DOCS_URL/tutorials/2d/2d_transforms.html</link>
+		<link title="Canvas layers">$DOCS_URL/tutorials/2d/canvas_layers.html</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
 	</tutorials>
 	<methods>
 		<method name="get_canvas" qualifiers="const">
-			<return type="RID">
-			</return>
+			<return type="RID" />
 			<description>
 				Returns the RID of the canvas used by this layer.
+			</description>
+		</method>
+		<method name="get_final_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Returns the transform from the [CanvasLayer]s coordinate system to the [Viewport]s coordinate system.
+			</description>
+		</method>
+		<method name="hide">
+			<return type="void" />
+			<description>
+				Hides any [CanvasItem] under this [CanvasLayer]. This is equivalent to setting [member visible] to [code]false[/code].
+			</description>
+		</method>
+		<method name="show">
+			<return type="void" />
+			<description>
+				Shows any [CanvasItem] under this [CanvasLayer]. This is equivalent to setting [member visible] to [code]true[/code].
 			</description>
 		</method>
 	</methods>
@@ -24,14 +44,16 @@
 		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport">
 			The custom [Viewport] node assigned to the [CanvasLayer]. If [code]null[/code], uses the default viewport instead.
 		</member>
-		<member name="follow_viewport_enable" type="bool" setter="set_follow_viewport" getter="is_following_viewport" default="false">
-			Sets the layer to follow the viewport in order to simulate a pseudo 3D effect.
+		<member name="follow_viewport_enabled" type="bool" setter="set_follow_viewport" getter="is_following_viewport" default="false">
+			If enabled, the [CanvasLayer] will use the viewport's transform, so it will move when camera moves instead of being anchored in a fixed position on the screen.
+			Together with [member follow_viewport_scale] it can be used for a pseudo 3D effect.
 		</member>
 		<member name="follow_viewport_scale" type="float" setter="set_follow_viewport_scale" getter="get_follow_viewport_scale" default="1.0">
-			Scales the layer when using [member follow_viewport_enable]. Layers moving into the foreground should have increasing scales, while layers moving into the background should have decreasing scales.
+			Scales the layer when using [member follow_viewport_enabled]. Layers moving into the foreground should have increasing scales, while layers moving into the background should have decreasing scales.
 		</member>
 		<member name="layer" type="int" setter="set_layer" getter="get_layer" default="1">
-			Layer index for draw order. Lower values are drawn first.
+			Layer index for draw order. Lower values are drawn behind higher values.
+			[b]Note:[/b] If multiple CanvasLayers have the same layer index, [CanvasItem] children of one CanvasLayer are drawn behind the [CanvasItem] children of the other CanvasLayer. Which CanvasLayer is drawn in front is non-deterministic.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The layer's base offset.
@@ -45,7 +67,16 @@
 		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
 			The layer's transform.
 		</member>
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
+			If [code]false[/code], any [CanvasItem] under this [CanvasLayer] will be hidden.
+			Unlike [member CanvasItem.visible], visibility of a [CanvasLayer] isn't propagated to underlying layers.
+		</member>
 	</members>
-	<constants>
-	</constants>
+	<signals>
+		<signal name="visibility_changed">
+			<description>
+				Emitted when visibility of the layer is changed. See [member visible].
+			</description>
+		</signal>
+	</signals>
 </class>

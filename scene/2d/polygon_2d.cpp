@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  polygon_2d.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  polygon_2d.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "polygon_2d.h"
 
@@ -90,18 +90,23 @@ bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toler
 }
 #endif
 
-void Polygon2D::_validate_property(PropertyInfo &property) const {
-	if (!invert && property.name == "invert_border") {
-		property.usage = PROPERTY_USAGE_NOEDITOR;
+void Polygon2D::_validate_property(PropertyInfo &p_property) const {
+	if (!invert && p_property.name == "invert_border") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 
 void Polygon2D::_skeleton_bone_setup_changed() {
-	update();
+	queue_redraw();
 }
 
 void Polygon2D::_notification(int p_what) {
+	if (p_what == NOTIFICATION_TRANSFORM_CHANGED && !Engine::get_singleton()->is_editor_hint()) {
+		return; // Mesh recreation for NOTIFICATION_TRANSFORM_CHANGED is only needed in editor.
+	}
+
 	switch (p_what) {
+		case NOTIFICATION_TRANSFORM_CHANGED:
 		case NOTIFICATION_DRAW: {
 			if (polygon.size() < 3) {
 				return;
@@ -114,7 +119,7 @@ void Polygon2D::_notification(int p_what) {
 
 			ObjectID new_skeleton_id;
 
-			if (skeleton_node) {
+			if (skeleton_node && !invert && bone_weights.size()) {
 				RS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), skeleton_node->get_skeleton());
 				new_skeleton_id = skeleton_node->get_instance_id();
 			} else {
@@ -295,14 +300,14 @@ void Polygon2D::_notification(int p_what) {
 			}
 
 			Vector<Color> colors;
+			colors.resize(len);
+
 			if (vertex_colors.size() == points.size()) {
-				colors.resize(len);
 				const Color *color_r = vertex_colors.ptr();
 				for (int i = 0; i < len; i++) {
 					colors.write[i] = color_r[i];
 				}
 			} else {
-				colors.resize(len);
 				for (int i = 0; i < len; i++) {
 					colors.write[i] = color;
 				}
@@ -364,7 +369,30 @@ void Polygon2D::_notification(int p_what) {
 
 				arr[RS::ARRAY_INDEX] = index_array;
 
-				RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				RS::SurfaceData sd;
+
+				if (skeleton_node) {
+					// Compute transform between mesh and skeleton for runtime AABB compute.
+					const Transform2D mesh_transform = get_global_transform();
+					const Transform2D skeleton_transform = skeleton_node->get_global_transform();
+					const Transform2D mesh_to_sk2d = skeleton_transform.affine_inverse() * mesh_transform;
+
+					// Convert 2d transform to 3d.
+					sd.mesh_to_skeleton_xform.basis.rows[0][0] = mesh_to_sk2d.columns[0][0];
+					sd.mesh_to_skeleton_xform.basis.rows[1][0] = mesh_to_sk2d.columns[0][1];
+					sd.mesh_to_skeleton_xform.origin.x = mesh_to_sk2d.get_origin().x;
+
+					sd.mesh_to_skeleton_xform.basis.rows[0][1] = mesh_to_sk2d.columns[1][0];
+					sd.mesh_to_skeleton_xform.basis.rows[1][1] = mesh_to_sk2d.columns[1][1];
+					sd.mesh_to_skeleton_xform.origin.y = mesh_to_sk2d.get_origin().y;
+				}
+
+				Error err = RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+				if (err != OK) {
+					return;
+				}
+
+				RS::get_singleton()->mesh_add_surface(mesh, sd);
 				RS::get_singleton()->canvas_item_add_mesh(get_canvas_item(), mesh, Transform2D(), Color(1, 1, 1), texture.is_valid() ? texture->get_rid() : RID());
 			}
 
@@ -375,7 +403,7 @@ void Polygon2D::_notification(int p_what) {
 void Polygon2D::set_polygon(const Vector<Vector2> &p_polygon) {
 	polygon = p_polygon;
 	rect_cache_dirty = true;
-	update();
+	queue_redraw();
 }
 
 Vector<Vector2> Polygon2D::get_polygon() const {
@@ -392,7 +420,7 @@ int Polygon2D::get_internal_vertex_count() const {
 
 void Polygon2D::set_uv(const Vector<Vector2> &p_uv) {
 	uv = p_uv;
-	update();
+	queue_redraw();
 }
 
 Vector<Vector2> Polygon2D::get_uv() const {
@@ -401,7 +429,7 @@ Vector<Vector2> Polygon2D::get_uv() const {
 
 void Polygon2D::set_polygons(const Array &p_polygons) {
 	polygons = p_polygons;
-	update();
+	queue_redraw();
 }
 
 Array Polygon2D::get_polygons() const {
@@ -410,7 +438,7 @@ Array Polygon2D::get_polygons() const {
 
 void Polygon2D::set_color(const Color &p_color) {
 	color = p_color;
-	update();
+	queue_redraw();
 }
 
 Color Polygon2D::get_color() const {
@@ -419,7 +447,7 @@ Color Polygon2D::get_color() const {
 
 void Polygon2D::set_vertex_colors(const Vector<Color> &p_colors) {
 	vertex_colors = p_colors;
-	update();
+	queue_redraw();
 }
 
 Vector<Color> Polygon2D::get_vertex_colors() const {
@@ -428,16 +456,7 @@ Vector<Color> Polygon2D::get_vertex_colors() const {
 
 void Polygon2D::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
-
-	/*if (texture.is_valid()) {
-		uint32_t flags=texture->get_flags();
-		flags&=~Texture::FLAG_REPEAT;
-		if (tex_tile)
-			flags|=Texture::FLAG_REPEAT;
-
-		texture->set_flags(flags);
-	}*/
-	update();
+	queue_redraw();
 }
 
 Ref<Texture2D> Polygon2D::get_texture() const {
@@ -446,7 +465,7 @@ Ref<Texture2D> Polygon2D::get_texture() const {
 
 void Polygon2D::set_texture_offset(const Vector2 &p_offset) {
 	tex_ofs = p_offset;
-	update();
+	queue_redraw();
 }
 
 Vector2 Polygon2D::get_texture_offset() const {
@@ -455,7 +474,7 @@ Vector2 Polygon2D::get_texture_offset() const {
 
 void Polygon2D::set_texture_rotation(real_t p_rot) {
 	tex_rot = p_rot;
-	update();
+	queue_redraw();
 }
 
 real_t Polygon2D::get_texture_rotation() const {
@@ -464,7 +483,7 @@ real_t Polygon2D::get_texture_rotation() const {
 
 void Polygon2D::set_texture_scale(const Size2 &p_scale) {
 	tex_scale = p_scale;
-	update();
+	queue_redraw();
 }
 
 Size2 Polygon2D::get_texture_scale() const {
@@ -473,7 +492,7 @@ Size2 Polygon2D::get_texture_scale() const {
 
 void Polygon2D::set_invert(bool p_invert) {
 	invert = p_invert;
-	update();
+	queue_redraw();
 	notify_property_list_changed();
 }
 
@@ -483,7 +502,7 @@ bool Polygon2D::get_invert() const {
 
 void Polygon2D::set_antialiased(bool p_antialiased) {
 	antialiased = p_antialiased;
-	update();
+	queue_redraw();
 }
 
 bool Polygon2D::get_antialiased() const {
@@ -492,7 +511,7 @@ bool Polygon2D::get_antialiased() const {
 
 void Polygon2D::set_invert_border(real_t p_invert_border) {
 	invert_border = p_invert_border;
-	update();
+	queue_redraw();
 }
 
 real_t Polygon2D::get_invert_border() const {
@@ -502,7 +521,7 @@ real_t Polygon2D::get_invert_border() const {
 void Polygon2D::set_offset(const Vector2 &p_offset) {
 	offset = p_offset;
 	rect_cache_dirty = true;
-	update();
+	queue_redraw();
 }
 
 Vector2 Polygon2D::get_offset() const {
@@ -532,7 +551,7 @@ Vector<float> Polygon2D::get_bone_weights(int p_index) const {
 
 void Polygon2D::erase_bone(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, bone_weights.size());
-	bone_weights.remove(p_idx);
+	bone_weights.remove_at(p_idx);
 }
 
 void Polygon2D::clear_bones() {
@@ -542,19 +561,21 @@ void Polygon2D::clear_bones() {
 void Polygon2D::set_bone_weights(int p_index, const Vector<float> &p_weights) {
 	ERR_FAIL_INDEX(p_index, bone_weights.size());
 	bone_weights.write[p_index].weights = p_weights;
-	update();
+	queue_redraw();
 }
 
 void Polygon2D::set_bone_path(int p_index, const NodePath &p_path) {
 	ERR_FAIL_INDEX(p_index, bone_weights.size());
 	bone_weights.write[p_index].path = p_path;
-	update();
+	queue_redraw();
 }
 
 Array Polygon2D::_get_bones() const {
 	Array bones;
 	for (int i = 0; i < get_bone_count(); i++) {
-		bones.push_back(get_bone_path(i));
+		// Convert path property to String to avoid errors due to invalid node path in editor,
+		// because it's relative to the Skeleton2D node and not Polygon2D.
+		bones.push_back(String(get_bone_path(i)));
 		bones.push_back(get_bone_weights(i));
 	}
 	return bones;
@@ -564,7 +585,8 @@ void Polygon2D::_set_bones(const Array &p_bones) {
 	ERR_FAIL_COND(p_bones.size() & 1);
 	clear_bones();
 	for (int i = 0; i < p_bones.size(); i += 2) {
-		add_bone(p_bones[i], p_bones[i + 1]);
+		// Convert back from String to NodePath.
+		add_bone(NodePath(p_bones[i]), p_bones[i + 1]);
 	}
 }
 
@@ -573,7 +595,7 @@ void Polygon2D::set_skeleton(const NodePath &p_skeleton) {
 		return;
 	}
 	skeleton = p_skeleton;
-	update();
+	queue_redraw();
 }
 
 NodePath Polygon2D::get_skeleton() const {
@@ -608,8 +630,8 @@ void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_scale", "texture_scale"), &Polygon2D::set_texture_scale);
 	ClassDB::bind_method(D_METHOD("get_texture_scale"), &Polygon2D::get_texture_scale);
 
-	ClassDB::bind_method(D_METHOD("set_invert", "invert"), &Polygon2D::set_invert);
-	ClassDB::bind_method(D_METHOD("get_invert"), &Polygon2D::get_invert);
+	ClassDB::bind_method(D_METHOD("set_invert_enabled", "invert"), &Polygon2D::set_invert);
+	ClassDB::bind_method(D_METHOD("get_invert_enabled"), &Polygon2D::get_invert);
 
 	ClassDB::bind_method(D_METHOD("set_antialiased", "antialiased"), &Polygon2D::set_antialiased);
 	ClassDB::bind_method(D_METHOD("get_antialiased"), &Polygon2D::get_antialiased);
@@ -641,25 +663,26 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "get_antialiased");
-	ADD_GROUP("Texture2D", "");
+
+	ADD_GROUP("Texture", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
-	ADD_GROUP("Texture2D", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_offset"), "set_texture_offset", "get_texture_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_scale"), "set_texture_scale", "get_texture_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians"), "set_texture_rotation", "get_texture_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_offset", "get_texture_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_scale", PROPERTY_HINT_LINK), "set_texture_scale", "get_texture_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees"), "set_texture_rotation", "get_texture_rotation");
+
 	ADD_GROUP("Skeleton", "");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton2D"), "set_skeleton", "get_skeleton");
 
 	ADD_GROUP("Invert", "invert_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_enable"), "set_invert", "get_invert");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "invert_border", PROPERTY_HINT_RANGE, "0.1,16384,0.1"), "set_invert_border", "get_invert_border");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_enabled"), "set_invert_enabled", "get_invert_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "invert_border", PROPERTY_HINT_RANGE, "0.1,16384,0.1,suffix:px"), "set_invert_border", "get_invert_border");
 
 	ADD_GROUP("Data", "");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "uv"), "set_uv", "get_uv");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "vertex_colors"), "set_vertex_colors", "get_vertex_colors");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons"), "set_polygons", "get_polygons");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bones", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_bones", "_get_bones");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bones", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_bones", "_get_bones");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "internal_vertex_count", PROPERTY_HINT_RANGE, "0,1000"), "set_internal_vertex_count", "get_internal_vertex_count");
 }
 
@@ -668,5 +691,8 @@ Polygon2D::Polygon2D() {
 }
 
 Polygon2D::~Polygon2D() {
+	// This will free the internally-allocated mesh instance, if allocated.
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	RS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), RID());
 	RS::get_singleton()->free(mesh);
 }

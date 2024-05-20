@@ -88,7 +88,7 @@ static const void *hb_graphite2_get_table (const void *data, unsigned int tag, s
   {
     blob = face_data->face->reference_table (tag);
 
-    hb_graphite2_tablelist_t *p = (hb_graphite2_tablelist_t *) calloc (1, sizeof (hb_graphite2_tablelist_t));
+    hb_graphite2_tablelist_t *p = (hb_graphite2_tablelist_t *) hb_calloc (1, sizeof (hb_graphite2_tablelist_t));
     if (unlikely (!p)) {
       hb_blob_destroy (blob);
       return nullptr;
@@ -123,15 +123,16 @@ _hb_graphite2_shaper_face_data_create (hb_face_t *face)
   }
   hb_blob_destroy (silf_blob);
 
-  hb_graphite2_face_data_t *data = (hb_graphite2_face_data_t *) calloc (1, sizeof (hb_graphite2_face_data_t));
+  hb_graphite2_face_data_t *data = (hb_graphite2_face_data_t *) hb_calloc (1, sizeof (hb_graphite2_face_data_t));
   if (unlikely (!data))
     return nullptr;
 
   data->face = face;
-  data->grface = gr_make_face (data, &hb_graphite2_get_table, gr_face_preloadAll);
+  const gr_face_ops ops = {sizeof(gr_face_ops), &hb_graphite2_get_table, NULL};
+  data->grface = gr_make_face_with_ops (data, &ops, gr_face_preloadAll);
 
   if (unlikely (!data->grface)) {
-    free (data);
+    hb_free (data);
     return nullptr;
   }
 
@@ -148,16 +149,16 @@ _hb_graphite2_shaper_face_data_destroy (hb_graphite2_face_data_t *data)
     hb_graphite2_tablelist_t *old = tlist;
     hb_blob_destroy (tlist->blob);
     tlist = tlist->next;
-    free (old);
+    hb_free (old);
   }
 
   gr_face_destroy (data->grface);
 
-  free (data);
+  hb_free (data);
 }
 
 /**
- * hb_graphite2_face_get_gr_face:
+ * hb_graphite2_face_get_gr_face: (skip)
  * @face: @hb_face_t to query
  *
  * Fetches the Graphite2 gr_face corresponding to the specified
@@ -194,10 +195,10 @@ _hb_graphite2_shaper_font_data_destroy (hb_graphite2_font_data_t *data HB_UNUSED
 
 #ifndef HB_DISABLE_DEPRECATED
 /**
- * hb_graphite2_font_get_gr_font:
+ * hb_graphite2_font_get_gr_font: (skip)
  * @font: An #hb_font_t
  *
- * Always returns %NULL. Use hb_graphite2_face_get_gr_face() instead.
+ * Always returns `NULL`. Use hb_graphite2_face_get_gr_face() instead.
  *
  * Return value: (nullable): Graphite2 font associated with @font.
  *
@@ -222,7 +223,7 @@ struct hb_graphite2_cluster_t {
   unsigned int base_glyph;
   unsigned int num_glyphs;
   unsigned int cluster;
-  unsigned int advance;
+  int advance;
 };
 
 hb_bool_t
@@ -247,6 +248,21 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
       gr_fref_set_feature_value (fref, features[i].value, feats);
   }
 
+  hb_direction_t direction = buffer->props.direction;
+  hb_direction_t horiz_dir = hb_script_get_horizontal_direction (buffer->props.script);
+  /* TODO vertical:
+   * The only BTT vertical script is Ogham, but it's not clear to me whether OpenType
+   * Ogham fonts are supposed to be implemented BTT or not.  Need to research that
+   * first. */
+  if ((HB_DIRECTION_IS_HORIZONTAL (direction) &&
+       direction != horiz_dir && horiz_dir != HB_DIRECTION_INVALID) ||
+      (HB_DIRECTION_IS_VERTICAL   (direction) &&
+       direction != HB_DIRECTION_TTB))
+  {
+    hb_buffer_reverse_clusters (buffer);
+    direction = HB_DIRECTION_REVERSE (direction);
+  }
+
   gr_segment *seg = nullptr;
   const gr_slot *is;
   unsigned int ci = 0, ic = 0;
@@ -260,21 +276,11 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   for (unsigned int i = 0; i < buffer->len; ++i)
     chars[i] = buffer->info[i].codepoint;
 
-  /* TODO ensure_native_direction. */
-
-  hb_tag_t script_tag[HB_OT_MAX_TAGS_PER_SCRIPT];
-  unsigned int count = HB_OT_MAX_TAGS_PER_SCRIPT;
-  hb_ot_tags_from_script_and_language (hb_buffer_get_script (buffer),
-				       HB_LANGUAGE_INVALID,
-				       &count,
-				       script_tag,
-				       nullptr, nullptr);
-
   seg = gr_make_seg (nullptr, grface,
-		     count ? script_tag[count - 1] : HB_OT_TAG_DEFAULT_SCRIPT,
+		     HB_TAG_NONE, // https://github.com/harfbuzz/harfbuzz/issues/3439#issuecomment-1442650148
 		     feats,
 		     gr_utf32, chars, buffer->len,
-		     2 | (hb_buffer_get_direction (buffer) == HB_DIRECTION_RTL ? 1 : 0));
+		     2 | (direction == HB_DIRECTION_RTL ? 1 : 0));
 
   if (unlikely (!seg)) {
     if (feats) gr_featureval_destroy (feats);
@@ -317,7 +323,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
 
 #undef ALLOCATE_ARRAY
 
-  memset (clusters, 0, sizeof (clusters[0]) * buffer->len);
+  hb_memset (clusters, 0, sizeof (clusters[0]) * buffer->len);
 
   hb_codepoint_t *pg = gids;
   clusters[0].cluster = buffer->info[0].cluster;
@@ -326,7 +332,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   float yscale = (float) font->y_scale / upem;
   yscale *= yscale / xscale;
   unsigned int curradv = 0;
-  if (HB_DIRECTION_IS_BACKWARD(buffer->props.direction))
+  if (HB_DIRECTION_IS_BACKWARD (direction))
   {
     curradv = gr_slot_origin_X(gr_seg_first_slot(seg)) * xscale;
     clusters[0].advance = gr_seg_advance_X(seg) * xscale - curradv;
@@ -355,16 +361,17 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
       c->num_chars = before - c->base_char;
       c->base_glyph = ic;
       c->num_glyphs = 0;
-      if (HB_DIRECTION_IS_BACKWARD(buffer->props.direction))
+      if (HB_DIRECTION_IS_BACKWARD (direction))
       {
 	c->advance = curradv - gr_slot_origin_X(is) * xscale;
 	curradv -= c->advance;
       }
       else
       {
+	auto origin_X = gr_slot_origin_X (is) * xscale;
 	c->advance = 0;
-	clusters[ci].advance += gr_slot_origin_X(is) * xscale - curradv;
-	curradv += clusters[ci].advance;
+	clusters[ci].advance += origin_X - curradv;
+	curradv = origin_X;
       }
       ci++;
     }
@@ -374,7 +381,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
 	clusters[ci].num_chars = after + 1 - clusters[ci].base_char;
   }
 
-  if (HB_DIRECTION_IS_BACKWARD(buffer->props.direction))
+  if (HB_DIRECTION_IS_BACKWARD (direction))
     clusters[ci].advance += curradv;
   else
     clusters[ci].advance += gr_seg_advance_X(seg) * xscale - curradv;
@@ -396,7 +403,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   unsigned int currclus = UINT_MAX;
   const hb_glyph_info_t *info = buffer->info;
   hb_glyph_position_t *pPos = hb_buffer_get_glyph_positions (buffer, nullptr);
-  if (!HB_DIRECTION_IS_BACKWARD(buffer->props.direction))
+  if (!HB_DIRECTION_IS_BACKWARD (direction))
   {
     curradvx = 0;
     for (is = gr_seg_first_slot (seg); is; pPos++, ++info, is = gr_slot_next_in_segment (is))
@@ -438,7 +445,8 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   if (feats) gr_featureval_destroy (feats);
   gr_seg_destroy (seg);
 
-  buffer->unsafe_to_break_all ();
+  buffer->clear_glyph_flags ();
+  buffer->unsafe_to_break ();
 
   return true;
 }

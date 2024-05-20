@@ -1,57 +1,55 @@
-/*************************************************************************/
-/*  visual_instance_3d.h                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  visual_instance_3d.h                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef VISUAL_INSTANCE_H
-#define VISUAL_INSTANCE_H
+#ifndef VISUAL_INSTANCE_3D_H
+#define VISUAL_INSTANCE_3D_H
 
-#include "core/math/face3.h"
-#include "core/templates/rid.h"
 #include "scene/3d/node_3d.h"
-#include "scene/resources/material.h"
 
 class VisualInstance3D : public Node3D {
 	GDCLASS(VisualInstance3D, Node3D);
-	OBJ_CATEGORY("3D Visual Nodes");
 
 	RID base;
 	RID instance;
 	uint32_t layers = 1;
-
-	RID _get_visual_instance_rid() const;
+	float sorting_offset = 0.0;
+	bool sorting_use_aabb_center = true;
 
 protected:
 	void _update_visibility();
 
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
+	GDVIRTUAL0RC(AABB, _get_aabb)
 public:
 	enum GetFacesFlags {
 		FACES_SOLID = 1, // solid geometry
@@ -61,10 +59,7 @@ public:
 	};
 
 	RID get_instance() const;
-	virtual AABB get_aabb() const = 0;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const = 0;
-
-	virtual AABB get_transformed_aabb() const; // helper
+	virtual AABB get_aabb() const;
 
 	void set_base(const RID &p_base);
 	RID get_base() const;
@@ -72,8 +67,14 @@ public:
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
 
-	void set_layer_mask_bit(int p_layer, bool p_enable);
-	bool get_layer_mask_bit(int p_layer) const;
+	void set_layer_mask_value(int p_layer_number, bool p_enable);
+	bool get_layer_mask_value(int p_layer_number) const;
+
+	void set_sorting_offset(float p_offset);
+	float get_sorting_offset() const;
+
+	void set_sorting_use_aabb_center(bool p_enabled);
+	bool is_sorting_use_aabb_center() const;
 
 	VisualInstance3D();
 	~VisualInstance3D();
@@ -92,7 +93,7 @@ public:
 
 	enum GIMode {
 		GI_MODE_DISABLED,
-		GI_MODE_BAKED,
+		GI_MODE_STATIC,
 		GI_MODE_DYNAMIC
 	};
 
@@ -104,40 +105,52 @@ public:
 		LIGHTMAP_SCALE_MAX,
 	};
 
+	enum VisibilityRangeFadeMode {
+		VISIBILITY_RANGE_FADE_DISABLED = RS::VISIBILITY_RANGE_FADE_DISABLED,
+		VISIBILITY_RANGE_FADE_SELF = RS::VISIBILITY_RANGE_FADE_SELF,
+		VISIBILITY_RANGE_FADE_DEPENDENCIES = RS::VISIBILITY_RANGE_FADE_DEPENDENCIES,
+	};
+
 private:
 	ShadowCastingSetting shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
 	Ref<Material> material_override;
+	Ref<Material> material_overlay;
 
 	float visibility_range_begin = 0.0;
 	float visibility_range_end = 0.0;
 	float visibility_range_begin_margin = 0.0;
 	float visibility_range_end_margin = 0.0;
+	VisibilityRangeFadeMode visibility_range_fade_mode = VISIBILITY_RANGE_FADE_DISABLED;
 
-	Vector<NodePath> visibility_range_children;
+	float transparency = 0.0f;
 
 	float lod_bias = 1.0;
 
-	mutable HashMap<StringName, Variant> instance_uniforms;
-	mutable HashMap<StringName, StringName> instance_uniform_property_remap;
+	mutable HashMap<StringName, Variant> instance_shader_parameters;
+	mutable HashMap<StringName, StringName> instance_shader_parameter_property_remap;
 
 	float extra_cull_margin = 0.0;
+	AABB custom_aabb;
 	LightmapScale lightmap_scale = LIGHTMAP_SCALE_1X;
-	GIMode gi_mode = GI_MODE_DISABLED;
+	GIMode gi_mode = GI_MODE_STATIC;
 	bool ignore_occlusion_culling = false;
 
-	const StringName *_instance_uniform_get_remap(const StringName p_name) const;
+	const StringName *_instance_uniform_get_remap(const StringName &p_name) const;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_property(PropertyInfo &p_property) const;
 
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
 	ShadowCastingSetting get_cast_shadows_setting() const;
+
+	void set_transparency(float p_transparency);
+	float get_transparency() const;
 
 	void set_visibility_range_begin(float p_dist);
 	float get_visibility_range_begin() const;
@@ -151,11 +164,14 @@ public:
 	void set_visibility_range_end_margin(float p_dist);
 	float get_visibility_range_end_margin() const;
 
-	void set_visibility_range_parent(const Node *p_parent);
-	void clear_visibility_range_parent();
+	void set_visibility_range_fade_mode(VisibilityRangeFadeMode p_mode);
+	VisibilityRangeFadeMode get_visibility_range_fade_mode() const;
 
 	void set_material_override(const Ref<Material> &p_material);
 	Ref<Material> get_material_override() const;
+
+	void set_material_overlay(const Ref<Material> &p_material);
+	Ref<Material> get_material_overlay() const;
 
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;
@@ -169,19 +185,23 @@ public:
 	void set_lightmap_scale(LightmapScale p_scale);
 	LightmapScale get_lightmap_scale() const;
 
-	void set_shader_instance_uniform(const StringName &p_uniform, const Variant &p_value);
-	Variant get_shader_instance_uniform(const StringName &p_uniform) const;
+	void set_instance_shader_parameter(const StringName &p_name, const Variant &p_value);
+	Variant get_instance_shader_parameter(const StringName &p_name) const;
 
-	void set_custom_aabb(AABB aabb);
+	void set_custom_aabb(AABB p_aabb);
+	AABB get_custom_aabb() const;
 
 	void set_ignore_occlusion_culling(bool p_enabled);
 	bool is_ignoring_occlusion_culling();
 
+	PackedStringArray get_configuration_warnings() const override;
 	GeometryInstance3D();
+	virtual ~GeometryInstance3D();
 };
 
 VARIANT_ENUM_CAST(GeometryInstance3D::ShadowCastingSetting);
 VARIANT_ENUM_CAST(GeometryInstance3D::LightmapScale);
 VARIANT_ENUM_CAST(GeometryInstance3D::GIMode);
+VARIANT_ENUM_CAST(GeometryInstance3D::VisibilityRangeFadeMode);
 
-#endif
+#endif // VISUAL_INSTANCE_3D_H

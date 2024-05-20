@@ -1,52 +1,47 @@
-/*************************************************************************/
-/*  editor_translation_parser.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_translation_parser.cpp                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_translation_parser.h"
 
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
 #include "core/object/script_language.h"
-#include "core/templates/set.h"
+#include "core/templates/hash_set.h"
 
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
 Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
-	if (!get_script_instance()) {
-		return ERR_UNAVAILABLE;
-	}
+	TypedArray<String> ids;
+	TypedArray<Array> ids_ctx_plural;
 
-	if (get_script_instance()->has_method("_parse_file")) {
-		Array ids;
-		Array ids_ctx_plural;
-		get_script_instance()->call("_parse_file", p_path, ids, ids_ctx_plural);
-
+	if (GDVIRTUAL_CALL(_parse_file, p_path, ids, ids_ctx_plural)) {
 		// Add user's extracted translatable messages.
 		for (int i = 0; i < ids.size(); i++) {
 			r_ids->append(ids[i]);
@@ -71,12 +66,8 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Str
 }
 
 void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
-	if (!get_script_instance()) {
-		return;
-	}
-
-	if (get_script_instance()->has_method("_get_recognized_extensions")) {
-		Array extensions = get_script_instance()->call("_get_recognized_extensions");
+	Vector<String> extensions;
+	if (GDVIRTUAL_CALL(_get_recognized_extensions, extensions)) {
 		for (int i = 0; i < extensions.size(); i++) {
 			r_extensions->push_back(extensions[i]);
 		}
@@ -86,14 +77,14 @@ void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_ex
 }
 
 void EditorTranslationParserPlugin::_bind_methods() {
-	BIND_VMETHOD(MethodInfo(Variant::NIL, "_parse_file", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::ARRAY, "msgids"), PropertyInfo(Variant::ARRAY, "msgids_context_plural")));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_recognized_extensions"));
+	GDVIRTUAL_BIND(_parse_file, "path", "msgids", "msgids_context_plural");
+	GDVIRTUAL_BIND(_get_recognized_extensions);
 }
 
 /////////////////////////
 
 void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensions) const {
-	Set<String> extensions;
+	HashSet<String> extensions;
 	List<String> temp;
 	for (int i = 0; i < standard_parsers.size(); i++) {
 		standard_parsers[i]->get_recognized_extensions(&temp);
@@ -102,19 +93,19 @@ void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensio
 		custom_parsers[i]->get_recognized_extensions(&temp);
 	}
 	// Remove duplicates.
-	for (int i = 0; i < temp.size(); i++) {
-		extensions.insert(temp[i]);
+	for (const String &E : temp) {
+		extensions.insert(E);
 	}
-	for (Set<String>::Element *E = extensions.front(); E; E = E->next()) {
-		r_extensions->push_back(E->get());
+	for (const String &E : extensions) {
+		r_extensions->push_back(E);
 	}
 }
 
 bool EditorTranslationParser::can_parse(const String &p_extension) const {
 	List<String> extensions;
 	get_recognized_extensions(&extensions);
-	for (int i = 0; i < extensions.size(); i++) {
-		if (p_extension == extensions[i]) {
+	for (const String &extension : extensions) {
+		if (p_extension == extension) {
 			return true;
 		}
 	}
@@ -126,8 +117,8 @@ Ref<EditorTranslationParserPlugin> EditorTranslationParser::get_parser(const Str
 	for (int i = 0; i < custom_parsers.size(); i++) {
 		List<String> temp;
 		custom_parsers[i]->get_recognized_extensions(&temp);
-		for (int j = 0; j < temp.size(); j++) {
-			if (temp[j] == p_extension) {
+		for (const String &E : temp) {
+			if (E == p_extension) {
 				return custom_parsers[i];
 			}
 		}
@@ -136,8 +127,8 @@ Ref<EditorTranslationParserPlugin> EditorTranslationParser::get_parser(const Str
 	for (int i = 0; i < standard_parsers.size(); i++) {
 		List<String> temp;
 		standard_parsers[i]->get_recognized_extensions(&temp);
-		for (int j = 0; j < temp.size(); j++) {
-			if (temp[j] == p_extension) {
+		for (const String &E : temp) {
+			if (E == p_extension) {
 				return standard_parsers[i];
 			}
 		}

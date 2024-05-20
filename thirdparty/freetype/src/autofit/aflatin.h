@@ -5,7 +5,7 @@
  *   Auto-fitter hinting routines for latin writing system
  *   (specification).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -116,11 +116,11 @@ FT_BEGIN_HEADER
 
 
   FT_LOCAL( FT_Error )
-  af_latin_metrics_init( AF_LatinMetrics  metrics,
+  af_latin_metrics_init( AF_StyleMetrics  metrics,
                          FT_Face          face );
 
   FT_LOCAL( void )
-  af_latin_metrics_scale( AF_LatinMetrics  metrics,
+  af_latin_metrics_scale( AF_StyleMetrics  metrics,
                           AF_Scaler        scaler );
 
   FT_LOCAL( void )

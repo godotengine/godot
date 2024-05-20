@@ -4,7 +4,7 @@
  *
  *   TrueType and OpenType colored glyph layer support (specification).
  *
- * Copyright (C) 2018-2020 by
+ * Copyright (C) 2018-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Originally written by Shao Yu Zhang <shaozhang@fb.com>.
@@ -41,6 +41,32 @@ FT_BEGIN_HEADER
                           FT_UInt           *aglyph_index,
                           FT_UInt           *acolor_index,
                           FT_LayerIterator*  iterator );
+
+  FT_LOCAL( FT_Bool )
+  tt_face_get_colr_glyph_paint( TT_Face                  face,
+                                FT_UInt                  base_glyph,
+                                FT_Color_Root_Transform  root_transform,
+                                FT_OpaquePaint*          paint );
+
+  FT_LOCAL( FT_Bool )
+  tt_face_get_color_glyph_clipbox( TT_Face      face,
+                                   FT_UInt      base_glyph,
+                                   FT_ClipBox*  clip_box );
+
+  FT_LOCAL( FT_Bool )
+  tt_face_get_paint_layers( TT_Face            face,
+                            FT_LayerIterator*  iterator,
+                            FT_OpaquePaint*    paint );
+
+  FT_LOCAL( FT_Bool )
+  tt_face_get_colorline_stops( TT_Face                face,
+                               FT_ColorStop*          color_stop,
+                               FT_ColorStopIterator*  iterator );
+
+  FT_LOCAL( FT_Bool )
+  tt_face_get_paint( TT_Face         face,
+                     FT_OpaquePaint  opaque_paint,
+                     FT_COLR_Paint*  paint );
 
   FT_LOCAL( FT_Error )
   tt_face_colr_blend_layer( TT_Face       face,

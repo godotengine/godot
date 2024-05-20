@@ -15,6 +15,7 @@
 #include "src/webp/config.h"
 #endif
 
+#include "src/dsp/cpu.h"
 #include "src/utils/bit_reader_inl_utils.h"
 #include "src/utils/utils.h"
 
@@ -41,14 +42,7 @@ void VP8InitBitReader(VP8BitReader* const br,
   br->bits_    = -8;   // to load the very first 8bits
   br->eof_     = 0;
   VP8BitReaderSetBuffer(br, start, size);
-// -- GODOT -- begin
-#ifdef JAVASCRIPT_ENABLED // html5 required aligned reads
-  while(((uintptr_t)br->buf_ & 1) != 0 && !br->eof_)
-    VP8LoadFinalBytes(br);
-#else
   VP8LoadNewBytes(br);
-#endif
-// -- GODOT -- end
 }
 
 void VP8RemapBitReader(VP8BitReader* const br, ptrdiff_t offset) {
@@ -128,7 +122,7 @@ int32_t VP8GetSignedValue(VP8BitReader* const br, int bits,
 
 #define VP8L_LOG8_WBITS 4  // Number of bytes needed to store VP8L_WBITS bits.
 
-#if defined(__arm__) || defined(_M_ARM) || defined(__aarch64__) || \
+#if defined(__arm__) || defined(_M_ARM) || WEBP_AARCH64 || \
     defined(__i386__) || defined(_M_IX86) || \
     defined(__x86_64__) || defined(_M_X64)
 #define VP8L_USE_FAST_LOAD

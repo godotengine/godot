@@ -1,495 +1,640 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RichTextLabel" inherits="Control" version="4.0">
+<class name="RichTextLabel" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Label that displays rich text.
+		A control for displaying text that can contain different font styles, images, and basic formatting.
 	</brief_description>
 	<description>
-		Rich text can contain custom text, fonts, images and some basic formatting. The label manages these as an internal tag stack. It also adapts itself to given width/heights.
-		[b]Note:[/b] Assignments to [member bbcode_text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member bbcode_text] will erase previous edits made from other manual sources such as [method append_bbcode] and the [code]push_*[/code] / [method pop] methods.
-		[b]Note:[/b] RichTextLabel doesn't support entangled BBCode tags. For example, instead of using [code][b]bold[i]bold italic[/b]italic[/i][/code], use [code][b]bold[i]bold italic[/i][/b][i]italic[/i][/code].
-		[b]Note:[/b] Unlike [Label], RichTextLabel doesn't have a [i]property[/i] to horizontally align text to the center. Instead, enable [member bbcode_enabled] and surround the text in a [code][center][/code] tag as follows: [code][center]Example[/center][/code]. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the [member fit_content_height] property.
+		A control for displaying text that can contain custom fonts, images, and basic formatting. [RichTextLabel] manages these as an internal tag stack. It also adapts itself to given width/heights.
+		[b]Note:[/b] Assignments to [member text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member text] will erase previous edits made from other manual sources such as [method append_text] and the [code]push_*[/code] / [method pop] methods.
+		[b]Note:[/b] RichTextLabel doesn't support entangled BBCode tags. For example, instead of using [code skip-lint][b]bold[i]bold italic[/b]italic[/i][/code], use [code skip-lint][b]bold[i]bold italic[/i][/b][i]italic[/i][/code].
+		[b]Note:[/b] [code]push_*/pop_*[/code] functions won't affect BBCode.
+		[b]Note:[/b] Unlike [Label], [RichTextLabel] doesn't have a [i]property[/i] to horizontally align text to the center. Instead, enable [member bbcode_enabled] and surround the text in a [code skip-lint][center][/code] tag as follows: [code skip-lint][center]Example[/center][/code]. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the [member fit_content] property.
 	</description>
 	<tutorials>
-		<link title="BBCode in RichTextLabel">https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
-		<link title="GUI Rich Text/BBcode Demo">https://godotengine.org/asset-library/asset/132</link>
-		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
+		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
+		<link title="Rich Text Label with BBCode Demo">https://godotengine.org/asset-library/asset/2774</link>
+		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<methods>
 		<method name="add_image">
-			<return type="void">
-			</return>
-			<argument index="0" name="image" type="Texture2D">
-			</argument>
-			<argument index="1" name="width" type="int" default="0">
-			</argument>
-			<argument index="2" name="height" type="int" default="0">
-			</argument>
-			<argument index="3" name="color" type="Color" default="Color(1, 1, 1, 1)">
-			</argument>
-			<argument index="4" name="inline_align" type="int" enum="VAlign" default="0">
-			</argument>
+			<return type="void" />
+			<param index="0" name="image" type="Texture2D" />
+			<param index="1" name="width" type="int" default="0" />
+			<param index="2" name="height" type="int" default="0" />
+			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="5" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
+			<param index="6" name="key" type="Variant" default="null" />
+			<param index="7" name="pad" type="bool" default="false" />
+			<param index="8" name="tooltip" type="String" default="&quot;&quot;" />
+			<param index="9" name="size_in_percent" type="bool" default="false" />
 			<description>
-				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image and a [code]color[/code] to tint the image.
-				If [code]width[/code] or [code]height[/code] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
+				Adds an image's opening and closing tags to the tag stack, optionally providing a [param width] and [param height] to resize the image, a [param color] to tint the image and a [param region] to only use parts of the image.
+				If [param width] or [param height] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
+				If [param width] and [param height] are not set, but [param region] is, the region's rect will be used.
+				[param key] is an optional identifier, that can be used to modify the image via [method update_image].
+				If [param pad] is set, and the image is smaller than the size specified by [param width] and [param height], the image padding is added to match the size instead of upscaling.
+				If [param size_in_percent] is set, [param width] and [param height] values are percentages of the control width instead of pixels.
 			</description>
 		</method>
 		<method name="add_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="text" type="String" />
 			<description>
 				Adds raw non-BBCode-parsed text to the tag stack.
 			</description>
 		</method>
-		<method name="append_bbcode">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="bbcode" type="String">
-			</argument>
+		<method name="append_text">
+			<return type="void" />
+			<param index="0" name="bbcode" type="String" />
 			<description>
-				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [constant OK] if successful.
-				[b]Note:[/b] Using this method, you can't close a tag that was opened in a previous [method append_bbcode] call. This is done to improve performance, especially when updating large RichTextLabels since rebuilding the whole BBCode every time would be slower. If you absolutely need to close a tag in a future method call, append the [member bbcode_text] instead of using [method append_bbcode].
+				Parses [param bbcode] and adds tags to the tag stack as needed.
+				[b]Note:[/b] Using this method, you can't close a tag that was opened in a previous [method append_text] call. This is done to improve performance, especially when updating large RichTextLabels since rebuilding the whole BBCode every time would be slower. If you absolutely need to close a tag in a future method call, append the [member text] instead of using [method append_text].
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Clears the tag stack and sets [member bbcode_text] to an empty string.
+				Clears the tag stack, causing the label to display nothing.
+				[b]Note:[/b] This method does not affect [member text], and its contents will show again if the label is redrawn. However, setting [member text] to an empty [String] also clears the stack.
+			</description>
+		</method>
+		<method name="deselect">
+			<return type="void" />
+			<description>
+				Clears the current selection.
+			</description>
+		</method>
+		<method name="get_character_line">
+			<return type="int" />
+			<param index="0" name="character" type="int" />
+			<description>
+				Returns the line number of the character position provided. Line and character numbers are both zero-indexed.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+			</description>
+		</method>
+		<method name="get_character_paragraph">
+			<return type="int" />
+			<param index="0" name="character" type="int" />
+			<description>
+				Returns the paragraph number of the character position provided. Paragraph and character numbers are both zero-indexed.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_content_height" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the height of the content.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+			</description>
+		</method>
+		<method name="get_content_width" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the width of the content.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of lines in the text. Wrapped text is counted as multiple lines.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+			</description>
+		</method>
+		<method name="get_line_offset">
+			<return type="float" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns the vertical offset of the line found at the provided index.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+			</description>
+		</method>
+		<method name="get_menu" qualifiers="const">
+			<return type="PopupMenu" />
+			<description>
+				Returns the [PopupMenu] of this [RichTextLabel]. By default, this menu is displayed when right-clicking on the [RichTextLabel].
+				You can add custom menu items or remove standard ones. Make sure your IDs don't conflict with the standard ones (see [enum MenuItems]). For example:
+				[codeblocks]
+				[gdscript]
+				func _ready():
+				    var menu = get_menu()
+				    # Remove "Select All" item.
+				    menu.remove_item(MENU_SELECT_ALL)
+				    # Add custom items.
+				    menu.add_separator()
+				    menu.add_item("Duplicate Text", MENU_MAX + 1)
+				    # Connect callback.
+				    menu.id_pressed.connect(_on_item_pressed)
+
+				func _on_item_pressed(id):
+				    if id == MENU_MAX + 1:
+				        add_text("\n" + get_parsed_text())
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    var menu = GetMenu();
+				    // Remove "Select All" item.
+				    menu.RemoveItem(RichTextLabel.MenuItems.SelectAll);
+				    // Add custom items.
+				    menu.AddSeparator();
+				    menu.AddItem("Duplicate Text", RichTextLabel.MenuItems.Max + 1);
+				    // Add event handler.
+				    menu.IdPressed += OnItemPressed;
+				}
+
+				public void OnItemPressed(int id)
+				{
+				    if (id == TextEdit.MenuItems.Max + 1)
+				    {
+				        AddText("\n" + GetParsedText());
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
 			</description>
 		</method>
 		<method name="get_paragraph_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of paragraphs (newlines or [code]p[/code] tags in the tag stack's text tags). Considers wrapped text as one paragraph.
 			</description>
 		</method>
+		<method name="get_paragraph_offset">
+			<return type="float" />
+			<param index="0" name="paragraph" type="int" />
+			<description>
+				Returns the vertical offset of the paragraph found at the provided index.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
+			</description>
+		</method>
+		<method name="get_parsed_text" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the text without BBCode mark-up.
+			</description>
+		</method>
 		<method name="get_selected_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the current selection text. Does not include BBCodes.
 			</description>
 		</method>
 		<method name="get_selection_from" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the current selection first character index if a selection is active, [code]-1[/code] otherwise. Does not include BBCodes.
 			</description>
 		</method>
 		<method name="get_selection_to" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the current selection last character index if a selection is active, [code]-1[/code] otherwise. Does not include BBCodes.
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the total number of characters from text tags. Does not include BBCodes.
 			</description>
 		</method>
-		<method name="get_v_scroll">
-			<return type="VScrollBar">
-			</return>
+		<method name="get_v_scroll_bar">
+			<return type="VScrollBar" />
 			<description>
 				Returns the vertical scrollbar.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
 		<method name="get_visible_line_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of visible lines.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="get_visible_paragraph_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of visible paragraphs. A paragraph is considered visible if at least one of its lines is visible.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_ready] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
 		<method name="install_effect">
-			<return type="void">
-			</return>
-			<argument index="0" name="effect" type="Variant">
-			</argument>
+			<return type="void" />
+			<param index="0" name="effect" type="Variant" />
 			<description>
-				Installs a custom effect. [code]effect[/code] should be a valid [RichTextEffect].
+				Installs a custom effect. This can also be done in the RichTextLabel inspector using the [member custom_effects] property. [param effect] should be a valid [RichTextEffect].
+				Example RichTextEffect:
+				[codeblock]
+				# effect.gd
+				class_name MyCustomEffect
+				extends RichTextEffect
+
+				var bbcode = "my_custom_effect"
+
+				# ...
+				[/codeblock]
+				Registering the above effect in RichTextLabel from script:
+				[codeblock]
+				# rich_text_label.gd
+				extends RichTextLabel
+
+				func _ready():
+				    install_effect(MyCustomEffect.new())
+
+				    # Alternatively, if not using `class_name` in the script that extends RichTextEffect:
+				    install_effect(preload("res://effect.gd").new())
+				[/codeblock]
+			</description>
+		</method>
+		<method name="invalidate_paragraph">
+			<return type="bool" />
+			<param index="0" name="paragraph" type="int" />
+			<description>
+				Invalidates [param paragraph] and all subsequent paragraphs cache.
+			</description>
+		</method>
+		<method name="is_menu_visible" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the menu is visible. Use this instead of [code]get_menu().visible[/code] to improve performance (so the creation of the menu is avoided).
+			</description>
+		</method>
+		<method name="is_ready" qualifiers="const">
+			<return type="bool" />
+			<description>
+				If [member threaded] is enabled, returns [code]true[/code] if the background thread has finished text processing, otherwise always return [code]true[/code].
+			</description>
+		</method>
+		<method name="menu_option">
+			<return type="void" />
+			<param index="0" name="option" type="int" />
+			<description>
+				Executes a given action as defined in the [enum MenuItems] enum.
 			</description>
 		</method>
 		<method name="newline">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Adds a newline tag to the tag stack.
 			</description>
 		</method>
 		<method name="parse_bbcode">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="bbcode" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="bbcode" type="String" />
 			<description>
-				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [constant OK] if parses [code]bbcode[/code] successfully.
+				The assignment version of [method append_text]. Clears the tag stack and inserts the new content.
 			</description>
 		</method>
 		<method name="parse_expressions_for_values">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="expressions" type="PackedStringArray">
-			</argument>
+			<return type="Dictionary" />
+			<param index="0" name="expressions" type="PackedStringArray" />
 			<description>
-				Parses BBCode parameter [code]expressions[/code] into a dictionary.
+				Parses BBCode parameter [param expressions] into a dictionary.
 			</description>
 		</method>
 		<method name="pop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Terminates the current tag. Use after [code]push_*[/code] methods to close BBCodes manually. Does not need to follow [code]add_*[/code] methods.
 			</description>
 		</method>
-		<method name="push_bgcolor">
-			<return type="void">
-			</return>
-			<argument index="0" name="bgcolor" type="Color">
-			</argument>
+		<method name="pop_all">
+			<return type="void" />
 			<description>
-				Adds a [code][bgcolor][/code] tag to the tag stack.
+				Terminates all tags opened by [code]push_*[/code] methods.
+			</description>
+		</method>
+		<method name="pop_context">
+			<return type="void" />
+			<description>
+				Terminates tags opened after the last [method push_context] call (including context marker), or all tags if there's no context marker on the stack.
+			</description>
+		</method>
+		<method name="push_bgcolor">
+			<return type="void" />
+			<param index="0" name="bgcolor" type="Color" />
+			<description>
+				Adds a [code skip-lint][bgcolor][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_bold">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Adds a [code][font][/code] tag with a bold font to the tag stack. This is the same as adding a [code][b][/code] tag if not currently in a [code][i][/code] tag.
+				Adds a [code skip-lint][font][/code] tag with a bold font to the tag stack. This is the same as adding a [code skip-lint][b][/code] tag if not currently in a [code skip-lint][i][/code] tag.
 			</description>
 		</method>
 		<method name="push_bold_italics">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Adds a [code][font][/code] tag with a bold italics font to the tag stack.
+				Adds a [code skip-lint][font][/code] tag with a bold italics font to the tag stack.
 			</description>
 		</method>
 		<method name="push_cell">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Adds a [code][cell][/code] tag to the tag stack. Must be inside a [code][table][/code] tag. See [method push_table] for details.
+				Adds a [code skip-lint][cell][/code] tag to the tag stack. Must be inside a [code skip-lint][table][/code] tag. See [method push_table] for details.
 			</description>
 		</method>
 		<method name="push_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
 			<description>
-				Adds a [code][color][/code] tag to the tag stack.
+				Adds a [code skip-lint][color][/code] tag to the tag stack.
+			</description>
+		</method>
+		<method name="push_context">
+			<return type="void" />
+			<description>
+				Adds a context marker to the tag stack. See [method pop_context].
+			</description>
+		</method>
+		<method name="push_customfx">
+			<return type="void" />
+			<param index="0" name="effect" type="RichTextEffect" />
+			<param index="1" name="env" type="Dictionary" />
+			<description>
+				Adds a custom effect tag to the tag stack. The effect does not need to be in [member custom_effects]. The environment is directly passed to the effect.
 			</description>
 		</method>
 		<method name="push_dropcap">
-			<return type="void">
-			</return>
-			<argument index="0" name="string" type="String">
-			</argument>
-			<argument index="1" name="font" type="Font">
-			</argument>
-			<argument index="2" name="size" type="int">
-			</argument>
-			<argument index="3" name="dropcap_margins" type="Rect2" default="Rect2(0, 0, 0, 0)">
-			</argument>
-			<argument index="4" name="color" type="Color" default="Color(1, 1, 1, 1)">
-			</argument>
-			<argument index="5" name="outline_size" type="int" default="0">
-			</argument>
-			<argument index="6" name="outline_color" type="Color" default="Color(0, 0, 0, 0)">
-			</argument>
+			<return type="void" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="font" type="Font" />
+			<param index="2" name="size" type="int" />
+			<param index="3" name="dropcap_margins" type="Rect2" default="Rect2(0, 0, 0, 0)" />
+			<param index="4" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="5" name="outline_size" type="int" default="0" />
+			<param index="6" name="outline_color" type="Color" default="Color(0, 0, 0, 0)" />
 			<description>
-				Adds a [code][dropcap][/code] tag to the tag stack. Drop cap (dropped capital) is a decorative element at the beginning of a paragraph that is larger than the rest of the text.
+				Adds a [code skip-lint][dropcap][/code] tag to the tag stack. Drop cap (dropped capital) is a decorative element at the beginning of a paragraph that is larger than the rest of the text.
 			</description>
 		</method>
 		<method name="push_fgcolor">
-			<return type="void">
-			</return>
-			<argument index="0" name="fgcolor" type="Color">
-			</argument>
+			<return type="void" />
+			<param index="0" name="fgcolor" type="Color" />
 			<description>
-				Adds a [code][fgcolor][/code] tag to the tag stack.
+				Adds a [code skip-lint][fgcolor][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_font">
-			<return type="void">
-			</return>
-			<argument index="0" name="font" type="Font">
-			</argument>
+			<return type="void" />
+			<param index="0" name="font" type="Font" />
+			<param index="1" name="font_size" type="int" default="0" />
 			<description>
-				Adds a [code][font][/code] tag to the tag stack. Overrides default fonts for its duration.
-			</description>
-		</method>
-		<method name="push_font_features">
-			<return type="void">
-			</return>
-			<argument index="0" name="opentype_features" type="Dictionary">
-			</argument>
-			<description>
-				Adds a [code][ot_feature][/code] tag to the tag stack. Overrides default OpenType font feature for its duration.
+				Adds a [code skip-lint][font][/code] tag to the tag stack. Overrides default fonts for its duration.
+				Passing [code]0[/code] to [param font_size] will use the existing default font size.
 			</description>
 		</method>
 		<method name="push_font_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="font_size" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="font_size" type="int" />
 			<description>
-				Adds a [code][font_size][/code] tag to the tag stack. Overrides default font size for its duration.
+				Adds a [code skip-lint][font_size][/code] tag to the tag stack. Overrides default font size for its duration.
+			</description>
+		</method>
+		<method name="push_hint">
+			<return type="void" />
+			<param index="0" name="description" type="String" />
+			<description>
+				Adds a [code skip-lint][hint][/code] tag to the tag stack. Same as BBCode [code skip-lint][hint=something]{text}[/hint][/code].
 			</description>
 		</method>
 		<method name="push_indent">
-			<return type="void">
-			</return>
-			<argument index="0" name="level" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="level" type="int" />
 			<description>
-				Adds an [code][indent][/code] tag to the tag stack. Multiplies [code]level[/code] by current [member tab_size] to determine new margin length.
+				Adds an [code skip-lint][indent][/code] tag to the tag stack. Multiplies [param level] by current [member tab_size] to determine new margin length.
 			</description>
 		</method>
 		<method name="push_italics">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Adds a [code][font][/code] tag with a italics font to the tag stack. This is the same as adding a [code][i][/code] tag if not currently in a [code][b][/code] tag.
+				Adds a [code skip-lint][font][/code] tag with an italics font to the tag stack. This is the same as adding an [code skip-lint][i][/code] tag if not currently in a [code skip-lint][b][/code] tag.
+			</description>
+		</method>
+		<method name="push_language">
+			<return type="void" />
+			<param index="0" name="language" type="String" />
+			<description>
+				Adds language code used for text shaping algorithm and Open-Type font features.
 			</description>
 		</method>
 		<method name="push_list">
-			<return type="void">
-			</return>
-			<argument index="0" name="level" type="int">
-			</argument>
-			<argument index="1" name="type" type="int" enum="RichTextLabel.ListType">
-			</argument>
-			<argument index="2" name="capitalize" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="level" type="int" />
+			<param index="1" name="type" type="int" enum="RichTextLabel.ListType" />
+			<param index="2" name="capitalize" type="bool" />
+			<param index="3" name="bullet" type="String" default="&quot;•&quot;" />
 			<description>
-				Adds [code][ol][/code] or [code][ul][/code] tag to the tag stack. Multiplies [code]level[/code] by current [member tab_size] to determine new margin length.
+				Adds [code skip-lint][ol][/code] or [code skip-lint][ul][/code] tag to the tag stack. Multiplies [param level] by current [member tab_size] to determine new margin length.
 			</description>
 		</method>
 		<method name="push_meta">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="Variant">
-			</argument>
+			<return type="void" />
+			<param index="0" name="data" type="Variant" />
+			<param index="1" name="underline_mode" type="int" enum="RichTextLabel.MetaUnderline" default="1" />
 			<description>
-				Adds a [code][meta][/code] tag to the tag stack. Similar to the BBCode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
+				Adds a meta tag to the tag stack. Similar to the BBCode [code skip-lint][url=something]{text}[/url][/code], but supports non-[String] metadata types.
+				If [member meta_underlined] is [code]true[/code], meta tags display an underline. This behavior can be customized with [param underline_mode].
+				[b]Note:[/b] Meta tags do nothing by default when clicked. To assign behavior when clicked, connect [signal meta_clicked] to a function that is called when the meta tag is clicked.
 			</description>
 		</method>
 		<method name="push_mono">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Adds a [code][font][/code] tag with a monospace font to the tag stack.
+				Adds a [code skip-lint][font][/code] tag with a monospace font to the tag stack.
 			</description>
 		</method>
 		<method name="push_normal">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Adds a [code][font][/code] tag with a normal font to the tag stack.
+				Adds a [code skip-lint][font][/code] tag with a normal font to the tag stack.
 			</description>
 		</method>
 		<method name="push_outline_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
 			<description>
-				Adds a [code][outline_color][/code] tag to the tag stack. Adds text outline for its duration.
+				Adds a [code skip-lint][outline_color][/code] tag to the tag stack. Adds text outline for its duration.
 			</description>
 		</method>
 		<method name="push_outline_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="outline_size" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="outline_size" type="int" />
 			<description>
-				Adds a [code][outline_size][/code] tag to the tag stack. Overrides default text outline size for its duration.
+				Adds a [code skip-lint][outline_size][/code] tag to the tag stack. Overrides default text outline size for its duration.
 			</description>
 		</method>
 		<method name="push_paragraph">
-			<return type="void">
-			</return>
-			<argument index="0" name="align" type="int" enum="RichTextLabel.Align">
-			</argument>
-			<argument index="1" name="base_direction" type="int" enum="Control.TextDirection" default="0">
-			</argument>
-			<argument index="2" name="language" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="3" name="st_parser" type="int" enum="Control.StructuredTextParser" default="0">
-			</argument>
+			<return type="void" />
+			<param index="0" name="alignment" type="int" enum="HorizontalAlignment" />
+			<param index="1" name="base_direction" type="int" enum="Control.TextDirection" default="0" />
+			<param index="2" name="language" type="String" default="&quot;&quot;" />
+			<param index="3" name="st_parser" type="int" enum="TextServer.StructuredTextParser" default="0" />
+			<param index="4" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="163" />
+			<param index="5" name="tab_stops" type="PackedFloat32Array" default="PackedFloat32Array()" />
 			<description>
-				Adds a [code][p][/code] tag to the tag stack.
+				Adds a [code skip-lint][p][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_strikethrough">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Adds a [code][s][/code] tag to the tag stack.
+				Adds a [code skip-lint][s][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_table">
-			<return type="void">
-			</return>
-			<argument index="0" name="columns" type="int">
-			</argument>
-			<argument index="1" name="inline_align" type="int" enum="VAlign" default="0">
-			</argument>
+			<return type="void" />
+			<param index="0" name="columns" type="int" />
+			<param index="1" name="inline_align" type="int" enum="InlineAlignment" default="0" />
+			<param index="2" name="align_to_row" type="int" default="-1" />
 			<description>
-				Adds a [code][table=columns,inline_align][/code] tag to the tag stack.
+				Adds a [code skip-lint][table=columns,inline_align][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_underline">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Adds a [code][u][/code] tag to the tag stack.
+				Adds a [code skip-lint][u][/code] tag to the tag stack.
 			</description>
 		</method>
-		<method name="remove_line">
-			<return type="bool">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+		<method name="remove_paragraph">
+			<return type="bool" />
+			<param index="0" name="paragraph" type="int" />
+			<param index="1" name="no_invalidate" type="bool" default="false" />
 			<description>
-				Removes a line of content from the label. Returns [code]true[/code] if the line exists.
-				The [code]line[/code] argument is the index of the line to remove, it can take values in the interval [code][0, get_line_count() - 1][/code].
+				Removes a paragraph of content from the label. Returns [code]true[/code] if the paragraph exists.
+				The [param paragraph] argument is the index of the paragraph to remove, it can take values in the interval [code][0, get_paragraph_count() - 1][/code].
+				If [param no_invalidate] is set to [code]true[/code], cache for the subsequent paragraphs is not invalidated. Use it for faster updates if deleted paragraph is fully self-contained (have no unclosed tags), or this call is part of the complex edit operation and [method invalidate_paragraph] will be called at the end of operation.
 			</description>
 		</method>
 		<method name="scroll_to_line">
-			<return type="void">
-			</return>
-			<argument index="0" name="line" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="line" type="int" />
 			<description>
-				Scrolls the window's top line to match [code]line[/code].
+				Scrolls the window's top line to match [param line].
 			</description>
 		</method>
 		<method name="scroll_to_paragraph">
-			<return type="void">
-			</return>
-			<argument index="0" name="paragraph" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="paragraph" type="int" />
 			<description>
-				Scrolls the window's top line to match first line of the [code]paragraph[/code].
+				Scrolls the window's top line to match first line of the [param paragraph].
+			</description>
+		</method>
+		<method name="scroll_to_selection">
+			<return type="void" />
+			<description>
+				Scrolls to the beginning of the current selection.
+			</description>
+		</method>
+		<method name="select_all">
+			<return type="void" />
+			<description>
+				Select all the text.
+				If [member selection_enabled] is [code]false[/code], no selection will occur.
 			</description>
 		</method>
 		<method name="set_cell_border_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
 			<description>
 				Sets color of a table cell border.
 			</description>
 		</method>
 		<method name="set_cell_padding">
-			<return type="void">
-			</return>
-			<argument index="0" name="padding" type="Rect2">
-			</argument>
+			<return type="void" />
+			<param index="0" name="padding" type="Rect2" />
 			<description>
 				Sets inner padding of a table cell.
 			</description>
 		</method>
 		<method name="set_cell_row_background_color">
-			<return type="void">
-			</return>
-			<argument index="0" name="odd_row_bg" type="Color">
-			</argument>
-			<argument index="1" name="even_row_bg" type="Color">
-			</argument>
+			<return type="void" />
+			<param index="0" name="odd_row_bg" type="Color" />
+			<param index="1" name="even_row_bg" type="Color" />
 			<description>
 				Sets color of a table cell. Separate colors for alternating rows can be specified.
 			</description>
 		</method>
 		<method name="set_cell_size_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="min_size" type="Vector2">
-			</argument>
-			<argument index="1" name="max_size" type="Vector2">
-			</argument>
+			<return type="void" />
+			<param index="0" name="min_size" type="Vector2" />
+			<param index="1" name="max_size" type="Vector2" />
 			<description>
 				Sets minimum and maximum size overrides for a table cell.
 			</description>
 		</method>
 		<method name="set_table_column_expand">
-			<return type="void">
-			</return>
-			<argument index="0" name="column" type="int">
-			</argument>
-			<argument index="1" name="expand" type="bool">
-			</argument>
-			<argument index="2" name="ratio" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="expand" type="bool" />
+			<param index="2" name="ratio" type="int" default="1" />
 			<description>
-				Edits the selected column's expansion options. If [code]expand[/code] is [code]true[/code], the column expands in proportion to its expansion ratio versus the other columns' ratios.
+				Edits the selected column's expansion options. If [param expand] is [code]true[/code], the column expands in proportion to its expansion ratio versus the other columns' ratios.
 				For example, 2 columns with ratios 3 and 4 plus 70 pixels in available width would expand 30 and 40 pixels, respectively.
-				If [code]expand[/code] is [code]false[/code], the column will not contribute to the total ratio.
+				If [param expand] is [code]false[/code], the column will not contribute to the total ratio.
+			</description>
+		</method>
+		<method name="update_image">
+			<return type="void" />
+			<param index="0" name="key" type="Variant" />
+			<param index="1" name="mask" type="int" enum="RichTextLabel.ImageUpdateMask" is_bitfield="true" />
+			<param index="2" name="image" type="Texture2D" />
+			<param index="3" name="width" type="int" default="0" />
+			<param index="4" name="height" type="int" default="0" />
+			<param index="5" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="6" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="7" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
+			<param index="8" name="pad" type="bool" default="false" />
+			<param index="9" name="tooltip" type="String" default="&quot;&quot;" />
+			<param index="10" name="size_in_percent" type="bool" default="false" />
+			<description>
+				Updates the existing images with the key [param key]. Only properties specified by [param mask] bits are updated. See [method add_image].
 			</description>
 		</method>
 	</methods>
 	<members>
+		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="TextServer.AutowrapMode" default="3">
+			If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. To see how each mode behaves, see [enum TextServer.AutowrapMode].
+		</member>
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" default="false">
 			If [code]true[/code], the label uses BBCode formatting.
+			[b]Note:[/b] This only affects the contents of [member text], not the tag stack.
 		</member>
-		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode" default="&quot;&quot;">
-			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
-			[b]Note:[/b] It is unadvised to use the [code]+=[/code] operator with [code]bbcode_text[/code] (e.g. [code]bbcode_text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. Use [method append_bbcode] for adding text instead, unless you absolutely need to close a tag that was opened in an earlier method call.
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
+		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="false">
+			If [code]true[/code], a right-click displays the context menu.
 		</member>
 		<member name="custom_effects" type="Array" setter="set_effects" getter="get_effects" default="[]">
 			The currently installed custom effects. This is an array of [RichTextEffect]s.
 			To add a custom effect, it's more convenient to use [method install_effect].
 		</member>
-		<member name="fit_content_height" type="bool" setter="set_fit_content_height" getter="is_fit_content_height_enabled" default="false">
-			If [code]true[/code], the label's height will be automatically updated to fit its content.
-			[b]Note:[/b] This property is used as a workaround to fix issues with [RichTextLabel] in [Container]s, but it's unreliable in some cases and will be removed in future versions.
+		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" default="true">
+			If [code]true[/code], the selected text will be deselected when focus is lost.
+		</member>
+		<member name="drag_and_drop_selection_enabled" type="bool" setter="set_drag_and_drop_selection_enabled" getter="is_drag_and_drop_selection_enabled" default="true">
+			If [code]true[/code], allow drag and drop of selected text.
+		</member>
+		<member name="fit_content" type="bool" setter="set_fit_content" getter="is_fit_content_enabled" default="false">
+			If [code]true[/code], the label's minimum size will be automatically updated to fit its content, matching the behavior of [Label].
+		</member>
+		<member name="hint_underlined" type="bool" setter="set_hint_underline" getter="is_hint_underlined" default="true">
+			If [code]true[/code], the label underlines hint tags such as [code skip-lint][hint=description]{text}[/hint][/code].
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
 		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true">
-			If [code]true[/code], the label underlines meta tags such as [code][url]{text}[/url][/code].
+			If [code]true[/code], the label underlines meta tags such as [code skip-lint][url]{text}[/url][/code]. These tags can call a function when clicked if [signal meta_clicked] is connected to a function.
 		</member>
-		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color" default="false">
-			If [code]true[/code], the label uses the custom font color.
+		<member name="progress_bar_delay" type="int" setter="set_progress_bar_delay" getter="get_progress_bar_delay" default="1000">
+			The delay after which the loading progress bar is displayed, in milliseconds. Set to [code]-1[/code] to disable progress bar entirely.
+			[b]Note:[/b] Progress bar is displayed only if [member threaded] is enabled.
 		</member>
-		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible" default="1.0">
-			The range of characters to display, as a [float] between 0.0 and 1.0. When assigned an out of range value, it's the same as assigning 1.0.
-			[b]Note:[/b] Setting this property updates [member visible_characters] based on current [method get_total_character_count].
-		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" override="true" default="true" />
 		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active" default="true">
 			If [code]true[/code], the scrollbar is visible. Setting this to [code]false[/code] does not block scrolling completely. See [method scroll_to_line].
 		</member>
@@ -499,7 +644,10 @@
 		<member name="selection_enabled" type="bool" setter="set_selection_enabled" getter="is_selection_enabled" default="false">
 			If [code]true[/code], the label allows text selection.
 		</member>
-		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
+		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
+			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.
+		</member>
+		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="TextServer.StructuredTextParser" default="0">
 			Set BiDi algorithm override for the structured text.
 		</member>
 		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[]">
@@ -509,53 +657,63 @@
 			The number of spaces associated with a single tab length. Does not affect [code]\t[/code] in text tags, only indent tags.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
-			The raw text of the label.
-			When set, clears the tag stack and adds a raw text tag to the top of it. Does not parse BBCodes. Does not modify [member bbcode_text].
+			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
+			[b]Note:[/b] If [member bbcode_enabled] is [code]true[/code], it is unadvised to use the [code]+=[/code] operator with [member text] (e.g. [code]text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. It will also erase all BBCode that was added to stack using [code]push_*[/code] methods. Use [method append_text] for adding text instead, unless you absolutely need to close a tag that was opened in an earlier method call.
 		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.
 		</member>
+		<member name="threaded" type="bool" setter="set_threaded" getter="is_threaded" default="false">
+			If [code]true[/code], text processing is done in a background thread.
+		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
-			The restricted number of characters to display in the label. If [code]-1[/code], all characters will be displayed.
-			[b]Note:[/b] Setting this property updates [member percent_visible] based on current [method get_total_character_count].
+			The number of characters to display. If set to [code]-1[/code], all characters are displayed. This can be useful when animating the text appearing in a dialog box.
+			[b]Note:[/b] Setting this property updates [member visible_ratio] accordingly.
+		</member>
+		<member name="visible_characters_behavior" type="int" setter="set_visible_characters_behavior" getter="get_visible_characters_behavior" enum="TextServer.VisibleCharactersBehavior" default="0">
+			Sets the clipping behavior when [member visible_characters] or [member visible_ratio] is set. See [enum TextServer.VisibleCharactersBehavior] for more info.
+		</member>
+		<member name="visible_ratio" type="float" setter="set_visible_ratio" getter="get_visible_ratio" default="1.0">
+			The fraction of characters to display, relative to the total number of characters (see [method get_total_character_count]). If set to [code]1.0[/code], all characters are displayed. If set to [code]0.5[/code], only half of the characters will be displayed. This can be useful when animating the text appearing in a dialog box.
+			[b]Note:[/b] Setting this property updates [member visible_characters] accordingly.
 		</member>
 	</members>
 	<signals>
-		<signal name="meta_clicked">
-			<argument index="0" name="meta" type="Variant">
-			</argument>
+		<signal name="finished">
 			<description>
-				Triggered when the user clicks on content between meta tags. If the meta is defined in text, e.g. [code][url={"data"="hi"}]hi[/url][/code], then the parameter for this signal will be a [String] type. If a particular type or an object is desired, the [method push_meta] method must be used to manually insert the data into the tag stack.
+				Triggered when the document is fully loaded.
+			</description>
+		</signal>
+		<signal name="meta_clicked">
+			<param index="0" name="meta" type="Variant" />
+			<description>
+				Triggered when the user clicks on content between meta (URL) tags. If the meta is defined in BBCode, e.g. [code skip-lint][url={"key": "value"}]Text[/url][/code], then the parameter for this signal will always be a [String] type. If a particular type or an object is desired, the [method push_meta] method must be used to manually insert the data into the tag stack. Alternatively, you can convert the [String] input to the desired type based on its contents (such as calling [method JSON.parse] on it).
+				For example, the following method can be connected to [signal meta_clicked] to open clicked URLs using the user's default web browser:
+				[codeblocks]
+				[gdscript]
+				# This assumes RichTextLabel's `meta_clicked` signal was connected to
+				# the function below using the signal connection dialog.
+				func _richtextlabel_on_meta_clicked(meta):
+				    # `meta` is of Variant type, so convert it to a String to avoid script errors at run-time.
+				    OS.shell_open(str(meta))
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</signal>
 		<signal name="meta_hover_ended">
-			<argument index="0" name="meta" type="Variant">
-			</argument>
+			<param index="0" name="meta" type="Variant" />
 			<description>
 				Triggers when the mouse exits a meta tag.
 			</description>
 		</signal>
 		<signal name="meta_hover_started">
-			<argument index="0" name="meta" type="Variant">
-			</argument>
+			<param index="0" name="meta" type="Variant" />
 			<description>
 				Triggers when the mouse enters a meta tag.
 			</description>
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0" enum="Align">
-			Makes text left aligned.
-		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="Align">
-			Makes text centered.
-		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="Align">
-			Makes text right aligned.
-		</constant>
-		<constant name="ALIGN_FILL" value="3" enum="Align">
-			Makes text fill width.
-		</constant>
 		<constant name="LIST_NUMBERS" value="0" enum="ListType">
 			Each list item has a number marker.
 		</constant>
@@ -568,140 +726,137 @@
 		<constant name="LIST_DOTS" value="3" enum="ListType">
 			Each list item has a filled circle marker.
 		</constant>
-		<constant name="ITEM_FRAME" value="0" enum="ItemType">
+		<constant name="MENU_COPY" value="0" enum="MenuItems">
+			Copies the selected text.
 		</constant>
-		<constant name="ITEM_TEXT" value="1" enum="ItemType">
+		<constant name="MENU_SELECT_ALL" value="1" enum="MenuItems">
+			Selects the whole [RichTextLabel] text.
 		</constant>
-		<constant name="ITEM_IMAGE" value="2" enum="ItemType">
+		<constant name="MENU_MAX" value="2" enum="MenuItems">
+			Represents the size of the [enum MenuItems] enum.
 		</constant>
-		<constant name="ITEM_NEWLINE" value="3" enum="ItemType">
+		<constant name="META_UNDERLINE_NEVER" value="0" enum="MetaUnderline">
+			Meta tag does not display an underline, even if [member meta_underlined] is [code]true[/code].
 		</constant>
-		<constant name="ITEM_FONT" value="4" enum="ItemType">
+		<constant name="META_UNDERLINE_ALWAYS" value="1" enum="MetaUnderline">
+			If [member meta_underlined] is [code]true[/code], meta tag always display an underline.
 		</constant>
-		<constant name="ITEM_FONT_SIZE" value="5" enum="ItemType">
+		<constant name="META_UNDERLINE_ON_HOVER" value="2" enum="MetaUnderline">
+			If [member meta_underlined] is [code]true[/code], meta tag display an underline when the mouse cursor is over it.
 		</constant>
-		<constant name="ITEM_FONT_FEATURES" value="6" enum="ItemType">
+		<constant name="UPDATE_TEXTURE" value="1" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image texture.
 		</constant>
-		<constant name="ITEM_COLOR" value="7" enum="ItemType">
+		<constant name="UPDATE_SIZE" value="2" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image size.
 		</constant>
-		<constant name="ITEM_OUTLINE_SIZE" value="8" enum="ItemType">
+		<constant name="UPDATE_COLOR" value="4" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image color.
 		</constant>
-		<constant name="ITEM_OUTLINE_COLOR" value="9" enum="ItemType">
+		<constant name="UPDATE_ALIGNMENT" value="8" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image inline alignment.
 		</constant>
-		<constant name="ITEM_UNDERLINE" value="10" enum="ItemType">
+		<constant name="UPDATE_REGION" value="16" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image texture region.
 		</constant>
-		<constant name="ITEM_STRIKETHROUGH" value="11" enum="ItemType">
+		<constant name="UPDATE_PAD" value="32" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image padding.
 		</constant>
-		<constant name="ITEM_PARAGRAPH" value="12" enum="ItemType">
+		<constant name="UPDATE_TOOLTIP" value="64" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image tooltip.
 		</constant>
-		<constant name="ITEM_INDENT" value="13" enum="ItemType">
-		</constant>
-		<constant name="ITEM_LIST" value="14" enum="ItemType">
-		</constant>
-		<constant name="ITEM_TABLE" value="15" enum="ItemType">
-		</constant>
-		<constant name="ITEM_FADE" value="16" enum="ItemType">
-		</constant>
-		<constant name="ITEM_SHAKE" value="17" enum="ItemType">
-		</constant>
-		<constant name="ITEM_WAVE" value="18" enum="ItemType">
-		</constant>
-		<constant name="ITEM_TORNADO" value="19" enum="ItemType">
-		</constant>
-		<constant name="ITEM_RAINBOW" value="20" enum="ItemType">
-		</constant>
-		<constant name="ITEM_BGCOLOR" value="21" enum="ItemType">
-		</constant>
-		<constant name="ITEM_FGCOLOR" value="22" enum="ItemType">
-		</constant>
-		<constant name="ITEM_META" value="23" enum="ItemType">
-		</constant>
-		<constant name="ITEM_DROPCAP" value="24" enum="ItemType">
-		</constant>
-		<constant name="ITEM_CUSTOMFX" value="25" enum="ItemType">
+		<constant name="UPDATE_WIDTH_IN_PERCENT" value="128" enum="ImageUpdateMask" is_bitfield="true">
+			If this bit is set, [method update_image] changes image width from/to percents.
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="bold_font" type="Font">
-			The font used for bold text.
-		</theme_item>
-		<theme_item name="bold_font_size" type="int">
-			The font size used for bold text.
-		</theme_item>
-		<theme_item name="bold_italics_font" type="Font">
-			The font used for bold italics text.
-		</theme_item>
-		<theme_item name="bold_italics_font_size" type="int">
-			The font size used for bold italics text.
-		</theme_item>
-		<theme_item name="default_color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="default_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The default text color.
 		</theme_item>
-		<theme_item name="focus" type="StyleBox">
-			The background The background used when the [RichTextLabel] is focused.
-		</theme_item>
-		<theme_item name="font_outline_color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The default tint of text outline.
 		</theme_item>
-		<theme_item name="font_selected_color" type="Color" default="Color(0, 0, 0, 1)">
-			The color of selected text, used when [member selection_enabled] is [code]true[/code].
+		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+			The color of selected text, used when [member selection_enabled] is [code]true[/code]. If equal to [code]Color(0, 0, 0, 0)[/code], it will be ignored.
 		</theme_item>
-		<theme_item name="font_shadow_color" type="Color" default="Color(0, 0, 0, 0)">
+		<theme_item name="font_shadow_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			The color of the font's shadow.
 		</theme_item>
-		<theme_item name="italics_font" type="Font">
-			The font used for italics text.
-		</theme_item>
-		<theme_item name="italics_font_size" type="int">
-			The font size used for italics text.
-		</theme_item>
-		<theme_item name="line_separation" type="int" default="1">
-			The vertical space between lines.
-		</theme_item>
-		<theme_item name="mono_font" type="Font">
-			The font used for monospace text.
-		</theme_item>
-		<theme_item name="mono_font_size" type="int">
-			The font size used for monospace text.
-		</theme_item>
-		<theme_item name="normal" type="StyleBox">
-			The normal background for the [RichTextLabel].
-		</theme_item>
-		<theme_item name="normal_font" type="Font">
-			The default text font.
-		</theme_item>
-		<theme_item name="normal_font_size" type="int">
-			The default text font size.
-		</theme_item>
-		<theme_item name="outline_size" type="int" default="0">
-			The size of the text outline.
-		</theme_item>
-		<theme_item name="selection_color" type="Color" default="Color(0.1, 0.1, 1, 0.8)">
+		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.1, 0.1, 1, 0.8)">
 			The color of the selection box.
 		</theme_item>
-		<theme_item name="shadow_as_outline" type="int" default="0">
-			Boolean value. If 1 ([code]true[/code]), the shadow will be displayed around the whole text as an outline.
-		</theme_item>
-		<theme_item name="shadow_offset_x" type="int" default="1">
-			The horizontal offset of the font's shadow.
-		</theme_item>
-		<theme_item name="shadow_offset_y" type="int" default="1">
-			The vertical offset of the font's shadow.
-		</theme_item>
-		<theme_item name="table_border" type="Color" default="Color(0, 0, 0, 0)">
+		<theme_item name="table_border" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			The default cell border color.
 		</theme_item>
-		<theme_item name="table_even_row_bg" type="Color" default="Color(0, 0, 0, 0)">
+		<theme_item name="table_even_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			The default background color for even rows.
 		</theme_item>
-		<theme_item name="table_hseparation" type="int" default="3">
-			The horizontal separation of elements in a table.
-		</theme_item>
-		<theme_item name="table_odd_row_bg" type="Color" default="Color(0, 0, 0, 0)">
+		<theme_item name="table_odd_row_bg" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
 			The default background color for odd rows.
 		</theme_item>
-		<theme_item name="table_vseparation" type="int" default="3">
+		<theme_item name="line_separation" data_type="constant" type="int" default="0">
+			The vertical space between lines.
+		</theme_item>
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+			The size of the text outline.
+			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+		</theme_item>
+		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
+			The horizontal offset of the font's shadow.
+		</theme_item>
+		<theme_item name="shadow_offset_y" data_type="constant" type="int" default="1">
+			The vertical offset of the font's shadow.
+		</theme_item>
+		<theme_item name="shadow_outline_size" data_type="constant" type="int" default="1">
+			The size of the shadow outline.
+		</theme_item>
+		<theme_item name="table_h_separation" data_type="constant" type="int" default="3">
+			The horizontal separation of elements in a table.
+		</theme_item>
+		<theme_item name="table_v_separation" data_type="constant" type="int" default="3">
 			The vertical separation of elements in a table.
+		</theme_item>
+		<theme_item name="text_highlight_h_padding" data_type="constant" type="int" default="3">
+			The horizontal padding around boxes drawn by the [code][fgcolor][/code] and [code][bgcolor][/code] tags. This does not affect the appearance of text selection.
+		</theme_item>
+		<theme_item name="text_highlight_v_padding" data_type="constant" type="int" default="3">
+			The vertical padding around boxes drawn by the [code][fgcolor][/code] and [code][bgcolor][/code] tags. This does not affect the appearance of text selection.
+		</theme_item>
+		<theme_item name="bold_font" data_type="font" type="Font">
+			The font used for bold text.
+		</theme_item>
+		<theme_item name="bold_italics_font" data_type="font" type="Font">
+			The font used for bold italics text.
+		</theme_item>
+		<theme_item name="italics_font" data_type="font" type="Font">
+			The font used for italics text.
+		</theme_item>
+		<theme_item name="mono_font" data_type="font" type="Font">
+			The font used for monospace text.
+		</theme_item>
+		<theme_item name="normal_font" data_type="font" type="Font">
+			The default text font.
+		</theme_item>
+		<theme_item name="bold_font_size" data_type="font_size" type="int">
+			The font size used for bold text.
+		</theme_item>
+		<theme_item name="bold_italics_font_size" data_type="font_size" type="int">
+			The font size used for bold italics text.
+		</theme_item>
+		<theme_item name="italics_font_size" data_type="font_size" type="int">
+			The font size used for italics text.
+		</theme_item>
+		<theme_item name="mono_font_size" data_type="font_size" type="int">
+			The font size used for monospace text.
+		</theme_item>
+		<theme_item name="normal_font_size" data_type="font_size" type="int">
+			The default text font size.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			The background used when the [RichTextLabel] is focused. The [theme_item focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			The normal background for the [RichTextLabel].
 		</theme_item>
 	</theme_items>
 </class>

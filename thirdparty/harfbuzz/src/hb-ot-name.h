@@ -33,18 +33,45 @@
 
 HB_BEGIN_DECLS
 
-
 /**
- * hb_ot_name_id_t:
+ * hb_ot_name_id_predefined_t:
+ * @HB_OT_NAME_ID_COPYRIGHT: Copyright notice
+ * @HB_OT_NAME_ID_FONT_FAMILY: Font Family name
+ * @HB_OT_NAME_ID_FONT_SUBFAMILY: Font Subfamily name
+ * @HB_OT_NAME_ID_UNIQUE_ID: Unique font identifier
+ * @HB_OT_NAME_ID_FULL_NAME: Full font name that reflects
+ * all family and relevant subfamily descriptors
+ * @HB_OT_NAME_ID_VERSION_STRING: Version string
+ * @HB_OT_NAME_ID_POSTSCRIPT_NAME: PostScript name for the font
+ * @HB_OT_NAME_ID_TRADEMARK: Trademark
+ * @HB_OT_NAME_ID_MANUFACTURER: Manufacturer Name
+ * @HB_OT_NAME_ID_DESIGNER: Designer
+ * @HB_OT_NAME_ID_DESCRIPTION: Description
+ * @HB_OT_NAME_ID_VENDOR_URL: URL of font vendor
+ * @HB_OT_NAME_ID_DESIGNER_URL: URL of typeface designer
+ * @HB_OT_NAME_ID_LICENSE: License Description
+ * @HB_OT_NAME_ID_LICENSE_URL: URL where additional licensing
+ * information can be found
+ * @HB_OT_NAME_ID_TYPOGRAPHIC_FAMILY: Typographic Family name
+ * @HB_OT_NAME_ID_TYPOGRAPHIC_SUBFAMILY: Typographic Subfamily name
+ * @HB_OT_NAME_ID_MAC_FULL_NAME: Compatible Full Name for MacOS
+ * @HB_OT_NAME_ID_SAMPLE_TEXT: Sample text
+ * @HB_OT_NAME_ID_CID_FINDFONT_NAME: PostScript CID findfont name
+ * @HB_OT_NAME_ID_WWS_FAMILY: WWS Family Name
+ * @HB_OT_NAME_ID_WWS_SUBFAMILY: WWS Subfamily Name
+ * @HB_OT_NAME_ID_LIGHT_BACKGROUND: Light Background Palette
+ * @HB_OT_NAME_ID_DARK_BACKGROUND: Dark Background Palette
+ * @HB_OT_NAME_ID_VARIATIONS_PS_PREFIX: Variations PostScript Name Prefix
  * @HB_OT_NAME_ID_INVALID: Value to represent a nonexistent name ID.
  *
- * An integral type representing an OpenType 'name' table name identifier.
- * There are predefined name IDs, as well as name IDs return from other
- * API.  These can be used to fetch name strings from a font face.
+ * An enum type representing the pre-defined name IDs.
  *
- * Since: 2.0.0
+ * For more information on these fields, see the
+ * [OpenType spec](https://docs.microsoft.com/en-us/typography/opentype/spec/name#name-ids).
+ *
+ * Since: 7.0.0
  **/
-enum
+typedef enum
 {
   HB_OT_NAME_ID_COPYRIGHT		= 0,
   HB_OT_NAME_ID_FONT_FAMILY		= 1,
@@ -74,8 +101,17 @@ enum
   HB_OT_NAME_ID_VARIATIONS_PS_PREFIX	= 25,
 
   HB_OT_NAME_ID_INVALID			= 0xFFFF
-};
+} hb_ot_name_id_predefined_t;
 
+/**
+ * hb_ot_name_id_t:
+ *
+ * An integral type representing an OpenType 'name' table name identifier.
+ * There are predefined name IDs, as well as name IDs return from other
+ * API.  These can be used to fetch name strings from a font face.
+ *
+ * Since: 2.0.0
+ **/
 typedef unsigned int hb_ot_name_id_t;
 
 

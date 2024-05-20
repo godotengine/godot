@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  audio_effect_distortion.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_effect_distortion.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_effect_distortion.h"
 #include "core/math/math_funcs.h"
@@ -41,8 +41,8 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 	float lpf_ic = 1.0 - lpf_c;
 
 	float drive_f = base->drive;
-	float pregain_f = Math::db2linear(base->pre_gain);
-	float postgain_f = Math::db2linear(base->post_gain);
+	float pregain_f = Math::db_to_linear(base->pre_gain);
+	float postgain_f = Math::db_to_linear(base->post_gain);
 
 	float atan_mult = pow(10, drive_f * drive_f * 3.0) - 1.0 + 0.001;
 	float atan_div = 1.0 / (atanf(atan_mult) * (1.0 + drive_f * 8));
@@ -50,7 +50,7 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 	float lofi_mult = powf(2.0, 2.0 + (1.0 - drive_f) * 14); //goes from 16 to 2 bits
 
 	for (int i = 0; i < p_frame_count * 2; i++) {
-		float out = undenormalise(src[i] * lpf_ic + lpf_c * h[i & 1]);
+		float out = undenormalize(src[i] * lpf_ic + lpf_c * h[i & 1]);
 		h[i & 1] = out;
 		float a = out;
 		float ha = src[i] - out; //high freqs
@@ -160,10 +160,10 @@ void AudioEffectDistortion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_post_gain"), &AudioEffectDistortion::get_post_gain);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Clip,ATan,LoFi,Overdrive,Wave Shape"), "set_mode", "get_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pre_gain", PROPERTY_HINT_RANGE, "-60,60,0.01"), "set_pre_gain", "get_pre_gain");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "keep_hf_hz", PROPERTY_HINT_RANGE, "1,20500,1"), "set_keep_hf_hz", "get_keep_hf_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pre_gain", PROPERTY_HINT_RANGE, "-60,60,0.01,suffix:dB"), "set_pre_gain", "get_pre_gain");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "keep_hf_hz", PROPERTY_HINT_RANGE, "1,20500,1,suffix:Hz"), "set_keep_hf_hz", "get_keep_hf_hz");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drive", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drive", "get_drive");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "post_gain", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_post_gain", "get_post_gain");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "post_gain", PROPERTY_HINT_RANGE, "-80,24,0.01,suffix:dB"), "set_post_gain", "get_post_gain");
 
 	BIND_ENUM_CONSTANT(MODE_CLIP);
 	BIND_ENUM_CONSTANT(MODE_ATAN);

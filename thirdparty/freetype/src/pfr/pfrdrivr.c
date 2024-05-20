@@ -4,7 +4,7 @@
  *
  *   FreeType PFR driver interface (body).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -27,16 +27,16 @@
 
 
   FT_CALLBACK_DEF( FT_Error )
-  pfr_get_kerning( FT_Face     pfrface,     /* PFR_Face */
+  pfr_get_kerning( FT_Face     face,     /* PFR_Face */
                    FT_UInt     left,
                    FT_UInt     right,
                    FT_Vector  *avector )
   {
-    PFR_Face     face = (PFR_Face)pfrface;
-    PFR_PhyFont  phys = &face->phy_font;
+    PFR_Face     pfrface = (PFR_Face)face;
+    PFR_PhyFont  phys    = &pfrface->phy_font;
 
 
-    (void)pfr_face_get_kerning( pfrface, left, right, avector );
+    (void)pfr_face_get_kerning( face, left, right, avector );
 
     /* convert from metrics to outline units when necessary */
     if ( phys->outline_resolution != phys->metrics_resolution )
@@ -62,12 +62,12 @@
    */
 
   FT_CALLBACK_DEF( FT_Error )
-  pfr_get_advance( FT_Face   pfrface,       /* PFR_Face */
+  pfr_get_advance( FT_Face   face,       /* PFR_Face */
                    FT_UInt   gindex,
                    FT_Pos   *anadvance )
   {
-    PFR_Face  face  = (PFR_Face)pfrface;
-    FT_Error  error = FT_ERR( Invalid_Argument );
+    PFR_Face  pfrface = (PFR_Face)face;
+    FT_Error  error   = FT_ERR( Invalid_Argument );
 
 
     *anadvance = 0;
@@ -77,9 +77,9 @@
 
     gindex--;
 
-    if ( face )
+    if ( pfrface )
     {
-      PFR_PhyFont  phys = &face->phy_font;
+      PFR_PhyFont  phys = &pfrface->phy_font;
 
 
       if ( gindex < phys->num_chars )
@@ -95,16 +95,16 @@
 
 
   FT_CALLBACK_DEF( FT_Error )
-  pfr_get_metrics( FT_Face    pfrface,      /* PFR_Face */
+  pfr_get_metrics( FT_Face    face,                 /* PFR_Face */
                    FT_UInt   *anoutline_resolution,
                    FT_UInt   *ametrics_resolution,
                    FT_Fixed  *ametrics_x_scale,
                    FT_Fixed  *ametrics_y_scale )
   {
-    PFR_Face     face = (PFR_Face)pfrface;
-    PFR_PhyFont  phys = &face->phy_font;
+    PFR_Face     pfrface = (PFR_Face)face;
+    PFR_PhyFont  phys    = &pfrface->phy_font;
     FT_Fixed     x_scale, y_scale;
-    FT_Size      size = face->root.size;
+    FT_Size      size    = pfrface->root.size;
 
 
     if ( anoutline_resolution )

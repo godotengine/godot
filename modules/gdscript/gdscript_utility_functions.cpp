@@ -1,34 +1,36 @@
-/*************************************************************************/
-/*  gdscript_utility_functions.cpp                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_utility_functions.cpp                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gdscript_utility_functions.h"
+
+#include "gdscript.h"
 
 #include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
@@ -36,21 +38,19 @@
 #include "core/object/object.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/vector.h"
-#include "gdscript.h"
+#include "core/variant/typed_array.h"
 
 #ifdef DEBUG_ENABLED
 
 #define VALIDATE_ARG_COUNT(m_count)                                         \
 	if (p_arg_count < m_count) {                                            \
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;  \
-		r_error.argument = m_count;                                         \
 		r_error.expected = m_count;                                         \
 		*r_ret = Variant();                                                 \
 		return;                                                             \
 	}                                                                       \
 	if (p_arg_count > m_count) {                                            \
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS; \
-		r_error.argument = m_count;                                         \
 		r_error.expected = m_count;                                         \
 		*r_ret = Variant();                                                 \
 		return;                                                             \
@@ -83,6 +83,7 @@
 #endif
 
 struct GDScriptUtilityFunctionsDefinitions {
+#ifndef DISABLE_DEPRECATED
 	static inline void convert(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(2);
 		VALIDATE_ARG_INT(1);
@@ -96,8 +97,12 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		} else {
 			Variant::construct(Variant::Type(type), *r_ret, p_args, 1, r_error);
+			if (r_error.error != Callable::CallError::CALL_OK) {
+				*r_ret = vformat(RTR(R"(Cannot convert "%s" to "%s".)"), Variant::get_type_name(p_args[0]->get_type()), Variant::get_type_name(Variant::Type(type)));
+			}
 		}
 	}
+#endif // DISABLE_DEPRECATED
 
 	static inline void type_exists(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
@@ -111,32 +116,10 @@ struct GDScriptUtilityFunctionsDefinitions {
 		*r_ret = String(result);
 	}
 
-	static inline void str(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
-			*r_ret = Variant();
-			return;
-		}
-
-		String str;
-		for (int i = 0; i < p_arg_count; i++) {
-			String os = p_args[i]->operator String();
-
-			if (i == 0) {
-				str = os;
-			} else {
-				str += os;
-			}
-		}
-		*r_ret = str;
-	}
-
 	static inline void range(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		switch (p_arg_count) {
 			case 0: {
 				r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-				r_error.argument = 1;
 				r_error.expected = 1;
 				*r_ret = Variant();
 			} break;
@@ -150,8 +133,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 				Error err = arr.resize(count);
 				if (err != OK) {
+					*r_ret = RTR("Cannot resize array.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
 					return;
 				}
 
@@ -175,8 +158,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 				Error err = arr.resize(to - from);
 				if (err != OK) {
+					*r_ret = RTR("Cannot resize array.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
 					return;
 				}
 				for (int i = from; i < to; i++) {
@@ -211,16 +194,16 @@ struct GDScriptUtilityFunctionsDefinitions {
 				// Calculate how many.
 				int count = 0;
 				if (incr > 0) {
-					count = ((to - from - 1) / incr) + 1;
+					count = Math::division_round_up(to - from, incr);
 				} else {
-					count = ((from - to - 1) / -incr) + 1;
+					count = Math::division_round_up(from - to, -incr);
 				}
 
 				Error err = arr.resize(count);
 
 				if (err != OK) {
+					*r_ret = RTR("Cannot resize array.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-					*r_ret = Variant();
 					return;
 				}
 
@@ -240,7 +223,6 @@ struct GDScriptUtilityFunctionsDefinitions {
 			} break;
 			default: {
 				r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-				r_error.argument = 3;
 				r_error.expected = 3;
 				*r_ret = Variant();
 
@@ -260,7 +242,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 	}
 
-	static inline void inst2dict(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void inst_to_dict(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 
 		if (p_args[0]->get_type() == Variant::NIL) {
@@ -268,6 +250,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		} else if (p_args[0]->get_type() != Variant::OBJECT) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 0;
+			r_error.expected = Variant::OBJECT;
 			*r_ret = Variant();
 		} else {
 			Object *obj = *p_args[0];
@@ -292,15 +275,16 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 
 				GDScript *p = base.ptr();
+				String path = p->get_script_path();
 				Vector<StringName> sname;
 
 				while (p->_owner) {
-					sname.push_back(p->name);
+					sname.push_back(p->local_name);
 					p = p->_owner;
 				}
 				sname.reverse();
 
-				if (!p->path.is_resource_file()) {
+				if (!path.is_resource_file()) {
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument = 0;
 					r_error.expected = Variant::DICTIONARY;
@@ -315,11 +299,11 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 				Dictionary d;
 				d["@subpath"] = cp;
-				d["@path"] = p->get_path();
+				d["@path"] = path;
 
-				for (Map<StringName, GDScript::MemberInfo>::Element *E = base->member_indices.front(); E; E = E->next()) {
-					if (!d.has(E->key())) {
-						d[E->key()] = ins->members[E->get().index];
+				for (const KeyValue<StringName, GDScript::MemberInfo> &E : base->member_indices) {
+					if (!d.has(E.key)) {
+						d[E.key] = ins->members[E.value.index];
 					}
 				}
 				*r_ret = d;
@@ -327,7 +311,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 	}
 
-	static inline void dict2inst(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void dict_to_inst(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 
 		if (p_args[0]->get_type() != Variant::DICTIONARY) {
@@ -389,16 +373,16 @@ struct GDScriptUtilityFunctionsDefinitions {
 		*r_ret = gdscr->_new(nullptr, -1 /*skip initializer*/, r_error);
 
 		if (r_error.error != Callable::CallError::CALL_OK) {
-			*r_ret = Variant();
+			*r_ret = RTR("Cannot instantiate GDScript class.");
 			return;
 		}
 
 		GDScriptInstance *ins = static_cast<GDScriptInstance *>(static_cast<Object *>(*r_ret)->get_script_instance());
 		Ref<GDScript> gd_ref = ins->get_script();
 
-		for (Map<StringName, GDScript::MemberInfo>::Element *E = gd_ref->member_indices.front(); E; E = E->next()) {
-			if (d.has(E->key())) {
-				ins->members.write[E->get().index] = d[E->key()];
+		for (KeyValue<StringName, GDScript::MemberInfo> &E : gd_ref->member_indices) {
+			if (d.has(E.key)) {
+				ins->members.write[E.value.index] = d[E.key];
 			}
 		}
 	}
@@ -406,13 +390,13 @@ struct GDScriptUtilityFunctionsDefinitions {
 	static inline void Color8(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		if (p_arg_count < 3) {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 3;
+			r_error.expected = 3;
 			*r_ret = Variant();
 			return;
 		}
 		if (p_arg_count > 4) {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-			r_error.argument = 4;
+			r_error.expected = 4;
 			*r_ret = Variant();
 			return;
 		}
@@ -432,34 +416,47 @@ struct GDScriptUtilityFunctionsDefinitions {
 	}
 
 	static inline void print_debug(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String str;
+		String s;
 		for (int i = 0; i < p_arg_count; i++) {
-			str += p_args[i]->operator String();
+			s += p_args[i]->operator String();
 		}
 
-		ScriptLanguage *script = GDScriptLanguage::get_singleton();
-		if (script->debug_get_stack_level_count() > 0) {
-			str += "\n   At: " + script->debug_get_stack_level_source(0) + ":" + itos(script->debug_get_stack_level_line(0)) + ":" + script->debug_get_stack_level_function(0) + "()";
+		if (Thread::get_caller_id() == Thread::get_main_id()) {
+			ScriptLanguage *script = GDScriptLanguage::get_singleton();
+			if (script->debug_get_stack_level_count() > 0) {
+				s += "\n   At: " + script->debug_get_stack_level_source(0) + ":" + itos(script->debug_get_stack_level_line(0)) + ":" + script->debug_get_stack_level_function(0) + "()";
+			}
+		} else {
+			s += "\n   At: Cannot retrieve debug info outside the main thread. Thread ID: " + itos(Thread::get_caller_id());
 		}
 
-		print_line(str);
+		print_line(s);
 		*r_ret = Variant();
 	}
 
 	static inline void print_stack(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(0);
+		if (Thread::get_caller_id() != Thread::get_main_id()) {
+			print_line("Cannot retrieve debug info outside the main thread. Thread ID: " + itos(Thread::get_caller_id()));
+			return;
+		}
 
 		ScriptLanguage *script = GDScriptLanguage::get_singleton();
 		for (int i = 0; i < script->debug_get_stack_level_count(); i++) {
 			print_line("Frame " + itos(i) + " - " + script->debug_get_stack_level_source(i) + ":" + itos(script->debug_get_stack_level_line(i)) + " in function '" + script->debug_get_stack_level_function(i) + "'");
 		};
+		*r_ret = Variant();
 	}
 
 	static inline void get_stack(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(0);
+		if (Thread::get_caller_id() != Thread::get_main_id()) {
+			*r_ret = TypedArray<Dictionary>();
+			return;
+		}
 
 		ScriptLanguage *script = GDScriptLanguage::get_singleton();
-		Array ret;
+		TypedArray<Dictionary> ret;
 		for (int i = 0; i < script->debug_get_stack_level_count(); i++) {
 			Dictionary frame;
 			frame["source"] = script->debug_get_stack_level_source(i);
@@ -473,7 +470,8 @@ struct GDScriptUtilityFunctionsDefinitions {
 	static inline void len(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 		switch (p_args[0]->get_type()) {
-			case Variant::STRING: {
+			case Variant::STRING:
+			case Variant::STRING_NAME: {
 				String d = *p_args[0];
 				*r_ret = d.length();
 			} break;
@@ -521,6 +519,10 @@ struct GDScriptUtilityFunctionsDefinitions {
 				Vector<Color> d = *p_args[0];
 				*r_ret = d.size();
 			} break;
+			case Variant::PACKED_VECTOR4_ARRAY: {
+				Vector<Vector4> d = *p_args[0];
+				*r_ret = d.size();
+			} break;
 			default: {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
@@ -529,10 +531,86 @@ struct GDScriptUtilityFunctionsDefinitions {
 			}
 		}
 	}
+
+	static inline void is_instance_of(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		VALIDATE_ARG_COUNT(2);
+
+		if (p_args[1]->get_type() == Variant::INT) {
+			int builtin_type = *p_args[1];
+			if (builtin_type < 0 || builtin_type >= Variant::VARIANT_MAX) {
+				*r_ret = RTR("Invalid type argument for is_instance_of(), use TYPE_* constants for built-in types.");
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 1;
+				r_error.expected = Variant::NIL;
+				return;
+			}
+			*r_ret = p_args[0]->get_type() == builtin_type;
+			return;
+		}
+
+		bool was_type_freed = false;
+		Object *type_object = p_args[1]->get_validated_object_with_check(was_type_freed);
+		if (was_type_freed) {
+			*r_ret = RTR("Type argument is a previously freed instance.");
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			r_error.expected = Variant::NIL;
+			return;
+		}
+		if (!type_object) {
+			*r_ret = RTR("Invalid type argument for is_instance_of(), should be a TYPE_* constant, a class or a script.");
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			r_error.expected = Variant::NIL;
+			return;
+		}
+
+		bool was_value_freed = false;
+		Object *value_object = p_args[0]->get_validated_object_with_check(was_value_freed);
+		if (was_value_freed) {
+			*r_ret = RTR("Value argument is a previously freed instance.");
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::NIL;
+			return;
+		}
+		if (!value_object) {
+			*r_ret = false;
+			return;
+		}
+
+		GDScriptNativeClass *native_type = Object::cast_to<GDScriptNativeClass>(type_object);
+		if (native_type) {
+			*r_ret = ClassDB::is_parent_class(value_object->get_class_name(), native_type->get_name());
+			return;
+		}
+
+		Script *script_type = Object::cast_to<Script>(type_object);
+		if (script_type) {
+			bool result = false;
+			if (value_object->get_script_instance()) {
+				Script *script_ptr = value_object->get_script_instance()->get_script().ptr();
+				while (script_ptr) {
+					if (script_ptr == script_type) {
+						result = true;
+						break;
+					}
+					script_ptr = script_ptr->get_base_script().ptr();
+				}
+			}
+			*r_ret = result;
+			return;
+		}
+
+		*r_ret = RTR("Invalid type argument for is_instance_of(), should be a TYPE_* constant, a class or a script.");
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 1;
+		r_error.expected = Variant::NIL;
+	}
 };
 
 struct GDScriptUtilityFunctionInfo {
-	GDScriptUtilityFunctions::FunctionPtr function;
+	GDScriptUtilityFunctions::FunctionPtr function = nullptr;
 	MethodInfo info;
 	bool is_constant = false;
 };
@@ -632,19 +710,21 @@ static void _register_function(const String &p_name, const MethodInfo &p_method_
 	PropertyInfo(Variant::NIL, m_name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT)
 
 void GDScriptUtilityFunctions::register_functions() {
+#ifndef DISABLE_DEPRECATED
 	REGISTER_VARIANT_FUNC(convert, true, VARARG("what"), ARG("type", Variant::INT));
+#endif // DISABLE_DEPRECATED
 	REGISTER_FUNC(type_exists, true, Variant::BOOL, ARG("type", Variant::STRING_NAME));
 	REGISTER_FUNC(_char, true, Variant::STRING, ARG("char", Variant::INT));
-	REGISTER_VARARG_FUNC(str, true, Variant::STRING);
 	REGISTER_VARARG_FUNC(range, false, Variant::ARRAY);
 	REGISTER_CLASS_FUNC(load, false, "Resource", ARG("path", Variant::STRING));
-	REGISTER_FUNC(inst2dict, false, Variant::DICTIONARY, ARG("instance", Variant::OBJECT));
-	REGISTER_FUNC(dict2inst, false, Variant::OBJECT, ARG("dictionary", Variant::DICTIONARY));
+	REGISTER_FUNC(inst_to_dict, false, Variant::DICTIONARY, ARG("instance", Variant::OBJECT));
+	REGISTER_FUNC(dict_to_inst, false, Variant::OBJECT, ARG("dictionary", Variant::DICTIONARY));
 	REGISTER_FUNC_DEF(Color8, true, 255, Variant::COLOR, ARG("r8", Variant::INT), ARG("g8", Variant::INT), ARG("b8", Variant::INT), ARG("a8", Variant::INT));
 	REGISTER_VARARG_FUNC(print_debug, false, Variant::NIL);
 	REGISTER_FUNC_NO_ARGS(print_stack, false, Variant::NIL);
 	REGISTER_FUNC_NO_ARGS(get_stack, false, Variant::ARRAY);
 	REGISTER_FUNC(len, true, Variant::INT, VARARG("var"));
+	REGISTER_FUNC(is_instance_of, true, Variant::BOOL, VARARG("value"), VARARG("type"));
 }
 
 void GDScriptUtilityFunctions::unregister_functions() {
@@ -654,50 +734,50 @@ void GDScriptUtilityFunctions::unregister_functions() {
 
 GDScriptUtilityFunctions::FunctionPtr GDScriptUtilityFunctions::get_function(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, nullptr);
+	ERR_FAIL_NULL_V(info, nullptr);
 	return info->function;
 }
 
 bool GDScriptUtilityFunctions::has_function_return_value(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, false);
+	ERR_FAIL_NULL_V(info, false);
 	return info->info.return_val.type != Variant::NIL || bool(info->info.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
 }
 
 Variant::Type GDScriptUtilityFunctions::get_function_return_type(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, Variant::NIL);
+	ERR_FAIL_NULL_V(info, Variant::NIL);
 	return info->info.return_val.type;
 }
 
 StringName GDScriptUtilityFunctions::get_function_return_class(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, StringName());
+	ERR_FAIL_NULL_V(info, StringName());
 	return info->info.return_val.class_name;
 }
 
 Variant::Type GDScriptUtilityFunctions::get_function_argument_type(const StringName &p_function, int p_arg) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, Variant::NIL);
+	ERR_FAIL_NULL_V(info, Variant::NIL);
 	ERR_FAIL_COND_V(p_arg >= info->info.arguments.size(), Variant::NIL);
-	return info->info.arguments[p_arg].type;
+	return info->info.arguments.get(p_arg).type;
 }
 
-int GDScriptUtilityFunctions::get_function_argument_count(const StringName &p_function, int p_arg) {
+int GDScriptUtilityFunctions::get_function_argument_count(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, 0);
+	ERR_FAIL_NULL_V(info, 0);
 	return info->info.arguments.size();
 }
 
 bool GDScriptUtilityFunctions::is_function_vararg(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, false);
+	ERR_FAIL_NULL_V(info, false);
 	return (bool)(info->info.flags & METHOD_FLAG_VARARG);
 }
 
 bool GDScriptUtilityFunctions::is_function_constant(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, false);
+	ERR_FAIL_NULL_V(info, false);
 	return info->is_constant;
 }
 
@@ -713,6 +793,6 @@ void GDScriptUtilityFunctions::get_function_list(List<StringName> *r_functions) 
 
 MethodInfo GDScriptUtilityFunctions::get_function_info(const StringName &p_function) {
 	GDScriptUtilityFunctionInfo *info = utility_function_table.lookup_ptr(p_function);
-	ERR_FAIL_COND_V(!info, MethodInfo());
+	ERR_FAIL_NULL_V(info, MethodInfo());
 	return info->info;
 }

@@ -119,28 +119,6 @@
 /** Obsolete/same as U_CAPI; was used to declare a function as an internal ICU C API  */
 #define U_INTERNAL U_CAPI
 
-/**
- * \def U_OVERRIDE
- * Defined to the C++11 "override" keyword if available.
- * Denotes a class or member which is an override of the base class.
- * May result in an error if it applied to something not an override.
- * @internal
- */
-#ifndef U_OVERRIDE
-#define U_OVERRIDE override
-#endif
-
-/**
- * \def U_FINAL
- * Defined to the C++11 "final" keyword if available.
- * Denotes a class or member which may not be overridden in subclasses.
- * May result in an error if subclasses attempt to override.
- * @internal
- */
-#if !defined(U_FINAL) || defined(U_IN_DOXYGEN)
-#define U_FINAL final
-#endif
-
 // Before ICU 65, function-like, multi-statement ICU macros were just defined as
 // series of statements wrapped in { } blocks and the caller could choose to
 // either treat them as if they were actual functions and end the invocation
@@ -282,14 +260,8 @@ typedef int8_t UBool;
  */
 #ifdef U_DEFINE_FALSE_AND_TRUE
     // Use the predefined value.
-#elif defined(U_COMBINED_IMPLEMENTATION) || \
-        defined(U_COMMON_IMPLEMENTATION) || defined(U_I18N_IMPLEMENTATION) || \
-        defined(U_IO_IMPLEMENTATION) || defined(U_LAYOUTEX_IMPLEMENTATION) || \
-        defined(U_TOOLUTIL_IMPLEMENTATION)
-    // Inside ICU: Keep FALSE & TRUE available.
-#   define U_DEFINE_FALSE_AND_TRUE 1
 #else
-    // Outside ICU: Avoid collision with non-macro definitions of FALSE & TRUE.
+    // Default to avoiding collision with non-macro definitions of FALSE & TRUE.
 #   define U_DEFINE_FALSE_AND_TRUE 0
 #endif
 
@@ -354,7 +326,7 @@ typedef int8_t UBool;
 
 /* UChar and UChar32 definitions -------------------------------------------- */
 
-/** Number of bytes in a UChar. @stable ICU 2.0 */
+/** Number of bytes in a UChar (always 2). @stable ICU 2.0 */
 #define U_SIZEOF_UCHAR 2
 
 /**
@@ -362,11 +334,7 @@ typedef int8_t UBool;
  * If 1, then char16_t is a typedef and not a real type (yet)
  * @internal
  */
-#if (U_PLATFORM == U_PF_AIX) && defined(__cplusplus) &&(U_CPLUSPLUS_VERSION < 11)
-// for AIX, uchar.h needs to be included
-# include <uchar.h>
-# define U_CHAR16_IS_TYPEDEF 1
-#elif defined(_MSC_VER) && (_MSC_VER < 1900)
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
 // Versions of Visual Studio/MSVC below 2015 do not support char16_t as a real type,
 // and instead use a typedef.  https://msdn.microsoft.com/library/bb531344.aspx
 # define U_CHAR16_IS_TYPEDEF 1
@@ -402,22 +370,14 @@ typedef int8_t UBool;
 #if 1
     // #if 1 is normal. UChar defaults to char16_t in C++.
     // For configuration testing of UChar=uint16_t temporarily change this to #if 0.
-    // The intltest Makefile #defines UCHAR_TYPE=char16_t,
-    // so we only #define it to uint16_t if it is undefined so far.
-#elif !defined(UCHAR_TYPE)
+#else
 #   define UCHAR_TYPE uint16_t
 #endif
 
-#if defined(U_COMBINED_IMPLEMENTATION) || defined(U_COMMON_IMPLEMENTATION) || \
-        defined(U_I18N_IMPLEMENTATION) || defined(U_IO_IMPLEMENTATION)
-    // Inside the ICU library code, never configurable.
-    typedef char16_t UChar;
-#elif defined(UCHAR_TYPE)
-    typedef UCHAR_TYPE UChar;
-#elif (U_CPLUSPLUS_VERSION >= 11)
+#if defined(U_ALL_IMPLEMENTATION) || !defined(UCHAR_TYPE)
     typedef char16_t UChar;
 #else
-    typedef uint16_t UChar;
+    typedef UCHAR_TYPE UChar;
 #endif
 
 /**

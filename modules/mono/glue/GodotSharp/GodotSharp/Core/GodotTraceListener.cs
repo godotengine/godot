@@ -17,14 +17,11 @@ namespace Godot
         public override void Fail(string message, string detailMessage)
         {
             GD.PrintErr("Assertion failed: ", message);
-            if (detailMessage != null)
-            {
-                GD.PrintErr("  Details: ", detailMessage);
-            }
+            GD.PrintErr("  Details: ", detailMessage);
 
             try
             {
-                var stackTrace = new StackTrace(true).ToString();
+                string stackTrace = new StackTrace(true).ToString();
                 GD.PrintErr(stackTrace);
             }
             catch

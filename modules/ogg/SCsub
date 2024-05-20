@@ -3,9 +3,6 @@
 Import("env")
 Import("env_modules")
 
-# Only kept to build the thirdparty library used by the theora and webm
-# modules.
-
 env_ogg = env_modules.Clone()
 
 # Thirdparty source files

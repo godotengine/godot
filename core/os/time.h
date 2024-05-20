@@ -1,37 +1,38 @@
-/*************************************************************************/
-/*  time.h                                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  time.h                                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TIME_H
 #define TIME_H
 
 #include "core/object/class_db.h"
+#include "time_enums.h"
 
 // This Time class conforms with as many of the ISO 8601 standards as possible.
 // * As per ISO 8601:2004 4.3.2.1, all dates follow the Proleptic Gregorian
@@ -51,33 +52,6 @@ class Time : public Object {
 public:
 	static Time *get_singleton();
 
-	enum Month : uint8_t {
-		/// Start at 1 to follow Windows SYSTEMTIME structure
-		/// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724950(v=vs.85).aspx
-		MONTH_JANUARY = 1,
-		MONTH_FEBRUARY,
-		MONTH_MARCH,
-		MONTH_APRIL,
-		MONTH_MAY,
-		MONTH_JUNE,
-		MONTH_JULY,
-		MONTH_AUGUST,
-		MONTH_SEPTEMBER,
-		MONTH_OCTOBER,
-		MONTH_NOVEMBER,
-		MONTH_DECEMBER,
-	};
-
-	enum Weekday : uint8_t {
-		WEEKDAY_SUNDAY,
-		WEEKDAY_MONDAY,
-		WEEKDAY_TUESDAY,
-		WEEKDAY_WEDNESDAY,
-		WEEKDAY_THURSDAY,
-		WEEKDAY_FRIDAY,
-		WEEKDAY_SATURDAY,
-	};
-
 	// Methods that convert times.
 	Dictionary get_datetime_dict_from_unix_time(int64_t p_unix_time_val) const;
 	Dictionary get_date_dict_from_unix_time(int64_t p_unix_time_val) const;
@@ -85,10 +59,11 @@ public:
 	String get_datetime_string_from_unix_time(int64_t p_unix_time_val, bool p_use_space = false) const;
 	String get_date_string_from_unix_time(int64_t p_unix_time_val) const;
 	String get_time_string_from_unix_time(int64_t p_unix_time_val) const;
-	Dictionary get_datetime_dict_from_string(String p_datetime, bool p_weekday = true) const;
-	String get_datetime_string_from_dict(Dictionary p_datetime, bool p_use_space = false) const;
-	int64_t get_unix_time_from_datetime_dict(Dictionary p_datetime) const;
-	int64_t get_unix_time_from_datetime_string(String p_datetime) const;
+	Dictionary get_datetime_dict_from_datetime_string(const String &p_datetime, bool p_weekday = true) const;
+	String get_datetime_string_from_datetime_dict(const Dictionary &p_datetime, bool p_use_space = false) const;
+	int64_t get_unix_time_from_datetime_dict(const Dictionary &p_datetime) const;
+	int64_t get_unix_time_from_datetime_string(const String &p_datetime) const;
+	String get_offset_string_from_offset_minutes(int64_t p_offset_minutes) const;
 
 	// Methods that get information from OS.
 	Dictionary get_datetime_dict_from_system(bool p_utc = false) const;
@@ -105,5 +80,8 @@ public:
 	Time();
 	virtual ~Time();
 };
+
+VARIANT_ENUM_CAST(Month);
+VARIANT_ENUM_CAST(Weekday);
 
 #endif // TIME_H

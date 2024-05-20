@@ -4,7 +4,7 @@
  *
  *   Memory debugger (body).
  *
- * Copyright (C) 2001-2020 by
+ * Copyright (C) 2001-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -35,8 +35,8 @@
 
 #include FT_CONFIG_STANDARD_LIBRARY_H
 
-  FT_BASE_DEF( const char* )  _ft_debug_file   = NULL;
-  FT_BASE_DEF( long )         _ft_debug_lineno = 0;
+  FT_BASE_DEF( const char* )  ft_debug_file_   = NULL;
+  FT_BASE_DEF( long )         ft_debug_lineno_ = 0;
 
   extern void
   FT_DumpMemory( FT_Memory  memory );
@@ -302,46 +302,6 @@
   }
 
 
-  static FT_MemTable
-  ft_mem_table_new( FT_Memory  memory )
-  {
-    FT_MemTable  table;
-
-
-    table = (FT_MemTable)memory->alloc( memory, sizeof ( *table ) );
-    if ( !table )
-      goto Exit;
-
-    FT_ZERO( table );
-
-    table->size  = FT_MEM_SIZE_MIN;
-    table->nodes = 0;
-
-    table->memory = memory;
-
-    table->memory_user = memory->user;
-
-    table->alloc   = memory->alloc;
-    table->realloc = memory->realloc;
-    table->free    = memory->free;
-
-    table->buckets = (FT_MemNode *)
-                       memory->alloc(
-                         memory,
-                         table->size * (FT_Long)sizeof ( FT_MemNode ) );
-    if ( table->buckets )
-      FT_ARRAY_ZERO( table->buckets, table->size );
-    else
-    {
-      memory->free( memory, table );
-      table = NULL;
-    }
-
-  Exit:
-    return table;
-  }
-
-
   static void
   ft_mem_table_destroy( FT_MemTable  table )
   {
@@ -349,8 +309,6 @@
     FT_Long  leak_count = 0;
     FT_Long  leaks      = 0;
 
-
-    FT_DumpMemory( table->memory );
 
     /* remove all blocks from the table, revealing leaked ones */
     for ( i = 0; i < table->size; i++ )
@@ -413,8 +371,6 @@
     printf( "FreeType: maximum memory footprint = %ld\n",
             table->alloc_max );
 
-    ft_mem_table_free( table, table );
-
     if ( leak_count > 0 )
       ft_mem_debug_panic(
         "FreeType: %ld bytes of memory leaked in %ld blocks\n",
@@ -459,8 +415,8 @@
 
     /* cast to FT_PtrDist first since void* can be larger */
     /* than FT_UInt32 and GCC 4.1.1 emits a warning       */
-    hash  = (FT_UInt32)(FT_PtrDist)(void*)_ft_debug_file +
-              (FT_UInt32)( 5 * _ft_debug_lineno );
+    hash  = (FT_UInt32)(FT_PtrDist)(void*)ft_debug_file_ +
+              (FT_UInt32)( 5 * ft_debug_lineno_ );
     pnode = &table->sources[hash % FT_MEM_SOURCE_BUCKETS];
 
     for (;;)
@@ -469,8 +425,8 @@
       if ( !node )
         break;
 
-      if ( node->file_name == _ft_debug_file   &&
-           node->line_no   == _ft_debug_lineno )
+      if ( node->file_name == ft_debug_file_   &&
+           node->line_no   == ft_debug_lineno_ )
         goto Exit;
 
       pnode = &node->link;
@@ -481,8 +437,8 @@
       ft_mem_debug_panic(
         "not enough memory to perform memory debugging\n" );
 
-    node->file_name = _ft_debug_file;
-    node->line_no   = _ft_debug_lineno;
+    node->file_name = ft_debug_file_;
+    node->line_no   = ft_debug_lineno_;
 
     node->cur_blocks = 0;
     node->max_blocks = 0;
@@ -539,7 +495,7 @@
             "org=%s:%d new=%s:%d\n",
             node->address, node->size,
             FT_FILENAME( node->source->file_name ), node->source->line_no,
-            FT_FILENAME( _ft_debug_file ), _ft_debug_lineno );
+            FT_FILENAME( ft_debug_file_ ), ft_debug_lineno_ );
         }
       }
 
@@ -626,7 +582,7 @@
             "  Block was allocated at (%s:%ld)\n"
             "  and released at (%s:%ld).",
             address,
-            FT_FILENAME( _ft_debug_file ), _ft_debug_lineno,
+            FT_FILENAME( ft_debug_file_ ), ft_debug_lineno_,
             FT_FILENAME( node->source->file_name ), node->source->line_no,
             FT_FILENAME( node->free_file_name ), node->free_line_no );
 
@@ -648,8 +604,8 @@
           /* we simply invert the node's size to indicate that the node */
           /* was freed.                                                 */
           node->size           = -node->size;
-          node->free_file_name = _ft_debug_file;
-          node->free_line_no   = _ft_debug_lineno;
+          node->free_file_name = ft_debug_file_;
+          node->free_line_no   = ft_debug_lineno_;
         }
         else
         {
@@ -671,7 +627,7 @@
         ft_mem_debug_panic(
           "trying to free unknown block at %p in (%s:%ld)\n",
           address,
-          FT_FILENAME( _ft_debug_file ), _ft_debug_lineno );
+          FT_FILENAME( ft_debug_file_ ), ft_debug_lineno_ );
     }
   }
 
@@ -705,8 +661,8 @@
       table->alloc_count++;
     }
 
-    _ft_debug_file   = "<unknown>";
-    _ft_debug_lineno = 0;
+    ft_debug_file_   = "<unknown>";
+    ft_debug_lineno_ = 0;
 
     return (FT_Pointer)block;
   }
@@ -721,8 +677,8 @@
 
     if ( !block )
       ft_mem_debug_panic( "trying to free NULL in (%s:%ld)",
-                          FT_FILENAME( _ft_debug_file ),
-                          _ft_debug_lineno );
+                          FT_FILENAME( ft_debug_file_ ),
+                          ft_debug_lineno_ );
 
     ft_mem_table_remove( table, (FT_Byte*)block, 0 );
 
@@ -731,8 +687,8 @@
 
     table->alloc_count--;
 
-    _ft_debug_file   = "<unknown>";
-    _ft_debug_lineno = 0;
+    ft_debug_file_   = "<unknown>";
+    ft_debug_lineno_ = 0;
   }
 
 
@@ -747,8 +703,8 @@
     FT_Pointer   new_block;
     FT_Long      delta;
 
-    const char*  file_name = FT_FILENAME( _ft_debug_file );
-    FT_Long      line_no   = _ft_debug_lineno;
+    const char*  file_name = FT_FILENAME( ft_debug_file_ );
+    FT_Long      line_no   = ft_debug_lineno_;
 
 
     /* unlikely, but possible */
@@ -811,8 +767,8 @@
 
     ft_mem_table_remove( table, (FT_Byte*)block, delta );
 
-    _ft_debug_file   = "<unknown>";
-    _ft_debug_lineno = 0;
+    ft_debug_file_   = "<unknown>";
+    ft_debug_lineno_ = 0;
 
     if ( !table->keep_alive )
       ft_mem_table_free( table, block );
@@ -821,17 +777,30 @@
   }
 
 
-  extern FT_Int
+  extern void
   ft_mem_debug_init( FT_Memory  memory )
   {
     FT_MemTable  table;
-    FT_Int       result = 0;
 
 
-    if ( ft_getenv( "FT2_DEBUG_MEMORY" ) )
+    if ( !ft_getenv( "FT2_DEBUG_MEMORY" ) )
+      return;
+
+    table = (FT_MemTable)memory->alloc( memory, sizeof ( *table ) );
+
+    if ( table )
     {
-      table = ft_mem_table_new( memory );
-      if ( table )
+      FT_ZERO( table );
+
+      table->memory      = memory;
+      table->memory_user = memory->user;
+      table->alloc       = memory->alloc;
+      table->realloc     = memory->realloc;
+      table->free        = memory->free;
+
+      ft_mem_table_resize( table );
+
+      if ( table->size )
       {
         const char*  p;
 
@@ -876,33 +845,36 @@
           if ( keep_alive > 0 )
             table->keep_alive = 1;
         }
-
-        result = 1;
       }
+      else
+        memory->free( memory, table );
     }
-    return result;
   }
 
 
   extern void
   ft_mem_debug_done( FT_Memory  memory )
   {
-    FT_MemTable  table = (FT_MemTable)memory->user;
-
-
-    if ( table )
+    if ( memory->free == ft_mem_debug_free )
     {
+      FT_MemTable  table = (FT_MemTable)memory->user;
+
+
+      FT_DumpMemory( memory );
+
+      ft_mem_table_destroy( table );
+
       memory->free    = table->free;
       memory->realloc = table->realloc;
       memory->alloc   = table->alloc;
+      memory->user    = table->memory_user;
 
-      ft_mem_table_destroy( table );
-      memory->user = NULL;
+      memory->free( memory, table );
     }
   }
 
 
-  static int
+  FT_COMPARE_DEF( int )
   ft_mem_source_compare( const void*  p1,
                          const void*  p2 )
   {
@@ -922,11 +894,9 @@
   extern void
   FT_DumpMemory( FT_Memory  memory )
   {
-    FT_MemTable  table = (FT_MemTable)memory->user;
-
-
-    if ( table )
+    if ( memory->free == ft_mem_debug_free )
     {
+      FT_MemTable    table = (FT_MemTable)memory->user;
       FT_MemSource*  bucket = table->sources;
       FT_MemSource*  limit  = bucket + FT_MEM_SOURCE_BUCKETS;
       FT_MemSource*  sources;
@@ -993,7 +963,7 @@
 #else  /* !FT_DEBUG_MEMORY */
 
   /* ANSI C doesn't like empty source files */
-  typedef int  _debug_mem_dummy;
+  typedef int  debug_mem_dummy_;
 
 #endif /* !FT_DEBUG_MEMORY */
 

@@ -16,12 +16,11 @@
 #include "basisu_frontend.h"
 #include "basisu_backend.h"
 #include "basisu_basis_file.h"
-#include "../transcoder/basisu_global_selector_palette.h"
 #include "../transcoder/basisu_transcoder.h"
 #include "basisu_uastc_enc.h"
 
-#define BASISU_LIB_VERSION 115
-#define BASISU_LIB_VERSION_STRING "1.15"
+#define BASISU_LIB_VERSION 116
+#define BASISU_LIB_VERSION_STRING "1.16"
 
 #ifndef BASISD_SUPPORT_KTX2
 	#error BASISD_SUPPORT_KTX2 is undefined
@@ -36,6 +35,9 @@
 
 namespace basisu
 {
+	struct opencl_context;
+	typedef opencl_context* opencl_context_ptr;
+
 	const uint32_t BASISU_MAX_SUPPORTED_TEXTURE_DIMENSION = 16384;
 
 	// Allow block's color distance to increase by 1.5 while searching for an alternative nearby endpoint.
@@ -90,6 +92,8 @@ namespace basisu
 			m_best_etc1s_luma_709_psnr = 0.0f;
 			m_best_etc1s_luma_601_psnr = 0.0f;
 			m_best_etc1s_luma_709_ssim = 0.0f;
+
+			m_opencl_failed = false;
 		}
 
 		std::string m_filename;
@@ -117,6 +121,8 @@ namespace basisu
 		float m_best_etc1s_luma_709_psnr;
 		float m_best_etc1s_luma_601_psnr;
 		float m_best_etc1s_luma_709_ssim;
+
+		bool m_opencl_failed;
 	};
 
 	template<bool def>
@@ -203,13 +209,9 @@ namespace basisu
 	struct basis_compressor_params
 	{
 		basis_compressor_params() :
-			m_pSel_codebook(NULL),
 			m_compression_level((int)BASISU_DEFAULT_COMPRESSION_LEVEL, 0, (int)BASISU_MAX_COMPRESSION_LEVEL),
 			m_selector_rdo_thresh(BASISU_DEFAULT_SELECTOR_RDO_THRESH, 0.0f, 1e+10f),
 			m_endpoint_rdo_thresh(BASISU_DEFAULT_ENDPOINT_RDO_THRESH, 0.0f, 1e+10f),
-			m_hybrid_sel_cb_quality_thresh(BASISU_DEFAULT_HYBRID_SEL_CB_QUALITY_THRESH, 0.0f, 1e+10f),
-			m_global_pal_bits(8, 0, ETC1_GLOBAL_SELECTOR_CODEBOOK_MAX_PAL_BITS),
-			m_global_mod_bits(8, 0, basist::etc1_global_palette_entry_modifier::cTotalBits),
 			m_mip_scale(1.0f, .000125f, 4.0f),
 			m_mip_smallest_dimension(1, 1, 16384),
 			m_max_endpoint_clusters(512),
@@ -234,9 +236,8 @@ namespace basisu
 
 		void clear()
 		{
-			m_pSel_codebook = NULL;
-
 			m_uastc.clear();
+			m_use_opencl.clear();
 			m_status_output.clear();
 
 			m_source_filenames.clear();
@@ -249,11 +250,8 @@ namespace basisu
 
 			m_y_flip.clear();
 			m_debug.clear();
-			m_validate.clear();
+			m_validate_etc1s.clear();
 			m_debug_images.clear();
-			m_global_sel_pal.clear();
-			m_auto_global_sel_pal.clear();
-			m_no_hybrid_sel_cb.clear();
 			m_perceptual.clear();
 			m_no_selector_rdo.clear();
 			m_selector_rdo_thresh.clear();
@@ -261,6 +259,7 @@ namespace basisu
 			m_write_output_basis_files.clear();
 			m_compression_level.clear();
 			m_compute_stats.clear();
+			m_print_stats.clear();
 			m_check_for_alpha.clear();
 			m_force_alpha.clear();
 			m_multithreading.clear();
@@ -269,9 +268,6 @@ namespace basisu
 			m_swizzle[2] = 2;
 			m_swizzle[3] = 3;
 			m_renormalize.clear();
-			m_hybrid_sel_cb_quality_thresh.clear();
-			m_global_pal_bits.clear();
-			m_global_mod_bits.clear();
 			m_disable_hierarchical_endpoint_codebooks.clear();
 
 			m_no_endpoint_rdo.clear();
@@ -319,14 +315,15 @@ namespace basisu
 			m_ktx2_zstd_supercompression_level.clear();
 			m_ktx2_srgb_transfer_func.clear();
 
+			m_validate_output_data.clear();
+
 			m_pJob_pool = nullptr;
 		}
-				
-		// Pointer to the global selector codebook, or nullptr to not use a global selector codebook
-		const basist::etc1_global_selector_codebook *m_pSel_codebook;
-
+						
 		// True to generate UASTC .basis file data, otherwise ETC1S.
 		bool_param<false> m_uastc;
+
+		bool_param<false> m_use_opencl;
 
 		// If m_read_source_images is true, m_source_filenames (and optionally m_source_alpha_filenames) contains the filenames of PNG images to read. 
 		// Otherwise, the compressor processes the images in m_source_images.
@@ -353,20 +350,16 @@ namespace basisu
 		
 		// Output debug information during compression
 		bool_param<false> m_debug;
-		bool_param<false> m_validate;
+		bool_param<false> m_validate_etc1s;
 		
 		// m_debug_images is pretty slow
 		bool_param<false> m_debug_images;
 
-		// Compression level, from 0 to BASISU_MAX_COMPRESSION_LEVEL (higher is slower)
+		// ETC1S compression level, from 0 to BASISU_MAX_COMPRESSION_LEVEL (higher is slower). 
+		// This parameter controls numerous internal encoding speed vs. compression efficiency/performance tradeoffs.
+		// Note this is NOT the same as the ETC1S quality level, and most users shouldn't change this.
 		param<int> m_compression_level;
-
-		bool_param<false> m_global_sel_pal;
-		bool_param<false> m_auto_global_sel_pal;
-
-		// Frontend/backend codec parameters
-		bool_param<false> m_no_hybrid_sel_cb;
-		
+						
 		// Use perceptual sRGB colorspace metrics instead of linear
 		bool_param<true> m_perceptual;
 
@@ -385,6 +378,9 @@ namespace basisu
 								
 		// Compute and display image metrics 
 		bool_param<false> m_compute_stats;
+
+		// Print stats to stdout, if m_compute_stats is true.
+		bool_param<true> m_print_stats;
 		
 		// Check to see if any input image has an alpha channel, if so then the output basis file will have alpha channels
 		bool_param<true> m_check_for_alpha;
@@ -398,13 +394,10 @@ namespace basisu
 
 		bool_param<false> m_renormalize;
 
+		// If true the front end will not use 2 level endpoint codebook searching, for slightly higher quality but much slower execution.
+		// Note some m_compression_level's disable this automatically.
 		bool_param<false> m_disable_hierarchical_endpoint_codebooks;
-
-		// Global/hybrid selector codebook parameters
-		param<float> m_hybrid_sel_cb_quality_thresh;
-		param<int> m_global_pal_bits;
-		param<int> m_global_mod_bits;
-		
+						
 		// mipmap generation parameters
 		bool_param<false> m_mip_gen;
 		param<float> m_mip_scale;
@@ -415,9 +408,9 @@ namespace basisu
 		bool_param<true> m_mip_wrapping;
 		bool_param<true> m_mip_fast;
 		param<int> m_mip_smallest_dimension;
-				
+						
 		// Codebook size (quality) control. 
-		// If m_quality_level != -1, it controls the quality level. It ranges from [0,255] or [BASISU_QUALITY_MIN, BASISU_QUALITY_MAX].
+		// If m_quality_level != -1, it controls the quality level. It ranges from [1,255] or [BASISU_QUALITY_MIN, BASISU_QUALITY_MAX].
 		// Otherwise m_max_endpoint_clusters/m_max_selector_clusters controls the codebook sizes directly.
 		uint32_t m_max_endpoint_clusters;
 		uint32_t m_max_selector_clusters;
@@ -444,6 +437,7 @@ namespace basisu
 		param<int> m_resample_width;
 		param<int> m_resample_height;
 		param<float> m_resample_factor;
+
 		const basist::basisu_lowlevel_etc1s_transcoder *m_pGlobal_codebooks;
 
 		// KTX2 specific parameters.
@@ -454,21 +448,27 @@ namespace basisu
 		param<int> m_ktx2_zstd_supercompression_level;
 		bool_param<false> m_ktx2_srgb_transfer_func;
 
+		bool_param<false> m_validate_output_data;
+
 		job_pool *m_pJob_pool;
 	};
-	
+
+	// Important: basisu_encoder_init() MUST be called first before using this class.
 	class basis_compressor
 	{
 		BASISU_NO_EQUALS_OR_COPY_CONSTRUCT(basis_compressor);
 
 	public:
 		basis_compressor();
+		~basis_compressor();
 
+		// Note it *should* be possible to call init() multiple times with different inputs, but this scenario isn't well tested. Ideally, create 1 object, compress, then delete it.
 		bool init(const basis_compressor_params &params);
 		
 		enum error_code
 		{
 			cECSuccess = 0,
+			cECFailedInitializing,
 			cECFailedReadingSourceImages,
 			cECFailedValidating,
 			cECFailedEncodeUASTC,
@@ -495,9 +495,13 @@ namespace basisu
 		double get_basis_bits_per_texel() const { return m_basis_bits_per_texel; }
 		
 		bool get_any_source_image_has_alpha() const { return m_any_source_image_has_alpha; }
+
+		bool get_opencl_failed() const { return m_opencl_failed; }
 								
 	private:
 		basis_compressor_params m_params;
+
+		opencl_context_ptr m_pOpenCL_context;
 		
 		basisu::vector<image> m_slice_images;
 
@@ -509,8 +513,7 @@ namespace basisu
 		basisu_backend_slice_desc_vec m_slice_descs;
 
 		uint32_t m_total_blocks;
-		bool m_auto_global_sel_pal;
-
+		
 		basisu_frontend m_frontend;
 		pixel_block_vec m_source_blocks;
 
@@ -536,6 +539,8 @@ namespace basisu
 
 		bool m_any_source_image_has_alpha;
 
+		bool m_opencl_failed;
+
 		bool read_source_images();
 		bool extract_source_blocks();
 		bool process_frontend();
@@ -550,6 +555,109 @@ namespace basisu
 		void get_dfd(uint8_vec& dfd, const basist::ktx2_header& hdr);
 		bool create_ktx2_file();
 	};
+				
+	// Alternative simple C-style wrapper API around the basis_compressor class. 
+	// This doesn't expose every encoder feature, but it's enough to get going.
+	// Important: basisu_encoder_init() MUST be called first before calling these functions.
+	//
+	// Input parameters:
+	//   source_images: Array of "image" objects, one per mipmap level, largest mipmap level first.
+	// OR
+	//   pImageRGBA: pointer to a 32-bpp RGBx or RGBA raster image, R first in memory, A last. Top scanline first in memory.
+	//   width/height/pitch_in_pixels: dimensions of pImageRGBA
+	//   
+	// flags_and_quality: Combination of the above flags logically OR'd with the ETC1S or UASTC level, i.e. "cFlagSRGB | cFlagGenMipsClamp | cFlagThreaded | 128" or "cFlagSRGB | cFlagGenMipsClamp | cFlagUASTC | cFlagThreaded | cPackUASTCLevelDefault".
+	//	  In ETC1S mode, the lower 8-bits are the ETC1S quality level which ranges from [1,255] (higher=better quality/larger files)
+	//	  In UASTC mode, the lower 8-bits are the UASTC pack level (see cPackUASTCLevelFastest, etc.). Fastest/lowest quality is 0, so be sure to set it correctly. 
+	// 
+	// uastc_rdo_quality: Float UASTC RDO quality level (0=no change, higher values lower quality but increase compressibility, initially try .5-1.5)
+	// 
+	// pSize: Returns the output data's compressed size in bytes
+	// 
+	// Return value is the compressed .basis or .ktx2 file data, or nullptr on failure. Must call basis_free() to free it.
+	enum
+	{
+		cFlagUseOpenCL = 1 << 8,		// use OpenCL if available
+		cFlagThreaded = 1 << 9,			// use multiple threads for compression
+		cFlagDebug = 1 << 10,			// enable debug output
 
+		cFlagKTX2 = 1 << 11,			// generate a KTX2 file
+		cFlagKTX2UASTCSuperCompression = 1 << 12, // use KTX2 Zstd supercompression on UASTC files
+
+		cFlagSRGB = 1 << 13,			// input texture is sRGB, use perceptual colorspace metrics, also use sRGB filtering during mipmap gen, and also sets KTX2 output transfer func to sRGB
+		cFlagGenMipsClamp = 1 << 14,  // generate mipmaps with clamp addressing
+		cFlagGenMipsWrap = 1 << 15,  // generate mipmaps with wrap addressing
+		
+		cFlagYFlip = 1 << 16,		// flip source image on Y axis before compression
+		
+		cFlagUASTC = 1 << 17,		// use UASTC compression vs. ETC1S
+		cFlagUASTCRDO = 1 << 18,		// use RDO postprocessing when generating UASTC files (must set uastc_rdo_quality to the quality scalar)
+		
+		cFlagPrintStats = 1 << 19,	// print image stats to stdout
+		cFlagPrintStatus = 1 << 20	// print status to stdout
+	};
+
+	// This function accepts an array of source images. 
+	// If more than one image is provided, it's assumed the images form a mipmap pyramid and automatic mipmap generation is disabled.
+	// Returns a pointer to the compressed .basis or .ktx2 file data. *pSize is the size of the compressed data. The returned block must be freed using basis_free_data().
+	// basisu_encoder_init() MUST be called first!
+	void* basis_compress(
+		const basisu::vector<image> &source_images,
+		uint32_t flags_and_quality, float uastc_rdo_quality,
+		size_t* pSize,
+		image_stats* pStats = nullptr);
+
+	// This function only accepts a single source image.
+	void* basis_compress(
+		const uint8_t* pImageRGBA, uint32_t width, uint32_t height, uint32_t pitch_in_pixels,
+		uint32_t flags_and_quality, float uastc_rdo_quality,
+		size_t* pSize,
+		image_stats* pStats = nullptr);
+
+	// Frees the dynamically allocated file data returned by basis_compress().
+	void basis_free_data(void* p);
+
+	// Runs a short benchmark using synthetic image data to time OpenCL encoding vs. CPU encoding, with multithreading enabled.
+	// Returns true if opencl is worth using on this system, otherwise false.
+	// If pOpenCL_failed is not null, it will be set to true if OpenCL encoding failed *on this particular machine/driver/BasisU version* and the encoder falled back to CPU encoding.
+	// basisu_encoder_init() MUST be called first. If OpenCL support wasn't enabled this always returns false.
+	bool basis_benchmark_etc1s_opencl(bool *pOpenCL_failed = nullptr);
+
+	// Parallel compression API
+	struct parallel_results
+	{
+		double m_total_time;
+		basis_compressor::error_code m_error_code;
+		uint8_vec m_basis_file;
+		uint8_vec m_ktx2_file;
+		basisu::vector<image_stats> m_stats;
+		double m_basis_bits_per_texel;
+		bool m_any_source_image_has_alpha;
+
+		parallel_results() 
+		{
+			clear();
+		}
+
+		void clear()
+		{
+			m_total_time = 0.0f;
+			m_error_code = basis_compressor::cECFailedInitializing;
+			m_basis_file.clear();
+			m_ktx2_file.clear();
+			m_stats.clear();
+			m_basis_bits_per_texel = 0.0f;
+			m_any_source_image_has_alpha = false;
+		}
+	};
+		
+	// Compresses an array of input textures across total_threads threads using the basis_compressor class.
+	// Compressing multiple textures at a time is substantially more efficient than just compressing one at a time.
+	// total_threads must be >= 1.
+	bool basis_parallel_compress(
+		uint32_t total_threads,
+		const basisu::vector<basis_compressor_params> &params_vec,
+		basisu::vector< parallel_results > &results_vec);
+		
 } // namespace basisu
 

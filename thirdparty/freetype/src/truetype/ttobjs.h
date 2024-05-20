@@ -4,7 +4,7 @@
  *
  *   Objects manager (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -162,8 +162,6 @@ FT_BEGIN_HEADER
     FT_Long   end;            /* where does it end?                     */
     FT_UInt   opc;            /* function #, or instruction code        */
     FT_Bool   active;         /* is it active?                          */
-    FT_Bool   inline_delta;   /* is function that defines inline delta? */
-    FT_ULong  sph_fdef_flags; /* flags to identify special functions    */
 
   } TT_DefRecord, *TT_DefArray;
 
@@ -282,6 +280,8 @@ FT_BEGIN_HEADER
 
     TT_Size_Metrics    ttmetrics;
 
+    FT_Byte*           widthp;          /* glyph widths from the hdmx table */
+
     FT_ULong           strike_index;      /* 0xFFFFFFFF to indicate invalid */
 
 #ifdef TT_USE_BYTECODE_INTERPRETER
@@ -389,8 +389,10 @@ FT_BEGIN_HEADER
 #endif /* TT_USE_BYTECODE_INTERPRETER */
 
   FT_LOCAL( FT_Error )
-  tt_size_reset( TT_Size  size,
-                 FT_Bool  only_height );
+  tt_size_reset_height( FT_Size  size );
+
+  FT_LOCAL( FT_Error )
+  tt_size_reset( TT_Size  size );
 
 
   /**************************************************************************

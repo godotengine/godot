@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  typedefs.h                                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  typedefs.h                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TYPEDEFS_H
 #define TYPEDEFS_H
@@ -62,13 +62,24 @@
 #endif
 #endif
 
-// Should always inline, except in debug builds because it makes debugging harder.
+// Should always inline, except in dev builds because it makes debugging harder.
 #ifndef _FORCE_INLINE_
-#ifdef DISABLE_FORCED_INLINE
+#ifdef DEV_ENABLED
 #define _FORCE_INLINE_ inline
 #else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
 #endif
+#endif
+
+// No discard allows the compiler to flag warnings if we don't use the return value of functions / classes
+#ifndef _NO_DISCARD_
+#define _NO_DISCARD_ [[nodiscard]]
+#endif
+
+// In some cases _NO_DISCARD_ will get false positives,
+// we can prevent the warning in specific cases by preceding the call with a cast.
+#ifndef _ALLOW_DISCARD_
+#define _ALLOW_DISCARD_ (void)
 #endif
 
 // Windows badly defines a lot of stuff we'll never use. Undefine it.
@@ -78,39 +89,50 @@
 #undef ERROR // override (really stupid) wingdi.h standard definition
 #undef DELETE // override (another really stupid) winnt.h standard definition
 #undef MessageBox // override winuser.h standard definition
-#undef MIN // override standard definition
-#undef MAX // override standard definition
-#undef CLAMP // override standard definition
 #undef Error
 #undef OK
 #undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
+#undef MemoryBarrier
+#undef MONO_FONT
 #endif
+
+// Make room for our constexpr's below by overriding potential system-specific macros.
+#undef ABS
+#undef SIGN
+#undef MIN
+#undef MAX
+#undef CLAMP
 
 // Generic ABS function, for math uses please use Math::abs.
-#ifndef ABS
-#define ABS(m_v) (((m_v) < 0) ? (-(m_v)) : (m_v))
-#endif
+template <typename T>
+constexpr T ABS(T m_v) {
+	return m_v < 0 ? -m_v : m_v;
+}
 
-#ifndef SGN
-#define SGN(m_v) (((m_v) == 0) ? (0.0) : (((m_v) < 0) ? (-1.0) : (+1.0)))
-#endif
+template <typename T>
+constexpr const T SIGN(const T m_v) {
+	return m_v > 0 ? +1.0f : (m_v < 0 ? -1.0f : 0.0f);
+}
 
-#ifndef MIN
-#define MIN(m_a, m_b) (((m_a) < (m_b)) ? (m_a) : (m_b))
-#endif
+template <typename T, typename T2>
+constexpr auto MIN(const T m_a, const T2 m_b) {
+	return m_a < m_b ? m_a : m_b;
+}
 
-#ifndef MAX
-#define MAX(m_a, m_b) (((m_a) > (m_b)) ? (m_a) : (m_b))
-#endif
+template <typename T, typename T2>
+constexpr auto MAX(const T m_a, const T2 m_b) {
+	return m_a > m_b ? m_a : m_b;
+}
 
-#ifndef CLAMP
-#define CLAMP(m_a, m_min, m_max) (((m_a) < (m_min)) ? (m_min) : (((m_a) > (m_max)) ? m_max : m_a))
-#endif
+template <typename T, typename T2, typename T3>
+constexpr auto CLAMP(const T m_a, const T2 m_min, const T3 m_max) {
+	return m_a < m_min ? m_min : (m_a > m_max ? m_max : m_a);
+}
 
 // Generic swap template.
 #ifndef SWAP
 #define SWAP(m_x, m_y) __swap_tmpl((m_x), (m_y))
-template <class T>
+template <typename T>
 inline void __swap_tmpl(T &x, T &y) {
 	T aux = x;
 	x = y;
@@ -164,7 +186,7 @@ static inline int get_shift_from_power_of_2(unsigned int p_bits) {
 	return -1;
 }
 
-template <class T>
+template <typename T>
 static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
 	--x;
 
@@ -212,6 +234,10 @@ constexpr T get_num_bits(T x) {
 #define BSWAP16(x) __builtin_bswap16(x)
 #define BSWAP32(x) __builtin_bswap32(x)
 #define BSWAP64(x) __builtin_bswap64(x)
+#elif defined(_MSC_VER)
+#define BSWAP16(x) _byteswap_ushort(x)
+#define BSWAP32(x) _byteswap_ulong(x)
+#define BSWAP64(x) _byteswap_uint64(x)
 #else
 static inline uint16_t BSWAP16(uint16_t x) {
 	return (x >> 8) | (x << 8);
@@ -230,7 +256,7 @@ static inline uint64_t BSWAP64(uint64_t x) {
 #endif
 
 // Generic comparator used in Map, List, etc.
-template <class T>
+template <typename T>
 struct Comparator {
 	_ALWAYS_INLINE_ bool operator()(const T &p_a, const T &p_b) const { return (p_a < p_b); }
 };
@@ -277,14 +303,17 @@ struct BuildIndexSequence : BuildIndexSequence<N - 1, N - 1, Is...> {};
 template <size_t... Is>
 struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 
+// Limit the depth of recursive algorithms when dealing with Array/Dictionary
+#define MAX_RECURSION 100
+
 #ifdef DEBUG_ENABLED
 #define DEBUG_METHODS_ENABLED
 #endif
 
 // Macro GD_IS_DEFINED() allows to check if a macro is defined. It needs to be defined to anything (say 1) to work.
-#define __GDARG_PLACEHOLDER_1 0,
+#define __GDARG_PLACEHOLDER_1 false,
 #define __gd_take_second_arg(__ignored, val, ...) val
-#define ____gd_is_defined(arg1_or_junk) __gd_take_second_arg(arg1_or_junk 1, 0)
+#define ____gd_is_defined(arg1_or_junk) __gd_take_second_arg(arg1_or_junk true, false)
 #define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
 #define GD_IS_DEFINED(x) ___gd_is_defined(x)
 

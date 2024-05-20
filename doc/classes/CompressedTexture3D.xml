@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CompressedTexture3D" inherits="Texture3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Texture with 3 dimensions, optionally compressed.
+	</brief_description>
+	<description>
+		[CompressedTexture3D] is the VRAM-compressed counterpart of [ImageTexture3D]. The file extension for [CompressedTexture3D] files is [code].ctex3d[/code]. This file format is internal to Godot; it is created by importing other image formats with the import system.
+		[CompressedTexture3D] uses VRAM compression, which allows to reduce memory usage on the GPU when rendering the texture. This also improves loading times, as VRAM-compressed textures are faster to load compared to textures using lossless compression. VRAM compression can exhibit noticeable artifacts and is intended to be used for 3D rendering, not 2D.
+		See [Texture3D] for a general description of 3D textures.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="load">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Loads the texture from the specified [param path].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="load_path" type="String" setter="load" getter="get_load_path" default="&quot;&quot;">
+			The [CompressedTexture3D]'s file path to a [code].ctex3d[/code] file.
+		</member>
+	</members>
+</class>

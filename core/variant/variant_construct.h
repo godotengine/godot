@@ -1,39 +1,38 @@
-/*************************************************************************/
-/*  variant_construct.h                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  variant_construct.h                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef VARIANT_CONSTRUCT_H
 #define VARIANT_CONSTRUCT_H
 
 #include "variant.h"
 
-#include "core/core_string_names.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/compression.h"
@@ -42,7 +41,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 
-template <class T>
+template <typename T>
 struct PtrConstruct {};
 
 #define MAKE_PTRCONSTRUCT(m_type)                                                  \
@@ -63,12 +62,15 @@ MAKE_PTRCONSTRUCT(Rect2);
 MAKE_PTRCONSTRUCT(Rect2i);
 MAKE_PTRCONSTRUCT(Vector3);
 MAKE_PTRCONSTRUCT(Vector3i);
+MAKE_PTRCONSTRUCT(Vector4);
+MAKE_PTRCONSTRUCT(Vector4i);
 MAKE_PTRCONSTRUCT(Transform2D);
 MAKE_PTRCONSTRUCT(Plane);
 MAKE_PTRCONSTRUCT(Quaternion);
 MAKE_PTRCONSTRUCT(AABB);
 MAKE_PTRCONSTRUCT(Basis);
 MAKE_PTRCONSTRUCT(Transform3D);
+MAKE_PTRCONSTRUCT(Projection);
 MAKE_PTRCONSTRUCT(Color);
 MAKE_PTRCONSTRUCT(StringName);
 MAKE_PTRCONSTRUCT(NodePath);
@@ -94,9 +96,10 @@ MAKE_PTRCONSTRUCT(PackedStringArray);
 MAKE_PTRCONSTRUCT(PackedVector2Array);
 MAKE_PTRCONSTRUCT(PackedVector3Array);
 MAKE_PTRCONSTRUCT(PackedColorArray);
+MAKE_PTRCONSTRUCT(PackedVector4Array);
 MAKE_PTRCONSTRUCT(Variant);
 
-template <class T, class... P>
+template <typename T, typename... P>
 class VariantConstructor {
 	template <size_t... Is>
 	static _FORCE_INLINE_ void construct_helper(T &base, const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
@@ -219,6 +222,64 @@ public:
 	}
 };
 
+template <typename T>
+class VariantConstructorFromString {
+public:
+	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
+		if (p_args[0]->get_type() != Variant::STRING) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::STRING;
+			return;
+		}
+
+		VariantTypeChanger<T>::change(&r_ret);
+		const String &src_str = *VariantGetInternalPtr<String>::get_ptr(p_args[0]);
+
+		if (r_ret.get_type() == Variant::Type::INT) {
+			r_ret = src_str.to_int();
+		} else if (r_ret.get_type() == Variant::Type::FLOAT) {
+			r_ret = src_str.to_float();
+		}
+	}
+
+	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<T>::change(r_ret);
+		const String &src_str = *VariantGetInternalPtr<String>::get_ptr(p_args[0]);
+		T ret = Variant();
+		if (r_ret->get_type() == Variant::Type::INT) {
+			ret = src_str.to_int();
+		} else if (r_ret->get_type() == Variant::Type::FLOAT) {
+			ret = src_str.to_float();
+		}
+		*r_ret = ret;
+	}
+
+	static void ptr_construct(void *base, const void **p_args) {
+		String src_str = PtrToArg<String>::convert(p_args[0]);
+		T dst_var = Variant();
+		Variant type_test = Variant(dst_var);
+		if (type_test.get_type() == Variant::Type::INT) {
+			dst_var = src_str.to_int();
+		} else if (type_test.get_type() == Variant::Type::FLOAT) {
+			dst_var = src_str.to_float();
+		}
+		PtrConstruct<T>::construct(dst_var, base);
+	}
+
+	static int get_argument_count() {
+		return 1;
+	}
+
+	static Variant::Type get_argument_type(int p_arg) {
+		return Variant::STRING;
+	}
+
+	static Variant::Type get_base_type() {
+		return GetTypeInfo<T>::VARIANT_TYPE;
+	}
+};
+
 class VariantConstructorCallableArgs {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
@@ -333,7 +394,83 @@ public:
 	}
 };
 
-template <class T>
+class VariantConstructorTypedArray {
+public:
+	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
+		if (p_args[0]->get_type() != Variant::ARRAY) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::ARRAY;
+			return;
+		}
+
+		if (p_args[1]->get_type() != Variant::INT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			r_error.expected = Variant::INT;
+			return;
+		}
+
+		if (p_args[2]->get_type() != Variant::STRING_NAME) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 2;
+			r_error.expected = Variant::STRING_NAME;
+			return;
+		}
+
+		const Array &base_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
+		const uint32_t type = p_args[1]->operator uint32_t();
+		const StringName &class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[2]);
+		r_ret = Array(base_arr, type, class_name, *p_args[3]);
+	}
+
+	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
+		const Array &base_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
+		const uint32_t type = p_args[1]->operator uint32_t();
+		const StringName &class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[2]);
+		*r_ret = Array(base_arr, type, class_name, *p_args[3]);
+	}
+
+	static void ptr_construct(void *base, const void **p_args) {
+		const Array &base_arr = PtrToArg<Array>::convert(p_args[0]);
+		const uint32_t type = PtrToArg<uint32_t>::convert(p_args[1]);
+		const StringName &class_name = PtrToArg<StringName>::convert(p_args[2]);
+		const Variant &script = PtrToArg<Variant>::convert(p_args[3]);
+		Array dst_arr = Array(base_arr, type, class_name, script);
+
+		PtrConstruct<Array>::construct(dst_arr, base);
+	}
+
+	static int get_argument_count() {
+		return 4;
+	}
+
+	static Variant::Type get_argument_type(int p_arg) {
+		switch (p_arg) {
+			case 0: {
+				return Variant::ARRAY;
+			} break;
+			case 1: {
+				return Variant::INT;
+			} break;
+			case 2: {
+				return Variant::STRING_NAME;
+			} break;
+			case 3: {
+				return Variant::NIL;
+			} break;
+			default: {
+				return Variant::NIL;
+			} break;
+		}
+	}
+
+	static Variant::Type get_base_type() {
+		return Variant::ARRAY;
+	}
+};
+
+template <typename T>
 class VariantConstructorToArray {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
@@ -344,7 +481,7 @@ public:
 			return;
 		}
 
-		VariantTypeChanger<Array>::change(&r_ret);
+		r_ret = Array();
 		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(&r_ret);
 		const T &src_arr = *VariantGetInternalPtr<T>::get_ptr(p_args[0]);
 
@@ -356,7 +493,7 @@ public:
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
-		VariantTypeChanger<Array>::change(r_ret);
+		*r_ret = Array();
 		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(r_ret);
 		const T &src_arr = *VariantGetInternalPtr<T>::get_ptr(p_args[0]);
 
@@ -392,7 +529,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 class VariantConstructorFromArray {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
@@ -485,7 +622,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 class VariantConstructNoArgs {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
@@ -524,7 +661,7 @@ public:
 		VariantInternal::clear(r_ret);
 	}
 	static void ptr_construct(void *base, const void **p_args) {
-		ERR_FAIL_MSG("can't ptrcall nil constructor");
+		ERR_FAIL_MSG("Cannot ptrcall nil constructor");
 	}
 
 	static int get_argument_count() {
@@ -543,14 +680,12 @@ public:
 class VariantConstructNoArgsObject {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
-		VariantInternal::clear(&r_ret);
-		VariantInternal::object_assign_null(&r_ret);
+		r_ret = (Object *)nullptr; // Must construct a TYPE_OBJECT containing nullptr.
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
-		VariantInternal::clear(r_ret);
-		VariantInternal::object_assign_null(r_ret);
+		*r_ret = (Object *)nullptr; // Must construct a TYPE_OBJECT containing nullptr.
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		PtrConstruct<Object *>::construct(nullptr, base);

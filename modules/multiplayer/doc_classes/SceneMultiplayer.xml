@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SceneMultiplayer" inherits="MultiplayerAPI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		High-level multiplayer API implementation.
+	</brief_description>
+	<description>
+		This class is the default implementation of [MultiplayerAPI], used to provide multiplayer functionalities in Godot Engine.
+		This implementation supports RPCs via [method Node.rpc] and [method Node.rpc_id] and requires [method MultiplayerAPI.rpc] to be passed a [Node] (it will fail for other object types).
+		This implementation additionally provide [SceneTree] replication via the [MultiplayerSpawner] and [MultiplayerSynchronizer] nodes, and the [SceneReplicationConfig] resource.
+		[b]Note:[/b] The high-level multiplayer API protocol is an implementation detail and isn't meant to be used by non-Godot servers. It may change without notice.
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the current SceneMultiplayer network state (you shouldn't call this unless you know what you are doing).
+			</description>
+		</method>
+		<method name="complete_auth">
+			<return type="int" enum="Error" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Mark the authentication step as completed for the remote peer identified by [param id]. The [signal MultiplayerAPI.peer_connected] signal will be emitted for this peer once the remote side also completes the authentication. No further authentication messages are expected to be received from this peer.
+				If a peer disconnects before completing authentication, either due to a network issue, the [member auth_timeout] expiring, or manually calling [method disconnect_peer], the [signal peer_authentication_failed] signal will be emitted instead of [signal MultiplayerAPI.peer_disconnected].
+			</description>
+		</method>
+		<method name="disconnect_peer">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Disconnects the peer identified by [param id], removing it from the list of connected peers, and closing the underlying connection with it.
+			</description>
+		</method>
+		<method name="get_authenticating_peers">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns the IDs of the peers currently trying to authenticate with this [MultiplayerAPI].
+			</description>
+		</method>
+		<method name="send_auth">
+			<return type="int" enum="Error" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="data" type="PackedByteArray" />
+			<description>
+				Sends the specified [param data] to the remote peer identified by [param id] as part of an authentication message. This can be used to authenticate peers, and control when [signal MultiplayerAPI.peer_connected] is emitted (and the remote peer accepted as one of the connected peers).
+			</description>
+		</method>
+		<method name="send_bytes">
+			<return type="int" enum="Error" />
+			<param index="0" name="bytes" type="PackedByteArray" />
+			<param index="1" name="id" type="int" default="0" />
+			<param index="2" name="mode" type="int" enum="MultiplayerPeer.TransferMode" default="2" />
+			<param index="3" name="channel" type="int" default="0" />
+			<description>
+				Sends the given raw [param bytes] to a specific peer identified by [param id] (see [method MultiplayerPeer.set_target_peer]). Default ID is [code]0[/code], i.e. broadcast to all peers.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed" default="false">
+			If [code]true[/code], the MultiplayerAPI will allow encoding and decoding of object during RPCs.
+			[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threat such as remote code execution.
+		</member>
+		<member name="auth_callback" type="Callable" setter="set_auth_callback" getter="get_auth_callback" default="Callable()">
+			The callback to execute when when receiving authentication data sent via [method send_auth]. If the [Callable] is empty (default), peers will be automatically accepted as soon as they connect.
+		</member>
+		<member name="auth_timeout" type="float" setter="set_auth_timeout" getter="get_auth_timeout" default="3.0">
+			If set to a value greater than [code]0.0[/code], the maximum amount of time peers can stay in the authenticating state, after which the authentication will automatically fail. See the [signal peer_authenticating] and [signal peer_authentication_failed] signals.
+		</member>
+		<member name="max_delta_packet_size" type="int" setter="set_max_delta_packet_size" getter="get_max_delta_packet_size" default="65535">
+			Maximum size of each delta packet. Higher values increase the chance of receiving full updates in a single frame, but also the chance of causing networking congestion (higher latency, disconnections). See [MultiplayerSynchronizer].
+		</member>
+		<member name="max_sync_packet_size" type="int" setter="set_max_sync_packet_size" getter="get_max_sync_packet_size" default="1350">
+			Maximum size of each synchronization packet. Higher values increase the chance of receiving full updates in a single frame, but also the chance of packet loss. See [MultiplayerSynchronizer].
+		</member>
+		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" default="false">
+			If [code]true[/code], the MultiplayerAPI's [member MultiplayerAPI.multiplayer_peer] refuses new incoming connections.
+		</member>
+		<member name="root_path" type="NodePath" setter="set_root_path" getter="get_root_path" default="NodePath(&quot;&quot;)">
+			The root path to use for RPCs and replication. Instead of an absolute path, a relative path will be used to find the node upon which the RPC should be executed.
+			This effectively allows to have different branches of the scene tree to be managed by different MultiplayerAPI, allowing for example to run both client and server in the same scene.
+		</member>
+		<member name="server_relay" type="bool" setter="set_server_relay_enabled" getter="is_server_relay_enabled" default="true">
+			Enable or disable the server feature that notifies clients of other peers' connection/disconnection, and relays messages between them. When this option is [code]false[/code], clients won't be automatically notified of other peers and won't be able to send them packets through the server.
+			[b]Note:[/b] Changing this option while other peers are connected may lead to unexpected behaviors.
+			[b]Note:[/b] Support for this feature may depend on the current [MultiplayerPeer] configuration. See [method MultiplayerPeer.is_server_relay_supported].
+		</member>
+	</members>
+	<signals>
+		<signal name="peer_authenticating">
+			<param index="0" name="id" type="int" />
+			<description>
+				Emitted when this MultiplayerAPI's [member MultiplayerAPI.multiplayer_peer] connects to a new peer and a valid [member auth_callback] is set. In this case, the [signal MultiplayerAPI.peer_connected] will not be emitted until [method complete_auth] is called with given peer [param id]. While in this state, the peer will not be included in the list returned by [method MultiplayerAPI.get_peers] (but in the one returned by [method get_authenticating_peers]), and only authentication data will be sent or received. See [method send_auth] for sending authentication data.
+			</description>
+		</signal>
+		<signal name="peer_authentication_failed">
+			<param index="0" name="id" type="int" />
+			<description>
+				Emitted when this MultiplayerAPI's [member MultiplayerAPI.multiplayer_peer] disconnects from a peer for which authentication had not yet completed. See [signal peer_authenticating].
+			</description>
+		</signal>
+		<signal name="peer_packet">
+			<param index="0" name="id" type="int" />
+			<param index="1" name="packet" type="PackedByteArray" />
+			<description>
+				Emitted when this MultiplayerAPI's [member MultiplayerAPI.multiplayer_peer] receives a [param packet] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.
+			</description>
+		</signal>
+	</signals>
+</class>

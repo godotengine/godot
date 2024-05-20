@@ -243,7 +243,7 @@
     nn = *bp;
     if ( !nn )
     {
-      if ( FT_NEW( nn ) )
+      if ( FT_QNEW( nn ) )
         goto Exit;
       *bp = nn;
 

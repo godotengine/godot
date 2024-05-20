@@ -1,1819 +1,2366 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RenderingDevice" inherits="Object" version="4.0">
+<class name="RenderingDevice" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Abstraction for working with modern low-level graphics APIs.
 	</brief_description>
 	<description>
+		[RenderingDevice] is an abstraction for working with modern low-level graphics APIs such as Vulkan. Compared to [RenderingServer] (which works with Godot's own rendering subsystems), [RenderingDevice] is much lower-level and allows working more directly with the underlying graphics APIs. [RenderingDevice] is used in Godot to provide support for several modern low-level graphics APIs while reducing the amount of code duplication required. [RenderingDevice] can also be used in your own projects to perform things that are not exposed by [RenderingServer] or high-level nodes, such as using compute shaders.
+		On startup, Godot creates a global [RenderingDevice] which can be retrieved using [method RenderingServer.get_rendering_device]. This global [RenderingDevice] performs drawing to the screen.
+		[b]Local RenderingDevices:[/b] Using [method RenderingServer.create_local_rendering_device], you can create "secondary" rendering devices to perform drawing and GPU compute operations on separate threads.
+		[b]Note:[/b] [RenderingDevice] assumes intermediate knowledge of modern graphics APIs such as Vulkan, Direct3D 12, Metal or WebGPU. These graphics APIs are lower-level than OpenGL or Direct3D 11, requiring you to perform what was previously done by the graphics driver itself. If you have difficulty understanding the concepts used in this class, follow the [url=https://vulkan-tutorial.com/]Vulkan Tutorial[/url] or [url=https://vkguide.dev/]Vulkan Guide[/url]. It's recommended to have existing modern OpenGL or Direct3D 11 knowledge before attempting to learn a low-level graphics API.
+		[b]Note:[/b] [RenderingDevice] is not available when running in headless mode or when using the Compatibility rendering method.
 	</description>
 	<tutorials>
+		<link title="Using compute shaders">$DOCS_URL/tutorials/shaders/compute_shaders.html</link>
 	</tutorials>
 	<methods>
-		<method name="barrier">
-			<return type="void">
-			</return>
-			<argument index="0" name="from" type="int" default="7">
-			</argument>
-			<argument index="1" name="to" type="int" default="7">
-			</argument>
+		<method name="barrier" deprecated="Barriers are automatically inserted by RenderingDevice.">
+			<return type="void" />
+			<param index="0" name="from" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
+			<param index="1" name="to" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="32767" />
 			<description>
+				This method does nothing.
 			</description>
 		</method>
 		<method name="buffer_clear">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="buffer" type="RID">
-			</argument>
-			<argument index="1" name="offset" type="int">
-			</argument>
-			<argument index="2" name="size_bytes" type="int">
-			</argument>
-			<argument index="3" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="RID" />
+			<param index="1" name="offset" type="int" />
+			<param index="2" name="size_bytes" type="int" />
 			<description>
+				Clears the contents of the [param buffer], clearing [param size_bytes] bytes, starting at [param offset].
+				Prints an error if:
+				- the size isn't a multiple of four
+				- the region specified by [param offset] + [param size_bytes] exceeds the buffer
+				- a draw list is currently active (created by [method draw_list_begin])
+				- a compute list is currently active (created by [method compute_list_begin])
+			</description>
+		</method>
+		<method name="buffer_copy">
+			<return type="int" enum="Error" />
+			<param index="0" name="src_buffer" type="RID" />
+			<param index="1" name="dst_buffer" type="RID" />
+			<param index="2" name="src_offset" type="int" />
+			<param index="3" name="dst_offset" type="int" />
+			<param index="4" name="size" type="int" />
+			<description>
+				Copies [param size] bytes from the [param src_buffer] at [param src_offset] into [param dst_buffer] at [param dst_offset].
+				Prints an error if:
+				- [param size] exceeds the size of either [param src_buffer] or [param dst_buffer] at their corresponding offsets
+				- a draw list is currently active (created by [method draw_list_begin])
+				- a compute list is currently active (created by [method compute_list_begin])
 			</description>
 		</method>
 		<method name="buffer_get_data">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="buffer" type="RID">
-			</argument>
+			<return type="PackedByteArray" />
+			<param index="0" name="buffer" type="RID" />
+			<param index="1" name="offset_bytes" type="int" default="0" />
+			<param index="2" name="size_bytes" type="int" default="0" />
 			<description>
+				Returns a copy of the data of the specified [param buffer], optionally [param offset_bytes] and [param size_bytes] can be set to copy only a portion of the buffer.
 			</description>
 		</method>
 		<method name="buffer_update">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="buffer" type="RID">
-			</argument>
-			<argument index="1" name="offset" type="int">
-			</argument>
-			<argument index="2" name="size_bytes" type="int">
-			</argument>
-			<argument index="3" name="data" type="PackedByteArray">
-			</argument>
-			<argument index="4" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="RID" />
+			<param index="1" name="offset" type="int" />
+			<param index="2" name="size_bytes" type="int" />
+			<param index="3" name="data" type="PackedByteArray" />
 			<description>
+				Updates a region of [param size_bytes] bytes, starting at [param offset], in the buffer, with the specified [param data].
+				Prints an error if:
+				- the region specified by [param offset] + [param size_bytes] exceeds the buffer
+				- a draw list is currently active (created by [method draw_list_begin])
+				- a compute list is currently active (created by [method compute_list_begin])
 			</description>
 		</method>
 		<method name="capture_timestamp">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="String" />
 			<description>
+				Creates a timestamp marker with the specified [param name]. This is used for performance reporting with the [method get_captured_timestamp_cpu_time], [method get_captured_timestamp_gpu_time] and [method get_captured_timestamp_name] methods.
 			</description>
 		</method>
 		<method name="compute_list_add_barrier">
-			<return type="void">
-			</return>
-			<argument index="0" name="compute_list" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="compute_list" type="int" />
 			<description>
+				Raises a Vulkan compute barrier in the specified [param compute_list].
 			</description>
 		</method>
 		<method name="compute_list_begin">
-			<return type="int">
-			</return>
-			<argument index="0" name="allow_draw_overlap" type="bool" default="false">
-			</argument>
+			<return type="int" />
 			<description>
+				Starts a list of compute commands created with the [code]compute_*[/code] methods. The returned value should be passed to other [code]compute_list_*[/code] functions.
+				Multiple compute lists cannot be created at the same time; you must finish the previous compute list first using [method compute_list_end].
+				A simple compute operation might look like this (code is not a complete example):
+				[codeblock]
+				var rd = RenderingDevice.new()
+				var compute_list = rd.compute_list_begin()
+
+				rd.compute_list_bind_compute_pipeline(compute_list, compute_shader_dilate_pipeline)
+				rd.compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0)
+				rd.compute_list_bind_uniform_set(compute_list, dilate_uniform_set, 1)
+
+				for i in atlas_slices:
+				    rd.compute_list_set_push_constant(compute_list, push_constant, push_constant.size())
+				    rd.compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z)
+				    # No barrier, let them run all together.
+
+				rd.compute_list_end()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="compute_list_bind_compute_pipeline">
-			<return type="void">
-			</return>
-			<argument index="0" name="compute_list" type="int">
-			</argument>
-			<argument index="1" name="compute_pipeline" type="RID">
-			</argument>
+			<return type="void" />
+			<param index="0" name="compute_list" type="int" />
+			<param index="1" name="compute_pipeline" type="RID" />
 			<description>
+				Tells the GPU what compute pipeline to use when processing the compute list. If the shader has changed since the last time this function was called, Godot will unbind all descriptor sets and will re-bind them inside [method compute_list_dispatch].
 			</description>
 		</method>
 		<method name="compute_list_bind_uniform_set">
-			<return type="void">
-			</return>
-			<argument index="0" name="compute_list" type="int">
-			</argument>
-			<argument index="1" name="uniform_set" type="RID">
-			</argument>
-			<argument index="2" name="set_index" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="compute_list" type="int" />
+			<param index="1" name="uniform_set" type="RID" />
+			<param index="2" name="set_index" type="int" />
 			<description>
+				Binds the [param uniform_set] to this [param compute_list]. Godot ensures that all textures in the uniform set have the correct Vulkan access masks. If Godot had to change access masks of textures, it will raise a Vulkan image memory barrier.
 			</description>
 		</method>
 		<method name="compute_list_dispatch">
-			<return type="void">
-			</return>
-			<argument index="0" name="compute_list" type="int">
-			</argument>
-			<argument index="1" name="x_groups" type="int">
-			</argument>
-			<argument index="2" name="y_groups" type="int">
-			</argument>
-			<argument index="3" name="z_groups" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="compute_list" type="int" />
+			<param index="1" name="x_groups" type="int" />
+			<param index="2" name="y_groups" type="int" />
+			<param index="3" name="z_groups" type="int" />
 			<description>
+				Submits the compute list for processing on the GPU. This is the compute equivalent to [method draw_list_draw].
+			</description>
+		</method>
+		<method name="compute_list_dispatch_indirect">
+			<return type="void" />
+			<param index="0" name="compute_list" type="int" />
+			<param index="1" name="buffer" type="RID" />
+			<param index="2" name="offset" type="int" />
+			<description>
+				Submits the compute list for processing on the GPU with the given group counts stored in the [param buffer] at [param offset]. Buffer must have been created with [constant STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT] flag.
 			</description>
 		</method>
 		<method name="compute_list_end">
-			<return type="void">
-			</return>
-			<argument index="0" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="void" />
 			<description>
+				Finishes a list of compute commands created with the [code]compute_*[/code] methods.
 			</description>
 		</method>
 		<method name="compute_list_set_push_constant">
-			<return type="void">
-			</return>
-			<argument index="0" name="compute_list" type="int">
-			</argument>
-			<argument index="1" name="buffer" type="PackedByteArray">
-			</argument>
-			<argument index="2" name="size_bytes" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="compute_list" type="int" />
+			<param index="1" name="buffer" type="PackedByteArray" />
+			<param index="2" name="size_bytes" type="int" />
 			<description>
+				Sets the push constant data to [param buffer] for the specified [param compute_list]. The shader determines how this binary data is used. The buffer's size in bytes must also be specified in [param size_bytes] (this can be obtained by calling the [method PackedByteArray.size] method on the passed [param buffer]).
 			</description>
 		</method>
 		<method name="compute_pipeline_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="shader" type="RID">
-			</argument>
-			<argument index="1" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="shader" type="RID" />
+			<param index="1" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]" />
 			<description>
+				Creates a new compute pipeline. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
 		<method name="compute_pipeline_is_valid">
-			<return type="bool">
-			</return>
-			<argument index="0" name="compute_pieline" type="RID">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="compute_pipeline" type="RID" />
 			<description>
+				Returns [code]true[/code] if the compute pipeline specified by the [param compute_pipeline] RID is valid, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="create_local_device">
-			<return type="RenderingDevice">
-			</return>
+			<return type="RenderingDevice" />
 			<description>
+				Create a new local [RenderingDevice]. This is most useful for performing compute operations on the GPU independently from the rest of the engine.
 			</description>
 		</method>
 		<method name="draw_command_begin_label">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="color" type="Color" />
 			<description>
+				Create a command buffer debug label region that can be displayed in third-party tools such as [url=https://renderdoc.org/]RenderDoc[/url]. All regions must be ended with a [method draw_command_end_label] call. When viewed from the linear series of submissions to a single queue, calls to [method draw_command_begin_label] and [method draw_command_end_label] must be matched and balanced.
+				The [code]VK_EXT_DEBUG_UTILS_EXTENSION_NAME[/code] Vulkan extension must be available and enabled for command buffer debug label region to work. See also [method draw_command_end_label].
 			</description>
 		</method>
 		<method name="draw_command_end_label">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
+				Ends the command buffer debug label region started by a [method draw_command_begin_label] call.
 			</description>
 		</method>
-		<method name="draw_command_insert_label">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
+		<method name="draw_command_insert_label" deprecated="Inserting labels no longer applies due to command reordering.">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="color" type="Color" />
 			<description>
+				This method does nothing.
 			</description>
 		</method>
 		<method name="draw_list_begin">
-			<return type="int">
-			</return>
-			<argument index="0" name="framebuffer" type="RID">
-			</argument>
-			<argument index="1" name="initial_color_action" type="int" enum="RenderingDevice.InitialAction">
-			</argument>
-			<argument index="2" name="final_color_action" type="int" enum="RenderingDevice.FinalAction">
-			</argument>
-			<argument index="3" name="initial_depth_action" type="int" enum="RenderingDevice.InitialAction">
-			</argument>
-			<argument index="4" name="final_depth_action" type="int" enum="RenderingDevice.FinalAction">
-			</argument>
-			<argument index="5" name="clear_color_values" type="PackedColorArray" default="PackedColorArray()">
-			</argument>
-			<argument index="6" name="clear_depth" type="float" default="1.0">
-			</argument>
-			<argument index="7" name="clear_stencil" type="int" default="0">
-			</argument>
-			<argument index="8" name="region" type="Rect2" default="Rect2i(0, 0, 0, 0)">
-			</argument>
-			<argument index="9" name="storage_textures" type="Array" default="[]">
-			</argument>
+			<return type="int" />
+			<param index="0" name="framebuffer" type="RID" />
+			<param index="1" name="initial_color_action" type="int" enum="RenderingDevice.InitialAction" />
+			<param index="2" name="final_color_action" type="int" enum="RenderingDevice.FinalAction" />
+			<param index="3" name="initial_depth_action" type="int" enum="RenderingDevice.InitialAction" />
+			<param index="4" name="final_depth_action" type="int" enum="RenderingDevice.FinalAction" />
+			<param index="5" name="clear_color_values" type="PackedColorArray" default="PackedColorArray()" />
+			<param index="6" name="clear_depth" type="float" default="1.0" />
+			<param index="7" name="clear_stencil" type="int" default="0" />
+			<param index="8" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<description>
+				Starts a list of raster drawing commands created with the [code]draw_*[/code] methods. The returned value should be passed to other [code]draw_list_*[/code] functions.
+				Multiple draw lists cannot be created at the same time; you must finish the previous draw list first using [method draw_list_end].
+				A simple drawing operation might look like this (code is not a complete example):
+				[codeblock]
+				var rd = RenderingDevice.new()
+				var clear_colors = PackedColorArray([Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 0)])
+				var draw_list = rd.draw_list_begin(framebuffers[i], RenderingDevice.INITIAL_ACTION_CLEAR, RenderingDevice.FINAL_ACTION_READ, RenderingDevice.INITIAL_ACTION_CLEAR, RenderingDevice.FINAL_ACTION_DISCARD, clear_colors)
+
+				# Draw opaque.
+				rd.draw_list_bind_render_pipeline(draw_list, raster_pipeline)
+				rd.draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0)
+				rd.draw_list_set_push_constant(draw_list, raster_push_constant, raster_push_constant.size())
+				rd.draw_list_draw(draw_list, false, 1, slice_triangle_count[i] * 3)
+				# Draw wire.
+				rd.draw_list_bind_render_pipeline(draw_list, raster_pipeline_wire)
+				rd.draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0)
+				rd.draw_list_set_push_constant(draw_list, raster_push_constant, raster_push_constant.size())
+				rd.draw_list_draw(draw_list, false, 1, slice_triangle_count[i] * 3)
+
+				rd.draw_list_end()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="draw_list_begin_for_screen">
-			<return type="int">
-			</return>
-			<argument index="0" name="screen" type="int" default="0">
-			</argument>
-			<argument index="1" name="clear_color" type="Color" default="Color(0, 0, 0, 1)">
-			</argument>
+			<return type="int" />
+			<param index="0" name="screen" type="int" default="0" />
+			<param index="1" name="clear_color" type="Color" default="Color(0, 0, 0, 1)" />
 			<description>
+				High-level variant of [method draw_list_begin], with the parameters automatically being adjusted for drawing onto the window specified by the [param screen] ID.
+				[b]Note:[/b] Cannot be used with local RenderingDevices, as these don't have a screen. If called on a local RenderingDevice, [method draw_list_begin_for_screen] returns [constant INVALID_ID].
 			</description>
 		</method>
-		<method name="draw_list_begin_split">
-			<return type="PackedInt64Array">
-			</return>
-			<argument index="0" name="framebuffer" type="RID">
-			</argument>
-			<argument index="1" name="splits" type="int">
-			</argument>
-			<argument index="2" name="initial_color_action" type="int" enum="RenderingDevice.InitialAction">
-			</argument>
-			<argument index="3" name="final_color_action" type="int" enum="RenderingDevice.FinalAction">
-			</argument>
-			<argument index="4" name="initial_depth_action" type="int" enum="RenderingDevice.InitialAction">
-			</argument>
-			<argument index="5" name="final_depth_action" type="int" enum="RenderingDevice.FinalAction">
-			</argument>
-			<argument index="6" name="clear_color_values" type="PackedColorArray" default="PackedColorArray()">
-			</argument>
-			<argument index="7" name="clear_depth" type="float" default="1.0">
-			</argument>
-			<argument index="8" name="clear_stencil" type="int" default="0">
-			</argument>
-			<argument index="9" name="region" type="Rect2" default="Rect2i(0, 0, 0, 0)">
-			</argument>
-			<argument index="10" name="storage_textures" type="RID[]" default="[]">
-			</argument>
+		<method name="draw_list_begin_split" deprecated="Split draw lists are used automatically by RenderingDevice.">
+			<return type="PackedInt64Array" />
+			<param index="0" name="framebuffer" type="RID" />
+			<param index="1" name="splits" type="int" />
+			<param index="2" name="initial_color_action" type="int" enum="RenderingDevice.InitialAction" />
+			<param index="3" name="final_color_action" type="int" enum="RenderingDevice.FinalAction" />
+			<param index="4" name="initial_depth_action" type="int" enum="RenderingDevice.InitialAction" />
+			<param index="5" name="final_depth_action" type="int" enum="RenderingDevice.FinalAction" />
+			<param index="6" name="clear_color_values" type="PackedColorArray" default="PackedColorArray()" />
+			<param index="7" name="clear_depth" type="float" default="1.0" />
+			<param index="8" name="clear_stencil" type="int" default="0" />
+			<param index="9" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
+			<param index="10" name="storage_textures" type="RID[]" default="[]" />
 			<description>
+				This method does nothing and always returns an empty [PackedInt64Array].
 			</description>
 		</method>
 		<method name="draw_list_bind_index_array">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="index_array" type="RID">
-			</argument>
+			<return type="void" />
+			<param index="0" name="draw_list" type="int" />
+			<param index="1" name="index_array" type="RID" />
 			<description>
+				Binds [param index_array] to the specified [param draw_list].
 			</description>
 		</method>
 		<method name="draw_list_bind_render_pipeline">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="render_pipeline" type="RID">
-			</argument>
+			<return type="void" />
+			<param index="0" name="draw_list" type="int" />
+			<param index="1" name="render_pipeline" type="RID" />
 			<description>
+				Binds [param render_pipeline] to the specified [param draw_list].
 			</description>
 		</method>
 		<method name="draw_list_bind_uniform_set">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="uniform_set" type="RID">
-			</argument>
-			<argument index="2" name="set_index" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="draw_list" type="int" />
+			<param index="1" name="uniform_set" type="RID" />
+			<param index="2" name="set_index" type="int" />
 			<description>
+				Binds [param uniform_set] to the specified [param draw_list]. A [param set_index] must also be specified, which is an identifier starting from [code]0[/code] that must match the one expected by the draw list.
 			</description>
 		</method>
 		<method name="draw_list_bind_vertex_array">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="vertex_array" type="RID">
-			</argument>
+			<return type="void" />
+			<param index="0" name="draw_list" type="int" />
+			<param index="1" name="vertex_array" type="RID" />
 			<description>
+				Binds [param vertex_array] to the specified [param draw_list].
 			</description>
 		</method>
 		<method name="draw_list_disable_scissor">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="draw_list" type="int" />
 			<description>
+				Removes and disables the scissor rectangle for the specified [param draw_list]. See also [method draw_list_enable_scissor].
 			</description>
 		</method>
 		<method name="draw_list_draw">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="use_indices" type="bool">
-			</argument>
-			<argument index="2" name="instances" type="int">
-			</argument>
-			<argument index="3" name="procedural_vertex_count" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<param index="0" name="draw_list" type="int" />
+			<param index="1" name="use_indices" type="bool" />
+			<param index="2" name="instances" type="int" />
+			<param index="3" name="procedural_vertex_count" type="int" default="0" />
 			<description>
+				Submits [param draw_list] for rendering on the GPU. This is the raster equivalent to [method compute_list_dispatch].
 			</description>
 		</method>
 		<method name="draw_list_enable_scissor">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="rect" type="Rect2" default="Rect2i(0, 0, 0, 0)">
-			</argument>
+			<return type="void" />
+			<param index="0" name="draw_list" type="int" />
+			<param index="1" name="rect" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<description>
+				Creates a scissor rectangle and enables it for the specified [param draw_list]. Scissor rectangles are used for clipping by discarding fragments that fall outside a specified rectangular portion of the screen. See also [method draw_list_disable_scissor].
+				[b]Note:[/b] The specified [param rect] is automatically intersected with the screen's dimensions, which means it cannot exceed the screen's dimensions.
 			</description>
 		</method>
 		<method name="draw_list_end">
-			<return type="void">
-			</return>
-			<argument index="0" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="void" />
 			<description>
+				Finishes a list of raster drawing commands created with the [code]draw_*[/code] methods.
+			</description>
+		</method>
+		<method name="draw_list_set_blend_constants">
+			<return type="void" />
+			<param index="0" name="draw_list" type="int" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Sets blend constants for the specified [param draw_list] to [param color]. Blend constants are used only if the graphics pipeline is created with [constant DYNAMIC_STATE_BLEND_CONSTANTS] flag set.
 			</description>
 		</method>
 		<method name="draw_list_set_push_constant">
-			<return type="void">
-			</return>
-			<argument index="0" name="draw_list" type="int">
-			</argument>
-			<argument index="1" name="buffer" type="PackedByteArray">
-			</argument>
-			<argument index="2" name="size_bytes" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="draw_list" type="int" />
+			<param index="1" name="buffer" type="PackedByteArray" />
+			<param index="2" name="size_bytes" type="int" />
 			<description>
+				Sets the push constant data to [param buffer] for the specified [param draw_list]. The shader determines how this binary data is used. The buffer's size in bytes must also be specified in [param size_bytes] (this can be obtained by calling the [method PackedByteArray.size] method on the passed [param buffer]).
 			</description>
 		</method>
 		<method name="draw_list_switch_to_next_pass">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
+				Switches to the next draw pass.
 			</description>
 		</method>
-		<method name="draw_list_switch_to_next_pass_split">
-			<return type="PackedInt64Array">
-			</return>
-			<argument index="0" name="splits" type="int">
-			</argument>
+		<method name="draw_list_switch_to_next_pass_split" deprecated="Split draw lists are used automatically by RenderingDevice.">
+			<return type="PackedInt64Array" />
+			<param index="0" name="splits" type="int" />
 			<description>
+				This method does nothing and always returns an empty [PackedInt64Array].
 			</description>
 		</method>
 		<method name="framebuffer_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="textures" type="RID[]">
-			</argument>
-			<argument index="1" name="validate_with_format" type="int" default="-1">
-			</argument>
-			<argument index="2" name="view_count" type="int" default="1">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="textures" type="RID[]" />
+			<param index="1" name="validate_with_format" type="int" default="-1" />
+			<param index="2" name="view_count" type="int" default="1" />
 			<description>
+				Creates a new framebuffer. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
 		<method name="framebuffer_create_empty">
-			<return type="RID">
-			</return>
-			<argument index="0" name="size" type="Vector2i">
-			</argument>
-			<argument index="1" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0">
-			</argument>
-			<argument index="2" name="validate_with_format" type="int" default="-1">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="size" type="Vector2i" />
+			<param index="1" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0" />
+			<param index="2" name="validate_with_format" type="int" default="-1" />
 			<description>
+				Creates a new empty framebuffer. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
 		<method name="framebuffer_create_multipass">
-			<return type="RID">
-			</return>
-			<argument index="0" name="textures" type="RID[]">
-			</argument>
-			<argument index="1" name="passes" type="RDFramebufferPass[]">
-			</argument>
-			<argument index="2" name="validate_with_format" type="int" default="-1">
-			</argument>
-			<argument index="3" name="view_count" type="int" default="1">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="textures" type="RID[]" />
+			<param index="1" name="passes" type="RDFramebufferPass[]" />
+			<param index="2" name="validate_with_format" type="int" default="-1" />
+			<param index="3" name="view_count" type="int" default="1" />
 			<description>
+				Creates a new multipass framebuffer. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
 		<method name="framebuffer_format_create">
-			<return type="int">
-			</return>
-			<argument index="0" name="attachments" type="RDAttachmentFormat[]">
-			</argument>
-			<argument index="1" name="view_count" type="int" default="1">
-			</argument>
+			<return type="int" />
+			<param index="0" name="attachments" type="RDAttachmentFormat[]" />
+			<param index="1" name="view_count" type="int" default="1" />
 			<description>
+				Creates a new framebuffer format with the specified [param attachments] and [param view_count]. Returns the new framebuffer's unique framebuffer format ID.
+				If [param view_count] is greater than or equal to [code]2[/code], enables multiview which is used for VR rendering. This requires support for the Vulkan multiview extension.
 			</description>
 		</method>
 		<method name="framebuffer_format_create_empty">
-			<return type="int">
-			</return>
-			<argument index="0" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0">
-			</argument>
+			<return type="int" />
+			<param index="0" name="samples" type="int" enum="RenderingDevice.TextureSamples" default="0" />
 			<description>
+				Creates a new empty framebuffer format with the specified number of [param samples] and returns its ID.
 			</description>
 		</method>
 		<method name="framebuffer_format_create_multipass">
-			<return type="int">
-			</return>
-			<argument index="0" name="attachments" type="RDAttachmentFormat[]">
-			</argument>
-			<argument index="1" name="passes" type="RDFramebufferPass[]">
-			</argument>
-			<argument index="2" name="view_count" type="int" default="1">
-			</argument>
+			<return type="int" />
+			<param index="0" name="attachments" type="RDAttachmentFormat[]" />
+			<param index="1" name="passes" type="RDFramebufferPass[]" />
+			<param index="2" name="view_count" type="int" default="1" />
 			<description>
+				Creates a multipass framebuffer format with the specified [param attachments], [param passes] and [param view_count] and returns its ID. If [param view_count] is greater than or equal to [code]2[/code], enables multiview which is used for VR rendering. This requires support for the Vulkan multiview extension.
 			</description>
 		</method>
 		<method name="framebuffer_format_get_texture_samples">
-			<return type="int" enum="RenderingDevice.TextureSamples">
-			</return>
-			<argument index="0" name="format" type="int">
-			</argument>
-			<argument index="1" name="render_pass" type="int" default="0">
-			</argument>
+			<return type="int" enum="RenderingDevice.TextureSamples" />
+			<param index="0" name="format" type="int" />
+			<param index="1" name="render_pass" type="int" default="0" />
 			<description>
+				Returns the number of texture samples used for the given framebuffer [param format] ID (returned by [method framebuffer_get_format]).
 			</description>
 		</method>
 		<method name="framebuffer_get_format">
-			<return type="int">
-			</return>
-			<argument index="0" name="framebuffer" type="RID">
-			</argument>
+			<return type="int" />
+			<param index="0" name="framebuffer" type="RID" />
 			<description>
+				Returns the format ID of the framebuffer specified by the [param framebuffer] RID. This ID is guaranteed to be unique for the same formats and does not need to be freed.
 			</description>
 		</method>
-		<method name="free">
-			<return type="void">
-			</return>
-			<argument index="0" name="rid" type="RID">
-			</argument>
+		<method name="framebuffer_is_valid" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="framebuffer" type="RID" />
 			<description>
+				Returns [code]true[/code] if the framebuffer specified by the [param framebuffer] RID is valid, [code]false[/code] otherwise.
 			</description>
 		</method>
-		<method name="full_barrier">
-			<return type="void">
-			</return>
+		<method name="free_rid">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
 			<description>
+				Tries to free an object in the RenderingDevice. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RenderingDevice directly.
+			</description>
+		</method>
+		<method name="full_barrier" deprecated="Barriers are automatically inserted by RenderingDevice.">
+			<return type="void" />
+			<description>
+				This method does nothing.
 			</description>
 		</method>
 		<method name="get_captured_timestamp_cpu_time" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
+				Returns the timestamp in CPU time for the rendering step specified by [param index] (in microseconds since the engine started). See also [method get_captured_timestamp_gpu_time] and [method capture_timestamp].
 			</description>
 		</method>
 		<method name="get_captured_timestamp_gpu_time" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
+				Returns the timestamp in GPU time for the rendering step specified by [param index] (in microseconds since the engine started). See also [method get_captured_timestamp_cpu_time] and [method capture_timestamp].
 			</description>
 		</method>
 		<method name="get_captured_timestamp_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="String" />
+			<param index="0" name="index" type="int" />
 			<description>
+				Returns the timestamp's name for the rendering step specified by [param index]. See also [method capture_timestamp].
 			</description>
 		</method>
 		<method name="get_captured_timestamps_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
+				Returns the total number of timestamps (rendering steps) available for profiling.
 			</description>
 		</method>
 		<method name="get_captured_timestamps_frame" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
+				Returns the index of the last frame rendered that has rendering timestamps available for querying.
 			</description>
 		</method>
 		<method name="get_device_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
+				Returns the name of the video adapter (e.g. "GeForce GTX 1080/PCIe/SSE2"). Equivalent to [method RenderingServer.get_video_adapter_name]. See also [method get_device_vendor_name].
 			</description>
 		</method>
 		<method name="get_device_pipeline_cache_uuid" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
+				Returns the universally unique identifier for the pipeline cache. This is used to cache shader files on disk, which avoids shader recompilations on subsequent engine runs. This UUID varies depending on the graphics card model, but also the driver version. Therefore, updating graphics drivers will invalidate the shader cache.
 			</description>
 		</method>
 		<method name="get_device_vendor_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
+				Returns the vendor of the video adapter (e.g. "NVIDIA Corporation"). Equivalent to [method RenderingServer.get_video_adapter_vendor]. See also [method get_device_name].
+			</description>
+		</method>
+		<method name="get_driver_resource">
+			<return type="int" />
+			<param index="0" name="resource" type="int" enum="RenderingDevice.DriverResource" />
+			<param index="1" name="rid" type="RID" />
+			<param index="2" name="index" type="int" />
+			<description>
+				Returns the unique identifier of the driver [param resource] for the specified [param rid]. Some driver resource types ignore the specified [param rid] (see [enum DriverResource] descriptions). [param index] is always ignored but must be specified anyway.
 			</description>
 		</method>
 		<method name="get_frame_delay" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
+				Returns the frame count kept by the graphics API. Higher values result in higher input lag, but with more consistent throughput. For the main [RenderingDevice], frames are cycled (usually 3 with triple-buffered V-Sync enabled). However, local [RenderingDevice]s only have 1 frame.
 			</description>
 		</method>
 		<method name="get_memory_usage" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="arg0" type="int" enum="RenderingDevice.MemoryType">
-			</argument>
+			<return type="int" />
+			<param index="0" name="type" type="int" enum="RenderingDevice.MemoryType" />
 			<description>
+				Returns the memory usage in bytes corresponding to the given [param type]. When using Vulkan, these statistics are calculated by [url=https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator]Vulkan Memory Allocator[/url].
 			</description>
 		</method>
 		<method name="index_array_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="index_buffer" type="RID">
-			</argument>
-			<argument index="1" name="index_offset" type="int">
-			</argument>
-			<argument index="2" name="index_count" type="int">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="index_buffer" type="RID" />
+			<param index="1" name="index_offset" type="int" />
+			<param index="2" name="index_count" type="int" />
 			<description>
+				Creates a new index array. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
 		<method name="index_buffer_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="size_indices" type="int">
-			</argument>
-			<argument index="1" name="format" type="int" enum="RenderingDevice.IndexBufferFormat">
-			</argument>
-			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray()">
-			</argument>
-			<argument index="3" name="use_restart_indices" type="bool" default="false">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="size_indices" type="int" />
+			<param index="1" name="format" type="int" enum="RenderingDevice.IndexBufferFormat" />
+			<param index="2" name="data" type="PackedByteArray" default="PackedByteArray()" />
+			<param index="3" name="use_restart_indices" type="bool" default="false" />
 			<description>
+				Creates a new index buffer. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
-		<method name="limit_get">
-			<return type="int">
-			</return>
-			<argument index="0" name="limit" type="int" enum="RenderingDevice.Limit">
-			</argument>
+		<method name="limit_get" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="limit" type="int" enum="RenderingDevice.Limit" />
 			<description>
+				Returns the value of the specified [param limit]. This limit varies depending on the current graphics hardware (and sometimes the driver version). If the given limit is exceeded, rendering errors will occur.
+				Limits for various graphics hardware can be found in the [url=https://vulkan.gpuinfo.org/]Vulkan Hardware Database[/url].
 			</description>
 		</method>
 		<method name="render_pipeline_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="shader" type="RID">
-			</argument>
-			<argument index="1" name="framebuffer_format" type="int">
-			</argument>
-			<argument index="2" name="vertex_format" type="int">
-			</argument>
-			<argument index="3" name="primitive" type="int" enum="RenderingDevice.RenderPrimitive">
-			</argument>
-			<argument index="4" name="rasterization_state" type="RDPipelineRasterizationState">
-			</argument>
-			<argument index="5" name="multisample_state" type="RDPipelineMultisampleState">
-			</argument>
-			<argument index="6" name="stencil_state" type="RDPipelineDepthStencilState">
-			</argument>
-			<argument index="7" name="color_blend_state" type="RDPipelineColorBlendState">
-			</argument>
-			<argument index="8" name="dynamic_state_flags" type="int" default="0">
-			</argument>
-			<argument index="9" name="for_render_pass" type="int" default="0">
-			</argument>
-			<argument index="10" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="shader" type="RID" />
+			<param index="1" name="framebuffer_format" type="int" />
+			<param index="2" name="vertex_format" type="int" />
+			<param index="3" name="primitive" type="int" enum="RenderingDevice.RenderPrimitive" />
+			<param index="4" name="rasterization_state" type="RDPipelineRasterizationState" />
+			<param index="5" name="multisample_state" type="RDPipelineMultisampleState" />
+			<param index="6" name="stencil_state" type="RDPipelineDepthStencilState" />
+			<param index="7" name="color_blend_state" type="RDPipelineColorBlendState" />
+			<param index="8" name="dynamic_state_flags" type="int" enum="RenderingDevice.PipelineDynamicStateFlags" is_bitfield="true" default="0" />
+			<param index="9" name="for_render_pass" type="int" default="0" />
+			<param index="10" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]" />
 			<description>
+				Creates a new render pipeline. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
 		<method name="render_pipeline_is_valid">
-			<return type="bool">
-			</return>
-			<argument index="0" name="render_pipeline" type="RID">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="render_pipeline" type="RID" />
 			<description>
+				Returns [code]true[/code] if the render pipeline specified by the [param render_pipeline] RID is valid, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="sampler_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="state" type="RDSamplerState">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="state" type="RDSamplerState" />
 			<description>
+				Creates a new sampler. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+			</description>
+		</method>
+		<method name="sampler_is_format_supported_for_filter" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="format" type="int" enum="RenderingDevice.DataFormat" />
+			<param index="1" name="sampler_filter" type="int" enum="RenderingDevice.SamplerFilter" />
+			<description>
+				Returns [code]true[/code] if implementation supports using a texture of [param format] with the given [param sampler_filter].
 			</description>
 		</method>
 		<method name="screen_get_framebuffer_format" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
+			<param index="0" name="screen" type="int" default="0" />
 			<description>
+				Returns the framebuffer format of the given screen.
+				[b]Note:[/b] Only the main [RenderingDevice] returned by [method RenderingServer.get_rendering_device] has a format. If called on a local [RenderingDevice], this method prints an error and returns [constant INVALID_ID].
 			</description>
 		</method>
 		<method name="screen_get_height" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="screen" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<param index="0" name="screen" type="int" default="0" />
 			<description>
+				Returns the window height matching the graphics API context for the given window ID (in pixels). Despite the parameter being named [param screen], this returns the [i]window[/i] size. See also [method screen_get_width].
+				[b]Note:[/b] Only the main [RenderingDevice] returned by [method RenderingServer.get_rendering_device] has a height. If called on a local [RenderingDevice], this method prints an error and returns [constant INVALID_ID].
 			</description>
 		</method>
 		<method name="screen_get_width" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="screen" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<param index="0" name="screen" type="int" default="0" />
 			<description>
+				Returns the window width matching the graphics API context for the given window ID (in pixels). Despite the parameter being named [param screen], this returns the [i]window[/i] size. See also [method screen_get_height].
+				[b]Note:[/b] Only the main [RenderingDevice] returned by [method RenderingServer.get_rendering_device] has a width. If called on a local [RenderingDevice], this method prints an error and returns [constant INVALID_ID].
 			</description>
 		</method>
 		<method name="set_resource_name">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="RID">
-			</argument>
-			<argument index="1" name="name" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="id" type="RID" />
+			<param index="1" name="name" type="String" />
 			<description>
+				Sets the resource name for [param id] to [param name]. This is used for debugging with third-party tools such as [url=https://renderdoc.org/]RenderDoc[/url].
+				The following types of resources can be named: texture, sampler, vertex buffer, index buffer, uniform buffer, texture buffer, storage buffer, uniform set buffer, shader, render pipeline and compute pipeline. Framebuffers cannot be named. Attempting to name an incompatible resource type will print an error.
+				[b]Note:[/b] Resource names are only set when the engine runs in verbose mode ([method OS.is_stdout_verbose] = [code]true[/code]), or when using an engine build compiled with the [code]dev_mode=yes[/code] SCons option. The graphics driver must also support the [code]VK_EXT_DEBUG_UTILS_EXTENSION_NAME[/code] Vulkan extension for named resources to work.
 			</description>
 		</method>
 		<method name="shader_compile_binary_from_spirv">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="spirv_data" type="RDShaderSPIRV">
-			</argument>
+			<return type="PackedByteArray" />
+			<param index="0" name="spirv_data" type="RDShaderSPIRV" />
+			<param index="1" name="name" type="String" default="&quot;&quot;" />
 			<description>
+				Compiles a binary shader from [param spirv_data] and returns the compiled binary data as a [PackedByteArray]. This compiled shader is specific to the GPU model and driver version used; it will not work on different GPU models or even different driver versions. See also [method shader_compile_spirv_from_source].
+				[param name] is an optional human-readable name that can be given to the compiled shader for organizational purposes.
 			</description>
 		</method>
 		<method name="shader_compile_spirv_from_source">
-			<return type="RDShaderSPIRV">
-			</return>
-			<argument index="0" name="shader_source" type="RDShaderSource">
-			</argument>
-			<argument index="1" name="allow_cache" type="bool" default="true">
-			</argument>
+			<return type="RDShaderSPIRV" />
+			<param index="0" name="shader_source" type="RDShaderSource" />
+			<param index="1" name="allow_cache" type="bool" default="true" />
 			<description>
+				Compiles a SPIR-V from the shader source code in [param shader_source] and returns the SPIR-V as a [RDShaderSPIRV]. This intermediate language shader is portable across different GPU models and driver versions, but cannot be run directly by GPUs until compiled into a binary shader using [method shader_compile_binary_from_spirv].
+				If [param allow_cache] is [code]true[/code], make use of the shader cache generated by Godot. This avoids a potentially lengthy shader compilation step if the shader is already in cache. If [param allow_cache] is [code]false[/code], Godot's shader cache is ignored and the shader will always be recompiled.
 			</description>
 		</method>
 		<method name="shader_create_from_bytecode">
-			<return type="RID">
-			</return>
-			<argument index="0" name="binary_data" type="PackedByteArray">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="binary_data" type="PackedByteArray" />
+			<param index="1" name="placeholder_rid" type="RID" default="RID()" />
 			<description>
+				Creates a new shader instance from a binary compiled shader. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method. See also [method shader_compile_binary_from_spirv] and [method shader_create_from_spirv].
 			</description>
 		</method>
 		<method name="shader_create_from_spirv">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="spirv_data" type="RDShaderSPIRV">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="spirv_data" type="RDShaderSPIRV" />
+			<param index="1" name="name" type="String" default="&quot;&quot;" />
 			<description>
+				Creates a new shader instance from SPIR-V intermediate code. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method. See also [method shader_compile_spirv_from_source] and [method shader_create_from_bytecode].
+			</description>
+		</method>
+		<method name="shader_create_placeholder">
+			<return type="RID" />
+			<description>
+				Create a placeholder RID by allocating an RID without initializing it for use in [method shader_create_from_bytecode]. This allows you to create an RID for a shader and pass it around, but defer compiling the shader to a later time.
 			</description>
 		</method>
 		<method name="shader_get_vertex_input_attribute_mask">
-			<return type="int">
-			</return>
-			<argument index="0" name="shader" type="RID">
-			</argument>
+			<return type="int" />
+			<param index="0" name="shader" type="RID" />
 			<description>
+				Returns the internal vertex input mask. Internally, the vertex input mask is an unsigned integer consisting of the locations (specified in GLSL via. [code]layout(location = ...)[/code]) of the input variables (specified in GLSL by the [code]in[/code] keyword).
 			</description>
 		</method>
 		<method name="storage_buffer_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="size_bytes" type="int">
-			</argument>
-			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray()">
-			</argument>
-			<argument index="2" name="usage" type="int" default="0">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="size_bytes" type="int" />
+			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
+			<param index="2" name="usage" type="int" enum="RenderingDevice.StorageBufferUsage" is_bitfield="true" default="0" />
 			<description>
+				Creates a [url=https://vkguide.dev/docs/chapter-4/storage_buffers/]storage buffer[/url] with the specified [param data] and [param usage]. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
 		<method name="submit">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
+				Pushes the frame setup and draw command buffers then marks the local device as currently processing (which allows calling [method sync]).
+				[b]Note:[/b] Only available in local RenderingDevices.
 			</description>
 		</method>
 		<method name="sync">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
+				Forces a synchronization between the CPU and GPU, which may be required in certain cases. Only call this when needed, as CPU-GPU synchronization has a performance cost.
+				[b]Note:[/b] Only available in local RenderingDevices.
+				[b]Note:[/b] [method sync] can only be called after a [method submit].
 			</description>
 		</method>
 		<method name="texture_buffer_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="size_bytes" type="int">
-			</argument>
-			<argument index="1" name="format" type="int" enum="RenderingDevice.DataFormat">
-			</argument>
-			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray()">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="size_bytes" type="int" />
+			<param index="1" name="format" type="int" enum="RenderingDevice.DataFormat" />
+			<param index="2" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
+				Creates a new texture buffer. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
 		<method name="texture_clear">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
-			<argument index="2" name="base_mipmap" type="int">
-			</argument>
-			<argument index="3" name="mipmap_count" type="int">
-			</argument>
-			<argument index="4" name="base_layer" type="int">
-			</argument>
-			<argument index="5" name="layer_count" type="int">
-			</argument>
-			<argument index="6" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="color" type="Color" />
+			<param index="2" name="base_mipmap" type="int" />
+			<param index="3" name="mipmap_count" type="int" />
+			<param index="4" name="base_layer" type="int" />
+			<param index="5" name="layer_count" type="int" />
 			<description>
+				Clears the specified [param texture] by replacing all of its pixels with the specified [param color]. [param base_mipmap] and [param mipmap_count] determine which mipmaps of the texture are affected by this clear operation, while [param base_layer] and [param layer_count] determine which layers of a 3D texture (or texture array) are affected by this clear operation. For 2D textures (which only have one layer by design), [param base_layer] must be [code]0[/code] and [param layer_count] must be [code]1[/code].
+				[b]Note:[/b] [param texture] can't be cleared while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to clear this texture.
 			</description>
 		</method>
 		<method name="texture_copy">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="from_texture" type="RID">
-			</argument>
-			<argument index="1" name="to_texture" type="RID">
-			</argument>
-			<argument index="2" name="from_pos" type="Vector3">
-			</argument>
-			<argument index="3" name="to_pos" type="Vector3">
-			</argument>
-			<argument index="4" name="size" type="Vector3">
-			</argument>
-			<argument index="5" name="src_mipmap" type="int">
-			</argument>
-			<argument index="6" name="dst_mipmap" type="int">
-			</argument>
-			<argument index="7" name="src_layer" type="int">
-			</argument>
-			<argument index="8" name="dst_layer" type="int">
-			</argument>
-			<argument index="9" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="from_texture" type="RID" />
+			<param index="1" name="to_texture" type="RID" />
+			<param index="2" name="from_pos" type="Vector3" />
+			<param index="3" name="to_pos" type="Vector3" />
+			<param index="4" name="size" type="Vector3" />
+			<param index="5" name="src_mipmap" type="int" />
+			<param index="6" name="dst_mipmap" type="int" />
+			<param index="7" name="src_layer" type="int" />
+			<param index="8" name="dst_layer" type="int" />
 			<description>
+				Copies the [param from_texture] to [param to_texture] with the specified [param from_pos], [param to_pos] and [param size] coordinates. The Z axis of the [param from_pos], [param to_pos] and [param size] must be [code]0[/code] for 2-dimensional textures. Source and destination mipmaps/layers must also be specified, with these parameters being [code]0[/code] for textures without mipmaps or single-layer textures. Returns [constant @GlobalScope.OK] if the texture copy was successful or [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
+				[b]Note:[/b] [param from_texture] texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to copy this texture.
+				[b]Note:[/b] [param from_texture] texture requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved.
+				[b]Note:[/b] [param to_texture] can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to copy this texture.
+				[b]Note:[/b] [param to_texture] requires the [constant TEXTURE_USAGE_CAN_COPY_TO_BIT] to be retrieved.
+				[b]Note:[/b] [param from_texture] and [param to_texture] must be of the same type (color or depth).
 			</description>
 		</method>
 		<method name="texture_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="format" type="RDTextureFormat">
-			</argument>
-			<argument index="1" name="view" type="RDTextureView">
-			</argument>
-			<argument index="2" name="data" type="PackedByteArray[]" default="[]">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="format" type="RDTextureFormat" />
+			<param index="1" name="view" type="RDTextureView" />
+			<param index="2" name="data" type="PackedByteArray[]" default="[]" />
 			<description>
+				Creates a new texture. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				[b]Note:[/b] Not to be confused with [method RenderingServer.texture_2d_create], which creates the Godot-specific [Texture2D] resource as opposed to the graphics API's own texture type.
+			</description>
+		</method>
+		<method name="texture_create_from_extension">
+			<return type="RID" />
+			<param index="0" name="type" type="int" enum="RenderingDevice.TextureType" />
+			<param index="1" name="format" type="int" enum="RenderingDevice.DataFormat" />
+			<param index="2" name="samples" type="int" enum="RenderingDevice.TextureSamples" />
+			<param index="3" name="usage_flags" type="int" enum="RenderingDevice.TextureUsageBits" is_bitfield="true" />
+			<param index="4" name="image" type="int" />
+			<param index="5" name="width" type="int" />
+			<param index="6" name="height" type="int" />
+			<param index="7" name="depth" type="int" />
+			<param index="8" name="layers" type="int" />
+			<description>
+				Returns an RID for an existing [param image] ([code]VkImage[/code]) with the given [param type], [param format], [param samples], [param usage_flags], [param width], [param height], [param depth], and [param layers]. This can be used to allow Godot to render onto foreign images.
 			</description>
 		</method>
 		<method name="texture_create_shared">
-			<return type="RID">
-			</return>
-			<argument index="0" name="view" type="RDTextureView">
-			</argument>
-			<argument index="1" name="with_texture" type="RID">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="view" type="RDTextureView" />
+			<param index="1" name="with_texture" type="RID" />
 			<description>
+				Creates a shared texture using the specified [param view] and the texture information from [param with_texture].
 			</description>
 		</method>
 		<method name="texture_create_shared_from_slice">
-			<return type="RID">
-			</return>
-			<argument index="0" name="view" type="RDTextureView">
-			</argument>
-			<argument index="1" name="with_texture" type="RID">
-			</argument>
-			<argument index="2" name="layer" type="int">
-			</argument>
-			<argument index="3" name="mipmap" type="int">
-			</argument>
-			<argument index="4" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="view" type="RDTextureView" />
+			<param index="1" name="with_texture" type="RID" />
+			<param index="2" name="layer" type="int" />
+			<param index="3" name="mipmap" type="int" />
+			<param index="4" name="mipmaps" type="int" default="1" />
+			<param index="5" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0" />
 			<description>
+				Creates a shared texture using the specified [param view] and the texture information from [param with_texture]'s [param layer] and [param mipmap]. The number of included mipmaps from the original texture can be controlled using the [param mipmaps] parameter. Only relevant for textures with multiple layers, such as 3D textures, texture arrays and cubemaps. For single-layer textures, use [method texture_create_shared]
+				For 2D textures (which only have one layer), [param layer] must be [code]0[/code].
+				[b]Note:[/b] Layer slicing is only supported for 2D texture arrays, not 3D textures or cubemaps.
 			</description>
 		</method>
 		<method name="texture_get_data">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<argument index="1" name="layer" type="int">
-			</argument>
+			<return type="PackedByteArray" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="layer" type="int" />
 			<description>
+				Returns the [param texture] data for the specified [param layer] as raw binary data. For 2D textures (which only have one layer), [param layer] must be [code]0[/code].
+				[b]Note:[/b] [param texture] can't be retrieved while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to retrieve this texture. Otherwise, an error is printed and a empty [PackedByteArray] is returned.
+				[b]Note:[/b] [param texture] requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved. Otherwise, an error is printed and a empty [PackedByteArray] is returned.
+			</description>
+		</method>
+		<method name="texture_get_format">
+			<return type="RDTextureFormat" />
+			<param index="0" name="texture" type="RID" />
+			<description>
+				Returns the data format used to create this texture.
+			</description>
+		</method>
+		<method name="texture_get_native_handle" deprecated="Use [method get_driver_resource] with [constant DRIVER_RESOURCE_TEXTURE] instead.">
+			<return type="int" />
+			<param index="0" name="texture" type="RID" />
+			<description>
+				Returns the internal graphics handle for this texture object. For use when communicating with third-party APIs mostly with GDExtension.
+				[b]Note:[/b] This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
 			</description>
 		</method>
 		<method name="texture_is_format_supported_for_usage" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="format" type="int" enum="RenderingDevice.DataFormat">
-			</argument>
-			<argument index="1" name="usage_flags" type="int">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="format" type="int" enum="RenderingDevice.DataFormat" />
+			<param index="1" name="usage_flags" type="int" enum="RenderingDevice.TextureUsageBits" is_bitfield="true" />
 			<description>
+				Returns [code]true[/code] if the specified [param format] is supported for the given [param usage_flags], [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="texture_is_shared">
-			<return type="bool">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="texture" type="RID" />
 			<description>
+				Returns [code]true[/code] if the [param texture] is shared, [code]false[/code] otherwise. See [RDTextureView].
 			</description>
 		</method>
 		<method name="texture_is_valid">
-			<return type="bool">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="texture" type="RID" />
 			<description>
+				Returns [code]true[/code] if the [param texture] is valid, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="texture_resolve_multisample">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="from_texture" type="RID">
-			</argument>
-			<argument index="1" name="to_texture" type="RID">
-			</argument>
-			<argument index="2" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="from_texture" type="RID" />
+			<param index="1" name="to_texture" type="RID" />
 			<description>
+				Resolves the [param from_texture] texture onto [param to_texture] with multisample antialiasing enabled. This must be used when rendering a framebuffer for MSAA to work. Returns [constant @GlobalScope.OK] if successful, [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
+				[b]Note:[/b] [param from_texture] and [param to_texture] textures must have the same dimension, format and type (color or depth).
+				[b]Note:[/b] [param from_texture] can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to resolve this texture.
+				[b]Note:[/b] [param from_texture] requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved.
+				[b]Note:[/b] [param from_texture] must be multisampled and must also be 2D (or a slice of a 3D/cubemap texture).
+				[b]Note:[/b] [param to_texture] can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to resolve this texture.
+				[b]Note:[/b] [param to_texture] texture requires the [constant TEXTURE_USAGE_CAN_COPY_TO_BIT] to be retrieved.
+				[b]Note:[/b] [param to_texture] texture must [b]not[/b] be multisampled and must also be 2D (or a slice of a 3D/cubemap texture).
 			</description>
 		</method>
 		<method name="texture_update">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="texture" type="RID">
-			</argument>
-			<argument index="1" name="layer" type="int">
-			</argument>
-			<argument index="2" name="data" type="PackedByteArray">
-			</argument>
-			<argument index="3" name="post_barrier" type="int" default="7">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<param index="2" name="data" type="PackedByteArray" />
 			<description>
+				Updates texture data with new data, replacing the previous data in place. The updated texture data must have the same dimensions and format. For 2D textures (which only have one layer), [param layer] must be [code]0[/code]. Returns [constant @GlobalScope.OK] if the update was successful, [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
+				[b]Note:[/b] Updating textures is forbidden during creation of a draw or compute list.
+				[b]Note:[/b] The existing [param texture] can't be updated while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to update this texture.
+				[b]Note:[/b] The existing [param texture] requires the [constant TEXTURE_USAGE_CAN_UPDATE_BIT] to be updatable.
 			</description>
 		</method>
 		<method name="uniform_buffer_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="size_bytes" type="int">
-			</argument>
-			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray()">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="size_bytes" type="int" />
+			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
+				Creates a new uniform buffer. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
 		<method name="uniform_set_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="uniforms" type="Array">
-			</argument>
-			<argument index="1" name="shader" type="RID">
-			</argument>
-			<argument index="2" name="shader_set" type="int">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="uniforms" type="RDUniform[]" />
+			<param index="1" name="shader" type="RID" />
+			<param index="2" name="shader_set" type="int" />
 			<description>
+				Creates a new uniform set. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
 		<method name="uniform_set_is_valid">
-			<return type="bool">
-			</return>
-			<argument index="0" name="uniform_set" type="RID">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="uniform_set" type="RID" />
 			<description>
+				Checks if the [param uniform_set] is valid, i.e. is owned.
+			</description>
+		</method>
+		<method name="vertex_array_create">
+			<return type="RID" />
+			<param index="0" name="vertex_count" type="int" />
+			<param index="1" name="vertex_format" type="int" />
+			<param index="2" name="src_buffers" type="RID[]" />
+			<param index="3" name="offsets" type="PackedInt64Array" default="PackedInt64Array()" />
+			<description>
+				Creates a vertex array based on the specified buffers. Optionally, [param offsets] (in bytes) may be defined for each buffer.
 			</description>
 		</method>
 		<method name="vertex_buffer_create">
-			<return type="RID">
-			</return>
-			<argument index="0" name="size_bytes" type="int">
-			</argument>
-			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray()">
-			</argument>
-			<argument index="2" name="use_as_storage" type="bool" default="false">
-			</argument>
+			<return type="RID" />
+			<param index="0" name="size_bytes" type="int" />
+			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
+			<param index="2" name="use_as_storage" type="bool" default="false" />
 			<description>
+				It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
 		<method name="vertex_format_create">
-			<return type="int">
-			</return>
-			<argument index="0" name="vertex_descriptions" type="RDVertexAttribute[]">
-			</argument>
+			<return type="int" />
+			<param index="0" name="vertex_descriptions" type="RDVertexAttribute[]" />
 			<description>
+				Creates a new vertex format with the specified [param vertex_descriptions]. Returns a unique vertex format ID corresponding to the newly created vertex format.
 			</description>
 		</method>
 	</methods>
 	<constants>
-		<constant name="BARRIER_MASK_RASTER" value="1">
+		<constant name="DEVICE_TYPE_OTHER" value="0" enum="DeviceType">
+			Rendering device type does not match any of the other enum values or is unknown.
 		</constant>
-		<constant name="BARRIER_MASK_COMPUTE" value="2">
+		<constant name="DEVICE_TYPE_INTEGRATED_GPU" value="1" enum="DeviceType">
+			Rendering device is an integrated GPU, which is typically [i](but not always)[/i] slower than dedicated GPUs ([constant DEVICE_TYPE_DISCRETE_GPU]). On Android and iOS, the rendering device type is always considered to be [constant DEVICE_TYPE_INTEGRATED_GPU].
 		</constant>
-		<constant name="BARRIER_MASK_TRANSFER" value="4">
+		<constant name="DEVICE_TYPE_DISCRETE_GPU" value="2" enum="DeviceType">
+			Rendering device is a dedicated GPU, which is typically [i](but not always)[/i] faster than integrated GPUs ([constant DEVICE_TYPE_INTEGRATED_GPU]).
 		</constant>
-		<constant name="BARRIER_MASK_ALL" value="7">
+		<constant name="DEVICE_TYPE_VIRTUAL_GPU" value="3" enum="DeviceType">
+			Rendering device is an emulated GPU in a virtual environment. This is typically much slower than the host GPU, which means the expected performance level on a dedicated GPU will be roughly equivalent to [constant DEVICE_TYPE_INTEGRATED_GPU]. Virtual machine GPU passthrough (such as VFIO) will not report the device type as [constant DEVICE_TYPE_VIRTUAL_GPU]. Instead, the host GPU's device type will be reported as if the GPU was not emulated.
 		</constant>
-		<constant name="BARRIER_MASK_NO_BARRIER" value="8">
+		<constant name="DEVICE_TYPE_CPU" value="4" enum="DeviceType">
+			Rendering device is provided by software emulation (such as Lavapipe or [url=https://github.com/google/swiftshader]SwiftShader[/url]). This is the slowest kind of rendering device available; it's typically much slower than [constant DEVICE_TYPE_INTEGRATED_GPU].
+		</constant>
+		<constant name="DEVICE_TYPE_MAX" value="5" enum="DeviceType">
+			Represents the size of the [enum DeviceType] enum.
+		</constant>
+		<constant name="DRIVER_RESOURCE_LOGICAL_DEVICE" value="0" enum="DriverResource">
+			Specific device object based on a physical device.
+			- Vulkan: Vulkan device driver resource ([code]VkDevice[/code]). ([code]rid[/code] argument doesn't apply.)
+		</constant>
+		<constant name="DRIVER_RESOURCE_PHYSICAL_DEVICE" value="1" enum="DriverResource">
+			Physical device the specific logical device is based on.
+			- Vulkan: [code]VkDevice[/code]. ([code]rid[/code] argument doesn't apply.)
+		</constant>
+		<constant name="DRIVER_RESOURCE_TOPMOST_OBJECT" value="2" enum="DriverResource">
+			Top-most graphics API entry object.
+			- Vulkan: [code]VkInstance[/code]. ([code]rid[/code] argument doesn't apply.)
+		</constant>
+		<constant name="DRIVER_RESOURCE_COMMAND_QUEUE" value="3" enum="DriverResource">
+			The main graphics-compute command queue.
+			- Vulkan: [code]VkQueue[/code]. ([code]rid[/code] argument doesn't apply.)
+		</constant>
+		<constant name="DRIVER_RESOURCE_QUEUE_FAMILY" value="4" enum="DriverResource">
+			The specific family the main queue belongs to.
+			- Vulkan: the queue family index, an [code]uint32_t[/code]. ([code]rid[/code] argument doesn't apply.)
+		</constant>
+		<constant name="DRIVER_RESOURCE_TEXTURE" value="5" enum="DriverResource">
+			- Vulkan: [code]VkImage[/code].
+		</constant>
+		<constant name="DRIVER_RESOURCE_TEXTURE_VIEW" value="6" enum="DriverResource">
+			The view of an owned or shared texture.
+			- Vulkan: [code]VkImageView[/code].
+		</constant>
+		<constant name="DRIVER_RESOURCE_TEXTURE_DATA_FORMAT" value="7" enum="DriverResource">
+			The native id of the data format of the texture.
+			- Vulkan: [code]VkFormat[/code].
+		</constant>
+		<constant name="DRIVER_RESOURCE_SAMPLER" value="8" enum="DriverResource">
+			- Vulkan: [code]VkSampler[/code].
+		</constant>
+		<constant name="DRIVER_RESOURCE_UNIFORM_SET" value="9" enum="DriverResource">
+			- Vulkan: [code]VkDescriptorSet[/code].
+		</constant>
+		<constant name="DRIVER_RESOURCE_BUFFER" value="10" enum="DriverResource">
+			Buffer of any kind of (storage, vertex, etc.).
+			- Vulkan: [code]VkBuffer[/code].
+		</constant>
+		<constant name="DRIVER_RESOURCE_COMPUTE_PIPELINE" value="11" enum="DriverResource">
+			- Vulkan: [code]VkPipeline[/code].
+		</constant>
+		<constant name="DRIVER_RESOURCE_RENDER_PIPELINE" value="12" enum="DriverResource">
+			- Vulkan: [code]VkPipeline[/code].
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_DEVICE" value="0" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_LOGICAL_DEVICE] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE" value="1" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_PHYSICAL_DEVICE] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_INSTANCE" value="2" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_TOPMOST_OBJECT] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE" value="3" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_COMMAND_QUEUE] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX" value="4" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_QUEUE_FAMILY] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE" value="5" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_TEXTURE] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_VIEW" value="6" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_TEXTURE_VIEW] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT" value="7" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_TEXTURE_DATA_FORMAT] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_SAMPLER" value="8" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_SAMPLER] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET" value="9" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_UNIFORM_SET] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_BUFFER" value="10" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_BUFFER] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE" value="11" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_COMPUTE_PIPELINE] instead.">
+		</constant>
+		<constant name="DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE" value="12" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_RENDER_PIPELINE] instead.">
 		</constant>
 		<constant name="DATA_FORMAT_R4G4_UNORM_PACK8" value="0" enum="DataFormat">
+			4-bit-per-channel red/green channel data format, packed into 8 bits. Values are in the [code][0.0, 1.0][/code] range.
+			[b]Note:[/b] More information on all data formats can be found on the [url=https://registry.khronos.org/vulkan/specs/1.1/html/vkspec.html#_identification_of_formats]Identification of formats[/url] section of the Vulkan specification, as well as the [url=https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkFormat.html]VkFormat[/url] enum.
 		</constant>
 		<constant name="DATA_FORMAT_R4G4B4A4_UNORM_PACK16" value="1" enum="DataFormat">
+			4-bit-per-channel red/green/blue/alpha channel data format, packed into 16 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B4G4R4A4_UNORM_PACK16" value="2" enum="DataFormat">
+			4-bit-per-channel blue/green/red/alpha channel data format, packed into 16 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R5G6B5_UNORM_PACK16" value="3" enum="DataFormat">
+			Red/green/blue channel data format with 5 bits of red, 6 bits of green and 5 bits of blue, packed into 16 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B5G6R5_UNORM_PACK16" value="4" enum="DataFormat">
+			Blue/green/red channel data format with 5 bits of blue, 6 bits of green and 5 bits of red, packed into 16 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R5G5B5A1_UNORM_PACK16" value="5" enum="DataFormat">
+			Red/green/blue/alpha channel data format with 5 bits of red, 6 bits of green, 5 bits of blue and 1 bit of alpha, packed into 16 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B5G5R5A1_UNORM_PACK16" value="6" enum="DataFormat">
+			Blue/green/red/alpha channel data format with 5 bits of blue, 6 bits of green, 5 bits of red and 1 bit of alpha, packed into 16 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A1R5G5B5_UNORM_PACK16" value="7" enum="DataFormat">
+			Alpha/red/green/blue channel data format with 1 bit of alpha, 5 bits of red, 6 bits of green and 5 bits of blue, packed into 16 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8_UNORM" value="8" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8_SNORM" value="9" enum="DataFormat">
+			8-bit-per-channel signed floating-point red channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8_USCALED" value="10" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point red channel data format with scaled value (value is converted from integer to float). Values are in the [code][0.0, 255.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8_SSCALED" value="11" enum="DataFormat">
+			8-bit-per-channel signed floating-point red channel data format with scaled value (value is converted from integer to float). Values are in the [code][-127.0, 127.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8_UINT" value="12" enum="DataFormat">
+			8-bit-per-channel unsigned integer red channel data format. Values are in the [code][0, 255][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8_SINT" value="13" enum="DataFormat">
+			8-bit-per-channel signed integer red channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8_SRGB" value="14" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point red channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8_UNORM" value="15" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point red/green channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8_SNORM" value="16" enum="DataFormat">
+			8-bit-per-channel signed floating-point red/green channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8_USCALED" value="17" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point red/green channel data format with scaled value (value is converted from integer to float). Values are in the [code][0.0, 255.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8_SSCALED" value="18" enum="DataFormat">
+			8-bit-per-channel signed floating-point red/green channel data format with scaled value (value is converted from integer to float). Values are in the [code][-127.0, 127.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8_UINT" value="19" enum="DataFormat">
+			8-bit-per-channel unsigned integer red/green channel data format. Values are in the [code][0, 255][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8_SINT" value="20" enum="DataFormat">
+			8-bit-per-channel signed integer red/green channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8_SRGB" value="21" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point red/green channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8_UNORM" value="22" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point red/green/blue channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8_SNORM" value="23" enum="DataFormat">
+			8-bit-per-channel signed floating-point red/green/blue channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8_USCALED" value="24" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point red/green/blue channel data format with scaled value (value is converted from integer to float). Values are in the [code][0.0, 255.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8_SSCALED" value="25" enum="DataFormat">
+			8-bit-per-channel signed floating-point red/green/blue channel data format with scaled value (value is converted from integer to float). Values are in the [code][-127.0, 127.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8_UINT" value="26" enum="DataFormat">
+			8-bit-per-channel unsigned integer red/green/blue channel data format. Values are in the [code][0, 255][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8_SINT" value="27" enum="DataFormat">
+			8-bit-per-channel signed integer red/green/blue channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8_SRGB" value="28" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point red/green/blue/blue channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8_UNORM" value="29" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point blue/green/red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8_SNORM" value="30" enum="DataFormat">
+			8-bit-per-channel signed floating-point blue/green/red channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8_USCALED" value="31" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point blue/green/red channel data format with scaled value (value is converted from integer to float). Values are in the [code][0.0, 255.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8_SSCALED" value="32" enum="DataFormat">
+			8-bit-per-channel signed floating-point blue/green/red channel data format with scaled value (value is converted from integer to float). Values are in the [code][-127.0, 127.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8_UINT" value="33" enum="DataFormat">
+			8-bit-per-channel unsigned integer blue/green/red channel data format. Values are in the [code][0, 255][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8_SINT" value="34" enum="DataFormat">
+			8-bit-per-channel signed integer blue/green/red channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8_SRGB" value="35" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point blue/green/red data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8A8_UNORM" value="36" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8A8_SNORM" value="37" enum="DataFormat">
+			8-bit-per-channel signed floating-point red/green/blue/alpha channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8A8_USCALED" value="38" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point red/green/blue/alpha channel data format with scaled value (value is converted from integer to float). Values are in the [code][0.0, 255.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8A8_SSCALED" value="39" enum="DataFormat">
+			8-bit-per-channel signed floating-point red/green/blue/alpha channel data format with scaled value (value is converted from integer to float). Values are in the [code][-127.0, 127.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8A8_UINT" value="40" enum="DataFormat">
+			8-bit-per-channel unsigned integer red/green/blue/alpha channel data format. Values are in the [code][0, 255][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8A8_SINT" value="41" enum="DataFormat">
+			8-bit-per-channel signed integer red/green/blue/alpha channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R8G8B8A8_SRGB" value="42" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8A8_UNORM" value="43" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point blue/green/red/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8A8_SNORM" value="44" enum="DataFormat">
+			8-bit-per-channel signed floating-point blue/green/red/alpha channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8A8_USCALED" value="45" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point blue/green/red/alpha channel data format with scaled value (value is converted from integer to float). Values are in the [code][0.0, 255.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8A8_SSCALED" value="46" enum="DataFormat">
+			8-bit-per-channel signed floating-point blue/green/red/alpha channel data format with scaled value (value is converted from integer to float). Values are in the [code][-127.0, 127.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8A8_UINT" value="47" enum="DataFormat">
+			8-bit-per-channel unsigned integer blue/green/red/alpha channel data format. Values are in the [code][0, 255][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8A8_SINT" value="48" enum="DataFormat">
+			8-bit-per-channel signed integer blue/green/red/alpha channel data format. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8A8_SRGB" value="49" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point blue/green/red/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A8B8G8R8_UNORM_PACK32" value="50" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point alpha/red/green/blue channel data format with normalized value, packed in 32 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A8B8G8R8_SNORM_PACK32" value="51" enum="DataFormat">
+			8-bit-per-channel signed floating-point alpha/red/green/blue channel data format with normalized value, packed in 32 bits. Values are in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A8B8G8R8_USCALED_PACK32" value="52" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point alpha/red/green/blue channel data format with scaled value (value is converted from integer to float), packed in 32 bits. Values are in the [code][0.0, 255.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A8B8G8R8_SSCALED_PACK32" value="53" enum="DataFormat">
+			8-bit-per-channel signed floating-point alpha/red/green/blue channel data format with scaled value (value is converted from integer to float), packed in 32 bits. Values are in the [code][-127.0, 127.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A8B8G8R8_UINT_PACK32" value="54" enum="DataFormat">
+			8-bit-per-channel unsigned integer alpha/red/green/blue channel data format, packed in 32 bits. Values are in the [code][0, 255][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A8B8G8R8_SINT_PACK32" value="55" enum="DataFormat">
+			8-bit-per-channel signed integer alpha/red/green/blue channel data format, packed in 32 bits. Values are in the [code][-127, 127][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A8B8G8R8_SRGB_PACK32" value="56" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point alpha/red/green/blue channel data format with normalized value and non-linear sRGB encoding, packed in 32 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A2R10G10B10_UNORM_PACK32" value="57" enum="DataFormat">
+			Unsigned floating-point alpha/red/green/blue channel data format with normalized value, packed in 32 bits. Format contains 2 bits of alpha, 10 bits of red, 10 bits of green and 10 bits of blue. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A2R10G10B10_SNORM_PACK32" value="58" enum="DataFormat">
+			Signed floating-point alpha/red/green/blue channel data format with normalized value, packed in 32 bits. Format contains 2 bits of alpha, 10 bits of red, 10 bits of green and 10 bits of blue. Values are in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A2R10G10B10_USCALED_PACK32" value="59" enum="DataFormat">
+			Unsigned floating-point alpha/red/green/blue channel data format with normalized value, packed in 32 bits. Format contains 2 bits of alpha, 10 bits of red, 10 bits of green and 10 bits of blue. Values are in the [code][0.0, 1023.0][/code] range for red/green/blue and [code][0.0, 3.0][/code] for alpha.
 		</constant>
 		<constant name="DATA_FORMAT_A2R10G10B10_SSCALED_PACK32" value="60" enum="DataFormat">
+			Signed floating-point alpha/red/green/blue channel data format with normalized value, packed in 32 bits. Format contains 2 bits of alpha, 10 bits of red, 10 bits of green and 10 bits of blue. Values are in the [code][-511.0, 511.0][/code] range for red/green/blue and [code][-1.0, 1.0][/code] for alpha.
 		</constant>
 		<constant name="DATA_FORMAT_A2R10G10B10_UINT_PACK32" value="61" enum="DataFormat">
+			Unsigned integer alpha/red/green/blue channel data format with normalized value, packed in 32 bits. Format contains 2 bits of alpha, 10 bits of red, 10 bits of green and 10 bits of blue. Values are in the [code][0, 1023][/code] range for red/green/blue and [code][0, 3][/code] for alpha.
 		</constant>
 		<constant name="DATA_FORMAT_A2R10G10B10_SINT_PACK32" value="62" enum="DataFormat">
+			Signed integer alpha/red/green/blue channel data format with normalized value, packed in 32 bits. Format contains 2 bits of alpha, 10 bits of red, 10 bits of green and 10 bits of blue. Values are in the [code][-511, 511][/code] range for red/green/blue and [code][-1, 1][/code] for alpha.
 		</constant>
 		<constant name="DATA_FORMAT_A2B10G10R10_UNORM_PACK32" value="63" enum="DataFormat">
+			Unsigned floating-point alpha/blue/green/red channel data format with normalized value, packed in 32 bits. Format contains 2 bits of alpha, 10 bits of blue, 10 bits of green and 10 bits of red. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A2B10G10R10_SNORM_PACK32" value="64" enum="DataFormat">
+			Signed floating-point alpha/blue/green/red channel data format with normalized value, packed in 32 bits. Format contains 2 bits of alpha, 10 bits of blue, 10 bits of green and 10 bits of red. Values are in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_A2B10G10R10_USCALED_PACK32" value="65" enum="DataFormat">
+			Unsigned floating-point alpha/blue/green/red channel data format with normalized value, packed in 32 bits. Format contains 2 bits of alpha, 10 bits of blue, 10 bits of green and 10 bits of red. Values are in the [code][0.0, 1023.0][/code] range for blue/green/red and [code][0.0, 3.0][/code] for alpha.
 		</constant>
 		<constant name="DATA_FORMAT_A2B10G10R10_SSCALED_PACK32" value="66" enum="DataFormat">
+			Signed floating-point alpha/blue/green/red channel data format with normalized value, packed in 32 bits. Format contains 2 bits of alpha, 10 bits of blue, 10 bits of green and 10 bits of red. Values are in the [code][-511.0, 511.0][/code] range for blue/green/red and [code][-1.0, 1.0][/code] for alpha.
 		</constant>
 		<constant name="DATA_FORMAT_A2B10G10R10_UINT_PACK32" value="67" enum="DataFormat">
+			Unsigned integer alpha/blue/green/red channel data format with normalized value, packed in 32 bits. Format contains 2 bits of alpha, 10 bits of blue, 10 bits of green and 10 bits of red. Values are in the [code][0, 1023][/code] range for blue/green/red and [code][0, 3][/code] for alpha.
 		</constant>
 		<constant name="DATA_FORMAT_A2B10G10R10_SINT_PACK32" value="68" enum="DataFormat">
+			Signed integer alpha/blue/green/red channel data format with normalized value, packed in 32 bits. Format contains 2 bits of alpha, 10 bits of blue, 10 bits of green and 10 bits of red. Values are in the [code][-511, 511][/code] range for blue/green/red and [code][-1, 1][/code] for alpha.
 		</constant>
 		<constant name="DATA_FORMAT_R16_UNORM" value="69" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16_SNORM" value="70" enum="DataFormat">
+			16-bit-per-channel signed floating-point red channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16_USCALED" value="71" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point red channel data format with scaled value (value is converted from integer to float). Values are in the [code][0.0, 65535.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16_SSCALED" value="72" enum="DataFormat">
+			16-bit-per-channel signed floating-point red channel data format with scaled value (value is converted from integer to float). Values are in the [code][-32767.0, 32767.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16_UINT" value="73" enum="DataFormat">
+			16-bit-per-channel unsigned integer red channel data format. Values are in the [code][0.0, 65535][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16_SINT" value="74" enum="DataFormat">
+			16-bit-per-channel signed integer red channel data format. Values are in the [code][-32767, 32767][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16_SFLOAT" value="75" enum="DataFormat">
+			16-bit-per-channel signed floating-point red channel data format with the value stored as-is.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16_UNORM" value="76" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point red/green channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16_SNORM" value="77" enum="DataFormat">
+			16-bit-per-channel signed floating-point red/green channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16_USCALED" value="78" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point red/green channel data format with scaled value (value is converted from integer to float). Values are in the [code][0.0, 65535.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16_SSCALED" value="79" enum="DataFormat">
+			16-bit-per-channel signed floating-point red/green channel data format with scaled value (value is converted from integer to float). Values are in the [code][-32767.0, 32767.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16_UINT" value="80" enum="DataFormat">
+			16-bit-per-channel unsigned integer red/green channel data format. Values are in the [code][0.0, 65535][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16_SINT" value="81" enum="DataFormat">
+			16-bit-per-channel signed integer red/green channel data format. Values are in the [code][-32767, 32767][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16_SFLOAT" value="82" enum="DataFormat">
+			16-bit-per-channel signed floating-point red/green channel data format with the value stored as-is.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16_UNORM" value="83" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point red/green/blue channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16_SNORM" value="84" enum="DataFormat">
+			16-bit-per-channel signed floating-point red/green/blue channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16_USCALED" value="85" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point red/green/blue channel data format with scaled value (value is converted from integer to float). Values are in the [code][0.0, 65535.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16_SSCALED" value="86" enum="DataFormat">
+			16-bit-per-channel signed floating-point red/green/blue channel data format with scaled value (value is converted from integer to float). Values are in the [code][-32767.0, 32767.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16_UINT" value="87" enum="DataFormat">
+			16-bit-per-channel unsigned integer red/green/blue channel data format. Values are in the [code][0.0, 65535][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16_SINT" value="88" enum="DataFormat">
+			16-bit-per-channel signed integer red/green/blue channel data format. Values are in the [code][-32767, 32767][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16_SFLOAT" value="89" enum="DataFormat">
+			16-bit-per-channel signed floating-point red/green/blue channel data format with the value stored as-is.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16A16_UNORM" value="90" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16A16_SNORM" value="91" enum="DataFormat">
+			16-bit-per-channel signed floating-point red/green/blue/alpha channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16A16_USCALED" value="92" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point red/green/blue/alpha channel data format with scaled value (value is converted from integer to float). Values are in the [code][0.0, 65535.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16A16_SSCALED" value="93" enum="DataFormat">
+			16-bit-per-channel signed floating-point red/green/blue/alpha channel data format with scaled value (value is converted from integer to float). Values are in the [code][-32767.0, 32767.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16A16_UINT" value="94" enum="DataFormat">
+			16-bit-per-channel unsigned integer red/green/blue/alpha channel data format. Values are in the [code][0.0, 65535][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16A16_SINT" value="95" enum="DataFormat">
+			16-bit-per-channel signed integer red/green/blue/alpha channel data format. Values are in the [code][-32767, 32767][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R16G16B16A16_SFLOAT" value="96" enum="DataFormat">
+			16-bit-per-channel signed floating-point red/green/blue/alpha channel data format with the value stored as-is.
 		</constant>
 		<constant name="DATA_FORMAT_R32_UINT" value="97" enum="DataFormat">
+			32-bit-per-channel unsigned integer red channel data format. Values are in the [code][0, 2^32 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R32_SINT" value="98" enum="DataFormat">
+			32-bit-per-channel signed integer red channel data format. Values are in the [code][2^31 + 1, 2^31 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R32_SFLOAT" value="99" enum="DataFormat">
+			32-bit-per-channel signed floating-point red channel data format with the value stored as-is.
 		</constant>
 		<constant name="DATA_FORMAT_R32G32_UINT" value="100" enum="DataFormat">
+			32-bit-per-channel unsigned integer red/green channel data format. Values are in the [code][0, 2^32 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R32G32_SINT" value="101" enum="DataFormat">
+			32-bit-per-channel signed integer red/green channel data format. Values are in the [code][2^31 + 1, 2^31 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R32G32_SFLOAT" value="102" enum="DataFormat">
+			32-bit-per-channel signed floating-point red/green channel data format with the value stored as-is.
 		</constant>
 		<constant name="DATA_FORMAT_R32G32B32_UINT" value="103" enum="DataFormat">
+			32-bit-per-channel unsigned integer red/green/blue channel data format. Values are in the [code][0, 2^32 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R32G32B32_SINT" value="104" enum="DataFormat">
+			32-bit-per-channel signed integer red/green/blue channel data format. Values are in the [code][2^31 + 1, 2^31 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R32G32B32_SFLOAT" value="105" enum="DataFormat">
+			32-bit-per-channel signed floating-point red/green/blue channel data format with the value stored as-is.
 		</constant>
 		<constant name="DATA_FORMAT_R32G32B32A32_UINT" value="106" enum="DataFormat">
+			32-bit-per-channel unsigned integer red/green/blue/alpha channel data format. Values are in the [code][0, 2^32 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R32G32B32A32_SINT" value="107" enum="DataFormat">
+			32-bit-per-channel signed integer red/green/blue/alpha channel data format. Values are in the [code][2^31 + 1, 2^31 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R32G32B32A32_SFLOAT" value="108" enum="DataFormat">
+			32-bit-per-channel signed floating-point red/green/blue/alpha channel data format with the value stored as-is.
 		</constant>
 		<constant name="DATA_FORMAT_R64_UINT" value="109" enum="DataFormat">
+			64-bit-per-channel unsigned integer red channel data format. Values are in the [code][0, 2^64 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R64_SINT" value="110" enum="DataFormat">
+			64-bit-per-channel signed integer red channel data format. Values are in the [code][2^63 + 1, 2^63 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R64_SFLOAT" value="111" enum="DataFormat">
+			64-bit-per-channel signed floating-point red channel data format with the value stored as-is.
 		</constant>
 		<constant name="DATA_FORMAT_R64G64_UINT" value="112" enum="DataFormat">
+			64-bit-per-channel unsigned integer red/green channel data format. Values are in the [code][0, 2^64 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R64G64_SINT" value="113" enum="DataFormat">
+			64-bit-per-channel signed integer red/green channel data format. Values are in the [code][2^63 + 1, 2^63 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R64G64_SFLOAT" value="114" enum="DataFormat">
+			64-bit-per-channel signed floating-point red/green channel data format with the value stored as-is.
 		</constant>
 		<constant name="DATA_FORMAT_R64G64B64_UINT" value="115" enum="DataFormat">
+			64-bit-per-channel unsigned integer red/green/blue channel data format. Values are in the [code][0, 2^64 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R64G64B64_SINT" value="116" enum="DataFormat">
+			64-bit-per-channel signed integer red/green/blue channel data format. Values are in the [code][2^63 + 1, 2^63 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R64G64B64_SFLOAT" value="117" enum="DataFormat">
+			64-bit-per-channel signed floating-point red/green/blue channel data format with the value stored as-is.
 		</constant>
 		<constant name="DATA_FORMAT_R64G64B64A64_UINT" value="118" enum="DataFormat">
+			64-bit-per-channel unsigned integer red/green/blue/alpha channel data format. Values are in the [code][0, 2^64 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R64G64B64A64_SINT" value="119" enum="DataFormat">
+			64-bit-per-channel signed integer red/green/blue/alpha channel data format. Values are in the [code][2^63 + 1, 2^63 - 1][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R64G64B64A64_SFLOAT" value="120" enum="DataFormat">
+			64-bit-per-channel signed floating-point red/green/blue/alpha channel data format with the value stored as-is.
 		</constant>
 		<constant name="DATA_FORMAT_B10G11R11_UFLOAT_PACK32" value="121" enum="DataFormat">
+			Unsigned floating-point blue/green/red data format with the value stored as-is, packed in 32 bits. The format's precision is 10 bits of blue channel, 11 bits of green channel and 11 bits of red channel.
 		</constant>
 		<constant name="DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32" value="122" enum="DataFormat">
+			Unsigned floating-point exposure/blue/green/red data format with the value stored as-is, packed in 32 bits. The format's precision is 5 bits of exposure, 9 bits of blue channel, 9 bits of green channel and 9 bits of red channel.
 		</constant>
 		<constant name="DATA_FORMAT_D16_UNORM" value="123" enum="DataFormat">
+			16-bit unsigned floating-point depth data format with normalized value. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_X8_D24_UNORM_PACK32" value="124" enum="DataFormat">
+			24-bit unsigned floating-point depth data format with normalized value, plus 8 unused bits, packed in 32 bits. Values for depth are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_D32_SFLOAT" value="125" enum="DataFormat">
+			32-bit signed floating-point depth data format with the value stored as-is.
 		</constant>
 		<constant name="DATA_FORMAT_S8_UINT" value="126" enum="DataFormat">
+			8-bit unsigned integer stencil data format.
 		</constant>
 		<constant name="DATA_FORMAT_D16_UNORM_S8_UINT" value="127" enum="DataFormat">
+			16-bit unsigned floating-point depth data format with normalized value, plus 8 bits of stencil in unsigned integer format. Values for depth are in the [code][0.0, 1.0][/code] range. Values for stencil are in the [code][0, 255][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_D24_UNORM_S8_UINT" value="128" enum="DataFormat">
+			24-bit unsigned floating-point depth data format with normalized value, plus 8 bits of stencil in unsigned integer format. Values for depth are in the [code][0.0, 1.0][/code] range. Values for stencil are in the [code][0, 255][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_D32_SFLOAT_S8_UINT" value="129" enum="DataFormat">
+			32-bit signed floating-point depth data format with the value stored as-is, plus 8 bits of stencil in unsigned integer format. Values for stencil are in the [code][0, 255][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_BC1_RGB_UNORM_BLOCK" value="130" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel and 5 bits of blue channel. Using BC1 texture compression (also known as S3TC DXT1).
 		</constant>
 		<constant name="DATA_FORMAT_BC1_RGB_SRGB_BLOCK" value="131" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel and 5 bits of blue channel. Using BC1 texture compression (also known as S3TC DXT1).
 		</constant>
 		<constant name="DATA_FORMAT_BC1_RGBA_UNORM_BLOCK" value="132" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel and 1 bit of alpha channel. Using BC1 texture compression (also known as S3TC DXT1).
 		</constant>
 		<constant name="DATA_FORMAT_BC1_RGBA_SRGB_BLOCK" value="133" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel and 1 bit of alpha channel. Using BC1 texture compression (also known as S3TC DXT1).
 		</constant>
 		<constant name="DATA_FORMAT_BC2_UNORM_BLOCK" value="134" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel and 4 bits of alpha channel. Using BC2 texture compression (also known as S3TC DXT3).
 		</constant>
 		<constant name="DATA_FORMAT_BC2_SRGB_BLOCK" value="135" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel and 4 bits of alpha channel. Using BC2 texture compression (also known as S3TC DXT3).
 		</constant>
 		<constant name="DATA_FORMAT_BC3_UNORM_BLOCK" value="136" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel and 8 bits of alpha channel. Using BC3 texture compression (also known as S3TC DXT5).
 		</constant>
 		<constant name="DATA_FORMAT_BC3_SRGB_BLOCK" value="137" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 5 bits of red channel, 6 bits of green channel, 5 bits of blue channel and 8 bits of alpha channel. Using BC3 texture compression (also known as S3TC DXT5).
 		</constant>
 		<constant name="DATA_FORMAT_BC4_UNORM_BLOCK" value="138" enum="DataFormat">
+			VRAM-compressed unsigned red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 8 bits of red channel. Using BC4 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_BC4_SNORM_BLOCK" value="139" enum="DataFormat">
+			VRAM-compressed signed red channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range. The format's precision is 8 bits of red channel. Using BC4 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_BC5_UNORM_BLOCK" value="140" enum="DataFormat">
+			VRAM-compressed unsigned red/green channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is 8 bits of red channel and 8 bits of green channel. Using BC5 texture compression (also known as S3TC RGTC).
 		</constant>
 		<constant name="DATA_FORMAT_BC5_SNORM_BLOCK" value="141" enum="DataFormat">
+			VRAM-compressed signed red/green channel data format with normalized value. Values are in the [code][-1.0, 1.0][/code] range. The format's precision is 8 bits of red channel and 8 bits of green channel. Using BC5 texture compression (also known as S3TC RGTC).
 		</constant>
 		<constant name="DATA_FORMAT_BC6H_UFLOAT_BLOCK" value="142" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue channel data format with the floating-point value stored as-is. The format's precision is 8 bits of red channel and 8 bits of green channel. Using BC6H texture compression (also known as BPTC HDR).
 		</constant>
 		<constant name="DATA_FORMAT_BC6H_SFLOAT_BLOCK" value="143" enum="DataFormat">
+			VRAM-compressed signed red/green/blue channel data format with the floating-point value stored as-is. The format's precision is between 4 and 7 bits for the red/green/blue channels and between 0 and 8 bits for the alpha channel. Using BC7 texture compression (also known as BPTC HDR).
 		</constant>
 		<constant name="DATA_FORMAT_BC7_UNORM_BLOCK" value="144" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. The format's precision is between 4 and 7 bits for the red/green/blue channels and between 0 and 8 bits for the alpha channel. Also known as BPTC LDR.
 		</constant>
 		<constant name="DATA_FORMAT_BC7_SRGB_BLOCK" value="145" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. The format's precision is between 4 and 7 bits for the red/green/blue channels and between 0 and 8 bits for the alpha channel. Also known as BPTC LDR.
 		</constant>
 		<constant name="DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK" value="146" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ETC2_R8G8B8_SRGB_BLOCK" value="147" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK" value="148" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Red/green/blue use 8 bit of precision each, with alpha using 1 bit of precision. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK" value="149" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. Red/green/blue use 8 bit of precision each, with alpha using 1 bit of precision. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK" value="150" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Red/green/blue use 8 bits of precision each, with alpha using 8 bits of precision. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK" value="151" enum="DataFormat">
+			VRAM-compressed unsigned red/green/blue/alpha channel data format with normalized value and non-linear sRGB encoding. Values are in the [code][0.0, 1.0][/code] range. Red/green/blue use 8 bits of precision each, with alpha using 8 bits of precision. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11_UNORM_BLOCK" value="152" enum="DataFormat">
+			11-bit VRAM-compressed unsigned red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11_SNORM_BLOCK" value="153" enum="DataFormat">
+			11-bit VRAM-compressed signed red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11G11_UNORM_BLOCK" value="154" enum="DataFormat">
+			11-bit VRAM-compressed unsigned red/green channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_EAC_R11G11_SNORM_BLOCK" value="155" enum="DataFormat">
+			11-bit VRAM-compressed signed red/green channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Using ETC2 texture compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_4x4_UNORM_BLOCK" value="156" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 4×4 blocks (highest quality). Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_4x4_SRGB_BLOCK" value="157" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 4×4 blocks (highest quality). Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_5x4_UNORM_BLOCK" value="158" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 5×4 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_5x4_SRGB_BLOCK" value="159" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 5×4 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_5x5_UNORM_BLOCK" value="160" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 5×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_5x5_SRGB_BLOCK" value="161" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 5×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_6x5_UNORM_BLOCK" value="162" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 6×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_6x5_SRGB_BLOCK" value="163" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 6×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_6x6_UNORM_BLOCK" value="164" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 6×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_6x6_SRGB_BLOCK" value="165" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 6×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_8x5_UNORM_BLOCK" value="166" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 8×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_8x5_SRGB_BLOCK" value="167" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 8×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_8x6_UNORM_BLOCK" value="168" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 8×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_8x6_SRGB_BLOCK" value="169" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 8×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_8x8_UNORM_BLOCK" value="170" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 8×8 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_8x8_SRGB_BLOCK" value="171" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 8×8 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x5_UNORM_BLOCK" value="172" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 10×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x5_SRGB_BLOCK" value="173" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 10×5 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x6_UNORM_BLOCK" value="174" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 10×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x6_SRGB_BLOCK" value="175" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 10×6 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x8_UNORM_BLOCK" value="176" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 10×8 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x8_SRGB_BLOCK" value="177" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 10×8 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x10_UNORM_BLOCK" value="178" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 10×10 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_10x10_SRGB_BLOCK" value="179" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 10×10 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_12x10_UNORM_BLOCK" value="180" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 12×10 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_12x10_SRGB_BLOCK" value="181" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 12×10 blocks. Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_12x12_UNORM_BLOCK" value="182" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value, packed in 12 blocks (lowest quality). Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_ASTC_12x12_SRGB_BLOCK" value="183" enum="DataFormat">
+			VRAM-compressed unsigned floating-point data format with normalized value and non-linear sRGB encoding, packed in 12 blocks (lowest quality). Values are in the [code][0.0, 1.0][/code] range. Using ASTC compression.
 		</constant>
 		<constant name="DATA_FORMAT_G8B8G8R8_422_UNORM" value="184" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point green/blue/red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_B8G8R8G8_422_UNORM" value="185" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point blue/green/red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G8_B8_R8_3PLANE_420_UNORM" value="186" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, stored across 3 separate planes (green + blue + red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal and vertical resolution (i.e. 2×2 adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM" value="187" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, stored across 2 separate planes (green + blue/red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal and vertical resolution (i.e. 2×2 adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G8_B8_R8_3PLANE_422_UNORM" value="188" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, stored across 2 separate planes (green + blue + red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G8_B8R8_2PLANE_422_UNORM" value="189" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, stored across 2 separate planes (green + blue/red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G8_B8_R8_3PLANE_444_UNORM" value="190" enum="DataFormat">
+			8-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, stored across 3 separate planes. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R10X6_UNORM_PACK16" value="191" enum="DataFormat">
+			10-bit-per-channel unsigned floating-point red channel data with normalized value, plus 6 unused bits, packed in 16 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R10X6G10X6_UNORM_2PACK16" value="192" enum="DataFormat">
+			10-bit-per-channel unsigned floating-point red/green channel data with normalized value, plus 6 unused bits after each channel, packed in 2×16 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16" value="193" enum="DataFormat">
+			10-bit-per-channel unsigned floating-point red/green/blue/alpha channel data with normalized value, plus 6 unused bits after each channel, packed in 4×16 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16" value="194" enum="DataFormat">
+			10-bit-per-channel unsigned floating-point green/blue/green/red channel data with normalized value, plus 6 unused bits after each channel, packed in 4×16 bits. Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel). The green channel is listed twice, but contains different values to allow it to be represented at full resolution.
 		</constant>
 		<constant name="DATA_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16" value="195" enum="DataFormat">
+			10-bit-per-channel unsigned floating-point blue/green/red/green channel data with normalized value, plus 6 unused bits after each channel, packed in 4×16 bits. Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel). The green channel is listed twice, but contains different values to allow it to be represented at full resolution.
 		</constant>
 		<constant name="DATA_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16" value="196" enum="DataFormat">
+			10-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Packed in 3×16 bits and stored across 2 separate planes (green + blue + red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal and vertical resolution (i.e. 2×2 adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16" value="197" enum="DataFormat">
+			10-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Packed in 3×16 bits and stored across 2 separate planes (green + blue/red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal and vertical resolution (i.e. 2×2 adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16" value="198" enum="DataFormat">
+			10-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Packed in 3×16 bits and stored across 3 separate planes (green + blue + red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16" value="199" enum="DataFormat">
+			10-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Packed in 3×16 bits and stored across 3 separate planes (green + blue/red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16" value="200" enum="DataFormat">
+			10-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Packed in 3×16 bits and stored across 3 separate planes (green + blue + red). Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R12X4_UNORM_PACK16" value="201" enum="DataFormat">
+			12-bit-per-channel unsigned floating-point red channel data with normalized value, plus 6 unused bits, packed in 16 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R12X4G12X4_UNORM_2PACK16" value="202" enum="DataFormat">
+			12-bit-per-channel unsigned floating-point red/green channel data with normalized value, plus 6 unused bits after each channel, packed in 2×16 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16" value="203" enum="DataFormat">
+			12-bit-per-channel unsigned floating-point red/green/blue/alpha channel data with normalized value, plus 6 unused bits after each channel, packed in 4×16 bits. Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16" value="204" enum="DataFormat">
+			12-bit-per-channel unsigned floating-point green/blue/green/red channel data with normalized value, plus 6 unused bits after each channel, packed in 4×16 bits. Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel). The green channel is listed twice, but contains different values to allow it to be represented at full resolution.
 		</constant>
 		<constant name="DATA_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16" value="205" enum="DataFormat">
+			12-bit-per-channel unsigned floating-point blue/green/red/green channel data with normalized value, plus 6 unused bits after each channel, packed in 4×16 bits. Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel). The green channel is listed twice, but contains different values to allow it to be represented at full resolution.
 		</constant>
 		<constant name="DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16" value="206" enum="DataFormat">
+			12-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Packed in 3×16 bits and stored across 2 separate planes (green + blue + red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal and vertical resolution (i.e. 2×2 adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16" value="207" enum="DataFormat">
+			12-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Packed in 3×16 bits and stored across 2 separate planes (green + blue/red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal and vertical resolution (i.e. 2×2 adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16" value="208" enum="DataFormat">
+			12-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Packed in 3×16 bits and stored across 3 separate planes (green + blue + red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16" value="209" enum="DataFormat">
+			12-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Packed in 3×16 bits and stored across 3 separate planes (green + blue/red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16" value="210" enum="DataFormat">
+			12-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Packed in 3×16 bits and stored across 3 separate planes (green + blue + red). Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="DATA_FORMAT_G16B16G16R16_422_UNORM" value="211" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point green/blue/red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_B16G16R16G16_422_UNORM" value="212" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point blue/green/red channel data format with normalized value. Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G16_B16_R16_3PLANE_420_UNORM" value="213" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Stored across 2 separate planes (green + blue + red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal and vertical resolution (i.e. 2×2 adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G16_B16R16_2PLANE_420_UNORM" value="214" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Stored across 2 separate planes (green + blue/red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal and vertical resolution (i.e. 2×2 adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G16_B16_R16_3PLANE_422_UNORM" value="215" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Stored across 3 separate planes (green + blue + red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM" value="216" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Stored across 3 separate planes (green + blue/red). Values are in the [code][0.0, 1.0][/code] range. Blue and red channel data is stored at halved horizontal resolution (i.e. 2 horizontally adjacent pixels will share the same value for the blue/red channel).
 		</constant>
 		<constant name="DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM" value="217" enum="DataFormat">
+			16-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Stored across 3 separate planes (green + blue + red). Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG" value="218" enum="DataFormat">
+		<constant name="DATA_FORMAT_MAX" value="218" enum="DataFormat">
+			Represents the size of the [enum DataFormat] enum.
 		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG" value="219" enum="DataFormat">
+		<constant name="BARRIER_MASK_VERTEX" value="1" enum="BarrierMask" is_bitfield="true">
+			Vertex shader barrier mask.
 		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG" value="220" enum="DataFormat">
+		<constant name="BARRIER_MASK_FRAGMENT" value="8" enum="BarrierMask" is_bitfield="true">
+			Fragment shader barrier mask.
 		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG" value="221" enum="DataFormat">
+		<constant name="BARRIER_MASK_COMPUTE" value="2" enum="BarrierMask" is_bitfield="true">
+			Compute barrier mask.
 		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG" value="222" enum="DataFormat">
+		<constant name="BARRIER_MASK_TRANSFER" value="4" enum="BarrierMask" is_bitfield="true">
+			Transfer barrier mask.
 		</constant>
-		<constant name="DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG" value="223" enum="DataFormat">
+		<constant name="BARRIER_MASK_RASTER" value="9" enum="BarrierMask" is_bitfield="true">
+			Raster barrier mask (vertex and fragment). Equivalent to [code]BARRIER_MASK_VERTEX | BARRIER_MASK_FRAGMENT[/code].
 		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG" value="224" enum="DataFormat">
+		<constant name="BARRIER_MASK_ALL_BARRIERS" value="32767" enum="BarrierMask" is_bitfield="true">
+			Barrier mask for all types (vertex, fragment, compute, transfer).
 		</constant>
-		<constant name="DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG" value="225" enum="DataFormat">
-		</constant>
-		<constant name="DATA_FORMAT_MAX" value="226" enum="DataFormat">
+		<constant name="BARRIER_MASK_NO_BARRIER" value="32768" enum="BarrierMask" is_bitfield="true">
+			No barrier for any type.
 		</constant>
 		<constant name="TEXTURE_TYPE_1D" value="0" enum="TextureType">
+			1-dimensional texture.
 		</constant>
 		<constant name="TEXTURE_TYPE_2D" value="1" enum="TextureType">
+			2-dimensional texture.
 		</constant>
 		<constant name="TEXTURE_TYPE_3D" value="2" enum="TextureType">
+			3-dimensional texture.
 		</constant>
 		<constant name="TEXTURE_TYPE_CUBE" value="3" enum="TextureType">
+			[Cubemap] texture.
 		</constant>
 		<constant name="TEXTURE_TYPE_1D_ARRAY" value="4" enum="TextureType">
+			Array of 1-dimensional textures.
 		</constant>
 		<constant name="TEXTURE_TYPE_2D_ARRAY" value="5" enum="TextureType">
+			Array of 2-dimensional textures.
 		</constant>
 		<constant name="TEXTURE_TYPE_CUBE_ARRAY" value="6" enum="TextureType">
+			Array of [Cubemap] textures.
 		</constant>
 		<constant name="TEXTURE_TYPE_MAX" value="7" enum="TextureType">
+			Represents the size of the [enum TextureType] enum.
 		</constant>
 		<constant name="TEXTURE_SAMPLES_1" value="0" enum="TextureSamples">
+			Perform 1 texture sample (this is the fastest but lowest-quality for antialiasing).
 		</constant>
 		<constant name="TEXTURE_SAMPLES_2" value="1" enum="TextureSamples">
+			Perform 2 texture samples.
 		</constant>
 		<constant name="TEXTURE_SAMPLES_4" value="2" enum="TextureSamples">
+			Perform 4 texture samples.
 		</constant>
 		<constant name="TEXTURE_SAMPLES_8" value="3" enum="TextureSamples">
+			Perform 8 texture samples. Not supported on mobile GPUs (including Apple Silicon).
 		</constant>
 		<constant name="TEXTURE_SAMPLES_16" value="4" enum="TextureSamples">
+			Perform 16 texture samples. Not supported on mobile GPUs and many desktop GPUs.
 		</constant>
 		<constant name="TEXTURE_SAMPLES_32" value="5" enum="TextureSamples">
+			Perform 32 texture samples. Not supported on most GPUs.
 		</constant>
 		<constant name="TEXTURE_SAMPLES_64" value="6" enum="TextureSamples">
+			Perform 64 texture samples (this is the slowest but highest-quality for antialiasing). Not supported on most GPUs.
 		</constant>
 		<constant name="TEXTURE_SAMPLES_MAX" value="7" enum="TextureSamples">
+			Represents the size of the [enum TextureSamples] enum.
 		</constant>
-		<constant name="TEXTURE_USAGE_SAMPLING_BIT" value="1" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_SAMPLING_BIT" value="1" enum="TextureUsageBits" is_bitfield="true">
+			Texture can be sampled.
 		</constant>
-		<constant name="TEXTURE_USAGE_COLOR_ATTACHMENT_BIT" value="2" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_COLOR_ATTACHMENT_BIT" value="2" enum="TextureUsageBits" is_bitfield="true">
+			Texture can be used as a color attachment in a framebuffer.
 		</constant>
-		<constant name="TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT" value="4" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT" value="4" enum="TextureUsageBits" is_bitfield="true">
+			Texture can be used as a depth/stencil attachment in a framebuffer.
 		</constant>
-		<constant name="TEXTURE_USAGE_STORAGE_BIT" value="8" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_STORAGE_BIT" value="8" enum="TextureUsageBits" is_bitfield="true">
+			Texture can be used as a [url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#descriptorsets-storageimage]storage image[/url].
 		</constant>
-		<constant name="TEXTURE_USAGE_STORAGE_ATOMIC_BIT" value="16" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_STORAGE_ATOMIC_BIT" value="16" enum="TextureUsageBits" is_bitfield="true">
+			Texture can be used as a [url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#descriptorsets-storageimage]storage image[/url] with support for atomic operations.
 		</constant>
-		<constant name="TEXTURE_USAGE_CPU_READ_BIT" value="32" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_CPU_READ_BIT" value="32" enum="TextureUsageBits" is_bitfield="true">
+			Texture can be read back on the CPU using [method texture_get_data] faster than without this bit, since it is always kept in the system memory.
 		</constant>
-		<constant name="TEXTURE_USAGE_CAN_UPDATE_BIT" value="64" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_CAN_UPDATE_BIT" value="64" enum="TextureUsageBits" is_bitfield="true">
+			Texture can be updated using [method texture_update].
 		</constant>
-		<constant name="TEXTURE_USAGE_CAN_COPY_FROM_BIT" value="128" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_CAN_COPY_FROM_BIT" value="128" enum="TextureUsageBits" is_bitfield="true">
+			Texture can be a source for [method texture_copy].
 		</constant>
-		<constant name="TEXTURE_USAGE_CAN_COPY_TO_BIT" value="256" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_CAN_COPY_TO_BIT" value="256" enum="TextureUsageBits" is_bitfield="true">
+			Texture can be a destination for [method texture_copy].
 		</constant>
-		<constant name="TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT" value="512" enum="TextureUsageBits">
+		<constant name="TEXTURE_USAGE_INPUT_ATTACHMENT_BIT" value="512" enum="TextureUsageBits" is_bitfield="true">
+			Texture can be used as a [url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#descriptorsets-inputattachment]input attachment[/url] in a framebuffer.
 		</constant>
 		<constant name="TEXTURE_SWIZZLE_IDENTITY" value="0" enum="TextureSwizzle">
+			Return the sampled value as-is.
 		</constant>
 		<constant name="TEXTURE_SWIZZLE_ZERO" value="1" enum="TextureSwizzle">
+			Always return [code]0.0[/code] when sampling.
 		</constant>
 		<constant name="TEXTURE_SWIZZLE_ONE" value="2" enum="TextureSwizzle">
+			Always return [code]1.0[/code] when sampling.
 		</constant>
 		<constant name="TEXTURE_SWIZZLE_R" value="3" enum="TextureSwizzle">
+			Sample the red color channel.
 		</constant>
 		<constant name="TEXTURE_SWIZZLE_G" value="4" enum="TextureSwizzle">
+			Sample the green color channel.
 		</constant>
 		<constant name="TEXTURE_SWIZZLE_B" value="5" enum="TextureSwizzle">
+			Sample the blue color channel.
 		</constant>
 		<constant name="TEXTURE_SWIZZLE_A" value="6" enum="TextureSwizzle">
+			Sample the alpha channel.
 		</constant>
 		<constant name="TEXTURE_SWIZZLE_MAX" value="7" enum="TextureSwizzle">
+			Represents the size of the [enum TextureSwizzle] enum.
 		</constant>
 		<constant name="TEXTURE_SLICE_2D" value="0" enum="TextureSliceType">
+			2-dimensional texture slice.
 		</constant>
 		<constant name="TEXTURE_SLICE_CUBEMAP" value="1" enum="TextureSliceType">
+			Cubemap texture slice.
 		</constant>
 		<constant name="TEXTURE_SLICE_3D" value="2" enum="TextureSliceType">
+			3-dimensional texture slice.
 		</constant>
 		<constant name="SAMPLER_FILTER_NEAREST" value="0" enum="SamplerFilter">
+			Nearest-neighbor sampler filtering. Sampling at higher resolutions than the source will result in a pixelated look.
 		</constant>
 		<constant name="SAMPLER_FILTER_LINEAR" value="1" enum="SamplerFilter">
+			Bilinear sampler filtering. Sampling at higher resolutions than the source will result in a blurry look.
 		</constant>
 		<constant name="SAMPLER_REPEAT_MODE_REPEAT" value="0" enum="SamplerRepeatMode">
+			Sample with repeating enabled.
 		</constant>
 		<constant name="SAMPLER_REPEAT_MODE_MIRRORED_REPEAT" value="1" enum="SamplerRepeatMode">
+			Sample with mirrored repeating enabled. When sampling outside the [code][0.0, 1.0][/code] range, return a mirrored version of the sampler. This mirrored version is mirrored again if sampling further away, with the pattern repeating indefinitely.
 		</constant>
 		<constant name="SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE" value="2" enum="SamplerRepeatMode">
+			Sample with repeating disabled. When sampling outside the [code][0.0, 1.0][/code] range, return the color of the last pixel on the edge.
 		</constant>
 		<constant name="SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER" value="3" enum="SamplerRepeatMode">
+			Sample with repeating disabled. When sampling outside the [code][0.0, 1.0][/code] range, return the specified [member RDSamplerState.border_color].
 		</constant>
 		<constant name="SAMPLER_REPEAT_MODE_MIRROR_CLAMP_TO_EDGE" value="4" enum="SamplerRepeatMode">
+			Sample with mirrored repeating enabled, but only once. When sampling in the [code][-1.0, 0.0][/code] range, return a mirrored version of the sampler. When sampling outside the [code][-1.0, 1.0][/code] range, return the color of the last pixel on the edge.
 		</constant>
 		<constant name="SAMPLER_REPEAT_MODE_MAX" value="5" enum="SamplerRepeatMode">
+			Represents the size of the [enum SamplerRepeatMode] enum.
 		</constant>
 		<constant name="SAMPLER_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK" value="0" enum="SamplerBorderColor">
+			Return a floating-point transparent black color when sampling outside the [code][0.0, 1.0][/code] range. Only effective if the sampler repeat mode is [constant SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER].
 		</constant>
 		<constant name="SAMPLER_BORDER_COLOR_INT_TRANSPARENT_BLACK" value="1" enum="SamplerBorderColor">
+			Return a integer transparent black color when sampling outside the [code][0.0, 1.0][/code] range. Only effective if the sampler repeat mode is [constant SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER].
 		</constant>
 		<constant name="SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_BLACK" value="2" enum="SamplerBorderColor">
+			Return a floating-point opaque black color when sampling outside the [code][0.0, 1.0][/code] range. Only effective if the sampler repeat mode is [constant SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER].
 		</constant>
 		<constant name="SAMPLER_BORDER_COLOR_INT_OPAQUE_BLACK" value="3" enum="SamplerBorderColor">
+			Return a integer opaque black color when sampling outside the [code][0.0, 1.0][/code] range. Only effective if the sampler repeat mode is [constant SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER].
 		</constant>
 		<constant name="SAMPLER_BORDER_COLOR_FLOAT_OPAQUE_WHITE" value="4" enum="SamplerBorderColor">
+			Return a floating-point opaque white color when sampling outside the [code][0.0, 1.0][/code] range. Only effective if the sampler repeat mode is [constant SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER].
 		</constant>
 		<constant name="SAMPLER_BORDER_COLOR_INT_OPAQUE_WHITE" value="5" enum="SamplerBorderColor">
+			Return a integer opaque white color when sampling outside the [code][0.0, 1.0][/code] range. Only effective if the sampler repeat mode is [constant SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER].
 		</constant>
 		<constant name="SAMPLER_BORDER_COLOR_MAX" value="6" enum="SamplerBorderColor">
+			Represents the size of the [enum SamplerBorderColor] enum.
 		</constant>
 		<constant name="VERTEX_FREQUENCY_VERTEX" value="0" enum="VertexFrequency">
+			Vertex attribute addressing is a function of the vertex. This is used to specify the rate at which vertex attributes are pulled from buffers.
 		</constant>
 		<constant name="VERTEX_FREQUENCY_INSTANCE" value="1" enum="VertexFrequency">
+			Vertex attribute addressing is a function of the instance index. This is used to specify the rate at which vertex attributes are pulled from buffers.
 		</constant>
 		<constant name="INDEX_BUFFER_FORMAT_UINT16" value="0" enum="IndexBufferFormat">
+			Index buffer in 16-bit unsigned integer format. This limits the maximum index that can be specified to [code]65535[/code].
 		</constant>
 		<constant name="INDEX_BUFFER_FORMAT_UINT32" value="1" enum="IndexBufferFormat">
+			Index buffer in 32-bit unsigned integer format. This limits the maximum index that can be specified to [code]4294967295[/code].
 		</constant>
-		<constant name="STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT" value="1" enum="StorageBufferUsage">
+		<constant name="STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT" value="1" enum="StorageBufferUsage" is_bitfield="true">
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
+			Sampler uniform.
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER_WITH_TEXTURE" value="1" enum="UniformType">
+			Sampler uniform with a texture.
 		</constant>
 		<constant name="UNIFORM_TYPE_TEXTURE" value="2" enum="UniformType">
+			Texture uniform.
 		</constant>
 		<constant name="UNIFORM_TYPE_IMAGE" value="3" enum="UniformType">
+			Image uniform.
 		</constant>
 		<constant name="UNIFORM_TYPE_TEXTURE_BUFFER" value="4" enum="UniformType">
+			Texture buffer uniform.
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER_WITH_TEXTURE_BUFFER" value="5" enum="UniformType">
+			Sampler uniform with a texture buffer.
 		</constant>
 		<constant name="UNIFORM_TYPE_IMAGE_BUFFER" value="6" enum="UniformType">
+			Image buffer uniform.
 		</constant>
 		<constant name="UNIFORM_TYPE_UNIFORM_BUFFER" value="7" enum="UniformType">
+			Uniform buffer uniform.
 		</constant>
 		<constant name="UNIFORM_TYPE_STORAGE_BUFFER" value="8" enum="UniformType">
+			[url=https://vkguide.dev/docs/chapter-4/storage_buffers/]Storage buffer[/url] uniform.
 		</constant>
 		<constant name="UNIFORM_TYPE_INPUT_ATTACHMENT" value="9" enum="UniformType">
+			Input attachment uniform.
 		</constant>
 		<constant name="UNIFORM_TYPE_MAX" value="10" enum="UniformType">
+			Represents the size of the [enum UniformType] enum.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_POINTS" value="0" enum="RenderPrimitive">
+			Point rendering primitive (with constant size, regardless of distance from camera).
 		</constant>
 		<constant name="RENDER_PRIMITIVE_LINES" value="1" enum="RenderPrimitive">
+			Line list rendering primitive. Lines are drawn separated from each other.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_LINES_WITH_ADJACENCY" value="2" enum="RenderPrimitive">
+			[url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#drawing-line-lists-with-adjacency]Line list rendering primitive with adjacency.[/url]
+			[b]Note:[/b] Adjacency is only useful with geometry shaders, which Godot does not expose.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_LINESTRIPS" value="3" enum="RenderPrimitive">
+			Line strip rendering primitive. Lines drawn are connected to the previous vertex.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_LINESTRIPS_WITH_ADJACENCY" value="4" enum="RenderPrimitive">
+			[url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#drawing-line-strips-with-adjacency]Line strip rendering primitive with adjacency.[/url]
+			[b]Note:[/b] Adjacency is only useful with geometry shaders, which Godot does not expose.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TRIANGLES" value="5" enum="RenderPrimitive">
+			Triangle list rendering primitive. Triangles are drawn separated from each other.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TRIANGLES_WITH_ADJACENCY" value="6" enum="RenderPrimitive">
+			[url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#drawing-triangle-lists-with-adjacency]Triangle list rendering primitive with adjacency.[/url]
+			 [b]Note:[/b] Adjacency is only useful with geometry shaders, which Godot does not expose.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TRIANGLE_STRIPS" value="7" enum="RenderPrimitive">
+			Triangle strip rendering primitive. Triangles drawn are connected to the previous triangle.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_AJACENCY" value="8" enum="RenderPrimitive">
+			[url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#drawing-triangle-strips-with-adjacency]Triangle strip rendering primitive with adjacency.[/url]
+			[b]Note:[/b] Adjacency is only useful with geometry shaders, which Godot does not expose.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_RESTART_INDEX" value="9" enum="RenderPrimitive">
+			Triangle strip rendering primitive with [i]primitive restart[/i] enabled. Triangles drawn are connected to the previous triangle, but a primitive restart index can be specified before drawing to create a second triangle strip after the specified index.
+			[b]Note:[/b] Only compatible with indexed draws.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TESSELATION_PATCH" value="10" enum="RenderPrimitive">
+			Tessellation patch rendering primitive. Only useful with tessellation shaders, which can be used to deform these patches.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_MAX" value="11" enum="RenderPrimitive">
+			Represents the size of the [enum RenderPrimitive] enum.
 		</constant>
 		<constant name="POLYGON_CULL_DISABLED" value="0" enum="PolygonCullMode">
+			Do not use polygon front face or backface culling.
 		</constant>
 		<constant name="POLYGON_CULL_FRONT" value="1" enum="PolygonCullMode">
+			Use polygon frontface culling (faces pointing towards the camera are hidden).
 		</constant>
 		<constant name="POLYGON_CULL_BACK" value="2" enum="PolygonCullMode">
+			Use polygon backface culling (faces pointing away from the camera are hidden).
 		</constant>
 		<constant name="POLYGON_FRONT_FACE_CLOCKWISE" value="0" enum="PolygonFrontFace">
+			Clockwise winding order to determine which face of a polygon is its front face.
 		</constant>
 		<constant name="POLYGON_FRONT_FACE_COUNTER_CLOCKWISE" value="1" enum="PolygonFrontFace">
+			Counter-clockwise winding order to determine which face of a polygon is its front face.
 		</constant>
 		<constant name="STENCIL_OP_KEEP" value="0" enum="StencilOperation">
+			Keep the current stencil value.
 		</constant>
 		<constant name="STENCIL_OP_ZERO" value="1" enum="StencilOperation">
+			Set the stencil value to [code]0[/code].
 		</constant>
 		<constant name="STENCIL_OP_REPLACE" value="2" enum="StencilOperation">
+			Replace the existing stencil value with the new one.
 		</constant>
 		<constant name="STENCIL_OP_INCREMENT_AND_CLAMP" value="3" enum="StencilOperation">
+			Increment the existing stencil value and clamp to the maximum representable unsigned value if reached. Stencil bits are considered as an unsigned integer.
 		</constant>
 		<constant name="STENCIL_OP_DECREMENT_AND_CLAMP" value="4" enum="StencilOperation">
+			Decrement the existing stencil value and clamp to the minimum value if reached. Stencil bits are considered as an unsigned integer.
 		</constant>
 		<constant name="STENCIL_OP_INVERT" value="5" enum="StencilOperation">
+			Bitwise-invert the existing stencil value.
 		</constant>
 		<constant name="STENCIL_OP_INCREMENT_AND_WRAP" value="6" enum="StencilOperation">
+			Increment the stencil value and wrap around to [code]0[/code] if reaching the maximum representable unsigned. Stencil bits are considered as an unsigned integer.
 		</constant>
 		<constant name="STENCIL_OP_DECREMENT_AND_WRAP" value="7" enum="StencilOperation">
+			Decrement the stencil value and wrap around to the maximum representable unsigned if reaching the minimum. Stencil bits are considered as an unsigned integer.
 		</constant>
 		<constant name="STENCIL_OP_MAX" value="8" enum="StencilOperation">
+			Represents the size of the [enum StencilOperation] enum.
 		</constant>
 		<constant name="COMPARE_OP_NEVER" value="0" enum="CompareOperator">
+			"Never" comparison (opposite of [constant COMPARE_OP_ALWAYS]).
 		</constant>
 		<constant name="COMPARE_OP_LESS" value="1" enum="CompareOperator">
+			"Less than" comparison.
 		</constant>
 		<constant name="COMPARE_OP_EQUAL" value="2" enum="CompareOperator">
+			"Equal" comparison.
 		</constant>
 		<constant name="COMPARE_OP_LESS_OR_EQUAL" value="3" enum="CompareOperator">
+			"Less than or equal" comparison.
 		</constant>
 		<constant name="COMPARE_OP_GREATER" value="4" enum="CompareOperator">
+			"Greater than" comparison.
 		</constant>
 		<constant name="COMPARE_OP_NOT_EQUAL" value="5" enum="CompareOperator">
+			"Not equal" comparison.
 		</constant>
 		<constant name="COMPARE_OP_GREATER_OR_EQUAL" value="6" enum="CompareOperator">
+			"Greater than or equal" comparison.
 		</constant>
 		<constant name="COMPARE_OP_ALWAYS" value="7" enum="CompareOperator">
+			"Always" comparison (opposite of [constant COMPARE_OP_NEVER]).
 		</constant>
 		<constant name="COMPARE_OP_MAX" value="8" enum="CompareOperator">
+			Represents the size of the [enum CompareOperator] enum.
 		</constant>
 		<constant name="LOGIC_OP_CLEAR" value="0" enum="LogicOperation">
+			Clear logic operation (result is always [code]0[/code]). See also [constant LOGIC_OP_SET].
 		</constant>
 		<constant name="LOGIC_OP_AND" value="1" enum="LogicOperation">
+			AND logic operation.
 		</constant>
 		<constant name="LOGIC_OP_AND_REVERSE" value="2" enum="LogicOperation">
+			AND logic operation with the [i]destination[/i] operand being inverted. See also [constant LOGIC_OP_AND_INVERTED].
 		</constant>
 		<constant name="LOGIC_OP_COPY" value="3" enum="LogicOperation">
+			Copy logic operation (keeps the [i]source[/i] value as-is). See also [constant LOGIC_OP_COPY_INVERTED] and [constant LOGIC_OP_NO_OP].
 		</constant>
 		<constant name="LOGIC_OP_AND_INVERTED" value="4" enum="LogicOperation">
+			AND logic operation with the [i]source[/i] operand being inverted. See also [constant LOGIC_OP_AND_REVERSE].
 		</constant>
 		<constant name="LOGIC_OP_NO_OP" value="5" enum="LogicOperation">
+			No-op logic operation (keeps the [i]destination[/i] value as-is). See also [constant LOGIC_OP_COPY].
 		</constant>
 		<constant name="LOGIC_OP_XOR" value="6" enum="LogicOperation">
+			Exclusive or (XOR) logic operation.
 		</constant>
 		<constant name="LOGIC_OP_OR" value="7" enum="LogicOperation">
+			OR logic operation.
 		</constant>
 		<constant name="LOGIC_OP_NOR" value="8" enum="LogicOperation">
+			Not-OR (NOR) logic operation.
 		</constant>
 		<constant name="LOGIC_OP_EQUIVALENT" value="9" enum="LogicOperation">
+			Not-XOR (XNOR) logic operation.
 		</constant>
 		<constant name="LOGIC_OP_INVERT" value="10" enum="LogicOperation">
+			Invert logic operation.
 		</constant>
 		<constant name="LOGIC_OP_OR_REVERSE" value="11" enum="LogicOperation">
+			OR logic operation with the [i]destination[/i] operand being inverted. See also [constant LOGIC_OP_OR_REVERSE].
 		</constant>
 		<constant name="LOGIC_OP_COPY_INVERTED" value="12" enum="LogicOperation">
+			NOT logic operation (inverts the value). See also [constant LOGIC_OP_COPY].
 		</constant>
 		<constant name="LOGIC_OP_OR_INVERTED" value="13" enum="LogicOperation">
+			OR logic operation with the [i]source[/i] operand being inverted. See also [constant LOGIC_OP_OR_REVERSE].
 		</constant>
 		<constant name="LOGIC_OP_NAND" value="14" enum="LogicOperation">
+			Not-AND (NAND) logic operation.
 		</constant>
 		<constant name="LOGIC_OP_SET" value="15" enum="LogicOperation">
+			SET logic operation (result is always [code]1[/code]). See also [constant LOGIC_OP_CLEAR].
 		</constant>
 		<constant name="LOGIC_OP_MAX" value="16" enum="LogicOperation">
+			Represents the size of the [enum LogicOperation] enum.
 		</constant>
 		<constant name="BLEND_FACTOR_ZERO" value="0" enum="BlendFactor">
+			Constant [code]0.0[/code] blend factor.
 		</constant>
 		<constant name="BLEND_FACTOR_ONE" value="1" enum="BlendFactor">
+			Constant [code]1.0[/code] blend factor.
 		</constant>
 		<constant name="BLEND_FACTOR_SRC_COLOR" value="2" enum="BlendFactor">
+			Color blend factor is [code]source color[/code]. Alpha blend factor is [code]source alpha[/code].
 		</constant>
 		<constant name="BLEND_FACTOR_ONE_MINUS_SRC_COLOR" value="3" enum="BlendFactor">
+			Color blend factor is [code]1.0 - source color[/code]. Alpha blend factor is [code]1.0 - source alpha[/code].
 		</constant>
 		<constant name="BLEND_FACTOR_DST_COLOR" value="4" enum="BlendFactor">
+			Color blend factor is [code]destination color[/code]. Alpha blend factor is [code]destination alpha[/code].
 		</constant>
 		<constant name="BLEND_FACTOR_ONE_MINUS_DST_COLOR" value="5" enum="BlendFactor">
+			Color blend factor is [code]1.0 - destination color[/code]. Alpha blend factor is [code]1.0 - destination alpha[/code].
 		</constant>
 		<constant name="BLEND_FACTOR_SRC_ALPHA" value="6" enum="BlendFactor">
+			Color and alpha blend factor is [code]source alpha[/code].
 		</constant>
 		<constant name="BLEND_FACTOR_ONE_MINUS_SRC_ALPHA" value="7" enum="BlendFactor">
+			Color and alpha blend factor is [code]1.0 - source alpha[/code].
 		</constant>
 		<constant name="BLEND_FACTOR_DST_ALPHA" value="8" enum="BlendFactor">
+			Color and alpha blend factor is [code]destination alpha[/code].
 		</constant>
 		<constant name="BLEND_FACTOR_ONE_MINUS_DST_ALPHA" value="9" enum="BlendFactor">
+			Color and alpha blend factor is [code]1.0 - destination alpha[/code].
 		</constant>
 		<constant name="BLEND_FACTOR_CONSTANT_COLOR" value="10" enum="BlendFactor">
+			Color blend factor is [code]blend constant color[/code]. Alpha blend factor is [code]blend constant alpha[/code] (see [method draw_list_set_blend_constants]).
 		</constant>
 		<constant name="BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR" value="11" enum="BlendFactor">
+			Color blend factor is [code]1.0 - blend constant color[/code]. Alpha blend factor is [code]1.0 - blend constant alpha[/code] (see [method draw_list_set_blend_constants]).
 		</constant>
 		<constant name="BLEND_FACTOR_CONSTANT_ALPHA" value="12" enum="BlendFactor">
+			Color and alpha blend factor is [code]blend constant alpha[/code] (see [method draw_list_set_blend_constants]).
 		</constant>
 		<constant name="BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA" value="13" enum="BlendFactor">
+			Color and alpha blend factor is [code]1.0 - blend constant alpha[/code] (see [method draw_list_set_blend_constants]).
 		</constant>
 		<constant name="BLEND_FACTOR_SRC_ALPHA_SATURATE" value="14" enum="BlendFactor">
+			Color blend factor is [code]min(source alpha, 1.0 - destination alpha)[/code]. Alpha blend factor is [code]1.0[/code].
 		</constant>
 		<constant name="BLEND_FACTOR_SRC1_COLOR" value="15" enum="BlendFactor">
+			Color blend factor is [code]second source color[/code]. Alpha blend factor is [code]second source alpha[/code]. Only relevant for dual-source blending.
 		</constant>
 		<constant name="BLEND_FACTOR_ONE_MINUS_SRC1_COLOR" value="16" enum="BlendFactor">
+			Color blend factor is [code]1.0 - second source color[/code]. Alpha blend factor is [code]1.0 - second source alpha[/code]. Only relevant for dual-source blending.
 		</constant>
 		<constant name="BLEND_FACTOR_SRC1_ALPHA" value="17" enum="BlendFactor">
+			Color and alpha blend factor is [code]second source alpha[/code]. Only relevant for dual-source blending.
 		</constant>
 		<constant name="BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA" value="18" enum="BlendFactor">
+			Color and alpha blend factor is [code]1.0 - second source alpha[/code]. Only relevant for dual-source blending.
 		</constant>
 		<constant name="BLEND_FACTOR_MAX" value="19" enum="BlendFactor">
+			Represents the size of the [enum BlendFactor] enum.
 		</constant>
 		<constant name="BLEND_OP_ADD" value="0" enum="BlendOperation">
+			Additive blending operation ([code]source + destination[/code]).
 		</constant>
 		<constant name="BLEND_OP_SUBTRACT" value="1" enum="BlendOperation">
+			Subtractive blending operation ([code]source - destination[/code]).
 		</constant>
 		<constant name="BLEND_OP_REVERSE_SUBTRACT" value="2" enum="BlendOperation">
+			Reverse subtractive blending operation ([code]destination - source[/code]).
 		</constant>
 		<constant name="BLEND_OP_MINIMUM" value="3" enum="BlendOperation">
+			Minimum blending operation (keep the lowest value of the two).
 		</constant>
 		<constant name="BLEND_OP_MAXIMUM" value="4" enum="BlendOperation">
+			Maximum blending operation (keep the highest value of the two).
 		</constant>
 		<constant name="BLEND_OP_MAX" value="5" enum="BlendOperation">
+			Represents the size of the [enum BlendOperation] enum.
 		</constant>
-		<constant name="DYNAMIC_STATE_LINE_WIDTH" value="1" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_LINE_WIDTH" value="1" enum="PipelineDynamicStateFlags" is_bitfield="true">
+			Allows dynamically changing the width of rendering lines.
 		</constant>
-		<constant name="DYNAMIC_STATE_DEPTH_BIAS" value="2" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_DEPTH_BIAS" value="2" enum="PipelineDynamicStateFlags" is_bitfield="true">
+			Allows dynamically changing the depth bias.
 		</constant>
-		<constant name="DYNAMIC_STATE_BLEND_CONSTANTS" value="4" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_BLEND_CONSTANTS" value="4" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_DEPTH_BOUNDS" value="8" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_DEPTH_BOUNDS" value="8" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_STENCIL_COMPARE_MASK" value="16" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_STENCIL_COMPARE_MASK" value="16" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_STENCIL_WRITE_MASK" value="32" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_STENCIL_WRITE_MASK" value="32" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_STENCIL_REFERENCE" value="64" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_STENCIL_REFERENCE" value="64" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="INITIAL_ACTION_CLEAR" value="0" enum="InitialAction">
+		<constant name="INITIAL_ACTION_LOAD" value="0" enum="InitialAction">
+			Load the previous contents of the framebuffer.
 		</constant>
-		<constant name="INITIAL_ACTION_CLEAR_REGION" value="1" enum="InitialAction">
+		<constant name="INITIAL_ACTION_CLEAR" value="1" enum="InitialAction">
+			Clear the whole framebuffer or its specified region.
 		</constant>
-		<constant name="INITIAL_ACTION_CLEAR_REGION_CONTINUE" value="2" enum="InitialAction">
+		<constant name="INITIAL_ACTION_DISCARD" value="2" enum="InitialAction">
+			Ignore the previous contents of the framebuffer. This is the fastest option if you'll overwrite all of the pixels and don't need to read any of them.
 		</constant>
-		<constant name="INITIAL_ACTION_KEEP" value="3" enum="InitialAction">
+		<constant name="INITIAL_ACTION_MAX" value="3" enum="InitialAction">
+			Represents the size of the [enum InitialAction] enum.
 		</constant>
-		<constant name="INITIAL_ACTION_DROP" value="4" enum="InitialAction">
+		<constant name="INITIAL_ACTION_CLEAR_REGION" value="1" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_CLEAR] instead.">
 		</constant>
-		<constant name="INITIAL_ACTION_CONTINUE" value="5" enum="InitialAction">
+		<constant name="INITIAL_ACTION_CLEAR_REGION_CONTINUE" value="1" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_LOAD] instead.">
 		</constant>
-		<constant name="INITIAL_ACTION_MAX" value="6" enum="InitialAction">
+		<constant name="INITIAL_ACTION_KEEP" value="0" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_LOAD] instead.">
 		</constant>
-		<constant name="FINAL_ACTION_READ" value="0" enum="FinalAction">
+		<constant name="INITIAL_ACTION_DROP" value="2" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_DISCARD] instead.">
+		</constant>
+		<constant name="INITIAL_ACTION_CONTINUE" value="0" enum="InitialAction" deprecated="Use [constant INITIAL_ACTION_LOAD] instead.">
+		</constant>
+		<constant name="FINAL_ACTION_STORE" value="0" enum="FinalAction">
+			Store the result of the draw list in the framebuffer. This is generally what you want to do.
 		</constant>
 		<constant name="FINAL_ACTION_DISCARD" value="1" enum="FinalAction">
+			Discard the contents of the framebuffer. This is the fastest option if you don't need to use the results of the draw list.
 		</constant>
-		<constant name="FINAL_ACTION_CONTINUE" value="2" enum="FinalAction">
+		<constant name="FINAL_ACTION_MAX" value="2" enum="FinalAction">
+			Represents the size of the [enum FinalAction] enum.
 		</constant>
-		<constant name="FINAL_ACTION_MAX" value="3" enum="FinalAction">
+		<constant name="FINAL_ACTION_READ" value="0" enum="FinalAction" deprecated="Use [constant FINAL_ACTION_STORE] instead.">
+		</constant>
+		<constant name="FINAL_ACTION_CONTINUE" value="0" enum="FinalAction" deprecated="Use [constant FINAL_ACTION_STORE] instead.">
 		</constant>
 		<constant name="SHADER_STAGE_VERTEX" value="0" enum="ShaderStage">
+			Vertex shader stage. This can be used to manipulate vertices from a shader (but not create new vertices).
 		</constant>
 		<constant name="SHADER_STAGE_FRAGMENT" value="1" enum="ShaderStage">
+			Fragment shader stage (called "pixel shader" in Direct3D). This can be used to manipulate pixels from a shader.
 		</constant>
 		<constant name="SHADER_STAGE_TESSELATION_CONTROL" value="2" enum="ShaderStage">
+			Tessellation control shader stage. This can be used to create additional geometry from a shader.
 		</constant>
 		<constant name="SHADER_STAGE_TESSELATION_EVALUATION" value="3" enum="ShaderStage">
+			Tessellation evaluation shader stage. This can be used to create additional geometry from a shader.
 		</constant>
 		<constant name="SHADER_STAGE_COMPUTE" value="4" enum="ShaderStage">
+			Compute shader stage. This can be used to run arbitrary computing tasks in a shader, performing them on the GPU instead of the CPU.
 		</constant>
 		<constant name="SHADER_STAGE_MAX" value="5" enum="ShaderStage">
+			Represents the size of the [enum ShaderStage] enum.
 		</constant>
 		<constant name="SHADER_STAGE_VERTEX_BIT" value="1" enum="ShaderStage">
+			Vertex shader stage bit (see also [constant SHADER_STAGE_VERTEX]).
 		</constant>
 		<constant name="SHADER_STAGE_FRAGMENT_BIT" value="2" enum="ShaderStage">
+			Fragment shader stage bit (see also [constant SHADER_STAGE_FRAGMENT]).
 		</constant>
 		<constant name="SHADER_STAGE_TESSELATION_CONTROL_BIT" value="4" enum="ShaderStage">
+			Tessellation control shader stage bit (see also [constant SHADER_STAGE_TESSELATION_CONTROL]).
 		</constant>
 		<constant name="SHADER_STAGE_TESSELATION_EVALUATION_BIT" value="8" enum="ShaderStage">
+			Tessellation evaluation shader stage bit (see also [constant SHADER_STAGE_TESSELATION_EVALUATION]).
 		</constant>
 		<constant name="SHADER_STAGE_COMPUTE_BIT" value="16" enum="ShaderStage">
+			Compute shader stage bit (see also [constant SHADER_STAGE_COMPUTE]).
 		</constant>
 		<constant name="SHADER_LANGUAGE_GLSL" value="0" enum="ShaderLanguage">
+			Khronos' GLSL shading language (used natively by OpenGL and Vulkan). This is the language used for core Godot shaders.
 		</constant>
 		<constant name="SHADER_LANGUAGE_HLSL" value="1" enum="ShaderLanguage">
+			Microsoft's High-Level Shading Language (used natively by Direct3D, but can also be used in Vulkan).
 		</constant>
 		<constant name="PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL" value="0" enum="PipelineSpecializationConstantType">
+			Boolean specialization constant.
 		</constant>
 		<constant name="PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT" value="1" enum="PipelineSpecializationConstantType">
+			Integer specialization constant.
 		</constant>
 		<constant name="PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT" value="2" enum="PipelineSpecializationConstantType">
+			Floating-point specialization constant.
 		</constant>
 		<constant name="LIMIT_MAX_BOUND_UNIFORM_SETS" value="0" enum="Limit">
+			Maximum number of uniform sets that can be bound at a given time.
 		</constant>
 		<constant name="LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS" value="1" enum="Limit">
+			Maximum number of color framebuffer attachments that can be used at a given time.
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURES_PER_UNIFORM_SET" value="2" enum="Limit">
+			Maximum number of textures that can be used per uniform set.
 		</constant>
 		<constant name="LIMIT_MAX_SAMPLERS_PER_UNIFORM_SET" value="3" enum="Limit">
+			Maximum number of samplers that can be used per uniform set.
 		</constant>
 		<constant name="LIMIT_MAX_STORAGE_BUFFERS_PER_UNIFORM_SET" value="4" enum="Limit">
+			Maximum number of [url=https://vkguide.dev/docs/chapter-4/storage_buffers/]storage buffers[/url] per uniform set.
 		</constant>
 		<constant name="LIMIT_MAX_STORAGE_IMAGES_PER_UNIFORM_SET" value="5" enum="Limit">
+			Maximum number of storage images per uniform set.
 		</constant>
 		<constant name="LIMIT_MAX_UNIFORM_BUFFERS_PER_UNIFORM_SET" value="6" enum="Limit">
+			Maximum number of uniform buffers per uniform set.
 		</constant>
 		<constant name="LIMIT_MAX_DRAW_INDEXED_INDEX" value="7" enum="Limit">
+			Maximum index for an indexed draw command.
 		</constant>
 		<constant name="LIMIT_MAX_FRAMEBUFFER_HEIGHT" value="8" enum="Limit">
+			Maximum height of a framebuffer (in pixels).
 		</constant>
 		<constant name="LIMIT_MAX_FRAMEBUFFER_WIDTH" value="9" enum="Limit">
+			Maximum width of a framebuffer (in pixels).
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURE_ARRAY_LAYERS" value="10" enum="Limit">
+			Maximum number of texture array layers.
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURE_SIZE_1D" value="11" enum="Limit">
+			Maximum supported 1-dimensional texture size (in pixels on a single axis).
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURE_SIZE_2D" value="12" enum="Limit">
+			Maximum supported 2-dimensional texture size (in pixels on a single axis).
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURE_SIZE_3D" value="13" enum="Limit">
+			Maximum supported 3-dimensional texture size (in pixels on a single axis).
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURE_SIZE_CUBE" value="14" enum="Limit">
+			Maximum supported cubemap texture size (in pixels on a single axis of a single face).
 		</constant>
 		<constant name="LIMIT_MAX_TEXTURES_PER_SHADER_STAGE" value="15" enum="Limit">
+			Maximum number of textures per shader stage.
 		</constant>
 		<constant name="LIMIT_MAX_SAMPLERS_PER_SHADER_STAGE" value="16" enum="Limit">
+			Maximum number of samplers per shader stage.
 		</constant>
 		<constant name="LIMIT_MAX_STORAGE_BUFFERS_PER_SHADER_STAGE" value="17" enum="Limit">
+			Maximum number of [url=https://vkguide.dev/docs/chapter-4/storage_buffers/]storage buffers[/url] per shader stage.
 		</constant>
 		<constant name="LIMIT_MAX_STORAGE_IMAGES_PER_SHADER_STAGE" value="18" enum="Limit">
+			Maximum number of storage images per shader stage.
 		</constant>
 		<constant name="LIMIT_MAX_UNIFORM_BUFFERS_PER_SHADER_STAGE" value="19" enum="Limit">
+			Maximum number of uniform buffers per uniform set.
 		</constant>
 		<constant name="LIMIT_MAX_PUSH_CONSTANT_SIZE" value="20" enum="Limit">
+			Maximum size of a push constant. A lot of devices are limited to 128 bytes, so try to avoid exceeding 128 bytes in push constants to ensure compatibility even if your GPU is reporting a higher value.
 		</constant>
 		<constant name="LIMIT_MAX_UNIFORM_BUFFER_SIZE" value="21" enum="Limit">
+			Maximum size of a uniform buffer.
 		</constant>
 		<constant name="LIMIT_MAX_VERTEX_INPUT_ATTRIBUTE_OFFSET" value="22" enum="Limit">
+			Maximum vertex input attribute offset.
 		</constant>
 		<constant name="LIMIT_MAX_VERTEX_INPUT_ATTRIBUTES" value="23" enum="Limit">
+			Maximum number of vertex input attributes.
 		</constant>
 		<constant name="LIMIT_MAX_VERTEX_INPUT_BINDINGS" value="24" enum="Limit">
+			Maximum number of vertex input bindings.
 		</constant>
 		<constant name="LIMIT_MAX_VERTEX_INPUT_BINDING_STRIDE" value="25" enum="Limit">
+			Maximum vertex input binding stride.
 		</constant>
 		<constant name="LIMIT_MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT" value="26" enum="Limit">
+			Minimum uniform buffer offset alignment.
 		</constant>
 		<constant name="LIMIT_MAX_COMPUTE_SHARED_MEMORY_SIZE" value="27" enum="Limit">
+			Maximum shared memory size for compute shaders.
 		</constant>
 		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_X" value="28" enum="Limit">
+			Maximum number of workgroups for compute shaders on the X axis.
 		</constant>
 		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Y" value="29" enum="Limit">
+			Maximum number of workgroups for compute shaders on the Y axis.
 		</constant>
 		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Z" value="30" enum="Limit">
+			Maximum number of workgroups for compute shaders on the Z axis.
 		</constant>
 		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_INVOCATIONS" value="31" enum="Limit">
+			Maximum number of workgroup invocations for compute shaders.
 		</constant>
 		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_X" value="32" enum="Limit">
+			Maximum workgroup size for compute shaders on the X axis.
 		</constant>
 		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Y" value="33" enum="Limit">
+			Maximum workgroup size for compute shaders on the Y axis.
 		</constant>
 		<constant name="LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z" value="34" enum="Limit">
+			Maximum workgroup size for compute shaders on the Z axis.
+		</constant>
+		<constant name="LIMIT_MAX_VIEWPORT_DIMENSIONS_X" value="35" enum="Limit">
+			Maximum viewport width (in pixels).
+		</constant>
+		<constant name="LIMIT_MAX_VIEWPORT_DIMENSIONS_Y" value="36" enum="Limit">
+			Maximum viewport height (in pixels).
 		</constant>
 		<constant name="MEMORY_TEXTURES" value="0" enum="MemoryType">
+			Memory taken by textures.
 		</constant>
 		<constant name="MEMORY_BUFFERS" value="1" enum="MemoryType">
+			Memory taken by buffers.
 		</constant>
 		<constant name="MEMORY_TOTAL" value="2" enum="MemoryType">
+			Total memory taken. This is greater than the sum of [constant MEMORY_TEXTURES] and [constant MEMORY_BUFFERS], as it also includes miscellaneous memory usage.
 		</constant>
 		<constant name="INVALID_ID" value="-1">
+			Returned by functions that return an ID if a value is invalid.
 		</constant>
 		<constant name="INVALID_FORMAT_ID" value="-1">
+			Returned by functions that return a format ID if a value is invalid.
 		</constant>
 	</constants>
 </class>

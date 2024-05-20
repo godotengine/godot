@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SubViewport" inherits="Viewport" version="4.0">
+<class name="SubViewport" inherits="Viewport" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Creates a sub-view into the screen.
+		An interface to a game world that doesn't create a window or draw to the screen directly.
 	</brief_description>
 	<description>
+		[SubViewport] Isolates a rectangular region of a scene to be displayed independently. This can be used, for example, to display UI in 3D space.
+		[b]Note:[/b] [SubViewport] is a [Viewport] that isn't a [Window], i.e. it doesn't draw anything by itself. To display anything, [SubViewport] must have a non-zero size and be either put inside a [SubViewportContainer] or assigned to a [ViewportTexture].
 	</description>
 	<tutorials>
-		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
-		<link title="Viewports tutorial index">https://docs.godotengine.org/en/latest/tutorials/viewports/index.html</link>
-		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
-		<link title="3D in 2D Demo">https://godotengine.org/asset-library/asset/128</link>
-		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>
-		<link title="Screen Capture Demo">https://godotengine.org/asset-library/asset/130</link>
-		<link title="Dynamic Split Screen Demo">https://godotengine.org/asset-library/asset/541</link>
-		<link title="3D Viewport Scaling Demo">https://godotengine.org/asset-library/asset/586</link>
+		<link title="Using Viewports">$DOCS_URL/tutorials/rendering/viewports.html</link>
+		<link title="Viewport and canvas transforms">$DOCS_URL/tutorials/2d/2d_transforms.html</link>
+		<link title="GUI in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2807</link>
+		<link title="3D in 2D Viewport Demo">https://godotengine.org/asset-library/asset/2804</link>
+		<link title="2D in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2803</link>
+		<link title="Screen Capture Demo">https://godotengine.org/asset-library/asset/2808</link>
+		<link title="Dynamic Split Screen Demo">https://godotengine.org/asset-library/asset/2806</link>
+		<link title="3D Resolution Scaling Demo">https://godotengine.org/asset-library/asset/2805</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="render_target_clear_mode" type="int" setter="set_clear_mode" getter="get_clear_mode" enum="SubViewport.ClearMode" default="0">
 			The clear mode when the sub-viewport is used as a render target.
@@ -26,7 +26,8 @@
 			The update mode when the sub-viewport is used as a render target.
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(512, 512)">
-			The width and height of the sub-viewport.
+			The width and height of the sub-viewport. Must be set to a value greater than or equal to 2 pixels on both dimensions. Otherwise, nothing will be displayed.
+			[b]Note:[/b] If the parent node is a [SubViewportContainer] and its [member SubViewportContainer.stretch] is [code]true[/code], the viewport size cannot be changed manually.
 		</member>
 		<member name="size_2d_override" type="Vector2i" setter="set_size_2d_override" getter="get_size_2d_override" default="Vector2i(0, 0)">
 			The 2D size override of the sub-viewport. If either the width or height is [code]0[/code], the override is disabled.

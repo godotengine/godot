@@ -1,44 +1,42 @@
-/*************************************************************************/
-/*  texture_layered_editor_plugin.cpp                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  texture_layered_editor_plugin.cpp                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "texture_layered_editor_plugin.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/resource_loader.h"
-#include "editor/editor_settings.h"
+#include "scene/gui/label.h"
 
-void TextureLayeredEditor::_gui_input(Ref<InputEvent> p_event) {
+void TextureLayeredEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && mm->get_button_mask() & MOUSE_BUTTON_MASK_LEFT) {
+	if (mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 		y_rot += -mm->get_relative().x * 0.01;
 		x_rot += mm->get_relative().y * 0.01;
 		_update_material();
@@ -50,18 +48,17 @@ void TextureLayeredEditor::_texture_rect_draw() {
 }
 
 void TextureLayeredEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		//get_scene()->connect("node_removed",this,"_node_removed");
-	}
-	if (p_what == NOTIFICATION_RESIZED) {
-		_texture_rect_update_area();
-	}
+	switch (p_what) {
+		case NOTIFICATION_RESIZED: {
+			_texture_rect_update_area();
+		} break;
 
-	if (p_what == NOTIFICATION_DRAW) {
-		Ref<Texture2D> checkerboard = get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons"));
-		Size2 size = get_size();
+		case NOTIFICATION_DRAW: {
+			Ref<Texture2D> checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
+			Size2 size = get_size();
 
-		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
+			draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
+		} break;
 	}
 }
 
@@ -69,13 +66,13 @@ void TextureLayeredEditor::_texture_changed() {
 	if (!is_visible()) {
 		return;
 	}
-	update();
+	queue_redraw();
 }
 
 void TextureLayeredEditor::_update_material() {
-	materials[0]->set_shader_param("layer", layer->get_value());
-	materials[2]->set_shader_param("layer", layer->get_value());
-	materials[texture->get_layered_type()]->set_shader_param("tex", texture->get_rid());
+	materials[0]->set_shader_parameter("layer", layer->get_value());
+	materials[2]->set_shader_parameter("layer", layer->get_value());
+	materials[texture->get_layered_type()]->set_shader_parameter("tex", texture->get_rid());
 
 	Vector3 v(1, 1, 1);
 	v.normalize();
@@ -84,10 +81,10 @@ void TextureLayeredEditor::_update_material() {
 	b.rotate(Vector3(1, 0, 0), x_rot);
 	b.rotate(Vector3(0, 1, 0), y_rot);
 
-	materials[1]->set_shader_param("normal", v);
-	materials[1]->set_shader_param("rot", b);
-	materials[2]->set_shader_param("normal", v);
-	materials[2]->set_shader_param("rot", b);
+	materials[1]->set_shader_parameter("normal", v);
+	materials[1]->set_shader_parameter("rot", b);
+	materials[2]->set_shader_parameter("normal", v);
+	materials[2]->set_shader_parameter("rot", b);
 
 	String format = Image::get_format_name(texture->get_format());
 
@@ -106,6 +103,8 @@ void TextureLayeredEditor::_update_material() {
 void TextureLayeredEditor::_make_shaders() {
 	shaders[0].instantiate();
 	shaders[0]->set_code(R"(
+// TextureLayeredEditor preview shader (2D array).
+
 shader_type canvas_item;
 
 uniform sampler2DArray tex;
@@ -118,6 +117,8 @@ void fragment() {
 
 	shaders[1].instantiate();
 	shaders[1]->set_code(R"(
+// TextureLayeredEditor preview shader (cubemap).
+
 shader_type canvas_item;
 
 uniform samplerCube tex;
@@ -132,6 +133,8 @@ void fragment() {
 
 	shaders[2].instantiate();
 	shaders[2]->set_code(R"(
+// TextureLayeredEditor preview shader (cubemap array).
+
 shader_type canvas_item;
 
 uniform samplerCubeArray tex;
@@ -178,7 +181,7 @@ void TextureLayeredEditor::_texture_rect_update_area() {
 
 void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 	if (!texture.is_null()) {
-		texture->disconnect("changed", callable_mp(this, &TextureLayeredEditor::_texture_changed));
+		texture->disconnect_changed(callable_mp(this, &TextureLayeredEditor::_texture_changed));
 	}
 
 	texture = p_texture;
@@ -188,8 +191,8 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 			_make_shaders();
 		}
 
-		texture->connect("changed", callable_mp(this, &TextureLayeredEditor::_texture_changed));
-		update();
+		texture->connect_changed(callable_mp(this, &TextureLayeredEditor::_texture_changed));
+		queue_redraw();
 		texture_rect->set_material(materials[texture->get_layered_type()]);
 		setting = true;
 		if (texture->get_layered_type() == TextureLayered::LAYERED_TYPE_2D_ARRAY) {
@@ -213,43 +216,38 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 	}
 }
 
-void TextureLayeredEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_gui_input"), &TextureLayeredEditor::_gui_input);
-	ClassDB::bind_method(D_METHOD("_layer_changed"), &TextureLayeredEditor::_layer_changed);
-}
-
 TextureLayeredEditor::TextureLayeredEditor() {
 	set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
 	set_custom_minimum_size(Size2(1, 150));
+
 	texture_rect = memnew(Control);
-	texture_rect->connect("draw", callable_mp(this, &TextureLayeredEditor::_texture_rect_draw));
 	texture_rect->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	add_child(texture_rect);
+	texture_rect->connect(SceneStringName(draw), callable_mp(this, &TextureLayeredEditor::_texture_rect_draw));
 
 	layer = memnew(SpinBox);
 	layer->set_step(1);
 	layer->set_max(100);
+	layer->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	layer->set_modulate(Color(1, 1, 1, 0.8));
 	add_child(layer);
 	layer->set_anchor(SIDE_RIGHT, 1);
 	layer->set_anchor(SIDE_LEFT, 1);
-	layer->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	layer->set_modulate(Color(1, 1, 1, 0.8));
+	layer->connect("value_changed", callable_mp(this, &TextureLayeredEditor::_layer_changed));
+
 	info = memnew(Label);
+	info->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	info->add_theme_color_override("font_color", Color(1, 1, 1, 1));
+	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5));
+	info->add_theme_constant_override("shadow_outline_size", 1);
+	info->add_theme_constant_override("shadow_offset_x", 2);
+	info->add_theme_constant_override("shadow_offset_y", 2);
 	add_child(info);
 	info->set_anchor(SIDE_RIGHT, 1);
 	info->set_anchor(SIDE_LEFT, 1);
 	info->set_anchor(SIDE_BOTTOM, 1);
 	info->set_anchor(SIDE_TOP, 1);
-	info->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	info->set_v_grow_direction(GROW_DIRECTION_BEGIN);
-	info->add_theme_color_override("font_color", Color(1, 1, 1, 1));
-	info->add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5));
-	info->add_theme_constant_override("shadow_as_outline", 1);
-	info->add_theme_constant_override("shadow_offset_x", 2);
-	info->add_theme_constant_override("shadow_offset_y", 2);
-
-	setting = false;
-	layer->connect("value_changed", Callable(this, "_layer_changed"));
 }
 
 TextureLayeredEditor::~TextureLayeredEditor() {
@@ -272,7 +270,7 @@ void EditorInspectorPluginLayeredTexture::parse_begin(Object *p_object) {
 	add_custom_control(editor);
 }
 
-TextureLayeredEditorPlugin::TextureLayeredEditorPlugin(EditorNode *p_node) {
+TextureLayeredEditorPlugin::TextureLayeredEditorPlugin() {
 	Ref<EditorInspectorPluginLayeredTexture> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

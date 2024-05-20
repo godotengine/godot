@@ -87,14 +87,14 @@ uset_addRange(USet* set, UChar32 start, UChar32 end) {
 }
 
 U_CAPI void U_EXPORT2
-uset_addString(USet* set, const UChar* str, int32_t strLen) {
+uset_addString(USet* set, const char16_t* str, int32_t strLen) {
     // UnicodeString handles -1 for strLen
     UnicodeString s(strLen<0, str, strLen);
     ((UnicodeSet*) set)->UnicodeSet::add(s);
 }
 
 U_CAPI void U_EXPORT2
-uset_addAllCodePoints(USet* set, const UChar *str, int32_t strLen) {
+uset_addAllCodePoints(USet* set, const char16_t *str, int32_t strLen) {
     // UnicodeString handles -1 for strLen
     UnicodeString s(str, strLen);
     ((UnicodeSet*) set)->UnicodeSet::addAll(s);
@@ -111,13 +111,13 @@ uset_removeRange(USet* set, UChar32 start, UChar32 end) {
 }
 
 U_CAPI void U_EXPORT2
-uset_removeString(USet* set, const UChar* str, int32_t strLen) {
+uset_removeString(USet* set, const char16_t* str, int32_t strLen) {
     UnicodeString s(strLen==-1, str, strLen);
     ((UnicodeSet*) set)->UnicodeSet::remove(s);
 }
 
 U_CAPI void U_EXPORT2
-uset_removeAllCodePoints(USet *set, const UChar *str, int32_t length) {
+uset_removeAllCodePoints(USet *set, const char16_t *str, int32_t length) {
     UnicodeString s(length==-1, str, length);
     ((UnicodeSet*) set)->UnicodeSet::removeAll(s);
 }
@@ -133,13 +133,13 @@ uset_retain(USet* set, UChar32 start, UChar32 end) {
 }
 
 U_CAPI void U_EXPORT2
-uset_retainString(USet *set, const UChar *str, int32_t length) {
+uset_retainString(USet *set, const char16_t *str, int32_t length) {
     UnicodeString s(length==-1, str, length);
     ((UnicodeSet*) set)->UnicodeSet::retain(s);
 }
 
 U_CAPI void U_EXPORT2
-uset_retainAllCodePoints(USet *set, const UChar *str, int32_t length) {
+uset_retainAllCodePoints(USet *set, const char16_t *str, int32_t length) {
     UnicodeString s(length==-1, str, length);
     ((UnicodeSet*) set)->UnicodeSet::retainAll(s);
 }
@@ -165,13 +165,13 @@ uset_complementRange(USet *set, UChar32 start, UChar32 end) {
 }
 
 U_CAPI void U_EXPORT2
-uset_complementString(USet *set, const UChar *str, int32_t length) {
+uset_complementString(USet *set, const char16_t *str, int32_t length) {
     UnicodeString s(length==-1, str, length);
     ((UnicodeSet*) set)->UnicodeSet::complement(s);
 }
 
 U_CAPI void U_EXPORT2
-uset_complementAllCodePoints(USet *set, const UChar *str, int32_t length) {
+uset_complementAllCodePoints(USet *set, const char16_t *str, int32_t length) {
     UnicodeString s(length==-1, str, length);
     ((UnicodeSet*) set)->UnicodeSet::complementAll(s);
 }
@@ -197,6 +197,11 @@ uset_isEmpty(const USet* set) {
 }
 
 U_CAPI UBool U_EXPORT2
+uset_hasStrings(const USet* set) {
+    return ((const UnicodeSet*) set)->UnicodeSet::hasStrings();
+}
+
+U_CAPI UBool U_EXPORT2
 uset_contains(const USet* set, UChar32 c) {
     return ((const UnicodeSet*) set)->UnicodeSet::contains(c);
 }
@@ -207,7 +212,7 @@ uset_containsRange(const USet* set, UChar32 start, UChar32 end) {
 }
 
 U_CAPI UBool U_EXPORT2
-uset_containsString(const USet* set, const UChar* str, int32_t strLen) {
+uset_containsString(const USet* set, const char16_t* str, int32_t strLen) {
     UnicodeString s(strLen==-1, str, strLen);
     return ((const UnicodeSet*) set)->UnicodeSet::contains(s);
 }
@@ -218,7 +223,7 @@ uset_containsAll(const USet* set1, const USet* set2) {
 }
 
 U_CAPI UBool U_EXPORT2
-uset_containsAllCodePoints(const USet* set, const UChar *str, int32_t strLen) {
+uset_containsAllCodePoints(const USet* set, const char16_t *str, int32_t strLen) {
     // Create a string alias, since nothing is being added to the set.
     UnicodeString s(strLen==-1, str, strLen);
     return ((const UnicodeSet*) set)->UnicodeSet::containsAll(s);
@@ -235,12 +240,12 @@ uset_containsSome(const USet* set1, const USet* set2) {
 }
 
 U_CAPI int32_t U_EXPORT2
-uset_span(const USet *set, const UChar *s, int32_t length, USetSpanCondition spanCondition) {
+uset_span(const USet *set, const char16_t *s, int32_t length, USetSpanCondition spanCondition) {
     return ((UnicodeSet*) set)->UnicodeSet::span(s, length, spanCondition);
 }
 
 U_CAPI int32_t U_EXPORT2
-uset_spanBack(const USet *set, const UChar *s, int32_t length, USetSpanCondition spanCondition) {
+uset_spanBack(const USet *set, const char16_t *s, int32_t length, USetSpanCondition spanCondition) {
     return ((UnicodeSet*) set)->UnicodeSet::spanBack(s, length, spanCondition);
 }
 
@@ -297,6 +302,11 @@ private:
 U_NAMESPACE_END
 
 U_CAPI int32_t U_EXPORT2
+uset_getRangeCount(const USet *set) {
+    return ((const UnicodeSet *)set)->UnicodeSet::getRangeCount();
+}
+
+U_CAPI int32_t U_EXPORT2
 uset_getItemCount(const USet* uset) {
     const UnicodeSet& set = *(const UnicodeSet*)uset;
     return set.getRangeCount() + USetAccess::getStringCount(set);
@@ -305,7 +315,7 @@ uset_getItemCount(const USet* uset) {
 U_CAPI int32_t U_EXPORT2
 uset_getItem(const USet* uset, int32_t itemIndex,
              UChar32* start, UChar32* end,
-             UChar* str, int32_t strCapacity,
+             char16_t* str, int32_t strCapacity,
              UErrorCode* ec) {
     if (U_FAILURE(*ec)) return 0;
     const UnicodeSet& set = *(const UnicodeSet*)uset;
@@ -330,21 +340,16 @@ uset_getItem(const USet* uset, int32_t itemIndex,
     }
 }
 
-//U_CAPI int32_t U_EXPORT2
-//uset_getRangeCount(const USet* set) {
-//    return ((const UnicodeSet*) set)->getRangeCount();
-//}
-//
 //U_CAPI UBool U_EXPORT2
 //uset_getRange(const USet* set, int32_t rangeIndex,
 //              UChar32* pStart, UChar32* pEnd) {
 //    if ((uint32_t) rangeIndex >= (uint32_t) uset_getRangeCount(set)) {
-//        return FALSE;
+//        return false;
 //    }
 //    const UnicodeSet* us = (const UnicodeSet*) set;
 //    *pStart = us->getRangeStart(rangeIndex);
 //    *pEnd = us->getRangeEnd(rangeIndex);
-//    return TRUE;
+//    return true;
 //}
 
 /*
@@ -355,7 +360,7 @@ uset_getItem(const USet* uset, int32_t itemIndex,
  * therefore all BMP code points precede all supplementary code points.
  *
  * Store each supplementary code point in 2 16-bit units,
- * simply with higher-then-lower 16-bit halfs.
+ * simply with higher-then-lower 16-bit halves.
  *
  * Precede the entire list with the length.
  * If there are supplementary code points, then set bit 15 in the length
@@ -367,7 +372,7 @@ uset_getItem(const USet* uset, int32_t itemIndex,
  */
 U_CAPI int32_t U_EXPORT2
 uset_serialize(const USet* set, uint16_t* dest, int32_t destCapacity, UErrorCode* ec) {
-    if (ec==NULL || U_FAILURE(*ec)) {
+    if (ec==nullptr || U_FAILURE(*ec)) {
         return 0;
     }
 
@@ -378,12 +383,12 @@ U_CAPI UBool U_EXPORT2
 uset_getSerializedSet(USerializedSet* fillSet, const uint16_t* src, int32_t srcLength) {
     int32_t length;
 
-    if(fillSet==NULL) {
-        return FALSE;
+    if(fillSet==nullptr) {
+        return false;
     }
-    if(src==NULL || srcLength<=0) {
+    if(src==nullptr || srcLength<=0) {
         fillSet->length=fillSet->bmpLength=0;
-        return FALSE;
+        return false;
     }
 
     length=*src++;
@@ -392,25 +397,25 @@ uset_getSerializedSet(USerializedSet* fillSet, const uint16_t* src, int32_t srcL
         length&=0x7fff;
         if(srcLength<(2+length)) {
             fillSet->length=fillSet->bmpLength=0;
-            return FALSE;
+            return false;
         }
         fillSet->bmpLength=*src++;
     } else {
         /* only BMP values */
         if(srcLength<(1+length)) {
             fillSet->length=fillSet->bmpLength=0;
-            return FALSE;
+            return false;
         }
         fillSet->bmpLength=length;
     }
     fillSet->array=src;
     fillSet->length=length;
-    return TRUE;
+    return true;
 }
 
 U_CAPI void U_EXPORT2
 uset_setSerializedToOne(USerializedSet* fillSet, UChar32 c) {
-    if(fillSet==NULL || (uint32_t)c>0x10ffff) {
+    if(fillSet==nullptr || (uint32_t)c>0x10ffff) {
         return;
     }
 
@@ -445,8 +450,8 @@ U_CAPI UBool U_EXPORT2
 uset_serializedContains(const USerializedSet* set, UChar32 c) {
     const uint16_t* array;
 
-    if(set==NULL || (uint32_t)c>0x10ffff) {
-        return FALSE;
+    if(set==nullptr || (uint32_t)c>0x10ffff) {
+        return false;
     }
 
     array=set->array;
@@ -501,7 +506,7 @@ uset_serializedContains(const USerializedSet* set, UChar32 c) {
 
 U_CAPI int32_t U_EXPORT2
 uset_getSerializedRangeCount(const USerializedSet* set) {
-    if(set==NULL) {
+    if(set==nullptr) {
         return 0;
     }
 
@@ -514,8 +519,8 @@ uset_getSerializedRange(const USerializedSet* set, int32_t rangeIndex,
     const uint16_t* array;
     int32_t bmpLength, length;
 
-    if(set==NULL || rangeIndex<0 || pStart==NULL || pEnd==NULL) {
-        return FALSE;
+    if(set==nullptr || rangeIndex<0 || pStart==nullptr || pEnd==nullptr) {
+        return false;
     }
 
     array=set->array;
@@ -532,7 +537,7 @@ uset_getSerializedRange(const USerializedSet* set, int32_t rangeIndex,
         } else {
             *pEnd=0x10ffff;
         }
-        return TRUE;
+        return true;
     } else {
         rangeIndex-=bmpLength;
         rangeIndex*=2; /* address pairs of pairs of units */
@@ -546,9 +551,9 @@ uset_getSerializedRange(const USerializedSet* set, int32_t rangeIndex,
             } else {
                 *pEnd=0x10ffff;
             }
-            return TRUE;
+            return true;
         } else {
-            return FALSE;
+            return false;
         }
     }
 }
@@ -585,15 +590,15 @@ uset_getSerializedRange(const USerializedSet* set, int32_t rangeIndex,
 // addRemove(USet* set, UChar32 c, int32_t doRemove) {
 //     int32_t i, length, more;
 // 
-//     if(set==NULL || (uint32_t)c>0x10ffff) {
-//         return FALSE;
+//     if(set==nullptr || (uint32_t)c>0x10ffff) {
+//         return false;
 //     }
 // 
 //     length=set->length;
 //     i=findChar(set->array, length, c);
 //     if((i&1)^doRemove) {
 //         /* c is already in the set */
-//         return TRUE;
+//         return true;
 //     }
 // 
 //     /* how many more array items do we need? */
@@ -610,7 +615,7 @@ uset_getSerializedRange(const USerializedSet* set, int32_t rangeIndex,
 //                 }
 //             }
 //         }
-//         return TRUE;
+//         return true;
 //     } else if(i>0 && c==set->array[i-1]) {
 //         /* c is just after the previous range, extend that in-place by one */
 //         if(++c<=0x10ffff) {
@@ -627,7 +632,7 @@ uset_getSerializedRange(const USerializedSet* set, int32_t rangeIndex,
 //             /* extend the previous range (had limit 0x10ffff) to the end of Unicode */
 //             set->length=i-1;
 //         }
-//         return TRUE;
+//         return true;
 //     } else if(i==length && c==0x10ffff) {
 //         /* insert one range limit c */
 //         more=1;
@@ -641,8 +646,8 @@ uset_getSerializedRange(const USerializedSet* set, int32_t rangeIndex,
 //         /* reallocate */
 //         int32_t newCapacity=set->capacity+set->capacity/2+USET_GROW_DELTA;
 //         UChar32* newArray=(UChar32* )uprv_malloc(newCapacity*4);
-//         if(newArray==NULL) {
-//             return FALSE;
+//         if(newArray==nullptr) {
+//             return false;
 //         }
 //         set->capacity=newCapacity;
 //         uprv_memcpy(newArray, set->array, length*4);
@@ -662,7 +667,7 @@ uset_getSerializedRange(const USerializedSet* set, int32_t rangeIndex,
 //     }
 //     set->length+=more;
 // 
-//     return TRUE;
+//     return true;
 // }
 // 
 // U_CAPI UBool U_EXPORT2

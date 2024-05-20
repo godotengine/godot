@@ -1,23 +1,18 @@
 ext.versions = [
-    androidGradlePlugin: '4.2.1',
-    compileSdk         : 29,
-    minSdk             : 18,
-    targetSdk          : 29,
-    buildTools         : '30.0.3',
-    supportCoreUtils   : '1.0.0',
-    kotlinVersion      : '1.5.10',
-    v4Support          : '1.0.0',
-    javaVersion        : 1.8,
-    ndkVersion         : '21.4.7075529' // Also update 'platform/android/detect.py#get_project_ndk_version()' when this is updated.
+    androidGradlePlugin: '8.2.0',
+    compileSdk         : 34,
+    // Also update 'platform/android/export/export_plugin.cpp#OPENGL_MIN_SDK_VERSION'
+    minSdk             : 21,
+    // Also update 'platform/android/export/export_plugin.cpp#DEFAULT_TARGET_SDK_VERSION'
+    targetSdk          : 34,
+    buildTools         : '34.0.0',
+    kotlinVersion      : '1.9.20',
+    fragmentVersion    : '1.6.2',
+    nexusPublishVersion: '1.3.0',
+    javaVersion        : JavaVersion.VERSION_17,
+    // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
+    ndkVersion         : '23.2.8568313'
 
-]
-
-ext.libraries = [
-    androidGradlePlugin: "com.android.tools.build:gradle:$versions.androidGradlePlugin",
-    supportCoreUtils   : "androidx.legacy:legacy-support-core-utils:$versions.supportCoreUtils",
-    kotlinGradlePlugin : "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlinVersion",
-    kotlinStdLib       : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlinVersion",
-    v4Support          : "androidx.legacy:legacy-support-v4:$versions.v4Support"
 ]
 
 ext.getExportPackageName = { ->
@@ -50,11 +45,35 @@ ext.getExportVersionName = { ->
     return versionName
 }
 
+ext.getExportMinSdkVersion = { ->
+    String minSdkVersion = project.hasProperty("export_version_min_sdk") ? project.property("export_version_min_sdk") : ""
+    if (minSdkVersion == null || minSdkVersion.isEmpty()) {
+        minSdkVersion = "$versions.minSdk"
+    }
+    try {
+        return Integer.parseInt(minSdkVersion)
+    } catch (NumberFormatException ignored) {
+        return versions.minSdk
+    }
+}
+
+ext.getExportTargetSdkVersion = { ->
+    String targetSdkVersion = project.hasProperty("export_version_target_sdk") ? project.property("export_version_target_sdk") : ""
+    if (targetSdkVersion == null || targetSdkVersion.isEmpty()) {
+        targetSdkVersion = "$versions.targetSdk"
+    }
+    try {
+        return Integer.parseInt(targetSdkVersion)
+    } catch (NumberFormatException ignored) {
+        return versions.targetSdk
+    }
+}
+
 ext.getGodotEditorVersion = { ->
     String editorVersion = project.hasProperty("godot_editor_version") ? project.property("godot_editor_version") : ""
     if (editorVersion == null || editorVersion.isEmpty()) {
         // Try the library version first
-        editorVersion = getGodotLibraryVersion()
+        editorVersion = getGodotLibraryVersionName()
 
         if (editorVersion.isEmpty()) {
             // Fallback value.
@@ -64,13 +83,27 @@ ext.getGodotEditorVersion = { ->
     return editorVersion
 }
 
-ext.getGodotLibraryVersion = { ->
+ext.getGodotLibraryVersionCode = { ->
+    String versionName = ""
+    int versionCode = 1
+    (versionName, versionCode) = getGodotLibraryVersion()
+    return versionCode
+}
+
+ext.getGodotLibraryVersionName = { ->
+    String versionName = ""
+    int versionCode = 1
+    (versionName, versionCode) = getGodotLibraryVersion()
+    return versionName
+}
+
+ext.generateGodotLibraryVersion = { List<String> requiredKeys ->
     // Attempt to read the version from the `version.py` file.
-    String libraryVersion = ""
+    String libraryVersionName = ""
+    int libraryVersionCode = 0
 
     File versionFile = new File("../../../version.py")
     if (versionFile.isFile()) {
-        List<String> requiredKeys = ["major", "minor", "patch", "status", "module_config"]
         def map = [:]
 
         List<String> lines = versionFile.readLines()
@@ -88,32 +121,90 @@ ext.getGodotLibraryVersion = { ->
         }
 
         if (requiredKeys.empty) {
-            libraryVersion = map.values().join(".")
+            libraryVersionName = map.values().join(".")
+            try {
+                if (map.containsKey("status")) {
+                    int statusCode = 0
+                    String statusValue = map["status"]
+                    if (statusValue == null) {
+                        statusCode = 0
+                    } else if (statusValue.startsWith("dev")) {
+                        statusCode = 1
+                    } else if (statusValue.startsWith("alpha")) {
+                        statusCode = 2
+                    } else if (statusValue.startsWith("beta")) {
+                        statusCode = 3
+                    } else if (statusValue.startsWith("rc")) {
+                        statusCode = 4
+                    } else if (statusValue.startsWith("stable")) {
+                        statusCode = 5
+                    } else {
+                        statusCode = 0
+                    }
+
+                    libraryVersionCode = statusCode
+                }
+
+                if (map.containsKey("patch")) {
+                    libraryVersionCode += Integer.parseInt(map["patch"]) * 10
+                }
+
+                if (map.containsKey("minor")) {
+                    libraryVersionCode += (Integer.parseInt(map["minor"]) * 1000)
+                }
+
+                if (map.containsKey("major")) {
+                    libraryVersionCode += (Integer.parseInt(map["major"]) * 100000)
+                }
+            } catch (NumberFormatException ignore) {
+                libraryVersionCode = 1
+            }
         }
     }
 
-    if (libraryVersion.isEmpty()) {
+    if (libraryVersionName.isEmpty()) {
         // Fallback value in case we're unable to read the file.
-        libraryVersion = "custom_build"
+        libraryVersionName = "custom_build"
     }
-    return libraryVersion
+
+    if (libraryVersionCode == 0) {
+        libraryVersionCode = 1
+    }
+
+    return [libraryVersionName, libraryVersionCode]
+}
+
+ext.getGodotLibraryVersion = { ->
+    List<String> requiredKeys = ["major", "minor", "patch", "status", "module_config"]
+    return generateGodotLibraryVersion(requiredKeys)
+}
+
+ext.getGodotPublishVersion = { ->
+    List<String> requiredKeys = ["major", "minor", "patch", "status"]
+    String versionName = ""
+    int versionCode = 1
+    (versionName, versionCode) = generateGodotLibraryVersion(requiredKeys)
+    if (!versionName.endsWith("stable")) {
+        versionName += "-SNAPSHOT"
+    }
+    return versionName
 }
 
 final String VALUE_SEPARATOR_REGEX = "\\|"
 
 // get the list of ABIs the project should be exported to
 ext.getExportEnabledABIs = { ->
-    String enabledABIs = project.hasProperty("export_enabled_abis") ? project.property("export_enabled_abis") : "";
+    String enabledABIs = project.hasProperty("export_enabled_abis") ? project.property("export_enabled_abis") : ""
     if (enabledABIs == null || enabledABIs.isEmpty()) {
         enabledABIs = "armeabi-v7a|arm64-v8a|x86|x86_64|"
     }
-    Set<String> exportAbiFilter = [];
+    Set<String> exportAbiFilter = []
     for (String abi_name : enabledABIs.split(VALUE_SEPARATOR_REGEX)) {
         if (!abi_name.trim().isEmpty()){
-            exportAbiFilter.add(abi_name);
+            exportAbiFilter.add(abi_name)
         }
     }
-    return exportAbiFilter;
+    return exportAbiFilter
 }
 
 ext.getExportPath = {
@@ -269,4 +360,27 @@ ext.shouldSign = { ->
 
 ext.shouldNotStrip = { ->
     return isAndroidStudio() || project.hasProperty("doNotStrip")
+}
+
+/**
+ * Whether to use the legacy convention of compressing all .so files in the APK.
+ *
+ * For more background, see:
+ * - https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs
+ * - https://stackoverflow.com/a/44704840
+ */
+ext.shouldUseLegacyPackaging = { ->
+    int minSdk = getExportMinSdkVersion()
+    if (minSdk < 23) {
+        // Enforce the default behavior for compatibility with device running api < 23
+        return true
+    }
+
+    String legacyPackagingFlag = project.hasProperty("compress_native_libraries") ? project.property("compress_native_libraries") : ""
+    if (legacyPackagingFlag != null && !legacyPackagingFlag.isEmpty()) {
+        return Boolean.parseBoolean(legacyPackagingFlag)
+    }
+
+    // Default behavior for minSdk >= 23
+    return false
 }

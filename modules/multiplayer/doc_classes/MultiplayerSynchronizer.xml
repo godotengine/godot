@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MultiplayerSynchronizer" inherits="Node" keywords="network" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Synchronizes properties from the multiplayer authority to the remote peers.
+	</brief_description>
+	<description>
+		By default, [MultiplayerSynchronizer] synchronizes configured properties to all peers.
+		Visibility can be handled directly with [method set_visibility_for] or as-needed with [method add_visibility_filter] and [method update_visibility].
+		[MultiplayerSpawner]s will handle nodes according to visibility of synchronizers as long as the node at [member root_path] was spawned by one.
+		Internally, [MultiplayerSynchronizer] uses [method MultiplayerAPI.object_configuration_add] to notify synchronization start passing the [Node] at [member root_path] as the [code]object[/code] and itself as the [code]configuration[/code], and uses [method MultiplayerAPI.object_configuration_remove] to notify synchronization end in a similar way.
+		[b]Note:[/b] Synchronization is not supported for [Object] type properties, like [Resource]. Properties that are unique to each peer, like the instance IDs of [Object]s (see [method Object.get_instance_id]) or [RID]s, will also not work in synchronization.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_visibility_filter">
+			<return type="void" />
+			<param index="0" name="filter" type="Callable" />
+			<description>
+				Adds a peer visibility filter for this synchronizer.
+				[param filter] should take a peer ID [int] and return a [bool].
+			</description>
+		</method>
+		<method name="get_visibility_for" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="peer" type="int" />
+			<description>
+				Queries the current visibility for peer [param peer].
+			</description>
+		</method>
+		<method name="remove_visibility_filter">
+			<return type="void" />
+			<param index="0" name="filter" type="Callable" />
+			<description>
+				Removes a peer visibility filter from this synchronizer.
+			</description>
+		</method>
+		<method name="set_visibility_for">
+			<return type="void" />
+			<param index="0" name="peer" type="int" />
+			<param index="1" name="visible" type="bool" />
+			<description>
+				Sets the visibility of [param peer] to [param visible]. If [param peer] is [code]0[/code], the value of [member public_visibility] will be updated instead.
+			</description>
+		</method>
+		<method name="update_visibility">
+			<return type="void" />
+			<param index="0" name="for_peer" type="int" default="0" />
+			<description>
+				Updates the visibility of [param for_peer] according to visibility filters. If [param for_peer] is [code]0[/code] (the default), all peers' visibilties are updated.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="delta_interval" type="float" setter="set_delta_interval" getter="get_delta_interval" default="0.0">
+			Time interval between delta synchronizations. When set to [code]0.0[/code] (the default), delta synchronizations happen every network process frame.
+		</member>
+		<member name="public_visibility" type="bool" setter="set_visibility_public" getter="is_visibility_public" default="true">
+			Whether synchronization should be visible to all peers by default. See [method set_visibility_for] and [method add_visibility_filter] for ways of configuring fine-grained visibility options.
+		</member>
+		<member name="replication_config" type="SceneReplicationConfig" setter="set_replication_config" getter="get_replication_config">
+			Resource containing which properties to synchronize.
+		</member>
+		<member name="replication_interval" type="float" setter="set_replication_interval" getter="get_replication_interval" default="0.0">
+			Time interval between synchronizations. When set to [code]0.0[/code] (the default), synchronizations happen every network process frame.
+		</member>
+		<member name="root_path" type="NodePath" setter="set_root_path" getter="get_root_path" default="NodePath(&quot;..&quot;)">
+			Node path that replicated properties are relative to.
+			If [member root_path] was spawned by a [MultiplayerSpawner], the node will be also be spawned and despawned based on this synchronizer visibility options.
+		</member>
+		<member name="visibility_update_mode" type="int" setter="set_visibility_update_mode" getter="get_visibility_update_mode" enum="MultiplayerSynchronizer.VisibilityUpdateMode" default="0">
+			Specifies when visibility filters are updated (see [enum VisibilityUpdateMode] for options).
+		</member>
+	</members>
+	<signals>
+		<signal name="delta_synchronized">
+			<description>
+				Emitted when a new delta synchronization state is received by this synchronizer after the properties have been updated.
+			</description>
+		</signal>
+		<signal name="synchronized">
+			<description>
+				Emitted when a new synchronization state is received by this synchronizer after the properties have been updated.
+			</description>
+		</signal>
+		<signal name="visibility_changed">
+			<param index="0" name="for_peer" type="int" />
+			<description>
+				Emitted when visibility of [param for_peer] is updated. See [method update_visibility].
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="VISIBILITY_PROCESS_IDLE" value="0" enum="VisibilityUpdateMode">
+			Visibility filters are updated during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
+		</constant>
+		<constant name="VISIBILITY_PROCESS_PHYSICS" value="1" enum="VisibilityUpdateMode">
+			Visibility filters are updated during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
+		</constant>
+		<constant name="VISIBILITY_PROCESS_NONE" value="2" enum="VisibilityUpdateMode">
+			Visibility filters are not updated automatically, and must be updated manually by calling [method update_visibility].
+		</constant>
+	</constants>
+</class>

@@ -1,135 +1,144 @@
-/*************************************************************************/
-/*  groups_editor.h                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  groups_editor.h                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef GROUPS_EDITOR_H
 #define GROUPS_EDITOR_H
 
-#include "core/object/undo_redo.h"
-#include "editor/scene_tree_editor.h"
-#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/popup.h"
-#include "scene/gui/tree.h"
 
-class GroupDialog : public AcceptDialog {
-	GDCLASS(GroupDialog, AcceptDialog);
+class Button;
+class CheckBox;
+class CheckButton;
+class EditorValidationPanel;
+class Label;
+class LineEdit;
+class PopupMenu;
+class Tree;
+class TreeItem;
 
-	ConfirmationDialog *error;
+class GroupsEditor : public VBoxContainer {
+	GDCLASS(GroupsEditor, VBoxContainer);
 
-	SceneTree *scene_tree;
-	TreeItem *groups_root;
+	const String GLOBAL_GROUP_PREFIX = "global_group/";
 
-	LineEdit *add_group_text;
+	bool updating_tree = false;
+	bool updating_groups = false;
+	bool groups_dirty = false;
+	bool update_groups_and_tree_queued = false;
 
-	Tree *groups;
+	Node *node = nullptr;
+	Node *scene_root_node = nullptr;
+	SceneTree *scene_tree = nullptr;
 
-	Tree *nodes_to_add;
-	TreeItem *add_node_root;
-	LineEdit *add_filter;
+	ConfirmationDialog *add_group_dialog = nullptr;
+	LineEdit *add_group_name = nullptr;
+	LineEdit *add_group_description = nullptr;
+	CheckButton *global_group_button = nullptr;
+	EditorValidationPanel *add_validation_panel = nullptr;
 
-	Tree *nodes_to_remove;
-	TreeItem *remove_node_root;
-	LineEdit *remove_filter;
+	ConfirmationDialog *rename_group_dialog = nullptr;
+	LineEdit *rename_group = nullptr;
+	CheckBox *rename_check_box = nullptr;
+	EditorValidationPanel *rename_validation_panel = nullptr;
 
-	Label *group_empty;
+	ConfirmationDialog *remove_group_dialog = nullptr;
+	CheckBox *remove_check_box = nullptr;
+	Label *remove_label = nullptr;
 
-	Button *add_button;
-	Button *remove_button;
+	PopupMenu *menu = nullptr;
 
-	String selected_group;
+	LineEdit *filter = nullptr;
+	Button *add = nullptr;
+	Tree *tree = nullptr;
 
-	UndoRedo *undo_redo;
+	HashMap<ObjectID, HashMap<StringName, bool>> scene_groups_cache;
+	HashMap<StringName, bool> scene_groups_for_caching;
 
-	void _group_selected();
+	HashMap<StringName, bool> scene_groups;
+	HashMap<StringName, String> global_groups;
 
-	void _remove_filter_changed(const String &p_filter);
-	void _add_filter_changed(const String &p_filter);
+	void _update_scene_groups(const ObjectID &p_id);
+	void _cache_scene_groups(const ObjectID &p_id);
 
-	void _add_pressed();
-	void _removed_pressed();
-	void _add_group_pressed(const String &p_name);
+	void _show_add_group_dialog();
+	void _show_rename_group_dialog();
+	void _show_remove_group_dialog();
 
-	void _group_renamed();
-	void _rename_group_item(const String &p_old_name, const String &p_new_name);
+	void _check_add();
+	void _check_rename();
+	void _validate_name(const String &p_name, EditorValidationPanel *p_validation_panel);
 
-	void _add_group(String p_name);
-	void _delete_group_pressed(Object *p_item, int p_column, int p_id);
-	void _delete_group_item(const String &p_name);
+	void _update_tree();
 
-	bool _can_edit(Node *p_node, String p_group);
+	void _update_groups();
+	void _load_scene_groups(Node *p_node);
 
-	void _load_groups(Node *p_current);
-	void _load_nodes(Node *p_current);
+	void _add_scene_group(const String &p_name);
+	void _rename_scene_group(const String &p_old_name, const String &p_new_name);
+	void _remove_scene_group(const String &p_name);
+
+	bool _has_group(const String &p_name);
+	void _set_group_checked(const String &p_name, bool p_checked);
+
+	void _confirm_add();
+	void _confirm_rename();
+	void _confirm_delete();
+
+	void _item_edited();
+	void _item_mouse_selected(const Vector2 &p_pos, MouseButton p_mouse_button);
+	void _modify_group(Object *p_item, int p_column, int p_id, MouseButton p_mouse_button);
+	void _menu_id_pressed(int p_id);
+
+	void _update_groups_and_tree();
+	void _queue_update_groups_and_tree();
+
+	void _groups_gui_input(Ref<InputEvent> p_event);
+
+	void _node_removed(Node *p_node);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void edit();
-	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo = p_undoredo; }
+	enum ModifyButton {
+		DELETE_GROUP,
+		COPY_GROUP,
+		RENAME_GROUP,
+		CONVERT_GROUP,
+	};
 
-	GroupDialog();
-};
-
-class GroupsEditor : public VBoxContainer {
-	GDCLASS(GroupsEditor, VBoxContainer);
-
-	Node *node;
-
-	GroupDialog *group_dialog;
-
-	LineEdit *group_name;
-	Button *add;
-	Tree *tree;
-
-	UndoRedo *undo_redo;
-
-	void update_tree();
-	void _add_group(const String &p_group = "");
-	void _remove_group(Object *p_item, int p_column, int p_id);
-	void _close();
-
-	void _show_group_dialog();
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo = p_undoredo; }
 	void set_current(Node *p_node);
 
 	GroupsEditor();
 	~GroupsEditor();
 };
 
-#endif
+#endif // GROUPS_EDITOR_H

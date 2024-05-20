@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Path2D" inherits="Node2D" version="4.0">
+<class name="Path2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Contains a [Curve2D] path for [PathFollow2D] nodes to follow.
 	</brief_description>
@@ -9,13 +9,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="curve" type="Curve2D" setter="set_curve" getter="get_curve">
 			A [Curve2D] describing the path.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

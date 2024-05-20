@@ -8,7 +8,7 @@
  * parse compressed PCF fonts, as found with many X11 server
  * distributions.
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -69,10 +69,14 @@
   /*                                                                   */
   /* so that configuration with `FT_CONFIG_OPTION_SYSTEM_ZLIB' might   */
   /* include the wrong `zconf.h' file, leading to errors.              */
-#include "zlib.h"
 
-#undef  SLOW
-#define SLOW  1  /* we can't use asm-optimized sources here! */
+#define ZEXPORT
+  /* prevent zlib functions from being visible outside their object files */
+#define ZEXTERN  static
+
+#define HAVE_MEMCPY  1
+#define Z_SOLO       1
+#define Z_FREETYPE   1
 
 #if defined( _MSC_VER )      /* Visual C++ (and Intel C++)   */
   /* We disable the warning `conversion from XXX to YYY,     */
@@ -83,24 +87,25 @@
 #pragma warning( disable : 4244 )
 #endif /* _MSC_VER */
 
-  /* Urgh.  `inflate_mask' must not be declared twice -- C++ doesn't like
-     this.  We temporarily disable it and load all necessary header files. */
-#define NO_INFLATE_MASK
-#include "zutil.h"
-#include "inftrees.h"
-#include "infblock.h"
-#include "infcodes.h"
-#include "infutil.h"
-#undef  NO_INFLATE_MASK
+#if defined( __GNUC__ )
+#pragma GCC diagnostic push
+#ifndef __cplusplus
+#pragma GCC diagnostic ignored "-Wstrict-prototypes"
+#endif
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+#endif
 
-  /* infutil.c must be included before infcodes.c */
 #include "zutil.c"
-#include "inftrees.c"
-#include "infutil.c"
-#include "infcodes.c"
-#include "infblock.c"
+#include "inffast.c"
 #include "inflate.c"
+#include "inftrees.c"
 #include "adler32.c"
+#include "crc32.c"
+
+#if defined( __GNUC__ )
+#pragma GCC diagnostic pop
+#endif
 
 #if defined( _MSC_VER )
 #pragma warning( pop )
@@ -121,47 +126,31 @@
      'malloc/free' */
 
   static voidpf
-  ft_gzip_alloc( FT_Memory  memory,
-                 uInt       items,
-                 uInt       size )
+  ft_gzip_alloc( voidpf  opaque,
+                 uInt    items,
+                 uInt    size )
   {
-    FT_ULong    sz = (FT_ULong)size * items;
+    FT_Memory   memory = (FT_Memory)opaque;
+    FT_ULong    sz     = (FT_ULong)size * items;
     FT_Error    error;
-    FT_Pointer  p  = NULL;
+    FT_Pointer  p      = NULL;
 
 
-    (void)FT_ALLOC( p, sz );
+    /* allocate and zero out */
+    FT_MEM_ALLOC( p, sz );
     return p;
   }
 
 
   static void
-  ft_gzip_free( FT_Memory  memory,
-                voidpf     address )
+  ft_gzip_free( voidpf  opaque,
+                voidpf  address )
   {
+    FT_Memory  memory = (FT_Memory)opaque;
+
+
     FT_MEM_FREE( address );
   }
-
-
-#if !defined( FT_CONFIG_OPTION_SYSTEM_ZLIB ) && !defined( USE_ZLIB_ZCALLOC )
-
-  local voidpf
-  zcalloc ( voidpf    opaque,
-            unsigned  items,
-            unsigned  size )
-  {
-    return ft_gzip_alloc( (FT_Memory)opaque, items, size );
-  }
-
-  local void
-  zcfree( voidpf  opaque,
-          voidpf  ptr )
-  {
-    ft_gzip_free( (FT_Memory)opaque, ptr );
-  }
-
-#endif /* !SYSTEM_ZLIB && !USE_ZLIB_ZCALLOC */
-
 
 /***************************************************************************/
 /***************************************************************************/
@@ -304,8 +293,8 @@
     }
 
     /* initialize zlib -- there is no zlib header in the compressed stream */
-    zstream->zalloc = (alloc_func)ft_gzip_alloc;
-    zstream->zfree  = (free_func) ft_gzip_free;
+    zstream->zalloc = ft_gzip_alloc;
+    zstream->zfree  = ft_gzip_free;
     zstream->opaque = stream->memory;
 
     zstream->avail_in = 0;
@@ -462,12 +451,13 @@
                             FT_ULong     count )
   {
     FT_Error  error = FT_Err_Ok;
-    FT_ULong  delta;
 
 
     for (;;)
     {
-      delta = (FT_ULong)( zip->limit - zip->cursor );
+      FT_ULong  delta = (FT_ULong)( zip->limit - zip->cursor );
+
+
       if ( delta >= count )
         delta = count;
 
@@ -671,7 +661,7 @@
         FT_Byte*  zip_buff = NULL;
 
 
-        if ( !FT_ALLOC( zip_buff, zip_size ) )
+        if ( !FT_QALLOC( zip_buff, zip_size ) )
         {
           FT_ULong  count;
 
@@ -741,20 +731,11 @@
     stream.next_out  = output;
     stream.avail_out = (uInt)*output_len;
 
-    stream.zalloc = (alloc_func)ft_gzip_alloc;
-    stream.zfree  = (free_func) ft_gzip_free;
+    stream.zalloc = ft_gzip_alloc;
+    stream.zfree  = ft_gzip_free;
     stream.opaque = memory;
 
-    /* This is a temporary fix and will be removed once the internal
-     * copy of zlib is updated to the newest version. The `|32' flag
-     * is only supported in the new versions of zlib to enable gzip
-     * encoded header.
-     */
-#ifdef FT_CONFIG_OPTION_SYSTEM_ZLIB
     err = inflateInit2( &stream, MAX_WBITS|32 );
-#else
-    err = inflateInit2( &stream, MAX_WBITS );
-#endif
 
     if ( err != Z_OK )
       return FT_THROW( Invalid_Argument );
@@ -780,6 +761,9 @@
       return FT_THROW( Array_Too_Large );
 
     if ( err == Z_DATA_ERROR )
+      return FT_THROW( Invalid_Table );
+
+    if ( err == Z_NEED_DICT )
       return FT_THROW( Invalid_Table );
 
     return FT_Err_Ok;

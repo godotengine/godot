@@ -11,7 +11,7 @@
  ********************************************************************
 
   function:
-  last mod: $Id: enquant.c 16503 2009-08-22 18:14:02Z giles $
+  last mod: $Id$
 
  ********************************************************************/
 #include <stdlib.h>
@@ -19,6 +19,69 @@
 #include "encint.h"
 
 
+
+int oc_quant_params_clone(th_quant_info *_dst,const th_quant_info *_src){
+  int i;
+  memcpy(_dst,_src,sizeof(*_dst));
+  memset(_dst->qi_ranges,0,sizeof(_dst->qi_ranges));
+  for(i=0;i<6;i++){
+    int nranges;
+    int qti;
+    int pli;
+    int qtj;
+    int plj;
+    int pdup;
+    int qdup;
+    qti=i/3;
+    pli=i%3;
+    qtj=(i-1)/3;
+    plj=(i-1)%3;
+    nranges=_src->qi_ranges[qti][pli].nranges;
+    /*Check for those duplicates that can be cleanly handled by
+       oc_quant_params_clear().*/
+    pdup=i>0&&nranges<=_src->qi_ranges[qtj][plj].nranges;
+    qdup=qti>0&&nranges<=_src->qi_ranges[0][pli].nranges;
+    _dst->qi_ranges[qti][pli].nranges=nranges;
+    if(pdup&&_src->qi_ranges[qti][pli].sizes==_src->qi_ranges[qtj][plj].sizes){
+      _dst->qi_ranges[qti][pli].sizes=_dst->qi_ranges[qtj][plj].sizes;
+    }
+    else if(qdup&&_src->qi_ranges[1][pli].sizes==_src->qi_ranges[0][pli].sizes){
+      _dst->qi_ranges[1][pli].sizes=_dst->qi_ranges[0][pli].sizes;
+    }
+    else{
+      int *sizes;
+      sizes=(int *)_ogg_malloc(nranges*sizeof(*sizes));
+      /*Note: The caller is responsible for cleaning up any partially
+         constructed qinfo.*/
+      if(sizes==NULL)return TH_EFAULT;
+      memcpy(sizes,_src->qi_ranges[qti][pli].sizes,nranges*sizeof(*sizes));
+      _dst->qi_ranges[qti][pli].sizes=sizes;
+    }
+    if(pdup&&_src->qi_ranges[qti][pli].base_matrices==
+     _src->qi_ranges[qtj][plj].base_matrices){
+      _dst->qi_ranges[qti][pli].base_matrices=
+       _dst->qi_ranges[qtj][plj].base_matrices;
+    }
+    else if(qdup&&_src->qi_ranges[1][pli].base_matrices==
+     _src->qi_ranges[0][pli].base_matrices){
+      _dst->qi_ranges[1][pli].base_matrices=
+       _dst->qi_ranges[0][pli].base_matrices;
+    }
+    else{
+      th_quant_base *base_matrices;
+      base_matrices=(th_quant_base *)_ogg_malloc(
+       (nranges+1)*sizeof(*base_matrices));
+      /*Note: The caller is responsible for cleaning up any partially
+         constructed qinfo.*/
+      if(base_matrices==NULL)return TH_EFAULT;
+      memcpy(base_matrices,_src->qi_ranges[qti][pli].base_matrices,
+       (nranges+1)*sizeof(*base_matrices));
+      _dst->qi_ranges[qti][pli].base_matrices=
+       (const th_quant_base *)base_matrices;
+    }
+  }
+  return 0;
+}
 
 void oc_quant_params_pack(oggpack_buffer *_opb,const th_quant_info *_qinfo){
   const th_quant_ranges *qranges;
@@ -119,7 +182,7 @@ void oc_quant_params_pack(oggpack_buffer *_opb,const th_quant_info *_qinfo){
   }
 }
 
-static void oc_iquant_init(oc_iquant *_this,ogg_uint16_t _d){
+void oc_iquant_init(oc_iquant *_this,ogg_uint16_t _d){
   ogg_uint32_t t;
   int          l;
   _d<<=1;
@@ -129,48 +192,61 @@ static void oc_iquant_init(oc_iquant *_this,ogg_uint16_t _d){
   _this->l=l;
 }
 
-/*See comments at oc_dequant_tables_init() for how the quantization tables'
-   storage should be initialized.*/
-void oc_enquant_tables_init(ogg_uint16_t *_dequant[64][3][2],
- oc_iquant *_enquant[64][3][2],const th_quant_info *_qinfo){
-  int qi;
+void oc_enc_enquant_table_init_c(void *_enquant,
+ const ogg_uint16_t _dequant[64]){
+  oc_iquant *enquant;
+  int        zzi;
+  /*In the original VP3.2 code, the rounding offset and the size of the
+     dead zone around 0 were controlled by a "sharpness" parameter.
+    We now R-D optimize the tokens for each block after quantization,
+     so the rounding offset should always be 1/2, and an explicit dead
+     zone is unnecessary.
+    Hence, all of that VP3.2 code is gone from here, and the remaining
+     floating point code has been implemented as equivalent integer
+     code with exact precision.*/
+  enquant=(oc_iquant *)_enquant;
+  for(zzi=0;zzi<64;zzi++)oc_iquant_init(enquant+zzi,_dequant[zzi]);
+}
+
+void oc_enc_enquant_table_fixup_c(void *_enquant[3][3][2],int _nqis){
   int pli;
+  int qii;
   int qti;
-  /*Initialize the dequantization tables first.*/
-  oc_dequant_tables_init(_dequant,NULL,_qinfo);
-  /*Derive the quantization tables directly from the dequantization tables.*/
-  for(qi=0;qi<64;qi++)for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
-    int zzi;
-    int plj;
-    int qtj;
-    int dupe;
-    dupe=0;
-    for(qtj=0;qtj<=qti;qtj++){
-      for(plj=0;plj<(qtj<qti?3:pli);plj++){
-        if(_dequant[qi][pli][qti]==_dequant[qi][plj][qtj]){
-          dupe=1;
-          break;
-        }
-      }
-      if(dupe)break;
-    }
-    if(dupe){
-      _enquant[qi][pli][qti]=_enquant[qi][plj][qtj];
-      continue;
-    }
-    /*In the original VP3.2 code, the rounding offset and the size of the
-       dead zone around 0 were controlled by a "sharpness" parameter.
-      We now R-D optimize the tokens for each block after quantization,
-       so the rounding offset should always be 1/2, and an explicit dead
-       zone is unnecessary.
-      Hence, all of that VP3.2 code is gone from here, and the remaining
-       floating point code has been implemented as equivalent integer
-       code with exact precision.*/
-    for(zzi=0;zzi<64;zzi++){
-      oc_iquant_init(_enquant[qi][pli][qti]+zzi,
-       _dequant[qi][pli][qti][zzi]);
-    }
+  for(pli=0;pli<3;pli++)for(qii=1;qii<_nqis;qii++)for(qti=0;qti<2;qti++){
+    *((oc_iquant *)_enquant[pli][qii][qti])=
+     *((oc_iquant *)_enquant[pli][0][qti]);
   }
+}
+
+int oc_enc_quantize_c(ogg_int16_t _qdct[64],const ogg_int16_t _dct[64],
+ const ogg_uint16_t _dequant[64],const void *_enquant){
+  const oc_iquant *enquant;
+  int              nonzero;
+  int              zzi;
+  int              val;
+  int              d;
+  int              s;
+  enquant=(const oc_iquant *)_enquant;
+  nonzero=0;
+  for(zzi=0;zzi<64;zzi++){
+    val=_dct[zzi];
+    d=_dequant[zzi];
+    val=val<<1;
+    if(abs(val)>=d){
+      s=OC_SIGNMASK(val);
+      /*The bias added here rounds ties away from zero, since token
+         optimization can only decrease the magnitude of the quantized
+         value.*/
+      val+=d+s^s;
+      /*Note the arithmetic right shift is not guaranteed by ANSI C.
+        Hopefully no one still uses ones-complement architectures.*/
+      val=((enquant[zzi].m*(ogg_int32_t)val>>16)+val>>enquant[zzi].l)-s;
+      _qdct[zzi]=(ogg_int16_t)val;
+      nonzero=zzi;
+    }
+    else _qdct[zzi]=0;
+  }
+  return nonzero;
 }
 
 
@@ -226,7 +302,7 @@ static const ogg_uint16_t OC_RPSD[2][64]={
    relative to the total, scaled by 2**16, for each pixel format.
   These values were measured after motion-compensated prediction, before
    quantization, over a large set of test video encoded at all possible rates.
-  TODO: These values are only from INTER frames; it should be re-measured for
+  TODO: These values are only from INTER frames; they should be re-measured for
    INTRA frames.*/
 static const ogg_uint16_t OC_PCD[4][3]={
   {59926, 3038, 2572},
@@ -236,38 +312,58 @@ static const ogg_uint16_t OC_PCD[4][3]={
 };
 
 
-/*Compute an "average" quantizer for each qi level.
-  We do one for INTER and one for INTRA, since their behavior is very
-   different, but average across chroma channels.
+/*Compute "average" quantizers for each qi level to use for rate control.
+  We do one for each color channel, as well as an average across color
+   channels, separately for INTER and INTRA, since their behavior is very
+   different.
   The basic approach is to compute a harmonic average of the squared quantizer,
    weighted by the expected squared magnitude of the DCT coefficients.
   Under the (not quite true) assumption that DCT coefficients are
    Laplacian-distributed, this preserves the product Q*lambda, where
    lambda=sqrt(2/sigma**2) is the Laplacian distribution parameter (not to be
    confused with the lambda used in R-D optimization throughout most of the
-   rest of the code).
-  The value Q*lambda completely determines the entropy of the coefficients.*/
+   rest of the code), when the distributions from multiple coefficients are
+   pooled.
+  The value Q*lambda completely determines the entropy of coefficients drawn
+   from a Laplacian distribution, and thus the expected bitrate.*/
 void oc_enquant_qavg_init(ogg_int64_t _log_qavg[2][64],
+ ogg_int16_t _log_plq[64][3][2],ogg_uint16_t _chroma_rd_scale[2][64][2],
  ogg_uint16_t *_dequant[64][3][2],int _pixel_fmt){
   int qi;
   int pli;
   int qti;
   int ci;
   for(qti=0;qti<2;qti++)for(qi=0;qi<64;qi++){
-    ogg_int64_t q2;
+    ogg_int64_t  q2;
+    ogg_uint32_t qp[3];
+    ogg_uint32_t cqp;
+    ogg_uint32_t d;
     q2=0;
     for(pli=0;pli<3;pli++){
-      ogg_uint32_t qp;
-      qp=0;
+      qp[pli]=0;
       for(ci=0;ci<64;ci++){
         unsigned rq;
         unsigned qd;
         qd=_dequant[qi][pli][qti][OC_IZIG_ZAG[ci]];
         rq=(OC_RPSD[qti][ci]+(qd>>1))/qd;
-        qp+=rq*(ogg_uint32_t)rq;
+        qp[pli]+=rq*(ogg_uint32_t)rq;
       }
-      q2+=OC_PCD[_pixel_fmt][pli]*(ogg_int64_t)qp;
+      q2+=OC_PCD[_pixel_fmt][pli]*(ogg_int64_t)qp[pli];
+      /*plq=1.0/sqrt(qp)*/
+      _log_plq[qi][pli][qti]=
+       (ogg_int16_t)(OC_Q10(32)-oc_blog32_q10(qp[pli])>>1);
     }
+    d=OC_PCD[_pixel_fmt][1]+OC_PCD[_pixel_fmt][2];
+    cqp=(ogg_uint32_t)((OC_PCD[_pixel_fmt][1]*(ogg_int64_t)qp[1]+
+     OC_PCD[_pixel_fmt][2]*(ogg_int64_t)qp[2]+(d>>1))/d);
+    /*chroma_rd_scale=clamp(0.25,cqp/qp[0],4)*/
+    d=OC_MAXI(qp[0]+(1<<OC_RD_SCALE_BITS-1)>>OC_RD_SCALE_BITS,1);
+    d=OC_CLAMPI(1<<OC_RD_SCALE_BITS-2,(cqp+(d>>1))/d,4<<OC_RD_SCALE_BITS);
+    _chroma_rd_scale[qti][qi][0]=(ogg_int16_t)d;
+    /*chroma_rd_iscale=clamp(0.25,qp[0]/cqp,4)*/
+    d=OC_MAXI(OC_RD_ISCALE(cqp,1),1);
+    d=OC_CLAMPI(1<<OC_RD_ISCALE_BITS-2,(qp[0]+(d>>1))/d,4<<OC_RD_ISCALE_BITS);
+    _chroma_rd_scale[qti][qi][1]=(ogg_int16_t)d;
     /*qavg=1.0/sqrt(q2).*/
     _log_qavg[qti][qi]=OC_Q57(48)-oc_blog64(q2)>>1;
   }

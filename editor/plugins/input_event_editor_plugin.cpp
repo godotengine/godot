@@ -1,36 +1,48 @@
-/*************************************************************************/
-/*  input_event_editor_plugin.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  input_event_editor_plugin.cpp                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "input_event_editor_plugin.h"
 
+#include "editor/event_listener_line_edit.h"
+#include "editor/input_event_configuration_dialog.h"
+
 void InputEventConfigContainer::_bind_methods() {
+}
+
+void InputEventConfigContainer::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			open_config_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
+		} break;
+	}
 }
 
 void InputEventConfigContainer::_configure_pressed() {
@@ -47,12 +59,6 @@ void InputEventConfigContainer::_config_dialog_confirmed() {
 	_event_changed();
 }
 
-Size2 InputEventConfigContainer::get_minimum_size() const {
-	// Don't bother with a minimum x size for the control - we don't want the inspector
-	// to jump in size if a long text is placed in the label (e.g. Joypad Axis description)
-	return Size2(0, HBoxContainer::get_minimum_size().y);
-}
-
 void InputEventConfigContainer::set_event(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 	Ref<InputEventMouseButton> m = p_event;
@@ -60,43 +66,39 @@ void InputEventConfigContainer::set_event(const Ref<InputEvent> &p_event) {
 	Ref<InputEventJoypadMotion> jm = p_event;
 
 	if (k.is_valid()) {
-		config_dialog->set_allowed_input_types(InputEventConfigurationDialog::InputType::INPUT_KEY);
+		config_dialog->set_allowed_input_types(INPUT_KEY);
 	} else if (m.is_valid()) {
-		config_dialog->set_allowed_input_types(InputEventConfigurationDialog::InputType::INPUT_MOUSE_BUTTON);
+		config_dialog->set_allowed_input_types(INPUT_MOUSE_BUTTON);
 	} else if (jb.is_valid()) {
-		config_dialog->set_allowed_input_types(InputEventConfigurationDialog::InputType::INPUT_JOY_BUTTON);
+		config_dialog->set_allowed_input_types(INPUT_JOY_BUTTON);
 	} else if (jm.is_valid()) {
-		config_dialog->set_allowed_input_types(InputEventConfigurationDialog::InputType::INPUT_JOY_MOTION);
+		config_dialog->set_allowed_input_types(INPUT_JOY_MOTION);
 	}
 
 	input_event = p_event;
 	_event_changed();
-	input_event->connect("changed", callable_mp(this, &InputEventConfigContainer::_event_changed));
+	input_event->connect_changed(callable_mp(this, &InputEventConfigContainer::_event_changed));
 }
 
 InputEventConfigContainer::InputEventConfigContainer() {
-	MarginContainer *mc = memnew(MarginContainer);
-	mc->add_theme_constant_override("margin_left", 10);
-	mc->add_theme_constant_override("margin_right", 10);
-	mc->add_theme_constant_override("margin_top", 10);
-	mc->add_theme_constant_override("margin_bottom", 10);
-	add_child(mc);
-
-	HBoxContainer *hb = memnew(HBoxContainer);
-	mc->add_child(hb);
-
-	open_config_button = memnew(Button);
-	open_config_button->set_text(TTR("Configure"));
-	open_config_button->connect("pressed", callable_mp(this, &InputEventConfigContainer::_configure_pressed));
-	hb->add_child(open_config_button);
-
 	input_event_text = memnew(Label);
-	hb->add_child(input_event_text);
+	input_event_text->set_h_size_flags(SIZE_EXPAND_FILL);
+	input_event_text->set_autowrap_mode(TextServer::AutowrapMode::AUTOWRAP_WORD_SMART);
+	input_event_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	add_child(input_event_text);
+
+	open_config_button = EditorInspector::create_inspector_action_button(TTR("Configure"));
+	open_config_button->connect(SceneStringName(pressed), callable_mp(this, &InputEventConfigContainer::_configure_pressed));
+	add_child(open_config_button);
+
+	add_child(memnew(Control));
 
 	config_dialog = memnew(InputEventConfigurationDialog);
 	config_dialog->connect("confirmed", callable_mp(this, &InputEventConfigContainer::_config_dialog_confirmed));
 	add_child(config_dialog);
 }
+
+///////////////////////
 
 bool EditorInspectorPluginInputEvent::can_handle(Object *p_object) {
 	Ref<InputEventKey> k = Ref<InputEventKey>(p_object);
@@ -115,7 +117,9 @@ void EditorInspectorPluginInputEvent::parse_begin(Object *p_object) {
 	add_custom_control(picker_controls);
 }
 
-InputEventEditorPlugin::InputEventEditorPlugin(EditorNode *p_node) {
+///////////////////////
+
+InputEventEditorPlugin::InputEventEditorPlugin() {
 	Ref<EditorInspectorPluginInputEvent> plugin;
 	plugin.instantiate();
 	add_inspector_plugin(plugin);

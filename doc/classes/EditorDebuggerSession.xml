@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorDebuggerSession" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A class to interact with the editor debugger.
+	</brief_description>
+	<description>
+		This class cannot be directly instantiated and must be retrieved via a [EditorDebuggerPlugin].
+		You can add tabs to the session UI via [method add_session_tab], send messages via [method send_message], and toggle [EngineProfiler]s via [method toggle_profiler].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_session_tab">
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
+			<description>
+				Adds the given [param control] to the debug session UI in the debugger bottom panel.
+			</description>
+		</method>
+		<method name="is_active">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the debug session is currently attached to a remote instance.
+			</description>
+		</method>
+		<method name="is_breaked">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the attached remote instance is currently in the debug loop.
+			</description>
+		</method>
+		<method name="is_debuggable">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the attached remote instance can be debugged.
+			</description>
+		</method>
+		<method name="remove_session_tab">
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
+			<description>
+				Removes the given [param control] from the debug session UI in the debugger bottom panel.
+			</description>
+		</method>
+		<method name="send_message">
+			<return type="void" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="data" type="Array" default="[]" />
+			<description>
+				Sends the given [param message] to the attached remote instance, optionally passing additionally [param data]. See [EngineDebugger] for how to retrieve those messages.
+			</description>
+		</method>
+		<method name="toggle_profiler">
+			<return type="void" />
+			<param index="0" name="profiler" type="String" />
+			<param index="1" name="enable" type="bool" />
+			<param index="2" name="data" type="Array" default="[]" />
+			<description>
+				Toggle the given [param profiler] on the attached remote instance, optionally passing additionally [param data]. See [EngineProfiler] for more details.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="breaked">
+			<param index="0" name="can_debug" type="bool" />
+			<description>
+				Emitted when the attached remote instance enters a break state. If [param can_debug] is [code]true[/code], the remote instance will enter the debug loop.
+			</description>
+		</signal>
+		<signal name="continued">
+			<description>
+				Emitted when the attached remote instance exits a break state.
+			</description>
+		</signal>
+		<signal name="started">
+			<description>
+				Emitted when a remote instance is attached to this session (i.e. the session becomes active).
+			</description>
+		</signal>
+		<signal name="stopped">
+			<description>
+				Emitted when a remote instance is detached from this session (i.e. the session becomes inactive).
+			</description>
+		</signal>
+	</signals>
+</class>

@@ -1,58 +1,59 @@
-/*************************************************************************/
-/*  renderer_scene_cull.h                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  renderer_scene_cull.h                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_CULL_H
-#define RENDERING_SERVER_SCENE_CULL_H
-
-#include "core/templates/bin_sorted_array.h"
-#include "core/templates/pass_func.h"
-#include "servers/rendering/renderer_compositor.h"
+#ifndef RENDERER_SCENE_CULL_H
+#define RENDERER_SCENE_CULL_H
 
 #include "core/math/dynamic_bvh.h"
-#include "core/math/geometry_3d.h"
-#include "core/math/octree.h"
-#include "core/os/semaphore.h"
-#include "core/os/thread.h"
+#include "core/templates/bin_sorted_array.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/paged_array.h"
+#include "core/templates/pass_func.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/xr/xr_interface.h"
+#include "servers/rendering/rendering_method.h"
+#include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/storage/utilities.h"
 
-class RendererSceneCull : public RendererScene {
+#ifndef _3D_DISABLED
+#include "servers/xr/xr_interface.h"
+#endif // _3D_DISABLED
+
+class RenderingLightCuller;
+
+class RendererSceneCull : public RenderingMethod {
 public:
-	RendererSceneRender *scene_render;
+	RendererSceneRender *scene_render = nullptr;
 
 	enum {
 		SDFGI_MAX_CASCADES = 8,
@@ -81,7 +82,8 @@ public:
 		uint32_t visible_layers;
 		bool vaspect;
 		RID env;
-		RID effects;
+		RID attributes;
+		RID compositor;
 
 		Transform3D transform;
 
@@ -108,7 +110,8 @@ public:
 	virtual void camera_set_transform(RID p_camera, const Transform3D &p_transform);
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
-	virtual void camera_set_camera_effects(RID p_camera, RID p_fx);
+	virtual void camera_set_camera_attributes(RID p_camera, RID p_attributes);
+	virtual void camera_set_compositor(RID p_camera, RID p_compositor);
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable);
 	virtual bool is_camera(RID p_camera) const;
 
@@ -120,7 +123,7 @@ public:
 
 	/* VISIBILITY NOTIFIER API */
 
-	RendererSceneOcclusionCull *dummy_occlusion_culling;
+	RendererSceneOcclusionCull *dummy_occlusion_culling = nullptr;
 
 	/* SCENARIO API */
 
@@ -267,7 +270,9 @@ public:
 			FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK = (3 << 20), // 2 bits, overlaps with the other vis. dependency flags
 			FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE = (1 << 20),
 			FLAG_VISIBILITY_DEPENDENCY_HIDDEN = (1 << 21),
-			FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY = (1 << 22),
+			FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN = (1 << 22),
+			FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY = (1 << 23),
+			FLAG_IGNORE_ALL_CULLING = (1 << 24),
 		};
 
 		uint32_t flags = 0;
@@ -275,23 +280,32 @@ public:
 		RID base_rid;
 		union {
 			uint64_t instance_data_rid;
-			RendererSceneRender::GeometryInstance *instance_geometry;
-			InstanceVisibilityNotifierData *visibility_notifier;
+			RenderGeometryInstance *instance_geometry;
+			InstanceVisibilityNotifierData *visibility_notifier = nullptr;
 		};
 		Instance *instance = nullptr;
 		int32_t parent_array_index = -1;
 		int32_t visibility_index = -1;
+
+		// Each time occlusion culling determines an instance is visible,
+		// set this to occlusion_frame plus some delay.
+		// Once the timeout is reached, allow the instance to be occlusion culled.
+		// This creates a delay for occlusion culling, which prevents flickering
+		// when jittering the raster occlusion projection.
+		uint64_t occlusion_timeout = 0;
 	};
 
 	struct InstanceVisibilityData {
 		uint64_t viewport_state = 0;
 		int32_t array_index = -1;
+		RS::VisibilityRangeFadeMode fade_mode = RS::VISIBILITY_RANGE_FADE_DISABLED;
 		Vector3 position;
 		Instance *instance = nullptr;
 		float range_begin = 0.0f;
 		float range_end = 0.0f;
 		float range_begin_margin = 0.0f;
 		float range_end_margin = 0.0f;
+		float children_fade_alpha = 1.0f;
 	};
 
 	class VisibilityArray : public BinSortedArray<InstanceVisibilityData> {
@@ -321,11 +335,12 @@ public:
 		List<Instance *> directional_lights;
 		RID environment;
 		RID fallback_environment;
-		RID camera_effects;
+		RID camera_attributes;
+		RID compositor;
 		RID reflection_probe_shadow_atlas;
 		RID reflection_atlas;
 		uint64_t used_viewport_visibility_bits;
-		Map<RID, uint64_t> viewport_visibility_masks;
+		HashMap<RID, uint64_t> viewport_visibility_masks;
 
 		SelfList<Instance>::List instances;
 
@@ -355,8 +370,9 @@ public:
 	virtual void scenario_initialize(RID p_rid);
 
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
-	virtual void scenario_set_camera_effects(RID p_scenario, RID p_fx);
+	virtual void scenario_set_camera_attributes(RID p_scenario, RID p_attributes);
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
+	virtual void scenario_set_compositor(RID p_scenario, RID p_compositor);
 	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_reflection_size, int p_reflection_count);
 	virtual bool is_scenario(RID p_scenario) const;
 	virtual RID scenario_get_environment(RID p_scenario);
@@ -366,8 +382,8 @@ public:
 	/* INSTANCING API */
 
 	struct InstancePair {
-		Instance *a;
-		Instance *b;
+		Instance *a = nullptr;
+		Instance *b = nullptr;
 		SelfList<InstancePair> list_a;
 		SelfList<InstancePair> list_b;
 		InstancePair() :
@@ -386,6 +402,7 @@ public:
 
 		RID skeleton;
 		RID material_override;
+		RID material_overlay;
 
 		RID mesh_instance; //only used for meshes and when skeleton/blendshapes exist
 
@@ -394,6 +411,7 @@ public:
 		float lod_bias;
 
 		bool ignore_occlusion_culling;
+		bool ignore_all_culling;
 
 		Vector<RID> materials;
 
@@ -408,7 +426,7 @@ public:
 		bool dynamic_gi : 2; //same above for dynamic objects
 		bool redraw_if_visible : 4;
 
-		Instance *lightmap;
+		Instance *lightmap = nullptr;
 		Rect2 lightmap_uv_scale;
 		int lightmap_slice_index;
 		uint32_t lightmap_cull_index;
@@ -425,23 +443,27 @@ public:
 			PropertyInfo info;
 		};
 
-		Map<StringName, InstanceShaderParameter> instance_shader_parameters;
-		bool instance_allocated_shader_parameters = false;
-		int32_t instance_allocated_shader_parameters_offset = -1;
+		HashMap<StringName, InstanceShaderParameter> instance_shader_uniforms;
+		bool instance_allocated_shader_uniforms = false;
+		int32_t instance_allocated_shader_uniforms_offset = -1;
 
 		//
 
 		RID self;
 		//scenario stuff
 		DynamicBVH::ID indexer_id;
-		int32_t array_index;
+		int32_t array_index = -1;
 		int32_t visibility_index = -1;
-		float visibility_range_begin;
-		float visibility_range_end;
-		float visibility_range_begin_margin;
-		float visibility_range_end_margin;
+		float visibility_range_begin = 0.0f;
+		float visibility_range_end = 0.0f;
+		float visibility_range_begin_margin = 0.0f;
+		float visibility_range_end_margin = 0.0f;
+		RS::VisibilityRangeFadeMode visibility_range_fade_mode = RS::VISIBILITY_RANGE_FADE_DISABLED;
 		Instance *visibility_parent = nullptr;
-		Scenario *scenario;
+		HashSet<Instance *> visibility_dependencies;
+		uint32_t visibility_dependencies_depth = 0;
+		float transparency = 0.0f;
+		Scenario *scenario = nullptr;
 		SelfList<Instance> scenario_item;
 
 		//aabb stuff
@@ -450,9 +472,13 @@ public:
 
 		SelfList<Instance> update_item;
 
-		AABB *custom_aabb; // <Zylann> would using aabb directly with a bool be better?
+		AABB *custom_aabb = nullptr; // <Zylann> would using aabb directly with a bool be better?
 		float extra_margin;
 		ObjectID object_id;
+
+		// sorting
+		float sorting_offset = 0.0;
+		bool use_aabb_center = true;
 
 		Vector<Color> lightmap_target_sh; //target is used for incrementally changing the SH over time, this avoids pops in some corner cases and when going interior <-> exterior
 
@@ -460,37 +486,35 @@ public:
 
 		uint64_t version; // changes to this, and changes to base increase version
 
-		InstanceBaseData *base_data;
+		InstanceBaseData *base_data = nullptr;
 
 		SelfList<InstancePair>::List pairs;
 		uint64_t pair_check;
 
-		RendererStorage::DependencyTracker dependency_tracker;
+		DependencyTracker dependency_tracker;
 
-		static void dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *tracker) {
+		static void dependency_changed(Dependency::DependencyChangedNotification p_notification, DependencyTracker *tracker) {
 			Instance *instance = (Instance *)tracker->userdata;
 			switch (p_notification) {
-				case RendererStorage::DEPENDENCY_CHANGED_SKELETON_DATA:
-				case RendererStorage::DEPENDENCY_CHANGED_AABB: {
+				case Dependency::DEPENDENCY_CHANGED_SKELETON_DATA:
+				case Dependency::DEPENDENCY_CHANGED_SKELETON_BONES:
+				case Dependency::DEPENDENCY_CHANGED_AABB: {
 					singleton->_instance_queue_update(instance, true, false);
 
 				} break;
-				case RendererStorage::DEPENDENCY_CHANGED_MATERIAL: {
+				case Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES:
+				case Dependency::DEPENDENCY_CHANGED_MATERIAL: {
 					singleton->_instance_queue_update(instance, false, true);
 				} break;
-				case RendererStorage::DEPENDENCY_CHANGED_MESH:
-				case RendererStorage::DEPENDENCY_CHANGED_PARTICLES:
-				case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH:
-				case RendererStorage::DEPENDENCY_CHANGED_DECAL:
-				case RendererStorage::DEPENDENCY_CHANGED_LIGHT:
-				case RendererStorage::DEPENDENCY_CHANGED_REFLECTION_PROBE: {
+				case Dependency::DEPENDENCY_CHANGED_MESH:
+				case Dependency::DEPENDENCY_CHANGED_PARTICLES:
+				case Dependency::DEPENDENCY_CHANGED_MULTIMESH:
+				case Dependency::DEPENDENCY_CHANGED_DECAL:
+				case Dependency::DEPENDENCY_CHANGED_LIGHT:
+				case Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE: {
 					singleton->_instance_queue_update(instance, true, true);
 				} break;
-				case RendererStorage::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES:
-				case RendererStorage::DEPENDENCY_CHANGED_SKELETON_BONES: {
-					//ignored
-				} break;
-				case RendererStorage::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR: {
+				case Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR: {
 					//requires repairing
 					if (instance->indexer_id.is_valid()) {
 						singleton->_unpair_instance(instance);
@@ -498,10 +522,13 @@ public:
 					}
 
 				} break;
+				default: {
+					// Ignored notifications.
+				} break;
 			}
 		}
 
-		static void dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *tracker) {
+		static void dependency_deleted(const RID &p_dependency, DependencyTracker *tracker) {
 			Instance *instance = (Instance *)tracker->userdata;
 
 			if (p_dependency == instance->base) {
@@ -509,6 +536,29 @@ public:
 			} else if (p_dependency == instance->skeleton) {
 				singleton->instance_attach_skeleton(instance->self, RID());
 			} else {
+				// It's possible the same material is used in multiple slots,
+				// so we check whether we need to clear them all.
+				if (p_dependency == instance->material_override) {
+					singleton->instance_geometry_set_material_override(instance->self, RID());
+				}
+				if (p_dependency == instance->material_overlay) {
+					singleton->instance_geometry_set_material_overlay(instance->self, RID());
+				}
+				for (int i = 0; i < instance->materials.size(); i++) {
+					if (p_dependency == instance->materials[i]) {
+						singleton->instance_set_surface_override_material(instance->self, i, RID());
+					}
+				}
+				if (instance->base_type == RS::INSTANCE_PARTICLES) {
+					RID particle_material = RSG::particles_storage->particles_get_process_material(instance->base);
+					if (p_dependency == particle_material) {
+						RSG::particles_storage->particles_set_process_material(instance->base, RID());
+					}
+				}
+
+				// Even if no change is made we still need to call `_instance_queue_update`.
+				// This dependency could also be a result of the freed material being used
+				// by the mesh this mesh instance uses.
 				singleton->_instance_queue_update(instance, false, true);
 			}
 		}
@@ -521,7 +571,7 @@ public:
 			receive_shadows = true;
 			visible = true;
 			layer_mask = 1;
-			baked_light = false;
+			baked_light = true;
 			dynamic_gi = false;
 			redraw_if_visible = false;
 			lightmap_slice_index = 0;
@@ -529,6 +579,7 @@ public:
 			lightmap_cull_index = 0;
 			lod_bias = 1.0;
 			ignore_occlusion_culling = false;
+			ignore_all_culling = false;
 
 			scenario = nullptr;
 
@@ -572,19 +623,17 @@ public:
 	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_dependencies = false);
 
 	struct InstanceGeometryData : public InstanceBaseData {
-		RendererSceneRender::GeometryInstance *geometry_instance = nullptr;
-		Set<Instance *> lights;
+		RenderGeometryInstance *geometry_instance = nullptr;
+		HashSet<Instance *> lights;
 		bool can_cast_shadows;
 		bool material_is_animated;
 		uint32_t projector_count = 0;
 		uint32_t softshadow_count = 0;
 
-		Set<Instance *> decals;
-		Set<Instance *> reflection_probes;
-		Set<Instance *> voxel_gi_instances;
-		Set<Instance *> lightmap_captures;
-		Set<Instance *> visibility_dependencies;
-		uint32_t visibility_dependencies_depth = 0;
+		HashSet<Instance *> decals;
+		HashSet<Instance *> reflection_probes;
+		HashSet<Instance *> voxel_gi_instances;
+		HashSet<Instance *> lightmap_captures;
 
 		InstanceGeometryData() {
 			can_cast_shadows = true;
@@ -593,9 +642,9 @@ public:
 	};
 
 	struct InstanceReflectionProbeData : public InstanceBaseData {
-		Instance *owner;
+		Instance *owner = nullptr;
 
-		Set<Instance *> geometries;
+		HashSet<Instance *> geometries;
 
 		RID instance;
 		SelfList<InstanceReflectionProbeData> update_list;
@@ -609,10 +658,10 @@ public:
 	};
 
 	struct InstanceDecalData : public InstanceBaseData {
-		Instance *owner;
+		Instance *owner = nullptr;
 		RID instance;
 
-		Set<Instance *> geometries;
+		HashSet<Instance *> geometries;
 
 		InstanceDecalData() {
 		}
@@ -622,6 +671,11 @@ public:
 
 	struct InstanceParticlesCollisionData : public InstanceBaseData {
 		RID instance;
+	};
+
+	struct InstanceFogVolumeData : public InstanceBaseData {
+		RID instance;
+		bool is_global;
 	};
 
 	struct InstanceVisibilityNotifierData : public InstanceBaseData {
@@ -641,46 +695,93 @@ public:
 		uint64_t last_version;
 		List<Instance *>::Element *D; // directional light in scenario
 
-		bool shadow_dirty;
 		bool uses_projector = false;
 		bool uses_softshadow = false;
 
-		Set<Instance *> geometries;
+		HashSet<Instance *> geometries;
 
-		Instance *baked_light;
+		Instance *baked_light = nullptr;
 
 		RS::LightBakeMode bake_mode;
 		uint32_t max_sdfgi_cascade = 2;
 
+	private:
+		// Instead of a single dirty flag, we maintain a count
+		// so that we can detect lights that are being made dirty
+		// each frame, and switch on tighter caster culling.
+		int32_t shadow_dirty_count;
+
+		uint32_t light_update_frame_id;
+		bool light_intersects_multiple_cameras;
+		uint32_t light_intersects_multiple_cameras_timeout_frame_id;
+
+	public:
+		bool is_shadow_dirty() const { return shadow_dirty_count != 0; }
+		void make_shadow_dirty() { shadow_dirty_count = light_intersects_multiple_cameras ? 1 : 2; }
+		void detect_light_intersects_multiple_cameras(uint32_t p_frame_id) {
+			// We need to detect the case where shadow updates are occurring
+			// more than once per frame. In this case, we need to turn off
+			// tighter caster culling, so situation reverts to one full shadow update
+			// per frame (light_intersects_multiple_cameras is set).
+			if (p_frame_id == light_update_frame_id) {
+				light_intersects_multiple_cameras = true;
+				light_intersects_multiple_cameras_timeout_frame_id = p_frame_id + 60;
+			} else {
+				// When shadow_volume_intersects_multiple_cameras is set, we
+				// want to detect the situation this is no longer the case, via a timeout.
+				// The system can go back to tighter caster culling in this situation.
+				// Having a long-ish timeout prevents rapid cycling.
+				if (light_intersects_multiple_cameras && (p_frame_id >= light_intersects_multiple_cameras_timeout_frame_id)) {
+					light_intersects_multiple_cameras = false;
+					light_intersects_multiple_cameras_timeout_frame_id = UINT32_MAX;
+				}
+			}
+			light_update_frame_id = p_frame_id;
+		}
+
+		void decrement_shadow_dirty() {
+			shadow_dirty_count--;
+			DEV_ASSERT(shadow_dirty_count >= 0);
+		}
+
+		// Shadow updates can either full (everything in the shadow volume)
+		// or closely culled to the camera frustum.
+		bool is_shadow_update_full() const { return shadow_dirty_count == 0; }
+
 		InstanceLightData() {
 			bake_mode = RS::LIGHT_BAKE_DISABLED;
-			shadow_dirty = true;
 			D = nullptr;
 			last_version = 0;
 			baked_light = nullptr;
+
+			shadow_dirty_count = 1;
+			light_update_frame_id = UINT32_MAX;
+			light_intersects_multiple_cameras_timeout_frame_id = UINT32_MAX;
+			light_intersects_multiple_cameras = false;
 		}
 	};
 
 	struct InstanceVoxelGIData : public InstanceBaseData {
-		Instance *owner;
+		Instance *owner = nullptr;
 
-		Set<Instance *> geometries;
-		Set<Instance *> dynamic_geometries;
+		HashSet<Instance *> geometries;
+		HashSet<Instance *> dynamic_geometries;
 
-		Set<Instance *> lights;
+		HashSet<Instance *> lights;
 
 		struct LightCache {
 			RS::LightType type;
 			Transform3D transform;
 			Color color;
 			float energy;
+			float intensity;
 			float bake_energy;
 			float radius;
 			float attenuation;
 			float spot_angle;
 			float spot_attenuation;
 			bool has_shadow;
-			bool sky_only;
+			RS::LightDirectionalSkyMode sky_mode;
 		};
 
 		Vector<LightCache> light_cache;
@@ -704,8 +805,8 @@ public:
 
 	struct InstanceLightmapData : public InstanceBaseData {
 		RID instance;
-		Set<Instance *> geometries;
-		Set<Instance *> users;
+		HashSet<Instance *> geometries;
+		HashSet<Instance *> users;
 
 		InstanceLightmapData() {
 		}
@@ -721,11 +822,12 @@ public:
 		DynamicBVH *bvh2 = nullptr; //some may need to cull in two
 		uint32_t pair_mask;
 		uint64_t pair_pass;
+		uint32_t cull_mask = 0xFFFFFFFF; // Needed for decals and lights in the mobile and compatibility renderers.
 
 		_FORCE_INLINE_ bool operator()(void *p_data) {
 			Instance *p_instance = (Instance *)p_data;
 
-			if (instance != p_instance && instance->transformed_aabb.intersects(p_instance->transformed_aabb) && (pair_mask & (1 << p_instance->base_type))) {
+			if (instance != p_instance && instance->transformed_aabb.intersects(p_instance->transformed_aabb) && (pair_mask & (1 << p_instance->base_type)) && (cull_mask & p_instance->layer_mask)) {
 				//test is more coarse in indexer
 				p_instance->pair_check = pair_pass;
 				InstancePair *pair = pair_allocator->alloc();
@@ -770,17 +872,17 @@ public:
 		}
 	};
 
-	Set<Instance *> heightfield_particle_colliders_update_list;
+	HashSet<Instance *> heightfield_particle_colliders_update_list;
 
 	PagedArrayPool<Instance *> instance_cull_page_pool;
-	PagedArrayPool<RendererSceneRender::GeometryInstance *> geometry_instance_cull_page_pool;
+	PagedArrayPool<RenderGeometryInstance *> geometry_instance_cull_page_pool;
 	PagedArrayPool<RID> rid_cull_page_pool;
 
 	PagedArray<Instance *> instance_cull_result;
 	PagedArray<Instance *> instance_shadow_cull_result;
 
 	struct InstanceCullResult {
-		PagedArray<RendererSceneRender::GeometryInstance *> geometry_instances;
+		PagedArray<RenderGeometryInstance *> geometry_instances;
 		PagedArray<Instance *> lights;
 		PagedArray<RID> light_instances;
 		PagedArray<RID> lightmaps;
@@ -788,12 +890,13 @@ public:
 		PagedArray<RID> decals;
 		PagedArray<RID> voxel_gi_instances;
 		PagedArray<RID> mesh_instances;
+		PagedArray<RID> fog_volumes;
 
 		struct DirectionalShadow {
-			PagedArray<RendererSceneRender::GeometryInstance *> cascade_geometry_instances[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES];
+			PagedArray<RenderGeometryInstance *> cascade_geometry_instances[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES];
 		} directional_shadows[RendererSceneRender::MAX_DIRECTIONAL_LIGHTS];
 
-		PagedArray<RendererSceneRender::GeometryInstance *> sdfgi_region_geometry_instances[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
+		PagedArray<RenderGeometryInstance *> sdfgi_region_geometry_instances[SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE];
 		PagedArray<RID> sdfgi_cascade_lights[SDFGI_MAX_CASCADES];
 
 		void clear() {
@@ -805,6 +908,7 @@ public:
 			decals.clear();
 			voxel_gi_instances.clear();
 			mesh_instances.clear();
+			fog_volumes.clear();
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
 					directional_shadows[i].cascade_geometry_instances[j].clear();
@@ -829,6 +933,7 @@ public:
 			decals.reset();
 			voxel_gi_instances.reset();
 			mesh_instances.reset();
+			fog_volumes.reset();
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
 					directional_shadows[i].cascade_geometry_instances[j].reset();
@@ -853,6 +958,7 @@ public:
 			decals.merge_unordered(p_cull_result.decals);
 			voxel_gi_instances.merge_unordered(p_cull_result.voxel_gi_instances);
 			mesh_instances.merge_unordered(p_cull_result.mesh_instances);
+			fog_volumes.merge_unordered(p_cull_result.fog_volumes);
 
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
@@ -869,7 +975,7 @@ public:
 			}
 		}
 
-		void init(PagedArrayPool<RID> *p_rid_pool, PagedArrayPool<RendererSceneRender::GeometryInstance *> *p_geometry_instance_pool, PagedArrayPool<Instance *> *p_instance_pool) {
+		void init(PagedArrayPool<RID> *p_rid_pool, PagedArrayPool<RenderGeometryInstance *> *p_geometry_instance_pool, PagedArrayPool<Instance *> *p_instance_pool) {
 			geometry_instances.set_page_pool(p_geometry_instance_pool);
 			light_instances.set_page_pool(p_rid_pool);
 			lights.set_page_pool(p_instance_pool);
@@ -878,6 +984,7 @@ public:
 			decals.set_page_pool(p_rid_pool);
 			voxel_gi_instances.set_page_pool(p_rid_pool);
 			mesh_instances.set_page_pool(p_rid_pool);
+			fog_volumes.set_page_pool(p_rid_pool);
 			for (int i = 0; i < RendererSceneRender::MAX_DIRECTIONAL_LIGHTS; i++) {
 				for (int j = 0; j < RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES; j++) {
 					directional_shadows[i].cascade_geometry_instances[j].set_page_pool(p_geometry_instance_pool);
@@ -907,7 +1014,10 @@ public:
 
 	RID_Owner<Instance, true> instance_owner;
 
-	uint32_t geometry_instance_pair_mask; // used in traditional forward, unnecessary on clustered
+	uint32_t geometry_instance_pair_mask = 0; // used in traditional forward, unnecessary on clustered
+
+	LocalVector<Vector2> camera_jitter_array;
+	RenderingLightCuller *light_culler = nullptr;
 
 	virtual RID instance_allocate();
 	virtual void instance_initialize(RID p_rid);
@@ -915,11 +1025,13 @@ public:
 	virtual void instance_set_base(RID p_instance, RID p_base);
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario);
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
+	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center);
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);
+	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency);
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb);
 
@@ -929,7 +1041,9 @@ public:
 
 	virtual void instance_set_visibility_parent(RID p_instance, RID p_parent_instance);
 
-	void _update_instance_visibility_depth(Instance *p_instance);
+	virtual void instance_set_ignore_culling(RID p_instance, bool p_enabled);
+
+	bool _update_instance_visibility_depth(Instance *p_instance);
 	void _update_instance_visibility_dependencies(Instance *p_instance);
 
 	// don't use these in a game!
@@ -940,13 +1054,14 @@ public:
 	virtual void instance_geometry_set_flag(RID p_instance, RS::InstanceFlags p_flags, bool p_enabled);
 	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, RS::ShadowCastingSetting p_shadow_casting_setting);
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material);
+	virtual void instance_geometry_set_material_overlay(RID p_instance, RID p_material);
 
-	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin);
+	virtual void instance_geometry_set_visibility_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin, RS::VisibilityRangeFadeMode p_fade_mode);
 
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
 
-	void _update_instance_shader_parameters_from_material(Map<StringName, Instance::InstanceShaderParameter> &isparams, const Map<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material);
+	void _update_instance_shader_uniforms_from_material(HashMap<StringName, Instance::InstanceShaderParameter> &isparams, const HashMap<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material);
 
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value);
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const;
@@ -959,11 +1074,12 @@ public:
 	_FORCE_INLINE_ void _update_instance_lightmap_captures(Instance *p_instance);
 	void _unpair_instance(Instance *p_instance);
 
-	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
+	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_lod_threshold);
+	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
+	RID _render_get_compositor(RID p_camera, RID p_scenario);
 
 	struct Cull {
 		struct Shadow {
@@ -971,7 +1087,7 @@ public:
 			struct Cascade {
 				Frustum frustum;
 
-				CameraMatrix projection;
+				Projection projection;
 				Transform3D transform;
 				real_t zfar;
 				real_t split;
@@ -1005,7 +1121,7 @@ public:
 
 	struct VisibilityCullData {
 		uint64_t viewport_mask;
-		Scenario *scenario;
+		Scenario *scenario = nullptr;
 		Vector3 camera_position;
 		uint32_t cull_offset;
 		uint32_t cull_count;
@@ -1013,35 +1129,36 @@ public:
 
 	void _visibility_cull_threaded(uint32_t p_thread, VisibilityCullData *cull_data);
 	void _visibility_cull(const VisibilityCullData &cull_data, uint64_t p_from, uint64_t p_to);
-	_FORCE_INLINE_ void _visibility_cull(const VisibilityCullData &cull_data, uint64_t p_idx);
+	template <bool p_fade_check>
 	_FORCE_INLINE_ int _visibility_range_check(InstanceVisibilityData &r_vis_data, const Vector3 &p_camera_pos, uint64_t p_viewport_mask);
 
 	struct CullData {
-		Cull *cull;
-		Scenario *scenario;
+		Cull *cull = nullptr;
+		Scenario *scenario = nullptr;
 		RID shadow_atlas;
 		Transform3D cam_transform;
 		uint32_t visible_layers;
-		Instance *render_reflection_probe;
+		Instance *render_reflection_probe = nullptr;
 		const RendererSceneOcclusionCull::HZBuffer *occlusion_buffer;
-		const CameraMatrix *camera_matrix;
+		const Projection *camera_matrix;
 		uint64_t visibility_viewport_mask;
 	};
 
 	void _scene_cull_threaded(uint32_t p_thread, CullData *cull_data);
 	void _scene_cull(CullData &cull_data, InstanceCullResult &cull_result, uint64_t p_from, uint64_t p_to);
+	_FORCE_INLINE_ bool _visibility_parent_check(const CullData &p_cull_data, const InstanceData &p_instance_data);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
-	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
+	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
+	void render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
-	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RendererScene::RenderInfo *r_render_info = nullptr);
+	void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderingMethod::RenderInfo *r_render_info = nullptr);
 	void update_dirty_instances();
 
 	void render_particle_colliders();
 	virtual void render_probes();
 
-	TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size);
+	TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
 
 	//pass to scene render
 
@@ -1053,7 +1170,6 @@ public:
 
 #define PASSBASE scene_render
 
-	PASS2(directional_shadow_atlas_set_size, int, bool)
 	PASS1(voxel_gi_set_quality, RS::VoxelGIQuality)
 
 	/* SKY API */
@@ -1066,47 +1182,186 @@ public:
 	PASS2(sky_set_material, RID, RID)
 	PASS4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
 
+	// Compositor effect
+
+	PASS0R(RID, compositor_effect_allocate)
+	PASS1(compositor_effect_initialize, RID)
+
+	PASS1RC(bool, is_compositor_effect, RID)
+
+	PASS2(compositor_effect_set_enabled, RID, bool)
+	PASS3(compositor_effect_set_callback, RID, RS::CompositorEffectCallbackType, const Callable &)
+	PASS3(compositor_effect_set_flag, RID, RS::CompositorEffectFlags, bool)
+
+	// Compositor
+
+	PASS0R(RID, compositor_allocate)
+	PASS1(compositor_initialize, RID)
+
+	PASS1RC(bool, is_compositor, RID)
+
+	PASS2(compositor_set_compositor_effects, RID, const TypedArray<RID> &)
+
+	// Environment
+
 	PASS0R(RID, environment_allocate)
 	PASS1(environment_initialize, RID)
 
 	PASS1RC(bool, is_environment, RID)
 
+	// Background
 	PASS2(environment_set_background, RID, RS::EnvironmentBG)
 	PASS2(environment_set_sky, RID, RID)
 	PASS2(environment_set_sky_custom_fov, RID, float)
 	PASS2(environment_set_sky_orientation, RID, const Basis &)
 	PASS2(environment_set_bg_color, RID, const Color &)
-	PASS2(environment_set_bg_energy, RID, float)
+	PASS3(environment_set_bg_energy, RID, float, float)
 	PASS2(environment_set_canvas_max_layer, RID, int)
-	PASS7(environment_set_ambient_light, RID, const Color &, RS::EnvironmentAmbientSource, float, float, RS::EnvironmentReflectionSource, const Color &)
+	PASS6(environment_set_ambient_light, RID, const Color &, RS::EnvironmentAmbientSource, float, float, RS::EnvironmentReflectionSource)
 
-	PASS6(environment_set_ssr, RID, bool, int, float, float, float)
-	PASS1(environment_set_ssr_roughness_quality, RS::EnvironmentSSRRoughnessQuality)
+	PASS1RC(RS::EnvironmentBG, environment_get_background, RID)
+	PASS1RC(RID, environment_get_sky, RID)
+	PASS1RC(float, environment_get_sky_custom_fov, RID)
+	PASS1RC(Basis, environment_get_sky_orientation, RID)
+	PASS1RC(Color, environment_get_bg_color, RID)
+	PASS1RC(float, environment_get_bg_energy_multiplier, RID)
+	PASS1RC(float, environment_get_bg_intensity, RID)
+	PASS1RC(int, environment_get_canvas_max_layer, RID)
+	PASS1RC(RS::EnvironmentAmbientSource, environment_get_ambient_source, RID)
+	PASS1RC(Color, environment_get_ambient_light, RID)
+	PASS1RC(float, environment_get_ambient_light_energy, RID)
+	PASS1RC(float, environment_get_ambient_sky_contribution, RID)
+	PASS1RC(RS::EnvironmentReflectionSource, environment_get_reflection_source, RID)
 
-	PASS10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
-	PASS6(environment_set_ssao_quality, RS::EnvironmentSSAOQuality, bool, float, int, float, float)
+	// Tonemap
+	PASS4(environment_set_tonemap, RID, RS::EnvironmentToneMapper, float, float)
+	PASS1RC(RS::EnvironmentToneMapper, environment_get_tone_mapper, RID)
+	PASS1RC(float, environment_get_exposure, RID)
+	PASS1RC(float, environment_get_white, RID)
 
-	PASS11(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RS::EnvironmentGlowBlendMode, float, float, float)
-	PASS1(environment_glow_set_use_bicubic_upscale, bool)
-	PASS1(environment_glow_set_use_high_quality, bool)
+	// Fog
+	PASS11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, RS::EnvironmentFogMode)
 
-	PASS9(environment_set_tonemap, RID, RS::EnvironmentToneMapper, float, float, bool, float, float, float, float)
-
-	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
-
-	PASS9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
-	PASS10(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, bool, float)
+	PASS1RC(bool, environment_get_fog_enabled, RID)
+	PASS1RC(Color, environment_get_fog_light_color, RID)
+	PASS1RC(float, environment_get_fog_light_energy, RID)
+	PASS1RC(float, environment_get_fog_sun_scatter, RID)
+	PASS1RC(float, environment_get_fog_density, RID)
+	PASS1RC(float, environment_get_fog_sky_affect, RID)
+	PASS1RC(float, environment_get_fog_height, RID)
+	PASS1RC(float, environment_get_fog_height_density, RID)
+	PASS1RC(float, environment_get_fog_aerial_perspective, RID)
+	PASS1RC(RS::EnvironmentFogMode, environment_get_fog_mode, RID)
 
 	PASS2(environment_set_volumetric_fog_volume_size, int, int)
 	PASS1(environment_set_volumetric_fog_filter_active, bool)
 
-	PASS11(environment_set_sdfgi, RID, bool, RS::EnvironmentSDFGICascades, float, RS::EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
+	// Depth Fog
+	PASS4(environment_set_fog_depth, RID, float, float, float)
+	PASS1RC(float, environment_get_fog_depth_curve, RID)
+	PASS1RC(float, environment_get_fog_depth_begin, RID)
+	PASS1RC(float, environment_get_fog_depth_end, RID)
+
+	// Volumentric Fog
+	PASS14(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float, float)
+
+	PASS1RC(bool, environment_get_volumetric_fog_enabled, RID)
+	PASS1RC(float, environment_get_volumetric_fog_density, RID)
+	PASS1RC(Color, environment_get_volumetric_fog_scattering, RID)
+	PASS1RC(Color, environment_get_volumetric_fog_emission, RID)
+	PASS1RC(float, environment_get_volumetric_fog_emission_energy, RID)
+	PASS1RC(float, environment_get_volumetric_fog_anisotropy, RID)
+	PASS1RC(float, environment_get_volumetric_fog_length, RID)
+	PASS1RC(float, environment_get_volumetric_fog_detail_spread, RID)
+	PASS1RC(float, environment_get_volumetric_fog_gi_inject, RID)
+	PASS1RC(float, environment_get_volumetric_fog_sky_affect, RID)
+	PASS1RC(bool, environment_get_volumetric_fog_temporal_reprojection, RID)
+	PASS1RC(float, environment_get_volumetric_fog_temporal_reprojection_amount, RID)
+	PASS1RC(float, environment_get_volumetric_fog_ambient_inject, RID)
+
+	// Glow
+	PASS13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, RS::EnvironmentGlowBlendMode, float, float, float, float, RID)
+
+	PASS1RC(bool, environment_get_glow_enabled, RID)
+	PASS1RC(Vector<float>, environment_get_glow_levels, RID)
+	PASS1RC(float, environment_get_glow_intensity, RID)
+	PASS1RC(float, environment_get_glow_strength, RID)
+	PASS1RC(float, environment_get_glow_bloom, RID)
+	PASS1RC(float, environment_get_glow_mix, RID)
+	PASS1RC(RS::EnvironmentGlowBlendMode, environment_get_glow_blend_mode, RID)
+	PASS1RC(float, environment_get_glow_hdr_bleed_threshold, RID)
+	PASS1RC(float, environment_get_glow_hdr_luminance_cap, RID)
+	PASS1RC(float, environment_get_glow_hdr_bleed_scale, RID)
+	PASS1RC(float, environment_get_glow_map_strength, RID)
+	PASS1RC(RID, environment_get_glow_map, RID)
+
+	PASS1(environment_glow_set_use_bicubic_upscale, bool)
+
+	// SSR
+	PASS6(environment_set_ssr, RID, bool, int, float, float, float)
+
+	PASS1RC(bool, environment_get_ssr_enabled, RID)
+	PASS1RC(int, environment_get_ssr_max_steps, RID)
+	PASS1RC(float, environment_get_ssr_fade_in, RID)
+	PASS1RC(float, environment_get_ssr_fade_out, RID)
+	PASS1RC(float, environment_get_ssr_depth_tolerance, RID)
+
+	PASS1(environment_set_ssr_roughness_quality, RS::EnvironmentSSRRoughnessQuality)
+
+	// SSAO
+	PASS10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
+
+	PASS1RC(bool, environment_get_ssao_enabled, RID)
+	PASS1RC(float, environment_get_ssao_radius, RID)
+	PASS1RC(float, environment_get_ssao_intensity, RID)
+	PASS1RC(float, environment_get_ssao_power, RID)
+	PASS1RC(float, environment_get_ssao_detail, RID)
+	PASS1RC(float, environment_get_ssao_horizon, RID)
+	PASS1RC(float, environment_get_ssao_sharpness, RID)
+	PASS1RC(float, environment_get_ssao_direct_light_affect, RID)
+	PASS1RC(float, environment_get_ssao_ao_channel_affect, RID)
+
+	PASS6(environment_set_ssao_quality, RS::EnvironmentSSAOQuality, bool, float, int, float, float)
+
+	// SSIL
+	PASS6(environment_set_ssil, RID, bool, float, float, float, float)
+
+	PASS1RC(bool, environment_get_ssil_enabled, RID)
+	PASS1RC(float, environment_get_ssil_radius, RID)
+	PASS1RC(float, environment_get_ssil_intensity, RID)
+	PASS1RC(float, environment_get_ssil_sharpness, RID)
+	PASS1RC(float, environment_get_ssil_normal_rejection, RID)
+
+	PASS6(environment_set_ssil_quality, RS::EnvironmentSSILQuality, bool, float, int, float, float)
+
+	// SDFGI
+
+	PASS11(environment_set_sdfgi, RID, bool, int, float, RS::EnvironmentSDFGIYScale, bool, float, bool, float, float, float)
+
+	PASS1RC(bool, environment_get_sdfgi_enabled, RID)
+	PASS1RC(int, environment_get_sdfgi_cascades, RID)
+	PASS1RC(float, environment_get_sdfgi_min_cell_size, RID)
+	PASS1RC(bool, environment_get_sdfgi_use_occlusion, RID)
+	PASS1RC(float, environment_get_sdfgi_bounce_feedback, RID)
+	PASS1RC(bool, environment_get_sdfgi_read_sky_light, RID)
+	PASS1RC(float, environment_get_sdfgi_energy, RID)
+	PASS1RC(float, environment_get_sdfgi_normal_bias, RID)
+	PASS1RC(float, environment_get_sdfgi_probe_bias, RID)
+	PASS1RC(RS::EnvironmentSDFGIYScale, environment_get_sdfgi_y_scale, RID)
+
 	PASS1(environment_set_sdfgi_ray_count, RS::EnvironmentSDFGIRayCount)
 	PASS1(environment_set_sdfgi_frames_to_converge, RS::EnvironmentSDFGIFramesToConverge)
 	PASS1(environment_set_sdfgi_frames_to_update_light, RS::EnvironmentSDFGIFramesToUpdateLight)
 
-	PASS1RC(RS::EnvironmentBG, environment_get_background, RID)
-	PASS1RC(int, environment_get_canvas_max_layer, RID)
+	// Adjustment
+	PASS7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
+
+	PASS1RC(bool, environment_get_adjustments_enabled, RID)
+	PASS1RC(float, environment_get_adjustments_brightness, RID)
+	PASS1RC(float, environment_get_adjustments_contrast, RID)
+	PASS1RC(float, environment_get_adjustments_saturation, RID)
+	PASS1RC(bool, environment_get_use_1d_color_correction, RID)
+	PASS1RC(RID, environment_get_color_correction, RID)
 
 	PASS3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 
@@ -1114,33 +1369,17 @@ public:
 	PASS1(sub_surface_scattering_set_quality, RS::SubSurfaceScatteringQuality)
 	PASS2(sub_surface_scattering_set_scale, float, float)
 
-	/* CAMERA EFFECTS */
-
-	PASS0R(RID, camera_effects_allocate)
-	PASS1(camera_effects_initialize, RID)
-
-	PASS2(camera_effects_set_dof_blur_quality, RS::DOFBlurQuality, bool)
-	PASS1(camera_effects_set_dof_blur_bokeh_shape, RS::DOFBokehShape)
-
-	PASS8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
-	PASS3(camera_effects_set_custom_exposure, RID, bool, float)
-
-	PASS1(shadows_quality_set, RS::ShadowQuality)
-	PASS1(directional_shadow_quality_set, RS::ShadowQuality)
+	PASS1(positional_soft_shadow_filter_set_quality, RS::ShadowQuality)
+	PASS1(directional_soft_shadow_filter_set_quality, RS::ShadowQuality)
 
 	PASS2(sdfgi_set_debug_probe_select, const Vector3 &, const Vector3 &)
 
 	/* Render Buffers */
 
-	PASS0R(RID, render_buffers_create)
-	PASS8(render_buffers_configure, RID, RID, int, int, RS::ViewportMSAA, RS::ViewportScreenSpaceAA, bool, uint32_t)
+	PASS0R(Ref<RenderSceneBuffers>, render_buffers_create)
 	PASS1(gi_set_use_half_resolution, bool)
 
-	/* Shadow Atlas */
-	PASS0R(RID, shadow_atlas_create)
-	PASS3(shadow_atlas_set_size, RID, int, bool)
-	PASS3(shadow_atlas_set_quadrant_subdivision, RID, int, int)
-
+	/* Misc */
 	PASS1(set_debug_draw_mode, RS::ViewportDebugDraw)
 
 	PASS1(decals_set_filter, RS::DecalFilter)
@@ -1158,4 +1397,4 @@ public:
 	virtual ~RendererSceneCull();
 };
 
-#endif // VISUALSERVERSCENE_H
+#endif // RENDERER_SCENE_CULL_H

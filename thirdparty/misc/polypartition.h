@@ -26,7 +26,7 @@
 
 #include "core/math/vector2.h"
 #include "core/templates/list.h"
-#include "core/templates/set.h"
+#include "core/templates/rb_set.h"
 
 typedef double tppl_float;
 
@@ -71,8 +71,8 @@ class TPPLPoly {
     return hole;
   }
 
-  void SetHole(bool hole) {
-    this->hole = hole;
+  void SetHole(bool p_hole) {
+    this->hole = p_hole;
   }
 
   TPPLPoint &GetPoint(long i) {
@@ -224,8 +224,8 @@ public:
   // Helper functions for MonotonePartition.
   bool Below(TPPLPoint &p1, TPPLPoint &p2);
   void AddDiagonal(MonotoneVertex *vertices, long *numvertices, long index1, long index2,
-          TPPLVertexType *vertextypes, Set<ScanLineEdge>::Element **edgeTreeIterators,
-          Set<ScanLineEdge> *edgeTree, long *helpers);
+	  TPPLVertexType *vertextypes, RBSet<ScanLineEdge>::Element **edgeTreeIterators,
+	  RBSet<ScanLineEdge> *edgeTree, long *helpers);
 
   // Triangulates a monotone polygon, used in Triangulate_MONO.
   int TriangulateMonotone(TPPLPoly *inPoly, TPPLPolyList *triangles);

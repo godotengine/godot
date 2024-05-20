@@ -5,7 +5,7 @@
  *   TrueTypeGX/AAT mort table validation
  *   body for type5 (Contextual Glyph Insertion) subtable.
  *
- * Copyright (C) 2005-2020 by
+ * Copyright (C) 2005-2023 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -63,7 +63,7 @@
     *GXV_mort_subtable_type5_StateOptRecData;
 
 
-  FT_LOCAL_DEF( void )
+  static void
   gxv_mort_subtable_type5_subtable_setup( FT_UShort      table_size,
                                           FT_UShort      classTable,
                                           FT_UShort      stateArray,

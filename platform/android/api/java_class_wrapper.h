@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  java_class_wrapper.h                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  java_class_wrapper.h                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef JAVA_CLASS_WRAPPER_H
 #define JAVA_CLASS_WRAPPER_H
@@ -63,7 +63,7 @@ class JavaClass : public RefCounted {
 		ARG_TYPE_MASK = (1 << 16) - 1
 	};
 
-	Map<StringName, Variant> constant_map;
+	RBMap<StringName, Variant> constant_map;
 
 	struct MethodInfo {
 		bool _static = false;
@@ -174,12 +174,12 @@ class JavaClass : public RefCounted {
 	bool _call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &ret);
 
 	friend class JavaClassWrapper;
-	Map<StringName, List<MethodInfo>> methods;
+	HashMap<StringName, List<MethodInfo>> methods;
 	jclass _class;
 #endif
 
 public:
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	JavaClass();
 };
@@ -195,7 +195,7 @@ class JavaObject : public RefCounted {
 #endif
 
 public:
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 #ifdef ANDROID_ENABLED
 	JavaObject(const Ref<JavaClass> &p_base, jobject *p_instance);
@@ -207,10 +207,8 @@ class JavaClassWrapper : public Object {
 	GDCLASS(JavaClassWrapper, Object);
 
 #ifdef ANDROID_ENABLED
-	Map<String, Ref<JavaClass>> class_cache;
+	RBMap<String, Ref<JavaClass>> class_cache;
 	friend class JavaClass;
-	jclass activityClass;
-	jmethodID findClass;
 	jmethodID getDeclaredMethods;
 	jmethodID getFields;
 	jmethodID getParameterTypes;
@@ -229,7 +227,6 @@ class JavaClassWrapper : public Object {
 	jmethodID Long_longValue;
 	jmethodID Float_floatValue;
 	jmethodID Double_doubleValue;
-	jobject classLoader;
 
 	bool _get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig);
 #endif

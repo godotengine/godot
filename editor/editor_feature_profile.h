@@ -1,45 +1,46 @@
-/*************************************************************************/
-/*  editor_feature_profile.h                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_feature_profile.h                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef EDITOR_FEATURE_PROFILE_H
 #define EDITOR_FEATURE_PROFILE_H
 
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
-#include "editor/editor_file_dialog.h"
-#include "editor_help.h"
+#include "editor/editor_help.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
+
+class EditorFileDialog;
 
 class EditorFeatureProfile : public RefCounted {
 	GDCLASS(EditorFeatureProfile, RefCounted);
@@ -53,15 +54,16 @@ public:
 		FEATURE_NODE_DOCK,
 		FEATURE_FILESYSTEM_DOCK,
 		FEATURE_IMPORT_DOCK,
+		FEATURE_HISTORY_DOCK,
 		FEATURE_MAX
 	};
 
 private:
-	Set<StringName> disabled_classes;
-	Set<StringName> disabled_editors;
-	Map<StringName, Set<StringName>> disabled_properties;
+	HashSet<StringName> disabled_classes;
+	HashSet<StringName> disabled_editors;
+	HashMap<StringName, HashSet<StringName>> disabled_properties;
 
-	Set<StringName> collapsed_classes;
+	HashSet<StringName> collapsed_classes;
 
 	bool features_disabled[FEATURE_MAX];
 	static const char *feature_names[FEATURE_MAX];
@@ -118,33 +120,35 @@ class EditorFeatureProfileManager : public AcceptDialog {
 		CLASS_OPTION_DISABLE_EDITOR
 	};
 
-	ConfirmationDialog *erase_profile_dialog;
-	ConfirmationDialog *new_profile_dialog;
-	LineEdit *new_profile_name;
+	ConfirmationDialog *erase_profile_dialog = nullptr;
+	ConfirmationDialog *new_profile_dialog = nullptr;
+	LineEdit *new_profile_name = nullptr;
 
-	LineEdit *current_profile_name;
-	OptionButton *profile_list;
+	LineEdit *current_profile_name = nullptr;
+	OptionButton *profile_list = nullptr;
 	Button *profile_actions[PROFILE_MAX];
 
-	HSplitContainer *h_split;
+	HSplitContainer *h_split = nullptr;
 
-	VBoxContainer *class_list_vbc;
-	Tree *class_list;
-	VBoxContainer *property_list_vbc;
-	Tree *property_list;
-	EditorHelpBit *description_bit;
-	Label *no_profile_selected_help;
+	VBoxContainer *class_list_vbc = nullptr;
+	Tree *class_list = nullptr;
+	VBoxContainer *property_list_vbc = nullptr;
+	Tree *property_list = nullptr;
+	EditorHelpBit *description_bit = nullptr;
+	Label *no_profile_selected_help = nullptr;
 
-	EditorFileDialog *import_profiles;
-	EditorFileDialog *export_profile;
+	EditorFileDialog *import_profiles = nullptr;
+	EditorFileDialog *export_profile = nullptr;
 
 	void _profile_action(int p_action);
 	void _profile_selected(int p_what);
+	void _hide_requested();
 
 	String current_profile;
 	void _update_profile_list(const String &p_select_profile = String());
 	void _update_selected_profile();
-	void _fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected);
+	void _update_profile_tree_from(TreeItem *p_edited);
+	void _fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected, int p_class_insert_index = -1);
 
 	Ref<EditorFeatureProfile> current;
 	Ref<EditorFeatureProfile> edited;
@@ -156,7 +160,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 	void _import_profiles(const Vector<String> &p_paths);
 	void _export_profile(const String &p_path);
 
-	bool updating_features;
+	bool updating_features = false;
 
 	void _class_list_item_selected();
 	void _class_list_item_edited();
@@ -164,7 +168,7 @@ class EditorFeatureProfileManager : public AcceptDialog {
 	void _property_item_edited();
 	void _save_and_update();
 
-	Timer *update_timer;
+	Timer *update_timer = nullptr;
 	void _emit_current_profile_changed();
 
 	static EditorFeatureProfileManager *singleton;
@@ -175,6 +179,8 @@ protected:
 
 public:
 	Ref<EditorFeatureProfile> get_current_profile();
+	String get_current_profile_name() const;
+	void set_current_profile(const String &p_profile_name, bool p_validate_profile);
 	void notify_changed();
 
 	static EditorFeatureProfileManager *get_singleton() { return singleton; }

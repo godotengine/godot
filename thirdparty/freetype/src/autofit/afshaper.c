@@ -4,7 +4,7 @@
  *
  *   HarfBuzz interface for accessing OpenType features (body).
  *
- * Copyright (C) 2013-2020 by
+ * Copyright (C) 2013-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -132,13 +132,24 @@
     /* Convert a HarfBuzz script tag into the corresponding OpenType */
     /* tag or tags -- some Indic scripts like Devanagari have an old */
     /* and a new set of features.                                    */
-    hb_ot_tags_from_script( script,
-                            &script_tags[0],
-                            &script_tags[1] );
+    {
+      unsigned int  tags_count = 3;
+      hb_tag_t      tags[3];
 
-    /* `hb_ot_tags_from_script' usually returns HB_OT_TAG_DEFAULT_SCRIPT */
-    /* as the second tag.  We change that to HB_TAG_NONE except for the  */
-    /* default script.                                                   */
+
+      hb_ot_tags_from_script_and_language( script,
+                                           HB_LANGUAGE_INVALID,
+                                           &tags_count,
+                                           tags,
+                                           NULL,
+                                           NULL );
+      script_tags[0] = tags_count > 0 ? tags[0] : HB_TAG_NONE;
+      script_tags[1] = tags_count > 1 ? tags[1] : HB_TAG_NONE;
+      script_tags[2] = tags_count > 2 ? tags[2] : HB_TAG_NONE;
+    }
+
+    /* If the second tag is HB_OT_TAG_DEFAULT_SCRIPT, change that to     */
+    /* HB_TAG_NONE except for the default script.                        */
     if ( default_script )
     {
       if ( script_tags[0] == HB_TAG_NONE )
@@ -157,9 +168,6 @@
       /* HarfBuzz maps them to `DFLT', which we don't want to handle here */
       if ( script_tags[0] == HB_OT_TAG_DEFAULT_SCRIPT )
         goto Exit;
-
-      if ( script_tags[1] == HB_OT_TAG_DEFAULT_SCRIPT )
-        script_tags[1] = HB_TAG_NONE;
     }
 
     gsub_lookups = hb_set_create();
@@ -173,9 +181,9 @@
     if ( hb_set_is_empty( gsub_lookups ) )
       goto Exit; /* nothing to do */
 
-    FT_TRACE4(( "GSUB lookups (style `%s'):\n"
-                " ",
+    FT_TRACE4(( "GSUB lookups (style `%s'):\n",
                 af_style_names[style_class->style] ));
+    FT_TRACE4(( " " ));
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     count = 0;
@@ -202,12 +210,13 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
     if ( !count )
       FT_TRACE4(( " (none)" ));
-    FT_TRACE4(( "\n\n" ));
+    FT_TRACE4(( "\n" ));
+    FT_TRACE4(( "\n" ));
 #endif
 
-    FT_TRACE4(( "GPOS lookups (style `%s'):\n"
-                " ",
+    FT_TRACE4(( "GPOS lookups (style `%s'):\n",
                 af_style_names[style_class->style] ));
+    FT_TRACE4(( " " ));
 
     gpos_lookups = hb_set_create();
     hb_ot_layout_collect_lookups( face,
@@ -242,13 +251,14 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
     if ( !count )
       FT_TRACE4(( " (none)" ));
-    FT_TRACE4(( "\n\n" ));
+    FT_TRACE4(( "\n" ));
+    FT_TRACE4(( "\n" ));
 #endif
 
     /*
      * We now check whether we can construct blue zones, using glyphs
      * covered by the feature only.  In case there is not a single zone
-     * (this is, not a single character is covered), we skip this coverage.
+     * (that is, not a single character is covered), we skip this coverage.
      *
      */
     if ( style_class->coverage != AF_COVERAGE_DEFAULT )
@@ -303,9 +313,9 @@
      * hinted and usually rendered glyph.
      *
      * Consider the superscript feature of font `pala.ttf': Some of the
-     * glyphs are `real', this is, they have a zero vertical offset, but
+     * glyphs are `real', that is, they have a zero vertical offset, but
      * most of them are small caps glyphs shifted up to the superscript
-     * position (this is, the `sups' feature is present in both the GSUB and
+     * position (that is, the `sups' feature is present in both the GSUB and
      * GPOS tables).  The code for blue zones computation actually uses a
      * feature's y offset so that the `real' glyphs get correct hints.  But
      * later on it is impossible to decide whether a glyph index belongs to,
@@ -353,8 +363,10 @@
     {
 #ifdef FT_DEBUG_LEVEL_TRACE
       if ( !( count % 10 ) )
-        FT_TRACE4(( "\n"
-                    "   " ));
+      {
+        FT_TRACE4(( "\n" ));
+        FT_TRACE4(( "   " ));
+      }
 
       FT_TRACE4(( " %d", idx ));
       count++;
@@ -376,9 +388,12 @@
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     if ( !count )
-      FT_TRACE4(( "\n"
-                  "    (none)" ));
-    FT_TRACE4(( "\n\n" ));
+    {
+      FT_TRACE4(( "\n" ));
+      FT_TRACE4(( "    (none)" ));
+    }
+    FT_TRACE4(( "\n" ));
+    FT_TRACE4(( "\n" ));
 #endif
 
   Exit:

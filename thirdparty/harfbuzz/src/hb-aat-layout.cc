@@ -55,6 +55,13 @@ AAT::hb_aat_apply_context_t::hb_aat_apply_context_t (const hb_ot_shape_plan_t *p
 						       buffer (buffer_),
 						       sanitizer (),
 						       ankr_table (&Null (AAT::ankr)),
+						       gdef_table (
+#ifndef HB_NO_OT_LAYOUT
+							 face->table.GDEF->table
+#else
+							 &Null (GDEF)
+#endif
+						       ),
 						       lookup_index (0)
 {
   sanitizer.init (blob);
@@ -79,7 +86,7 @@ AAT::hb_aat_apply_context_t::set_ankr_table (const AAT::ankr *ankr_table_)
  * @short_description: Apple Advanced Typography Layout
  * @include: hb-aat.h
  *
- * Functions for querying AAT Layout features in the font face. 
+ * Functions for querying AAT Layout features in the font face.
  *
  * HarfBuzz supports all of the AAT tables used to implement shaping. Other
  * AAT tables and their associated features are not supported.
@@ -107,7 +114,7 @@ static const hb_aat_feature_mapping_t feature_mappings[] =
   {HB_TAG ('f','r','a','c'), HB_AAT_LAYOUT_FEATURE_TYPE_FRACTIONS,               HB_AAT_LAYOUT_FEATURE_SELECTOR_DIAGONAL_FRACTIONS,             HB_AAT_LAYOUT_FEATURE_SELECTOR_NO_FRACTIONS},
   {HB_TAG ('f','w','i','d'), HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,            HB_AAT_LAYOUT_FEATURE_SELECTOR_MONOSPACED_TEXT,                (hb_aat_layout_feature_selector_t) 7},
   {HB_TAG ('h','a','l','t'), HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,            HB_AAT_LAYOUT_FEATURE_SELECTOR_ALT_HALF_WIDTH_TEXT,            (hb_aat_layout_feature_selector_t) 7},
-  {HB_TAG ('h','i','s','t'), HB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES,               HB_AAT_LAYOUT_FEATURE_SELECTOR_HISTORICAL_LIGATURES_ON,        HB_AAT_LAYOUT_FEATURE_SELECTOR_HISTORICAL_LIGATURES_OFF},
+  {HB_TAG ('h','i','s','t'), (hb_aat_layout_feature_type_t) 40,                  (hb_aat_layout_feature_selector_t) 0,                          (hb_aat_layout_feature_selector_t) 1},
   {HB_TAG ('h','k','n','a'), HB_AAT_LAYOUT_FEATURE_TYPE_ALTERNATE_KANA,          HB_AAT_LAYOUT_FEATURE_SELECTOR_ALTERNATE_HORIZ_KANA_ON,        HB_AAT_LAYOUT_FEATURE_SELECTOR_ALTERNATE_HORIZ_KANA_OFF},
   {HB_TAG ('h','l','i','g'), HB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES,               HB_AAT_LAYOUT_FEATURE_SELECTOR_HISTORICAL_LIGATURES_ON,        HB_AAT_LAYOUT_FEATURE_SELECTOR_HISTORICAL_LIGATURES_OFF},
   {HB_TAG ('h','n','g','l'), HB_AAT_LAYOUT_FEATURE_TYPE_TRANSLITERATION,         HB_AAT_LAYOUT_FEATURE_SELECTOR_HANJA_TO_HANGUL,                HB_AAT_LAYOUT_FEATURE_SELECTOR_NO_TRANSLITERATION},
@@ -130,6 +137,7 @@ static const hb_aat_feature_mapping_t feature_mappings[] =
   {HB_TAG ('p','n','u','m'), HB_AAT_LAYOUT_FEATURE_TYPE_NUMBER_SPACING,          HB_AAT_LAYOUT_FEATURE_SELECTOR_PROPORTIONAL_NUMBERS,           (hb_aat_layout_feature_selector_t) 4},
   {HB_TAG ('p','w','i','d'), HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,            HB_AAT_LAYOUT_FEATURE_SELECTOR_PROPORTIONAL_TEXT,              (hb_aat_layout_feature_selector_t) 7},
   {HB_TAG ('q','w','i','d'), HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,            HB_AAT_LAYOUT_FEATURE_SELECTOR_QUARTER_WIDTH_TEXT,             (hb_aat_layout_feature_selector_t) 7},
+  {HB_TAG ('r','l','i','g'), HB_AAT_LAYOUT_FEATURE_TYPE_LIGATURES,               HB_AAT_LAYOUT_FEATURE_SELECTOR_REQUIRED_LIGATURES_ON,          HB_AAT_LAYOUT_FEATURE_SELECTOR_REQUIRED_LIGATURES_OFF},
   {HB_TAG ('r','u','b','y'), HB_AAT_LAYOUT_FEATURE_TYPE_RUBY_KANA,               HB_AAT_LAYOUT_FEATURE_SELECTOR_RUBY_KANA_ON,                   HB_AAT_LAYOUT_FEATURE_SELECTOR_RUBY_KANA_OFF},
   {HB_TAG ('s','i','n','f'), HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_POSITION,       HB_AAT_LAYOUT_FEATURE_SELECTOR_SCIENTIFIC_INFERIORS,           HB_AAT_LAYOUT_FEATURE_SELECTOR_NORMAL_POSITION},
   {HB_TAG ('s','m','c','p'), HB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE,              HB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS,          HB_AAT_LAYOUT_FEATURE_SELECTOR_DEFAULT_LOWER_CASE},
@@ -169,16 +177,17 @@ static const hb_aat_feature_mapping_t feature_mappings[] =
   {HB_TAG ('v','k','n','a'), HB_AAT_LAYOUT_FEATURE_TYPE_ALTERNATE_KANA,          HB_AAT_LAYOUT_FEATURE_SELECTOR_ALTERNATE_VERT_KANA_ON,         HB_AAT_LAYOUT_FEATURE_SELECTOR_ALTERNATE_VERT_KANA_OFF},
   {HB_TAG ('v','p','a','l'), HB_AAT_LAYOUT_FEATURE_TYPE_TEXT_SPACING,            HB_AAT_LAYOUT_FEATURE_SELECTOR_ALT_PROPORTIONAL_TEXT,          (hb_aat_layout_feature_selector_t) 7},
   {HB_TAG ('v','r','t','2'), HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_SUBSTITUTION,   HB_AAT_LAYOUT_FEATURE_SELECTOR_SUBSTITUTE_VERTICAL_FORMS_ON,   HB_AAT_LAYOUT_FEATURE_SELECTOR_SUBSTITUTE_VERTICAL_FORMS_OFF},
+  {HB_TAG ('v','r','t','r'), HB_AAT_LAYOUT_FEATURE_TYPE_VERTICAL_SUBSTITUTION,   (hb_aat_layout_feature_selector_t) 2,                          (hb_aat_layout_feature_selector_t) 3},
   {HB_TAG ('z','e','r','o'), HB_AAT_LAYOUT_FEATURE_TYPE_TYPOGRAPHIC_EXTRAS,      HB_AAT_LAYOUT_FEATURE_SELECTOR_SLASHED_ZERO_ON,                HB_AAT_LAYOUT_FEATURE_SELECTOR_SLASHED_ZERO_OFF},
 };
 
-/** 
+/**
  * hb_aat_layout_find_feature_mapping:
  * @tag: The requested #hb_tag_t feature tag
  *
  * Fetches the AAT feature-and-selector combination that corresponds
  * to a given OpenType feature tag.
- *  
+ *
  * Return value: the AAT features and selectors corresponding to the
  * OpenType feature tag queried
  *
@@ -202,14 +211,14 @@ void
 hb_aat_layout_compile_map (const hb_aat_map_builder_t *mapper,
 			   hb_aat_map_t *map)
 {
-  const AAT::morx& morx = *mapper->face->table.morx;
+  const AAT::morx& morx = *mapper->face->table.morx->table;
   if (morx.has_data ())
   {
     morx.compile_flags (mapper, map);
     return;
   }
 
-  const AAT::mort& mort = *mapper->face->table.mort;
+  const AAT::mort& mort = *mapper->face->table.mort->table;
   if (mort.has_data ())
   {
     mort.compile_flags (mapper, map);
@@ -227,38 +236,54 @@ hb_aat_layout_compile_map (const hb_aat_map_builder_t *mapper,
  *
  * <note>Note: does not examine the `GSUB` table.</note>
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  * Since: 2.3.0
  */
 hb_bool_t
 hb_aat_layout_has_substitution (hb_face_t *face)
 {
-  return face->table.morx->has_data () ||
-	 face->table.mort->has_data ();
+  return face->table.morx->table->has_data () ||
+	 face->table.mort->table->has_data ();
 }
 
 void
 hb_aat_layout_substitute (const hb_ot_shape_plan_t *plan,
 			  hb_font_t *font,
-			  hb_buffer_t *buffer)
+			  hb_buffer_t *buffer,
+			  const hb_feature_t *features,
+			  unsigned num_features)
 {
-  hb_blob_t *morx_blob = font->face->table.morx.get_blob ();
-  const AAT::morx& morx = *morx_blob->as<AAT::morx> ();
-  if (morx.has_data ())
+  hb_aat_map_builder_t builder (font->face, plan->props);
+  for (unsigned i = 0; i < num_features; i++)
+    builder.add_feature (features[i]);
+  hb_aat_map_t map;
+  builder.compile (map);
+
   {
-    AAT::hb_aat_apply_context_t c (plan, font, buffer, morx_blob);
-    morx.apply (&c);
-    return;
+    auto &accel = *font->face->table.morx;
+    const AAT::morx& morx = *accel.table;
+    if (morx.has_data ())
+    {
+      AAT::hb_aat_apply_context_t c (plan, font, buffer, accel.get_blob ());
+      if (!buffer->message (font, "start table morx")) return;
+      morx.apply (&c, map, accel);
+      (void) buffer->message (font, "end table morx");
+      return;
+    }
   }
 
-  hb_blob_t *mort_blob = font->face->table.mort.get_blob ();
-  const AAT::mort& mort = *mort_blob->as<AAT::mort> ();
-  if (mort.has_data ())
   {
-    AAT::hb_aat_apply_context_t c (plan, font, buffer, mort_blob);
-    mort.apply (&c);
-    return;
+    auto &accel = *font->face->table.mort;
+    const AAT::mort& mort = *accel.table;
+    if (mort.has_data ())
+    {
+      AAT::hb_aat_apply_context_t c (plan, font, buffer, accel.get_blob ());
+      if (!buffer->message (font, "start table mort")) return;
+      mort.apply (&c, map, accel);
+      (void) buffer->message (font, "end table mort");
+      return;
+    }
   }
 }
 
@@ -282,7 +307,7 @@ is_deleted_glyph (const hb_glyph_info_t *info)
 void
 hb_aat_layout_remove_deleted_glyphs (hb_buffer_t *buffer)
 {
-  hb_ot_layout_delete_glyphs_inplace (buffer, is_deleted_glyph);
+  buffer->delete_glyphs_inplace (is_deleted_glyph);
 }
 
 /**
@@ -294,14 +319,14 @@ hb_aat_layout_remove_deleted_glyphs (hb_buffer_t *buffer)
  *
  * <note>Note: does not examine the `GPOS` table.</note>
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  * Since: 2.3.0
  */
 hb_bool_t
 hb_aat_layout_has_positioning (hb_face_t *face)
 {
-  return face->table.kerx->has_data ();
+  return face->table.kerx->table->has_data ();
 }
 
 void
@@ -309,12 +334,13 @@ hb_aat_layout_position (const hb_ot_shape_plan_t *plan,
 			hb_font_t *font,
 			hb_buffer_t *buffer)
 {
-  hb_blob_t *kerx_blob = font->face->table.kerx.get_blob ();
-  const AAT::kerx& kerx = *kerx_blob->as<AAT::kerx> ();
+  auto &accel = *font->face->table.kerx;
 
-  AAT::hb_aat_apply_context_t c (plan, font, buffer, kerx_blob);
+  AAT::hb_aat_apply_context_t c (plan, font, buffer, accel.get_blob ());
+  if (!buffer->message (font, "start table kerx")) return;
   c.set_ankr_table (font->face->table.ankr.get ());
-  kerx.apply (&c);
+  accel.apply (&c);
+  (void) buffer->message (font, "end table kerx");
 }
 
 
@@ -325,7 +351,7 @@ hb_aat_layout_position (const hb_ot_shape_plan_t *plan,
  * Tests whether the specified face includes any tracking information
  * in the `trak` table.
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  * Since: 2.3.0
  */

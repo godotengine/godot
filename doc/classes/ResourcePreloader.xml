@@ -1,72 +1,57 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ResourcePreloader" inherits="Node" version="4.0">
+<class name="ResourcePreloader" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Resource Preloader Node.
+		A node used to preload sub-resources inside a scene.
 	</brief_description>
 	<description>
-		This node is used to preload sub-resources inside a scene, so when the scene is loaded, all the resources are ready to use and can be retrieved from the preloader.
+		This node is used to preload sub-resources inside a scene, so when the scene is loaded, all the resources are ready to use and can be retrieved from the preloader. You can add the resources using the ResourcePreloader tab when the node is selected.
 		GDScript has a simplified [method @GDScript.preload] built-in method which can be used in most situations, leaving the use of [ResourcePreloader] for more advanced scenarios.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="add_resource">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="resource" type="Resource">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="resource" type="Resource" />
 			<description>
-				Adds a resource to the preloader with the given [code]name[/code]. If a resource with the given [code]name[/code] already exists, the new resource will be renamed to "[code]name[/code] N" where N is an incrementing number starting from 2.
+				Adds a resource to the preloader with the given [param name]. If a resource with the given [param name] already exists, the new resource will be renamed to "[param name] N" where N is an incrementing number starting from 2.
 			</description>
 		</method>
 		<method name="get_resource" qualifiers="const">
-			<return type="Resource">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="Resource" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns the resource associated to [code]name[/code].
+				Returns the resource associated to [param name].
 			</description>
 		</method>
 		<method name="get_resource_list" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns the list of resources inside the preloader.
 			</description>
 		</method>
 		<method name="has_resource" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the preloader contains a resource associated to [code]name[/code].
+				Returns [code]true[/code] if the preloader contains a resource associated to [param name].
 			</description>
 		</method>
 		<method name="remove_resource">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Removes the resource associated to [code]name[/code] from the preloader.
+				Removes the resource associated to [param name] from the preloader.
 			</description>
 		</method>
 		<method name="rename_resource">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="newname" type="StringName">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="newname" type="StringName" />
 			<description>
-				Renames a resource inside the preloader from [code]name[/code] to [code]newname[/code].
+				Renames a resource inside the preloader from [param name] to [param newname].
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

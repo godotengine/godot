@@ -43,8 +43,8 @@ Source: https://github.com/godotengine/godot
 
 Files: *
 Comment: Godot Engine
-Copyright: 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+Copyright: 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat
 
 Files: ./icon.png
@@ -59,16 +59,16 @@ Files: ./core/math/convex_hull.cpp
  ./core/math/convex_hull.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
-Files: ./modules/fbx/fbx_parser/
-Comment: Open Asset Import Library (FBX parser)
-Copyright: 2006-2020, assimp team
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
-License: BSD-3-clause
+Files: ./modules/lightmapper_rd/lm_compute.glsl
+Comment: Joint Non-Local Means (JNLM) denoiser
+Copyright: 2020, Manuel Prandini
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
+License: Expat
 
 Files: ./platform/android/java/lib/aidl/com/android/*
  ./platform/android/java/lib/res/layout/status_bar_ongoing_event_progress_bar.xml
@@ -79,6 +79,23 @@ Comment: The Android Open Source Project
 Copyright: 2008-2016, The Android Open Source Project
  2002, Google, Inc.
 License: Apache-2.0
+
+Files: ./platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix.java
+Comment: ProcessPhoenix
+Copyright: 2015, Jake Wharton
+License: Apache-2.0
+
+Files: ./scene/animation/easing_equations.h
+Comment: Robert Penner's Easing Functions
+Copyright: 2001, Robert Penner
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
+License: Expat
+
+Files: ./servers/physics_2d/godot_joints_2d.cpp
+Comment: Chipmunk2D Joint Constraints
+Copyright: 2007, Scott Lembcke
+License: Expat
 
 Files: ./servers/physics_3d/collision_solver_3d_sat.cpp
 Comment: Open Dynamics Engine
@@ -101,32 +118,75 @@ Files: ./servers/physics_3d/gjk_epa.cpp
  ./servers/physics_3d/shape_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
 Files: ./servers/physics_3d/joints/cone_twist_joint_3d_sw.cpp
  ./servers/physics_3d/joints/cone_twist_joint_3d_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
- 2007-2021, Juan Linietsky, Ariel Manzur.
- 2014-2021, Godot Engine contributors.
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
+
+Files: ./servers/rendering/renderer_rd/shaders/ss_effects_downsample.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_blur.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_importance_map.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao_interleave.glsl
+ ./servers/rendering/renderer_rd/shaders/ssao.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_blur.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_importance_map.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil_interleave.glsl
+ ./servers/rendering/renderer_rd/shaders/ssil.glsl
+Comment: Intel ASSAO and related files
+Copyright: 2016, Intel Corporation
+License: Expat
+
+Files: ./servers/rendering/renderer_rd/shaders/taa_resolve.glsl
+Comment: Temporal Anti-Aliasing resolve implementation
+Copyright: 2016, Panos Karabelas
+License: Expat
+
+Files: ./thirdparty/amd-fsr/
+Comment: AMD FidelityFX Super Resolution
+Copyright: 2021, Advanced Micro Devices, Inc.
+License: Expat
+
+Files: ./thirdparty/amd-fsr2/
+Comment: AMD FidelityFX Super Resolution 2
+Copyright: 2022-2023, Advanced Micro Devices, Inc.
+License: Expat
+
+Files: ./thirdparty/angle/
+Comment: ANGLE
+Copyright: 2018, The ANGLE Project Authors.
+License: BSD-3-clause
+
+Files: ./thirdparty/astcenc/
+Comment: Arm ASTC Encoder
+Copyright: 2011-2024, Arm Limited
+License: Apache-2.0
 
 Files: ./thirdparty/basis_universal/
 Comment: Basis Universal
-Copyright: 2019, Binomial LLC.
+Copyright: 2022, Binomial LLC.
 License: Apache-2.0
 
-Files: ./thirdparty/bullet/
-Comment: Bullet Continuous Collision Detection and Physics Library
-Copyright: 2003-2013, Erwin Coumans
-License: Zlib
+Files: ./thirdparty/brotli/
+Comment: Brotli
+Copyright: 2009, 2010, 2013-2016 by the Brotli Authors.
+License: Expat
 
 Files: ./thirdparty/certs/ca-certificates.crt
 Comment: CA certificates
 Copyright: Mozilla Contributors
 License: MPL-2.0
+
+Files: ./thirdparty/clipper2/
+Comment: Clipper2
+Copyright: 2010-2023, Angus Johnson
+License: BSL-1.0
 
 Files: ./thirdparty/cvtt/
 Comment: Convection Texture Tools Stand-Alone Kernels
@@ -134,9 +194,19 @@ Copyright: 2018, Eric Lasota
  2018, Microsoft Corp.
 License: Expat
 
+Files: ./thirdparty/d3d12ma/
+Comment: D3D12 Memory Allocator
+Copyright: 2019-2022 Advanced Micro Devices, Inc.
+License: Expat
+
+Files: ./thirdparty/directx_headers/
+Comment: DirectX Headers
+Copyright: Microsoft Corporation
+License: Expat
+
 Files: ./thirdparty/doctest/
 Comment: doctest
-Copyright: 2016-2020, Viktor Kirilov
+Copyright: 2016-2023, Viktor Kirilov
 License: Expat
 
 Files: ./thirdparty/embree/
@@ -146,39 +216,39 @@ License: Apache-2.0
 
 Files: ./thirdparty/enet/
 Comment: ENet
-Copyright: 2002-2020, Lee Salzman
+Copyright: 2002-2024, Lee Salzman
 License: Expat
 
 Files: ./thirdparty/etcpak/
 Comment: etcpak
-Copyright: 2013-2021, Bartosz Taudul
+Copyright: 2013-2022, Bartosz Taudul
 License: BSD-3-clause
 
-Files: ./thirdparty/fonts/DroidSans*.ttf
+Files: ./thirdparty/fonts/DroidSans*.woff2
 Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
 License: Apache-2.0
 
-Files: ./thirdparty/fonts/NotoSans*.ttf
+Files: ./thirdparty/fonts/JetBrainsMono_Regular.woff2
+Comment: JetBrains Mono font
+Copyright: 2020, JetBrains s.r.o.
+License: OFL-1.1
+
+Files: ./thirdparty/fonts/NotoSans*.woff2
 Comment: Noto Sans font
 Copyright: 2012, Google Inc.
 License: OFL-1.1
 
-Files: ./thirdparty/fonts/Hack_Regular.ttf
-Comment: Hack font
-Copyright: 2018, Source Foundry Authors
-  2003, Bitstream Inc.
-License: Expat and Bitstream Vera Fonts Copyright
-
-Files: ./thirdparty/fonts/Tamsyn*.png
-Comment: Tamsyn font
-Copyright: 2015, Scott Fial
-License: Tamsyn
-
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2020, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2023, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
+
+Files: ./thirdparty/glad/
+Comment: glad
+Copyright: 2013-2022, David Herberth
+ 2013-2020, The Khronos Group Inc.
+License: CC0-1.0 and Apache-2.0
 
 Files: ./thirdparty/glslang/
 Comment: glslang
@@ -190,34 +260,49 @@ License: glslang
 Files: ./thirdparty/graphite/
 Comment: Graphite engine
 Copyright: 2010, SIL International
-License: MPL-2.0
+License: Expat
 
 Files: ./thirdparty/harfbuzz/
 Comment: HarfBuzz text shaping library
-Copyright: 2010-2020, Google, Inc.
- 2018-2020, Ebrahim Byagowi
- 2019-2020, Facebook, Inc.
- 2012, Mozilla Foundation
+Copyright: 2010-2022, Google, Inc.
+ 2015-2020, Ebrahim Byagowi
+ 2019,2020, Facebook, Inc.
+ 2012, 2015, Mozilla Foundation
  2011, Codethink Limited
- 2008, 2010 Nokia Corporation and/or its subsidiary(-ies)
+ 2008, 2010, Nokia Corporation and/or its subsidiary(-ies)
  2009, Keith Stribley
- 2009, Martin Hosken and SIL International
+ 2011, Martin Hosken and SIL International
  2007, Chris Wilson
- 2006, Behdad Esfahbod
- 2005, David Turner
- 2004, 2007-2010, Red Hat, Inc.
- 1998-2004, David Turner and Werner Lemberg
+ 2005-2006, 2020-2023, Behdad Esfahbod
+ 2004, 2007-2010, 2013, 2021-2023, Red Hat, Inc.
+ 1998-2005, David Turner and Werner Lemberg
+ 2016, Igalia, S.L.
+ 2022, Matthias Clasen
+ 2018, 2021, Khaled Hosny
+ 2018-2020, Adobe, Inc.
+ 2013-2015, Alexei Podtelezhnikov
 License: HarfBuzz
 
 Files: ./thirdparty/icu4c/
 Comment: International Components for Unicode
-Copyright: 1991-2021, Unicode
+Copyright: 2016-2024, Unicode, Inc.
 License: Unicode
 
 Files: ./thirdparty/jpeg-compressor/
 Comment: jpeg-compressor
 Copyright: 2012, Rich Geldreich
 License: public-domain or Apache-2.0
+
+Files: ./thirdparty/libbacktrace/
+Comment: libbacktrace
+Copyright: 2012-2021, Free Software Foundation, Inc.
+License: BSD-3-clause
+
+Files: ./thirdparty/libktx/
+Comment: KTX
+Copyright: 2013-2020, Mark Callow
+ 2010-2020 The Khronos Group, Inc.
+License: Apache-2.0
 
 Files: ./thirdparty/libogg/
 Comment: OggVorbis
@@ -226,22 +311,12 @@ License: BSD-3-clause
 
 Files: ./thirdparty/libpng/
 Comment: libpng
-Copyright: 1995-2019, The PNG Reference Library Authors.
- 2018-2019, Cosmin Truta.
+Copyright: 1995-2024, The PNG Reference Library Authors.
+ 2018-2024, Cosmin Truta.
  2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
  1996-1997, Andreas Dilger.
  1995-1996, Guy Eric Schalnat, Group 42, Inc.
 License: Zlib
-
-Files: ./thirdparty/libsimplewebm/
-Comment: libsimplewebm
-Copyright: 2016, Błażej Szczygieł
-License: Expat
-
-Files: ./thirdparty/libsimplewebm/libwebm/
-Comment: The WebM Project
-Copyright: 2010, Google Inc.
-License: BSD-3-clause
 
 Files: ./thirdparty/libtheora/
 Comment: OggTheora
@@ -252,17 +327,6 @@ Files: ./thirdparty/libvorbis/
 Comment: OggVorbis
 Copyright: 2002-2015, Xiph.org Foundation
 License: BSD-3-clause
-
-Files: ./thirdparty/libvpx/
-Comment: The WebM Project
-Copyright: 2010, The WebM Project authors.
-License: BSD-3-clause
-
-Files: ./thirdparty/libvpx/third_party/android/cpu-features.c
- ./thirdparty/libvpx/third_party/android/cpu-features.h
-Comment: The Android Open Source Project
-Copyright: 2010, The Android Open Source Project
-License: BSD-2-clause
 
 Files: ./thirdparty/libwebp/
 Comment: WebP codec
@@ -276,8 +340,13 @@ License: Apache-2.0
 
 Files: ./thirdparty/meshoptimizer/
 Comment: meshoptimizer
-Copyright: 2016-2021, Arseny Kapoulkine
+Copyright: 2016-2023, Arseny Kapoulkine
 License: Expat
+
+Files: ./thirdparty/mingw-std-threads/
+Comment: mingw-std-threads
+Copyright: 2016, Mega Limited
+License: BSD-2-clause
 
 Files: ./thirdparty/minimp3/
 Comment: MiniMP3
@@ -285,8 +354,8 @@ Copyright: lieff
 License: CC0-1.0
 
 Files: ./thirdparty/miniupnpc/
-Comment: MiniUPnPc
-Copyright: 2005-2021, Thomas Bernard
+Comment: MiniUPnP Project
+Copyright: 2005-2024, Thomas Bernard
 License: BSD-3-clause
 
 Files: ./thirdparty/minizip/
@@ -296,21 +365,10 @@ Copyright: 1998-2010, Gilles Vollant
  2009-2010, Mathias Svensson
 License: Zlib
 
-Files: ./thirdparty/misc/clipper.cpp
- ./thirdparty/misc/clipper.hpp
-Comment: Clipper
-Copyright: 2010-2017, Angus Johnson
-License: BSL-1.0
-
 Files: ./thirdparty/misc/cubemap_coeffs.h
 Comment: Fast Filtering of Reflection Probes
 Copyright: 2016, Activision Publishing, Inc.
 License: Expat
-
-Files: ./thirdparty/misc/easing_equations.cpp
-Comment: Robert Penner's Easing Functions
-Copyright: 2001, Robert Penner
-License: BSD-3-clause
 
 Files: ./thirdparty/misc/fastlz.c
  ./thirdparty/misc/fastlz.h
@@ -330,11 +388,16 @@ Comment: Tangent Space Normal Maps implementation
 Copyright: 2011, Morten S. Mikkelsen
 License: Zlib
 
-Files: ./thirdparty/misc/open-simplex-noise.c
- ./thirdparty/misc/open-simplex-noise.h
-Comment: OpenSimplex Noise
-Copyright: 2014, Stephen M. Cameron
-License: public-domain or Unlicense
+Files: ./thirdparty/misc/ok_color.h
+ ./thirdparty/misc/ok_color_shader.h
+Comment: OK Lab color space
+Copyright: 2021, Björn Ottosson
+License: Expat
+
+Files: ./thirdparty/noise/FastNoiseLite.h
+Comment: FastNoise Lite
+Copyright: 2023, Jordan Peck and contributors
+License: Expat
 
 Files: ./thirdparty/misc/pcg.cpp
  ./thirdparty/misc/pcg.h
@@ -346,6 +409,11 @@ Files: ./thirdparty/misc/polypartition.cpp
  ./thirdparty/misc/polypartition.h
 Comment: PolyPartition / Triangulator
 Copyright: 2011-2021, Ivan Fratric and contributors
+License: Expat
+
+Files: ./thirdparty/misc/qoa.h
+Comment: Quite OK Audio Format
+Copyright: 2023, Dominic Szablewski
 License: Expat
 
 Files: ./thirdparty/misc/r128.c
@@ -367,7 +435,6 @@ Copyright: 2016-2020, Aras Pranckevicius
 License: public-domain or Unlicense or Expat
 
 Files: ./thirdparty/misc/stb_rect_pack.h
- ./thirdparty/misc/stb_vorbis.c
 Comment: stb libraries
 Copyright: Sean Barrett
 License: public-domain or Unlicense or Expat
@@ -377,33 +444,25 @@ Comment: YUV2RGB
 Copyright: 2008-2011, Robin Watts
 License: BSD-2-clause
 
-Files: ./thirdparty/nanosvg/
-Comment: NanoSVG
-Copyright: 2013-2014, Mikko Mononen
-License: Zlib
+Files: ./thirdparty/msdfgen/
+Comment: Multi-channel signed distance field generator
+Copyright: 2016-2022, Viktor Chlumsky
+License: Expat
 
-Files: ./thirdparty/oidn/
-Comment: Intel Open Image Denoise
-Copyright: 2009-2019, Intel Corporation
+Files: ./thirdparty/nvapi/nvapi_minimal.h
+Comment: Stripped down version of "nvapi.h" from the NVIDIA NVAPI SDK
+Copyright: 2019-2022, NVIDIA Corporation
+License: Expat
+
+Files: ./thirdparty/openxr/
+Comment: OpenXR Loader
+Copyright: 2020-2023, The Khronos Group Inc.
 License: Apache-2.0
-
-Files: ./thirdparty/opus/
-Comment: Opus
-Copyright: 2001-2011, Xiph.Org, Skype Limited, Octasic,
- Jean-Marc Valin, Timothy B. Terriberry,
- CSIRO, Gregory Maxwell, Mark Borgerding,
- Erik de Castro Lopo
-License: BSD-3-clause
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2020, University of Cambridge
- 2009-2020, Zoltan Herczeg
-License: BSD-3-clause
-
-Files: ./thirdparty/pvrtccompressor/
-Comment: PvrTcCompressor
-Copyright: 2014, Jeffrey Lim.
+Copyright: 1997-2024, University of Cambridge
+ 2009-2024, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/recastnavigation/
@@ -418,7 +477,7 @@ License: Apache-2.0
 
 Files: ./thirdparty/spirv-reflect/
 Comment: SPIRV-Reflect
-Copyright: 2017-2018, Google Inc.
+Copyright: 2017-2022, Google Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/squish/
@@ -426,11 +485,21 @@ Comment: libSquish
 Copyright: 2006, Simon Brown
 License: Expat
 
+Files: ./thirdparty/thorvg/
+Comment: ThorVG
+Copyright: 2020-2024, The ThorVG Project
+License: Expat
+
 Files: ./thirdparty/tinyexr/
 Comment: TinyEXR
-Copyright: 2014-2020, Syoyo Fujita
+Copyright: 2014-2021, Syoyo Fujita
   2002, Industrial Light & Magic, a division of Lucas Digital Ltd. LLC
 License: BSD-3-clause
+
+Files: ./thirdparty/ufbx/
+Comment: ufbx
+Copyright: 2020, Samuli Raivio
+License: Expat
 
 Files: ./thirdparty/vhacd/
 Comment: V-HACD
@@ -438,17 +507,41 @@ Copyright: 2011, Khaled Mamou
   2003-2009, Erwin Coumans
 License: BSD-3-clause
 
+Files: ./thirdparty/volk/
+Comment: volk
+Copyright: 2018-2024, Arseny Kapoulkine
+License: Expat
+
 Files: ./thirdparty/vulkan/
-Comment: Vulkan Ecosystem Components (Vulkan ICD loader and headers)
-Copyright: 2014-2020, The Khronos Group Inc.
-  2014-2020, Valve Corporation
-  2014-2020, LunarG, Inc.
-  2015-2020, Google Inc.
+Comment: Vulkan Headers
+Copyright: 2014-2024, The Khronos Group Inc.
+  2014-2023, Valve Corporation
+  2014-2023, LunarG, Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/vulkan/vk_mem_alloc.h
 Comment: Vulkan Memory Allocator
-Copyright: 2017-2019, Advanced Micro Devices, Inc.
+Copyright: 2017-2024, Advanced Micro Devices, Inc.
+License: Expat
+
+Files: ./thirdparty/wayland/
+Comment: Wayland core protocol
+Copyright: 2008-2012, Kristian Høgsberg
+  2010-2012, Intel Corporation
+  2011, Benjamin Franzke
+  2012, Collabora, Ltd.
+License: Expat
+
+Files: ./thirdparty/wayland-protocols/
+Comment: Wayland protocols that add functionality not available in the core protocol
+Copyright: 2008-2013, Kristian Høgsberg
+  2010-2013, Intel Corporation
+  2013,      Rafael Antognolli
+  2013,      Jasper St. Pierre
+  2014,      Jonas Ådahl
+  2014,      Jason Ekstrand
+  2014-2015, Collabora, Ltd.
+  2015,      Red Hat Inc.
 License: Expat
 
 Files: ./thirdparty/wslay/
@@ -465,12 +558,12 @@ License: Expat
 
 Files: ./thirdparty/zlib/
 Comment: zlib
-Copyright: 1995-2017, Jean-loup Gailly and Mark Adler
+Copyright: 1995-2024, Jean-loup Gailly and Mark Adler
 License: Zlib
 
 Files: ./thirdparty/zstd/
 Comment: Zstandard
-Copyright: 2016-2020, Facebook, Inc.
+Copyright: Meta Platforms, Inc. and affiliates.
 License: BSD-3-clause
 
 
@@ -1130,7 +1223,7 @@ License: glslang
  GNU General Public License for more details.
  .
  You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  .
  As a special exception, you may create a larger work that contains
  part or all of the Bison parser skeleton and distribute that work
@@ -1370,7 +1463,7 @@ License: HarfBuzz
  Copyright (C) 2009  Keith Stribley
  Copyright (C) 2009  Martin Hosken and SIL International
  Copyright (C) 2007  Chris Wilson
- Copyright (C) 2006  Behdad Esfahbod
+ Copyright (C) 2005,2006,2020,2021  Behdad Esfahbod
  Copyright (C) 2005  David Turner
  Copyright (C) 2004,2007,2008,2009,2010  Red Hat, Inc.
  Copyright (C) 1998-2004  David Turner and Werner Lemberg
@@ -1756,7 +1849,7 @@ License: MPL-2.0
  .
    This Source Code Form is subject to the terms of the Mozilla Public
    License, v. 2.0. If a copy of the MPL was not distributed with this
-   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+   file, You can obtain one at https://mozilla.org/MPL/2.0/.
  .
  If it is not possible or desirable to put the notice in a particular
  file, then You may include the notice in a location (such as a LICENSE
@@ -1853,18 +1946,6 @@ License: OFL-1.1
  INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
  DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE.
-
-License: Tamsyn
- Tamsyn font is free.  You are hereby granted permission to use, copy, modify,
- and distribute it as you see fit.
- .
- Tamsyn font is provided "as is" without any express or implied warranty.
- .
- The author makes no representations about the suitability of this font for
- a particular purpose.
- .
- In no event will the author be held liable for damages arising from the use
- of this font.
 
 License: Unicode
  COPYRIGHT AND PERMISSION NOTICE (ICU 58 and later)

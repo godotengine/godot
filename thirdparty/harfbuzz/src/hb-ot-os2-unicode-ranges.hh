@@ -34,10 +34,10 @@ namespace OT {
 struct OS2Range
 {
   int cmp (hb_codepoint_t key) const
-  { return (key < start) ? -1 : key <= end ? 0 : +1; }
+  { return (key < first) ? -1 : key <= last ? 0 : +1; }
 
-  hb_codepoint_t start;
-  hb_codepoint_t end;
+  hb_codepoint_t first;
+  hb_codepoint_t last;
   unsigned int bit;
 };
 
@@ -223,7 +223,7 @@ static unsigned int
 _hb_ot_os2_get_unicode_range_bit (hb_codepoint_t cp)
 {
   auto *range = hb_sorted_array (_hb_os2_unicode_ranges).bsearch (cp);
-  return range ? range->bit : -1;
+  return range ? range->bit : (unsigned) -1;
 }
 
 } /* namespace OT */

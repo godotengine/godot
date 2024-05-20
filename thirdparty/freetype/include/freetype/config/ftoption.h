@@ -4,7 +4,7 @@
  *
  *   User-selectable configuration macros (specification only).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -105,8 +105,7 @@ FT_BEGIN_HEADER
    *
    * ```
    *   FREETYPE_PROPERTIES=truetype:interpreter-version=35 \
-   *                       cff:no-stem-darkening=1 \
-   *                       autofitter:warping=1
+   *                       cff:no-stem-darkening=1
    * ```
    *
    */
@@ -220,6 +219,10 @@ FT_BEGIN_HEADER
    *   If you use a build system like cmake or the `configure` script,
    *   options set by those programs have precedence, overwriting the value
    *   here with the configured one.
+   *
+   *   If you use the GNU make build system directly (that is, without the
+   *   `configure` script) and you define this macro, you also have to pass
+   *   `SYSTEM_ZLIB=yes` as an argument to make.
    */
 /* #define FT_CONFIG_OPTION_SYSTEM_ZLIB */
 
@@ -433,6 +436,23 @@ FT_BEGIN_HEADER
 
   /**************************************************************************
    *
+   * Logging
+   *
+   *   Compiling FreeType in debug or trace mode makes FreeType write error
+   *   and trace log messages to `stderr`.  Enabling this macro
+   *   automatically forces the `FT_DEBUG_LEVEL_ERROR` and
+   *   `FT_DEBUG_LEVEL_TRACE` macros and allows FreeType to write error and
+   *   trace log messages to a file instead of `stderr`.  For writing logs
+   *   to a file, FreeType uses an the external `dlg` library (the source
+   *   code is in `src/dlg`).
+   *
+   *   This option needs a C99 compiler.
+   */
+/* #define FT_DEBUG_LOGGING */
+
+
+  /**************************************************************************
+   *
    * Autofitter debugging
    *
    *   If `FT_DEBUG_AUTOFIT` is defined, FreeType provides some means to
@@ -441,9 +461,9 @@ FT_BEGIN_HEADER
    *   while compiling in 'release' mode):
    *
    *   ```
-   *     _af_debug_disable_horz_hints
-   *     _af_debug_disable_vert_hints
-   *     _af_debug_disable_blue_hints
+   *     af_debug_disable_horz_hints_
+   *     af_debug_disable_vert_hints_
+   *     af_debug_disable_blue_hints_
    *   ```
    *
    *   Additionally, the following functions provide dumps of various
@@ -460,7 +480,7 @@ FT_BEGIN_HEADER
    *   As an argument, they use another global variable:
    *
    *   ```
-   *     _af_debug_hints
+   *     af_debug_hints_
    *   ```
    *
    *   Please have a look at the `ftgrid` demo program to see how those
@@ -509,6 +529,20 @@ FT_BEGIN_HEADER
 
   /**************************************************************************
    *
+   * OpenType SVG Glyph Support
+   *
+   *   Setting this macro enables support for OpenType SVG glyphs.  By
+   *   default, FreeType can only fetch SVG documents.  However, it can also
+   *   render them if external rendering hook functions are plugged in at
+   *   runtime.
+   *
+   *   More details on the hooks can be found in file `otsvg.h`.
+   */
+#define FT_CONFIG_OPTION_SVG
+
+
+  /**************************************************************************
+   *
    * Error Strings
    *
    *   If this macro is set, `FT_Error_String` will return meaningful
@@ -550,12 +584,12 @@ FT_BEGIN_HEADER
   /**************************************************************************
    *
    * Define `TT_CONFIG_OPTION_POSTSCRIPT_NAMES` if you want to be able to
-   * load and enumerate the glyph Postscript names in a TrueType or OpenType
+   * load and enumerate Postscript names of glyphs in a TrueType or OpenType
    * file.
    *
-   * Note that when you do not compile the 'psnames' module by undefining the
-   * above `FT_CONFIG_OPTION_POSTSCRIPT_NAMES`, the 'sfnt' module will
-   * contain additional code used to read the PS Names table from a font.
+   * Note that if you do not compile the 'psnames' module by undefining the
+   * above `FT_CONFIG_OPTION_POSTSCRIPT_NAMES` macro, the 'sfnt' module will
+   * contain additional code to read the PostScript name table from a font.
    *
    * (By default, the module uses 'psnames' to extract glyph names.)
    */
@@ -627,36 +661,12 @@ FT_BEGIN_HEADER
    * not) instructions in a certain way so that all TrueType fonts look like
    * they do in a Windows ClearType (DirectWrite) environment.  See [1] for a
    * technical overview on what this means.  See `ttinterp.h` for more
-   * details on the LEAN option.
+   * details on this option.
    *
-   * There are three possible values.
-   *
-   * Value 1:
-   *   This value is associated with the 'Infinality' moniker, contributed by
-   *   an individual nicknamed Infinality with the goal of making TrueType
-   *   fonts render better than on Windows.  A high amount of configurability
-   *   and flexibility, down to rules for single glyphs in fonts, but also
-   *   very slow.  Its experimental and slow nature and the original
-   *   developer losing interest meant that this option was never enabled in
-   *   default builds.
-   *
-   *   The corresponding interpreter version is v38.
-   *
-   * Value 2:
-   *   The new default mode for the TrueType driver.  The Infinality code
-   *   base was stripped to the bare minimum and all configurability removed
-   *   in the name of speed and simplicity.  The configurability was mainly
-   *   aimed at legacy fonts like 'Arial', 'Times New Roman', or 'Courier'.
-   *   Legacy fonts are fonts that modify vertical stems to achieve clean
-   *   black-and-white bitmaps.  The new mode focuses on applying a minimal
-   *   set of rules to all fonts indiscriminately so that modern and web
-   *   fonts render well while legacy fonts render okay.
-   *
-   *   The corresponding interpreter version is v40.
-   *
-   * Value 3:
-   *   Compile both, making both v38 and v40 available (the latter is the
-   *   default).
+   * The new default mode focuses on applying a minimal set of rules to all
+   * fonts indiscriminately so that modern and web fonts render well while
+   * legacy fonts render okay.  The corresponding interpreter version is v40.
+   * The so-called Infinality mode (v38) is no longer available in FreeType.
    *
    * By undefining these, you get rendering behavior like on Windows without
    * ClearType, i.e., Windows XP without ClearType enabled and Win9x
@@ -671,9 +681,7 @@ FT_BEGIN_HEADER
    * [1]
    * https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx
    */
-/* #define TT_CONFIG_OPTION_SUBPIXEL_HINTING  1         */
-#define TT_CONFIG_OPTION_SUBPIXEL_HINTING  2
-/* #define TT_CONFIG_OPTION_SUBPIXEL_HINTING  ( 1 | 2 ) */
+#define TT_CONFIG_OPTION_SUBPIXEL_HINTING
 
 
   /**************************************************************************
@@ -703,6 +711,24 @@ FT_BEGIN_HEADER
    * also.  This has many similarities to Type~1 Multiple Masters support.
    */
 #define TT_CONFIG_OPTION_GX_VAR_SUPPORT
+
+
+  /**************************************************************************
+   *
+   * Define `TT_CONFIG_OPTION_NO_BORING_EXPANSION` if you want to exclude
+   * support for 'boring' OpenType specification expansions.
+   *
+   *   https://github.com/harfbuzz/boring-expansion-spec
+   *
+   * Right now, the following features are covered:
+   *
+   *   - 'avar' version 2.0
+   *
+   * Most likely, this is a temporary configuration option to be removed in
+   * the near future, since it is assumed that eventually those features are
+   * added to the OpenType standard.
+   */
+/* #define TT_CONFIG_OPTION_NO_BORING_EXPANSION */
 
 
   /**************************************************************************
@@ -894,24 +920,6 @@ FT_BEGIN_HEADER
 
   /**************************************************************************
    *
-   * Compile 'autofit' module with warp hinting.  The idea of the warping
-   * code is to slightly scale and shift a glyph within a single dimension so
-   * that as much of its segments are aligned (more or less) on the grid.  To
-   * find out the optimal scaling and shifting value, various parameter
-   * combinations are tried and scored.
-   *
-   * You can switch warping on and off with the `warping` property of the
-   * auto-hinter (see file `ftdriver.h` for more information; by default it
-   * is switched off).
-   *
-   * This experimental option is not active if the rendering mode is
-   * `FT_RENDER_MODE_LIGHT`.
-   */
-#define AF_CONFIG_OPTION_USE_WARPER
-
-
-  /**************************************************************************
-   *
    * Use TrueType-like size metrics for 'light' auto-hinting.
    *
    * It is strongly recommended to avoid this option, which exists only to
@@ -943,21 +951,29 @@ FT_BEGIN_HEADER
 
 
   /*
-   * The next three macros are defined if native TrueType hinting is
+   * The next two macros are defined if native TrueType hinting is
    * requested by the definitions above.  Don't change this.
    */
 #ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 #define  TT_USE_BYTECODE_INTERPRETER
-
 #ifdef TT_CONFIG_OPTION_SUBPIXEL_HINTING
-#if TT_CONFIG_OPTION_SUBPIXEL_HINTING & 1
-#define  TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
-#endif
-
-#if TT_CONFIG_OPTION_SUBPIXEL_HINTING & 2
 #define  TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
 #endif
 #endif
+
+
+  /*
+   * The TT_SUPPORT_COLRV1 macro is defined to indicate to clients that this
+   * version of FreeType has support for 'COLR' v1 API.  This definition is
+   * useful to FreeType clients that want to build in support for 'COLR' v1
+   * depending on a tip-of-tree checkout before it is officially released in
+   * FreeType, and while the feature cannot yet be tested against using
+   * version macros.  Don't change this macro.  This may be removed once the
+   * feature is in a FreeType release version and version macros can be used
+   * to test for availability.
+   */
+#ifdef TT_CONFIG_OPTION_COLOR_LAYERS
+#define  TT_SUPPORT_COLRV1
 #endif
 
 
@@ -989,8 +1005,8 @@ FT_BEGIN_HEADER
 #error "Invalid CFF darkening parameters!"
 #endif
 
-FT_END_HEADER
 
+FT_END_HEADER
 
 #endif /* FTOPTION_H_ */
 

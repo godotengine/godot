@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PlaceholderTextureLayered" inherits="TextureLayered" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Placeholder class for a 2-dimensional texture array.
+	</brief_description>
+	<description>
+		This class is used when loading a project that uses a [TextureLayered] subclass in 2 conditions:
+		- When running the project exported in dedicated server mode, only the texture's dimensions are kept (as they may be relied upon for gameplay purposes or positioning of other elements). This allows reducing the exported PCK's size significantly.
+		- When this subclass is missing due to using a different engine version or build (e.g. modules disabled).
+		[b]Note:[/b] This is not intended to be used as an actual texture for rendering. It is not guaranteed to work like one in shaders or materials (for example when calculating UV).
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="layers" type="int" setter="set_layers" getter="get_layers" default="1">
+			The number of layers in the texture array.
+		</member>
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(1, 1)">
+			The size of each texture layer (in pixels).
+		</member>
+	</members>
+</class>

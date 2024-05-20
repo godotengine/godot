@@ -329,6 +329,15 @@ const uint8_t kPrefixEncodeExtraBitsValue[PREFIX_LOOKUP_IDX_MAX] = {
 static float FastSLog2Slow_C(uint32_t v) {
   assert(v >= LOG_LOOKUP_IDX_MAX);
   if (v < APPROX_LOG_WITH_CORRECTION_MAX) {
+#if !defined(WEBP_HAVE_SLOW_CLZ_CTZ)
+    // use clz if available
+    const int log_cnt = BitsLog2Floor(v) - 7;
+    const uint32_t y = 1 << log_cnt;
+    int correction = 0;
+    const float v_f = (float)v;
+    const uint32_t orig_v = v;
+    v >>= log_cnt;
+#else
     int log_cnt = 0;
     uint32_t y = 1;
     int correction = 0;
@@ -339,6 +348,7 @@ static float FastSLog2Slow_C(uint32_t v) {
       v = v >> 1;
       y = y << 1;
     } while (v >= LOG_LOOKUP_IDX_MAX);
+#endif
     // vf = (2^log_cnt) * Xf; where y = 2^log_cnt and Xf < 256
     // Xf = floor(Xf) * (1 + (v % y) / v)
     // log2(Xf) = log2(floor(Xf)) + log2(1 + (v % y) / v)
@@ -355,6 +365,14 @@ static float FastSLog2Slow_C(uint32_t v) {
 static float FastLog2Slow_C(uint32_t v) {
   assert(v >= LOG_LOOKUP_IDX_MAX);
   if (v < APPROX_LOG_WITH_CORRECTION_MAX) {
+#if !defined(WEBP_HAVE_SLOW_CLZ_CTZ)
+    // use clz if available
+    const int log_cnt = BitsLog2Floor(v) - 7;
+    const uint32_t y = 1 << log_cnt;
+    const uint32_t orig_v = v;
+    double log_2;
+    v >>= log_cnt;
+#else
     int log_cnt = 0;
     uint32_t y = 1;
     const uint32_t orig_v = v;
@@ -364,6 +382,7 @@ static float FastLog2Slow_C(uint32_t v) {
       v = v >> 1;
       y = y << 1;
     } while (v >= LOG_LOOKUP_IDX_MAX);
+#endif
     log_2 = kLog2Table[v] + log_cnt;
     if (orig_v >= APPROX_LOG_MAX) {
       // Since the division is still expensive, add this correction factor only
@@ -383,7 +402,7 @@ static float FastLog2Slow_C(uint32_t v) {
 // Compute the combined Shanon's entropy for distribution {X} and {X+Y}
 static float CombinedShannonEntropy_C(const int X[256], const int Y[256]) {
   int i;
-  double retval = 0.;
+  float retval = 0.f;
   int sumX = 0, sumXY = 0;
   for (i = 0; i < 256; ++i) {
     const int x = X[i];
@@ -399,7 +418,7 @@ static float CombinedShannonEntropy_C(const int X[256], const int Y[256]) {
     }
   }
   retval += VP8LFastSLog2(sumX) + VP8LFastSLog2(sumXY);
-  return (float)retval;
+  return retval;
 }
 
 void VP8LBitEntropyInit(VP8LBitEntropy* const entropy) {
@@ -503,11 +522,11 @@ static void GetCombinedEntropyUnrefined_C(const uint32_t X[],
 void VP8LSubtractGreenFromBlueAndRed_C(uint32_t* argb_data, int num_pixels) {
   int i;
   for (i = 0; i < num_pixels; ++i) {
-    const int argb = argb_data[i];
+    const int argb = (int)argb_data[i];
     const int green = (argb >> 8) & 0xff;
     const uint32_t new_r = (((argb >> 16) & 0xff) - green) & 0xff;
     const uint32_t new_b = (((argb >>  0) & 0xff) - green) & 0xff;
-    argb_data[i] = (argb & 0xff00ff00u) | (new_r << 16) | new_b;
+    argb_data[i] = ((uint32_t)argb & 0xff00ff00u) | (new_r << 16) | new_b;
   }
 }
 
@@ -528,10 +547,10 @@ void VP8LTransformColor_C(const VP8LMultipliers* const m, uint32_t* data,
     const int8_t red   = U32ToS8(argb >> 16);
     int new_red = red & 0xff;
     int new_blue = argb & 0xff;
-    new_red -= ColorTransformDelta(m->green_to_red_, green);
+    new_red -= ColorTransformDelta((int8_t)m->green_to_red_, green);
     new_red &= 0xff;
-    new_blue -= ColorTransformDelta(m->green_to_blue_, green);
-    new_blue -= ColorTransformDelta(m->red_to_blue_, red);
+    new_blue -= ColorTransformDelta((int8_t)m->green_to_blue_, green);
+    new_blue -= ColorTransformDelta((int8_t)m->red_to_blue_, red);
     new_blue &= 0xff;
     data[i] = (argb & 0xff00ff00u) | (new_red << 16) | (new_blue);
   }
@@ -541,7 +560,7 @@ static WEBP_INLINE uint8_t TransformColorRed(uint8_t green_to_red,
                                              uint32_t argb) {
   const int8_t green = U32ToS8(argb >> 8);
   int new_red = argb >> 16;
-  new_red -= ColorTransformDelta(green_to_red, green);
+  new_red -= ColorTransformDelta((int8_t)green_to_red, green);
   return (new_red & 0xff);
 }
 
@@ -550,9 +569,9 @@ static WEBP_INLINE uint8_t TransformColorBlue(uint8_t green_to_blue,
                                               uint32_t argb) {
   const int8_t green = U32ToS8(argb >>  8);
   const int8_t red   = U32ToS8(argb >> 16);
-  uint8_t new_blue = argb & 0xff;
-  new_blue -= ColorTransformDelta(green_to_blue, green);
-  new_blue -= ColorTransformDelta(red_to_blue, red);
+  int new_blue = argb & 0xff;
+  new_blue -= ColorTransformDelta((int8_t)green_to_blue, green);
+  new_blue -= ColorTransformDelta((int8_t)red_to_blue, red);
   return (new_blue & 0xff);
 }
 
@@ -617,20 +636,25 @@ void VP8LBundleColorMap_C(const uint8_t* const row, int width, int xbits,
 
 //------------------------------------------------------------------------------
 
-static double ExtraCost_C(const uint32_t* population, int length) {
+static uint32_t ExtraCost_C(const uint32_t* population, int length) {
   int i;
-  double cost = 0.;
-  for (i = 2; i < length - 2; ++i) cost += (i >> 1) * population[i + 2];
+  uint32_t cost = population[4] + population[5];
+  assert(length % 2 == 0);
+  for (i = 2; i < length / 2 - 1; ++i) {
+    cost += i * (population[2 * i + 2] + population[2 * i + 3]);
+  }
   return cost;
 }
 
-static double ExtraCostCombined_C(const uint32_t* X, const uint32_t* Y,
-                                  int length) {
+static uint32_t ExtraCostCombined_C(const uint32_t* X, const uint32_t* Y,
+                                    int length) {
   int i;
-  double cost = 0.;
-  for (i = 2; i < length - 2; ++i) {
-    const int xy = X[i + 2] + Y[i + 2];
-    cost += (i >> 1) * xy;
+  uint32_t cost = X[4] + Y[4] + X[5] + Y[5];
+  assert(length % 2 == 0);
+  for (i = 2; i < length / 2 - 1; ++i) {
+    const int xy0 = X[2 * i + 2] + Y[2 * i + 2];
+    const int xy1 = X[2 * i + 3] + Y[2 * i + 3];
+    cost += i * (xy0 + xy1);
   }
   return cost;
 }
@@ -702,140 +726,6 @@ void VP8LHistogramAdd(const VP8LHistogram* const a,
 //------------------------------------------------------------------------------
 // Image transforms.
 
-static WEBP_INLINE uint32_t Average2(uint32_t a0, uint32_t a1) {
-  return (((a0 ^ a1) & 0xfefefefeu) >> 1) + (a0 & a1);
-}
-
-static WEBP_INLINE uint32_t Average3(uint32_t a0, uint32_t a1, uint32_t a2) {
-  return Average2(Average2(a0, a2), a1);
-}
-
-static WEBP_INLINE uint32_t Average4(uint32_t a0, uint32_t a1,
-                                     uint32_t a2, uint32_t a3) {
-  return Average2(Average2(a0, a1), Average2(a2, a3));
-}
-
-static WEBP_INLINE uint32_t Clip255(uint32_t a) {
-  if (a < 256) {
-    return a;
-  }
-  // return 0, when a is a negative integer.
-  // return 255, when a is positive.
-  return ~a >> 24;
-}
-
-static WEBP_INLINE int AddSubtractComponentFull(int a, int b, int c) {
-  return Clip255(a + b - c);
-}
-
-static WEBP_INLINE uint32_t ClampedAddSubtractFull(uint32_t c0, uint32_t c1,
-                                                   uint32_t c2) {
-  const int a = AddSubtractComponentFull(c0 >> 24, c1 >> 24, c2 >> 24);
-  const int r = AddSubtractComponentFull((c0 >> 16) & 0xff,
-                                         (c1 >> 16) & 0xff,
-                                         (c2 >> 16) & 0xff);
-  const int g = AddSubtractComponentFull((c0 >> 8) & 0xff,
-                                         (c1 >> 8) & 0xff,
-                                         (c2 >> 8) & 0xff);
-  const int b = AddSubtractComponentFull(c0 & 0xff, c1 & 0xff, c2 & 0xff);
-  return ((uint32_t)a << 24) | (r << 16) | (g << 8) | b;
-}
-
-static WEBP_INLINE int AddSubtractComponentHalf(int a, int b) {
-  return Clip255(a + (a - b) / 2);
-}
-
-static WEBP_INLINE uint32_t ClampedAddSubtractHalf(uint32_t c0, uint32_t c1,
-                                                   uint32_t c2) {
-  const uint32_t ave = Average2(c0, c1);
-  const int a = AddSubtractComponentHalf(ave >> 24, c2 >> 24);
-  const int r = AddSubtractComponentHalf((ave >> 16) & 0xff, (c2 >> 16) & 0xff);
-  const int g = AddSubtractComponentHalf((ave >> 8) & 0xff, (c2 >> 8) & 0xff);
-  const int b = AddSubtractComponentHalf((ave >> 0) & 0xff, (c2 >> 0) & 0xff);
-  return ((uint32_t)a << 24) | (r << 16) | (g << 8) | b;
-}
-
-// gcc-4.9 on ARM generates incorrect code in Select() when Sub3() is inlined.
-#if defined(__arm__) && \
-    (LOCAL_GCC_VERSION == 0x409 || LOCAL_GCC_VERSION == 0x408)
-# define LOCAL_INLINE __attribute__ ((noinline))
-#else
-# define LOCAL_INLINE WEBP_INLINE
-#endif
-
-static LOCAL_INLINE int Sub3(int a, int b, int c) {
-  const int pb = b - c;
-  const int pa = a - c;
-  return abs(pb) - abs(pa);
-}
-
-#undef LOCAL_INLINE
-
-static WEBP_INLINE uint32_t Select(uint32_t a, uint32_t b, uint32_t c) {
-  const int pa_minus_pb =
-      Sub3((a >> 24)       , (b >> 24)       , (c >> 24)       ) +
-      Sub3((a >> 16) & 0xff, (b >> 16) & 0xff, (c >> 16) & 0xff) +
-      Sub3((a >>  8) & 0xff, (b >>  8) & 0xff, (c >>  8) & 0xff) +
-      Sub3((a      ) & 0xff, (b      ) & 0xff, (c      ) & 0xff);
-  return (pa_minus_pb <= 0) ? a : b;
-}
-
-//------------------------------------------------------------------------------
-// Predictors
-
-static uint32_t Predictor2(uint32_t left, const uint32_t* const top) {
-  (void)left;
-  return top[0];
-}
-static uint32_t Predictor3(uint32_t left, const uint32_t* const top) {
-  (void)left;
-  return top[1];
-}
-static uint32_t Predictor4(uint32_t left, const uint32_t* const top) {
-  (void)left;
-  return top[-1];
-}
-static uint32_t Predictor5(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = Average3(left, top[0], top[1]);
-  return pred;
-}
-static uint32_t Predictor6(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = Average2(left, top[-1]);
-  return pred;
-}
-static uint32_t Predictor7(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = Average2(left, top[0]);
-  return pred;
-}
-static uint32_t Predictor8(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = Average2(top[-1], top[0]);
-  (void)left;
-  return pred;
-}
-static uint32_t Predictor9(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = Average2(top[0], top[1]);
-  (void)left;
-  return pred;
-}
-static uint32_t Predictor10(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = Average4(left, top[-1], top[0], top[1]);
-  return pred;
-}
-static uint32_t Predictor11(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = Select(top[0], left, top[-1]);
-  return pred;
-}
-static uint32_t Predictor12(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = ClampedAddSubtractFull(left, top[0], top[-1]);
-  return pred;
-}
-static uint32_t Predictor13(uint32_t left, const uint32_t* const top) {
-  const uint32_t pred = ClampedAddSubtractHalf(left, top[0], top[-1]);
-  return pred;
-}
-
-//------------------------------------------------------------------------------
-
 static void PredictorSub0_C(const uint32_t* in, const uint32_t* upper,
                             int num_pixels, uint32_t* out) {
   int i;
@@ -850,18 +740,33 @@ static void PredictorSub1_C(const uint32_t* in, const uint32_t* upper,
   (void)upper;
 }
 
-GENERATE_PREDICTOR_SUB(Predictor2, PredictorSub2_C)
-GENERATE_PREDICTOR_SUB(Predictor3, PredictorSub3_C)
-GENERATE_PREDICTOR_SUB(Predictor4, PredictorSub4_C)
-GENERATE_PREDICTOR_SUB(Predictor5, PredictorSub5_C)
-GENERATE_PREDICTOR_SUB(Predictor6, PredictorSub6_C)
-GENERATE_PREDICTOR_SUB(Predictor7, PredictorSub7_C)
-GENERATE_PREDICTOR_SUB(Predictor8, PredictorSub8_C)
-GENERATE_PREDICTOR_SUB(Predictor9, PredictorSub9_C)
-GENERATE_PREDICTOR_SUB(Predictor10, PredictorSub10_C)
-GENERATE_PREDICTOR_SUB(Predictor11, PredictorSub11_C)
-GENERATE_PREDICTOR_SUB(Predictor12, PredictorSub12_C)
-GENERATE_PREDICTOR_SUB(Predictor13, PredictorSub13_C)
+// It subtracts the prediction from the input pixel and stores the residual
+// in the output pixel.
+#define GENERATE_PREDICTOR_SUB(PREDICTOR_I)                                \
+static void PredictorSub##PREDICTOR_I##_C(const uint32_t* in,              \
+                                          const uint32_t* upper,           \
+                                          int num_pixels, uint32_t* out) { \
+  int x;                                                                   \
+  assert(upper != NULL);                                                   \
+  for (x = 0; x < num_pixels; ++x) {                                       \
+    const uint32_t pred =                                                  \
+        VP8LPredictor##PREDICTOR_I##_C(&in[x - 1], upper + x);             \
+    out[x] = VP8LSubPixels(in[x], pred);                                   \
+  }                                                                        \
+}
+
+GENERATE_PREDICTOR_SUB(2)
+GENERATE_PREDICTOR_SUB(3)
+GENERATE_PREDICTOR_SUB(4)
+GENERATE_PREDICTOR_SUB(5)
+GENERATE_PREDICTOR_SUB(6)
+GENERATE_PREDICTOR_SUB(7)
+GENERATE_PREDICTOR_SUB(8)
+GENERATE_PREDICTOR_SUB(9)
+GENERATE_PREDICTOR_SUB(10)
+GENERATE_PREDICTOR_SUB(11)
+GENERATE_PREDICTOR_SUB(12)
+GENERATE_PREDICTOR_SUB(13)
 
 //------------------------------------------------------------------------------
 
@@ -891,6 +796,7 @@ VP8LBundleColorMapFunc VP8LBundleColorMap;
 VP8LPredictorAddSubFunc VP8LPredictorsSub[16];
 VP8LPredictorAddSubFunc VP8LPredictorsSub_C[16];
 
+extern VP8CPUInfo VP8GetCPUInfo;
 extern void VP8LEncDspInitSSE2(void);
 extern void VP8LEncDspInitSSE41(void);
 extern void VP8LEncDspInitNEON(void);
@@ -962,10 +868,10 @@ WEBP_DSP_INIT_FUNC(VP8LEncDspInit) {
 
   // If defined, use CPUInfo() to overwrite some pointers with faster versions.
   if (VP8GetCPUInfo != NULL) {
-#if defined(WEBP_USE_SSE2)
+#if defined(WEBP_HAVE_SSE2)
     if (VP8GetCPUInfo(kSSE2)) {
       VP8LEncDspInitSSE2();
-#if defined(WEBP_USE_SSE41)
+#if defined(WEBP_HAVE_SSE41)
       if (VP8GetCPUInfo(kSSE4_1)) {
         VP8LEncDspInitSSE41();
       }
@@ -989,7 +895,7 @@ WEBP_DSP_INIT_FUNC(VP8LEncDspInit) {
 #endif
   }
 
-#if defined(WEBP_USE_NEON)
+#if defined(WEBP_HAVE_NEON)
   if (WEBP_NEON_OMIT_C_CODE ||
       (VP8GetCPUInfo != NULL && VP8GetCPUInfo(kNEON))) {
     VP8LEncDspInitNEON();

@@ -1,51 +1,43 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GLTFSkin" inherits="Resource" version="4.0">
+<class name="GLTFSkin" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_inverse_binds">
-			<return type="Array">
-			</return>
+			<return type="Transform3D[]" />
 			<description>
 			</description>
 		</method>
 		<method name="get_joint_i_to_bone_i">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 			</description>
 		</method>
 		<method name="get_joint_i_to_name">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 			</description>
 		</method>
 		<method name="set_inverse_binds">
-			<return type="void">
-			</return>
-			<argument index="0" name="inverse_binds" type="Array">
-			</argument>
+			<return type="void" />
+			<param index="0" name="inverse_binds" type="Transform3D[]" />
 			<description>
 			</description>
 		</method>
 		<method name="set_joint_i_to_bone_i">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint_i_to_bone_i" type="Dictionary">
-			</argument>
+			<return type="void" />
+			<param index="0" name="joint_i_to_bone_i" type="Dictionary" />
 			<description>
 			</description>
 		</method>
 		<method name="set_joint_i_to_name">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint_i_to_name" type="Dictionary">
-			</argument>
+			<return type="void" />
+			<param index="0" name="joint_i_to_name" type="Dictionary" />
 			<description>
 			</description>
 		</method>
@@ -66,6 +58,4 @@
 		<member name="skin_root" type="int" setter="set_skin_root" getter="get_skin_root" default="-1">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

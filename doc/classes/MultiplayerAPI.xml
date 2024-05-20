@@ -1,135 +1,135 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiplayerAPI" inherits="RefCounted" version="4.0">
+<class name="MultiplayerAPI" inherits="RefCounted" keywords="network" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		High-level multiplayer API.
+		High-level multiplayer API interface.
 	</brief_description>
 	<description>
-		This class implements most of the logic behind the high-level multiplayer API. See also [MultiplayerPeer].
-		By default, [SceneTree] has a reference to this class that is used to provide multiplayer capabilities (i.e. RPC/RSET) across the whole scene.
-		It is possible to override the MultiplayerAPI instance used by specific Nodes by setting the [member Node.custom_multiplayer] property, effectively allowing to run both client and server in the same scene.
-		[b]Note:[/b] The high-level multiplayer API protocol is an implementation detail and isn't meant to be used by non-Godot servers. It may change without notice.
+		Base class for high-level multiplayer API implementations. See also [MultiplayerPeer].
+		By default, [SceneTree] has a reference to an implementation of this class and uses it to provide multiplayer capabilities (i.e. RPCs) across the whole scene.
+		It is possible to override the MultiplayerAPI instance used by specific tree branches by calling the [method SceneTree.set_multiplayer] method, effectively allowing to run both client and server in the same scene.
+		It is also possible to extend or replace the default implementation via scripting or native extensions. See [MultiplayerAPIExtension] for details about extensions, [SceneMultiplayer] for the details about the default implementation.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="clear">
-			<return type="void">
-			</return>
+		<method name="create_default_interface" qualifiers="static">
+			<return type="MultiplayerAPI" />
 			<description>
-				Clears the current MultiplayerAPI network state (you shouldn't call this unless you know what you are doing).
+				Returns a new instance of the default MultiplayerAPI.
 			</description>
 		</method>
-		<method name="get_network_connected_peers" qualifiers="const">
-			<return type="PackedInt32Array">
-			</return>
+		<method name="get_default_interface" qualifiers="static">
+			<return type="StringName" />
 			<description>
-				Returns the peer IDs of all connected peers of this MultiplayerAPI's [member network_peer].
+				Returns the default MultiplayerAPI implementation class name. This is usually [code]"SceneMultiplayer"[/code] when [SceneMultiplayer] is available. See [method set_default_interface].
 			</description>
 		</method>
-		<method name="get_network_unique_id" qualifiers="const">
-			<return type="int">
-			</return>
+		<method name="get_peers">
+			<return type="PackedInt32Array" />
 			<description>
-				Returns the unique peer ID of this MultiplayerAPI's [member network_peer].
+				Returns the peer IDs of all connected peers of this MultiplayerAPI's [member multiplayer_peer].
 			</description>
 		</method>
-		<method name="get_rpc_sender_id" qualifiers="const">
-			<return type="int">
-			</return>
+		<method name="get_remote_sender_id">
+			<return type="int" />
 			<description>
 				Returns the sender's peer ID for the RPC currently being executed.
-				[b]Note:[/b] If not inside an RPC this method will return 0.
+				[b]Note:[/b] This method returns [code]0[/code] when called outside of an RPC. As such, the original peer ID may be lost when code execution is delayed (such as with GDScript's [code]await[/code] keyword).
 			</description>
 		</method>
-		<method name="has_network_peer" qualifiers="const">
-			<return type="bool">
-			</return>
+		<method name="get_unique_id">
+			<return type="int" />
 			<description>
-				Returns [code]true[/code] if there is a [member network_peer] set.
+				Returns the unique peer ID of this MultiplayerAPI's [member multiplayer_peer].
 			</description>
 		</method>
-		<method name="is_network_server" qualifiers="const">
-			<return type="bool">
-			</return>
+		<method name="has_multiplayer_peer">
+			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this MultiplayerAPI's [member network_peer] is in server mode (listening for connections).
+				Returns [code]true[/code] if there is a [member multiplayer_peer] set.
+			</description>
+		</method>
+		<method name="is_server">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this MultiplayerAPI's [member multiplayer_peer] is valid and in server mode (listening for connections).
+			</description>
+		</method>
+		<method name="object_configuration_add">
+			<return type="int" enum="Error" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="configuration" type="Variant" />
+			<description>
+				Notifies the MultiplayerAPI of a new [param configuration] for the given [param object]. This method is used internally by [SceneTree] to configure the root path for this MultiplayerAPI (passing [code]null[/code] and a valid [NodePath] as [param configuration]). This method can be further used by MultiplayerAPI implementations to provide additional features, refer to specific implementation (e.g. [SceneMultiplayer]) for details on how they use it.
+				[b]Note:[/b] This method is mostly relevant when extending or overriding the MultiplayerAPI behavior via [MultiplayerAPIExtension].
+			</description>
+		</method>
+		<method name="object_configuration_remove">
+			<return type="int" enum="Error" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="configuration" type="Variant" />
+			<description>
+				Notifies the MultiplayerAPI to remove a [param configuration] for the given [param object]. This method is used internally by [SceneTree] to configure the root path for this MultiplayerAPI (passing [code]null[/code] and an empty [NodePath] as [param configuration]). This method can be further used by MultiplayerAPI implementations to provide additional features, refer to specific implementation (e.g. [SceneMultiplayer]) for details on how they use it.
+				[b]Note:[/b] This method is mostly relevant when extending or overriding the MultiplayerAPI behavior via [MultiplayerAPIExtension].
 			</description>
 		</method>
 		<method name="poll">
-			<return type="void">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
-				Method used for polling the MultiplayerAPI. You only need to worry about this if you are using [member Node.custom_multiplayer] override or you set [member SceneTree.multiplayer_poll] to [code]false[/code]. By default, [SceneTree] will poll its MultiplayerAPI for you.
-				[b]Note:[/b] This method results in RPCs and RSETs being called, so they will be executed in the same context of this function (e.g. [code]_process[/code], [code]physics[/code], [Thread]).
+				Method used for polling the MultiplayerAPI. You only need to worry about this if you set [member SceneTree.multiplayer_poll] to [code]false[/code]. By default, [SceneTree] will poll its MultiplayerAPI(s) for you.
+				[b]Note:[/b] This method results in RPCs being called, so they will be executed in the same context of this function (e.g. [code]_process[/code], [code]physics[/code], [Thread]).
 			</description>
 		</method>
-		<method name="send_bytes">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="bytes" type="PackedByteArray">
-			</argument>
-			<argument index="1" name="id" type="int" default="0">
-			</argument>
-			<argument index="2" name="mode" type="int" enum="MultiplayerPeer.TransferMode" default="2">
-			</argument>
+		<method name="rpc">
+			<return type="int" enum="Error" />
+			<param index="0" name="peer" type="int" />
+			<param index="1" name="object" type="Object" />
+			<param index="2" name="method" type="StringName" />
+			<param index="3" name="arguments" type="Array" default="[]" />
 			<description>
-				Sends the given raw [code]bytes[/code] to a specific peer identified by [code]id[/code] (see [method MultiplayerPeer.set_target_peer]). Default ID is [code]0[/code], i.e. broadcast to all peers.
+				Sends an RPC to the target [param peer]. The given [param method] will be called on the remote [param object] with the provided [param arguments]. The RPC may also be called locally depending on the implementation and RPC configuration. See [method Node.rpc] and [method Node.rpc_config].
+				[b]Note:[/b] Prefer using [method Node.rpc], [method Node.rpc_id], or [code]my_method.rpc(peer, arg1, arg2, ...)[/code] (in GDScript), since they are faster. This method is mostly useful in conjunction with [MultiplayerAPIExtension] when augmenting or replacing the multiplayer capabilities.
+			</description>
+		</method>
+		<method name="set_default_interface" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="interface_name" type="StringName" />
+			<description>
+				Sets the default MultiplayerAPI implementation class. This method can be used by modules and extensions to configure which implementation will be used by [SceneTree] when the engine starts.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed" default="false">
-			If [code]true[/code], the MultiplayerAPI will allow encoding and decoding of object during RPCs/RSETs.
-			[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
-		</member>
-		<member name="network_peer" type="MultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
-			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server]) and will set root node's network mode to master, or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
-		</member>
-		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections" default="false">
-			If [code]true[/code], the MultiplayerAPI's [member network_peer] refuses new incoming connections.
-		</member>
-		<member name="root_node" type="Node" setter="set_root_node" getter="get_root_node">
-			The root node to use for RPCs. Instead of an absolute path, a relative path will be used to find the node upon which the RPC should be executed.
-			This effectively allows to have different branches of the scene tree to be managed by different MultiplayerAPI, allowing for example to run both client and server in the same scene.
+		<member name="multiplayer_peer" type="MultiplayerPeer" setter="set_multiplayer_peer" getter="get_multiplayer_peer">
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_server]) and will set root node's network mode to authority, or it will become a regular client peer. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
 		</member>
 	</members>
 	<signals>
 		<signal name="connected_to_server">
 			<description>
-				Emitted when this MultiplayerAPI's [member network_peer] successfully connected to a server. Only emitted on clients.
+				Emitted when this MultiplayerAPI's [member multiplayer_peer] successfully connected to a server. Only emitted on clients.
 			</description>
 		</signal>
 		<signal name="connection_failed">
 			<description>
-				Emitted when this MultiplayerAPI's [member network_peer] fails to establish a connection to a server. Only emitted on clients.
+				Emitted when this MultiplayerAPI's [member multiplayer_peer] fails to establish a connection to a server. Only emitted on clients.
 			</description>
 		</signal>
-		<signal name="network_peer_connected">
-			<argument index="0" name="id" type="int">
-			</argument>
+		<signal name="peer_connected">
+			<param index="0" name="id" type="int" />
 			<description>
-				Emitted when this MultiplayerAPI's [member network_peer] connects with a new peer. ID is the peer ID of the new peer. Clients get notified when other clients connect to the same server. Upon connecting to a server, a client also receives this signal for the server (with ID being 1).
+				Emitted when this MultiplayerAPI's [member multiplayer_peer] connects with a new peer. ID is the peer ID of the new peer. Clients get notified when other clients connect to the same server. Upon connecting to a server, a client also receives this signal for the server (with ID being 1).
 			</description>
 		</signal>
-		<signal name="network_peer_disconnected">
-			<argument index="0" name="id" type="int">
-			</argument>
+		<signal name="peer_disconnected">
+			<param index="0" name="id" type="int" />
 			<description>
-				Emitted when this MultiplayerAPI's [member network_peer] disconnects from a peer. Clients get notified when other clients disconnect from the same server.
-			</description>
-		</signal>
-		<signal name="network_peer_packet">
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="packet" type="PackedByteArray">
-			</argument>
-			<description>
-				Emitted when this MultiplayerAPI's [member network_peer] receive a [code]packet[/code] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.
+				Emitted when this MultiplayerAPI's [member multiplayer_peer] disconnects from a peer. Clients get notified when other clients disconnect from the same server.
 			</description>
 		</signal>
 		<signal name="server_disconnected">
 			<description>
-				Emitted when this MultiplayerAPI's [member network_peer] disconnects from server. Only emitted on clients.
+				Emitted when this MultiplayerAPI's [member multiplayer_peer] disconnects from server. Only emitted on clients.
 			</description>
 		</signal>
 	</signals>
@@ -137,14 +137,11 @@
 		<constant name="RPC_MODE_DISABLED" value="0" enum="RPCMode">
 			Used with [method Node.rpc_config] to disable a method or property for all RPC calls, making it unavailable. Default for all methods.
 		</constant>
-		<constant name="RPC_MODE_REMOTE" value="1" enum="RPCMode">
-			Used with [method Node.rpc_config] to set a method to be called or a property to be changed only on the remote end, not locally. Analogous to the [code]remote[/code] keyword. Calls and property changes are accepted from all remote peers, no matter if they are node's master or puppets.
+		<constant name="RPC_MODE_ANY_PEER" value="1" enum="RPCMode">
+			Used with [method Node.rpc_config] to set a method to be callable remotely by any peer. Analogous to the [code]@rpc("any_peer")[/code] annotation. Calls are accepted from all remote peers, no matter if they are node's authority or not.
 		</constant>
-		<constant name="RPC_MODE_MASTER" value="2" enum="RPCMode">
-			Used with [method Node.rpc_config] to set a method to be called or a property to be changed only on the network master for this node. Analogous to the [code]master[/code] keyword. Only accepts calls or property changes from the node's network puppets, see [method Node.set_network_master].
-		</constant>
-		<constant name="RPC_MODE_PUPPET" value="3" enum="RPCMode">
-			Used with [method Node.rpc_config] to set a method to be called or a property to be changed only on puppets for this node. Analogous to the [code]puppet[/code] keyword. Only accepts calls or property changes from the node's network master, see [method Node.set_network_master].
+		<constant name="RPC_MODE_AUTHORITY" value="2" enum="RPCMode">
+			Used with [method Node.rpc_config] to set a method to be callable remotely only by the current multiplayer authority (which is the server by default). Analogous to the [code]@rpc("authority")[/code] annotation. See [method Node.set_multiplayer_authority].
 		</constant>
 	</constants>
 </class>

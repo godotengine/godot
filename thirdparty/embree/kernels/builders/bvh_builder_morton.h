@@ -5,6 +5,7 @@
 
 #include "../common/builder.h"
 #include "../../common/algorithms/parallel_reduce.h"
+#include "../../common/algorithms/parallel_sort.h"
 
 namespace embree
 {
@@ -101,7 +102,7 @@ namespace embree
         }
       };
 
-#if defined (__AVX2__)
+#if defined (__AVX2__) || defined(__SYCL_DEVICE_ONLY__)
 
       /*! for AVX2 there is a fast scalar bitInterleave */
       struct MortonCodeGenerator
@@ -411,7 +412,7 @@ namespace embree
           ReductionTy bounds[MAX_BRANCHING_FACTOR];
           if (current.size() > singleThreadThreshold)
           {
-            /*! parallel_for is faster than spawing sub-tasks */
+            /*! parallel_for is faster than spawning sub-tasks */
             parallel_for(size_t(0), numChildren, [&] (const range<size_t>& r) {
                 for (size_t i=r.begin(); i<r.end(); i++) {
                   bounds[i] = recurse(depth+1,children[i],nullptr,true);

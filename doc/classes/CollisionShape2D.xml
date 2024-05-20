@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CollisionShape2D" inherits="Node2D" version="4.0">
+<class name="CollisionShape2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Node that represents collision shape data in 2D space.
+		A node that provides a [Shape2D] to a [CollisionObject2D] parent.
 	</brief_description>
 	<description>
-		Editor facility for creating and editing collision shapes in 2D space. You can use this node to represent all sorts of collision shapes, for example, add this to an [Area2D] to give it a detection shape, or add it to a [PhysicsBody2D] to create a solid object. [b]IMPORTANT[/b]: this is an Editor-only helper to create shapes, use [method CollisionObject2D.shape_owner_get_shape] to get the actual shape.
+		A node that provides a [Shape2D] to a [CollisionObject2D] parent and allows to edit it. This can give a detection shape to an [Area2D] or turn a [PhysicsBody2D] into a solid object.
 	</description>
 	<tutorials>
-		<link title="Physics introduction">https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
-		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/121</link>
-		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
+		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/2728</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
+		<member name="debug_color" type="Color" setter="set_debug_color" getter="get_debug_color" default="Color(0, 0, 0, 1)">
+			The collision shape debug color.
+			[b]Note:[/b] The default value is [member ProjectSettings.debug/shapes/collision/shape_color]. The [code]Color(0, 0, 0, 1)[/code] value documented here is a placeholder, and not the actual default debug color.
+		</member>
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false" keywords="enabled">
 			A disabled collision shape has no effect in the world. This property should be changed with [method Object.set_deferred].
 		</member>
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" default="false">
 			Sets whether this collision shape should only detect collision on one side (top or bottom).
+			[b]Note:[/b] This property has no effect if this [CollisionShape2D] is a child of an [Area2D] node.
 		</member>
 		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin" default="1.0">
 			The margin used for one-way collision (in pixels). Higher values will make the shape thicker, and work better for colliders that enter the shape at a high velocity.
@@ -28,6 +31,4 @@
 			The actual shape owned by this collision shape.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

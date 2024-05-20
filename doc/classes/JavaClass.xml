@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="JavaClass" inherits="RefCounted" version="4.0">
+<class name="JavaClass" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Represents an object from the Java Native Interface.
 	</brief_description>
 	<description>
+		Represents an object from the Java Native Interface. It is returned from [method JavaClassWrapper.wrap].
+		[b]Note:[/b] This class only works on Android. For any other build, this class does nothing.
+		[b]Note:[/b] This class is not to be confused with [JavaScriptObject].
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
 </class>

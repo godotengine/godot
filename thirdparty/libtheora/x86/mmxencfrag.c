@@ -65,7 +65,7 @@ unsigned oc_enc_frag_sad_mmxext(const unsigned char *_src,
     "paddw %%mm6,%%mm0\n\t"
     "paddw %%mm2,%%mm0\n\t"
     "movd %%mm0,%[ret]\n\t"
-    :[ret]"=a"(ret),[src]"+%r"(_src),[ref]"+r"(_ref),[ystride3]"=&r"(ystride3)
+    :[ret]"=a"(ret),[src]"+r"(_src),[ref]"+r"(_ref),[ystride3]"=&r"(ystride3)
     :[ystride]"r"((ptrdiff_t)_ystride)
   );
   return (unsigned)ret;
@@ -87,7 +87,9 @@ unsigned oc_enc_frag_sad_thresh_mmxext(const unsigned char *_src,
    The latter is exactly 1 too large when the low bit of two corresponding \
     bytes is only set in one of them. \
    Therefore we pxor the operands, pand to mask out the low bits, and psubb to \
-    correct the output of pavgb.*/ \
+    correct the output of pavgb. \
+   TODO: This should be rewritten to compute ~pavgb(~a,~b) instead, which \
+    schedules better; currently, however, this function is unused.*/ \
  "movq %%mm0,%%mm6\n\t" \
  "lea (%[ref1],%[ystride],2),%[ref1]\n\t" \
  "pxor %%mm1,%%mm0\n\t" \
@@ -153,7 +155,7 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
     OC_SAD2_LOOP
     OC_SAD2_LOOP
     OC_SAD2_TAIL
-    :[ret]"=&a"(ret),[src]"+r"(_src),[ref1]"+%r"(_ref1),[ref2]"+r"(_ref2)
+    :[ret]"=&a"(ret),[src]"+r"(_src),[ref1]"+r"(_ref1),[ref2]"+r"(_ref2)
     :[ystride]"r"((ptrdiff_t)_ystride)
   );
   return (unsigned)ret;
@@ -163,54 +165,54 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
    16-bit difference in %%mm0...%%mm7.*/
 #define OC_LOAD_SUB_8x4(_off) \
  "#OC_LOAD_SUB_8x4\n\t" \
- "movd "_off"(%[src]),%%mm0\n\t" \
- "movd "_off"(%[ref]),%%mm4\n\t" \
- "movd "_off"(%[src],%[src_ystride]),%%mm1\n\t" \
+ "movd "#_off"(%[src]),%%mm0\n\t" \
+ "movd "#_off"(%[ref]),%%mm4\n\t" \
+ "movd "#_off"(%[src],%[src_ystride]),%%mm1\n\t" \
  "lea (%[src],%[src_ystride],2),%[src]\n\t" \
- "movd "_off"(%[ref],%[ref_ystride]),%%mm5\n\t" \
+ "movd "#_off"(%[ref],%[ref_ystride]),%%mm5\n\t" \
  "lea (%[ref],%[ref_ystride],2),%[ref]\n\t" \
- "movd "_off"(%[src]),%%mm2\n\t" \
- "movd "_off"(%[ref]),%%mm7\n\t" \
- "movd "_off"(%[src],%[src_ystride]),%%mm3\n\t" \
- "movd "_off"(%[ref],%[ref_ystride]),%%mm6\n\t" \
+ "movd "#_off"(%[src]),%%mm2\n\t" \
+ "movd "#_off"(%[ref]),%%mm7\n\t" \
+ "movd "#_off"(%[src],%[src_ystride]),%%mm3\n\t" \
+ "movd "#_off"(%[ref],%[ref_ystride]),%%mm6\n\t" \
  "punpcklbw %%mm4,%%mm0\n\t" \
  "lea (%[src],%[src_ystride],2),%[src]\n\t" \
  "punpcklbw %%mm4,%%mm4\n\t" \
  "lea (%[ref],%[ref_ystride],2),%[ref]\n\t" \
  "psubw %%mm4,%%mm0\n\t" \
- "movd "_off"(%[src]),%%mm4\n\t" \
- "movq %%mm0,"_off"*2(%[buf])\n\t" \
- "movd "_off"(%[ref]),%%mm0\n\t" \
+ "movd "#_off"(%[src]),%%mm4\n\t" \
+ "movq %%mm0,"OC_MEM_OFFS(_off*2,buf)"\n\t" \
+ "movd "#_off"(%[ref]),%%mm0\n\t" \
  "punpcklbw %%mm5,%%mm1\n\t" \
  "punpcklbw %%mm5,%%mm5\n\t" \
  "psubw %%mm5,%%mm1\n\t" \
- "movd "_off"(%[src],%[src_ystride]),%%mm5\n\t" \
+ "movd "#_off"(%[src],%[src_ystride]),%%mm5\n\t" \
  "punpcklbw %%mm7,%%mm2\n\t" \
  "punpcklbw %%mm7,%%mm7\n\t" \
  "psubw %%mm7,%%mm2\n\t" \
- "movd "_off"(%[ref],%[ref_ystride]),%%mm7\n\t" \
+ "movd "#_off"(%[ref],%[ref_ystride]),%%mm7\n\t" \
  "punpcklbw %%mm6,%%mm3\n\t" \
  "lea (%[src],%[src_ystride],2),%[src]\n\t" \
  "punpcklbw %%mm6,%%mm6\n\t" \
  "psubw %%mm6,%%mm3\n\t" \
- "movd "_off"(%[src]),%%mm6\n\t" \
+ "movd "#_off"(%[src]),%%mm6\n\t" \
  "punpcklbw %%mm0,%%mm4\n\t" \
  "lea (%[ref],%[ref_ystride],2),%[ref]\n\t" \
  "punpcklbw %%mm0,%%mm0\n\t" \
  "lea (%[src],%[src_ystride],2),%[src]\n\t" \
  "psubw %%mm0,%%mm4\n\t" \
- "movd "_off"(%[ref]),%%mm0\n\t" \
+ "movd "#_off"(%[ref]),%%mm0\n\t" \
  "punpcklbw %%mm7,%%mm5\n\t" \
  "neg %[src_ystride]\n\t" \
  "punpcklbw %%mm7,%%mm7\n\t" \
  "psubw %%mm7,%%mm5\n\t" \
- "movd "_off"(%[src],%[src_ystride]),%%mm7\n\t" \
+ "movd "#_off"(%[src],%[src_ystride]),%%mm7\n\t" \
  "punpcklbw %%mm0,%%mm6\n\t" \
  "lea (%[ref],%[ref_ystride],2),%[ref]\n\t" \
  "punpcklbw %%mm0,%%mm0\n\t" \
  "neg %[ref_ystride]\n\t" \
  "psubw %%mm0,%%mm6\n\t" \
- "movd "_off"(%[ref],%[ref_ystride]),%%mm0\n\t" \
+ "movd "#_off"(%[ref],%[ref_ystride]),%%mm0\n\t" \
  "lea (%[src],%[src_ystride],8),%[src]\n\t" \
  "punpcklbw %%mm0,%%mm7\n\t" \
  "neg %[src_ystride]\n\t" \
@@ -218,24 +220,24 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
  "lea (%[ref],%[ref_ystride],8),%[ref]\n\t" \
  "psubw %%mm0,%%mm7\n\t" \
  "neg %[ref_ystride]\n\t" \
- "movq "_off"*2(%[buf]),%%mm0\n\t" \
+ "movq "OC_MEM_OFFS(_off*2,buf)",%%mm0\n\t" \
 
 /*Load an 8x4 array of pixel values from %[src] into %%mm0...%%mm7.*/
 #define OC_LOAD_8x4(_off) \
  "#OC_LOAD_8x4\n\t" \
- "movd "_off"(%[src]),%%mm0\n\t" \
- "movd "_off"(%[src],%[ystride]),%%mm1\n\t" \
- "movd "_off"(%[src],%[ystride],2),%%mm2\n\t" \
+ "movd "#_off"(%[src]),%%mm0\n\t" \
+ "movd "#_off"(%[src],%[ystride]),%%mm1\n\t" \
+ "movd "#_off"(%[src],%[ystride],2),%%mm2\n\t" \
  "pxor %%mm7,%%mm7\n\t" \
- "movd "_off"(%[src],%[ystride3]),%%mm3\n\t" \
+ "movd "#_off"(%[src],%[ystride3]),%%mm3\n\t" \
  "punpcklbw %%mm7,%%mm0\n\t" \
- "movd "_off"(%[src4]),%%mm4\n\t" \
+ "movd "#_off"(%[src4]),%%mm4\n\t" \
  "punpcklbw %%mm7,%%mm1\n\t" \
- "movd "_off"(%[src4],%[ystride]),%%mm5\n\t" \
+ "movd "#_off"(%[src4],%[ystride]),%%mm5\n\t" \
  "punpcklbw %%mm7,%%mm2\n\t" \
- "movd "_off"(%[src4],%[ystride],2),%%mm6\n\t" \
+ "movd "#_off"(%[src4],%[ystride],2),%%mm6\n\t" \
  "punpcklbw %%mm7,%%mm3\n\t" \
- "movd "_off"(%[src4],%[ystride3]),%%mm7\n\t" \
+ "movd "#_off"(%[src4],%[ystride3]),%%mm7\n\t" \
  "punpcklbw %%mm4,%%mm4\n\t" \
  "punpcklbw %%mm5,%%mm5\n\t" \
  "psrlw $8,%%mm4\n\t" \
@@ -248,7 +250,7 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
 /*Performs the first two stages of an 8-point 1-D Hadamard transform.
   The transform is performed in place, except that outputs 0-3 are swapped with
    outputs 4-7.
-  Outputs 2, 3, 6 and 7 from the second stage are negated (which allows us to
+  Outputs 2, 3, 6, and 7 from the second stage are negated (which allows us to
    perform this stage in place with no temporary registers).*/
 #define OC_HADAMARD_AB_8x4 \
  "#OC_HADAMARD_AB_8x4\n\t" \
@@ -281,7 +283,7 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
  "psubw %%mm5,%%mm7\n\t" \
 
 /*Performs the last stage of an 8-point 1-D Hadamard transform in place.
-  Ouputs 1, 3, 5, and 7 are negated (which allows us to perform this stage in
+  Outputs 1, 3, 5, and 7 are negated (which allows us to perform this stage in
    place with no temporary registers).*/
 #define OC_HADAMARD_C_8x4 \
  "#OC_HADAMARD_C_8x4\n\t" \
@@ -324,8 +326,8 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
    Even with pabsw, it would be (3+1)*8+7=39 instructions (with no spills). \
    This implementation is only 26 (+4 for spilling registers).*/ \
  "#OC_HADAMARD_C_ABS_ACCUM_A_8x4\n\t" \
- "movq %%mm7,"_r7"(%[buf])\n\t" \
- "movq %%mm6,"_r6"(%[buf])\n\t" \
+ "movq %%mm7,"OC_MEM_OFFS(_r7,buf)"\n\t" \
+ "movq %%mm6,"OC_MEM_OFFS(_r6,buf)"\n\t" \
  /*mm7={0x7FFF}x4 \
    mm0=max(abs(mm0),abs(mm1))-0x7FFF*/ \
  "pcmpeqb %%mm7,%%mm7\n\t" \
@@ -343,14 +345,14 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
  "pmaxsw %%mm5,%%mm4\n\t" \
  "paddw %%mm3,%%mm6\n\t" \
  "paddw %%mm5,%%mm1\n\t" \
- "movq "_r7"(%[buf]),%%mm3\n\t" \
+ "movq "OC_MEM_OFFS(_r7,buf)",%%mm3\n\t" \
 
 /*Performs the second part of the final stage of the Hadamard transform and
    summing of absolute values.*/
 #define OC_HADAMARD_C_ABS_ACCUM_B_8x4(_r6,_r7) \
  "#OC_HADAMARD_C_ABS_ACCUM_B_8x4\n\t" \
  "paddsw %%mm7,%%mm6\n\t" \
- "movq "_r6"(%[buf]),%%mm5\n\t" \
+ "movq "OC_MEM_OFFS(_r6,buf)",%%mm5\n\t" \
  "paddsw %%mm7,%%mm1\n\t" \
  "psubw %%mm6,%%mm2\n\t" \
  "psubw %%mm1,%%mm4\n\t" \
@@ -391,7 +393,7 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
 #define OC_TRANSPOSE_4x4x2(_off) \
  "#OC_TRANSPOSE_4x4x2\n\t" \
  /*First 4x4 transpose:*/ \
- "movq %%mm5,0x10+"_off"(%[buf])\n\t" \
+ "movq %%mm5,"OC_MEM_OFFS(0x10+(_off),buf)"\n\t" \
  /*mm0 = e3 e2 e1 e0 \
    mm1 = f3 f2 f1 f0 \
    mm2 = g3 g2 g1 g0 \
@@ -411,13 +413,13 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
  "punpckhdq %%mm2,%%mm1\n\t" \
  "movq %%mm3,%%mm2\n\t" \
  "punpckhdq %%mm5,%%mm3\n\t" \
- "movq %%mm0,0x40+"_off"(%[buf])\n\t" \
+ "movq %%mm0,"OC_MEM_OFFS(0x40+(_off),buf)"\n\t" \
  "punpckldq %%mm5,%%mm2\n\t" \
  /*mm0 = h0 g0 f0 e0 \
    mm1 = h1 g1 f1 e1 \
    mm2 = h2 g2 f2 e2 \
    mm3 = h3 g3 f3 e3*/ \
- "movq 0x10+"_off"(%[buf]),%%mm5\n\t" \
+ "movq "OC_MEM_OFFS(0x10+(_off),buf)",%%mm5\n\t" \
  /*Second 4x4 transpose:*/ \
  /*mm4 = a3 a2 a1 a0 \
    mm5 = b3 b2 b1 b0 \
@@ -425,11 +427,11 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
    mm7 = d3 d2 d1 d0*/ \
  "movq %%mm6,%%mm0\n\t" \
  "punpcklwd %%mm7,%%mm6\n\t" \
- "movq %%mm1,0x50+"_off"(%[buf])\n\t" \
+ "movq %%mm1,"OC_MEM_OFFS(0x50+(_off),buf)"\n\t" \
  "punpckhwd %%mm7,%%mm0\n\t" \
  "movq %%mm4,%%mm7\n\t" \
  "punpcklwd %%mm5,%%mm4\n\t" \
- "movq %%mm2,0x60+"_off"(%[buf])\n\t" \
+ "movq %%mm2,"OC_MEM_OFFS(0x60+(_off),buf)"\n\t" \
  "punpckhwd %%mm5,%%mm7\n\t" \
  /*mm4 = b1 a1 b0 a0 \
    mm7 = b3 a3 b2 a2 \
@@ -437,7 +439,7 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
    mm0 = d3 c3 d2 c2*/ \
  "movq %%mm4,%%mm5\n\t" \
  "punpckldq %%mm6,%%mm4\n\t" \
- "movq %%mm3,0x70+"_off"(%[buf])\n\t" \
+ "movq %%mm3,"OC_MEM_OFFS(0x70+(_off),buf)"\n\t" \
  "punpckhdq %%mm6,%%mm5\n\t" \
  "movq %%mm7,%%mm6\n\t" \
  "punpckhdq %%mm0,%%mm7\n\t" \
@@ -447,100 +449,102 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
    mm6 = d2 c2 b2 a2 \
    mm7 = d3 c3 b3 a3*/ \
 
-static unsigned oc_int_frag_satd_thresh_mmxext(const unsigned char *_src,
- int _src_ystride,const unsigned char *_ref,int _ref_ystride,unsigned _thresh){
-  OC_ALIGN8(ogg_int16_t  buf[64]);
-  ogg_int16_t *bufp;
-  unsigned     ret;
-  unsigned     ret2;
-  bufp=buf;
+static unsigned oc_int_frag_satd_mmxext(int *_dc,
+ const unsigned char *_src,int _src_ystride,
+ const unsigned char *_ref,int _ref_ystride){
+  OC_ALIGN8(ogg_int16_t buf[64]);
+  unsigned ret;
+  unsigned ret2;
+  int      dc;
   __asm__ __volatile__(
-    OC_LOAD_SUB_8x4("0x00")
+    OC_LOAD_SUB_8x4(0x00)
     OC_HADAMARD_8x4
-    OC_TRANSPOSE_4x4x2("0x00")
+    OC_TRANSPOSE_4x4x2(0x00)
     /*Finish swapping out this 8x4 block to make room for the next one.
       mm0...mm3 have been swapped out already.*/
-    "movq %%mm4,0x00(%[buf])\n\t"
-    "movq %%mm5,0x10(%[buf])\n\t"
-    "movq %%mm6,0x20(%[buf])\n\t"
-    "movq %%mm7,0x30(%[buf])\n\t"
-    OC_LOAD_SUB_8x4("0x04")
+    "movq %%mm4,"OC_MEM_OFFS(0x00,buf)"\n\t"
+    "movq %%mm5,"OC_MEM_OFFS(0x10,buf)"\n\t"
+    "movq %%mm6,"OC_MEM_OFFS(0x20,buf)"\n\t"
+    "movq %%mm7,"OC_MEM_OFFS(0x30,buf)"\n\t"
+    OC_LOAD_SUB_8x4(0x04)
     OC_HADAMARD_8x4
-    OC_TRANSPOSE_4x4x2("0x08")
+    OC_TRANSPOSE_4x4x2(0x08)
     /*Here the first 4x4 block of output from the last transpose is the second
        4x4 block of input for the next transform.
       We have cleverly arranged that it already be in the appropriate place, so
        we only have to do half the loads.*/
-    "movq 0x10(%[buf]),%%mm1\n\t"
-    "movq 0x20(%[buf]),%%mm2\n\t"
-    "movq 0x30(%[buf]),%%mm3\n\t"
-    "movq 0x00(%[buf]),%%mm0\n\t"
-    OC_HADAMARD_ABS_ACCUM_8x4("0x28","0x38")
+    "movq "OC_MEM_OFFS(0x10,buf)",%%mm1\n\t"
+    "movq "OC_MEM_OFFS(0x20,buf)",%%mm2\n\t"
+    "movq "OC_MEM_OFFS(0x30,buf)",%%mm3\n\t"
+    "movq "OC_MEM_OFFS(0x00,buf)",%%mm0\n\t"
+    /*We split out the stages here so we can save the DC coefficient in the
+       middle.*/
+    OC_HADAMARD_AB_8x4
+    OC_HADAMARD_C_ABS_ACCUM_A_8x4(0x28,0x38)
+    "movd %%mm1,%[dc]\n\t"
+    OC_HADAMARD_C_ABS_ACCUM_B_8x4(0x28,0x38)
     /*Up to this point, everything fit in 16 bits (8 input + 1 for the
        difference + 2*3 for the two 8-point 1-D Hadamards - 1 for the abs - 1
        for the factor of two we dropped + 3 for the vertical accumulation).
       Now we finally have to promote things to dwords.
       We break this part out of OC_HADAMARD_ABS_ACCUM_8x4 to hide the long
        latency of pmaddwd by starting the next series of loads now.*/
-    "mov %[thresh],%[ret2]\n\t"
     "pmaddwd %%mm7,%%mm0\n\t"
-    "movq 0x50(%[buf]),%%mm1\n\t"
-    "movq 0x58(%[buf]),%%mm5\n\t"
+    "movq "OC_MEM_OFFS(0x50,buf)",%%mm1\n\t"
+    "movq "OC_MEM_OFFS(0x58,buf)",%%mm5\n\t"
     "movq %%mm0,%%mm4\n\t"
-    "movq 0x60(%[buf]),%%mm2\n\t"
+    "movq "OC_MEM_OFFS(0x60,buf)",%%mm2\n\t"
     "punpckhdq %%mm0,%%mm0\n\t"
-    "movq 0x68(%[buf]),%%mm6\n\t"
+    "movq "OC_MEM_OFFS(0x68,buf)",%%mm6\n\t"
     "paddd %%mm0,%%mm4\n\t"
-    "movq 0x70(%[buf]),%%mm3\n\t"
-    "movd %%mm4,%[ret]\n\t"
-    "movq 0x78(%[buf]),%%mm7\n\t"
-    /*The sums produced by OC_HADAMARD_ABS_ACCUM_8x4 each have an extra 4
-       added to them, and a factor of two removed; correct the final sum here.*/
-    "lea -32(%[ret],%[ret]),%[ret]\n\t"
-    "movq 0x40(%[buf]),%%mm0\n\t"
-    "cmp %[ret2],%[ret]\n\t"
-    "movq 0x48(%[buf]),%%mm4\n\t"
-    "jae 1f\n\t"
-    OC_HADAMARD_ABS_ACCUM_8x4("0x68","0x78")
-    "pmaddwd %%mm7,%%mm0\n\t"
-    /*There isn't much to stick in here to hide the latency this time, but the
-       alternative to pmaddwd is movq->punpcklwd->punpckhwd->paddd, whose
-       latency is even worse.*/
-    "sub $32,%[ret]\n\t"
-    "movq %%mm0,%%mm4\n\t"
-    "punpckhdq %%mm0,%%mm0\n\t"
-    "paddd %%mm0,%%mm4\n\t"
+    "movq "OC_MEM_OFFS(0x70,buf)",%%mm3\n\t"
     "movd %%mm4,%[ret2]\n\t"
-    "lea (%[ret],%[ret2],2),%[ret]\n\t"
-    ".p2align 4,,15\n\t"
-    "1:\n\t"
-    /*Although it looks like we're using 7 registers here, gcc can alias %[ret]
+    "movq "OC_MEM_OFFS(0x78,buf)",%%mm7\n\t"
+    "movq "OC_MEM_OFFS(0x40,buf)",%%mm0\n\t"
+    "movq "OC_MEM_OFFS(0x48,buf)",%%mm4\n\t"
+    OC_HADAMARD_ABS_ACCUM_8x4(0x68,0x78)
+    "pmaddwd %%mm7,%%mm0\n\t"
+    /*Subtract abs(dc) from 2*ret2.*/
+    "movsx %w[dc],%[dc]\n\t"
+    "cdq\n\t"
+    "lea (%[ret],%[ret2],2),%[ret2]\n\t"
+    "movq %%mm0,%%mm4\n\t"
+    "punpckhdq %%mm0,%%mm0\n\t"
+    "xor %[dc],%[ret]\n\t"
+    "paddd %%mm0,%%mm4\n\t"
+    /*The sums produced by OC_HADAMARD_ABS_ACCUM_8x4 each have an extra 4
+       added to them, a factor of two removed, and the DC value included;
+       correct the final sum here.*/
+    "sub %[ret],%[ret2]\n\t"
+    "movd %%mm4,%[ret]\n\t"
+    "lea -64(%[ret2],%[ret],2),%[ret]\n\t"
+    /*Although it looks like we're using 8 registers here, gcc can alias %[ret]
        and %[ret2] with some of the inputs, since for once we don't write to
-       them until after we're done using everything but %[buf] (which is also
-       listed as an output to ensure gcc _doesn't_ alias them against it).*/
+       them until after we're done using everything but %[buf].*/
     /*Note that _src_ystride and _ref_ystride must be given non-overlapping
        constraints, otherewise if gcc can prove they're equal it will allocate
        them to the same register (which is bad); _src and _ref face a similar
        problem, though those are never actually the same.*/
-    :[ret]"=a"(ret),[ret2]"=r"(ret2),[buf]"+r"(bufp)
+    :[ret]"=d"(ret),[ret2]"=r"(ret2),[dc]"=a"(dc),
+     [buf]"=m"(OC_ARRAY_OPERAND(ogg_int16_t,buf,64))
     :[src]"r"(_src),[src_ystride]"c"((ptrdiff_t)_src_ystride),
-     [ref]"r"(_ref),[ref_ystride]"d"((ptrdiff_t)_ref_ystride),
-     [thresh]"m"(_thresh)
+     [ref]"r"(_ref),[ref_ystride]"d"((ptrdiff_t)_ref_ystride)
     /*We have to use neg, so we actually clobber the condition codes for once
        (not to mention cmp, sub, and add).*/
     :"cc"
   );
+  *_dc=dc;
   return ret;
 }
 
-unsigned oc_enc_frag_satd_thresh_mmxext(const unsigned char *_src,
- const unsigned char *_ref,int _ystride,unsigned _thresh){
-  return oc_int_frag_satd_thresh_mmxext(_src,_ystride,_ref,_ystride,_thresh);
+unsigned oc_enc_frag_satd_mmxext(int *_dc,const unsigned char *_src,
+ const unsigned char *_ref,int _ystride){
+  return oc_int_frag_satd_mmxext(_dc,_src,_ystride,_ref,_ystride);
 }
 
 /*Our internal implementation of frag_copy2 takes an extra stride parameter so
-   we can share code with oc_enc_frag_satd2_thresh_mmxext().*/
-static void oc_int_frag_copy2_mmxext(unsigned char *_dst,int _dst_ystride,
+   we can share code with oc_enc_frag_satd2_mmxext().*/
+void oc_int_frag_copy2_mmxext(unsigned char *_dst,int _dst_ystride,
  const unsigned char *_src1,const unsigned char *_src2,int _src_ystride){
   __asm__ __volatile__(
     /*Load the first 3 rows.*/
@@ -649,55 +653,53 @@ static void oc_int_frag_copy2_mmxext(unsigned char *_dst,int _dst_ystride,
     "psubb %%mm4,%%mm2\n\t"
     /*%%mm2 (row 7) is done, write it out.*/
     "movq %%mm2,(%[dst],%[dst_ystride])\n\t"
-    :[dst]"+r"(_dst),[src1]"+%r"(_src1),[src2]"+r"(_src2)
+    :[dst]"+r"(_dst),[src1]"+r"(_src1),[src2]"+r"(_src2)
     :[dst_ystride]"r"((ptrdiff_t)_dst_ystride),
      [src_ystride]"r"((ptrdiff_t)_src_ystride)
     :"memory"
   );
 }
 
-unsigned oc_enc_frag_satd2_thresh_mmxext(const unsigned char *_src,
- const unsigned char *_ref1,const unsigned char *_ref2,int _ystride,
- unsigned _thresh){
+unsigned oc_enc_frag_satd2_mmxext(int *_dc,const unsigned char *_src,
+ const unsigned char *_ref1,const unsigned char *_ref2,int _ystride){
   OC_ALIGN8(unsigned char ref[64]);
   oc_int_frag_copy2_mmxext(ref,8,_ref1,_ref2,_ystride);
-  return oc_int_frag_satd_thresh_mmxext(_src,_ystride,ref,8,_thresh);
+  return oc_int_frag_satd_mmxext(_dc,_src,_ystride,ref,8);
 }
 
-unsigned oc_enc_frag_intra_satd_mmxext(const unsigned char *_src,
- int _ystride){
-  OC_ALIGN8(ogg_int16_t  buf[64]);
-  ogg_int16_t *bufp;
-  unsigned     ret;
-  unsigned     ret2;
-  bufp=buf;
+unsigned oc_enc_frag_intra_satd_mmxext(int *_dc,
+ const unsigned char *_src,int _ystride){
+  OC_ALIGN8(ogg_int16_t buf[64]);
+  unsigned ret;
+  unsigned ret2;
+  int      dc;
   __asm__ __volatile__(
-    OC_LOAD_8x4("0x00")
+    OC_LOAD_8x4(0x00)
     OC_HADAMARD_8x4
-    OC_TRANSPOSE_4x4x2("0x00")
+    OC_TRANSPOSE_4x4x2(0x00)
     /*Finish swapping out this 8x4 block to make room for the next one.
       mm0...mm3 have been swapped out already.*/
-    "movq %%mm4,0x00(%[buf])\n\t"
-    "movq %%mm5,0x10(%[buf])\n\t"
-    "movq %%mm6,0x20(%[buf])\n\t"
-    "movq %%mm7,0x30(%[buf])\n\t"
-    OC_LOAD_8x4("0x04")
+    "movq %%mm4,"OC_MEM_OFFS(0x00,buf)"\n\t"
+    "movq %%mm5,"OC_MEM_OFFS(0x10,buf)"\n\t"
+    "movq %%mm6,"OC_MEM_OFFS(0x20,buf)"\n\t"
+    "movq %%mm7,"OC_MEM_OFFS(0x30,buf)"\n\t"
+    OC_LOAD_8x4(0x04)
     OC_HADAMARD_8x4
-    OC_TRANSPOSE_4x4x2("0x08")
+    OC_TRANSPOSE_4x4x2(0x08)
     /*Here the first 4x4 block of output from the last transpose is the second
        4x4 block of input for the next transform.
       We have cleverly arranged that it already be in the appropriate place, so
        we only have to do half the loads.*/
-    "movq 0x10(%[buf]),%%mm1\n\t"
-    "movq 0x20(%[buf]),%%mm2\n\t"
-    "movq 0x30(%[buf]),%%mm3\n\t"
-    "movq 0x00(%[buf]),%%mm0\n\t"
+    "movq "OC_MEM_OFFS(0x10,buf)",%%mm1\n\t"
+    "movq "OC_MEM_OFFS(0x20,buf)",%%mm2\n\t"
+    "movq "OC_MEM_OFFS(0x30,buf)",%%mm3\n\t"
+    "movq "OC_MEM_OFFS(0x00,buf)",%%mm0\n\t"
     /*We split out the stages here so we can save the DC coefficient in the
        middle.*/
     OC_HADAMARD_AB_8x4
-    OC_HADAMARD_C_ABS_ACCUM_A_8x4("0x28","0x38")
-    "movd %%mm1,%[ret]\n\t"
-    OC_HADAMARD_C_ABS_ACCUM_B_8x4("0x28","0x38")
+    OC_HADAMARD_C_ABS_ACCUM_A_8x4(0x28,0x38)
+    "movd %%mm1,%[dc]\n\t"
+    OC_HADAMARD_C_ABS_ACCUM_B_8x4(0x28,0x38)
     /*Up to this point, everything fit in 16 bits (8 input + 1 for the
        difference + 2*3 for the two 8-point 1-D Hadamards - 1 for the abs - 1
        for the factor of two we dropped + 3 for the vertical accumulation).
@@ -705,41 +707,43 @@ unsigned oc_enc_frag_intra_satd_mmxext(const unsigned char *_src,
       We break this part out of OC_HADAMARD_ABS_ACCUM_8x4 to hide the long
        latency of pmaddwd by starting the next series of loads now.*/
     "pmaddwd %%mm7,%%mm0\n\t"
-    "movq 0x50(%[buf]),%%mm1\n\t"
-    "movq 0x58(%[buf]),%%mm5\n\t"
-    "movq 0x60(%[buf]),%%mm2\n\t"
+    "movq "OC_MEM_OFFS(0x50,buf)",%%mm1\n\t"
+    "movq "OC_MEM_OFFS(0x58,buf)",%%mm5\n\t"
+    "movq "OC_MEM_OFFS(0x60,buf)",%%mm2\n\t"
     "movq %%mm0,%%mm4\n\t"
-    "movq 0x68(%[buf]),%%mm6\n\t"
+    "movq "OC_MEM_OFFS(0x68,buf)",%%mm6\n\t"
     "punpckhdq %%mm0,%%mm0\n\t"
-    "movq 0x70(%[buf]),%%mm3\n\t"
+    "movq "OC_MEM_OFFS(0x70,buf)",%%mm3\n\t"
     "paddd %%mm0,%%mm4\n\t"
-    "movq 0x78(%[buf]),%%mm7\n\t"
-    "movd %%mm4,%[ret2]\n\t"
-    "movq 0x40(%[buf]),%%mm0\n\t"
-    "movq 0x48(%[buf]),%%mm4\n\t"
-    OC_HADAMARD_ABS_ACCUM_8x4("0x68","0x78")
+    "movq "OC_MEM_OFFS(0x78,buf)",%%mm7\n\t"
+    "movd %%mm4,%[ret]\n\t"
+    "movq "OC_MEM_OFFS(0x40,buf)",%%mm0\n\t"
+    "movq "OC_MEM_OFFS(0x48,buf)",%%mm4\n\t"
+    OC_HADAMARD_ABS_ACCUM_8x4(0x68,0x78)
     "pmaddwd %%mm7,%%mm0\n\t"
     /*We assume that the DC coefficient is always positive (which is true,
        because the input to the INTRA transform was not a difference).*/
-    "movzx %w[ret],%[ret]\n\t"
-    "add %[ret2],%[ret2]\n\t"
-    "sub %[ret],%[ret2]\n\t"
+    "movzx %w[dc],%[dc]\n\t"
+    "add %[ret],%[ret]\n\t"
+    "sub %[dc],%[ret]\n\t"
     "movq %%mm0,%%mm4\n\t"
     "punpckhdq %%mm0,%%mm0\n\t"
     "paddd %%mm0,%%mm4\n\t"
-    "movd %%mm4,%[ret]\n\t"
-    "lea -64(%[ret2],%[ret],2),%[ret]\n\t"
-    /*Although it looks like we're using 7 registers here, gcc can alias %[ret]
+    "movd %%mm4,%[ret2]\n\t"
+    "lea -64(%[ret],%[ret2],2),%[ret]\n\t"
+    /*Although it looks like we're using 8 registers here, gcc can alias %[ret]
        and %[ret2] with some of the inputs, since for once we don't write to
        them until after we're done using everything but %[buf] (which is also
        listed as an output to ensure gcc _doesn't_ alias them against it).*/
-    :[ret]"=a"(ret),[ret2]"=r"(ret2),[buf]"+r"(bufp)
+    :[ret]"=a"(ret),[ret2]"=r"(ret2),[dc]"=r"(dc),
+     [buf]"=m"(OC_ARRAY_OPERAND(ogg_int16_t,buf,64))
     :[src]"r"(_src),[src4]"r"(_src+4*_ystride),
      [ystride]"r"((ptrdiff_t)_ystride),[ystride3]"r"((ptrdiff_t)3*_ystride)
     /*We have to use sub, so we actually clobber the condition codes for once
        (not to mention add).*/
     :"cc"
   );
+  *_dc=dc;
   return ret;
 }
 

@@ -1,40 +1,38 @@
-/*************************************************************************/
-/*  gpu_particles_collision_3d.h                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gpu_particles_collision_3d.h                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef GPU_PARTICLES_COLLISION_3D_H
 #define GPU_PARTICLES_COLLISION_3D_H
 
 #include "core/templates/local_vector.h"
-#include "core/templates/rid.h"
 #include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/material.h"
 
 class GPUParticlesCollision3D : public VisualInstance3D {
 	GDCLASS(GPUParticlesCollision3D, VisualInstance3D);
@@ -52,49 +50,51 @@ public:
 	void set_cull_mask(uint32_t p_cull_mask);
 	uint32_t get_cull_mask() const;
 
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override { return Vector<Face3>(); }
-
 	~GPUParticlesCollision3D();
 };
 
-class GPUParticlesCollisionSphere : public GPUParticlesCollision3D {
-	GDCLASS(GPUParticlesCollisionSphere, GPUParticlesCollision3D);
+class GPUParticlesCollisionSphere3D : public GPUParticlesCollision3D {
+	GDCLASS(GPUParticlesCollisionSphere3D, GPUParticlesCollision3D);
 
-	float radius = 1.0;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_radius(float p_radius);
-	float get_radius() const;
-
-	virtual AABB get_aabb() const override;
-
-	GPUParticlesCollisionSphere();
-	~GPUParticlesCollisionSphere();
-};
-
-class GPUParticlesCollisionBox : public GPUParticlesCollision3D {
-	GDCLASS(GPUParticlesCollisionBox, GPUParticlesCollision3D);
-
-	Vector3 extents = Vector3(1, 1, 1);
+	real_t radius = 1.0;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_radius(real_t p_radius);
+	real_t get_radius() const;
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesCollisionBox();
-	~GPUParticlesCollisionBox();
+	GPUParticlesCollisionSphere3D();
+	~GPUParticlesCollisionSphere3D();
 };
 
-class GPUParticlesCollisionSDF : public GPUParticlesCollision3D {
-	GDCLASS(GPUParticlesCollisionSDF, GPUParticlesCollision3D);
+class GPUParticlesCollisionBox3D : public GPUParticlesCollision3D {
+	GDCLASS(GPUParticlesCollisionBox3D, GPUParticlesCollision3D);
+
+	Vector3 size = Vector3(2, 2, 2);
+
+protected:
+	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
+
+public:
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
+
+	virtual AABB get_aabb() const override;
+
+	GPUParticlesCollisionBox3D();
+	~GPUParticlesCollisionBox3D();
+};
+
+class GPUParticlesCollisionSDF3D : public GPUParticlesCollision3D {
+	GDCLASS(GPUParticlesCollisionSDF3D, GPUParticlesCollision3D);
 
 public:
 	enum Resolution {
@@ -112,8 +112,9 @@ public:
 	typedef void (*BakeEndFunc)();
 
 private:
-	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 size = Vector3(2, 2, 2);
 	Resolution resolution = RESOLUTION_64;
+	uint32_t bake_mask = 0xFFFFFFFF;
 	Ref<Texture3D> texture;
 	float thickness = 1.0;
 
@@ -157,22 +158,34 @@ private:
 		float thickness = 0.0;
 	};
 
-	void _find_closest_distance(const Vector3 &p_pos, const BVH *bvh, uint32_t p_bvh_cell, const Face3 *triangles, float thickness, float &closest_distance);
+	void _find_closest_distance(const Vector3 &p_pos, const BVH *p_bvh, uint32_t p_bvh_cell, const Face3 *p_triangles, float p_thickness, float &r_closest_distance);
 	void _compute_sdf_z(uint32_t p_z, ComputeSDFParams *params);
 	void _compute_sdf(ComputeSDFParams *params);
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
 
 public:
+	virtual PackedStringArray get_configuration_warnings() const override;
+
 	void set_thickness(float p_thickness);
 	float get_thickness() const;
 
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	void set_resolution(Resolution p_resolution);
 	Resolution get_resolution() const;
+
+	void set_bake_mask(uint32_t p_mask);
+	uint32_t get_bake_mask() const;
+
+	void set_bake_mask_value(int p_layer_number, bool p_enable);
+	bool get_bake_mask_value(int p_layer_number) const;
 
 	void set_texture(const Ref<Texture3D> &p_texture);
 	Ref<Texture3D> get_texture() const;
@@ -186,14 +199,14 @@ public:
 	static BakeStepFunc bake_step_function;
 	static BakeEndFunc bake_end_function;
 
-	GPUParticlesCollisionSDF();
-	~GPUParticlesCollisionSDF();
+	GPUParticlesCollisionSDF3D();
+	~GPUParticlesCollisionSDF3D();
 };
 
-VARIANT_ENUM_CAST(GPUParticlesCollisionSDF::Resolution)
+VARIANT_ENUM_CAST(GPUParticlesCollisionSDF3D::Resolution)
 
-class GPUParticlesCollisionHeightField : public GPUParticlesCollision3D {
-	GDCLASS(GPUParticlesCollisionHeightField, GPUParticlesCollision3D);
+class GPUParticlesCollisionHeightField3D : public GPUParticlesCollision3D {
+	GDCLASS(GPUParticlesCollisionHeightField3D, GPUParticlesCollision3D);
 
 public:
 	enum Resolution {
@@ -212,20 +225,23 @@ public:
 	};
 
 private:
-	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 size = Vector3(2, 2, 2);
 	Resolution resolution = RESOLUTION_1024;
 	bool follow_camera_mode = false;
-	float follow_camera_push_ratio = 0.1;
 
 	UpdateMode update_mode = UPDATE_MODE_WHEN_MOVED;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
 
 public:
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	void set_resolution(Resolution p_resolution);
 	Resolution get_resolution() const;
@@ -233,29 +249,26 @@ public:
 	void set_update_mode(UpdateMode p_update_mode);
 	UpdateMode get_update_mode() const;
 
-	void set_follow_camera_mode(bool p_enabled);
-	bool is_follow_camera_mode_enabled() const;
-
-	void set_follow_camera_push_ratio(float p_ratio);
-	float get_follow_camera_push_ratio() const;
+	void set_follow_camera_enabled(bool p_enabled);
+	bool is_follow_camera_enabled() const;
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesCollisionHeightField();
-	~GPUParticlesCollisionHeightField();
+	GPUParticlesCollisionHeightField3D();
+	~GPUParticlesCollisionHeightField3D();
 };
 
-VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField::Resolution)
-VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField::UpdateMode)
+VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField3D::Resolution)
+VARIANT_ENUM_CAST(GPUParticlesCollisionHeightField3D::UpdateMode)
 
 class GPUParticlesAttractor3D : public VisualInstance3D {
 	GDCLASS(GPUParticlesAttractor3D, VisualInstance3D);
 
 	uint32_t cull_mask = 0xFFFFFFFF;
 	RID collision;
-	float strength = 1.0;
-	float attenuation = 1.0;
-	float directionality = 0.0;
+	real_t strength = 1.0;
+	real_t attenuation = 1.0;
+	real_t directionality = 0.0;
 
 protected:
 	_FORCE_INLINE_ RID _get_collision() { return collision; }
@@ -267,76 +280,82 @@ public:
 	void set_cull_mask(uint32_t p_cull_mask);
 	uint32_t get_cull_mask() const;
 
-	void set_strength(float p_strength);
-	float get_strength() const;
+	void set_strength(real_t p_strength);
+	real_t get_strength() const;
 
-	void set_attenuation(float p_attenuation);
-	float get_attenuation() const;
+	void set_attenuation(real_t p_attenuation);
+	real_t get_attenuation() const;
 
-	void set_directionality(float p_directionality);
-	float get_directionality() const;
-
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override { return Vector<Face3>(); }
+	void set_directionality(real_t p_directionality);
+	real_t get_directionality() const;
 
 	~GPUParticlesAttractor3D();
 };
 
-class GPUParticlesAttractorSphere : public GPUParticlesAttractor3D {
-	GDCLASS(GPUParticlesAttractorSphere, GPUParticlesAttractor3D);
+class GPUParticlesAttractorSphere3D : public GPUParticlesAttractor3D {
+	GDCLASS(GPUParticlesAttractorSphere3D, GPUParticlesAttractor3D);
 
-	float radius = 1.0;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_radius(float p_radius);
-	float get_radius() const;
-
-	virtual AABB get_aabb() const override;
-
-	GPUParticlesAttractorSphere();
-	~GPUParticlesAttractorSphere();
-};
-
-class GPUParticlesAttractorBox : public GPUParticlesAttractor3D {
-	GDCLASS(GPUParticlesAttractorBox, GPUParticlesAttractor3D);
-
-	Vector3 extents = Vector3(1, 1, 1);
+	real_t radius = 1.0;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_radius(real_t p_radius);
+	real_t get_radius() const;
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesAttractorBox();
-	~GPUParticlesAttractorBox();
+	GPUParticlesAttractorSphere3D();
+	~GPUParticlesAttractorSphere3D();
 };
 
-class GPUParticlesAttractorVectorField : public GPUParticlesAttractor3D {
-	GDCLASS(GPUParticlesAttractorVectorField, GPUParticlesAttractor3D);
+class GPUParticlesAttractorBox3D : public GPUParticlesAttractor3D {
+	GDCLASS(GPUParticlesAttractorBox3D, GPUParticlesAttractor3D);
 
-	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 size = Vector3(2, 2, 2);
+
+protected:
+	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
+
+public:
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
+
+	virtual AABB get_aabb() const override;
+
+	GPUParticlesAttractorBox3D();
+	~GPUParticlesAttractorBox3D();
+};
+
+class GPUParticlesAttractorVectorField3D : public GPUParticlesAttractor3D {
+	GDCLASS(GPUParticlesAttractorVectorField3D, GPUParticlesAttractor3D);
+
+	Vector3 size = Vector3(2, 2, 2);
 	Ref<Texture3D> texture;
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
 
 public:
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	void set_texture(const Ref<Texture3D> &p_texture);
 	Ref<Texture3D> get_texture() const;
 
 	virtual AABB get_aabb() const override;
 
-	GPUParticlesAttractorVectorField();
-	~GPUParticlesAttractorVectorField();
+	GPUParticlesAttractorVectorField3D();
+	~GPUParticlesAttractorVectorField3D();
 };
 
 #endif // GPU_PARTICLES_COLLISION_3D_H

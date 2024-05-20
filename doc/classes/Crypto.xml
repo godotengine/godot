@@ -1,146 +1,130 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Crypto" inherits="RefCounted" version="4.0">
+<class name="Crypto" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Access to advanced cryptographic functionalities.
+		Provides access to advanced cryptographic functionalities.
 	</brief_description>
 	<description>
-		The Crypto class allows you to access some more advanced cryptographic functionalities in Godot.
-		For now, this includes generating cryptographically secure random bytes, RSA keys and self-signed X509 certificates generation, asymmetric key encryption/decryption, and signing/verification.
+		The Crypto class provides access to advanced cryptographic functionalities.
+		Currently, this includes asymmetric key encryption/decryption, signing/verification, and generating cryptographically secure random bytes, RSA keys, HMAC digests, and self-signed [X509Certificate]s.
 		[codeblocks]
 		[gdscript]
-		extends Node
 		var crypto = Crypto.new()
-		var key = CryptoKey.new()
-		var cert = X509Certificate.new()
-		func _ready():
-		    # Generate new RSA key.
-		    key = crypto.generate_rsa(4096)
-		    # Generate new self-signed certificate with the given key.
-		    cert = crypto.generate_self_signed_certificate(key, "CN=mydomain.com,O=My Game Company,C=IT")
-		    # Save key and certificate in the user folder.
-		    key.save("user://generated.key")
-		    cert.save("user://generated.crt")
-		    # Encryption
-		    var data = "Some data"
-		    var encrypted = crypto.encrypt(key, data.to_utf8())
-		    # Decryption
-		    var decrypted = crypto.decrypt(key, encrypted)
-		    # Signing
-		    var signature = crypto.sign(HashingContext.HASH_SHA256, data.sha256_buffer(), key)
-		    # Verifying
-		    var verified = crypto.verify(HashingContext.HASH_SHA256, data.sha256_buffer(), signature, key)
-		    # Checks
-		    assert(verified)
-		    assert(data.to_utf8() == decrypted)
+
+		# Generate new RSA key.
+		var key = crypto.generate_rsa(4096)
+
+		# Generate new self-signed certificate with the given key.
+		var cert = crypto.generate_self_signed_certificate(key, "CN=mydomain.com,O=My Game Company,C=IT")
+
+		# Save key and certificate in the user folder.
+		key.save("user://generated.key")
+		cert.save("user://generated.crt")
+
+		# Encryption
+		var data = "Some data"
+		var encrypted = crypto.encrypt(key, data.to_utf8_buffer())
+
+		# Decryption
+		var decrypted = crypto.decrypt(key, encrypted)
+
+		# Signing
+		var signature = crypto.sign(HashingContext.HASH_SHA256, data.sha256_buffer(), key)
+
+		# Verifying
+		var verified = crypto.verify(HashingContext.HASH_SHA256, data.sha256_buffer(), signature, key)
+
+		# Checks
+		assert(verified)
+		assert(data.to_utf8_buffer() == decrypted)
 		[/gdscript]
 		[csharp]
 		using Godot;
-		using System;
 		using System.Diagnostics;
 
-		public class CryptoNode : Node
-		{
-		    public Crypto Crypto = new Crypto();
-		    public CryptoKey Key = new CryptoKey();
-		    public X509Certificate Cert = new X509Certificate();
-		    public override void _Ready()
-		    {
-		        // Generate new RSA key.
-		        Key = Crypto.GenerateRsa(4096);
-		        // Generate new self-signed certificate with the given key.
-		        Cert = Crypto.GenerateSelfSignedCertificate(Key, "CN=mydomain.com,O=My Game Company,C=IT");
-		        // Save key and certificate in the user folder.
-		        Key.Save("user://generated.key");
-		        Cert.Save("user://generated.crt");
-		        // Encryption
-		        string data = "Some data";
-		        byte[] encrypted = Crypto.Encrypt(Key, data.ToUTF8());
-		        // Decryption
-		        byte[] decrypted = Crypto.Decrypt(Key, encrypted);
-		        // Signing
-		        byte[] signature = Crypto.Sign(HashingContext.HashType.Sha256, Data.SHA256Buffer(), Key);
-		        // Verifying
-		        bool verified = Crypto.Verify(HashingContext.HashType.Sha256, Data.SHA256Buffer(), signature, Key);
-		        // Checks
-		        Debug.Assert(verified);
-		        Debug.Assert(data.ToUTF8() == decrypted);
-		    }
-		}
+		Crypto crypto = new Crypto();
+
+		// Generate new RSA key.
+		CryptoKey key = crypto.GenerateRsa(4096);
+
+		// Generate new self-signed certificate with the given key.
+		X509Certificate cert = crypto.GenerateSelfSignedCertificate(key, "CN=mydomain.com,O=My Game Company,C=IT");
+
+		// Save key and certificate in the user folder.
+		key.Save("user://generated.key");
+		cert.Save("user://generated.crt");
+
+		// Encryption
+		string data = "Some data";
+		byte[] encrypted = crypto.Encrypt(key, data.ToUtf8Buffer());
+
+		// Decryption
+		byte[] decrypted = crypto.Decrypt(key, encrypted);
+
+		// Signing
+		byte[] signature = crypto.Sign(HashingContext.HashType.Sha256, Data.Sha256Buffer(), key);
+
+		// Verifying
+		bool verified = crypto.Verify(HashingContext.HashType.Sha256, Data.Sha256Buffer(), signature, key);
+
+		// Checks
+		Debug.Assert(verified);
+		Debug.Assert(data.ToUtf8Buffer() == decrypted);
 		[/csharp]
 		[/codeblocks]
-		[b]Note:[/b] Not available in HTML5 exports.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="constant_time_compare">
-			<return type="bool">
-			</return>
-			<argument index="0" name="trusted" type="PackedByteArray">
-			</argument>
-			<argument index="1" name="received" type="PackedByteArray">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="trusted" type="PackedByteArray" />
+			<param index="1" name="received" type="PackedByteArray" />
 			<description>
 				Compares two [PackedByteArray]s for equality without leaking timing information in order to prevent timing attacks.
 				See [url=https://paragonie.com/blog/2015/11/preventing-timing-attacks-on-string-comparison-with-double-hmac-strategy]this blog post[/url] for more information.
 			</description>
 		</method>
 		<method name="decrypt">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="key" type="CryptoKey">
-			</argument>
-			<argument index="1" name="ciphertext" type="PackedByteArray">
-			</argument>
+			<return type="PackedByteArray" />
+			<param index="0" name="key" type="CryptoKey" />
+			<param index="1" name="ciphertext" type="PackedByteArray" />
 			<description>
-				Decrypt the given [code]ciphertext[/code] with the provided private [code]key[/code].
-				[b]Note[/b]: The maximum size of accepted ciphertext is limited by the key size.
+				Decrypt the given [param ciphertext] with the provided private [param key].
+				[b]Note:[/b] The maximum size of accepted ciphertext is limited by the key size.
 			</description>
 		</method>
 		<method name="encrypt">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="key" type="CryptoKey">
-			</argument>
-			<argument index="1" name="plaintext" type="PackedByteArray">
-			</argument>
+			<return type="PackedByteArray" />
+			<param index="0" name="key" type="CryptoKey" />
+			<param index="1" name="plaintext" type="PackedByteArray" />
 			<description>
-				Encrypt the given [code]plaintext[/code] with the provided public [code]key[/code].
-				[b]Note[/b]: The maximum size of accepted plaintext is limited by the key size.
+				Encrypt the given [param plaintext] with the provided public [param key].
+				[b]Note:[/b] The maximum size of accepted plaintext is limited by the key size.
 			</description>
 		</method>
 		<method name="generate_random_bytes">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
+			<return type="PackedByteArray" />
+			<param index="0" name="size" type="int" />
 			<description>
-				Generates a [PackedByteArray] of cryptographically secure random bytes with given [code]size[/code].
+				Generates a [PackedByteArray] of cryptographically secure random bytes with given [param size].
 			</description>
 		</method>
 		<method name="generate_rsa">
-			<return type="CryptoKey">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
+			<return type="CryptoKey" />
+			<param index="0" name="size" type="int" />
 			<description>
-				Generates an RSA [CryptoKey] that can be used for creating self-signed certificates and passed to [method StreamPeerSSL.accept_stream].
+				Generates an RSA [CryptoKey] that can be used for creating self-signed certificates and passed to [method StreamPeerTLS.accept_stream].
 			</description>
 		</method>
 		<method name="generate_self_signed_certificate">
-			<return type="X509Certificate">
-			</return>
-			<argument index="0" name="key" type="CryptoKey">
-			</argument>
-			<argument index="1" name="issuer_name" type="String" default="&quot;CN=myserver,O=myorganisation,C=IT&quot;">
-			</argument>
-			<argument index="2" name="not_before" type="String" default="&quot;20140101000000&quot;">
-			</argument>
-			<argument index="3" name="not_after" type="String" default="&quot;20340101000000&quot;">
-			</argument>
+			<return type="X509Certificate" />
+			<param index="0" name="key" type="CryptoKey" />
+			<param index="1" name="issuer_name" type="String" default="&quot;CN=myserver,O=myorganisation,C=IT&quot;" />
+			<param index="2" name="not_before" type="String" default="&quot;20140101000000&quot;" />
+			<param index="3" name="not_after" type="String" default="&quot;20340101000000&quot;" />
 			<description>
-				Generates a self-signed [X509Certificate] from the given [CryptoKey] and [code]issuer_name[/code]. The certificate validity will be defined by [code]not_before[/code] and [code]not_after[/code] (first valid date and last valid date). The [code]issuer_name[/code] must contain at least "CN=" (common name, i.e. the domain name), "O=" (organization, i.e. your company name), "C=" (country, i.e. 2 lettered ISO-3166 code of the country the organization is based in).
-				A small example to generate an RSA key and a X509 self-signed certificate.
+				Generates a self-signed [X509Certificate] from the given [CryptoKey] and [param issuer_name]. The certificate validity will be defined by [param not_before] and [param not_after] (first valid date and last valid date). The [param issuer_name] must contain at least "CN=" (common name, i.e. the domain name), "O=" (organization, i.e. your company name), "C=" (country, i.e. 2 lettered ISO-3166 code of the country the organization is based in).
+				A small example to generate an RSA key and an X509 self-signed certificate.
 				[codeblocks]
 				[gdscript]
 				var crypto = Crypto.new()
@@ -160,48 +144,33 @@
 			</description>
 		</method>
 		<method name="hmac_digest">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="hash_type" type="int" enum="HashingContext.HashType">
-			</argument>
-			<argument index="1" name="key" type="PackedByteArray">
-			</argument>
-			<argument index="2" name="msg" type="PackedByteArray">
-			</argument>
+			<return type="PackedByteArray" />
+			<param index="0" name="hash_type" type="int" enum="HashingContext.HashType" />
+			<param index="1" name="key" type="PackedByteArray" />
+			<param index="2" name="msg" type="PackedByteArray" />
 			<description>
-				Generates an [url=https://en.wikipedia.org/wiki/HMAC]HMAC[/url] digest of [code]msg[/code] using [code]key[/code]. The [code]hash_type[/code] parameter is the hashing algorithm that is used for the inner and outer hashes.
+				Generates an [url=https://en.wikipedia.org/wiki/HMAC]HMAC[/url] digest of [param msg] using [param key]. The [param hash_type] parameter is the hashing algorithm that is used for the inner and outer hashes.
 				Currently, only [constant HashingContext.HASH_SHA256] and [constant HashingContext.HASH_SHA1] are supported.
 			</description>
 		</method>
 		<method name="sign">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="hash_type" type="int" enum="HashingContext.HashType">
-			</argument>
-			<argument index="1" name="hash" type="PackedByteArray">
-			</argument>
-			<argument index="2" name="key" type="CryptoKey">
-			</argument>
+			<return type="PackedByteArray" />
+			<param index="0" name="hash_type" type="int" enum="HashingContext.HashType" />
+			<param index="1" name="hash" type="PackedByteArray" />
+			<param index="2" name="key" type="CryptoKey" />
 			<description>
-				Sign a given [code]hash[/code] of type [code]hash_type[/code] with the provided private [code]key[/code].
+				Sign a given [param hash] of type [param hash_type] with the provided private [param key].
 			</description>
 		</method>
 		<method name="verify">
-			<return type="bool">
-			</return>
-			<argument index="0" name="hash_type" type="int" enum="HashingContext.HashType">
-			</argument>
-			<argument index="1" name="hash" type="PackedByteArray">
-			</argument>
-			<argument index="2" name="signature" type="PackedByteArray">
-			</argument>
-			<argument index="3" name="key" type="CryptoKey">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="hash_type" type="int" enum="HashingContext.HashType" />
+			<param index="1" name="hash" type="PackedByteArray" />
+			<param index="2" name="signature" type="PackedByteArray" />
+			<param index="3" name="key" type="CryptoKey" />
 			<description>
-				Verify that a given [code]signature[/code] for [code]hash[/code] of type [code]hash_type[/code] against the provided public [code]key[/code].
+				Verify that a given [param signature] for [param hash] of type [param hash_type] against the provided public [param key].
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

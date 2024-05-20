@@ -2,4 +2,4 @@ GDTEST_OK
 >> WARNING
 >> Line: 2
 >> UNUSED_VARIABLE
->> The local variable 'unused' is declared but never used in the block. If this is intended, prefix it with an underscore: '_unused'
+>> The local variable "unused" is declared but never used in the block. If this is intended, prefix it with an underscore: "_unused".

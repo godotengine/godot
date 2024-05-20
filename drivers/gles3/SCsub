@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+Import("env")
+
+env.add_source_files(env.drivers_sources, "*.cpp")
+
+SConscript("shaders/SCsub")
+SConscript("storage/SCsub")
+SConscript("effects/SCsub")
+SConscript("environment/SCsub")

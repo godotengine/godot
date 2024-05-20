@@ -29,7 +29,6 @@
 #ifndef HB_HH
 #define HB_HH
 
-
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC
 #ifdef _MSC_VER
 #pragma warning( disable: 4068 ) /* Unknown pragma */
@@ -62,8 +61,12 @@
 
 /* Error.  Should never happen. */
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_ERROR
+#pragma GCC diagnostic error   "-Wbitwise-instead-of-logical"
 #pragma GCC diagnostic error   "-Wcast-align"
 #pragma GCC diagnostic error   "-Wcast-function-type"
+#pragma GCC diagnostic error   "-Wcast-function-type-strict"
+#pragma GCC diagnostic error   "-Wconstant-conversion"
+#pragma GCC diagnostic error   "-Wcomma"
 #pragma GCC diagnostic error   "-Wdelete-non-virtual-dtor"
 #pragma GCC diagnostic error   "-Wembedded-directive"
 #pragma GCC diagnostic error   "-Wextra-semi-stmt"
@@ -102,26 +105,31 @@
 #pragma GCC diagnostic warning "-Wdisabled-optimization"
 #pragma GCC diagnostic warning "-Wdouble-promotion"
 #pragma GCC diagnostic warning "-Wformat=2"
+#pragma GCC diagnostic warning "-Wformat-signedness"
 #pragma GCC diagnostic warning "-Wignored-pragma-optimize"
 #pragma GCC diagnostic warning "-Wlogical-op"
 #pragma GCC diagnostic warning "-Wmaybe-uninitialized"
 #pragma GCC diagnostic warning "-Wmissing-format-attribute"
 #pragma GCC diagnostic warning "-Wundef"
+#pragma GCC diagnostic warning "-Wunsafe-loop-optimizations"
 #pragma GCC diagnostic warning "-Wunused-but-set-variable"
 #endif
 
 /* Ignored currently, but should be fixed at some point. */
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
 #pragma GCC diagnostic ignored "-Wconversion"			// TODO fix
-#pragma GCC diagnostic ignored "-Wformat-signedness"		// TODO fix
 #pragma GCC diagnostic ignored "-Wshadow"			// TODO fix
-#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"	// TODO fix
 #pragma GCC diagnostic ignored "-Wunused-parameter"		// TODO fix
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic ignored "-Wunused-result"		// TODO fix
+#endif
 #endif
 
 /* Ignored intentionally. */
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
 #pragma GCC diagnostic ignored "-Wclass-memaccess"
+#pragma GCC diagnostic ignored "-Wcast-function-type-strict" // https://github.com/harfbuzz/harfbuzz/pull/3859#issuecomment-1295409126
+#pragma GCC diagnostic ignored "-Wdangling-reference" // https://github.com/harfbuzz/harfbuzz/issues/4043
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -137,6 +145,7 @@
 
 
 #include "hb-config.hh"
+#include "hb-limits.hh"
 
 
 /*
@@ -169,6 +178,11 @@
 #define HB_EXTERN __declspec (dllexport) extern
 #endif
 
+// https://github.com/harfbuzz/harfbuzz/pull/4619
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS 1
+#endif
+
 #include "hb.h"
 #define HB_H_IN
 #include "hb-ot.h"
@@ -179,6 +193,9 @@
 #include <cassert>
 #include <cfloat>
 #include <climits>
+#if defined(_MSC_VER) && !defined(_USE_MATH_DEFINES)
+# define _USE_MATH_DEFINES
+#endif
 #include <cmath>
 #include <cstdarg>
 #include <cstddef>
@@ -201,6 +218,12 @@
 #include <winapifamily.h>
 #endif
 
+#ifndef PRId32
+# define PRId32 "d"
+# define PRIu32 "u"
+# define PRIx32 "x"
+#endif
+
 #define HB_PASTE1(a,b) a##b
 #define HB_PASTE(a,b) HB_PASTE1(a,b)
 
@@ -220,10 +243,15 @@ extern "C" void* hb_malloc_impl(size_t size);
 extern "C" void* hb_calloc_impl(size_t nmemb, size_t size);
 extern "C" void* hb_realloc_impl(void *ptr, size_t size);
 extern "C" void  hb_free_impl(void *ptr);
-#define malloc hb_malloc_impl
-#define calloc hb_calloc_impl
-#define realloc hb_realloc_impl
-#define free hb_free_impl
+#define hb_malloc hb_malloc_impl
+#define hb_calloc hb_calloc_impl
+#define hb_realloc hb_realloc_impl
+#define hb_free hb_free_impl
+#else
+#define hb_malloc malloc
+#define hb_calloc calloc
+#define hb_realloc realloc
+#define hb_free free
 #endif
 
 
@@ -231,9 +259,17 @@ extern "C" void  hb_free_impl(void *ptr);
  * Compiler attributes
  */
 
-#if (defined(__GNUC__) || defined(__clang__)) && defined(__OPTIMIZE__)
-#define likely(expr) (__builtin_expect (!!(expr), 1))
-#define unlikely(expr) (__builtin_expect (!!(expr), 0))
+// gcc 10 has __has_builtin but not earlier versions. Sanction any gcc >= 5
+// clang defines it so no need.
+#ifdef __has_builtin
+#define hb_has_builtin __has_builtin
+#else
+#define hb_has_builtin(x) ((defined(__GNUC__) && __GNUC__ >= 5))
+#endif
+
+#if defined(__OPTIMIZE__) && hb_has_builtin(__builtin_expect)
+#define likely(expr) __builtin_expect (bool(expr), 1)
+#define unlikely(expr) __builtin_expect (bool(expr), 0)
 #else
 #define likely(expr) (expr)
 #define unlikely(expr) (expr)
@@ -292,6 +328,14 @@ extern "C" void  hb_free_impl(void *ptr);
 #define __restrict
 #endif
 
+#ifndef HB_ALWAYS_INLINE
+#if defined(_MSC_VER)
+#define HB_ALWAYS_INLINE __forceinline
+#else
+#define HB_ALWAYS_INLINE __attribute__((always_inline)) inline
+#endif
+#endif
+
 /*
  * Borrowed from https://bugzilla.mozilla.org/show_bug.cgi?id=1215411
  * HB_FALLTHROUGH is an annotation to suppress compiler warnings about switch
@@ -335,7 +379,6 @@ extern "C" void  hb_free_impl(void *ptr);
 #else
 #  define HB_NODISCARD
 #endif
-#define hb_success_t HB_NODISCARD bool
 
 /* https://github.com/harfbuzz/harfbuzz/issues/1852 */
 #if defined(__clang__) && !(defined(_AIX) && (defined(__IBMCPP__) || defined(__ibmxl__)))
@@ -376,7 +419,7 @@ extern "C" void  hb_free_impl(void *ptr);
 #      define HB_NO_SETLOCALE
 #      define HB_NO_ERRNO
 #    endif
-#  elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#  elif !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #    ifndef HB_NO_GETENV
 #      define HB_NO_GETENV
 #    endif
@@ -397,6 +440,9 @@ static int HB_UNUSED _hb_errno = 0;
 #  undef errno
 #  define errno _hb_errno
 #endif
+
+#define HB_STMT_START do
+#define HB_STMT_END   while (0)
 
 #if defined(HAVE_ATEXIT) && !defined(HB_USE_ATEXIT)
 /* atexit() is only safe to be called from shared libraries on certain
@@ -426,16 +472,56 @@ static int HB_UNUSED _hb_errno = 0;
  */
 #    define HB_USE_ATEXIT 1
 #  endif
-#endif
+#endif /* defined(HAVE_ATEXIT) && !defined(HB_USE_ATEXIT) */
 #ifdef HB_NO_ATEXIT
 #  undef HB_USE_ATEXIT
 #endif
 #ifndef HB_USE_ATEXIT
 #  define HB_USE_ATEXIT 0
 #endif
+#ifndef hb_atexit
+#if !HB_USE_ATEXIT
+#  define hb_atexit(_) HB_STMT_START { if (0) (_) (); } HB_STMT_END
+#else /* HB_USE_ATEXIT */
+#  ifdef HAVE_ATEXIT
+#    define hb_atexit atexit
+#  else
+     template <void (*function) (void)> struct hb_atexit_t { ~hb_atexit_t () { function (); } };
+#    define hb_atexit(f) static hb_atexit_t<f> _hb_atexit_##__LINE__;
+#  endif
+#endif
+#endif
 
-#define HB_STMT_START do
-#define HB_STMT_END   while (0)
+
+// Locale business
+
+#if !defined(HB_NO_SETLOCALE) && (!defined(HAVE_NEWLOCALE) || !defined(HAVE_USELOCALE))
+#define HB_NO_SETLOCALE 1
+#endif
+
+#ifndef HB_NO_SETLOCALE
+
+#include <locale.h>
+#ifdef HAVE_XLOCALE_H
+#include <xlocale.h> // Needed on BSD/OS X for uselocale
+#endif
+
+#ifdef WIN32
+#define hb_locale_t _locale_t
+#else
+#define hb_locale_t locale_t
+#endif
+#define hb_setlocale setlocale
+#define hb_uselocale uselocale
+
+#else
+
+#define hb_locale_t void *
+#define hb_setlocale(Category, Locale) "C"
+#define hb_uselocale(Locale) ((hb_locale_t) 0)
+
+#endif
+
 
 /* Lets assert int types.  Saves trouble down the road. */
 static_assert ((sizeof (hb_codepoint_t) == 4), "");
@@ -444,9 +530,16 @@ static_assert ((sizeof (hb_mask_t) == 4), "");
 static_assert ((sizeof (hb_var_int_t) == 4), "");
 
 
+/* Pie time. */
+// https://github.com/harfbuzz/harfbuzz/issues/4166
+#define HB_PI 3.14159265358979f
+#define HB_2_PI (2.f * HB_PI)
+
+
 /* Headers we include for everyone.  Keep topologically sorted by dependency.
  * They express dependency amongst themselves, but no other file should include
  * them directly.*/
+#include "hb-cplusplus.hh"
 #include "hb-meta.hh"
 #include "hb-mutex.hh"
 #include "hb-number.hh"

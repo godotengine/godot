@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiMeshInstance2D" inherits="Node2D" version="4.0">
+<class name="MultiMeshInstance2D" inherits="Node2D" keywords="batch" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Node that instances a [MultiMesh] in 2D.
 	</brief_description>
@@ -9,15 +9,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh">
 			The [MultiMesh] that will be drawn by the [MultiMeshInstance2D].
-		</member>
-		<member name="normal_map" type="Texture2D" setter="set_normal_map" getter="get_normal_map">
-			The normal map that will be used if using the default [CanvasItemMaterial].
-			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The [Texture2D] that will be used if using the default [CanvasItemMaterial]. Can be accessed as [code]TEXTURE[/code] in CanvasItem shader.
@@ -30,6 +24,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

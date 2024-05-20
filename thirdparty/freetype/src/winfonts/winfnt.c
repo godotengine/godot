@@ -4,7 +4,7 @@
  *
  *   FreeType font driver for Windows FNT/FON files
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  * Copyright 2003 Huw D M Davies for Codeweavers
  * Copyright 2007 Dmitry Timoshkov for Codeweavers
@@ -217,7 +217,11 @@
     /* first of all, read the FNT header */
     if ( FT_STREAM_SEEK( font->offset )                        ||
          FT_STREAM_READ_FIELDS( winfnt_header_fields, header ) )
+    {
+      FT_TRACE2(( "  not a Windows FNT file\n" ));
+      error = FT_THROW( Unknown_File_Format );
       goto Exit;
+    }
 
     /* check header */
     if ( header->version != 0x200 &&
@@ -284,7 +288,10 @@
     /* does it begin with an MZ header? */
     if ( FT_STREAM_SEEK( 0 )                                      ||
          FT_STREAM_READ_FIELDS( winmz_header_fields, &mz_header ) )
+    {
+      error = FT_ERR( Unknown_File_Format );
       goto Exit;
+    }
 
     error = FT_ERR( Unknown_File_Format );
     if ( mz_header.magic == WINFNT_MZ_MAGIC )
@@ -344,6 +351,10 @@
             break;
 
           count = FT_GET_USHORT_LE();
+
+          FT_TRACE2(( type_id == 0x8007U ? "RT_FONTDIR count %hu\n" :
+                      type_id == 0x8008U ? "RT_FONT count %hu\n" : "",
+                                           count ));
 
           if ( type_id == 0x8008U )
           {
@@ -420,12 +431,12 @@
           goto Exit;
 
         FT_TRACE2(( "magic %04lx, machine %02x, number_of_sections %u, "
-                    "size_of_optional_header %02x\n"
-                    "magic32 %02x, rsrc_virtual_address %04lx, "
-                    "rsrc_size %04lx\n",
+                    "size_of_optional_header %02x\n",
                     pe32_header.magic, pe32_header.machine,
                     pe32_header.number_of_sections,
-                    pe32_header.size_of_optional_header,
+                    pe32_header.size_of_optional_header ));
+        FT_TRACE2(( "magic32 %02x, rsrc_virtual_address %04lx, "
+                    "rsrc_size %04lx\n",
                     pe32_header.magic32, pe32_header.rsrc_virtual_address,
                     pe32_header.rsrc_size ));
 
@@ -478,7 +489,7 @@
                                       &dir_entry1 )                )
             goto Exit;
 
-          if ( !(dir_entry1.offset & 0x80000000UL ) /* DataIsDirectory */ )
+          if ( !( dir_entry1.offset & 0x80000000UL ) /* DataIsDirectory */ )
           {
             error = FT_THROW( Invalid_File_Format );
             goto Exit;
@@ -502,7 +513,7 @@
                                         &dir_entry2 )                )
               goto Exit;
 
-            if ( !(dir_entry2.offset & 0x80000000UL ) /* DataIsDirectory */ )
+            if ( !( dir_entry2.offset & 0x80000000UL ) /* DataIsDirectory */ )
             {
               error = FT_THROW( Invalid_File_Format );
               goto Exit;
@@ -613,31 +624,34 @@
 
 
   static FT_Error
-  fnt_cmap_init( FNT_CMap    cmap,
+  fnt_cmap_init( FT_CMap     cmap,     /* FNT_CMap */
                  FT_Pointer  pointer )
   {
-    FNT_Face  face = (FNT_Face)FT_CMAP_FACE( cmap );
-    FNT_Font  font = face->font;
+    FNT_CMap  fntcmap = (FNT_CMap)cmap;
+    FNT_Face  face    = (FNT_Face)FT_CMAP_FACE( cmap );
+    FNT_Font  font    = face->font;
 
     FT_UNUSED( pointer );
 
 
-    cmap->first = (FT_UInt32)  font->header.first_char;
-    cmap->count = (FT_UInt32)( font->header.last_char - cmap->first + 1 );
+    fntcmap->first = (FT_UInt32)font->header.first_char;
+    fntcmap->count = (FT_UInt32)( font->header.last_char -
+                                  fntcmap->first + 1 );
 
     return 0;
   }
 
 
   static FT_UInt
-  fnt_cmap_char_index( FNT_CMap   cmap,
+  fnt_cmap_char_index( FT_CMap    cmap,       /* FNT_CMap */
                        FT_UInt32  char_code )
   {
-    FT_UInt  gindex = 0;
+    FNT_CMap  fntcmap = (FNT_CMap)cmap;
+    FT_UInt   gindex  = 0;
 
 
-    char_code -= cmap->first;
-    if ( char_code < cmap->count )
+    char_code -= fntcmap->first;
+    if ( char_code < fntcmap->count )
       /* we artificially increase the glyph index; */
       /* FNT_Load_Glyph reverts to the right one   */
       gindex = (FT_UInt)( char_code + 1 );
@@ -645,26 +659,27 @@
   }
 
 
-  static FT_UInt32
-  fnt_cmap_char_next( FNT_CMap    cmap,
+  static FT_UInt
+  fnt_cmap_char_next( FT_CMap     cmap,        /* FNT_CMap */
                       FT_UInt32  *pchar_code )
   {
-    FT_UInt    gindex = 0;
-    FT_UInt32  result = 0;
+    FNT_CMap   fntcmap   = (FNT_CMap)cmap;
+    FT_UInt    gindex    = 0;
+    FT_UInt32  result    = 0;
     FT_UInt32  char_code = *pchar_code + 1;
 
 
-    if ( char_code <= cmap->first )
+    if ( char_code <= fntcmap->first )
     {
-      result = cmap->first;
+      result = fntcmap->first;
       gindex = 1;
     }
     else
     {
-      char_code -= cmap->first;
-      if ( char_code < cmap->count )
+      char_code -= fntcmap->first;
+      if ( char_code < fntcmap->count )
       {
-        result = cmap->first + char_code;
+        result = fntcmap->first + char_code;
         gindex = (FT_UInt)( char_code + 1 );
       }
     }
@@ -793,7 +808,7 @@
         root->style_flags |= FT_STYLE_FLAG_BOLD;
 
       /* set up the `fixed_sizes' array */
-      if ( FT_NEW_ARRAY( root->available_sizes, 1 ) )
+      if ( FT_QNEW( root->available_sizes ) )
         goto Fail;
 
       root->num_fixed_sizes = 1;
@@ -885,10 +900,10 @@
       }
       family_size = font->header.file_size - font->header.face_name_offset;
       /* Some broken fonts don't delimit the face name with a final */
-      /* NULL byte -- the frame is erroneously one byte too small.  */
+      /* null byte -- the frame is erroneously one byte too small.  */
       /* We thus allocate one more byte, setting it explicitly to   */
       /* zero.                                                      */
-      if ( FT_ALLOC( font->family_name, family_size + 1 ) )
+      if ( FT_QALLOC( font->family_name, family_size + 1 ) )
         goto Fail;
 
       FT_MEM_COPY( font->family_name,
@@ -897,9 +912,10 @@
 
       font->family_name[family_size] = '\0';
 
-      if ( FT_REALLOC( font->family_name,
-                       family_size,
-                       ft_strlen( font->family_name ) + 1 ) )
+      /* shrink it to the actual length */
+      if ( FT_QREALLOC( font->family_name,
+                        family_size + 1,
+                        ft_strlen( font->family_name ) + 1 ) )
         goto Fail;
 
       root->family_name = font->family_name;
@@ -1094,7 +1110,7 @@
 
       /* note: since glyphs are stored in columns and not in rows we */
       /*       can't use ft_glyphslot_set_bitmap                     */
-      if ( FT_ALLOC_MULT( bitmap->buffer, bitmap->rows, pitch ) )
+      if ( FT_QALLOC_MULT( bitmap->buffer, bitmap->rows, pitch ) )
         goto Exit;
 
       column = (FT_Byte*)bitmap->buffer;

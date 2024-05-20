@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeBillboard" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeBillboard" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node that controls how the object faces the camera to be used within the visual shader graph.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="billboard_type" type="int" setter="set_billboard_type" getter="get_billboard_type" enum="VisualShaderNodeBillboard.BillboardType" default="1">
 			Controls how the object faces the camera. See [enum BillboardType].

@@ -79,10 +79,21 @@ struct KernSubTableFormat3
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  c->check_range (kernValueZ,
 				  kernValueCount * sizeof (FWORD) +
 				  glyphCount * 2 +
 				  leftClassCount * rightClassCount));
+  }
+
+  template <typename set_t>
+  void collect_glyphs (set_t &left_set, set_t &right_set, unsigned num_glyphs) const
+  {
+    set_t set;
+    if (likely (glyphCount))
+      set.add_range (0, glyphCount - 1);
+    left_set.union_ (set);
+    right_set.union_ (set);
   }
 
   protected:
@@ -134,22 +145,36 @@ struct KernSubTable
     switch (subtable_type) {
     case 0:	return_trace (c->dispatch (u.format0));
 #ifndef HB_NO_AAT_SHAPE
-    case 1:	return_trace (u.header.apple ? c->dispatch (u.format1, hb_forward<Ts> (ds)...) : c->default_return_value ());
+    case 1:	return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
 #endif
     case 2:	return_trace (c->dispatch (u.format2));
 #ifndef HB_NO_AAT_SHAPE
-    case 3:	return_trace (u.header.apple ? c->dispatch (u.format3, hb_forward<Ts> (ds)...) : c->default_return_value ());
+    case 3:	return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
 #endif
     default:	return_trace (c->default_return_value ());
+    }
+  }
+
+  template <typename set_t>
+  void collect_glyphs (set_t &left_set, set_t &right_set, unsigned num_glyphs) const
+  {
+    unsigned int subtable_type = get_type ();
+    switch (subtable_type) {
+    case 0:	u.format0.collect_glyphs (left_set, right_set, num_glyphs); return;
+    case 1:	u.format1.collect_glyphs (left_set, right_set, num_glyphs); return;
+    case 2:	u.format2.collect_glyphs (left_set, right_set, num_glyphs); return;
+    case 3:	u.format3.collect_glyphs (left_set, right_set, num_glyphs); return;
+    default:	return;
     }
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (unlikely (!u.header.sanitize (c) ||
-		  u.header.length < u.header.min_size ||
-		  !c->check_range (this, u.header.length))) return_trace (false);
+    if (unlikely (!(u.header.sanitize (c) &&
+		    hb_barrier () &&
+		    u.header.length >= u.header.min_size &&
+		    c->check_range (this, u.header.length)))) return_trace (false);
 
     return_trace (dispatch (c));
   }
@@ -316,8 +341,9 @@ struct kern
     }
   }
 
-  bool apply (AAT::hb_aat_apply_context_t *c) const
-  { return dispatch (c); }
+  bool apply (AAT::hb_aat_apply_context_t *c,
+	      const AAT::kern_accelerator_data_t *accel_data = nullptr) const
+  { return dispatch (c, accel_data); }
 
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
@@ -325,9 +351,9 @@ struct kern
     unsigned int subtable_type = get_type ();
     TRACE_DISPATCH (this, subtable_type);
     switch (subtable_type) {
-    case 0:	return_trace (c->dispatch (u.ot, hb_forward<Ts> (ds)...));
+    case 0:	return_trace (c->dispatch (u.ot, std::forward<Ts> (ds)...));
 #ifndef HB_NO_AAT_SHAPE
-    case 1:	return_trace (c->dispatch (u.aat, hb_forward<Ts> (ds)...));
+    case 1:	return_trace (c->dispatch (u.aat, std::forward<Ts> (ds)...));
 #endif
     default:	return_trace (c->default_return_value ());
     }
@@ -337,8 +363,44 @@ struct kern
   {
     TRACE_SANITIZE (this);
     if (!u.version32.sanitize (c)) return_trace (false);
+    hb_barrier ();
     return_trace (dispatch (c));
   }
+
+  AAT::kern_accelerator_data_t create_accelerator_data (unsigned num_glyphs) const
+  {
+    switch (get_type ()) {
+    case 0: return u.ot.create_accelerator_data (num_glyphs);
+#ifndef HB_NO_AAT_SHAPE
+    case 1: return u.aat.create_accelerator_data (num_glyphs);
+#endif
+    default:return AAT::kern_accelerator_data_t ();
+    }
+  }
+
+  struct accelerator_t
+  {
+    accelerator_t (hb_face_t *face)
+    {
+      hb_sanitize_context_t sc;
+      this->table = sc.reference_table<kern> (face);
+      this->accel_data = this->table->create_accelerator_data (face->get_num_glyphs ());
+    }
+    ~accelerator_t ()
+    {
+      this->table.destroy ();
+    }
+
+    hb_blob_t *get_blob () const { return table.get_blob (); }
+
+    bool apply (AAT::hb_aat_apply_context_t *c) const
+    {
+      return table->apply (c, &accel_data);
+    }
+
+    hb_blob_ptr_t<kern> table;
+    AAT::kern_accelerator_data_t accel_data;
+  };
 
   protected:
   union {
@@ -351,6 +413,10 @@ struct kern
   } u;
   public:
   DEFINE_SIZE_UNION (4, version32);
+};
+
+struct kern_accelerator_t : kern::accelerator_t {
+  kern_accelerator_t (hb_face_t *face) : kern::accelerator_t (face) {}
 };
 
 } /* namespace OT */

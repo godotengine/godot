@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StyleBoxLine" inherits="StyleBox" version="4.0">
+<class name="StyleBoxLine" inherits="StyleBox" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		[StyleBox] that displays a single line.
+		A [StyleBox] that displays a single line of a given color and thickness.
 	</brief_description>
 	<description>
-		[StyleBox] that displays a single line of a given color and thickness. It can be used to draw things like separators.
+		A [StyleBox] that displays a single line of a given color and thickness. The line can be either horizontal or vertical. Useful for separators.
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0, 0, 0, 1)">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(0, 0, 0, 1)" keywords="colour">
 			The line's color.
 		</member>
 		<member name="grow_begin" type="float" setter="set_grow_begin" getter="get_grow_begin" default="1.0">
@@ -27,6 +25,4 @@
 			If [code]true[/code], the line will be vertical. If [code]false[/code], the line will be horizontal.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

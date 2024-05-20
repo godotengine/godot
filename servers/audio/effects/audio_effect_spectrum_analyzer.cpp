@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  audio_effect_spectrum_analyzer.cpp                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_effect_spectrum_analyzer.cpp                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_effect_spectrum_analyzer.h"
 #include "servers/audio_server.h"
@@ -115,9 +115,9 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 		float *fftw = temporal_fft.ptrw();
 		for (int i = 0; i < to_fill; i++) { //left and right buffers
 			float window = -0.5 * Math::cos(to_fill_step * (double)temporal_fft_pos) + 0.5;
-			fftw[temporal_fft_pos * 2] = window * p_src_frames->l;
+			fftw[temporal_fft_pos * 2] = window * p_src_frames->left;
 			fftw[temporal_fft_pos * 2 + 1] = 0;
-			fftw[(temporal_fft_pos + fft_size * 2) * 2] = window * p_src_frames->r;
+			fftw[(temporal_fft_pos + fft_size * 2) * 2] = window * p_src_frames->right;
 			fftw[(temporal_fft_pos + fft_size * 2) * 2 + 1] = 0;
 			++p_src_frames;
 			++temporal_fft_pos;
@@ -135,8 +135,8 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 
 			for (int i = 0; i < fft_size; i++) {
 				//abs(vec)/fft_size normalizes each frequency
-				hw[i].l = Vector2(fftw[i * 2], fftw[i * 2 + 1]).length() / float(fft_size);
-				hw[i].r = Vector2(fftw[fft_size * 4 + i * 2], fftw[fft_size * 4 + i * 2 + 1]).length() / float(fft_size);
+				hw[i].left = Vector2(fftw[i * 2], fftw[i * 2 + 1]).length() / float(fft_size);
+				hw[i].right = Vector2(fftw[fft_size * 4 + i * 2], fftw[fft_size * 4 + i * 2 + 1]).length() / float(fft_size);
 			}
 
 			fft_pos = next; //swap
@@ -199,8 +199,8 @@ Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(f
 		Vector2 max;
 
 		for (int i = begin_pos; i <= end_pos; i++) {
-			max.x = MAX(max.x, r[i].l);
-			max.y = MAX(max.y, r[i].r);
+			max.x = MAX(max.x, r[i].left);
+			max.y = MAX(max.y, r[i].right);
 		}
 
 		return max;
@@ -264,7 +264,7 @@ void AudioEffectSpectrumAnalyzer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fft_size", "size"), &AudioEffectSpectrumAnalyzer::set_fft_size);
 	ClassDB::bind_method(D_METHOD("get_fft_size"), &AudioEffectSpectrumAnalyzer::get_fft_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.1,4,0.1"), "set_buffer_length", "get_buffer_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.1,4,0.1,suffix:s"), "set_buffer_length", "get_buffer_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tap_back_pos", PROPERTY_HINT_RANGE, "0.1,4,0.1"), "set_tap_back_pos", "get_tap_back_pos");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fft_size", PROPERTY_HINT_ENUM, "256,512,1024,2048,4096"), "set_fft_size", "get_fft_size");
 

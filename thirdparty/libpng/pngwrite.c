@@ -1,7 +1,7 @@
 
 /* pngwrite.c - general routines to write a PNG file
  *
- * Copyright (c) 2018-2019 Cosmin Truta
+ * Copyright (c) 2018-2024 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -75,10 +75,10 @@ write_unknown_chunks(png_structrp png_ptr, png_const_inforp info_ptr,
  * library.  If you have a new chunk to add, make a function to write it,
  * and put it in the correct location here.  If you want the chunk written
  * after the image data, put it in png_write_end().  I strongly encourage
- * you to supply a PNG_INFO_ flag, and check info_ptr->valid before writing
- * the chunk, as that will keep the code from breaking if you want to just
- * write a plain PNG file.  If you have long comments, I suggest writing
- * them in png_write_end(), and compressing them.
+ * you to supply a PNG_INFO_<chunk> flag, and check info_ptr->valid before
+ * writing the chunk, as that will keep the code from breaking if you want
+ * to just write a plain PNG file.  If you have long comments, I suggest
+ * writing them in png_write_end(), and compressing them.
  */
 void PNGAPI
 png_write_info_before_PLTE(png_structrp png_ptr, png_const_inforp info_ptr)
@@ -128,10 +128,6 @@ png_write_info_before_PLTE(png_structrp png_ptr, png_const_inforp info_ptr)
        * the application continues writing the PNG.  So check the 'invalid'
        * flag here too.
        */
-#ifdef PNG_WRITE_APNG_SUPPORTED
-      if (info_ptr->valid & PNG_INFO_acTL)
-         png_write_acTL(png_ptr, info_ptr->num_frames, info_ptr->num_plays);
-#endif
 #ifdef PNG_GAMMA_SUPPORTED
 #  ifdef PNG_WRITE_gAMA_SUPPORTED
       if ((info_ptr->colorspace.flags & PNG_COLORSPACE_INVALID) == 0 &&
@@ -243,7 +239,10 @@ png_write_info(png_structrp png_ptr, png_const_inforp info_ptr)
 
 #ifdef PNG_WRITE_eXIf_SUPPORTED
    if ((info_ptr->valid & PNG_INFO_eXIf) != 0)
+   {
       png_write_eXIf(png_ptr, info_ptr->exif, info_ptr->num_exif);
+      png_ptr->mode |= PNG_WROTE_eXIf;
+   }
 #endif
 
 #ifdef PNG_WRITE_hIST_SUPPORTED
@@ -370,13 +369,9 @@ png_write_end(png_structrp png_ptr, png_inforp info_ptr)
       png_error(png_ptr, "No IDATs written into file");
 
 #ifdef PNG_WRITE_CHECK_FOR_INVALID_INDEX_SUPPORTED
-   if (png_ptr->num_palette_max > png_ptr->num_palette)
+   if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE &&
+       png_ptr->num_palette_max >= png_ptr->num_palette)
       png_benign_error(png_ptr, "Wrote palette index exceeding num_palette");
-#endif
-
-#ifdef PNG_WRITE_APNG_SUPPORTED
-   if (png_ptr->num_frames_written != png_ptr->num_frames_to_write)
-      png_error(png_ptr, "Not enough frames written");
 #endif
 
    /* See if user wants us to write information chunks */
@@ -448,8 +443,9 @@ png_write_end(png_structrp png_ptr, png_inforp info_ptr)
 #endif
 
 #ifdef PNG_WRITE_eXIf_SUPPORTED
-   if ((info_ptr->valid & PNG_INFO_eXIf) != 0)
-      png_write_eXIf(png_ptr, info_ptr->exif, info_ptr->num_exif);
+      if ((info_ptr->valid & PNG_INFO_eXIf) != 0 &&
+          (png_ptr->mode & PNG_WROTE_eXIf) == 0)
+         png_write_eXIf(png_ptr, info_ptr->exif, info_ptr->num_exif);
 #endif
 
 #ifdef PNG_WRITE_UNKNOWN_CHUNKS_SUPPORTED
@@ -498,6 +494,16 @@ png_convert_from_time_t(png_timep ptime, time_t ttime)
    png_debug(1, "in png_convert_from_time_t");
 
    tbuf = gmtime(&ttime);
+   if (tbuf == NULL)
+   {
+      /* TODO: add a safe function which takes a png_ptr argument and raises
+       * a png_error if the ttime argument is invalid and the call to gmtime
+       * fails as a consequence.
+       */
+      memset(ptime, 0, sizeof(*ptime));
+      return;
+   }
+
    png_convert_from_struct_tm(ptime, tbuf);
 }
 #endif
@@ -709,11 +715,11 @@ png_write_row(png_structrp png_ptr, png_const_bytep row)
    /* 1.5.6: moved from png_struct to be a local structure: */
    png_row_info row_info;
 
-   if (png_ptr == NULL)
-      return;
-
    png_debug2(1, "in png_write_row (row %u, pass %d)",
        png_ptr->row_number, png_ptr->pass);
+
+   if (png_ptr == NULL)
+      return;
 
    /* Initialize transformations and other stuff if first time */
    if (png_ptr->row_number == 0 && png_ptr->pass == 0)
@@ -1205,6 +1211,8 @@ png_set_compression_strategy(png_structrp png_ptr, int strategy)
 void PNGAPI
 png_set_compression_window_bits(png_structrp png_ptr, int window_bits)
 {
+   png_debug(1, "in png_set_compression_window_bits");
+
    if (png_ptr == NULL)
       return;
 
@@ -1288,6 +1296,8 @@ png_set_text_compression_strategy(png_structrp png_ptr, int strategy)
 void PNGAPI
 png_set_text_compression_window_bits(png_structrp png_ptr, int window_bits)
 {
+   png_debug(1, "in png_set_text_compression_window_bits");
+
    if (png_ptr == NULL)
       return;
 
@@ -1325,6 +1335,8 @@ png_set_text_compression_method(png_structrp png_ptr, int method)
 void PNGAPI
 png_set_write_status_fn(png_structrp png_ptr, png_write_status_ptr write_row_fn)
 {
+   png_debug(1, "in png_set_write_status_fn");
+
    if (png_ptr == NULL)
       return;
 
@@ -1352,6 +1364,8 @@ void PNGAPI
 png_write_png(png_structrp png_ptr, png_inforp info_ptr,
     int transforms, voidp params)
 {
+   png_debug(1, "in png_write_png");
+
    if (png_ptr == NULL || info_ptr == NULL)
       return;
 
@@ -1470,43 +1484,6 @@ png_write_png(png_structrp png_ptr, png_inforp info_ptr,
 }
 #endif
 
-#ifdef PNG_WRITE_APNG_SUPPORTED
-void PNGAPI
-png_write_frame_head(png_structp png_ptr, png_infop info_ptr,
-    png_bytepp row_pointers, png_uint_32 width, png_uint_32 height,
-    png_uint_32 x_offset, png_uint_32 y_offset,
-    png_uint_16 delay_num, png_uint_16 delay_den, png_byte dispose_op,
-    png_byte blend_op)
-{
-    png_debug(1, "in png_write_frame_head");
-
-    /* there is a chance this has been set after png_write_info was called,
-    * so it would be set but not written. is there a way to be sure? */
-    if (!(info_ptr->valid & PNG_INFO_acTL))
-        png_error(png_ptr, "png_write_frame_head(): acTL not set");
-
-    png_write_reset(png_ptr);
-
-    png_write_reinit(png_ptr, info_ptr, width, height);
-
-    if ( !(png_ptr->num_frames_written == 0 &&
-           (png_ptr->apng_flags & PNG_FIRST_FRAME_HIDDEN) ) )
-        png_write_fcTL(png_ptr, width, height, x_offset, y_offset,
-                       delay_num, delay_den, dispose_op, blend_op);
-
-    PNG_UNUSED(row_pointers)
-}
-
-void PNGAPI
-png_write_frame_tail(png_structp png_ptr, png_infop info_ptr)
-{
-    png_debug(1, "in png_write_frame_tail");
-
-    png_ptr->num_frames_written++;
-
-    PNG_UNUSED(info_ptr)
-}
-#endif /* PNG_WRITE_APNG_SUPPORTED */
 
 #ifdef PNG_SIMPLIFIED_WRITE_SUPPORTED
 /* Initialize the write structure - general purpose utility. */

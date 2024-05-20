@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  memory.h                                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  memory.h                                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef MEMORY_H
 #define MEMORY_H
@@ -35,13 +35,10 @@
 #include "core/templates/safe_refcount.h"
 
 #include <stddef.h>
-
-#ifndef PAD_ALIGN
-#define PAD_ALIGN 16 //must always be greater than this at much
-#endif
+#include <new>
+#include <type_traits>
 
 class Memory {
-	Memory();
 #ifdef DEBUG_ENABLED
 	static SafeNumeric<uint64_t> mem_usage;
 	static SafeNumeric<uint64_t> max_usage;
@@ -50,6 +47,17 @@ class Memory {
 	static SafeNumeric<uint64_t> alloc_count;
 
 public:
+	// Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ max_align_t
+	//             ┌─────────────────┬──┬────────────────┬──┬───────────...
+	//             │ uint64_t        │░░│ uint64_t       │░░│ T[]
+	//             │ alloc size      │░░│ element count  │░░│ data
+	//             └─────────────────┴──┴────────────────┴──┴───────────...
+	// Offset:     ↑ SIZE_OFFSET        ↑ ELEMENT_OFFSET    ↑ DATA_OFFSET
+
+	static constexpr size_t SIZE_OFFSET = 0;
+	static constexpr size_t ELEMENT_OFFSET = ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t) == 0) ? (SIZE_OFFSET + sizeof(uint64_t)) : ((SIZE_OFFSET + sizeof(uint64_t)) + alignof(uint64_t) - ((SIZE_OFFSET + sizeof(uint64_t)) % alignof(uint64_t)));
+	static constexpr size_t DATA_OFFSET = ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t) == 0) ? (ELEMENT_OFFSET + sizeof(uint64_t)) : ((ELEMENT_OFFSET + sizeof(uint64_t)) + alignof(max_align_t) - ((ELEMENT_OFFSET + sizeof(uint64_t)) % alignof(max_align_t)));
+
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
 	static void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
 	static void free_static(void *p_ptr, bool p_pad_align = false);
@@ -84,7 +92,7 @@ void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_d
 
 _ALWAYS_INLINE_ void postinitialize_handler(void *) {}
 
-template <class T>
+template <typename T>
 _ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
 	postinitialize_handler(p_obj);
 	return p_obj;
@@ -92,38 +100,31 @@ _ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
 
 #define memnew(m_class) _post_initialize(new ("") m_class)
 
-_ALWAYS_INLINE_ void *operator new(size_t p_size, void *p_pointer, size_t check, const char *p_description) {
-	//void *failptr=0;
-	//ERR_FAIL_COND_V( check < p_size , failptr); /** bug, or strange compiler, most likely */
-
-	return p_pointer;
-}
-
 #define memnew_allocator(m_class, m_allocator) _post_initialize(new (m_allocator::alloc) m_class)
-#define memnew_placement(m_placement, m_class) _post_initialize(new (m_placement, sizeof(m_class), "") m_class)
+#define memnew_placement(m_placement, m_class) _post_initialize(new (m_placement) m_class)
 
 _ALWAYS_INLINE_ bool predelete_handler(void *) {
 	return true;
 }
 
-template <class T>
+template <typename T>
 void memdelete(T *p_class) {
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
 	}
-	if (!__has_trivial_destructor(T)) {
+	if constexpr (!std::is_trivially_destructible_v<T>) {
 		p_class->~T();
 	}
 
 	Memory::free_static(p_class, false);
 }
 
-template <class T, class A>
+template <typename T, typename A>
 void memdelete_allocator(T *p_class) {
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
 	}
-	if (!__has_trivial_destructor(T)) {
+	if constexpr (!std::is_trivially_destructible_v<T>) {
 		p_class->~T();
 	}
 
@@ -139,8 +140,12 @@ void memdelete_allocator(T *p_class) {
 
 #define memnew_arr(m_class, m_count) memnew_arr_template<m_class>(m_count)
 
+_FORCE_INLINE_ uint64_t *_get_element_count_ptr(uint8_t *p_ptr) {
+	return (uint64_t *)(p_ptr - Memory::DATA_OFFSET + Memory::ELEMENT_OFFSET);
+}
+
 template <typename T>
-T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
+T *memnew_arr_template(size_t p_elements) {
 	if (p_elements == 0) {
 		return nullptr;
 	}
@@ -148,17 +153,19 @@ T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
 	same strategy used by std::vector, and the Vector class, so it should be safe.*/
 
 	size_t len = sizeof(T) * p_elements;
-	uint64_t *mem = (uint64_t *)Memory::alloc_static(len, true);
+	uint8_t *mem = (uint8_t *)Memory::alloc_static(len, true);
 	T *failptr = nullptr; //get rid of a warning
-	ERR_FAIL_COND_V(!mem, failptr);
-	*(mem - 1) = p_elements;
+	ERR_FAIL_NULL_V(mem, failptr);
 
-	if (!__has_trivial_constructor(T)) {
+	uint64_t *_elem_count_ptr = _get_element_count_ptr(mem);
+	*(_elem_count_ptr) = p_elements;
+
+	if constexpr (!std::is_trivially_constructible_v<T>) {
 		T *elems = (T *)mem;
 
 		/* call operator new */
 		for (size_t i = 0; i < p_elements; i++) {
-			new (&elems[i], sizeof(T), p_descr) T;
+			new (&elems[i]) T;
 		}
 	}
 
@@ -172,16 +179,18 @@ T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
 
 template <typename T>
 size_t memarr_len(const T *p_class) {
-	uint64_t *ptr = (uint64_t *)p_class;
-	return *(ptr - 1);
+	uint8_t *ptr = (uint8_t *)p_class;
+	uint64_t *_elem_count_ptr = _get_element_count_ptr(ptr);
+	return *(_elem_count_ptr);
 }
 
 template <typename T>
 void memdelete_arr(T *p_class) {
-	uint64_t *ptr = (uint64_t *)p_class;
+	uint8_t *ptr = (uint8_t *)p_class;
 
-	if (!__has_trivial_destructor(T)) {
-		uint64_t elem_count = *(ptr - 1);
+	if constexpr (!std::is_trivially_destructible_v<T>) {
+		uint64_t *_elem_count_ptr = _get_element_count_ptr(ptr);
+		uint64_t elem_count = *(_elem_count_ptr);
 
 		for (uint64_t i = 0; i < elem_count; i++) {
 			p_class[i].~T();
@@ -193,15 +202,23 @@ void memdelete_arr(T *p_class) {
 
 struct _GlobalNil {
 	int color = 1;
-	_GlobalNil *right;
-	_GlobalNil *left;
-	_GlobalNil *parent;
+	_GlobalNil *right = nullptr;
+	_GlobalNil *left = nullptr;
+	_GlobalNil *parent = nullptr;
 
 	_GlobalNil();
 };
 
 struct _GlobalNilClass {
 	static _GlobalNil _nil;
+};
+
+template <typename T>
+class DefaultTypedAllocator {
+public:
+	template <typename... Args>
+	_FORCE_INLINE_ T *new_allocation(const Args &&...p_args) { return memnew(T(p_args...)); }
+	_FORCE_INLINE_ void delete_allocation(T *p_allocation) { memdelete(p_allocation); }
 };
 
 #endif // MEMORY_H

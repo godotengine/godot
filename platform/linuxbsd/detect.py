@@ -1,10 +1,13 @@
 import os
 import platform
 import sys
+from methods import print_warning, print_error, get_compiler_version, using_gcc
+from platform_methods import detect_arch
 
+from typing import TYPE_CHECKING
 
-def is_active():
-    return True
+if TYPE_CHECKING:
+    from SCons.Script.SConscript import SConsEnvironment
 
 
 def get_name():
@@ -15,43 +18,9 @@ def can_build():
     if os.name != "posix" or sys.platform == "darwin":
         return False
 
-    # Check the minimal dependencies
-    x11_error = os.system("pkg-config --version > /dev/null")
-    if x11_error:
-        return False
-
-    x11_error = os.system("pkg-config x11 --modversion > /dev/null ")
-    if x11_error:
-        return False
-
-    x11_error = os.system("pkg-config xcursor --modversion > /dev/null ")
-    if x11_error:
-        print("xcursor not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xinerama --modversion > /dev/null ")
-    if x11_error:
-        print("xinerama not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xext --modversion > /dev/null ")
-    if x11_error:
-        print("xext not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xrandr --modversion > /dev/null ")
-    if x11_error:
-        print("xrandr not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xrender --modversion > /dev/null ")
-    if x11_error:
-        print("xrender not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xi --modversion > /dev/null ")
-    if x11_error:
-        print("xi not found.. Aborting.")
+    pkgconf_error = os.system("pkg-config --version > /dev/null")
+    if pkgconf_error:
+        print_error("pkg-config not found. Aborting.")
         return False
 
     return True
@@ -61,9 +30,8 @@ def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
 
     return [
+        EnumVariable("linker", "Linker program", "default", ("default", "bfd", "gold", "lld", "mold")),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
-        BoolVariable("use_lld", "Use the LLD linker", False),
-        BoolVariable("use_thinlto", "Use ThinLTO", False),
         BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", True),
         BoolVariable("use_coverage", "Test Godot coverage", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
@@ -71,53 +39,69 @@ def get_opts():
         BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN)", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_msan", "Use LLVM compiler memory sanitizer (MSAN)", False),
-        BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
-        BoolVariable("dbus", "Detect and use D-Bus to handle screensaver", True),
+        BoolVariable("use_sowrap", "Dynamically load system libraries", True),
+        BoolVariable("alsa", "Use ALSA", True),
+        BoolVariable("pulseaudio", "Use PulseAudio", True),
+        BoolVariable("dbus", "Use D-Bus to handle screensaver and portal desktop settings", True),
+        BoolVariable("speechd", "Use Speech Dispatcher for Text-to-Speech support", True),
+        BoolVariable("fontconfig", "Use fontconfig for system fonts support", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
-        BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
-        BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
+        BoolVariable("wayland", "Enable Wayland display", True),
+        BoolVariable("libdecor", "Enable libdecor support", True),
         BoolVariable("touch", "Enable touch events", True),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
     ]
 
 
+def get_doc_classes():
+    return [
+        "EditorExportPlatformLinuxBSD",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
+
+
 def get_flags():
-    return []
+    return [
+        ("arch", detect_arch()),
+        ("supported", ["mono"]),
+    ]
 
 
-def configure(env):
+def configure(env: "SConsEnvironment"):
+    # Validate arch.
+    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64"]
+    if env["arch"] not in supported_arches:
+        print_error(
+            'Unsupported CPU architecture "%s" for Linux / *BSD. Supported architectures are: %s.'
+            % (env["arch"], ", ".join(supported_arches))
+        )
+        sys.exit(255)
+
     ## Build type
 
-    if env["target"] == "release":
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Prepend(CCFLAGS=["-O3"])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
-
-        if env["debug_symbols"]:
-            env.Prepend(CCFLAGS=["-g2"])
-
-    elif env["target"] == "release_debug":
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Prepend(CCFLAGS=["-O2"])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
-        env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
-
-        if env["debug_symbols"]:
-            env.Prepend(CCFLAGS=["-g2"])
-
-    elif env["target"] == "debug":
-        env.Prepend(CCFLAGS=["-g3"])
-        env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
+    if env.dev_build:
+        # This is needed for our crash handler to work properly.
+        # gdb works fine without it though, so maybe our crash handler could too.
         env.Append(LINKFLAGS=["-rdynamic"])
 
-    ## Architecture
+    # Cross-compilation
+    # TODO: Support cross-compilation on architectures other than x86.
+    host_is_64_bit = sys.maxsize > 2**32
+    if host_is_64_bit and env["arch"] == "x86_32":
+        env.Append(CCFLAGS=["-m32"])
+        env.Append(LINKFLAGS=["-m32"])
+    elif not host_is_64_bit and env["arch"] == "x86_64":
+        env.Append(CCFLAGS=["-m64"])
+        env.Append(LINKFLAGS=["-m64"])
 
-    is64 = sys.maxsize > 2 ** 32
-    if env["bits"] == "default":
-        env["bits"] = "64" if is64 else "32"
+    # CPU architecture flags.
+    if env["arch"] == "rv64":
+        # G = General-purpose extensions, C = Compression extension (very common).
+        env.Append(CCFLAGS=["-march=rv64gc"])
 
     ## Compiler configuration
 
@@ -131,22 +115,35 @@ def configure(env):
             env["CXX"] = "clang++"
         env.extra_suffix = ".llvm" + env.extra_suffix
 
-    if env["use_lld"]:
-        if env["use_llvm"]:
-            env.Append(LINKFLAGS=["-fuse-ld=lld"])
-            if env["use_thinlto"]:
-                # A convenience so you don't need to write use_lto too when using SCons
-                env["use_lto"] = True
+    if env["linker"] != "default":
+        print("Using linker program: " + env["linker"])
+        if env["linker"] == "mold" and using_gcc(env):  # GCC < 12.1 doesn't support -fuse-ld=mold.
+            cc_version = get_compiler_version(env)
+            cc_semver = (cc_version["major"], cc_version["minor"])
+            if cc_semver < (12, 1):
+                found_wrapper = False
+                for path in ["/usr/libexec", "/usr/local/libexec", "/usr/lib", "/usr/local/lib"]:
+                    if os.path.isfile(path + "/mold/ld"):
+                        env.Append(LINKFLAGS=["-B" + path + "/mold"])
+                        found_wrapper = True
+                        break
+                if not found_wrapper:
+                    print_error(
+                        "Couldn't locate mold installation path. Make sure it's installed in /usr or /usr/local."
+                    )
+                    sys.exit(255)
+            else:
+                env.Append(LINKFLAGS=["-fuse-ld=mold"])
         else:
-            print("Using LLD with GCC is not supported yet, try compiling with 'use_llvm=yes'.")
-            sys.exit(255)
+            env.Append(LINKFLAGS=["-fuse-ld=%s" % env["linker"]])
 
     if env["use_coverage"]:
         env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
         env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
-        env.extra_suffix += "s"
+        env.extra_suffix += ".san"
+        env.Append(CCFLAGS=["-DSANITIZERS_ENABLED"])
 
         if env["use_ubsan"]:
             env.Append(
@@ -182,39 +179,40 @@ def configure(env):
             env.Append(CCFLAGS=["-fsanitize-recover=memory"])
             env.Append(LINKFLAGS=["-fsanitize=memory"])
 
-    if env["use_lto"]:
-        if not env["use_llvm"] and env.GetOption("num_jobs") > 1:
+    # LTO
+
+    if env["lto"] == "auto":  # Full LTO for production.
+        env["lto"] = "full"
+
+    if env["lto"] != "none":
+        if env["lto"] == "thin":
+            if not env["use_llvm"]:
+                print_error("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
+                sys.exit(255)
+            env.Append(CCFLAGS=["-flto=thin"])
+            env.Append(LINKFLAGS=["-flto=thin"])
+        elif not env["use_llvm"] and env.GetOption("num_jobs") > 1:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto=" + str(env.GetOption("num_jobs"))])
         else:
-            if env["use_lld"] and env["use_thinlto"]:
-                env.Append(CCFLAGS=["-flto=thin"])
-                env.Append(LINKFLAGS=["-flto=thin"])
-            else:
-                env.Append(CCFLAGS=["-flto"])
-                env.Append(LINKFLAGS=["-flto"])
+            env.Append(CCFLAGS=["-flto"])
+            env.Append(LINKFLAGS=["-flto"])
 
         if not env["use_llvm"]:
             env["RANLIB"] = "gcc-ranlib"
             env["AR"] = "gcc-ar"
 
     env.Append(CCFLAGS=["-pipe"])
-    env.Append(LINKFLAGS=["-pipe"])
-
-    # -fpie and -no-pie is supported on GCC 6+ and Clang 4+, both below our
-    # minimal requirements.
-    env.Append(CCFLAGS=["-fpie"])
-    env.Append(LINKFLAGS=["-no-pie"])
 
     ## Dependencies
 
-    env.ParseConfig("pkg-config x11 --cflags --libs")
-    env.ParseConfig("pkg-config xcursor --cflags --libs")
-    env.ParseConfig("pkg-config xinerama --cflags --libs")
-    env.ParseConfig("pkg-config xext --cflags --libs")
-    env.ParseConfig("pkg-config xrandr --cflags --libs")
-    env.ParseConfig("pkg-config xrender --cflags --libs")
-    env.ParseConfig("pkg-config xi --cflags --libs")
+    if env["use_sowrap"]:
+        env.Append(CPPDEFINES=["SOWRAP_ENABLED"])
+
+    if env["wayland"]:
+        if os.system("wayland-scanner -v 2>/dev/null") != 0:
+            print_warning("wayland-scanner not found. Disabling Wayland support.")
+            env["wayland"] = False
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
@@ -222,19 +220,21 @@ def configure(env):
     # FIXME: Check for existence of the libs before parsing their flags with pkg-config
 
     # freetype depends on libpng and zlib, so bundling one of them while keeping others
-    # as shared libraries leads to weird issues
-    if (
-        env["builtin_freetype"]
-        or env["builtin_libpng"]
-        or env["builtin_zlib"]
-        or env["builtin_graphite"]
-        or env["builtin_harfbuzz"]
-    ):
-        env["builtin_freetype"] = True
-        env["builtin_libpng"] = True
-        env["builtin_zlib"] = True
-        env["builtin_graphite"] = True
-        env["builtin_harfbuzz"] = True
+    # as shared libraries leads to weird issues. And graphite and harfbuzz need freetype.
+    ft_linked_deps = [
+        env["builtin_freetype"],
+        env["builtin_libpng"],
+        env["builtin_zlib"],
+        env["builtin_graphite"],
+        env["builtin_harfbuzz"],
+    ]
+    if (not all(ft_linked_deps)) and any(ft_linked_deps):  # All or nothing.
+        print_error(
+            "These libraries should be either all builtin, or all system provided:\n"
+            "freetype, libpng, zlib, graphite, harfbuzz.\n"
+            "Please specify `builtin_<name>=no` for all of them, or none."
+        )
+        sys.exit(255)
 
     if not env["builtin_freetype"]:
         env.ParseConfig("pkg-config freetype2 --cflags --libs")
@@ -242,8 +242,8 @@ def configure(env):
     if not env["builtin_graphite"]:
         env.ParseConfig("pkg-config graphite2 --cflags --libs")
 
-    if not env["builtin_icu"]:
-        env.ParseConfig("pkg-config icu-uc --cflags --libs")
+    if not env["builtin_icu4c"]:
+        env.ParseConfig("pkg-config icu-i18n icu-uc --cflags --libs")
 
     if not env["builtin_harfbuzz"]:
         env.ParseConfig("pkg-config harfbuzz harfbuzz-icu --cflags --libs")
@@ -251,35 +251,18 @@ def configure(env):
     if not env["builtin_libpng"]:
         env.ParseConfig("pkg-config libpng16 --cflags --libs")
 
-    if not env["builtin_bullet"]:
-        # We need at least version 2.90
-        min_bullet_version = "2.90"
-
-        import subprocess
-
-        bullet_version = subprocess.check_output(["pkg-config", "bullet", "--modversion"]).strip()
-        if str(bullet_version) < min_bullet_version:
-            # Abort as system bullet was requested but too old
-            print(
-                "Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(
-                    bullet_version, min_bullet_version
-                )
-            )
-            sys.exit(255)
-        env.ParseConfig("pkg-config bullet --cflags --libs")
-
-    if False:  # not env['builtin_assimp']:
-        # FIXME: Add min version check
-        env.ParseConfig("pkg-config assimp --cflags --libs")
-
     if not env["builtin_enet"]:
         env.ParseConfig("pkg-config libenet --cflags --libs")
 
     if not env["builtin_squish"]:
-        env.ParseConfig("pkg-config libsquish --cflags --libs")
+        # libsquish doesn't reliably install its .pc file, so some distros lack it.
+        env.Append(LIBS=["libsquish"])
 
     if not env["builtin_zstd"]:
         env.ParseConfig("pkg-config libzstd --cflags --libs")
+
+    if env["brotli"] and not env["builtin_brotli"]:
+        env.ParseConfig("pkg-config libbrotlicommon libbrotlidec --cflags --libs")
 
     # Sound and video libraries
     # Keep the order as it triggers chained dependencies (ogg needed by others, etc.)
@@ -289,20 +272,12 @@ def configure(env):
         env["builtin_libvorbis"] = False  # Needed to link against system libtheora
         env.ParseConfig("pkg-config theora theoradec --cflags --libs")
     else:
-        list_of_x86 = ["x86_64", "x86", "i386", "i586"]
-        if any(platform.machine() in s for s in list_of_x86):
+        if env["arch"] in ["x86_64", "x86_32"]:
             env["x86_libtheora_opt_gcc"] = True
-
-    if not env["builtin_libvpx"]:
-        env.ParseConfig("pkg-config vpx --cflags --libs")
 
     if not env["builtin_libvorbis"]:
         env["builtin_libogg"] = False  # Needed to link against system libvorbis
         env.ParseConfig("pkg-config vorbis vorbisfile --cflags --libs")
-
-    if not env["builtin_opus"]:
-        env["builtin_libogg"] = False  # Needed to link against system opus
-        env.ParseConfig("pkg-config opus opusfile --cflags --libs")
 
     if not env["builtin_libogg"]:
         env.ParseConfig("pkg-config ogg --cflags --libs")
@@ -323,47 +298,104 @@ def configure(env):
         env.Append(LIBS=["miniupnpc"])
 
     # On Linux wchar_t should be 32-bits
-    # 16-bit library shouldn't be required due to compiler optimisations
+    # 16-bit library shouldn't be required due to compiler optimizations
     if not env["builtin_pcre2"]:
         env.ParseConfig("pkg-config libpcre2-32 --cflags --libs")
 
-    if not env["builtin_embree"]:
+    if not env["builtin_recastnavigation"]:
+        # No pkgconfig file so far, hardcode default paths.
+        env.Prepend(CPPPATH=["/usr/include/recastnavigation"])
+        env.Append(LIBS=["Recast"])
+
+    if not env["builtin_embree"] and env["arch"] in ["x86_64", "arm64"]:
         # No pkgconfig file so far, hardcode expected lib name.
-        env.Append(LIBS=["embree3"])
+        env.Append(LIBS=["embree4"])
 
-    ## Flags
+    if not env["builtin_openxr"]:
+        env.ParseConfig("pkg-config openxr --cflags --libs")
 
-    if os.system("pkg-config --exists alsa") == 0:  # 0 means found
-        print("Enabling ALSA")
-        env["alsa"] = True
-        env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
-    else:
-        print("ALSA libraries not found, disabling driver")
+    if env["fontconfig"]:
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists fontconfig") == 0:  # 0 means found
+                env.ParseConfig("pkg-config fontconfig --cflags --libs")
+                env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
+            else:
+                print_warning("fontconfig development libraries not found. Disabling the system fonts support.")
+                env["fontconfig"] = False
+        else:
+            env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
+
+    if env["alsa"]:
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists alsa") == 0:  # 0 means found
+                env.ParseConfig("pkg-config alsa --cflags --libs")
+                env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
+            else:
+                print_warning("ALSA development libraries not found. Disabling the ALSA audio driver.")
+                env["alsa"] = False
+        else:
+            env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
 
     if env["pulseaudio"]:
-        if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
-            print("Enabling PulseAudio")
-            env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
-            env.ParseConfig("pkg-config --cflags libpulse")
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
+                env.ParseConfig("pkg-config libpulse --cflags --libs")
+                env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
+            else:
+                print_warning("PulseAudio development libraries not found. Disabling the PulseAudio audio driver.")
+                env["pulseaudio"] = False
         else:
-            print("PulseAudio development libraries not found, disabling driver")
+            env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
 
     if env["dbus"]:
-        if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
-            print("Enabling D-Bus")
-            env.Append(CPPDEFINES=["DBUS_ENABLED"])
-            env.ParseConfig("pkg-config --cflags --libs dbus-1")
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
+                env.ParseConfig("pkg-config dbus-1 --cflags --libs")
+                env.Append(CPPDEFINES=["DBUS_ENABLED"])
+            else:
+                print_warning("D-Bus development libraries not found. Disabling screensaver prevention.")
+                env["dbus"] = False
         else:
-            print("D-Bus development libraries not found, disabling dependent features")
+            env.Append(CPPDEFINES=["DBUS_ENABLED"])
+
+    if env["speechd"]:
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists speech-dispatcher") == 0:  # 0 means found
+                env.ParseConfig("pkg-config speech-dispatcher --cflags --libs")
+                env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
+            else:
+                print_warning("speech-dispatcher development libraries not found. Disabling text to speech support.")
+                env["speechd"] = False
+        else:
+            env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
+
+    if not env["use_sowrap"]:
+        if os.system("pkg-config --exists xkbcommon") == 0:  # 0 means found
+            env.ParseConfig("pkg-config xkbcommon --cflags --libs")
+            env.Append(CPPDEFINES=["XKB_ENABLED"])
+        else:
+            if env["wayland"]:
+                print_error("libxkbcommon development libraries required by Wayland not found. Aborting.")
+                sys.exit(255)
+            else:
+                print_warning(
+                    "libxkbcommon development libraries not found. Disabling dead key composition and key label support."
+                )
+    else:
+        env.Append(CPPDEFINES=["XKB_ENABLED"])
 
     if platform.system() == "Linux":
         env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
-            if os.system("pkg-config --exists libudev") == 0:  # 0 means found
-                print("Enabling udev support")
-                env.Append(CPPDEFINES=["UDEV_ENABLED"])
+            if not env["use_sowrap"]:
+                if os.system("pkg-config --exists libudev") == 0:  # 0 means found
+                    env.ParseConfig("pkg-config libudev --cflags --libs")
+                    env.Append(CPPDEFINES=["UDEV_ENABLED"])
+                else:
+                    print_warning("libudev development libraries not found. Disabling controller hotplugging support.")
+                    env["udev"] = False
             else:
-                print("libudev development libraries not found, disabling udev support")
+                env.Append(CPPDEFINES=["UDEV_ENABLED"])
     else:
         env["udev"] = False  # Linux specific
 
@@ -372,69 +404,111 @@ def configure(env):
         env.ParseConfig("pkg-config zlib --cflags --libs")
 
     env.Prepend(CPPPATH=["#platform/linuxbsd"])
+    if env["use_sowrap"]:
+        env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers"])
+
+    env.Append(
+        CPPDEFINES=[
+            "LINUXBSD_ENABLED",
+            "UNIX_ENABLED",
+            ("_FILE_OFFSET_BITS", 64),
+        ]
+    )
 
     if env["x11"]:
-        if not env["vulkan"]:
-            print("Error: X11 support requires vulkan=yes")
-            env.Exit(255)
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists x11"):
+                print_error("X11 libraries not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config x11 --cflags --libs")
+            if os.system("pkg-config --exists xcursor"):
+                print_error("Xcursor library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config xcursor --cflags --libs")
+            if os.system("pkg-config --exists xinerama"):
+                print_error("Xinerama library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config xinerama --cflags --libs")
+            if os.system("pkg-config --exists xext"):
+                print_error("Xext library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config xext --cflags --libs")
+            if os.system("pkg-config --exists xrandr"):
+                print_error("XrandR library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config xrandr --cflags --libs")
+            if os.system("pkg-config --exists xrender"):
+                print_error("XRender library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config xrender --cflags --libs")
+            if os.system("pkg-config --exists xi"):
+                print_error("Xi library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config xi --cflags --libs")
         env.Append(CPPDEFINES=["X11_ENABLED"])
 
-    env.Append(CPPDEFINES=["UNIX_ENABLED"])
-    env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
+    if env["wayland"]:
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists libdecor-0"):
+                print_warning("libdecor development libraries not found. Disabling client-side decorations.")
+                env["libdecor"] = False
+            else:
+                env.ParseConfig("pkg-config libdecor-0 --cflags --libs")
+            if os.system("pkg-config --exists wayland-client"):
+                print_error("Wayland client library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config wayland-client --cflags --libs")
+            if os.system("pkg-config --exists wayland-cursor"):
+                print_error("Wayland cursor library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config wayland-cursor --cflags --libs")
+            if os.system("pkg-config --exists wayland-egl"):
+                print_error("Wayland EGL library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config wayland-egl --cflags --libs")
+
+        if env["libdecor"]:
+            env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])
+
+        env.Prepend(CPPPATH=["#platform/linuxbsd", "#thirdparty/linuxbsd_headers/wayland/"])
+        env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
+        env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
-        if not env["builtin_vulkan"]:
+        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        if not env["use_volk"]:
             env.ParseConfig("pkg-config vulkan --cflags --libs")
         if not env["builtin_glslang"]:
-            # No pkgconfig file for glslang so far
+            # No pkgconfig file so far, hardcode expected lib name.
             env.Append(LIBS=["glslang", "SPIRV"])
 
-        # env.Append(CPPDEFINES=['OPENGL_ENABLED'])
-        env.Append(LIBS=["GL"])
+    if env["opengl3"]:
+        env.Append(CPPDEFINES=["GLES3_ENABLED"])
 
     env.Append(LIBS=["pthread"])
 
     if platform.system() == "Linux":
         env.Append(LIBS=["dl"])
 
-    if platform.system().find("BSD") >= 0:
-        env["execinfo"] = True
-
-    if env["execinfo"]:
-        env.Append(LIBS=["execinfo"])
-
-    if not env["tools"]:
-        import subprocess
-        import re
-
-        linker_version_str = subprocess.check_output([env.subst(env["LINK"]), "-Wl,--version"]).decode("utf-8")
-        gnu_ld_version = re.search("^GNU ld [^$]*(\d+\.\d+)$", linker_version_str, re.MULTILINE)
-        if not gnu_ld_version:
-            print(
-                "Warning: Creating template binaries enabled for PCK embedding is currently only supported with GNU ld"
-            )
+    if platform.libc_ver()[0] != "glibc":
+        if env["execinfo"]:
+            env.Append(LIBS=["execinfo"])
+            env.Append(CPPDEFINES=["CRASH_HANDLER_ENABLED"])
         else:
-            if float(gnu_ld_version.group(1)) >= 2.30:
-                env.Append(LINKFLAGS=["-T", "platform/linuxbsd/pck_embed.ld"])
-            else:
-                env.Append(LINKFLAGS=["-T", "platform/linuxbsd/pck_embed.legacy.ld"])
+            # The default crash handler depends on glibc, so if the host uses
+            # a different libc (BSD libc, musl), libexecinfo is required.
+            print("Note: Using `execinfo=no` disables the crash handler on platforms where glibc is missing.")
+    else:
+        env.Append(CPPDEFINES=["CRASH_HANDLER_ENABLED"])
 
-    ## Cross-compilation
-
-    if is64 and env["bits"] == "32":
-        env.Append(CCFLAGS=["-m32"])
-        env.Append(LINKFLAGS=["-m32", "-L/usr/lib/i386-linux-gnu"])
-    elif not is64 and env["bits"] == "64":
-        env.Append(CCFLAGS=["-m64"])
-        env.Append(LINKFLAGS=["-m64", "-L/usr/lib/i686-linux-gnu"])
+    if platform.system() == "FreeBSD":
+        env.Append(LINKFLAGS=["-lkvm"])
 
     # Link those statically for portability
     if env["use_static_cpp"]:
         env.Append(LINKFLAGS=["-static-libgcc", "-static-libstdc++"])
-        if env["use_llvm"]:
+        if env["use_llvm"] and platform.system() != "FreeBSD":
             env["LINKCOM"] = env["LINKCOM"] + " -l:libatomic.a"
-
     else:
-        if env["use_llvm"]:
+        if env["use_llvm"] and platform.system() != "FreeBSD":
             env.Append(LIBS=["atomic"])

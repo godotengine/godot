@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  multimesh.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  multimesh.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "multimesh.h"
 
@@ -101,9 +101,9 @@ void MultiMesh::_set_transform_2d_array(const Vector<Vector2> &p_array) {
 
 	for (int i = 0; i < len / 3; i++) {
 		Transform2D t;
-		t.elements[0] = r[i * 3 + 0];
-		t.elements[1] = r[i * 3 + 1];
-		t.elements[2] = r[i * 3 + 2];
+		t.columns[0] = r[i * 3 + 0];
+		t.columns[1] = r[i * 3 + 1];
+		t.columns[2] = r[i * 3 + 2];
 
 		set_instance_transform_2d(i, t);
 	}
@@ -125,9 +125,9 @@ Vector<Vector2> MultiMesh::_get_transform_2d_array() const {
 
 	for (int i = 0; i < instance_count; i++) {
 		Transform2D t = get_instance_transform_2d(i);
-		w[i * 3 + 0] = t.elements[0];
-		w[i * 3 + 1] = t.elements[1];
-		w[i * 3 + 2] = t.elements[2];
+		w[i * 3 + 0] = t.columns[0];
+		w[i * 3 + 1] = t.columns[1];
+		w[i * 3 + 2] = t.columns[2];
 	}
 
 	return xforms;
@@ -242,6 +242,7 @@ void MultiMesh::set_instance_transform(int p_instance, const Transform3D &p_tran
 
 void MultiMesh::set_instance_transform_2d(int p_instance, const Transform2D &p_transform) {
 	RenderingServer::get_singleton()->multimesh_instance_set_transform_2d(multimesh, p_instance, p_transform);
+	emit_changed();
 }
 
 Transform3D MultiMesh::get_instance_transform(int p_instance) const {
@@ -266,6 +267,16 @@ void MultiMesh::set_instance_custom_data(int p_instance, const Color &p_custom_d
 
 Color MultiMesh::get_instance_custom_data(int p_instance) const {
 	return RenderingServer::get_singleton()->multimesh_instance_get_custom_data(multimesh, p_instance);
+}
+
+void MultiMesh::set_custom_aabb(const AABB &p_custom) {
+	custom_aabb = p_custom;
+	RS::get_singleton()->multimesh_set_custom_aabb(multimesh, custom_aabb);
+	emit_changed();
+}
+
+AABB MultiMesh::get_custom_aabb() const {
+	return custom_aabb;
 }
 
 AABB MultiMesh::get_aabb() const {
@@ -325,6 +336,8 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_color", "instance"), &MultiMesh::get_instance_color);
 	ClassDB::bind_method(D_METHOD("set_instance_custom_data", "instance", "custom_data"), &MultiMesh::set_instance_custom_data);
 	ClassDB::bind_method(D_METHOD("get_instance_custom_data", "instance"), &MultiMesh::get_instance_custom_data);
+	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &MultiMesh::set_custom_aabb);
+	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &MultiMesh::get_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &MultiMesh::get_aabb);
 
 	ClassDB::bind_method(D_METHOD("get_buffer"), &MultiMesh::get_buffer);
@@ -333,6 +346,7 @@ void MultiMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_format", PROPERTY_HINT_ENUM, "2D,3D"), "set_transform_format", "get_transform_format");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_colors"), "set_use_colors", "is_using_colors");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_custom_data"), "set_use_custom_data", "is_using_custom_data");
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "instance_count", PROPERTY_HINT_RANGE, "0,16384,1,or_greater"), "set_instance_count", "get_instance_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_instance_count", PROPERTY_HINT_RANGE, "-1,16384,1,or_greater"), "set_visible_instance_count", "get_visible_instance_count");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
@@ -340,13 +354,13 @@ void MultiMesh::_bind_methods() {
 
 #ifndef DISABLE_DEPRECATED
 	// Kept for compatibility from 3.x to 4.0.
-	ClassDB::bind_method(D_METHOD("_set_transform_array"), &MultiMesh::_set_transform_array);
+	ClassDB::bind_method(D_METHOD("_set_transform_array", "array"), &MultiMesh::_set_transform_array);
 	ClassDB::bind_method(D_METHOD("_get_transform_array"), &MultiMesh::_get_transform_array);
-	ClassDB::bind_method(D_METHOD("_set_transform_2d_array"), &MultiMesh::_set_transform_2d_array);
+	ClassDB::bind_method(D_METHOD("_set_transform_2d_array", "array"), &MultiMesh::_set_transform_2d_array);
 	ClassDB::bind_method(D_METHOD("_get_transform_2d_array"), &MultiMesh::_get_transform_2d_array);
-	ClassDB::bind_method(D_METHOD("_set_color_array"), &MultiMesh::_set_color_array);
+	ClassDB::bind_method(D_METHOD("_set_color_array", "array"), &MultiMesh::_set_color_array);
 	ClassDB::bind_method(D_METHOD("_get_color_array"), &MultiMesh::_get_color_array);
-	ClassDB::bind_method(D_METHOD("_set_custom_data_array"), &MultiMesh::_set_custom_data_array);
+	ClassDB::bind_method(D_METHOD("_set_custom_data_array", "array"), &MultiMesh::_set_custom_data_array);
 	ClassDB::bind_method(D_METHOD("_get_custom_data_array"), &MultiMesh::_get_custom_data_array);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "transform_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_transform_array", "_get_transform_array");
@@ -364,5 +378,6 @@ MultiMesh::MultiMesh() {
 }
 
 MultiMesh::~MultiMesh() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(multimesh);
 }

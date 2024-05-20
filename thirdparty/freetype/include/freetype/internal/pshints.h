@@ -6,7 +6,7 @@
  *   recorders (specification only).  These are used to support native
  *   T1/T2 hints in the 'type1', 'cid', and 'cff' font drivers.
  *
- * Copyright (C) 2001-2020 by
+ * Copyright (C) 2001-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -294,7 +294,7 @@ FT_BEGIN_HEADER
    *
    * @note:
    *   On input, all points within the outline are in font coordinates. On
-   *   output, they are in 1/64th of pixels.
+   *   output, they are in 1/64 of pixels.
    *
    *   The scaling transformation is taken from the 'globals' object which
    *   must correspond to the same font as the glyph.
@@ -607,7 +607,7 @@ FT_BEGIN_HEADER
    *
    * @note:
    *   On input, all points within the outline are in font coordinates. On
-   *   output, they are in 1/64th of pixels.
+   *   output, they are in 1/64 of pixels.
    *
    *   The scaling transformation is taken from the 'globals' object which
    *   must correspond to the same font than the glyph.

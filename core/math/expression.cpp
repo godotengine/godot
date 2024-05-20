@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  expression.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  expression.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "expression.h"
 
@@ -36,10 +36,6 @@
 #include "core/object/ref_counted.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
-
-static bool _is_number(char32_t c) {
-	return (c >= '0' && c <= '9');
-}
 
 Error Expression::_get_token(Token &r_token) {
 	while (true) {
@@ -88,7 +84,7 @@ Error Expression::_get_token(Token &r_token) {
 				r_token.type = TK_INPUT;
 				int index = 0;
 				do {
-					if (!_is_number(expression[str_ofs])) {
+					if (!is_digit(expression[str_ofs])) {
 						_set_error("Expected number after '$'");
 						r_token.type = TK_ERROR;
 						return ERR_PARSE_ERROR;
@@ -97,7 +93,7 @@ Error Expression::_get_token(Token &r_token) {
 					index += expression[str_ofs] - '0';
 					str_ofs++;
 
-				} while (_is_number(expression[str_ofs]));
+				} while (is_digit(expression[str_ofs]));
 
 				r_token.value = index;
 				return OK;
@@ -159,7 +155,12 @@ Error Expression::_get_token(Token &r_token) {
 				return OK;
 			}
 			case '*': {
-				r_token.type = TK_OP_MUL;
+				if (expression[str_ofs] == '*') {
+					r_token.type = TK_OP_POW;
+					str_ofs++;
+				} else {
+					r_token.type = TK_OP_MUL;
+				}
 				return OK;
 			}
 			case '%': {
@@ -197,6 +198,7 @@ Error Expression::_get_token(Token &r_token) {
 			case '\'':
 			case '"': {
 				String str;
+				char32_t prev = 0;
 				while (true) {
 					char32_t ch = GET_CHAR();
 
@@ -234,9 +236,11 @@ Error Expression::_get_token(Token &r_token) {
 							case 'r':
 								res = 13;
 								break;
+							case 'U':
 							case 'u': {
-								// hex number
-								for (int j = 0; j < 4; j++) {
+								// Hexadecimal sequence.
+								int hex_len = (next == 'U') ? 6 : 4;
+								for (int j = 0; j < hex_len; j++) {
 									char32_t c = GET_CHAR();
 
 									if (c == 0) {
@@ -244,13 +248,13 @@ Error Expression::_get_token(Token &r_token) {
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
-									if (!(_is_number(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+									if (!is_hex_digit(c)) {
 										_set_error("Malformed hex constant in string");
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
 									char32_t v;
-									if (_is_number(c)) {
+									if (is_digit(c)) {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
 										v = c - 'a';
@@ -273,11 +277,45 @@ Error Expression::_get_token(Token &r_token) {
 							} break;
 						}
 
+						// Parse UTF-16 pair.
+						if ((res & 0xfffffc00) == 0xd800) {
+							if (prev == 0) {
+								prev = res;
+								continue;
+							} else {
+								_set_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+								r_token.type = TK_ERROR;
+								return ERR_PARSE_ERROR;
+							}
+						} else if ((res & 0xfffffc00) == 0xdc00) {
+							if (prev == 0) {
+								_set_error("Invalid UTF-16 sequence in string, unpaired trail surrogate");
+								r_token.type = TK_ERROR;
+								return ERR_PARSE_ERROR;
+							} else {
+								res = (prev << 10UL) + res - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+								prev = 0;
+							}
+						}
+						if (prev != 0) {
+							_set_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+							r_token.type = TK_ERROR;
+							return ERR_PARSE_ERROR;
+						}
 						str += res;
-
 					} else {
+						if (prev != 0) {
+							_set_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+							r_token.type = TK_ERROR;
+							return ERR_PARSE_ERROR;
+						}
 						str += ch;
 					}
+				}
+				if (prev != 0) {
+					_set_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+					r_token.type = TK_ERROR;
+					return ERR_PARSE_ERROR;
 				}
 
 				r_token.type = TK_CONSTANT;
@@ -291,39 +329,67 @@ Error Expression::_get_token(Token &r_token) {
 				}
 
 				char32_t next_char = (str_ofs >= expression.length()) ? 0 : expression[str_ofs];
-				if (_is_number(cchar) || (cchar == '.' && _is_number(next_char))) {
+				if (is_digit(cchar) || (cchar == '.' && is_digit(next_char))) {
 					//a number
 
 					String num;
 #define READING_SIGN 0
 #define READING_INT 1
-#define READING_DEC 2
-#define READING_EXP 3
-#define READING_DONE 4
+#define READING_HEX 2
+#define READING_BIN 3
+#define READING_DEC 4
+#define READING_EXP 5
+#define READING_DONE 6
 					int reading = READING_INT;
 
 					char32_t c = cchar;
 					bool exp_sign = false;
 					bool exp_beg = false;
+					bool bin_beg = false;
+					bool hex_beg = false;
 					bool is_float = false;
+					bool is_first_char = true;
 
 					while (true) {
 						switch (reading) {
 							case READING_INT: {
-								if (_is_number(c)) {
-									//pass
+								if (is_digit(c)) {
+									if (is_first_char && c == '0') {
+										if (next_char == 'b') {
+											reading = READING_BIN;
+										} else if (next_char == 'x') {
+											reading = READING_HEX;
+										}
+									}
 								} else if (c == '.') {
 									reading = READING_DEC;
 									is_float = true;
 								} else if (c == 'e') {
 									reading = READING_EXP;
+									is_float = true;
 								} else {
 									reading = READING_DONE;
 								}
 
 							} break;
+							case READING_BIN: {
+								if (bin_beg && !is_binary_digit(c)) {
+									reading = READING_DONE;
+								} else if (c == 'b') {
+									bin_beg = true;
+								}
+
+							} break;
+							case READING_HEX: {
+								if (hex_beg && !is_hex_digit(c)) {
+									reading = READING_DONE;
+								} else if (c == 'x') {
+									hex_beg = true;
+								}
+
+							} break;
 							case READING_DEC: {
-								if (_is_number(c)) {
+								if (is_digit(c)) {
 								} else if (c == 'e') {
 									reading = READING_EXP;
 
@@ -333,13 +399,10 @@ Error Expression::_get_token(Token &r_token) {
 
 							} break;
 							case READING_EXP: {
-								if (_is_number(c)) {
+								if (is_digit(c)) {
 									exp_beg = true;
 
 								} else if ((c == '-' || c == '+') && !exp_sign && !exp_beg) {
-									if (c == '-') {
-										is_float = true;
-									}
 									exp_sign = true;
 
 								} else {
@@ -353,6 +416,7 @@ Error Expression::_get_token(Token &r_token) {
 						}
 						num += String::chr(c);
 						c = GET_CHAR();
+						is_first_char = false;
 					}
 
 					str_ofs--;
@@ -361,19 +425,22 @@ Error Expression::_get_token(Token &r_token) {
 
 					if (is_float) {
 						r_token.value = num.to_float();
+					} else if (bin_beg) {
+						r_token.value = num.bin_to_int();
+					} else if (hex_beg) {
+						r_token.value = num.hex_to_int();
 					} else {
 						r_token.value = num.to_int();
 					}
 					return OK;
 
-				} else if ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_') {
-					String id;
-					bool first = true;
+				} else if (is_unicode_identifier_start(cchar)) {
+					String id = String::chr(cchar);
+					cchar = GET_CHAR();
 
-					while ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_' || (!first && _is_number(cchar))) {
+					while (is_unicode_identifier_continue(cchar)) {
 						id += String::chr(cchar);
 						cchar = GET_CHAR();
-						first = false;
 					}
 
 					str_ofs--; //go back one
@@ -410,6 +477,14 @@ Error Expression::_get_token(Token &r_token) {
 					} else if (id == "self") {
 						r_token.type = TK_SELF;
 					} else {
+						for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+							if (id == Variant::get_type_name(Variant::Type(i))) {
+								r_token.type = TK_BASIC_TYPE;
+								r_token.value = i;
+								return OK;
+							}
+						}
+
 						if (Variant::has_utility_function(id)) {
 							r_token.type = TK_BUILTIN_FUNC;
 							r_token.value = id;
@@ -471,6 +546,7 @@ const char *Expression::token_name[TK_MAX] = {
 	"OP MUL",
 	"OP DIV",
 	"OP MOD",
+	"OP POW",
 	"OP SHIFT LEFT",
 	"OP SHIFT RIGHT",
 	"OP BIT AND",
@@ -483,7 +559,7 @@ const char *Expression::token_name[TK_MAX] = {
 };
 
 Expression::ENode *Expression::_parse_expression() {
-	Vector<ExpressionNode> expression;
+	Vector<ExpressionNode> expression_nodes;
 
 	while (true) {
 		//keep appending stuff to expression
@@ -761,14 +837,14 @@ Expression::ENode *Expression::_parse_expression() {
 				ExpressionNode e;
 				e.is_op = true;
 				e.op = Variant::OP_NEGATE;
-				expression.push_back(e);
+				expression_nodes.push_back(e);
 				continue;
 			} break;
 			case TK_OP_NOT: {
 				ExpressionNode e;
 				e.is_op = true;
 				e.op = Variant::OP_NOT;
-				expression.push_back(e);
+				expression_nodes.push_back(e);
 				continue;
 			} break;
 
@@ -814,7 +890,7 @@ Expression::ENode *Expression::_parse_expression() {
 				case TK_PERIOD: {
 					//named indexing or function call
 					_get_token(tk);
-					if (tk.type != TK_IDENTIFIER) {
+					if (tk.type != TK_IDENTIFIER && tk.type != TK_BUILTIN_FUNC) {
 						_set_error("Expected identifier after '.'");
 						return nullptr;
 					}
@@ -883,7 +959,7 @@ Expression::ENode *Expression::_parse_expression() {
 			ExpressionNode e;
 			e.is_op = false;
 			e.node = expr;
-			expression.push_back(e);
+			expression_nodes.push_back(e);
 		}
 
 		//ok finally look for an operator
@@ -942,6 +1018,9 @@ Expression::ENode *Expression::_parse_expression() {
 			case TK_OP_MOD:
 				op = Variant::OP_MODULE;
 				break;
+			case TK_OP_POW:
+				op = Variant::OP_POWER;
+				break;
 			case TK_OP_SHIFT_LEFT:
 				op = Variant::OP_SHIFT_LEFT;
 				break;
@@ -974,19 +1053,19 @@ Expression::ENode *Expression::_parse_expression() {
 			ExpressionNode e;
 			e.is_op = true;
 			e.op = op;
-			expression.push_back(e);
+			expression_nodes.push_back(e);
 		}
 	}
 
 	/* Reduce the set of expressions and place them in an operator tree, respecting precedence */
 
-	while (expression.size() > 1) {
+	while (expression_nodes.size() > 1) {
 		int next_op = -1;
 		int min_priority = 0xFFFFF;
 		bool is_unary = false;
 
-		for (int i = 0; i < expression.size(); i++) {
-			if (!expression[i].is_op) {
+		for (int i = 0; i < expression_nodes.size(); i++) {
+			if (!expression_nodes[i].is_op) {
 				continue;
 			}
 
@@ -994,36 +1073,39 @@ Expression::ENode *Expression::_parse_expression() {
 
 			bool unary = false;
 
-			switch (expression[i].op) {
-				case Variant::OP_BIT_NEGATE:
+			switch (expression_nodes[i].op) {
+				case Variant::OP_POWER:
 					priority = 0;
+					break;
+				case Variant::OP_BIT_NEGATE:
+					priority = 1;
 					unary = true;
 					break;
 				case Variant::OP_NEGATE:
-					priority = 1;
+					priority = 2;
 					unary = true;
 					break;
 				case Variant::OP_MULTIPLY:
 				case Variant::OP_DIVIDE:
 				case Variant::OP_MODULE:
-					priority = 2;
+					priority = 3;
 					break;
 				case Variant::OP_ADD:
 				case Variant::OP_SUBTRACT:
-					priority = 3;
+					priority = 4;
 					break;
 				case Variant::OP_SHIFT_LEFT:
 				case Variant::OP_SHIFT_RIGHT:
-					priority = 4;
-					break;
-				case Variant::OP_BIT_AND:
 					priority = 5;
 					break;
-				case Variant::OP_BIT_XOR:
+				case Variant::OP_BIT_AND:
 					priority = 6;
 					break;
-				case Variant::OP_BIT_OR:
+				case Variant::OP_BIT_XOR:
 					priority = 7;
+					break;
+				case Variant::OP_BIT_OR:
+					priority = 8;
 					break;
 				case Variant::OP_LESS:
 				case Variant::OP_LESS_EQUAL:
@@ -1031,23 +1113,23 @@ Expression::ENode *Expression::_parse_expression() {
 				case Variant::OP_GREATER_EQUAL:
 				case Variant::OP_EQUAL:
 				case Variant::OP_NOT_EQUAL:
-					priority = 8;
+					priority = 9;
 					break;
 				case Variant::OP_IN:
-					priority = 10;
+					priority = 11;
 					break;
 				case Variant::OP_NOT:
-					priority = 11;
+					priority = 12;
 					unary = true;
 					break;
 				case Variant::OP_AND:
-					priority = 12;
-					break;
-				case Variant::OP_OR:
 					priority = 13;
 					break;
+				case Variant::OP_OR:
+					priority = 14;
+					break;
 				default: {
-					_set_error("Parser bug, invalid operator in expression: " + itos(expression[i].op));
+					_set_error("Parser bug, invalid operator in expression: " + itos(expression_nodes[i].op));
 					return nullptr;
 				}
 			}
@@ -1070,9 +1152,9 @@ Expression::ENode *Expression::_parse_expression() {
 		// OK! create operator..
 		if (is_unary) {
 			int expr_pos = next_op;
-			while (expression[expr_pos].is_op) {
+			while (expression_nodes[expr_pos].is_op) {
 				expr_pos++;
-				if (expr_pos == expression.size()) {
+				if (expr_pos == expression_nodes.size()) {
 					//can happen..
 					_set_error("Unexpected end of expression...");
 					return nullptr;
@@ -1082,29 +1164,29 @@ Expression::ENode *Expression::_parse_expression() {
 			//consecutively do unary operators
 			for (int i = expr_pos - 1; i >= next_op; i--) {
 				OperatorNode *op = alloc_node<OperatorNode>();
-				op->op = expression[i].op;
-				op->nodes[0] = expression[i + 1].node;
+				op->op = expression_nodes[i].op;
+				op->nodes[0] = expression_nodes[i + 1].node;
 				op->nodes[1] = nullptr;
-				expression.write[i].is_op = false;
-				expression.write[i].node = op;
-				expression.remove(i + 1);
+				expression_nodes.write[i].is_op = false;
+				expression_nodes.write[i].node = op;
+				expression_nodes.remove_at(i + 1);
 			}
 
 		} else {
-			if (next_op < 1 || next_op >= (expression.size() - 1)) {
+			if (next_op < 1 || next_op >= (expression_nodes.size() - 1)) {
 				_set_error("Parser bug...");
 				ERR_FAIL_V(nullptr);
 			}
 
 			OperatorNode *op = alloc_node<OperatorNode>();
-			op->op = expression[next_op].op;
+			op->op = expression_nodes[next_op].op;
 
-			if (expression[next_op - 1].is_op) {
+			if (expression_nodes[next_op - 1].is_op) {
 				_set_error("Parser bug...");
 				ERR_FAIL_V(nullptr);
 			}
 
-			if (expression[next_op + 1].is_op) {
+			if (expression_nodes[next_op + 1].is_op) {
 				// this is not invalid and can really appear
 				// but it becomes invalid anyway because no binary op
 				// can be followed by a unary op in a valid combination,
@@ -1114,17 +1196,17 @@ Expression::ENode *Expression::_parse_expression() {
 				return nullptr;
 			}
 
-			op->nodes[0] = expression[next_op - 1].node; //expression goes as left
-			op->nodes[1] = expression[next_op + 1].node; //next expression goes as right
+			op->nodes[0] = expression_nodes[next_op - 1].node; //expression goes as left
+			op->nodes[1] = expression_nodes[next_op + 1].node; //next expression goes as right
 
 			//replace all 3 nodes by this operator and make it an expression
-			expression.write[next_op - 1].node = op;
-			expression.remove(next_op);
-			expression.remove(next_op);
+			expression_nodes.write[next_op - 1].node = op;
+			expression_nodes.remove_at(next_op);
+			expression_nodes.remove_at(next_op);
 		}
 	}
 
-	return expression[0].node;
+	return expression_nodes[0].node;
 }
 
 bool Expression::_compile_expression() {
@@ -1157,12 +1239,12 @@ bool Expression::_compile_expression() {
 	return false;
 }
 
-bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, String &r_error_str) {
+bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, bool p_const_calls_only, String &r_error_str) {
 	switch (p_node->type) {
 		case Expression::ENode::TYPE_INPUT: {
 			const Expression::InputNode *in = static_cast<const Expression::InputNode *>(p_node);
 			if (in->index < 0 || in->index >= p_inputs.size()) {
-				r_error_str = vformat(RTR("Invalid input %i (not passed) in expression"), in->index);
+				r_error_str = vformat(RTR("Invalid input %d (not passed) in expression"), in->index);
 				return true;
 			}
 			r_ret = p_inputs[in->index];
@@ -1183,7 +1265,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			const Expression::OperatorNode *op = static_cast<const Expression::OperatorNode *>(p_node);
 
 			Variant a;
-			bool ret = _execute(p_inputs, p_instance, op->nodes[0], a, r_error_str);
+			bool ret = _execute(p_inputs, p_instance, op->nodes[0], a, p_const_calls_only, r_error_str);
 			if (ret) {
 				return true;
 			}
@@ -1191,7 +1273,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			Variant b;
 
 			if (op->nodes[1]) {
-				ret = _execute(p_inputs, p_instance, op->nodes[1], b, r_error_str);
+				ret = _execute(p_inputs, p_instance, op->nodes[1], b, p_const_calls_only, r_error_str);
 				if (ret) {
 					return true;
 				}
@@ -1209,14 +1291,14 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			const Expression::IndexNode *index = static_cast<const Expression::IndexNode *>(p_node);
 
 			Variant base;
-			bool ret = _execute(p_inputs, p_instance, index->base, base, r_error_str);
+			bool ret = _execute(p_inputs, p_instance, index->base, base, p_const_calls_only, r_error_str);
 			if (ret) {
 				return true;
 			}
 
 			Variant idx;
 
-			ret = _execute(p_inputs, p_instance, index->index, idx, r_error_str);
+			ret = _execute(p_inputs, p_instance, index->index, idx, p_const_calls_only, r_error_str);
 			if (ret) {
 				return true;
 			}
@@ -1233,7 +1315,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			const Expression::NamedIndexNode *index = static_cast<const Expression::NamedIndexNode *>(p_node);
 
 			Variant base;
-			bool ret = _execute(p_inputs, p_instance, index->base, base, r_error_str);
+			bool ret = _execute(p_inputs, p_instance, index->base, base, p_const_calls_only, r_error_str);
 			if (ret) {
 				return true;
 			}
@@ -1253,7 +1335,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			arr.resize(array->array.size());
 			for (int i = 0; i < array->array.size(); i++) {
 				Variant value;
-				bool ret = _execute(p_inputs, p_instance, array->array[i], value, r_error_str);
+				bool ret = _execute(p_inputs, p_instance, array->array[i], value, p_const_calls_only, r_error_str);
 
 				if (ret) {
 					return true;
@@ -1270,14 +1352,14 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			Dictionary d;
 			for (int i = 0; i < dictionary->dict.size(); i += 2) {
 				Variant key;
-				bool ret = _execute(p_inputs, p_instance, dictionary->dict[i + 0], key, r_error_str);
+				bool ret = _execute(p_inputs, p_instance, dictionary->dict[i + 0], key, p_const_calls_only, r_error_str);
 
 				if (ret) {
 					return true;
 				}
 
 				Variant value;
-				ret = _execute(p_inputs, p_instance, dictionary->dict[i + 1], value, r_error_str);
+				ret = _execute(p_inputs, p_instance, dictionary->dict[i + 1], value, p_const_calls_only, r_error_str);
 				if (ret) {
 					return true;
 				}
@@ -1297,7 +1379,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 
 			for (int i = 0; i < constructor->arguments.size(); i++) {
 				Variant value;
-				bool ret = _execute(p_inputs, p_instance, constructor->arguments[i], value, r_error_str);
+				bool ret = _execute(p_inputs, p_instance, constructor->arguments[i], value, p_const_calls_only, r_error_str);
 
 				if (ret) {
 					return true;
@@ -1325,7 +1407,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 
 			for (int i = 0; i < bifunc->arguments.size(); i++) {
 				Variant value;
-				bool ret = _execute(p_inputs, p_instance, bifunc->arguments[i], value, r_error_str);
+				bool ret = _execute(p_inputs, p_instance, bifunc->arguments[i], value, p_const_calls_only, r_error_str);
 				if (ret) {
 					return true;
 				}
@@ -1337,7 +1419,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			Callable::CallError ce;
 			Variant::call_utility_function(bifunc->func, &r_ret, (const Variant **)argp.ptr(), argp.size(), ce);
 			if (ce.error != Callable::CallError::CALL_OK) {
-				r_error_str = "Builtin Call Failed. " + Variant::get_call_error_text(bifunc->func, (const Variant **)argp.ptr(), argp.size(), ce);
+				r_error_str = "Builtin call failed: " + Variant::get_call_error_text(bifunc->func, (const Variant **)argp.ptr(), argp.size(), ce);
 				return true;
 			}
 
@@ -1346,7 +1428,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			const Expression::CallNode *call = static_cast<const Expression::CallNode *>(p_node);
 
 			Variant base;
-			bool ret = _execute(p_inputs, p_instance, call->base, base, r_error_str);
+			bool ret = _execute(p_inputs, p_instance, call->base, base, p_const_calls_only, r_error_str);
 
 			if (ret) {
 				return true;
@@ -1359,7 +1441,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 
 			for (int i = 0; i < call->arguments.size(); i++) {
 				Variant value;
-				ret = _execute(p_inputs, p_instance, call->arguments[i], value, r_error_str);
+				ret = _execute(p_inputs, p_instance, call->arguments[i], value, p_const_calls_only, r_error_str);
 
 				if (ret) {
 					return true;
@@ -1369,7 +1451,11 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			}
 
 			Callable::CallError ce;
-			base.call(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
+			if (p_const_calls_only) {
+				base.call_const(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
+			} else {
+				base.callp(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
+			}
 
 			if (ce.error != Callable::CallError::CALL_OK) {
 				r_error_str = vformat(RTR("On call to '%s':"), String(call->method));
@@ -1408,13 +1494,13 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 	return OK;
 }
 
-Variant Expression::execute(Array p_inputs, Object *p_base, bool p_show_error) {
+Variant Expression::execute(const Array &p_inputs, Object *p_base, bool p_show_error, bool p_const_calls_only) {
 	ERR_FAIL_COND_V_MSG(error_set, Variant(), "There was previously a parse error: " + error_str + ".");
 
 	execution_error = false;
 	Variant output;
 	String error_txt;
-	bool err = _execute(p_inputs, p_base, root, output, error_txt);
+	bool err = _execute(p_inputs, p_base, root, output, p_const_calls_only, error_txt);
 	if (err) {
 		execution_error = true;
 		error_str = error_txt;
@@ -1434,7 +1520,7 @@ String Expression::get_error_text() const {
 
 void Expression::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parse", "expression", "input_names"), &Expression::parse, DEFVAL(Vector<String>()));
-	ClassDB::bind_method(D_METHOD("execute", "inputs", "base_instance", "show_error"), &Expression::execute, DEFVAL(Array()), DEFVAL(Variant()), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("execute", "inputs", "base_instance", "show_error", "const_calls_only"), &Expression::execute, DEFVAL(Array()), DEFVAL(Variant()), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("has_execute_failed"), &Expression::has_execute_failed);
 	ClassDB::bind_method(D_METHOD("get_error_text"), &Expression::get_error_text);
 }

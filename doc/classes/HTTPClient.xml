@@ -1,71 +1,63 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPClient" inherits="RefCounted" version="4.0">
+<class name="HTTPClient" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Low-level hyper-text transfer protocol client.
 	</brief_description>
 	<description>
-		Hyper-text transfer protocol client (sometimes called "User Agent"). Used to make HTTP requests to download web content, upload files and other data or to communicate with various services, among other use cases. [b]See the [HTTPRequest] node for a higher-level alternative.[/b]
+		Hyper-text transfer protocol client (sometimes called "User Agent"). Used to make HTTP requests to download web content, upload files and other data or to communicate with various services, among other use cases.
+		See the [HTTPRequest] node for a higher-level alternative.
 		[b]Note:[/b] This client only needs to connect to a host once (see [method connect_to_host]) to send multiple requests. Because of this, methods that take URLs usually take just the part after the host instead of the full URL, as the client is already connected to a host. See [method request] for a full example and to get started.
-		A [HTTPClient] should be reused between multiple requests or to connect to different hosts instead of creating one client per request. Supports SSL and SSL server certificate verification. HTTP status codes in the 2xx range indicate success, 3xx redirection (i.e. "try again, but over here"), 4xx something was wrong with the request, and 5xx something went wrong on the server's side.
-		For more information on HTTP, see https://developer.mozilla.org/en-US/docs/Web/HTTP (or read RFC 2616 to get it straight from the source: https://tools.ietf.org/html/rfc2616).
-		[b]Note:[/b] When performing HTTP requests from a project exported to HTML5, keep in mind the remote server may not allow requests from foreign origins due to [url=https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS]CORS[/url]. If you host the server in question, you should modify its backend to allow requests from foreign origins by adding the [code]Access-Control-Allow-Origin: *[/code] HTTP header.
-		[b]Note:[/b] SSL/TLS support is currently limited to TLS 1.0, TLS 1.1, and TLS 1.2. Attempting to connect to a TLS 1.3-only server will return an error.
+		A [HTTPClient] should be reused between multiple requests or to connect to different hosts instead of creating one client per request. Supports Transport Layer Security (TLS), including server certificate verification. HTTP status codes in the 2xx range indicate success, 3xx redirection (i.e. "try again, but over here"), 4xx something was wrong with the request, and 5xx something went wrong on the server's side.
+		For more information on HTTP, see [url=https://developer.mozilla.org/en-US/docs/Web/HTTP]MDN's documentation on HTTP[/url] (or read [url=https://tools.ietf.org/html/rfc2616]RFC 2616[/url] to get it straight from the source).
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
+		[b]Note:[/b] It's recommended to use transport encryption (TLS) and to avoid sending sensitive information (such as login credentials) in HTTP GET URL parameters. Consider using HTTP POST requests or HTTP headers for such information instead.
+		[b]Note:[/b] When performing HTTP requests from a project exported to Web, keep in mind the remote server may not allow requests from foreign origins due to [url=https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS]CORS[/url]. If you host the server in question, you should modify its backend to allow requests from foreign origins by adding the [code]Access-Control-Allow-Origin: *[/code] HTTP header.
+		[b]Note:[/b] TLS support is currently limited to TLS 1.0, TLS 1.1, and TLS 1.2. Attempting to connect to a TLS 1.3-only server will return an error.
+		[b]Warning:[/b] TLS certificate revocation and certificate pinning are currently not supported. Revoked certificates are accepted as long as they are otherwise valid. If this is a concern, you may want to use automatically managed certificates with a short validity period.
 	</description>
 	<tutorials>
-		<link title="HTTP client class">https://docs.godotengine.org/en/latest/tutorials/networking/http_client_class.html</link>
-		<link title="SSL certificates">https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
+		<link title="HTTP client class">$DOCS_URL/tutorials/networking/http_client_class.html</link>
+		<link title="TLS certificates">$DOCS_URL/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
 		<method name="close">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Closes the current connection, allowing reuse of this [HTTPClient].
 			</description>
 		</method>
 		<method name="connect_to_host">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="host" type="String">
-			</argument>
-			<argument index="1" name="port" type="int" default="-1">
-			</argument>
-			<argument index="2" name="use_ssl" type="bool" default="false">
-			</argument>
-			<argument index="3" name="verify_host" type="bool" default="true">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" default="-1" />
+			<param index="2" name="tls_options" type="TLSOptions" default="null" />
 			<description>
 				Connects to a host. This needs to be done before any requests are sent.
-				The host should not have http:// prepended but will strip the protocol identifier if provided.
-				If no [code]port[/code] is specified (or [code]-1[/code] is used), it is automatically set to 80 for HTTP and 443 for HTTPS (if [code]use_ssl[/code] is enabled).
-				[code]verify_host[/code] will check the SSL identity of the host if set to [code]true[/code].
+				If no [param port] is specified (or [code]-1[/code] is used), it is automatically set to 80 for HTTP and 443 for HTTPS. You can pass the optional [param tls_options] parameter to customize the trusted certification authorities, or the common name verification when using HTTPS. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
 			</description>
 		</method>
 		<method name="get_response_body_length" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the response's body length.
 				[b]Note:[/b] Some Web servers may not send a body length. In this case, the value returned will be [code]-1[/code]. If using chunked transfer encoding, the body length will also be [code]-1[/code].
+				[b]Note:[/b] This function always returns [code]-1[/code] on the Web platform due to browsers limitations.
 			</description>
 		</method>
 		<method name="get_response_code" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the response's HTTP status code.
 			</description>
 		</method>
 		<method name="get_response_headers">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns the response headers.
 			</description>
 		</method>
 		<method name="get_response_headers_as_dictionary">
-			<return type="Dictionary">
-			</return>
+			<return type="Dictionary" />
 			<description>
 				Returns all response headers as a Dictionary of structure [code]{ "key": "value1; value2" }[/code] where the case-sensitivity of the keys and values is kept like the server delivers it. A value is a simple String, this string can have more than one value where "; " is used as separator.
 				[b]Example:[/b]
@@ -78,38 +70,32 @@
 			</description>
 		</method>
 		<method name="get_status" qualifiers="const">
-			<return type="int" enum="HTTPClient.Status">
-			</return>
+			<return type="int" enum="HTTPClient.Status" />
 			<description>
 				Returns a [enum Status] constant. Need to call [method poll] in order to get status updates.
 			</description>
 		</method>
 		<method name="has_response" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				If [code]true[/code], this [HTTPClient] has a response available.
 			</description>
 		</method>
 		<method name="is_response_chunked" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				If [code]true[/code], this [HTTPClient] has a response that is chunked.
 			</description>
 		</method>
 		<method name="poll">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				This needs to be called in order to have any request processed. Check results with [method get_status].
 			</description>
 		</method>
 		<method name="query_string_from_dict">
-			<return type="String">
-			</return>
-			<argument index="0" name="fields" type="Dictionary">
-			</argument>
+			<return type="String" />
+			<param index="0" name="fields" type="Dictionary" />
 			<description>
 				Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.:
 				[codeblocks]
@@ -120,7 +106,7 @@
 				[/gdscript]
 				[csharp]
 				var fields = new Godot.Collections.Dictionary { { "username", "user" }, { "password", "pass" } };
-				string queryString = new HTTPClient().QueryStringFromDict(fields);
+				string queryString = httpClient.QueryStringFromDict(fields);
 				// Returns "username=user&amp;password=pass"
 				[/csharp]
 				[/codeblocks]
@@ -132,34 +118,33 @@
 				# Returns "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
 				[/gdscript]
 				[csharp]
-				var fields = new Godot.Collections.Dictionary{{"single", 123}, {"notValued", null}, {"multiple", new Godot.Collections.Array{22, 33, 44}}};
-				string queryString = new HTTPClient().QueryStringFromDict(fields);
+				var fields = new Godot.Collections.Dictionary
+				{
+				    { "single", 123 },
+				    { "notValued", default },
+				    { "multiple", new Godot.Collections.Array { 22, 33, 44 } },
+				};
+				string queryString = httpClient.QueryStringFromDict(fields);
 				// Returns "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
 				[/csharp]
 				[/codeblocks]
 			</description>
 		</method>
 		<method name="read_response_body_chunk">
-			<return type="PackedByteArray">
-			</return>
+			<return type="PackedByteArray" />
 			<description>
 				Reads one chunk from the response.
 			</description>
 		</method>
 		<method name="request">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="method" type="int" enum="HTTPClient.Method">
-			</argument>
-			<argument index="1" name="url" type="String">
-			</argument>
-			<argument index="2" name="headers" type="PackedStringArray">
-			</argument>
-			<argument index="3" name="body" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="method" type="int" enum="HTTPClient.Method" />
+			<param index="1" name="url" type="String" />
+			<param index="2" name="headers" type="PackedStringArray" />
+			<param index="3" name="body" type="String" default="&quot;&quot;" />
 			<description>
 				Sends a request to the connected host.
-				The URL parameter is usually just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
+				The URL parameter is usually just the part after the host, so for [code]https://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
 				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
 				To create a POST request with query strings to push to the server, do:
 				[codeblocks]
@@ -171,30 +156,43 @@
 				[/gdscript]
 				[csharp]
 				var fields = new Godot.Collections.Dictionary { { "username", "user" }, { "password", "pass" } };
-				string queryString = new HTTPClient().QueryStringFromDict(fields);
-				string[] headers = {"Content-Type: application/x-www-form-urlencoded", "Content-Length: " + queryString.Length};
-				var result = new HTTPClient().Request(HTTPClient.Method.Post, "index.php", headers, queryString);
+				string queryString = new HttpClient().QueryStringFromDict(fields);
+				string[] headers = { "Content-Type: application/x-www-form-urlencoded", $"Content-Length: {queryString.Length}" };
+				var result = new HttpClient().Request(HttpClient.Method.Post, "index.php", headers, queryString);
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] The [code]request_data[/code] parameter is ignored if [code]method[/code] is [constant HTTPClient.METHOD_GET]. This is because GET methods can't contain request data. As a workaround, you can pass request data as a query string in the URL. See [method String.uri_encode] for an example.
+				[b]Note:[/b] The [param body] parameter is ignored if [param method] is [constant HTTPClient.METHOD_GET]. This is because GET methods can't contain request data. As a workaround, you can pass request data as a query string in the URL. See [method String.uri_encode] for an example.
 			</description>
 		</method>
 		<method name="request_raw">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="method" type="int" enum="HTTPClient.Method">
-			</argument>
-			<argument index="1" name="url" type="String">
-			</argument>
-			<argument index="2" name="headers" type="PackedStringArray">
-			</argument>
-			<argument index="3" name="body" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="method" type="int" enum="HTTPClient.Method" />
+			<param index="1" name="url" type="String" />
+			<param index="2" name="headers" type="PackedStringArray" />
+			<param index="3" name="body" type="PackedByteArray" />
 			<description>
 				Sends a raw request to the connected host.
-				The URL parameter is usually just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
+				The URL parameter is usually just the part after the host, so for [code]https://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
 				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
 				Sends the body data raw, as a byte array and does not encode it in any way.
+			</description>
+		</method>
+		<method name="set_http_proxy">
+			<return type="void" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
+			<description>
+				Sets the proxy server for HTTP requests.
+				The proxy server is unset if [param host] is empty or [param port] is -1.
+			</description>
+		</method>
+		<method name="set_https_proxy">
+			<return type="void" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
+			<description>
+				Sets the proxy server for HTTPS requests.
+				The proxy server is unset if [param host] is empty or [param port] is -1.
 			</description>
 		</method>
 	</methods>
@@ -267,8 +265,8 @@
 		<constant name="STATUS_CONNECTION_ERROR" value="8" enum="Status">
 			Status: Error in HTTP connection.
 		</constant>
-		<constant name="STATUS_SSL_HANDSHAKE_ERROR" value="9" enum="Status">
-			Status: Error in SSL handshake.
+		<constant name="STATUS_TLS_HANDSHAKE_ERROR" value="9" enum="Status">
+			Status: Error in TLS handshake.
 		</constant>
 		<constant name="RESPONSE_CONTINUE" value="100" enum="ResponseCode">
 			HTTP status code [code]100 Continue[/code]. Interim response that indicates everything so far is OK and that the client should continue with the request (or ignore this status if already finished).
@@ -324,11 +322,11 @@
 		<constant name="RESPONSE_NOT_MODIFIED" value="304" enum="ResponseCode">
 			HTTP status code [code]304 Not Modified[/code]. A conditional GET or HEAD request has been received and would have resulted in a 200 OK response if it were not for the fact that the condition evaluated to [code]false[/code].
 		</constant>
-		<constant name="RESPONSE_USE_PROXY" value="305" enum="ResponseCode">
-			HTTP status code [code]305 Use Proxy[/code]. [i]Deprecated. Do not use.[/i]
+		<constant name="RESPONSE_USE_PROXY" value="305" enum="ResponseCode" deprecated="Many clients ignore this response code for security reasons. It is also deprecated by the HTTP standard.">
+			HTTP status code [code]305 Use Proxy[/code].
 		</constant>
-		<constant name="RESPONSE_SWITCH_PROXY" value="306" enum="ResponseCode">
-			HTTP status code [code]306 Switch Proxy[/code]. [i]Deprecated. Do not use.[/i]
+		<constant name="RESPONSE_SWITCH_PROXY" value="306" enum="ResponseCode" deprecated="Many clients ignore this response code for security reasons. It is also deprecated by the HTTP standard.">
+			HTTP status code [code]306 Switch Proxy[/code].
 		</constant>
 		<constant name="RESPONSE_TEMPORARY_REDIRECT" value="307" enum="ResponseCode">
 			HTTP status code [code]307 Temporary Redirect[/code]. The target resource resides temporarily under a different URI and the user agent MUST NOT change the request method if it performs an automatic redirection to that URI.

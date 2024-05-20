@@ -1,135 +1,150 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="UPNP" inherits="RefCounted" version="4.0">
+<class name="UPNP" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		UPNP network functions.
+		Universal Plug and Play (UPnP) functions for network device discovery, querying and port forwarding.
 	</brief_description>
 	<description>
-		Provides UPNP functionality to discover [UPNPDevice]s on the local network and execute commands on them, like managing port mappings (port forwarding) and querying the local and remote network IP address. Note that methods on this class are synchronous and block the calling thread.
-		To forward a specific port:
+		This class can be used to discover compatible [UPNPDevice]s on the local network and execute commands on them, like managing port mappings (for port forwarding/NAT traversal) and querying the local and remote network IP address. Note that methods on this class are synchronous and block the calling thread.
+		To forward a specific port (here [code]7777[/code], note both [method discover] and [method add_port_mapping] can return errors that should be checked):
 		[codeblock]
-		const PORT = 7777
 		var upnp = UPNP.new()
-		upnp.discover(2000, 2, "InternetGatewayDevice")
-		upnp.add_port_mapping(port)
+		upnp.discover()
+		upnp.add_port_mapping(7777)
 		[/codeblock]
 		To close a specific port (e.g. after you have finished using it):
 		[codeblock]
 		upnp.delete_port_mapping(port)
 		[/codeblock]
+		[b]Note:[/b] UPnP discovery blocks the current thread. To perform discovery without blocking the main thread, use [Thread]s like this:
+		[codeblock]
+		# Emitted when UPnP port mapping setup is completed (regardless of success or failure).
+		signal upnp_completed(error)
+
+		# Replace this with your own server port number between 1024 and 65535.
+		const SERVER_PORT = 3928
+		var thread = null
+
+		func _upnp_setup(server_port):
+		    # UPNP queries take some time.
+		    var upnp = UPNP.new()
+		    var err = upnp.discover()
+
+		    if err != OK:
+		        push_error(str(err))
+		        emit_signal("upnp_completed", err)
+		        return
+
+		    if upnp.get_gateway() and upnp.get_gateway().is_valid_gateway():
+		        upnp.add_port_mapping(server_port, server_port, ProjectSettings.get_setting("application/config/name"), "UDP")
+		        upnp.add_port_mapping(server_port, server_port, ProjectSettings.get_setting("application/config/name"), "TCP")
+		        emit_signal("upnp_completed", OK)
+
+		func _ready():
+		    thread = Thread.new()
+		    thread.start(_upnp_setup.bind(SERVER_PORT))
+
+		func _exit_tree():
+		    # Wait for thread finish here to handle game exit while the thread is running.
+		    thread.wait_to_finish()
+		[/codeblock]
+		[b]Terminology:[/b] In the context of UPnP networking, "gateway" (or "internet gateway device", short IGD) refers to network devices that allow computers in the local network to access the internet ("wide area network", WAN). These gateways are often also called "routers".
+		[b]Pitfalls:[/b]
+		- As explained above, these calls are blocking and shouldn't be run on the main thread, especially as they can block for multiple seconds at a time. Use threading!
+		- Networking is physical and messy. Packets get lost in transit or get filtered, addresses, free ports and assigned mappings change, and devices may leave or join the network at any time. Be mindful of this, be diligent when checking and handling errors, and handle these gracefully if you can: add clear error UI, timeouts and re-try handling.
+		- Port mappings may change (and be removed) at any time, and the remote/external IP address of the gateway can change likewise. You should consider re-querying the external IP and try to update/refresh the port mapping periodically (for example, every 5 minutes and on networking failures).
+		- Not all devices support UPnP, and some users disable UPnP support. You need to handle this (e.g. documenting and requiring the user to manually forward ports, or adding alternative methods of NAT traversal, like a relay/mirror server, or NAT hole punching, STUN/TURN, etc.).
+		- Consider what happens on mapping conflicts. Maybe multiple users on the same network would like to play your game at the same time, or maybe another application uses the same port. Make the port configurable, and optimally choose a port automatically (re-trying with a different port on failure).
+		[b]Further reading:[/b] If you want to know more about UPnP (and the Internet Gateway Device (IGD) and Port Control Protocol (PCP) specifically), [url=https://en.wikipedia.org/wiki/Universal_Plug_and_Play]Wikipedia[/url] is a good first stop, the specification can be found at the [url=https://openconnectivity.org/developer/specifications/upnp-resources/upnp/]Open Connectivity Foundation[/url] and Godot's implementation is based on the [url=https://github.com/miniupnp/miniupnp]MiniUPnP client[/url].
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="add_device">
-			<return type="void">
-			</return>
-			<argument index="0" name="device" type="UPNPDevice">
-			</argument>
+			<return type="void" />
+			<param index="0" name="device" type="UPNPDevice" />
 			<description>
 				Adds the given [UPNPDevice] to the list of discovered devices.
 			</description>
 		</method>
 		<method name="add_port_mapping" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="port_internal" type="int" default="0">
-			</argument>
-			<argument index="2" name="desc" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="3" name="proto" type="String" default="&quot;UDP&quot;">
-			</argument>
-			<argument index="4" name="duration" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="port_internal" type="int" default="0" />
+			<param index="2" name="desc" type="String" default="&quot;&quot;" />
+			<param index="3" name="proto" type="String" default="&quot;UDP&quot;" />
+			<param index="4" name="duration" type="int" default="0" />
 			<description>
-				Adds a mapping to forward the external [code]port[/code] (between 1 and 65535) on the default gateway (see [method get_gateway]) to the [code]internal_port[/code] on the local machine for the given protocol [code]proto[/code] (either [code]TCP[/code] or [code]UDP[/code], with UDP being the default). If a port mapping for the given port and protocol combination already exists on that gateway device, this method tries to overwrite it. If that is not desired, you can retrieve the gateway manually with [method get_gateway] and call [method add_port_mapping] on it, if any.
-				If [code]internal_port[/code] is [code]0[/code] (the default), the same port number is used for both the external and the internal port (the [code]port[/code] value).
-				The description ([code]desc[/code]) is shown in some router UIs and can be used to point out which application added the mapping. The mapping's lease duration can be limited by specifying a [code]duration[/code] (in seconds). However, some routers are incompatible with one or both of these, so use with caution and add fallback logic in case of errors to retry without them if in doubt.
+				Adds a mapping to forward the external [param port] (between 1 and 65535, although recommended to use port 1024 or above) on the default gateway (see [method get_gateway]) to the [param port_internal] on the local machine for the given protocol [param proto] (either [code]"TCP"[/code] or [code]"UDP"[/code], with UDP being the default). If a port mapping for the given port and protocol combination already exists on that gateway device, this method tries to overwrite it. If that is not desired, you can retrieve the gateway manually with [method get_gateway] and call [method add_port_mapping] on it, if any. Note that forwarding a well-known port (below 1024) with UPnP may fail depending on the device.
+				Depending on the gateway device, if a mapping for that port already exists, it will either be updated or it will refuse this command due to that conflict, especially if the existing mapping for that port wasn't created via UPnP or points to a different network address (or device) than this one.
+				If [param port_internal] is [code]0[/code] (the default), the same port number is used for both the external and the internal port (the [param port] value).
+				The description ([param desc]) is shown in some routers management UIs and can be used to point out which application added the mapping.
+				The mapping's lease [param duration] can be limited by specifying a duration in seconds. The default of [code]0[/code] means no duration, i.e. a permanent lease and notably some devices only support these permanent leases. Note that whether permanent or not, this is only a request and the gateway may still decide at any point to remove the mapping (which usually happens on a reboot of the gateway, when its external IP address changes, or on some models when it detects a port mapping has become inactive, i.e. had no traffic for multiple minutes). If not [code]0[/code] (permanent), the allowed range according to spec is between [code]120[/code] (2 minutes) and [code]86400[/code] seconds (24 hours).
 				See [enum UPNPResult] for possible return values.
 			</description>
 		</method>
 		<method name="clear_devices">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the list of discovered devices.
 			</description>
 		</method>
 		<method name="delete_port_mapping" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="proto" type="String" default="&quot;UDP&quot;">
-			</argument>
+			<return type="int" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="proto" type="String" default="&quot;UDP&quot;" />
 			<description>
-				Deletes the port mapping for the given port and protocol combination on the default gateway (see [method get_gateway]) if one exists. [code]port[/code] must be a valid port between 1 and 65535, [code]proto[/code] can be either [code]TCP[/code] or [code]UDP[/code]. See [enum UPNPResult] for possible return values.
+				Deletes the port mapping for the given port and protocol combination on the default gateway (see [method get_gateway]) if one exists. [param port] must be a valid port between 1 and 65535, [param proto] can be either [code]"TCP"[/code] or [code]"UDP"[/code]. May be refused for mappings pointing to addresses other than this one, for well-known ports (below 1024), or for mappings not added via UPnP. See [enum UPNPResult] for possible return values.
 			</description>
 		</method>
 		<method name="discover">
-			<return type="int">
-			</return>
-			<argument index="0" name="timeout" type="int" default="2000">
-			</argument>
-			<argument index="1" name="ttl" type="int" default="2">
-			</argument>
-			<argument index="2" name="device_filter" type="String" default="&quot;InternetGatewayDevice&quot;">
-			</argument>
+			<return type="int" />
+			<param index="0" name="timeout" type="int" default="2000" />
+			<param index="1" name="ttl" type="int" default="2" />
+			<param index="2" name="device_filter" type="String" default="&quot;InternetGatewayDevice&quot;" />
 			<description>
 				Discovers local [UPNPDevice]s. Clears the list of previously discovered devices.
-				Filters for IGD (InternetGatewayDevice) type devices by default, as those manage port forwarding. [code]timeout[/code] is the time to wait for responses in milliseconds. [code]ttl[/code] is the time-to-live; only touch this if you know what you're doing.
+				Filters for IGD (InternetGatewayDevice) type devices by default, as those manage port forwarding. [param timeout] is the time to wait for responses in milliseconds. [param ttl] is the time-to-live; only touch this if you know what you're doing.
 				See [enum UPNPResult] for possible return values.
 			</description>
 		</method>
 		<method name="get_device" qualifiers="const">
-			<return type="UPNPDevice">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="UPNPDevice" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Returns the [UPNPDevice] at the given [code]index[/code].
+				Returns the [UPNPDevice] at the given [param index].
 			</description>
 		</method>
 		<method name="get_device_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of discovered [UPNPDevice]s.
 			</description>
 		</method>
 		<method name="get_gateway" qualifiers="const">
-			<return type="UPNPDevice">
-			</return>
+			<return type="UPNPDevice" />
 			<description>
 				Returns the default gateway. That is the first discovered [UPNPDevice] that is also a valid IGD (InternetGatewayDevice).
 			</description>
 		</method>
 		<method name="query_external_address" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the external [IP] address of the default gateway (see [method get_gateway]) as string. Returns an empty string on error.
 			</description>
 		</method>
 		<method name="remove_device">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Removes the device at [code]index[/code] from the list of discovered devices.
+				Removes the device at [param index] from the list of discovered devices.
 			</description>
 		</method>
 		<method name="set_device">
-			<return type="void">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<argument index="1" name="device" type="UPNPDevice">
-			</argument>
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="device" type="UPNPDevice" />
 			<description>
-				Sets the device at [code]index[/code] from the list of discovered devices to [code]device[/code].
+				Sets the device at [param index] from the list of discovered devices to [param device].
 			</description>
 		</method>
 	</methods>

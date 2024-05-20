@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterBitMap" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Imports a [BitMap] resource (2D array of boolean values).
+	</brief_description>
+	<description>
+		[BitMap] resources are typically used as click masks in [TextureButton] and [TouchScreenButton].
+	</description>
+	<tutorials>
+		<link title="Importing images">$DOCS_URL/tutorials/assets_pipeline/importing_images.html</link>
+	</tutorials>
+	<members>
+		<member name="create_from" type="int" setter="" getter="" default="0">
+			The data source to use for generating the bitmap.
+			[b]Black &amp; White:[/b] Pixels whose HSV value is greater than the [member threshold] will be considered as "enabled" (bit is [code]true[/code]). If the pixel is lower than or equal to the threshold, it will be considered as "disabled" (bit is [code]false[/code]).
+			[b]Alpha:[/b] Pixels whose alpha value is greater than the [member threshold] will be considered as "enabled" (bit is [code]true[/code]). If the pixel is lower than or equal to the threshold, it will be considered as "disabled" (bit is [code]false[/code]).
+		</member>
+		<member name="threshold" type="float" setter="" getter="" default="0.5">
+			The threshold to use to determine which bits should be considered enabled or disabled. See also [member create_from].
+		</member>
+	</members>
+</class>

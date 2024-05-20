@@ -5,7 +5,7 @@
  *   Get and set properties of PostScript drivers (body).
  *   See `ftdriver.h' for available properties.
  *
- * Copyright (C) 2017-2020 by
+ * Copyright (C) 2017-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -220,7 +220,7 @@
       return error;
     }
 
-    FT_TRACE0(( "ps_property_set: missing property `%s'\n",
+    FT_TRACE2(( "ps_property_set: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }
@@ -275,7 +275,7 @@
       return error;
     }
 
-    FT_TRACE0(( "ps_property_get: missing property `%s'\n",
+    FT_TRACE2(( "ps_property_get: missing property `%s'\n",
                 property_name ));
     return FT_THROW( Missing_Property );
   }

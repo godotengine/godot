@@ -1,41 +1,44 @@
-/*************************************************************************/
-/*  performance.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  performance.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef PERFORMANCE_H
 #define PERFORMANCE_H
 
 #include "core/object/class_db.h"
-#include "core/templates/ordered_hash_map.h"
+#include "core/templates/hash_map.h"
 
 #define PERF_WARN_OFFLINE_FUNCTION
 #define PERF_WARN_PROCESS_SYNC
+
+template <typename T>
+class TypedArray;
 
 class Performance : public Object {
 	GDCLASS(Performance, Object);
@@ -47,6 +50,7 @@ class Performance : public Object {
 
 	double _process_time;
 	double _physics_process_time;
+	double _navigation_process_time;
 
 	class MonitorCall {
 		Callable _callable;
@@ -58,7 +62,7 @@ class Performance : public Object {
 		Variant call(bool &r_error, String &r_error_message);
 	};
 
-	OrderedHashMap<StringName, MonitorCall> _monitor_map;
+	HashMap<StringName, MonitorCall> _monitor_map;
 	uint64_t _monitor_modification_time;
 
 public:
@@ -66,6 +70,7 @@ public:
 		TIME_FPS,
 		TIME_PROCESS,
 		TIME_PHYSICS_PROCESS,
+		TIME_NAVIGATION_PROCESS,
 		MEMORY_STATIC,
 		MEMORY_STATIC_MAX,
 		MEMORY_MESSAGE_BUFFER_MAX,
@@ -85,8 +90,16 @@ public:
 		PHYSICS_3D_ACTIVE_OBJECTS,
 		PHYSICS_3D_COLLISION_PAIRS,
 		PHYSICS_3D_ISLAND_COUNT,
-		//physics
 		AUDIO_OUTPUT_LATENCY,
+		NAVIGATION_ACTIVE_MAPS,
+		NAVIGATION_REGION_COUNT,
+		NAVIGATION_AGENT_COUNT,
+		NAVIGATION_LINK_COUNT,
+		NAVIGATION_POLYGON_COUNT,
+		NAVIGATION_EDGE_COUNT,
+		NAVIGATION_EDGE_MERGE_COUNT,
+		NAVIGATION_EDGE_CONNECTION_COUNT,
+		NAVIGATION_EDGE_FREE_COUNT,
 		MONITOR_MAX
 	};
 
@@ -103,12 +116,13 @@ public:
 
 	void set_process_time(double p_pt);
 	void set_physics_process_time(double p_pt);
+	void set_navigation_process_time(double p_pt);
 
 	void add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args);
 	void remove_custom_monitor(const StringName &p_id);
 	bool has_custom_monitor(const StringName &p_id);
 	Variant get_custom_monitor(const StringName &p_id);
-	Array get_custom_monitor_names();
+	TypedArray<StringName> get_custom_monitor_names();
 
 	uint64_t get_monitor_modification_time();
 

@@ -1,32 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConeTwistJoint3D" inherits="Joint3D" version="4.0">
+<class name="ConeTwistJoint3D" inherits="Joint3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A twist joint between two 3D PhysicsBodies.
+		A physics joint that connects two 3D physics bodies in a way that simulates a ball-and-socket joint.
 	</brief_description>
 	<description>
-		The joint can rotate the bodies across an axis defined by the local x-axes of the [Joint3D].
-		The twist axis is initiated as the X axis of the [Joint3D].
-		Once the Bodies swing, the twist axis is calculated as the middle of the x-axes of the Joint3D in the local space of the two Bodies. See also [Generic6DOFJoint3D].
+		A physics joint that connects two 3D physics bodies in a way that simulates a ball-and-socket joint. The twist axis is initiated as the X axis of the [ConeTwistJoint3D]. Once the physics bodies swing, the twist axis is calculated as the middle of the X axes of the joint in the local space of the two physics bodies. Useful for limbs like shoulders and hips, lamps hanging off a ceiling, etc.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="ConeTwistJoint3D.Param">
-			</argument>
+			<return type="float" />
+			<param index="0" name="param" type="int" enum="ConeTwistJoint3D.Param" />
 			<description>
+				Returns the value of the specified parameter.
 			</description>
 		</method>
 		<method name="set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="ConeTwistJoint3D.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="ConeTwistJoint3D.Param" />
+			<param index="1" name="value" type="float" />
 			<description>
+				Sets the value of the specified parameter.
 			</description>
 		</method>
 	</methods>
@@ -41,13 +36,13 @@
 		<member name="softness" type="float" setter="set_param" getter="get_param" default="0.8">
 			The ease with which the joint starts to twist. If it's too low, it takes more force to start twisting the joint.
 		</member>
-		<member name="swing_span" type="float" setter="_set_swing_span" getter="_get_swing_span" default="45.0">
+		<member name="swing_span" type="float" setter="set_param" getter="get_param" default="0.785398">
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
 			The swing span defines, how much rotation will not get corrected along the swing axis.
 			Could be defined as looseness in the [ConeTwistJoint3D].
 			If below 0.05, this behavior is locked.
 		</member>
-		<member name="twist_span" type="float" setter="_set_twist_span" getter="_get_twist_span" default="180.0">
+		<member name="twist_span" type="float" setter="set_param" getter="get_param" default="3.14159">
 			Twist is the rotation around the twist axis, this value defined how far the joint can twist.
 			Twist is locked if below 0.05.
 		</member>

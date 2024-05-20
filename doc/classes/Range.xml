@@ -1,28 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Range" inherits="Control" version="4.0">
+<class name="Range" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Abstract base class for range-based controls.
+		Abstract base class for controls that represent a number within a range.
 	</brief_description>
 	<description>
-		Range is a base class for [Control] nodes that change a floating-point [i]value[/i] between a [i]minimum[/i] and a [i]maximum[/i], using [i]step[/i] and [i]page[/i], for example a [ScrollBar].
+		Range is an abstract base class for controls that represent a number within a range, using a configured [member step] and [member page] size. See e.g. [ScrollBar] and [Slider] for examples of higher-level nodes using Range.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="share">
-			<return type="void">
-			</return>
-			<argument index="0" name="with" type="Node">
-			</argument>
+		<method name="_value_changed" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="new_value" type="float" />
 			<description>
-				Binds two ranges together along with any ranges previously grouped with either of them. When any of range's member variables change, it will share the new value with all other ranges in its group.
+				Called when the [Range]'s value is changed (following the same conditions as [signal value_changed]).
+			</description>
+		</method>
+		<method name="set_value_no_signal">
+			<return type="void" />
+			<param index="0" name="value" type="float" />
+			<description>
+				Sets the [Range]'s current value to the specified [param value], without emitting the [signal value_changed] signal.
+			</description>
+		</method>
+		<method name="share">
+			<return type="void" />
+			<param index="0" name="with" type="Node" />
+			<description>
+				Binds two [Range]s together along with any ranges previously grouped with either of them. When any of range's member variables change, it will share the new value with all other ranges in its group.
 			</description>
 		</method>
 		<method name="unshare">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Stops range from sharing its member variables with any other.
+				Stops the [Range] from sharing its member variables with any other.
 			</description>
 		</method>
 	</methods>
@@ -34,28 +45,29 @@
 			If [code]true[/code], [member value] may be less than [member min_value].
 		</member>
 		<member name="exp_edit" type="bool" setter="set_exp_ratio" getter="is_ratio_exp" default="false">
-			If [code]true[/code], and [code]min_value[/code] is greater than 0, [code]value[/code] will be represented exponentially rather than linearly.
+			If [code]true[/code], and [member min_value] is greater than 0, [member value] will be represented exponentially rather than linearly.
 		</member>
 		<member name="max_value" type="float" setter="set_max" getter="get_max" default="100.0">
-			Maximum value. Range is clamped if [code]value[/code] is greater than [code]max_value[/code].
+			Maximum value. Range is clamped if [member value] is greater than [member max_value].
 		</member>
 		<member name="min_value" type="float" setter="set_min" getter="get_min" default="0.0">
-			Minimum value. Range is clamped if [code]value[/code] is less than [code]min_value[/code].
+			Minimum value. Range is clamped if [member value] is less than [member min_value].
 		</member>
 		<member name="page" type="float" setter="set_page" getter="get_page" default="0.0">
-			Page size. Used mainly for [ScrollBar]. ScrollBar's length is its size multiplied by [code]page[/code] over the difference between [code]min_value[/code] and [code]max_value[/code].
+			Page size. Used mainly for [ScrollBar]. ScrollBar's length is its size multiplied by [member page] over the difference between [member min_value] and [member max_value].
 		</member>
 		<member name="ratio" type="float" setter="set_as_ratio" getter="get_as_ratio">
 			The value mapped between 0 and 1.
 		</member>
 		<member name="rounded" type="bool" setter="set_use_rounded_values" getter="is_using_rounded_values" default="false">
-			If [code]true[/code], [code]value[/code] will always be rounded to the nearest integer.
+			If [code]true[/code], [member value] will always be rounded to the nearest integer.
 		</member>
-		<member name="step" type="float" setter="set_step" getter="get_step" default="1.0">
-			If greater than 0, [code]value[/code] will always be rounded to a multiple of [code]step[/code]. If [code]rounded[/code] is also [code]true[/code], [code]value[/code] will first be rounded to a multiple of [code]step[/code] then rounded to the nearest integer.
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="0" />
+		<member name="step" type="float" setter="set_step" getter="get_step" default="0.01">
+			If greater than 0, [member value] will always be rounded to a multiple of this property's value. If [member rounded] is also [code]true[/code], [member value] will first be rounded to a multiple of this property's value, then rounded to the nearest integer.
 		</member>
 		<member name="value" type="float" setter="set_value" getter="get_value" default="0.0">
-			Range's current value.
+			Range's current value. Changing this property (even via code) will trigger [signal value_changed] signal. Use [method set_value_no_signal] if you want to avoid it.
 		</member>
 	</members>
 	<signals>
@@ -65,13 +77,11 @@
 			</description>
 		</signal>
 		<signal name="value_changed">
-			<argument index="0" name="value" type="float">
-			</argument>
+			<param index="0" name="value" type="float" />
 			<description>
-				Emitted when [member value] changes.
+				Emitted when [member value] changes. When used on a [Slider], this is called continuously while dragging (potentially every frame). If you are performing an expensive operation in a function connected to [signal value_changed], consider using a [i]debouncing[/i] [Timer] to call the function less often.
+				[b]Note:[/b] Unlike signals such as [signal LineEdit.text_changed], [signal value_changed] is also emitted when [param value] is set directly via code.
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

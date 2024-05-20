@@ -1,18 +1,18 @@
 diff --git a/thirdparty/spirv-reflect/spirv_reflect.c b/thirdparty/spirv-reflect/spirv_reflect.c
-index 0fc979a8a4..3e3643717a 100644
+index 3b9d6bfecc..e97d1b0438 100644
 --- a/thirdparty/spirv-reflect/spirv_reflect.c
 +++ b/thirdparty/spirv-reflect/spirv_reflect.c
-@@ -124,6 +124,9 @@ typedef struct Decorations {
-   NumberDecoration      location;
-   NumberDecoration      offset;
-   NumberDecoration      uav_counter_buffer;
+@@ -122,6 +122,9 @@ typedef struct SpvReflectPrvDecorations {
+   SpvReflectPrvNumberDecoration   component;
+   SpvReflectPrvNumberDecoration   offset;
+   SpvReflectPrvNumberDecoration   uav_counter_buffer;
 +// -- GODOT begin --
-+  NumberDecoration      specialization_constant;
++  SpvReflectPrvNumberDecoration   specialization_constant;
 +// -- GODOT end --
-   StringDecoration      semantic;
-   uint32_t              array_stride;
-   uint32_t              matrix_stride;
-@@ -610,6 +613,9 @@ static SpvReflectResult ParseNodes(Parser* p_parser)
+   SpvReflectPrvStringDecoration   semantic;
+   uint32_t                        array_stride;
+   uint32_t                        matrix_stride;
+@@ -708,6 +711,9 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser) {
      p_parser->nodes[i].decorations.offset.value = (uint32_t)INVALID_VALUE;
      p_parser->nodes[i].decorations.uav_counter_buffer.value = (uint32_t)INVALID_VALUE;
      p_parser->nodes[i].decorations.built_in = (SpvBuiltIn)INVALID_VALUE;
@@ -22,76 +22,70 @@ index 0fc979a8a4..3e3643717a 100644
    }
    // Mark source file id node
    p_parser->source_file_id = (uint32_t)INVALID_VALUE;
-@@ -800,10 +806,16 @@ static SpvReflectResult ParseNodes(Parser* p_parser)
-         CHECKED_READU32(p_parser, p_node->word_offset + 2, p_node->result_id);
-       }
-       break;
--
-+// -- GODOT begin --
+@@ -907,7 +913,13 @@ static SpvReflectResult ParseNodes(SpvReflectPrvParser* p_parser) {
+ 
        case SpvOpSpecConstantTrue:
        case SpvOpSpecConstantFalse:
 -      case SpvOpSpecConstant:
++// -- GODOT begin --
 +      case SpvOpSpecConstant: {
 +        CHECKED_READU32(p_parser, p_node->word_offset + 1, p_node->result_type_id);
 +        CHECKED_READU32(p_parser, p_node->word_offset + 2, p_node->result_id);
 +        p_node->is_type = true;
-+      }
-+      break;
++      } break;
 +// -- GODOT end --
        case SpvOpSpecConstantComposite:
        case SpvOpSpecConstantOp: {
          CHECKED_READU32(p_parser, p_node->word_offset + 1, p_node->result_type_id);
-@@ -1309,6 +1321,9 @@ static SpvReflectResult ParseDecorations(Parser* p_parser)
+@@ -1385,6 +1397,9 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser) {
+       default: {
          skip = true;
-       }
-       break; 
+       } break;
 +// -- GODOT begin --
 +      case SpvDecorationSpecId:
 +// -- GODOT end --
+       case SpvDecorationRelaxedPrecision:
        case SpvDecorationBlock:
        case SpvDecorationBufferBlock:
-       case SpvDecorationColMajor:
-@@ -1441,7 +1456,14 @@ static SpvReflectResult ParseDecorations(Parser* p_parser)
+@@ -1542,6 +1557,14 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser) {
          p_target_decorations->input_attachment_index.word_offset = word_offset;
-       }
-       break;
--
+       } break;
+ 
 +// -- GODOT begin --
 +      case SpvDecorationSpecId: {
 +        uint32_t word_offset = p_node->word_offset + member_offset+ 3;
 +        CHECKED_READU32(p_parser, word_offset, p_target_decorations->specialization_constant.value);
 +        p_target_decorations->specialization_constant.word_offset = word_offset;
-+      }
-+      break;
++      } break;
 +// -- GODOT end --
++
        case SpvReflectDecorationHlslCounterBufferGOOGLE: {
-         uint32_t word_offset = p_node->word_offset + member_offset+ 3;
+         uint32_t word_offset = p_node->word_offset + member_offset + 3;
          CHECKED_READU32(p_parser, word_offset, p_target_decorations->uav_counter_buffer.value);
-@@ -1731,6 +1753,13 @@ static SpvReflectResult ParseType(
+@@ -1851,6 +1874,13 @@ static SpvReflectResult ParseType(SpvReflectPrvParser* p_parser, SpvReflectPrvNo
+       case SpvOpTypeAccelerationStructureKHR: {
          p_type->type_flags |= SPV_REFLECT_TYPE_FLAG_EXTERNAL_ACCELERATION_STRUCTURE;
-       }
-       break;
+       } break;
++
 +// -- GODOT begin --
 +      case SpvOpSpecConstantTrue:
 +      case SpvOpSpecConstantFalse:
 +      case SpvOpSpecConstant: {
-+      }
-+      break;
++      } break;
 +// -- GODOT end --
      }
  
      if (result == SPV_REFLECT_RESULT_SUCCESS) {
-@@ -3187,6 +3216,69 @@ static SpvReflectResult ParseExecutionModes(Parser* p_parser, SpvReflectShaderMo
+@@ -3522,6 +3552,68 @@ static SpvReflectResult ParseExecutionModes(SpvReflectPrvParser* p_parser, SpvRe
    return SPV_REFLECT_RESULT_SUCCESS;
  }
  
 +// -- GODOT begin --
-+static SpvReflectResult ParseSpecializationConstants(Parser* p_parser, SpvReflectShaderModule* p_module)
-+{
++static SpvReflectResult ParseSpecializationConstants(SpvReflectPrvParser* p_parser, SpvReflectShaderModule* p_module) {
 +  p_module->specialization_constant_count = 0;
 +  p_module->specialization_constants = NULL;
 +  for (size_t i = 0; i < p_parser->node_count; ++i) {
-+    Node* p_node = &(p_parser->nodes[i]);
++    SpvReflectPrvNode* p_node = &(p_parser->nodes[i]);
 +    if (p_node->op == SpvOpSpecConstantTrue || p_node->op == SpvOpSpecConstantFalse || p_node->op == SpvOpSpecConstant) {
 +      p_module->specialization_constant_count++;
 +    }
@@ -106,7 +100,7 @@ index 0fc979a8a4..3e3643717a 100644
 +  uint32_t index = 0;
 +
 +  for (size_t i = 0; i < p_parser->node_count; ++i) {
-+    Node* p_node = &(p_parser->nodes[i]);
++    SpvReflectPrvNode* p_node = &(p_parser->nodes[i]);
 +    switch(p_node->op) {
 +      default: continue;
 +      case SpvOpSpecConstantTrue: {
@@ -124,7 +118,7 @@ index 0fc979a8a4..3e3643717a 100644
 +        IF_READU32(result, p_parser, p_node->word_offset + 1, element_type_id);
 +        IF_READU32(result, p_parser, p_node->word_offset + 3, default_value);
 +
-+        Node* p_next_node = FindNode(p_parser, element_type_id);
++        SpvReflectPrvNode* p_next_node = FindNode(p_parser, element_type_id);
 +
 +        if (p_next_node->op == SpvOpTypeInt) {
 +          p_module->specialization_constants[index].constant_type = SPV_REFLECT_SPECIALIZATION_CONSTANT_INT;
@@ -148,10 +142,10 @@ index 0fc979a8a4..3e3643717a 100644
 +}
 +// -- GODOT end --
 +
- static SpvReflectResult ParsePushConstantBlocks(Parser* p_parser, SpvReflectShaderModule* p_module)
- {
+ static SpvReflectResult ParsePushConstantBlocks(SpvReflectPrvParser* p_parser, SpvReflectShaderModule* p_module) {
    for (size_t i = 0; i < p_parser->node_count; ++i) {
-@@ -3562,6 +3654,12 @@ SpvReflectResult spvReflectCreateShaderModule(
+     SpvReflectPrvNode* p_node = &(p_parser->nodes[i]);
+@@ -3908,6 +4000,12 @@ static SpvReflectResult CreateShaderModule(uint32_t flags, size_t size, const vo
      result = ParsePushConstantBlocks(&parser, p_module);
      SPV_REFLECT_ASSERT(result == SPV_REFLECT_RESULT_SUCCESS);
    }
@@ -164,9 +158,9 @@ index 0fc979a8a4..3e3643717a 100644
    if (result == SPV_REFLECT_RESULT_SUCCESS) {
      result = ParseEntryPoints(&parser, p_module);
      SPV_REFLECT_ASSERT(result == SPV_REFLECT_RESULT_SUCCESS);
-@@ -3691,6 +3789,9 @@ void spvReflectDestroyShaderModule(SpvReflectShaderModule* p_module)
-     SafeFree(p_entry->used_push_constants);
+@@ -4056,6 +4154,9 @@ void spvReflectDestroyShaderModule(SpvReflectShaderModule* p_module) {
    }
+   SafeFree(p_module->capabilities);
    SafeFree(p_module->entry_points);
 +// -- GODOT begin --
 +  SafeFree(p_module->specialization_constants);
@@ -174,17 +168,16 @@ index 0fc979a8a4..3e3643717a 100644
  
    // Push constants
    for (size_t i = 0; i < p_module->push_constant_block_count; ++i) {
-@@ -3959,6 +4060,38 @@ SpvReflectResult spvReflectEnumerateEntryPointInterfaceVariables(
+@@ -4283,6 +4384,36 @@ SpvReflectResult spvReflectEnumerateEntryPointInterfaceVariables(const SpvReflec
    return SPV_REFLECT_RESULT_SUCCESS;
  }
  
 +// -- GODOT begin --
 +SpvReflectResult spvReflectEnumerateSpecializationConstants(
-+  const SpvReflectShaderModule* p_module,
-+  uint32_t*                     p_count,
++  const SpvReflectShaderModule*      p_module,
++  uint32_t*                          p_count,
 +  SpvReflectSpecializationConstant** pp_constants
-+)
-+{
++) {
 +  if (IsNull(p_module)) {
 +    return SPV_REFLECT_RESULT_ERROR_NULL_POINTER;
 +  }
@@ -201,8 +194,7 @@ index 0fc979a8a4..3e3643717a 100644
 +      SpvReflectSpecializationConstant *p_const = &p_module->specialization_constants[index];
 +      pp_constants[index] = p_const;
 +    }
-+  }
-+  else {
++  } else {
 +    *p_count = p_module->specialization_constant_count;
 +  }
 +
@@ -210,28 +202,30 @@ index 0fc979a8a4..3e3643717a 100644
 +}
 +// -- GODOT end --
 +
- SpvReflectResult spvReflectEnumerateInputVariables(
-   const SpvReflectShaderModule* p_module,
-   uint32_t*                     p_count,
+ SpvReflectResult spvReflectEnumerateInputVariables(const SpvReflectShaderModule* p_module, uint32_t* p_count,
+                                                    SpvReflectInterfaceVariable** pp_variables) {
+   if (IsNull(p_module)) {
 diff --git a/thirdparty/spirv-reflect/spirv_reflect.h b/thirdparty/spirv-reflect/spirv_reflect.h
-index a5a956e9e8..21f8160770 100644
+index 08550e8f02..24446f1c1b 100644
 --- a/thirdparty/spirv-reflect/spirv_reflect.h
 +++ b/thirdparty/spirv-reflect/spirv_reflect.h
-@@ -292,6 +292,28 @@ typedef struct SpvReflectTypeDescription {
+@@ -374,6 +374,30 @@ typedef struct SpvReflectTypeDescription {
    struct SpvReflectTypeDescription* members;
  } SpvReflectTypeDescription;
  
 +// -- GODOT begin --
-+/*! @struct SpvReflectSpecializationConstant
++/*! @enum SpvReflectSpecializationConstantType
 +
 +*/
-+
 +typedef enum SpvReflectSpecializationConstantType {
 +  SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL = 0,
 +  SPV_REFLECT_SPECIALIZATION_CONSTANT_INT = 1,
 +  SPV_REFLECT_SPECIALIZATION_CONSTANT_FLOAT = 2,
 +} SpvReflectSpecializationConstantType;
 +
++/*! @struct SpvReflectSpecializationConstant
++
++*/
 +typedef struct SpvReflectSpecializationConstant {
 +  const char* name;
 +  uint32_t spirv_id;
@@ -245,19 +239,19 @@ index a5a956e9e8..21f8160770 100644
 +// -- GODOT end --
  
  /*! @struct SpvReflectInterfaceVariable
- 
-@@ -439,6 +461,10 @@ typedef struct SpvReflectShaderModule {
-   SpvReflectInterfaceVariable*      interface_variables;
-   uint32_t                          push_constant_block_count;
-   SpvReflectBlockVariable*          push_constant_blocks;
-+  // -- GODOT begin --
+     @brief The OpVariable that is either an Input or Output to the module
+@@ -549,6 +573,10 @@ typedef struct SpvReflectShaderModule {
+   SpvReflectInterfaceVariable*      interface_variables;                              // Uses value(s) from first entry point
+   uint32_t                          push_constant_block_count;                        // Uses value(s) from first entry point
+   SpvReflectBlockVariable*          push_constant_blocks;                             // Uses value(s) from first entry point
++// -- GODOT begin --
 +  uint32_t                          specialization_constant_count;
 +  SpvReflectSpecializationConstant* specialization_constants;
-+  // -- GODOT end --
++// -- GODOT end --
  
    struct Internal {
-     size_t                          spirv_size;
-@@ -694,6 +720,33 @@ SpvReflectResult spvReflectEnumerateInputVariables(
+     SpvReflectModuleFlags           module_flags;
+@@ -821,6 +849,32 @@ SpvReflectResult spvReflectEnumerateInputVariables(
    SpvReflectInterfaceVariable** pp_variables
  );
  
@@ -279,7 +273,6 @@ index a5a956e9e8..21f8160770 100644
 + @return               If successful, returns SPV_REFLECT_RESULT_SUCCESS.
 +                       Otherwise, the error code indicates the cause of the
 +                       failure.
-+
 +*/
 +SpvReflectResult spvReflectEnumerateSpecializationConstants(
 +  const SpvReflectShaderModule*      p_module,

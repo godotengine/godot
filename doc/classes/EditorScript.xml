@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorScript" inherits="RefCounted" version="4.0">
+<class name="EditorScript" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base script that can be used to add extension functions to the editor.
 	</brief_description>
@@ -9,7 +9,7 @@
 		[b]Example script:[/b]
 		[codeblocks]
 		[gdscript]
-		tool
+		@tool
 		extends EditorScript
 
 		func _run():
@@ -17,10 +17,9 @@
 		[/gdscript]
 		[csharp]
 		using Godot;
-		using System;
 
 		[Tool]
-		public class HelloEditor : EditorScript
+		public partial class HelloEditor : EditorScript
 		{
 		    public override void _Run()
 		    {
@@ -30,42 +29,36 @@
 		[/csharp]
 		[/codeblocks]
 		[b]Note:[/b] The script is run in the Editor context, which means the output is visible in the console window started with the Editor (stdout) instead of the usual Godot [b]Output[/b] dock.
+		[b]Note:[/b] EditorScript is [RefCounted], meaning it is destroyed when nothing references it. This can cause errors during asynchronous operations if there are no references to the script.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="_run" qualifiers="virtual">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				This method is executed by the Editor when [b]File &gt; Run[/b] is used.
 			</description>
 		</method>
 		<method name="add_root_node">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="Node">
-			</argument>
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
 			<description>
-				Adds [code]node[/code] as a child of the root node in the editor context.
+				Adds [param node] as a child of the root node in the editor context.
 				[b]Warning:[/b] The implementation of this method is currently disabled.
 			</description>
 		</method>
-		<method name="get_editor_interface">
-			<return type="EditorInterface">
-			</return>
+		<method name="get_editor_interface" qualifiers="const" deprecated="[EditorInterface] is a global singleton and can be accessed directly by its name.">
+			<return type="EditorInterface" />
 			<description>
 				Returns the [EditorInterface] singleton instance.
 			</description>
 		</method>
-		<method name="get_scene">
-			<return type="Node">
-			</return>
+		<method name="get_scene" qualifiers="const">
+			<return type="Node" />
 			<description>
 				Returns the Editor's currently active scene.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

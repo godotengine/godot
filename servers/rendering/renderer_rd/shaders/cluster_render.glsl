@@ -9,7 +9,7 @@ layout(location = 0) in vec3 vertex_attrib;
 layout(location = 0) out float depth_interp;
 layout(location = 1) out flat uint element_index;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	uint base_index;
 	uint pad0;
 	uint pad1;
@@ -64,7 +64,7 @@ void main() {
 #version 450
 
 #VERSION_DEFINES
-
+#ifndef MOLTENVK_USED // Metal will corrupt GPU state otherwise
 #if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic) && defined(has_GL_KHR_shader_subgroup_vote)
 
 #extension GL_KHR_shader_subgroup_ballot : enable
@@ -72,6 +72,7 @@ void main() {
 #extension GL_KHR_shader_subgroup_vote : enable
 
 #define USE_SUBGROUPS
+#endif
 #endif
 
 layout(location = 0) in float depth_interp;
@@ -99,6 +100,10 @@ layout(set = 0, binding = 3, std430) buffer restrict ClusterRender {
 }
 cluster_render;
 
+#ifdef USE_ATTACHMENT
+layout(location = 0) out vec4 frag_color;
+#endif
+
 void main() {
 	//convert from screen to cluster
 	uvec2 cluster = uvec2(gl_FragCoord.xy) >> state.screen_to_clusters_shift;
@@ -112,12 +117,14 @@ void main() {
 	uint usage_write_offset = cluster_offset + (element_index >> 5);
 	uint usage_write_bit = 1 << (element_index & 0x1F);
 
+	uint aux = 0;
+
 #ifdef USE_SUBGROUPS
 
 	uint cluster_thread_group_index;
 
 	if (!gl_HelperInvocation) {
-		//http://advances.realtimerendering.com/s2017/2017_Sig_Improved_Culling_final.pdf
+		//https://advances.realtimerendering.com/s2017/2017_Sig_Improved_Culling_final.pdf
 
 		uvec4 mask;
 
@@ -137,12 +144,16 @@ void main() {
 		cluster_thread_group_index = subgroupBallotExclusiveBitCount(mask);
 
 		if (cluster_thread_group_index == 0) {
-			atomicOr(cluster_render.data[usage_write_offset], usage_write_bit);
+			aux = atomicOr(cluster_render.data[usage_write_offset], usage_write_bit);
 		}
 	}
 #else
-	if (!gl_HelperInvocation) {
-		atomicOr(cluster_render.data[usage_write_offset], usage_write_bit);
+// MoltenVK/Metal fails to compile shaders using gl_HelperInvocation for some GPUs
+#ifndef MOLTENVK_USED
+	if (!gl_HelperInvocation)
+#endif
+	{
+		aux = atomicOr(cluster_render.data[usage_write_offset], usage_write_bit);
 	}
 #endif
 	//find the current element in the depth usage list and mark the current depth as used
@@ -157,12 +168,20 @@ void main() {
 	if (!gl_HelperInvocation) {
 		z_write_bit = subgroupOr(z_write_bit); //merge all Zs
 		if (cluster_thread_group_index == 0) {
-			atomicOr(cluster_render.data[z_write_offset], z_write_bit);
+			aux = atomicOr(cluster_render.data[z_write_offset], z_write_bit);
 		}
 	}
 #else
-	if (!gl_HelperInvocation) {
-		atomicOr(cluster_render.data[z_write_offset], z_write_bit);
+// MoltenVK/Metal fails to compile shaders using gl_HelperInvocation for some GPUs
+#ifndef MOLTENVK_USED
+	if (!gl_HelperInvocation)
+#endif
+	{
+		aux = atomicOr(cluster_render.data[z_write_offset], z_write_bit);
 	}
+#endif
+
+#ifdef USE_ATTACHMENT
+	frag_color = vec4(float(aux));
 #endif
 }

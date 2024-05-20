@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectSpectrumAnalyzerInstance" inherits="AudioEffectInstance" version="4.0">
+<class name="AudioEffectSpectrumAnalyzerInstance" inherits="AudioEffectInstance" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -8,14 +8,10 @@
 	</tutorials>
 	<methods>
 		<method name="get_magnitude_for_frequency_range" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="from_hz" type="float">
-			</argument>
-			<argument index="1" name="to_hz" type="float">
-			</argument>
-			<argument index="2" name="mode" type="int" enum="AudioEffectSpectrumAnalyzerInstance.MagnitudeMode" default="1">
-			</argument>
+			<return type="Vector2" />
+			<param index="0" name="from_hz" type="float" />
+			<param index="1" name="to_hz" type="float" />
+			<param index="2" name="mode" type="int" enum="AudioEffectSpectrumAnalyzerInstance.MagnitudeMode" default="1" />
 			<description>
 			</description>
 		</method>

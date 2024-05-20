@@ -1,20 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PopupPanel" inherits="Popup" version="4.0">
+<class name="PopupPanel" inherits="Popup" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Class for displaying popups with a panel background.
+		A popup with a panel background.
 	</brief_description>
 	<description>
-		Class for displaying popups with a panel background. In some cases it might be simpler to use than [Popup], since it provides a configurable background. If you are making windows, better check [Window].
+		A popup with a configurable panel background. Any child controls added to this node will be stretched to fit the panel's size (similar to how [PanelContainer] works). If you are making windows, see [Window].
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
 	<theme_items>
-		<theme_item name="panel" type="StyleBox">
-			The background panel style of this [PopupPanel].
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			[StyleBox] for the the background panel.
 		</theme_item>
 	</theme_items>
 </class>

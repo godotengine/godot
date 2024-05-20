@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CameraAttributesPhysical" inherits="CameraAttributes" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Physically-based camera settings.
+	</brief_description>
+	<description>
+		[CameraAttributesPhysical] is used to set rendering settings based on a physically-based camera's settings. It is responsible for exposure, auto-exposure, and depth of field.
+		When used in a [WorldEnvironment] it provides default settings for exposure, auto-exposure, and depth of field that will be used by all cameras without their own [CameraAttributes], including the editor camera. When used in a [Camera3D] it will override any [CameraAttributes] set in the [WorldEnvironment] and will override the [Camera3D]s [member Camera3D.far], [member Camera3D.near], [member Camera3D.fov], and [member Camera3D.keep_aspect] properties. When used in [VoxelGI] or [LightmapGI], only the exposure settings will be used.
+		The default settings are intended for use in an outdoor environment, tips for settings for use in an indoor environment can be found in each setting's documentation.
+		[b]Note:[/b] Depth of field blur is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
+	</description>
+	<tutorials>
+		<link title="Physical light and camera units">$DOCS_URL/tutorials/3d/physical_light_and_camera_units.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_fov" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the vertical field of view that corresponds to the [member frustum_focal_length]. This value is calculated internally whenever [member frustum_focal_length] is changed.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="auto_exposure_max_exposure_value" type="float" setter="set_auto_exposure_max_exposure_value" getter="get_auto_exposure_max_exposure_value" default="10.0">
+			The maximum luminance (in EV100) used when calculating auto exposure. When calculating scene average luminance, color values will be clamped to at least this value. This limits the auto-exposure from exposing below a certain brightness, resulting in a cut off point where the scene will remain bright.
+		</member>
+		<member name="auto_exposure_min_exposure_value" type="float" setter="set_auto_exposure_min_exposure_value" getter="get_auto_exposure_min_exposure_value" default="-8.0">
+			The minimum luminance luminance (in EV100) used when calculating auto exposure. When calculating scene average luminance, color values will be clamped to at least this value. This limits the auto-exposure from exposing above a certain brightness, resulting in a cut off point where the scene will remain dark.
+		</member>
+		<member name="exposure_aperture" type="float" setter="set_aperture" getter="get_aperture" default="16.0">
+			Size of the aperture of the camera, measured in f-stops. An f-stop is a unitless ratio between the focal length of the camera and the diameter of the aperture. A high aperture setting will result in a smaller aperture which leads to a dimmer image and sharper focus. A low aperture results in a wide aperture which lets in more light resulting in a brighter, less-focused image. Default is appropriate for outdoors at daytime (i.e. for use with a default [DirectionalLight3D]), for indoor lighting, a value between 2 and 4 is more appropriate.
+			Only available when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled.
+		</member>
+		<member name="exposure_shutter_speed" type="float" setter="set_shutter_speed" getter="get_shutter_speed" default="100.0">
+			Time for shutter to open and close, evaluated as [code]1 / shutter_speed[/code] seconds. A higher value will allow less light (leading to a darker image), while a lower value will allow more light (leading to a brighter image).
+			Only available when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled.
+		</member>
+		<member name="frustum_far" type="float" setter="set_far" getter="get_far" default="4000.0">
+			Override value for [member Camera3D.far]. Used internally when calculating depth of field. When attached to a [Camera3D] as its [member Camera3D.attributes], it will override the [member Camera3D.far] property.
+		</member>
+		<member name="frustum_focal_length" type="float" setter="set_focal_length" getter="get_focal_length" default="35.0">
+			Distance between camera lens and camera aperture, measured in millimeters. Controls field of view and depth of field. A larger focal length will result in a smaller field of view and a narrower depth of field meaning fewer objects will be in focus. A smaller focal length will result in a wider field of view and a larger depth of field meaning more objects will be in focus. When attached to a [Camera3D] as its [member Camera3D.attributes], it will override the [member Camera3D.fov] property and the [member Camera3D.keep_aspect] property.
+		</member>
+		<member name="frustum_focus_distance" type="float" setter="set_focus_distance" getter="get_focus_distance" default="10.0">
+			Distance from camera of object that will be in focus, measured in meters. Internally this will be clamped to be at least 1 millimeter larger than [member frustum_focal_length].
+		</member>
+		<member name="frustum_near" type="float" setter="set_near" getter="get_near" default="0.05">
+			Override value for [member Camera3D.near]. Used internally when calculating depth of field. When attached to a [Camera3D] as its [member Camera3D.attributes], it will override the [member Camera3D.near] property.
+		</member>
+	</members>
+</class>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectSpectrumAnalyzer" inherits="AudioEffect" version="4.0">
+<class name="AudioEffectSpectrumAnalyzer" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Audio effect that can be used for real-time audio visualizations.
 	</brief_description>
@@ -8,11 +8,8 @@
 		See also [AudioStreamGenerator] for procedurally generating sounds.
 	</description>
 	<tutorials>
-		<link title="https://godotengine.org/asset-library/asset/528">Audio Spectrum Demo</link>
-		<link title="https://godotengine.org/article/godot-32-will-get-new-audio-features">Godot 3.2 will get new audio features</link>
+		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="2.0">
 			The length of the buffer to keep (in seconds). Higher values keep data around for longer, but require more memory.

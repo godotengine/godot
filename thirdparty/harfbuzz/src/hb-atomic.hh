@@ -84,11 +84,11 @@ _hb_atomic_ptr_impl_cmplexch (const void **P, const void *O_, const void *N)
 #define _hb_memory_r_barrier()			std::atomic_thread_fence(std::memory_order_acquire)
 #define _hb_memory_w_barrier()			std::atomic_thread_fence(std::memory_order_release)
 
-#define hb_atomic_int_impl_add(AI, V)		(reinterpret_cast<std::atomic<int> *> (AI)->fetch_add ((V), std::memory_order_acq_rel))
-#define hb_atomic_int_impl_set_relaxed(AI, V)	(reinterpret_cast<std::atomic<int> *> (AI)->store ((V), std::memory_order_relaxed))
-#define hb_atomic_int_impl_set(AI, V)		(reinterpret_cast<std::atomic<int> *> (AI)->store ((V), std::memory_order_release))
-#define hb_atomic_int_impl_get_relaxed(AI)	(reinterpret_cast<std::atomic<int> const *> (AI)->load (std::memory_order_relaxed))
-#define hb_atomic_int_impl_get(AI)		(reinterpret_cast<std::atomic<int> const *> (AI)->load (std::memory_order_acquire))
+#define hb_atomic_int_impl_add(AI, V)		(reinterpret_cast<std::atomic<std::decay<decltype (*(AI))>::type> *> (AI)->fetch_add ((V), std::memory_order_acq_rel))
+#define hb_atomic_int_impl_set_relaxed(AI, V)	(reinterpret_cast<std::atomic<std::decay<decltype (*(AI))>::type> *> (AI)->store ((V), std::memory_order_relaxed))
+#define hb_atomic_int_impl_set(AI, V)		(reinterpret_cast<std::atomic<std::decay<decltype (*(AI))>::type> *> (AI)->store ((V), std::memory_order_release))
+#define hb_atomic_int_impl_get_relaxed(AI)	(reinterpret_cast<std::atomic<std::decay<decltype (*(AI))>::type> const *> (AI)->load (std::memory_order_relaxed))
+#define hb_atomic_int_impl_get(AI)		(reinterpret_cast<std::atomic<std::decay<decltype (*(AI))>::type> const *> (AI)->load (std::memory_order_acquire))
 
 #define hb_atomic_ptr_impl_set_relaxed(P, V)	(reinterpret_cast<std::atomic<void*> *> (P)->store ((V), std::memory_order_relaxed))
 #define hb_atomic_ptr_impl_get_relaxed(P)	(reinterpret_cast<std::atomic<void*> const *> (P)->load (std::memory_order_relaxed))
@@ -102,21 +102,31 @@ _hb_atomic_ptr_impl_cmplexch (const void **P, const void *O_, const void *N)
 #define hb_atomic_ptr_impl_cmpexch(P,O,N)	_hb_atomic_ptr_impl_cmplexch ((const void **) (P), (O), (N))
 
 
-#elif defined(HB_NO_MT)
+#else /* defined(HB_NO_MT) */
 
 #define hb_atomic_int_impl_add(AI, V)		((*(AI) += (V)) - (V))
-
 #define _hb_memory_barrier()			do {} while (0)
-
 #define hb_atomic_ptr_impl_cmpexch(P,O,N)	(* (void **) (P) == (void *) (O) ? (* (void **) (P) = (void *) (N), true) : false)
 
-
-#else
-
-#error "Could not find any system to define atomic_int macros."
-#error "Check hb-atomic.hh for possible resolutions."
-
 #endif
+
+
+/* This should never be disabled, even under HB_NO_MT.
+ * except that MSVC gives me an internal compiler error, so disabled there.
+ *
+ * https://github.com/harfbuzz/harfbuzz/pull/4119
+ */
+#ifndef _hb_compiler_memory_r_barrier
+#if defined(__ATOMIC_ACQUIRE) // gcc-like
+static inline void _hb_compiler_memory_r_barrier () { asm volatile("": : :"memory"); }
+#elif !defined(_MSC_VER)
+#include <atomic>
+#define _hb_compiler_memory_r_barrier() std::atomic_signal_fence (std::memory_order_acquire)
+#else
+static inline void _hb_compiler_memory_r_barrier () {}
+#endif
+#endif
+
 
 
 #ifndef _hb_memory_r_barrier
@@ -140,24 +150,47 @@ _hb_atomic_ptr_impl_cmplexch (const void **P, const void *O_, const void *N)
 #endif
 #ifndef hb_atomic_int_impl_set
 inline void hb_atomic_int_impl_set (int *AI, int v)	{ _hb_memory_w_barrier (); *AI = v; }
+inline void hb_atomic_int_impl_set (short *AI, short v)	{ _hb_memory_w_barrier (); *AI = v; }
 #endif
 #ifndef hb_atomic_int_impl_get
 inline int hb_atomic_int_impl_get (const int *AI)	{ int v = *AI; _hb_memory_r_barrier (); return v; }
+inline short hb_atomic_int_impl_get (const short *AI)	{ short v = *AI; _hb_memory_r_barrier (); return v; }
 #endif
 #ifndef hb_atomic_ptr_impl_get
 inline void *hb_atomic_ptr_impl_get (void ** const P)	{ void *v = *P; _hb_memory_r_barrier (); return v; }
 #endif
 
 
+struct hb_atomic_short_t
+{
+  hb_atomic_short_t () = default;
+  constexpr hb_atomic_short_t (short v) : v (v) {}
+
+  hb_atomic_short_t& operator = (short v_) { set_relaxed (v_); return *this; }
+  operator short () const { return get_relaxed (); }
+
+  void set_relaxed (short v_) { hb_atomic_int_impl_set_relaxed (&v, v_); }
+  void set_release (short v_) { hb_atomic_int_impl_set (&v, v_); }
+  short get_relaxed () const { return hb_atomic_int_impl_get_relaxed (&v); }
+  short get_acquire () const { return hb_atomic_int_impl_get (&v); }
+  short inc () { return hb_atomic_int_impl_add (&v,  1); }
+  short dec () { return hb_atomic_int_impl_add (&v, -1); }
+
+  short v = 0;
+};
+
 struct hb_atomic_int_t
 {
   hb_atomic_int_t () = default;
   constexpr hb_atomic_int_t (int v) : v (v) {}
 
+  hb_atomic_int_t& operator = (int v_) { set_relaxed (v_); return *this; }
+  operator int () const { return get_relaxed (); }
+
   void set_relaxed (int v_) { hb_atomic_int_impl_set_relaxed (&v, v_); }
-  void set (int v_) { hb_atomic_int_impl_set (&v, v_); }
+  void set_release (int v_) { hb_atomic_int_impl_set (&v, v_); }
   int get_relaxed () const { return hb_atomic_int_impl_get_relaxed (&v); }
-  int get () const { return hb_atomic_int_impl_get (&v); }
+  int get_acquire () const { return hb_atomic_int_impl_get (&v); }
   int inc () { return hb_atomic_int_impl_add (&v,  1); }
   int dec () { return hb_atomic_int_impl_add (&v, -1); }
 
@@ -171,18 +204,25 @@ struct hb_atomic_ptr_t
 
   hb_atomic_ptr_t () = default;
   constexpr hb_atomic_ptr_t (T* v) : v (v) {}
+  hb_atomic_ptr_t (const hb_atomic_ptr_t &other) = delete;
 
   void init (T* v_ = nullptr) { set_relaxed (v_); }
   void set_relaxed (T* v_) { hb_atomic_ptr_impl_set_relaxed (&v, v_); }
   T *get_relaxed () const { return (T *) hb_atomic_ptr_impl_get_relaxed (&v); }
-  T *get () const { return (T *) hb_atomic_ptr_impl_get ((void **) &v); }
+  T *get_acquire () const { return (T *) hb_atomic_ptr_impl_get ((void **) &v); }
   bool cmpexch (const T *old, T *new_) const { return hb_atomic_ptr_impl_cmpexch ((void **) &v, (void *) old, (void *) new_); }
 
-  T * operator -> () const                    { return get (); }
-  template <typename C> operator C * () const { return get (); }
+  T * operator -> () const                    { return get_acquire (); }
+  template <typename C> operator C * () const { return get_acquire (); }
 
   T *v = nullptr;
 };
+
+static inline bool hb_barrier ()
+{
+  _hb_compiler_memory_r_barrier ();
+  return true;
+}
 
 
 #endif /* HB_ATOMIC_HH */

@@ -1,59 +1,63 @@
-/*************************************************************************/
-/*  core_constants.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  core_constants.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "core_constants.h"
 
 #include "core/input/input_event.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/templates/hash_set.h"
 #include "core/variant/variant.h"
 
 struct _CoreConstant {
 #ifdef DEBUG_METHODS_ENABLED
-	StringName enum_name;
 	bool ignore_value_in_docs = false;
+	bool is_bitfield = false;
 #endif
-	const char *name;
-	int value = 0;
+	StringName enum_name;
+	const char *name = nullptr;
+	int64_t value = 0;
 
 	_CoreConstant() {}
 
 #ifdef DEBUG_METHODS_ENABLED
-	_CoreConstant(const StringName &p_enum_name, const char *p_name, int p_value, bool p_ignore_value_in_docs = false) :
-			enum_name(p_enum_name),
+	_CoreConstant(const StringName &p_enum_name, const char *p_name, int64_t p_value, bool p_ignore_value_in_docs = false, bool p_is_bitfield = false) :
 			ignore_value_in_docs(p_ignore_value_in_docs),
+			is_bitfield(p_is_bitfield),
+			enum_name(p_enum_name),
 			name(p_name),
 			value(p_value) {
 	}
 #else
-	_CoreConstant(const char *p_name, int p_value) :
+	_CoreConstant(const StringName &p_enum_name, const char *p_name, int64_t p_value) :
+			enum_name(p_enum_name),
 			name(p_name),
 			value(p_value) {
 	}
@@ -61,51 +65,192 @@ struct _CoreConstant {
 };
 
 static Vector<_CoreConstant> _global_constants;
+static HashMap<StringName, int> _global_constants_map;
+static HashMap<StringName, Vector<_CoreConstant>> _global_enums;
 
 #ifdef DEBUG_METHODS_ENABLED
 
-#define BIND_CORE_CONSTANT(m_constant) \
-	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant));
+#define BIND_CORE_CONSTANT(m_constant)                                                 \
+	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant)); \
+	_global_constants_map[#m_constant] = _global_constants.size() - 1;
 
-#define BIND_CORE_ENUM_CONSTANT(m_constant) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant));
+#define BIND_CORE_ENUM_CONSTANT(m_constant)                                                          \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant));              \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
-#define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_constant, #m_constant), m_custom_name, m_constant));
+#define BIND_CORE_BITFIELD_FLAG(m_constant)                                                          \
+	{                                                                                                \
+		StringName enum_name = __constant_get_bitfield_name(m_constant, #m_constant);                \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant, false, true)); \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
-#define BIND_CORE_CONSTANT_NO_VAL(m_constant) \
-	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant, true));
+// This just binds enum classes as if they were regular enum constants.
+#define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member)                                                  \
+	{                                                                                                              \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member);                \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                             \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);               \
+	}
 
-#define BIND_CORE_ENUM_CONSTANT_NO_VAL(m_constant) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant, true));
+#define BIND_CORE_BITFIELD_CLASS_FLAG(m_enum, m_prefix, m_member)                                                               \
+	{                                                                                                                           \
+		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member, #m_prefix "_" #m_member);                         \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member, false, true)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                                          \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);                            \
+	}
 
-#define BIND_CORE_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant) \
-	_global_constants.push_back(_CoreConstant(__constant_get_enum_name(m_constant, #m_constant), m_custom_name, m_constant, true));
+#define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member)                               \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member, #m_name);                  \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member));   \
+		_global_constants_map[#m_name] = _global_constants.size() - 1;                               \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_BITFIELD_CLASS_FLAG_CUSTOM(m_enum, m_name, m_member)                                          \
+	{                                                                                                           \
+		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member, #m_name);                         \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member, false, true)); \
+		_global_constants_map[#m_name] = _global_constants.size() - 1;                                          \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);            \
+	}
+
+#define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member)                                                 \
+	{                                                                                                                    \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member);                      \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member, true)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                                   \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);                     \
+	}
+
+#define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant)                                    \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant));            \
+		_global_constants_map[m_custom_name] = _global_constants.size() - 1;                         \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_CONSTANT_NO_VAL(m_constant)                                                \
+	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant, true)); \
+	_global_constants_map[#m_constant] = _global_constants.size() - 1;
+
+#define BIND_CORE_ENUM_CONSTANT_NO_VAL(m_constant)                                                   \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant, true));        \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant)                             \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant, true));      \
+		_global_constants_map[m_custom_name] = _global_constants.size() - 1;                         \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
 #else
 
-#define BIND_CORE_CONSTANT(m_constant) \
-	_global_constants.push_back(_CoreConstant(#m_constant, m_constant));
+#define BIND_CORE_CONSTANT(m_constant)                                                 \
+	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant)); \
+	_global_constants_map[#m_constant] = _global_constants.size() - 1;
 
-#define BIND_CORE_ENUM_CONSTANT(m_constant) \
-	_global_constants.push_back(_CoreConstant(#m_constant, m_constant));
+#define BIND_CORE_ENUM_CONSTANT(m_constant)                                                          \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant));              \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
-#define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant) \
-	_global_constants.push_back(_CoreConstant(m_custom_name, m_constant));
+#define BIND_CORE_BITFIELD_FLAG(m_constant)                                                          \
+	{                                                                                                \
+		StringName enum_name = __constant_get_bitfield_name(m_constant, #m_constant);                \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant));              \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
-#define BIND_CORE_CONSTANT_NO_VAL(m_constant) \
-	_global_constants.push_back(_CoreConstant(#m_constant, m_constant));
+// This just binds enum classes as if they were regular enum constants.
+#define BIND_CORE_ENUM_CLASS_CONSTANT(m_enum, m_prefix, m_member)                                                  \
+	{                                                                                                              \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member);                \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                             \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);               \
+	}
 
-#define BIND_CORE_ENUM_CONSTANT_NO_VAL(m_constant) \
-	_global_constants.push_back(_CoreConstant(#m_constant, m_constant));
+#define BIND_CORE_BITFIELD_CLASS_FLAG(m_enum, m_prefix, m_member)                                                  \
+	{                                                                                                              \
+		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member, #m_prefix "_" #m_member);            \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                             \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);               \
+	}
 
-#define BIND_CORE_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant) \
-	_global_constants.push_back(_CoreConstant(m_custom_name, m_constant));
+#define BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(m_enum, m_name, m_member)                               \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member, #m_name);                  \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member));   \
+		_global_constants_map[#m_name] = _global_constants.size() - 1;                               \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_BITFIELD_CLASS_FLAG_CUSTOM(m_enum, m_name, m_member)                               \
+	{                                                                                                \
+		StringName enum_name = __constant_get_bitfield_name(m_enum::m_member, #m_name);              \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_name, (int64_t)m_enum::m_member));   \
+		_global_constants_map[#m_name] = _global_constants.size() - 1;                               \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_ENUM_CLASS_CONSTANT_NO_VAL(m_enum, m_prefix, m_member)                                           \
+	{                                                                                                              \
+		StringName enum_name = __constant_get_enum_name(m_enum::m_member, #m_prefix "_" #m_member);                \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_prefix "_" #m_member, (int64_t)m_enum::m_member)); \
+		_global_constants_map[#m_prefix "_" #m_member] = _global_constants.size() - 1;                             \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]);               \
+	}
+
+#define BIND_CORE_ENUM_CONSTANT_CUSTOM(m_custom_name, m_constant)                                    \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant));            \
+		_global_constants_map[m_custom_name] = _global_constants.size() - 1;                         \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_CONSTANT_NO_VAL(m_constant)                                          \
+	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant)); \
+	_global_constants_map[#m_constant] = _global_constants.size() - 1;
+
+#define BIND_CORE_ENUM_CONSTANT_NO_VAL(m_constant)                                                   \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, #m_constant, m_constant));              \
+		_global_constants_map[#m_constant] = _global_constants.size() - 1;                           \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
+
+#define BIND_CORE_ENUM_CONSTANT_CUSTOM_NO_VAL(m_custom_name, m_constant)                             \
+	{                                                                                                \
+		StringName enum_name = __constant_get_enum_name(m_constant, #m_constant);                    \
+		_global_constants.push_back(_CoreConstant(enum_name, m_custom_name, m_constant));            \
+		_global_constants_map[m_custom_name] = _global_constants.size() - 1;                         \
+		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
+	}
 
 #endif
-
-VARIANT_ENUM_CAST(Key);
-VARIANT_ENUM_CAST(KeyModifierMask);
 
 void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(SIDE_LEFT);
@@ -124,335 +269,319 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(CLOCKWISE);
 	BIND_CORE_ENUM_CONSTANT(COUNTERCLOCKWISE);
 
-	BIND_CORE_ENUM_CONSTANT(HALIGN_LEFT);
-	BIND_CORE_ENUM_CONSTANT(HALIGN_CENTER);
-	BIND_CORE_ENUM_CONSTANT(HALIGN_RIGHT);
-	BIND_CORE_ENUM_CONSTANT(HALIGN_FILL);
+	BIND_CORE_ENUM_CONSTANT(HORIZONTAL_ALIGNMENT_LEFT);
+	BIND_CORE_ENUM_CONSTANT(HORIZONTAL_ALIGNMENT_CENTER);
+	BIND_CORE_ENUM_CONSTANT(HORIZONTAL_ALIGNMENT_RIGHT);
+	BIND_CORE_ENUM_CONSTANT(HORIZONTAL_ALIGNMENT_FILL);
 
-	BIND_CORE_ENUM_CONSTANT(VALIGN_TOP);
-	BIND_CORE_ENUM_CONSTANT(VALIGN_CENTER);
-	BIND_CORE_ENUM_CONSTANT(VALIGN_BOTTOM);
+	BIND_CORE_ENUM_CONSTANT(VERTICAL_ALIGNMENT_TOP);
+	BIND_CORE_ENUM_CONSTANT(VERTICAL_ALIGNMENT_CENTER);
+	BIND_CORE_ENUM_CONSTANT(VERTICAL_ALIGNMENT_BOTTOM);
+	BIND_CORE_ENUM_CONSTANT(VERTICAL_ALIGNMENT_FILL);
 
-	// huge list of keys
-	BIND_CORE_CONSTANT(SPKEY);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_TOP_TO);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_CENTER_TO);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_BASELINE_TO);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_BOTTOM_TO);
 
-	BIND_CORE_ENUM_CONSTANT(KEY_ESCAPE);
-	BIND_CORE_ENUM_CONSTANT(KEY_TAB);
-	BIND_CORE_ENUM_CONSTANT(KEY_BACKTAB);
-	BIND_CORE_ENUM_CONSTANT(KEY_BACKSPACE);
-	BIND_CORE_ENUM_CONSTANT(KEY_ENTER);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_ENTER);
-	BIND_CORE_ENUM_CONSTANT(KEY_INSERT);
-	BIND_CORE_ENUM_CONSTANT(KEY_DELETE);
-	BIND_CORE_ENUM_CONSTANT(KEY_PAUSE);
-	BIND_CORE_ENUM_CONSTANT(KEY_PRINT);
-	BIND_CORE_ENUM_CONSTANT(KEY_SYSREQ);
-	BIND_CORE_ENUM_CONSTANT(KEY_CLEAR);
-	BIND_CORE_ENUM_CONSTANT(KEY_HOME);
-	BIND_CORE_ENUM_CONSTANT(KEY_END);
-	BIND_CORE_ENUM_CONSTANT(KEY_LEFT);
-	BIND_CORE_ENUM_CONSTANT(KEY_UP);
-	BIND_CORE_ENUM_CONSTANT(KEY_RIGHT);
-	BIND_CORE_ENUM_CONSTANT(KEY_DOWN);
-	BIND_CORE_ENUM_CONSTANT(KEY_PAGEUP);
-	BIND_CORE_ENUM_CONSTANT(KEY_PAGEDOWN);
-	BIND_CORE_ENUM_CONSTANT(KEY_SHIFT);
-	BIND_CORE_ENUM_CONSTANT(KEY_CTRL);
-	BIND_CORE_ENUM_CONSTANT(KEY_META);
-	BIND_CORE_ENUM_CONSTANT(KEY_ALT);
-	BIND_CORE_ENUM_CONSTANT(KEY_CAPSLOCK);
-	BIND_CORE_ENUM_CONSTANT(KEY_NUMLOCK);
-	BIND_CORE_ENUM_CONSTANT(KEY_SCROLLLOCK);
-	BIND_CORE_ENUM_CONSTANT(KEY_F1);
-	BIND_CORE_ENUM_CONSTANT(KEY_F2);
-	BIND_CORE_ENUM_CONSTANT(KEY_F3);
-	BIND_CORE_ENUM_CONSTANT(KEY_F4);
-	BIND_CORE_ENUM_CONSTANT(KEY_F5);
-	BIND_CORE_ENUM_CONSTANT(KEY_F6);
-	BIND_CORE_ENUM_CONSTANT(KEY_F7);
-	BIND_CORE_ENUM_CONSTANT(KEY_F8);
-	BIND_CORE_ENUM_CONSTANT(KEY_F9);
-	BIND_CORE_ENUM_CONSTANT(KEY_F10);
-	BIND_CORE_ENUM_CONSTANT(KEY_F11);
-	BIND_CORE_ENUM_CONSTANT(KEY_F12);
-	BIND_CORE_ENUM_CONSTANT(KEY_F13);
-	BIND_CORE_ENUM_CONSTANT(KEY_F14);
-	BIND_CORE_ENUM_CONSTANT(KEY_F15);
-	BIND_CORE_ENUM_CONSTANT(KEY_F16);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_MULTIPLY);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_DIVIDE);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_SUBTRACT);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_PERIOD);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_ADD);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_0);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_1);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_2);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_3);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_4);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_5);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_6);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_7);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_8);
-	BIND_CORE_ENUM_CONSTANT(KEY_KP_9);
-	BIND_CORE_ENUM_CONSTANT(KEY_SUPER_L);
-	BIND_CORE_ENUM_CONSTANT(KEY_SUPER_R);
-	BIND_CORE_ENUM_CONSTANT(KEY_MENU);
-	BIND_CORE_ENUM_CONSTANT(KEY_HYPER_L);
-	BIND_CORE_ENUM_CONSTANT(KEY_HYPER_R);
-	BIND_CORE_ENUM_CONSTANT(KEY_HELP);
-	BIND_CORE_ENUM_CONSTANT(KEY_DIRECTION_L);
-	BIND_CORE_ENUM_CONSTANT(KEY_DIRECTION_R);
-	BIND_CORE_ENUM_CONSTANT(KEY_BACK);
-	BIND_CORE_ENUM_CONSTANT(KEY_FORWARD);
-	BIND_CORE_ENUM_CONSTANT(KEY_STOP);
-	BIND_CORE_ENUM_CONSTANT(KEY_REFRESH);
-	BIND_CORE_ENUM_CONSTANT(KEY_VOLUMEDOWN);
-	BIND_CORE_ENUM_CONSTANT(KEY_VOLUMEMUTE);
-	BIND_CORE_ENUM_CONSTANT(KEY_VOLUMEUP);
-	BIND_CORE_ENUM_CONSTANT(KEY_BASSBOOST);
-	BIND_CORE_ENUM_CONSTANT(KEY_BASSUP);
-	BIND_CORE_ENUM_CONSTANT(KEY_BASSDOWN);
-	BIND_CORE_ENUM_CONSTANT(KEY_TREBLEUP);
-	BIND_CORE_ENUM_CONSTANT(KEY_TREBLEDOWN);
-	BIND_CORE_ENUM_CONSTANT(KEY_MEDIAPLAY);
-	BIND_CORE_ENUM_CONSTANT(KEY_MEDIASTOP);
-	BIND_CORE_ENUM_CONSTANT(KEY_MEDIAPREVIOUS);
-	BIND_CORE_ENUM_CONSTANT(KEY_MEDIANEXT);
-	BIND_CORE_ENUM_CONSTANT(KEY_MEDIARECORD);
-	BIND_CORE_ENUM_CONSTANT(KEY_HOMEPAGE);
-	BIND_CORE_ENUM_CONSTANT(KEY_FAVORITES);
-	BIND_CORE_ENUM_CONSTANT(KEY_SEARCH);
-	BIND_CORE_ENUM_CONSTANT(KEY_STANDBY);
-	BIND_CORE_ENUM_CONSTANT(KEY_OPENURL);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCHMAIL);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCHMEDIA);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCH0);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCH1);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCH2);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCH3);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCH4);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCH5);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCH6);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCH7);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCH8);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCH9);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCHA);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCHB);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCHC);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCHD);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCHE);
-	BIND_CORE_ENUM_CONSTANT(KEY_LAUNCHF);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_TO_TOP);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_TO_CENTER);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_TO_BASELINE);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_TO_BOTTOM);
 
-	BIND_CORE_ENUM_CONSTANT(KEY_UNKNOWN);
-	BIND_CORE_ENUM_CONSTANT(KEY_SPACE);
-	BIND_CORE_ENUM_CONSTANT(KEY_EXCLAM);
-	BIND_CORE_ENUM_CONSTANT(KEY_QUOTEDBL);
-	BIND_CORE_ENUM_CONSTANT(KEY_NUMBERSIGN);
-	BIND_CORE_ENUM_CONSTANT(KEY_DOLLAR);
-	BIND_CORE_ENUM_CONSTANT(KEY_PERCENT);
-	BIND_CORE_ENUM_CONSTANT(KEY_AMPERSAND);
-	BIND_CORE_ENUM_CONSTANT(KEY_APOSTROPHE);
-	BIND_CORE_ENUM_CONSTANT(KEY_PARENLEFT);
-	BIND_CORE_ENUM_CONSTANT(KEY_PARENRIGHT);
-	BIND_CORE_ENUM_CONSTANT(KEY_ASTERISK);
-	BIND_CORE_ENUM_CONSTANT(KEY_PLUS);
-	BIND_CORE_ENUM_CONSTANT(KEY_COMMA);
-	BIND_CORE_ENUM_CONSTANT(KEY_MINUS);
-	BIND_CORE_ENUM_CONSTANT(KEY_PERIOD);
-	BIND_CORE_ENUM_CONSTANT(KEY_SLASH);
-	BIND_CORE_ENUM_CONSTANT(KEY_0);
-	BIND_CORE_ENUM_CONSTANT(KEY_1);
-	BIND_CORE_ENUM_CONSTANT(KEY_2);
-	BIND_CORE_ENUM_CONSTANT(KEY_3);
-	BIND_CORE_ENUM_CONSTANT(KEY_4);
-	BIND_CORE_ENUM_CONSTANT(KEY_5);
-	BIND_CORE_ENUM_CONSTANT(KEY_6);
-	BIND_CORE_ENUM_CONSTANT(KEY_7);
-	BIND_CORE_ENUM_CONSTANT(KEY_8);
-	BIND_CORE_ENUM_CONSTANT(KEY_9);
-	BIND_CORE_ENUM_CONSTANT(KEY_COLON);
-	BIND_CORE_ENUM_CONSTANT(KEY_SEMICOLON);
-	BIND_CORE_ENUM_CONSTANT(KEY_LESS);
-	BIND_CORE_ENUM_CONSTANT(KEY_EQUAL);
-	BIND_CORE_ENUM_CONSTANT(KEY_GREATER);
-	BIND_CORE_ENUM_CONSTANT(KEY_QUESTION);
-	BIND_CORE_ENUM_CONSTANT(KEY_AT);
-	BIND_CORE_ENUM_CONSTANT(KEY_A);
-	BIND_CORE_ENUM_CONSTANT(KEY_B);
-	BIND_CORE_ENUM_CONSTANT(KEY_C);
-	BIND_CORE_ENUM_CONSTANT(KEY_D);
-	BIND_CORE_ENUM_CONSTANT(KEY_E);
-	BIND_CORE_ENUM_CONSTANT(KEY_F);
-	BIND_CORE_ENUM_CONSTANT(KEY_G);
-	BIND_CORE_ENUM_CONSTANT(KEY_H);
-	BIND_CORE_ENUM_CONSTANT(KEY_I);
-	BIND_CORE_ENUM_CONSTANT(KEY_J);
-	BIND_CORE_ENUM_CONSTANT(KEY_K);
-	BIND_CORE_ENUM_CONSTANT(KEY_L);
-	BIND_CORE_ENUM_CONSTANT(KEY_M);
-	BIND_CORE_ENUM_CONSTANT(KEY_N);
-	BIND_CORE_ENUM_CONSTANT(KEY_O);
-	BIND_CORE_ENUM_CONSTANT(KEY_P);
-	BIND_CORE_ENUM_CONSTANT(KEY_Q);
-	BIND_CORE_ENUM_CONSTANT(KEY_R);
-	BIND_CORE_ENUM_CONSTANT(KEY_S);
-	BIND_CORE_ENUM_CONSTANT(KEY_T);
-	BIND_CORE_ENUM_CONSTANT(KEY_U);
-	BIND_CORE_ENUM_CONSTANT(KEY_V);
-	BIND_CORE_ENUM_CONSTANT(KEY_W);
-	BIND_CORE_ENUM_CONSTANT(KEY_X);
-	BIND_CORE_ENUM_CONSTANT(KEY_Y);
-	BIND_CORE_ENUM_CONSTANT(KEY_Z);
-	BIND_CORE_ENUM_CONSTANT(KEY_BRACKETLEFT);
-	BIND_CORE_ENUM_CONSTANT(KEY_BACKSLASH);
-	BIND_CORE_ENUM_CONSTANT(KEY_BRACKETRIGHT);
-	BIND_CORE_ENUM_CONSTANT(KEY_ASCIICIRCUM);
-	BIND_CORE_ENUM_CONSTANT(KEY_UNDERSCORE);
-	BIND_CORE_ENUM_CONSTANT(KEY_QUOTELEFT);
-	BIND_CORE_ENUM_CONSTANT(KEY_BRACELEFT);
-	BIND_CORE_ENUM_CONSTANT(KEY_BAR);
-	BIND_CORE_ENUM_CONSTANT(KEY_BRACERIGHT);
-	BIND_CORE_ENUM_CONSTANT(KEY_ASCIITILDE);
-	BIND_CORE_ENUM_CONSTANT(KEY_NOBREAKSPACE);
-	BIND_CORE_ENUM_CONSTANT(KEY_EXCLAMDOWN);
-	BIND_CORE_ENUM_CONSTANT(KEY_CENT);
-	BIND_CORE_ENUM_CONSTANT(KEY_STERLING);
-	BIND_CORE_ENUM_CONSTANT(KEY_CURRENCY);
-	BIND_CORE_ENUM_CONSTANT(KEY_YEN);
-	BIND_CORE_ENUM_CONSTANT(KEY_BROKENBAR);
-	BIND_CORE_ENUM_CONSTANT(KEY_SECTION);
-	BIND_CORE_ENUM_CONSTANT(KEY_DIAERESIS);
-	BIND_CORE_ENUM_CONSTANT(KEY_COPYRIGHT);
-	BIND_CORE_ENUM_CONSTANT(KEY_ORDFEMININE);
-	BIND_CORE_ENUM_CONSTANT(KEY_GUILLEMOTLEFT);
-	BIND_CORE_ENUM_CONSTANT(KEY_NOTSIGN);
-	BIND_CORE_ENUM_CONSTANT(KEY_HYPHEN);
-	BIND_CORE_ENUM_CONSTANT(KEY_REGISTERED);
-	BIND_CORE_ENUM_CONSTANT(KEY_MACRON);
-	BIND_CORE_ENUM_CONSTANT(KEY_DEGREE);
-	BIND_CORE_ENUM_CONSTANT(KEY_PLUSMINUS);
-	BIND_CORE_ENUM_CONSTANT(KEY_TWOSUPERIOR);
-	BIND_CORE_ENUM_CONSTANT(KEY_THREESUPERIOR);
-	BIND_CORE_ENUM_CONSTANT(KEY_ACUTE);
-	BIND_CORE_ENUM_CONSTANT(KEY_MU);
-	BIND_CORE_ENUM_CONSTANT(KEY_PARAGRAPH);
-	BIND_CORE_ENUM_CONSTANT(KEY_PERIODCENTERED);
-	BIND_CORE_ENUM_CONSTANT(KEY_CEDILLA);
-	BIND_CORE_ENUM_CONSTANT(KEY_ONESUPERIOR);
-	BIND_CORE_ENUM_CONSTANT(KEY_MASCULINE);
-	BIND_CORE_ENUM_CONSTANT(KEY_GUILLEMOTRIGHT);
-	BIND_CORE_ENUM_CONSTANT(KEY_ONEQUARTER);
-	BIND_CORE_ENUM_CONSTANT(KEY_ONEHALF);
-	BIND_CORE_ENUM_CONSTANT(KEY_THREEQUARTERS);
-	BIND_CORE_ENUM_CONSTANT(KEY_QUESTIONDOWN);
-	BIND_CORE_ENUM_CONSTANT(KEY_AGRAVE);
-	BIND_CORE_ENUM_CONSTANT(KEY_AACUTE);
-	BIND_CORE_ENUM_CONSTANT(KEY_ACIRCUMFLEX);
-	BIND_CORE_ENUM_CONSTANT(KEY_ATILDE);
-	BIND_CORE_ENUM_CONSTANT(KEY_ADIAERESIS);
-	BIND_CORE_ENUM_CONSTANT(KEY_ARING);
-	BIND_CORE_ENUM_CONSTANT(KEY_AE);
-	BIND_CORE_ENUM_CONSTANT(KEY_CCEDILLA);
-	BIND_CORE_ENUM_CONSTANT(KEY_EGRAVE);
-	BIND_CORE_ENUM_CONSTANT(KEY_EACUTE);
-	BIND_CORE_ENUM_CONSTANT(KEY_ECIRCUMFLEX);
-	BIND_CORE_ENUM_CONSTANT(KEY_EDIAERESIS);
-	BIND_CORE_ENUM_CONSTANT(KEY_IGRAVE);
-	BIND_CORE_ENUM_CONSTANT(KEY_IACUTE);
-	BIND_CORE_ENUM_CONSTANT(KEY_ICIRCUMFLEX);
-	BIND_CORE_ENUM_CONSTANT(KEY_IDIAERESIS);
-	BIND_CORE_ENUM_CONSTANT(KEY_ETH);
-	BIND_CORE_ENUM_CONSTANT(KEY_NTILDE);
-	BIND_CORE_ENUM_CONSTANT(KEY_OGRAVE);
-	BIND_CORE_ENUM_CONSTANT(KEY_OACUTE);
-	BIND_CORE_ENUM_CONSTANT(KEY_OCIRCUMFLEX);
-	BIND_CORE_ENUM_CONSTANT(KEY_OTILDE);
-	BIND_CORE_ENUM_CONSTANT(KEY_ODIAERESIS);
-	BIND_CORE_ENUM_CONSTANT(KEY_MULTIPLY);
-	BIND_CORE_ENUM_CONSTANT(KEY_OOBLIQUE);
-	BIND_CORE_ENUM_CONSTANT(KEY_UGRAVE);
-	BIND_CORE_ENUM_CONSTANT(KEY_UACUTE);
-	BIND_CORE_ENUM_CONSTANT(KEY_UCIRCUMFLEX);
-	BIND_CORE_ENUM_CONSTANT(KEY_UDIAERESIS);
-	BIND_CORE_ENUM_CONSTANT(KEY_YACUTE);
-	BIND_CORE_ENUM_CONSTANT(KEY_THORN);
-	BIND_CORE_ENUM_CONSTANT(KEY_SSHARP);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_TOP);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_CENTER);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_BOTTOM);
 
-	BIND_CORE_ENUM_CONSTANT(KEY_DIVISION);
-	BIND_CORE_ENUM_CONSTANT(KEY_YDIAERESIS);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_IMAGE_MASK);
+	BIND_CORE_ENUM_CONSTANT(INLINE_ALIGNMENT_TEXT_MASK);
 
-	BIND_CORE_ENUM_CONSTANT(KEY_CODE_MASK);
-	BIND_CORE_ENUM_CONSTANT(KEY_MODIFIER_MASK);
+	BIND_CORE_ENUM_CLASS_CONSTANT(EulerOrder, EULER_ORDER, XYZ);
+	BIND_CORE_ENUM_CLASS_CONSTANT(EulerOrder, EULER_ORDER, XZY);
+	BIND_CORE_ENUM_CLASS_CONSTANT(EulerOrder, EULER_ORDER, YXZ);
+	BIND_CORE_ENUM_CLASS_CONSTANT(EulerOrder, EULER_ORDER, YZX);
+	BIND_CORE_ENUM_CLASS_CONSTANT(EulerOrder, EULER_ORDER, ZXY);
+	BIND_CORE_ENUM_CLASS_CONSTANT(EulerOrder, EULER_ORDER, ZYX);
 
-	BIND_CORE_ENUM_CONSTANT(KEY_MASK_SHIFT);
-	BIND_CORE_ENUM_CONSTANT(KEY_MASK_ALT);
-	BIND_CORE_ENUM_CONSTANT(KEY_MASK_META);
-	BIND_CORE_ENUM_CONSTANT(KEY_MASK_CTRL);
-	BIND_CORE_ENUM_CONSTANT_NO_VAL(KEY_MASK_CMD);
-	BIND_CORE_ENUM_CONSTANT(KEY_MASK_KPAD);
-	BIND_CORE_ENUM_CONSTANT(KEY_MASK_GROUP_SWITCH);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, NONE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SPECIAL);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ESCAPE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, TAB);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BACKTAB);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BACKSPACE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ENTER);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_ENTER);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, INSERT);
+	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(Key, KEY_DELETE, KEY_DELETE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, PAUSE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, PRINT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SYSREQ);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, CLEAR);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, HOME);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, END);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LEFT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, UP);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, RIGHT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, DOWN);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, PAGEUP);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, PAGEDOWN);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SHIFT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, CTRL);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, META);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ALT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, CAPSLOCK);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, NUMLOCK);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SCROLLLOCK);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F1);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F2);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F3);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F4);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F5);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F6);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F7);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F8);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F9);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F10);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F11);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F12);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F13);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F14);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F15);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F16);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F17);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F18);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F19);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F20);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F21);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F22);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F23);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F24);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F25);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F26);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F27);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F28);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F29);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F30);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F31);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F32);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F33);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F34);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F35);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_MULTIPLY);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_DIVIDE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_SUBTRACT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_PERIOD);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_ADD);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_0);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_1);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_2);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_3);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_4);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_5);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_6);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_7);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_8);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KP_9);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MENU);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, HYPER);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, HELP);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BACK);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, FORWARD);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, STOP);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, REFRESH);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, VOLUMEDOWN);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, VOLUMEMUTE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, VOLUMEUP);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MEDIAPLAY);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MEDIASTOP);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MEDIAPREVIOUS);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MEDIANEXT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MEDIARECORD);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, HOMEPAGE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, FAVORITES);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SEARCH);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, STANDBY);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, OPENURL);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCHMAIL);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCHMEDIA);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCH0);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCH1);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCH2);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCH3);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCH4);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCH5);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCH6);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCH7);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCH8);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCH9);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCHA);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCHB);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCHC);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCHD);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCHE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LAUNCHF);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, GLOBE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, KEYBOARD);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, JIS_EISU);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, JIS_KANA);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, UNKNOWN);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SPACE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, EXCLAM);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, QUOTEDBL);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, NUMBERSIGN);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, DOLLAR);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, PERCENT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, AMPERSAND);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, APOSTROPHE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, PARENLEFT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, PARENRIGHT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ASTERISK);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, PLUS);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, COMMA);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, MINUS);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, PERIOD);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SLASH);
+	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(Key, KEY_0, KEY_0);
+	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(Key, KEY_1, KEY_1);
+	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(Key, KEY_2, KEY_2);
+	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(Key, KEY_3, KEY_3);
+	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(Key, KEY_4, KEY_4);
+	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(Key, KEY_5, KEY_5);
+	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(Key, KEY_6, KEY_6);
+	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(Key, KEY_7, KEY_7);
+	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(Key, KEY_8, KEY_8);
+	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(Key, KEY_9, KEY_9);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, COLON);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SEMICOLON);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, LESS);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, EQUAL);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, GREATER);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, QUESTION);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, AT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, A);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, B);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, C);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, D);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, E);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, F);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, G);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, H);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, I);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, J);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, K);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, L);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, M);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, N);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, O);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, P);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, Q);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, R);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, S);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, T);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, U);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, V);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, W);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, X);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, Y);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, Z);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BRACKETLEFT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BACKSLASH);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BRACKETRIGHT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ASCIICIRCUM);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, UNDERSCORE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, QUOTELEFT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BRACELEFT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BAR);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, BRACERIGHT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, ASCIITILDE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, YEN);
+	BIND_CORE_ENUM_CLASS_CONSTANT(Key, KEY, SECTION);
 
-	// mouse
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_LEFT);
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_RIGHT);
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_MIDDLE);
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_XBUTTON1);
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_XBUTTON2);
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_WHEEL_UP);
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_WHEEL_DOWN);
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_WHEEL_LEFT);
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_WHEEL_RIGHT);
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_MASK_LEFT);
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_MASK_RIGHT);
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_MASK_MIDDLE);
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_MASK_XBUTTON1);
-	BIND_CORE_ENUM_CONSTANT(MOUSE_BUTTON_MASK_XBUTTON2);
+	BIND_CORE_BITFIELD_CLASS_FLAG_CUSTOM(KeyModifierMask, KEY_CODE_MASK, CODE_MASK);
+	BIND_CORE_BITFIELD_CLASS_FLAG_CUSTOM(KeyModifierMask, KEY_MODIFIER_MASK, MODIFIER_MASK);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, CMD_OR_CTRL);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, SHIFT);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, ALT);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, META);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, CTRL);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, KPAD);
+	BIND_CORE_BITFIELD_CLASS_FLAG(KeyModifierMask, KEY_MASK, GROUP_SWITCH);
 
-	// Joypad buttons
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_INVALID);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_A);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_B);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_X);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_Y);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_BACK);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_GUIDE);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_START);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_LEFT_STICK);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_RIGHT_STICK);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_LEFT_SHOULDER);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_RIGHT_SHOULDER);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_DPAD_UP);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_DPAD_DOWN);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_DPAD_LEFT);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_DPAD_RIGHT);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_MISC1);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_PADDLE1);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_PADDLE2);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_PADDLE3);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_PADDLE4);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_TOUCHPAD);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_SDL_MAX);
-	BIND_CORE_ENUM_CONSTANT(JOY_BUTTON_MAX);
+	BIND_CORE_ENUM_CLASS_CONSTANT(KeyLocation, KEY_LOCATION, UNSPECIFIED);
+	BIND_CORE_ENUM_CLASS_CONSTANT(KeyLocation, KEY_LOCATION, LEFT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(KeyLocation, KEY_LOCATION, RIGHT);
 
-	// Joypad axes
-	BIND_CORE_ENUM_CONSTANT(JOY_AXIS_INVALID);
-	BIND_CORE_ENUM_CONSTANT(JOY_AXIS_LEFT_X);
-	BIND_CORE_ENUM_CONSTANT(JOY_AXIS_LEFT_Y);
-	BIND_CORE_ENUM_CONSTANT(JOY_AXIS_RIGHT_X);
-	BIND_CORE_ENUM_CONSTANT(JOY_AXIS_RIGHT_Y);
-	BIND_CORE_ENUM_CONSTANT(JOY_AXIS_TRIGGER_LEFT);
-	BIND_CORE_ENUM_CONSTANT(JOY_AXIS_TRIGGER_RIGHT);
-	BIND_CORE_ENUM_CONSTANT(JOY_AXIS_SDL_MAX);
-	BIND_CORE_ENUM_CONSTANT(JOY_AXIS_MAX);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, NONE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, LEFT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, RIGHT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, MIDDLE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, WHEEL_UP);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, WHEEL_DOWN);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, WHEEL_LEFT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MouseButton, MOUSE_BUTTON, WHEEL_RIGHT);
+	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(MouseButton, MOUSE_BUTTON_XBUTTON1, MB_XBUTTON1);
+	BIND_CORE_ENUM_CLASS_CONSTANT_CUSTOM(MouseButton, MOUSE_BUTTON_XBUTTON2, MB_XBUTTON2);
 
-	// midi
-	BIND_CORE_ENUM_CONSTANT(MIDI_MESSAGE_NOTE_OFF);
-	BIND_CORE_ENUM_CONSTANT(MIDI_MESSAGE_NOTE_ON);
-	BIND_CORE_ENUM_CONSTANT(MIDI_MESSAGE_AFTERTOUCH);
-	BIND_CORE_ENUM_CONSTANT(MIDI_MESSAGE_CONTROL_CHANGE);
-	BIND_CORE_ENUM_CONSTANT(MIDI_MESSAGE_PROGRAM_CHANGE);
-	BIND_CORE_ENUM_CONSTANT(MIDI_MESSAGE_CHANNEL_PRESSURE);
-	BIND_CORE_ENUM_CONSTANT(MIDI_MESSAGE_PITCH_BEND);
+	BIND_CORE_BITFIELD_CLASS_FLAG(MouseButtonMask, MOUSE_BUTTON_MASK, LEFT);
+	BIND_CORE_BITFIELD_CLASS_FLAG(MouseButtonMask, MOUSE_BUTTON_MASK, RIGHT);
+	BIND_CORE_BITFIELD_CLASS_FLAG(MouseButtonMask, MOUSE_BUTTON_MASK, MIDDLE);
+	BIND_CORE_BITFIELD_CLASS_FLAG(MouseButtonMask, MOUSE_BUTTON_MASK, MB_XBUTTON1);
+	BIND_CORE_BITFIELD_CLASS_FLAG(MouseButtonMask, MOUSE_BUTTON_MASK, MB_XBUTTON2);
+
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, INVALID);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, A);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, B);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, X);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, Y);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, BACK);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, GUIDE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, START);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, LEFT_STICK);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, RIGHT_STICK);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, LEFT_SHOULDER);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, RIGHT_SHOULDER);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, DPAD_UP);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, DPAD_DOWN);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, DPAD_LEFT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, DPAD_RIGHT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MISC1);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, PADDLE1);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, PADDLE2);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, PADDLE3);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, PADDLE4);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, TOUCHPAD);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, SDL_MAX);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyButton, JOY_BUTTON, MAX);
+
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyAxis, JOY_AXIS, INVALID);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyAxis, JOY_AXIS, LEFT_X);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyAxis, JOY_AXIS, LEFT_Y);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyAxis, JOY_AXIS, RIGHT_X);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyAxis, JOY_AXIS, RIGHT_Y);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyAxis, JOY_AXIS, TRIGGER_LEFT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyAxis, JOY_AXIS, TRIGGER_RIGHT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyAxis, JOY_AXIS, SDL_MAX);
+	BIND_CORE_ENUM_CLASS_CONSTANT(JoyAxis, JOY_AXIS, MAX);
+
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, NONE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, NOTE_OFF);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, NOTE_ON);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, AFTERTOUCH);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, CONTROL_CHANGE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, PROGRAM_CHANGE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, CHANNEL_PRESSURE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, PITCH_BEND);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, SYSTEM_EXCLUSIVE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, QUARTER_FRAME);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, SONG_POSITION_POINTER);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, SONG_SELECT);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, TUNE_REQUEST);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, TIMING_CLOCK);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, START);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, CONTINUE);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, STOP);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, ACTIVE_SENSING);
+	BIND_CORE_ENUM_CLASS_CONSTANT(MIDIMessage, MIDI_MESSAGE, SYSTEM_RESET);
 
 	// error list
 
@@ -511,8 +640,7 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_ENUM);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_ENUM_SUGGESTION);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_EXP_EASING);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LENGTH);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_KEY_ACCEL);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LINK);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_FLAGS);
 
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LAYERS_2D_RENDER);
@@ -521,6 +649,7 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LAYERS_3D_RENDER);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LAYERS_3D_PHYSICS);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LAYERS_3D_NAVIGATION);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LAYERS_AVOIDANCE);
 
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_FILE);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_DIR);
@@ -528,40 +657,71 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_GLOBAL_DIR);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_RESOURCE_TYPE);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_MULTILINE_TEXT);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_EXPRESSION);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_PLACEHOLDER_TEXT);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_COLOR_NO_ALPHA);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_IMAGE_COMPRESS_LOSSY);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_OBJECT_ID);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_TYPE_STRING);
 
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_STORAGE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_EDITOR);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_NETWORK);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_OBJECT_TOO_BIG);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_NODE_PATH_VALID_TYPES);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_SAVE_FILE);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_GLOBAL_SAVE_FILE);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_INT_IS_OBJECTID);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_INT_IS_POINTER);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_ARRAY_TYPE);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LOCALE_ID);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_LOCALIZABLE_STRING);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_NODE_TYPE);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_HIDE_QUATERNION_EDIT);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_PASSWORD);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_MAX);
 
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_EDITOR_HELPER);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_CHECKABLE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_CHECKED);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_INTERNATIONALIZED);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_GROUP);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_CATEGORY);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_SUBGROUP);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_NO_INSTANCE_STATE);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_RESTART_IF_CHANGED);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_SCRIPT_VARIABLE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NONE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_STORAGE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_EDITOR);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_INTERNAL);
 
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_DEFAULT);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_DEFAULT_INTL);
-	BIND_CORE_ENUM_CONSTANT(PROPERTY_USAGE_NOEDITOR);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_CHECKABLE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_CHECKED);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_GROUP);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_CATEGORY);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_SUBGROUP);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_CLASS_IS_BITFIELD);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NO_INSTANCE_STATE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_RESTART_IF_CHANGED);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_SCRIPT_VARIABLE);
 
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_NORMAL);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_EDITOR);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_NOSCRIPT);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_CONST);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_REVERSE);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_VIRTUAL);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_FROM_SCRIPT);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAG_STATIC);
-	BIND_CORE_ENUM_CONSTANT(METHOD_FLAGS_DEFAULT);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_STORE_IF_NULL);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_CLASS_IS_ENUM);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NIL_IS_VARIANT);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_ARRAY);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_ALWAYS_DUPLICATE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NEVER_DUPLICATE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_HIGH_END_GFX);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_KEYING_INCREMENTS);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_DEFERRED_SET_RESOURCE);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_EDITOR_BASIC_SETTING);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_READ_ONLY);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_SECRET);
+
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_DEFAULT);
+	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NO_EDITOR);
+
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_NORMAL);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_EDITOR);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_CONST);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_VIRTUAL);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_VARARG);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_STATIC);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_OBJECT_CORE);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAGS_DEFAULT);
 
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_NIL", Variant::NIL);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_BOOL", Variant::BOOL);
@@ -575,11 +735,14 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_VECTOR3", Variant::VECTOR3);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_VECTOR3I", Variant::VECTOR3I);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_TRANSFORM2D", Variant::TRANSFORM2D);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_VECTOR4", Variant::VECTOR4);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_VECTOR4I", Variant::VECTOR4I);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PLANE", Variant::PLANE);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_QUATERNION", Variant::QUATERNION);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_AABB", Variant::AABB);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_BASIS", Variant::BASIS);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_TRANSFORM3D", Variant::TRANSFORM3D);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PROJECTION", Variant::PROJECTION);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_COLOR", Variant::COLOR);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_STRING_NAME", Variant::STRING_NAME);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_NODE_PATH", Variant::NODE_PATH);
@@ -589,15 +752,16 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_SIGNAL", Variant::SIGNAL);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_DICTIONARY", Variant::DICTIONARY);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_ARRAY", Variant::ARRAY);
-	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_RAW_ARRAY", Variant::PACKED_BYTE_ARRAY);
-	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_INT32_ARRAY", Variant::PACKED_INT32_ARRAY);
-	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_INT64_ARRAY", Variant::PACKED_INT64_ARRAY);
-	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_FLOAT32_ARRAY", Variant::PACKED_FLOAT32_ARRAY);
-	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_FLOAT64_ARRAY", Variant::PACKED_FLOAT64_ARRAY);
-	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_STRING_ARRAY", Variant::PACKED_STRING_ARRAY);
-	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_VECTOR2_ARRAY", Variant::PACKED_VECTOR2_ARRAY);
-	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_VECTOR3_ARRAY", Variant::PACKED_VECTOR3_ARRAY);
-	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_COLOR_ARRAY", Variant::PACKED_COLOR_ARRAY);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PACKED_BYTE_ARRAY", Variant::PACKED_BYTE_ARRAY);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PACKED_INT32_ARRAY", Variant::PACKED_INT32_ARRAY);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PACKED_INT64_ARRAY", Variant::PACKED_INT64_ARRAY);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PACKED_FLOAT32_ARRAY", Variant::PACKED_FLOAT32_ARRAY);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PACKED_FLOAT64_ARRAY", Variant::PACKED_FLOAT64_ARRAY);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PACKED_STRING_ARRAY", Variant::PACKED_STRING_ARRAY);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PACKED_VECTOR2_ARRAY", Variant::PACKED_VECTOR2_ARRAY);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PACKED_VECTOR3_ARRAY", Variant::PACKED_VECTOR3_ARRAY);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PACKED_COLOR_ARRAY", Variant::PACKED_COLOR_ARRAY);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PACKED_VECTOR4_ARRAY", Variant::PACKED_VECTOR4_ARRAY);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_MAX", Variant::VARIANT_MAX);
 
 	//comparison
@@ -615,6 +779,7 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_NEGATE", Variant::OP_NEGATE);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_POSITIVE", Variant::OP_POSITIVE);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_MODULE", Variant::OP_MODULE);
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_POWER", Variant::OP_POWER);
 	//bitwise
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_SHIFT_LEFT", Variant::OP_SHIFT_LEFT);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("OP_SHIFT_RIGHT", Variant::OP_SHIFT_RIGHT);
@@ -634,23 +799,29 @@ void register_global_constants() {
 
 void unregister_global_constants() {
 	_global_constants.clear();
+	_global_constants_map.clear();
+	_global_enums.clear();
 }
 
 int CoreConstants::get_global_constant_count() {
 	return _global_constants.size();
 }
 
-#ifdef DEBUG_METHODS_ENABLED
 StringName CoreConstants::get_global_constant_enum(int p_idx) {
 	return _global_constants[p_idx].enum_name;
+}
+
+#ifdef DEBUG_METHODS_ENABLED
+bool CoreConstants::is_global_constant_bitfield(int p_idx) {
+	return _global_constants[p_idx].is_bitfield;
 }
 
 bool CoreConstants::get_ignore_value_in_docs(int p_idx) {
 	return _global_constants[p_idx].ignore_value_in_docs;
 }
 #else
-StringName CoreConstants::get_global_constant_enum(int p_idx) {
-	return StringName();
+bool CoreConstants::is_global_constant_bitfield(int p_idx) {
+	return false;
 }
 
 bool CoreConstants::get_ignore_value_in_docs(int p_idx) {
@@ -662,6 +833,27 @@ const char *CoreConstants::get_global_constant_name(int p_idx) {
 	return _global_constants[p_idx].name;
 }
 
-int CoreConstants::get_global_constant_value(int p_idx) {
+int64_t CoreConstants::get_global_constant_value(int p_idx) {
 	return _global_constants[p_idx].value;
+}
+
+bool CoreConstants::is_global_constant(const StringName &p_name) {
+	return _global_constants_map.has(p_name);
+}
+
+int CoreConstants::get_global_constant_index(const StringName &p_name) {
+	ERR_FAIL_COND_V_MSG(!_global_constants_map.has(p_name), -1, "Trying to get index of non-existing constant.");
+	return _global_constants_map[p_name];
+}
+
+bool CoreConstants::is_global_enum(const StringName &p_enum) {
+	return _global_enums.has(p_enum);
+}
+
+void CoreConstants::get_enum_values(const StringName &p_enum, HashMap<StringName, int64_t> *p_values) {
+	ERR_FAIL_NULL_MSG(p_values, "Trying to get enum values with null map.");
+	ERR_FAIL_COND_MSG(!_global_enums.has(p_enum), "Trying to get values of non-existing enum.");
+	for (const _CoreConstant &constant : _global_enums[p_enum]) {
+		(*p_values)[constant.name] = constant.value;
+	}
 }

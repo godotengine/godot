@@ -1,5 +1,6 @@
 def can_build(env, platform):
-    return env["tools"]
+    env.module_add_dependencies("fbx", ["gltf"])
+    return not env["disable_3d"]
 
 
 def configure(env):
@@ -8,7 +9,10 @@ def configure(env):
 
 def get_doc_classes():
     return [
-        "EditorSceneImporterFBX",
+        "EditorSceneFormatImporterFBX2GLTF",
+        "EditorSceneFormatImporterUFBX",
+        "FBXDocument",
+        "FBXState",
     ]
 
 

@@ -1000,8 +1000,9 @@ static void HFilter8i_NEON(uint8_t* u, uint8_t* v, int stride,
 // libwebp adds 1 << 16 to cospi8sqrt2minus1 (kC1). However, this causes the
 // same issue with kC1 and vqdmulh that we work around by down shifting kC2
 
-static const int16_t kC1 = 20091;
-static const int16_t kC2 = 17734;  // half of kC2, actually. See comment above.
+static const int16_t kC1 = WEBP_TRANSFORM_AC3_C1;
+static const int16_t kC2 =
+    WEBP_TRANSFORM_AC3_C2 / 2;  // half of kC2, actually. See comment above.
 
 #if defined(WEBP_USE_INTRINSICS)
 static WEBP_INLINE void Transpose8x2_NEON(const int16x8_t in0,
@@ -1255,15 +1256,12 @@ static void TransformWHT_NEON(const int16_t* in, int16_t* out) {
 
 //------------------------------------------------------------------------------
 
-#define MUL(a, b) (((a) * (b)) >> 16)
 static void TransformAC3_NEON(const int16_t* in, uint8_t* dst) {
-  static const int kC1_full = 20091 + (1 << 16);
-  static const int kC2_full = 35468;
   const int16x4_t A = vld1_dup_s16(in);
-  const int16x4_t c4 = vdup_n_s16(MUL(in[4], kC2_full));
-  const int16x4_t d4 = vdup_n_s16(MUL(in[4], kC1_full));
-  const int c1 = MUL(in[1], kC2_full);
-  const int d1 = MUL(in[1], kC1_full);
+  const int16x4_t c4 = vdup_n_s16(WEBP_TRANSFORM_AC3_MUL2(in[4]));
+  const int16x4_t d4 = vdup_n_s16(WEBP_TRANSFORM_AC3_MUL1(in[4]));
+  const int c1 = WEBP_TRANSFORM_AC3_MUL2(in[1]);
+  const int d1 = WEBP_TRANSFORM_AC3_MUL1(in[1]);
   const uint64_t cd = (uint64_t)( d1 & 0xffff) <<  0 |
                       (uint64_t)( c1 & 0xffff) << 16 |
                       (uint64_t)(-c1 & 0xffff) << 32 |
@@ -1274,7 +1272,6 @@ static void TransformAC3_NEON(const int16_t* in, uint8_t* dst) {
   const int16x8_t m2_m3 = vcombine_s16(vqsub_s16(B, c4), vqsub_s16(B, d4));
   Add4x4_NEON(m0_m1, m2_m3, dst);
 }
-#undef MUL
 
 //------------------------------------------------------------------------------
 // 4x4
@@ -1283,12 +1280,12 @@ static void DC4_NEON(uint8_t* dst) {    // DC
   const uint8x8_t A = vld1_u8(dst - BPS);  // top row
   const uint16x4_t p0 = vpaddl_u8(A);  // cascading summation of the top
   const uint16x4_t p1 = vpadd_u16(p0, p0);
-  const uint16x8_t L0 = vmovl_u8(vld1_u8(dst + 0 * BPS - 1));
-  const uint16x8_t L1 = vmovl_u8(vld1_u8(dst + 1 * BPS - 1));
-  const uint16x8_t L2 = vmovl_u8(vld1_u8(dst + 2 * BPS - 1));
-  const uint16x8_t L3 = vmovl_u8(vld1_u8(dst + 3 * BPS - 1));
-  const uint16x8_t s0 = vaddq_u16(L0, L1);
-  const uint16x8_t s1 = vaddq_u16(L2, L3);
+  const uint8x8_t L0 = vld1_u8(dst + 0 * BPS - 1);
+  const uint8x8_t L1 = vld1_u8(dst + 1 * BPS - 1);
+  const uint8x8_t L2 = vld1_u8(dst + 2 * BPS - 1);
+  const uint8x8_t L3 = vld1_u8(dst + 3 * BPS - 1);
+  const uint16x8_t s0 = vaddl_u8(L0, L1);
+  const uint16x8_t s1 = vaddl_u8(L2, L3);
   const uint16x8_t s01 = vaddq_u16(s0, s1);
   const uint16x8_t sum = vaddq_u16(s01, vcombine_u16(p1, p1));
   const uint8x8_t dc0 = vrshrn_n_u16(sum, 3);  // (sum + 4) >> 3
@@ -1428,9 +1425,8 @@ static WEBP_INLINE void DC8_NEON(uint8_t* dst, int do_top, int do_left) {
 
   if (do_top) {
     const uint8x8_t A = vld1_u8(dst - BPS);  // top row
-#if defined(__aarch64__)
-    const uint16x8_t B = vmovl_u8(A);
-    const uint16_t p2 = vaddvq_u16(B);
+#if WEBP_AARCH64
+    const uint16_t p2 = vaddlv_u8(A);
     sum_top = vdupq_n_u16(p2);
 #else
     const uint16x4_t p0 = vpaddl_u8(A);  // cascading summation of the top
@@ -1441,18 +1437,18 @@ static WEBP_INLINE void DC8_NEON(uint8_t* dst, int do_top, int do_left) {
   }
 
   if (do_left) {
-    const uint16x8_t L0 = vmovl_u8(vld1_u8(dst + 0 * BPS - 1));
-    const uint16x8_t L1 = vmovl_u8(vld1_u8(dst + 1 * BPS - 1));
-    const uint16x8_t L2 = vmovl_u8(vld1_u8(dst + 2 * BPS - 1));
-    const uint16x8_t L3 = vmovl_u8(vld1_u8(dst + 3 * BPS - 1));
-    const uint16x8_t L4 = vmovl_u8(vld1_u8(dst + 4 * BPS - 1));
-    const uint16x8_t L5 = vmovl_u8(vld1_u8(dst + 5 * BPS - 1));
-    const uint16x8_t L6 = vmovl_u8(vld1_u8(dst + 6 * BPS - 1));
-    const uint16x8_t L7 = vmovl_u8(vld1_u8(dst + 7 * BPS - 1));
-    const uint16x8_t s0 = vaddq_u16(L0, L1);
-    const uint16x8_t s1 = vaddq_u16(L2, L3);
-    const uint16x8_t s2 = vaddq_u16(L4, L5);
-    const uint16x8_t s3 = vaddq_u16(L6, L7);
+    const uint8x8_t L0 = vld1_u8(dst + 0 * BPS - 1);
+    const uint8x8_t L1 = vld1_u8(dst + 1 * BPS - 1);
+    const uint8x8_t L2 = vld1_u8(dst + 2 * BPS - 1);
+    const uint8x8_t L3 = vld1_u8(dst + 3 * BPS - 1);
+    const uint8x8_t L4 = vld1_u8(dst + 4 * BPS - 1);
+    const uint8x8_t L5 = vld1_u8(dst + 5 * BPS - 1);
+    const uint8x8_t L6 = vld1_u8(dst + 6 * BPS - 1);
+    const uint8x8_t L7 = vld1_u8(dst + 7 * BPS - 1);
+    const uint16x8_t s0 = vaddl_u8(L0, L1);
+    const uint16x8_t s1 = vaddl_u8(L2, L3);
+    const uint16x8_t s2 = vaddl_u8(L4, L5);
+    const uint16x8_t s3 = vaddl_u8(L6, L7);
     const uint16x8_t s01 = vaddq_u16(s0, s1);
     const uint16x8_t s23 = vaddq_u16(s2, s3);
     sum_left = vaddq_u16(s01, s23);
@@ -1512,29 +1508,34 @@ static WEBP_INLINE void DC16_NEON(uint8_t* dst, int do_top, int do_left) {
 
   if (do_top) {
     const uint8x16_t A = vld1q_u8(dst - BPS);  // top row
+#if WEBP_AARCH64
+    const uint16_t p3 = vaddlvq_u8(A);
+    sum_top = vdupq_n_u16(p3);
+#else
     const uint16x8_t p0 = vpaddlq_u8(A);  // cascading summation of the top
     const uint16x4_t p1 = vadd_u16(vget_low_u16(p0), vget_high_u16(p0));
     const uint16x4_t p2 = vpadd_u16(p1, p1);
     const uint16x4_t p3 = vpadd_u16(p2, p2);
     sum_top = vcombine_u16(p3, p3);
+#endif
   }
 
   if (do_left) {
     int i;
     sum_left = vdupq_n_u16(0);
     for (i = 0; i < 16; i += 8) {
-      const uint16x8_t L0 = vmovl_u8(vld1_u8(dst + (i + 0) * BPS - 1));
-      const uint16x8_t L1 = vmovl_u8(vld1_u8(dst + (i + 1) * BPS - 1));
-      const uint16x8_t L2 = vmovl_u8(vld1_u8(dst + (i + 2) * BPS - 1));
-      const uint16x8_t L3 = vmovl_u8(vld1_u8(dst + (i + 3) * BPS - 1));
-      const uint16x8_t L4 = vmovl_u8(vld1_u8(dst + (i + 4) * BPS - 1));
-      const uint16x8_t L5 = vmovl_u8(vld1_u8(dst + (i + 5) * BPS - 1));
-      const uint16x8_t L6 = vmovl_u8(vld1_u8(dst + (i + 6) * BPS - 1));
-      const uint16x8_t L7 = vmovl_u8(vld1_u8(dst + (i + 7) * BPS - 1));
-      const uint16x8_t s0 = vaddq_u16(L0, L1);
-      const uint16x8_t s1 = vaddq_u16(L2, L3);
-      const uint16x8_t s2 = vaddq_u16(L4, L5);
-      const uint16x8_t s3 = vaddq_u16(L6, L7);
+      const uint8x8_t L0 = vld1_u8(dst + (i + 0) * BPS - 1);
+      const uint8x8_t L1 = vld1_u8(dst + (i + 1) * BPS - 1);
+      const uint8x8_t L2 = vld1_u8(dst + (i + 2) * BPS - 1);
+      const uint8x8_t L3 = vld1_u8(dst + (i + 3) * BPS - 1);
+      const uint8x8_t L4 = vld1_u8(dst + (i + 4) * BPS - 1);
+      const uint8x8_t L5 = vld1_u8(dst + (i + 5) * BPS - 1);
+      const uint8x8_t L6 = vld1_u8(dst + (i + 6) * BPS - 1);
+      const uint8x8_t L7 = vld1_u8(dst + (i + 7) * BPS - 1);
+      const uint16x8_t s0 = vaddl_u8(L0, L1);
+      const uint16x8_t s1 = vaddl_u8(L2, L3);
+      const uint16x8_t s2 = vaddl_u8(L4, L5);
+      const uint16x8_t s3 = vaddl_u8(L6, L7);
       const uint16x8_t s01 = vaddq_u16(s0, s1);
       const uint16x8_t s23 = vaddq_u16(s2, s3);
       const uint16x8_t sum = vaddq_u16(s01, s23);

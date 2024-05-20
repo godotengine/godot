@@ -18,8 +18,53 @@
 #include <smmintrin.h>
 #include "src/dsp/lossless.h"
 
-// For sign-extended multiplying constants, pre-shifted by 5:
-#define CST_5b(X)  (((int16_t)((uint16_t)(X) << 8)) >> 5)
+//------------------------------------------------------------------------------
+// Cost operations.
+
+static WEBP_INLINE uint32_t HorizontalSum_SSE41(__m128i cost) {
+  cost = _mm_add_epi32(cost, _mm_srli_si128(cost, 8));
+  cost = _mm_add_epi32(cost, _mm_srli_si128(cost, 4));
+  return _mm_cvtsi128_si32(cost);
+}
+
+static uint32_t ExtraCost_SSE41(const uint32_t* const a, int length) {
+  int i;
+  __m128i cost = _mm_set_epi32(2 * a[7], 2 * a[6], a[5], a[4]);
+  assert(length % 8 == 0);
+
+  for (i = 8; i + 8 <= length; i += 8) {
+    const int j = (i - 2) >> 1;
+    const __m128i a0 = _mm_loadu_si128((const __m128i*)&a[i]);
+    const __m128i a1 = _mm_loadu_si128((const __m128i*)&a[i + 4]);
+    const __m128i w = _mm_set_epi32(j + 3, j + 2, j + 1, j);
+    const __m128i a2 = _mm_hadd_epi32(a0, a1);
+    const __m128i mul = _mm_mullo_epi32(a2, w);
+    cost = _mm_add_epi32(mul, cost);
+  }
+  return HorizontalSum_SSE41(cost);
+}
+
+static uint32_t ExtraCostCombined_SSE41(const uint32_t* const a,
+                                        const uint32_t* const b, int length) {
+  int i;
+  __m128i cost = _mm_add_epi32(_mm_set_epi32(2 * a[7], 2 * a[6], a[5], a[4]),
+                               _mm_set_epi32(2 * b[7], 2 * b[6], b[5], b[4]));
+  assert(length % 8 == 0);
+
+  for (i = 8; i + 8 <= length; i += 8) {
+    const int j = (i - 2) >> 1;
+    const __m128i a0 = _mm_loadu_si128((const __m128i*)&a[i]);
+    const __m128i a1 = _mm_loadu_si128((const __m128i*)&a[i + 4]);
+    const __m128i b0 = _mm_loadu_si128((const __m128i*)&b[i]);
+    const __m128i b1 = _mm_loadu_si128((const __m128i*)&b[i + 4]);
+    const __m128i w = _mm_set_epi32(j + 3, j + 2, j + 1, j);
+    const __m128i a2 = _mm_hadd_epi32(a0, a1);
+    const __m128i b2 = _mm_hadd_epi32(b0, b1);
+    const __m128i mul = _mm_mullo_epi32(_mm_add_epi32(a2, b2), w);
+    cost = _mm_add_epi32(mul, cost);
+  }
+  return HorizontalSum_SSE41(cost);
+}
 
 //------------------------------------------------------------------------------
 // Subtract-Green Transform
@@ -44,46 +89,50 @@ static void SubtractGreenFromBlueAndRed_SSE41(uint32_t* argb_data,
 //------------------------------------------------------------------------------
 // Color Transform
 
-#define SPAN 8
+// For sign-extended multiplying constants, pre-shifted by 5:
+#define CST_5b(X) (((int16_t)((uint16_t)(X) << 8)) >> 5)
+
+#define MK_CST_16(HI, LO) \
+  _mm_set1_epi32((int)(((uint32_t)(HI) << 16) | ((LO) & 0xffff)))
+
 static void CollectColorBlueTransforms_SSE41(const uint32_t* argb, int stride,
                                              int tile_width, int tile_height,
                                              int green_to_blue, int red_to_blue,
                                              int histo[]) {
-  const __m128i mults_r = _mm_set1_epi16(CST_5b(red_to_blue));
-  const __m128i mults_g = _mm_set1_epi16(CST_5b(green_to_blue));
-  const __m128i mask_g = _mm_set1_epi16((short)0xff00);   // green mask
-  const __m128i mask_gb = _mm_set1_epi32(0xffff);         // green/blue mask
-  const __m128i mask_b = _mm_set1_epi16(0x00ff);          // blue mask
-  const __m128i shuffler_lo = _mm_setr_epi8(-1, 2, -1, 6, -1, 10, -1, 14, -1,
-                                            -1, -1, -1, -1, -1, -1, -1);
-  const __m128i shuffler_hi = _mm_setr_epi8(-1, -1, -1, -1, -1, -1, -1, -1, -1,
-                                            2, -1, 6, -1, 10, -1, 14);
-  int y;
-  for (y = 0; y < tile_height; ++y) {
-    const uint32_t* const src = argb + y * stride;
-    int i, x;
-    for (x = 0; x + SPAN <= tile_width; x += SPAN) {
-      uint16_t values[SPAN];
-      const __m128i in0 = _mm_loadu_si128((__m128i*)&src[x + 0]);
-      const __m128i in1 = _mm_loadu_si128((__m128i*)&src[x + SPAN / 2]);
-      const __m128i r0 = _mm_shuffle_epi8(in0, shuffler_lo);
-      const __m128i r1 = _mm_shuffle_epi8(in1, shuffler_hi);
-      const __m128i r = _mm_or_si128(r0, r1);         // r 0
-      const __m128i gb0 = _mm_and_si128(in0, mask_gb);
-      const __m128i gb1 = _mm_and_si128(in1, mask_gb);
-      const __m128i gb = _mm_packus_epi32(gb0, gb1);  // g b
-      const __m128i g = _mm_and_si128(gb, mask_g);    // g 0
-      const __m128i A = _mm_mulhi_epi16(r, mults_r);  // x dbr
-      const __m128i B = _mm_mulhi_epi16(g, mults_g);  // x dbg
-      const __m128i C = _mm_sub_epi8(gb, B);          // x b'
-      const __m128i D = _mm_sub_epi8(C, A);           // x b''
-      const __m128i E = _mm_and_si128(D, mask_b);     // 0 b''
-      _mm_storeu_si128((__m128i*)values, E);
-      for (i = 0; i < SPAN; ++i) ++histo[values[i]];
+  const __m128i mult =
+      MK_CST_16(CST_5b(red_to_blue) + 256,CST_5b(green_to_blue));
+  const __m128i perm =
+      _mm_setr_epi8(-1, 1, -1, 2, -1, 5, -1, 6, -1, 9, -1, 10, -1, 13, -1, 14);
+  if (tile_width >= 4) {
+    int y;
+    for (y = 0; y < tile_height; ++y) {
+      const uint32_t* const src = argb + y * stride;
+      const __m128i A1 = _mm_loadu_si128((const __m128i*)src);
+      const __m128i B1 = _mm_shuffle_epi8(A1, perm);
+      const __m128i C1 = _mm_mulhi_epi16(B1, mult);
+      const __m128i D1 = _mm_sub_epi16(A1, C1);
+      __m128i E = _mm_add_epi16(_mm_srli_epi32(D1, 16), D1);
+      int x;
+      for (x = 4; x + 4 <= tile_width; x += 4) {
+        const __m128i A2 = _mm_loadu_si128((const __m128i*)(src + x));
+        __m128i B2, C2, D2;
+        ++histo[_mm_extract_epi8(E,  0)];
+        B2 = _mm_shuffle_epi8(A2, perm);
+        ++histo[_mm_extract_epi8(E,  4)];
+        C2 = _mm_mulhi_epi16(B2, mult);
+        ++histo[_mm_extract_epi8(E,  8)];
+        D2 = _mm_sub_epi16(A2, C2);
+        ++histo[_mm_extract_epi8(E, 12)];
+        E = _mm_add_epi16(_mm_srli_epi32(D2, 16), D2);
+      }
+      ++histo[_mm_extract_epi8(E,  0)];
+      ++histo[_mm_extract_epi8(E,  4)];
+      ++histo[_mm_extract_epi8(E,  8)];
+      ++histo[_mm_extract_epi8(E, 12)];
     }
   }
   {
-    const int left_over = tile_width & (SPAN - 1);
+    const int left_over = tile_width & 3;
     if (left_over > 0) {
       VP8LCollectColorBlueTransforms_C(argb + tile_width - left_over, stride,
                                        left_over, tile_height,
@@ -95,33 +144,37 @@ static void CollectColorBlueTransforms_SSE41(const uint32_t* argb, int stride,
 static void CollectColorRedTransforms_SSE41(const uint32_t* argb, int stride,
                                             int tile_width, int tile_height,
                                             int green_to_red, int histo[]) {
-  const __m128i mults_g = _mm_set1_epi16(CST_5b(green_to_red));
-  const __m128i mask_g = _mm_set1_epi32(0x00ff00);  // green mask
-  const __m128i mask = _mm_set1_epi16(0xff);
 
-  int y;
-  for (y = 0; y < tile_height; ++y) {
-    const uint32_t* const src = argb + y * stride;
-    int i, x;
-    for (x = 0; x + SPAN <= tile_width; x += SPAN) {
-      uint16_t values[SPAN];
-      const __m128i in0 = _mm_loadu_si128((__m128i*)&src[x + 0]);
-      const __m128i in1 = _mm_loadu_si128((__m128i*)&src[x + SPAN / 2]);
-      const __m128i g0 = _mm_and_si128(in0, mask_g);  // 0 0  | g 0
-      const __m128i g1 = _mm_and_si128(in1, mask_g);
-      const __m128i g = _mm_packus_epi32(g0, g1);     // g 0
-      const __m128i A0 = _mm_srli_epi32(in0, 16);     // 0 0  | x r
-      const __m128i A1 = _mm_srli_epi32(in1, 16);
-      const __m128i A = _mm_packus_epi32(A0, A1);     // x r
-      const __m128i B = _mm_mulhi_epi16(g, mults_g);  // x dr
-      const __m128i C = _mm_sub_epi8(A, B);           // x r'
-      const __m128i D = _mm_and_si128(C, mask);       // 0 r'
-      _mm_storeu_si128((__m128i*)values, D);
-      for (i = 0; i < SPAN; ++i) ++histo[values[i]];
+  const __m128i mult = MK_CST_16(0, CST_5b(green_to_red));
+  const __m128i mask_g = _mm_set1_epi32(0x0000ff00);
+  if (tile_width >= 4) {
+    int y;
+    for (y = 0; y < tile_height; ++y) {
+      const uint32_t* const src = argb + y * stride;
+      const __m128i A1 = _mm_loadu_si128((const __m128i*)src);
+      const __m128i B1 = _mm_and_si128(A1, mask_g);
+      const __m128i C1 = _mm_madd_epi16(B1, mult);
+      __m128i D = _mm_sub_epi16(A1, C1);
+      int x;
+      for (x = 4; x + 4 <= tile_width; x += 4) {
+        const __m128i A2 = _mm_loadu_si128((const __m128i*)(src + x));
+        __m128i B2, C2;
+        ++histo[_mm_extract_epi8(D,  2)];
+        B2 = _mm_and_si128(A2, mask_g);
+        ++histo[_mm_extract_epi8(D,  6)];
+        C2 = _mm_madd_epi16(B2, mult);
+        ++histo[_mm_extract_epi8(D, 10)];
+        ++histo[_mm_extract_epi8(D, 14)];
+        D = _mm_sub_epi16(A2, C2);
+      }
+      ++histo[_mm_extract_epi8(D,  2)];
+      ++histo[_mm_extract_epi8(D,  6)];
+      ++histo[_mm_extract_epi8(D, 10)];
+      ++histo[_mm_extract_epi8(D, 14)];
     }
   }
   {
-    const int left_over = tile_width & (SPAN - 1);
+    const int left_over = tile_width & 3;
     if (left_over > 0) {
       VP8LCollectColorRedTransforms_C(argb + tile_width - left_over, stride,
                                       left_over, tile_height, green_to_red,
@@ -130,12 +183,16 @@ static void CollectColorRedTransforms_SSE41(const uint32_t* argb, int stride,
   }
 }
 
+#undef MK_CST_16
+
 //------------------------------------------------------------------------------
 // Entry point
 
 extern void VP8LEncDspInitSSE41(void);
 
 WEBP_TSAN_IGNORE_FUNCTION void VP8LEncDspInitSSE41(void) {
+  VP8LExtraCost = ExtraCost_SSE41;
+  VP8LExtraCostCombined = ExtraCostCombined_SSE41;
   VP8LSubtractGreenFromBlueAndRed = SubtractGreenFromBlueAndRed_SSE41;
   VP8LCollectColorBlueTransforms = CollectColorBlueTransforms_SSE41;
   VP8LCollectColorRedTransforms = CollectColorRedTransforms_SSE41;

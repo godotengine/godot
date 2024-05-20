@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventShortcut" inherits="InputEvent" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Represents a triggered keyboard [Shortcut].
+	</brief_description>
+	<description>
+		InputEventShortcut is a special event that can be received in [method Node._unhandled_key_input]. It is typically sent by the editor's Command Palette to trigger actions, but can also be sent manually using [method Viewport.push_input].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="shortcut" type="Shortcut" setter="set_shortcut" getter="get_shortcut">
+			The [Shortcut] represented by this event. Its [method Shortcut.matches_event] method will always return [code]true[/code] for this event.
+		</member>
+	</members>
+</class>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Callable" version="4.0">
+<class name="Callable" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		An object representing a method in a certain object that can be called.
+		A built-in type representing a method or a standalone function.
 	</brief_description>
 	<description>
-		[Callable] is a first class object which can be held in variables and passed to functions. It represents a given method in an [Object], and is typically used for signal callbacks.
+		[Callable] is a built-in [Variant] type that represents a function. It can either be a method within an [Object] instance, or a custom callable used for different purposes (see [method is_custom]). Like all [Variant] types, it can be stored in variables and passed to other functions. It is most commonly used for signal callbacks.
 		[b]Example:[/b]
 		[codeblocks]
 		[gdscript]
@@ -14,176 +14,251 @@
 		func test():
 		    var callable = Callable(self, "print_args")
 		    callable.call("hello", "world")  # Prints "hello world ".
-		    callable.call(Vector2.UP, 42, callable)  # Prints "(0, -1) 42 Node(Node.gd)::print_args".
+		    callable.call(Vector2.UP, 42, callable)  # Prints "(0, -1) 42 Node(node.gd)::print_args".
 		    callable.call("invalid")  # Invalid call, should have at least 2 arguments.
 		[/gdscript]
 		[csharp]
-		public void PrintArgs(object arg1, object arg2, object arg3 = null)
+		// Default parameter values are not supported.
+		public void PrintArgs(Variant arg1, Variant arg2, Variant arg3 = default)
 		{
 		    GD.PrintS(arg1, arg2, arg3);
 		}
 
 		public void Test()
 		{
-		    Callable callable = new Callable(this, nameof(PrintArgs));
-		    callable.Call("hello", "world"); // Prints "hello world null".
+		    // Invalid calls fail silently.
+		    Callable callable = new Callable(this, MethodName.PrintArgs);
+		    callable.Call("hello", "world"); // Default parameter values are not supported, should have 3 arguments.
 		    callable.Call(Vector2.Up, 42, callable); // Prints "(0, -1) 42 Node(Node.cs)::PrintArgs".
-		    callable.Call("invalid"); // Invalid call, should have at least 2 arguments.
+		    callable.Call("invalid"); // Invalid call, should have 3 arguments.
 		}
 		[/csharp]
 		[/codeblocks]
+		In GDScript, it's possible to create lambda functions within a method. Lambda functions are custom callables that are not associated with an [Object] instance. Optionally, lambda functions can also be named. The name will be displayed in the debugger, or when calling [method get_method].
+		[codeblock]
+		func _init():
+		    var my_lambda = func (message):
+		        print(message)
+
+		    # Prints Hello everyone!
+		    my_lambda.call("Hello everyone!")
+
+		    # Prints "Attack!", when the button_pressed signal is emitted.
+		    button_pressed.connect(func(): print("Attack!"))
+		[/codeblock]
+		In GDScript, you can access methods and global functions as [Callable]s:
+		[codeblock]
+		tween.tween_callback(node.queue_free)  # Object methods.
+		tween.tween_callback(array.clear)  # Methods of built-in types.
+		tween.tween_callback(print.bind("Test"))  # Global functions.
+		[/codeblock]
+		[b]Note:[/b] [Dictionary] does not support the above due to ambiguity with keys.
+		[codeblock]
+		var dictionary = {"hello": "world"}
+
+		# This will not work, `clear` is treated as a key.
+		tween.tween_callback(dictionary.clear)
+
+		# This will work.
+		tween.tween_callback(Callable.create(dictionary, "clear"))
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="Callable" qualifiers="constructor">
-			<return type="Callable">
-			</return>
+	<constructors>
+		<constructor name="Callable">
+			<return type="Callable" />
 			<description>
-				Constructs a null [Callable] with no object nor method bound.
+				Constructs an empty [Callable], with no object nor method bound.
 			</description>
-		</method>
-		<method name="Callable" qualifiers="constructor">
-			<return type="Callable">
-			</return>
-			<argument index="0" name="from" type="Callable">
-			</argument>
+		</constructor>
+		<constructor name="Callable">
+			<return type="Callable" />
+			<param index="0" name="from" type="Callable" />
 			<description>
 				Constructs a [Callable] as a copy of the given [Callable].
 			</description>
-		</method>
-		<method name="Callable" qualifiers="constructor">
-			<return type="Callable">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="method" type="StringName">
-			</argument>
+		</constructor>
+		<constructor name="Callable">
+			<return type="Callable" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="method" type="StringName" />
 			<description>
-				Creates a new [Callable] for the method called [code]method[/code] in the specified [code]object[/code].
+				Creates a new [Callable] for the method named [param method] in the specified [param object].
+				[b]Note:[/b] For methods of built-in [Variant] types, use [method create] instead.
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="bind" qualifiers="vararg const">
+			<return type="Callable" />
+			<description>
+				Returns a copy of this [Callable] with one or more arguments bound. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
+				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
 			</description>
 		</method>
-		<method name="bind" qualifiers="vararg const">
-			<return type="Callable">
-			</return>
+		<method name="bindv">
+			<return type="Callable" />
+			<param index="0" name="arguments" type="Array" />
 			<description>
-				Returns a copy of this [Callable] with the arguments bound. Bound arguments are passed after the arguments supplied by [method call].
+				Returns a copy of this [Callable] with one or more arguments bound, reading them from an array. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
+				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg const">
-			<return type="Variant">
-			</return>
+			<return type="Variant" />
 			<description>
 				Calls the method represented by this [Callable]. Arguments can be passed and should match the method's signature.
 			</description>
 		</method>
 		<method name="call_deferred" qualifiers="vararg const">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Calls the method represented by this [Callable] in deferred mode, i.e. during the idle frame. Arguments can be passed and should match the method's signature.
+				Calls the method represented by this [Callable] in deferred mode, i.e. at the end of the current frame. Arguments can be passed and should match the method's signature.
+				[codeblocks]
+				[gdscript]
+				func _ready():
+				    grab_focus.call_deferred()
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    Callable.From(GrabFocus).CallDeferred();
+				}
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] Deferred calls are processed at idle time. Idle time happens mainly at the end of process and physics frames. In it, deferred calls will be run until there are none left, which means you can defer calls from other deferred calls and they'll still be run in the current idle time cycle. This means you should not call a method deferred from itself (or from a method called by it), as this causes infinite recursion the same way as if you had called the method directly.
+				See also [method Object.call_deferred].
+			</description>
+		</method>
+		<method name="callv" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="arguments" type="Array" />
+			<description>
+				Calls the method represented by this [Callable]. Unlike [method call], this method expects all arguments to be contained inside the [param arguments] [Array].
+			</description>
+		</method>
+		<method name="create" qualifiers="static">
+			<return type="Callable" />
+			<param index="0" name="variant" type="Variant" />
+			<param index="1" name="method" type="StringName" />
+			<description>
+				Creates a new [Callable] for the method named [param method] in the specified [param variant]. To represent a method of a built-in [Variant] type, a custom callable is used (see [method is_custom]). If [param variant] is [Object], then a standard callable will be created instead.
+				[b]Note:[/b] This method is always necessary for the [Dictionary] type, as property syntax is used to access its entries. You may also use this method when [param variant]'s type is not known in advance (for polymorphism).
+			</description>
+		</method>
+		<method name="get_argument_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total number of arguments this [Callable] should take, including optional arguments. This means that any arguments bound with [method bind] are [i]subtracted[/i] from the result, and any arguments unbound with [method unbind] are [i]added[/i] to the result.
+			</description>
+		</method>
+		<method name="get_bound_arguments" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Return the bound arguments (as long as [method get_bound_arguments_count] is greater than zero), or empty (if [method get_bound_arguments_count] is less than or equal to zero).
+			</description>
+		</method>
+		<method name="get_bound_arguments_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total amount of arguments bound (or unbound) via successive [method bind] or [method unbind] calls. If the amount of arguments unbound is greater than the ones bound, this function returns a value less than zero.
 			</description>
 		</method>
 		<method name="get_method" qualifiers="const">
-			<return type="StringName">
-			</return>
+			<return type="StringName" />
 			<description>
-				Returns the name of the method represented by this [Callable].
+				Returns the name of the method represented by this [Callable]. If the callable is a GDScript lambda function, returns the function's name or [code]"&lt;anonymous lambda&gt;"[/code].
 			</description>
 		</method>
 		<method name="get_object" qualifiers="const">
-			<return type="Object">
-			</return>
+			<return type="Object" />
 			<description>
 				Returns the object on which this [Callable] is called.
 			</description>
 		</method>
 		<method name="get_object_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the ID of this [Callable]'s object (see [method Object.get_instance_id]).
 			</description>
 		</method>
 		<method name="hash" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
-				Returns the hash value of this [Callable]'s object.
+				Returns the 32-bit hash value of this [Callable]'s object.
+				[b]Note:[/b] [Callable]s with equal content will always produce identical hash values. However, the reverse is not true. Returning identical hash values does [i]not[/i] imply the callables are equal, because different callables can have identical hash values due to hash collisions. The engine uses a 32-bit hash algorithm for [method hash].
 			</description>
 		</method>
 		<method name="is_custom" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this [Callable] is a custom callable whose behavior differs based on implementation details. Custom callables are used in the engine for various reasons. If [code]true[/code], you can't use [method get_method].
+				Returns [code]true[/code] if this [Callable] is a custom callable. Custom callables are used:
+				- for binding/unbinding arguments (see [method bind] and [method unbind]);
+				- for representing methods of built-in [Variant] types (see [method create]);
+				- for representing global, lambda, and RPC functions in GDScript;
+				- for other purposes in the core, GDExtension, and C#.
 			</description>
 		</method>
 		<method name="is_null" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this [Callable] has no target to call the method on.
 			</description>
 		</method>
 		<method name="is_standard" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this [Callable] is a standard callable, referencing an object and a method using a [StringName].
+				Returns [code]true[/code] if this [Callable] is a standard callable. This method is the opposite of [method is_custom]. Returns [code]false[/code] if this callable is a lambda function.
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the object exists and has a valid function assigned, or is a custom callable.
-			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Callable">
-			</argument>
-			<description>
-				Returns [code]true[/code] if both [Callable]s invoke different targets.
-			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="Callable">
-			</argument>
-			<description>
-				Returns [code]true[/code] if both [Callable]s invoke the same custom target.
+				Returns [code]true[/code] if the callable's object exists and has a valid method name assigned, or is a custom callable.
 			</description>
 		</method>
 		<method name="rpc" qualifiers="vararg const">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Perform an RPC (Remote Procedure Call). This is used for multiplayer and is normally not available unless the function being called has been marked as [i]RPC[/i]. Calling it on unsupported functions will result in an error.
+				Perform an RPC (Remote Procedure Call) on all connected peers. This is used for multiplayer and is normally not available, unless the function being called has been marked as [i]RPC[/i] (using [annotation @GDScript.@rpc] or [method Node.rpc_config]). Calling this method on unsupported functions will result in an error. See [method Node.rpc].
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg const">
-			<return type="void">
-			</return>
-			<argument index="0" name="peer_id" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="peer_id" type="int" />
 			<description>
-				Perform an RPC (Remote Procedure Call) on a specific peer ID (see multiplayer documentation for reference). This is used for multiplayer and is normally not available unless the function being called has been marked as [i]RPC[/i]. Calling it on unsupported functions will result in an error.
+				Perform an RPC (Remote Procedure Call) on a specific peer ID (see multiplayer documentation for reference). This is used for multiplayer and is normally not available unless the function being called has been marked as [i]RPC[/i] (using [annotation @GDScript.@rpc] or [method Node.rpc_config]). Calling this method on unsupported functions will result in an error. See [method Node.rpc_id].
 			</description>
 		</method>
 		<method name="unbind" qualifiers="const">
-			<return type="Callable">
-			</return>
-			<argument index="0" name="argcount" type="int">
-			</argument>
+			<return type="Callable" />
+			<param index="0" name="argcount" type="int" />
 			<description>
-				Returns a copy of this [Callable] with the arguments unbound. Calling the returned [Callable] will call the method without the extra arguments that are supplied in the [Callable] on which you are calling this method.
+				Returns a copy of this [Callable] with a number of arguments unbound. In other words, when the new callable is called the last few arguments supplied by the user are ignored, according to [param argcount]. The remaining arguments are passed to the callable. This allows to use the original callable in a context that attempts to pass more arguments than this callable can handle, e.g. a signal with a fixed number of arguments. See also [method bind].
+				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
+				[codeblock]
+				func _ready():
+				    foo.unbind(1).call(1, 2) # Calls foo(1).
+				    foo.bind(3, 4).unbind(1).call(1, 2) # Calls foo(1, 3, 4), note that it does not change the arguments from bind.
+				[/codeblock]
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="Callable" />
+			<description>
+				Returns [code]true[/code] if both [Callable]s invoke different targets.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Callable" />
+			<description>
+				Returns [code]true[/code] if both [Callable]s invoke the same custom target.
+			</description>
+		</operator>
+	</operators>
 </class>

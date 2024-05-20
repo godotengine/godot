@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot pass a value of type "enum_function_parameter_wrong_type.gd.MyOtherEnum" as "enum_function_parameter_wrong_type.gd.MyEnum".

@@ -52,26 +52,25 @@ RBBIRuleBuilder::RBBIRuleBuilder(const UnicodeString   &rules,
 {
     fStatus = &status; // status is checked below
     fParseError = parseErr;
-    fDebugEnv   = NULL;
+    fDebugEnv   = nullptr;
 #ifdef RBBI_DEBUG
     fDebugEnv   = getenv("U_RBBIDEBUG");
 #endif
 
 
-    fForwardTree        = NULL;
-    fReverseTree        = NULL;
-    fSafeFwdTree        = NULL;
-    fSafeRevTree        = NULL;
+    fForwardTree        = nullptr;
+    fReverseTree        = nullptr;
+    fSafeFwdTree        = nullptr;
+    fSafeRevTree        = nullptr;
     fDefaultTree        = &fForwardTree;
-    fForwardTable       = NULL;
-    fRuleStatusVals     = NULL;
-    fChainRules         = FALSE;
-    fLBCMNoChain        = FALSE;
-    fLookAheadHardBreak = FALSE;
-    fUSetNodes          = NULL;
-    fRuleStatusVals     = NULL;
-    fScanner            = NULL;
-    fSetBuilder         = NULL;
+    fForwardTable       = nullptr;
+    fRuleStatusVals     = nullptr;
+    fChainRules         = false;
+    fLookAheadHardBreak = false;
+    fUSetNodes          = nullptr;
+    fRuleStatusVals     = nullptr;
+    fScanner            = nullptr;
+    fSetBuilder         = nullptr;
     if (parseErr) {
         uprv_memset(parseErr, 0, sizeof(UParseError));
     }
@@ -87,7 +86,8 @@ RBBIRuleBuilder::RBBIRuleBuilder(const UnicodeString   &rules,
     if (U_FAILURE(status)) {
         return;
     }
-    if(fSetBuilder == 0 || fScanner == 0 || fUSetNodes == 0 || fRuleStatusVals == 0) {
+    if (fSetBuilder == nullptr || fScanner == nullptr ||
+        fUSetNodes == nullptr || fRuleStatusVals == nullptr) {
         status = U_MEMORY_ALLOCATION_ERROR;
     }
 }
@@ -104,7 +104,7 @@ RBBIRuleBuilder::~RBBIRuleBuilder() {
     int        i;
     for (i=0; ; i++) {
         RBBINode *n = (RBBINode *)fUSetNodes->elementAt(i);
-        if (n==NULL) {
+        if (n==nullptr) {
             break;
         }
         delete n;
@@ -138,7 +138,7 @@ RBBIDataHeader *RBBIRuleBuilder::flattenData() {
     int32_t    i;
 
     if (U_FAILURE(*fStatus)) {
-        return NULL;
+        return nullptr;
     }
 
     // Remove whitespace from the rules to make it smaller.
@@ -157,7 +157,7 @@ RBBIDataHeader *RBBIRuleBuilder::flattenData() {
     int32_t statusTableSize   = align8(fRuleStatusVals->size() * sizeof(int32_t));
 
     int32_t rulesLengthInUTF8 = 0;
-    u_strToUTF8WithSub(0, 0, &rulesLengthInUTF8,
+    u_strToUTF8WithSub(nullptr, 0, &rulesLengthInUTF8,
                        fStrippedRules.getBuffer(), fStrippedRules.length(),
                        0xfffd, nullptr, fStatus);
     *fStatus = U_ZERO_ERROR;
@@ -183,9 +183,9 @@ RBBIDataHeader *RBBIRuleBuilder::flattenData() {
 #endif
 
     RBBIDataHeader  *data     = (RBBIDataHeader *)uprv_malloc(totalSize);
-    if (data == NULL) {
+    if (data == nullptr) {
         *fStatus = U_MEMORY_ALLOCATION_ERROR;
-        return NULL;
+        return nullptr;
     }
     uprv_memset(data, 0, totalSize);
 
@@ -226,7 +226,7 @@ RBBIDataHeader *RBBIRuleBuilder::flattenData() {
                        fStrippedRules.getBuffer(), fStrippedRules.length(),
                        0xfffd, nullptr, fStatus);
     if (U_FAILURE(*fStatus)) {
-        return NULL;
+        return nullptr;
     }
 
     return data;
@@ -250,7 +250,7 @@ RBBIRuleBuilder::createRuleBasedBreakIterator( const UnicodeString    &rules,
     //
     RBBIRuleBuilder  builder(rules, parseError, status);
     if (U_FAILURE(status)) { // status checked here bcos build below doesn't
-        return NULL;
+        return nullptr;
     }
 
     RBBIDataHeader *data = builder.build(status);
@@ -267,9 +267,9 @@ RBBIRuleBuilder::createRuleBasedBreakIterator( const UnicodeString    &rules,
     RuleBasedBreakIterator *This = new RuleBasedBreakIterator(data, status);
     if (U_FAILURE(status)) {
         delete This;
-        This = NULL;
+        This = nullptr;
     } 
-    else if(This == NULL) { // test for NULL
+    else if(This == nullptr) { // test for nullptr
         status = U_MEMORY_ALLOCATION_ERROR;
     }
     return This;
@@ -328,7 +328,7 @@ RBBIDataHeader *RBBIRuleBuilder::build(UErrorCode &status) {
     //   Package up the compiled data into a memory image
     //      in the run-time format.
     //
-    RBBIDataHeader *data = flattenData(); // returns NULL if error
+    RBBIDataHeader *data = flattenData(); // returns nullptr if error
     if (U_FAILURE(status)) {
         return nullptr;
     }

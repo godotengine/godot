@@ -6,6 +6,7 @@
     This software is distributed without any warranty.
     See <http://creativecommons.org/publicdomain/zero/1.0/>.
 */
+#include <stddef.h>
 #include "minimp3.h"
 
 /* flags for mp3dec_ex_open_* functions */
@@ -128,8 +129,10 @@ int mp3dec_ex_open_w(mp3dec_ex_t *dec, const wchar_t *file_name, int flags);
 #endif
 #endif /*MINIMP3_EXT_H*/
 
-#ifdef MINIMP3_IMPLEMENTATION
+#if defined(MINIMP3_IMPLEMENTATION) && !defined(_MINIMP3_EX_IMPLEMENTATION_GUARD)
+#define _MINIMP3_EX_IMPLEMENTATION_GUARD
 #include <limits.h>
+#include "minimp3.h"
 
 static void mp3dec_skip_id3v1(const uint8_t *buf, size_t *pbuf_size)
 {
@@ -374,7 +377,7 @@ int mp3dec_load_cb(mp3dec_t *dec, mp3dec_io_t *io, uint8_t *buf, size_t buf_size
         samples = hdr_frame_samples(hdr)*frame_info.channels;
         if (3 != frame_info.layer)
             break;
-        int ret = mp3dec_check_vbrtag(hdr, frame_size, &frames, &delay, &padding);
+        ret = mp3dec_check_vbrtag(hdr, frame_size, &frames, &delay, &padding);
         if (ret > 0)
         {
             padding *= frame_info.channels;
@@ -526,7 +529,8 @@ int mp3dec_iterate_buf(const uint8_t *buf, size_t buf_size, MP3D_ITERATE_CB call
 
         if (callback)
         {
-            if ((ret = callback(user_data, hdr, frame_size, free_format_bytes, buf_size, hdr - orig_buf, &frame_info)))
+            ret = callback(user_data, hdr, frame_size, free_format_bytes, buf_size, hdr - orig_buf, &frame_info);
+            if (ret != 0)
                 return ret;
         }
         buf      += frame_size;
@@ -559,7 +563,7 @@ int mp3dec_iterate_cb(mp3dec_io_t *io, uint8_t *buf, size_t buf_size, MP3D_ITERA
         readed += id3v2size;
     } else
     {
-        size_t readed = io->read(buf + MINIMP3_ID3_DETECT_SIZE, buf_size - MINIMP3_ID3_DETECT_SIZE, io->read_data);
+        readed = io->read(buf + MINIMP3_ID3_DETECT_SIZE, buf_size - MINIMP3_ID3_DETECT_SIZE, io->read_data);
         if (readed > (buf_size - MINIMP3_ID3_DETECT_SIZE))
             return MP3D_E_IOERROR;
         filled += readed;
@@ -587,7 +591,8 @@ int mp3dec_iterate_cb(mp3dec_io_t *io, uint8_t *buf, size_t buf_size, MP3D_ITERA
         readed += i;
         if (callback)
         {
-            if ((ret = callback(user_data, hdr, frame_size, free_format_bytes, filled - consumed, readed, &frame_info)))
+            ret = callback(user_data, hdr, frame_size, free_format_bytes, filled - consumed, readed, &frame_info);
+            if (ret != 0)
                 return ret;
         }
         readed += frame_size;
@@ -597,7 +602,7 @@ int mp3dec_iterate_cb(mp3dec_io_t *io, uint8_t *buf, size_t buf_size, MP3D_ITERA
             memmove(buf, buf + consumed, filled - consumed);
             filled -= consumed;
             consumed = 0;
-            size_t readed = io->read(buf + filled, buf_size - filled, io->read_data);
+            readed = io->read(buf + filled, buf_size - filled, io->read_data);
             if (readed > (buf_size - filled))
                 return MP3D_E_IOERROR;
             if (readed != (buf_size - filled))
@@ -1391,4 +1396,4 @@ void mp3dec_ex_close(mp3dec_ex_t *dec)
 }
 #endif
 
-#endif /*MINIMP3_IMPLEMENTATION*/
+#endif /* MINIMP3_IMPLEMENTATION && !_MINIMP3_EX_IMPLEMENTATION_GUARD */

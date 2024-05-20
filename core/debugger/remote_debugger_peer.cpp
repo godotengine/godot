@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  remote_debugger_peer.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  remote_debugger_peer.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "remote_debugger_peer.h"
 
@@ -45,7 +45,7 @@ bool RemoteDebuggerPeerTCP::has_message() {
 Array RemoteDebuggerPeerTCP::get_message() {
 	MutexLock lock(mutex);
 	ERR_FAIL_COND_V(!has_message(), Array());
-	Array out = in_queue[0];
+	Array out = in_queue.front()->get();
 	in_queue.pop_front();
 	return out;
 }
@@ -66,10 +66,12 @@ int RemoteDebuggerPeerTCP::get_max_message_size() const {
 
 void RemoteDebuggerPeerTCP::close() {
 	running = false;
-	thread.wait_to_finish();
+	if (thread.is_started()) {
+		thread.wait_to_finish();
+	}
 	tcp_client->disconnect_from_host();
-	out_buf.resize(0);
-	in_buf.resize(0);
+	out_buf.clear();
+	in_buf.clear();
 }
 
 RemoteDebuggerPeerTCP::RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_tcp) {
@@ -79,10 +81,8 @@ RemoteDebuggerPeerTCP::RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_tcp) {
 	tcp_client = p_tcp;
 	if (tcp_client.is_valid()) { // Attaching to an already connected stream.
 		connected = true;
-#ifndef NO_THREADS
 		running = true;
 		thread.start(_thread_func, this);
-#endif
 	} else {
 		tcp_client.instantiate();
 	}
@@ -93,14 +93,14 @@ RemoteDebuggerPeerTCP::~RemoteDebuggerPeerTCP() {
 }
 
 void RemoteDebuggerPeerTCP::_write_out() {
-	while (tcp_client->poll(NetSocket::POLL_TYPE_OUT) == OK) {
+	while (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED && tcp_client->wait(NetSocket::POLL_TYPE_OUT) == OK) {
 		uint8_t *buf = out_buf.ptrw();
 		if (out_left <= 0) {
 			if (out_queue.size() == 0) {
 				break; // Nothing left to send
 			}
 			mutex.lock();
-			Variant var = out_queue[0];
+			Variant var = out_queue.front()->get();
 			out_queue.pop_front();
 			mutex.unlock();
 			int size = 0;
@@ -119,7 +119,7 @@ void RemoteDebuggerPeerTCP::_write_out() {
 }
 
 void RemoteDebuggerPeerTCP::_read_in() {
-	while (tcp_client->poll(NetSocket::POLL_TYPE_IN) == OK) {
+	while (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED && tcp_client->wait(NetSocket::POLL_TYPE_IN) == OK) {
 		uint8_t *buf = in_buf.ptrw();
 		if (in_left <= 0) {
 			if (in_queue.size() > max_queued_messages) {
@@ -162,11 +162,12 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 	int port = p_port;
 
 	const int tries = 6;
-	int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
+	const int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
 
 	tcp_client->connect_to_host(ip, port);
 
 	for (int i = 0; i < tries; i++) {
+		tcp_client->poll();
 		if (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
 			print_verbose("Remote Debugger: Connected!");
 			break;
@@ -182,16 +183,15 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 		return FAILED;
 	}
 	connected = true;
-#ifndef NO_THREADS
 	running = true;
 	thread.start(_thread_func, this);
-#endif
 	return OK;
 }
 
 void RemoteDebuggerPeerTCP::_thread_func(void *p_ud) {
-	const uint64_t min_tick = 100;
-	RemoteDebuggerPeerTCP *peer = (RemoteDebuggerPeerTCP *)p_ud;
+	// Update in time for 144hz monitors
+	const uint64_t min_tick = 6900;
+	RemoteDebuggerPeerTCP *peer = static_cast<RemoteDebuggerPeerTCP *>(p_ud);
 	while (peer->running && peer->is_peer_connected()) {
 		uint64_t ticks_usec = OS::get_singleton()->get_ticks_usec();
 		peer->_poll();
@@ -206,12 +206,11 @@ void RemoteDebuggerPeerTCP::_thread_func(void *p_ud) {
 }
 
 void RemoteDebuggerPeerTCP::poll() {
-#ifdef NO_THREADS
-	_poll();
-#endif
+	// Nothing to do, polling is done in thread.
 }
 
 void RemoteDebuggerPeerTCP::_poll() {
+	tcp_client->poll();
 	if (connected) {
 		_write_out();
 		_read_in();
@@ -225,7 +224,7 @@ RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create(const String &p_uri) {
 	String debug_host = p_uri.replace("tcp://", "");
 	uint16_t debug_port = 6007;
 
-	if (debug_host.find(":") != -1) {
+	if (debug_host.contains(":")) {
 		int sep_pos = debug_host.rfind(":");
 		debug_port = debug_host.substr(sep_pos + 1).to_int();
 		debug_host = debug_host.substr(0, sep_pos);

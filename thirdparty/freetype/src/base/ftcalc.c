@@ -4,7 +4,7 @@
  *
  *   Arithmetic computations (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -45,7 +45,7 @@
 
 /* we need to emulate a 64-bit data type if a real one isn't available */
 
-#ifndef FT_LONG64
+#ifndef FT_INT64
 
   typedef struct  FT_Int64_
   {
@@ -54,7 +54,7 @@
 
   } FT_Int64;
 
-#endif /* !FT_LONG64 */
+#endif /* !FT_INT64 */
 
 
   /**************************************************************************
@@ -79,7 +79,7 @@
   FT_END_STMNT
 
   /* The following three functions are available regardless of whether */
-  /* FT_LONG64 is defined.                                             */
+  /* FT_INT64 is defined.                                              */
 
   /* documentation is in freetype.h */
 
@@ -109,7 +109,7 @@
 
 #ifndef FT_MSB
 
-  FT_BASE_DEF ( FT_Int )
+  FT_BASE_DEF( FT_Int )
   FT_MSB( FT_UInt32 z )
   {
     FT_Int  shift = 0;
@@ -164,7 +164,7 @@
   }
 
 
-#ifdef FT_LONG64
+#ifdef FT_INT64
 
 
   /* documentation is in freetype.h */
@@ -272,7 +272,7 @@
   }
 
 
-#else /* !FT_LONG64 */
+#else /* !FT_INT64 */
 
 
   static void
@@ -651,7 +651,7 @@
   }
 
 
-#endif /* !FT_LONG64 */
+#endif /* !FT_INT64 */
 
 
   /* documentation is in ftglyph.h */
@@ -749,65 +749,43 @@
   FT_BASE_DEF( FT_Bool )
   FT_Matrix_Check( const FT_Matrix*  matrix )
   {
-    FT_Matrix  m;
-    FT_Fixed   val[4];
-    FT_Fixed   nonzero_minval, maxval;
-    FT_Fixed   temp1, temp2;
-    FT_UInt    i;
+    FT_Fixed  xx, xy, yx, yy;
+    FT_Fixed  val;
+    FT_Int    shift;
+    FT_ULong  temp1, temp2;
 
 
     if ( !matrix )
       return 0;
 
-    val[0] = FT_ABS( matrix->xx );
-    val[1] = FT_ABS( matrix->xy );
-    val[2] = FT_ABS( matrix->yx );
-    val[3] = FT_ABS( matrix->yy );
+    xx  = matrix->xx;
+    xy  = matrix->xy;
+    yx  = matrix->yx;
+    yy  = matrix->yy;
+    val = FT_ABS( xx ) | FT_ABS( xy ) | FT_ABS( yx ) | FT_ABS( yy );
 
-    /*
-     * To avoid overflow, we ensure that each value is not larger than
-     *
-     *   int(sqrt(2^31 / 4)) = 23170  ;
-     *
-     * we also check that no value becomes zero if we have to scale.
-     */
-
-    maxval         = 0;
-    nonzero_minval = FT_LONG_MAX;
-
-    for ( i = 0; i < 4; i++ )
-    {
-      if ( val[i] > maxval )
-        maxval = val[i];
-      if ( val[i] && val[i] < nonzero_minval )
-        nonzero_minval = val[i];
-    }
-
-    /* we only handle 32bit values */
-    if ( maxval > 0x7FFFFFFFL )
+    /* we only handle non-zero 32-bit values */
+    if ( !val || val > 0x7FFFFFFFL )
       return 0;
 
-    if ( maxval > 23170 )
+    /* Scale matrix to avoid the temp1 overflow, which is */
+    /* more stringent than avoiding the temp2 overflow.   */
+
+    shift = FT_MSB( val ) - 12;
+
+    if ( shift > 0 )
     {
-      FT_Fixed  scale = FT_DivFix( maxval, 23170 );
-
-
-      if ( !FT_DivFix( nonzero_minval, scale ) )
-        return 0;    /* value range too large */
-
-      m.xx = FT_DivFix( matrix->xx, scale );
-      m.xy = FT_DivFix( matrix->xy, scale );
-      m.yx = FT_DivFix( matrix->yx, scale );
-      m.yy = FT_DivFix( matrix->yy, scale );
+      xx >>= shift;
+      xy >>= shift;
+      yx >>= shift;
+      yy >>= shift;
     }
-    else
-      m = *matrix;
 
-    temp1 = FT_ABS( m.xx * m.yy - m.xy * m.yx );
-    temp2 = m.xx * m.xx + m.xy * m.xy + m.yx * m.yx + m.yy * m.yy;
+    temp1 = 32U * (FT_ULong)FT_ABS( xx * yy - xy * yx );
+    temp2 = (FT_ULong)( xx * xx ) + (FT_ULong)( xy * xy ) +
+            (FT_ULong)( yx * yx ) + (FT_ULong)( yy * yy );
 
-    if ( temp1 == 0         ||
-         temp2 / temp1 > 50 )
+    if ( temp1 <= temp2 )
       return 0;
 
     return 1;
@@ -985,7 +963,7 @@
     /* we silently ignore overflow errors since such large values */
     /* lead to even more (harmless) rendering errors later on     */
 
-#ifdef FT_LONG64
+#ifdef FT_INT64
 
     FT_Int64  delta = SUB_INT64( MUL_INT64( in_x, out_y ),
                                  MUL_INT64( in_y, out_x ) );
@@ -1061,7 +1039,7 @@
     /*                                                           */
     /* This approach has the advantage that the angle between    */
     /* `in' and `out' is not checked.  In case one of the two    */
-    /* vectors is `dominant', this is, much larger than the      */
+    /* vectors is `dominant', that is, much larger than the      */
     /* other vector, we thus always have a flat corner.          */
     /*                                                           */
     /*                hypotenuse                                 */
@@ -1082,6 +1060,67 @@
     /*   d_in + d_out < 17/16 d_hypot     */
 
     return ( d_in + d_out - d_hypot ) < ( d_hypot >> 4 );
+  }
+
+
+  FT_BASE_DEF( FT_Int32 )
+  FT_MulAddFix( FT_Fixed*  s,
+                FT_Int32*  f,
+                FT_UInt    count )
+  {
+    FT_UInt   i;
+    FT_Int64  temp;
+
+
+#ifdef FT_INT64
+    temp = 0;
+
+    for ( i = 0; i < count; ++i )
+      temp += (FT_Int64)s[i] * f[i];
+
+    return (FT_Int32)( ( temp + 0x8000 ) >> 16 );
+#else
+    temp.hi = 0;
+    temp.lo = 0;
+
+    for ( i = 0; i < count; ++i )
+    {
+      FT_Int64  multResult;
+
+      FT_Int     sign  = 1;
+      FT_UInt32  carry = 0;
+
+      FT_UInt32  scalar;
+      FT_UInt32  factor;
+
+
+      scalar = (FT_UInt32)s[i];
+      factor = (FT_UInt32)f[i];
+
+      FT_MOVE_SIGN( s[i], scalar, sign );
+      FT_MOVE_SIGN( f[i], factor, sign );
+
+      ft_multo64( scalar, factor, &multResult );
+
+      if ( sign < 0 )
+      {
+        /* Emulated `FT_Int64` negation. */
+        carry = ( multResult.lo == 0 );
+
+        multResult.lo = ~multResult.lo + 1;
+        multResult.hi = ~multResult.hi + carry;
+      }
+
+      FT_Add64( &temp, &multResult, &temp );
+    }
+
+    /* Shift and round value. */
+    return (FT_Int32)( ( ( temp.hi << 16 ) | ( temp.lo >> 16 ) )
+                                     + ( 1 & ( temp.lo >> 15 ) ) );
+
+
+#endif /* !FT_INT64 */
+
   }
 
 

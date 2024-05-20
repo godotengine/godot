@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Bone2D" inherits="Node2D" version="4.0">
+<class name="Bone2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Joint used with [Skeleton2D] to control and animate other nodes.
+		A joint used with [Skeleton2D] to control and animate other nodes.
 	</brief_description>
 	<description>
-		Use a hierarchy of [code]Bone2D[/code] bound to a [Skeleton2D] to control, and animate other [Node2D] nodes.
-		You can use [code]Bone2D[/code] and [code]Skeleton2D[/code] nodes to animate 2D meshes created with the Polygon 2D UV editor.
+		A hierarchy of [Bone2D]s can be bound to a [Skeleton2D] to control and animate other [Node2D] nodes.
+		You can use [Bone2D] and [Skeleton2D] nodes to animate 2D meshes created with the [Polygon2D] UV editor.
 		Each bone has a [member rest] transform that you can reset to with [method apply_rest]. These rest poses are relative to the bone's parent.
 		If in the editor, you can set the rest pose of an entire skeleton using a menu option, from the code, you need to iterate over the bones to set their individual rest poses.
 	</description>
@@ -13,90 +13,62 @@
 	</tutorials>
 	<methods>
 		<method name="apply_rest">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Stores the node's current transforms in [member rest].
+				Resets the bone to the rest pose. This is equivalent to setting [member Node2D.transform] to [member rest].
 			</description>
 		</method>
 		<method name="get_autocalculate_length_and_angle" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
-				Returns whether this [code]Bone2D[/code] node is going to autocalculate its length and bone angle using its first [code]Bone2D[/code] child node, if one exists. If there are no [code]Bone2D[/code] children, then it cannot autocalculate these values and will print a warning.
+				Returns whether this [Bone2D] is going to autocalculate its length and bone angle using its first [Bone2D] child node, if one exists. If there are no [Bone2D] children, then it cannot autocalculate these values and will print a warning.
 			</description>
 		</method>
 		<method name="get_bone_angle" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
-				Returns the angle of the bone in the [code]Bone2D[/code] node.
-				[b]Note:[/b] This is different from the [code]Bone2D[/code]'s rotation. The bone angle is the rotation of the bone shown by the [code]Bone2D[/code] gizmo, and because [code]Bone2D[/code] bones are based on positions, this can vary from the actual rotation of the [code]Bone2D[/code] node.
-			</description>
-		</method>
-		<method name="get_default_length" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Deprecated. Please use  [code]get_length[/code] instead.
+				Returns the angle of the bone in the [Bone2D].
+				[b]Note:[/b] This is different from the [Bone2D]'s rotation. The bone's angle is the rotation of the bone shown by the gizmo, which is unaffected by the [Bone2D]'s [member Node2D.transform].
 			</description>
 		</method>
 		<method name="get_index_in_skeleton" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the node's index as part of the entire skeleton. See [Skeleton2D].
 			</description>
 		</method>
 		<method name="get_length" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
-				Returns the length of the bone in the [code]Bone2D[/code] node.
+				Returns the length of the bone in the [Bone2D] node.
 			</description>
 		</method>
 		<method name="get_skeleton_rest" qualifiers="const">
-			<return type="Transform2D">
-			</return>
+			<return type="Transform2D" />
 			<description>
-				Returns the node's [member rest] [code]Transform2D[/code] if it doesn't have a parent, or its rest pose relative to its parent.
+				Returns the node's [member rest] [Transform2D] if it doesn't have a parent, or its rest pose relative to its parent.
 			</description>
 		</method>
 		<method name="set_autocalculate_length_and_angle">
-			<return type="void">
-			</return>
-			<argument index="0" name="auto_calculate" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="auto_calculate" type="bool" />
 			<description>
-				When set to [code]true[/code], the [code]Bone2D[/code] node will attempt to automatically calculate the bone angle and length using the first child [code]Bone2D[/code] node, if one exists. If none exist, the [code]Bone2D[/code] cannot automatically calculate these values and will print a warning.
+				When set to [code]true[/code], the [Bone2D] node will attempt to automatically calculate the bone angle and length using the first child [Bone2D] node, if one exists. If none exist, the [Bone2D] cannot automatically calculate these values and will print a warning.
 			</description>
 		</method>
 		<method name="set_bone_angle">
-			<return type="void">
-			</return>
-			<argument index="0" name="angle" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="angle" type="float" />
 			<description>
-				Sets the bone angle for the [code]Bone2D[/code] node. This is typically set to the rotation from the [code]Bone2D[/code] node to a child [code]Bone2D[/code] node.
-				[b]Note:[/b] This is different from the [code]Bone2D[/code]'s rotation. The bone angle is the rotation of the bone shown by the [code]Bone2D[/code] gizmo, and because [code]Bone2D[/code] bones are based on positions, this can vary from the actual rotation of the [code]Bone2D[/code] node.
-			</description>
-		</method>
-		<method name="set_default_length">
-			<return type="void">
-			</return>
-			<argument index="0" name="default_length" type="float">
-			</argument>
-			<description>
-				Deprecated. Please use [code]set_length[/code] instead.
+				Sets the bone angle for the [Bone2D]. This is typically set to the rotation from the [Bone2D] to a child [Bone2D] node.
+				[b]Note:[/b] This is different from the [Bone2D]'s rotation. The bone's angle is the rotation of the bone shown by the gizmo, which is unaffected by the [Bone2D]'s [member Node2D.transform].
 			</description>
 		</method>
 		<method name="set_length">
-			<return type="void">
-			</return>
-			<argument index="0" name="length" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="length" type="float" />
 			<description>
-				Sets the length of the bone in the [code]Bone2D[/code] node.
+				Sets the length of the bone in the [Bone2D].
 			</description>
 		</method>
 	</methods>
@@ -105,6 +77,4 @@
 			Rest transform of the bone. You can reset the node's transforms to this value using [method apply_rest].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

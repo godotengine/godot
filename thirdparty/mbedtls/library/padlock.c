@@ -3,45 +3,6 @@
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 /*
  *  This implementation is based on the VIA PadLock Programming Guide:
@@ -50,62 +11,53 @@
  *  programming_guide.pdf
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
 #if defined(MBEDTLS_PADLOCK_C)
 
-#include "mbedtls/padlock.h"
+#include "padlock.h"
 
 #include <string.h>
 
-#ifndef asm
-#define asm __asm
-#endif
-
-#if defined(MBEDTLS_HAVE_X86)
+#if defined(MBEDTLS_VIA_PADLOCK_HAVE_CODE)
 
 /*
  * PadLock detection routine
  */
-int mbedtls_padlock_has_support( int feature )
+int mbedtls_padlock_has_support(int feature)
 {
     static int flags = -1;
     int ebx = 0, edx = 0;
 
-    if( flags == -1 )
-    {
-        asm( "movl  %%ebx, %0           \n\t"
+    if (flags == -1) {
+        asm ("movl  %%ebx, %0           \n\t"
              "movl  $0xC0000000, %%eax  \n\t"
              "cpuid                     \n\t"
              "cmpl  $0xC0000001, %%eax  \n\t"
              "movl  $0, %%edx           \n\t"
-             "jb    unsupported         \n\t"
+             "jb    1f                  \n\t"
              "movl  $0xC0000001, %%eax  \n\t"
              "cpuid                     \n\t"
-             "unsupported:              \n\t"
+             "1:                        \n\t"
              "movl  %%edx, %1           \n\t"
              "movl  %2, %%ebx           \n\t"
              : "=m" (ebx), "=m" (edx)
              :  "m" (ebx)
-             : "eax", "ecx", "edx" );
+             : "eax", "ecx", "edx");
 
         flags = edx;
     }
 
-    return( flags & feature );
+    return flags & feature;
 }
 
 /*
  * PadLock AES-ECB block en(de)cryption
  */
-int mbedtls_padlock_xcryptecb( mbedtls_aes_context *ctx,
-                       int mode,
-                       const unsigned char input[16],
-                       unsigned char output[16] )
+int mbedtls_padlock_xcryptecb(mbedtls_aes_context *ctx,
+                              int mode,
+                              const unsigned char input[16],
+                              unsigned char output[16])
 {
     int ebx = 0;
     uint32_t *rk;
@@ -113,14 +65,19 @@ int mbedtls_padlock_xcryptecb( mbedtls_aes_context *ctx,
     uint32_t *ctrl;
     unsigned char buf[256];
 
-    rk  = ctx->rk;
-    blk = MBEDTLS_PADLOCK_ALIGN16( buf );
-    memcpy( blk, input, 16 );
+    rk = ctx->buf + ctx->rk_offset;
 
-     ctrl = blk + 4;
-    *ctrl = 0x80 | ctx->nr | ( ( ctx->nr + ( mode^1 ) - 10 ) << 9 );
+    if (((long) rk & 15) != 0) {
+        return MBEDTLS_ERR_PADLOCK_DATA_MISALIGNED;
+    }
 
-    asm( "pushfl                        \n\t"
+    blk = MBEDTLS_PADLOCK_ALIGN16(buf);
+    memcpy(blk, input, 16);
+
+    ctrl = blk + 4;
+    *ctrl = 0x80 | ctx->nr | ((ctx->nr + (mode^1) - 10) << 9);
+
+    asm ("pushfl                        \n\t"
          "popfl                         \n\t"
          "movl    %%ebx, %0             \n\t"
          "movl    $1, %%ecx             \n\t"
@@ -132,22 +89,23 @@ int mbedtls_padlock_xcryptecb( mbedtls_aes_context *ctx,
          "movl    %1, %%ebx             \n\t"
          : "=m" (ebx)
          :  "m" (ebx), "m" (ctrl), "m" (rk), "m" (blk)
-         : "memory", "ecx", "edx", "esi", "edi" );
+         : "memory", "ecx", "edx", "esi", "edi");
 
-    memcpy( output, blk, 16 );
+    memcpy(output, blk, 16);
 
-    return( 0 );
+    return 0;
 }
 
+#if defined(MBEDTLS_CIPHER_MODE_CBC)
 /*
  * PadLock AES-CBC buffer en(de)cryption
  */
-int mbedtls_padlock_xcryptcbc( mbedtls_aes_context *ctx,
-                       int mode,
-                       size_t length,
-                       unsigned char iv[16],
-                       const unsigned char *input,
-                       unsigned char *output )
+int mbedtls_padlock_xcryptcbc(mbedtls_aes_context *ctx,
+                              int mode,
+                              size_t length,
+                              unsigned char iv[16],
+                              const unsigned char *input,
+                              unsigned char *output)
 {
     int ebx = 0;
     size_t count;
@@ -156,20 +114,23 @@ int mbedtls_padlock_xcryptcbc( mbedtls_aes_context *ctx,
     uint32_t *ctrl;
     unsigned char buf[256];
 
-    if( ( (long) input  & 15 ) != 0 ||
-        ( (long) output & 15 ) != 0 )
-        return( MBEDTLS_ERR_PADLOCK_DATA_MISALIGNED );
+    rk = ctx->buf + ctx->rk_offset;
 
-    rk = ctx->rk;
-    iw = MBEDTLS_PADLOCK_ALIGN16( buf );
-    memcpy( iw, iv, 16 );
+    if (((long) input  & 15) != 0 ||
+        ((long) output & 15) != 0 ||
+        ((long) rk & 15) != 0) {
+        return MBEDTLS_ERR_PADLOCK_DATA_MISALIGNED;
+    }
 
-     ctrl = iw + 4;
-    *ctrl = 0x80 | ctx->nr | ( ( ctx->nr + ( mode ^ 1 ) - 10 ) << 9 );
+    iw = MBEDTLS_PADLOCK_ALIGN16(buf);
+    memcpy(iw, iv, 16);
 
-    count = ( length + 15 ) >> 4;
+    ctrl = iw + 4;
+    *ctrl = 0x80 | ctx->nr | ((ctx->nr + (mode ^ 1) - 10) << 9);
 
-    asm( "pushfl                        \n\t"
+    count = (length + 15) >> 4;
+
+    asm ("pushfl                        \n\t"
          "popfl                         \n\t"
          "movl    %%ebx, %0             \n\t"
          "movl    %2, %%ecx             \n\t"
@@ -182,14 +143,15 @@ int mbedtls_padlock_xcryptcbc( mbedtls_aes_context *ctx,
          "movl    %1, %%ebx             \n\t"
          : "=m" (ebx)
          :  "m" (ebx), "m" (count), "m" (ctrl),
-            "m"  (rk), "m" (input), "m" (output), "m" (iw)
-         : "memory", "eax", "ecx", "edx", "esi", "edi" );
+         "m"  (rk), "m" (input), "m" (output), "m" (iw)
+         : "memory", "eax", "ecx", "edx", "esi", "edi");
 
-    memcpy( iv, iw, 16 );
+    memcpy(iv, iw, 16);
 
-    return( 0 );
+    return 0;
 }
+#endif /* MBEDTLS_CIPHER_MODE_CBC */
 
-#endif /* MBEDTLS_HAVE_X86 */
+#endif /* MBEDTLS_VIA_PADLOCK_HAVE_CODE */
 
 #endif /* MBEDTLS_PADLOCK_C */

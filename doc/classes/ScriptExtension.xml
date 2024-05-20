@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptExtension" inherits="Script" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_can_instantiate" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_editor_can_reload_from_file" qualifiers="virtual">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_base_script" qualifiers="virtual const">
+			<return type="Script" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_class_icon_path" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_constants" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_documentation" qualifiers="virtual const">
+			<return type="Dictionary[]" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_global_name" qualifiers="virtual const">
+			<return type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_instance_base_type" qualifiers="virtual const">
+			<return type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_language" qualifiers="virtual const">
+			<return type="ScriptLanguage" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_member_line" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="member" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_members" qualifiers="virtual const">
+			<return type="StringName[]" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_method_info" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_property_default_value" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_rpc_config" qualifiers="virtual const">
+			<return type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_script_method_argument_count" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				Return the expected argument count for the given [param method], or [code]null[/code] if it can't be determined (which will then fall back to the default behavior).
+			</description>
+		</method>
+		<method name="_get_script_method_list" qualifiers="virtual const">
+			<return type="Dictionary[]" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_script_property_list" qualifiers="virtual const">
+			<return type="Dictionary[]" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_script_signal_list" qualifiers="virtual const">
+			<return type="Dictionary[]" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_source_code" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_has_method" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="_has_property_default_value" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="_has_script_signal" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="signal" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="_has_source_code" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_has_static_method" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="_inherits_script" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="script" type="Script" />
+			<description>
+			</description>
+		</method>
+		<method name="_instance_create" qualifiers="virtual const">
+			<return type="void*" />
+			<param index="0" name="for_object" type="Object" />
+			<description>
+			</description>
+		</method>
+		<method name="_instance_has" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="object" type="Object" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_abstract" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the script is an abstract script. An abstract script does not have a constructor and cannot be instantiated.
+			</description>
+		</method>
+		<method name="_is_placeholder_fallback_enabled" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_tool" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_valid" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_placeholder_erased" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="placeholder" type="void*" />
+			<description>
+			</description>
+		</method>
+		<method name="_placeholder_instance_create" qualifiers="virtual const">
+			<return type="void*" />
+			<param index="0" name="for_object" type="Object" />
+			<description>
+			</description>
+		</method>
+		<method name="_reload" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="keep_state" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_source_code" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="code" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_update_exports" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

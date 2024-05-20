@@ -4,7 +4,7 @@
  *
  *   A small-bitmap cache (specification).
  *
- * Copyright (C) 2000-2020 by
+ * Copyright (C) 2000-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -61,7 +61,7 @@ FT_BEGIN_HEADER
 
   typedef const FTC_SFamilyClassRec*  FTC_SFamilyClass;
 
-#define FTC_SFAMILY_CLASS( x )  ((FTC_SFamilyClass)(x))
+#define FTC_SFAMILY_CLASS( x )  ( (FTC_SFamilyClass)(x) )
 
 #define FTC_CACHE_SFAMILY_CLASS( x )  \
           FTC_SFAMILY_CLASS( FTC_CACHE_GCACHE_CLASS( x )->family_class )
@@ -79,17 +79,6 @@ FT_BEGIN_HEADER
 #if 0
   FT_LOCAL( FT_ULong )
   FTC_SNode_Weight( FTC_SNode  inode );
-#endif
-
-
-#ifdef FTC_INLINE
-
-  FT_LOCAL( FT_Bool )
-  FTC_SNode_Compare( FTC_SNode   snode,
-                     FTC_GQuery  gquery,
-                     FTC_Cache   cache,
-                     FT_Bool*    list_changed);
-
 #endif
 
   /* */

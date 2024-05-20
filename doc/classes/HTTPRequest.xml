@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPRequest" inherits="Node" version="4.0">
+<class name="HTTPRequest" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node with the ability to send HTTP(S) requests.
 	</brief_description>
 	<description>
 		A node with the ability to send HTTP requests. Uses [HTTPClient] internally.
 		Can be used to make HTTP requests, i.e. download or upload files or web content via HTTP.
+		[b]Warning:[/b] See the notes and warnings on [HTTPClient] for limitations, especially regarding TLS security.
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 		[b]Example of contacting a REST API and printing one of its returned fields:[/b]
 		[codeblocks]
 		[gdscript]
@@ -13,7 +15,7 @@
 		    # Create an HTTP request node and connect its completion signal.
 		    var http_request = HTTPRequest.new()
 		    add_child(http_request)
-		    http_request.connect("request_completed", self, "_http_request_completed")
+		    http_request.request_completed.connect(self._http_request_completed)
 
 		    # Perform a GET request. The URL below returns JSON as of writing.
 		    var error = http_request.request("https://httpbin.org/get")
@@ -23,15 +25,16 @@
 		    # Perform a POST request. The URL below returns JSON as of writing.
 		    # Note: Don't make simultaneous requests using a single HTTPRequest node.
 		    # The snippet below is provided for reference only.
-		    var body = {"name": "Godette"}
-		    error = http_request.request("https://httpbin.org/post", [], true, HTTPClient.METHOD_POST, body)
+		    var body = JSON.new().stringify({"name": "Godette"})
+		    error = http_request.request("https://httpbin.org/post", [], HTTPClient.METHOD_POST, body)
 		    if error != OK:
 		        push_error("An error occurred in the HTTP request.")
 
-
 		# Called when the HTTP request is completed.
 		func _http_request_completed(result, response_code, headers, body):
-		    var response = parse_json(body.get_string_from_utf8())
+		    var json = JSON.new()
+		    json.parse(body.get_string_from_utf8())
+		    var response = json.get_data()
 
 		    # Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
 		    print(response.headers["User-Agent"])
@@ -40,9 +43,9 @@
 		public override void _Ready()
 		{
 		    // Create an HTTP request node and connect its completion signal.
-		    var httpRequest = new HTTPRequest();
+		    var httpRequest = new HttpRequest();
 		    AddChild(httpRequest);
-		    httpRequest.Connect("request_completed", this, nameof(HttpRequestCompleted));
+		    httpRequest.RequestCompleted += HttpRequestCompleted;
 
 		    // Perform a GET request. The URL below returns JSON as of writing.
 		    Error error = httpRequest.Request("https://httpbin.org/get");
@@ -54,23 +57,26 @@
 		    // Perform a POST request. The URL below returns JSON as of writing.
 		    // Note: Don't make simultaneous requests using a single HTTPRequest node.
 		    // The snippet below is provided for reference only.
-		    string[] body = { "name", "Godette" };
-		    // GDScript to_json is non existent, so we use JSON.Print() here.
-		    error = httpRequest.Request("https://httpbin.org/post", null, true, HTTPClient.Method.Post, JSON.Print(body));
+		    string body = new Json().Stringify(new Godot.Collections.Dictionary
+		    {
+		        { "name", "Godette" }
+		    });
+		    error = httpRequest.Request("https://httpbin.org/post", null, HttpClient.Method.Post, body);
 		    if (error != Error.Ok)
 		    {
 		        GD.PushError("An error occurred in the HTTP request.");
 		    }
 		}
 
-
 		// Called when the HTTP request is completed.
-		private void HttpRequestCompleted(int result, int response_code, string[] headers, byte[] body)
+		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 		{
-		    // GDScript parse_json is non existent so we have to use JSON.parse, which has a slightly different syntax.
-		    var response = JSON.Parse(body.GetStringFromUTF8()).Result as Godot.Collections.Dictionary;
+		    var json = new Json();
+		    json.Parse(body.GetStringFromUtf8());
+		    var response = json.GetData().AsGodotDictionary();
+
 		    // Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
-		    GD.Print((response["headers"] as Godot.Collections.Dictionary)["User-Agent"]);
+		    GD.Print((response["headers"].AsGodotDictionary())["User-Agent"]);
 		}
 		[/csharp]
 		[/codeblocks]
@@ -81,13 +87,12 @@
 		    # Create an HTTP request node and connect its completion signal.
 		    var http_request = HTTPRequest.new()
 		    add_child(http_request)
-		    http_request.connect("request_completed", self, "_http_request_completed")
+		    http_request.request_completed.connect(self._http_request_completed)
 
 		    # Perform the HTTP request. The URL below returns a PNG image as of writing.
 		    var error = http_request.request("https://via.placeholder.com/512")
 		    if error != OK:
 		        push_error("An error occurred in the HTTP request.")
-
 
 		# Called when the HTTP request is completed.
 		func _http_request_completed(result, response_code, headers, body):
@@ -99,8 +104,7 @@
 		    if error != OK:
 		        push_error("Couldn't load the image.")
 
-		    var texture = ImageTexture.new()
-		    texture.create_from_image(image)
+		    var texture = ImageTexture.create_from_image(image)
 
 		    # Display the image in a TextureRect node.
 		    var texture_rect = TextureRect.new()
@@ -111,9 +115,9 @@
 		public override void _Ready()
 		{
 		    // Create an HTTP request node and connect its completion signal.
-		    var httpRequest = new HTTPRequest();
+		    var httpRequest = new HttpRequest();
 		    AddChild(httpRequest);
-		    httpRequest.Connect("request_completed", this, nameof(HttpRequestCompleted));
+		    httpRequest.RequestCompleted += HttpRequestCompleted;
 
 		    // Perform the HTTP request. The URL below returns a PNG image as of writing.
 		    Error error = httpRequest.Request("https://via.placeholder.com/512");
@@ -123,11 +127,10 @@
 		    }
 		}
 
-
 		// Called when the HTTP request is completed.
-		private void HttpRequestCompleted(int result, int response_code, string[] headers, byte[] body)
+		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 		{
-		    if (result != (int)HTTPRequest.Result.Success)
+		    if (result != (long)HttpRequest.Result.Success)
 		    {
 		        GD.PushError("Image couldn't be downloaded. Try a different image.");
 		    }
@@ -138,8 +141,7 @@
 		        GD.PushError("Couldn't load the image.");
 		    }
 
-		    var texture = new ImageTexture();
-		    texture.CreateFromImage(image);
+		    var texture = ImageTexture.CreateFromImage(image);
 
 		    // Display the image in a TextureRect node.
 		    var textureRect = new TextureRect();
@@ -148,89 +150,94 @@
 		}
 		[/csharp]
 		[/codeblocks]
-
 		[b]Gzipped response bodies[/b]: HTTPRequest will automatically handle decompression of response bodies. A [code]Accept-Encoding[/code] header will be automatically added to each of your requests, unless one is already specified. Any response with a [code]Content-Encoding: gzip[/code] header will automatically be decompressed and delivered to you as uncompressed bytes.
-		[b]Note:[/b] When performing HTTP requests from a project exported to HTML5, keep in mind the remote server may not allow requests from foreign origins due to [url=https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS]CORS[/url]. If you host the server in question, you should modify its backend to allow requests from foreign origins by adding the [code]Access-Control-Allow-Origin: *[/code] HTTP header.
-		[b]Note:[/b] SSL/TLS support is currently limited to TLS 1.0, TLS 1.1, and TLS 1.2. Attempting to connect to a TLS 1.3-only server will return an error.
 	</description>
 	<tutorials>
-		<link title="Making HTTP requests">https://docs.godotengine.org/en/latest/tutorials/networking/http_request_class.html</link>
-		<link title="SSL certificates">https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
+		<link title="Making HTTP requests">$DOCS_URL/tutorials/networking/http_request_class.html</link>
+		<link title="TLS certificates">$DOCS_URL/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
 		<method name="cancel_request">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Cancels the current request.
 			</description>
 		</method>
 		<method name="get_body_size" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the response body length.
 				[b]Note:[/b] Some Web servers may not send a body length. In this case, the value returned will be [code]-1[/code]. If using chunked transfer encoding, the body length will also be [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_downloaded_bytes" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
-				Returns the amount of bytes this HTTPRequest downloaded.
+				Returns the number of bytes this HTTPRequest downloaded.
 			</description>
 		</method>
 		<method name="get_http_client_status" qualifiers="const">
-			<return type="int" enum="HTTPClient.Status">
-			</return>
+			<return type="int" enum="HTTPClient.Status" />
 			<description>
 				Returns the current status of the underlying [HTTPClient]. See [enum HTTPClient.Status].
 			</description>
 		</method>
 		<method name="request">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="url" type="String">
-			</argument>
-			<argument index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()">
-			</argument>
-			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
-			</argument>
-			<argument index="3" name="method" type="int" enum="HTTPClient.Method" default="0">
-			</argument>
-			<argument index="4" name="request_data" type="String" default="&quot;&quot;">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="url" type="String" />
+			<param index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()" />
+			<param index="2" name="method" type="int" enum="HTTPClient.Method" default="0" />
+			<param index="3" name="request_data" type="String" default="&quot;&quot;" />
 			<description>
 				Creates request on the underlying [HTTPClient]. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].
 				Returns [constant OK] if request is successfully created. (Does not imply that the server has responded), [constant ERR_UNCONFIGURED] if not in the tree, [constant ERR_BUSY] if still processing previous request, [constant ERR_INVALID_PARAMETER] if given string is not a valid URL format, or [constant ERR_CANT_CONNECT] if not using thread and the [HTTPClient] cannot connect to host.
-				[b]Note:[/b] The [code]request_data[/code] parameter is ignored if [code]method[/code] is [constant HTTPClient.METHOD_GET]. This is because GET methods can't contain request data. As a workaround, you can pass request data as a query string in the URL. See [method String.uri_encode] for an example.
+				[b]Note:[/b] When [param method] is [constant HTTPClient.METHOD_GET], the payload sent via [param request_data] might be ignored by the server or even cause the server to reject the request (check [url=https://datatracker.ietf.org/doc/html/rfc7231#section-4.3.1]RFC 7231 section 4.3.1[/url] for more details). As a workaround, you can send data as a query string in the URL (see [method String.uri_encode] for an example).
+				[b]Note:[/b] It's recommended to use transport encryption (TLS) and to avoid sending sensitive information (such as login credentials) in HTTP GET URL parameters. Consider using HTTP POST requests or HTTP headers for such information instead.
 			</description>
 		</method>
 		<method name="request_raw">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="url" type="String">
-			</argument>
-			<argument index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()">
-			</argument>
-			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
-			</argument>
-			<argument index="3" name="method" type="int" enum="HTTPClient.Method" default="0">
-			</argument>
-			<argument index="4" name="request_data_raw" type="PackedByteArray" default="PackedByteArray()">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="url" type="String" />
+			<param index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()" />
+			<param index="2" name="method" type="int" enum="HTTPClient.Method" default="0" />
+			<param index="3" name="request_data_raw" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
 				Creates request on the underlying [HTTPClient] using a raw array of bytes for the request body. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].
 				Returns [constant OK] if request is successfully created. (Does not imply that the server has responded), [constant ERR_UNCONFIGURED] if not in the tree, [constant ERR_BUSY] if still processing previous request, [constant ERR_INVALID_PARAMETER] if given string is not a valid URL format, or [constant ERR_CANT_CONNECT] if not using thread and the [HTTPClient] cannot connect to host.
+			</description>
+		</method>
+		<method name="set_http_proxy">
+			<return type="void" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
+			<description>
+				Sets the proxy server for HTTP requests.
+				The proxy server is unset if [param host] is empty or [param port] is -1.
+			</description>
+		</method>
+		<method name="set_https_proxy">
+			<return type="void" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
+			<description>
+				Sets the proxy server for HTTPS requests.
+				The proxy server is unset if [param host] is empty or [param port] is -1.
+			</description>
+		</method>
+		<method name="set_tls_options">
+			<return type="void" />
+			<param index="0" name="client_options" type="TLSOptions" />
+			<description>
+				Sets the [TLSOptions] to be used when connecting to an HTTPS server. See [method TLSOptions.client].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="accept_gzip" type="bool" setter="set_accept_gzip" getter="is_accepting_gzip" default="true">
 			If [code]true[/code], this header will be added to each request: [code]Accept-Encoding: gzip, deflate[/code] telling servers that it's okay to compress response bodies.
-			Any Response body declaring a [code]Content-Encoding[/code] of either [code]gzip[/code] or [code]deflate[/code] will then be automatically decompressed, and the uncompressed bytes will be delivered via [code]request_completed[/code].
-			If the user has specified their own [code]Accept-Encoding[/code] header, then no header will be added regardless of [code]accept_gzip[/code].
-			If [code]false[/code] no header will be added, and no decompression will be performed on response bodies. The raw bytes of the response body will be returned via [code]request_completed[/code].
+			Any Response body declaring a [code]Content-Encoding[/code] of either [code]gzip[/code] or [code]deflate[/code] will then be automatically decompressed, and the uncompressed bytes will be delivered via [signal request_completed].
+			If the user has specified their own [code]Accept-Encoding[/code] header, then no header will be added regardless of [member accept_gzip].
+			If [code]false[/code] no header will be added, and no decompression will be performed on response bodies. The raw bytes of the response body will be returned via [signal request_completed].
 		</member>
 		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit" default="-1">
 			Maximum allowed size for response bodies. If the response body is compressed, this will be used as the maximum allowed size for the decompressed body.
@@ -245,7 +252,8 @@
 		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects" default="8">
 			Maximum number of allowed redirects.
 		</member>
-		<member name="timeout" type="int" setter="set_timeout" getter="get_timeout" default="0">
+		<member name="timeout" type="float" setter="set_timeout" getter="get_timeout" default="0.0">
+			The duration to wait in seconds before a request times out. If [member timeout] is set to [code]0.0[/code] then the request will never time out. For simple requests, such as communication with a REST API, it is recommended that [member timeout] is set to a value suitable for the server response time (e.g. between [code]1.0[/code] and [code]10.0[/code]). This will help prevent unwanted timeouts caused by variation in server response times while still allowing the application to detect when a request has timed out. For larger requests such as file downloads it is suggested the [member timeout] be set to [code]0.0[/code], disabling the timeout functionality. This will help to prevent large transfers from failing due to exceeding the timeout value.
 		</member>
 		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads" default="false">
 			If [code]true[/code], multithreading is used to improve performance.
@@ -253,14 +261,10 @@
 	</members>
 	<signals>
 		<signal name="request_completed">
-			<argument index="0" name="result" type="int">
-			</argument>
-			<argument index="1" name="response_code" type="int">
-			</argument>
-			<argument index="2" name="headers" type="PackedStringArray">
-			</argument>
-			<argument index="3" name="body" type="PackedByteArray">
-			</argument>
+			<param index="0" name="result" type="int" />
+			<param index="1" name="response_code" type="int" />
+			<param index="2" name="headers" type="PackedStringArray" />
+			<param index="3" name="body" type="PackedByteArray" />
 			<description>
 				Emitted when a request is completed.
 			</description>
@@ -281,8 +285,8 @@
 		<constant name="RESULT_CONNECTION_ERROR" value="4" enum="Result">
 			Request failed due to connection (read/write) error.
 		</constant>
-		<constant name="RESULT_SSL_HANDSHAKE_ERROR" value="5" enum="Result">
-			Request failed on SSL handshake.
+		<constant name="RESULT_TLS_HANDSHAKE_ERROR" value="5" enum="Result">
+			Request failed on TLS handshake.
 		</constant>
 		<constant name="RESULT_NO_RESPONSE" value="6" enum="Result">
 			Request does not have a response (yet).
@@ -305,6 +309,7 @@
 			Request reached its maximum redirect limit, see [member max_redirects].
 		</constant>
 		<constant name="RESULT_TIMEOUT" value="13" enum="Result">
+			Request failed due to a timeout. If you expect requests to take a long time, try increasing the value of [member timeout] or setting it to [code]0.0[/code] to remove the timeout completely.
 		</constant>
 	</constants>
 </class>

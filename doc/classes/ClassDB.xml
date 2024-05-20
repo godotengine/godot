@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ClassDB" inherits="Object" version="4.0">
+<class name="ClassDB" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Class information repository.
+		A class information repository.
 	</brief_description>
 	<description>
 		Provides access to metadata stored for every available class.
@@ -10,213 +10,212 @@
 	</tutorials>
 	<methods>
 		<method name="can_instantiate" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
 			<description>
-				Returns [code]true[/code] if you can instance objects from the specified [code]class[/code], [code]false[/code] in other case.
+				Returns [code]true[/code] if objects can be instantiated from the specified [param class], otherwise returns [code]false[/code].
 			</description>
 		</method>
 		<method name="class_exists" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
 			<description>
-				Returns whether the specified [code]class[/code] is available or not.
+				Returns whether the specified [param class] is available or not.
 			</description>
 		</method>
-		<method name="class_get_category" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
+		<method name="class_get_enum_constants" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="enum" type="StringName" />
+			<param index="2" name="no_inheritance" type="bool" default="false" />
 			<description>
-				Returns a category associated with the class for use in documentation and the Asset Library. Debug mode required.
+				Returns an array with all the keys in [param enum] of [param class] or its ancestry.
+			</description>
+		</method>
+		<method name="class_get_enum_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns an array with all the enums of [param class] or its ancestry.
 			</description>
 		</method>
 		<method name="class_get_integer_constant" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
-			<argument index="1" name="name" type="StringName">
-			</argument>
+			<return type="int" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="name" type="StringName" />
 			<description>
-				Returns the value of the integer constant [code]name[/code] of [code]class[/code] or its ancestry. Always returns 0 when the constant could not be found.
+				Returns the value of the integer constant [param name] of [param class] or its ancestry. Always returns 0 when the constant could not be found.
+			</description>
+		</method>
+		<method name="class_get_integer_constant_enum" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns which enum the integer constant [param name] of [param class] or its ancestry belongs to.
 			</description>
 		</method>
 		<method name="class_get_integer_constant_list" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
-			<argument index="1" name="no_inheritance" type="bool" default="false">
-			</argument>
+			<return type="PackedStringArray" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
-				Returns an array with the names all the integer constants of [code]class[/code] or its ancestry.
+				Returns an array with the names all the integer constants of [param class] or its ancestry.
+			</description>
+		</method>
+		<method name="class_get_method_argument_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="method" type="StringName" />
+			<param index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns the number of arguments of the method [param method] of [param class] or its ancestry if [param no_inheritance] is [code]false[/code].
 			</description>
 		</method>
 		<method name="class_get_method_list" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
-			<argument index="1" name="no_inheritance" type="bool" default="false">
-			</argument>
+			<return type="Dictionary[]" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
-				Returns an array with all the methods of [code]class[/code] or its ancestry if [code]no_inheritance[/code] is [code]false[/code]. Every element of the array is a [Dictionary] with the following keys: [code]args[/code], [code]default_args[/code], [code]flags[/code], [code]id[/code], [code]name[/code], [code]return: (class_name, hint, hint_string, name, type, usage)[/code].
-				[b]Note:[/code] In exported release builds the debug info is not available, so the returned dictionaries will contain only method names.
+				Returns an array with all the methods of [param class] or its ancestry if [param no_inheritance] is [code]false[/code]. Every element of the array is a [Dictionary] with the following keys: [code]args[/code], [code]default_args[/code], [code]flags[/code], [code]id[/code], [code]name[/code], [code]return: (class_name, hint, hint_string, name, type, usage)[/code].
+				[b]Note:[/b] In exported release builds the debug info is not available, so the returned dictionaries will contain only method names.
 			</description>
 		</method>
 		<method name="class_get_property" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="property" type="StringName">
-			</argument>
+			<return type="Variant" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="property" type="StringName" />
 			<description>
-				Returns the value of [code]property[/code] of [code]class[/code] or its ancestry.
+				Returns the value of [param property] of [param object] or its ancestry.
+			</description>
+		</method>
+		<method name="class_get_property_default_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="property" type="StringName" />
+			<description>
+				Returns the default value of [param property] of [param class] or its ancestor classes.
 			</description>
 		</method>
 		<method name="class_get_property_list" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
-			<argument index="1" name="no_inheritance" type="bool" default="false">
-			</argument>
+			<return type="Dictionary[]" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
-				Returns an array with all the properties of [code]class[/code] or its ancestry if [code]no_inheritance[/code] is [code]false[/code].
+				Returns an array with all the properties of [param class] or its ancestry if [param no_inheritance] is [code]false[/code].
 			</description>
 		</method>
 		<method name="class_get_signal" qualifiers="const">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
-			<argument index="1" name="signal" type="StringName">
-			</argument>
+			<return type="Dictionary" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="signal" type="StringName" />
 			<description>
-				Returns the [code]signal[/code] data of [code]class[/code] or its ancestry. The returned value is a [Dictionary] with the following keys: [code]args[/code], [code]default_args[/code], [code]flags[/code], [code]id[/code], [code]name[/code], [code]return: (class_name, hint, hint_string, name, type, usage)[/code].
+				Returns the [param signal] data of [param class] or its ancestry. The returned value is a [Dictionary] with the following keys: [code]args[/code], [code]default_args[/code], [code]flags[/code], [code]id[/code], [code]name[/code], [code]return: (class_name, hint, hint_string, name, type, usage)[/code].
 			</description>
 		</method>
 		<method name="class_get_signal_list" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
-			<argument index="1" name="no_inheritance" type="bool" default="false">
-			</argument>
+			<return type="Dictionary[]" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
-				Returns an array with all the signals of [code]class[/code] or its ancestry if [code]no_inheritance[/code] is [code]false[/code]. Every element of the array is a [Dictionary] as described in [method class_get_signal].
+				Returns an array with all the signals of [param class] or its ancestry if [param no_inheritance] is [code]false[/code]. Every element of the array is a [Dictionary] as described in [method class_get_signal].
+			</description>
+		</method>
+		<method name="class_has_enum" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns whether [param class] or its ancestry has an enum called [param name] or not.
 			</description>
 		</method>
 		<method name="class_has_integer_constant" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
-			<argument index="1" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="name" type="StringName" />
 			<description>
-				Returns whether [code]class[/code] or its ancestry has an integer constant called [code]name[/code] or not.
+				Returns whether [param class] or its ancestry has an integer constant called [param name] or not.
 			</description>
 		</method>
 		<method name="class_has_method" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
-			<argument index="1" name="method" type="StringName">
-			</argument>
-			<argument index="2" name="no_inheritance" type="bool" default="false">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="method" type="StringName" />
+			<param index="2" name="no_inheritance" type="bool" default="false" />
 			<description>
-				Returns whether [code]class[/code] (or its ancestry if [code]no_inheritance[/code] is [code]false[/code]) has a method called [code]method[/code] or not.
+				Returns whether [param class] (or its ancestry if [param no_inheritance] is [code]false[/code]) has a method called [param method] or not.
 			</description>
 		</method>
 		<method name="class_has_signal" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
-			<argument index="1" name="signal" type="StringName">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="signal" type="StringName" />
 			<description>
-				Returns whether [code]class[/code] or its ancestry has a signal called [code]signal[/code] or not.
+				Returns whether [param class] or its ancestry has a signal called [param signal] or not.
 			</description>
 		</method>
 		<method name="class_set_property" qualifiers="const">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="property" type="StringName">
-			</argument>
-			<argument index="2" name="value" type="Variant">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="property" type="StringName" />
+			<param index="2" name="value" type="Variant" />
 			<description>
-				Sets [code]property[/code] value of [code]class[/code] to [code]value[/code].
+				Sets [param property] value of [param object] to [param value].
 			</description>
 		</method>
 		<method name="get_class_list" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns the names of all the classes available.
 			</description>
 		</method>
 		<method name="get_inheriters_from_class" qualifiers="const">
-			<return type="PackedStringArray">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
+			<return type="PackedStringArray" />
+			<param index="0" name="class" type="StringName" />
 			<description>
-				Returns the names of all the classes that directly or indirectly inherit from [code]class[/code].
+				Returns the names of all the classes that directly or indirectly inherit from [param class].
 			</description>
 		</method>
 		<method name="get_parent_class" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
+			<return type="StringName" />
+			<param index="0" name="class" type="StringName" />
 			<description>
-				Returns the parent class of [code]class[/code].
+				Returns the parent class of [param class].
 			</description>
 		</method>
 		<method name="instantiate" qualifiers="const">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
+			<return type="Variant" />
+			<param index="0" name="class" type="StringName" />
 			<description>
-				Creates an instance of [code]class[/code].
+				Creates an instance of [param class].
 			</description>
 		</method>
 		<method name="is_class_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
 			<description>
-				Returns whether this [code]class[/code] is enabled or not.
+				Returns whether this [param class] is enabled or not.
+			</description>
+		</method>
+		<method name="is_class_enum_bitfield" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="enum" type="StringName" />
+			<param index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns whether [param class] (or its ancestor classes if [param no_inheritance] is [code]false[/code]) has an enum called [param enum] that is a bitfield.
 			</description>
 		</method>
 		<method name="is_parent_class" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="class" type="StringName">
-			</argument>
-			<argument index="1" name="inherits" type="StringName">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="inherits" type="StringName" />
 			<description>
-				Returns whether [code]inherits[/code] is an ancestor of [code]class[/code] or not.
+				Returns whether [param inherits] is an ancestor of [param class] or not.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

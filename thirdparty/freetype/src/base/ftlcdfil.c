@@ -4,7 +4,7 @@
  *
  *   FreeType API for color filtering of subpixel bitmap glyphs (body).
  *
- * Copyright (C) 2006-2020 by
+ * Copyright (C) 2006-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -32,7 +32,7 @@
 
 
   /* add padding according to filter weights */
-  FT_BASE_DEF (void)
+  FT_BASE_DEF( void )
   ft_lcd_padding( FT_BBox*        cbox,
                   FT_GlyphSlot    slot,
                   FT_Render_Mode  mode )
@@ -357,7 +357,7 @@
 
   FT_EXPORT_DEF( FT_Error )
   FT_Library_SetLcdGeometry( FT_Library  library,
-                             FT_Vector*  sub )
+                             FT_Vector   sub[3] )
   {
     FT_UNUSED( library );
     FT_UNUSED( sub );
@@ -368,7 +368,7 @@
 #else /* !FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 
   /* add padding to accommodate outline shifts */
-  FT_BASE_DEF (void)
+  FT_BASE_DEF( void )
   ft_lcd_padding( FT_BBox*        cbox,
                   FT_GlyphSlot    slot,
                   FT_Render_Mode  mode )
@@ -428,7 +428,7 @@
 
     ft_memcpy( library->lcd_geometry, sub, 3 * sizeof( FT_Vector ) );
 
-    return FT_THROW( Unimplemented_Feature );
+    return FT_Err_Ok;
   }
 
 #endif /* !FT_CONFIG_OPTION_SUBPIXEL_RENDERING */

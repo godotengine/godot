@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  audio_driver_opensl.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_driver_opensl.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_driver_opensl.h"
 
@@ -44,7 +44,7 @@ void AudioDriverOpenSL::_buffer_callback(
 	if (pause) {
 		mix = false;
 	} else {
-		mix = mutex.try_lock() == OK;
+		mix = mutex.try_lock();
 	}
 
 	if (mix) {
@@ -56,8 +56,9 @@ void AudioDriverOpenSL::_buffer_callback(
 		}
 	}
 
-	if (mix)
+	if (mix) {
 		mutex.unlock();
+	}
 
 	const int32_t *src_buff = mixdown_buffer;
 
@@ -74,15 +75,9 @@ void AudioDriverOpenSL::_buffer_callback(
 void AudioDriverOpenSL::_buffer_callbacks(
 		SLAndroidSimpleBufferQueueItf queueItf,
 		void *pContext) {
-	AudioDriverOpenSL *ad = (AudioDriverOpenSL *)pContext;
+	AudioDriverOpenSL *ad = static_cast<AudioDriverOpenSL *>(pContext);
 
 	ad->_buffer_callback(queueItf);
-}
-
-AudioDriverOpenSL *AudioDriverOpenSL::s_ad = nullptr;
-
-const char *AudioDriverOpenSL::get_name() const {
-	return "Android";
 }
 
 Error AudioDriverOpenSL::init() {
@@ -132,8 +127,6 @@ void AudioDriverOpenSL::start() {
 	ERR_FAIL_COND(res != SL_RESULT_SUCCESS);
 
 	SLDataLocator_AndroidSimpleBufferQueue loc_bufq = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, BUFFER_COUNT };
-	//bufferQueue.locatorType = SL_DATALOCATOR_BUFFERQUEUE;
-	//bufferQueue.numBuffers = BUFFER_COUNT; /* Four buffers in our buffer queue */
 	/* Setup the format of the content in the buffer queue */
 	pcm.formatType = SL_DATAFORMAT_PCM;
 	pcm.numChannels = 2;
@@ -154,13 +147,8 @@ void AudioDriverOpenSL::start() {
 	locator_outputmix.outputMix = OutputMix;
 	audioSink.pLocator = (void *)&locator_outputmix;
 	audioSink.pFormat = nullptr;
-	/* Initialize the context for Buffer queue callbacks */
-	//cntxt.pDataBase = (void*)&pcmData;
-	//cntxt.pData = cntxt.pDataBase;
-	//cntxt.size = sizeof(pcmData);
 
 	/* Create the music player */
-
 	{
 		const SLInterfaceID ids[2] = { SL_IID_BUFFERQUEUE, SL_IID_EFFECTSEND };
 		const SLboolean req[2] = { SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE };
@@ -207,12 +195,12 @@ void AudioDriverOpenSL::_record_buffer_callback(SLAndroidSimpleBufferQueueItf qu
 }
 
 void AudioDriverOpenSL::_record_buffer_callbacks(SLAndroidSimpleBufferQueueItf queueItf, void *pContext) {
-	AudioDriverOpenSL *ad = (AudioDriverOpenSL *)pContext;
+	AudioDriverOpenSL *ad = static_cast<AudioDriverOpenSL *>(pContext);
 
 	ad->_record_buffer_callback(queueItf);
 }
 
-Error AudioDriverOpenSL::capture_init_device() {
+Error AudioDriverOpenSL::init_input_device() {
 	SLDataLocator_IODevice loc_dev = {
 		SL_DATALOCATOR_IODEVICE,
 		SL_IODEVICE_AUDIOINPUT,
@@ -279,15 +267,16 @@ Error AudioDriverOpenSL::capture_init_device() {
 	return OK;
 }
 
-Error AudioDriverOpenSL::capture_start() {
+Error AudioDriverOpenSL::input_start() {
 	if (OS::get_singleton()->request_permission("RECORD_AUDIO")) {
-		return capture_init_device();
+		return init_input_device();
 	}
 
-	return OK;
+	WARN_PRINT("Unable to start audio capture - No RECORD_AUDIO permission");
+	return ERR_UNAUTHORIZED;
 }
 
-Error AudioDriverOpenSL::capture_stop() {
+Error AudioDriverOpenSL::input_stop() {
 	SLuint32 state;
 	SLresult res = (*recordItf)->GetRecordState(recordItf, &state);
 	ERR_FAIL_COND_V(res != SL_RESULT_SUCCESS, ERR_CANT_OPEN);
@@ -312,13 +301,15 @@ AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
 }
 
 void AudioDriverOpenSL::lock() {
-	if (active)
+	if (active) {
 		mutex.lock();
+	}
 }
 
 void AudioDriverOpenSL::unlock() {
-	if (active)
+	if (active) {
 		mutex.unlock();
+	}
 }
 
 void AudioDriverOpenSL::finish() {
@@ -338,5 +329,4 @@ void AudioDriverOpenSL::set_pause(bool p_pause) {
 }
 
 AudioDriverOpenSL::AudioDriverOpenSL() {
-	s_ad = this;
 }

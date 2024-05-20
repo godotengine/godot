@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RDVertexAttribute" inherits="RefCounted" version="4.0">
+<class name="RDVertexAttribute" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Vertex attribute (used by [RenderingDevice]).
 	</brief_description>
 	<description>
+		This object is used by [RenderingDevice].
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="format" type="int" setter="set_format" getter="get_format" enum="RenderingDevice.DataFormat" default="226">
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="RenderingDevice.DataFormat" default="218">
 		</member>
 		<member name="frequency" type="int" setter="set_frequency" getter="get_frequency" enum="RenderingDevice.VertexFrequency" default="0">
 		</member>
@@ -20,6 +20,4 @@
 		<member name="stride" type="int" setter="set_stride" getter="get_stride" default="0">
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -12,7 +12,7 @@
 
 #define FLAGS_CLIP_RECT_UV (1 << 9)
 #define FLAGS_TRANSPOSE_RECT (1 << 10)
-#define FLAGS_USING_LIGHT_MASK (1 << 11)
+#define FLAGS_CONVERT_ATTRIBUTES_TO_LINEAR (1 << 11)
 #define FLAGS_NINEPACH_DRAW_CENTER (1 << 12)
 #define FLAGS_USING_PARTICLES (1 << 13)
 
@@ -24,22 +24,15 @@
 #define FLAGS_DEFAULT_NORMAL_MAP_USED (1 << 26)
 #define FLAGS_DEFAULT_SPECULAR_MAP_USED (1 << 27)
 
-#define SAMPLER_NEAREST_CLAMP 0
-#define SAMPLER_LINEAR_CLAMP 1
-#define SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP 2
-#define SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP 3
-#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP 4
-#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP 5
-#define SAMPLER_NEAREST_REPEAT 6
-#define SAMPLER_LINEAR_REPEAT 7
-#define SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT 8
-#define SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT 9
-#define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT 10
-#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
+#define FLAGS_USE_MSDF (1 << 28)
+#define FLAGS_USE_LCD (1 << 29)
+
+#define FLAGS_FLIP_H (1 << 30)
+#define FLAGS_FLIP_V (1 << 31)
 
 // Push Constant
 
-layout(push_constant, binding = 0, std430) uniform DrawData {
+layout(push_constant, std430) uniform DrawData {
 	vec2 world_x;
 	vec2 world_y;
 	vec2 world_ofs;
@@ -131,15 +124,15 @@ layout(set = 0, binding = 4) uniform texture2D shadow_atlas_texture;
 
 layout(set = 0, binding = 5) uniform sampler shadow_sampler;
 
-layout(set = 0, binding = 6) uniform texture2D screen_texture;
+layout(set = 0, binding = 6) uniform texture2D color_buffer;
 layout(set = 0, binding = 7) uniform texture2D sdf_texture;
 
-layout(set = 0, binding = 8) uniform sampler material_samplers[12];
+#include "samplers_inc.glsl"
 
-layout(set = 0, binding = 9, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 9, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
 }
-global_variables;
+global_shader_uniforms;
 
 /* SET1: Is reserved for the material */
 

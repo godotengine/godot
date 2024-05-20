@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT morx table validation (body).
  *
- * Copyright (C) 2005-2020 by
+ * Copyright (C) 2005-2023 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -84,7 +84,7 @@
       p += 4;
 #endif
 
-      GXV_TRACE(( "validating chain subtable %d/%d (%d bytes)\n",
+      GXV_TRACE(( "validating chain subtable %d/%d (%lu bytes)\n",
                   i + 1, nSubtables, length ));
 
       type = coverage & 0x0007;
@@ -99,7 +99,7 @@
 
       func = fmt_funcs_table[type];
       if ( !func )
-        GXV_TRACE(( "morx type %d is reserved\n", type ));
+        GXV_TRACE(( "morx type %lu is reserved\n", type ));
 
       func( p, p + rest, gxvalid );
 
@@ -186,7 +186,7 @@
 
     for ( i = 0; i < nChains; i++ )
     {
-      GXV_TRACE(( "validating chain %d/%d\n", i + 1, nChains ));
+      GXV_TRACE(( "validating chain %lu/%lu\n", i + 1, nChains ));
       GXV_32BIT_ALIGNMENT_VALIDATE( p - table );
       gxv_morx_chain_validate( p, limit, gxvalid );
       p += gxvalid->subtable_length;

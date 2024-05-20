@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RemoteTransform2D" inherits="Node2D" version="4.0">
+<class name="RemoteTransform2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		RemoteTransform2D pushes its own [Transform2D] to another [CanvasItem] derived Node in the scene.
+		RemoteTransform2D pushes its own [Transform2D] to another [Node2D] derived node in the scene.
 	</brief_description>
 	<description>
-		RemoteTransform2D pushes its own [Transform2D] to another [CanvasItem] derived Node (called the remote node) in the scene.
-		It can be set to update another Node's position, rotation and/or scale. It can use either global or local coordinates.
+		RemoteTransform2D pushes its own [Transform2D] to another [Node2D] derived node (called the remote node) in the scene.
+		It can be set to update another node's position, rotation and/or scale. It can use either global or local coordinates.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="force_update_cache">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				[RemoteTransform2D] caches the remote node. It may not notice if the remote node disappears; [method force_update_cache] forces it to update the cache again.
 			</description>
@@ -35,6 +34,4 @@
 			If [code]true[/code], global coordinates are used. If [code]false[/code], local coordinates are used.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

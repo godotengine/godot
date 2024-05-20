@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_debugger_inspector.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_debugger_inspector.cpp                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_debugger_inspector.h"
 
@@ -36,7 +36,7 @@
 #include "scene/debugger/scene_debugger.h"
 
 bool EditorDebuggerRemoteObject::_set(const StringName &p_name, const Variant &p_value) {
-	if (!editable || !prop_values.has(p_name) || String(p_name).begins_with("Constants/")) {
+	if (!prop_values.has(p_name) || String(p_name).begins_with("Constants/")) {
 		return false;
 	}
 
@@ -55,15 +55,20 @@ bool EditorDebuggerRemoteObject::_get(const StringName &p_name, Variant &r_ret) 
 }
 
 void EditorDebuggerRemoteObject::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->clear(); //sorry, no want category
-	for (const PropertyInfo &E : prop_list) {
-		p_list->push_back(E);
+	p_list->clear(); // Sorry, no want category.
+	for (const PropertyInfo &prop : prop_list) {
+		if (prop.name == "script") {
+			// Skip the script property, it's always added by the non-virtual method.
+			continue;
+		}
+
+		p_list->push_back(prop);
 	}
 }
 
 String EditorDebuggerRemoteObject::get_title() {
 	if (remote_object_id.is_valid()) {
-		return TTR("Remote ") + String(type_name) + ": " + itos(remote_object_id);
+		return vformat(TTR("Remote %s:"), String(type_name)) + " " + itos(remote_object_id);
 	} else {
 		return "<null>";
 	}
@@ -86,7 +91,6 @@ void EditorDebuggerRemoteObject::_bind_methods() {
 
 EditorDebuggerInspector::EditorDebuggerInspector() {
 	variables = memnew(EditorDebuggerRemoteObject);
-	variables->editable = false;
 }
 
 EditorDebuggerInspector::~EditorDebuggerInspector() {
@@ -102,14 +106,13 @@ void EditorDebuggerInspector::_bind_methods() {
 
 void EditorDebuggerInspector::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_POSTINITIALIZE:
+		case NOTIFICATION_POSTINITIALIZE: {
 			connect("object_id_selected", callable_mp(this, &EditorDebuggerInspector::_object_selected));
-			break;
-		case NOTIFICATION_ENTER_TREE:
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
 			edit(variables);
-			break;
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -122,38 +125,38 @@ void EditorDebuggerInspector::_object_selected(ObjectID p_object) {
 }
 
 ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
-	EditorDebuggerRemoteObject *debugObj = nullptr;
+	EditorDebuggerRemoteObject *debug_obj = nullptr;
 
 	SceneDebuggerObject obj;
 	obj.deserialize(p_arr);
 	ERR_FAIL_COND_V(obj.id.is_null(), ObjectID());
 
 	if (remote_objects.has(obj.id)) {
-		debugObj = remote_objects[obj.id];
+		debug_obj = remote_objects[obj.id];
 	} else {
-		debugObj = memnew(EditorDebuggerRemoteObject);
-		debugObj->remote_object_id = obj.id;
-		debugObj->type_name = obj.class_name;
-		remote_objects[obj.id] = debugObj;
-		debugObj->connect("value_edited", callable_mp(this, &EditorDebuggerInspector::_object_edited));
+		debug_obj = memnew(EditorDebuggerRemoteObject);
+		debug_obj->remote_object_id = obj.id;
+		debug_obj->type_name = obj.class_name;
+		remote_objects[obj.id] = debug_obj;
+		debug_obj->connect("value_edited", callable_mp(this, &EditorDebuggerInspector::_object_edited));
 	}
 
-	int old_prop_size = debugObj->prop_list.size();
+	int old_prop_size = debug_obj->prop_list.size();
 
-	debugObj->prop_list.clear();
+	debug_obj->prop_list.clear();
 	int new_props_added = 0;
-	Set<String> changed;
-	for (int i = 0; i < obj.properties.size(); i++) {
-		PropertyInfo &pinfo = obj.properties[i].first;
-		Variant &var = obj.properties[i].second;
+	HashSet<String> changed;
+	for (SceneDebuggerObject::SceneDebuggerProperty &property : obj.properties) {
+		PropertyInfo &pinfo = property.first;
+		Variant &var = property.second;
 
 		if (pinfo.type == Variant::OBJECT) {
 			if (var.get_type() == Variant::STRING) {
 				String path = var;
-				if (path.find("::") != -1) {
+				if (path.contains("::")) {
 					// built-in resource
 					String base_path = path.get_slice("::", 0);
-					RES dependency = ResourceLoader::load(base_path);
+					Ref<Resource> dependency = ResourceLoader::load(base_path);
 					if (dependency.is_valid()) {
 						remote_dependencies.insert(dependency);
 					}
@@ -161,12 +164,14 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 				var = ResourceLoader::load(path);
 
 				if (pinfo.hint_string == "Script") {
-					if (debugObj->get_script() != var) {
-						debugObj->set_script(REF());
-						Ref<Script> script(var);
-						if (!script.is_null()) {
-							ScriptInstance *script_instance = script->placeholder_instance_create(debugObj);
-							debugObj->set_script_and_instance(var, script_instance);
+					if (debug_obj->get_script() != var) {
+						debug_obj->set_script(Ref<RefCounted>());
+						Ref<Script> scr(var);
+						if (!scr.is_null()) {
+							ScriptInstance *scr_instance = scr->placeholder_instance_create(debug_obj);
+							if (scr_instance) {
+								debug_obj->set_script_and_instance(var, scr_instance);
+							}
 						}
 					}
 				}
@@ -174,38 +179,38 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 		}
 
 		//always add the property, since props may have been added or removed
-		debugObj->prop_list.push_back(pinfo);
+		debug_obj->prop_list.push_back(pinfo);
 
-		if (!debugObj->prop_values.has(pinfo.name)) {
+		if (!debug_obj->prop_values.has(pinfo.name)) {
 			new_props_added++;
-			debugObj->prop_values[pinfo.name] = var;
+			debug_obj->prop_values[pinfo.name] = var;
 		} else {
-			if (bool(Variant::evaluate(Variant::OP_NOT_EQUAL, debugObj->prop_values[pinfo.name], var))) {
-				debugObj->prop_values[pinfo.name] = var;
+			if (bool(Variant::evaluate(Variant::OP_NOT_EQUAL, debug_obj->prop_values[pinfo.name], var))) {
+				debug_obj->prop_values[pinfo.name] = var;
 				changed.insert(pinfo.name);
 			}
 		}
 	}
 
-	if (old_prop_size == debugObj->prop_list.size() && new_props_added == 0) {
+	if (old_prop_size == debug_obj->prop_list.size() && new_props_added == 0) {
 		//only some may have changed, if so, then update those, if exist
-		for (Set<String>::Element *E = changed.front(); E; E = E->next()) {
-			emit_signal(SNAME("object_property_updated"), debugObj->remote_object_id, E->get());
+		for (const String &E : changed) {
+			emit_signal(SNAME("object_property_updated"), debug_obj->remote_object_id, E);
 		}
 	} else {
 		//full update, because props were added or removed
-		debugObj->update();
+		debug_obj->update();
 	}
 	return obj.id;
 }
 
 void EditorDebuggerInspector::clear_cache() {
-	for (Map<ObjectID, EditorDebuggerRemoteObject *>::Element *E = remote_objects.front(); E; E = E->next()) {
+	for (const KeyValue<ObjectID, EditorDebuggerRemoteObject *> &E : remote_objects) {
 		EditorNode *editor = EditorNode::get_singleton();
-		if (editor->get_editor_history()->get_current() == E->value()->get_instance_id()) {
+		if (editor->get_editor_selection_history()->get_current() == E.value->get_instance_id()) {
 			editor->push_item(nullptr);
 		}
-		memdelete(E->value());
+		memdelete(E.value);
 	}
 	remote_objects.clear();
 	remote_dependencies.clear();
@@ -225,9 +230,9 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array) {
 	Variant v = var.value;
 
 	PropertyHint h = PROPERTY_HINT_NONE;
-	String hs = String();
+	String hs;
 
-	if (v.get_type() == Variant::OBJECT) {
+	if (var.var_type == Variant::OBJECT && v) {
 		v = Object::cast_to<EncodedObjectAsID>(v)->get_object_id();
 		h = PROPERTY_HINT_OBJECT_ID;
 		hs = "Object";
@@ -257,13 +262,26 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array) {
 	variables->prop_values[type + n] = v;
 	variables->update();
 	edit(variables);
+
+	// To prevent constantly resizing when using filtering.
+	int size_x = get_size().x;
+	if (size_x > get_custom_minimum_size().x) {
+		set_custom_minimum_size(Size2(size_x, 0));
+	}
 }
 
 void EditorDebuggerInspector::clear_stack_variables() {
 	variables->clear();
 	variables->update();
+	set_custom_minimum_size(Size2(0, 0));
 }
 
 String EditorDebuggerInspector::get_stack_variable(const String &p_var) {
-	return variables->get_variant(p_var);
+	for (KeyValue<StringName, Variant> &E : variables->prop_values) {
+		String v = E.key.operator String();
+		if (v.get_slice("/", 1) == p_var) {
+			return variables->get_variant(v);
+		}
+	}
+	return String();
 }

@@ -4,7 +4,7 @@
  *
  *   OpenType objects manager (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -69,8 +69,8 @@
     FT_Module         module;
 
 
-    module = FT_Get_Module( size->root.face->driver->root.library,
-                            "pshinter" );
+    module = FT_Get_Module( font->library, "pshinter" );
+
     return ( module && pshinter && pshinter->get_globals_funcs )
            ? pshinter->get_globals_funcs( module )
            : 0;
@@ -182,8 +182,7 @@
       goto Exit;
 
     cff_make_private_dict( &font->top_font, &priv );
-    error = funcs->create( cffsize->face->memory, &priv,
-                             &internal->topfont );
+    error = funcs->create( memory, &priv, &internal->topfont );
     if ( error )
       goto Exit;
 
@@ -193,8 +192,7 @@
 
 
       cff_make_private_dict( sub, &priv );
-      error = funcs->create( cffsize->face->memory, &priv,
-                               &internal->subfonts[i - 1] );
+      error = funcs->create( memory, &priv, &internal->subfonts[i - 1] );
       if ( error )
         goto Exit;
     }
@@ -283,6 +281,8 @@
   cff_size_request( FT_Size          size,
                     FT_Size_Request  req )
   {
+    FT_Error  error;
+
     CFF_Size           cffsize = (CFF_Size)size;
     PSH_Globals_Funcs  funcs;
 
@@ -304,7 +304,9 @@
 
 #endif /* TT_CONFIG_OPTION_EMBEDDED_BITMAPS */
 
-    FT_Request_Metrics( size->face, req );
+    error = FT_Request_Metrics( size->face, req );
+    if ( error )
+      goto Exit;
 
     funcs = cff_size_get_globals_funcs( cffsize );
 
@@ -345,7 +347,8 @@
       }
     }
 
-    return FT_Err_Ok;
+  Exit:
+    return error;
   }
 
 
@@ -376,8 +379,7 @@
       FT_Module  module;
 
 
-      module = FT_Get_Module( slot->face->driver->root.library,
-                              "pshinter" );
+      module = FT_Get_Module( slot->library, "pshinter" );
       if ( module )
       {
         T2_Hints_Funcs  funcs;
@@ -406,9 +408,7 @@
     FT_String*  result;
 
 
-    (void)FT_STRDUP( result, source );
-
-    FT_UNUSED( error );
+    FT_MEM_STRDUP( result, source );
 
     return result;
   }
@@ -659,8 +659,8 @@
       if ( dict->cid_registry == 0xFFFFU && !psnames )
       {
         FT_ERROR(( "cff_face_init:"
-                   " cannot open CFF & CEF fonts\n"
-                   "              "
+                   " cannot open CFF & CEF fonts\n" ));
+        FT_ERROR(( "              "
                    " without the `psnames' module\n" ));
         error = FT_THROW( Missing_Module );
         goto Exit;
@@ -684,13 +684,13 @@
 
         /* In Multiple Master CFFs, two SIDs hold the Normalize Design  */
         /* Vector (NDV) and Convert Design Vector (CDV) charstrings,    */
-        /* which may contain NULL bytes in the middle of the data, too. */
+        /* which may contain null bytes in the middle of the data, too. */
         /* We thus access `cff->strings' directly.                      */
         for ( idx = 1; idx < cff->num_strings; idx++ )
         {
           FT_Byte*    s1    = cff->strings[idx - 1];
           FT_Byte*    s2    = cff->strings[idx];
-          FT_PtrDist  s1len = s2 - s1 - 1; /* without the final NULL byte */
+          FT_PtrDist  s1len = s2 - s1 - 1; /* without the final null byte */
           FT_PtrDist  l;
 
 
@@ -719,22 +719,15 @@
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
       {
-        FT_Service_MultiMasters       mm  = (FT_Service_MultiMasters)face->mm;
-        FT_Service_MetricsVariations  var = (FT_Service_MetricsVariations)face->var;
-
         FT_UInt  instance_index = (FT_UInt)face_index >> 16;
 
 
         if ( FT_HAS_MULTIPLE_MASTERS( cffface ) &&
-             mm                                 &&
              instance_index > 0                 )
         {
-          error = mm->set_instance( cffface, instance_index );
+          error = FT_Set_Named_Instance( cffface, instance_index );
           if ( error )
             goto Exit;
-
-          if ( var )
-            var->metrics_adjust( cffface );
         }
       }
 #endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
@@ -1028,12 +1021,10 @@
         cffface->style_flags = flags;
       }
 
-#ifndef FT_CONFIG_OPTION_NO_GLYPH_NAMES
       /* CID-keyed CFF or CFF2 fonts don't have glyph names -- the SFNT */
       /* loader has unset this flag because of the 3.0 `post' table.    */
       if ( dict->cid_registry == 0xFFFFU && !cff2 )
         cffface->face_flags |= FT_FACE_FLAG_GLYPH_NAMES;
-#endif
 
       if ( dict->cid_registry != 0xFFFFU && pure_cff )
         cffface->face_flags |= FT_FACE_FLAG_CID_KEYED;
@@ -1049,11 +1040,11 @@
       {
         FT_CharMapRec  cmaprec;
         FT_CharMap     cmap;
-        FT_UInt        nn;
+        FT_Int         nn;
         CFF_Encoding   encoding = &cff->encoding;
 
 
-        for ( nn = 0; nn < (FT_UInt)cffface->num_charmaps; nn++ )
+        for ( nn = 0; nn < cffface->num_charmaps; nn++ )
         {
           cmap = cffface->charmaps[nn];
 
@@ -1078,7 +1069,7 @@
         cmaprec.encoding_id = TT_MS_ID_UNICODE_CS;
         cmaprec.encoding    = FT_ENCODING_UNICODE;
 
-        nn = (FT_UInt)cffface->num_charmaps;
+        nn = cffface->num_charmaps;
 
         error = FT_CMap_New( &cff_cmap_unicode_class_rec, NULL,
                              &cmaprec, NULL );
@@ -1089,7 +1080,7 @@
         error = FT_Err_Ok;
 
         /* if no Unicode charmap was previously selected, select this one */
-        if ( !cffface->charmap && nn != (FT_UInt)cffface->num_charmaps )
+        if ( !cffface->charmap && nn != cffface->num_charmaps )
           cffface->charmap = cffface->charmaps[nn];
 
       Skip_Unicode:
@@ -1159,7 +1150,7 @@
     }
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-    cff_done_blend( face );
+    cff_done_blend( cffface );
     face->blend = NULL;
 #endif
   }
@@ -1174,11 +1165,7 @@
 
 
     /* set default property values, cf. `ftcffdrv.h' */
-#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
-    driver->hinting_engine = FT_HINTING_FREETYPE;
-#else
     driver->hinting_engine = FT_HINTING_ADOBE;
-#endif
 
     driver->no_stem_darkening = TRUE;
 

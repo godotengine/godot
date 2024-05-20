@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TileMapPattern" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Holds a pattern to be copied from or pasted into [TileMap]s.
+	</brief_description>
+	<description>
+		This resource holds a set of cells to help bulk manipulations of [TileMap].
+		A pattern always start at the [code](0,0)[/code] coordinates and cannot have cells with negative coordinates.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_cell_alternative_tile" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns the tile alternative ID of the cell at [param coords].
+			</description>
+		</method>
+		<method name="get_cell_atlas_coords" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns the tile atlas coordinates ID of the cell at [param coords].
+			</description>
+		</method>
+		<method name="get_cell_source_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns the tile source ID of the cell at [param coords].
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the size, in cells, of the pattern.
+			</description>
+		</method>
+		<method name="get_used_cells" qualifiers="const">
+			<return type="Vector2i[]" />
+			<description>
+				Returns the list of used cell coordinates in the pattern.
+			</description>
+		</method>
+		<method name="has_cell" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Returns whether the pattern has a tile at the given coordinates.
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the pattern is empty or not.
+			</description>
+		</method>
+		<method name="remove_cell">
+			<return type="void" />
+			<param index="0" name="coords" type="Vector2i" />
+			<param index="1" name="update_size" type="bool" />
+			<description>
+				Remove the cell at the given coordinates.
+			</description>
+		</method>
+		<method name="set_cell">
+			<return type="void" />
+			<param index="0" name="coords" type="Vector2i" />
+			<param index="1" name="source_id" type="int" default="-1" />
+			<param index="2" name="atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
+			<param index="3" name="alternative_tile" type="int" default="-1" />
+			<description>
+				Sets the tile identifiers for the cell at coordinates [param coords]. See [method TileMap.set_cell].
+			</description>
+		</method>
+		<method name="set_size">
+			<return type="void" />
+			<param index="0" name="size" type="Vector2i" />
+			<description>
+				Sets the size of the pattern.
+			</description>
+		</method>
+	</methods>
+</class>

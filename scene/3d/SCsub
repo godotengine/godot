@@ -2,7 +2,7 @@
 
 Import("env")
 
-if env["disable_3d"]:
-    env.add_source_files(env.scene_sources, "node_3d.cpp")
-else:
-    env.add_source_files(env.scene_sources, "*.cpp")
+env.add_source_files(env.scene_sources, "*.cpp")
+
+# Chain load SCsubs
+SConscript("physics/SCsub")

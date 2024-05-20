@@ -56,7 +56,7 @@
  *
  * Tests whether a face has a `MATH` table.
  *
- * Return value: %true if the table is found, %false otherwise
+ * Return value: `true` if the table is found, `false` otherwise
  *
  * Since: 1.3.3
  **/
@@ -76,7 +76,7 @@ hb_ot_math_has_data (hb_face_t *face)
  *
  * However, if the requested constant is #HB_OT_MATH_CONSTANT_SCRIPT_PERCENT_SCALE_DOWN,
  * #HB_OT_MATH_CONSTANT_SCRIPT_SCRIPT_PERCENT_SCALE_DOWN or
- * #HB_OT_MATH_CONSTANT_SCRIPT_PERCENT_SCALE_DOWN, then the return value is
+ * #HB_OT_MATH_CONSTANT_RADICAL_DEGREE_BOTTOM_RAISE_PERCENT, then the return value is
  * an integer between 0 and 100 representing that percentage.
  *
  * Return value: the requested constant or zero
@@ -142,7 +142,7 @@ hb_ot_math_get_glyph_top_accent_attachment (hb_font_t *font,
  *
  * Tests whether the given glyph index is an extended shape in the face.
  *
- * Return value: %true if the glyph is an extended shape, %false otherwise
+ * Return value: `true` if the glyph is an extended shape, `false` otherwise
  *
  * Since: 1.3.3
  **/
@@ -182,6 +182,51 @@ hb_ot_math_get_glyph_kerning (hb_font_t *font,
 							       kern,
 							       correction_height,
 							       font);
+}
+
+/**
+ * hb_ot_math_get_glyph_kernings:
+ * @font: #hb_font_t to work upon
+ * @glyph: The glyph index from which to retrieve the kernings
+ * @kern: The #hb_ot_math_kern_t from which to retrieve the kernings
+ * @start_offset: offset of the first kern entry to retrieve
+ * @entries_count: (inout) (optional): Input = the maximum number of kern entries to return;
+ *                                     Output = the actual number of kern entries returned
+ * @kern_entries: (out caller-allocates) (array length=entries_count): array of kern entries returned
+ *
+ * Fetches the raw MathKern (cut-in) data for the specified font, glyph index,
+ * and @kern. The corresponding list of kern values and correction heights is
+ * returned as a list of #hb_ot_math_kern_entry_t structs.
+ *
+ * See also #hb_ot_math_get_glyph_kerning, which handles selecting the
+ * appropriate kern value for a given correction height.
+ *
+ * <note>For a glyph with @n defined kern values (where @n > 0), there are only
+ * @n−1 defined correction heights, as each correction height defines a boundary
+ * past which the next kern value should be selected. Therefore, only the
+ * #hb_ot_math_kern_entry_t.kern_value of the uppermost #hb_ot_math_kern_entry_t
+ * actually comes from the font; its corresponding
+ * #hb_ot_math_kern_entry_t.max_correction_height is always set to
+ * <code>INT32_MAX</code>.</note>
+ *
+ * Return value: the total number of kern values available or zero
+ *
+ * Since: 3.4.0
+ **/
+unsigned int
+hb_ot_math_get_glyph_kernings (hb_font_t *font,
+			       hb_codepoint_t glyph,
+			       hb_ot_math_kern_t kern,
+			       unsigned int start_offset,
+			       unsigned int *entries_count, /* IN/OUT */
+			       hb_ot_math_kern_entry_t *kern_entries /* OUT */)
+{
+  return font->face->table.MATH->get_glyph_info().get_kernings (glyph,
+								kern,
+								start_offset,
+								entries_count,
+								kern_entries,
+								font);
 }
 
 /**

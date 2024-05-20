@@ -33,6 +33,7 @@
 
 #include "hb-common.h"
 #include "hb-blob.h"
+#include "hb-map.h"
 #include "hb-set.h"
 
 HB_BEGIN_DECLS
@@ -150,6 +151,11 @@ hb_face_collect_unicodes (hb_face_t *face,
 			  hb_set_t  *out);
 
 HB_EXTERN void
+hb_face_collect_nominal_glyph_mapping (hb_face_t *face,
+				       hb_map_t  *mapping,
+				       hb_set_t  *unicodes);
+
+HB_EXTERN void
 hb_face_collect_variation_selectors (hb_face_t *face,
 				     hb_set_t  *out);
 
@@ -170,6 +176,10 @@ HB_EXTERN hb_bool_t
 hb_face_builder_add_table (hb_face_t *face,
 			   hb_tag_t   tag,
 			   hb_blob_t *blob);
+
+HB_EXTERN void
+hb_face_builder_sort_tables (hb_face_t *face,
+                             const hb_tag_t  *tags);
 
 
 HB_END_DECLS

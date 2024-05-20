@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  scroll_container.h                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  scroll_container.h                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef SCROLL_CONTAINER_H
 #define SCROLL_CONTAINER_H
@@ -38,10 +38,19 @@
 class ScrollContainer : public Container {
 	GDCLASS(ScrollContainer, Container);
 
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
+public:
+	enum ScrollMode {
+		SCROLL_MODE_DISABLED = 0,
+		SCROLL_MODE_AUTO,
+		SCROLL_MODE_SHOW_ALWAYS,
+		SCROLL_MODE_SHOW_NEVER,
+	};
 
-	Size2 child_max_size;
+private:
+	HScrollBar *h_scroll = nullptr;
+	VScrollBar *v_scroll = nullptr;
+
+	mutable Size2 largest_child_min_size; // The largest one among the min sizes of all available child controls.
 
 	void update_scrollbars();
 
@@ -54,49 +63,51 @@ class ScrollContainer : public Container {
 	bool drag_touching_deaccel = false;
 	bool beyond_deadzone = false;
 
-	bool scroll_h = true;
-	bool scroll_v = true;
-
-	bool h_scroll_visible = true;
-	bool v_scroll_visible = true;
+	ScrollMode horizontal_scroll_mode = SCROLL_MODE_AUTO;
+	ScrollMode vertical_scroll_mode = SCROLL_MODE_AUTO;
 
 	int deadzone = 0;
 	bool follow_focus = false;
+
+	struct ThemeCache {
+		Ref<StyleBox> panel_style;
+	} theme_cache;
 
 	void _cancel_drag();
 
 protected:
 	Size2 get_minimum_size() const override;
 
-	void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _gui_focus_changed(Control *p_control);
-	void _update_dimensions();
-	void _notification(int p_what);
+	void _reposition_children();
 
-	void _scroll_moved(float);
+	void _notification(int p_what);
 	static void _bind_methods();
 
 	bool _updating_scrollbars = false;
 	void _update_scrollbar_position();
+	void _scroll_moved(float);
 
 public:
+	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
+
 	void set_h_scroll(int p_pos);
 	int get_h_scroll() const;
 
 	void set_v_scroll(int p_pos);
 	int get_v_scroll() const;
 
-	void set_enable_h_scroll(bool p_enable);
-	bool is_h_scroll_enabled() const;
+	void set_horizontal_custom_step(float p_custom_step);
+	float get_horizontal_custom_step() const;
 
-	void set_enable_v_scroll(bool p_enable);
-	bool is_v_scroll_enabled() const;
+	void set_vertical_custom_step(float p_custom_step);
+	float get_vertical_custom_step() const;
 
-	void set_h_scroll_visible(bool p_visible);
-	bool is_h_scroll_visible() const;
+	void set_horizontal_scroll_mode(ScrollMode p_mode);
+	ScrollMode get_horizontal_scroll_mode() const;
 
-	void set_v_scroll_visible(bool p_visible);
-	bool is_v_scroll_visible() const;
+	void set_vertical_scroll_mode(ScrollMode p_mode);
+	ScrollMode get_vertical_scroll_mode() const;
 
 	int get_deadzone() const;
 	void set_deadzone(int p_deadzone);
@@ -104,13 +115,15 @@ public:
 	bool is_following_focus() const;
 	void set_follow_focus(bool p_follow);
 
-	HScrollBar *get_h_scrollbar();
-	VScrollBar *get_v_scrollbar();
+	HScrollBar *get_h_scroll_bar();
+	VScrollBar *get_v_scroll_bar();
 	void ensure_control_visible(Control *p_control);
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	ScrollContainer();
 };
 
-#endif
+VARIANT_ENUM_CAST(ScrollContainer::ScrollMode);
+
+#endif // SCROLL_CONTAINER_H

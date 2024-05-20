@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectChorus" inherits="AudioEffect" version="4.0">
+<class name="AudioEffectChorus" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Adds a chorus audio effect.
 	</brief_description>
@@ -7,113 +7,84 @@
 		Adds a chorus audio effect. The effect applies a filter with voices to duplicate the audio source and manipulate it through the filter.
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_voice_cutoff_hz" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="voice_idx" type="int">
-			</argument>
+			<return type="float" />
+			<param index="0" name="voice_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_voice_delay_ms" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="voice_idx" type="int">
-			</argument>
+			<return type="float" />
+			<param index="0" name="voice_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_voice_depth_ms" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="voice_idx" type="int">
-			</argument>
+			<return type="float" />
+			<param index="0" name="voice_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_voice_level_db" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="voice_idx" type="int">
-			</argument>
+			<return type="float" />
+			<param index="0" name="voice_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_voice_pan" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="voice_idx" type="int">
-			</argument>
+			<return type="float" />
+			<param index="0" name="voice_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="get_voice_rate_hz" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="voice_idx" type="int">
-			</argument>
+			<return type="float" />
+			<param index="0" name="voice_idx" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="set_voice_cutoff_hz">
-			<return type="void">
-			</return>
-			<argument index="0" name="voice_idx" type="int">
-			</argument>
-			<argument index="1" name="cutoff_hz" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="voice_idx" type="int" />
+			<param index="1" name="cutoff_hz" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_voice_delay_ms">
-			<return type="void">
-			</return>
-			<argument index="0" name="voice_idx" type="int">
-			</argument>
-			<argument index="1" name="delay_ms" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="voice_idx" type="int" />
+			<param index="1" name="delay_ms" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_voice_depth_ms">
-			<return type="void">
-			</return>
-			<argument index="0" name="voice_idx" type="int">
-			</argument>
-			<argument index="1" name="depth_ms" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="voice_idx" type="int" />
+			<param index="1" name="depth_ms" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_voice_level_db">
-			<return type="void">
-			</return>
-			<argument index="0" name="voice_idx" type="int">
-			</argument>
-			<argument index="1" name="level_db" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="voice_idx" type="int" />
+			<param index="1" name="level_db" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_voice_pan">
-			<return type="void">
-			</return>
-			<argument index="0" name="voice_idx" type="int">
-			</argument>
-			<argument index="1" name="pan" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="voice_idx" type="int" />
+			<param index="1" name="pan" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_voice_rate_hz">
-			<return type="void">
-			</return>
-			<argument index="0" name="voice_idx" type="int">
-			</argument>
-			<argument index="1" name="rate_hz" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="voice_idx" type="int" />
+			<param index="1" name="rate_hz" type="float" />
 			<description>
 			</description>
 		</method>
@@ -195,12 +166,10 @@
 			The voice's filter rate.
 		</member>
 		<member name="voice_count" type="int" setter="set_voice_count" getter="get_voice_count" default="2">
-			The amount of voices in the effect.
+			The number of voices in the effect.
 		</member>
 		<member name="wet" type="float" setter="set_wet" getter="get_wet" default="0.5">
 			The effect's processed signal.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

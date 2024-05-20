@@ -1,38 +1,39 @@
-/*************************************************************************/
-/*  webrtc_multiplayer_peer.h                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  webrtc_multiplayer_peer.h                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef WEBRTC_MULTIPLAYER_H
-#define WEBRTC_MULTIPLAYER_H
+#ifndef WEBRTC_MULTIPLAYER_PEER_H
+#define WEBRTC_MULTIPLAYER_PEER_H
 
-#include "core/io/multiplayer_peer.h"
 #include "webrtc_peer_connection.h"
+
+#include "scene/main/multiplayer_peer.h"
 
 class WebRTCMultiplayerPeer : public MultiplayerPeer {
 	GDCLASS(WebRTCMultiplayerPeer, MultiplayerPeer);
@@ -46,6 +47,13 @@ private:
 		CH_ORDERED = 1,
 		CH_UNRELIABLE = 2,
 		CH_RESERVED_MAX = 3
+	};
+
+	enum NetworkMode {
+		MODE_NONE,
+		MODE_SERVER,
+		MODE_CLIENT,
+		MODE_MESH,
 	};
 
 	class ConnectedPeer : public RefCounted {
@@ -62,54 +70,58 @@ private:
 		}
 	};
 
-	uint32_t unique_id;
-	int target_peer;
-	int client_count;
-	bool refuse_connections;
-	ConnectionStatus connection_status;
-	TransferMode transfer_mode;
-	int next_packet_peer;
-	bool server_compat;
+	uint32_t unique_id = 0;
+	int target_peer = 0;
+	int client_count = 0;
+	ConnectionStatus connection_status = CONNECTION_DISCONNECTED;
+	int next_packet_peer = 0;
+	int next_packet_channel = 0;
+	NetworkMode network_mode = MODE_NONE;
 
-	Map<int, Ref<ConnectedPeer>> peer_map;
+	HashMap<int, Ref<ConnectedPeer>> peer_map;
+	List<TransferMode> channels_modes;
+	List<Dictionary> channels_config;
 
 	void _peer_to_dict(Ref<ConnectedPeer> p_connected_peer, Dictionary &r_dict);
 	void _find_next_peer();
+	Ref<ConnectedPeer> _get_next_peer();
+	Error _initialize(int p_self_id, NetworkMode p_mode, Array p_channels_config = Array());
 
 public:
-	WebRTCMultiplayerPeer();
+	WebRTCMultiplayerPeer() {}
 	~WebRTCMultiplayerPeer();
 
-	Error initialize(int p_self_id, bool p_server_compat = false);
+	Error create_server(Array p_channels_config = Array());
+	Error create_client(int p_self_id, Array p_channels_config = Array());
+	Error create_mesh(int p_self_id, Array p_channels_config = Array());
 	Error add_peer(Ref<WebRTCPeerConnection> p_peer, int p_peer_id, int p_unreliable_lifetime = 1);
 	void remove_peer(int p_peer_id);
 	bool has_peer(int p_peer_id);
 	Dictionary get_peer(int p_peer_id);
 	Dictionary get_peers();
-	void close();
 
 	// PacketPeer
-	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
-	Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
-	int get_available_packet_count() const override;
-	int get_max_packet_size() const override;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
+	virtual int get_available_packet_count() const override;
+	virtual int get_max_packet_size() const override;
 
 	// MultiplayerPeer
-	void set_transfer_mode(TransferMode p_mode) override;
-	TransferMode get_transfer_mode() const override;
-	void set_target_peer(int p_peer_id) override;
+	virtual void set_target_peer(int p_peer_id) override;
 
-	int get_unique_id() const override;
-	int get_packet_peer() const override;
+	virtual int get_unique_id() const override;
+	virtual int get_packet_peer() const override;
+	virtual int get_packet_channel() const override;
+	virtual TransferMode get_packet_mode() const override;
 
-	bool is_server() const override;
+	virtual bool is_server() const override;
+	virtual bool is_server_relay_supported() const override;
 
-	void poll() override;
+	virtual void poll() override;
+	virtual void close() override;
+	virtual void disconnect_peer(int p_peer_id, bool p_force = false) override;
 
-	void set_refuse_new_connections(bool p_enable) override;
-	bool is_refusing_new_connections() const override;
-
-	ConnectionStatus get_connection_status() const override;
+	virtual ConnectionStatus get_connection_status() const override;
 };
 
-#endif // WEBRTC_MULTIPLAYER_H
+#endif // WEBRTC_MULTIPLAYER_PEER_H

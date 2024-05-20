@@ -1,40 +1,41 @@
-/*************************************************************************/
-/*  color.h                                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  color.h                                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef COLOR_H
 #define COLOR_H
 
 #include "core/math/math_funcs.h"
-#include "core/string/ustring.h"
 
-struct Color {
+class String;
+
+struct _NO_DISCARD_ Color {
 	union {
 		struct {
 			float r;
@@ -51,10 +52,15 @@ struct Color {
 	uint64_t to_rgba64() const;
 	uint64_t to_argb64() const;
 	uint64_t to_abgr64() const;
+	String to_html(bool p_alpha = true) const;
 	float get_h() const;
 	float get_s() const;
 	float get_v() const;
-	void set_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0);
+	void set_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
+	float get_ok_hsl_h() const;
+	float get_ok_hsl_s() const;
+	float get_ok_hsl_l() const;
+	void set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 
 	_FORCE_INLINE_ float &operator[](int p_idx) {
 		return components[p_idx];
@@ -93,14 +99,16 @@ struct Color {
 	void invert();
 	Color inverted() const;
 
+	_FORCE_INLINE_ float get_luminance() const {
+		return 0.2126f * r + 0.7152f * g + 0.0722f * b;
+	}
+
 	_FORCE_INLINE_ Color lerp(const Color &p_to, float p_weight) const {
 		Color res = *this;
-
-		res.r += (p_weight * (p_to.r - r));
-		res.g += (p_weight * (p_to.g - g));
-		res.b += (p_weight * (p_to.b - b));
-		res.a += (p_weight * (p_to.a - a));
-
+		res.r = Math::lerp(res.r, p_to.r, p_weight);
+		res.g = Math::lerp(res.g, p_to.g, p_weight);
+		res.b = Math::lerp(res.b, p_to.b, p_weight);
+		res.a = Math::lerp(res.a, p_to.a, p_weight);
 		return res;
 	}
 
@@ -133,13 +141,13 @@ struct Color {
 
 		float cMax = MAX(cRed, MAX(cGreen, cBlue));
 
-		float expp = MAX(-B - 1.0f, floor(Math::log(cMax) / Math_LN2)) + 1.0f + B;
+		float expp = MAX(-B - 1.0f, floor(Math::log(cMax) / (real_t)Math_LN2)) + 1.0f + B;
 
 		float sMax = (float)floor((cMax / Math::pow(2.0f, expp - B - N)) + 0.5f);
 
 		float exps = expp + 1.0f;
 
-		if (0.0 <= sMax && sMax < pow2to9) {
+		if (0.0f <= sMax && sMax < pow2to9) {
 			exps = expp;
 		}
 
@@ -152,7 +160,7 @@ struct Color {
 
 	_FORCE_INLINE_ Color blend(const Color &p_over) const {
 		Color res;
-		float sa = 1.0 - p_over.a;
+		float sa = 1.0f - p_over.a;
 		res.a = a * sa + p_over.a;
 		if (res.a == 0) {
 			return Color(0, 0, 0, 0);
@@ -164,18 +172,18 @@ struct Color {
 		return res;
 	}
 
-	_FORCE_INLINE_ Color to_linear() const {
+	_FORCE_INLINE_ Color srgb_to_linear() const {
 		return Color(
-				r < 0.04045 ? r * (1.0 / 12.92) : Math::pow((r + 0.055) * (1.0 / (1 + 0.055)), 2.4),
-				g < 0.04045 ? g * (1.0 / 12.92) : Math::pow((g + 0.055) * (1.0 / (1 + 0.055)), 2.4),
-				b < 0.04045 ? b * (1.0 / 12.92) : Math::pow((b + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+				r < 0.04045f ? r * (1.0f / 12.92f) : Math::pow((r + 0.055f) * (float)(1.0 / (1.0 + 0.055)), 2.4f),
+				g < 0.04045f ? g * (1.0f / 12.92f) : Math::pow((g + 0.055f) * (float)(1.0 / (1.0 + 0.055)), 2.4f),
+				b < 0.04045f ? b * (1.0f / 12.92f) : Math::pow((b + 0.055f) * (float)(1.0 / (1.0 + 0.055)), 2.4f),
 				a);
 	}
-	_FORCE_INLINE_ Color to_srgb() const {
+	_FORCE_INLINE_ Color linear_to_srgb() const {
 		return Color(
-				r < 0.0031308 ? 12.92 * r : (1.0 + 0.055) * Math::pow(r, 1.0f / 2.4f) - 0.055,
-				g < 0.0031308 ? 12.92 * g : (1.0 + 0.055) * Math::pow(g, 1.0f / 2.4f) - 0.055,
-				b < 0.0031308 ? 12.92 * b : (1.0 + 0.055) * Math::pow(b, 1.0f / 2.4f) - 0.055, a);
+				r < 0.0031308f ? 12.92f * r : (1.0f + 0.055f) * Math::pow(r, 1.0f / 2.4f) - 0.055f,
+				g < 0.0031308f ? 12.92f * g : (1.0f + 0.055f) * Math::pow(g, 1.0f / 2.4f) - 0.055f,
+				b < 0.0031308f ? 12.92f * b : (1.0f + 0.055f) * Math::pow(b, 1.0f / 2.4f) - 0.055f, a);
 	}
 
 	static Color hex(uint32_t p_hex);
@@ -189,26 +197,29 @@ struct Color {
 	static String get_named_color_name(int p_idx);
 	static Color get_named_color(int p_idx);
 	static Color from_string(const String &p_string, const Color &p_default);
-	String to_html(bool p_alpha = true) const;
-	Color from_hsv(float p_h, float p_s, float p_v, float p_a) const;
+	static Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
+	static Color from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 	static Color from_rgbe9995(uint32_t p_rgbe);
 
-	_FORCE_INLINE_ bool operator<(const Color &p_color) const; //used in set keys
+	_FORCE_INLINE_ bool operator<(const Color &p_color) const; // Used in set keys.
 	operator String() const;
 
 	// For the binder.
-	_FORCE_INLINE_ void set_r8(int32_t r8) { r = (CLAMP(r8, 0, 255) / 255.0); }
+	_FORCE_INLINE_ void set_r8(int32_t r8) { r = (CLAMP(r8, 0, 255) / 255.0f); }
 	_FORCE_INLINE_ int32_t get_r8() const { return int32_t(CLAMP(Math::round(r * 255.0f), 0.0f, 255.0f)); }
-	_FORCE_INLINE_ void set_g8(int32_t g8) { g = (CLAMP(g8, 0, 255) / 255.0); }
+	_FORCE_INLINE_ void set_g8(int32_t g8) { g = (CLAMP(g8, 0, 255) / 255.0f); }
 	_FORCE_INLINE_ int32_t get_g8() const { return int32_t(CLAMP(Math::round(g * 255.0f), 0.0f, 255.0f)); }
-	_FORCE_INLINE_ void set_b8(int32_t b8) { b = (CLAMP(b8, 0, 255) / 255.0); }
+	_FORCE_INLINE_ void set_b8(int32_t b8) { b = (CLAMP(b8, 0, 255) / 255.0f); }
 	_FORCE_INLINE_ int32_t get_b8() const { return int32_t(CLAMP(Math::round(b * 255.0f), 0.0f, 255.0f)); }
-	_FORCE_INLINE_ void set_a8(int32_t a8) { a = (CLAMP(a8, 0, 255) / 255.0); }
+	_FORCE_INLINE_ void set_a8(int32_t a8) { a = (CLAMP(a8, 0, 255) / 255.0f); }
 	_FORCE_INLINE_ int32_t get_a8() const { return int32_t(CLAMP(Math::round(a * 255.0f), 0.0f, 255.0f)); }
 
-	_FORCE_INLINE_ void set_h(float p_h) { set_hsv(p_h, get_s(), get_v()); }
-	_FORCE_INLINE_ void set_s(float p_s) { set_hsv(get_h(), p_s, get_v()); }
-	_FORCE_INLINE_ void set_v(float p_v) { set_hsv(get_h(), get_s(), p_v); }
+	_FORCE_INLINE_ void set_h(float p_h) { set_hsv(p_h, get_s(), get_v(), a); }
+	_FORCE_INLINE_ void set_s(float p_s) { set_hsv(get_h(), p_s, get_v(), a); }
+	_FORCE_INLINE_ void set_v(float p_v) { set_hsv(get_h(), get_s(), p_v, a); }
+	_FORCE_INLINE_ void set_ok_hsl_h(float p_h) { set_ok_hsl(p_h, get_ok_hsl_s(), get_ok_hsl_l(), a); }
+	_FORCE_INLINE_ void set_ok_hsl_s(float p_s) { set_ok_hsl(get_ok_hsl_h(), p_s, get_ok_hsl_l(), a); }
+	_FORCE_INLINE_ void set_ok_hsl_l(float p_l) { set_ok_hsl(get_ok_hsl_h(), get_ok_hsl_s(), p_l, a); }
 
 	_FORCE_INLINE_ Color() {}
 
@@ -230,7 +241,7 @@ struct Color {
 		r = p_r;
 		g = p_g;
 		b = p_b;
-		a = 1.0;
+		a = 1.0f;
 	}
 
 	/**

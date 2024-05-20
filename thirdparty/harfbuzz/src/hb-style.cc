@@ -25,7 +25,6 @@
 #include "hb.hh"
 
 #ifndef HB_NO_STYLE
-#ifdef HB_EXPERIMENTAL_API
 
 #include "hb-ot-var-avar-table.hh"
 #include "hb-ot-var-fvar-table.hh"
@@ -36,56 +35,45 @@
 #include "hb-ot-face.hh"
 
 /**
- * hb_style_tag_t:
- * @HB_STYLE_TAG_ITALIC: Used to vary between non-italic and italic.
- * A value of 0 can be interpreted as "Roman" (non-italic); a value of 1 can
- * be interpreted as (fully) italic.
- * @HB_STYLE_TAG_OPTICAL_SIZE: Used to vary design to suit different text sizes.
- * Non-zero. Values can be interpreted as text size, in points.
- * @HB_STYLE_TAG_SLANT: Used to vary between upright and slanted text. Values
- * must be greater than -90 and less than +90. Values can be interpreted as
- * the angle, in counter-clockwise degrees, of oblique slant from whatever the
- * designer considers to be upright for that font design.
- * @HB_STYLE_TAG_WIDTH: Used to vary width of text from narrower to wider.
- * Non-zero. Values can be interpreted as a percentage of whatever the font
- * designer considers “normal width” for that font design.
- * @HB_STYLE_TAG_WEIGHT: Used to vary stroke thicknesses or other design details
- * to give variation from lighter to blacker. Values can be interpreted in direct
- * comparison to values for usWeightClass in the OS/2 table,
- * or the CSS font-weight property.
+ * SECTION:hb-style
+ * @title: hb-style
+ * @short_description: Font Styles
+ * @include: hb.h
  *
- * Defined by https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg
- *
- * Since: EXPERIMENTAL
+ * Functions for fetching style information from fonts.
  **/
-typedef enum {
-  HB_STYLE_TAG_ITALIC		= HB_TAG ('i','t','a','l'),
-  HB_STYLE_TAG_OPTICAL_SIZE	= HB_TAG ('o','p','s','z'),
-  HB_STYLE_TAG_SLANT		= HB_TAG ('s','l','n','t'),
-  HB_STYLE_TAG_WIDTH		= HB_TAG ('w','d','t','h'),
-  HB_STYLE_TAG_WEIGHT		= HB_TAG ('w','g','h','t'),
 
-  /*< private >*/
-  _HB_STYLE_TAG_MAX_VALUE	= HB_TAG_MAX_SIGNED /*< skip >*/
-} hb_style_tag_t;
+static inline float
+_hb_angle_to_ratio (float a)
+{
+  return tanf (a * -HB_PI / 180.f);
+}
+
+static inline float
+_hb_ratio_to_angle (float r)
+{
+  return atanf (r) * -180.f / HB_PI;
+}
 
 /**
  * hb_style_get_value:
  * @font: a #hb_font_t object.
  * @style_tag: a style tag.
  *
- * Searches variation axes of a hb_font_t object for a specific axis first,
+ * Searches variation axes of a #hb_font_t object for a specific axis first,
  * if not set, then tries to get default style values from different
  * tables of the font.
  *
  * Returns: Corresponding axis or default value to a style tag.
  *
- * Since: EXPERIMENTAL
+ * Since: 3.0.0
  **/
 float
-hb_style_get_value (hb_font_t *font, hb_tag_t tag)
+hb_style_get_value (hb_font_t *font, hb_style_tag_t style_tag)
 {
-  hb_style_tag_t style_tag = (hb_style_tag_t) tag;
+  if (unlikely (style_tag == HB_STYLE_TAG_SLANT_RATIO))
+    return _hb_angle_to_ratio (hb_style_get_value (font, HB_STYLE_TAG_SLANT_ANGLE));
+
   hb_face_t *face = font->face;
 
 #ifndef HB_NO_VAR
@@ -112,17 +100,28 @@ hb_style_get_value (hb_font_t *font, hb_tag_t tag)
     return face->table.OS2->is_italic () || face->table.head->is_italic () ? 1 : 0;
   case HB_STYLE_TAG_OPTICAL_SIZE:
   {
-    unsigned int lower, upper;
+    unsigned int lower, design, upper;
     return face->table.OS2->v5 ().get_optical_size (&lower, &upper)
 	   ? (float) (lower + upper) / 2.f
+	   : hb_ot_layout_get_size_params (face, &design, nullptr, nullptr, nullptr, nullptr)
+	   ? design / 10.f
 	   : 12.f;
   }
-  case HB_STYLE_TAG_SLANT:
-    return face->table.post->table->italicAngle.to_float ();
+  case HB_STYLE_TAG_SLANT_ANGLE:
+  {
+    float angle = face->table.post->table->italicAngle.to_float ();
+
+    if (font->slant)
+      angle = _hb_ratio_to_angle (font->slant + _hb_angle_to_ratio (angle));
+
+    return angle;
+  }
   case HB_STYLE_TAG_WIDTH:
     return face->table.OS2->has_data ()
 	   ? face->table.OS2->get_width ()
-	   : (face->table.head->is_condensed () ? 75 : 100);
+	   : (face->table.head->is_condensed () ? 75 :
+	      face->table.head->is_expanded () ? 125 :
+	      100);
   case HB_STYLE_TAG_WEIGHT:
     return face->table.OS2->has_data ()
 	   ? face->table.OS2->usWeightClass
@@ -132,5 +131,4 @@ hb_style_get_value (hb_font_t *font, hb_tag_t tag)
   }
 }
 
-#endif
 #endif

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  GodotPlugin.java                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  GodotPlugin.java                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 package org.godotengine.godot.plugin;
 
@@ -57,27 +57,28 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
- * Base class for the Godot Android plugins.
+ * Base class for Godot Android plugins.
  * <p>
- * A Godot Android plugin is a regular Android library packaged as an aar archive file with the following caveats:
+ * A Godot Android plugin is an Android library with the following requirements:
  * <p>
- * - The library must have a dependency on the Godot Android library (godot-lib.aar).
- * A stable version is available for each release.
+ * - The plugin must have a dependency on the Godot Android library: `implementation "org.godotengine:godot:<godotLibVersion>"`
  * <p>
- * - The library must include a <meta-data> tag in its manifest file setup as follow:
- * <meta-data android:name="org.godotengine.plugin.v1.[PluginName]" android:value="[plugin.init.ClassFullName]" />
+ * - The plugin must include a <meta-data> tag in its Android manifest with the following format:
+ * <meta-data android:name="org.godotengine.plugin.v2.[PluginName]" android:value="[plugin.init.ClassFullName]" />
+ * <p>
  * Where:
+ * <p>
  * - 'PluginName' is the name of the plugin.
- * - 'plugin.init.ClassFullName' is the full name (package + class name) of the plugin class
+ * <p>
+ * - 'plugin.init.ClassFullName' is the full name (package + class name) of the plugin init class
  * extending {@link GodotPlugin}.
+ * <p>
+ * A Godot Android plugin can also define and provide c/c++ gdextension libraries, which will be
+ * automatically bundled by the aar build system.
+ * GDExtension ('*.gdextension') config files must be located in the project 'assets' directory and
+ * their paths specified by {@link GodotPlugin#getPluginGDExtensionLibrariesPaths()}.
  *
- * A plugin can also define and provide c/c++ gdnative libraries and nativescripts for the target
- * app/game to leverage.
- * The shared library for the gdnative library will be automatically bundled by the aar build
- * system.
- * Godot '*.gdnlib' and '*.gdns' resource files must however be manually defined in the project
- * 'assets' directory. The recommended path for these resources in the 'assets' directory should be:
- * 'godot/plugin/v1/[PluginName]/'
+ * @see <a href="https://docs.godotengine.org/en/stable/tutorials/platform/android/index.html">Android plugins</a>
  */
 public abstract class GodotPlugin {
 	private static final String TAG = GodotPlugin.class.getSimpleName();
@@ -85,6 +86,10 @@ public abstract class GodotPlugin {
 	private final Godot godot;
 	private final ConcurrentHashMap<String, SignalInfo> registeredSignals = new ConcurrentHashMap<>();
 
+	/**
+	 * Base constructor passing a {@link Godot} instance through which the plugin can access Godot's
+	 * APIs and lifecycle events.
+	 */
 	public GodotPlugin(Godot godot) {
 		this.godot = godot;
 	}
@@ -97,7 +102,7 @@ public abstract class GodotPlugin {
 	}
 
 	/**
-	 * Provides access to the underlying {@link Activity}.
+	 * Provides access to the hosting {@link Activity}.
 	 */
 	@Nullable
 	protected Activity getActivity() {
@@ -106,37 +111,19 @@ public abstract class GodotPlugin {
 
 	/**
 	 * Register the plugin with Godot native code.
-	 *
-	 * This method is invoked on the render thread.
+	 * <p>
+	 * This method is invoked on the render thread to register the plugin on engine startup.
 	 */
 	public final void onRegisterPluginWithGodotNative() {
-		registeredSignals.putAll(
-				registerPluginWithGodotNative(this, getPluginName(), getPluginMethods(), getPluginSignals(),
-						getPluginGDNativeLibrariesPaths()));
-	}
+		final String pluginName = getPluginName();
+		if (!nativeRegisterSingleton(pluginName, this)) {
+			return;
+		}
 
-	/**
-	 * Register the plugin with Godot native code.
-	 *
-	 * This method must be invoked on the render thread.
-	 */
-	public static void registerPluginWithGodotNative(Object pluginObject,
-			GodotPluginInfoProvider pluginInfoProvider) {
-		registerPluginWithGodotNative(pluginObject, pluginInfoProvider.getPluginName(),
-				Collections.emptyList(), pluginInfoProvider.getPluginSignals(),
-				pluginInfoProvider.getPluginGDNativeLibrariesPaths());
-
-		// Notify that registration is complete.
-		pluginInfoProvider.onPluginRegistered();
-	}
-
-	private static Map<String, SignalInfo> registerPluginWithGodotNative(Object pluginObject,
-			String pluginName, List<String> pluginMethods, Set<SignalInfo> pluginSignals,
-			Set<String> pluginGDNativeLibrariesPaths) {
-		nativeRegisterSingleton(pluginName, pluginObject);
+		List<String> pluginMethods = getPluginMethods();
 
 		Set<Method> filteredMethods = new HashSet<>();
-		Class<?> clazz = pluginObject.getClass();
+		Class<?> clazz = getClass();
 
 		Method[] methods = clazz.getDeclaredMethods();
 		for (Method method : methods) {
@@ -168,28 +155,25 @@ public abstract class GodotPlugin {
 			nativeRegisterMethod(pluginName, method.getName(), method.getReturnType().getName(), pt);
 		}
 
+		Set<SignalInfo> pluginSignals = getPluginSignals();
+
 		// Register the signals for this plugin.
-		Map<String, SignalInfo> registeredSignals = new HashMap<>();
 		for (SignalInfo signalInfo : pluginSignals) {
 			String signalName = signalInfo.getName();
 			nativeRegisterSignal(pluginName, signalName, signalInfo.getParamTypesNames());
 			registeredSignals.put(signalName, signalInfo);
 		}
-
-		// Get the list of gdnative libraries to register.
-		if (!pluginGDNativeLibrariesPaths.isEmpty()) {
-			nativeRegisterGDNativeLibraries(pluginGDNativeLibrariesPaths.toArray(new String[0]));
-		}
-
-		return registeredSignals;
 	}
 
 	/**
-	 * Invoked once during the Godot Android initialization process after creation of the
+	 * Invoked once during the initialization process after creation of the
 	 * {@link org.godotengine.godot.GodotRenderView} view.
 	 * <p>
-	 * The plugin can return a non-null {@link View} layout in order to add it to the Godot view
+	 * The plugin can return a non-null {@link View} layout which will be added to the Godot view
 	 * hierarchy.
+	 * <p>
+	 * Use {@link GodotPlugin#shouldBeOnTop()} to specify whether the plugin's {@link View} should
+	 * be added on top or behind the main Godot view.
 	 *
 	 * @see Activity#onCreate(Bundle)
 	 * @return the plugin's view to be included; null if no views should be included.
@@ -232,44 +216,52 @@ public abstract class GodotPlugin {
 	public boolean onMainBackPressed() { return false; }
 
 	/**
-	 * Invoked on the render thread when the Godot setup is complete.
+	 * Invoked on the render thread when set up of the Godot engine is complete.
+	 * <p>
+	 * This is invoked before {@link GodotPlugin#onGodotMainLoopStarted()}.
 	 */
 	public void onGodotSetupCompleted() {}
 
 	/**
 	 * Invoked on the render thread when the Godot main loop has started.
+	 *
+	 * This is invoked after {@link GodotPlugin#onGodotSetupCompleted()}.
 	 */
 	public void onGodotMainLoopStarted() {}
 
 	/**
-	 * Invoked once per frame on the GL thread after the frame is drawn.
+	 * When using the OpenGL renderer, this is invoked once per frame on the GL thread after the
+	 * frame is drawn.
 	 */
 	public void onGLDrawFrame(GL10 gl) {}
 
 	/**
-	 * Called on the GL thread after the surface is created and whenever the OpenGL ES surface size
-	 * changes.
+	 * When using the OpenGL renderer, this is called on the GL thread after the surface is created
+	 * and whenever the OpenGL ES surface size changes.
 	 */
 	public void onGLSurfaceChanged(GL10 gl, int width, int height) {}
 
 	/**
-	 * Called on the GL thread when the surface is created or recreated.
+	 * When using the OpenGL renderer, this is called on the GL thread when the surface is created
+	 * or recreated.
 	 */
 	public void onGLSurfaceCreated(GL10 gl, EGLConfig config) {}
 
 	/**
-	 * Invoked once per frame on the Vulkan thread after the frame is drawn.
+	 * When using the Vulkan renderer, this is invoked once per frame on the Vulkan thread after
+	 * the frame is drawn.
 	 */
 	public void onVkDrawFrame() {}
 
 	/**
-	 * Called on the Vulkan thread after the surface is created and whenever the surface size
-	 * changes.
+	 * When using the Vulkan renderer, this is called on the Vulkan thread after the surface is
+	 * created and whenever the surface size changes.
 	 */
 	public void onVkSurfaceChanged(Surface surface, int width, int height) {}
 
 	/**
-	 * Called on the Vulkan thread when the surface is created or recreated.
+	 * When using the Vulkan renderer, this is called on the Vulkan thread when the surface is
+	 * created or recreated.
 	 */
 	public void onVkSurfaceCreated(Surface surface) {}
 
@@ -284,7 +276,7 @@ public abstract class GodotPlugin {
 	/**
 	 * Returns the list of methods to be exposed to Godot.
 	 *
-	 * @deprecated Used the {@link UsedByGodot} annotation instead.
+	 * @deprecated Use the {@link UsedByGodot} annotation instead.
 	 */
 	@NonNull
 	@Deprecated
@@ -301,13 +293,33 @@ public abstract class GodotPlugin {
 	}
 
 	/**
-	 * Returns the paths for the plugin's gdnative libraries.
-	 *
-	 * The paths must be relative to the 'assets' directory and point to a '*.gdnlib' file.
+	 * Returns the paths for the plugin's gdextension libraries (if any).
+	 * <p>
+	 * Each returned path must be relative to the 'assets' directory and point to a '*.gdextension' file.
 	 */
 	@NonNull
-	protected Set<String> getPluginGDNativeLibrariesPaths() {
+	public Set<String> getPluginGDExtensionLibrariesPaths() {
 		return Collections.emptySet();
+	}
+
+	/**
+	 * Returns whether the plugin's {@link View} returned in
+	 * {@link GodotPlugin#onMainCreate(Activity)} should be placed on top of the main Godot view.
+	 * <p>
+	 * Returning false causes the plugin's {@link View} to be placed behind, which can be useful
+	 * when used with transparency in order to let the Godot view handle inputs.
+	 */
+	public boolean shouldBeOnTop() {
+		return true;
+	}
+
+	/**
+	 * Returns whether the plugin supports the given feature tag.
+	 *
+	 * @see <a href="https://docs.godotengine.org/en/stable/tutorials/export/feature_tags.html">Feature tags</a>
+	 */
+	public boolean supportsFeature(String featureTag) {
+		return false;
 	}
 
 	/**
@@ -345,7 +357,7 @@ public abstract class GodotPlugin {
 			}
 			emitSignal(getGodot(), getPluginName(), signalInfo, signalArgs);
 		} catch (IllegalArgumentException exception) {
-			Log.w(TAG, exception.getMessage());
+			Log.w(TAG, exception);
 			if (BuildConfig.DEBUG) {
 				throw exception;
 			}
@@ -354,7 +366,7 @@ public abstract class GodotPlugin {
 
 	/**
 	 * Emit a Godot signal.
-	 * @param godot
+	 * @param godot Godot instance
 	 * @param pluginName Name of the Godot plugin the signal will be emitted from. The plugin must already be registered with the Godot engine.
 	 * @param signalInfo Information about the signal to emit.
 	 * @param signalArgs Arguments used to populate the emitted signal. The arguments will be validated against the given {@link SignalInfo} parameter.
@@ -383,7 +395,7 @@ public abstract class GodotPlugin {
 			godot.runOnRenderThread(() -> nativeEmitSignal(pluginName, signalInfo.getName(), signalArgs));
 
 		} catch (IllegalArgumentException exception) {
-			Log.w(TAG, exception.getMessage());
+			Log.w(TAG, exception);
 			if (BuildConfig.DEBUG) {
 				throw exception;
 			}
@@ -394,7 +406,7 @@ public abstract class GodotPlugin {
 	 * Used to setup a {@link GodotPlugin} instance.
 	 * @param p_name Name of the instance.
 	 */
-	private static native void nativeRegisterSingleton(String p_name, Object object);
+	private static native boolean nativeRegisterSingleton(String p_name, Object object);
 
 	/**
 	 * Used to complete registration of the {@link GodotPlugin} instance's methods.
@@ -406,13 +418,7 @@ public abstract class GodotPlugin {
 	private static native void nativeRegisterMethod(String p_sname, String p_name, String p_ret, String[] p_params);
 
 	/**
-	 * Used to register gdnative libraries bundled by the plugin.
-	 * @param gdnlibPaths Paths to the libraries relative to the 'assets' directory.
-	 */
-	private static native void nativeRegisterGDNativeLibraries(String[] gdnlibPaths);
-
-	/**
-	 * Used to complete registration of the {@link GodotPlugin} instance's methods.
+	 * Used to complete registration of the {@link GodotPlugin} instance's signals.
 	 * @param pluginName Name of the plugin
 	 * @param signalName Name of the signal to register
 	 * @param signalParamTypes Signal parameters types

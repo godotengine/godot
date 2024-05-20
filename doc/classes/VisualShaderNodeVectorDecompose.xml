@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeVectorDecompose" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeVectorDecompose" inherits="VisualShaderNodeVectorBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Decomposes a [Vector3] into three scalars within the visual shader graph.
+		Decomposes a [Vector2], [Vector3] or 4D vector (represented as a [Quaternion]) into scalars within the visual shader graph.
 	</brief_description>
 	<description>
-		Takes a [code]vec3[/code] and decomposes it into three scalar values that can be used as separate inputs.
+		Takes a [code]vec2[/code], [code]vec3[/code] or [code]vec4[/code] and decomposes it into scalar values that can be used as separate outputs.
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
 </class>

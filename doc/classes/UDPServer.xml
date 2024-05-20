@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="UDPServer" inherits="RefCounted" version="4.0">
+<class name="UDPServer" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Helper class to implement a UDP server.
 	</brief_description>
@@ -9,7 +9,8 @@
 		Below a small example of how it can be used:
 		[codeblocks]
 		[gdscript]
-		class_name Server
+		# server_node.gd
+		class_name ServerNode
 		extends Node
 
 		var server := UDPServer.new()
@@ -21,7 +22,7 @@
 		func _process(delta):
 		    server.poll() # Important!
 		    if server.is_connection_available():
-		        var peer : PacketPeerUDP = server.take_connection()
+		        var peer: PacketPeerUDP = server.take_connection()
 		        var packet = peer.get_packet()
 		        print("Accepted peer: %s:%s" % [peer.get_packet_ip(), peer.get_packet_port()])
 		        print("Received data: %s" % [packet.get_string_from_utf8()])
@@ -34,35 +35,35 @@
 		        pass # Do something with the connected peers.
 		[/gdscript]
 		[csharp]
+		// ServerNode.cs
 		using Godot;
-		using System;
 		using System.Collections.Generic;
 
-		public class Server : Node
+		public partial class ServerNode : Node
 		{
-		    public UDPServer Server = new UDPServer();
-		    public List&lt;PacketPeerUDP&gt; Peers = new List&lt;PacketPeerUDP&gt;();
+		    private UdpServer _server = new UdpServer();
+		    private List&lt;PacketPeerUdp&gt; _peers  = new List&lt;PacketPeerUdp&gt;();
 
 		    public override void _Ready()
 		    {
-		        Server.Listen(4242);
+		        _server.Listen(4242);
 		    }
 
-		    public override void _Process(float delta)
+		    public override void _Process(double delta)
 		    {
-		        Server.Poll(); // Important!
-		        if (Server.IsConnectionAvailable())
+		        _server.Poll(); // Important!
+		        if (_server.IsConnectionAvailable())
 		        {
-		            PacketPeerUDP peer = Server.TakeConnection();
+		            PacketPeerUdp peer = _server.TakeConnection();
 		            byte[] packet = peer.GetPacket();
-		            GD.Print($"Accepted Peer: {peer.GetPacketIp()}:{peer.GetPacketPort()}");
-		            GD.Print($"Received Data: {packet.GetStringFromUTF8()}");
+		            GD.Print($"Accepted Peer: {peer.GetPacketIP()}:{peer.GetPacketPort()}");
+		            GD.Print($"Received Data: {packet.GetStringFromUtf8()}");
 		            // Reply so it knows we received the message.
 		            peer.PutPacket(packet);
 		            // Keep a reference so we can keep contacting the remote peer.
-		            Peers.Add(peer);
+		            _peers.Add(peer);
 		        }
-		        foreach (var peer in Peers)
+		        foreach (var peer in _peers)
 		        {
 		            // Do something with the peers.
 		        }
@@ -72,7 +73,8 @@
 		[/codeblocks]
 		[codeblocks]
 		[gdscript]
-		class_name Client
+		# client_node.gd
+		class_name ClientNode
 		extends Node
 
 		var udp := PacketPeerUDP.new()
@@ -84,36 +86,36 @@
 		func _process(delta):
 		    if !connected:
 		        # Try to contact server
-		        udp.put_packet("The answer is... 42!".to_utf8())
+		        udp.put_packet("The answer is... 42!".to_utf8_buffer())
 		    if udp.get_available_packet_count() &gt; 0:
 		        print("Connected: %s" % udp.get_packet().get_string_from_utf8())
 		        connected = true
 		[/gdscript]
 		[csharp]
+		// ClientNode.cs
 		using Godot;
-		using System;
 
-		public class Client : Node
+		public partial class ClientNode : Node
 		{
-		    public PacketPeerUDP Udp = new PacketPeerUDP();
-		    public bool Connected = false;
+		    private PacketPeerUdp _udp = new PacketPeerUdp();
+		    private bool _connected = false;
 
 		    public override void _Ready()
 		    {
-		        Udp.ConnectToHost("127.0.0.1", 4242);
+		        _udp.ConnectToHost("127.0.0.1", 4242);
 		    }
 
-		    public override void _Process(float delta)
+		    public override void _Process(double delta)
 		    {
-		        if (!Connected)
+		        if (!_connected)
 		        {
 		            // Try to contact server
-		            Udp.PutPacket("The Answer Is..42!".ToUTF8());
+		            _udp.PutPacket("The Answer Is..42!".ToUtf8Buffer());
 		        }
-		        if (Udp.GetAvailablePacketCount() &gt; 0)
+		        if (_udp.GetAvailablePacketCount() &gt; 0)
 		        {
-		            GD.Print($"Connected: {Udp.GetPacket().GetStringFromUTF8()}");
-		            Connected = true;
+		            GD.Print($"Connected: {_udp.GetPacket().GetStringFromUtf8()}");
+		            _connected = true;
 		        }
 		    }
 		}
@@ -124,54 +126,45 @@
 	</tutorials>
 	<methods>
 		<method name="get_local_port" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the local port this server is listening to.
 			</description>
 		</method>
 		<method name="is_connection_available" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if a packet with a new address/port combination was received on the socket.
 			</description>
 		</method>
 		<method name="is_listening" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the socket is open and listening on a port.
 			</description>
 		</method>
 		<method name="listen">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="bind_address" type="String" default="&quot;*&quot;" />
 			<description>
-				Starts the server by opening a UDP socket listening on the given port. You can optionally specify a [code]bind_address[/code] to only listen for packets sent to that address. See also [method PacketPeerUDP.bind].
+				Starts the server by opening a UDP socket listening on the given [param port]. You can optionally specify a [param bind_address] to only listen for packets sent to that address. See also [method PacketPeerUDP.bind].
 			</description>
 		</method>
 		<method name="poll">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Call this method at regular intervals (e.g. inside [method Node._process]) to process new packets. And packet from known address/port pair will be delivered to the appropriate [PacketPeerUDP], any packet received from an unknown address/port pair will be added as a pending connection (see [method is_connection_available], [method take_connection]). The maximum number of pending connection is defined via [member max_pending_connections].
 			</description>
 		</method>
 		<method name="stop">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the server, closing the UDP socket if open. Will close all connected [PacketPeerUDP] accepted via [method take_connection] (remote peers will not be notified).
 			</description>
 		</method>
 		<method name="take_connection">
-			<return type="PacketPeerUDP">
-			</return>
+			<return type="PacketPeerUDP" />
 			<description>
 				Returns the first pending connection (connected to the appropriate address/port). Will return [code]null[/code] if no new connection is available. See also [method is_connection_available], [method PacketPeerUDP.connect_to_host].
 			</description>
@@ -182,6 +175,4 @@
 			Define the maximum number of pending connections, during [method poll], any new pending connection exceeding that value will be automatically dropped. Setting this value to [code]0[/code] effectively prevents any new pending connection to be accepted (e.g. when all your players have connected).
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

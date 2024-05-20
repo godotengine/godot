@@ -1,36 +1,36 @@
-/*************************************************************************/
-/*  quick_hull.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  quick_hull.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "quick_hull.h"
 
-#include "core/templates/map.h"
+#include "core/templates/rb_map.h"
 
 uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
 
@@ -52,10 +52,10 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 	Vector<bool> valid_points;
 	valid_points.resize(p_points.size());
-	Set<Vector3> valid_cache;
+	HashSet<Vector3> valid_cache;
 
 	for (int i = 0; i < p_points.size(); i++) {
-		Vector3 sp = p_points[i].snapped(Vector3(0.0001, 0.0001, 0.0001));
+		Vector3 sp = p_points[i].snappedf(0.0001);
 		if (valid_cache.has(sp)) {
 			valid_points.write[i] = false;
 		} else {
@@ -237,7 +237,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		//find lit faces and lit edges
 		List<List<Face>::Element *> lit_faces; //lit face is a death sentence
 
-		Map<Edge, FaceConnect> lit_edges; //create this on the flight, should not be that bad for performance and simplifies code a lot
+		HashMap<Edge, FaceConnect, Edge> lit_edges; //create this on the flight, should not be that bad for performance and simplifies code a lot
 
 		for (List<Face>::Element *E = faces.front(); E; E = E->next()) {
 			if (E->get().plane.distance_to(v) > 0) {
@@ -248,15 +248,15 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 					uint32_t b = E->get().vertices[(i + 1) % 3];
 					Edge e(a, b);
 
-					Map<Edge, FaceConnect>::Element *F = lit_edges.find(e);
+					HashMap<Edge, FaceConnect, Edge>::Iterator F = lit_edges.find(e);
 					if (!F) {
 						F = lit_edges.insert(e, FaceConnect());
 					}
 					if (e.vertices[0] == a) {
 						//left
-						F->get().left = E;
+						F->value.left = E;
 					} else {
-						F->get().right = E;
+						F->value.right = E;
 					}
 				}
 			}
@@ -265,8 +265,8 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 		//create new faces from horizon edges
 		List<List<Face>::Element *> new_faces; //new faces
 
-		for (Map<Edge, FaceConnect>::Element *E = lit_edges.front(); E; E = E->next()) {
-			FaceConnect &fc = E->get();
+		for (KeyValue<Edge, FaceConnect> &E : lit_edges) {
+			FaceConnect &fc = E.value;
 			if (fc.left && fc.right) {
 				continue; //edge is uninteresting, not on horizon
 			}
@@ -275,8 +275,8 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 			Face face;
 			face.vertices[0] = f.points_over[next];
-			face.vertices[1] = E->key().vertices[0];
-			face.vertices[2] = E->key().vertices[1];
+			face.vertices[1] = E.key.vertices[0];
+			face.vertices[2] = E.key.vertices[1];
 
 			Plane p(p_points[face.vertices[0]], p_points[face.vertices[1]], p_points[face.vertices[2]]);
 
@@ -333,7 +333,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	/* CREATE MESHDATA */
 
 	//make a map of edges again
-	Map<Edge, RetFaceConnect> ret_edges;
+	HashMap<Edge, RetFaceConnect, Edge> ret_edges;
 	List<Geometry3D::MeshData::Face> ret_faces;
 
 	for (const Face &E : faces) {
@@ -351,15 +351,15 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 			uint32_t b = E.vertices[(i + 1) % 3];
 			Edge e(a, b);
 
-			Map<Edge, RetFaceConnect>::Element *G = ret_edges.find(e);
+			HashMap<Edge, RetFaceConnect, Edge>::Iterator G = ret_edges.find(e);
 			if (!G) {
 				G = ret_edges.insert(e, RetFaceConnect());
 			}
 			if (e.vertices[0] == a) {
 				//left
-				G->get().left = F;
+				G->value.left = F;
 			} else {
-				G->get().right = F;
+				G->value.right = F;
 			}
 		}
 	}
@@ -369,47 +369,45 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	for (List<Geometry3D::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
 		Geometry3D::MeshData::Face &f = E->get();
 
-		for (int i = 0; i < f.indices.size(); i++) {
+		for (uint32_t i = 0; i < f.indices.size(); i++) {
 			int a = E->get().indices[i];
 			int b = E->get().indices[(i + 1) % f.indices.size()];
 			Edge e(a, b);
 
-			Map<Edge, RetFaceConnect>::Element *F = ret_edges.find(e);
+			HashMap<Edge, RetFaceConnect, Edge>::Iterator F = ret_edges.find(e);
 
 			ERR_CONTINUE(!F);
-			List<Geometry3D::MeshData::Face>::Element *O = F->get().left == E ? F->get().right : F->get().left;
+			List<Geometry3D::MeshData::Face>::Element *O = F->value.left == E ? F->value.right : F->value.left;
 			ERR_CONTINUE(O == E);
 			ERR_CONTINUE(O == nullptr);
 
 			if (O->get().plane.is_equal_approx(f.plane)) {
 				//merge and delete edge and contiguous face, while repointing edges (uuugh!)
-				int ois = O->get().indices.size();
-				int merged = 0;
+				int o_index_size = O->get().indices.size();
 
-				for (int j = 0; j < ois; j++) {
+				for (int j = 0; j < o_index_size; j++) {
 					//search a
 					if (O->get().indices[j] == a) {
 						//append the rest
-						for (int k = 0; k < ois; k++) {
-							int idx = O->get().indices[(k + j) % ois];
-							int idxn = O->get().indices[(k + j + 1) % ois];
+						for (int k = 0; k < o_index_size; k++) {
+							int idx = O->get().indices[(k + j) % o_index_size];
+							int idxn = O->get().indices[(k + j + 1) % o_index_size];
 							if (idx == b && idxn == a) { //already have b!
 								break;
 							}
 							if (idx != a) {
 								f.indices.insert(i + 1, idx);
 								i++;
-								merged++;
 							}
 							Edge e2(idx, idxn);
 
-							Map<Edge, RetFaceConnect>::Element *F2 = ret_edges.find(e2);
+							HashMap<Edge, RetFaceConnect, Edge>::Iterator F2 = ret_edges.find(e2);
 							ERR_CONTINUE(!F2);
 							//change faceconnect, point to this face instead
-							if (F2->get().left == O) {
-								F2->get().left = E;
-							} else if (F2->get().right == O) {
-								F2->get().right = E;
+							if (F2->value.left == O) {
+								F2->value.left = E;
+							} else if (F2->value.right == O) {
+								F2->value.right = E;
 							}
 						}
 
@@ -418,17 +416,17 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 				}
 
 				// remove all edge connections to this face
-				for (Map<Edge, RetFaceConnect>::Element *G = ret_edges.front(); G; G = G->next()) {
-					if (G->get().left == O) {
-						G->get().left = nullptr;
+				for (KeyValue<Edge, RetFaceConnect> &G : ret_edges) {
+					if (G.value.left == O) {
+						G.value.left = nullptr;
 					}
 
-					if (G->get().right == O) {
-						G->get().right = nullptr;
+					if (G.value.right == O) {
+						G.value.right = nullptr;
 					}
 				}
 
-				ret_edges.erase(F); //remove the edge
+				ret_edges.remove(F); //remove the edge
 				ret_faces.erase(O); //remove the face
 			}
 		}
@@ -438,17 +436,24 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	r_mesh.faces.clear();
 	r_mesh.faces.resize(ret_faces.size());
 
+	HashMap<List<Geometry3D::MeshData::Face>::Element *, int> face_indices;
+
 	int idx = 0;
-	for (const Geometry3D::MeshData::Face &E : ret_faces) {
-		r_mesh.faces.write[idx++] = E;
+	for (List<Geometry3D::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
+		face_indices[E] = idx;
+		r_mesh.faces[idx++] = E->get();
 	}
 	r_mesh.edges.resize(ret_edges.size());
 	idx = 0;
-	for (Map<Edge, RetFaceConnect>::Element *E = ret_edges.front(); E; E = E->next()) {
+	for (const KeyValue<Edge, RetFaceConnect> &E : ret_edges) {
 		Geometry3D::MeshData::Edge e;
-		e.a = E->key().vertices[0];
-		e.b = E->key().vertices[1];
-		r_mesh.edges.write[idx++] = e;
+		e.vertex_a = E.key.vertices[0];
+		e.vertex_b = E.key.vertices[1];
+		ERR_CONTINUE(!face_indices.has(E.value.left));
+		ERR_CONTINUE(!face_indices.has(E.value.right));
+		e.face_a = face_indices[E.value.left];
+		e.face_b = face_indices[E.value.right];
+		r_mesh.edges[idx++] = e;
 	}
 
 	r_mesh.vertices = p_points;

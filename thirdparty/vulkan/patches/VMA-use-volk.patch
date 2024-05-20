@@ -1,0 +1,17 @@
+diff --git a/thirdparty/vulkan/vk_mem_alloc.h b/thirdparty/vulkan/vk_mem_alloc.h
+index fa4298b23c..a29bf6dfb6 100644
+--- a/thirdparty/vulkan/vk_mem_alloc.h
++++ b/thirdparty/vulkan/vk_mem_alloc.h
+@@ -126,7 +126,11 @@ See documentation chapter: \ref statistics.
+ extern "C" {
+ #endif
+ 
+-#include <vulkan/vulkan.h>
++#ifdef USE_VOLK
++    #include <volk.h>
++#else
++    #include <vulkan/vulkan.h>
++#endif
+ 
+ #if !defined(VMA_VULKAN_VERSION)
+     #if defined(VK_VERSION_1_3)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeInput" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeInput" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Represents the input shader parameter within the visual shader graph.
 	</brief_description>
@@ -7,12 +7,11 @@
 		Gives access to input variables (built-ins) available for the shader. See the shading reference for the list of available built-ins for each shader type (check [code]Tutorials[/code] section for link).
 	</description>
 	<tutorials>
-		<link title="Shading reference index">https://docs.godotengine.org/en/stable/tutorials/shading/shading_reference/index.html</link>
+		<link title="Shading reference index">$DOCS_URL/tutorials/shaders/shader_reference/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_input_real_name" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns a translated name of the current constant in the Godot Shader Language. E.g. [code]"ALBEDO"[/code] if the [member input_name] equal to [code]"albedo"[/code].
 			</description>
@@ -20,7 +19,7 @@
 	</methods>
 	<members>
 		<member name="input_name" type="String" setter="set_input_name" getter="get_input_name" default="&quot;[None]&quot;">
-			One of the several input constants in lower-case style like: "vertex"([code]VERTEX[/code]) or "point_size"([code]POINT_SIZE[/code]).
+			One of the several input constants in lower-case style like: "vertex" ([code]VERTEX[/code]) or "point_size" ([code]POINT_SIZE[/code]).
 		</member>
 	</members>
 	<signals>
@@ -30,6 +29,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

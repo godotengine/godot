@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  audio_driver_opensl.h                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_driver_opensl.h                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef AUDIO_DRIVER_OPENSL_H
 #define AUDIO_DRIVER_OPENSL_H
@@ -59,7 +59,6 @@ class AudioDriverOpenSL : public AudioDriver {
 	SLObjectItf sl;
 	SLEngineItf EngineItf;
 	SLObjectItf OutputMix;
-	SLVolumeItf volumeItf;
 	SLObjectItf player;
 	SLObjectItf recorder;
 	SLAndroidSimpleBufferQueueItf bufferQueueItf;
@@ -68,7 +67,6 @@ class AudioDriverOpenSL : public AudioDriver {
 	SLDataFormat_PCM pcm;
 	SLDataSink audioSink;
 	SLDataLocator_OutputMix locator_outputmix;
-	SLBufferQueueState state;
 
 	static AudioDriverOpenSL *s_ad;
 
@@ -86,27 +84,28 @@ class AudioDriverOpenSL : public AudioDriver {
 			SLAndroidSimpleBufferQueueItf queueItf,
 			void *pContext);
 
-	virtual Error capture_init_device();
+	Error init_input_device();
 
 public:
-	void set_singleton();
+	virtual const char *get_name() const override {
+		return "Android";
+	}
 
-	virtual const char *get_name() const;
+	virtual Error init() override;
+	virtual void start() override;
+	virtual int get_mix_rate() const override;
+	virtual SpeakerMode get_speaker_mode() const override;
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual void lock() override;
+	virtual void unlock() override;
+	virtual void finish() override;
 
-	virtual void set_pause(bool p_pause);
+	virtual Error input_start() override;
+	virtual Error input_stop() override;
 
-	virtual Error capture_start();
-	virtual Error capture_stop();
+	void set_pause(bool p_pause);
 
 	AudioDriverOpenSL();
 };
 
-#endif // AUDIO_DRIVER_ANDROID_H
+#endif // AUDIO_DRIVER_OPENSL_H

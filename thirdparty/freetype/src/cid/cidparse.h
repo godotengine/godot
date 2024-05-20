@@ -4,7 +4,7 @@
  *
  *   CID-keyed Type1 parser (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -78,7 +78,7 @@ FT_BEGIN_HEADER
     FT_ULong      binary_length;
 
     CID_FaceInfo  cid;
-    FT_Int        num_dict;
+    FT_UInt       num_dict;
 
   } CID_Parser;
 

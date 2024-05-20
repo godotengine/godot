@@ -1,88 +1,78 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HMACContext" inherits="RefCounted" version="4.0">
+<class name="HMACContext" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Used to create an HMAC for a message using a key.
 	</brief_description>
 	<description>
 		The HMACContext class is useful for advanced HMAC use cases, such as streaming the message as it supports creating the message over time rather than providing it all at once.
-	[codeblocks]
-	[gdscript]
-	extends Node
-	var ctx = HMACContext.new()
+		[codeblocks]
+		[gdscript]
+		extends Node
+		var ctx = HMACContext.new()
 
-	func _ready():
-	    var key = "supersecret".to_utf8()
-	    var err = ctx.start(HashingContext.HASH_SHA256, key)
-	    assert(err == OK)
-	    var msg1 = "this is ".to_utf8()
-	    var msg2 = "vewy vewy secret".to_utf8()
-	    err = ctx.update(msg1)
-	    assert(err == OK)
-	    err = ctx.update(msg2)
-	    assert(err == OK)
-	    var hmac = ctx.finish()
-	    print(hmac.hex_encode())
+		func _ready():
+		    var key = "supersecret".to_utf8_buffer()
+		    var err = ctx.start(HashingContext.HASH_SHA256, key)
+		    assert(err == OK)
+		    var msg1 = "this is ".to_utf8_buffer()
+		    var msg2 = "super duper secret".to_utf8_buffer()
+		    err = ctx.update(msg1)
+		    assert(err == OK)
+		    err = ctx.update(msg2)
+		    assert(err == OK)
+		    var hmac = ctx.finish()
+		    print(hmac.hex_encode())
 
-	[/gdscript]
-	[csharp]
-	using Godot;
-	using System;
-	using System.Diagnostics;
+		[/gdscript]
+		[csharp]
+		using Godot;
+		using System.Diagnostics;
 
-	public class CryptoNode : Node
-	{
-	    private HMACContext ctx = new HMACContext();
-	    public override void _Ready()
-	    {
-	        PackedByteArray key = String("supersecret").to_utf8();
-	        Error err = ctx.Start(HashingContext.HASH_SHA256, key);
-	        GD.Assert(err == OK);
-	        PackedByteArray msg1 = String("this is ").to_utf8();
-	        PackedByteArray msg2 = String("vewy vew secret").to_utf8();
-	        err = ctx.Update(msg1);
-	        GD.Assert(err == OK);
-	        err = ctx.Update(msg2);
-	        GD.Assert(err == OK);
-	        PackedByteArray hmac = ctx.Finish();
-	        GD.Print(hmac.HexEncode());
-	    }
-	}
+		public partial class MyNode : Node
+		{
+		    private HmacContext _ctx = new HmacContext();
 
-	[/csharp]
-	[/codeblocks]
-	[b]Note:[/b] Not available in HTML5 exports.
+		    public override void _Ready()
+		    {
+		        byte[] key = "supersecret".ToUtf8Buffer();
+		        Error err = _ctx.Start(HashingContext.HashType.Sha256, key);
+		        Debug.Assert(err == Error.Ok);
+		        byte[] msg1 = "this is ".ToUtf8Buffer();
+		        byte[] msg2 = "super duper secret".ToUtf8Buffer();
+		        err = _ctx.Update(msg1);
+		        Debug.Assert(err == Error.Ok);
+		        err = _ctx.Update(msg2);
+		        Debug.Assert(err == Error.Ok);
+		        byte[] hmac = _ctx.Finish();
+		        GD.Print(hmac.HexEncode());
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="finish">
-			<return type="PackedByteArray">
-			</return>
+			<return type="PackedByteArray" />
 			<description>
 				Returns the resulting HMAC. If the HMAC failed, an empty [PackedByteArray] is returned.
 			</description>
 		</method>
 		<method name="start">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="hash_type" type="int" enum="HashingContext.HashType">
-			</argument>
-			<argument index="1" name="key" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="hash_type" type="int" enum="HashingContext.HashType" />
+			<param index="1" name="key" type="PackedByteArray" />
 			<description>
 				Initializes the HMACContext. This method cannot be called again on the same HMACContext until [method finish] has been called.
 			</description>
 		</method>
 		<method name="update">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="data" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="data" type="PackedByteArray" />
 			<description>
-				Updates the message to be HMACed. This can be called multiple times before [method finish] is called to append [code]data[/code] to the message, but cannot be called until [method start] has been called.
+				Updates the message to be HMACed. This can be called multiple times before [method finish] is called to append [param data] to the message, but cannot be called until [method start] has been called.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

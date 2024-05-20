@@ -1,187 +1,177 @@
-/*************************************************************************/
-/*  graph_node.h                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  graph_node.h                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef GRAPH_NODE_H
 #define GRAPH_NODE_H
 
-#include "scene/gui/container.h"
-#include "scene/resources/text_line.h"
+#include "scene/gui/graph_element.h"
 
-class GraphNode : public Container {
-	GDCLASS(GraphNode, Container);
+class HBoxContainer;
 
-public:
-	enum Overlay {
-		OVERLAY_DISABLED,
-		OVERLAY_BREAKPOINT,
-		OVERLAY_POSITION
-	};
+class GraphNode : public GraphElement {
+	GDCLASS(GraphNode, GraphElement);
 
-private:
+	friend class GraphEdit;
+
 	struct Slot {
 		bool enable_left = false;
 		int type_left = 0;
 		Color color_left = Color(1, 1, 1, 1);
+		Ref<Texture2D> custom_port_icon_left;
+
 		bool enable_right = false;
 		int type_right = 0;
 		Color color_right = Color(1, 1, 1, 1);
-		Ref<Texture2D> custom_slot_left;
-		Ref<Texture2D> custom_slot_right;
+		Ref<Texture2D> custom_port_icon_right;
+
+		bool draw_stylebox = true;
 	};
 
-	String title;
-	Ref<TextLine> title_buf;
-
-	Dictionary opentype_features;
-	String language;
-	TextDirection text_direction = TEXT_DIRECTION_AUTO;
-
-	bool show_close = false;
-	Vector2 position_offset;
-	bool comment = false;
-	bool resizable = false;
-
-	bool resizing = false;
-	Vector2 resizing_from;
-	Vector2 resizing_from_size;
-
-	Rect2 close_rect;
-
-	Vector<int> cache_y;
-
-	struct ConnCache {
+	struct PortCache {
 		Vector2 pos;
+		int slot_index;
 		int type = 0;
 		Color color;
 	};
 
-	Vector<ConnCache> conn_input_cache;
-	Vector<ConnCache> conn_output_cache;
+	struct _MinSizeCache {
+		int min_size = 0;
+		bool will_stretch = false;
+		int final_size = 0;
+	};
 
-	Map<int, Slot> slot_info;
+	HBoxContainer *titlebar_hbox = nullptr;
+	Label *title_label = nullptr;
 
-	bool connpos_dirty = true;
+	String title;
 
-	void _connpos_update();
-	void _resort();
-	void _shape();
+	Vector<PortCache> left_port_cache;
+	Vector<PortCache> right_port_cache;
 
-	Vector2 drag_from;
-	bool selected = false;
+	HashMap<int, Slot> slot_table;
+	Vector<int> slot_y_cache;
 
-	Overlay overlay = OVERLAY_DISABLED;
+	struct ThemeCache {
+		Ref<StyleBox> panel;
+		Ref<StyleBox> panel_selected;
+		Ref<StyleBox> titlebar;
+		Ref<StyleBox> titlebar_selected;
+		Ref<StyleBox> slot;
+
+		int separation = 0;
+		int port_h_offset = 0;
+
+		Ref<Texture2D> port;
+		Ref<Texture2D> resizer;
+		Color resizer_color;
+	} theme_cache;
+
+	bool port_pos_dirty = true;
+
+	bool ignore_invalid_connection_type = false;
+
+	void _port_pos_update();
 
 protected:
-	void _gui_input(const Ref<InputEvent> &p_ev);
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual void _resort() override;
+
+	virtual void draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color);
+	GDVIRTUAL4(_draw_port, int, Point2i, bool, const Color &);
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	bool has_point(const Point2 &p_point) const override;
-
-	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>());
-	void clear_slot(int p_idx);
-	void clear_all_slots();
-
-	bool is_slot_enabled_left(int p_idx) const;
-	void set_slot_enabled_left(int p_idx, bool p_enable_left);
-
-	void set_slot_type_left(int p_idx, int p_type_left);
-	int get_slot_type_left(int p_idx) const;
-
-	void set_slot_color_left(int p_idx, const Color &p_color_left);
-	Color get_slot_color_left(int p_idx) const;
-
-	bool is_slot_enabled_right(int p_idx) const;
-	void set_slot_enabled_right(int p_idx, bool p_enable_right);
-
-	void set_slot_type_right(int p_idx, int p_type_right);
-	int get_slot_type_right(int p_idx) const;
-
-	void set_slot_color_right(int p_idx, const Color &p_color_right);
-	Color get_slot_color_right(int p_idx) const;
-
 	void set_title(const String &p_title);
 	String get_title() const;
 
-	void set_text_direction(TextDirection p_text_direction);
-	TextDirection get_text_direction() const;
+	HBoxContainer *get_titlebar_hbox();
 
-	void set_opentype_feature(const String &p_name, int p_value);
-	int get_opentype_feature(const String &p_name) const;
-	void clear_opentype_features();
+	void set_slot(int p_slot_index, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>(), bool p_draw_stylebox = true);
+	void clear_slot(int p_slot_index);
+	void clear_all_slots();
 
-	void set_language(const String &p_language);
-	String get_language() const;
+	bool is_slot_enabled_left(int p_slot_index) const;
+	void set_slot_enabled_left(int p_slot_index, bool p_enable);
 
-	void set_position_offset(const Vector2 &p_offset);
-	Vector2 get_position_offset() const;
+	void set_slot_type_left(int p_slot_index, int p_type);
+	int get_slot_type_left(int p_slot_index) const;
 
-	void set_selected(bool p_selected);
-	bool is_selected();
+	void set_slot_color_left(int p_slot_index, const Color &p_color);
+	Color get_slot_color_left(int p_slot_index) const;
 
-	void set_drag(bool p_drag);
-	Vector2 get_drag_from();
+	void set_slot_custom_icon_left(int p_slot_index, const Ref<Texture2D> &p_custom_icon);
+	Ref<Texture2D> get_slot_custom_icon_left(int p_slot_index) const;
 
-	void set_show_close_button(bool p_enable);
-	bool is_close_button_visible() const;
+	bool is_slot_enabled_right(int p_slot_index) const;
+	void set_slot_enabled_right(int p_slot_index, bool p_enable);
 
-	int get_connection_input_count();
-	int get_connection_output_count();
-	Vector2 get_connection_input_position(int p_idx);
-	int get_connection_input_type(int p_idx);
-	Color get_connection_input_color(int p_idx);
-	Vector2 get_connection_output_position(int p_idx);
-	int get_connection_output_type(int p_idx);
-	Color get_connection_output_color(int p_idx);
+	void set_slot_type_right(int p_slot_index, int p_type);
+	int get_slot_type_right(int p_slot_index) const;
 
-	void set_overlay(Overlay p_overlay);
-	Overlay get_overlay() const;
+	void set_slot_color_right(int p_slot_index, const Color &p_color);
+	Color get_slot_color_right(int p_slot_index) const;
 
-	void set_comment(bool p_enable);
-	bool is_comment() const;
+	void set_slot_custom_icon_right(int p_slot_index, const Ref<Texture2D> &p_custom_icon);
+	Ref<Texture2D> get_slot_custom_icon_right(int p_slot_index) const;
 
-	void set_resizable(bool p_enable);
-	bool is_resizable() const;
+	bool is_slot_draw_stylebox(int p_slot_index) const;
+	void set_slot_draw_stylebox(int p_slot_index, bool p_enable);
+
+	void set_ignore_invalid_connection_type(bool p_ignore);
+	bool is_ignoring_valid_connection_type() const;
+
+	int get_input_port_count();
+	Vector2 get_input_port_position(int p_port_idx);
+	int get_input_port_type(int p_port_idx);
+	Color get_input_port_color(int p_port_idx);
+	int get_input_port_slot(int p_port_idx);
+
+	int get_output_port_count();
+	Vector2 get_output_port_position(int p_port_idx);
+	int get_output_port_type(int p_port_idx);
+	Color get_output_port_color(int p_port_idx);
+	int get_output_port_slot(int p_port_idx);
 
 	virtual Size2 get_minimum_size() const override;
 
-	bool is_resizing() const { return resizing; }
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+
+	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
+	virtual Vector<int> get_allowed_size_flags_vertical() const override;
 
 	GraphNode();
 };
-
-VARIANT_ENUM_CAST(GraphNode::Overlay)
 
 #endif // GRAPH_NODE_H

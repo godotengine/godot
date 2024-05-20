@@ -1,47 +1,47 @@
-/*************************************************************************/
-/*  variant_construct.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  variant_construct.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "variant_construct.h"
 
 struct VariantConstructData {
-	void (*construct)(Variant &r_base, const Variant **p_args, Callable::CallError &r_error);
-	Variant::ValidatedConstructor validated_construct;
-	Variant::PTRConstructor ptr_construct;
-	Variant::Type (*get_argument_type)(int);
-	int argument_count;
+	void (*construct)(Variant &r_base, const Variant **p_args, Callable::CallError &r_error) = nullptr;
+	Variant::ValidatedConstructor validated_construct = nullptr;
+	Variant::PTRConstructor ptr_construct = nullptr;
+	Variant::Type (*get_argument_type)(int) = nullptr;
+	int argument_count = 0;
 	Vector<String> arg_names;
 };
 
 static LocalVector<VariantConstructData> construct_data[Variant::VARIANT_MAX];
 
-template <class T>
+template <typename T>
 static void add_constructor(const Vector<String> &arg_names) {
 	ERR_FAIL_COND_MSG(arg_names.size() != T::get_argument_count(), "Argument names size mismatch for " + Variant::get_type_name(T::get_base_type()) + ".");
 
@@ -68,11 +68,13 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<int64_t, int64_t>>(sarray("from"));
 	add_constructor<VariantConstructor<int64_t, double>>(sarray("from"));
 	add_constructor<VariantConstructor<int64_t, bool>>(sarray("from"));
+	add_constructor<VariantConstructorFromString<int64_t>>(sarray("from"));
 
 	add_constructor<VariantConstructNoArgs<double>>(sarray());
 	add_constructor<VariantConstructor<double, double>>(sarray("from"));
 	add_constructor<VariantConstructor<double, int64_t>>(sarray("from"));
 	add_constructor<VariantConstructor<double, bool>>(sarray("from"));
+	add_constructor<VariantConstructorFromString<double>>(sarray("from"));
 
 	add_constructor<VariantConstructNoArgs<String>>(sarray());
 	add_constructor<VariantConstructor<String, String>>(sarray("from"));
@@ -111,22 +113,33 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<Vector3i, Vector3>>(sarray("from"));
 	add_constructor<VariantConstructor<Vector3i, int64_t, int64_t, int64_t>>(sarray("x", "y", "z"));
 
+	add_constructor<VariantConstructNoArgs<Vector4>>(sarray());
+	add_constructor<VariantConstructor<Vector4, Vector4>>(sarray("from"));
+	add_constructor<VariantConstructor<Vector4, Vector4i>>(sarray("from"));
+	add_constructor<VariantConstructor<Vector4, double, double, double, double>>(sarray("x", "y", "z", "w"));
+
+	add_constructor<VariantConstructNoArgs<Vector4i>>(sarray());
+	add_constructor<VariantConstructor<Vector4i, Vector4i>>(sarray("from"));
+	add_constructor<VariantConstructor<Vector4i, Vector4>>(sarray("from"));
+	add_constructor<VariantConstructor<Vector4i, int64_t, int64_t, int64_t, int64_t>>(sarray("x", "y", "z", "w"));
+
 	add_constructor<VariantConstructNoArgs<Transform2D>>(sarray());
 	add_constructor<VariantConstructor<Transform2D, Transform2D>>(sarray("from"));
 	add_constructor<VariantConstructor<Transform2D, float, Vector2>>(sarray("rotation", "position"));
+	add_constructor<VariantConstructor<Transform2D, float, Size2, float, Vector2>>(sarray("rotation", "scale", "skew", "position"));
 	add_constructor<VariantConstructor<Transform2D, Vector2, Vector2, Vector2>>(sarray("x_axis", "y_axis", "origin"));
 
 	add_constructor<VariantConstructNoArgs<Plane>>(sarray());
 	add_constructor<VariantConstructor<Plane, Plane>>(sarray("from"));
+	add_constructor<VariantConstructor<Plane, Vector3>>(sarray("normal"));
 	add_constructor<VariantConstructor<Plane, Vector3, double>>(sarray("normal", "d"));
-	add_constructor<VariantConstructor<Plane, Vector3, Vector3>>(sarray("point", "normal"));
+	add_constructor<VariantConstructor<Plane, Vector3, Vector3>>(sarray("normal", "point"));
 	add_constructor<VariantConstructor<Plane, Vector3, Vector3, Vector3>>(sarray("point1", "point2", "point3"));
 	add_constructor<VariantConstructor<Plane, double, double, double, double>>(sarray("a", "b", "c", "d"));
 
 	add_constructor<VariantConstructNoArgs<Quaternion>>(sarray());
 	add_constructor<VariantConstructor<Quaternion, Quaternion>>(sarray("from"));
 	add_constructor<VariantConstructor<Quaternion, Basis>>(sarray("from"));
-	add_constructor<VariantConstructor<Quaternion, Vector3>>(sarray("euler"));
 	add_constructor<VariantConstructor<Quaternion, Vector3, double>>(sarray("axis", "angle"));
 	add_constructor<VariantConstructor<Quaternion, Vector3, Vector3>>(sarray("arc_from", "arc_to"));
 	add_constructor<VariantConstructor<Quaternion, double, double, double, double>>(sarray("x", "y", "z", "w"));
@@ -138,14 +151,19 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructNoArgs<Basis>>(sarray());
 	add_constructor<VariantConstructor<Basis, Basis>>(sarray("from"));
 	add_constructor<VariantConstructor<Basis, Quaternion>>(sarray("from"));
-	add_constructor<VariantConstructor<Basis, Vector3>>(sarray("euler"));
-	add_constructor<VariantConstructor<Basis, Vector3, double>>(sarray("axis", "phi"));
+	add_constructor<VariantConstructor<Basis, Vector3, double>>(sarray("axis", "angle"));
 	add_constructor<VariantConstructor<Basis, Vector3, Vector3, Vector3>>(sarray("x_axis", "y_axis", "z_axis"));
 
 	add_constructor<VariantConstructNoArgs<Transform3D>>(sarray());
 	add_constructor<VariantConstructor<Transform3D, Transform3D>>(sarray("from"));
 	add_constructor<VariantConstructor<Transform3D, Basis, Vector3>>(sarray("basis", "origin"));
 	add_constructor<VariantConstructor<Transform3D, Vector3, Vector3, Vector3, Vector3>>(sarray("x_axis", "y_axis", "z_axis", "origin"));
+	add_constructor<VariantConstructor<Transform3D, Projection>>(sarray("from"));
+
+	add_constructor<VariantConstructNoArgs<Projection>>(sarray());
+	add_constructor<VariantConstructor<Projection, Projection>>(sarray("from"));
+	add_constructor<VariantConstructor<Projection, Transform3D>>(sarray("from"));
+	add_constructor<VariantConstructor<Projection, Vector4, Vector4, Vector4, Vector4>>(sarray("x_axis", "y_axis", "z_axis", "w_axis"));
 
 	add_constructor<VariantConstructNoArgs<Color>>(sarray());
 	add_constructor<VariantConstructor<Color, Color>>(sarray("from"));
@@ -183,6 +201,7 @@ void Variant::_register_variant_constructors() {
 
 	add_constructor<VariantConstructNoArgs<Array>>(sarray());
 	add_constructor<VariantConstructor<Array, Array>>(sarray("from"));
+	add_constructor<VariantConstructorTypedArray>(sarray("base", "type", "class_name", "script"));
 	add_constructor<VariantConstructorToArray<PackedByteArray>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedInt32Array>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedInt64Array>>(sarray("from"));
@@ -192,6 +211,7 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructorToArray<PackedVector2Array>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedVector3Array>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedColorArray>>(sarray("from"));
+	add_constructor<VariantConstructorToArray<PackedVector4Array>>(sarray("from"));
 
 	add_constructor<VariantConstructNoArgs<PackedByteArray>>(sarray());
 	add_constructor<VariantConstructor<PackedByteArray, PackedByteArray>>(sarray("from"));
@@ -228,6 +248,10 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructNoArgs<PackedColorArray>>(sarray());
 	add_constructor<VariantConstructor<PackedColorArray, PackedColorArray>>(sarray("from"));
 	add_constructor<VariantConstructorFromArray<PackedColorArray>>(sarray("from"));
+
+	add_constructor<VariantConstructNoArgs<PackedVector4Array>>(sarray());
+	add_constructor<VariantConstructor<PackedVector4Array, PackedVector4Array>>(sarray("from"));
+	add_constructor<VariantConstructorFromArray<PackedVector4Array>>(sarray("from"));
 }
 
 void Variant::_unregister_variant_constructors() {
@@ -296,6 +320,17 @@ String Variant::get_constructor_argument_name(Variant::Type p_type, int p_constr
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, String());
 	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[p_type].size(), String());
 	return construct_data[p_type][p_constructor].arg_names[p_argument];
+}
+
+void VariantInternal::refcounted_object_assign(Variant *v, const RefCounted *rc) {
+	if (!rc || !const_cast<RefCounted *>(rc)->init_ref()) {
+		v->_get_obj().obj = nullptr;
+		v->_get_obj().id = ObjectID();
+		return;
+	}
+
+	v->_get_obj().obj = const_cast<RefCounted *>(rc);
+	v->_get_obj().id = rc->get_instance_id();
 }
 
 void VariantInternal::object_assign(Variant *v, const Object *o) {

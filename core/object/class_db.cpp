@@ -1,36 +1,38 @@
-/*************************************************************************/
-/*  class_db.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  class_db.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "class_db.h"
 
 #include "core/config/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/object/script_language.h"
 #include "core/os/mutex.h"
 #include "core/version.h"
 
@@ -39,198 +41,23 @@
 
 #ifdef DEBUG_METHODS_ENABLED
 
-MethodDefinition D_METHOD(const char *p_name) {
+MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint32_t p_argcount) {
 	MethodDefinition md;
 	md.name = StaticCString::create(p_name);
-	return md;
-}
-
-MethodDefinition D_METHOD(const char *p_name, const char *p_arg1) {
-	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
-	md.args.push_back(StaticCString::create(p_arg1));
-	return md;
-}
-
-MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2) {
-	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
-	md.args.resize(2);
-	md.args.write[0] = StaticCString::create(p_arg1);
-	md.args.write[1] = StaticCString::create(p_arg2);
-	return md;
-}
-
-MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3) {
-	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
-	md.args.resize(3);
-	md.args.write[0] = StaticCString::create(p_arg1);
-	md.args.write[1] = StaticCString::create(p_arg2);
-	md.args.write[2] = StaticCString::create(p_arg3);
-	return md;
-}
-
-MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4) {
-	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
-	md.args.resize(4);
-	md.args.write[0] = StaticCString::create(p_arg1);
-	md.args.write[1] = StaticCString::create(p_arg2);
-	md.args.write[2] = StaticCString::create(p_arg3);
-	md.args.write[3] = StaticCString::create(p_arg4);
-	return md;
-}
-
-MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5) {
-	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
-	md.args.resize(5);
-	md.args.write[0] = StaticCString::create(p_arg1);
-	md.args.write[1] = StaticCString::create(p_arg2);
-	md.args.write[2] = StaticCString::create(p_arg3);
-	md.args.write[3] = StaticCString::create(p_arg4);
-	md.args.write[4] = StaticCString::create(p_arg5);
-	return md;
-}
-
-MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6) {
-	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
-	md.args.resize(6);
-	md.args.write[0] = StaticCString::create(p_arg1);
-	md.args.write[1] = StaticCString::create(p_arg2);
-	md.args.write[2] = StaticCString::create(p_arg3);
-	md.args.write[3] = StaticCString::create(p_arg4);
-	md.args.write[4] = StaticCString::create(p_arg5);
-	md.args.write[5] = StaticCString::create(p_arg6);
-	return md;
-}
-
-MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7) {
-	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
-	md.args.resize(7);
-	md.args.write[0] = StaticCString::create(p_arg1);
-	md.args.write[1] = StaticCString::create(p_arg2);
-	md.args.write[2] = StaticCString::create(p_arg3);
-	md.args.write[3] = StaticCString::create(p_arg4);
-	md.args.write[4] = StaticCString::create(p_arg5);
-	md.args.write[5] = StaticCString::create(p_arg6);
-	md.args.write[6] = StaticCString::create(p_arg7);
-	return md;
-}
-
-MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8) {
-	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
-	md.args.resize(8);
-	md.args.write[0] = StaticCString::create(p_arg1);
-	md.args.write[1] = StaticCString::create(p_arg2);
-	md.args.write[2] = StaticCString::create(p_arg3);
-	md.args.write[3] = StaticCString::create(p_arg4);
-	md.args.write[4] = StaticCString::create(p_arg5);
-	md.args.write[5] = StaticCString::create(p_arg6);
-	md.args.write[6] = StaticCString::create(p_arg7);
-	md.args.write[7] = StaticCString::create(p_arg8);
-	return md;
-}
-
-MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9) {
-	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
-	md.args.resize(9);
-	md.args.write[0] = StaticCString::create(p_arg1);
-	md.args.write[1] = StaticCString::create(p_arg2);
-	md.args.write[2] = StaticCString::create(p_arg3);
-	md.args.write[3] = StaticCString::create(p_arg4);
-	md.args.write[4] = StaticCString::create(p_arg5);
-	md.args.write[5] = StaticCString::create(p_arg6);
-	md.args.write[6] = StaticCString::create(p_arg7);
-	md.args.write[7] = StaticCString::create(p_arg8);
-	md.args.write[8] = StaticCString::create(p_arg9);
-	return md;
-}
-
-MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10) {
-	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
-	md.args.resize(10);
-	md.args.write[0] = StaticCString::create(p_arg1);
-	md.args.write[1] = StaticCString::create(p_arg2);
-	md.args.write[2] = StaticCString::create(p_arg3);
-	md.args.write[3] = StaticCString::create(p_arg4);
-	md.args.write[4] = StaticCString::create(p_arg5);
-	md.args.write[5] = StaticCString::create(p_arg6);
-	md.args.write[6] = StaticCString::create(p_arg7);
-	md.args.write[7] = StaticCString::create(p_arg8);
-	md.args.write[8] = StaticCString::create(p_arg9);
-	md.args.write[9] = StaticCString::create(p_arg10);
-	return md;
-}
-
-MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10, const char *p_arg11) {
-	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
-	md.args.resize(11);
-	md.args.write[0] = StaticCString::create(p_arg1);
-	md.args.write[1] = StaticCString::create(p_arg2);
-	md.args.write[2] = StaticCString::create(p_arg3);
-	md.args.write[3] = StaticCString::create(p_arg4);
-	md.args.write[4] = StaticCString::create(p_arg5);
-	md.args.write[5] = StaticCString::create(p_arg6);
-	md.args.write[6] = StaticCString::create(p_arg7);
-	md.args.write[7] = StaticCString::create(p_arg8);
-	md.args.write[8] = StaticCString::create(p_arg9);
-	md.args.write[9] = StaticCString::create(p_arg10);
-	md.args.write[10] = StaticCString::create(p_arg11);
-	return md;
-}
-
-MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10, const char *p_arg11, const char *p_arg12) {
-	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
-	md.args.resize(12);
-	md.args.write[0] = StaticCString::create(p_arg1);
-	md.args.write[1] = StaticCString::create(p_arg2);
-	md.args.write[2] = StaticCString::create(p_arg3);
-	md.args.write[3] = StaticCString::create(p_arg4);
-	md.args.write[4] = StaticCString::create(p_arg5);
-	md.args.write[5] = StaticCString::create(p_arg6);
-	md.args.write[6] = StaticCString::create(p_arg7);
-	md.args.write[7] = StaticCString::create(p_arg8);
-	md.args.write[8] = StaticCString::create(p_arg9);
-	md.args.write[9] = StaticCString::create(p_arg10);
-	md.args.write[10] = StaticCString::create(p_arg11);
-	md.args.write[11] = StaticCString::create(p_arg12);
-	return md;
-}
-
-MethodDefinition D_METHOD(const char *p_name, const char *p_arg1, const char *p_arg2, const char *p_arg3, const char *p_arg4, const char *p_arg5, const char *p_arg6, const char *p_arg7, const char *p_arg8, const char *p_arg9, const char *p_arg10, const char *p_arg11, const char *p_arg12, const char *p_arg13) {
-	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
-	md.args.resize(13);
-	md.args.write[0] = StaticCString::create(p_arg1);
-	md.args.write[1] = StaticCString::create(p_arg2);
-	md.args.write[2] = StaticCString::create(p_arg3);
-	md.args.write[3] = StaticCString::create(p_arg4);
-	md.args.write[4] = StaticCString::create(p_arg5);
-	md.args.write[5] = StaticCString::create(p_arg6);
-	md.args.write[6] = StaticCString::create(p_arg7);
-	md.args.write[7] = StaticCString::create(p_arg8);
-	md.args.write[8] = StaticCString::create(p_arg9);
-	md.args.write[9] = StaticCString::create(p_arg10);
-	md.args.write[10] = StaticCString::create(p_arg11);
-	md.args.write[11] = StaticCString::create(p_arg12);
-	md.args.write[12] = StaticCString::create(p_arg13);
+	md.args.resize(p_argcount);
+	for (uint32_t i = 0; i < p_argcount; i++) {
+		md.args.write[i] = StaticCString::create(*p_args[i]);
+	}
 	return md;
 }
 
 #endif
 
 ClassDB::APIType ClassDB::current_api = API_CORE;
+HashMap<ClassDB::APIType, uint32_t> ClassDB::api_hashes_cache;
 
 void ClassDB::set_current_api(APIType p_api) {
+	DEV_ASSERT(!api_hashes_cache.has(p_api)); // This API type may not be suitable for caching of hash if it can change later.
 	current_api = p_api;
 }
 
@@ -241,6 +68,151 @@ ClassDB::APIType ClassDB::get_current_api() {
 HashMap<StringName, ClassDB::ClassInfo> ClassDB::classes;
 HashMap<StringName, StringName> ClassDB::resource_base_extensions;
 HashMap<StringName, StringName> ClassDB::compat_classes;
+
+#ifdef TOOLS_ENABLED
+HashMap<StringName, ObjectGDExtension> ClassDB::placeholder_extensions;
+
+class PlaceholderExtensionInstance {
+	StringName class_name;
+	HashMap<StringName, Variant> properties;
+
+public:
+	PlaceholderExtensionInstance(const StringName &p_class_name) {
+		class_name = p_class_name;
+	}
+
+	~PlaceholderExtensionInstance() {}
+
+	void set(const StringName &p_name, const Variant &p_value) {
+		bool is_default_valid = false;
+		Variant default_value = ClassDB::class_get_default_property_value(class_name, p_name, &is_default_valid);
+
+		// If there's a default value, then we know it's a valid property.
+		if (is_default_valid) {
+			properties[p_name] = p_value;
+		}
+	}
+
+	Variant get(const StringName &p_name) {
+		const Variant *value = properties.getptr(p_name);
+		Variant ret;
+
+		if (value) {
+			ret = *value;
+		} else {
+			bool is_default_valid = false;
+			Variant default_value = ClassDB::class_get_default_property_value(class_name, p_name, &is_default_valid);
+			if (is_default_valid) {
+				ret = default_value;
+			}
+		}
+
+		return ret;
+	}
+
+	static GDExtensionBool placeholder_instance_set(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value) {
+		PlaceholderExtensionInstance *self = (PlaceholderExtensionInstance *)p_instance;
+		const StringName &name = *(StringName *)p_name;
+		const Variant &value = *(const Variant *)p_value;
+
+		self->set(name, value);
+
+		// We have to return true so Godot doesn't try to call the real setter function.
+		return true;
+	}
+
+	static GDExtensionBool placeholder_instance_get(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret) {
+		PlaceholderExtensionInstance *self = (PlaceholderExtensionInstance *)p_instance;
+		const StringName &name = *(StringName *)p_name;
+		Variant *value = (Variant *)r_ret;
+
+		*value = self->get(name);
+
+		// We have to return true so Godot doesn't try to call the real getter function.
+		return true;
+	}
+
+	static const GDExtensionPropertyInfo *placeholder_instance_get_property_list(GDExtensionClassInstancePtr p_instance, uint32_t *r_count) {
+		*r_count = 0;
+		return nullptr;
+	}
+
+	static void placeholder_instance_free_property_list(GDExtensionClassInstancePtr p_instance, const GDExtensionPropertyInfo *p_list, uint32_t p_count) {
+	}
+
+	static GDExtensionBool placeholder_instance_property_can_revert(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name) {
+		return false;
+	}
+
+	static GDExtensionBool placeholder_instance_property_get_revert(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret) {
+		return false;
+	}
+
+	static GDExtensionBool placeholder_instance_validate_property(GDExtensionClassInstancePtr p_instance, GDExtensionPropertyInfo *p_property) {
+		return false;
+	}
+
+	static void placeholder_instance_notification(GDExtensionClassInstancePtr p_instance, int32_t p_what, GDExtensionBool p_reversed) {
+	}
+
+	static void placeholder_instance_to_string(GDExtensionClassInstancePtr p_instance, GDExtensionBool *r_is_valid, GDExtensionStringPtr p_out) {
+		*r_is_valid = true;
+	}
+
+	static void placeholder_instance_reference(GDExtensionClassInstancePtr p_instance) {
+	}
+
+	static void placeholder_instance_unreference(GDExtensionClassInstancePtr p_instance) {
+	}
+
+	static uint64_t placeholder_instance_get_rid(GDExtensionClassInstancePtr p_instance) {
+		return 0;
+	}
+
+	static GDExtensionObjectPtr placeholder_class_create_instance(void *p_class_userdata) {
+		ClassDB::ClassInfo *ti = (ClassDB::ClassInfo *)p_class_userdata;
+
+		// Find the closest native parent.
+		ClassDB::ClassInfo *native_parent = ti->inherits_ptr;
+		while (native_parent->gdextension) {
+			native_parent = native_parent->inherits_ptr;
+		}
+		ERR_FAIL_NULL_V(native_parent->creation_func, nullptr);
+
+		// Construct a placeholder.
+		Object *obj = native_parent->creation_func();
+
+		// ClassDB::set_object_extension_instance() won't be called for placeholders.
+		// We need need to make sure that all the things it would have done (even if
+		// done in a different way to support placeholders) will also be done here.
+
+		obj->_extension = ClassDB::get_placeholder_extension(ti->name);
+		obj->_extension_instance = memnew(PlaceholderExtensionInstance(ti->name));
+
+#ifdef TOOLS_ENABLED
+		if (obj->_extension->track_instance) {
+			obj->_extension->track_instance(obj->_extension->tracking_userdata, obj);
+		}
+#endif
+
+		return obj;
+	}
+
+	static GDExtensionObjectPtr placeholder_class_recreate_instance(void *p_class_userdata, GDExtensionObjectPtr p_object) {
+		ClassDB::ClassInfo *ti = (ClassDB::ClassInfo *)p_class_userdata;
+		return memnew(PlaceholderExtensionInstance(ti->name));
+	}
+
+	static void placeholder_class_free_instance(void *p_class_userdata, GDExtensionClassInstancePtr p_instance) {
+		PlaceholderExtensionInstance *instance = (PlaceholderExtensionInstance *)p_instance;
+		memdelete(instance);
+	}
+
+	static GDExtensionClassCallVirtual placeholder_class_get_virtual(void *p_class_userdata, GDExtensionConstStringNamePtr p_name) {
+		return nullptr;
+	}
+};
+#endif
 
 bool ClassDB::_is_parent_class(const StringName &p_class, const StringName &p_inherits) {
 	if (!classes.has(p_class)) {
@@ -267,23 +239,34 @@ bool ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inh
 void ClassDB::get_class_list(List<StringName> *p_classes) {
 	OBJTYPE_RLOCK;
 
-	const StringName *k = nullptr;
-
-	while ((k = classes.next(k))) {
-		p_classes->push_back(*k);
+	for (const KeyValue<StringName, ClassInfo> &E : classes) {
+		p_classes->push_back(E.key);
 	}
 
-	p_classes->sort();
+	p_classes->sort_custom<StringName::AlphCompare>();
 }
+
+#ifdef TOOLS_ENABLED
+void ClassDB::get_extensions_class_list(List<StringName> *p_classes) {
+	OBJTYPE_RLOCK;
+
+	for (const KeyValue<StringName, ClassInfo> &E : classes) {
+		if (E.value.api != API_EXTENSION && E.value.api != API_EDITOR_EXTENSION) {
+			continue;
+		}
+		p_classes->push_back(E.key);
+	}
+
+	p_classes->sort_custom<StringName::AlphCompare>();
+}
+#endif
 
 void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes) {
 	OBJTYPE_RLOCK;
 
-	const StringName *k = nullptr;
-
-	while ((k = classes.next(k))) {
-		if (*k != p_class && _is_parent_class(*k, p_class)) {
-			p_classes->push_back(*k);
+	for (const KeyValue<StringName, ClassInfo> &E : classes) {
+		if (E.key != p_class && _is_parent_class(E.key, p_class)) {
+			p_classes->push_back(E.key);
 		}
 	}
 }
@@ -291,11 +274,9 @@ void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringNa
 void ClassDB::get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes) {
 	OBJTYPE_RLOCK;
 
-	const StringName *k = nullptr;
-
-	while ((k = classes.next(k))) {
-		if (*k != p_class && _get_parent_class(*k) == p_class) {
-			p_classes->push_back(*k);
+	for (const KeyValue<StringName, ClassInfo> &E : classes) {
+		if (E.key != p_class && _get_parent_class(E.key) == p_class) {
+			p_classes->push_back(E.key);
 		}
 	}
 }
@@ -324,7 +305,7 @@ StringName ClassDB::get_compatibility_remapped_class(const StringName &p_class) 
 
 StringName ClassDB::_get_parent_class(const StringName &p_class) {
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V_MSG(!ti, StringName(), "Cannot get class '" + String(p_class) + "'.");
+	ERR_FAIL_NULL_V_MSG(ti, StringName(), "Cannot get class '" + String(p_class) + "'.");
 	return ti->inherits;
 }
 
@@ -339,43 +320,42 @@ ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 
 	ClassInfo *ti = classes.getptr(p_class);
 
-	ERR_FAIL_COND_V_MSG(!ti, API_NONE, "Cannot get class '" + String(p_class) + "'.");
+	ERR_FAIL_NULL_V_MSG(ti, API_NONE, "Cannot get class '" + String(p_class) + "'.");
 	return ti->api;
 }
 
-uint64_t ClassDB::get_api_hash(APIType p_api) {
-	OBJTYPE_RLOCK;
+uint32_t ClassDB::get_api_hash(APIType p_api) {
 #ifdef DEBUG_METHODS_ENABLED
+	OBJTYPE_WLOCK;
 
-	uint64_t hash = hash_djb2_one_64(HashMapHasherDefault::hash(VERSION_FULL_CONFIG));
-
-	List<StringName> names;
-
-	const StringName *k = nullptr;
-
-	while ((k = classes.next(k))) {
-		names.push_back(*k);
+	if (api_hashes_cache.has(p_api)) {
+		return api_hashes_cache[p_api];
 	}
-	//must be alphabetically sorted for hash to compute
-	names.sort_custom<StringName::AlphCompare>();
 
-	for (const StringName &E : names) {
+	uint64_t hash = hash_murmur3_one_64(HashMapHasherDefault::hash(VERSION_FULL_CONFIG));
+
+	List<StringName> class_list;
+	for (const KeyValue<StringName, ClassInfo> &E : classes) {
+		class_list.push_back(E.key);
+	}
+	// Must be alphabetically sorted for hash to compute.
+	class_list.sort_custom<StringName::AlphCompare>();
+
+	for (const StringName &E : class_list) {
 		ClassInfo *t = classes.getptr(E);
-		ERR_FAIL_COND_V_MSG(!t, 0, "Cannot get class '" + String(E) + "'.");
+		ERR_FAIL_NULL_V_MSG(t, 0, "Cannot get class '" + String(E) + "'.");
 		if (t->api != p_api || !t->exposed) {
 			continue;
 		}
-		hash = hash_djb2_one_64(t->name.hash(), hash);
-		hash = hash_djb2_one_64(t->inherits.hash(), hash);
+		hash = hash_murmur3_one_64(t->name.hash(), hash);
+		hash = hash_murmur3_one_64(t->inherits.hash(), hash);
 
 		{ //methods
 
 			List<StringName> snames;
 
-			k = nullptr;
-
-			while ((k = t->method_map.next(k))) {
-				String name = k->operator String();
+			for (const KeyValue<StringName, MethodBind *> &F : t->method_map) {
+				String name = F.key.operator String();
 
 				ERR_CONTINUE(name.is_empty());
 
@@ -383,34 +363,35 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 					continue; // Ignore non-virtual methods that start with an underscore
 				}
 
-				snames.push_back(*k);
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : snames) {
 				MethodBind *mb = t->method_map[F];
-				hash = hash_djb2_one_64(mb->get_name().hash(), hash);
-				hash = hash_djb2_one_64(mb->get_argument_count(), hash);
-				hash = hash_djb2_one_64(mb->get_argument_type(-1), hash); //return
+				hash = hash_murmur3_one_64(mb->get_name().hash(), hash);
+				hash = hash_murmur3_one_64(mb->get_argument_count(), hash);
+				hash = hash_murmur3_one_64(mb->get_argument_type(-1), hash); //return
 
 				for (int i = 0; i < mb->get_argument_count(); i++) {
 					const PropertyInfo info = mb->get_argument_info(i);
-					hash = hash_djb2_one_64(info.type, hash);
-					hash = hash_djb2_one_64(info.name.hash(), hash);
-					hash = hash_djb2_one_64(info.hint, hash);
-					hash = hash_djb2_one_64(info.hint_string.hash(), hash);
+					hash = hash_murmur3_one_64(info.type, hash);
+					hash = hash_murmur3_one_64(info.name.hash(), hash);
+					hash = hash_murmur3_one_64(info.hint, hash);
+					hash = hash_murmur3_one_64(info.hint_string.hash(), hash);
 				}
 
-				hash = hash_djb2_one_64(mb->get_default_argument_count(), hash);
+				hash = hash_murmur3_one_64(mb->get_default_argument_count(), hash);
 
-				for (int i = 0; i < mb->get_default_argument_count(); i++) {
-					//hash should not change, i hope for tis
-					Variant da = mb->get_default_argument(i);
-					hash = hash_djb2_one_64(da.hash(), hash);
+				for (int i = 0; i < mb->get_argument_count(); i++) {
+					if (mb->has_default_argument(i)) {
+						Variant da = mb->get_default_argument(i);
+						hash = hash_murmur3_one_64(da.hash(), hash);
+					}
 				}
 
-				hash = hash_djb2_one_64(mb->get_hint_flags(), hash);
+				hash = hash_murmur3_one_64(mb->get_hint_flags(), hash);
 			}
 		}
 
@@ -418,17 +399,15 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			k = nullptr;
-
-			while ((k = t->constant_map.next(k))) {
-				snames.push_back(*k);
+			for (const KeyValue<StringName, int64_t> &F : t->constant_map) {
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : snames) {
-				hash = hash_djb2_one_64(F.hash(), hash);
-				hash = hash_djb2_one_64(t->constant_map[F], hash);
+				hash = hash_murmur3_one_64(F.hash(), hash);
+				hash = hash_murmur3_one_64(t->constant_map[F], hash);
 			}
 		}
 
@@ -436,19 +415,17 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			k = nullptr;
-
-			while ((k = t->signal_map.next(k))) {
-				snames.push_back(*k);
+			for (const KeyValue<StringName, MethodInfo> &F : t->signal_map) {
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : snames) {
 				MethodInfo &mi = t->signal_map[F];
-				hash = hash_djb2_one_64(F.hash(), hash);
-				for (int i = 0; i < mi.arguments.size(); i++) {
-					hash = hash_djb2_one_64(mi.arguments[i].type, hash);
+				hash = hash_murmur3_one_64(F.hash(), hash);
+				for (const PropertyInfo &pi : mi.arguments) {
+					hash = hash_murmur3_one_64(pi.type, hash);
 				}
 			}
 		}
@@ -457,32 +434,37 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			List<StringName> snames;
 
-			k = nullptr;
-
-			while ((k = t->property_setget.next(k))) {
-				snames.push_back(*k);
+			for (const KeyValue<StringName, PropertySetGet> &F : t->property_setget) {
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : snames) {
 				PropertySetGet *psg = t->property_setget.getptr(F);
-				ERR_FAIL_COND_V(!psg, 0);
+				ERR_FAIL_NULL_V(psg, 0);
 
-				hash = hash_djb2_one_64(F.hash(), hash);
-				hash = hash_djb2_one_64(psg->setter.hash(), hash);
-				hash = hash_djb2_one_64(psg->getter.hash(), hash);
+				hash = hash_murmur3_one_64(F.hash(), hash);
+				hash = hash_murmur3_one_64(psg->setter.hash(), hash);
+				hash = hash_murmur3_one_64(psg->getter.hash(), hash);
 			}
 		}
 
 		//property list
 		for (const PropertyInfo &F : t->property_list) {
-			hash = hash_djb2_one_64(F.name.hash(), hash);
-			hash = hash_djb2_one_64(F.type, hash);
-			hash = hash_djb2_one_64(F.hint, hash);
-			hash = hash_djb2_one_64(F.hint_string.hash(), hash);
-			hash = hash_djb2_one_64(F.usage, hash);
+			hash = hash_murmur3_one_64(F.name.hash(), hash);
+			hash = hash_murmur3_one_64(F.type, hash);
+			hash = hash_murmur3_one_64(F.hint, hash);
+			hash = hash_murmur3_one_64(F.hint_string.hash(), hash);
+			hash = hash_murmur3_one_64(F.usage, hash);
 		}
+	}
+
+	hash = hash_fmix32(hash);
+
+	// Extension API changes at runtime; let's just not cache them by now.
+	if (p_api != API_EXTENSION && p_api != API_EDITOR_EXTENSION) {
+		api_hashes_cache[p_api] = hash;
 	}
 
 	return hash;
@@ -501,34 +483,26 @@ void ClassDB::add_compatibility_class(const StringName &p_class, const StringNam
 	compat_classes[p_class] = p_fallback;
 }
 
-thread_local bool initializing_with_extension = false;
-thread_local ObjectNativeExtension *initializing_extension = nullptr;
-thread_local GDExtensionClassInstancePtr initializing_extension_instance = nullptr;
-
-void ClassDB::instance_get_native_extension_data(ObjectNativeExtension **r_extension, GDExtensionClassInstancePtr *r_extension_instance) {
-	if (initializing_with_extension) {
-		*r_extension = initializing_extension;
-		*r_extension_instance = initializing_extension_instance;
-		initializing_with_extension = false;
-	} else {
-		*r_extension = nullptr;
-		*r_extension_instance = nullptr;
+StringName ClassDB::get_compatibility_class(const StringName &p_class) {
+	if (compat_classes.has(p_class)) {
+		return compat_classes[p_class];
 	}
+	return StringName();
 }
 
-Object *ClassDB::instantiate(const StringName &p_class) {
+Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class) {
 	ClassInfo *ti;
 	{
 		OBJTYPE_RLOCK;
 		ti = classes.getptr(p_class);
-		if (!ti || ti->disabled || !ti->creation_func || (ti->native_extension && !ti->native_extension->create_instance)) {
+		if (!ti || ti->disabled || !ti->creation_func || (ti->gdextension && !ti->gdextension->create_instance)) {
 			if (compat_classes.has(p_class)) {
 				ti = classes.getptr(compat_classes[p_class]);
 			}
 		}
-		ERR_FAIL_COND_V_MSG(!ti, nullptr, "Cannot get class '" + String(p_class) + "'.");
+		ERR_FAIL_NULL_V_MSG(ti, nullptr, "Cannot get class '" + String(p_class) + "'.");
 		ERR_FAIL_COND_V_MSG(ti->disabled, nullptr, "Class '" + String(p_class) + "' is disabled.");
-		ERR_FAIL_COND_V(!ti->creation_func, nullptr);
+		ERR_FAIL_NULL_V_MSG(ti->creation_func, nullptr, "Class '" + String(p_class) + "' or its base class cannot be instantiated.");
 	}
 #ifdef TOOLS_ENABLED
 	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
@@ -536,25 +510,185 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 		return nullptr;
 	}
 #endif
-	if (ti->native_extension) {
-		initializing_with_extension = true;
-		initializing_extension = ti->native_extension;
-		initializing_extension_instance = ti->native_extension->create_instance(ti->native_extension->class_userdata);
+	if (ti->gdextension && ti->gdextension->create_instance) {
+		ObjectGDExtension *extension = ti->gdextension;
+#ifdef TOOLS_ENABLED
+		if (!p_require_real_class && ti->is_runtime && Engine::get_singleton()->is_editor_hint()) {
+			extension = get_placeholder_extension(ti->name);
+		}
+#endif
+		return (Object *)extension->create_instance(extension->class_userdata);
+	} else {
+#ifdef TOOLS_ENABLED
+		if (!p_require_real_class && ti->is_runtime && Engine::get_singleton()->is_editor_hint()) {
+			if (!ti->inherits_ptr || !ti->inherits_ptr->creation_func) {
+				ERR_PRINT_ONCE(vformat("Cannot make a placeholder instance of runtime class %s because its parent cannot be constructed.", ti->name));
+			} else {
+				ObjectGDExtension *extension = get_placeholder_extension(ti->name);
+				return (Object *)extension->create_instance(extension->class_userdata);
+			}
+		}
+#endif
+
+		return ti->creation_func();
 	}
-	return ti->creation_func();
+}
+
+Object *ClassDB::instantiate(const StringName &p_class) {
+	return _instantiate_internal(p_class);
+}
+
+Object *ClassDB::instantiate_no_placeholders(const StringName &p_class) {
+	return _instantiate_internal(p_class, true);
+}
+
+#ifdef TOOLS_ENABLED
+ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class) {
+	ObjectGDExtension *placeholder_extension = placeholder_extensions.getptr(p_class);
+	if (placeholder_extension) {
+		return placeholder_extension;
+	}
+
+	ClassInfo *ti;
+	{
+		OBJTYPE_RLOCK;
+		ti = classes.getptr(p_class);
+		if (!ti || ti->disabled || !ti->creation_func || (ti->gdextension && !ti->gdextension->create_instance)) {
+			if (compat_classes.has(p_class)) {
+				ti = classes.getptr(compat_classes[p_class]);
+			}
+		}
+		ERR_FAIL_NULL_V_MSG(ti, nullptr, "Cannot get class '" + String(p_class) + "'.");
+		ERR_FAIL_COND_V_MSG(ti->disabled, nullptr, "Class '" + String(p_class) + "' is disabled.");
+	}
+
+	// Make a "fake" extension to act as a placeholder.
+	placeholder_extensions[p_class] = ObjectGDExtension();
+	placeholder_extension = placeholder_extensions.getptr(p_class);
+
+	placeholder_extension->is_runtime = true;
+	placeholder_extension->is_placeholder = true;
+
+	if (ti->gdextension) {
+		placeholder_extension->library = ti->gdextension->library;
+		placeholder_extension->parent = ti->gdextension->parent;
+		placeholder_extension->children = ti->gdextension->children;
+		placeholder_extension->parent_class_name = ti->gdextension->parent_class_name;
+		placeholder_extension->class_name = ti->gdextension->class_name;
+		placeholder_extension->editor_class = ti->gdextension->editor_class;
+		placeholder_extension->reloadable = ti->gdextension->reloadable;
+		placeholder_extension->is_virtual = ti->gdextension->is_virtual;
+		placeholder_extension->is_abstract = ti->gdextension->is_abstract;
+		placeholder_extension->is_exposed = ti->gdextension->is_exposed;
+
+		placeholder_extension->tracking_userdata = ti->gdextension->tracking_userdata;
+		placeholder_extension->track_instance = ti->gdextension->track_instance;
+		placeholder_extension->untrack_instance = ti->gdextension->untrack_instance;
+	} else {
+		placeholder_extension->library = nullptr;
+		placeholder_extension->parent = nullptr;
+		placeholder_extension->parent_class_name = ti->inherits;
+		placeholder_extension->class_name = ti->name;
+		placeholder_extension->editor_class = ti->api == API_EDITOR;
+		placeholder_extension->reloadable = false;
+		placeholder_extension->is_virtual = ti->is_virtual;
+		placeholder_extension->is_abstract = false;
+		placeholder_extension->is_exposed = ti->exposed;
+	}
+
+	placeholder_extension->set = &PlaceholderExtensionInstance::placeholder_instance_set;
+	placeholder_extension->get = &PlaceholderExtensionInstance::placeholder_instance_get;
+	placeholder_extension->get_property_list = &PlaceholderExtensionInstance::placeholder_instance_get_property_list;
+	placeholder_extension->free_property_list2 = &PlaceholderExtensionInstance::placeholder_instance_free_property_list;
+	placeholder_extension->property_can_revert = &PlaceholderExtensionInstance::placeholder_instance_property_can_revert;
+	placeholder_extension->property_get_revert = &PlaceholderExtensionInstance::placeholder_instance_property_get_revert;
+	placeholder_extension->validate_property = &PlaceholderExtensionInstance::placeholder_instance_validate_property;
+#ifndef DISABLE_DEPRECATED
+	placeholder_extension->notification = nullptr;
+	placeholder_extension->free_property_list = nullptr;
+#endif // DISABLE_DEPRECATED
+	placeholder_extension->notification2 = &PlaceholderExtensionInstance::placeholder_instance_notification;
+	placeholder_extension->to_string = &PlaceholderExtensionInstance::placeholder_instance_to_string;
+	placeholder_extension->reference = &PlaceholderExtensionInstance::placeholder_instance_reference;
+	placeholder_extension->unreference = &PlaceholderExtensionInstance::placeholder_instance_unreference;
+	placeholder_extension->get_rid = &PlaceholderExtensionInstance::placeholder_instance_get_rid;
+
+	placeholder_extension->class_userdata = ti;
+	placeholder_extension->create_instance = &PlaceholderExtensionInstance::placeholder_class_create_instance;
+	placeholder_extension->free_instance = &PlaceholderExtensionInstance::placeholder_class_free_instance;
+	placeholder_extension->get_virtual = &PlaceholderExtensionInstance::placeholder_class_get_virtual;
+	placeholder_extension->get_virtual_call_data = nullptr;
+	placeholder_extension->call_virtual_with_data = nullptr;
+	placeholder_extension->recreate_instance = &PlaceholderExtensionInstance::placeholder_class_recreate_instance;
+
+	return placeholder_extension;
+}
+#endif
+
+void ClassDB::set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance) {
+	ERR_FAIL_NULL(p_object);
+	ClassInfo *ti;
+	{
+		OBJTYPE_RLOCK;
+		ti = classes.getptr(p_class);
+		if (!ti || ti->disabled || !ti->creation_func || (ti->gdextension && !ti->gdextension->create_instance)) {
+			if (compat_classes.has(p_class)) {
+				ti = classes.getptr(compat_classes[p_class]);
+			}
+		}
+		ERR_FAIL_NULL_MSG(ti, "Cannot get class '" + String(p_class) + "'.");
+		ERR_FAIL_COND_MSG(ti->disabled, "Class '" + String(p_class) + "' is disabled.");
+		ERR_FAIL_NULL_MSG(ti->gdextension, "Class '" + String(p_class) + "' has no native extension.");
+	}
+
+	p_object->_extension = ti->gdextension;
+	p_object->_extension_instance = p_instance;
+
+#ifdef TOOLS_ENABLED
+	if (p_object->_extension->track_instance) {
+		p_object->_extension->track_instance(p_object->_extension->tracking_userdata, p_object);
+	}
+#endif
 }
 
 bool ClassDB::can_instantiate(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
+	if (!ti) {
+		if (!ScriptServer::is_global_class(p_class)) {
+			ERR_FAIL_V_MSG(false, "Cannot get class '" + String(p_class) + "'.");
+		}
+		String path = ScriptServer::get_global_class_path(p_class);
+		Ref<Script> scr = ResourceLoader::load(path);
+		return scr.is_valid() && scr->is_valid() && !scr->is_abstract();
+	}
 #ifdef TOOLS_ENABLED
 	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
 		return false;
 	}
 #endif
-	return (!ti->disabled && ti->creation_func != nullptr && !(ti->native_extension && !ti->native_extension->create_instance));
+	return (!ti->disabled && ti->creation_func != nullptr && !(ti->gdextension && !ti->gdextension->create_instance));
+}
+
+bool ClassDB::is_virtual(const StringName &p_class) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *ti = classes.getptr(p_class);
+	if (!ti) {
+		if (!ScriptServer::is_global_class(p_class)) {
+			ERR_FAIL_V_MSG(false, "Cannot get class '" + String(p_class) + "'.");
+		}
+		String path = ScriptServer::get_global_class_path(p_class);
+		Ref<Script> scr = ResourceLoader::load(path);
+		return scr.is_valid() && scr->is_valid() && scr->is_abstract();
+	}
+#ifdef TOOLS_ENABLED
+	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
+		return false;
+	}
+#endif
+	return (!ti->disabled && ti->creation_func != nullptr && !(ti->gdextension && !ti->gdextension->create_instance) && ti->is_virtual);
 }
 
 void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherits) {
@@ -579,7 +713,6 @@ void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherit
 	}
 }
 
-#ifdef DEBUG_METHODS_ENABLED
 static MethodInfo info_from_bind(MethodBind *p_method) {
 	MethodInfo minfo;
 	minfo.name = p_method->get_name();
@@ -600,7 +733,6 @@ static MethodInfo info_from_bind(MethodBind *p_method) {
 
 	return minfo;
 }
-#endif
 
 void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance, bool p_exclude_from_properties) {
 	OBJTYPE_RLOCK;
@@ -618,7 +750,6 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 		}
 
 #ifdef DEBUG_METHODS_ENABLED
-
 		for (const MethodInfo &E : type->virtual_methods) {
 			p_methods->push_back(E);
 		}
@@ -633,19 +764,73 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 
 			p_methods->push_back(minfo);
 		}
-
 #else
+		for (KeyValue<StringName, MethodBind *> &E : type->method_map) {
+			MethodBind *m = E.value;
+			MethodInfo minfo = info_from_bind(m);
+			p_methods->push_back(minfo);
+		}
+#endif
 
-		const StringName *K = nullptr;
-
-		while ((K = type->method_map.next(K))) {
-			MethodBind *m = type->method_map[*K];
-			MethodInfo mi;
-			mi.name = m->get_name();
-			p_methods->push_back(mi);
+		if (p_no_inheritance) {
+			break;
 		}
 
+		type = type->inherits_ptr;
+	}
+}
+
+void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List<Pair<MethodInfo, uint32_t>> *p_methods, bool p_no_inheritance, bool p_exclude_from_properties) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->disabled) {
+			if (p_no_inheritance) {
+				break;
+			}
+
+			type = type->inherits_ptr;
+			continue;
+		}
+
+#ifdef DEBUG_METHODS_ENABLED
+		for (const MethodInfo &E : type->virtual_methods) {
+			Pair<MethodInfo, uint32_t> pair(E, 0);
+			p_methods->push_back(pair);
+		}
+
+		for (const StringName &E : type->method_order) {
+			if (p_exclude_from_properties && type->methods_in_properties.has(E)) {
+				continue;
+			}
+
+			MethodBind *method = type->method_map.get(E);
+			MethodInfo minfo = info_from_bind(method);
+
+			Pair<MethodInfo, uint32_t> pair(minfo, method->get_hash());
+			p_methods->push_back(pair);
+		}
+#else
+		for (KeyValue<StringName, MethodBind *> &E : type->method_map) {
+			MethodBind *method = E.value;
+			MethodInfo minfo = info_from_bind(method);
+
+			Pair<MethodInfo, uint32_t> pair(minfo, method->get_hash());
+			p_methods->push_back(pair);
+		}
 #endif
+
+		for (const KeyValue<StringName, LocalVector<MethodBind *, unsigned int, false, false>> &E : type->method_map_compatibility) {
+			LocalVector<MethodBind *> compat = E.value;
+			for (MethodBind *method : compat) {
+				MethodInfo minfo = info_from_bind(method);
+
+				Pair<MethodInfo, uint32_t> pair(minfo, method->get_hash());
+				p_methods->push_back(pair);
+			}
+		}
 
 		if (p_no_inheritance) {
 			break;
@@ -688,9 +873,8 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 		if (type->method_map.has(p_method)) {
 			if (r_info) {
 				MethodBind *m = type->method_map[p_method];
-				MethodInfo mi;
-				mi.name = m->get_name();
-				*r_info = mi;
+				MethodInfo minfo = info_from_bind(m);
+				*r_info = minfo;
 			}
 			return true;
 		}
@@ -721,12 +905,66 @@ MethodBind *ClassDB::get_method(const StringName &p_class, const StringName &p_n
 	return nullptr;
 }
 
-void ClassDB::bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int p_constant) {
+Vector<uint32_t> ClassDB::get_method_compatibility_hashes(const StringName &p_class, const StringName &p_name) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->method_map_compatibility.has(p_name)) {
+			LocalVector<MethodBind *> *c = type->method_map_compatibility.getptr(p_name);
+			Vector<uint32_t> ret;
+			for (uint32_t i = 0; i < c->size(); i++) {
+				ret.push_back((*c)[i]->get_hash());
+			}
+			return ret;
+		}
+		type = type->inherits_ptr;
+	}
+	return Vector<uint32_t>();
+}
+
+MethodBind *ClassDB::get_method_with_compatibility(const StringName &p_class, const StringName &p_name, uint64_t p_hash, bool *r_method_exists, bool *r_is_deprecated) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		MethodBind **method = type->method_map.getptr(p_name);
+		if (method && *method) {
+			if (r_method_exists) {
+				*r_method_exists = true;
+			}
+			if ((*method)->get_hash() == p_hash) {
+				return *method;
+			}
+		}
+
+		LocalVector<MethodBind *> *compat = type->method_map_compatibility.getptr(p_name);
+		if (compat) {
+			if (r_method_exists) {
+				*r_method_exists = true;
+			}
+			for (uint32_t i = 0; i < compat->size(); i++) {
+				if ((*compat)[i]->get_hash() == p_hash) {
+					if (r_is_deprecated) {
+						*r_is_deprecated = true;
+					}
+					return (*compat)[i];
+				}
+			}
+		}
+		type = type->inherits_ptr;
+	}
+	return nullptr;
+}
+
+void ClassDB::bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield) {
 	OBJTYPE_WLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
 
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
 	if (type->constant_map.has(p_name)) {
 		ERR_FAIL();
@@ -735,18 +973,20 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 	type->constant_map[p_name] = p_constant;
 
 	String enum_name = p_enum;
-	if (enum_name != String()) {
-		if (enum_name.find(".") != -1) {
+	if (!enum_name.is_empty()) {
+		if (enum_name.contains(".")) {
 			enum_name = enum_name.get_slicec('.', 1);
 		}
 
-		List<StringName> *constants_list = type->enum_map.getptr(enum_name);
+		ClassInfo::EnumInfo *constants_list = type->enum_map.getptr(enum_name);
 
 		if (constants_list) {
-			constants_list->push_back(p_name);
+			constants_list->constants.push_back(p_name);
+			constants_list->is_bitfield = p_is_bitfield;
 		} else {
-			List<StringName> new_list;
-			new_list.push_back(p_name);
+			ClassInfo::EnumInfo new_list;
+			new_list.is_bitfield = p_is_bitfield;
+			new_list.constants.push_back(p_name);
 			type->enum_map[enum_name] = new_list;
 		}
 	}
@@ -767,10 +1007,9 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 			p_constants->push_back(E);
 		}
 #else
-		const StringName *K = nullptr;
 
-		while ((K = type->constant_map.next(K))) {
-			p_constants->push_back(*K);
+		for (const KeyValue<StringName, int64_t> &E : type->constant_map) {
+			p_constants->push_back(E.key);
 		}
 
 #endif
@@ -782,13 +1021,13 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 	}
 }
 
-int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success) {
+int64_t ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		int *constant = type->constant_map.getptr(p_name);
+		int64_t *constant = type->constant_map.getptr(p_name);
 		if (constant) {
 			if (p_success) {
 				*p_success = true;
@@ -831,12 +1070,11 @@ StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const S
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		const StringName *k = nullptr;
-		while ((k = type->enum_map.next(k))) {
-			List<StringName> &constants_list = type->enum_map.get(*k);
+		for (KeyValue<StringName, ClassInfo::EnumInfo> &E : type->enum_map) {
+			List<StringName> &constants_list = E.value.constants;
 			const List<StringName>::Element *found = constants_list.find(p_name);
 			if (found) {
-				return *k;
+				return E.key;
 			}
 		}
 
@@ -856,9 +1094,8 @@ void ClassDB::get_enum_list(const StringName &p_class, List<StringName> *p_enums
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		const StringName *k = nullptr;
-		while ((k = type->enum_map.next(k))) {
-			p_enums->push_back(*k);
+		for (KeyValue<StringName, ClassInfo::EnumInfo> &E : type->enum_map) {
+			p_enums->push_back(E.key);
 		}
 
 		if (p_no_inheritance) {
@@ -875,10 +1112,10 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		const List<StringName> *constants = type->enum_map.getptr(p_enum);
+		const ClassInfo::EnumInfo *constants = type->enum_map.getptr(p_enum);
 
 		if (constants) {
-			for (const List<StringName>::Element *E = constants->front(); E; E = E->next()) {
+			for (const List<StringName>::Element *E = constants->constants.front(); E; E = E->next()) {
 				p_constants->push_back(E->get());
 			}
 		}
@@ -889,6 +1126,33 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 
 		type = type->inherits_ptr;
 	}
+}
+
+void ClassDB::set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values) {
+#ifdef DEBUG_METHODS_ENABLED
+	OBJTYPE_WLOCK;
+	ClassInfo *type = classes.getptr(p_class);
+
+	ERR_FAIL_NULL(type);
+
+	type->method_error_values[p_method] = p_values;
+#endif
+}
+
+Vector<Error> ClassDB::get_method_error_return_values(const StringName &p_class, const StringName &p_method) {
+#ifdef DEBUG_METHODS_ENABLED
+	OBJTYPE_RLOCK;
+	ClassInfo *type = classes.getptr(p_class);
+
+	ERR_FAIL_NULL_V(type, Vector<Error>());
+
+	if (!type->method_error_values.has(p_method)) {
+		return Vector<Error>();
+	}
+	return type->method_error_values[p_method];
+#else
+	return Vector<Error>();
+#endif
 }
 
 bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
@@ -910,11 +1174,30 @@ bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool
 	return false;
 }
 
+bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->enum_map.has(p_name) && type->enum_map[p_name].is_bitfield) {
+			return true;
+		}
+		if (p_no_inheritance) {
+			return false;
+		}
+
+		type = type->inherits_ptr;
+	}
+
+	return false;
+}
+
 void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) {
 	OBJTYPE_WLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
 	StringName sname = p_signal.name;
 
@@ -933,14 +1216,13 @@ void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_sig
 	OBJTYPE_RLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
 	ClassInfo *check = type;
 
 	while (check) {
-		const StringName *S = nullptr;
-		while ((S = check->signal_map.next(S))) {
-			p_signals->push_back(check->signal_map[*S]);
+		for (KeyValue<StringName, MethodInfo> &E : check->signal_map) {
+			p_signals->push_back(E.value);
 		}
 
 		if (p_no_inheritance) {
@@ -985,20 +1267,42 @@ bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, 
 	return false;
 }
 
-void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix) {
+void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
-	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, p_prefix, PROPERTY_USAGE_GROUP));
+	String prefix = p_prefix;
+	if (p_indent_depth > 0) {
+		prefix = vformat("%s,%d", p_prefix, p_indent_depth);
+	}
+
+	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_GROUP));
 }
 
-void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix) {
+void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
-	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, p_prefix, PROPERTY_USAGE_SUBGROUP));
+	String prefix = p_prefix;
+	if (p_indent_depth > 0) {
+		prefix = vformat("%s,%d", p_prefix, p_indent_depth);
+	}
+
+	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_SUBGROUP));
+}
+
+void ClassDB::add_property_array_count(const StringName &p_class, const String &p_label, const StringName &p_count_property, const StringName &p_count_setter, const StringName &p_count_getter, const String &p_array_element_prefix, uint32_t p_count_usage) {
+	add_property(p_class, PropertyInfo(Variant::INT, p_count_property, PROPERTY_HINT_NONE, "", p_count_usage | PROPERTY_USAGE_ARRAY, vformat("%s,%s", p_label, p_array_element_prefix)), p_count_setter, p_count_getter);
+}
+
+void ClassDB::add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix) {
+	OBJTYPE_WLOCK;
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL(type);
+
+	type->property_list.push_back(PropertyInfo(Variant::NIL, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, p_array_element_prefix));
 }
 
 // NOTE: For implementation simplicity reasons, this method doesn't allow setters to have optional arguments at the end.
@@ -1007,14 +1311,14 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 	ClassInfo *type = classes.getptr(p_class);
 	lock.read_unlock();
 
-	ERR_FAIL_COND(!type);
+	ERR_FAIL_NULL(type);
 
 	MethodBind *mb_set = nullptr;
 	if (p_setter) {
 		mb_set = get_method(p_class, p_setter);
 #ifdef DEBUG_METHODS_ENABLED
 
-		ERR_FAIL_COND_MSG(!mb_set, "Invalid setter '" + p_class + "::" + p_setter + "' for property '" + p_pinfo.name + "'.");
+		ERR_FAIL_NULL_MSG(mb_set, "Invalid setter '" + p_class + "::" + p_setter + "' for property '" + p_pinfo.name + "'.");
 
 		int exp_args = 1 + (p_index >= 0 ? 1 : 0);
 		ERR_FAIL_COND_MSG(mb_set->get_argument_count() != exp_args, "Invalid function for setter '" + p_class + "::" + p_setter + " for property '" + p_pinfo.name + "'.");
@@ -1026,7 +1330,7 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 		mb_get = get_method(p_class, p_getter);
 #ifdef DEBUG_METHODS_ENABLED
 
-		ERR_FAIL_COND_MSG(!mb_get, "Invalid getter '" + p_class + "::" + p_getter + "' for property '" + p_pinfo.name + "'.");
+		ERR_FAIL_NULL_MSG(mb_get, "Invalid getter '" + p_class + "::" + p_getter + "' for property '" + p_pinfo.name + "'.");
 
 		int exp_args = 0 + (p_index >= 0 ? 1 : 0);
 		ERR_FAIL_COND_MSG(mb_get->get_argument_count() != exp_args, "Invalid function for getter '" + p_class + "::" + p_getter + "' for property: '" + p_pinfo.name + "'.");
@@ -1067,6 +1371,23 @@ void ClassDB::set_property_default_value(const StringName &p_class, const String
 	default_values[p_class][p_name] = p_default;
 }
 
+void ClassDB::add_linked_property(const StringName &p_class, const String &p_property, const String &p_linked_property) {
+#ifdef TOOLS_ENABLED
+	OBJTYPE_WLOCK;
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL(type);
+
+	ERR_FAIL_COND(!type->property_map.has(p_property));
+	ERR_FAIL_COND(!type->property_map.has(p_linked_property));
+
+	if (!type->linked_properties.has(p_property)) {
+		type->linked_properties.insert(p_property, List<StringName>());
+	}
+	type->linked_properties[p_property].push_back(p_linked_property);
+
+#endif
+}
+
 void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
 	OBJTYPE_RLOCK;
 
@@ -1077,7 +1398,7 @@ void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p
 			if (p_validator) {
 				// Making a copy as we may modify it.
 				PropertyInfo pi_mut = pi;
-				p_validator->_validate_property(pi_mut);
+				p_validator->validate_property(pi_mut);
 				p_list->push_back(pi_mut);
 			} else {
 				p_list->push_back(pi);
@@ -1091,6 +1412,25 @@ void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p
 	}
 }
 
+void ClassDB::get_linked_properties_info(const StringName &p_class, const StringName &p_property, List<StringName> *r_properties, bool p_no_inheritance) {
+#ifdef TOOLS_ENABLED
+	ClassInfo *check = classes.getptr(p_class);
+	while (check) {
+		if (!check->linked_properties.has(p_property)) {
+			return;
+		}
+		for (const StringName &E : check->linked_properties[p_property]) {
+			r_properties->push_back(E);
+		}
+
+		if (p_no_inheritance) {
+			break;
+		}
+		check = check->inherits_ptr;
+	}
+#endif
+}
+
 bool ClassDB::get_property_info(const StringName &p_class, const StringName &p_property, PropertyInfo *r_info, bool p_no_inheritance, const Object *p_validator) {
 	OBJTYPE_RLOCK;
 
@@ -1099,7 +1439,7 @@ bool ClassDB::get_property_info(const StringName &p_class, const StringName &p_p
 		if (check->property_map.has(p_property)) {
 			PropertyInfo pinfo = check->property_map[p_property];
 			if (p_validator) {
-				p_validator->_validate_property(pinfo);
+				p_validator->validate_property(pinfo);
 			}
 			if (r_info) {
 				*r_info = pinfo;
@@ -1139,7 +1479,7 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 				if (psg->_setptr) {
 					psg->_setptr->call(p_object, arg, 2, ce);
 				} else {
-					p_object->call(psg->setter, arg, 2, ce);
+					p_object->callp(psg->setter, arg, 2, ce);
 				}
 
 			} else {
@@ -1147,7 +1487,7 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 				if (psg->_setptr) {
 					psg->_setptr->call(p_object, arg, 1, ce);
 				} else {
-					p_object->call(psg->setter, arg, 1, ce);
+					p_object->callp(psg->setter, arg, 1, ce);
 				}
 			}
 
@@ -1180,20 +1520,20 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 				Variant index = psg->index;
 				const Variant *arg[1] = { &index };
 				Callable::CallError ce;
-				r_value = p_object->call(psg->getter, arg, 1, ce);
+				r_value = p_object->callp(psg->getter, arg, 1, ce);
 
 			} else {
 				Callable::CallError ce;
 				if (psg->_getptr) {
 					r_value = psg->_getptr->call(p_object, nullptr, 0, ce);
 				} else {
-					r_value = p_object->call(psg->getter, nullptr, 0, ce);
+					r_value = p_object->callp(psg->getter, nullptr, 0, ce);
 				}
 			}
 			return true;
 		}
 
-		const int *c = check->constant_map.getptr(p_property); //constants count
+		const int64_t *c = check->constant_map.getptr(p_property); //constants count
 		if (c) {
 			r_value = *c;
 			return true;
@@ -1210,6 +1550,12 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 		}
 
 		check = check->inherits_ptr;
+	}
+
+	// The "free()" method is special, so we assume it exists and return a Callable.
+	if (p_property == CoreStringName(free_)) {
+		r_value = Callable(p_object, p_property);
+		return true;
 	}
 
 	return false;
@@ -1310,7 +1656,7 @@ void ClassDB::set_method_flags(const StringName &p_class, const StringName &p_me
 	OBJTYPE_WLOCK;
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
-	ERR_FAIL_COND(!check);
+	ERR_FAIL_NULL(check);
 	ERR_FAIL_COND(!check->method_map.has(p_method));
 	check->method_map[p_method]->set_hint_flags(p_flags);
 }
@@ -1331,10 +1677,56 @@ bool ClassDB::has_method(const StringName &p_class, const StringName &p_method, 
 	return false;
 }
 
+int ClassDB::get_method_argument_count(const StringName &p_class, const StringName &p_method, bool *r_is_valid, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		MethodBind **method = type->method_map.getptr(p_method);
+		if (method && *method) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return (*method)->get_argument_count();
+		}
+		if (p_no_inheritance) {
+			break;
+		}
+		type = type->inherits_ptr;
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return 0;
+}
+
 void ClassDB::bind_method_custom(const StringName &p_class, MethodBind *p_method) {
+	_bind_method_custom(p_class, p_method, false);
+}
+void ClassDB::bind_compatibility_method_custom(const StringName &p_class, MethodBind *p_method) {
+	_bind_method_custom(p_class, p_method, true);
+}
+
+void ClassDB::_bind_compatibility(ClassInfo *type, MethodBind *p_method) {
+	if (!type->method_map_compatibility.has(p_method->get_name())) {
+		type->method_map_compatibility.insert(p_method->get_name(), LocalVector<MethodBind *>());
+	}
+	type->method_map_compatibility[p_method->get_name()].push_back(p_method);
+}
+
+void ClassDB::_bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_compatibility) {
+	OBJTYPE_WLOCK;
+
 	ClassInfo *type = classes.getptr(p_class);
 	if (!type) {
 		ERR_FAIL_MSG("Couldn't bind custom method '" + p_method->get_name() + "' for instance '" + p_class + "'.");
+	}
+
+	if (p_compatibility) {
+		_bind_compatibility(type, p_method);
+		return;
 	}
 
 	if (type->method_map.has(p_method->get_name())) {
@@ -1349,23 +1741,56 @@ void ClassDB::bind_method_custom(const StringName &p_class, MethodBind *p_method
 	type->method_map[p_method->get_name()] = p_method;
 }
 
+MethodBind *ClassDB::_bind_vararg_method(MethodBind *p_bind, const StringName &p_name, const Vector<Variant> &p_default_args, bool p_compatibility) {
+	MethodBind *bind = p_bind;
+	bind->set_name(p_name);
+	bind->set_default_arguments(p_default_args);
+
+	String instance_type = bind->get_instance_class();
+
+	ClassInfo *type = classes.getptr(instance_type);
+	if (!type) {
+		memdelete(bind);
+		ERR_FAIL_NULL_V(type, nullptr);
+	}
+
+	if (p_compatibility) {
+		_bind_compatibility(type, bind);
+		return bind;
+	}
+
+	if (type->method_map.has(p_name)) {
+		memdelete(bind);
+		// Overloading not supported
+		ERR_FAIL_V_MSG(nullptr, "Method already bound: " + instance_type + "::" + p_name + ".");
+	}
+	type->method_map[p_name] = bind;
 #ifdef DEBUG_METHODS_ENABLED
-MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount) {
+	// FIXME: <reduz> set_return_type is no longer in MethodBind, so I guess it should be moved to vararg method bind
+	//bind->set_return_type("Variant");
+	type->method_order.push_back(p_name);
+#endif
+
+	return bind;
+}
+
+#ifdef DEBUG_METHODS_ENABLED
+MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount) {
 	StringName mdname = method_name.name;
 #else
-MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const char *method_name, const Variant **p_defs, int p_defcount) {
+MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const char *method_name, const Variant **p_defs, int p_defcount) {
 	StringName mdname = StaticCString::create(method_name);
 #endif
 
 	OBJTYPE_WLOCK;
-	ERR_FAIL_COND_V(!p_bind, nullptr);
+	ERR_FAIL_NULL_V(p_bind, nullptr);
 	p_bind->set_name(mdname);
 
 	String instance_type = p_bind->get_instance_class();
 
 #ifdef DEBUG_ENABLED
 
-	ERR_FAIL_COND_V_MSG(has_method(instance_type, mdname), nullptr, "Class " + String(instance_type) + " already has a method " + String(mdname) + ".");
+	ERR_FAIL_COND_V_MSG(!p_compatibility && has_method(instance_type, mdname), nullptr, "Class " + String(instance_type) + " already has a method " + String(mdname) + ".");
 #endif
 
 	ClassInfo *type = classes.getptr(instance_type);
@@ -1374,7 +1799,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 		ERR_FAIL_V_MSG(nullptr, "Couldn't bind method '" + mdname + "' for instance '" + instance_type + "'.");
 	}
 
-	if (type->method_map.has(mdname)) {
+	if (!p_compatibility && type->method_map.has(mdname)) {
 		memdelete(p_bind);
 		// overloading not supported
 		ERR_FAIL_V_MSG(nullptr, "Method already bound '" + instance_type + "::" + mdname + "'.");
@@ -1389,10 +1814,16 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 
 	p_bind->set_argument_names(method_name.args);
 
-	type->method_order.push_back(mdname);
+	if (!p_compatibility) {
+		type->method_order.push_back(mdname);
+	}
 #endif
 
-	type->method_map[mdname] = p_bind;
+	if (p_compatibility) {
+		_bind_compatibility(type, p_bind);
+	} else {
+		type->method_map[mdname] = p_bind;
+	}
 
 	Vector<Variant> defvals;
 
@@ -1406,7 +1837,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 	return p_bind;
 }
 
-void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual) {
+void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual, const Vector<String> &p_arg_names, bool p_object_core) {
 	ERR_FAIL_COND_MSG(!classes.has(p_class), "Request for nonexistent class '" + p_class + "'.");
 
 	OBJTYPE_WLOCK;
@@ -1415,6 +1846,25 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 	MethodInfo mi = p_method;
 	if (p_virtual) {
 		mi.flags |= METHOD_FLAG_VIRTUAL;
+	}
+	if (p_object_core) {
+		mi.flags |= METHOD_FLAG_OBJECT_CORE;
+	}
+
+	if (!p_object_core) {
+		if (p_arg_names.size() != mi.arguments.size()) {
+			WARN_PRINT("Mismatch argument name count for virtual method: " + String(p_class) + "::" + p_method.name);
+		} else {
+			List<PropertyInfo>::Iterator itr = mi.arguments.begin();
+			for (int i = 0; i < p_arg_names.size(); ++itr, ++i) {
+				itr->name = p_arg_names[i];
+			}
+		}
+	}
+
+	if (classes[p_class].virtual_methods_map.has(p_method.name)) {
+		// overloading not supported
+		ERR_FAIL_MSG("Virtual method already bound '" + String(p_class) + "::" + p_method.name + "'.");
 	}
 	classes[p_class].virtual_methods.push_back(mi);
 	classes[p_class].virtual_methods_map[p_method.name] = mi;
@@ -1443,6 +1893,28 @@ void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p
 #endif
 }
 
+void ClassDB::add_extension_class_virtual_method(const StringName &p_class, const GDExtensionClassVirtualMethodInfo *p_method_info) {
+	ERR_FAIL_COND_MSG(!classes.has(p_class), "Request for nonexistent class '" + p_class + "'.");
+
+#ifdef DEBUG_METHODS_ENABLED
+	PackedStringArray arg_names;
+
+	MethodInfo mi;
+	mi.name = *reinterpret_cast<StringName *>(p_method_info->name);
+	mi.return_val = PropertyInfo(p_method_info->return_value);
+	mi.return_val_metadata = p_method_info->return_value_metadata;
+	mi.flags = p_method_info->method_flags;
+	for (int i = 0; i < (int)p_method_info->argument_count; i++) {
+		PropertyInfo arg(p_method_info->arguments[i]);
+		mi.arguments.push_back(arg);
+		mi.arguments_metadata.push_back(p_method_info->arguments_metadata[i]);
+		arg_names.push_back(arg.name);
+	}
+
+	add_virtual_method(p_class, mi, true, arg_names);
+#endif
+}
+
 void ClassDB::set_class_enabled(const StringName &p_class, bool p_enable) {
 	OBJTYPE_WLOCK;
 
@@ -1460,7 +1932,7 @@ bool ClassDB::is_class_enabled(const StringName &p_class) {
 		}
 	}
 
-	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
+	ERR_FAIL_NULL_V_MSG(ti, false, "Cannot get class '" + String(p_class) + "'.");
 	return !ti->disabled;
 }
 
@@ -1468,17 +1940,16 @@ bool ClassDB::is_class_exposed(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
+	ERR_FAIL_NULL_V_MSG(ti, false, "Cannot get class '" + String(p_class) + "'.");
 	return ti->exposed;
 }
 
-StringName ClassDB::get_category(const StringName &p_node) {
-	ERR_FAIL_COND_V(!classes.has(p_node), StringName());
-#ifdef DEBUG_ENABLED
-	return classes[p_node].category;
-#else
-	return StringName();
-#endif
+bool ClassDB::is_class_reloadable(const StringName &p_class) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *ti = classes.getptr(p_class);
+	ERR_FAIL_NULL_V_MSG(ti, false, "Cannot get class '" + String(p_class) + "'.");
+	return ti->reloadable;
 }
 
 void ClassDB::add_resource_base_extension(const StringName &p_extension, const StringName &p_class) {
@@ -1490,10 +1961,8 @@ void ClassDB::add_resource_base_extension(const StringName &p_extension, const S
 }
 
 void ClassDB::get_resource_base_extensions(List<String> *p_extensions) {
-	const StringName *K = nullptr;
-
-	while ((K = resource_base_extensions.next(K))) {
-		p_extensions->push_back(*K);
+	for (const KeyValue<StringName, StringName> &E : resource_base_extensions) {
+		p_extensions->push_back(E.key);
 	}
 }
 
@@ -1502,18 +1971,15 @@ bool ClassDB::is_resource_extension(const StringName &p_extension) {
 }
 
 void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p_extensions) {
-	const StringName *K = nullptr;
-
-	while ((K = resource_base_extensions.next(K))) {
-		StringName cmp = resource_base_extensions[*K];
-		if (is_parent_class(p_class, cmp) || is_parent_class(cmp, p_class)) {
-			p_extensions->push_back(*K);
+	for (const KeyValue<StringName, StringName> &E : resource_base_extensions) {
+		if (is_parent_class(p_class, E.value) || is_parent_class(E.value, p_class)) {
+			p_extensions->push_back(E.key);
 		}
 	}
 }
 
 HashMap<StringName, HashMap<StringName, Variant>> ClassDB::default_values;
-Set<StringName> ClassDB::default_values_cached;
+HashSet<StringName> ClassDB::default_values_cached;
 
 Variant ClassDB::class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid) {
 	if (!default_values_cached.has(p_class)) {
@@ -1527,8 +1993,8 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 		if (Engine::get_singleton()->has_singleton(p_class)) {
 			c = Engine::get_singleton()->get_singleton_object(p_class);
 			cleanup_c = false;
-		} else if (ClassDB::can_instantiate(p_class)) {
-			c = ClassDB::instantiate(p_class);
+		} else if (ClassDB::can_instantiate(p_class) && !ClassDB::is_virtual(p_class)) { // Keep this condition in sync with doc_tools.cpp get_documentation_default_value.
+			c = ClassDB::instantiate_no_placeholders(p_class);
 			cleanup_c = true;
 		}
 
@@ -1576,7 +2042,8 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 	// Some properties may have an instantiated Object as default value,
 	// (like Path2D's `curve` used to have), but that's not a good practice.
 	// Instead, those properties should use PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT
-	// to be auto-instantiated when created in the editor.
+	// to be auto-instantiated when created in the editor with the following method:
+	// EditorNode::get_editor_data().instantiate_object_properties(obj);
 	if (var.get_type() == Variant::OBJECT) {
 		Object *obj = var.get_validated_object();
 		if (obj) {
@@ -1588,29 +2055,87 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 	return var;
 }
 
-void ClassDB::register_extension_class(ObjectNativeExtension *p_extension) {
+void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 	GLOBAL_LOCK_FUNCTION;
 
 	ERR_FAIL_COND_MSG(classes.has(p_extension->class_name), "Class already registered: " + String(p_extension->class_name));
-	ERR_FAIL_COND_MSG(classes.has(p_extension->parent_class_name), "Parent class name for extension class not found: " + String(p_extension->parent_class_name));
+	ERR_FAIL_COND_MSG(!classes.has(p_extension->parent_class_name), "Parent class name for extension class not found: " + String(p_extension->parent_class_name));
 
 	ClassInfo *parent = classes.getptr(p_extension->parent_class_name);
 
 	ClassInfo c;
 	c.api = p_extension->editor_class ? API_EDITOR_EXTENSION : API_EXTENSION;
-	c.native_extension = p_extension;
+	c.gdextension = p_extension;
 	c.name = p_extension->class_name;
-	c.creation_func = parent->creation_func;
+	c.is_virtual = p_extension->is_virtual;
+	if (!p_extension->is_abstract) {
+		// Find the closest ancestor which is either non-abstract or native (or both).
+		ClassInfo *concrete_ancestor = parent;
+		while (concrete_ancestor->creation_func == nullptr &&
+				concrete_ancestor->inherits_ptr != nullptr &&
+				concrete_ancestor->gdextension != nullptr) {
+			concrete_ancestor = concrete_ancestor->inherits_ptr;
+		}
+		ERR_FAIL_NULL_MSG(concrete_ancestor->creation_func, "Extension class " + String(p_extension->class_name) + " cannot extend native abstract class " + String(concrete_ancestor->name));
+		c.creation_func = concrete_ancestor->creation_func;
+	}
 	c.inherits = parent->name;
 	c.class_ptr = parent->class_ptr;
 	c.inherits_ptr = parent;
+	c.exposed = p_extension->is_exposed;
+	if (c.exposed) {
+		// The parent classes should be exposed if it has an exposed child class.
+		while (parent && !parent->exposed) {
+			parent->exposed = true;
+			parent = classes.getptr(parent->name);
+		}
+	}
+	c.reloadable = p_extension->reloadable;
+#ifdef TOOLS_ENABLED
+	c.is_runtime = p_extension->is_runtime;
+#endif
 
 	classes[p_extension->class_name] = c;
 }
 
-void ClassDB::unregister_extension_class(const StringName &p_class) {
-	ERR_FAIL_COND(!classes.has(p_class));
+void ClassDB::unregister_extension_class(const StringName &p_class, bool p_free_method_binds) {
+	ClassInfo *c = classes.getptr(p_class);
+	ERR_FAIL_NULL_MSG(c, "Class '" + String(p_class) + "' does not exist.");
+	if (p_free_method_binds) {
+		for (KeyValue<StringName, MethodBind *> &F : c->method_map) {
+			memdelete(F.value);
+		}
+	}
 	classes.erase(p_class);
+	default_values_cached.erase(p_class);
+	default_values.erase(p_class);
+#ifdef TOOLS_ENABLED
+	placeholder_extensions.erase(p_class);
+#endif
+}
+
+HashMap<StringName, ClassDB::NativeStruct> ClassDB::native_structs;
+void ClassDB::register_native_struct(const StringName &p_name, const String &p_code, uint64_t p_current_size) {
+	NativeStruct ns;
+	ns.ccode = p_code;
+	ns.struct_size = p_current_size;
+	native_structs[p_name] = ns;
+}
+
+void ClassDB::get_native_struct_list(List<StringName> *r_names) {
+	for (const KeyValue<StringName, NativeStruct> &E : native_structs) {
+		r_names->push_back(E.key);
+	}
+}
+
+String ClassDB::get_native_struct_code(const StringName &p_name) {
+	ERR_FAIL_COND_V(!native_structs.has(p_name), String());
+	return native_structs[p_name].ccode;
+}
+
+uint64_t ClassDB::get_native_struct_size(const StringName &p_name) {
+	ERR_FAIL_COND_V(!native_structs.has(p_name), 0);
+	return native_structs[p_name].struct_size;
 }
 
 RWLock ClassDB::lock;
@@ -1623,19 +2148,23 @@ void ClassDB::cleanup_defaults() {
 void ClassDB::cleanup() {
 	//OBJTYPE_LOCK; hah not here
 
-	const StringName *k = nullptr;
+	for (KeyValue<StringName, ClassInfo> &E : classes) {
+		ClassInfo &ti = E.value;
 
-	while ((k = classes.next(k))) {
-		ClassInfo &ti = classes[*k];
-
-		const StringName *m = nullptr;
-		while ((m = ti.method_map.next(m))) {
-			memdelete(ti.method_map[*m]);
+		for (KeyValue<StringName, MethodBind *> &F : ti.method_map) {
+			memdelete(F.value);
+		}
+		for (KeyValue<StringName, LocalVector<MethodBind *>> &F : ti.method_map_compatibility) {
+			for (uint32_t i = 0; i < F.value.size(); i++) {
+				memdelete(F.value[i]);
+			}
 		}
 	}
+
 	classes.clear();
 	resource_base_extensions.clear();
 	compat_classes.clear();
+	native_structs.clear();
 }
 
 //

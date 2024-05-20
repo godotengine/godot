@@ -1,50 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HingeJoint3D" inherits="Joint3D" version="4.0">
+<class name="HingeJoint3D" inherits="Joint3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A hinge between two 3D PhysicsBodies.
+		A physics joint that restricts the rotation of a 3D physics body around an axis relative to another physics body.
 	</brief_description>
 	<description>
-		A HingeJoint3D normally uses the Z axis of body A as the hinge axis, another axis can be specified when adding it manually though. See also [Generic6DOFJoint3D].
+		A physics joint that restricts the rotation of a 3D physics body around an axis relative to another physics body. For example, Body A can be a [StaticBody3D] representing a door hinge that a [RigidBody3D] rotates around.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="get_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="HingeJoint3D.Flag">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="flag" type="int" enum="HingeJoint3D.Flag" />
 			<description>
 				Returns the value of the specified flag.
 			</description>
 		</method>
 		<method name="get_param" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="HingeJoint3D.Param">
-			</argument>
+			<return type="float" />
+			<param index="0" name="param" type="int" enum="HingeJoint3D.Param" />
 			<description>
 				Returns the value of the specified parameter.
 			</description>
 		</method>
 		<method name="set_flag">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="HingeJoint3D.Flag">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="flag" type="int" enum="HingeJoint3D.Flag" />
+			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], enables the specified flag.
 			</description>
 		</method>
 		<method name="set_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="HingeJoint3D.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="HingeJoint3D.Param" />
+			<param index="1" name="value" type="float" />
 			<description>
 				Sets the value of the specified parameter.
 			</description>
@@ -57,15 +47,15 @@
 		<member name="angular_limit/enable" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
 		</member>
-		<member name="angular_limit/lower" type="float" setter="_set_lower_limit" getter="_get_lower_limit" default="-90.0">
+		<member name="angular_limit/lower" type="float" setter="set_param" getter="get_param" default="-1.5708">
 			The minimum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
 		</member>
 		<member name="angular_limit/relaxation" type="float" setter="set_param" getter="get_param" default="1.0">
 			The lower this value, the more the rotation gets slowed down.
 		</member>
-		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param" default="0.9">
+		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param" default="0.9" deprecated="This property is never set by the engine and is kept for compatibility purposes.">
 		</member>
-		<member name="angular_limit/upper" type="float" setter="_set_upper_limit" getter="_get_upper_limit" default="90.0">
+		<member name="angular_limit/upper" type="float" setter="set_param" getter="get_param" default="1.5708">
 			The maximum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
 		</member>
 		<member name="motor/enable" type="bool" setter="set_flag" getter="get_flag" default="false">
@@ -94,7 +84,7 @@
 		<constant name="PARAM_LIMIT_BIAS" value="3" enum="Param">
 			The speed with which the rotation across the axis perpendicular to the hinge gets corrected.
 		</constant>
-		<constant name="PARAM_LIMIT_SOFTNESS" value="4" enum="Param">
+		<constant name="PARAM_LIMIT_SOFTNESS" value="4" enum="Param" deprecated="This property is never used by the engine and is kept for compatibility purpose.">
 		</constant>
 		<constant name="PARAM_LIMIT_RELAXATION" value="5" enum="Param">
 			The lower this value, the more the rotation gets slowed down.

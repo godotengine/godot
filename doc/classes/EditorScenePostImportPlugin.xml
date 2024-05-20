@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorScenePostImportPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Plugin to control and modifying the process of importing a scene.
+	</brief_description>
+	<description>
+		This plugin type exists to modify the process of importing scenes, allowing to change the content as well as add importer options at every stage of the process.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_import_options" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Override to add general import options. These will appear in the main import dock on the editor. Add options via [method add_import_option] and [method add_import_option_advanced].
+			</description>
+		</method>
+		<method name="_get_internal_import_options" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="category" type="int" />
+			<description>
+				Override to add internal import options. These will appear in the 3D scene import dialog. Add options via [method add_import_option] and [method add_import_option_advanced].
+			</description>
+		</method>
+		<method name="_get_internal_option_update_view_required" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="category" type="int" />
+			<param index="1" name="option" type="String" />
+			<description>
+				Return true whether updating the 3D view of the import dialog needs to be updated if an option has changed.
+			</description>
+		</method>
+		<method name="_get_internal_option_visibility" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="category" type="int" />
+			<param index="1" name="for_animation" type="bool" />
+			<param index="2" name="option" type="String" />
+			<description>
+				Return true or false whether a given option should be visible. Return null to ignore.
+			</description>
+		</method>
+		<method name="_get_option_visibility" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="for_animation" type="bool" />
+			<param index="2" name="option" type="String" />
+			<description>
+				Return true or false whether a given option should be visible. Return null to ignore.
+			</description>
+		</method>
+		<method name="_internal_process" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="category" type="int" />
+			<param index="1" name="base_node" type="Node" />
+			<param index="2" name="node" type="Node" />
+			<param index="3" name="resource" type="Resource" />
+			<description>
+				Process a specific node or resource for a given category.
+			</description>
+		</method>
+		<method name="_post_process" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="scene" type="Node" />
+			<description>
+				Post process the scene. This function is called after the final scene has been configured.
+			</description>
+		</method>
+		<method name="_pre_process" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="scene" type="Node" />
+			<description>
+				Pre Process the scene. This function is called right after the scene format loader loaded the scene and no changes have been made.
+			</description>
+		</method>
+		<method name="add_import_option">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Add a specific import option (name and default value only). This function can only be called from [method _get_import_options] and [method _get_internal_import_options].
+			</description>
+		</method>
+		<method name="add_import_option_advanced">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="Variant.Type" />
+			<param index="1" name="name" type="String" />
+			<param index="2" name="default_value" type="Variant" />
+			<param index="3" name="hint" type="int" enum="PropertyHint" default="0" />
+			<param index="4" name="hint_string" type="String" default="&quot;&quot;" />
+			<param index="5" name="usage_flags" type="int" default="6" />
+			<description>
+				Add a specific import option. This function can only be called from [method _get_import_options] and [method _get_internal_import_options].
+			</description>
+		</method>
+		<method name="get_option_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Query the value of an option. This function can only be called from those querying visibility, or processing.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="INTERNAL_IMPORT_CATEGORY_NODE" value="0" enum="InternalImportCategory">
+		</constant>
+		<constant name="INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE" value="1" enum="InternalImportCategory">
+		</constant>
+		<constant name="INTERNAL_IMPORT_CATEGORY_MESH" value="2" enum="InternalImportCategory">
+		</constant>
+		<constant name="INTERNAL_IMPORT_CATEGORY_MATERIAL" value="3" enum="InternalImportCategory">
+		</constant>
+		<constant name="INTERNAL_IMPORT_CATEGORY_ANIMATION" value="4" enum="InternalImportCategory">
+		</constant>
+		<constant name="INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE" value="5" enum="InternalImportCategory">
+		</constant>
+		<constant name="INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE" value="6" enum="InternalImportCategory">
+		</constant>
+		<constant name="INTERNAL_IMPORT_CATEGORY_MAX" value="7" enum="InternalImportCategory">
+		</constant>
+	</constants>
+</class>

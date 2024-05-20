@@ -4,7 +4,7 @@
  *
  *   OpenType GSUB table validation (body).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -61,7 +61,8 @@
       {
         FT_Bytes  Coverage;
         FT_Int    DeltaGlyphID;
-        FT_Long   idx;
+        FT_UInt   first_cov, last_cov;
+        FT_UInt   first_idx, last_idx;
 
 
         OTV_LIMIT_CHECK( 4 );
@@ -70,12 +71,21 @@
 
         otv_Coverage_validate( Coverage, otvalid, -1 );
 
-        idx = (FT_Long)otv_Coverage_get_first( Coverage ) + DeltaGlyphID;
-        if ( idx < 0 )
+        first_cov = otv_Coverage_get_first( Coverage );
+        last_cov  = otv_Coverage_get_last( Coverage );
+
+        /* These additions are modulo 65536. */
+        first_idx = (FT_UInt)( (FT_Int)first_cov + DeltaGlyphID ) & 0xFFFFU;
+        last_idx  = (FT_UInt)( (FT_Int)last_cov + DeltaGlyphID ) & 0xFFFFU;
+
+        /* Since the maximum number of glyphs is 2^16 - 1 = 65535, */
+        /* the largest possible glyph index is 65534.  For this    */
+        /* reason there can't be a wrap-around region, which would */
+        /* imply the use of the invalid glyph index 65535.         */
+        if ( first_idx > last_idx )
           FT_INVALID_DATA;
 
-        idx = (FT_Long)otv_Coverage_get_last( Coverage ) + DeltaGlyphID;
-        if ( (FT_UInt)idx >= otvalid->glyph_count )
+        if ( last_idx >= otvalid->glyph_count )
           FT_INVALID_DATA;
       }
       break;

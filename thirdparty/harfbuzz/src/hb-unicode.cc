@@ -165,11 +165,11 @@ hb_unicode_funcs_get_default ()
 
 #if !defined(HB_NO_UNICODE_FUNCS) && defined(HB_UNICODE_FUNCS_NIL)
 #error "Could not find any Unicode functions implementation, you have to provide your own"
-#error "Consider building hb-ucd.cc.  If you absolutely want to build without any, check the code."
+#error "Consider building hb-ucd.cc.  If you absolutely want to build without any, define HB_NO_UNICODE_FUNCS."
 #endif
 
 /**
- * hb_unicode_funcs_create: (Xconstructor)
+ * hb_unicode_funcs_create:
  * @parent: (nullable): Parent Unicode-functions structure
  *
  * Creates a new #hb_unicode_funcs_t structure of Unicode functions.
@@ -268,7 +268,7 @@ hb_unicode_funcs_destroy (hb_unicode_funcs_t *ufuncs)
 
   hb_unicode_funcs_destroy (ufuncs->parent);
 
-  free (ufuncs);
+  hb_free (ufuncs);
 }
 
 /**
@@ -281,7 +281,7 @@ hb_unicode_funcs_destroy (hb_unicode_funcs_t *ufuncs)
  *
  * Attaches a user-data key/data pair to the specified Unicode-functions structure. 
  *
- * Return value: %true if success, %false otherwise
+ * Return value: `true` if success, `false` otherwise
  *
  * Since: 0.9.2
  **/
@@ -308,8 +308,8 @@ hb_unicode_funcs_set_user_data (hb_unicode_funcs_t *ufuncs,
  * Since: 0.9.2
  **/
 void *
-hb_unicode_funcs_get_user_data (hb_unicode_funcs_t *ufuncs,
-				hb_user_data_key_t *key)
+hb_unicode_funcs_get_user_data (const hb_unicode_funcs_t *ufuncs,
+				hb_user_data_key_t       *key)
 {
   return hb_object_get_user_data (ufuncs, key);
 }
@@ -340,7 +340,7 @@ hb_unicode_funcs_make_immutable (hb_unicode_funcs_t *ufuncs)
  * Tests whether the specified Unicode-functions structure
  * is immutable.
  *
- * Return value: %true if @ufuncs is immutable, %false otherwise
+ * Return value: `true` if @ufuncs is immutable, `false` otherwise
  *
  * Since: 0.9.2
  **/
@@ -377,20 +377,30 @@ hb_unicode_funcs_set_##name##_func (hb_unicode_funcs_t		   *ufuncs,	\
 				    hb_destroy_func_t		    destroy)	\
 {										\
   if (hb_object_is_immutable (ufuncs))						\
-    return;									\
+    goto fail;									\
+										\
+  if (!func)									\
+  {										\
+    if (destroy)								\
+      destroy (user_data);							\
+    destroy = nullptr;								\
+    user_data = ufuncs->parent->user_data.name;					\
+  }										\
 										\
   if (ufuncs->destroy.name)							\
     ufuncs->destroy.name (ufuncs->user_data.name);				\
 										\
-  if (func) {									\
+  if (func)									\
     ufuncs->func.name = func;							\
-    ufuncs->user_data.name = user_data;						\
-    ufuncs->destroy.name = destroy;						\
-  } else {									\
+  else										\
     ufuncs->func.name = ufuncs->parent->func.name;				\
-    ufuncs->user_data.name = ufuncs->parent->user_data.name;			\
-    ufuncs->destroy.name = nullptr;						\
-  }										\
+  ufuncs->user_data.name = user_data;						\
+  ufuncs->destroy.name = destroy;						\
+  return;									\
+										\
+fail:										\
+  if (destroy)									\
+    destroy (user_data);							\
 }
 
 HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS
@@ -421,7 +431,7 @@ HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS_SIMPLE
  * Calls the composition function of the specified
  * Unicode-functions structure @ufuncs.
  *
- * Return value: %true if @a and @b composed, %false otherwise
+ * Return value: `true` if @a and @b composed, `false` otherwise
  *
  * Since: 0.9.2
  **/
@@ -446,7 +456,7 @@ hb_unicode_compose (hb_unicode_funcs_t *ufuncs,
  * Calls the decomposition function of the specified
  * Unicode-functions structure @ufuncs.
  *
- * Return value: %true if @ab was decomposed, %false otherwise
+ * Return value: `true` if @ab was decomposed, `false` otherwise
  *
  * Since: 0.9.2
  **/

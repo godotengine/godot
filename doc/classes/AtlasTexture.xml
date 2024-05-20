@@ -1,30 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AtlasTexture" inherits="Texture2D" version="4.0">
+<class name="AtlasTexture" inherits="Texture2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Crops out one part of a texture, such as a texture from a texture atlas.
+		A texture that crops out part of another Texture2D.
 	</brief_description>
 	<description>
-		[Texture2D] resource that crops out one part of the [member atlas] texture, defined by [member region]. The main use case is cropping out textures from a texture atlas, which is a big texture file that packs multiple smaller textures. Consists of a [Texture2D] for the [member atlas], a [member region] that defines the area of [member atlas] to use, and a [member margin] that defines the border width.
-		[AtlasTexture] cannot be used in an [AnimatedTexture], cannot be tiled in nodes such as [TextureRect], and does not work properly if used inside of other [AtlasTexture] resources. Multiple [AtlasTexture] resources can be used to crop multiple textures from the atlas. Using a texture atlas helps to optimize video memory costs and render calls compared to using multiple small files.
+		[Texture2D] resource that draws only part of its [member atlas] texture, as defined by the [member region]. An additional [member margin] can also be set, which is useful for small adjustments.
+		Multiple [AtlasTexture] resources can be cropped from the same [member atlas]. Packing many smaller textures into a singular large texture helps to optimize video memory costs and render calls.
+		[b]Note:[/b] [AtlasTexture] cannot be used in an [AnimatedTexture], and may not tile properly in nodes such as [TextureRect], when inside other [AtlasTexture] resources.
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="atlas" type="Texture2D" setter="set_atlas" getter="get_atlas">
-			The texture that contains the atlas. Can be any [Texture2D] subtype.
+			The texture that contains the atlas. Can be any type inheriting from [Texture2D], including another [AtlasTexture].
 		</member>
 		<member name="filter_clip" type="bool" setter="set_filter_clip" getter="has_filter_clip" default="false">
-			If [code]true[/code], clips the area outside of the region to avoid bleeding of the surrounding texture pixels.
+			If [code]true[/code], the area outside of the [member region] is clipped to avoid bleeding of the surrounding texture pixels.
 		</member>
 		<member name="margin" type="Rect2" setter="set_margin" getter="get_margin" default="Rect2(0, 0, 0, 0)">
-			The margin around the region. The [Rect2]'s [member Rect2.size] parameter ("w" and "h" in the editor) resizes the texture so it fits within the margin.
+			The margin around the [member region]. Useful for small adjustments. If the [member Rect2.size] of this property ("w" and "h" in the editor) is set, the drawn texture is resized to fit within the margin.
 		</member>
 		<member name="region" type="Rect2" setter="set_region" getter="get_region" default="Rect2(0, 0, 0, 0)">
-			The AtlasTexture's used region.
+			The region used to draw the [member atlas].
 		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -12,14 +12,16 @@
 #ifndef WEBP_DSP_NEON_H_
 #define WEBP_DSP_NEON_H_
 
-#include <arm_neon.h>
-
 #include "src/dsp/dsp.h"
+
+#if defined(WEBP_USE_NEON)
+
+#include <arm_neon.h>
 
 // Right now, some intrinsics functions seem slower, so we disable them
 // everywhere except newer clang/gcc or aarch64 where the inline assembly is
 // incompatible.
-#if LOCAL_CLANG_PREREQ(3,8) || LOCAL_GCC_PREREQ(4,9) || defined(__aarch64__)
+#if LOCAL_CLANG_PREREQ(3, 8) || LOCAL_GCC_PREREQ(4, 9) || WEBP_AARCH64
 #define WEBP_USE_INTRINSICS   // use intrinsics when possible
 #endif
 
@@ -44,7 +46,7 @@
 // if using intrinsics, this flag avoids some functions that make gcc-4.6.3
 // crash ("internal compiler error: in immed_double_const, at emit-rtl.").
 // (probably similar to gcc.gnu.org/bugzilla/show_bug.cgi?id=48183)
-#if !(LOCAL_CLANG_PREREQ(3,8) || LOCAL_GCC_PREREQ(4,8) || defined(__aarch64__))
+#if !(LOCAL_CLANG_PREREQ(3, 8) || LOCAL_GCC_PREREQ(4, 8) || WEBP_AARCH64)
 #define WORK_AROUND_GCC
 #endif
 
@@ -98,4 +100,5 @@ static WEBP_INLINE int32x4x4_t Transpose4x4_NEON(const int32x4x4_t rows) {
 } while (0)
 #endif
 
+#endif  // WEBP_USE_NEON
 #endif  // WEBP_DSP_NEON_H_

@@ -1,0 +1,6 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR
+>> on function: test()
+>> runtime/errors/constant_array_is_deep.gd
+>> 6
+>> Invalid assignment on read-only value (on base: 'Dictionary').

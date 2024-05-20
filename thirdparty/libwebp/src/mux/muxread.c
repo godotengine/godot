@@ -21,20 +21,23 @@
 
 // Handy MACRO.
 #define SWITCH_ID_LIST(INDEX, LIST)                                           \
-  if (idx == (INDEX)) {                                                       \
-    const WebPChunk* const chunk = ChunkSearchList((LIST), nth,               \
-                                                   kChunks[(INDEX)].tag);     \
-    if (chunk) {                                                              \
-      *data = chunk->data_;                                                   \
-      return WEBP_MUX_OK;                                                     \
-    } else {                                                                  \
-      return WEBP_MUX_NOT_FOUND;                                              \
+  do {                                                                        \
+    if (idx == (INDEX)) {                                                     \
+      const WebPChunk* const chunk = ChunkSearchList((LIST), nth,             \
+                                                     kChunks[(INDEX)].tag);   \
+      if (chunk) {                                                            \
+        *data = chunk->data_;                                                 \
+        return WEBP_MUX_OK;                                                   \
+      } else {                                                                \
+        return WEBP_MUX_NOT_FOUND;                                            \
+      }                                                                       \
     }                                                                         \
-  }
+  } while (0)
 
 static WebPMuxError MuxGet(const WebPMux* const mux, CHUNK_INDEX idx,
                            uint32_t nth, WebPData* const data) {
   assert(mux != NULL);
+  assert(idx != IDX_LAST_CHUNK);
   assert(!IsWPI(kChunks[idx].id));
   WebPDataInit(data);
 
@@ -56,7 +59,7 @@ static WebPMuxError ChunkVerifyAndAssign(WebPChunk* chunk,
   uint32_t chunk_size;
   WebPData chunk_data;
 
-  // Sanity checks.
+  // Correctness checks.
   if (data_size < CHUNK_HEADER_SIZE) return WEBP_MUX_NOT_ENOUGH_DATA;
   chunk_size = GetLE32(data + TAG_SIZE);
   if (chunk_size > MAX_CHUNK_PAYLOAD) return WEBP_MUX_BAD_DATA;
@@ -116,9 +119,12 @@ static int MuxImageParse(const WebPChunk* const chunk, int copy_data,
     // Each of ANMF chunk contain a header at the beginning. So, its size should
     // be at least 'hdr_size'.
     if (size < hdr_size) goto Fail;
-    ChunkAssignData(&subchunk, &temp, copy_data, chunk->tag_);
+    if (ChunkAssignData(&subchunk, &temp, copy_data,
+                        chunk->tag_) != WEBP_MUX_OK) {
+      goto Fail;
+    }
   }
-  ChunkSetHead(&subchunk, &wpi->header_);
+  if (ChunkSetHead(&subchunk, &wpi->header_) != WEBP_MUX_OK) goto Fail;
   wpi->is_partial_ = 1;  // Waiting for ALPH and/or VP8/VP8L chunks.
 
   // Rest of the chunks.
@@ -155,7 +161,6 @@ static int MuxImageParse(const WebPChunk* const chunk, int copy_data,
         break;
       default:
         goto Fail;
-        break;
     }
     subchunk_size = ChunkDiskSize(&subchunk);
     bytes += subchunk_size;
@@ -187,7 +192,6 @@ WebPMux* WebPMuxCreateInternal(const WebPData* bitstream, int copy_data,
   WebPChunk** chunk_list_ends[WEBP_CHUNK_NIL + 1] = { NULL };
   ChunkInit(&chunk);
 
-  // Sanity checks.
   if (WEBP_ABI_IS_INCOMPATIBLE(version, WEBP_MUX_ABI_VERSION)) {
     return NULL;  // version mismatch
   }
@@ -264,7 +268,6 @@ WebPMux* WebPMuxCreateInternal(const WebPData* bitstream, int copy_data,
         if (!MuxImageParse(&chunk, copy_data, wpi)) goto Err;
         ChunkRelease(&chunk);
         goto PushImage;
-        break;
       default:  // A non-image chunk.
         if (wpi->is_partial_) goto Err;  // Encountered a non-image chunk before
                                          // getting all chunks of an image.
@@ -429,6 +432,7 @@ WebPMuxError WebPMuxGetChunk(const WebPMux* mux, const char fourcc[4],
     return WEBP_MUX_INVALID_ARGUMENT;
   }
   idx = ChunkGetIndexFromFourCC(fourcc);
+  assert(idx != IDX_LAST_CHUNK);
   if (IsWPI(kChunks[idx].id)) {     // An image chunk.
     return WEBP_MUX_INVALID_ARGUMENT;
   } else if (idx != IDX_UNKNOWN) {  // A known chunk type.
@@ -483,7 +487,6 @@ WebPMuxError WebPMuxGetFrame(
   WebPMuxError err;
   WebPMuxImage* wpi;
 
-  // Sanity checks.
   if (mux == NULL || frame == NULL) {
     return WEBP_MUX_INVALID_ARGUMENT;
   }

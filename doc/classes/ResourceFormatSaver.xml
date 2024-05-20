@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ResourceFormatSaver" inherits="RefCounted" version="4.0">
+<class name="ResourceFormatSaver" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Saves a specific resource type to a file.
 	</brief_description>
@@ -10,39 +10,46 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_recognized_extensions" qualifiers="virtual">
-			<return type="PackedStringArray">
-			</return>
-			<argument index="0" name="resource" type="Resource">
-			</argument>
+		<method name="_get_recognized_extensions" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="resource" type="Resource" />
 			<description>
 				Returns the list of extensions available for saving the resource object, provided it is recognized (see [method _recognize]).
 			</description>
 		</method>
-		<method name="_recognize" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="resource" type="Resource">
-			</argument>
+		<method name="_recognize" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="resource" type="Resource" />
 			<description>
 				Returns whether the given resource object can be saved by this saver.
 			</description>
 		</method>
-		<method name="_save" qualifiers="virtual">
-			<return type="int">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="resource" type="Resource">
-			</argument>
-			<argument index="2" name="flags" type="int">
-			</argument>
+		<method name="_recognize_path" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="resource" type="Resource" />
+			<param index="1" name="path" type="String" />
 			<description>
-				Saves the given resource object to a file at the target [code]path[/code]. [code]flags[/code] is a bitmask composed with [enum ResourceSaver.SaverFlags] constants.
+				Returns [code]true[/code] if this saver handles a given save path and [code]false[/code] otherwise.
+				If this method is not implemented, the default behavior returns whether the path's extension is within the ones provided by [method _get_recognized_extensions].
+			</description>
+		</method>
+		<method name="_save" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="resource" type="Resource" />
+			<param index="1" name="path" type="String" />
+			<param index="2" name="flags" type="int" />
+			<description>
+				Saves the given resource object to a file at the target [param path]. [param flags] is a bitmask composed with [enum ResourceSaver.SaverFlags] constants.
 				Returns [constant OK] on success, or an [enum Error] constant in case of failure.
 			</description>
 		</method>
+		<method name="_set_uid" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="uid" type="int" />
+			<description>
+				Sets a new UID for the resource at the given [param path]. Returns [constant OK] on success, or an [enum Error] constant in case of failure.
+			</description>
+		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

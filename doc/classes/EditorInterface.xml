@@ -1,277 +1,408 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInterface" inherits="Node" version="4.0">
+<class name="EditorInterface" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Godot editor's interface.
 	</brief_description>
 	<description>
-		EditorInterface gives you control over Godot editor's window. It allows customizing the window, saving and (re-)loading scenes, rendering mesh previews, inspecting and editing resources and objects, and provides access to [EditorSettings], [EditorFileSystem], [EditorResourcePreview], [ScriptEditor], the editor viewport, and information about scenes.
-		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorPlugin.get_editor_interface].
+		[EditorInterface] gives you control over Godot editor's window. It allows customizing the window, saving and (re-)loading scenes, rendering mesh previews, inspecting and editing resources and objects, and provides access to [EditorSettings], [EditorFileSystem], [EditorResourcePreview], [ScriptEditor], the editor viewport, and information about scenes.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton directly by its name.
+		[codeblocks]
+		[gdscript]
+		var editor_settings = EditorInterface.get_editor_settings()
+		[/gdscript]
+		[csharp]
+		// In C# you can access it via the static Singleton property.
+		EditorSettings settings = EditorInterface.Singleton.GetEditorSettings();
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="edit_node">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="Node">
-			</argument>
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Edits the given [Node]. The node will be also selected if it's inside the scene tree.
 			</description>
 		</method>
 		<method name="edit_resource">
-			<return type="void">
-			</return>
-			<argument index="0" name="resource" type="Resource">
-			</argument>
+			<return type="void" />
+			<param index="0" name="resource" type="Resource" />
 			<description>
-				Edits the given [Resource].
+				Edits the given [Resource]. If the resource is a [Script] you can also edit it with [method edit_script] to specify the line and column position.
 			</description>
 		</method>
-		<method name="get_base_control">
-			<return type="Control">
-			</return>
+		<method name="edit_script">
+			<return type="void" />
+			<param index="0" name="script" type="Script" />
+			<param index="1" name="line" type="int" default="-1" />
+			<param index="2" name="column" type="int" default="0" />
+			<param index="3" name="grab_focus" type="bool" default="true" />
+			<description>
+				Edits the given [Script]. The line and column on which to open the script can also be specified. The script will be open with the user-configured editor for the script's language which may be an external editor.
+			</description>
+		</method>
+		<method name="get_base_control" qualifiers="const">
+			<return type="Control" />
 			<description>
 				Returns the main container of Godot editor's window. For example, you can use it to retrieve the size of the container and place your controls accordingly.
+				[b]Warning:[/b] Removing and freeing this node will render the editor useless and may cause a crash.
+			</description>
+		</method>
+		<method name="get_command_palette" qualifiers="const">
+			<return type="EditorCommandPalette" />
+			<description>
+				Returns the editor's [EditorCommandPalette] instance.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
+			</description>
+		</method>
+		<method name="get_current_directory" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the current directory being viewed in the [FileSystemDock]. If a file is selected, its base directory will be returned using [method String.get_base_dir] instead.
+			</description>
+		</method>
+		<method name="get_current_feature_profile" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the currently activated feature profile. If the default profile is currently active, an empty string is returned instead.
+				In order to get a reference to the [EditorFeatureProfile], you must load the feature profile using [method EditorFeatureProfile.load_from_file].
+				[b]Note:[/b] Feature profiles created via the user interface are loaded from the [code]feature_profiles[/code] directory, as a file with the [code].profile[/code] extension. The editor configuration folder can be found by using [method EditorPaths.get_config_dir].
 			</description>
 		</method>
 		<method name="get_current_path" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the current path being viewed in the [FileSystemDock].
 			</description>
 		</method>
-		<method name="get_edited_scene_root">
-			<return type="Node">
-			</return>
+		<method name="get_edited_scene_root" qualifiers="const">
+			<return type="Node" />
 			<description>
 				Returns the edited (current) scene's root [Node].
 			</description>
 		</method>
-		<method name="get_editor_main_control">
-			<return type="Control">
-			</return>
+		<method name="get_editor_main_screen" qualifiers="const">
+			<return type="VBoxContainer" />
 			<description>
-				Returns the main editor control. Use this as a parent for main screens.
-				[b]Note:[/b] This returns the main editor control containing the whole editor, not the 2D or 3D viewports specifically.
+				Returns the editor control responsible for main screen plugins and tools. Use it with plugins that implement [method EditorPlugin._has_main_screen].
+				[b]Note:[/b] This node is a [VBoxContainer], which means that if you add a [Control] child to it, you need to set the child's [member Control.size_flags_vertical] to [constant Control.SIZE_EXPAND_FILL] to make it use the full available space.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
-		<method name="get_editor_paths">
-			<return type="EditorPaths">
-			</return>
+		<method name="get_editor_paths" qualifiers="const">
+			<return type="EditorPaths" />
 			<description>
+				Returns the [EditorPaths] singleton.
 			</description>
 		</method>
 		<method name="get_editor_scale" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the actual scale of the editor UI ([code]1.0[/code] being 100% scale). This can be used to adjust position and dimensions of the UI added by plugins.
 				[b]Note:[/b] This value is set via the [code]interface/editor/display_scale[/code] and [code]interface/editor/custom_display_scale[/code] editor settings. Editor must be restarted for changes to be properly applied.
 			</description>
 		</method>
-		<method name="get_editor_settings">
-			<return type="EditorSettings">
-			</return>
+		<method name="get_editor_settings" qualifiers="const">
+			<return type="EditorSettings" />
 			<description>
 				Returns the editor's [EditorSettings] instance.
 			</description>
 		</method>
-		<method name="get_file_system_dock">
-			<return type="FileSystemDock">
-			</return>
+		<method name="get_editor_theme" qualifiers="const">
+			<return type="Theme" />
+			<description>
+				Returns the editor's [Theme].
+				[b]Note:[/b] When creating custom editor UI, prefer accessing theme items directly from your GUI nodes using the [code]get_theme_*[/code] methods.
+			</description>
+		</method>
+		<method name="get_editor_viewport_2d" qualifiers="const">
+			<return type="SubViewport" />
+			<description>
+				Returns the 2D editor [SubViewport]. It does not have a camera. Instead, the view transforms are done directly and can be accessed with [member Viewport.global_canvas_transform].
+			</description>
+		</method>
+		<method name="get_editor_viewport_3d" qualifiers="const">
+			<return type="SubViewport" />
+			<param index="0" name="idx" type="int" default="0" />
+			<description>
+				Returns the specified 3D editor [SubViewport], from [code]0[/code] to [code]3[/code]. The viewport can be used to access the active editor cameras with [method Viewport.get_camera_3d].
+			</description>
+		</method>
+		<method name="get_file_system_dock" qualifiers="const">
+			<return type="FileSystemDock" />
 			<description>
 				Returns the editor's [FileSystemDock] instance.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
 		<method name="get_inspector" qualifiers="const">
-			<return type="EditorInspector">
-			</return>
+			<return type="EditorInspector" />
 			<description>
 				Returns the editor's [EditorInspector] instance.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
 		<method name="get_open_scenes" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="PackedStringArray" />
 			<description>
 				Returns an [Array] with the file paths of the currently opened scenes.
 			</description>
 		</method>
 		<method name="get_playing_scene" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the name of the scene that is being played. If no scene is currently being played, returns an empty string.
 			</description>
 		</method>
-		<method name="get_resource_filesystem">
-			<return type="EditorFileSystem">
-			</return>
+		<method name="get_resource_filesystem" qualifiers="const">
+			<return type="EditorFileSystem" />
 			<description>
 				Returns the editor's [EditorFileSystem] instance.
 			</description>
 		</method>
-		<method name="get_resource_previewer">
-			<return type="EditorResourcePreview">
-			</return>
+		<method name="get_resource_previewer" qualifiers="const">
+			<return type="EditorResourcePreview" />
 			<description>
 				Returns the editor's [EditorResourcePreview] instance.
 			</description>
 		</method>
-		<method name="get_script_editor">
-			<return type="ScriptEditor">
-			</return>
+		<method name="get_script_editor" qualifiers="const">
+			<return type="ScriptEditor" />
 			<description>
 				Returns the editor's [ScriptEditor] instance.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
-		<method name="get_selected_path" qualifiers="const">
-			<return type="String">
-			</return>
+		<method name="get_selected_paths" qualifiers="const">
+			<return type="PackedStringArray" />
 			<description>
-				Returns the path of the directory currently selected in the [FileSystemDock]. If a file is selected, its base directory will be returned using [method String.get_base_dir] instead.
+				Returns an array containing the paths of the currently selected files (and directories) in the [FileSystemDock].
 			</description>
 		</method>
-		<method name="get_selection">
-			<return type="EditorSelection">
-			</return>
+		<method name="get_selection" qualifiers="const">
+			<return type="EditorSelection" />
 			<description>
 				Returns the editor's [EditorSelection] instance.
 			</description>
 		</method>
 		<method name="inspect_object">
-			<return type="void">
-			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="for_property" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="2" name="inspector_only" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="for_property" type="String" default="&quot;&quot;" />
+			<param index="2" name="inspector_only" type="bool" default="false" />
 			<description>
-				Shows the given property on the given [code]object[/code] in the editor's Inspector dock. If [code]inspector_only[/code] is [code]true[/code], plugins will not attempt to edit [code]object[/code].
+				Shows the given property on the given [param object] in the editor's Inspector dock. If [param inspector_only] is [code]true[/code], plugins will not attempt to edit [param object].
+			</description>
+		</method>
+		<method name="is_multi_window_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if multiple window support is enabled in the editor. Multiple window support is enabled if [i]all[/i] of these statements are true:
+				- [member EditorSettings.interface/multi_window/enable] is [code]true[/code].
+				- [member EditorSettings.interface/editor/single_window_mode] is [code]false[/code].
+				- [member Viewport.gui_embed_subwindows] is [code]false[/code]. This is forced to [code]true[/code] on platforms that don't support multiple windows such as Web, or when the [code]--single-window[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] is used.
 			</description>
 		</method>
 		<method name="is_playing_scene" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if a scene is currently being played, [code]false[/code] otherwise. Paused scenes are considered as being played.
 			</description>
 		</method>
 		<method name="is_plugin_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="plugin" type="String">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="plugin" type="String" />
 			<description>
-				Returns [code]true[/code] if the specified [code]plugin[/code] is enabled. The plugin name is the same as its directory name.
+				Returns [code]true[/code] if the specified [param plugin] is enabled. The plugin name is the same as its directory name.
 			</description>
 		</method>
 		<method name="make_mesh_previews">
-			<return type="Array">
-			</return>
-			<argument index="0" name="meshes" type="Array">
-			</argument>
-			<argument index="1" name="preview_size" type="int">
-			</argument>
+			<return type="Texture2D[]" />
+			<param index="0" name="meshes" type="Mesh[]" />
+			<param index="1" name="preview_size" type="int" />
 			<description>
 				Returns mesh previews rendered at the given size as an [Array] of [Texture2D]s.
 			</description>
 		</method>
+		<method name="mark_scene_as_unsaved">
+			<return type="void" />
+			<description>
+				Marks the current scene tab as unsaved.
+			</description>
+		</method>
 		<method name="open_scene_from_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="scene_filepath" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="scene_filepath" type="String" />
 			<description>
 				Opens the scene at the given path.
 			</description>
 		</method>
 		<method name="play_current_scene">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Plays the currently active scene.
 			</description>
 		</method>
 		<method name="play_custom_scene">
-			<return type="void">
-			</return>
-			<argument index="0" name="scene_filepath" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="scene_filepath" type="String" />
 			<description>
 				Plays the scene specified by its filepath.
 			</description>
 		</method>
 		<method name="play_main_scene">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Plays the main scene.
 			</description>
 		</method>
+		<method name="popup_dialog">
+			<return type="void" />
+			<param index="0" name="dialog" type="Window" />
+			<param index="1" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
+			<description>
+				Pops up the [param dialog] in the editor UI with [method Window.popup_exclusive]. The dialog must have no current parent, otherwise the method fails.
+				See also [method Window.set_unparent_when_invisible].
+			</description>
+		</method>
+		<method name="popup_dialog_centered">
+			<return type="void" />
+			<param index="0" name="dialog" type="Window" />
+			<param index="1" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<description>
+				Pops up the [param dialog] in the editor UI with [method Window.popup_exclusive_centered]. The dialog must have no current parent, otherwise the method fails.
+				See also [method Window.set_unparent_when_invisible].
+			</description>
+		</method>
+		<method name="popup_dialog_centered_clamped">
+			<return type="void" />
+			<param index="0" name="dialog" type="Window" />
+			<param index="1" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<param index="2" name="fallback_ratio" type="float" default="0.75" />
+			<description>
+				Pops up the [param dialog] in the editor UI with [method Window.popup_exclusive_centered_clamped]. The dialog must have no current parent, otherwise the method fails.
+				See also [method Window.set_unparent_when_invisible].
+			</description>
+		</method>
+		<method name="popup_dialog_centered_ratio">
+			<return type="void" />
+			<param index="0" name="dialog" type="Window" />
+			<param index="1" name="ratio" type="float" default="0.8" />
+			<description>
+				Pops up the [param dialog] in the editor UI with [method Window.popup_exclusive_centered_ratio]. The dialog must have no current parent, otherwise the method fails.
+				See also [method Window.set_unparent_when_invisible].
+			</description>
+		</method>
+		<method name="popup_node_selector">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<param index="1" name="valid_types" type="StringName[]" default="[]" />
+			<description>
+				Pops up an editor dialog for selecting a [Node] from the edited scene. The [param callback] must take a single argument of type [NodePath]. It is called on the selected [NodePath] or the empty path [code]^""[/code] if the dialog is canceled. If [param valid_types] is provided, the dialog will only show Nodes that match one of the listed Node types.
+				[b]Example:[/b]
+				[codeblock]
+				func _ready():
+				    if Engine.is_editor_hint():
+				        EditorInterface.popup_node_selector(_on_node_selected, ["Button"])
+
+				func _on_node_selected(node_path):
+				    if node_path.is_empty():
+				        print("node selection canceled")
+				    else:
+				        print("selected ", node_path)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="popup_property_selector">
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="callback" type="Callable" />
+			<param index="2" name="type_filter" type="PackedInt32Array" default="PackedInt32Array()" />
+			<description>
+				Pops up an editor dialog for selecting properties from [param object]. The [param callback] must take a single argument of type [NodePath]. It is called on the selected property path (see [method NodePath.get_as_property_path]) or the empty path [code]^""[/code] if the dialog is canceled. If [param type_filter] is provided, the dialog will only show properties that match one of the listed [enum Variant.Type] values.
+				[b]Example:[/b]
+				[codeblock]
+				func _ready():
+				    if Engine.is_editor_hint():
+				        EditorInterface.popup_property_selector(this, _on_property_selected, [TYPE_INT])
+
+				func _on_property_selected(property_path):
+				    if property_path.is_empty():
+				        print("property selection canceled")
+				    else:
+				        print("selected ", property_path)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="reload_scene_from_path">
-			<return type="void">
-			</return>
-			<argument index="0" name="scene_filepath" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="scene_filepath" type="String" />
 			<description>
 				Reloads the scene at the given path.
 			</description>
 		</method>
-		<method name="save_scene">
-			<return type="int" enum="Error">
-			</return>
+		<method name="restart_editor">
+			<return type="void" />
+			<param index="0" name="save" type="bool" default="true" />
 			<description>
-				Saves the scene. Returns either [code]OK[/code] or [code]ERR_CANT_CREATE[/code] (see [@GlobalScope] constants).
+				Restarts the editor. This closes the editor and then opens the same project. If [param save] is [code]true[/code], the project will be saved before restarting.
+			</description>
+		</method>
+		<method name="save_all_scenes">
+			<return type="void" />
+			<description>
+				Saves all opened scenes in the editor.
+			</description>
+		</method>
+		<method name="save_scene">
+			<return type="int" enum="Error" />
+			<description>
+				Saves the currently active scene. Returns either [constant OK] or [constant ERR_CANT_CREATE].
 			</description>
 		</method>
 		<method name="save_scene_as">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="with_preview" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="with_preview" type="bool" default="true" />
 			<description>
-				Saves the scene as a file at [code]path[/code].
+				Saves the currently active scene as a file at [param path].
 			</description>
 		</method>
 		<method name="select_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="file" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="file" type="String" />
 			<description>
-				Selects the file, with the path provided by [code]file[/code], in the FileSystem dock.
+				Selects the file, with the path provided by [param file], in the FileSystem dock.
+			</description>
+		</method>
+		<method name="set_current_feature_profile">
+			<return type="void" />
+			<param index="0" name="profile_name" type="String" />
+			<description>
+				Selects and activates the specified feature profile with the given [param profile_name]. Set [param profile_name] to an empty string to reset to the default feature profile.
+				A feature profile can be created programmatically using the [EditorFeatureProfile] class.
+				[b]Note:[/b] The feature profile that gets activated must be located in the [code]feature_profiles[/code] directory, as a file with the [code].profile[/code] extension. If a profile could not be found, an error occurs. The editor configuration folder can be found by using [method EditorPaths.get_config_dir].
 			</description>
 		</method>
 		<method name="set_main_screen_editor">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="String" />
 			<description>
-				Sets the editor's current main screen to the one specified in [code]name[/code]. [code]name[/code] must match the text of the tab in question exactly ([code]2D[/code], [code]3D[/code], [code]Script[/code], [code]AssetLib[/code]).
+				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the title of the tab in question exactly (e.g. [code]2D[/code], [code]3D[/code], [code skip-lint]Script[/code], or [code]AssetLib[/code] for default tabs).
 			</description>
 		</method>
 		<method name="set_plugin_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="plugin" type="String">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="plugin" type="String" />
+			<param index="1" name="enabled" type="bool" />
 			<description>
 				Sets the enabled status of a plugin. The plugin name is the same as its directory name.
 			</description>
 		</method>
 		<method name="stop_playing_scene">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Stops the scene that is currently playing.
 			</description>
@@ -281,7 +412,8 @@
 		<member name="distraction_free_mode" type="bool" setter="set_distraction_free_mode" getter="is_distraction_free_mode_enabled">
 			If [code]true[/code], enables distraction-free mode which hides side docks to increase the space available for the main view.
 		</member>
+		<member name="movie_maker_enabled" type="bool" setter="set_movie_maker_enabled" getter="is_movie_maker_enabled">
+			If [code]true[/code], the Movie Maker mode is enabled in the editor. See [MovieWriter] for more information.
+		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

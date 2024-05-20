@@ -1,10 +1,9 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -18,32 +17,47 @@ namespace Godot
     public struct Plane : IEquatable<Plane>
     {
         private Vector3 _normal;
+        private real_t _d;
 
         /// <summary>
-        /// The normal of the plane, which must be normalized.
-        /// In the scalar equation of the plane `ax + by + cz = d`, this is
-        /// the vector `(a, b, c)`, where `d` is the <see cref="D"/> property.
+        /// The normal of the plane, which must be a unit vector.
+        /// In the scalar equation of the plane <c>ax + by + cz = d</c>, this is
+        /// the vector <c>(a, b, c)</c>, where <c>d</c> is the <see cref="D"/> property.
         /// </summary>
-        /// <value>Equivalent to `x`, `y`, and `z`.</value>
+        /// <value>Equivalent to <see cref="X"/>, <see cref="Y"/>, and <see cref="Z"/>.</value>
         public Vector3 Normal
         {
-            get { return _normal; }
+            readonly get { return _normal; }
             set { _normal = value; }
+        }
+
+        /// <summary>
+        /// The distance from the origin to the plane (in the direction of
+        /// <see cref="Normal"/>). This value is typically non-negative.
+        /// In the scalar equation of the plane <c>ax + by + cz = d</c>,
+        /// this is <c>d</c>, while the <c>(a, b, c)</c> coordinates are represented
+        /// by the <see cref="Normal"/> property.
+        /// </summary>
+        /// <value>The plane's distance from the origin.</value>
+        public real_t D
+        {
+            readonly get { return _d; }
+            set { _d = value; }
         }
 
         /// <summary>
         /// The X component of the plane's normal vector.
         /// </summary>
         /// <value>Equivalent to <see cref="Normal"/>'s X value.</value>
-        public real_t x
+        public real_t X
         {
-            get
+            readonly get
             {
-                return _normal.x;
+                return _normal.X;
             }
             set
             {
-                _normal.x = value;
+                _normal.X = value;
             }
         }
 
@@ -51,15 +65,15 @@ namespace Godot
         /// The Y component of the plane's normal vector.
         /// </summary>
         /// <value>Equivalent to <see cref="Normal"/>'s Y value.</value>
-        public real_t y
+        public real_t Y
         {
-            get
+            readonly get
             {
-                return _normal.y;
+                return _normal.Y;
             }
             set
             {
-                _normal.y = value;
+                _normal.Y = value;
             }
         }
 
@@ -67,76 +81,59 @@ namespace Godot
         /// The Z component of the plane's normal vector.
         /// </summary>
         /// <value>Equivalent to <see cref="Normal"/>'s Z value.</value>
-        public real_t z
+        public real_t Z
         {
-            get
+            readonly get
             {
-                return _normal.z;
+                return _normal.Z;
             }
             set
             {
-                _normal.z = value;
+                _normal.Z = value;
             }
         }
 
         /// <summary>
-        /// The distance from the origin to the plane (in the direction of
-        /// <see cref="Normal"/>). This value is typically non-negative.
-        /// In the scalar equation of the plane `ax + by + cz = d`,
-        /// this is `d`, while the `(a, b, c)` coordinates are represented
-        /// by the <see cref="Normal"/> property.
-        /// </summary>
-        /// <value>The plane's distance from the origin.</value>
-        public real_t D { get; set; }
-
-        /// <summary>
-        /// The center of the plane, the point where the normal line intersects the plane.
-        /// </summary>
-        /// <value>Equivalent to <see cref="Normal"/> multiplied by `D`.</value>
-        public Vector3 Center
-        {
-            get
-            {
-                return _normal * D;
-            }
-            set
-            {
-                _normal = value.Normalized();
-                D = value.Length();
-            }
-        }
-
-        /// <summary>
-        /// Returns the shortest distance from this plane to the position `point`.
+        /// Returns the shortest distance from this plane to the position <paramref name="point"/>.
         /// </summary>
         /// <param name="point">The position to use for the calculation.</param>
         /// <returns>The shortest distance.</returns>
-        public real_t DistanceTo(Vector3 point)
+        public readonly real_t DistanceTo(Vector3 point)
         {
-            return _normal.Dot(point) - D;
+            return _normal.Dot(point) - _d;
         }
 
         /// <summary>
-        /// Returns true if point is inside the plane.
-        /// Comparison uses a custom minimum epsilon threshold.
+        /// Returns the center of the plane, the point on the plane closest to the origin.
+        /// The point where the normal line going through the origin intersects the plane.
+        /// </summary>
+        /// <value>Equivalent to <see cref="Normal"/> multiplied by <see cref="D"/>.</value>
+        public readonly Vector3 GetCenter()
+        {
+            return _normal * _d;
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if point is inside the plane.
+        /// Comparison uses a custom minimum tolerance threshold.
         /// </summary>
         /// <param name="point">The point to check.</param>
-        /// <param name="epsilon">The tolerance threshold.</param>
-        /// <returns>A bool for whether or not the plane has the point.</returns>
-        public bool HasPoint(Vector3 point, real_t epsilon = Mathf.Epsilon)
+        /// <param name="tolerance">The tolerance threshold.</param>
+        /// <returns>A <see langword="bool"/> for whether or not the plane has the point.</returns>
+        public readonly bool HasPoint(Vector3 point, real_t tolerance = Mathf.Epsilon)
         {
-            real_t dist = _normal.Dot(point) - D;
-            return Mathf.Abs(dist) <= epsilon;
+            real_t dist = _normal.Dot(point) - _d;
+            return Mathf.Abs(dist) <= tolerance;
         }
 
         /// <summary>
-        /// Returns the intersection point of the three planes: `b`, `c`,
-        /// and this plane. If no intersection is found, `null` is returned.
+        /// Returns the intersection point of the three planes: <paramref name="b"/>, <paramref name="c"/>,
+        /// and this plane. If no intersection is found, <see langword="null"/> is returned.
         /// </summary>
         /// <param name="b">One of the three planes to use in the calculation.</param>
         /// <param name="c">One of the three planes to use in the calculation.</param>
-        /// <returns>The intersection, or `null` if none is found.</returns>
-        public Vector3? Intersect3(Plane b, Plane c)
+        /// <returns>The intersection, or <see langword="null"/> if none is found.</returns>
+        public readonly Vector3? Intersect3(Plane b, Plane c)
         {
             real_t denom = _normal.Cross(b._normal).Dot(c._normal);
 
@@ -145,22 +142,22 @@ namespace Godot
                 return null;
             }
 
-            Vector3 result = b._normal.Cross(c._normal) * D +
-                                c._normal.Cross(_normal) * b.D +
-                                _normal.Cross(b._normal) * c.D;
+            Vector3 result = (b._normal.Cross(c._normal) * _d) +
+                                (c._normal.Cross(_normal) * b._d) +
+                                (_normal.Cross(b._normal) * c._d);
 
             return result / denom;
         }
 
         /// <summary>
-        /// Returns the intersection point of a ray consisting of the
-        /// position `from` and the direction normal `dir` with this plane.
-        /// If no intersection is found, `null` is returned.
+        /// Returns the intersection point of a ray consisting of the position <paramref name="from"/>
+        /// and the direction normal <paramref name="dir"/> with this plane.
+        /// If no intersection is found, <see langword="null"/> is returned.
         /// </summary>
         /// <param name="from">The start of the ray.</param>
         /// <param name="dir">The direction of the ray, normalized.</param>
-        /// <returns>The intersection, or `null` if none is found.</returns>
-        public Vector3? IntersectRay(Vector3 from, Vector3 dir)
+        /// <returns>The intersection, or <see langword="null"/> if none is found.</returns>
+        public readonly Vector3? IntersectsRay(Vector3 from, Vector3 dir)
         {
             real_t den = _normal.Dot(dir);
 
@@ -169,7 +166,7 @@ namespace Godot
                 return null;
             }
 
-            real_t dist = (_normal.Dot(from) - D) / den;
+            real_t dist = (_normal.Dot(from) - _d) / den;
 
             // This is a ray, before the emitting pos (from) does not exist
             if (dist > Mathf.Epsilon)
@@ -182,13 +179,13 @@ namespace Godot
 
         /// <summary>
         /// Returns the intersection point of a line segment from
-        /// position `begin` to position `end` with this plane.
-        /// If no intersection is found, `null` is returned.
+        /// position <paramref name="begin"/> to position <paramref name="end"/> with this plane.
+        /// If no intersection is found, <see langword="null"/> is returned.
         /// </summary>
         /// <param name="begin">The start of the line segment.</param>
         /// <param name="end">The end of the line segment.</param>
-        /// <returns>The intersection, or `null` if none is found.</returns>
-        public Vector3? IntersectSegment(Vector3 begin, Vector3 end)
+        /// <returns>The intersection, or <see langword="null"/> if none is found.</returns>
+        public readonly Vector3? IntersectsSegment(Vector3 begin, Vector3 end)
         {
             Vector3 segment = begin - end;
             real_t den = _normal.Dot(segment);
@@ -198,7 +195,7 @@ namespace Godot
                 return null;
             }
 
-            real_t dist = (_normal.Dot(begin) - D) / den;
+            real_t dist = (_normal.Dot(begin) - _d) / den;
 
             // Only allow dist to be in the range of 0 to 1, with tolerance.
             if (dist < -Mathf.Epsilon || dist > 1.0f + Mathf.Epsilon)
@@ -210,20 +207,30 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns true if `point` is located above the plane.
+        /// Returns <see langword="true"/> if this plane is finite, by calling
+        /// <see cref="Mathf.IsFinite(real_t)"/> on each component.
+        /// </summary>
+        /// <returns>Whether this vector is finite or not.</returns>
+        public readonly bool IsFinite()
+        {
+            return _normal.IsFinite() && Mathf.IsFinite(D);
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if <paramref name="point"/> is located above the plane.
         /// </summary>
         /// <param name="point">The point to check.</param>
-        /// <returns>A bool for whether or not the point is above the plane.</returns>
-        public bool IsPointOver(Vector3 point)
+        /// <returns>A <see langword="bool"/> for whether or not the point is above the plane.</returns>
+        public readonly bool IsPointOver(Vector3 point)
         {
-            return _normal.Dot(point) > D;
+            return _normal.Dot(point) > _d;
         }
 
         /// <summary>
         /// Returns the plane scaled to unit length.
         /// </summary>
         /// <returns>A normalized version of the plane.</returns>
-        public Plane Normalized()
+        public readonly Plane Normalized()
         {
             real_t len = _normal.Length();
 
@@ -232,17 +239,17 @@ namespace Godot
                 return new Plane(0, 0, 0, 0);
             }
 
-            return new Plane(_normal / len, D / len);
+            return new Plane(_normal / len, _d / len);
         }
 
         /// <summary>
-        /// Returns the orthogonal projection of `point` into the plane.
+        /// Returns the orthogonal projection of <paramref name="point"/> into the plane.
         /// </summary>
         /// <param name="point">The point to project.</param>
         /// <returns>The projected point.</returns>
-        public Vector3 Project(Vector3 point)
+        public readonly Vector3 Project(Vector3 point)
         {
-            return point - _normal * DistanceTo(point);
+            return point - (_normal * DistanceTo(point));
         }
 
         // Constants
@@ -251,27 +258,28 @@ namespace Godot
         private static readonly Plane _planeXY = new Plane(0, 0, 1, 0);
 
         /// <summary>
-        /// A plane that extends in the Y and Z axes (normal vector points +X).
+        /// A <see cref="Plane"/> that extends in the Y and Z axes (normal vector points +X).
         /// </summary>
-        /// <value>Equivalent to `new Plane(1, 0, 0, 0)`.</value>
+        /// <value>Equivalent to <c>new Plane(1, 0, 0, 0)</c>.</value>
         public static Plane PlaneYZ { get { return _planeYZ; } }
 
         /// <summary>
-        /// A plane that extends in the X and Z axes (normal vector points +Y).
+        /// A <see cref="Plane"/> that extends in the X and Z axes (normal vector points +Y).
         /// </summary>
-        /// <value>Equivalent to `new Plane(0, 1, 0, 0)`.</value>
+        /// <value>Equivalent to <c>new Plane(0, 1, 0, 0)</c>.</value>
         public static Plane PlaneXZ { get { return _planeXZ; } }
 
         /// <summary>
-        /// A plane that extends in the X and Y axes (normal vector points +Z).
+        /// A <see cref="Plane"/> that extends in the X and Y axes (normal vector points +Z).
         /// </summary>
-        /// <value>Equivalent to `new Plane(0, 0, 1, 0)`.</value>
+        /// <value>Equivalent to <c>new Plane(0, 0, 1, 0)</c>.</value>
         public static Plane PlaneXY { get { return _planeXY; } }
 
         /// <summary>
-        /// Constructs a plane from four values. `a`, `b` and `c` become the
+        /// Constructs a <see cref="Plane"/> from four values.
+        /// <paramref name="a"/>, <paramref name="b"/> and <paramref name="c"/> become the
         /// components of the resulting plane's <see cref="Normal"/> vector.
-        /// `d` becomes the plane's distance from the origin.
+        /// <paramref name="d"/> becomes the plane's distance from the origin.
         /// </summary>
         /// <param name="a">The X component of the plane's normal vector.</param>
         /// <param name="b">The Y component of the plane's normal vector.</param>
@@ -280,22 +288,46 @@ namespace Godot
         public Plane(real_t a, real_t b, real_t c, real_t d)
         {
             _normal = new Vector3(a, b, c);
-            this.D = d;
+            _d = d;
         }
 
         /// <summary>
-        /// Constructs a plane from a normal vector and the plane's distance to the origin.
+        /// Constructs a <see cref="Plane"/> from a <paramref name="normal"/> vector.
+        /// The plane will intersect the origin.
         /// </summary>
-        /// <param name="normal">The normal of the plane, must be normalized.</param>
+        /// <param name="normal">The normal of the plane, must be a unit vector.</param>
+        public Plane(Vector3 normal)
+        {
+            _normal = normal;
+            _d = 0;
+        }
+
+        /// <summary>
+        /// Constructs a <see cref="Plane"/> from a <paramref name="normal"/> vector and
+        /// the plane's distance to the origin <paramref name="d"/>.
+        /// </summary>
+        /// <param name="normal">The normal of the plane, must be a unit vector.</param>
         /// <param name="d">The plane's distance from the origin. This value is typically non-negative.</param>
         public Plane(Vector3 normal, real_t d)
         {
-            this._normal = normal;
-            this.D = d;
+            _normal = normal;
+            _d = d;
         }
 
         /// <summary>
-        /// Constructs a plane from the three points, given in clockwise order.
+        /// Constructs a <see cref="Plane"/> from a <paramref name="normal"/> vector and
+        /// a <paramref name="point"/> on the plane.
+        /// </summary>
+        /// <param name="normal">The normal of the plane, must be a unit vector.</param>
+        /// <param name="point">The point on the plane.</param>
+        public Plane(Vector3 normal, Vector3 point)
+        {
+            _normal = normal;
+            _d = _normal.Dot(point);
+        }
+
+        /// <summary>
+        /// Constructs a <see cref="Plane"/> from the three points, given in clockwise order.
         /// </summary>
         /// <param name="v1">The first point.</param>
         /// <param name="v2">The second point.</param>
@@ -304,71 +336,104 @@ namespace Godot
         {
             _normal = (v1 - v3).Cross(v1 - v2);
             _normal.Normalize();
-            D = _normal.Dot(v1);
+            _d = _normal.Dot(v1);
         }
 
+        /// <summary>
+        /// Returns the negative value of the <see cref="Plane"/>.
+        /// This is the same as writing <c>new Plane(-p.Normal, -p.D)</c>.
+        /// This operation flips the direction of the normal vector and
+        /// also flips the distance value, resulting in a Plane that is
+        /// in the same place, but facing the opposite direction.
+        /// </summary>
+        /// <param name="plane">The plane to negate/flip.</param>
+        /// <returns>The negated/flipped plane.</returns>
         public static Plane operator -(Plane plane)
         {
-            return new Plane(-plane._normal, -plane.D);
+            return new Plane(-plane._normal, -plane._d);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the
+        /// <see cref="Plane"/>s are exactly equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left rect.</param>
+        /// <param name="right">The right rect.</param>
+        /// <returns>Whether or not the planes are exactly equal.</returns>
         public static bool operator ==(Plane left, Plane right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if the
+        /// <see cref="Plane"/>s are not equal.
+        /// Note: Due to floating-point precision errors, consider using
+        /// <see cref="IsEqualApprox"/> instead, which is more reliable.
+        /// </summary>
+        /// <param name="left">The left rect.</param>
+        /// <param name="right">The right rect.</param>
+        /// <returns>Whether or not the planes are not equal.</returns>
         public static bool operator !=(Plane left, Plane right)
         {
             return !left.Equals(right);
         }
 
-        public override bool Equals(object obj)
+        /// <summary>
+        /// Returns <see langword="true"/> if this plane and <paramref name="obj"/> are equal.
+        /// </summary>
+        /// <param name="obj">The other object to compare.</param>
+        /// <returns>Whether or not the plane and the other object are exactly equal.</returns>
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
-            if (obj is Plane)
-            {
-                return Equals((Plane)obj);
-            }
-
-            return false;
-        }
-
-        public bool Equals(Plane other)
-        {
-            return _normal == other._normal && D == other.D;
+            return obj is Plane other && Equals(other);
         }
 
         /// <summary>
-        /// Returns true if this plane and `other` are approximately equal, by running
-        /// <see cref="Mathf.IsEqualApprox(real_t, real_t)"/> on each component.
+        /// Returns <see langword="true"/> if this plane and <paramref name="other"/> are equal.
+        /// </summary>
+        /// <param name="other">The other plane to compare.</param>
+        /// <returns>Whether or not the planes are exactly equal.</returns>
+        public readonly bool Equals(Plane other)
+        {
+            return _normal == other._normal && _d == other._d;
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if this plane and <paramref name="other"/> are
+        /// approximately equal, by running <see cref="Mathf.IsEqualApprox(real_t, real_t)"/> on each component.
         /// </summary>
         /// <param name="other">The other plane to compare.</param>
         /// <returns>Whether or not the planes are approximately equal.</returns>
-        public bool IsEqualApprox(Plane other)
+        public readonly bool IsEqualApprox(Plane other)
         {
-            return _normal.IsEqualApprox(other._normal) && Mathf.IsEqualApprox(D, other.D);
+            return _normal.IsEqualApprox(other._normal) && Mathf.IsEqualApprox(_d, other._d);
         }
 
-        public override int GetHashCode()
+        /// <summary>
+        /// Serves as the hash function for <see cref="Plane"/>.
+        /// </summary>
+        /// <returns>A hash code for this plane.</returns>
+        public override readonly int GetHashCode()
         {
-            return _normal.GetHashCode() ^ D.GetHashCode();
+            return HashCode.Combine(_normal, _d);
         }
 
-        public override string ToString()
-        {
-            return String.Format("{0}, {1}", new object[]
-            {
-                _normal.ToString(),
-                D.ToString()
-            });
-        }
+        /// <summary>
+        /// Converts this <see cref="Plane"/> to a string.
+        /// </summary>
+        /// <returns>A string representation of this plane.</returns>
+        public override readonly string ToString() => ToString(null);
 
-        public string ToString(string format)
+        /// <summary>
+        /// Converts this <see cref="Plane"/> to a string with the given <paramref name="format"/>.
+        /// </summary>
+        /// <returns>A string representation of this plane.</returns>
+        public readonly string ToString(string? format)
         {
-            return String.Format("{0}, {1}", new object[]
-            {
-                _normal.ToString(format),
-                D.ToString(format)
-            });
+            return $"{_normal.ToString(format)}, {_d.ToString(format, CultureInfo.InvariantCulture)}";
         }
     }
 }

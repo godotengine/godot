@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsShapeQueryParameters2D" inherits="RefCounted" version="4.0">
+<class name="PhysicsShapeQueryParameters2D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Parameters to be sent to a 2D shape physics query.
+		Provides parameters for [method PhysicsDirectSpaceState2D.intersect_shape].
 	</brief_description>
 	<description>
-		This class contains the shape and other parameters for 2D intersection/collision queries.
+		By changing various properties of this object, such as the shape, you can configure the parameters for [method PhysicsDirectSpaceState2D.intersect_shape].
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
 			If [code]true[/code], the query will take [Area2D]s into account.
@@ -17,11 +15,11 @@
 		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled" default="true">
 			If [code]true[/code], the query will take [PhysicsBody2D]s into account.
 		</member>
-		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="2147483647">
-			The physics layer(s) the query will take into account (as a bitmask). See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="4294967295">
+			The physics layers the query will detect (as a bitmask). By default, all collision layers are detected. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
-		<member name="exclude" type="Array" setter="set_exclude" getter="get_exclude" default="[]">
-			The list of objects or object [RID]s that will be excluded from collisions.
+		<member name="exclude" type="RID[]" setter="set_exclude" getter="get_exclude" default="[]">
+			The list of object [RID]s that will be excluded from collisions. Use [method CollisionObject2D.get_rid] to get the [RID] associated with a [CollisionObject2D]-derived node.
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.0">
 			The collision margin for the shape.
@@ -32,7 +30,7 @@
 		<member name="shape" type="Resource" setter="set_shape" getter="get_shape">
 			The [Shape2D] that will be used for collision/intersection queries. This stores the actual reference which avoids the shape to be released while being used for queries, so always prefer using this over [member shape_rid].
 		</member>
-		<member name="shape_rid" type="RID" setter="set_shape_rid" getter="get_shape_rid">
+		<member name="shape_rid" type="RID" setter="set_shape_rid" getter="get_shape_rid" default="RID()">
 			The queried shape's [RID] that will be used for collision/intersection queries. Use this over [member shape] if you want to optimize for performance using the Servers API:
 				[codeblocks]
 				[gdscript]
@@ -67,6 +65,4 @@
 			The queried shape's transform matrix.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

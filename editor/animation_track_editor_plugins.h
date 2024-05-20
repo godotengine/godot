@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  animation_track_editor_plugins.h                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_track_editor_plugins.h                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef ANIMATION_TRACK_EDITOR_PLUGINS_H
 #define ANIMATION_TRACK_EDITOR_PLUGINS_H
@@ -81,7 +81,7 @@ class AnimationTrackEditSpriteFrame : public AnimationTrackEdit {
 	GDCLASS(AnimationTrackEditSpriteFrame, AnimationTrackEdit);
 
 	ObjectID id;
-	bool is_coords;
+	bool is_coords = false;
 
 public:
 	virtual int get_key_height() const override;
@@ -92,7 +92,7 @@ public:
 	void set_node(Object *p_object);
 	void set_as_coords();
 
-	AnimationTrackEditSpriteFrame() { is_coords = false; }
+	AnimationTrackEditSpriteFrame() {}
 };
 
 class AnimationTrackEditSubAnim : public AnimationTrackEdit {
@@ -114,17 +114,18 @@ class AnimationTrackEditTypeAudio : public AnimationTrackEdit {
 
 	void _preview_changed(ObjectID p_which);
 
-	bool len_resizing;
-	bool len_resizing_start;
-	int len_resizing_index;
-	float len_resizing_from_px;
-	float len_resizing_rel;
+	bool len_resizing = false;
+	bool len_resizing_start = false;
+	int len_resizing_index = 0;
+	float len_resizing_from_px = 0.0f;
+	float len_resizing_rel = 0.0f;
+	bool over_drag_position = false;
 
 protected:
 	static void _bind_methods();
 
 public:
-	virtual void _gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
@@ -133,6 +134,8 @@ public:
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
 	virtual bool is_key_selectable_by_distance() const override;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
+
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	AnimationTrackEditTypeAudio();
 };

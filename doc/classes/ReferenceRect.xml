@@ -1,26 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ReferenceRect" inherits="Control" version="4.0">
+<class name="ReferenceRect" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Reference frame for GUI.
+		A rectangle hint for designing UIs.
 	</brief_description>
 	<description>
-		A rectangle box that displays only a [member border_color] border color around its rectangle. [ReferenceRect] has no fill [Color]. If you need to display a rectangle filled with a solid color, consider using [ColorRect] instead.
+		A rectangle box that displays only a colored border around its rectangle. It is used to visualize the extents of a [Control].
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color(1, 0, 0, 1)">
-			Sets the border [Color] of the [ReferenceRect].
+			Sets the border color of the [ReferenceRect].
 		</member>
 		<member name="border_width" type="float" setter="set_border_width" getter="get_border_width" default="1.0">
 			Sets the border width of the [ReferenceRect]. The border grows both inwards and outwards with respect to the rectangle box.
 		</member>
 		<member name="editor_only" type="bool" setter="set_editor_only" getter="get_editor_only" default="true">
-			If set to [code]true[/code], the [ReferenceRect] will only be visible while in editor. Otherwise, [ReferenceRect] will be visible in game.
+			If [code]true[/code], the [ReferenceRect] will only be visible while in editor. Otherwise, [ReferenceRect] will be visible in the running project.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

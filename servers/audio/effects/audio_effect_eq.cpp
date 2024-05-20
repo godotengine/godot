@@ -1,34 +1,35 @@
-/*************************************************************************/
-/*  audio_effect_eq.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_effect_eq.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_effect_eq.h"
+
 #include "servers/audio_server.h"
 
 void AudioEffectEQInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
@@ -37,7 +38,7 @@ void AudioEffectEQInstance::process(const AudioFrame *p_src_frames, AudioFrame *
 	EQ::BandProcess *proc_r = bands[1].ptrw();
 	float *bgain = gains.ptrw();
 	for (int i = 0; i < band_count; i++) {
-		bgain[i] = Math::db2linear(base->gain[i]);
+		bgain[i] = Math::db_to_linear(base->gain[i]);
 	}
 
 	for (int i = 0; i < p_frame_count; i++) {
@@ -45,14 +46,14 @@ void AudioEffectEQInstance::process(const AudioFrame *p_src_frames, AudioFrame *
 		AudioFrame dst = AudioFrame(0, 0);
 
 		for (int j = 0; j < band_count; j++) {
-			float l = src.l;
-			float r = src.r;
+			float l = src.left;
+			float r = src.right;
 
 			proc_l[j].process_one(l);
 			proc_r[j].process_one(r);
 
-			dst.l += l * bgain[j];
-			dst.r += r * bgain[j];
+			dst.left += l * bgain[j];
+			dst.right += r * bgain[j];
 		}
 
 		p_dst_frames[i] = dst;
@@ -90,9 +91,9 @@ int AudioEffectEQ::get_band_count() const {
 }
 
 bool AudioEffectEQ::_set(const StringName &p_name, const Variant &p_value) {
-	const Map<StringName, int>::Element *E = prop_band_map.find(p_name);
+	HashMap<StringName, int>::ConstIterator E = prop_band_map.find(p_name);
 	if (E) {
-		set_band_gain_db(E->get(), p_value);
+		set_band_gain_db(E->value, p_value);
 		return true;
 	}
 
@@ -100,9 +101,9 @@ bool AudioEffectEQ::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool AudioEffectEQ::_get(const StringName &p_name, Variant &r_ret) const {
-	const Map<StringName, int>::Element *E = prop_band_map.find(p_name);
+	HashMap<StringName, int>::ConstIterator E = prop_band_map.find(p_name);
 	if (E) {
-		r_ret = get_band_gain_db(E->get());
+		r_ret = get_band_gain_db(E->value);
 		return true;
 	}
 
@@ -127,8 +128,8 @@ AudioEffectEQ::AudioEffectEQ(EQ::Preset p_preset) {
 	gain.resize(eq.get_band_count());
 	for (int i = 0; i < gain.size(); i++) {
 		gain.write[i] = 0.0;
-		String name = "band_db/" + itos(eq.get_band_frequency(i)) + "_hz";
-		prop_band_map[name] = i;
-		band_names.push_back(name);
+		String band_name = "band_db/" + itos(eq.get_band_frequency(i)) + "_hz";
+		prop_band_map[band_name] = i;
+		band_names.push_back(band_name);
 	}
 }

@@ -22,6 +22,7 @@
 #include "src/webp/encode.h"
 #include "src/webp/format_constants.h"
 #include "src/webp/mux.h"
+#include "src/webp/types.h"
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define snprintf _snprintf
@@ -248,9 +249,6 @@ WebPAnimEncoder* WebPAnimEncoderNewInternal(
 
   enc = (WebPAnimEncoder*)WebPSafeCalloc(1, sizeof(*enc));
   if (enc == NULL) return NULL;
-  // sanity inits, so we can call WebPAnimEncoderDelete():
-  enc->encoded_frames_ = NULL;
-  enc->mux_ = NULL;
   MarkNoError(enc);
 
   // Dimensions and options.
@@ -421,7 +419,7 @@ static void MinimizeChangeRectangle(const WebPPicture* const src,
   const int max_allowed_diff_lossy = QualityToMaxDiff(quality);
   const int max_allowed_diff = is_lossless ? 0 : max_allowed_diff_lossy;
 
-  // Sanity checks.
+  // Assumption/correctness checks.
   assert(src->width == dst->width && src->height == dst->height);
   assert(rect->x_offset_ + rect->width_ <= dst->width);
   assert(rect->y_offset_ + rect->height_ <= dst->height);
@@ -596,16 +594,17 @@ int WebPAnimEncoderRefineRect(
     int is_lossless, float quality, int* const x_offset, int* const y_offset,
     int* const width, int* const height) {
   FrameRectangle rect;
-  const int right = clip(*x_offset + *width, 0, curr_canvas->width);
-  const int left = clip(*x_offset, 0, curr_canvas->width - 1);
-  const int bottom = clip(*y_offset + *height, 0, curr_canvas->height);
-  const int top = clip(*y_offset, 0, curr_canvas->height - 1);
+  int right, left, bottom, top;
   if (prev_canvas == NULL || curr_canvas == NULL ||
       prev_canvas->width != curr_canvas->width ||
       prev_canvas->height != curr_canvas->height ||
       !prev_canvas->use_argb || !curr_canvas->use_argb) {
     return 0;
   }
+  right = clip(*x_offset + *width, 0, curr_canvas->width);
+  left = clip(*x_offset, 0, curr_canvas->width - 1);
+  bottom = clip(*y_offset + *height, 0, curr_canvas->height);
+  top = clip(*y_offset, 0, curr_canvas->height - 1);
   rect.x_offset_ = left;
   rect.y_offset_ = top;
   rect.width_ = clip(right - left, 0, curr_canvas->width - rect.x_offset_);
@@ -949,7 +948,8 @@ static int IncreasePreviousDuration(WebPAnimEncoder* const enc, int duration) {
   int new_duration;
 
   assert(enc->count_ >= 1);
-  assert(prev_enc_frame->sub_frame_.duration ==
+  assert(!prev_enc_frame->is_key_frame_ ||
+         prev_enc_frame->sub_frame_.duration ==
          prev_enc_frame->key_frame_.duration);
   assert(prev_enc_frame->sub_frame_.duration ==
          (prev_enc_frame->sub_frame_.duration & (MAX_DURATION - 1)));
@@ -966,7 +966,7 @@ static int IncreasePreviousDuration(WebPAnimEncoder* const enc, int duration) {
       0x10, 0x88, 0x88, 0x08
     };
     const WebPData lossless_1x1 = {
-        lossless_1x1_bytes, sizeof(lossless_1x1_bytes)
+      lossless_1x1_bytes, sizeof(lossless_1x1_bytes)
     };
     const uint8_t lossy_1x1_bytes[] = {
       0x52, 0x49, 0x46, 0x46, 0x40, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
@@ -1358,6 +1358,12 @@ int WebPAnimEncoderAdd(WebPAnimEncoder* enc, WebPPicture* frame, int timestamp,
     if (!IncreasePreviousDuration(enc, (int)prev_frame_duration)) {
       return 0;
     }
+    // IncreasePreviousDuration() may add a frame to avoid exceeding
+    // MAX_DURATION which could cause CacheFrame() to over read encoded_frames_
+    // before the next flush.
+    if (enc->count_ == enc->size_ && !FlushFrames(enc)) {
+      return 0;
+    }
   } else {
     enc->first_timestamp_ = timestamp;
   }
@@ -1393,7 +1399,10 @@ int WebPAnimEncoderAdd(WebPAnimEncoder* enc, WebPPicture* frame, int timestamp,
     }
     config = *encoder_config;
   } else {
-    WebPConfigInit(&config);
+    if (!WebPConfigInit(&config)) {
+      MarkError(enc, "Cannot Init config");
+      return 0;
+    }
     config.lossless = 1;
   }
   assert(enc->curr_canvas_ == NULL);
@@ -1414,12 +1423,14 @@ int WebPAnimEncoderAdd(WebPAnimEncoder* enc, WebPPicture* frame, int timestamp,
 // -----------------------------------------------------------------------------
 // Bitstream assembly.
 
-static int DecodeFrameOntoCanvas(const WebPMuxFrameInfo* const frame,
-                                 WebPPicture* const canvas) {
+WEBP_NODISCARD static int DecodeFrameOntoCanvas(
+    const WebPMuxFrameInfo* const frame, WebPPicture* const canvas) {
   const WebPData* const image = &frame->bitstream;
   WebPPicture sub_image;
   WebPDecoderConfig config;
-  WebPInitDecoderConfig(&config);
+  if (!WebPInitDecoderConfig(&config)) {
+    return 0;
+  }
   WebPUtilClearPic(canvas, NULL);
   if (WebPGetFeatures(image->bytes, image->size, &config.input) !=
       VP8_STATUS_OK) {
@@ -1576,6 +1587,25 @@ int WebPAnimEncoderAssemble(WebPAnimEncoder* enc, WebPData* webp_data) {
 const char* WebPAnimEncoderGetError(WebPAnimEncoder* enc) {
   if (enc == NULL) return NULL;
   return enc->error_str_;
+}
+
+WebPMuxError WebPAnimEncoderSetChunk(
+    WebPAnimEncoder* enc, const char fourcc[4], const WebPData* chunk_data,
+    int copy_data) {
+  if (enc == NULL) return WEBP_MUX_INVALID_ARGUMENT;
+  return WebPMuxSetChunk(enc->mux_, fourcc, chunk_data, copy_data);
+}
+
+WebPMuxError WebPAnimEncoderGetChunk(
+    const WebPAnimEncoder* enc, const char fourcc[4], WebPData* chunk_data) {
+  if (enc == NULL) return WEBP_MUX_INVALID_ARGUMENT;
+  return WebPMuxGetChunk(enc->mux_, fourcc, chunk_data);
+}
+
+WebPMuxError WebPAnimEncoderDeleteChunk(
+    WebPAnimEncoder* enc, const char fourcc[4]) {
+  if (enc == NULL) return WEBP_MUX_INVALID_ARGUMENT;
+  return WebPMuxDeleteChunk(enc->mux_, fourcc);
 }
 
 // -----------------------------------------------------------------------------

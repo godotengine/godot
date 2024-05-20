@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2018 University of Cambridge
+          New API code Copyright (c) 2016-2023 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -139,7 +139,9 @@ const pcre2_compile_context PRIV(default_compile_context) = {
   BSR_DEFAULT,                               /* Backslash R default */
   NEWLINE_DEFAULT,                           /* Newline convention */
   PARENS_NEST_LIMIT,                         /* As it says */
-  0 };                                       /* Extra options */
+  0,                                         /* Extra options */
+  MAX_VARLOOKBEHIND                          /* As it says */
+  };
 
 /* The create function copies the default into the new memory, but must
 override the default memory handling functions if a gcontext was provided. */
@@ -228,49 +230,48 @@ return ccontext;
 PCRE2_EXP_DEFN pcre2_general_context * PCRE2_CALL_CONVENTION
 pcre2_general_context_copy(pcre2_general_context *gcontext)
 {
-pcre2_general_context *new =
+pcre2_general_context *newcontext =
   gcontext->memctl.malloc(sizeof(pcre2_real_general_context),
   gcontext->memctl.memory_data);
-if (new == NULL) return NULL;
-memcpy(new, gcontext, sizeof(pcre2_real_general_context));
-return new;
+if (newcontext == NULL) return NULL;
+memcpy(newcontext, gcontext, sizeof(pcre2_real_general_context));
+return newcontext;
 }
 
 
 PCRE2_EXP_DEFN pcre2_compile_context * PCRE2_CALL_CONVENTION
 pcre2_compile_context_copy(pcre2_compile_context *ccontext)
 {
-pcre2_compile_context *new =
+pcre2_compile_context *newcontext =
   ccontext->memctl.malloc(sizeof(pcre2_real_compile_context),
   ccontext->memctl.memory_data);
-if (new == NULL) return NULL;
-memcpy(new, ccontext, sizeof(pcre2_real_compile_context));
-return new;
+if (newcontext == NULL) return NULL;
+memcpy(newcontext, ccontext, sizeof(pcre2_real_compile_context));
+return newcontext;
 }
 
 
 PCRE2_EXP_DEFN pcre2_match_context * PCRE2_CALL_CONVENTION
 pcre2_match_context_copy(pcre2_match_context *mcontext)
 {
-pcre2_match_context *new =
+pcre2_match_context *newcontext =
   mcontext->memctl.malloc(sizeof(pcre2_real_match_context),
   mcontext->memctl.memory_data);
-if (new == NULL) return NULL;
-memcpy(new, mcontext, sizeof(pcre2_real_match_context));
-return new;
+if (newcontext == NULL) return NULL;
+memcpy(newcontext, mcontext, sizeof(pcre2_real_match_context));
+return newcontext;
 }
-
 
 
 PCRE2_EXP_DEFN pcre2_convert_context * PCRE2_CALL_CONVENTION
 pcre2_convert_context_copy(pcre2_convert_context *ccontext)
 {
-pcre2_convert_context *new =
+pcre2_convert_context *newcontext =
   ccontext->memctl.malloc(sizeof(pcre2_real_convert_context),
   ccontext->memctl.memory_data);
-if (new == NULL) return NULL;
-memcpy(new, ccontext, sizeof(pcre2_real_convert_context));
-return new;
+if (newcontext == NULL) return NULL;
+memcpy(newcontext, ccontext, sizeof(pcre2_real_convert_context));
+return newcontext;
 }
 
 
@@ -371,6 +372,13 @@ switch(newline)
 }
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
+pcre2_set_max_varlookbehind(pcre2_compile_context *ccontext, uint32_t limit)
+{
+ccontext->max_varlookbehind = limit;
+return 0;
+}
+
+PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_set_parens_nest_limit(pcre2_compile_context *ccontext, uint32_t limit)
 {
 ccontext->parens_nest_limit = limit;
@@ -443,8 +451,11 @@ mcontext->offset_limit = limit;
 return 0;
 }
 
-/* This function became obsolete at release 10.30. It is kept as a synonym for
-backwards compatibility. */
+/* These functions became obsolete at release 10.30. The first is kept as a
+synonym for backwards compatibility. The second now does nothing. Exclude both
+from coverage reports. */
+
+/* LCOV_EXCL_START */
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_set_recursion_limit(pcre2_match_context *mcontext, uint32_t limit)
@@ -463,6 +474,9 @@ pcre2_set_recursion_memory_management(pcre2_match_context *mcontext,
 (void)mydata;
 return 0;
 }
+
+/* LCOV_EXCL_STOP */
+
 
 /* ------------ Convert context ------------ */
 

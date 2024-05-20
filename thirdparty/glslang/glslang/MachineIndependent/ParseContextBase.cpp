@@ -67,12 +67,13 @@ void TParseContextBase::outputMessage(const TSourceLoc& loc, const char* szReaso
     }
 }
 
-#if !defined(GLSLANG_WEB) || defined(GLSLANG_WEB_DEVEL)
-
 void C_DECL TParseContextBase::error(const TSourceLoc& loc, const char* szReason, const char* szToken,
                                      const char* szExtraInfoFormat, ...)
 {
     if (messages & EShMsgOnlyPreprocessor)
+        return;
+    // If enhanced msg readability, only print one error
+    if (messages & EShMsgEnhanced && numErrors > 0)
         return;
     va_list args;
     va_start(args, szExtraInfoFormat);
@@ -115,8 +116,6 @@ void C_DECL TParseContextBase::ppWarn(const TSourceLoc& loc, const char* szReaso
     va_end(args);
 }
 
-#endif
-
 //
 // Both test and if necessary, spit out an error, to see if the node is really
 // an l-value that can be operated on this way.
@@ -137,7 +136,6 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
     case EvqConst:          message = "can't modify a const";        break;
     case EvqConstReadOnly:  message = "can't modify a const";        break;
     case EvqUniform:        message = "can't modify a uniform";      break;
-#ifndef GLSLANG_WEB
     case EvqBuffer:
         if (node->getQualifier().isReadOnly())
             message = "can't modify a readonly buffer";
@@ -148,7 +146,6 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
         if (language != EShLangIntersect)
             message = "cannot modify hitAttributeNV in this stage";
         break;
-#endif
 
     default:
         //
@@ -156,12 +153,12 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
         //
         switch (node->getBasicType()) {
         case EbtSampler:
-            message = "can't modify a sampler";
+            if (extensionTurnedOn(E_GL_ARB_bindless_texture) == false)
+                message = "can't modify a sampler";
             break;
         case EbtVoid:
             message = "can't modify void";
             break;
-#ifndef GLSLANG_WEB
         case EbtAtomicUint:
             message = "can't modify an atomic_uint";
             break;
@@ -171,7 +168,9 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
         case EbtRayQuery:
             message = "can't modify rayQueryEXT";
             break;
-#endif
+        case EbtHitObjectNV:
+            message = "can't modify hitObjectNV";
+            break;
         default:
             break;
         }
@@ -209,7 +208,7 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
     //
     // If we get here, we have an error and a message.
     //
-    const TIntermTyped* leftMostTypeNode = TIntermediate::findLValueBase(node, true);
+    const TIntermTyped* leftMostTypeNode = TIntermediate::traverseLValueBase(node, true);
 
     if (symNode)
         error(loc, " l-value required", op, "\"%s\" (%s)", symbol, message);
@@ -228,14 +227,14 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
 // Test for and give an error if the node can't be read from.
 void TParseContextBase::rValueErrorCheck(const TSourceLoc& loc, const char* op, TIntermTyped* node)
 {
-    TIntermBinary* binaryNode = node->getAsBinaryNode();
-    const TIntermSymbol* symNode = node->getAsSymbolNode();
-
     if (! node)
         return;
 
+    TIntermBinary* binaryNode = node->getAsBinaryNode();
+    const TIntermSymbol* symNode = node->getAsSymbolNode();
+
     if (node->getQualifier().isWriteOnly()) {
-        const TIntermTyped* leftMostTypeNode = TIntermediate::findLValueBase(node, true);
+        const TIntermTyped* leftMostTypeNode = TIntermediate::traverseLValueBase(node, true);
 
         if (symNode != nullptr)
             error(loc, "can't read from writeonly object: ", op, symNode->getName().c_str());
@@ -601,7 +600,6 @@ void TParseContextBase::parseSwizzleSelector(const TSourceLoc& loc, const TStrin
         selector.push_back(0);
 }
 
-#ifdef ENABLE_HLSL
 //
 // Make the passed-in variable information become a member of the
 // global uniform block.  If this doesn't exist yet, make it.
@@ -622,6 +620,17 @@ void TParseContextBase::growGlobalUniformBlock(const TSourceLoc& loc, TType& mem
     // Update with binding and set
     globalUniformBlock->getWritableType().getQualifier().layoutBinding = globalUniformBinding;
     globalUniformBlock->getWritableType().getQualifier().layoutSet = globalUniformSet;
+
+    // Check for declarations of this default uniform that already exist due to other compilation units.
+    TSymbol* symbol = symbolTable.find(memberName);
+    if (symbol) {
+        if (memberType != symbol->getType()) {
+            TString err;
+            err += "Redeclaration: already declared as \"" + symbol->getType().getCompleteString() + "\"";
+            error(loc, "", memberName.c_str(), err.c_str());
+        }
+        return;
+    }
 
     // Add the requested member as a member to the global block.
     TType* type = new TType;
@@ -646,12 +655,90 @@ void TParseContextBase::growGlobalUniformBlock(const TSourceLoc& loc, TType& mem
 
     ++firstNewMember;
 }
-#endif
+
+void TParseContextBase::growAtomicCounterBlock(int binding, const TSourceLoc& loc, TType& memberType, const TString& memberName, TTypeList* typeList) {
+    // Make the atomic counter block, if not yet made.
+    const auto &at  = atomicCounterBuffers.find(binding);
+    if (at == atomicCounterBuffers.end()) {
+        atomicCounterBuffers.insert({binding, (TVariable*)nullptr });
+        atomicCounterBlockFirstNewMember.insert({binding, 0});
+    }
+
+    TVariable*& atomicCounterBuffer = atomicCounterBuffers[binding];
+    int& bufferNewMember = atomicCounterBlockFirstNewMember[binding];
+
+    if (atomicCounterBuffer == nullptr) {
+        TQualifier blockQualifier;
+        blockQualifier.clear();
+        blockQualifier.storage = EvqBuffer;
+        
+        char charBuffer[512];
+        if (binding != TQualifier::layoutBindingEnd) {
+            snprintf(charBuffer, 512, "%s_%d", getAtomicCounterBlockName(), binding);
+        } else {
+            snprintf(charBuffer, 512, "%s_0", getAtomicCounterBlockName());
+        }
+        
+        TType blockType(new TTypeList, *NewPoolTString(charBuffer), blockQualifier);
+        setUniformBlockDefaults(blockType);
+        blockType.getQualifier().layoutPacking = ElpStd430;
+        atomicCounterBuffer = new TVariable(NewPoolTString(""), blockType, true);
+        // If we arn't auto mapping bindings then set the block to use the same
+        // binding as what the atomic was set to use
+        if (!intermediate.getAutoMapBindings()) {
+            atomicCounterBuffer->getWritableType().getQualifier().layoutBinding = binding;
+        }
+        bufferNewMember = 0;
+
+        atomicCounterBuffer->getWritableType().getQualifier().layoutSet = atomicCounterBlockSet;
+    }
+
+    // Add the requested member as a member to the global block.
+    TType* type = new TType;
+    type->shallowCopy(memberType);
+    type->setFieldName(memberName);
+    if (typeList)
+        type->setStruct(typeList);
+    TTypeLoc typeLoc = {type, loc};
+    atomicCounterBuffer->getType().getWritableStruct()->push_back(typeLoc);
+
+    // Insert into the symbol table.
+    if (bufferNewMember == 0) {
+        // This is the first request; we need a normal symbol table insert
+        if (symbolTable.insert(*atomicCounterBuffer))
+            trackLinkage(*atomicCounterBuffer);
+        else
+            error(loc, "failed to insert the global constant buffer", "buffer", "");
+    } else {
+        // This is a follow-on request; we need to amend the first insert
+        symbolTable.amend(*atomicCounterBuffer, bufferNewMember);
+    }
+
+    ++bufferNewMember;
+}
 
 void TParseContextBase::finish()
 {
     if (parsingBuiltins)
         return;
+
+    for (const TString& relaxedSymbol : relaxedSymbols)
+    {
+        TSymbol* symbol = symbolTable.find(relaxedSymbol);
+        TType& type = symbol->getWritableType();
+        for (const TTypeLoc& typeLoc : *type.getStruct())
+        {
+            if (typeLoc.type->isOpaque())
+            {
+                typeLoc.type->getSampler() = TSampler{};
+                typeLoc.type->setBasicType(EbtInt);
+                TString fieldName("/*");
+                fieldName.append(typeLoc.type->getFieldName());
+                fieldName.append("*/");
+                typeLoc.type->setFieldName(fieldName);
+            }
+        }
+    }
 
     // Transfer the linkage symbols to AST nodes, preserving order.
     TIntermAggregate* linkage = new TIntermAggregate;

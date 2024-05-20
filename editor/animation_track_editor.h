@@ -1,96 +1,189 @@
-/*************************************************************************/
-/*  animation_track_editor.h                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_track_editor.h                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef ANIMATION_TRACK_EDITOR_H
 #define ANIMATION_TRACK_EDITOR_H
 
 #include "editor/editor_data.h"
-#include "editor/editor_spin_slider.h"
-#include "editor/property_editor.h"
+#include "editor/editor_properties.h"
 #include "editor/property_selector.h"
-#include "scene/animation/animation_cache.h"
+#include "scene/3d/node_3d.h"
 #include "scene/gui/control.h"
-#include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/scroll_bar.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/texture_rect.h"
+#include "scene/gui/tree.h"
 #include "scene/resources/animation.h"
-#include "scene_tree_editor.h"
 
-class AnimationPlayer;
-
+class AnimationTrackEditor;
 class AnimationTrackEdit;
+class CheckBox;
+class EditorSpinSlider;
+class HSlider;
+class OptionButton;
+class PanelContainer;
+class SceneTreeDialog;
+class SpinBox;
+class TextureRect;
+class ViewPanner;
+
+class AnimationTrackKeyEdit : public Object {
+	GDCLASS(AnimationTrackKeyEdit, Object);
+
+public:
+	bool setting = false;
+	bool animation_read_only = false;
+
+	Ref<Animation> animation;
+	int track = -1;
+	float key_ofs = 0;
+	Node *root_path = nullptr;
+
+	PropertyInfo hint;
+	NodePath base;
+	bool use_fps = false;
+	AnimationTrackEditor *editor = nullptr;
+
+	bool _hide_script_from_inspector() { return true; }
+	bool _hide_metadata_from_inspector() { return true; }
+	bool _dont_undo_redo() { return true; }
+
+	bool _is_read_only() { return animation_read_only; }
+
+	void notify_change();
+	Node *get_root_path();
+	void set_use_fps(bool p_enable);
+
+protected:
+	static void _bind_methods();
+	void _fix_node_path(Variant &value);
+	void _update_obj(const Ref<Animation> &p_anim);
+	void _key_ofs_changed(const Ref<Animation> &p_anim, float from, float to);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+};
+
+class AnimationMultiTrackKeyEdit : public Object {
+	GDCLASS(AnimationMultiTrackKeyEdit, Object);
+
+public:
+	bool setting = false;
+	bool animation_read_only = false;
+
+	Ref<Animation> animation;
+
+	RBMap<int, List<float>> key_ofs_map;
+	RBMap<int, NodePath> base_map;
+	PropertyInfo hint;
+
+	Node *root_path = nullptr;
+
+	bool use_fps = false;
+	AnimationTrackEditor *editor = nullptr;
+
+	bool _hide_script_from_inspector() { return true; }
+	bool _hide_metadata_from_inspector() { return true; }
+	bool _dont_undo_redo() { return true; }
+
+	bool _is_read_only() { return animation_read_only; }
+
+	void notify_change();
+	Node *get_root_path();
+	void set_use_fps(bool p_enable);
+
+protected:
+	static void _bind_methods();
+	void _fix_node_path(Variant &value, NodePath &base);
+	void _update_obj(const Ref<Animation> &p_anim);
+	void _key_ofs_changed(const Ref<Animation> &p_anim, float from, float to);
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+};
 
 class AnimationTimelineEdit : public Range {
 	GDCLASS(AnimationTimelineEdit, Range);
 
+	friend class AnimationBezierTrackEdit;
+	friend class AnimationTrackEditor;
+
+	static constexpr float SCROLL_ZOOM_FACTOR_IN = 1.02f; // Zoom factor per mouse scroll in the animation editor when zooming in. The closer to 1.0, the finer the control.
+	static constexpr float SCROLL_ZOOM_FACTOR_OUT = 0.98f; // Zoom factor when zooming out. Similar to SCROLL_ZOOM_FACTOR_IN but less than 1.0.
+
 	Ref<Animation> animation;
-	AnimationTrackEdit *track_edit;
-	int name_limit;
-	Range *zoom;
-	Range *h_scroll;
-	float play_position_pos;
+	bool read_only = false;
 
-	HBoxContainer *len_hb;
-	EditorSpinSlider *length;
-	Button *loop;
-	TextureRect *time_icon;
+	AnimationTrackEdit *track_edit = nullptr;
+	int name_limit = 0;
+	Range *zoom = nullptr;
+	Range *h_scroll = nullptr;
+	float play_position_pos = 0.0f;
 
-	MenuButton *add_track;
-	Control *play_position; //separate control used to draw so updates for only position changed are much faster
-	HScrollBar *hscroll;
+	HBoxContainer *len_hb = nullptr;
+	EditorSpinSlider *length = nullptr;
+	Button *loop = nullptr;
+	TextureRect *time_icon = nullptr;
+
+	MenuButton *add_track = nullptr;
+	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
+	HScrollBar *hscroll = nullptr;
 
 	void _zoom_changed(double);
 	void _anim_length_changed(double p_new_len);
 	void _anim_loop_pressed();
 
 	void _play_position_draw();
-	UndoRedo *undo_redo;
 	Rect2 hsize_rect;
 
-	bool editing;
-	bool use_fps;
+	bool editing = false;
+	bool use_fps = false;
 
-	bool panning_timeline;
-	float panning_timeline_from;
-	float panning_timeline_at;
-	bool dragging_timeline;
-	bool dragging_hsize;
-	float dragging_hsize_from;
-	float dragging_hsize_at;
+	Ref<ViewPanner> panner;
+	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
+	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
-	void _gui_input(const Ref<InputEvent> &p_event);
+	bool dragging_timeline = false;
+	bool dragging_hsize = false;
+	float dragging_hsize_from = 0.0f;
+	float dragging_hsize_at = 0.0f;
+	double last_zoom_scale = 1.0;
+	double hscroll_on_zoom_buffer = -1.0;
+
+	Vector2 zoom_scroll_origin;
+	bool zoom_callback_occured = false;
+
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _track_added(int p_track);
+
+	float _get_zoom_scale(double p_zoom_value) const;
+	void _scroll_to_start();
 
 protected:
 	static void _bind_methods();
@@ -103,11 +196,11 @@ public:
 	float get_zoom_scale() const;
 
 	virtual Size2 get_minimum_size() const override;
-	void set_animation(const Ref<Animation> &p_animation);
+	void set_animation(const Ref<Animation> &p_animation, bool p_read_only);
 	void set_track_edit(AnimationTrackEdit *p_track_edit);
 	void set_zoom(Range *p_zoom);
 	Range *get_zoom() const { return zoom; }
-	void set_undo_redo(UndoRedo *p_undo_redo);
+	void auto_fit();
 
 	void set_play_position(float p_pos);
 	float get_play_position() const;
@@ -120,55 +213,65 @@ public:
 
 	void set_hscroll(HScrollBar *p_hscroll);
 
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
+
 	AnimationTimelineEdit();
 };
 
-class AnimationTrackEditor;
-
 class AnimationTrackEdit : public Control {
 	GDCLASS(AnimationTrackEdit, Control);
+	friend class AnimationTimelineEdit;
 
 	enum {
 		MENU_CALL_MODE_CONTINUOUS,
 		MENU_CALL_MODE_DISCRETE,
-		MENU_CALL_MODE_TRIGGER,
 		MENU_CALL_MODE_CAPTURE,
 		MENU_INTERPOLATION_NEAREST,
 		MENU_INTERPOLATION_LINEAR,
 		MENU_INTERPOLATION_CUBIC,
+		MENU_INTERPOLATION_LINEAR_ANGLE,
+		MENU_INTERPOLATION_CUBIC_ANGLE,
 		MENU_LOOP_WRAP,
 		MENU_LOOP_CLAMP,
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
-		MENU_KEY_DELETE
+		MENU_KEY_CUT,
+		MENU_KEY_COPY,
+		MENU_KEY_PASTE,
+		MENU_KEY_ADD_RESET,
+		MENU_KEY_DELETE,
+		MENU_USE_BLEND_ENABLED,
+		MENU_USE_BLEND_DISABLED,
 	};
-	AnimationTimelineEdit *timeline;
-	UndoRedo *undo_redo;
-	Popup *path_popup;
-	LineEdit *path;
-	Node *root;
-	Control *play_position; //separate control used to draw so updates for only position changed are much faster
-	float play_position_pos;
+
+	AnimationTimelineEdit *timeline = nullptr;
+	Popup *path_popup = nullptr;
+	LineEdit *path = nullptr;
+	Node *root = nullptr;
+	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
+	float play_position_pos = 0.0f;
 	NodePath node_path;
 
 	Ref<Animation> animation;
-	int track;
+	bool read_only = false;
+	int track = 0;
 
 	Rect2 check_rect;
 	Rect2 path_rect;
 
 	Rect2 update_mode_rect;
 	Rect2 interp_mode_rect;
-	Rect2 loop_mode_rect;
+	Rect2 loop_wrap_rect;
 	Rect2 remove_rect;
-	Rect2 bezier_edit_rect;
 
 	Ref<Texture2D> type_icon;
 	Ref<Texture2D> selected_icon;
 
-	PopupMenu *menu;
+	PopupMenu *menu = nullptr;
 
-	bool clicking_on_name;
+	bool hovered = false;
+	bool clicking_on_name = false;
+	int hovering_key_idx = -1;
 
 	void _zoom_changed();
 
@@ -180,22 +283,27 @@ class AnimationTrackEdit : public Control {
 	void _path_submitted(const String &p_text);
 	void _play_position_draw();
 	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
+	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 
-	mutable int dropping_at;
-	float insert_at_pos;
-	bool moving_selection_attempt;
-	int select_single_attempt;
-	bool moving_selection;
-	float moving_selection_from_ofs;
+	Ref<Texture2D> _get_key_type_icon() const;
 
-	bool in_group;
-	AnimationTrackEditor *editor;
+	mutable int dropping_at = 0;
+	float insert_at_pos = 0.0f;
+	bool moving_selection_attempt = false;
+	bool moving_selection_effective = false;
+	float moving_selection_pivot = 0.0f;
+	float moving_selection_mouse_begin_x = 0.0f;
+	int select_single_attempt = -1;
+	bool moving_selection = false;
+
+	bool in_group = false;
+	AnimationTrackEditor *editor = nullptr;
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	virtual void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	virtual Variant get_drag_data(const Point2 &p_point) override;
@@ -220,12 +328,10 @@ public:
 	Ref<Animation> get_animation() const;
 	AnimationTimelineEdit *get_timeline() const { return timeline; }
 	AnimationTrackEditor *get_editor() const { return editor; }
-	UndoRedo *get_undo_redo() const { return undo_redo; }
 	NodePath get_path() const;
-	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
+	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only);
 	virtual Size2 get_minimum_size() const override;
 
-	void set_undo_redo(UndoRedo *p_undo_redo);
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
 	void set_root(Node *p_root);
@@ -256,6 +362,7 @@ class AnimationBezierTrackEdit;
 class AnimationTrackEditGroup : public Control {
 	GDCLASS(AnimationTrackEditGroup, Control);
 	Ref<Texture2D> icon;
+	Vector2 icon_size;
 	String node_name;
 	NodePath node;
 	Node *root = nullptr;
@@ -264,8 +371,9 @@ class AnimationTrackEditGroup : public Control {
 	void _zoom_changed();
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
+
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void set_type_and_name(const Ref<Texture2D> &p_type, const String &p_name, const NodePath &p_node);
@@ -278,46 +386,60 @@ public:
 
 class AnimationTrackEditor : public VBoxContainer {
 	GDCLASS(AnimationTrackEditor, VBoxContainer);
+	friend class AnimationTimelineEdit;
+	friend class AnimationBezierTrackEdit;
 
 	Ref<Animation> animation;
-	Node *root;
+	bool read_only = false;
+	Node *root = nullptr;
 
-	MenuButton *edit;
+	MenuButton *edit = nullptr;
 
-	PanelContainer *main_panel;
-	HScrollBar *hscroll;
-	ScrollContainer *scroll;
-	VBoxContainer *track_vbox;
-	AnimationBezierTrackEdit *bezier_edit;
+	PanelContainer *main_panel = nullptr;
+	HScrollBar *hscroll = nullptr;
+	ScrollContainer *scroll = nullptr;
+	VBoxContainer *track_vbox = nullptr;
+	AnimationBezierTrackEdit *bezier_edit = nullptr;
 
-	Label *info_message;
+	Label *info_message = nullptr;
 
-	AnimationTimelineEdit *timeline;
-	HSlider *zoom;
-	EditorSpinSlider *step;
-	TextureRect *zoom_icon;
-	Button *snap;
-	OptionButton *snap_mode;
+	AnimationTimelineEdit *timeline = nullptr;
+	HSlider *zoom = nullptr;
+	EditorSpinSlider *step = nullptr;
+	TextureRect *zoom_icon = nullptr;
+	Button *snap = nullptr;
+	Button *bezier_edit_icon = nullptr;
+	OptionButton *snap_mode = nullptr;
+	Button *auto_fit = nullptr;
+	Button *auto_fit_bezier = nullptr;
 
-	Button *imported_anim_warning;
+	Button *imported_anim_warning = nullptr;
 	void _show_imported_anim_warning();
+
+	Button *dummy_player_warning = nullptr;
+	void _show_dummy_player_warning();
+
+	Button *inactive_player_warning = nullptr;
+	void _show_inactive_player_warning();
 
 	void _snap_mode_changed(int p_mode);
 	Vector<AnimationTrackEdit *> track_edits;
 	Vector<AnimationTrackEditGroup *> groups;
 
-	bool animation_changing_awaiting_update;
-	void _animation_update();
+	bool animation_changing_awaiting_update = false;
+	void _animation_update(); // Updated by AnimationTrackEditor(this)
 	int _get_track_selected();
 	void _animation_changed();
 	void _update_tracks();
+	void _redraw_tracks();
+	void _redraw_groups();
+	void _check_bezier_exist();
 
 	void _name_limit_changed();
-	void _timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only = false);
+	void _timeline_changed(float p_new_pos, bool p_timeline_only);
 	void _track_remove_request(int p_track);
+	void _animation_track_remove_request(int p_track, Ref<Animation> p_from_animation);
 	void _track_grab_focus(int p_track);
-
-	UndoRedo *undo_redo;
 
 	void _update_scroll(double);
 	void _update_step(double p_new_step);
@@ -326,17 +448,17 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _add_track(int p_type);
 	void _new_track_node_selected(NodePath p_path);
-	void _new_track_property_selected(String p_name);
+	void _new_track_property_selected(const String &p_name);
 
 	void _update_step_spinbox();
 
-	PropertySelector *prop_selector;
-	PropertySelector *method_selector;
-	SceneTreeDialog *pick_track;
-	int adding_track_type;
+	PropertySelector *prop_selector = nullptr;
+	PropertySelector *method_selector = nullptr;
+	SceneTreeDialog *pick_track = nullptr;
+	int adding_track_type = 0;
 	NodePath adding_track_path;
 
-	bool keying;
+	bool keying = false;
 
 	struct InsertData {
 		Animation::TrackType type;
@@ -345,17 +467,14 @@ class AnimationTrackEditor : public VBoxContainer {
 		Variant value;
 		String query;
 		bool advance = false;
-	}; /* insert_data;*/
+	};
 
-	Label *insert_confirm_text;
-	CheckBox *insert_confirm_bezier;
-	CheckBox *insert_confirm_reset;
-	ConfirmationDialog *insert_confirm;
-	bool insert_queue;
-	bool inserting;
-	bool insert_query;
+	Label *insert_confirm_text = nullptr;
+	CheckBox *insert_confirm_bezier = nullptr;
+	CheckBox *insert_confirm_reset = nullptr;
+	ConfirmationDialog *insert_confirm = nullptr;
+	bool insert_queue = false;
 	List<InsertData> insert_data;
-	uint64_t insert_frame;
 
 	void _query_insert(const InsertData &p_id);
 	Ref<Animation> _create_and_get_reset_animation();
@@ -369,21 +488,26 @@ class AnimationTrackEditor : public VBoxContainer {
 			reset = p_reset_anim ? p_reset_anim->get_track_count() : 0;
 		}
 	};
-	TrackIndices _confirm_insert(InsertData p_id, TrackIndices p_next_tracks, bool p_create_reset, Ref<Animation> p_reset_anim, bool p_create_beziers);
-	void _insert_delay(bool p_create_reset, bool p_create_beziers);
+	TrackIndices _confirm_insert(InsertData p_id, TrackIndices p_next_tracks, bool p_reset_wanted, Ref<Animation> p_reset_anim, bool p_create_beziers);
+	void _insert_track(bool p_reset_wanted, bool p_create_beziers);
 
-	void _root_removed(Node *p_root);
+	void _root_removed();
 
 	PropertyInfo _find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val = nullptr);
 
+	Ref<ViewPanner> panner;
+	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
+	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
+
 	void _timeline_value_changed(double);
 
-	float insert_key_from_track_call_ofs;
-	int insert_key_from_track_call_track;
+	float insert_key_from_track_call_ofs = 0.0f;
+	int insert_key_from_track_call_track = 0;
 	void _insert_key_from_track(float p_ofs, int p_track);
 	void _add_method_key(const String &p_method);
 
-	void _clear_selection(bool p_update = false);
+	void _fetch_value_track_options(const NodePath &p_path, Animation::UpdateMode *r_update_mode, Animation::InterpolationType *r_interpolation_type, bool *r_loop_wrap);
+
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
 
@@ -399,78 +523,100 @@ class AnimationTrackEditor : public VBoxContainer {
 		float pos = 0;
 	};
 
-	Map<SelectedKey, KeyInfo> selection;
+	RBMap<SelectedKey, KeyInfo> selection;
 
-	void _key_selected(int p_key, bool p_single, int p_track);
-	void _key_deselected(int p_key, int p_track);
-
-	bool moving_selection;
-	float moving_selection_offset;
+	bool moving_selection = false;
+	float moving_selection_offset = 0.0f;
 	void _move_selection_begin();
 	void _move_selection(float p_offset);
 	void _move_selection_commit();
 	void _move_selection_cancel();
 
-	AnimationTrackKeyEdit *key_edit;
-	AnimationMultiTrackKeyEdit *multi_key_edit;
+	AnimationTrackKeyEdit *key_edit = nullptr;
+	AnimationMultiTrackKeyEdit *multi_key_edit = nullptr;
 	void _update_key_edit();
-
 	void _clear_key_edit();
 
-	Control *box_selection;
+	Control *box_selection = nullptr;
 	void _box_selection_draw();
-	bool box_selecting;
+	bool box_selecting = false;
 	Vector2 box_selecting_from;
 	Rect2 box_select_rect;
 	void _scroll_input(const Ref<InputEvent> &p_event);
 
 	Vector<Ref<AnimationTrackEditPlugin>> track_edit_plugins;
 
+	void _toggle_bezier_edit();
 	void _cancel_bezier_edit();
 	void _bezier_edit(int p_for_track);
+	void _bezier_track_set_key_handle_mode(Animation *p_anim, int p_track, int p_index, Animation::HandleMode p_mode, Animation::HandleSetMode p_set_mode = Animation::HANDLE_SET_MODE_NONE);
 
 	////////////// edit menu stuff
 
-	ConfirmationDialog *optimize_dialog;
-	SpinBox *optimize_linear_error;
-	SpinBox *optimize_angular_error;
-	SpinBox *optimize_max_angle;
+	ConfirmationDialog *bake_dialog = nullptr;
+	CheckBox *bake_trs = nullptr;
+	CheckBox *bake_blendshape = nullptr;
+	CheckBox *bake_value = nullptr;
+	SpinBox *bake_fps = nullptr;
 
-	ConfirmationDialog *cleanup_dialog;
-	CheckBox *cleanup_keys;
-	CheckBox *cleanup_tracks;
-	CheckBox *cleanup_all;
+	ConfirmationDialog *optimize_dialog = nullptr;
+	SpinBox *optimize_velocity_error = nullptr;
+	SpinBox *optimize_angular_error = nullptr;
+	SpinBox *optimize_precision_error = nullptr;
 
-	ConfirmationDialog *scale_dialog;
-	SpinBox *scale;
+	ConfirmationDialog *cleanup_dialog = nullptr;
+	CheckBox *cleanup_keys_with_trimming_head = nullptr;
+	CheckBox *cleanup_keys_with_trimming_end = nullptr;
+	CheckBox *cleanup_keys = nullptr;
+	CheckBox *cleanup_tracks = nullptr;
+	CheckBox *cleanup_all = nullptr;
+
+	ConfirmationDialog *scale_dialog = nullptr;
+	SpinBox *scale = nullptr;
+
+	ConfirmationDialog *ease_dialog = nullptr;
+	OptionButton *transition_selection = nullptr;
+	OptionButton *ease_selection = nullptr;
+	SpinBox *ease_fps = nullptr;
 
 	void _select_all_tracks_for_copy();
 
 	void _edit_menu_about_to_popup();
 	void _edit_menu_pressed(int p_option);
-	int last_menu_track_opt;
+	int last_menu_track_opt = 0;
 
 	void _cleanup_animation(Ref<Animation> p_animation);
 
-	void _anim_duplicate_keys(bool transpose);
+	void _anim_duplicate_keys(float p_ofs, bool p_ofs_valid, int p_track);
+
+	void _anim_copy_keys(bool p_cut);
+
+	bool _is_track_compatible(int p_target_track_idx, Variant::Type p_source_value_type, Animation::TrackType p_source_track_type);
+
+	void _anim_paste_keys(float p_ofs, bool p_ofs_valid, int p_track);
 
 	void _view_group_toggle();
-	Button *view_group;
-	Button *selected_filter;
+	Button *view_group = nullptr;
+	Button *selected_filter = nullptr;
+
+	void _auto_fit();
+	void _auto_fit_bezier();
 
 	void _selection_changed();
 
-	ConfirmationDialog *track_copy_dialog;
-	Tree *track_copy_select;
+	ConfirmationDialog *track_copy_dialog = nullptr;
+	Tree *track_copy_select = nullptr;
 
 	struct TrackClipboard {
 		NodePath full_path;
 		NodePath base_path;
-		Animation::TrackType track_type = Animation::TrackType::TYPE_ANIMATION;
-		Animation::InterpolationType interp_type = Animation::InterpolationType::INTERPOLATION_CUBIC;
-		Animation::UpdateMode update_mode = Animation::UpdateMode::UPDATE_CAPTURE;
+		Animation::TrackType track_type = Animation::TYPE_ANIMATION;
+		Animation::InterpolationType interp_type = Animation::INTERPOLATION_CUBIC_ANGLE;
+		Animation::UpdateMode update_mode = Animation::UPDATE_CAPTURE;
+		Animation::LoopMode loop_mode = Animation::LOOP_PINGPONG;
 		bool loop_wrap = false;
 		bool enabled = false;
+		bool use_blend = false;
 
 		struct Key {
 			float time = 0;
@@ -480,8 +626,23 @@ class AnimationTrackEditor : public VBoxContainer {
 		Vector<Key> keys;
 	};
 
-	Vector<TrackClipboard> track_clipboard;
+	struct KeyClipboard {
+		int top_track;
 
+		struct Key {
+			Animation::TrackType track_type;
+			int track;
+			float time = 0;
+			float transition = 0;
+			Variant value;
+		};
+		Vector<Key> keys;
+	};
+
+	Vector<TrackClipboard> track_clipboard;
+	KeyClipboard key_clipboard;
+
+	void _set_key_clipboard(int p_top_track, float p_top_time, RBMap<SelectedKey, KeyInfo> &p_keymap);
 	void _insert_animation_key(NodePath p_path, const Variant &p_value);
 
 	void _pick_track_filter_text_changed(const String &p_newtext);
@@ -493,19 +654,38 @@ protected:
 	void _notification(int p_what);
 
 public:
+	// Public for use with callable_mp.
+	void _clear_selection(bool p_update = false);
+	void _key_selected(int p_key, bool p_single, int p_track);
+	void _key_deselected(int p_key, int p_track);
+
 	enum {
 		EDIT_COPY_TRACKS,
 		EDIT_COPY_TRACKS_CONFIRM,
 		EDIT_PASTE_TRACKS,
+		EDIT_CUT_KEYS,
+		EDIT_COPY_KEYS,
+		EDIT_PASTE_KEYS,
 		EDIT_SCALE_SELECTION,
 		EDIT_SCALE_FROM_CURSOR,
 		EDIT_SCALE_CONFIRM,
+		EDIT_SET_START_OFFSET,
+		EDIT_SET_END_OFFSET,
+		EDIT_EASE_SELECTION,
+		EDIT_EASE_CONFIRM,
+		EDIT_DUPLICATE_SELECTED_KEYS,
 		EDIT_DUPLICATE_SELECTION,
 		EDIT_DUPLICATE_TRANSPOSED,
+		EDIT_MOVE_FIRST_SELECTED_KEY_TO_CURSOR,
+		EDIT_MOVE_LAST_SELECTED_KEY_TO_CURSOR,
+		EDIT_ADD_RESET_KEY,
 		EDIT_DELETE_SELECTION,
 		EDIT_GOTO_NEXT_STEP,
+		EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY, // Next step without updating animation.
 		EDIT_GOTO_PREV_STEP,
 		EDIT_APPLY_RESET,
+		EDIT_BAKE_ANIMATION,
+		EDIT_BAKE_ANIMATION_CONFIRM,
 		EDIT_OPTIMIZE_ANIMATION,
 		EDIT_OPTIMIZE_ANIMATION_CONFIRM,
 		EDIT_CLEAN_UP_ANIMATION,
@@ -515,7 +695,7 @@ public:
 	void add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 	void remove_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 
-	void set_animation(const Ref<Animation> &p_anim);
+	void set_animation(const Ref<Animation> &p_anim, bool p_read_only);
 	Ref<Animation> get_current_animation() const;
 	void set_root(Node *p_root);
 	Node *get_root() const;
@@ -530,12 +710,18 @@ public:
 	void set_anim_pos(float p_pos);
 	void insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists = false);
 	void insert_value_key(const String &p_property, const Variant &p_value, bool p_advance);
-	void insert_transform_key(Node3D *p_node, const String &p_sub, const Transform3D &p_xform);
+	void insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value);
+	bool has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type);
+	void make_insert_queue();
+	void commit_insert_queue();
 
 	void show_select_node_warning(bool p_show);
+	void show_dummy_player_warning(bool p_show);
+	void show_inactive_player_warning(bool p_show);
 
 	bool is_key_selected(int p_track, int p_key) const;
 	bool is_selection_active() const;
+	bool is_key_clipboard_active() const;
 	bool is_moving_selection() const;
 	bool is_snap_enabled() const;
 	float get_moving_selection_offset() const;
@@ -546,11 +732,37 @@ public:
 	void goto_prev_step(bool p_from_mouse_event);
 
 	/** If `p_from_mouse_event` is `true`, handle Shift key presses for precise snapping. */
-	void goto_next_step(bool p_from_mouse_event);
+	void goto_next_step(bool p_from_mouse_event, bool p_timeline_only = false);
 
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();
 	~AnimationTrackEditor();
+};
+
+// AnimationTrackKeyEditEditorPlugin
+
+class AnimationTrackKeyEditEditor : public EditorProperty {
+	GDCLASS(AnimationTrackKeyEditEditor, EditorProperty);
+
+	Ref<Animation> animation;
+	int track = -1;
+	real_t key_ofs = 0.0;
+	bool use_fps = false;
+
+	EditorSpinSlider *spinner = nullptr;
+
+	struct KeyDataCache {
+		real_t time = 0.0;
+		float transition = 0.0;
+		Variant value;
+	} key_data_cache;
+
+	void _time_edit_entered();
+	void _time_edit_exited();
+
+public:
+	AnimationTrackKeyEditEditor(Ref<Animation> p_animation, int p_track, real_t p_key_ofs, bool p_use_fps);
+	~AnimationTrackKeyEditEditor();
 };
 
 #endif // ANIMATION_TRACK_EDITOR_H

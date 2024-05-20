@@ -1,70 +1,93 @@
-/*************************************************************************/
-/*  sprite_frames.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  sprite_frames.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "sprite_frames.h"
 
 #include "scene/scene_string_names.h"
 
-void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture2D> &p_frame, int p_at_pos) {
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture2D> &p_texture, float p_duration, int p_at_pos) {
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	if (p_at_pos >= 0 && p_at_pos < E->get().frames.size()) {
-		E->get().frames.insert(p_at_pos, p_frame);
+	p_duration = MAX(SPRITE_FRAME_MINIMUM_DURATION, p_duration);
+
+	Frame frame = { p_texture, p_duration };
+
+	if (p_at_pos >= 0 && p_at_pos < E->value.frames.size()) {
+		E->value.frames.insert(p_at_pos, frame);
 	} else {
-		E->get().frames.push_back(p_frame);
+		E->value.frames.push_back(frame);
 	}
 
 	emit_changed();
 }
 
+void SpriteFrames::set_frame(const StringName &p_anim, int p_idx, const Ref<Texture2D> &p_texture, float p_duration) {
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
+	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
+	ERR_FAIL_COND(p_idx < 0);
+	if (p_idx >= E->value.frames.size()) {
+		return;
+	}
+
+	p_duration = MAX(SPRITE_FRAME_MINIMUM_DURATION, p_duration);
+
+	Frame frame = { p_texture, p_duration };
+
+	E->value.frames.write[p_idx] = frame;
+
+	emit_changed();
+}
+
 int SpriteFrames::get_frame_count(const StringName &p_anim) const {
-	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, 0, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	return E->get().frames.size();
+	return E->value.frames.size();
 }
 
 void SpriteFrames::remove_frame(const StringName &p_anim, int p_idx) {
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	E->get().frames.remove(p_idx);
+	E->value.frames.remove_at(p_idx);
+
 	emit_changed();
 }
 
 void SpriteFrames::clear(const StringName &p_anim) {
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	E->get().frames.clear();
+	E->value.frames.clear();
+
 	emit_changed();
 }
 
@@ -96,82 +119,65 @@ void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &
 	animations[p_next] = anim;
 }
 
-Vector<String> SpriteFrames::_get_animation_list() const {
-	Vector<String> ret;
-	List<StringName> al;
-	get_animation_list(&al);
-	for (const StringName &E : al) {
-		ret.push_back(E);
-	}
-
-	return ret;
-}
-
 void SpriteFrames::get_animation_list(List<StringName> *r_animations) const {
-	for (const Map<StringName, Anim>::Element *E = animations.front(); E; E = E->next()) {
-		r_animations->push_back(E->key());
+	for (const KeyValue<StringName, Anim> &E : animations) {
+		r_animations->push_back(E.key);
 	}
 }
 
 Vector<String> SpriteFrames::get_animation_names() const {
 	Vector<String> names;
-	for (const Map<StringName, Anim>::Element *E = animations.front(); E; E = E->next()) {
-		names.push_back(E->key());
+	for (const KeyValue<StringName, Anim> &E : animations) {
+		names.push_back(E.key);
 	}
 	names.sort();
 	return names;
 }
 
-void SpriteFrames::set_animation_speed(const StringName &p_anim, float p_fps) {
+void SpriteFrames::set_animation_speed(const StringName &p_anim, double p_fps) {
 	ERR_FAIL_COND_MSG(p_fps < 0, "Animation speed cannot be negative (" + itos(p_fps) + ").");
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
-	E->get().speed = p_fps;
+	E->value.speed = p_fps;
 }
 
-float SpriteFrames::get_animation_speed(const StringName &p_anim) const {
-	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
+double SpriteFrames::get_animation_speed(const StringName &p_anim) const {
+	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, 0, "Animation '" + String(p_anim) + "' doesn't exist.");
-	return E->get().speed;
+	return E->value.speed;
 }
 
 void SpriteFrames::set_animation_loop(const StringName &p_anim, bool p_loop) {
-	Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
-	E->get().loop = p_loop;
+	E->value.loop = p_loop;
 }
 
 bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
-	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
+	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, false, "Animation '" + String(p_anim) + "' doesn't exist.");
-	return E->get().loop;
-}
-
-void SpriteFrames::_set_frames(const Array &p_frames) {
-	clear_all();
-	Map<StringName, Anim>::Element *E = animations.find(SceneStringNames::get_singleton()->_default);
-	ERR_FAIL_COND(!E);
-
-	E->get().frames.resize(p_frames.size());
-	for (int i = 0; i < E->get().frames.size(); i++) {
-		E->get().frames.write[i] = p_frames[i];
-	}
-}
-
-Array SpriteFrames::_get_frames() const {
-	return Array();
+	return E->value.loop;
 }
 
 Array SpriteFrames::_get_animations() const {
 	Array anims;
-	for (Map<StringName, Anim>::Element *E = animations.front(); E; E = E->next()) {
+
+	List<StringName> sorted_names;
+	get_animation_list(&sorted_names);
+	sorted_names.sort_custom<StringName::AlphCompare>();
+
+	for (const StringName &anim_name : sorted_names) {
+		const Anim &anim = animations[anim_name];
 		Dictionary d;
-		d["name"] = E->key();
-		d["speed"] = E->get().speed;
-		d["loop"] = E->get().loop;
+		d["name"] = anim_name;
+		d["speed"] = anim.speed;
+		d["loop"] = anim.loop;
 		Array frames;
-		for (int i = 0; i < E->get().frames.size(); i++) {
-			frames.push_back(E->get().frames[i]);
+		for (int i = 0; i < anim.frames.size(); i++) {
+			Dictionary f;
+			f["texture"] = anim.frames[i].texture;
+			f["duration"] = anim.frames[i].duration;
+			frames.push_back(f);
 		}
 		d["frames"] = frames;
 		anims.push_back(d);
@@ -195,13 +201,47 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 		anim.loop = d["loop"];
 		Array frames = d["frames"];
 		for (int j = 0; j < frames.size(); j++) {
-			RES res = frames[j];
-			anim.frames.push_back(res);
+#ifndef DISABLE_DEPRECATED
+			// For compatibility.
+			Ref<Resource> res = frames[j];
+			if (res.is_valid()) {
+				Frame frame = { res, 1.0 };
+				anim.frames.push_back(frame);
+				continue;
+			}
+#endif
+
+			Dictionary f = frames[j];
+
+			ERR_CONTINUE(!f.has("texture"));
+			ERR_CONTINUE(!f.has("duration"));
+
+			Frame frame = { f["texture"], MAX(SPRITE_FRAME_MINIMUM_DURATION, (float)f["duration"]) };
+			anim.frames.push_back(frame);
 		}
 
 		animations[d["name"]] = anim;
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void SpriteFrames::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	const String pf = p_function;
+	if (p_idx == 0) {
+		if (pf == "has_animation" || pf == "remove_animation" || pf == "rename_animation" ||
+				pf == "set_animation_speed" || pf == "get_animation_speed" ||
+				pf == "set_animation_loop" || pf == "get_animation_loop" ||
+				pf == "add_frame" || pf == "set_frame" || pf == "remove_frame" ||
+				pf == "get_frame_count" || pf == "get_frame_texture" || pf == "get_frame_duration" ||
+				pf == "clear") {
+			for (const String &E : get_animation_names()) {
+				r_options->push_back(E.quote());
+			}
+		}
+	}
+	Resource::get_argument_options(p_function, p_idx, r_options);
+}
+#endif
 
 void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_animation", "anim"), &SpriteFrames::add_animation);
@@ -211,31 +251,31 @@ void SpriteFrames::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_animation_names"), &SpriteFrames::get_animation_names);
 
-	ClassDB::bind_method(D_METHOD("set_animation_speed", "anim", "speed"), &SpriteFrames::set_animation_speed);
+	ClassDB::bind_method(D_METHOD("set_animation_speed", "anim", "fps"), &SpriteFrames::set_animation_speed);
 	ClassDB::bind_method(D_METHOD("get_animation_speed", "anim"), &SpriteFrames::get_animation_speed);
 
 	ClassDB::bind_method(D_METHOD("set_animation_loop", "anim", "loop"), &SpriteFrames::set_animation_loop);
 	ClassDB::bind_method(D_METHOD("get_animation_loop", "anim"), &SpriteFrames::get_animation_loop);
 
-	ClassDB::bind_method(D_METHOD("add_frame", "anim", "frame", "at_position"), &SpriteFrames::add_frame, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_frame_count", "anim"), &SpriteFrames::get_frame_count);
-	ClassDB::bind_method(D_METHOD("get_frame", "anim", "idx"), &SpriteFrames::get_frame);
-	ClassDB::bind_method(D_METHOD("set_frame", "anim", "idx", "txt"), &SpriteFrames::set_frame);
+	ClassDB::bind_method(D_METHOD("add_frame", "anim", "texture", "duration", "at_position"), &SpriteFrames::add_frame, DEFVAL(1.0), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("set_frame", "anim", "idx", "texture", "duration"), &SpriteFrames::set_frame, DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("remove_frame", "anim", "idx"), &SpriteFrames::remove_frame);
+
+	ClassDB::bind_method(D_METHOD("get_frame_count", "anim"), &SpriteFrames::get_frame_count);
+	ClassDB::bind_method(D_METHOD("get_frame_texture", "anim", "idx"), &SpriteFrames::get_frame_texture);
+	ClassDB::bind_method(D_METHOD("get_frame_duration", "anim", "idx"), &SpriteFrames::get_frame_duration);
+
 	ClassDB::bind_method(D_METHOD("clear", "anim"), &SpriteFrames::clear);
 	ClassDB::bind_method(D_METHOD("clear_all"), &SpriteFrames::clear_all);
 
-	ClassDB::bind_method(D_METHOD("_set_frames"), &SpriteFrames::_set_frames);
-	ClassDB::bind_method(D_METHOD("_get_frames"), &SpriteFrames::_get_frames);
+	// `animations` property is for serialization.
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_frames", "_get_frames"); //compatibility
-
-	ClassDB::bind_method(D_METHOD("_set_animations"), &SpriteFrames::_set_animations);
+	ClassDB::bind_method(D_METHOD("_set_animations", "animations"), &SpriteFrames::_set_animations);
 	ClassDB::bind_method(D_METHOD("_get_animations"), &SpriteFrames::_get_animations);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations");
 }
 
 SpriteFrames::SpriteFrames() {
-	add_animation(SceneStringNames::get_singleton()->_default);
+	add_animation(SceneStringName(default_));
 }

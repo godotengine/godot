@@ -6,7 +6,7 @@
 
 layout(location = 0) in highp vec3 vertex;
 
-layout(push_constant, binding = 0, std430) uniform Constants {
+layout(push_constant, std430) uniform Constants {
 	mat4 projection;
 	mat2x4 modelview;
 	vec2 direction;
@@ -34,7 +34,7 @@ void main() {
 
 #VERSION_DEFINES
 
-layout(push_constant, binding = 0, std430) uniform Constants {
+layout(push_constant, std430) uniform Constants {
 	mat4 projection;
 	mat2x4 modelview;
 	vec2 direction;

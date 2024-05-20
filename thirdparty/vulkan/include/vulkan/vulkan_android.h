@@ -2,7 +2,7 @@
 #define VULKAN_ANDROID_H_ 1
 
 /*
-** Copyright (c) 2015-2020 The Khronos Group Inc.
+** Copyright 2015-2024 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -19,6 +19,7 @@ extern "C" {
 
 
 
+// VK_KHR_android_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_KHR_android_surface 1
 struct ANativeWindow;
 #define VK_KHR_ANDROID_SURFACE_SPEC_VERSION 6
@@ -42,9 +43,10 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateAndroidSurfaceKHR(
 #endif
 
 
+// VK_ANDROID_external_memory_android_hardware_buffer is a preprocessor guard. Do not pass it to API calls.
 #define VK_ANDROID_external_memory_android_hardware_buffer 1
 struct AHardwareBuffer;
-#define VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_SPEC_VERSION 3
+#define VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_SPEC_VERSION 5
 #define VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME "VK_ANDROID_external_memory_android_hardware_buffer"
 typedef struct VkAndroidHardwareBufferUsageANDROID {
     VkStructureType    sType;
@@ -90,6 +92,19 @@ typedef struct VkExternalFormatANDROID {
     uint64_t           externalFormat;
 } VkExternalFormatANDROID;
 
+typedef struct VkAndroidHardwareBufferFormatProperties2ANDROID {
+    VkStructureType                  sType;
+    void*                            pNext;
+    VkFormat                         format;
+    uint64_t                         externalFormat;
+    VkFormatFeatureFlags2            formatFeatures;
+    VkComponentMapping               samplerYcbcrConversionComponents;
+    VkSamplerYcbcrModelConversion    suggestedYcbcrModel;
+    VkSamplerYcbcrRange              suggestedYcbcrRange;
+    VkChromaLocation                 suggestedXChromaOffset;
+    VkChromaLocation                 suggestedYChromaOffset;
+} VkAndroidHardwareBufferFormatProperties2ANDROID;
+
 typedef VkResult (VKAPI_PTR *PFN_vkGetAndroidHardwareBufferPropertiesANDROID)(VkDevice device, const struct AHardwareBuffer* buffer, VkAndroidHardwareBufferPropertiesANDROID* pProperties);
 typedef VkResult (VKAPI_PTR *PFN_vkGetMemoryAndroidHardwareBufferANDROID)(VkDevice device, const VkMemoryGetAndroidHardwareBufferInfoANDROID* pInfo, struct AHardwareBuffer** pBuffer);
 
@@ -104,6 +119,32 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetMemoryAndroidHardwareBufferANDROID(
     const VkMemoryGetAndroidHardwareBufferInfoANDROID* pInfo,
     struct AHardwareBuffer**                    pBuffer);
 #endif
+
+
+// VK_ANDROID_external_format_resolve is a preprocessor guard. Do not pass it to API calls.
+#define VK_ANDROID_external_format_resolve 1
+#define VK_ANDROID_EXTERNAL_FORMAT_RESOLVE_SPEC_VERSION 1
+#define VK_ANDROID_EXTERNAL_FORMAT_RESOLVE_EXTENSION_NAME "VK_ANDROID_external_format_resolve"
+typedef struct VkPhysicalDeviceExternalFormatResolveFeaturesANDROID {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           externalFormatResolve;
+} VkPhysicalDeviceExternalFormatResolveFeaturesANDROID;
+
+typedef struct VkPhysicalDeviceExternalFormatResolvePropertiesANDROID {
+    VkStructureType     sType;
+    void*               pNext;
+    VkBool32            nullColorAttachmentWithExternalFormatResolve;
+    VkChromaLocation    externalFormatResolveChromaOffsetX;
+    VkChromaLocation    externalFormatResolveChromaOffsetY;
+} VkPhysicalDeviceExternalFormatResolvePropertiesANDROID;
+
+typedef struct VkAndroidHardwareBufferFormatResolvePropertiesANDROID {
+    VkStructureType    sType;
+    void*              pNext;
+    VkFormat           colorAttachmentFormat;
+} VkAndroidHardwareBufferFormatResolvePropertiesANDROID;
+
 
 #ifdef __cplusplus
 }

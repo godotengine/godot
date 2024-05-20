@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Projection" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 4×4 matrix for 3D projective transformations.
+	</brief_description>
+	<description>
+		A 4×4 matrix used for 3D projective transformations. It can represent transformations such as translation, rotation, scaling, shearing, and perspective division. It consists of four [Vector4] columns.
+		For purely linear transformations (translation, rotation, and scale), it is recommended to use [Transform3D], as it is more performant and requires less memory.
+		Used internally as [Camera3D]'s projection matrix.
+	</description>
+	<tutorials>
+	</tutorials>
+	<constructors>
+		<constructor name="Projection">
+			<return type="Projection" />
+			<description>
+				Constructs a default-initialized [Projection] set to [constant IDENTITY].
+			</description>
+		</constructor>
+		<constructor name="Projection">
+			<return type="Projection" />
+			<param index="0" name="from" type="Projection" />
+			<description>
+				Constructs a [Projection] as a copy of the given [Projection].
+			</description>
+		</constructor>
+		<constructor name="Projection">
+			<return type="Projection" />
+			<param index="0" name="from" type="Transform3D" />
+			<description>
+				Constructs a Projection as a copy of the given [Transform3D].
+			</description>
+		</constructor>
+		<constructor name="Projection">
+			<return type="Projection" />
+			<param index="0" name="x_axis" type="Vector4" />
+			<param index="1" name="y_axis" type="Vector4" />
+			<param index="2" name="z_axis" type="Vector4" />
+			<param index="3" name="w_axis" type="Vector4" />
+			<description>
+				Constructs a Projection from four [Vector4] values (matrix columns).
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="create_depth_correction" qualifiers="static">
+			<return type="Projection" />
+			<param index="0" name="flip_y" type="bool" />
+			<description>
+				Creates a new [Projection] that projects positions from a depth range of [code]-1[/code] to [code]1[/code] to one that ranges from [code]0[/code] to [code]1[/code], and flips the projected positions vertically, according to [param flip_y].
+			</description>
+		</method>
+		<method name="create_fit_aabb" qualifiers="static">
+			<return type="Projection" />
+			<param index="0" name="aabb" type="AABB" />
+			<description>
+				Creates a new [Projection] that scales a given projection to fit around a given [AABB] in projection space.
+			</description>
+		</method>
+		<method name="create_for_hmd" qualifiers="static">
+			<return type="Projection" />
+			<param index="0" name="eye" type="int" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="intraocular_dist" type="float" />
+			<param index="3" name="display_width" type="float" />
+			<param index="4" name="display_to_lens" type="float" />
+			<param index="5" name="oversample" type="float" />
+			<param index="6" name="z_near" type="float" />
+			<param index="7" name="z_far" type="float" />
+			<description>
+				Creates a new [Projection] for projecting positions onto a head-mounted display with the given X:Y aspect ratio, distance between eyes, display width, distance to lens, oversampling factor, and depth clipping planes.
+				[param eye] creates the projection for the left eye when set to 1, or the right eye when set to 2.
+			</description>
+		</method>
+		<method name="create_frustum" qualifiers="static">
+			<return type="Projection" />
+			<param index="0" name="left" type="float" />
+			<param index="1" name="right" type="float" />
+			<param index="2" name="bottom" type="float" />
+			<param index="3" name="top" type="float" />
+			<param index="4" name="z_near" type="float" />
+			<param index="5" name="z_far" type="float" />
+			<description>
+				Creates a new [Projection] that projects positions in a frustum with the given clipping planes.
+			</description>
+		</method>
+		<method name="create_frustum_aspect" qualifiers="static">
+			<return type="Projection" />
+			<param index="0" name="size" type="float" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="offset" type="Vector2" />
+			<param index="3" name="z_near" type="float" />
+			<param index="4" name="z_far" type="float" />
+			<param index="5" name="flip_fov" type="bool" default="false" />
+			<description>
+				Creates a new [Projection] that projects positions in a frustum with the given size, X:Y aspect ratio, offset, and clipping planes.
+				[param flip_fov] determines whether the projection's field of view is flipped over its diagonal.
+			</description>
+		</method>
+		<method name="create_light_atlas_rect" qualifiers="static">
+			<return type="Projection" />
+			<param index="0" name="rect" type="Rect2" />
+			<description>
+				Creates a new [Projection] that projects positions into the given [Rect2].
+			</description>
+		</method>
+		<method name="create_orthogonal" qualifiers="static">
+			<return type="Projection" />
+			<param index="0" name="left" type="float" />
+			<param index="1" name="right" type="float" />
+			<param index="2" name="bottom" type="float" />
+			<param index="3" name="top" type="float" />
+			<param index="4" name="z_near" type="float" />
+			<param index="5" name="z_far" type="float" />
+			<description>
+				Creates a new [Projection] that projects positions using an orthogonal projection with the given clipping planes.
+			</description>
+		</method>
+		<method name="create_orthogonal_aspect" qualifiers="static">
+			<return type="Projection" />
+			<param index="0" name="size" type="float" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="z_near" type="float" />
+			<param index="3" name="z_far" type="float" />
+			<param index="4" name="flip_fov" type="bool" default="false" />
+			<description>
+				Creates a new [Projection] that projects positions using an orthogonal projection with the given size, X:Y aspect ratio, and clipping planes.
+				[param flip_fov] determines whether the projection's field of view is flipped over its diagonal.
+			</description>
+		</method>
+		<method name="create_perspective" qualifiers="static">
+			<return type="Projection" />
+			<param index="0" name="fovy" type="float" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="z_near" type="float" />
+			<param index="3" name="z_far" type="float" />
+			<param index="4" name="flip_fov" type="bool" default="false" />
+			<description>
+				Creates a new [Projection] that projects positions using a perspective projection with the given Y-axis field of view (in degrees), X:Y aspect ratio, and clipping planes.
+				[param flip_fov] determines whether the projection's field of view is flipped over its diagonal.
+			</description>
+		</method>
+		<method name="create_perspective_hmd" qualifiers="static">
+			<return type="Projection" />
+			<param index="0" name="fovy" type="float" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="z_near" type="float" />
+			<param index="3" name="z_far" type="float" />
+			<param index="4" name="flip_fov" type="bool" />
+			<param index="5" name="eye" type="int" />
+			<param index="6" name="intraocular_dist" type="float" />
+			<param index="7" name="convergence_dist" type="float" />
+			<description>
+				Creates a new [Projection] that projects positions using a perspective projection with the given Y-axis field of view (in degrees), X:Y aspect ratio, and clipping distances. The projection is adjusted for a head-mounted display with the given distance between eyes and distance to a point that can be focused on.
+				[param eye] creates the projection for the left eye when set to 1, or the right eye when set to 2.
+				[param flip_fov] determines whether the projection's field of view is flipped over its diagonal.
+			</description>
+		</method>
+		<method name="determinant" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns a scalar value that is the signed factor by which areas are scaled by this matrix. If the sign is negative, the matrix flips the orientation of the area.
+				The determinant can be used to calculate the invertibility of a matrix or solve linear systems of equations involving the matrix, among other applications.
+			</description>
+		</method>
+		<method name="flipped_y" qualifiers="const">
+			<return type="Projection" />
+			<description>
+				Returns a copy of this [Projection] with the signs of the values of the Y column flipped.
+			</description>
+		</method>
+		<method name="get_aspect" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the X:Y aspect ratio of this [Projection]'s viewport.
+			</description>
+		</method>
+		<method name="get_far_plane_half_extents" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the dimensions of the far clipping plane of the projection, divided by two.
+			</description>
+		</method>
+		<method name="get_fov" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the horizontal field of view of the projection (in degrees).
+			</description>
+		</method>
+		<method name="get_fovy" qualifiers="static">
+			<return type="float" />
+			<param index="0" name="fovx" type="float" />
+			<param index="1" name="aspect" type="float" />
+			<description>
+				Returns the vertical field of view of the projection (in degrees) associated with the given horizontal field of view (in degrees) and aspect ratio.
+			</description>
+		</method>
+		<method name="get_lod_multiplier" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the factor by which the visible level of detail is scaled by this [Projection].
+			</description>
+		</method>
+		<method name="get_pixels_per_meter" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="for_pixel_width" type="int" />
+			<description>
+				Returns the number of pixels with the given pixel width displayed per meter, after this [Projection] is applied.
+			</description>
+		</method>
+		<method name="get_projection_plane" qualifiers="const">
+			<return type="Plane" />
+			<param index="0" name="plane" type="int" />
+			<description>
+				Returns the clipping plane of this [Projection] whose index is given by [param plane].
+				[param plane] should be equal to one of [constant PLANE_NEAR], [constant PLANE_FAR], [constant PLANE_LEFT], [constant PLANE_TOP], [constant PLANE_RIGHT], or [constant PLANE_BOTTOM].
+			</description>
+		</method>
+		<method name="get_viewport_half_extents" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the dimensions of the viewport plane that this [Projection] projects positions onto, divided by two.
+			</description>
+		</method>
+		<method name="get_z_far" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the distance for this [Projection] beyond which positions are clipped.
+			</description>
+		</method>
+		<method name="get_z_near" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the distance for this [Projection] before which positions are clipped.
+			</description>
+		</method>
+		<method name="inverse" qualifiers="const">
+			<return type="Projection" />
+			<description>
+				Returns a [Projection] that performs the inverse of this [Projection]'s projective transformation.
+			</description>
+		</method>
+		<method name="is_orthogonal" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Projection] performs an orthogonal projection.
+			</description>
+		</method>
+		<method name="jitter_offseted" qualifiers="const">
+			<return type="Projection" />
+			<param index="0" name="offset" type="Vector2" />
+			<description>
+				Returns a [Projection] with the X and Y values from the given [Vector2] added to the first and second values of the final column respectively.
+			</description>
+		</method>
+		<method name="perspective_znear_adjusted" qualifiers="const">
+			<return type="Projection" />
+			<param index="0" name="new_znear" type="float" />
+			<description>
+				Returns a [Projection] with the near clipping distance adjusted to be [param new_znear].
+				[b]Note:[/b] The original [Projection] must be a perspective projection.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="w" type="Vector4" setter="" getter="" default="Vector4(0, 0, 0, 1)">
+			The projection matrix's W vector (column 3). Equivalent to array index [code]3[/code].
+		</member>
+		<member name="x" type="Vector4" setter="" getter="" default="Vector4(1, 0, 0, 0)">
+			The projection matrix's X vector (column 0). Equivalent to array index [code]0[/code].
+		</member>
+		<member name="y" type="Vector4" setter="" getter="" default="Vector4(0, 1, 0, 0)">
+			The projection matrix's Y vector (column 1). Equivalent to array index [code]1[/code].
+		</member>
+		<member name="z" type="Vector4" setter="" getter="" default="Vector4(0, 0, 1, 0)">
+			The projection matrix's Z vector (column 2). Equivalent to array index [code]2[/code].
+		</member>
+	</members>
+	<constants>
+		<constant name="PLANE_NEAR" value="0">
+			The index value of the projection's near clipping plane.
+		</constant>
+		<constant name="PLANE_FAR" value="1">
+			The index value of the projection's far clipping plane.
+		</constant>
+		<constant name="PLANE_LEFT" value="2">
+			The index value of the projection's left clipping plane.
+		</constant>
+		<constant name="PLANE_TOP" value="3">
+			The index value of the projection's top clipping plane.
+		</constant>
+		<constant name="PLANE_RIGHT" value="4">
+			The index value of the projection's right clipping plane.
+		</constant>
+		<constant name="PLANE_BOTTOM" value="5">
+			The index value of the projection bottom clipping plane.
+		</constant>
+		<constant name="IDENTITY" value="Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)">
+			A [Projection] with no transformation defined. When applied to other data structures, no transformation is performed.
+		</constant>
+		<constant name="ZERO" value="Projection(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)">
+			A [Projection] with all values initialized to 0. When applied to other data structures, they will be zeroed.
+		</constant>
+	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="Projection" />
+			<description>
+				Returns [code]true[/code] if the projections are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, this may return [code]true[/code], even if the projections are virtually equal. An [code]is_equal_approx[/code] method may be added in a future version of Godot.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Projection" />
+			<param index="0" name="right" type="Projection" />
+			<description>
+				Returns a [Projection] that applies the combined transformations of this [Projection] and [param right].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector4" />
+			<param index="0" name="right" type="Vector4" />
+			<description>
+				Projects (multiplies) the given [Vector4] by this [Projection] matrix.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Projection" />
+			<description>
+				Returns [code]true[/code] if the projections are equal.
+				[b]Note:[/b] Due to floating-point precision errors, this may return [code]false[/code], even if the projections are virtually equal. An [code]is_equal_approx[/code] method may be added in a future version of Godot.
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="Vector4" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the column of the [Projection] with the given index.
+				Indices are in the following order: x, y, z, w.
+			</description>
+		</operator>
+	</operators>
+</class>

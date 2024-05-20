@@ -1,25 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeBlend3" inherits="AnimationNode" version="4.0">
+<class name="AnimationNodeBlend3" inherits="AnimationNodeSync" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Blends two of three animations linearly inside of an [AnimationNodeBlendTree].
 	</brief_description>
 	<description>
-		A resource to add to an [AnimationNodeBlendTree]. Blends two animations together linearly out of three based on a value in the [code][-1.0, 1.0][/code] range.
-		This node has three inputs:
-		- The base animation
-		- A -blend animation to blend with when the blend amount is in the [code][-1.0, 0.0][/code] range.
-		- A +blend animation to blend with when the blend amount is in the [code][0.0, 1.0][/code] range
+		A resource to add to an [AnimationNodeBlendTree]. Blends two animations out of three linearly out of three based on the amount value.
+		This animation node has three inputs:
+		- The base animation to blend with
+		- A "-blend" animation to blend with when the blend amount is negative value
+		- A "+blend" animation to blend with when the blend amount is positive value
+		In general, the blend value should be in the [code][-1.0, 1.0][/code] range. Values outside of this range can blend amplified animations, however, [AnimationNodeAdd3] works better for this purpose.
 	</description>
 	<tutorials>
-		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
-	<methods>
-	</methods>
-	<members>
-		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" default="false">
-			If [code]true[/code], sets the [code]optimization[/code] to [code]false[/code] when calling [method AnimationNode.blend_input], forcing the blended animations to update every frame.
-		</member>
-	</members>
-	<constants>
-	</constants>
 </class>

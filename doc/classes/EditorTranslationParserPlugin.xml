@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorTranslationParserPlugin" inherits="RefCounted" version="4.0">
+<class name="EditorTranslationParserPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Plugin for adding custom parsers to extract strings that are to be translated from custom files (.csv, .json etc.).
 	</brief_description>
 	<description>
-		Plugins are registered via [method EditorPlugin.add_translation_parser_plugin] method. To define the parsing and string extraction logic, override the [method _parse_file] method in script.
+		[EditorTranslationParserPlugin] is invoked when a file is being parsed to extract strings that require translation. To define the parsing and string extraction logic, override the [method _parse_file] method in script.
 		Add the extracted strings to argument [code]msgids[/code] or [code]msgids_context_plural[/code] if context or plural is used.
 		When adding to [code]msgids_context_plural[/code], you must add the data using the format [code]["A", "B", "C"][/code], where [code]A[/code] represents the extracted string, [code]B[/code] represents the context, and [code]C[/code] represents the plural version of the extracted string. If you want to add only context but not plural, put [code]""[/code] for the plural slot. The idea is the same if you only want to add plural but not context. See the code below for concrete examples.
 		The extracted strings will be written into a POT file selected by user under "POT Generation" in "Localization" tab in "Project Settings" menu.
 		Below shows an example of a custom parser that extracts strings from a CSV file to write into a POT.
 		[codeblocks]
 		[gdscript]
-		tool
+		@tool
 		extends EditorTranslationParserPlugin
 
 		func _parse_file(path, msgids, msgids_context_plural):
-		    var file = File.new()
-		    file.open(path, File.READ)
+		    var file = FileAccess.open(path, FileAccess.READ)
 		    var text = file.get_as_text()
 		    var split_strs = text.split(",", false)
 		    for s in split_strs:
@@ -28,27 +27,25 @@
 		[/gdscript]
 		[csharp]
 		using Godot;
-		using System;
 
 		[Tool]
-		public class CustomParser : EditorTranslationParserPlugin
+		public partial class CustomParser : EditorTranslationParserPlugin
 		{
-		    public override void ParseFile(string path, Godot.Collections.Array msgids, Godot.Collections.Array msgidsContextPlural)
+		    public override void _ParseFile(string path, Godot.Collections.Array&lt;string&gt; msgids, Godot.Collections.Array&lt;Godot.Collections.Array&gt; msgidsContextPlural)
 		    {
-		        var file = new File();
-		        file.Open(path, File.ModeFlags.Read);
+		        using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
 		        string text = file.GetAsText();
-		        string[] splitStrs = text.Split(",", false);
-		        foreach (var s in splitStrs)
+		        string[] splitStrs = text.Split(",", allowEmpty: false);
+		        foreach (string s in splitStrs)
 		        {
 		            msgids.Add(s);
-		            //GD.Print("Extracted string: " + s)
+		            //GD.Print($"Extracted string: {s}");
 		        }
 		    }
 
-		    public override Godot.Collections.Array GetRecognizedExtensions()
+		    public override string[] _GetRecognizedExtensions()
 		    {
-		        return new Godot.Collections.Array{"csv"};
+		        return new string[] { "csv" };
 		    }
 		}
 		[/csharp]
@@ -72,7 +69,7 @@
 		msgidsContextPlural.Add(new Godot.Collections.Array{"Only with context", "a friendly context", ""});
 		[/csharp]
 		[/codeblocks]
-		[b]Note:[/b] If you override parsing logic for standard script types (GDScript, C#, etc.), it would be better to load the [code]path[/code] argument using [method ResourceLoader.load]. This is because built-in scripts are loaded as [Resource] type, not [File] type.
+		[b]Note:[/b] If you override parsing logic for standard script types (GDScript, C#, etc.), it would be better to load the [code]path[/code] argument using [method ResourceLoader.load]. This is because built-in scripts are loaded as [Resource] type, not [FileAccess] type.
 		For example:
 		[codeblocks]
 		[gdscript]
@@ -85,44 +82,38 @@
 		    return ["gd"]
 		[/gdscript]
 		[csharp]
-		public override void ParseFile(string path, Godot.Collections.Array msgids, Godot.Collections.Array msgidsContextPlural)
+		public override void _ParseFile(string path, Godot.Collections.Array&lt;string&gt; msgids, Godot.Collections.Array&lt;Godot.Collections.Array&gt; msgidsContextPlural)
 		{
 		    var res = ResourceLoader.Load&lt;Script&gt;(path, "Script");
 		    string text = res.SourceCode;
 		    // Parsing logic.
 		}
 
-		public override Godot.Collections.Array GetRecognizedExtensions()
+		public override string[] _GetRecognizedExtensions()
 		{
-		    return new Godot.Collections.Array{"gd"};
+		    return new string[] { "gd" };
 		}
 		[/csharp]
 		[/codeblocks]
+		To use [EditorTranslationParserPlugin], register it using the [method EditorPlugin.add_translation_parser_plugin] method first.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_recognized_extensions" qualifiers="virtual">
-			<return type="Array">
-			</return>
+		<method name="_get_recognized_extensions" qualifiers="virtual const">
+			<return type="PackedStringArray" />
 			<description>
 				Gets the list of file extensions to associate with this parser, e.g. [code]["csv"][/code].
 			</description>
 		</method>
 		<method name="_parse_file" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="msgids" type="Array">
-			</argument>
-			<argument index="2" name="msgids_context_plural" type="Array">
-			</argument>
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="msgids" type="String[]" />
+			<param index="2" name="msgids_context_plural" type="Array[]" />
 			<description>
 				Override this method to define a custom parsing logic to extract the translatable strings.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

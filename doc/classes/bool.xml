@@ -1,168 +1,109 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="bool" version="4.0">
+<class name="bool" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Boolean built-in type.
+		A built-in boolean type.
 	</brief_description>
 	<description>
-		Boolean is a built-in type. There are two boolean values: [code]true[/code] and [code]false[/code]. You can think of it as a switch with on or off (1 or 0) setting. Booleans are used in programming for logic in condition statements, like [code]if[/code] statements.
-		Booleans can be directly used in [code]if[/code] statements. The code below demonstrates this on the [code]if can_shoot:[/code] line. You don't need to use [code]== true[/code], you only need [code]if can_shoot:[/code]. Similarly, use [code]if not can_shoot:[/code] rather than [code]== false[/code].
+		The [bool] is a built-in [Variant] type that may only store one of two values: [code]true[/code] or [code]false[/code]. You can imagine it as a switch that can be either turned on or off, or as a binary digit that can either be 1 or 0.
+		Booleans can be directly used in [code]if[/code], and other conditional statements:
 		[codeblocks]
 		[gdscript]
-		var _can_shoot = true
-
-		func shoot():
-		    if _can_shoot:
-		        pass # Perform shooting actions here.
+		var can_shoot = true
+		if can_shoot:
+		    launch_bullet()
 		[/gdscript]
 		[csharp]
-		private bool _canShoot = true;
-
-		public void Shoot()
+		bool canShoot = true;
+		if (canShoot)
 		{
-		    if (_canShoot)
-		    {
-		        // Perform shooting actions here.
-		    }
+		    LaunchBullet();
 		}
 		[/csharp]
 		[/codeblocks]
-		The following code will only create a bullet if both conditions are met: action "shoot" is pressed and if [code]can_shoot[/code] is [code]true[/code].
-		[b]Note:[/b] [code]Input.is_action_pressed("shoot")[/code] is also a boolean that is [code]true[/code] when "shoot" is pressed and [code]false[/code] when "shoot" isn't pressed.
+		All comparison operators return booleans ([code]==[/code], [code]&gt;[/code], [code]&lt;=[/code], etc.). As such, it is not necessary to compare booleans themselves. You do not need to add [code]== true[/code] or [code]== false[/code].
+		Booleans can be combined with the logical operators [code]and[/code], [code]or[/code], [code]not[/code] to create complex conditions:
 		[codeblocks]
 		[gdscript]
-		var _can_shoot = true
+		if bullets &gt; 0 and not is_reloading():
+		    launch_bullet()
 
-		func shoot():
-		    if _can_shoot and Input.is_action_pressed("shoot"):
-		        create_bullet()
+		if bullets == 0 or is_reloading():
+		    play_clack_sound()
 		[/gdscript]
 		[csharp]
-		private bool _canShoot = true;
-
-		public void Shoot()
+		if (bullets &gt; 0 &amp;&amp; !IsReloading())
 		{
-		    if (_canShoot &amp;&amp; Input.IsActionPressed("shoot"))
-		    {
-		        CreateBullet();
-		    }
+		    LaunchBullet();
+		}
+
+		if (bullets == 0 || IsReloading())
+		{
+		    PlayClackSound();
 		}
 		[/csharp]
 		[/codeblocks]
-		The following code will set [code]can_shoot[/code] to [code]false[/code] and start a timer. This will prevent player from shooting until the timer runs out. Next [code]can_shoot[/code] will be set to [code]true[/code] again allowing player to shoot once again.
-		[codeblocks]
-		[gdscript]
-		var _can_shoot = true
-		onready var _cool_down = $CoolDownTimer
-
-		func shoot():
-		    if _can_shoot and Input.is_action_pressed("shoot"):
-		        create_bullet()
-		        _can_shoot = false
-		        _cool_down.start()
-
-		func _on_CoolDownTimer_timeout():
-		    _can_shoot = true
-		[/gdscript]
-		[csharp]
-		private bool _canShoot = true;
-		private Timer _coolDown;
-
-		public override void _Ready()
-		{
-		    _coolDown = GetNode&lt;Timer&gt;("CoolDownTimer");
-		}
-
-		public void Shoot()
-		{
-		    if (_canShoot &amp;&amp; Input.IsActionPressed("shoot"))
-		    {
-		        CreateBullet();
-		        _canShoot = false;
-		        _coolDown.Start();
-		    }
-		}
-
-		public void OnCoolDownTimerTimeout()
-		{
-		    _canShoot = true;
-		}
-		[/csharp]
-		[/codeblocks]
+		[b]Note:[/b] In modern programming languages, logical operators are evaluated in order. All remaining conditions are skipped if their result would have no effect on the final value. This concept is known as [url=https://en.wikipedia.org/wiki/Short-circuit_evaluation]short-circuit evaluation[/url] and can be useful to avoid evaluating expensive conditions in some performance-critical cases.
+		[b]Note:[/b] By convention, built-in methods and properties that return booleans are usually defined as yes-no questions, single adjectives, or similar ([method String.is_empty], [method Node.can_process], [member Camera2D.enabled], etc.).
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="bool" qualifiers="constructor">
-			<return type="bool">
-			</return>
+	<constructors>
+		<constructor name="bool">
+			<return type="bool" />
 			<description>
-				Constructs a default-initialized [bool] set to [code]false[/code].
+				Constructs a [bool] set to [code]false[/code].
 			</description>
-		</method>
-		<method name="bool" qualifiers="constructor">
-			<return type="bool">
-			</return>
-			<argument index="0" name="from" type="bool">
-			</argument>
+		</constructor>
+		<constructor name="bool">
+			<return type="bool" />
+			<param index="0" name="from" type="bool" />
 			<description>
 				Constructs a [bool] as a copy of the given [bool].
 			</description>
-		</method>
-		<method name="bool" qualifiers="constructor">
-			<return type="bool">
-			</return>
-			<argument index="0" name="from" type="float">
-			</argument>
+		</constructor>
+		<constructor name="bool">
+			<return type="bool" />
+			<param index="0" name="from" type="float" />
 			<description>
-				Cast a [float] value to a boolean value, this method will return [code]false[/code] if [code]0.0[/code] is passed in, and [code]true[/code] for all other floats.
+				Cast a [float] value to a boolean value. Returns [code]false[/code] if [param from] is equal to [code]0.0[/code] (including [code]-0.0[/code]), and [code]true[/code] for all other values (including [constant @GDScript.INF] and [constant @GDScript.NAN]).
 			</description>
-		</method>
-		<method name="bool" qualifiers="constructor">
-			<return type="bool">
-			</return>
-			<argument index="0" name="from" type="int">
-			</argument>
+		</constructor>
+		<constructor name="bool">
+			<return type="bool" />
+			<param index="0" name="from" type="int" />
 			<description>
-				Cast an [int] value to a boolean value, this method will return [code]false[/code] if [code]0[/code] is passed in, and [code]true[/code] for all other ints.
+				Cast an [int] value to a boolean value. Returns [code]false[/code] if [param from] is equal to [code]0[/code], and [code]true[/code] for all other values.
 			</description>
-		</method>
-		<method name="operator !=" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="bool">
-			</argument>
+		</constructor>
+	</constructors>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
 			<description>
-				Returns [code]true[/code] if two bools are different, i.e. one is [code]true[/code] and the other is [code]false[/code].
+				Returns [code]true[/code] if the two booleans are not equal. That is, one is [code]true[/code] and the other is [code]false[/code]. This operation can be seen as a logical XOR.
 			</description>
-		</method>
-		<method name="operator &lt;" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="bool">
-			</argument>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
 			<description>
-				Returns [code]true[/code] if left operand is [code]false[/code] and right operand is [code]true[/code].
+				Returns [code]true[/code] if the left operand is [code]false[/code] and the right operand is [code]true[/code].
 			</description>
-		</method>
-		<method name="operator ==" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="bool">
-			</argument>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
 			<description>
-				Returns [code]true[/code] if two bools are equal, i.e. both are [code]true[/code] or both are [code]false[/code].
+				Returns [code]true[/code] if the two booleans are equal. That is, both are [code]true[/code] or both are [code]false[/code]. This operation can be seen as a logical EQ or XNOR.
 			</description>
-		</method>
-		<method name="operator &gt;" qualifiers="operator">
-			<return type="bool">
-			</return>
-			<argument index="0" name="right" type="bool">
-			</argument>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
 			<description>
-				Returns [code]true[/code] if left operand is [code]true[/code] and right operand is [code]false[/code].
+				Returns [code]true[/code] if the left operand is [code]true[/code] and the right operand is [code]false[/code].
 			</description>
-		</method>
-	</methods>
-	<constants>
-	</constants>
+		</operator>
+	</operators>
 </class>

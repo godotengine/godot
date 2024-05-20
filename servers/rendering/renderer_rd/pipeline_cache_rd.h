@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  pipeline_cache_rd.h                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  pipeline_cache_rd.h                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef PIPELINE_CACHE_RD_H
 #define PIPELINE_CACHE_RD_H
@@ -38,14 +38,14 @@ class PipelineCacheRD {
 	SpinLock spin_lock;
 
 	RID shader;
-	uint32_t input_mask;
+	uint64_t input_mask;
 
 	RD::RenderPrimitive render_primitive;
 	RD::PipelineRasterizationState rasterization_state;
 	RD::PipelineMultisampleState multisample_state;
 	RD::PipelineDepthStencilState depth_stencil_state;
 	RD::PipelineColorBlendState blend_state;
-	int dynamic_state_flags;
+	int dynamic_state_flags = 0;
 	Vector<RD::PipelineSpecializationConstant> base_specialization_constants;
 
 	struct Version {
@@ -57,7 +57,7 @@ class PipelineCacheRD {
 		RID pipeline;
 	};
 
-	Version *versions;
+	Version *versions = nullptr;
 	uint32_t version_count;
 
 	RID _generate_version(RD::VertexFormatID p_vertex_format_id, RD::FramebufferFormatID p_framebuffer_format_id, bool p_wireframe, uint32_t p_render_pass, uint32_t p_bool_specializations = 0);
@@ -76,6 +76,8 @@ public:
 #endif
 
 		spin_lock.lock();
+		p_wireframe |= rasterization_state.wireframe;
+
 		RID result;
 		for (uint32_t i = 0; i < version_count; i++) {
 			if (versions[i].vertex_id == p_vertex_format_id && versions[i].framebuffer_id == p_framebuffer_format_id && versions[i].wireframe == p_wireframe && versions[i].render_pass == p_render_pass && versions[i].bool_specializations == p_bool_specializations) {
@@ -89,7 +91,11 @@ public:
 		return result;
 	}
 
-	_FORCE_INLINE_ uint32_t get_vertex_input_mask() const {
+	_FORCE_INLINE_ uint64_t get_vertex_input_mask() {
+		if (input_mask == 0) {
+			ERR_FAIL_COND_V(shader.is_null(), 0);
+			input_mask = RD::get_singleton()->shader_get_vertex_input_attribute_mask(shader);
+		}
 		return input_mask;
 	}
 	void clear();
@@ -97,4 +103,4 @@ public:
 	~PipelineCacheRD();
 };
 
-#endif // RENDER_PIPELINE_CACHE_RD_H
+#endif // PIPELINE_CACHE_RD_H

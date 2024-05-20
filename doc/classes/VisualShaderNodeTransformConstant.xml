@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeTransformConstant" inherits="VisualShaderNodeConstant" version="4.0">
+<class name="VisualShaderNodeTransformConstant" inherits="VisualShaderNodeConstant" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [Transform3D] constant for use within the visual shader graph.
 	</brief_description>
@@ -8,13 +8,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="constant" type="Transform3D" setter="set_constant" getter="get_constant" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			A [Transform3D] constant which represents the state of this node.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

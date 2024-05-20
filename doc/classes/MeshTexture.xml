@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshTexture" inherits="Texture2D" version="4.0">
+<class name="MeshTexture" inherits="Texture2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Simple texture that uses a mesh to draw itself.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="base_texture" type="Texture2D" setter="set_base_texture" getter="get_base_texture">
 			Sets the base texture that the Mesh will use to draw.
@@ -20,7 +18,6 @@
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			Sets the mesh used to draw. It must be a mesh using 2D vertices.
 		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 	</members>
-	<constants>
-	</constants>
 </class>

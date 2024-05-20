@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ParallaxBackground" inherits="CanvasLayer" version="4.0">
+<class name="ParallaxBackground" inherits="CanvasLayer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node used to create a parallax scrolling background.
 	</brief_description>
 	<description>
 		A ParallaxBackground uses one or more [ParallaxLayer] child nodes to create a parallax effect. Each [ParallaxLayer] can move at a different speed using [member ParallaxLayer.motion_offset]. This creates an illusion of depth in a 2D game. If not used with a [Camera2D], you must manually calculate the [member scroll_offset].
+		[b]Note:[/b] Each [ParallaxBackground] is drawn on one specific [Viewport] and cannot be shared between multiple [Viewport]s, see [member CanvasLayer.custom_viewport]. When using multiple [Viewport]s, for example in a split-screen game, you need create an individual [ParallaxBackground] for each [Viewport] you want it to be drawn on.
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="layer" type="int" setter="set_layer" getter="get_layer" override="true" default="-100" />
+		<member name="layer" type="int" setter="set_layer" getter="get_layer" overrides="CanvasLayer" default="-100" />
 		<member name="scroll_base_offset" type="Vector2" setter="set_scroll_base_offset" getter="get_scroll_base_offset" default="Vector2(0, 0)">
 			The base position offset for all [ParallaxLayer] children.
 		</member>
@@ -31,6 +30,4 @@
 			The ParallaxBackground's scroll value. Calculated automatically when using a [Camera2D], but can be used to manually manage scrolling when no camera is present.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

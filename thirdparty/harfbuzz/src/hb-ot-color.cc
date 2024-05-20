@@ -31,11 +31,11 @@
 
 #include "hb-ot.h"
 
-#include "hb-ot-color-cbdt-table.hh"
-#include "hb-ot-color-colr-table.hh"
-#include "hb-ot-color-cpal-table.hh"
-#include "hb-ot-color-sbix-table.hh"
-#include "hb-ot-color-svg-table.hh"
+#include "OT/Color/CBDT/CBDT.hh"
+#include "OT/Color/COLR/COLR.hh"
+#include "OT/Color/CPAL/CPAL.hh"
+#include "OT/Color/sbix/sbix.hh"
+#include "OT/Color/svg/svg.hh"
 
 
 /**
@@ -61,7 +61,7 @@
  *
  * Tests whether a face includes a `CPAL` color-palette table.
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  * Since: 2.1.0
  */
@@ -90,15 +90,15 @@ hb_ot_color_palette_get_count (hb_face_t *face)
 /**
  * hb_ot_color_palette_get_name_id:
  * @face: #hb_face_t to work upon
- * @palette_index: The index of the color palette 
+ * @palette_index: The index of the color palette
  *
  * Fetches the `name` table Name ID that provides display names for
- * a `CPAL` color palette. 
+ * a `CPAL` color palette.
  *
  * Palette display names can be generic (e.g., "Default") or provide
  * specific, themed names (e.g., "Spring", "Summer", "Fall", and "Winter").
  *
- * Return value: the Named ID found for the palette. 
+ * Return value: the Named ID found for the palette.
  * If the requested palette has no name the result is #HB_OT_NAME_ID_INVALID.
  *
  * Since: 2.1.0
@@ -116,7 +116,7 @@ hb_ot_color_palette_get_name_id (hb_face_t *face,
  * @color_index: The index of the color
  *
  * Fetches the `name` table Name ID that provides display names for
- * the specificed color in a face's `CPAL` color palette. 
+ * the specified color in a face's `CPAL` color palette.
  *
  * Display names can be generic (e.g., "Background") or specific
  * (e.g., "Eye color").
@@ -167,6 +167,10 @@ hb_ot_color_palette_get_flags (hb_face_t *face,
  * for allocating a buffer of suitable size before calling
  * hb_ot_color_palette_get_colors() a second time.
  *
+ * The RGBA values in the palette are unpremultiplied. See the
+ * OpenType spec [CPAL](https://learn.microsoft.com/en-us/typography/opentype/spec/cpal)
+ * section for details.
+ *
  * Return value: the total number of colors in the palette
  *
  * Since: 2.1.0
@@ -190,16 +194,53 @@ hb_ot_color_palette_get_colors (hb_face_t     *face,
  * hb_ot_color_has_layers:
  * @face: #hb_face_t to work upon
  *
- * Tests whether a face includes any `COLR` color layers.
+ * Tests whether a face includes a `COLR` table
+ * with data according to COLRv0.
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  * Since: 2.1.0
  */
 hb_bool_t
 hb_ot_color_has_layers (hb_face_t *face)
 {
-  return face->table.COLR->has_data ();
+  return face->table.COLR->has_v0_data ();
+}
+
+/**
+ * hb_ot_color_has_paint:
+ * @face: #hb_face_t to work upon
+ *
+ * Tests where a face includes a `COLR` table
+ * with data according to COLRv1.
+ *
+ * Return value: `true` if data found, `false` otherwise
+ *
+ * Since: 7.0.0
+ */
+hb_bool_t
+hb_ot_color_has_paint (hb_face_t *face)
+{
+  return face->table.COLR->has_v1_data ();
+}
+
+/**
+ * hb_ot_color_glyph_has_paint:
+ * @face: #hb_face_t to work upon
+ * @glyph: The glyph index to query
+ *
+ * Tests where a face includes COLRv1 paint
+ * data for @glyph.
+ *
+ * Return value: `true` if data found, `false` otherwise
+ *
+ * Since: 7.0.0
+ */
+hb_bool_t
+hb_ot_color_glyph_has_paint (hb_face_t      *face,
+                             hb_codepoint_t  glyph)
+{
+  return face->table.COLR->has_paint_for_glyph (glyph);
 }
 
 /**
@@ -239,7 +280,7 @@ hb_ot_color_glyph_get_layers (hb_face_t           *face,
  *
  * Tests whether a face includes any `SVG` glyph images.
  *
- * Return value: %true if data found, %false otherwise.
+ * Return value: `true` if data found, `false` otherwise.
  *
  * Since: 2.1.0
  */
@@ -255,6 +296,8 @@ hb_ot_color_has_svg (hb_face_t *face)
  * @glyph: a svg glyph index
  *
  * Fetches the SVG document for a glyph. The blob may be either plain text or gzip-encoded.
+ *
+ * If the glyph has no SVG document, the singleton empty blob is returned.
  *
  * Return value: (transfer full): An #hb_blob_t containing the SVG document of the glyph, if available
  *
@@ -277,7 +320,7 @@ hb_ot_color_glyph_reference_svg (hb_face_t *face, hb_codepoint_t glyph)
  *
  * Tests whether a face has PNG glyph images (either in `CBDT` or `sbix` tables).
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  * Since: 2.1.0
  */
@@ -293,8 +336,10 @@ hb_ot_color_has_png (hb_face_t *face)
  * @glyph: a glyph index
  *
  * Fetches the PNG image for a glyph. This function takes a font object, not a face object,
- * as input. To get an optimally sized PNG blob, the UPEM value must be set on the @font
- * object. If UPEM is unset, the blob returned will be the largest PNG available.
+ * as input. To get an optimally sized PNG blob, the PPEM values must be set on the @font
+ * object. If PPEM is unset, the blob returned will be the largest PNG available.
+ *
+ * If the glyph has no PNG image, the singleton empty blob is returned.
  *
  * Return value: (transfer full): An #hb_blob_t containing the PNG image for the glyph, if available
  *

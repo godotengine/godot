@@ -1,17 +1,33 @@
 using System;
+using System.Runtime.InteropServices;
+using Godot.NativeInterop;
 
 namespace Godot
 {
     public static partial class GD
     {
-        /// <summary>
-        /// Fires when an unhandled exception occurs, regardless of project settings.
-        /// </summary>
-        public static event EventHandler<UnhandledExceptionArgs> UnhandledException;
-
-        private static void OnUnhandledException(Exception e)
+        [UnmanagedCallersOnly]
+        internal static void OnCoreApiAssemblyLoaded(godot_bool isDebug)
         {
-            UnhandledException?.Invoke(null, new UnhandledExceptionArgs(e));
+            try
+            {
+                Dispatcher.InitializeDefaultGodotTaskScheduler();
+
+                if (isDebug.ToBool())
+                {
+                    DebuggingUtils.InstallTraceListener();
+
+                    AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+                    {
+                        // Exception.ToString() includes the inner exception
+                        ExceptionUtils.LogUnhandledException((Exception)e.ExceptionObject);
+                    };
+                }
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+            }
         }
     }
 }

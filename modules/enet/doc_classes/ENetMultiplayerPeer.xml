@@ -1,195 +1,74 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ENetMultiplayerPeer" inherits="MultiplayerPeer" version="4.0">
+<class name="ENetMultiplayerPeer" inherits="MultiplayerPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		PacketPeer implementation using the [url=http://enet.bespin.org/index.html]ENet[/url] library.
+		A MultiplayerPeer implementation using the [url=http://enet.bespin.org/index.html]ENet[/url] library.
 	</brief_description>
 	<description>
-		A PacketPeer implementation that should be passed to [member MultiplayerAPI.network_peer] after being initialized as either a client or server. Events can then be handled by connecting to [SceneTree] signals.
-		ENet's purpose is to provide a relatively thin, simple and robust network communication layer on top of UDP (User Datagram Protocol).
+		A MultiplayerPeer implementation that should be passed to [member MultiplayerAPI.multiplayer_peer] after being initialized as either a client, server, or mesh. Events can then be handled by connecting to [MultiplayerAPI] signals. See [ENetConnection] for more information on the ENet library wrapper.
 		[b]Note:[/b] ENet only uses UDP, not TCP. When forwarding the server port to make your server accessible on the public Internet, you only need to forward the server port in UDP. You can use the [UPNP] class to try to forward the server port automatically when starting the server.
 	</description>
 	<tutorials>
-		<link title="High-level multiplayer">https://docs.godotengine.org/en/latest/tutorials/networking/high_level_multiplayer.html</link>
+		<link title="High-level multiplayer">$DOCS_URL/tutorials/networking/high_level_multiplayer.html</link>
 		<link title="API documentation on the ENet website">http://enet.bespin.org/usergroup0.html</link>
 	</tutorials>
 	<methods>
-		<method name="close_connection">
-			<return type="void">
-			</return>
-			<argument index="0" name="wait_usec" type="int" default="100">
-			</argument>
+		<method name="add_mesh_peer">
+			<return type="int" enum="Error" />
+			<param index="0" name="peer_id" type="int" />
+			<param index="1" name="host" type="ENetConnection" />
 			<description>
-				Closes the connection. Ignored if no connection is currently established. If this is a server it tries to notify all clients before forcibly disconnecting them. If this is a client it simply closes the connection to the server.
+				Add a new remote peer with the given [param peer_id] connected to the given [param host].
+				[b]Note:[/b] The [param host] must have exactly one peer in the [constant ENetPacketPeer.STATE_CONNECTED] state.
 			</description>
 		</method>
 		<method name="create_client">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="address" type="String">
-			</argument>
-			<argument index="1" name="port" type="int">
-			</argument>
-			<argument index="2" name="in_bandwidth" type="int" default="0">
-			</argument>
-			<argument index="3" name="out_bandwidth" type="int" default="0">
-			</argument>
-			<argument index="4" name="local_port" type="int" default="0">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="address" type="String" />
+			<param index="1" name="port" type="int" />
+			<param index="2" name="channel_count" type="int" default="0" />
+			<param index="3" name="in_bandwidth" type="int" default="0" />
+			<param index="4" name="out_bandwidth" type="int" default="0" />
+			<param index="5" name="local_port" type="int" default="0" />
 			<description>
-				Create client that connects to a server at [code]address[/code] using specified [code]port[/code]. The given address needs to be either a fully qualified domain name (e.g. [code]"www.example.com"[/code]) or an IP address in IPv4 or IPv6 format (e.g. [code]"192.168.1.1"[/code]). The [code]port[/code] is the port the server is listening on. The [code]in_bandwidth[/code] and [code]out_bandwidth[/code] parameters can be used to limit the incoming and outgoing bandwidth to the given number of bytes per second. The default of 0 means unlimited bandwidth. Note that ENet will strategically drop packets on specific sides of a connection between peers to ensure the peer's bandwidth is not overwhelmed. The bandwidth parameters also determine the window size of a connection which limits the amount of reliable packets that may be in transit at any given time. Returns [constant OK] if a client was created, [constant ERR_ALREADY_IN_USE] if this ENetMultiplayerPeer instance already has an open connection (in which case you need to call [method close_connection] first) or [constant ERR_CANT_CREATE] if the client could not be created. If [code]local_port[/code] is specified, the client will also listen to the given port; this is useful for some NAT traversal techniques.
+				Create client that connects to a server at [param address] using specified [param port]. The given address needs to be either a fully qualified domain name (e.g. [code]"www.example.com"[/code]) or an IP address in IPv4 or IPv6 format (e.g. [code]"192.168.1.1"[/code]). The [param port] is the port the server is listening on. The [param channel_count] parameter can be used to specify the number of ENet channels allocated for the connection. The [param in_bandwidth] and [param out_bandwidth] parameters can be used to limit the incoming and outgoing bandwidth to the given number of bytes per second. The default of 0 means unlimited bandwidth. Note that ENet will strategically drop packets on specific sides of a connection between peers to ensure the peer's bandwidth is not overwhelmed. The bandwidth parameters also determine the window size of a connection which limits the amount of reliable packets that may be in transit at any given time. Returns [constant OK] if a client was created, [constant ERR_ALREADY_IN_USE] if this ENetMultiplayerPeer instance already has an open connection (in which case you need to call [method MultiplayerPeer.close] first) or [constant ERR_CANT_CREATE] if the client could not be created. If [param local_port] is specified, the client will also listen to the given port; this is useful for some NAT traversal techniques.
+			</description>
+		</method>
+		<method name="create_mesh">
+			<return type="int" enum="Error" />
+			<param index="0" name="unique_id" type="int" />
+			<description>
+				Initialize this [MultiplayerPeer] in mesh mode. The provided [param unique_id] will be used as the local peer network unique ID once assigned as the [member MultiplayerAPI.multiplayer_peer]. In the mesh configuration you will need to set up each new peer manually using [ENetConnection] before calling [method add_mesh_peer]. While this technique is more advanced, it allows for better control over the connection process (e.g. when dealing with NAT punch-through) and for better distribution of the network load (which would otherwise be more taxing on the server).
 			</description>
 		</method>
 		<method name="create_server">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="max_clients" type="int" default="32">
-			</argument>
-			<argument index="2" name="in_bandwidth" type="int" default="0">
-			</argument>
-			<argument index="3" name="out_bandwidth" type="int" default="0">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="max_clients" type="int" default="32" />
+			<param index="2" name="max_channels" type="int" default="0" />
+			<param index="3" name="in_bandwidth" type="int" default="0" />
+			<param index="4" name="out_bandwidth" type="int" default="0" />
 			<description>
-				Create server that listens to connections via [code]port[/code]. The port needs to be an available, unused port between 0 and 65535. Note that ports below 1024 are privileged and may require elevated permissions depending on the platform. To change the interface the server listens on, use [method set_bind_ip]. The default IP is the wildcard [code]"*"[/code], which listens on all available interfaces. [code]max_clients[/code] is the maximum number of clients that are allowed at once, any number up to 4095 may be used, although the achievable number of simultaneous clients may be far lower and depends on the application. For additional details on the bandwidth parameters, see [method create_client]. Returns [constant OK] if a server was created, [constant ERR_ALREADY_IN_USE] if this ENetMultiplayerPeer instance already has an open connection (in which case you need to call [method close_connection] first) or [constant ERR_CANT_CREATE] if the server could not be created.
+				Create server that listens to connections via [param port]. The port needs to be an available, unused port between 0 and 65535. Note that ports below 1024 are privileged and may require elevated permissions depending on the platform. To change the interface the server listens on, use [method set_bind_ip]. The default IP is the wildcard [code]"*"[/code], which listens on all available interfaces. [param max_clients] is the maximum number of clients that are allowed at once, any number up to 4095 may be used, although the achievable number of simultaneous clients may be far lower and depends on the application. For additional details on the bandwidth parameters, see [method create_client]. Returns [constant OK] if a server was created, [constant ERR_ALREADY_IN_USE] if this ENetMultiplayerPeer instance already has an open connection (in which case you need to call [method MultiplayerPeer.close] first) or [constant ERR_CANT_CREATE] if the server could not be created.
 			</description>
 		</method>
-		<method name="disconnect_peer">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="now" type="bool" default="false">
-			</argument>
+		<method name="get_peer" qualifiers="const">
+			<return type="ENetPacketPeer" />
+			<param index="0" name="id" type="int" />
 			<description>
-				Disconnect the given peer. If "now" is set to [code]true[/code], the connection will be closed immediately without flushing queued messages.
-			</description>
-		</method>
-		<method name="get_last_packet_channel" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the channel of the last packet fetched via [method PacketPeer.get_packet].
-			</description>
-		</method>
-		<method name="get_local_port" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the local port to which this peer is bound.
-			</description>
-		</method>
-		<method name="get_packet_channel" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the channel of the next packet that will be retrieved via [method PacketPeer.get_packet].
-			</description>
-		</method>
-		<method name="get_peer_address" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the IP address of the given peer.
-			</description>
-		</method>
-		<method name="get_peer_port" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the remote port of the given peer.
+				Returns the [ENetPacketPeer] associated to the given [param id].
 			</description>
 		</method>
 		<method name="set_bind_ip">
-			<return type="void">
-			</return>
-			<argument index="0" name="ip" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="ip" type="String" />
 			<description>
 				The IP used when creating a server. This is set to the wildcard [code]"*"[/code] by default, which binds to all available interfaces. The given IP needs to be in IPv4 or IPv6 address format, for example: [code]"192.168.1.1"[/code].
 			</description>
 		</method>
-		<method name="set_dtls_certificate">
-			<return type="void">
-			</return>
-			<argument index="0" name="certificate" type="X509Certificate">
-			</argument>
-			<description>
-				Configure the [X509Certificate] to use when [member use_dtls] is [code]true[/code]. For servers, you must also setup the [CryptoKey] via [method set_dtls_key].
-			</description>
-		</method>
-		<method name="set_dtls_key">
-			<return type="void">
-			</return>
-			<argument index="0" name="key" type="CryptoKey">
-			</argument>
-			<description>
-				Configure the [CryptoKey] to use when [member use_dtls] is [code]true[/code]. Remember to also call [method set_dtls_certificate] to setup your [X509Certificate].
-			</description>
-		</method>
-		<method name="set_peer_timeout">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="timeout_limit" type="int">
-			</argument>
-			<argument index="2" name="timeout_min" type="int">
-			</argument>
-			<argument index="3" name="timeout_max" type="int">
-			</argument>
-			<description>
-				Sets the timeout parameters for a peer.	The timeout parameters control how and when a peer will timeout from a failure to acknowledge reliable traffic. Timeout values are expressed in milliseconds.
-				The [code]timeout_limit[/code] is a factor that, multiplied by a value based on the average round trip time, will determine the timeout limit for a reliable packet. When that limit is reached, the timeout will be doubled, and the peer will be disconnected if that limit has reached [code]timeout_min[/code]. The [code]timeout_max[/code] parameter, on the other hand, defines a fixed timeout for which any packet must be acknowledged or the peer will be dropped.
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="always_ordered" type="bool" setter="set_always_ordered" getter="is_always_ordered" default="false">
-			Enforce ordered packets when using [constant MultiplayerPeer.TRANSFER_MODE_UNRELIABLE] (thus behaving similarly to [constant MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED]). This is the only way to use ordering with the RPC system.
-		</member>
-		<member name="channel_count" type="int" setter="set_channel_count" getter="get_channel_count" default="3">
-			The number of channels to be used by ENet. Channels are used to separate different kinds of data. In reliable or ordered mode, for example, the packet delivery order is ensured on a per-channel basis. This is done to combat latency and reduces ordering restrictions on packets. The delivery status of a packet in one channel won't stall the delivery of other packets in another channel.
-		</member>
-		<member name="compression_mode" type="int" setter="set_compression_mode" getter="get_compression_mode" enum="ENetMultiplayerPeer.CompressionMode" default="1">
-			The compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.
-			[b]Note:[/b] Most games' network design involve sending many small packets frequently (smaller than 4 KB each). If in doubt, it is recommended to keep the default compression algorithm as it works best on these small packets.
-		</member>
-		<member name="dtls_verify" type="bool" setter="set_dtls_verify_enabled" getter="is_dtls_verify_enabled" default="true">
-			Enable or disable certificate verification when [member use_dtls] [code]true[/code].
-		</member>
-		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" override="true" default="false" />
-		<member name="server_relay" type="bool" setter="set_server_relay_enabled" getter="is_server_relay_enabled" default="true">
-			Enable or disable the server feature that notifies clients of other peers' connection/disconnection, and relays messages between them. When this option is [code]false[/code], clients won't be automatically notified of other peers and won't be able to send them packets through the server.
-		</member>
-		<member name="transfer_channel" type="int" setter="set_transfer_channel" getter="get_transfer_channel" default="-1">
-			Set the default channel to be used to transfer data. By default, this value is [code]-1[/code] which means that ENet will only use 2 channels: one for reliable packets, and one for unreliable packets. The channel [code]0[/code] is reserved and cannot be used. Setting this member to any value between [code]0[/code] and [member channel_count] (excluded) will force ENet to use that channel for sending data. See [member channel_count] for more information about ENet channels.
-		</member>
-		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" override="true" enum="MultiplayerPeer.TransferMode" default="2" />
-		<member name="use_dtls" type="bool" setter="set_dtls_enabled" getter="is_dtls_enabled" default="false">
-			When enabled, the client or server created by this peer, will use [PacketPeerDTLS] instead of raw UDP sockets for communicating with the remote peer. This will make the communication encrypted with DTLS at the cost of higher resource usage and potentially larger packet size.
-			Note: When creating a DTLS server, make sure you setup the key/certificate pair via [method set_dtls_key] and [method set_dtls_certificate]. For DTLS clients, have a look at the [member dtls_verify] option, and configure the certificate accordingly via [method set_dtls_certificate].
+		<member name="host" type="ENetConnection" setter="" getter="get_host">
+			The underlying [ENetConnection] created after [method create_client] and [method create_server].
 		</member>
 	</members>
-	<constants>
-		<constant name="COMPRESS_NONE" value="0" enum="CompressionMode">
-			No compression. This uses the most bandwidth, but has the upside of requiring the fewest CPU resources. This option may also be used to make network debugging using tools like Wireshark easier.
-		</constant>
-		<constant name="COMPRESS_RANGE_CODER" value="1" enum="CompressionMode">
-			ENet's built-in range encoding. Works well on small packets, but is not the most efficient algorithm on packets larger than 4 KB.
-		</constant>
-		<constant name="COMPRESS_FASTLZ" value="2" enum="CompressionMode">
-			[url=http://fastlz.org/]FastLZ[/url] compression. This option uses less CPU resources compared to [constant COMPRESS_ZLIB], at the expense of using more bandwidth.
-		</constant>
-		<constant name="COMPRESS_ZLIB" value="3" enum="CompressionMode">
-			[url=https://www.zlib.net/]Zlib[/url] compression. This option uses less bandwidth compared to [constant COMPRESS_FASTLZ], at the expense of using more CPU resources.
-		</constant>
-		<constant name="COMPRESS_ZSTD" value="4" enum="CompressionMode">
-			[url=https://facebook.github.io/zstd/]Zstandard[/url] compression. Note that this algorithm is not very efficient on packets smaller than 4 KB. Therefore, it's recommended to use other compression algorithms in most cases.
-		</constant>
-	</constants>
 </class>

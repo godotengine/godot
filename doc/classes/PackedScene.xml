@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedScene" inherits="Resource" version="4.0">
+<class name="PackedScene" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An abstraction of a serialized scene.
 	</brief_description>
 	<description>
 		A simplified interface to a scene file. Provides access to operations and checks that can be performed on the scene resource itself.
-		Can be used to save a node to a file. When saving, the node as well as all the nodes it owns get saved (see [code]owner[/code] property on [Node]).
+		Can be used to save a node to a file. When saving, the node as well as all the nodes it owns get saved (see [member Node.owner] property).
 		[b]Note:[/b] The node doesn't need to own itself.
 		[b]Example of loading a saved scene:[/b]
 		[codeblocks]
@@ -22,48 +22,48 @@
 		AddChild(scene);
 		[/csharp]
 		[/codeblocks]
-		[b]Example of saving a node with different owners:[/b] The following example creates 3 objects: [code]Node2D[/code] ([code]node[/code]), [code]RigidBody2D[/code] ([code]rigid[/code]) and [code]CollisionObject2D[/code] ([code]collision[/code]). [code]collision[/code] is a child of [code]rigid[/code] which is a child of [code]node[/code]. Only [code]rigid[/code] is owned by [code]node[/code] and [code]pack[/code] will therefore only save those two nodes, but not [code]collision[/code].
+		[b]Example of saving a node with different owners:[/b] The following example creates 3 objects: [Node2D] ([code]node[/code]), [RigidBody2D] ([code]body[/code]) and [CollisionObject2D] ([code]collision[/code]). [code]collision[/code] is a child of [code]body[/code] which is a child of [code]node[/code]. Only [code]body[/code] is owned by [code]node[/code] and [method pack] will therefore only save those two nodes, but not [code]collision[/code].
 		[codeblocks]
 		[gdscript]
 		# Create the objects.
 		var node = Node2D.new()
-		var rigid = RigidBody2D.new()
+		var body = RigidBody2D.new()
 		var collision = CollisionShape2D.new()
 
 		# Create the object hierarchy.
-		rigid.add_child(collision)
-		node.add_child(rigid)
+		body.add_child(collision)
+		node.add_child(body)
 
-		# Change owner of `rigid`, but not of `collision`.
-		rigid.owner = node
+		# Change owner of `body`, but not of `collision`.
+		body.owner = node
 		var scene = PackedScene.new()
 
-		# Only `node` and `rigid` are now packed.
+		# Only `node` and `body` are now packed.
 		var result = scene.pack(node)
 		if result == OK:
-		    var error = ResourceSaver.save("res://path/name.tscn", scene)  # Or "user://..."
+		    var error = ResourceSaver.save(scene, "res://path/name.tscn")  # Or "user://..."
 		    if error != OK:
 		        push_error("An error occurred while saving the scene to disk.")
 		[/gdscript]
 		[csharp]
 		// Create the objects.
 		var node = new Node2D();
-		var rigid = new RigidBody2D();
+		var body = new RigidBody2D();
 		var collision = new CollisionShape2D();
 
 		// Create the object hierarchy.
-		rigid.AddChild(collision);
-		node.AddChild(rigid);
+		body.AddChild(collision);
+		node.AddChild(body);
 
-		// Change owner of `rigid`, but not of `collision`.
-		rigid.Owner = node;
+		// Change owner of `body`, but not of `collision`.
+		body.Owner = node;
 		var scene = new PackedScene();
 
-		// Only `node` and `rigid` are now packed.
+		// Only `node` and `body` are now packed.
 		Error result = scene.Pack(node);
 		if (result == Error.Ok)
 		{
-		    Error error = ResourceSaver.Save("res://path/name.tscn", scene); // Or "user://..."
+		    Error error = ResourceSaver.Save(scene, "res://path/name.tscn"); // Or "user://..."
 		    if (error != Error.Ok)
 		    {
 		        GD.PushError("An error occurred while saving the scene to disk.");
@@ -73,46 +73,40 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
+		<link title="2D Role Playing Game (RPG) Demo">https://godotengine.org/asset-library/asset/2729</link>
 	</tutorials>
 	<methods>
 		<method name="can_instantiate" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the scene file has nodes.
 			</description>
 		</method>
-		<method name="get_state">
-			<return type="SceneState">
-			</return>
+		<method name="get_state" qualifiers="const">
+			<return type="SceneState" />
 			<description>
-				Returns the [code]SceneState[/code] representing the scene file contents.
+				Returns the [SceneState] representing the scene file contents.
 			</description>
 		</method>
-		<method name="instantiate" qualifiers="const">
-			<return type="Node">
-			</return>
-			<argument index="0" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0">
-			</argument>
+		<method name="instantiate" qualifiers="const" keywords="create, make, spawn, new">
+			<return type="Node" />
+			<param index="0" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0" />
 			<description>
-				Instantiates the scene's node hierarchy. Triggers child scene instantiation(s). Triggers a [constant Node.NOTIFICATION_INSTANCED] notification on the root node.
+				Instantiates the scene's node hierarchy. Triggers child scene instantiation(s). Triggers a [constant Node.NOTIFICATION_SCENE_INSTANTIATED] notification on the root node.
 			</description>
 		</method>
 		<method name="pack">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="path" type="Node">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="Node" />
 			<description>
-				Pack will ignore any sub-nodes not owned by given node. See [member Node.owner].
+				Packs the [param path] node, and all owned sub-nodes, into this [PackedScene]. Any existing data will be cleared. See [member Node.owner].
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" default="{&quot;conn_count&quot;: 0,&quot;conns&quot;: PackedInt32Array(),&quot;editable_instances&quot;: [],&quot;names&quot;: PackedStringArray(),&quot;node_count&quot;: 0,&quot;node_paths&quot;: [],&quot;nodes&quot;: PackedInt32Array(),&quot;variants&quot;: [],&quot;version&quot;: 2}">
+		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" default="{ &quot;conn_count&quot;: 0, &quot;conns&quot;: PackedInt32Array(), &quot;editable_instances&quot;: [], &quot;names&quot;: PackedStringArray(), &quot;node_count&quot;: 0, &quot;node_paths&quot;: [], &quot;nodes&quot;: PackedInt32Array(), &quot;variants&quot;: [], &quot;version&quot;: 3 }">
 			A dictionary representation of the scene contents.
-			Available keys include "rnames" and "variants" for resources, "node_count", "nodes", "node_paths" for nodes, "editable_instances" for base scene children overrides, "conn_count" and "conns" for signal connections, and "version" for the format style of the PackedScene.
+			Available keys include "names" and "variants" for resources, "node_count", "nodes", "node_paths" for nodes, "editable_instances" for paths to overridden nodes, "conn_count" and "conns" for signal connections, and "version" for the format style of the PackedScene.
 		</member>
 	</members>
 	<constants>
@@ -125,6 +119,10 @@
 		</constant>
 		<constant name="GEN_EDIT_STATE_MAIN" value="2" enum="GenEditState">
 			If passed to [method instantiate], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
+			[b]Note:[/b] Only available in editor builds.
+		</constant>
+		<constant name="GEN_EDIT_STATE_MAIN_INHERITED" value="3" enum="GenEditState">
+			It's similar to [constant GEN_EDIT_STATE_MAIN], but for the case where the scene is being instantiated to be the base of another one.
 			[b]Note:[/b] Only available in editor builds.
 		</constant>
 	</constants>

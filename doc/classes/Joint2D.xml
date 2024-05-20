@@ -1,18 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Joint2D" inherits="Node2D" version="4.0">
+<class name="Joint2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base node for all joint constraints in 2D physics.
+		Abstract base class for all 2D physics joints.
 	</brief_description>
 	<description>
-		Base node for all joint constraints in 2D physics. Joints take 2 bodies and apply a custom constraint.
+		Abstract base class for all joints in 2D physics. 2D joints bind together two physics bodies and apply a constraint.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the joint's [RID].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0">
-			When [member node_a] and [member node_b] move in different directions the [code]bias[/code] controls how fast the joint pulls them back to their original position. The lower the [code]bias[/code] the more the two bodies can pull on the joint.
+			When [member node_a] and [member node_b] move in different directions the [member bias] controls how fast the joint pulls them back to their original position. The lower the [member bias] the more the two bodies can pull on the joint.
+			When set to [code]0[/code], the default value from [member ProjectSettings.physics/2d/solver/default_constraint_bias] is used.
 		</member>
 		<member name="disable_collision" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision" default="true">
 			If [code]true[/code], [member node_a] and [member node_b] can not collide.
@@ -24,6 +31,4 @@
 			The second body attached to the joint. Must derive from [PhysicsBody2D].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

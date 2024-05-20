@@ -1,53 +1,49 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Shader" inherits="Resource" version="4.0">
+<class name="Shader" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A custom shader program.
+		A shader implemented in the Godot shading language.
 	</brief_description>
 	<description>
-		This class allows you to define a custom shader program that can be used by a [ShaderMaterial]. Shaders allow you to write your own custom behavior for rendering objects or updating particle information. For a detailed explanation and usage, please see the tutorials linked below.
+		A custom shader program implemented in the Godot shading language, saved with the [code].gdshader[/code] extension.
+		This class is used by a [ShaderMaterial] and allows you to write your own custom behavior for rendering visual items or updating particle information. For a detailed explanation and usage, please see the tutorials linked below.
 	</description>
 	<tutorials>
-		<link title="Shading tutorial index">https://docs.godotengine.org/en/latest/tutorials/shading/index.html</link>
-		<link title="What are shaders?">https://docs.godotengine.org/en/latest/tutorials/shading/your_first_shader/what_are_shaders.html</link>
+		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_default_texture_param" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="param" type="StringName">
-			</argument>
+		<method name="get_default_texture_parameter" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="index" type="int" default="0" />
 			<description>
 				Returns the texture that is set as default for the specified parameter.
-				[b]Note:[/b] [code]param[/code] must match the name of the uniform in the code exactly.
+				[b]Note:[/b] [param name] must match the name of the uniform in the code exactly.
+				[b]Note:[/b] If the sampler array is used use [param index] to access the specified texture.
 			</description>
 		</method>
 		<method name="get_mode" qualifiers="const">
-			<return type="int" enum="Shader.Mode">
-			</return>
+			<return type="int" enum="Shader.Mode" />
 			<description>
-				Returns the shader mode for the shader, either [constant MODE_CANVAS_ITEM], [constant MODE_SPATIAL] or [constant MODE_PARTICLES].
+				Returns the shader mode for the shader.
 			</description>
 		</method>
-		<method name="has_param" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+		<method name="get_shader_uniform_list">
+			<return type="Array" />
+			<param index="0" name="get_groups" type="bool" default="false" />
 			<description>
-				Returns [code]true[/code] if the shader has this param defined as a uniform in its code.
-				[b]Note:[/b] [code]param[/code] must match the name of the uniform in the code exactly.
+				Get the list of shader uniforms that can be assigned to a [ShaderMaterial], for use with [method ShaderMaterial.set_shader_parameter] and [method ShaderMaterial.get_shader_parameter]. The parameters returned are contained in dictionaries in a similar format to the ones returned by [method Object.get_property_list].
+				If argument [param get_groups] is true, parameter grouping hints will be provided.
 			</description>
 		</method>
-		<method name="set_default_texture_param">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="StringName">
-			</argument>
-			<argument index="1" name="texture" type="Texture2D">
-			</argument>
+		<method name="set_default_texture_parameter">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="texture" type="Texture2D" />
+			<param index="2" name="index" type="int" default="0" />
 			<description>
 				Sets the default texture to be used with a texture uniform. The default is used if a texture is not set in the [ShaderMaterial].
-				[b]Note:[/b] [code]param[/code] must match the name of the uniform in the code exactly.
+				[b]Note:[/b] [param name] must match the name of the uniform in the code exactly.
+				[b]Note:[/b] If the sampler array is used use [param index] to access the specified texture.
 			</description>
 		</method>
 	</methods>
@@ -68,6 +64,9 @@
 		</constant>
 		<constant name="MODE_SKY" value="3" enum="Mode">
 			Mode used for drawing skies. Only works with shaders attached to [Sky] objects.
+		</constant>
+		<constant name="MODE_FOG" value="4" enum="Mode">
+			Mode used for setting the color and density of volumetric fog effect.
 		</constant>
 	</constants>
 </class>

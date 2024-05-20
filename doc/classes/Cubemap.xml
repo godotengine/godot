@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Cubemap" inherits="ImageTextureLayered" version="4.0">
+<class name="Cubemap" inherits="ImageTextureLayered" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Six square textures representing the faces of a cube. Commonly used as a skybox.
 	</brief_description>
 	<description>
+		A cubemap is made of 6 textures organized in layers. They are typically used for faking reflections in 3D rendering (see [ReflectionProbe]). It can be used to make an object look as if it's reflecting its surroundings. This usually delivers much better performance than other reflection methods.
+		This resource is typically used as a uniform in custom shaders. Few core Godot methods make use of [Cubemap] resources.
+		To create such a texture file yourself, reimport your image files using the Godot Editor import presets.
+		[b]Note:[/b] Godot doesn't support using cubemaps in a [PanoramaSkyMaterial]. You can use [url=https://danilw.github.io/GLSL-howto/cubemap_to_panorama_js/cubemap_to_panorama.html]this tool[/url] to convert a cubemap to an equirectangular sky map.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderCubemap]).
+			</description>
+		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

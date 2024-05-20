@@ -1,6 +1,6 @@
 /* ******************************************************************
  * Common functions of New Generation Entropy library
- * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  *  You can contact the author at :
  *  - FSE+HUF source repository : https://github.com/Cyan4973/FiniteStateEntropy
@@ -19,8 +19,8 @@
 #include "error_private.h"       /* ERR_*, ERROR */
 #define FSE_STATIC_LINKING_ONLY  /* FSE_MIN_TABLELOG */
 #include "fse.h"
-#define HUF_STATIC_LINKING_ONLY  /* HUF_TABLELOG_ABSOLUTEMAX */
 #include "huf.h"
+#include "bits.h"                /* ZSDT_highbit32, ZSTD_countTrailingZeros32 */
 
 
 /*===   Version   ===*/
@@ -38,28 +38,6 @@ const char* HUF_getErrorName(size_t code) { return ERR_getErrorName(code); }
 /*-**************************************************************
 *  FSE NCount encoding-decoding
 ****************************************************************/
-static U32 FSE_ctz(U32 val)
-{
-    assert(val != 0);
-    {
-#   if defined(_MSC_VER)   /* Visual */
-        unsigned long r=0;
-        return _BitScanForward(&r, val) ? (unsigned)r : 0;
-#   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* GCC Intrinsic */
-        return __builtin_ctz(val);
-#   elif defined(__ICCARM__)    /* IAR Intrinsic */
-        return __CTZ(val);
-#   else   /* Software version */
-        U32 count = 0;
-        while ((val & 1) == 0) {
-            val >>= 1;
-            ++count;
-        }
-        return count;
-#   endif
-    }
-}
-
 FORCE_INLINE_TEMPLATE
 size_t FSE_readNCount_body(short* normalizedCounter, unsigned* maxSVPtr, unsigned* tableLogPtr,
                            const void* headerBuffer, size_t hbSize)
@@ -107,7 +85,7 @@ size_t FSE_readNCount_body(short* normalizedCounter, unsigned* maxSVPtr, unsigne
              * repeat.
              * Avoid UB by setting the high bit to 1.
              */
-            int repeats = FSE_ctz(~bitStream | 0x80000000) >> 1;
+            int repeats = ZSTD_countTrailingZeros32(~bitStream | 0x80000000) >> 1;
             while (repeats >= 12) {
                 charnum += 3 * 12;
                 if (LIKELY(ip <= iend-7)) {
@@ -118,7 +96,7 @@ size_t FSE_readNCount_body(short* normalizedCounter, unsigned* maxSVPtr, unsigne
                     ip = iend - 4;
                 }
                 bitStream = MEM_readLE32(ip) >> bitCount;
-                repeats = FSE_ctz(~bitStream | 0x80000000) >> 1;
+                repeats = ZSTD_countTrailingZeros32(~bitStream | 0x80000000) >> 1;
             }
             charnum += 3 * repeats;
             bitStream >>= 2 * repeats;
@@ -183,7 +161,7 @@ size_t FSE_readNCount_body(short* normalizedCounter, unsigned* maxSVPtr, unsigne
                  * know that threshold > 1.
                  */
                 if (remaining <= 1) break;
-                nbBits = BIT_highbit32(remaining) + 1;
+                nbBits = ZSTD_highbit32(remaining) + 1;
                 threshold = 1 << (nbBits - 1);
             }
             if (charnum >= maxSV1) break;
@@ -217,7 +195,7 @@ static size_t FSE_readNCount_body_default(
 }
 
 #if DYNAMIC_BMI2
-TARGET_ATTRIBUTE("bmi2") static size_t FSE_readNCount_body_bmi2(
+BMI2_TARGET_ATTRIBUTE static size_t FSE_readNCount_body_bmi2(
         short* normalizedCounter, unsigned* maxSVPtr, unsigned* tableLogPtr,
         const void* headerBuffer, size_t hbSize)
 {
@@ -258,7 +236,7 @@ size_t HUF_readStats(BYTE* huffWeight, size_t hwSize, U32* rankStats,
                      const void* src, size_t srcSize)
 {
     U32 wksp[HUF_READ_STATS_WORKSPACE_SIZE_U32];
-    return HUF_readStats_wksp(huffWeight, hwSize, rankStats, nbSymbolsPtr, tableLogPtr, src, srcSize, wksp, sizeof(wksp), /* bmi2 */ 0);
+    return HUF_readStats_wksp(huffWeight, hwSize, rankStats, nbSymbolsPtr, tableLogPtr, src, srcSize, wksp, sizeof(wksp), /* flags */ 0);
 }
 
 FORCE_INLINE_TEMPLATE size_t
@@ -299,21 +277,21 @@ HUF_readStats_body(BYTE* huffWeight, size_t hwSize, U32* rankStats,
     ZSTD_memset(rankStats, 0, (HUF_TABLELOG_MAX + 1) * sizeof(U32));
     weightTotal = 0;
     {   U32 n; for (n=0; n<oSize; n++) {
-            if (huffWeight[n] >= HUF_TABLELOG_MAX) return ERROR(corruption_detected);
+            if (huffWeight[n] > HUF_TABLELOG_MAX) return ERROR(corruption_detected);
             rankStats[huffWeight[n]]++;
             weightTotal += (1 << huffWeight[n]) >> 1;
     }   }
     if (weightTotal == 0) return ERROR(corruption_detected);
 
     /* get last non-null symbol weight (implied, total must be 2^n) */
-    {   U32 const tableLog = BIT_highbit32(weightTotal) + 1;
+    {   U32 const tableLog = ZSTD_highbit32(weightTotal) + 1;
         if (tableLog > HUF_TABLELOG_MAX) return ERROR(corruption_detected);
         *tableLogPtr = tableLog;
         /* determine last weight */
         {   U32 const total = 1 << tableLog;
             U32 const rest = total - weightTotal;
-            U32 const verif = 1 << BIT_highbit32(rest);
-            U32 const lastWeight = BIT_highbit32(rest) + 1;
+            U32 const verif = 1 << ZSTD_highbit32(rest);
+            U32 const lastWeight = ZSTD_highbit32(rest) + 1;
             if (verif != rest) return ERROR(corruption_detected);    /* last value must be a clean power of 2 */
             huffWeight[oSize] = (BYTE)lastWeight;
             rankStats[lastWeight]++;
@@ -337,7 +315,7 @@ static size_t HUF_readStats_body_default(BYTE* huffWeight, size_t hwSize, U32* r
 }
 
 #if DYNAMIC_BMI2
-static TARGET_ATTRIBUTE("bmi2") size_t HUF_readStats_body_bmi2(BYTE* huffWeight, size_t hwSize, U32* rankStats,
+static BMI2_TARGET_ATTRIBUTE size_t HUF_readStats_body_bmi2(BYTE* huffWeight, size_t hwSize, U32* rankStats,
                      U32* nbSymbolsPtr, U32* tableLogPtr,
                      const void* src, size_t srcSize,
                      void* workSpace, size_t wkspSize)
@@ -350,13 +328,13 @@ size_t HUF_readStats_wksp(BYTE* huffWeight, size_t hwSize, U32* rankStats,
                      U32* nbSymbolsPtr, U32* tableLogPtr,
                      const void* src, size_t srcSize,
                      void* workSpace, size_t wkspSize,
-                     int bmi2)
+                     int flags)
 {
 #if DYNAMIC_BMI2
-    if (bmi2) {
+    if (flags & HUF_flags_bmi2) {
         return HUF_readStats_body_bmi2(huffWeight, hwSize, rankStats, nbSymbolsPtr, tableLogPtr, src, srcSize, workSpace, wkspSize);
     }
 #endif
-    (void)bmi2;
+    (void)flags;
     return HUF_readStats_body_default(huffWeight, hwSize, rankStats, nbSymbolsPtr, tableLogPtr, src, srcSize, workSpace, wkspSize);
 }

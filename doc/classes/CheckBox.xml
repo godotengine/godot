@@ -1,93 +1,46 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CheckBox" inherits="Button" version="4.0">
+<class name="CheckBox" inherits="Button" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Binary choice user interface widget. See also [CheckButton].
+		A button that represents a binary choice.
 	</brief_description>
 	<description>
-		A checkbox allows the user to make a binary choice (choosing only one of two possible options). It's similar to [CheckButton] in functionality, but it has a different appearance. To follow established UX patterns, it's recommended to use CheckBox when toggling it has [b]no[/b] immediate effect on something. For instance, it should be used when toggling it will only do something once a confirmation button is pressed.
+		[CheckBox] allows the user to choose one of only two possible options. It's similar to [CheckButton] in functionality, but it has a different appearance. To follow established UX patterns, it's recommended to use [CheckBox] when toggling it has [b]no[/b] immediate effect on something. For example, it could be used when toggling it will only do something once a confirmation button is pressed.
 		See also [BaseButton] which contains common properties and methods associated with this node.
+		When [member BaseButton.button_group] specifies a [ButtonGroup], [CheckBox] changes its appearance to that of a radio button and uses the various [code]radio_*[/code] theme properties.
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="align" type="int" setter="set_text_align" getter="get_text_align" override="true" enum="Button.TextAlign" default="0" />
-		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" override="true" default="true" />
+		<member name="alignment" type="int" setter="set_text_alignment" getter="get_text_alignment" overrides="Button" enum="HorizontalAlignment" default="0" />
+		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
 	</members>
-	<constants>
-	</constants>
 	<theme_items>
-		<theme_item name="check_vadjust" type="int" default="0">
+		<theme_item name="check_v_offset" data_type="constant" type="int" default="0">
 			The vertical offset used when rendering the check icons (in pixels).
 		</theme_item>
-		<theme_item name="checked" type="Texture2D">
+		<theme_item name="checked" data_type="icon" type="Texture2D">
 			The check icon to display when the [CheckBox] is checked.
 		</theme_item>
-		<theme_item name="checked_disabled" type="Texture2D">
+		<theme_item name="checked_disabled" data_type="icon" type="Texture2D">
+			The check icon to display when the [CheckBox] is checked and is disabled.
 		</theme_item>
-		<theme_item name="disabled" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckBox] is disabled.
+		<theme_item name="radio_checked" data_type="icon" type="Texture2D">
+			The check icon to display when the [CheckBox] is configured as a radio button and is checked.
 		</theme_item>
-		<theme_item name="focus" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckBox] is focused.
+		<theme_item name="radio_checked_disabled" data_type="icon" type="Texture2D">
+			The check icon to display when the [CheckBox] is configured as a radio button, is disabled, and is unchecked.
 		</theme_item>
-		<theme_item name="font" type="Font">
-			The [Font] to use for the [CheckBox] text.
+		<theme_item name="radio_unchecked" data_type="icon" type="Texture2D">
+			The check icon to display when the [CheckBox] is configured as a radio button and is unchecked.
 		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
-			The [CheckBox] text's font color.
+		<theme_item name="radio_unchecked_disabled" data_type="icon" type="Texture2D">
+			The check icon to display when the [CheckBox] is configured as a radio button, is disabled, and is unchecked.
 		</theme_item>
-		<theme_item name="font_disabled_color" type="Color" default="Color(0.9, 0.9, 0.9, 0.2)">
-			The [CheckBox] text's font color when it's disabled.
-		</theme_item>
-		<theme_item name="font_hover_color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
-			The [CheckBox] text's font color when it's hovered.
-		</theme_item>
-		<theme_item name="font_hover_pressed_color" type="Color" default="Color(1, 1, 1, 1)">
-			The [CheckBox] text's font color when it's hovered and pressed.
-		</theme_item>
-		<theme_item name="font_outline_color" type="Color" default="Color(1, 1, 1, 1)">
-			The tint of text outline of the [CheckBox].
-		</theme_item>
-		<theme_item name="font_pressed_color" type="Color" default="Color(1, 1, 1, 1)">
-			The [CheckBox] text's font color when it's pressed.
-		</theme_item>
-		<theme_item name="font_size" type="int">
-			Font size of the [CheckBox]'s text.
-		</theme_item>
-		<theme_item name="hover" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckBox] is hovered.
-		</theme_item>
-		<theme_item name="hover_pressed" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckBox] is hovered and pressed.
-		</theme_item>
-		<theme_item name="hseparation" type="int" default="4">
-			The separation between the check icon and the text (in pixels).
-		</theme_item>
-		<theme_item name="normal" type="StyleBox">
-			The [StyleBox] to display as a background.
-		</theme_item>
-		<theme_item name="outline_size" type="int" default="0">
-			The size of the text outline.
-		</theme_item>
-		<theme_item name="pressed" type="StyleBox">
-			The [StyleBox] to display as a background when the [CheckBox] is pressed.
-		</theme_item>
-		<theme_item name="radio_checked" type="Texture2D">
-			If the [CheckBox] is configured as a radio button, the icon to display when the [CheckBox] is checked.
-		</theme_item>
-		<theme_item name="radio_checked_disabled" type="Texture2D">
-		</theme_item>
-		<theme_item name="radio_unchecked" type="Texture2D">
-			If the [CheckBox] is configured as a radio button, the icon to display when the [CheckBox] is unchecked.
-		</theme_item>
-		<theme_item name="radio_unchecked_disabled" type="Texture2D">
-		</theme_item>
-		<theme_item name="unchecked" type="Texture2D">
+		<theme_item name="unchecked" data_type="icon" type="Texture2D">
 			The check icon to display when the [CheckBox] is unchecked.
 		</theme_item>
-		<theme_item name="unchecked_disabled" type="Texture2D">
+		<theme_item name="unchecked_disabled" data_type="icon" type="Texture2D">
+			The check icon to display when the [CheckBox] is unchecked and is disabled.
 		</theme_item>
 	</theme_items>
 </class>

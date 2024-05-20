@@ -1,36 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Control" inherits="CanvasItem" version="4.0">
+<class name="Control" inherits="CanvasItem" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		All user interface nodes inherit from Control. A control's anchors and offsets adapt its position and size relative to its parent.
+		Base class for all GUI controls. Adapts its position and size based on its parent control.
 	</brief_description>
 	<description>
 		Base class for all UI-related nodes. [Control] features a bounding rectangle that defines its extents, an anchor position relative to its parent control or the current viewport, and offsets relative to the anchor. The offsets update automatically when the node, any of its parents, or the screen size change.
 		For more information on Godot's UI system, anchors, offsets, and containers, see the related tutorials in the manual. To build flexible UIs, you'll need a mix of UI elements that inherit from [Control] and [Container] nodes.
 		[b]User Interface nodes and input[/b]
-		Godot sends input events to the scene's root node first, by calling [method Node._input]. [method Node._input] forwards the event down the node tree to the nodes under the mouse cursor, or on keyboard focus. To do so, it calls [code]MainLoop._input_event[/code].
-		[b]FIXME:[/b] No longer valid after DisplayServer split and Input refactoring.
+		Godot propagates input events via viewports. Each [Viewport] is responsible for propagating [InputEvent]s to their child nodes. As the [member SceneTree.root] is a [Window], this already happens automatically for all UI elements in your game.
+		Input events are propagated through the [SceneTree] from the root node to all child nodes by calling [method Node._input]. For UI elements specifically, it makes more sense to override the virtual method [method _gui_input], which filters out unrelated input events, such as by checking z-order, [member mouse_filter], focus, or if the event was inside of the control's bounding box.
 		Call [method accept_event] so no other node receives the event. Once you accept an input, it becomes handled so [method Node._unhandled_input] will not process it.
-		Only one [Control] node can be in keyboard focus. Only the node in focus will receive keyboard events. To get the focus, call [method grab_focus]. [Control] nodes lose focus when another node grabs it, or if you hide the node in focus.
+		Only one [Control] node can be in focus. Only the node in focus will receive events. To get the focus, call [method grab_focus]. [Control] nodes lose focus when another node grabs it, or if you hide the node in focus.
 		Sets [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] to tell a [Control] node to ignore mouse or touch events. You'll need it if you place an icon on top of a button.
-		[Theme] resources change the Control's appearance. If you change the [Theme] on a [Control] node, it affects all of its children. To override some of the theme's parameters, call one of the [code]add_theme_*_override[/code] methods, like [method add_theme_font_override]. You can override the theme with the inspector.
+		[Theme] resources change the Control's appearance. If you change the [Theme] on a [Control] node, it affects all of its children. To override some of the theme's parameters, call one of the [code]add_theme_*_override[/code] methods, like [method add_theme_font_override]. You can override the theme with the Inspector.
 		[b]Note:[/b] Theme items are [i]not[/i] [Object] properties. This means you can't access their values using [method Object.get] and [method Object.set]. Instead, use the [code]get_theme_*[/code] and [code]add_theme_*_override[/code] methods provided by this class.
 	</description>
 	<tutorials>
-		<link title="GUI tutorial index">https://docs.godotengine.org/en/latest/tutorials/ui/index.html</link>
-		<link title="Custom drawing in 2D">https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
-		<link title="Control node gallery">https://docs.godotengine.org/en/latest/tutorials/ui/control_node_gallery.html</link>
+		<link title="GUI documentation index">$DOCS_URL/tutorials/ui/index.html</link>
+		<link title="Custom drawing in 2D">$DOCS_URL/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="Control node gallery">$DOCS_URL/tutorials/ui/control_node_gallery.html</link>
+		<link title="Multiple resolutions">$DOCS_URL/tutorials/rendering/multiple_resolutions.html</link>
 		<link title="All GUI Demos">https://github.com/godotengine/godot-demo-projects/tree/master/gui</link>
 	</tutorials>
 	<methods>
-		<method name="_can_drop_data" qualifiers="virtual">
-			<return type="bool">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
+		<method name="_can_drop_data" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="at_position" type="Vector2" />
+			<param index="1" name="data" type="Variant" />
 			<description>
-				Godot calls this method to test if [code]data[/code] from a control's [method _get_drag_data] can be dropped at [code]position[/code]. [code]position[/code] is local to this control.
+				Godot calls this method to test if [param data] from a control's [method _get_drag_data] can be dropped at [param at_position]. [param at_position] is local to this control.
 				This method should only be used to test the data. Process the data in [method _drop_data].
 				[codeblocks]
 				[gdscript]
@@ -40,52 +38,49 @@
 				    return typeof(data) == TYPE_DICTIONARY and data.has("expected")
 				[/gdscript]
 				[csharp]
-				public override bool CanDropData(Vector2 position, object data)
+				public override bool _CanDropData(Vector2 atPosition, Variant data)
 				{
 				    // Check position if it is relevant to you
 				    // Otherwise, just check data
-				    return data is Godot.Collections.Dictionary &amp;&amp; (data as Godot.Collections.Dictionary).Contains("expected");
+				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; data.AsGodotDictionary().ContainsKey("expected");
 				}
 				[/csharp]
 				[/codeblocks]
 			</description>
 		</method>
 		<method name="_drop_data" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Variant">
-			</argument>
+			<return type="void" />
+			<param index="0" name="at_position" type="Vector2" />
+			<param index="1" name="data" type="Variant" />
 			<description>
-				Godot calls this method to pass you the [code]data[/code] from a control's [method _get_drag_data] result. Godot first calls [method _can_drop_data] to test if [code]data[/code] is allowed to drop at [code]position[/code] where [code]position[/code] is local to this control.
+				Godot calls this method to pass you the [param data] from a control's [method _get_drag_data] result. Godot first calls [method _can_drop_data] to test if [param data] is allowed to drop at [param at_position] where [param at_position] is local to this control.
 				[codeblocks]
 				[gdscript]
 				func _can_drop_data(position, data):
 				    return typeof(data) == TYPE_DICTIONARY and data.has("color")
+
 				func _drop_data(position, data):
 				    var color = data["color"]
 				[/gdscript]
 				[csharp]
-				public override bool CanDropData(Vector2 position, object data)
+				public override bool _CanDropData(Vector2 atPosition, Variant data)
 				{
-				    return data is Godot.Collections.Dictionary &amp;&amp; (data as Godot.Collections.Dictionary).Contains("color");
+				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; dict.AsGodotDictionary().ContainsKey("color");
 				}
-				public override void DropData(Vector2 position, object data)
+
+				public override void _DropData(Vector2 atPosition, Variant data)
 				{
-				    Color color = (Color)(data as Godot.Collections.Dictionary)["color"];
+				    Color color = data.AsGodotDictionary()["color"].AsColor();
 				}
 				[/csharp]
 				[/codeblocks]
 			</description>
 		</method>
 		<method name="_get_drag_data" qualifiers="virtual">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<return type="Variant" />
+			<param index="0" name="at_position" type="Vector2" />
 			<description>
-				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Returns [code]null[/code] if there is no data to drag. Controls that want to receive drop data should implement [method _can_drop_data] and [method _drop_data]. [code]position[/code] is local to this control. Drag may be forced with [method force_drag].
+				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Returns [code]null[/code] if there is no data to drag. Controls that want to receive drop data should implement [method _can_drop_data] and [method _drop_data]. [param at_position] is local to this control. Drag may be forced with [method force_drag].
 				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
 				[codeblocks]
 				[gdscript]
@@ -95,32 +90,38 @@
 				    return mydata
 				[/gdscript]
 				[csharp]
-				public override object GetDragData(Vector2 position)
+				public override Variant _GetDragData(Vector2 atPosition)
 				{
-				    object mydata = MakeData(); // This is your custom method generating the drag data.
-				    SetDragPreview(MakePreview(mydata)); // This is your custom method generating the preview of the drag data.
-				    return mydata;
+				    var myData = MakeData(); // This is your custom method generating the drag data.
+				    SetDragPreview(MakePreview(myData)); // This is your custom method generating the preview of the drag data.
+				    return myData;
 				}
 				[/csharp]
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="_get_minimum_size" qualifiers="virtual">
-			<return type="Vector2">
-			</return>
+		<method name="_get_minimum_size" qualifiers="virtual const">
+			<return type="Vector2" />
 			<description>
-				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member rect_min_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
+				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member custom_minimum_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
 				If not overridden, defaults to [constant Vector2.ZERO].
+				[b]Note:[/b] This method will not be called when the script is attached to a [Control] node that already overrides its minimum size (e.g. [Label], [Button], [PanelContainer] etc.). It can only be used with most basic GUI nodes, like [Control], [Container], [Panel] etc.
+			</description>
+		</method>
+		<method name="_get_tooltip" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="at_position" type="Vector2" />
+			<description>
+				Virtual method to be implemented by the user. Returns the tooltip text for the position [param at_position] in control's local coordinates, which will typically appear when the cursor is resting over this control. See [method get_tooltip].
+				[b]Note:[/b] If this method returns an empty [String], no tooltip is displayed.
 			</description>
 		</method>
 		<method name="_gui_input" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
+			<return type="void" />
+			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Virtual method to be implemented by the user. Use this method to process and accept inputs on UI elements. See [method accept_event].
-				Example: clicking a control.
+				[b]Example usage for clicking a control:[/b]
 				[codeblocks]
 				[gdscript]
 				func _gui_input(event):
@@ -131,10 +132,9 @@
 				[csharp]
 				public override void _GuiInput(InputEvent @event)
 				{
-				    if (@event is InputEventMouseButton)
+				    if (@event is InputEventMouseButton mb)
 				    {
-				        var mb = @event as InputEventMouseButton;
-				        if (mb.ButtonIndex == (int)ButtonList.Left &amp;&amp; mb.Pressed)
+				        if (mb.ButtonIndex == MouseButton.Left &amp;&amp; mb.Pressed)
 				        {
 				            GD.Print("I've been clicked D:");
 				        }
@@ -147,32 +147,29 @@
 				* control has [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
 				* control is obstructed by another [Control] on top of it, which doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
 				* control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
-				* it happens outside the parent's rectangle and the parent has either [member rect_clip_content] enabled.
+				* it happens outside the parent's rectangle and the parent has either [member clip_contents] enabled.
+				[b]Note:[/b] Event position is relative to the control origin.
 			</description>
 		</method>
 		<method name="_has_point" qualifiers="virtual const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="" type="Vector2">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="point" type="Vector2" />
 			<description>
-				Virtual method to be implemented by the user. Returns whether the given [code]point[/code] is inside this control.
+				Virtual method to be implemented by the user. Returns whether the given [param point] is inside this control.
 				If not overridden, default behavior is checking if the point is within control's Rect.
-				[b]Note:[/b] If you want to check if a point is inside the control, you can use [code]get_rect().has_point(point)[/code].
+				[b]Note:[/b] If you want to check if a point is inside the control, you can use [code]Rect2(Vector2.ZERO, size).has_point(point)[/code].
 			</description>
 		</method>
-		<method name="_make_custom_tooltip" qualifiers="virtual">
-			<return type="Control">
-			</return>
-			<argument index="0" name="for_text" type="String">
-			</argument>
+		<method name="_make_custom_tooltip" qualifiers="virtual const">
+			<return type="Object" />
+			<param index="0" name="for_text" type="String" />
 			<description>
-				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [code]for_text[/code] includes the contents of the [member hint_tooltip] property.
+				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [param for_text] includes the contents of the [member tooltip_text] property.
 				The returned node must be of type [Control] or Control-derived. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance (if you want to use a pre-existing node from your scene tree, you can duplicate it and pass the duplicated instance). When [code]null[/code] or a non-Control node is returned, the default tooltip will be used instead.
-				The returned node will be added as child to a [PopupPanel], so you should only provide the contents of that panel. That [PopupPanel] can be themed using [method Theme.set_stylebox] for the type [code]"TooltipPanel"[/code] (see [member hint_tooltip] for an example).
-				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member rect_min_size] to some non-zero value.
+				The returned node will be added as child to a [PopupPanel], so you should only provide the contents of that panel. That [PopupPanel] can be themed using [method Theme.set_stylebox] for the type [code]"TooltipPanel"[/code] (see [member tooltip_text] for an example).
+				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member custom_minimum_size] to some non-zero value.
 				[b]Note:[/b] The node (and any relevant children) should be [member CanvasItem.visible] when returned, otherwise, the viewport that instantiates it will not be able to calculate its minimum size reliably.
-				Example of usage with a custom-constructed node:
+				[b]Example of usage with a custom-constructed node:[/b]
 				[codeblocks]
 				[gdscript]
 				func _make_custom_tooltip(for_text):
@@ -181,7 +178,7 @@
 				    return label
 				[/gdscript]
 				[csharp]
-				public override Godot.Control _MakeCustomTooltip(String forText)
+				public override Control _MakeCustomTooltip(string forText)
 				{
 				    var label = new Label();
 				    label.Text = forText;
@@ -189,18 +186,18 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				Example of usage with a custom scene instance:
+				[b]Example of usage with a custom scene instance:[/b]
 				[codeblocks]
 				[gdscript]
 				func _make_custom_tooltip(for_text):
-				    var tooltip = preload("res://SomeTooltipScene.tscn").instantiate()
+				    var tooltip = preload("res://some_tooltip_scene.tscn").instantiate()
 				    tooltip.get_node("Label").text = for_text
 				    return tooltip
 				[/gdscript]
 				[csharp]
-				public override Godot.Control _MakeCustomTooltip(String forText)
+				public override Control _MakeCustomTooltip(string forText)
 				{
-				    Node tooltip = ResourceLoader.Load&lt;PackedScene&gt;("res://SomeTooltipScene.tscn").Instantiate();
+				    Node tooltip = ResourceLoader.Load&lt;PackedScene&gt;("res://some_tooltip_scene.tscn").Instantiate();
 				    tooltip.GetNode&lt;Label&gt;("Label").Text = forText;
 				    return tooltip;
 				}
@@ -208,34 +205,28 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="_structured_text_parser" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="args" type="Array">
-			</argument>
-			<argument index="1" name="text" type="String">
-			</argument>
+		<method name="_structured_text_parser" qualifiers="virtual const">
+			<return type="Vector3i[]" />
+			<param index="0" name="args" type="Array" />
+			<param index="1" name="text" type="String" />
 			<description>
 				User defined BiDi algorithm override function.
-				Return [code]Array[/code] of [code]Vector2i[/code] text ranges, in the left-to-right order. Ranges should cover full source [code]text[/code] without overlaps. BiDi algorithm will be used on each range separately.
+				Returns an [Array] of [Vector3i] text ranges and text base directions, in the left-to-right order. Ranges should cover full source [param text] without overlaps. BiDi algorithm will be used on each range separately.
 			</description>
 		</method>
 		<method name="accept_event">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Marks an input event as handled. Once you accept an input event, it stops propagating, even to nodes listening to [method Node._unhandled_input] or [method Node._unhandled_key_input].
+				[b]Note:[/b] This does not affect the methods in [Input], only the way events are propagated.
 			</description>
 		</method>
 		<method name="add_theme_color_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="color" type="Color">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="color" type="Color" />
 			<description>
-				Creates a local override for a theme [Color] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_color_override].
+				Creates a local override for a theme [Color] with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_color_override].
 				See also [method get_theme_color].
 				[b]Example of overriding a label's color and resetting it later:[/b]
 				[codeblocks]
@@ -249,72 +240,57 @@
 				[/gdscript]
 				[csharp]
 				// Given the child Label node "MyLabel", override its font color with a custom value.
-				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", new Color(1, 0.5f, 0))
+				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", new Color(1, 0.5f, 0));
 				// Reset the font color of the child label.
-				GetNode&lt;Label&gt;("MyLabel").RemoveThemeColorOverride("font_color")
+				GetNode&lt;Label&gt;("MyLabel").RemoveThemeColorOverride("font_color");
 				// Alternatively it can be overridden with the default value from the Label type.
-				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", GetThemeColor("font_color", "Label"))
+				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", GetThemeColor("font_color", "Label"));
 				[/csharp]
 				[/codeblocks]
 			</description>
 		</method>
 		<method name="add_theme_constant_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="constant" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="constant" type="int" />
 			<description>
-				Creates a local override for a theme constant with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_constant_override].
+				Creates a local override for a theme constant with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_constant_override].
 				See also [method get_theme_constant].
 			</description>
 		</method>
 		<method name="add_theme_font_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="font" type="Font">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="font" type="Font" />
 			<description>
-				Creates a local override for a theme [Font] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_override].
+				Creates a local override for a theme [Font] with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_override].
 				See also [method get_theme_font].
 			</description>
 		</method>
 		<method name="add_theme_font_size_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="font_size" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="font_size" type="int" />
 			<description>
-				Creates a local override for a theme font size with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_size_override].
+				Creates a local override for a theme font size with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_size_override].
 				See also [method get_theme_font_size].
 			</description>
 		</method>
 		<method name="add_theme_icon_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="texture" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="texture" type="Texture2D" />
 			<description>
-				Creates a local override for a theme icon with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_icon_override].
+				Creates a local override for a theme icon with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_icon_override].
 				See also [method get_theme_icon].
 			</description>
 		</method>
 		<method name="add_theme_stylebox_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="stylebox" type="StyleBox">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="stylebox" type="StyleBox" />
 			<description>
-				Creates a local override for a theme [StyleBox] with the specified [code]name[/code]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_stylebox_override].
+				Creates a local override for a theme [StyleBox] with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_stylebox_override].
 				See also [method get_theme_stylebox].
 				[b]Example of modifying a property in a StyleBox by duplicating it:[/b]
 				[codeblocks]
@@ -343,141 +319,148 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="begin_bulk_theme_override">
+			<return type="void" />
+			<description>
+				Prevents [code]*_theme_*_override[/code] methods from emitting [constant NOTIFICATION_THEME_CHANGED] until [method end_bulk_theme_override] is called.
+			</description>
+		</method>
+		<method name="end_bulk_theme_override">
+			<return type="void" />
+			<description>
+				Ends a bulk theme override update. See [method begin_bulk_theme_override].
+			</description>
+		</method>
 		<method name="find_next_valid_focus" qualifiers="const">
-			<return type="Control">
-			</return>
+			<return type="Control" />
 			<description>
 				Finds the next (below in the tree) [Control] that can receive the focus.
 			</description>
 		</method>
 		<method name="find_prev_valid_focus" qualifiers="const">
-			<return type="Control">
-			</return>
+			<return type="Control" />
 			<description>
 				Finds the previous (above in the tree) [Control] that can receive the focus.
 			</description>
 		</method>
-		<method name="force_drag">
-			<return type="void">
-			</return>
-			<argument index="0" name="data" type="Variant">
-			</argument>
-			<argument index="1" name="preview" type="Control">
-			</argument>
+		<method name="find_valid_focus_neighbor" qualifiers="const">
+			<return type="Control" />
+			<param index="0" name="side" type="int" enum="Side" />
 			<description>
-				Forces drag and bypasses [method _get_drag_data] and [method set_drag_preview] by passing [code]data[/code] and [code]preview[/code]. Drag will start even if the mouse is neither over nor pressed on this control.
+				Finds the next [Control] that can receive the focus on the specified [enum Side].
+				[b]Note:[/b] This is different from [method get_focus_neighbor], which returns the path of a specified focus neighbor.
+			</description>
+		</method>
+		<method name="force_drag">
+			<return type="void" />
+			<param index="0" name="data" type="Variant" />
+			<param index="1" name="preview" type="Control" />
+			<description>
+				Forces drag and bypasses [method _get_drag_data] and [method set_drag_preview] by passing [param data] and [param preview]. Drag will start even if the mouse is neither over nor pressed on this control.
 				The methods [method _can_drop_data] and [method _drop_data] must be implemented on controls that want to receive drop data.
 			</description>
 		</method>
 		<method name="get_anchor" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="side" type="int" enum="Side">
-			</argument>
+			<return type="float" />
+			<param index="0" name="side" type="int" enum="Side" />
 			<description>
 				Returns the anchor for the specified [enum Side]. A getter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
 			</description>
 		</method>
 		<method name="get_begin" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
-				Returns [member offset_left] and [member offset_top]. See also [member rect_position].
+				Returns [member offset_left] and [member offset_top]. See also [member position].
 			</description>
 		</method>
 		<method name="get_combined_minimum_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
-				Returns combined minimum size from [member rect_min_size] and [method get_minimum_size].
+				Returns combined minimum size from [member custom_minimum_size] and [method get_minimum_size].
 			</description>
 		</method>
 		<method name="get_cursor_shape" qualifiers="const">
-			<return type="int" enum="Control.CursorShape">
-			</return>
-			<argument index="0" name="position" type="Vector2" default="Vector2(0, 0)">
-			</argument>
+			<return type="int" enum="Control.CursorShape" />
+			<param index="0" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Returns the mouse cursor shape the control displays on mouse hover. See [enum CursorShape].
 			</description>
 		</method>
 		<method name="get_end" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns [member offset_right] and [member offset_bottom].
 			</description>
 		</method>
 		<method name="get_focus_neighbor" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="side" type="int" enum="Side">
-			</argument>
+			<return type="NodePath" />
+			<param index="0" name="side" type="int" enum="Side" />
 			<description>
 				Returns the focus neighbor for the specified [enum Side]. A getter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
-			</description>
-		</method>
-		<method name="get_focus_owner" qualifiers="const">
-			<return type="Control">
-			</return>
-			<description>
-				Returns the control that has the keyboard focus or [code]null[/code] if none.
+				[b]Note:[/b] To find the next [Control] on the specific [enum Side], even if a neighbor is not assigned, use [method find_valid_focus_neighbor].
 			</description>
 		</method>
 		<method name="get_global_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
-				Returns the position and size of the control relative to the top-left corner of the screen. See [member rect_position] and [member rect_size].
+				Returns the position and size of the control relative to the containing canvas. See [member global_position] and [member size].
+				[b]Note:[/b] If the node itself or any parent [CanvasItem] between the node and the canvas have a non default rotation or skew, the resulting size is likely not meaningful.
+				[b]Note:[/b] Setting [member Viewport.gui_snap_controls_to_pixels] to [code]true[/code] can lead to rounding inaccuracies between the displayed control and the returned [Rect2].
 			</description>
 		</method>
 		<method name="get_minimum_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
-				Returns the minimum size for this control. See [member rect_min_size].
+				Returns the minimum size for this control. See [member custom_minimum_size].
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="offset" type="int" enum="Side">
-			</argument>
+			<return type="float" />
+			<param index="0" name="offset" type="int" enum="Side" />
 			<description>
-				Returns the anchor for the specified [enum Side]. A getter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
+				Returns the offset for the specified [enum Side]. A getter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
 			</description>
 		</method>
 		<method name="get_parent_area_size" qualifiers="const">
-			<return type="Vector2">
-			</return>
+			<return type="Vector2" />
 			<description>
 				Returns the width/height occupied in the parent control.
 			</description>
 		</method>
 		<method name="get_parent_control" qualifiers="const">
-			<return type="Control">
-			</return>
+			<return type="Control" />
 			<description>
 				Returns the parent control node.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
-			<return type="Rect2">
-			</return>
+			<return type="Rect2" />
 			<description>
-				Returns the position and size of the control relative to the top-left corner of the parent Control. See [member rect_position] and [member rect_size].
+				Returns the position and size of the control in the coordinate system of the containing node. See [member position], [member scale] and [member size].
+				[b]Note:[/b] If [member rotation] is not the default rotation, the resulting size is not meaningful.
+				[b]Note:[/b] Setting [member Viewport.gui_snap_controls_to_pixels] to [code]true[/code] can lead to rounding inaccuracies between the displayed control and the returned [Rect2].
+			</description>
+		</method>
+		<method name="get_screen_position" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the position of this [Control] in global screen coordinates (i.e. taking window position into account). Mostly useful for editor plugins.
+				Equals to [member global_position] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
+				[b]Example usage for showing a popup:[/b]
+				[codeblock]
+				popup_menu.position = get_screen_position() + get_local_mouse_position()
+				popup_menu.reset_size()
+				popup_menu.popup()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_theme_color" qualifiers="const">
-			<return type="Color">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="Color" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns a [Color] from the first matching [Theme] in the tree if that [Theme] has a color item with the specified [code]name[/code] and [code]theme_type[/code]. If [code]theme_type[/code] is omitted the class name of the current control is used as the type, or [member theme_type_variation] if it is defined. If the type is a class name its parent classes are also checked, in order of inheritance. If the type is a variation its base types are checked, in order of dependency, then the control's class name and its parent classes are checked.
-				For the current control its local overrides are considered first (see [method add_theme_color_override]), then its assigned [member theme]. After the current control, each parent control and its assigned [member theme] are considered; controls without a [member theme] assigned are skipped. If no matching [Theme] is found in the tree, a custom project [Theme] (see [member ProjectSettings.gui/theme/custom]) and the default [Theme] are used.
+				Returns a [Color] from the first matching [Theme] in the tree if that [Theme] has a color item with the specified [param name] and [param theme_type]. If [param theme_type] is omitted the class name of the current control is used as the type, or [member theme_type_variation] if it is defined. If the type is a class name its parent classes are also checked, in order of inheritance. If the type is a variation its base types are checked, in order of dependency, then the control's class name and its parent classes are checked.
+				For the current control its local overrides are considered first (see [method add_theme_color_override]), then its assigned [member theme]. After the current control, each parent control and its assigned [member theme] are considered; controls without a [member theme] assigned are skipped. If no matching [Theme] is found in the tree, the custom project [Theme] (see [member ProjectSettings.gui/theme/custom]) and the default [Theme] are used (see [ThemeDB]).
 				[codeblocks]
 				[gdscript]
 				func _ready():
@@ -499,572 +482,445 @@
 			</description>
 		</method>
 		<method name="get_theme_constant" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="int" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns a constant from the first matching [Theme] in the tree if that [Theme] has a constant item with the specified [code]name[/code] and [code]theme_type[/code].
+				Returns a constant from the first matching [Theme] in the tree if that [Theme] has a constant item with the specified [param name] and [param theme_type].
+				See [method get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_theme_default_base_scale" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the default base scale value from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_base_scale] value.
+				See [method get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_theme_default_font" qualifiers="const">
+			<return type="Font" />
+			<description>
+				Returns the default font from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_font] value.
+				See [method get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_theme_default_font_size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the default font size value from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_font_size] value.
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_font" qualifiers="const">
-			<return type="Font">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="Font" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns a [Font] from the first matching [Theme] in the tree if that [Theme] has a font item with the specified [code]name[/code] and [code]theme_type[/code].
+				Returns a [Font] from the first matching [Theme] in the tree if that [Theme] has a font item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_font_size" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="int" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns a font size from the first matching [Theme] in the tree if that [Theme] has a font size item with the specified [code]name[/code] and [code]theme_type[/code].
+				Returns a font size from the first matching [Theme] in the tree if that [Theme] has a font size item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_icon" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="Texture2D" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns an icon from the first matching [Theme] in the tree if that [Theme] has an icon item with the specified [code]name[/code] and [code]theme_type[/code].
+				Returns an icon from the first matching [Theme] in the tree if that [Theme] has an icon item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_stylebox" qualifiers="const">
-			<return type="StyleBox">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="StyleBox" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns a [StyleBox] from the first matching [Theme] in the tree if that [Theme] has a stylebox item with the specified [code]name[/code] and [code]theme_type[/code].
+				Returns a [StyleBox] from the first matching [Theme] in the tree if that [Theme] has a stylebox item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_tooltip" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="at_position" type="Vector2" default="Vector2(0, 0)">
-			</argument>
+			<return type="String" />
+			<param index="0" name="at_position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Returns the tooltip, which will appear when the cursor is resting over this control. See [member hint_tooltip].
+				Returns the tooltip text for the position [param at_position] in control's local coordinates, which will typically appear when the cursor is resting over this control. By default, it returns [member tooltip_text].
+				This method can be overridden to customize its behavior. See [method _get_tooltip].
+				[b]Note:[/b] If this method returns an empty [String], no tooltip is displayed.
 			</description>
 		</method>
 		<method name="grab_click_focus">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Creates an [InputEventMouseButton] that attempts to click the control. If the event is received, the control acquires focus.
 				[codeblocks]
 				[gdscript]
 				func _process(delta):
-				    grab_click_focus() #when clicking another Control node, this node will be clicked instead
+				    grab_click_focus() # When clicking another Control node, this node will be clicked instead.
 				[/gdscript]
 				[csharp]
-				public override void _Process(float delta)
+				public override void _Process(double delta)
 				{
-				    GrabClickFocus(); //when clicking another Control node, this node will be clicked instead
+				    GrabClickFocus(); // When clicking another Control node, this node will be clicked instead.
 				}
 				[/csharp]
 				[/codeblocks]
 			</description>
 		</method>
 		<method name="grab_focus">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Steal the focus from another control and become the focused control (see [member focus_mode]).
+				[b]Note:[/b] Using this method together with [method Callable.call_deferred] makes it more reliable, especially when called inside [method Node._ready].
 			</description>
 		</method>
 		<method name="has_focus" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this is the current focused control. See [member focus_mode].
 			</description>
 		</method>
 		<method name="has_theme_color" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a color item with the specified [code]name[/code] and [code]theme_type[/code].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a color item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_color_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if there is a local override for a theme [Color] with the specified [code]name[/code] in this [Control] node.
+				Returns [code]true[/code] if there is a local override for a theme [Color] with the specified [param name] in this [Control] node.
 				See [method add_theme_color_override].
 			</description>
 		</method>
 		<method name="has_theme_constant" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a constant item with the specified [code]name[/code] and [code]theme_type[/code].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a constant item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_constant_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if there is a local override for a theme constant with the specified [code]name[/code] in this [Control] node.
+				Returns [code]true[/code] if there is a local override for a theme constant with the specified [param name] in this [Control] node.
 				See [method add_theme_constant_override].
 			</description>
 		</method>
 		<method name="has_theme_font" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font item with the specified [code]name[/code] and [code]theme_type[/code].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_font_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if there is a local override for a theme [Font] with the specified [code]name[/code] in this [Control] node.
+				Returns [code]true[/code] if there is a local override for a theme [Font] with the specified [param name] in this [Control] node.
 				See [method add_theme_font_override].
 			</description>
 		</method>
 		<method name="has_theme_font_size" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font size item with the specified [code]name[/code] and [code]theme_type[/code].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font size item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_font_size_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if there is a local override for a theme font size with the specified [code]name[/code] in this [Control] node.
+				Returns [code]true[/code] if there is a local override for a theme font size with the specified [param name] in this [Control] node.
 				See [method add_theme_font_size_override].
 			</description>
 		</method>
 		<method name="has_theme_icon" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if there is a matching [Theme] in the tree that has an icon item with the specified [code]name[/code] and [code]theme_type[/code].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has an icon item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_icon_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if there is a local override for a theme icon with the specified [code]name[/code] in this [Control] node.
+				Returns [code]true[/code] if there is a local override for a theme icon with the specified [param name] in this [Control] node.
 				See [method add_theme_icon_override].
 			</description>
 		</method>
 		<method name="has_theme_stylebox" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="theme_type" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a stylebox item with the specified [code]name[/code] and [code]theme_type[/code].
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a stylebox item with the specified [param name] and [param theme_type].
 				See [method get_theme_color] for details.
 			</description>
 		</method>
 		<method name="has_theme_stylebox_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if there is a local override for a theme [StyleBox] with the specified [code]name[/code] in this [Control] node.
+				Returns [code]true[/code] if there is a local override for a theme [StyleBox] with the specified [param name] in this [Control] node.
 				See [method add_theme_stylebox_override].
 			</description>
 		</method>
+		<method name="is_drag_successful" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a drag operation is successful. Alternative to [method Viewport.gui_is_drag_successful].
+				Best used with [constant Node.NOTIFICATION_DRAG_END].
+			</description>
+		</method>
 		<method name="is_layout_rtl" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if layout is right-to-left.
 			</description>
 		</method>
-		<method name="minimum_size_changed">
-			<return type="void">
-			</return>
-			<description>
-				Invalidates the size cache in this node and in parent nodes up to top_level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_min_size] directly calls this method automatically.
-			</description>
-		</method>
 		<method name="release_focus">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
-				Give up the focus. No other control will be able to receive keyboard input.
+				Give up the focus. No other control will be able to receive input.
 			</description>
 		</method>
 		<method name="remove_theme_color_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Removes a local override for a theme [Color] with the specified [code]name[/code] previously added by [method add_theme_color_override] or via the Inspector dock.
+				Removes a local override for a theme [Color] with the specified [param name] previously added by [method add_theme_color_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_constant_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Removes a local override for a theme constant with the specified [code]name[/code] previously added by [method add_theme_constant_override] or via the Inspector dock.
+				Removes a local override for a theme constant with the specified [param name] previously added by [method add_theme_constant_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_font_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Removes a local override for a theme [Font] with the specified [code]name[/code] previously added by [method add_theme_font_override] or via the Inspector dock.
+				Removes a local override for a theme [Font] with the specified [param name] previously added by [method add_theme_font_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_font_size_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Removes a local override for a theme font size with the specified [code]name[/code] previously added by [method add_theme_font_size_override] or via the Inspector dock.
+				Removes a local override for a theme font size with the specified [param name] previously added by [method add_theme_font_size_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_icon_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Removes a local override for a theme icon with the specified [code]name[/code] previously added by [method add_theme_icon_override] or via the Inspector dock.
+				Removes a local override for a theme icon with the specified [param name] previously added by [method add_theme_icon_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_stylebox_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
 			<description>
-				Removes a local override for a theme [StyleBox] with the specified [code]name[/code] previously added by [method add_theme_stylebox_override] or via the Inspector dock.
+				Removes a local override for a theme [StyleBox] with the specified [param name] previously added by [method add_theme_stylebox_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="reset_size">
+			<return type="void" />
+			<description>
+				Resets the size to [method get_combined_minimum_size]. This is equivalent to calling [code]set_size(Vector2())[/code] (or any size below the minimum).
 			</description>
 		</method>
 		<method name="set_anchor">
-			<return type="void">
-			</return>
-			<argument index="0" name="side" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="anchor" type="float">
-			</argument>
-			<argument index="2" name="keep_offset" type="bool" default="false">
-			</argument>
-			<argument index="3" name="push_opposite_anchor" type="bool" default="true">
-			</argument>
+			<return type="void" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<param index="1" name="anchor" type="float" />
+			<param index="2" name="keep_offset" type="bool" default="false" />
+			<param index="3" name="push_opposite_anchor" type="bool" default="true" />
 			<description>
-				Sets the anchor for the specified [enum Side] to [code]anchor[/code]. A setter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
-				If [code]keep_offset[/code] is [code]true[/code], offsets aren't updated after this operation.
-				If [code]push_opposite_anchor[/code] is [code]true[/code] and the opposite anchor overlaps this anchor, the opposite one will have its value overridden. For example, when setting left anchor to 1 and the right anchor has value of 0.5, the right anchor will also get value of 1. If [code]push_opposite_anchor[/code] was [code]false[/code], the left anchor would get value 0.5.
+				Sets the anchor for the specified [enum Side] to [param anchor]. A setter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
+				If [param keep_offset] is [code]true[/code], offsets aren't updated after this operation.
+				If [param push_opposite_anchor] is [code]true[/code] and the opposite anchor overlaps this anchor, the opposite one will have its value overridden. For example, when setting left anchor to 1 and the right anchor has value of 0.5, the right anchor will also get value of 1. If [param push_opposite_anchor] was [code]false[/code], the left anchor would get value 0.5.
 			</description>
 		</method>
 		<method name="set_anchor_and_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="side" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="anchor" type="float">
-			</argument>
-			<argument index="2" name="offset" type="float">
-			</argument>
-			<argument index="3" name="push_opposite_anchor" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<param index="1" name="anchor" type="float" />
+			<param index="2" name="offset" type="float" />
+			<param index="3" name="push_opposite_anchor" type="bool" default="false" />
 			<description>
 				Works the same as [method set_anchor], but instead of [code]keep_offset[/code] argument and automatic update of offset, it allows to set the offset yourself (see [method set_offset]).
 			</description>
 		</method>
 		<method name="set_anchors_and_offsets_preset">
-			<return type="void">
-			</return>
-			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
-			</argument>
-			<argument index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0">
-			</argument>
-			<argument index="2" name="margin" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<param index="0" name="preset" type="int" enum="Control.LayoutPreset" />
+			<param index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0" />
+			<param index="2" name="margin" type="int" default="0" />
 			<description>
 				Sets both anchor preset and offset preset. See [method set_anchors_preset] and [method set_offsets_preset].
 			</description>
 		</method>
 		<method name="set_anchors_preset">
-			<return type="void">
-			</return>
-			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
-			</argument>
-			<argument index="1" name="keep_offsets" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<param index="0" name="preset" type="int" enum="Control.LayoutPreset" />
+			<param index="1" name="keep_offsets" type="bool" default="false" />
 			<description>
-				Sets the anchors to a [code]preset[/code] from [enum Control.LayoutPreset] enum. This is the code equivalent to using the Layout menu in the 2D editor.
-				If [code]keep_offsets[/code] is [code]true[/code], control's position will also be updated.
+				Sets the anchors to a [param preset] from [enum Control.LayoutPreset] enum. This is the code equivalent to using the Layout menu in the 2D editor.
+				If [param keep_offsets] is [code]true[/code], control's position will also be updated.
 			</description>
 		</method>
 		<method name="set_begin">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<param index="0" name="position" type="Vector2" />
 			<description>
-				Sets [member offset_left] and [member offset_top] at the same time. Equivalent of changing [member rect_position].
+				Sets [member offset_left] and [member offset_top] at the same time. Equivalent of changing [member position].
 			</description>
 		</method>
 		<method name="set_drag_forwarding">
-			<return type="void">
-			</return>
-			<argument index="0" name="target" type="Control">
-			</argument>
+			<return type="void" />
+			<param index="0" name="drag_func" type="Callable" />
+			<param index="1" name="can_drop_func" type="Callable" />
+			<param index="2" name="drop_func" type="Callable" />
 			<description>
-				Forwards the handling of this control's drag and drop to [code]target[/code] control.
-				Forwarding can be implemented in the target control similar to the methods [method _get_drag_data], [method _can_drop_data], and [method _drop_data] but with two differences:
-				1. The function name must be suffixed with [b]_fw[/b]
-				2. The function must take an extra argument that is the control doing the forwarding
-				[codeblocks]
-				[gdscript]
-				# ThisControl.gd
-				extends Control
-				export(Control) var target_control
-
-				func _ready():
-				    set_drag_forwarding(target_control)
-
-				# TargetControl.gd
-				extends Control
-
-				func _can_drop_data_fw(position, data, from_control):
-				    return true
-
-				func _drop_data_fw(position, data, from_control):
-				    my_handle_data(data) # Your handler method.
-
-				func _get_drag_data_fw(position, from_control):
-				    set_drag_preview(my_preview)
-				    return my_data()
-				[/gdscript]
-				[csharp]
-				// ThisControl.cs
-				public class ThisControl : Control
-				{
-				    [Export]
-				    public Control TargetControl { get; set; }
-				    public override void _Ready()
-				    {
-				        SetDragForwarding(TargetControl);
-				    }
-				}
-
-				// TargetControl.cs
-				public class TargetControl : Control
-				{
-				    public void CanDropDataFw(Vector2 position, object data, Control fromControl)
-				    {
-				        return true;
-				    }
-
-				    public void DropDataFw(Vector2 position, object data, Control fromControl)
-				    {
-				        MyHandleData(data); // Your handler method.
-				    }
-
-				    public void GetDragDataFw(Vector2 position, Control fromControl)
-				    {
-				        SetDragPreview(MyPreview);
-				        return MyData();
-				    }
-				}
-				[/csharp]
-				[/codeblocks]
+				Forwards the handling of this control's [method _get_drag_data],  [method _can_drop_data] and [method _drop_data] virtual functions to delegate callables.
+				For each argument, if not empty, the delegate callable is used, otherwise the local (virtual) function is used.
+				The function format for each callable should be exactly the same as the virtual functions described above.
 			</description>
 		</method>
 		<method name="set_drag_preview">
-			<return type="void">
-			</return>
-			<argument index="0" name="control" type="Control">
-			</argument>
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
 			<description>
 				Shows the given control at the mouse pointer. A good time to call this method is in [method _get_drag_data]. The control must not be in the scene tree. You should not free the control, and you should not keep a reference to the control beyond the duration of the drag. It will be deleted automatically after the drag has ended.
 				[codeblocks]
 				[gdscript]
-				export (Color, RGBA) var color = Color(1, 0, 0, 1)
+				@export var color = Color(1, 0, 0, 1)
 
 				func _get_drag_data(position):
 				    # Use a control that is not in the tree
 				    var cpb = ColorPickerButton.new()
 				    cpb.color = color
-				    cpb.rect_size = Vector2(50, 50)
+				    cpb.size = Vector2(50, 50)
 				    set_drag_preview(cpb)
 				    return color
 				[/gdscript]
 				[csharp]
 				[Export]
-				public Color Color = new Color(1, 0, 0, 1);
+				private Color _color = new Color(1, 0, 0, 1);
 
-				public override object GetDragData(Vector2 position)
+				public override Variant _GetDragData(Vector2 atPosition)
 				{
 				    // Use a control that is not in the tree
 				    var cpb = new ColorPickerButton();
-				    cpb.Color = Color;
-				    cpb.RectSize = new Vector2(50, 50);
+				    cpb.Color = _color;
+				    cpb.Size = new Vector2(50, 50);
 				    SetDragPreview(cpb);
-				    return Color;
+				    return _color;
 				}
 				[/csharp]
 				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_end">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<param index="0" name="position" type="Vector2" />
 			<description>
 				Sets [member offset_right] and [member offset_bottom] at the same time.
 			</description>
 		</method>
 		<method name="set_focus_neighbor">
-			<return type="void">
-			</return>
-			<argument index="0" name="side" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="neighbor" type="NodePath">
-			</argument>
+			<return type="void" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<param index="1" name="neighbor" type="NodePath" />
 			<description>
-				Sets the anchor for the specified [enum Side] to the [Control] at [code]neighbor[/code] node path. A setter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
+				Sets the focus neighbor for the specified [enum Side] to the [Control] at [param neighbor] node path. A setter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
 			</description>
 		</method>
 		<method name="set_global_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="keep_offsets" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="keep_offsets" type="bool" default="false" />
 			<description>
-				Sets the [member rect_global_position] to given [code]position[/code].
-				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
+				Sets the [member global_position] to given [param position].
+				If [param keep_offsets] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
 		<method name="set_offset">
-			<return type="void">
-			</return>
-			<argument index="0" name="side" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="offset" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<param index="1" name="offset" type="float" />
 			<description>
-				Sets the offset for the specified [enum Side] to [code]offset[/code]. A setter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
+				Sets the offset for the specified [enum Side] to [param offset]. A setter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
 			</description>
 		</method>
 		<method name="set_offsets_preset">
-			<return type="void">
-			</return>
-			<argument index="0" name="preset" type="int" enum="Control.LayoutPreset">
-			</argument>
-			<argument index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0">
-			</argument>
-			<argument index="2" name="margin" type="int" default="0">
-			</argument>
+			<return type="void" />
+			<param index="0" name="preset" type="int" enum="Control.LayoutPreset" />
+			<param index="1" name="resize_mode" type="int" enum="Control.LayoutPresetMode" default="0" />
+			<param index="2" name="margin" type="int" default="0" />
 			<description>
-				Sets the offsets to a [code]preset[/code] from [enum Control.LayoutPreset] enum. This is the code equivalent to using the Layout menu in the 2D editor.
-				Use parameter [code]resize_mode[/code] with constants from [enum Control.LayoutPresetMode] to better determine the resulting size of the [Control]. Constant size will be ignored if used with presets that change size, e.g. [code]PRESET_LEFT_WIDE[/code].
-				Use parameter [code]margin[/code] to determine the gap between the [Control] and the edges.
+				Sets the offsets to a [param preset] from [enum Control.LayoutPreset] enum. This is the code equivalent to using the Layout menu in the 2D editor.
+				Use parameter [param resize_mode] with constants from [enum Control.LayoutPresetMode] to better determine the resulting size of the [Control]. Constant size will be ignored if used with presets that change size, e.g. [constant PRESET_LEFT_WIDE].
+				Use parameter [param margin] to determine the gap between the [Control] and the edges.
 			</description>
 		</method>
 		<method name="set_position">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="keep_offsets" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="keep_offsets" type="bool" default="false" />
 			<description>
-				Sets the [member rect_position] to given [code]position[/code].
-				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
+				Sets the [member position] to given [param position].
+				If [param keep_offsets] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
 		<method name="set_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="size" type="Vector2">
-			</argument>
-			<argument index="1" name="keep_offsets" type="bool" default="false">
-			</argument>
+			<return type="void" />
+			<param index="0" name="size" type="Vector2" />
+			<param index="1" name="keep_offsets" type="bool" default="false" />
 			<description>
-				Sets the size (see [member rect_size]).
-				If [code]keep_offsets[/code] is [code]true[/code], control's anchors will be updated instead of offsets.
+				Sets the size (see [member size]).
+				If [param keep_offsets] is [code]true[/code], control's anchors will be updated instead of offsets.
+			</description>
+		</method>
+		<method name="update_minimum_size">
+			<return type="void" />
+			<description>
+				Invalidates the size cache in this node and in parent nodes up to top level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member custom_minimum_size] directly calls this method automatically.
 			</description>
 		</method>
 		<method name="warp_mouse">
-			<return type="void">
-			</return>
-			<argument index="0" name="to_position" type="Vector2">
-			</argument>
+			<return type="void" />
+			<param index="0" name="position" type="Vector2" />
 			<description>
-				Moves the mouse cursor to [code]to_position[/code], relative to [member rect_position] of this [Control].
+				Moves the mouse cursor to [param position], relative to [member position] of this [Control].
+				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS and Linux. It has no effect on Android, iOS and Web.
 			</description>
 		</method>
 	</methods>
@@ -1081,28 +937,40 @@
 		<member name="anchor_top" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
 			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
+		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" deprecated="Use [member Node.auto_translate_mode] instead.">
+			Toggles if any text should automatically change to its translated version depending on the current locale.
+		</member>
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
+			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered and won't receive input.
+		</member>
+		<member name="custom_minimum_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2(0, 0)">
+			The minimum size of the node's bounding rectangle. If you set it to a value greater than [code](0, 0)[/code], the node's bounding rectangle will always have at least this size. Note that [Control] nodes have their internal minimum size returned by [method get_minimum_size]. It depends on the control's contents, like text, textures, or style boxes. The actual minimum size is the maximum value of this property and the internal minimum size (see [method get_combined_minimum_size]).
+		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode" default="0">
-			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard signals.
+			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard, gamepad, and mouse signals.
 		</member>
-		<member name="focus_neighbor_bottom" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
-			Tells Godot which node it should give keyboard focus to if the user presses the down arrow on the keyboard or down on a gamepad by default. You can change the key by editing the [code]ui_down[/code] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.
+		<member name="focus_neighbor_bottom" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)" keywords="focus_neighbour_bottom">
+			Tells Godot which node it should give focus to if the user presses the down arrow on the keyboard or down on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_down] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.
 		</member>
-		<member name="focus_neighbor_left" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
-			Tells Godot which node it should give keyboard focus to if the user presses the left arrow on the keyboard or left on a gamepad by default. You can change the key by editing the [code]ui_left[/code] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the left of this one.
+		<member name="focus_neighbor_left" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)" keywords="focus_neighbour_left">
+			Tells Godot which node it should give focus to if the user presses the left arrow on the keyboard or left on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_left] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the left of this one.
 		</member>
-		<member name="focus_neighbor_right" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
-			Tells Godot which node it should give keyboard focus to if the user presses the right arrow on the keyboard or right on a gamepad by default. You can change the key by editing the [code]ui_right[/code] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.
+		<member name="focus_neighbor_right" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)" keywords="focus_neighbour_right">
+			Tells Godot which node it should give focus to if the user presses the right arrow on the keyboard or right on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_right] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the right of this one.
 		</member>
-		<member name="focus_neighbor_top" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
-			Tells Godot which node it should give keyboard focus to if the user presses the top arrow on the keyboard or top on a gamepad by default. You can change the key by editing the [code]ui_top[/code] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.
+		<member name="focus_neighbor_top" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)" keywords="focus_neighbour_top">
+			Tells Godot which node it should give focus to if the user presses the top arrow on the keyboard or top on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_up] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the top of this one.
 		</member>
 		<member name="focus_next" type="NodePath" setter="set_focus_next" getter="get_focus_next" default="NodePath(&quot;&quot;)">
-			Tells Godot which node it should give keyboard focus to if the user presses [kbd]Tab[/kbd] on a keyboard by default. You can change the key by editing the [code]ui_focus_next[/code] input action.
+			Tells Godot which node it should give focus to if the user presses [kbd]Tab[/kbd] on a keyboard by default. You can change the key by editing the [member ProjectSettings.input/ui_focus_next] input action.
 			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
 		</member>
 		<member name="focus_previous" type="NodePath" setter="set_focus_previous" getter="get_focus_previous" default="NodePath(&quot;&quot;)">
-			Tells Godot which node it should give keyboard focus to if the user presses [kbd]Shift + Tab[/kbd] on a keyboard by default. You can change the key by editing the [code]ui_focus_prev[/code] input action.
+			Tells Godot which node it should give focus to if the user presses [kbd]Shift + Tab[/kbd] on a keyboard by default. You can change the key by editing the [member ProjectSettings.input/ui_focus_prev] input action.
 			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
+		</member>
+		<member name="global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
+			The node's global position, relative to the world (usually to the [CanvasLayer]).
 		</member>
 		<member name="grow_horizontal" type="int" setter="set_h_grow_direction" getter="get_h_grow_direction" enum="Control.GrowDirection" default="1">
 			Controls the direction on the horizontal axis in which the control should grow if its horizontal minimum size is changed to be greater than its current size, as the control always has to be at least the minimum size.
@@ -1110,8 +978,87 @@
 		<member name="grow_vertical" type="int" setter="set_v_grow_direction" getter="get_v_grow_direction" enum="Control.GrowDirection" default="1">
 			Controls the direction on the vertical axis in which the control should grow if its vertical minimum size is changed to be greater than its current size, as the control always has to be at least the minimum size.
 		</member>
-		<member name="hint_tooltip" type="String" setter="set_tooltip" getter="_get_tooltip" default="&quot;&quot;">
-			Changes the tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments, provided that the [member mouse_filter] property is not [constant MOUSE_FILTER_IGNORE]. You can change the time required for the tooltip to appear with [code]gui/timers/tooltip_delay_sec[/code] option in Project Settings.
+		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" enum="Control.LayoutDirection" default="0">
+			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
+		</member>
+		<member name="localize_numeral_system" type="bool" setter="set_localize_numeral_system" getter="is_localizing_numeral_system" default="true">
+			If [code]true[/code], automatically converts code line numbers, list indices, [SpinBox] and [ProgressBar] values from the Western Arabic (0..9) to the numeral systems used in current locale.
+			[b]Note:[/b] Numbers within the text are not automatically converted, it can be done manually, using [method TextServer.format_number].
+		</member>
+		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" enum="Control.CursorShape" default="0">
+			The default cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
+			[b]Note:[/b] On Linux, shapes may vary depending on the cursor theme of the system.
+		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter" default="0">
+			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the constants to learn what each does.
+		</member>
+		<member name="mouse_force_pass_scroll_events" type="bool" setter="set_force_pass_scroll_events" getter="is_force_pass_scroll_events" default="true">
+			When enabled, scroll wheel events processed by [method _gui_input] will be passed to the parent control even if [member mouse_filter] is set to [constant MOUSE_FILTER_STOP]. As it defaults to true, this allows nested scrollable containers to work out of the box.
+			You should disable it on the root of your UI if you do not want scroll events to go to the [method Node._unhandled_input] processing.
+		</member>
+		<member name="offset_bottom" type="float" setter="set_offset" getter="get_offset" default="0.0">
+			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
+			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
+		</member>
+		<member name="offset_left" type="float" setter="set_offset" getter="get_offset" default="0.0">
+			Distance between the node's left edge and its parent control, based on [member anchor_left].
+			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
+		</member>
+		<member name="offset_right" type="float" setter="set_offset" getter="get_offset" default="0.0">
+			Distance between the node's right edge and its parent control, based on [member anchor_right].
+			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
+		</member>
+		<member name="offset_top" type="float" setter="set_offset" getter="get_offset" default="0.0">
+			Distance between the node's top edge and its parent control, based on [member anchor_top].
+			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
+		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
+		<member name="pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2(0, 0)">
+			By default, the node's pivot is its top-left corner. When you change its [member rotation] or [member scale], it will rotate or scale around this pivot. Set this property to [member size] / 2 to pivot around the Control's center.
+		</member>
+		<member name="position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2(0, 0)">
+			The node's position, relative to its containing node. It corresponds to the rectangle's top-left corner. The property is not affected by [member pivot_offset].
+		</member>
+		<member name="rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
+			The node's rotation around its pivot, in radians. See [member pivot_offset] to change the pivot's position.
+			[b]Note:[/b] This property is edited in the inspector in degrees. If you want to use degrees in a script, use [member rotation_degrees].
+		</member>
+		<member name="rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees">
+			Helper property to access [member rotation] in degrees instead of radians.
+		</member>
+		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
+			The node's scale, relative to its [member size]. Change this property to scale the node around its [member pivot_offset]. The Control's [member tooltip_text] will also scale according to this value.
+			[b]Note:[/b] This property is mainly intended to be used for animation purposes. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.
+			[b]Note:[/b] [member FontFile.oversampling] does [i]not[/i] take [Control] [member scale] into account. This means that scaling up/down will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated. To ensure text remains crisp regardless of scale, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling [b]Multichannel Signed Distance Field[/b] in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the inspector.
+			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instantiated. To set the Control's scale when it's instantiated, wait for one frame using [code]await get_tree().process_frame[/code] then set its [member scale] property.
+		</member>
+		<member name="shortcut_context" type="Node" setter="set_shortcut_context" getter="get_shortcut_context">
+			The [Node] which must be a parent of the focused [Control] for the shortcut to be activated. If [code]null[/code], the shortcut can be activated when any control is focused (a global shortcut). This allows shortcuts to be accepted only when the user has a certain area of the GUI focused.
+		</member>
+		<member name="size" type="Vector2" setter="_set_size" getter="get_size" default="Vector2(0, 0)">
+			The size of the node's bounding rectangle, in the node's coordinate system. [Container] nodes update this property automatically.
+		</member>
+		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" enum="Control.SizeFlags" is_bitfield="true" default="1">
+			Tells the parent [Container] nodes how they should resize and place the node on the X axis. Use a combination of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
+		</member>
+		<member name="size_flags_stretch_ratio" type="float" setter="set_stretch_ratio" getter="get_stretch_ratio" default="1.0">
+			If the node and at least one of its neighbors uses the [constant SIZE_EXPAND] size flag, the parent [Container] will let it take more or less space depending on this property. If this node has a stretch ratio of 2 and its neighbor a ratio of 1, this node will take two thirds of the available space.
+		</member>
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" enum="Control.SizeFlags" is_bitfield="true" default="1">
+			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use a combination of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
+		</member>
+		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
+			The [Theme] resource this node and all its [Control] and [Window] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
+			[b]Note:[/b] [Window] styles will have no effect unless the window is embedded.
+		</member>
+		<member name="theme_type_variation" type="StringName" setter="set_theme_type_variation" getter="get_theme_type_variation" default="&amp;&quot;&quot;">
+			The name of a theme type variation used by this [Control] to look up its own theme items. When empty, the class name of the node is used (e.g. [code skip-lint]Button[/code] for the [Button] control), as well as the class names of all parent classes (in order of inheritance).
+			When set, this property gives the highest priority to the type of the specified name. This type can in turn extend another type, forming a dependency chain. See [method Theme.set_type_variation]. If the theme item cannot be found using this type or its base types, lookup falls back on the class names.
+			[b]Note:[/b] To look up [Control]'s own items use various [code]get_theme_*[/code] methods without specifying [code]theme_type[/code].
+			[b]Note:[/b] Theme items are looked for in the tree order, from branch to root, where each [Control] node is checked for its [member theme] property. The earliest match against any type/class name is returned. The project-level Theme and the default Theme are checked last.
+		</member>
+		<member name="tooltip_text" type="String" setter="set_tooltip_text" getter="get_tooltip_text" default="&quot;&quot;">
+			The default tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments, provided that the [member mouse_filter] property is not [constant MOUSE_FILTER_IGNORE]. The time required for the tooltip to appear can be changed with the [member ProjectSettings.gui/timers/tooltip_delay_sec] option. See also [method get_tooltip].
 			The tooltip popup will use either a default implementation, or a custom one that you can provide by overriding [method _make_custom_tooltip]. The default tooltip includes a [PopupPanel] and [Label] whose theme properties can be customized using [Theme] methods with the [code]"TooltipPanel"[/code] and [code]"TooltipLabel"[/code] respectively. For example:
 			[codeblocks]
 			[gdscript]
@@ -1132,91 +1079,20 @@
 			[/csharp]
 			[/codeblocks]
 		</member>
-		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" enum="Control.LayoutDirection" default="0">
-			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
-		</member>
-		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" enum="Control.CursorShape" default="0">
-			The default cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
-			[b]Note:[/b] On Linux, shapes may vary depending on the cursor theme of the system.
-		</member>
-		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter" default="0">
-			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the constants to learn what each does.
-		</member>
-		<member name="offset_bottom" type="float" setter="set_offset" getter="get_offset" default="0.0">
-			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
-			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
-		</member>
-		<member name="offset_left" type="float" setter="set_offset" getter="get_offset" default="0.0">
-			Distance between the node's left edge and its parent control, based on [member anchor_left].
-			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
-		</member>
-		<member name="offset_right" type="float" setter="set_offset" getter="get_offset" default="0.0">
-			Distance between the node's right edge and its parent control, based on [member anchor_right].
-			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
-		</member>
-		<member name="offset_top" type="float" setter="set_offset" getter="get_offset" default="0.0">
-			Distance between the node's top edge and its parent control, based on [member anchor_top].
-			Offsets are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Offsets update automatically when you move or resize the node.
-		</member>
-		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
-			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered and won't receive input.
-		</member>
-		<member name="rect_global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
-			The node's global position, relative to the world (usually to the top-left corner of the window).
-		</member>
-		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2(0, 0)">
-			The minimum size of the node's bounding rectangle. If you set it to a value greater than (0, 0), the node's bounding rectangle will always have at least this size, even if its content is smaller. If it's set to (0, 0), the node sizes automatically to fit its content, be it a texture or child nodes.
-		</member>
-		<member name="rect_pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2(0, 0)">
-			By default, the node's pivot is its top-left corner. When you change its [member rect_scale], it will scale around this pivot. Set this property to [member rect_size] / 2 to center the pivot in the node's rectangle.
-		</member>
-		<member name="rect_position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2(0, 0)">
-			The node's position, relative to its parent. It corresponds to the rectangle's top-left corner. The property is not affected by [member rect_pivot_offset].
-		</member>
-		<member name="rect_rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
-			The node's rotation around its pivot, in radians. See [member rect_pivot_offset] to change the pivot's position.
-		</member>
-		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
-			The node's scale, relative to its [member rect_size]. Change this property to scale the node around its [member rect_pivot_offset]. The Control's [member hint_tooltip] will also scale according to this value.
-			[b]Note:[/b] This property is mainly intended to be used for animation purposes. Text inside the Control will look pixelated or blurry when the Control is scaled. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=https://docs.godotengine.org/en/latest/tutorials/viewports/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.
-			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instantiated. To set the Control's scale when it's instantiated, wait for one frame using [code]yield(get_tree(), "idle_frame")[/code] then set its [member rect_scale] property.
-		</member>
-		<member name="rect_size" type="Vector2" setter="_set_size" getter="get_size" default="Vector2(0, 0)">
-			The size of the node's bounding rectangle, in pixels. [Container] nodes update this property automatically.
-		</member>
-		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" default="1">
-			Tells the parent [Container] nodes how they should resize and place the node on the X axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
-		</member>
-		<member name="size_flags_stretch_ratio" type="float" setter="set_stretch_ratio" getter="get_stretch_ratio" default="1.0">
-			If the node and at least one of its neighbors uses the [constant SIZE_EXPAND] size flag, the parent [Container] will let it take more or less space depending on this property. If this node has a stretch ratio of 2 and its neighbor a ratio of 1, this node will take two thirds of the available space.
-		</member>
-		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" default="1">
-			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
-		</member>
-		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
-			The [Theme] resource this node and all its [Control] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
-		</member>
-		<member name="theme_type_variation" type="StringName" setter="set_theme_type_variation" getter="get_theme_type_variation" default="&amp;&quot;&quot;">
-			The name of a theme type variation used by this [Control] to look up its own theme items. When empty, the class name of the node is used (e.g. [code]Button[/code] for the [Button] control), as well as the class names of all parent classes (in order of inheritance).
-			When set, this property gives the highest priority to the type of the specified name. This type can in turn extend another type, forming a dependency chain. See [method Theme.set_type_variation]. If the theme item cannot be found using this type or its base types, lookup falls back on the class names.
-			[b]Note:[/b] To look up [Control]'s own items use various [code]get_theme_*[/code] methods without specifying [code]theme_type[/code].
-			[b]Note:[/b] Theme items are looked for in the tree order, from branch to root, where each [Control] node is checked for its [member theme] property. The earliest match against any type/class name is returned. The project-level Theme and the default Theme are checked last.
-		</member>
 	</members>
 	<signals>
 		<signal name="focus_entered">
 			<description>
-				Emitted when the node gains keyboard focus.
+				Emitted when the node gains focus.
 			</description>
 		</signal>
 		<signal name="focus_exited">
 			<description>
-				Emitted when the node loses keyboard focus.
+				Emitted when the node loses focus.
 			</description>
 		</signal>
 		<signal name="gui_input">
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
+			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Emitted when the node receives an [InputEvent].
 			</description>
@@ -1228,14 +1104,20 @@
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse enters the control's [code]Rect[/code] area, provided its [member mouse_filter] lets the event reach it.
-				[b]Note:[/b] [signal mouse_entered] will not be emitted if the mouse enters a child [Control] node before entering the parent's [code]Rect[/code] area, at least until the mouse is moved to reach the parent's [code]Rect[/code] area.
+				Emitted when the mouse cursor enters the control's (or any child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+				[b]Note:[/b] [member CanvasItem.z_index] doesn't affect, which Control receives the signal.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse leaves the control's [code]Rect[/code] area, provided its [member mouse_filter] lets the event reach it.
-				[b]Note:[/b] [signal mouse_exited] will be emitted if the mouse enters a child [Control] node, even if the mouse cursor is still inside the parent's [code]Rect[/code] area.
+				Emitted when the mouse cursor leaves the control's (and all child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+				[b]Note:[/b] [member CanvasItem.z_index] doesn't affect, which Control receives the signal.
+				[b]Note:[/b] If you want to check whether the mouse truly left the area, ignoring any top nodes, you can use code like this:
+				[codeblock]
+				func _on_mouse_exited():
+				    if not Rect2(Vector2(), size).has_point(get_local_mouse_position()):
+				        # Not hovering over area.
+				[/codeblock]
 			</description>
 		</signal>
 		<signal name="resized">
@@ -1250,6 +1132,7 @@
 		</signal>
 		<signal name="theme_changed">
 			<description>
+				Emitted when the [constant NOTIFICATION_THEME_CHANGED] notification is sent.
 			</description>
 		</signal>
 	</signals>
@@ -1261,16 +1144,30 @@
 			The node can only grab focus on mouse clicks. Use with [member focus_mode].
 		</constant>
 		<constant name="FOCUS_ALL" value="2" enum="FocusMode">
-			The node can grab focus on mouse click or using the arrows and the Tab keys on the keyboard. Use with [member focus_mode].
+			The node can grab focus on mouse click, using the arrows and the Tab keys on the keyboard, or using the D-pad buttons on a gamepad. Use with [member focus_mode].
 		</constant>
 		<constant name="NOTIFICATION_RESIZED" value="40">
-			Sent when the node changes size. Use [member rect_size] to get the new size.
+			Sent when the node changes size. Use [member size] to get the new size.
 		</constant>
 		<constant name="NOTIFICATION_MOUSE_ENTER" value="41">
-			Sent when the mouse pointer enters the node.
+			Sent when the mouse cursor enters the control's (or any child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
+			See also [constant NOTIFICATION_MOUSE_ENTER_SELF].
 		</constant>
 		<constant name="NOTIFICATION_MOUSE_EXIT" value="42">
-			Sent when the mouse pointer exits the node.
+			Sent when the mouse cursor leaves the control's (and all child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
+			See also [constant NOTIFICATION_MOUSE_EXIT_SELF].
+		</constant>
+		<constant name="NOTIFICATION_MOUSE_ENTER_SELF" value="60" experimental="The reason this notification is sent may change in the future.">
+			Sent when the mouse cursor enters the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
+			See also [constant NOTIFICATION_MOUSE_ENTER].
+		</constant>
+		<constant name="NOTIFICATION_MOUSE_EXIT_SELF" value="61" experimental="The reason this notification is sent may change in the future.">
+			Sent when the mouse cursor leaves the control's visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
+			[b]Note:[/b] [member CanvasItem.z_index] doesn't affect which Control receives the notification.
+			See also [constant NOTIFICATION_MOUSE_EXIT].
 		</constant>
 		<constant name="NOTIFICATION_FOCUS_ENTER" value="43">
 			Sent when the node grabs focus.
@@ -1279,13 +1176,28 @@
 			Sent when the node loses focus.
 		</constant>
 		<constant name="NOTIFICATION_THEME_CHANGED" value="45">
-			Sent when the node's [member theme] changes, right before Godot redraws the control. Happens when you call one of the [code]add_theme_*_override[/code] methods.
+			Sent when the node needs to refresh its theme items. This happens in one of the following cases:
+			- The [member theme] property is changed on this node or any of its ancestors.
+			- The [member theme_type_variation] property is changed on this node.
+			- One of the node's theme property overrides is changed.
+			- The node enters the scene tree.
+			[b]Note:[/b] As an optimization, this notification won't be sent from changes that occur while this node is outside of the scene tree. Instead, all of the theme item updates can be applied at once when the node enters the scene tree.
+			[b]Note:[/b] This notification is received alongside [constant Node.NOTIFICATION_ENTER_TREE], so if you are instantiating a scene, the child nodes will not be initialized yet. You can use it to setup theming for this node, child nodes created from script, or if you want to access child nodes added in the editor, make sure the node is ready using [method Node.is_node_ready].
+			[codeblock]
+			func _notification(what):
+			    if what == NOTIFICATION_THEME_CHANGED:
+			        if not is_node_ready():
+			            await ready # Wait until ready signal.
+			        $Label.add_theme_color_override("font_color", Color.YELLOW)
+			[/codeblock]
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_BEGIN" value="47">
-			Sent when this node is inside a [ScrollContainer] which has begun being scrolled.
+			Sent when this node is inside a [ScrollContainer] which has begun being scrolled when dragging the scrollable area [i]with a touch event[/i]. This notification is [i]not[/i] sent when scrolling by dragging the scrollbar, scrolling with the mouse wheel or scrolling with keyboard/gamepad events.
+			[b]Note:[/b] This signal is only emitted on Android or iOS, or on desktop/web platforms when [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is enabled.
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_END" value="48">
-			Sent when this node is inside a [ScrollContainer] which has stopped being scrolled.
+			Sent when this node is inside a [ScrollContainer] which has stopped being scrolled when dragging the scrollable area [i]with a touch event[/i]. This notification is [i]not[/i] sent when scrolling by dragging the scrollbar, scrolling with the mouse wheel or scrolling with keyboard/gamepad events.
+			[b]Note:[/b] This signal is only emitted on Android or iOS, or on desktop/web platforms when [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is enabled.
 		</constant>
 		<constant name="NOTIFICATION_LAYOUT_DIRECTION_CHANGED" value="49">
 			Sent when control layout direction is changed.
@@ -1303,10 +1215,10 @@
 			Show the system's cross mouse cursor when the user hovers the node.
 		</constant>
 		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
-			Show the system's wait mouse cursor, often an hourglass, when the user hovers the node.
+			Show the system's wait mouse cursor when the user hovers the node. Often an hourglass.
 		</constant>
 		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
-			Show the system's busy mouse cursor when the user hovers the node. Often an hourglass.
+			Show the system's busy mouse cursor when the user hovers the node. Often an arrow with a small hourglass.
 		</constant>
 		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
 			Show the system's drag mouse cursor, often a closed fist or a cross symbol, when the user hovers the node. It tells the user they're currently dragging an item, like a node in the Scene dock.
@@ -1386,8 +1298,8 @@
 		<constant name="PRESET_HCENTER_WIDE" value="14" enum="LayoutPreset">
 			Snap all 4 anchors to a horizontal line that cuts the parent control in half. Use with [method set_anchors_preset].
 		</constant>
-		<constant name="PRESET_WIDE" value="15" enum="LayoutPreset">
-			Snap all 4 anchors to the respective corners of the parent control. Set all 4 offsets to 0 after you applied this preset and the [Control] will fit its parent control. This is equivalent to the "Full Rect" layout option in the editor. Use with [method set_anchors_preset].
+		<constant name="PRESET_FULL_RECT" value="15" enum="LayoutPreset">
+			Snap all 4 anchors to the respective corners of the parent control. Set all 4 offsets to 0 after you applied this preset and the [Control] will fit its parent control. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_MODE_MINSIZE" value="0" enum="LayoutPresetMode">
 			The control will be resized to its minimum size.
@@ -1401,29 +1313,34 @@
 		<constant name="PRESET_MODE_KEEP_SIZE" value="3" enum="LayoutPresetMode">
 			The control's size will not change.
 		</constant>
-		<constant name="SIZE_FILL" value="1" enum="SizeFlags">
-			Tells the parent [Container] to expand the bounds of this node to fill all the available space without pushing any other node. Use with [member size_flags_horizontal] and [member size_flags_vertical].
+		<constant name="SIZE_SHRINK_BEGIN" value="0" enum="SizeFlags" is_bitfield="true">
+			Tells the parent [Container] to align the node with its start, either the top or the left edge. It is mutually exclusive with [constant SIZE_FILL] and other shrink size flags, but can be used with [constant SIZE_EXPAND] in some containers. Use with [member size_flags_horizontal] and [member size_flags_vertical].
+			[b]Note:[/b] Setting this flag is equal to not having any size flags.
 		</constant>
-		<constant name="SIZE_EXPAND" value="2" enum="SizeFlags">
+		<constant name="SIZE_FILL" value="1" enum="SizeFlags" is_bitfield="true">
+			Tells the parent [Container] to expand the bounds of this node to fill all the available space without pushing any other node. It is mutually exclusive with shrink size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
+		</constant>
+		<constant name="SIZE_EXPAND" value="2" enum="SizeFlags" is_bitfield="true">
 			Tells the parent [Container] to let this node take all the available space on the axis you flag. If multiple neighboring nodes are set to expand, they'll share the space based on their stretch ratio. See [member size_flags_stretch_ratio]. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
-		<constant name="SIZE_EXPAND_FILL" value="3" enum="SizeFlags">
-			Sets the node's size flags to both fill and expand. See the 2 constants above for more information.
+		<constant name="SIZE_EXPAND_FILL" value="3" enum="SizeFlags" is_bitfield="true">
+			Sets the node's size flags to both fill and expand. See [constant SIZE_FILL] and [constant SIZE_EXPAND] for more information.
 		</constant>
-		<constant name="SIZE_SHRINK_CENTER" value="4" enum="SizeFlags">
-			Tells the parent [Container] to center the node in itself. It centers the control based on its bounding box, so it doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
+		<constant name="SIZE_SHRINK_CENTER" value="4" enum="SizeFlags" is_bitfield="true">
+			Tells the parent [Container] to center the node in the available space. It is mutually exclusive with [constant SIZE_FILL] and other shrink size flags, but can be used with [constant SIZE_EXPAND] in some containers. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
-		<constant name="SIZE_SHRINK_END" value="8" enum="SizeFlags">
-			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
+		<constant name="SIZE_SHRINK_END" value="8" enum="SizeFlags" is_bitfield="true">
+			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It is mutually exclusive with [constant SIZE_FILL] and other shrink size flags, but can be used with [constant SIZE_EXPAND] in some containers. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="MOUSE_FILTER_STOP" value="0" enum="MouseFilter">
-			The control will receive mouse button input events through [method _gui_input] if clicked on. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals. These events are automatically marked as handled, and they will not propagate further to other controls. This also results in blocking signals in other controls.
+			The control will receive mouse movement input events and mouse button input events if clicked on through [method _gui_input]. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals. These events are automatically marked as handled, and they will not propagate further to other controls. This also results in blocking signals in other controls.
 		</constant>
 		<constant name="MOUSE_FILTER_PASS" value="1" enum="MouseFilter">
-			The control will receive mouse button input events through [method _gui_input] if clicked on. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals. If this control does not handle the event, the parent control (if any) will be considered, and so on until there is no more parent control to potentially handle it. This also allows signals to fire in other controls. Even if no control handled it at all, the event will still be handled automatically, so unhandled input will not be fired.
+			The control will receive mouse movement input events and mouse button input events if clicked on through [method _gui_input]. And the control will receive the [signal mouse_entered] and [signal mouse_exited] signals. If this control does not handle the event, the parent control (if any) will be considered, and so on until there is no more parent control to potentially handle it. This also allows signals to fire in other controls. If no control handled it, the event will be passed to [method Node._shortcut_input] for further processing.
 		</constant>
 		<constant name="MOUSE_FILTER_IGNORE" value="2" enum="MouseFilter">
-			The control will not receive mouse button input events through [method _gui_input]. The control will also not receive the [signal mouse_entered] nor [signal mouse_exited] signals. This will not block other controls from receiving these events or firing the signals. Ignored events will not be handled automatically.
+			The control will not receive mouse movement input events and mouse button input events if clicked on through [method _gui_input]. The control will also not receive the [signal mouse_entered] nor [signal mouse_exited] signals. This will not block other controls from receiving these events or firing the signals. Ignored events will not be handled automatically.
+			[b]Note:[/b] If the control has received [signal mouse_entered] but not [signal mouse_exited], changing the [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] will cause [signal mouse_exited] to be emitted.
 		</constant>
 		<constant name="GROW_DIRECTION_BEGIN" value="0" enum="GrowDirection">
 			The control will grow to the left or top to make up if its minimum size is changed to be greater than its current size on the respective axis.
@@ -1463,28 +1380,6 @@
 		</constant>
 		<constant name="TEXT_DIRECTION_RTL" value="2" enum="TextDirection">
 			Right-to-left text writing direction.
-		</constant>
-		<constant name="STRUCTURED_TEXT_DEFAULT" value="0" enum="StructuredTextParser">
-			Use default behavior. Same as [code]STRUCTURED_TEXT_NONE[/code] unless specified otherwise in the control description.
-		</constant>
-		<constant name="STRUCTURED_TEXT_URI" value="1" enum="StructuredTextParser">
-			BiDi override for URI.
-		</constant>
-		<constant name="STRUCTURED_TEXT_FILE" value="2" enum="StructuredTextParser">
-			BiDi override for file path.
-		</constant>
-		<constant name="STRUCTURED_TEXT_EMAIL" value="3" enum="StructuredTextParser">
-			BiDi override for email.
-		</constant>
-		<constant name="STRUCTURED_TEXT_LIST" value="4" enum="StructuredTextParser">
-			BiDi override for lists.
-			Structured text options: list separator [code]String[/code].
-		</constant>
-		<constant name="STRUCTURED_TEXT_NONE" value="5" enum="StructuredTextParser">
-			Use default Unicode BiDi algorithm.
-		</constant>
-		<constant name="STRUCTURED_TEXT_CUSTOM" value="6" enum="StructuredTextParser">
-			User defined structured text BiDi override function.
 		</constant>
 	</constants>
 </class>

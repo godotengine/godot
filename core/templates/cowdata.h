@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  cowdata.h                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  cowdata.h                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef COWDATA_H
 #define COWDATA_H
@@ -36,101 +36,149 @@
 #include "core/templates/safe_refcount.h"
 
 #include <string.h>
+#include <type_traits>
 
-template <class T>
+template <typename T>
 class Vector;
 class String;
 class Char16String;
 class CharString;
-template <class T, class V>
+template <typename T, typename V>
 class VMap;
 
-#if !defined(NO_THREADS)
-SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
+static_assert(std::is_trivially_destructible_v<std::atomic<uint64_t>>);
+
+// Silence a false positive warning (see GH-52119).
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wplacement-new"
 #endif
 
-template <class T>
+template <typename T>
 class CowData {
-	template <class TV>
+	template <typename TV>
 	friend class Vector;
 	friend class String;
 	friend class Char16String;
 	friend class CharString;
-	template <class TV, class VV>
+	template <typename TV, typename VV>
 	friend class VMap;
 
+public:
+	typedef int64_t Size;
+	typedef uint64_t USize;
+	static constexpr USize MAX_INT = INT64_MAX;
+
 private:
+	// Function to find the next power of 2 to an integer.
+	static _FORCE_INLINE_ USize next_po2(USize x) {
+		if (x == 0) {
+			return 0;
+		}
+
+		--x;
+		x |= x >> 1;
+		x |= x >> 2;
+		x |= x >> 4;
+		x |= x >> 8;
+		x |= x >> 16;
+		if (sizeof(USize) == 8) {
+			x |= x >> 32;
+		}
+
+		return ++x;
+	}
+
+	// Alignment:  ↓ max_align_t           ↓ USize          ↓ max_align_t
+	//             ┌────────────────────┬──┬─────────────┬──┬───────────...
+	//             │ SafeNumeric<USize> │░░│ USize       │░░│ T[]
+	//             │ ref. count         │░░│ data size   │░░│ data
+	//             └────────────────────┴──┴─────────────┴──┴───────────...
+	// Offset:     ↑ REF_COUNT_OFFSET      ↑ SIZE_OFFSET    ↑ DATA_OFFSET
+
+	static constexpr size_t REF_COUNT_OFFSET = 0;
+	static constexpr size_t SIZE_OFFSET = ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) % alignof(USize) == 0) ? (REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) : ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) + alignof(USize) - ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) % alignof(USize)));
+	static constexpr size_t DATA_OFFSET = ((SIZE_OFFSET + sizeof(USize)) % alignof(max_align_t) == 0) ? (SIZE_OFFSET + sizeof(USize)) : ((SIZE_OFFSET + sizeof(USize)) + alignof(max_align_t) - ((SIZE_OFFSET + sizeof(USize)) % alignof(max_align_t)));
+
 	mutable T *_ptr = nullptr;
 
 	// internal helpers
 
-	_FORCE_INLINE_ SafeNumeric<uint32_t> *_get_refcount() const {
+	static _FORCE_INLINE_ SafeNumeric<USize> *_get_refcount_ptr(uint8_t *p_ptr) {
+		return (SafeNumeric<USize> *)(p_ptr + REF_COUNT_OFFSET);
+	}
+
+	static _FORCE_INLINE_ USize *_get_size_ptr(uint8_t *p_ptr) {
+		return (USize *)(p_ptr + SIZE_OFFSET);
+	}
+
+	static _FORCE_INLINE_ T *_get_data_ptr(uint8_t *p_ptr) {
+		return (T *)(p_ptr + DATA_OFFSET);
+	}
+
+	_FORCE_INLINE_ SafeNumeric<USize> *_get_refcount() const {
 		if (!_ptr) {
 			return nullptr;
 		}
 
-		return reinterpret_cast<SafeNumeric<uint32_t> *>(_ptr) - 2;
+		return (SafeNumeric<USize> *)((uint8_t *)_ptr - DATA_OFFSET + REF_COUNT_OFFSET);
 	}
 
-	_FORCE_INLINE_ uint32_t *_get_size() const {
+	_FORCE_INLINE_ USize *_get_size() const {
 		if (!_ptr) {
 			return nullptr;
 		}
 
-		return reinterpret_cast<uint32_t *>(_ptr) - 1;
+		return (USize *)((uint8_t *)_ptr - DATA_OFFSET + SIZE_OFFSET);
 	}
 
-	_FORCE_INLINE_ T *_get_data() const {
-		if (!_ptr) {
-			return nullptr;
+	_FORCE_INLINE_ USize _get_alloc_size(USize p_elements) const {
+		return next_po2(p_elements * sizeof(T));
+	}
+
+	_FORCE_INLINE_ bool _get_alloc_size_checked(USize p_elements, USize *out) const {
+		if (unlikely(p_elements == 0)) {
+			*out = 0;
+			return true;
 		}
-		return reinterpret_cast<T *>(_ptr);
-	}
-
-	_FORCE_INLINE_ size_t _get_alloc_size(size_t p_elements) const {
-		return next_power_of_2(p_elements * sizeof(T));
-	}
-
-	_FORCE_INLINE_ bool _get_alloc_size_checked(size_t p_elements, size_t *out) const {
-#if defined(__GNUC__)
-		size_t o;
-		size_t p;
+#if defined(__GNUC__) && defined(IS_32_BIT)
+		USize o;
+		USize p;
 		if (__builtin_mul_overflow(p_elements, sizeof(T), &o)) {
 			*out = 0;
 			return false;
 		}
-		*out = next_power_of_2(o);
-		if (__builtin_add_overflow(o, static_cast<size_t>(32), &p)) {
+		*out = next_po2(o);
+		if (__builtin_add_overflow(o, static_cast<USize>(32), &p)) {
 			return false; // No longer allocated here.
 		}
-		return true;
 #else
 		// Speed is more important than correctness here, do the operations unchecked
 		// and hope for the best.
 		*out = _get_alloc_size(p_elements);
-		return true;
 #endif
+		return *out;
 	}
 
 	void _unref(void *p_data);
 	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
-	uint32_t _copy_on_write();
+	USize _copy_on_write();
 
 public:
 	void operator=(const CowData<T> &p_from) { _ref(p_from); }
 
 	_FORCE_INLINE_ T *ptrw() {
 		_copy_on_write();
-		return (T *)_get_data();
+		return _ptr;
 	}
 
 	_FORCE_INLINE_ const T *ptr() const {
-		return _get_data();
+		return _ptr;
 	}
 
-	_FORCE_INLINE_ int size() const {
-		uint32_t *size = (uint32_t *)_get_size();
+	_FORCE_INLINE_ Size size() const {
+		USize *size = (USize *)_get_size();
 		if (size) {
 			return *size;
 		} else {
@@ -141,41 +189,42 @@ public:
 	_FORCE_INLINE_ void clear() { resize(0); }
 	_FORCE_INLINE_ bool is_empty() const { return _ptr == nullptr; }
 
-	_FORCE_INLINE_ void set(int p_index, const T &p_elem) {
+	_FORCE_INLINE_ void set(Size p_index, const T &p_elem) {
 		ERR_FAIL_INDEX(p_index, size());
 		_copy_on_write();
-		_get_data()[p_index] = p_elem;
+		_ptr[p_index] = p_elem;
 	}
 
-	_FORCE_INLINE_ T &get_m(int p_index) {
+	_FORCE_INLINE_ T &get_m(Size p_index) {
 		CRASH_BAD_INDEX(p_index, size());
 		_copy_on_write();
-		return _get_data()[p_index];
+		return _ptr[p_index];
 	}
 
-	_FORCE_INLINE_ const T &get(int p_index) const {
+	_FORCE_INLINE_ const T &get(Size p_index) const {
 		CRASH_BAD_INDEX(p_index, size());
 
-		return _get_data()[p_index];
+		return _ptr[p_index];
 	}
 
-	Error resize(int p_size);
+	template <bool p_ensure_zero = false>
+	Error resize(Size p_size);
 
-	_FORCE_INLINE_ void remove(int p_index) {
+	_FORCE_INLINE_ void remove_at(Size p_index) {
 		ERR_FAIL_INDEX(p_index, size());
 		T *p = ptrw();
-		int len = size();
-		for (int i = p_index; i < len - 1; i++) {
+		Size len = size();
+		for (Size i = p_index; i < len - 1; i++) {
 			p[i] = p[i + 1];
 		}
 
 		resize(len - 1);
 	}
 
-	Error insert(int p_pos, const T &p_val) {
+	Error insert(Size p_pos, const T &p_val) {
 		ERR_FAIL_INDEX_V(p_pos, size() + 1, ERR_INVALID_PARAMETER);
 		resize(size() + 1);
-		for (int i = (size() - 1); i > p_pos; i--) {
+		for (Size i = (size() - 1); i > p_pos; i--) {
 			set(i, get(i - 1));
 		}
 		set(p_pos, p_val);
@@ -183,83 +232,88 @@ public:
 		return OK;
 	}
 
-	int find(const T &p_val, int p_from = 0) const;
+	Size find(const T &p_val, Size p_from = 0) const;
+	Size rfind(const T &p_val, Size p_from = -1) const;
+	Size count(const T &p_val) const;
 
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData();
 	_FORCE_INLINE_ CowData(CowData<T> &p_from) { _ref(p_from); };
 };
 
-template <class T>
+template <typename T>
 void CowData<T>::_unref(void *p_data) {
 	if (!p_data) {
 		return;
 	}
 
-	SafeNumeric<uint32_t> *refc = _get_refcount();
+	SafeNumeric<USize> *refc = _get_refcount();
 
 	if (refc->decrement() > 0) {
 		return; // still in use
 	}
 	// clean up
 
-	if (!__has_trivial_destructor(T)) {
-		uint32_t *count = _get_size();
+	if constexpr (!std::is_trivially_destructible_v<T>) {
+		USize *count = _get_size();
 		T *data = (T *)(count + 1);
 
-		for (uint32_t i = 0; i < *count; ++i) {
+		for (USize i = 0; i < *count; ++i) {
 			// call destructors
 			data[i].~T();
 		}
 	}
 
 	// free mem
-	Memory::free_static((uint8_t *)p_data, true);
+	Memory::free_static(((uint8_t *)p_data) - DATA_OFFSET, false);
 }
 
-template <class T>
-uint32_t CowData<T>::_copy_on_write() {
+template <typename T>
+typename CowData<T>::USize CowData<T>::_copy_on_write() {
 	if (!_ptr) {
 		return 0;
 	}
 
-	SafeNumeric<uint32_t> *refc = _get_refcount();
+	SafeNumeric<USize> *refc = _get_refcount();
 
-	uint32_t rc = refc->get();
+	USize rc = refc->get();
 	if (unlikely(rc > 1)) {
 		/* in use by more than me */
-		uint32_t current_size = *_get_size();
+		USize current_size = *_get_size();
 
-		uint32_t *mem_new = (uint32_t *)Memory::alloc_static(_get_alloc_size(current_size), true);
+		uint8_t *mem_new = (uint8_t *)Memory::alloc_static(_get_alloc_size(current_size) + DATA_OFFSET, false);
+		ERR_FAIL_NULL_V(mem_new, 0);
 
-		new (mem_new - 2, sizeof(uint32_t), "") SafeNumeric<uint32_t>(1); //refcount
-		*(mem_new - 1) = current_size; //size
+		SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
+		USize *_size_ptr = _get_size_ptr(mem_new);
+		T *_data_ptr = _get_data_ptr(mem_new);
 
-		T *_data = (T *)(mem_new);
+		new (_refc_ptr) SafeNumeric<USize>(1); //refcount
+		*(_size_ptr) = current_size; //size
 
 		// initialize new elements
-		if (__has_trivial_copy(T)) {
-			memcpy(mem_new, _ptr, current_size * sizeof(T));
-
+		if constexpr (std::is_trivially_copyable_v<T>) {
+			memcpy((uint8_t *)_data_ptr, _ptr, current_size * sizeof(T));
 		} else {
-			for (uint32_t i = 0; i < current_size; i++) {
-				memnew_placement(&_data[i], T(_get_data()[i]));
+			for (USize i = 0; i < current_size; i++) {
+				memnew_placement(&_data_ptr[i], T(_ptr[i]));
 			}
 		}
 
 		_unref(_ptr);
-		_ptr = _data;
+		_ptr = _data_ptr;
 
 		rc = 1;
 	}
 	return rc;
 }
 
-template <class T>
-Error CowData<T>::resize(int p_size) {
+template <typename T>
+template <bool p_ensure_zero>
+Error CowData<T>::resize(Size p_size) {
 	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
-	int current_size = size();
+	Size current_size = size();
 
 	if (p_size == current_size) {
 		return OK;
@@ -273,59 +327,72 @@ Error CowData<T>::resize(int p_size) {
 	}
 
 	// possibly changing size, copy on write
-	uint32_t rc = _copy_on_write();
+	USize rc = _copy_on_write();
 
-	size_t current_alloc_size = _get_alloc_size(current_size);
-	size_t alloc_size;
+	USize current_alloc_size = _get_alloc_size(current_size);
+	USize alloc_size;
 	ERR_FAIL_COND_V(!_get_alloc_size_checked(p_size, &alloc_size), ERR_OUT_OF_MEMORY);
 
 	if (p_size > current_size) {
 		if (alloc_size != current_alloc_size) {
 			if (current_size == 0) {
 				// alloc from scratch
-				uint32_t *ptr = (uint32_t *)Memory::alloc_static(alloc_size, true);
-				ERR_FAIL_COND_V(!ptr, ERR_OUT_OF_MEMORY);
-				*(ptr - 1) = 0; //size, currently none
-				new (ptr - 2, sizeof(uint32_t), "") SafeNumeric<uint32_t>(1); //refcount
+				uint8_t *mem_new = (uint8_t *)Memory::alloc_static(alloc_size + DATA_OFFSET, false);
+				ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
 
-				_ptr = (T *)ptr;
+				SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
+				USize *_size_ptr = _get_size_ptr(mem_new);
+				T *_data_ptr = _get_data_ptr(mem_new);
+
+				new (_refc_ptr) SafeNumeric<USize>(1); //refcount
+				*(_size_ptr) = 0; //size, currently none
+
+				_ptr = _data_ptr;
 
 			} else {
-				uint32_t *_ptrnew = (uint32_t *)Memory::realloc_static(_ptr, alloc_size, true);
-				ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
-				new (_ptrnew - 2, sizeof(uint32_t), "") SafeNumeric<uint32_t>(rc); //refcount
+				uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)_ptr) - DATA_OFFSET, alloc_size + DATA_OFFSET, false);
+				ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
 
-				_ptr = (T *)(_ptrnew);
+				SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
+				T *_data_ptr = _get_data_ptr(mem_new);
+
+				new (_refc_ptr) SafeNumeric<USize>(rc); //refcount
+
+				_ptr = _data_ptr;
 			}
 		}
 
 		// construct the newly created elements
 
-		if (!__has_trivial_constructor(T)) {
-			T *elems = _get_data();
-
-			for (int i = *_get_size(); i < p_size; i++) {
-				memnew_placement(&elems[i], T);
+		if constexpr (!std::is_trivially_constructible_v<T>) {
+			for (Size i = *_get_size(); i < p_size; i++) {
+				memnew_placement(&_ptr[i], T);
 			}
+		} else if (p_ensure_zero) {
+			memset((void *)(_ptr + current_size), 0, (p_size - current_size) * sizeof(T));
 		}
 
 		*_get_size() = p_size;
 
 	} else if (p_size < current_size) {
-		if (!__has_trivial_destructor(T)) {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
 			// deinitialize no longer needed elements
-			for (uint32_t i = p_size; i < *_get_size(); i++) {
-				T *t = &_get_data()[i];
+			for (USize i = p_size; i < *_get_size(); i++) {
+				T *t = &_ptr[i];
 				t->~T();
 			}
 		}
 
 		if (alloc_size != current_alloc_size) {
-			uint32_t *_ptrnew = (uint32_t *)Memory::realloc_static(_ptr, alloc_size, true);
-			ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
-			new (_ptrnew - 2, sizeof(uint32_t), "") SafeNumeric<uint32_t>(rc); //refcount
+			uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)_ptr) - DATA_OFFSET, alloc_size + DATA_OFFSET, false);
+			ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
 
-			_ptr = (T *)(_ptrnew);
+			SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
+			T *_data_ptr = _get_data_ptr(mem_new);
+
+			new (_refc_ptr) SafeNumeric<USize>(rc); //refcount
+
+			_ptr = _data_ptr;
 		}
 
 		*_get_size() = p_size;
@@ -334,15 +401,15 @@ Error CowData<T>::resize(int p_size) {
 	return OK;
 }
 
-template <class T>
-int CowData<T>::find(const T &p_val, int p_from) const {
-	int ret = -1;
+template <typename T>
+typename CowData<T>::Size CowData<T>::find(const T &p_val, Size p_from) const {
+	Size ret = -1;
 
 	if (p_from < 0 || size() == 0) {
 		return ret;
 	}
 
-	for (int i = p_from; i < size(); i++) {
+	for (Size i = p_from; i < size(); i++) {
 		if (get(i) == p_val) {
 			ret = i;
 			break;
@@ -352,12 +419,42 @@ int CowData<T>::find(const T &p_val, int p_from) const {
 	return ret;
 }
 
-template <class T>
+template <typename T>
+typename CowData<T>::Size CowData<T>::rfind(const T &p_val, Size p_from) const {
+	const Size s = size();
+
+	if (p_from < 0) {
+		p_from = s + p_from;
+	}
+	if (p_from < 0 || p_from >= s) {
+		p_from = s - 1;
+	}
+
+	for (Size i = p_from; i >= 0; i--) {
+		if (get(i) == p_val) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+template <typename T>
+typename CowData<T>::Size CowData<T>::count(const T &p_val) const {
+	Size amount = 0;
+	for (Size i = 0; i < size(); i++) {
+		if (get(i) == p_val) {
+			amount++;
+		}
+	}
+	return amount;
+}
+
+template <typename T>
 void CowData<T>::_ref(const CowData *p_from) {
 	_ref(*p_from);
 }
 
-template <class T>
+template <typename T>
 void CowData<T>::_ref(const CowData &p_from) {
 	if (_ptr == p_from._ptr) {
 		return; // self assign, do nothing.
@@ -375,9 +472,13 @@ void CowData<T>::_ref(const CowData &p_from) {
 	}
 }
 
-template <class T>
+template <typename T>
 CowData<T>::~CowData() {
 	_unref(_ptr);
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 #endif // COWDATA_H

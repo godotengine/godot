@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRCamera3D" inherits="Camera3D" version="4.0">
+<class name="XRCamera3D" inherits="Camera3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A camera node with a few overrules for AR/VR applied, such as location tracking.
 	</brief_description>
@@ -8,10 +8,6 @@
 		The position and orientation of this node is automatically updated by the XR Server to represent the location of the HMD if such tracking is available and can thus be used by game logic. Note that, in contrast to the XR Controller, the render thread has access to the most up-to-date tracking data of the HMD and the location of the XRCamera3D can lag a few milliseconds behind what is used for rendering as a result.
 	</description>
 	<tutorials>
-		<link title="VR tutorial index">https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
 </class>

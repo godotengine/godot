@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TabBar" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A control that provides a horizontal bar with tabs.
+	</brief_description>
+	<description>
+		A control that provides a horizontal bar with tabs. Similar to [TabContainer] but is only in charge of drawing tabs, not interacting with children.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_tab">
+			<return type="void" />
+			<param index="0" name="title" type="String" default="&quot;&quot;" />
+			<param index="1" name="icon" type="Texture2D" default="null" />
+			<description>
+				Adds a new tab.
+			</description>
+		</method>
+		<method name="clear_tabs">
+			<return type="void" />
+			<description>
+				Clears all tabs.
+			</description>
+		</method>
+		<method name="ensure_tab_visible">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Moves the scroll view to make the tab visible.
+			</description>
+		</method>
+		<method name="get_offset_buttons_visible" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the offset buttons (the ones that appear when there's not enough space for all tabs) are visible.
+			</description>
+		</method>
+		<method name="get_previous_tab" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the previously active tab index.
+			</description>
+		</method>
+		<method name="get_tab_button_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the icon for the right button of the tab at index [param tab_idx] or [code]null[/code] if the right button has no icon.
+			</description>
+		</method>
+		<method name="get_tab_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the icon for the tab at index [param tab_idx] or [code]null[/code] if the tab has no icon.
+			</description>
+		</method>
+		<method name="get_tab_icon_max_width" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the maximum allowed width of the icon for the tab at index [param tab_idx].
+			</description>
+		</method>
+		<method name="get_tab_idx_at_point" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="point" type="Vector2" />
+			<description>
+				Returns the index of the tab at local coordinates [param point]. Returns [code]-1[/code] if the point is outside the control boundaries or if there's no tab at the queried position.
+			</description>
+		</method>
+		<method name="get_tab_language" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns tab title language code.
+			</description>
+		</method>
+		<method name="get_tab_metadata" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the metadata value set to the tab at index [param tab_idx] using [method set_tab_metadata]. If no metadata was previously set, returns [code]null[/code] by default.
+			</description>
+		</method>
+		<method name="get_tab_offset" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of hidden tabs offsetted to the left.
+			</description>
+		</method>
+		<method name="get_tab_rect" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns tab [Rect2] with local position and size.
+			</description>
+		</method>
+		<method name="get_tab_text_direction" qualifiers="const">
+			<return type="int" enum="Control.TextDirection" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns tab title text base writing direction.
+			</description>
+		</method>
+		<method name="get_tab_title" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the title of the tab at index [param tab_idx].
+			</description>
+		</method>
+		<method name="get_tab_tooltip" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns the tooltip text of the tab at index [param tab_idx].
+			</description>
+		</method>
+		<method name="is_tab_disabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the tab at index [param tab_idx] is disabled.
+			</description>
+		</method>
+		<method name="is_tab_hidden" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the tab at index [param tab_idx] is hidden.
+			</description>
+		</method>
+		<method name="move_tab">
+			<return type="void" />
+			<param index="0" name="from" type="int" />
+			<param index="1" name="to" type="int" />
+			<description>
+				Moves a tab from [param from] to [param to].
+			</description>
+		</method>
+		<method name="remove_tab">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<description>
+				Removes the tab at index [param tab_idx].
+			</description>
+		</method>
+		<method name="select_next_available">
+			<return type="bool" />
+			<description>
+				Selects the first available tab with greater index than the currently selected. Returns [code]true[/code] if tab selection changed.
+			</description>
+		</method>
+		<method name="select_previous_available">
+			<return type="bool" />
+			<description>
+				Selects the first available tab with lower index than the currently selected. Returns [code]true[/code] if tab selection changed.
+			</description>
+		</method>
+		<method name="set_tab_button_icon">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="icon" type="Texture2D" />
+			<description>
+				Sets an [param icon] for the button of the tab at index [param tab_idx] (located to the right, before the close button), making it visible and clickable (See [signal tab_button_pressed]). Giving it a [code]null[/code] value will hide the button.
+			</description>
+		</method>
+		<method name="set_tab_disabled">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="disabled" type="bool" />
+			<description>
+				If [param disabled] is [code]true[/code], disables the tab at index [param tab_idx], making it non-interactable.
+			</description>
+		</method>
+		<method name="set_tab_hidden">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="hidden" type="bool" />
+			<description>
+				If [param hidden] is [code]true[/code], hides the tab at index [param tab_idx], making it disappear from the tab area.
+			</description>
+		</method>
+		<method name="set_tab_icon">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="icon" type="Texture2D" />
+			<description>
+				Sets an [param icon] for the tab at index [param tab_idx].
+			</description>
+		</method>
+		<method name="set_tab_icon_max_width">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="width" type="int" />
+			<description>
+				Sets the maximum allowed width of the icon for the tab at index [param tab_idx]. This limit is applied on top of the default size of the icon and on top of [theme_item icon_max_width]. The height is adjusted according to the icon's ratio.
+			</description>
+		</method>
+		<method name="set_tab_language">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="language" type="String" />
+			<description>
+				Sets language code of tab title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			</description>
+		</method>
+		<method name="set_tab_metadata">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="metadata" type="Variant" />
+			<description>
+				Sets the metadata value for the tab at index [param tab_idx], which can be retrieved later using [method get_tab_metadata].
+			</description>
+		</method>
+		<method name="set_tab_text_direction">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="direction" type="int" enum="Control.TextDirection" />
+			<description>
+				Sets tab title base writing direction.
+			</description>
+		</method>
+		<method name="set_tab_title">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="title" type="String" />
+			<description>
+				Sets a [param title] for the tab at index [param tab_idx].
+			</description>
+		</method>
+		<method name="set_tab_tooltip">
+			<return type="void" />
+			<param index="0" name="tab_idx" type="int" />
+			<param index="1" name="tooltip" type="String" />
+			<description>
+				Sets a [param tooltip] for tab at index [param tab_idx].
+				[b]Note:[/b] By default, if the [param tooltip] is empty and the tab text is truncated (not all characters fit into the tab), the title will be displayed as a tooltip. To hide the tooltip, assign [code]" "[/code] as the [param tooltip] text.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">
+			If [code]true[/code], tabs overflowing this node's width will be hidden, displaying two navigation buttons instead. Otherwise, this node's minimum size is updated so that all tabs are visible.
+		</member>
+		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="-1">
+			The index of the current selected tab. A value of [code]-1[/code] means that no tab is selected and can only be set when [member deselect_enabled] is [code]true[/code] or if all tabs are hidden or disabled.
+		</member>
+		<member name="deselect_enabled" type="bool" setter="set_deselect_enabled" getter="get_deselect_enabled" default="false">
+			If [code]true[/code], all tabs can be deselected so that no tab is selected. Click on the current tab to deselect it.
+		</member>
+		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
+			If [code]true[/code], tabs can be rearranged with mouse drag.
+		</member>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
+		<member name="max_tab_width" type="int" setter="set_max_tab_width" getter="get_max_tab_width" default="0">
+			Sets the maximum width which all tabs should be limited to. Unlimited if set to [code]0[/code].
+		</member>
+		<member name="scroll_to_selected" type="bool" setter="set_scroll_to_selected" getter="get_scroll_to_selected" default="true">
+			If [code]true[/code], the tab offset will be changed to keep the currently selected tab visible.
+		</member>
+		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled" default="true">
+			if [code]true[/code], the mouse's scroll wheel can be used to navigate the scroll view.
+		</member>
+		<member name="select_with_rmb" type="bool" setter="set_select_with_rmb" getter="get_select_with_rmb" default="false">
+			If [code]true[/code], enables selecting a tab with the right mouse button.
+		</member>
+		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
+			Sets the position at which tabs will be placed. See [enum AlignmentMode] for details.
+		</member>
+		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="TabBar.CloseButtonDisplayPolicy" default="0">
+			Sets when the close button will appear on the tabs. See [enum CloseButtonDisplayPolicy] for details.
+		</member>
+		<member name="tab_count" type="int" setter="set_tab_count" getter="get_tab_count" default="0">
+			The number of tabs currently in the bar.
+		</member>
+		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
+			[TabBar]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
+			Setting this to [code]-1[/code] will disable rearranging between [TabBar]s.
+		</member>
+	</members>
+	<signals>
+		<signal name="active_tab_rearranged">
+			<param index="0" name="idx_to" type="int" />
+			<description>
+				Emitted when the active tab is rearranged via mouse drag. See [member drag_to_rearrange_enabled].
+			</description>
+		</signal>
+		<signal name="tab_button_pressed">
+			<param index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab's right button is pressed. See [method set_tab_button_icon].
+			</description>
+		</signal>
+		<signal name="tab_changed">
+			<param index="0" name="tab" type="int" />
+			<description>
+				Emitted when switching to another tab.
+			</description>
+		</signal>
+		<signal name="tab_clicked">
+			<param index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab is clicked, even if it is the current tab.
+			</description>
+		</signal>
+		<signal name="tab_close_pressed">
+			<param index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab's close button is pressed.
+				[b]Note:[/b] Tabs are not removed automatically once the close button is pressed, this behavior needs to be programmed manually. For example:
+				[codeblocks]
+				[gdscript]
+				$TabBar.tab_close_pressed.connect($TabBar.remove_tab)
+				[/gdscript]
+				[csharp]
+				GetNode&lt;TabBar&gt;("TabBar").TabClosePressed += GetNode&lt;TabBar&gt;("TabBar").RemoveTab;
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</signal>
+		<signal name="tab_hovered">
+			<param index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab is hovered by the mouse.
+			</description>
+		</signal>
+		<signal name="tab_rmb_clicked">
+			<param index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab is right-clicked. [member select_with_rmb] must be enabled.
+			</description>
+		</signal>
+		<signal name="tab_selected">
+			<param index="0" name="tab" type="int" />
+			<description>
+				Emitted when a tab is selected via click, directional input, or script, even if it is the current tab.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="ALIGNMENT_LEFT" value="0" enum="AlignmentMode">
+			Places tabs to the left.
+		</constant>
+		<constant name="ALIGNMENT_CENTER" value="1" enum="AlignmentMode">
+			Places tabs in the middle.
+		</constant>
+		<constant name="ALIGNMENT_RIGHT" value="2" enum="AlignmentMode">
+			Places tabs to the right.
+		</constant>
+		<constant name="ALIGNMENT_MAX" value="3" enum="AlignmentMode">
+			Represents the size of the [enum AlignmentMode] enum.
+		</constant>
+		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0" enum="CloseButtonDisplayPolicy">
+			Never show the close buttons.
+		</constant>
+		<constant name="CLOSE_BUTTON_SHOW_ACTIVE_ONLY" value="1" enum="CloseButtonDisplayPolicy">
+			Only show the close button on the currently active tab.
+		</constant>
+		<constant name="CLOSE_BUTTON_SHOW_ALWAYS" value="2" enum="CloseButtonDisplayPolicy">
+			Show the close button on all tabs.
+		</constant>
+		<constant name="CLOSE_BUTTON_MAX" value="3" enum="CloseButtonDisplayPolicy">
+			Represents the size of the [enum CloseButtonDisplayPolicy] enum.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="drop_mark_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Modulation color for the [theme_item drop_mark] icon.
+		</theme_item>
+		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
+			Font color of disabled tabs.
+		</theme_item>
+		<theme_item name="font_hovered_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Font color of the currently hovered tab. Does not apply to the selected tab.
+		</theme_item>
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The tint of text outline of the tab name.
+		</theme_item>
+		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Font color of the currently selected tab.
+		</theme_item>
+		<theme_item name="font_unselected_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 1)">
+			Font color of the other, unselected tabs.
+		</theme_item>
+		<theme_item name="h_separation" data_type="constant" type="int" default="4">
+			The horizontal separation between the elements inside tabs.
+		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+			The maximum allowed width of the tab's icon. This limit is applied on top of the default size of the icon, but before the value set with [method set_tab_icon_max_width]. The height is adjusted according to the icon's ratio.
+		</theme_item>
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+			The size of the tab text outline.
+			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			The font used to draw tab names.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the tab names.
+		</theme_item>
+		<theme_item name="close" data_type="icon" type="Texture2D">
+			The icon for the close button (see [member tab_close_display_policy]).
+		</theme_item>
+		<theme_item name="decrement" data_type="icon" type="Texture2D">
+			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
+		</theme_item>
+		<theme_item name="decrement_highlight" data_type="icon" type="Texture2D">
+			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
+		</theme_item>
+		<theme_item name="drop_mark" data_type="icon" type="Texture2D">
+			Icon shown to indicate where a dragged tab is gonna be dropped (see [member drag_to_rearrange_enabled]).
+		</theme_item>
+		<theme_item name="increment" data_type="icon" type="Texture2D">
+			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the last tab is visible) it appears semi-transparent.
+		</theme_item>
+		<theme_item name="increment_highlight" data_type="icon" type="Texture2D">
+			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
+		</theme_item>
+		<theme_item name="button_highlight" data_type="style" type="StyleBox">
+			Background of the tab and close buttons when they're being hovered with the cursor.
+		</theme_item>
+		<theme_item name="button_pressed" data_type="style" type="StyleBox">
+			Background of the tab and close buttons when it's being pressed.
+		</theme_item>
+		<theme_item name="tab_disabled" data_type="style" type="StyleBox">
+			The style of disabled tabs.
+		</theme_item>
+		<theme_item name="tab_focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [TabBar] is focused. The [theme_item tab_focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox] of the selected tab, so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
+		<theme_item name="tab_hovered" data_type="style" type="StyleBox">
+			The style of the currently hovered tab. Does not apply to the selected tab.
+			[b]Note:[/b] This style will be drawn with the same width as [theme_item tab_unselected] at minimum.
+		</theme_item>
+		<theme_item name="tab_selected" data_type="style" type="StyleBox">
+			The style of the currently selected tab.
+		</theme_item>
+		<theme_item name="tab_unselected" data_type="style" type="StyleBox">
+			The style of the other, unselected tabs.
+		</theme_item>
+	</theme_items>
+</class>

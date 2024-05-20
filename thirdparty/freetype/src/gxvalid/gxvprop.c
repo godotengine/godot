@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT prop table validation (body).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2023 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -283,7 +283,7 @@
     format      = FT_NEXT_USHORT( p );
     defaultProp = FT_NEXT_USHORT( p );
 
-    GXV_TRACE(( "  version 0x%08x\n", version ));
+    GXV_TRACE(( "  version 0x%08lx\n", version ));
     GXV_TRACE(( "  format  0x%04x\n", format ));
     GXV_TRACE(( "  defaultProp  0x%04x\n", defaultProp ));
 
@@ -309,7 +309,7 @@
     if ( format == 0 )
     {
       FT_TRACE3(( "(format 0, no per-glyph properties, "
-                  "remaining %d bytes are skipped)", limit - p ));
+                  "remaining %ld bytes are skipped)", limit - p ));
       goto Exit;
     }
 

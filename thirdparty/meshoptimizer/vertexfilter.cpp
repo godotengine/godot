@@ -30,6 +30,9 @@
 // When targeting Wasm SIMD we can't use runtime cpuid checks so we unconditionally enable SIMD
 #if defined(__wasm_simd128__)
 #define SIMD_WASM
+// Prevent compiling other variant when wasm simd compilation is active
+#undef SIMD_NEON
+#undef SIMD_SSE
 #endif
 
 #endif // !MESHOPTIMIZER_NO_SIMD
@@ -52,6 +55,7 @@
 #endif
 
 #ifdef SIMD_WASM
+#undef __DEPRECATED
 #include <wasm_simd128.h>
 #endif
 
@@ -60,6 +64,10 @@
 #define wasmx_unpackhi_v16x8(a, b) wasm_v16x8_shuffle(a, b, 4, 12, 5, 13, 6, 14, 7, 15)
 #define wasmx_unziplo_v32x4(a, b) wasm_v32x4_shuffle(a, b, 0, 2, 4, 6)
 #define wasmx_unziphi_v32x4(a, b) wasm_v32x4_shuffle(a, b, 1, 3, 5, 7)
+#endif
+
+#ifndef __has_builtin
+#define __has_builtin(x) 0
 #endif
 
 namespace meshopt
@@ -160,7 +168,8 @@ static void decodeFilterExp(unsigned int* data, size_t count)
 #endif
 
 #if defined(SIMD_SSE) || defined(SIMD_NEON) || defined(SIMD_WASM)
-template <typename T> static void dispatchSimd(void (*process)(T*, size_t), T* data, size_t count, size_t stride)
+template <typename T>
+static void dispatchSimd(void (*process)(T*, size_t), T* data, size_t count, size_t stride)
 {
 	assert(stride <= 4);
 
@@ -183,9 +192,7 @@ inline uint64_t rotateleft64(uint64_t v, int x)
 {
 #if defined(_MSC_VER) && !defined(__clang__)
 	return _rotl64(v, x);
-// Apple's Clang 8 is actually vanilla Clang 3.9, there we need to look for
-// version 11 instead: https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-#elif defined(__clang__) && ((!defined(__apple_build_version__) && __clang_major__ >= 8) || __clang_major__ >= 11)
+#elif defined(__clang__) && __has_builtin(__builtin_rotateleft64)
 	return __builtin_rotateleft64(v, x);
 #else
 	return (v << (x & 63)) | (v >> ((64 - x) & 63));
@@ -789,52 +796,236 @@ static void decodeFilterExpSimd(unsigned int* data, size_t count)
 }
 #endif
 
+// optimized variant of frexp
+inline int optlog2(float v)
+{
+	union
+	{
+		float f;
+		unsigned int ui;
+	} u;
+
+	u.f = v;
+	// +1 accounts for implicit 1. in mantissa; denormalized numbers will end up clamped to min_exp by calling code
+	return u.ui == 0 ? 0 : int((u.ui >> 23) & 0xff) - 127 + 1;
+}
+
+// optimized variant of ldexp
+inline float optexp2(int e)
+{
+	union
+	{
+		float f;
+		unsigned int ui;
+	} u;
+
+	u.ui = unsigned(e + 127) << 23;
+	return u.f;
+}
+
 } // namespace meshopt
 
-void meshopt_decodeFilterOct(void* buffer, size_t vertex_count, size_t vertex_size)
+void meshopt_decodeFilterOct(void* buffer, size_t count, size_t stride)
 {
 	using namespace meshopt;
 
-	assert(vertex_size == 4 || vertex_size == 8);
+	assert(stride == 4 || stride == 8);
 
 #if defined(SIMD_SSE) || defined(SIMD_NEON) || defined(SIMD_WASM)
-	if (vertex_size == 4)
-		dispatchSimd(decodeFilterOctSimd, static_cast<signed char*>(buffer), vertex_count, 4);
+	if (stride == 4)
+		dispatchSimd(decodeFilterOctSimd, static_cast<signed char*>(buffer), count, 4);
 	else
-		dispatchSimd(decodeFilterOctSimd, static_cast<short*>(buffer), vertex_count, 4);
+		dispatchSimd(decodeFilterOctSimd, static_cast<short*>(buffer), count, 4);
 #else
-	if (vertex_size == 4)
-		decodeFilterOct(static_cast<signed char*>(buffer), vertex_count);
+	if (stride == 4)
+		decodeFilterOct(static_cast<signed char*>(buffer), count);
 	else
-		decodeFilterOct(static_cast<short*>(buffer), vertex_count);
+		decodeFilterOct(static_cast<short*>(buffer), count);
 #endif
 }
 
-void meshopt_decodeFilterQuat(void* buffer, size_t vertex_count, size_t vertex_size)
+void meshopt_decodeFilterQuat(void* buffer, size_t count, size_t stride)
 {
 	using namespace meshopt;
 
-	assert(vertex_size == 8);
-	(void)vertex_size;
+	assert(stride == 8);
+	(void)stride;
 
 #if defined(SIMD_SSE) || defined(SIMD_NEON) || defined(SIMD_WASM)
-	dispatchSimd(decodeFilterQuatSimd, static_cast<short*>(buffer), vertex_count, 4);
+	dispatchSimd(decodeFilterQuatSimd, static_cast<short*>(buffer), count, 4);
 #else
-	decodeFilterQuat(static_cast<short*>(buffer), vertex_count);
+	decodeFilterQuat(static_cast<short*>(buffer), count);
 #endif
 }
 
-void meshopt_decodeFilterExp(void* buffer, size_t vertex_count, size_t vertex_size)
+void meshopt_decodeFilterExp(void* buffer, size_t count, size_t stride)
 {
 	using namespace meshopt;
 
-	assert(vertex_size % 4 == 0);
+	assert(stride > 0 && stride % 4 == 0);
 
 #if defined(SIMD_SSE) || defined(SIMD_NEON) || defined(SIMD_WASM)
-	dispatchSimd(decodeFilterExpSimd, static_cast<unsigned int*>(buffer), vertex_count * (vertex_size / 4), 1);
+	dispatchSimd(decodeFilterExpSimd, static_cast<unsigned int*>(buffer), count * (stride / 4), 1);
 #else
-	decodeFilterExp(static_cast<unsigned int*>(buffer), vertex_count * (vertex_size / 4));
+	decodeFilterExp(static_cast<unsigned int*>(buffer), count * (stride / 4));
 #endif
+}
+
+void meshopt_encodeFilterOct(void* destination, size_t count, size_t stride, int bits, const float* data)
+{
+	assert(stride == 4 || stride == 8);
+	assert(bits >= 1 && bits <= 16);
+
+	signed char* d8 = static_cast<signed char*>(destination);
+	short* d16 = static_cast<short*>(destination);
+
+	int bytebits = int(stride * 2);
+
+	for (size_t i = 0; i < count; ++i)
+	{
+		const float* n = &data[i * 4];
+
+		// octahedral encoding of a unit vector
+		float nx = n[0], ny = n[1], nz = n[2], nw = n[3];
+		float nl = fabsf(nx) + fabsf(ny) + fabsf(nz);
+		float ns = nl == 0.f ? 0.f : 1.f / nl;
+
+		nx *= ns;
+		ny *= ns;
+
+		float u = (nz >= 0.f) ? nx : (1 - fabsf(ny)) * (nx >= 0.f ? 1.f : -1.f);
+		float v = (nz >= 0.f) ? ny : (1 - fabsf(nx)) * (ny >= 0.f ? 1.f : -1.f);
+
+		int fu = meshopt_quantizeSnorm(u, bits);
+		int fv = meshopt_quantizeSnorm(v, bits);
+		int fo = meshopt_quantizeSnorm(1.f, bits);
+		int fw = meshopt_quantizeSnorm(nw, bytebits);
+
+		if (stride == 4)
+		{
+			d8[i * 4 + 0] = (signed char)(fu);
+			d8[i * 4 + 1] = (signed char)(fv);
+			d8[i * 4 + 2] = (signed char)(fo);
+			d8[i * 4 + 3] = (signed char)(fw);
+		}
+		else
+		{
+			d16[i * 4 + 0] = short(fu);
+			d16[i * 4 + 1] = short(fv);
+			d16[i * 4 + 2] = short(fo);
+			d16[i * 4 + 3] = short(fw);
+		}
+	}
+}
+
+void meshopt_encodeFilterQuat(void* destination_, size_t count, size_t stride, int bits, const float* data)
+{
+	assert(stride == 8);
+	assert(bits >= 4 && bits <= 16);
+	(void)stride;
+
+	short* destination = static_cast<short*>(destination_);
+
+	const float scaler = sqrtf(2.f);
+
+	for (size_t i = 0; i < count; ++i)
+	{
+		const float* q = &data[i * 4];
+		short* d = &destination[i * 4];
+
+		// establish maximum quaternion component
+		int qc = 0;
+		qc = fabsf(q[1]) > fabsf(q[qc]) ? 1 : qc;
+		qc = fabsf(q[2]) > fabsf(q[qc]) ? 2 : qc;
+		qc = fabsf(q[3]) > fabsf(q[qc]) ? 3 : qc;
+
+		// we use double-cover properties to discard the sign
+		float sign = q[qc] < 0.f ? -1.f : 1.f;
+
+		// note: we always encode a cyclical swizzle to be able to recover the order via rotation
+		d[0] = short(meshopt_quantizeSnorm(q[(qc + 1) & 3] * scaler * sign, bits));
+		d[1] = short(meshopt_quantizeSnorm(q[(qc + 2) & 3] * scaler * sign, bits));
+		d[2] = short(meshopt_quantizeSnorm(q[(qc + 3) & 3] * scaler * sign, bits));
+		d[3] = short((meshopt_quantizeSnorm(1.f, bits) & ~3) | qc);
+	}
+}
+
+void meshopt_encodeFilterExp(void* destination_, size_t count, size_t stride, int bits, const float* data, enum meshopt_EncodeExpMode mode)
+{
+	using namespace meshopt;
+
+	assert(stride > 0 && stride % 4 == 0 && stride <= 256);
+	assert(bits >= 1 && bits <= 24);
+
+	unsigned int* destination = static_cast<unsigned int*>(destination_);
+	size_t stride_float = stride / sizeof(float);
+
+	int component_exp[64];
+	assert(stride_float <= sizeof(component_exp) / sizeof(int));
+
+	const int min_exp = -100;
+
+	if (mode == meshopt_EncodeExpSharedComponent)
+	{
+		for (size_t j = 0; j < stride_float; ++j)
+			component_exp[j] = min_exp;
+
+		for (size_t i = 0; i < count; ++i)
+		{
+			const float* v = &data[i * stride_float];
+
+			// use maximum exponent to encode values; this guarantees that mantissa is [-1, 1]
+			for (size_t j = 0; j < stride_float; ++j)
+			{
+				int e = optlog2(v[j]);
+
+				component_exp[j] = (component_exp[j] < e) ? e : component_exp[j];
+			}
+		}
+	}
+
+	for (size_t i = 0; i < count; ++i)
+	{
+		const float* v = &data[i * stride_float];
+		unsigned int* d = &destination[i * stride_float];
+
+		int vector_exp = min_exp;
+
+		if (mode == meshopt_EncodeExpSharedVector)
+		{
+			// use maximum exponent to encode values; this guarantees that mantissa is [-1, 1]
+			for (size_t j = 0; j < stride_float; ++j)
+			{
+				int e = optlog2(v[j]);
+
+				vector_exp = (vector_exp < e) ? e : vector_exp;
+			}
+		}
+		else if (mode == meshopt_EncodeExpSeparate)
+		{
+			for (size_t j = 0; j < stride_float; ++j)
+			{
+				int e = optlog2(v[j]);
+
+				component_exp[j] = (min_exp < e) ? e : min_exp;
+			}
+		}
+
+		for (size_t j = 0; j < stride_float; ++j)
+		{
+			int exp = (mode == meshopt_EncodeExpSharedVector) ? vector_exp : component_exp[j];
+
+			// note that we additionally scale the mantissa to make it a K-bit signed integer (K-1 bits for magnitude)
+			exp -= (bits - 1);
+
+			// compute renormalized rounded mantissa for each component
+			int mmask = (1 << 24) - 1;
+
+			int m = int(v[j] * optexp2(-exp) + (v[j] >= 0 ? 0.5f : -0.5f));
+
+			d[j] = (m & mmask) | (unsigned(exp) << 24);
+		}
+	}
 }
 
 #undef SIMD_SSE

@@ -1,46 +1,49 @@
-/*************************************************************************/
-/*  reparent_dialog.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  reparent_dialog.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "reparent_dialog.h"
 
 #include "core/string/print_string.h"
+#include "editor/gui/scene_tree_editor.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/label.h"
+#include "scene/gui/check_box.h"
 
 void ReparentDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		connect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			connect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		disconnect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
+		case NOTIFICATION_EXIT_TREE: {
+			disconnect("confirmed", callable_mp(this, &ReparentDialog::_reparent));
+		} break;
 	}
 }
 
@@ -55,9 +58,9 @@ void ReparentDialog::_reparent() {
 	}
 }
 
-void ReparentDialog::set_current(const Set<Node *> &p_selection) {
+void ReparentDialog::set_current(const HashSet<Node *> &p_selection) {
 	tree->set_marked(p_selection, false, false);
-	//tree->set_selected(p_node->get_parent());
+	tree->set_selected(nullptr);
 }
 
 void ReparentDialog::_bind_methods() {
@@ -71,7 +74,6 @@ ReparentDialog::ReparentDialog() {
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
-	//set_child_rect(vbc);
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_show_enabled_subscene(true);
@@ -83,11 +85,7 @@ ReparentDialog::ReparentDialog() {
 	keep_transform->set_pressed(true);
 	vbc->add_child(keep_transform);
 
-	//vbc->add_margin_child("Options:",node_only);
-
-	//cancel->connect("pressed", this,"_cancel");
-
-	get_ok_button()->set_text(TTR("Reparent"));
+	set_ok_button_text(TTR("Reparent"));
 }
 
 ReparentDialog::~ReparentDialog() {

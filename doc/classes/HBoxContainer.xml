@@ -1,20 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HBoxContainer" inherits="BoxContainer" version="4.0">
+<class name="HBoxContainer" inherits="BoxContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Horizontal box container.
+		A container that arranges its child controls horizontally.
 	</brief_description>
 	<description>
-		Horizontal box container. See [BoxContainer].
+		A variant of [BoxContainer] that can only arrange its child controls horizontally. Child controls are rearranged automatically when their minimum size changes.
 	</description>
 	<tutorials>
+		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
-	<theme_items>
-		<theme_item name="separation" type="int" default="4">
-			The horizontal space between the [HBoxContainer]'s elements.
-		</theme_item>
-	</theme_items>
 </class>

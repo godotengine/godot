@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSelection" inherits="Object" version="4.0">
+<class name="EditorSelection" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Manages the SceneTree selection in the editor.
 	</brief_description>
@@ -11,41 +11,34 @@
 	</tutorials>
 	<methods>
 		<method name="add_node">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="Node">
-			</argument>
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Adds a node to the selection.
 				[b]Note:[/b] The newly selected node will not be automatically edited in the inspector. If you want to edit a node, use [method EditorInterface.edit_node].
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clear the selection.
 			</description>
 		</method>
 		<method name="get_selected_nodes">
-			<return type="Node[]">
-			</return>
+			<return type="Node[]" />
 			<description>
-				Gets the list of selected nodes.
+				Returns the list of selected nodes.
 			</description>
 		</method>
 		<method name="get_transformable_selected_nodes">
-			<return type="Array">
-			</return>
+			<return type="Node[]" />
 			<description>
-				Gets the list of selected nodes, optimized for transform operations (i.e. moving them, rotating, etc). This list avoids situations where a node is selected and also child/grandchild.
+				Returns the list of selected nodes, optimized for transform operations (i.e. moving them, rotating, etc.). This list can be used to avoid situations where a node is selected and is also a child/grandchild.
 			</description>
 		</method>
 		<method name="remove_node">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="Node">
-			</argument>
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Removes a node from the selection.
 			</description>
@@ -58,6 +51,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

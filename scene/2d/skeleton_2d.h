@@ -1,38 +1,38 @@
-/*************************************************************************/
-/*  skeleton_2d.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  skeleton_2d.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef SKELETON_2D_H
 #define SKELETON_2D_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/skeleton_modification_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
 
 class Skeleton2D;
 
@@ -49,8 +49,8 @@ class Bone2D : public Node2D {
 	Transform2D rest;
 
 	bool autocalculate_length_and_angle = true;
-	float length = 16;
-	float bone_angle = 0;
+	real_t length = 16;
+	real_t bone_angle = 0;
 
 	int skeleton_index = -1;
 
@@ -78,17 +78,14 @@ public:
 	void apply_rest();
 	Transform2D get_skeleton_rest() const;
 
-	TypedArray<String> get_configuration_warnings() const override;
-
-	void set_default_length(real_t p_length);
-	real_t get_default_length() const;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void set_autocalculate_length_and_angle(bool p_autocalculate);
 	bool get_autocalculate_length_and_angle() const;
-	void set_length(float p_length);
-	float get_length() const;
-	void set_bone_angle(float p_angle);
-	float get_bone_angle() const;
+	void set_length(real_t p_length);
+	real_t get_length() const;
+	void set_bone_angle(real_t p_angle);
+	real_t get_bone_angle() const;
 
 	int get_index_in_skeleton() const;
 
@@ -122,7 +119,7 @@ class Skeleton2D : public Node2D {
 
 		//Transform2D local_pose_cache;
 		Transform2D local_pose_override;
-		float local_pose_override_amount = 0;
+		real_t local_pose_override_amount = 0;
 		bool local_pose_override_persistent = false;
 	};
 
@@ -153,12 +150,12 @@ public:
 
 	RID get_skeleton() const;
 
-	void set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, float p_amount, bool p_persistent = true);
+	void set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, real_t p_amount, bool p_persistent = true);
 	Transform2D get_bone_local_pose_override(int p_bone_idx);
 
 	Ref<SkeletonModificationStack2D> get_modification_stack() const;
 	void set_modification_stack(Ref<SkeletonModificationStack2D> p_stack);
-	void execute_modifications(float p_delta, int p_execution_mode);
+	void execute_modifications(real_t p_delta, int p_execution_mode);
 
 	Skeleton2D();
 	~Skeleton2D();

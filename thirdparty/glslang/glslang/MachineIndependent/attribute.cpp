@@ -34,8 +34,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef GLSLANG_WEB
-
 #include "attribute.h"
 #include "../Include/intermediate.h"
 #include "ParseHelper.h"
@@ -123,6 +121,10 @@ TAttributeType TParseContext::attributeFromName(const TString& name) const
         return EatPeelCount;
     else if (name == "partial_count")
         return EatPartialCount;
+    else if (name == "subgroup_uniform_control_flow")
+        return EatSubgroupUniformControlFlow;
+    else if (name == "export")
+        return EatExport;
     else
         return EatNone;
 }
@@ -341,6 +343,28 @@ void TParseContext::handleLoopAttributes(const TAttributes& attributes, TIntermN
     }
 }
 
-} // end namespace glslang
 
-#endif // GLSLANG_WEB
+//
+// Function attributes
+//
+void TParseContext::handleFunctionAttributes(const TSourceLoc& loc, const TAttributes& attributes)
+{
+    for (auto it = attributes.begin(); it != attributes.end(); ++it) {
+        if (it->size() > 0) {
+            warn(loc, "attribute with arguments not recognized, skipping", "", "");
+            continue;
+        }
+
+        switch (it->name) {
+        case EatSubgroupUniformControlFlow:
+            requireExtensions(loc, 1, &E_GL_EXT_subgroup_uniform_control_flow, "attribute");
+            intermediate.setSubgroupUniformControlFlow();
+            break;
+        default:
+            warn(loc, "attribute does not apply to a function", "", "");
+            break;
+        }
+    }
+}
+
+} // end namespace glslang

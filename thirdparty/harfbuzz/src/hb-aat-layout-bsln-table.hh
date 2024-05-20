@@ -42,7 +42,7 @@ struct BaselineTableFormat0Part
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   protected:
@@ -78,11 +78,11 @@ struct BaselineTableFormat2Part
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   protected:
-  HBGlyphID	stdGlyph;	/* The specific glyph index number in this
+  HBGlyphID16	stdGlyph;	/* The specific glyph index number in this
 				 * font that is used to set the baseline values.
 				 * This is the standard glyph.
 				 * This glyph must contain a set of control points
@@ -105,7 +105,7 @@ struct BaselineTableFormat3Part
   }
 
   protected:
-  HBGlyphID	stdGlyph;	/* ditto */
+  HBGlyphID16	stdGlyph;	/* ditto */
   HBUINT16	ctlPoints[32];	/* ditto */
   Lookup<HBUINT16>
 		lookupTable;	/* Lookup table that maps glyphs to their
@@ -123,6 +123,7 @@ struct bsln
     TRACE_SANITIZE (this);
     if (unlikely (!(c->check_struct (this) && defaultBaseline < 32)))
       return_trace (false);
+    hb_barrier ();
 
     switch (format)
     {

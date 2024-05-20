@@ -11,7 +11,7 @@
  ********************************************************************
 
   function:
-    last mod: $Id: mmxfrag.c 16503 2009-08-22 18:14:02Z giles $
+    last mod: $Id$
 
  ********************************************************************/
 
@@ -22,9 +22,63 @@
   The iteration each instruction belongs to is marked in the comments as #i.*/
 #include <stddef.h>
 #include "x86int.h"
-#include "mmxfrag.h"
 
 #if defined(OC_X86_ASM)
+
+/*Copies an 8x8 block of pixels from _src to _dst, assuming _ystride bytes
+   between rows.*/
+# define OC_FRAG_COPY_MMX(_dst,_src,_ystride) \
+  do{ \
+    const unsigned char *src; \
+    unsigned char       *dst; \
+    ptrdiff_t            ystride3; \
+    src=(_src); \
+    dst=(_dst); \
+    __asm__ __volatile__( \
+      /*src+0*ystride*/ \
+      "movq (%[src]),%%mm0\n\t" \
+      /*src+1*ystride*/ \
+      "movq (%[src],%[ystride]),%%mm1\n\t" \
+      /*ystride3=ystride*3*/ \
+      "lea (%[ystride],%[ystride],2),%[ystride3]\n\t" \
+      /*src+2*ystride*/ \
+      "movq (%[src],%[ystride],2),%%mm2\n\t" \
+      /*src+3*ystride*/ \
+      "movq (%[src],%[ystride3]),%%mm3\n\t" \
+      /*dst+0*ystride*/ \
+      "movq %%mm0,(%[dst])\n\t" \
+      /*dst+1*ystride*/ \
+      "movq %%mm1,(%[dst],%[ystride])\n\t" \
+      /*Pointer to next 4.*/ \
+      "lea (%[src],%[ystride],4),%[src]\n\t" \
+      /*dst+2*ystride*/ \
+      "movq %%mm2,(%[dst],%[ystride],2)\n\t" \
+      /*dst+3*ystride*/ \
+      "movq %%mm3,(%[dst],%[ystride3])\n\t" \
+      /*Pointer to next 4.*/ \
+      "lea (%[dst],%[ystride],4),%[dst]\n\t" \
+      /*src+0*ystride*/ \
+      "movq (%[src]),%%mm0\n\t" \
+      /*src+1*ystride*/ \
+      "movq (%[src],%[ystride]),%%mm1\n\t" \
+      /*src+2*ystride*/ \
+      "movq (%[src],%[ystride],2),%%mm2\n\t" \
+      /*src+3*ystride*/ \
+      "movq (%[src],%[ystride3]),%%mm3\n\t" \
+      /*dst+0*ystride*/ \
+      "movq %%mm0,(%[dst])\n\t" \
+      /*dst+1*ystride*/ \
+      "movq %%mm1,(%[dst],%[ystride])\n\t" \
+      /*dst+2*ystride*/ \
+      "movq %%mm2,(%[dst],%[ystride],2)\n\t" \
+      /*dst+3*ystride*/ \
+      "movq %%mm3,(%[dst],%[ystride3])\n\t" \
+      :[dst]"+r"(dst),[src]"+r"(src),[ystride3]"=&r"(ystride3) \
+      :[ystride]"r"((ptrdiff_t)(_ystride)) \
+      :"memory" \
+    ); \
+  } \
+  while(0)
 
 /*Copies an 8x8 block of pixels from _src to _dst, assuming _ystride bytes
    between rows.*/
@@ -32,6 +86,27 @@ void oc_frag_copy_mmx(unsigned char *_dst,
  const unsigned char *_src,int _ystride){
   OC_FRAG_COPY_MMX(_dst,_src,_ystride);
 }
+
+/*Copies the fragments specified by the lists of fragment indices from one
+   frame to another.
+  _dst_frame:     The reference frame to copy to.
+  _src_frame:     The reference frame to copy from.
+  _ystride:       The row stride of the reference frames.
+  _fragis:        A pointer to a list of fragment indices.
+  _nfragis:       The number of fragment indices to copy.
+  _frag_buf_offs: The offsets of fragments in the reference frames.*/
+void oc_frag_copy_list_mmx(unsigned char *_dst_frame,
+ const unsigned char *_src_frame,int _ystride,
+ const ptrdiff_t *_fragis,ptrdiff_t _nfragis,const ptrdiff_t *_frag_buf_offs){
+  ptrdiff_t fragii;
+  for(fragii=0;fragii<_nfragis;fragii++){
+    ptrdiff_t frag_buf_off;
+    frag_buf_off=_frag_buf_offs[_fragis[fragii]];
+    OC_FRAG_COPY_MMX(_dst_frame+frag_buf_off,
+     _src_frame+frag_buf_off,_ystride);
+  }
+}
+
 
 void oc_frag_recon_intra_mmx(unsigned char *_dst,int _ystride,
  const ogg_int16_t *_residue){
@@ -280,7 +355,7 @@ void oc_frag_recon_inter2_mmx(unsigned char *_dst,const unsigned char *_src1,
       /*Advance dest ptr.*/
       "lea (%[dst],%[ystride],2),%[dst]\n\t"
      :[dst]"+r"(_dst),[residue]"+r"(_residue),
-      [src1]"+%r"(_src1),[src2]"+r"(_src2)
+      [src1]"+r"(_src1),[src2]"+r"(_src2)
      :[ystride]"r"((ptrdiff_t)_ystride)
      :"memory"
     );

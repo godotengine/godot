@@ -1,60 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimatedTexture" inherits="Texture2D" version="4.0">
+<class name="AnimatedTexture" inherits="Texture2D" deprecated="This class does not work properly in current versions and may be removed in the future. There is currently no equivalent workaround." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Proxy texture for simple frame-based animations.
 	</brief_description>
 	<description>
 		[AnimatedTexture] is a resource format for frame-based animations, where multiple textures can be chained automatically with a predefined delay for each frame. Unlike [AnimationPlayer] or [AnimatedSprite2D], it isn't a [Node], but has the advantage of being usable anywhere a [Texture2D] resource can be used, e.g. in a [TileSet].
-		The playback of the animation is controlled by the [member fps] property as well as each frame's optional delay (see [method set_frame_delay]). The animation loops, i.e. it will restart at frame 0 automatically after playing the last frame.
+		The playback of the animation is controlled by the [member speed_scale] property, as well as each frame's duration (see [method set_frame_duration]). The animation loops, i.e. it will restart at frame 0 automatically after playing the last frame.
 		[AnimatedTexture] currently requires all frame textures to have the same size, otherwise the bigger ones will be cropped to match the smallest one.
 		[b]Note:[/b] AnimatedTexture doesn't support using [AtlasTexture]s. Each frame needs to be a separate [Texture2D].
+		[b]Warning:[/b] The current implementation is not efficient for the modern renderers.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_frame_delay" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="frame" type="int">
-			</argument>
+		<method name="get_frame_duration" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="frame" type="int" />
 			<description>
-				Returns the given frame's delay value.
+				Returns the given [param frame]'s duration, in seconds.
 			</description>
 		</method>
 		<method name="get_frame_texture" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="frame" type="int">
-			</argument>
+			<return type="Texture2D" />
+			<param index="0" name="frame" type="int" />
 			<description>
 				Returns the given frame's [Texture2D].
 			</description>
 		</method>
-		<method name="set_frame_delay">
-			<return type="void">
-			</return>
-			<argument index="0" name="frame" type="int">
-			</argument>
-			<argument index="1" name="delay" type="float">
-			</argument>
+		<method name="set_frame_duration">
+			<return type="void" />
+			<param index="0" name="frame" type="int" />
+			<param index="1" name="duration" type="float" />
 			<description>
-				Sets an additional delay (in seconds) between this frame and the next one, that will be added to the time interval defined by [member fps]. By default, frames have no delay defined. If a delay value is defined, the final time interval between this frame and the next will be [code]1.0 / fps + delay[/code].
-				For example, for an animation with 3 frames, 2 FPS and a frame delay on the second frame of 1.2, the resulting playback will be:
-				[codeblock]
-				Frame 0: 0.5 s (1 / fps)
-				Frame 1: 1.7 s (1 / fps + 1.2)
-				Frame 2: 0.5 s (1 / fps)
-				Total duration: 2.7 s
-				[/codeblock]
+				Sets the duration of any given [param frame]. The final duration is affected by the [member speed_scale]. If set to [code]0[/code], the frame is skipped during playback.
 			</description>
 		</method>
 		<method name="set_frame_texture">
-			<return type="void">
-			</return>
-			<argument index="0" name="frame" type="int">
-			</argument>
-			<argument index="1" name="texture" type="Texture2D">
-			</argument>
+			<return type="void" />
+			<param index="0" name="frame" type="int" />
+			<param index="1" name="texture" type="Texture2D" />
 			<description>
 				Assigns a [Texture2D] to the given frame. Frame IDs start at 0, so the first frame has ID 0, and the last frame of the animation has ID [member frames] - 1.
 				You can define any number of textures up to [constant MAX_FRAMES], but keep in mind that only frames from 0 to [member frames] - 1 will be part of the animation.
@@ -63,20 +47,20 @@
 	</methods>
 	<members>
 		<member name="current_frame" type="int" setter="set_current_frame" getter="get_current_frame">
-			Sets the currently visible frame of the texture.
-		</member>
-		<member name="fps" type="float" setter="set_fps" getter="get_fps" default="4.0">
-			Animation speed in frames per second. This value defines the default time interval between two frames of the animation, and thus the overall duration of the animation loop based on the [member frames] property. A value of 0 means no predefined number of frames per second, the animation will play according to each frame's frame delay (see [method set_frame_delay]).
-			For example, an animation with 8 frames, no frame delay and a [code]fps[/code] value of 2 will run for 4 seconds, with each frame lasting 0.5 seconds.
+			Sets the currently visible frame of the texture. Setting this frame while playing resets the current frame time, so the newly selected frame plays for its whole configured frame duration.
 		</member>
 		<member name="frames" type="int" setter="set_frames" getter="get_frames" default="1">
 			Number of frames to use in the animation. While you can create the frames independently with [method set_frame_texture], you need to set this value for the animation to take new frames into account. The maximum number of frames is [constant MAX_FRAMES].
 		</member>
-		<member name="oneshot" type="bool" setter="set_oneshot" getter="get_oneshot" default="false">
+		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot" default="false">
 			If [code]true[/code], the animation will only play once and will not loop back to the first frame after reaching the end. Note that reaching the end will not set [member pause] to [code]true[/code].
 		</member>
 		<member name="pause" type="bool" setter="set_pause" getter="get_pause" default="false">
 			If [code]true[/code], the animation will pause where it currently is (i.e. at [member current_frame]). The animation will continue from where it was paused when changing this property to [code]false[/code].
+		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
+		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
+			The animation speed is multiplied by this value. If set to a negative value, the animation is played in reverse.
 		</member>
 	</members>
 	<constants>

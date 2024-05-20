@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2019 University of Cambridge
+          New API code Copyright (c) 2016-2023 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -133,8 +133,10 @@ while ((t = *data++) != XCL_END)
 #ifdef SUPPORT_UNICODE
   else  /* XCL_PROP & XCL_NOTPROP */
     {
+    int chartype;
     const ucd_record *prop = GET_UCD(c);
     BOOL isprop = t == XCL_PROP;
+    BOOL ok;
 
     switch(*data)
       {
@@ -143,8 +145,9 @@ while ((t = *data++) != XCL_END)
       break;
 
       case PT_LAMP:
-      if ((prop->chartype == ucp_Lu || prop->chartype == ucp_Ll ||
-           prop->chartype == ucp_Lt) == isprop) return !negated;
+      chartype = prop->chartype;
+      if ((chartype == ucp_Lu || chartype == ucp_Ll ||
+           chartype == ucp_Lt) == isprop) return !negated;
       break;
 
       case PT_GC:
@@ -160,9 +163,16 @@ while ((t = *data++) != XCL_END)
       if ((data[1] == prop->script) == isprop) return !negated;
       break;
 
+      case PT_SCX:
+      ok = (data[1] == prop->script ||
+            MAPBIT(PRIV(ucd_script_sets) + UCD_SCRIPTX_PROP(prop), data[1]) != 0);
+      if (ok == isprop) return !negated;
+      break;
+
       case PT_ALNUM:
-      if ((PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
-           PRIV(ucp_gentype)[prop->chartype] == ucp_N) == isprop)
+      chartype = prop->chartype;
+      if ((PRIV(ucp_gentype)[chartype] == ucp_L ||
+           PRIV(ucp_gentype)[chartype] == ucp_N) == isprop)
         return !negated;
       break;
 
@@ -187,9 +197,10 @@ while ((t = *data++) != XCL_END)
       break;
 
       case PT_WORD:
-      if ((PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
-           PRIV(ucp_gentype)[prop->chartype] == ucp_N || c == CHAR_UNDERSCORE)
-             == isprop)
+      chartype = prop->chartype;
+      if ((PRIV(ucp_gentype)[chartype] == ucp_L ||
+           PRIV(ucp_gentype)[chartype] == ucp_N ||
+           chartype == ucp_Mn || chartype == ucp_Pc) == isprop)
         return !negated;
       break;
 
@@ -207,6 +218,17 @@ while ((t = *data++) != XCL_END)
         }
       break;
 
+      case PT_BIDICL:
+      if ((UCD_BIDICLASS_PROP(prop) == data[1]) == isprop)
+        return !negated;
+      break;
+
+      case PT_BOOL:
+      ok = MAPBIT(PRIV(ucd_boolprop_sets) +
+        UCD_BPROPS_PROP(prop), data[1]) != 0;
+      if (ok == isprop) return !negated;
+      break;
+
       /* The following three properties can occur only in an XCLASS, as there
       is no \p or \P coding for them. */
 
@@ -220,9 +242,10 @@ while ((t = *data++) != XCL_END)
       */
 
       case PT_PXGRAPH:
-      if ((PRIV(ucp_gentype)[prop->chartype] != ucp_Z &&
-            (PRIV(ucp_gentype)[prop->chartype] != ucp_C ||
-              (prop->chartype == ucp_Cf &&
+      chartype = prop->chartype;
+      if ((PRIV(ucp_gentype)[chartype] != ucp_Z &&
+            (PRIV(ucp_gentype)[chartype] != ucp_C ||
+              (chartype == ucp_Cf &&
                 c != 0x061c && c != 0x180e && (c < 0x2066 || c > 0x2069))
          )) == isprop)
         return !negated;
@@ -232,10 +255,11 @@ while ((t = *data++) != XCL_END)
       not Zl and not Zp, and U+180E. */
 
       case PT_PXPRINT:
-      if ((prop->chartype != ucp_Zl &&
-           prop->chartype != ucp_Zp &&
-            (PRIV(ucp_gentype)[prop->chartype] != ucp_C ||
-              (prop->chartype == ucp_Cf &&
+      chartype = prop->chartype;
+      if ((chartype != ucp_Zl &&
+           chartype != ucp_Zp &&
+            (PRIV(ucp_gentype)[chartype] != ucp_C ||
+              (chartype == ucp_Cf &&
                 c != 0x061c && (c < 0x2066 || c > 0x2069))
          )) == isprop)
         return !negated;
@@ -246,8 +270,21 @@ while ((t = *data++) != XCL_END)
       compatibility (these are $+<=>^`|~). */
 
       case PT_PXPUNCT:
-      if ((PRIV(ucp_gentype)[prop->chartype] == ucp_P ||
-            (c < 128 && PRIV(ucp_gentype)[prop->chartype] == ucp_S)) == isprop)
+      chartype = prop->chartype;
+      if ((PRIV(ucp_gentype)[chartype] == ucp_P ||
+            (c < 128 && PRIV(ucp_gentype)[chartype] == ucp_S)) == isprop)
+        return !negated;
+      break;
+
+      /* Perl has two sets of hex digits */
+
+      case PT_PXXDIGIT:
+      if (((c >= CHAR_0 && c <= CHAR_9) ||
+           (c >= CHAR_A && c <= CHAR_F) ||
+           (c >= CHAR_a && c <= CHAR_f) ||
+           (c >= 0xff10 && c <= 0xff19) ||  /* Fullwidth digits */
+           (c >= 0xff21 && c <= 0xff26) ||  /* Fullwidth letters */
+           (c >= 0xff41 && c <= 0xff46)) == isprop)
         return !negated;
       break;
 

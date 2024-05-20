@@ -7,7 +7,7 @@
  *
  *   This is _not_ used to retrieve glyph names!
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -65,7 +65,7 @@
           FT_Stream  stream = face->stream;
 
 
-          if ( FT_NEW_ARRAY  ( entry->string, entry->stringLength ) ||
+          if ( FT_QNEW_ARRAY ( entry->string, entry->stringLength ) ||
                FT_STREAM_SEEK( entry->stringOffset )                ||
                FT_STREAM_READ( entry->string, entry->stringLength ) )
           {
@@ -121,7 +121,7 @@
           FT_Stream  stream = face->stream;
 
 
-          if ( FT_NEW_ARRAY  ( entry->string, entry->stringLength ) ||
+          if ( FT_QNEW_ARRAY ( entry->string, entry->stringLength ) ||
                FT_STREAM_SEEK( entry->stringOffset )                ||
                FT_STREAM_READ( entry->string, entry->stringLength ) )
           {

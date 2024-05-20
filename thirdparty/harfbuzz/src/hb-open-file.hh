@@ -35,7 +35,6 @@
 
 namespace OT {
 
-
 /*
  *
  * The OpenType Font File
@@ -91,7 +90,7 @@ typedef struct OpenTypeOffsetTable
   {
     if (table_count)
     {
-      + tables.sub_array (start_offset, table_count)
+      + tables.as_array ().sub_array (start_offset, table_count)
       | hb_map (&TableRecord::tag)
       | hb_sink (hb_array (table_tags, *table_count))
       ;
@@ -102,7 +101,13 @@ typedef struct OpenTypeOffsetTable
   {
     Tag t;
     t = tag;
-    return tables.bfind (t, table_index, HB_BFIND_NOT_FOUND_STORE, Index::NOT_FOUND_INDEX);
+    /* Use lfind for small fonts; there are fonts that have unsorted table entries;
+     * those tend to work in other tools, so tolerate them.
+     * https://github.com/harfbuzz/harfbuzz/issues/3065 */
+    if (tables.len < 16)
+      return tables.lfind (t, table_index, HB_NOT_FOUND_STORE, Index::NOT_FOUND_INDEX);
+    else
+      return tables.bfind (t, table_index, HB_NOT_FOUND_STORE, Index::NOT_FOUND_INDEX);
   }
   const TableRecord& get_table_by_tag (hb_tag_t tag) const
   {
@@ -113,44 +118,53 @@ typedef struct OpenTypeOffsetTable
 
   public:
 
-  template <typename item_t>
+  template <typename Iterator,
+	    hb_requires ((hb_is_source_of<Iterator, hb_pair_t<hb_tag_t, hb_blob_t *>>::value))>
   bool serialize (hb_serialize_context_t *c,
 		  hb_tag_t sfnt_tag,
-		  hb_array_t<item_t> items)
+		  Iterator it)
   {
     TRACE_SERIALIZE (this);
     /* Alloc 12 for the OTHeader. */
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     /* Write sfntVersion (bytes 0..3). */
     sfnt_version = sfnt_tag;
     /* Take space for numTables, searchRange, entrySelector, RangeShift
      * and the TableRecords themselves.  */
-    if (unlikely (!tables.serialize (c, items.length))) return_trace (false);
+    unsigned num_items = hb_len (it);
+    if (unlikely (!tables.serialize (c, num_items))) return_trace (false);
 
     const char *dir_end = (const char *) c->head;
     HBUINT32 *checksum_adjustment = nullptr;
 
     /* Write OffsetTables, alloc for and write actual table blobs. */
-    for (unsigned int i = 0; i < tables.len; i++)
+    unsigned i = 0;
+    for (hb_pair_t<hb_tag_t, hb_blob_t*> entry : it)
     {
-      TableRecord &rec = tables.arrayZ[i];
-      hb_blob_t *blob = items[i].blob;
-      rec.tag = items[i].tag;
-      rec.length = blob->length;
-      rec.offset.serialize (c, this);
+      hb_blob_t *blob = entry.second;
+      unsigned len = blob->length;
 
       /* Allocate room for the table and copy it. */
-      char *start = (char *) c->allocate_size<void> (rec.length);
+      char *start = (char *) c->allocate_size<void> (len, false);
       if (unlikely (!start)) return false;
 
-      if (likely (rec.length))
-	memcpy (start, blob->data, rec.length);
+      TableRecord &rec = tables.arrayZ[i];
+      rec.tag = entry.first;
+      rec.length = len;
+      rec.offset = 0;
+      if (unlikely (!c->check_assign (rec.offset,
+				      (unsigned) ((char *) start - (char *) this),
+				      HB_SERIALIZE_ERROR_OFFSET_OVERFLOW)))
+        return_trace (false);
+
+      if (likely (len))
+	hb_memcpy (start, blob->data, len);
 
       /* 4-byte alignment. */
       c->align (4);
       const char *end = (const char *) c->head;
 
-      if (items[i].tag == HB_OT_TAG_head &&
+      if (entry.first == HB_OT_TAG_head &&
 	  (unsigned) (end - start) >= head::static_size)
       {
 	head *h = (head *) start;
@@ -159,6 +173,7 @@ typedef struct OpenTypeOffsetTable
       }
 
       rec.checkSum.set_for_data (start, end - start);
+      i++;
     }
 
     tables.qsort ();
@@ -170,7 +185,7 @@ typedef struct OpenTypeOffsetTable
       /* The following line is a slower version of the following block. */
       //checksum.set_for_data (this, (const char *) c->head - (const char *) this);
       checksum.set_for_data (this, dir_end - (const char *) this);
-      for (unsigned int i = 0; i < items.length; i++)
+      for (unsigned int i = 0; i < num_items; i++)
       {
 	TableRecord &rec = tables.arrayZ[i];
 	checksum = checksum + rec.checkSum;
@@ -218,7 +233,7 @@ struct TTCHeaderVersion1
   Tag		ttcTag;		/* TrueType Collection ID string: 'ttcf' */
   FixedVersion<>version;	/* Version of the TTC Header (1.0),
 				 * 0x00010000u */
-  LArrayOf<LOffsetTo<OpenTypeOffsetTable>>
+  Array32Of<Offset32To<OpenTypeOffsetTable>>
 		table;		/* Array of offsets to the OffsetTable for each font
 				 * from the beginning of the file */
   public:
@@ -252,6 +267,7 @@ struct TTCHeader
   {
     TRACE_SANITIZE (this);
     if (unlikely (!u.header.version.sanitize (c))) return_trace (false);
+    hb_barrier ();
     switch (u.header.version.major) {
     case 2: /* version 2 is compatible with version 1 */
     case 1: return_trace (u.version1.sanitize (c));
@@ -287,6 +303,7 @@ struct ResourceRecord
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
 		  offset.sanitize (c, data_base) &&
+		  hb_barrier () &&
 		  get_face (data_base).sanitize (c));
   }
 
@@ -295,7 +312,7 @@ struct ResourceRecord
   HBINT16	nameOffset;	/* Offset from beginning of resource name list
 				 * to resource name, -1 means there is none. */
   HBUINT8	attrs;		/* Resource attributes */
-  NNOffsetTo<LArrayOf<HBUINT8>, HBUINT24>
+  NNOffset24To<Array32Of<HBUINT8>>
 		offset;		/* Offset from beginning of data block to
 				 * data for this resource */
   HBUINT32	reserved;	/* Reserved for handle to resource */
@@ -322,6 +339,7 @@ struct ResourceTypeRecord
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  resourcesZ.sanitize (c, type_base,
 				       get_resource_count (),
 				       data_base));
@@ -330,7 +348,7 @@ struct ResourceTypeRecord
   protected:
   Tag		tag;		/* Resource type. */
   HBUINT16	resCountM1;	/* Number of resources minus 1. */
-  NNOffsetTo<UnsizedArrayOf<ResourceRecord>>
+  NNOffset16To<UnsizedArrayOf<ResourceRecord>>
 		resourcesZ;	/* Offset from beginning of resource type list
 				 * to reference item list for this type. */
   public:
@@ -370,6 +388,7 @@ struct ResourceMap
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  typeList.sanitize (c, this,
 				     &(this+typeList),
 				     data_base));
@@ -386,7 +405,7 @@ struct ResourceMap
   HBUINT32	reserved1;	/* Reserved for handle to next resource map */
   HBUINT16	resreved2;	/* Reserved for file reference number */
   HBUINT16	attrs;		/* Resource fork attribute */
-  NNOffsetTo<ArrayOfM1<ResourceTypeRecord>>
+  NNOffset16To<ArrayOfM1<ResourceTypeRecord>>
 		typeList;	/* Offset from beginning of map to
 				 * resource type list */
   Offset16	nameList;	/* Offset from beginning of map to
@@ -413,15 +432,16 @@ struct ResourceForkHeader
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  data.sanitize (c, this, dataLen) &&
 		  map.sanitize (c, this, &(this+data)));
   }
 
   protected:
-  LNNOffsetTo<UnsizedArrayOf<HBUINT8>>
+  NNOffset32To<UnsizedArrayOf<HBUINT8>>
 		data;		/* Offset from beginning of resource fork
 				 * to resource data */
-  LNNOffsetTo<ResourceMap >
+  NNOffset32To<ResourceMap >
 		map;		/* Offset from beginning of resource fork
 				 * to resource map */
   HBUINT32	dataLen;	/* Length of resource data */
@@ -477,14 +497,15 @@ struct OpenTypeFontFile
     }
   }
 
-  template <typename item_t>
+  template <typename Iterator,
+	    hb_requires ((hb_is_source_of<Iterator, hb_pair_t<hb_tag_t, hb_blob_t *>>::value))>
   bool serialize_single (hb_serialize_context_t *c,
 			 hb_tag_t sfnt_tag,
-			 hb_array_t<item_t> items)
+			 Iterator items)
   {
     TRACE_SERIALIZE (this);
     assert (sfnt_tag != TTCTag);
-    if (unlikely (!c->extend_min (*this))) return_trace (false);
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     return_trace (u.fontFace.serialize (c, sfnt_tag, items));
   }
 
@@ -492,6 +513,7 @@ struct OpenTypeFontFile
   {
     TRACE_SANITIZE (this);
     if (unlikely (!u.tag.sanitize (c))) return_trace (false);
+    hb_barrier ();
     switch (u.tag) {
     case CFFTag:	/* All the non-collection tags */
     case TrueTag:

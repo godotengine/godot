@@ -1,41 +1,42 @@
-/*************************************************************************/
-/*  joypad_linux.h                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  joypad_linux.h                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-//author: Andreas Haas <hondres,  liugam3@gmail.com>
 #ifndef JOYPAD_LINUX_H
 #define JOYPAD_LINUX_H
 
 #ifdef JOYDEV_ENABLED
+
 #include "core/input/input.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "core/templates/local_vector.h"
 
 struct input_absinfo;
 
@@ -52,11 +53,17 @@ private:
 		MAX_KEY = 767, // Hack because <linux/input.h> can't be included here
 	};
 
+	struct JoypadEvent {
+		uint16_t type;
+		uint16_t code;
+		int32_t value;
+	};
+
 	struct Joypad {
-		Input::JoyAxisValue curr_axis[MAX_ABS];
+		float curr_axis[MAX_ABS];
 		int key_map[MAX_KEY];
 		int abs_map[MAX_ABS];
-		int dpad = 0;
+		BitField<HatMask> dpad;
 		int fd = -1;
 
 		String devpath;
@@ -66,6 +73,8 @@ private:
 		int ff_effect_id = 0;
 		uint64_t ff_effect_timestamp = 0;
 
+		LocalVector<JoypadEvent> events;
+
 		~Joypad();
 		void reset();
 	};
@@ -73,32 +82,43 @@ private:
 #ifdef UDEV_ENABLED
 	bool use_udev = false;
 #endif
-	SafeFlag exit_monitor;
-	Mutex joy_mutex;
-	Thread joy_thread;
 	Input *input = nullptr;
+
+	SafeFlag monitor_joypads_exit;
+	SafeFlag joypad_events_exit;
+	Thread monitor_joypads_thread;
+	Thread joypad_events_thread;
+
 	Joypad joypads[JOYPADS_MAX];
+	Mutex joypads_mutex[JOYPADS_MAX];
+
 	Vector<String> attached_devices;
 
-	static void joy_thread_func(void *p_user);
+	static void monitor_joypads_thread_func(void *p_user);
+	void monitor_joypads_thread_run();
 
-	int get_joy_from_path(String p_path) const;
+	void open_joypad(const char *p_path);
+	void setup_joypad_properties(Joypad &p_joypad);
 
-	void setup_joypad_properties(int p_id);
-	void close_joypad(int p_id = -1);
+	void close_joypads();
+	void close_joypad(const char *p_devpath);
+	void close_joypad(Joypad &p_joypad, int p_id);
+
 #ifdef UDEV_ENABLED
 	void enumerate_joypads(struct udev *p_udev);
 	void monitor_joypads(struct udev *p_udev);
 #endif
 	void monitor_joypads();
-	void run_joypad_thread();
-	void open_joypad(const char *p_path);
 
-	void joypad_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
-	void joypad_vibration_stop(int p_id, uint64_t p_timestamp);
+	void joypad_vibration_start(Joypad &p_joypad, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
+	void joypad_vibration_stop(Joypad &p_joypad, uint64_t p_timestamp);
 
-	Input::JoyAxisValue axis_correct(const input_absinfo *p_abs, int p_value) const;
+	static void joypad_events_thread_func(void *p_user);
+	void joypad_events_thread_run();
+
+	float axis_correct(const input_absinfo *p_abs, int p_value) const;
 };
 
-#endif
+#endif // JOYDEV_ENABLED
+
 #endif // JOYPAD_LINUX_H

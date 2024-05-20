@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HashingContext" inherits="RefCounted" version="4.0">
+<class name="HashingContext" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Context to compute cryptographic hashes over multiple iterations.
+		Provides functionality for computing cryptographic hashes chunk by chunk.
 	</brief_description>
 	<description>
-		The HashingContext class provides an interface for computing cryptographic hashes over multiple iterations. This is useful for example when computing hashes of big files (so you don't have to load them all in memory), network streams, and data streams in general (so you don't have to hold buffers).
+		The HashingContext class provides an interface for computing cryptographic hashes over multiple iterations. Useful for computing hashes of big files (so you don't have to load them all in memory), network streams, and data streams in general (so you don't have to hold buffers).
 		The [enum HashType] enum shows the supported hashing algorithms.
 		[codeblocks]
 		[gdscript]
-		const CHUNK_SIZE = 102
+		const CHUNK_SIZE = 1024
 
 		func hash_file(path):
-		    var ctx = HashingContext.new()
-		    var file = File.new()
-		    # Start a SHA-256 context.
-		    ctx.start(HashingContext.HASH_SHA256)
 		    # Check that file exists.
-		    if not file.file_exists(path):
+		    if not FileAccess.file_exists(path):
 		        return
+		    # Start an SHA-256 context.
+		    var ctx = HashingContext.new()
+		    ctx.start(HashingContext.HASH_SHA256)
 		    # Open the file to hash.
-		    file.open(path, File.READ)
+		    var file = FileAccess.open(path, FileAccess.READ)
 		    # Update the context after reading each chunk.
 		    while not file.eof_reached():
 		        ctx.update(file.get_buffer(CHUNK_SIZE))
@@ -33,17 +32,16 @@
 
 		public void HashFile(string path)
 		{
-		    var ctx = new HashingContext();
-		    var file = new File();
-		    // Start a SHA-256 context.
-		    ctx.Start(HashingContext.HashType.Sha256);
 		    // Check that file exists.
-		    if (!file.FileExists(path))
+		    if (!FileAccess.FileExists(path))
 		    {
 		        return;
 		    }
+		    // Start an SHA-256 context.
+		    var ctx = new HashingContext();
+		    ctx.Start(HashingContext.HashType.Sha256);
 		    // Open the file to hash.
-		    file.Open(path, File.ModeFlags.Read);
+		    using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
 		    // Update the context after reading each chunk.
 		    while (!file.EofReached())
 		    {
@@ -52,39 +50,32 @@
 		    // Get the computed hash.
 		    byte[] res = ctx.Finish();
 		    // Print the result as hex string and array.
-
-		    GD.PrintT(res.HexEncode(), res);
+		    GD.PrintT(res.HexEncode(), (Variant)res);
 		}
 		[/csharp]
 		[/codeblocks]
-		[b]Note:[/b] Not available in HTML5 exports.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="finish">
-			<return type="PackedByteArray">
-			</return>
+			<return type="PackedByteArray" />
 			<description>
 				Closes the current context, and return the computed hash.
 			</description>
 		</method>
 		<method name="start">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="type" type="int" enum="HashingContext.HashType">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="type" type="int" enum="HashingContext.HashType" />
 			<description>
-				Starts a new hash computation of the given [code]type[/code] (e.g. [constant HASH_SHA256] to start computation of a SHA-256).
+				Starts a new hash computation of the given [param type] (e.g. [constant HASH_SHA256] to start computation of an SHA-256).
 			</description>
 		</method>
 		<method name="update">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="chunk" type="PackedByteArray">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="chunk" type="PackedByteArray" />
 			<description>
-				Updates the computation with the given [code]chunk[/code] of data.
+				Updates the computation with the given [param chunk] of data.
 			</description>
 		</method>
 	</methods>

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  pool_allocator.h                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  pool_allocator.h                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef POOL_ALLOCATOR_H
 #define POOL_ALLOCATOR_H
@@ -34,13 +34,12 @@
 #include "core/typedefs.h"
 
 /**
-	@author Juan Linietsky <reduzio@gmail.com>
  * Generic Pool Allocator.
  * This is a generic memory pool allocator, with locking, compacting and alignment. (@TODO alignment)
  * It used as a standard way to manage allocation in a specific region of memory, such as texture memory,
  * audio sample memory, or just any kind of memory overall.
  * (@TODO) abstraction should be greater, because in many platforms, you need to manage a nonreachable memory.
-*/
+ */
 
 enum {
 	POOL_ALLOCATOR_INVALID_ID = -1 ///< default invalid value. use INVALID_ID( id ) to test
@@ -76,22 +75,22 @@ private:
 	typedef int EntryArrayPos;
 	typedef int EntryIndicesPos;
 
-	Entry *entry_array;
-	int *entry_indices;
-	int entry_max;
-	int entry_count;
+	Entry *entry_array = nullptr;
+	int *entry_indices = nullptr;
+	int entry_max = 0;
+	int entry_count = 0;
 
-	uint8_t *pool;
-	void *mem_ptr;
-	int pool_size;
+	uint8_t *pool = nullptr;
+	void *mem_ptr = nullptr;
+	int pool_size = 0;
 
-	int free_mem;
-	int free_mem_peak;
+	int free_mem = 0;
+	int free_mem_peak = 0;
 
-	unsigned int check_count;
-	int align;
+	unsigned int check_count = 0;
+	int align = 1;
 
-	bool needs_locking;
+	bool needs_locking = false;
 
 	inline int entry_end(const Entry &p_entry) const {
 		return p_entry.pos + aligned(p_entry.len);
@@ -109,7 +108,7 @@ private:
 	void compact_up(int p_from = 0);
 	bool get_free_entry(EntryArrayPos *p_pos);
 	bool find_hole(EntryArrayPos *p_pos, int p_for_size);
-	bool find_entry_index(EntryIndicesPos *p_map_pos, Entry *p_entry);
+	bool find_entry_index(EntryIndicesPos *p_map_pos, const Entry *p_entry);
 	Entry *get_entry(ID p_mem);
 	const Entry *get_entry(ID p_mem) const;
 

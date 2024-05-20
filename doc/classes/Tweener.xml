@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tweener" inherits="RefCounted" version="4.0">
+<class name="Tweener" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract class for all Tweeners used by [Tween].
 	</brief_description>
 	<description>
-		Tweeners are objects that perform a specific animating task, e.g. interpolating a property or calling a method at a given time. A [Tweener] can't be created manually, you need to use a dedicated method from [Tween] or [Node].
+		Tweeners are objects that perform a specific animating task, e.g. interpolating a property or calling a method at a given time. A [Tweener] can't be created manually, you need to use a dedicated method from [Tween].
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<signals>
 		<signal name="finished">
 			<description>
@@ -17,6 +15,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

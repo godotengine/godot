@@ -30,6 +30,7 @@
 #include "hb-open-type.hh"
 #include "hb-aat-layout-common.hh"
 #include "hb-ot-layout-common.hh"
+#include "hb-ot-layout-gdef-table.hh"
 #include "hb-aat-map.hh"
 
 /*
@@ -73,15 +74,16 @@ struct RearrangementSubtable
 	ret (false),
 	start (0), end (0) {}
 
-    bool is_actionable (StateTableDriver<Types, EntryData> *driver HB_UNUSED,
-			const Entry<EntryData> &entry)
+    bool is_actionable (hb_buffer_t *buffer HB_UNUSED,
+			StateTableDriver<Types, EntryData> *driver HB_UNUSED,
+			const Entry<EntryData> &entry) const
     {
       return (entry.flags & Verb) && start < end;
     }
-    void transition (StateTableDriver<Types, EntryData> *driver,
+    void transition (hb_buffer_t *buffer,
+		     StateTableDriver<Types, EntryData> *driver,
 		     const Entry<EntryData> &entry)
     {
-      hb_buffer_t *buffer = driver->buffer;
       unsigned int flags = entry.flags;
 
       if (flags & MarkFirst)
@@ -122,7 +124,7 @@ struct RearrangementSubtable
 	bool reverse_l = 3 == (m >> 4);
 	bool reverse_r = 3 == (m & 0x0F);
 
-	if (end - start >= l + r)
+	if (end - start >= l + r && end-start <= HB_MAX_CONTEXT_LENGTH)
 	{
 	  buffer->merge_clusters (start, hb_min (buffer->idx + 1, buffer->len));
 	  buffer->merge_clusters (start, end);
@@ -130,14 +132,14 @@ struct RearrangementSubtable
 	  hb_glyph_info_t *info = buffer->info;
 	  hb_glyph_info_t buf[4];
 
-	  memcpy (buf, info + start, l * sizeof (buf[0]));
-	  memcpy (buf + 2, info + end - r, r * sizeof (buf[0]));
+	  hb_memcpy (buf, info + start, l * sizeof (buf[0]));
+	  hb_memcpy (buf + 2, info + end - r, r * sizeof (buf[0]));
 
 	  if (l != r)
 	    memmove (info + start + r, info + start + l, (end - start - l - r) * sizeof (buf[0]));
 
-	  memcpy (info + start, buf + 2, r * sizeof (buf[0]));
-	  memcpy (info + end - l, buf, l * sizeof (buf[0]));
+	  hb_memcpy (info + start, buf + 2, r * sizeof (buf[0]));
+	  hb_memcpy (info + end - l, buf, l * sizeof (buf[0]));
 	  if (reverse_l)
 	  {
 	    buf[0] = info[end - 1];
@@ -167,8 +169,8 @@ struct RearrangementSubtable
 
     driver_context_t dc (this);
 
-    StateTableDriver<Types, EntryData> driver (machine, c->buffer, c->face);
-    driver.drive (&dc);
+    StateTableDriver<Types, EntryData> driver (machine, c->face);
+    driver.drive (&dc, c);
 
     return_trace (dc.ret);
   }
@@ -179,10 +181,10 @@ struct RearrangementSubtable
     return_trace (machine.sanitize (c));
   }
 
-  protected:
+  public:
   StateTable<Types, EntryData>	machine;
   public:
-  DEFINE_SIZE_STATIC (16);
+  DEFINE_SIZE_STATIC ((StateTable<Types, EntryData>::static_size));
 };
 
 template <typename Types>
@@ -215,54 +217,59 @@ struct ContextualSubtable
 			     hb_aat_apply_context_t *c_) :
 	ret (false),
 	c (c_),
+	gdef (*c->gdef_table),
 	mark_set (false),
+	has_glyph_classes (gdef.has_glyph_classes ()),
 	mark (0),
 	table (table_),
 	subs (table+table->substitutionTables) {}
 
-    bool is_actionable (StateTableDriver<Types, EntryData> *driver,
-			const Entry<EntryData> &entry)
+    bool is_actionable (hb_buffer_t *buffer,
+			StateTableDriver<Types, EntryData> *driver,
+			const Entry<EntryData> &entry) const
     {
-      hb_buffer_t *buffer = driver->buffer;
-
       if (buffer->idx == buffer->len && !mark_set)
 	return false;
 
       return entry.data.markIndex != 0xFFFF || entry.data.currentIndex != 0xFFFF;
     }
-    void transition (StateTableDriver<Types, EntryData> *driver,
+    void transition (hb_buffer_t *buffer,
+		     StateTableDriver<Types, EntryData> *driver,
 		     const Entry<EntryData> &entry)
     {
-      hb_buffer_t *buffer = driver->buffer;
-
       /* Looks like CoreText applies neither mark nor current substitution for
        * end-of-text if mark was not explicitly set. */
       if (buffer->idx == buffer->len && !mark_set)
 	return;
 
-      const HBGlyphID *replacement;
+      const HBGlyphID16 *replacement;
 
       replacement = nullptr;
       if (Types::extended)
       {
 	if (entry.data.markIndex != 0xFFFF)
 	{
-	  const Lookup<HBGlyphID> &lookup = subs[entry.data.markIndex];
+	  const Lookup<HBGlyphID16> &lookup = subs[entry.data.markIndex];
 	  replacement = lookup.get_value (buffer->info[mark].codepoint, driver->num_glyphs);
 	}
       }
       else
       {
 	unsigned int offset = entry.data.markIndex + buffer->info[mark].codepoint;
-	const UnsizedArrayOf<HBGlyphID> &subs_old = (const UnsizedArrayOf<HBGlyphID> &) subs;
+	const UnsizedArrayOf<HBGlyphID16> &subs_old = (const UnsizedArrayOf<HBGlyphID16> &) subs;
 	replacement = &subs_old[Types::wordOffsetToIndex (offset, table, subs_old.arrayZ)];
-	if (!replacement->sanitize (&c->sanitizer) || !*replacement)
+	if (!(replacement->sanitize (&c->sanitizer) &&
+	      hb_barrier () &&
+	      *replacement))
 	  replacement = nullptr;
       }
       if (replacement)
       {
 	buffer->unsafe_to_break (mark, hb_min (buffer->idx + 1, buffer->len));
 	buffer->info[mark].codepoint = *replacement;
+	if (has_glyph_classes)
+	  _hb_glyph_info_set_glyph_props (&buffer->info[mark],
+					  gdef.get_glyph_props (*replacement));
 	ret = true;
       }
 
@@ -272,21 +279,26 @@ struct ContextualSubtable
       {
 	if (entry.data.currentIndex != 0xFFFF)
 	{
-	  const Lookup<HBGlyphID> &lookup = subs[entry.data.currentIndex];
+	  const Lookup<HBGlyphID16> &lookup = subs[entry.data.currentIndex];
 	  replacement = lookup.get_value (buffer->info[idx].codepoint, driver->num_glyphs);
 	}
       }
       else
       {
 	unsigned int offset = entry.data.currentIndex + buffer->info[idx].codepoint;
-	const UnsizedArrayOf<HBGlyphID> &subs_old = (const UnsizedArrayOf<HBGlyphID> &) subs;
+	const UnsizedArrayOf<HBGlyphID16> &subs_old = (const UnsizedArrayOf<HBGlyphID16> &) subs;
 	replacement = &subs_old[Types::wordOffsetToIndex (offset, table, subs_old.arrayZ)];
-	if (!replacement->sanitize (&c->sanitizer) || !*replacement)
+	if (!(replacement->sanitize (&c->sanitizer) &&
+	      hb_barrier () &&
+	      *replacement))
 	  replacement = nullptr;
       }
       if (replacement)
       {
 	buffer->info[idx].codepoint = *replacement;
+	if (has_glyph_classes)
+	  _hb_glyph_info_set_glyph_props (&buffer->info[idx],
+					  gdef.get_glyph_props (*replacement));
 	ret = true;
       }
 
@@ -301,10 +313,12 @@ struct ContextualSubtable
     bool ret;
     private:
     hb_aat_apply_context_t *c;
+    const OT::GDEF &gdef;
     bool mark_set;
+    bool has_glyph_classes;
     unsigned int mark;
     const ContextualSubtable *table;
-    const UnsizedOffsetListOf<Lookup<HBGlyphID>, HBUINT, false> &subs;
+    const UnsizedListOfOffset16To<Lookup<HBGlyphID16>, HBUINT, void, false> &subs;
   };
 
   bool apply (hb_aat_apply_context_t *c) const
@@ -313,8 +327,8 @@ struct ContextualSubtable
 
     driver_context_t dc (this, c);
 
-    StateTableDriver<Types, EntryData> driver (machine, c->buffer, c->face);
-    driver.drive (&dc);
+    StateTableDriver<Types, EntryData> driver (machine, c->face);
+    driver.drive (&dc, c);
 
     return_trace (dc.ret);
   }
@@ -325,6 +339,7 @@ struct ContextualSubtable
 
     unsigned int num_entries = 0;
     if (unlikely (!machine.sanitize (c, &num_entries))) return_trace (false);
+    hb_barrier ();
 
     if (!Types::extended)
       return_trace (substitutionTables.sanitize (c, this, 0));
@@ -345,13 +360,14 @@ struct ContextualSubtable
     return_trace (substitutionTables.sanitize (c, this, num_lookups));
   }
 
-  protected:
+  public:
   StateTable<Types, EntryData>
 		machine;
-  NNOffsetTo<UnsizedOffsetListOf<Lookup<HBGlyphID>, HBUINT, false>, HBUINT>
+  protected:
+  NNOffsetTo<UnsizedListOfOffset16To<Lookup<HBGlyphID16>, HBUINT, void, false>, HBUINT>
 		substitutionTables;
   public:
-  DEFINE_SIZE_STATIC (20);
+  DEFINE_SIZE_STATIC ((StateTable<Types, EntryData>::static_size + HBUINT::static_size));
 };
 
 
@@ -448,16 +464,16 @@ struct LigatureSubtable
 	ligature (table+table->ligature),
 	match_length (0) {}
 
-    bool is_actionable (StateTableDriver<Types, EntryData> *driver HB_UNUSED,
-			const Entry<EntryData> &entry)
+    bool is_actionable (hb_buffer_t *buffer HB_UNUSED,
+			StateTableDriver<Types, EntryData> *driver HB_UNUSED,
+			const Entry<EntryData> &entry) const
     {
       return LigatureEntryT::performAction (entry);
     }
-    void transition (StateTableDriver<Types, EntryData> *driver,
+    void transition (hb_buffer_t *buffer,
+		     StateTableDriver<Types, EntryData> *driver,
 		     const Entry<EntryData> &entry)
     {
-      hb_buffer_t *buffer = driver->buffer;
-
       DEBUG_MSG (APPLY, nullptr, "Ligature transition at %u", buffer->idx);
       if (entry.flags & LigatureEntryT::SetComponent)
       {
@@ -502,6 +518,7 @@ struct LigatureSubtable
 	  if (unlikely (!buffer->move_to (match_positions[--cursor % ARRAY_LENGTH (match_positions)]))) return;
 
 	  if (unlikely (!actionData->sanitize (&c->sanitizer))) break;
+	  hb_barrier ();
 	  action = *actionData;
 
 	  uint32_t uoffset = action & LigActionOffset;
@@ -512,16 +529,18 @@ struct LigatureSubtable
 	  component_idx = Types::wordOffsetToIndex (component_idx, table, component.arrayZ);
 	  const HBUINT16 &componentData = component[component_idx];
 	  if (unlikely (!componentData.sanitize (&c->sanitizer))) break;
+	  hb_barrier ();
 	  ligature_idx += componentData;
 
-	  DEBUG_MSG (APPLY, nullptr, "Action store %u last %u",
+	  DEBUG_MSG (APPLY, nullptr, "Action store %d last %d",
 		     bool (action & LigActionStore),
 		     bool (action & LigActionLast));
 	  if (action & (LigActionStore | LigActionLast))
 	  {
 	    ligature_idx = Types::offsetToIndex (ligature_idx, table, ligature.arrayZ);
-	    const HBGlyphID &ligatureData = ligature[ligature_idx];
+	    const HBGlyphID16 &ligatureData = ligature[ligature_idx];
 	    if (unlikely (!ligatureData.sanitize (&c->sanitizer))) break;
+	    hb_barrier ();
 	    hb_codepoint_t lig = ligatureData;
 
 	    DEBUG_MSG (APPLY, nullptr, "Produced ligature %u", lig);
@@ -533,6 +552,7 @@ struct LigatureSubtable
 	    {
 	      DEBUG_MSG (APPLY, nullptr, "Skipping ligature component");
 	      if (unlikely (!buffer->move_to (match_positions[--match_length % ARRAY_LENGTH (match_positions)]))) return;
+	      buffer->cur().unicode_props() |= UPROPS_MASK_IGNORABLE;
 	      if (unlikely (!buffer->replace_glyph (DELETED_GLYPH))) return;
 	    }
 
@@ -554,7 +574,7 @@ struct LigatureSubtable
     const LigatureSubtable *table;
     const UnsizedArrayOf<HBUINT32> &ligAction;
     const UnsizedArrayOf<HBUINT16> &component;
-    const UnsizedArrayOf<HBGlyphID> &ligature;
+    const UnsizedArrayOf<HBGlyphID16> &ligature;
     unsigned int match_length;
     unsigned int match_positions[HB_MAX_CONTEXT_LENGTH];
   };
@@ -565,8 +585,8 @@ struct LigatureSubtable
 
     driver_context_t dc (this, c);
 
-    StateTableDriver<Types, EntryData> driver (machine, c->buffer, c->face);
-    driver.drive (&dc);
+    StateTableDriver<Types, EntryData> driver (machine, c->face);
+    driver.drive (&dc, c);
 
     return_trace (dc.ret);
   }
@@ -576,20 +596,22 @@ struct LigatureSubtable
     TRACE_SANITIZE (this);
     /* The rest of array sanitizations are done at run-time. */
     return_trace (c->check_struct (this) && machine.sanitize (c) &&
+		  hb_barrier () &&
 		  ligAction && component && ligature);
   }
 
-  protected:
+  public:
   StateTable<Types, EntryData>
 		machine;
+  protected:
   NNOffsetTo<UnsizedArrayOf<HBUINT32>, HBUINT>
 		ligAction;	/* Offset to the ligature action table. */
   NNOffsetTo<UnsizedArrayOf<HBUINT16>, HBUINT>
 		component;	/* Offset to the component table. */
-  NNOffsetTo<UnsizedArrayOf<HBGlyphID>, HBUINT>
+  NNOffsetTo<UnsizedArrayOf<HBGlyphID16>, HBUINT>
 		ligature;	/* Offset to the actual ligature lists. */
   public:
-  DEFINE_SIZE_STATIC (28);
+  DEFINE_SIZE_STATIC ((StateTable<Types, EntryData>::static_size + 3 * HBUINT::static_size));
 };
 
 template <typename Types>
@@ -599,17 +621,42 @@ struct NoncontextualSubtable
   {
     TRACE_APPLY (this);
 
+    const OT::GDEF &gdef (*c->gdef_table);
+    bool has_glyph_classes = gdef.has_glyph_classes ();
+
     bool ret = false;
     unsigned int num_glyphs = c->face->get_num_glyphs ();
 
     hb_glyph_info_t *info = c->buffer->info;
     unsigned int count = c->buffer->len;
+    // If there's only one range, we already checked the flag.
+    auto *last_range = c->range_flags && (c->range_flags->length > 1) ? &(*c->range_flags)[0] : nullptr;
     for (unsigned int i = 0; i < count; i++)
     {
-      const HBGlyphID *replacement = substitute.get_value (info[i].codepoint, num_glyphs);
+      /* This block copied from StateTableDriver::drive. Keep in sync. */
+      if (last_range)
+      {
+	auto *range = last_range;
+	{
+	  unsigned cluster = info[i].cluster;
+	  while (cluster < range->cluster_first)
+	    range--;
+	  while (cluster > range->cluster_last)
+	    range++;
+
+	  last_range = range;
+	}
+	if (!(range->flags & c->subtable_flags))
+	  continue;
+      }
+
+      const HBGlyphID16 *replacement = substitute.get_value (info[i].codepoint, num_glyphs);
       if (replacement)
       {
 	info[i].codepoint = *replacement;
+	if (has_glyph_classes)
+	  _hb_glyph_info_set_glyph_props (&info[i],
+					  gdef.get_glyph_props (*replacement));
 	ret = true;
       }
     }
@@ -624,7 +671,7 @@ struct NoncontextualSubtable
   }
 
   protected:
-  Lookup<HBGlyphID>	substitute;
+  Lookup<HBGlyphID16>	substitute;
   public:
   DEFINE_SIZE_MIN (2);
 };
@@ -708,16 +755,17 @@ struct InsertionSubtable
 	mark (0),
 	insertionAction (table+table->insertionAction) {}
 
-    bool is_actionable (StateTableDriver<Types, EntryData> *driver HB_UNUSED,
-			const Entry<EntryData> &entry)
+    bool is_actionable (hb_buffer_t *buffer HB_UNUSED,
+			StateTableDriver<Types, EntryData> *driver HB_UNUSED,
+			const Entry<EntryData> &entry) const
     {
       return (entry.flags & (CurrentInsertCount | MarkedInsertCount)) &&
 	     (entry.data.currentInsertIndex != 0xFFFF ||entry.data.markedInsertIndex != 0xFFFF);
     }
-    void transition (StateTableDriver<Types, EntryData> *driver,
+    void transition (hb_buffer_t *buffer,
+		     StateTableDriver<Types, EntryData> *driver,
 		     const Entry<EntryData> &entry)
     {
-      hb_buffer_t *buffer = driver->buffer;
       unsigned int flags = entry.flags;
 
       unsigned mark_loc = buffer->out_len;
@@ -727,8 +775,9 @@ struct InsertionSubtable
 	unsigned int count = (flags & MarkedInsertCount);
 	if (unlikely ((buffer->max_ops -= count) <= 0)) return;
 	unsigned int start = entry.data.markedInsertIndex;
-	const HBGlyphID *glyphs = &insertionAction[start];
+	const HBGlyphID16 *glyphs = &insertionAction[start];
 	if (unlikely (!c->sanitizer.check_array (glyphs, count))) count = 0;
+	hb_barrier ();
 
 	bool before = flags & MarkedInsertBefore;
 
@@ -755,8 +804,9 @@ struct InsertionSubtable
 	unsigned int count = (flags & CurrentInsertCount) >> 5;
 	if (unlikely ((buffer->max_ops -= count) <= 0)) return;
 	unsigned int start = entry.data.currentInsertIndex;
-	const HBGlyphID *glyphs = &insertionAction[start];
+	const HBGlyphID16 *glyphs = &insertionAction[start];
 	if (unlikely (!c->sanitizer.check_array (glyphs, count))) count = 0;
+	hb_barrier ();
 
 	bool before = flags & CurrentInsertBefore;
 
@@ -793,7 +843,7 @@ struct InsertionSubtable
     private:
     hb_aat_apply_context_t *c;
     unsigned int mark;
-    const UnsizedArrayOf<HBGlyphID> &insertionAction;
+    const UnsizedArrayOf<HBGlyphID16> &insertionAction;
   };
 
   bool apply (hb_aat_apply_context_t *c) const
@@ -802,8 +852,8 @@ struct InsertionSubtable
 
     driver_context_t dc (this, c);
 
-    StateTableDriver<Types, EntryData> driver (machine, c->buffer, c->face);
-    driver.drive (&dc);
+    StateTableDriver<Types, EntryData> driver (machine, c->face);
+    driver.drive (&dc, c);
 
     return_trace (dc.ret);
   }
@@ -813,17 +863,19 @@ struct InsertionSubtable
     TRACE_SANITIZE (this);
     /* The rest of array sanitizations are done at run-time. */
     return_trace (c->check_struct (this) && machine.sanitize (c) &&
+		  hb_barrier () &&
 		  insertionAction);
   }
 
-  protected:
+  public:
   StateTable<Types, EntryData>
 		machine;
-  NNOffsetTo<UnsizedArrayOf<HBGlyphID>, HBUINT>
+  protected:
+  NNOffsetTo<UnsizedArrayOf<HBGlyphID16>, HBUINT>
 		insertionAction;	/* Byte offset from stateHeader to the start of
 					 * the insertion glyph table. */
   public:
-  DEFINE_SIZE_STATIC (20);
+  DEFINE_SIZE_STATIC ((StateTable<Types, EntryData>::static_size + HBUINT::static_size));
 };
 
 
@@ -845,6 +897,89 @@ struct Feature
 
   public:
   DEFINE_SIZE_STATIC (12);
+};
+
+
+struct hb_accelerate_subtables_context_t :
+       hb_dispatch_context_t<hb_accelerate_subtables_context_t>
+{
+  struct hb_applicable_t
+  {
+    friend struct hb_accelerate_subtables_context_t;
+    friend struct hb_aat_layout_lookup_accelerator_t;
+
+    public:
+    hb_set_digest_t digest;
+
+    template <typename T>
+    auto init_ (const T &obj_, unsigned num_glyphs, hb_priority<1>) HB_AUTO_RETURN
+    (
+      obj_.machine.collect_glyphs (this->digest, num_glyphs)
+    )
+
+    template <typename T>
+    void init_ (const T &obj_, unsigned num_glyphs, hb_priority<0>)
+    {
+      digest = digest.full ();
+    }
+
+    template <typename T>
+    void init (const T &obj_, unsigned num_glyphs)
+    {
+      init_ (obj_, num_glyphs, hb_prioritize);
+    }
+  };
+
+  /* Dispatch interface. */
+  template <typename T>
+  return_t dispatch (const T &obj)
+  {
+    hb_applicable_t *entry = &array[i++];
+
+    entry->init (obj, num_glyphs);
+
+    return hb_empty_t ();
+  }
+  static return_t default_return_value () { return hb_empty_t (); }
+
+  bool stop_sublookup_iteration (return_t r) const { return false; }
+
+  hb_accelerate_subtables_context_t (hb_applicable_t *array_, unsigned num_glyphs_) :
+				     hb_dispatch_context_t<hb_accelerate_subtables_context_t> (),
+				     array (array_), num_glyphs (num_glyphs_) {}
+
+  hb_applicable_t *array;
+  unsigned num_glyphs;
+  unsigned i = 0;
+};
+
+struct hb_aat_layout_chain_accelerator_t
+{
+  template <typename TChain>
+  static hb_aat_layout_chain_accelerator_t *create (const TChain &chain, unsigned num_glyphs)
+  {
+    unsigned count = chain.get_subtable_count ();
+
+    unsigned size = sizeof (hb_aat_layout_chain_accelerator_t) -
+		    HB_VAR_ARRAY * sizeof (hb_accelerate_subtables_context_t::hb_applicable_t) +
+		    count * sizeof (hb_accelerate_subtables_context_t::hb_applicable_t);
+
+    /* The following is a calloc because when we are collecting subtables,
+     * some of them might be invalid and hence not collect; as a result,
+     * we might not fill in all the count entries of the subtables array.
+     * Zeroing it allows the set digest to gatekeep it without having to
+     * initialize it further. */
+    auto *thiz = (hb_aat_layout_chain_accelerator_t *) hb_calloc (1, size);
+    if (unlikely (!thiz))
+      return nullptr;
+
+    hb_accelerate_subtables_context_t c_accelerate_subtables (thiz->subtables, num_glyphs);
+    chain.dispatch (&c_accelerate_subtables);
+
+    return thiz;
+  }
+
+  hb_accelerate_subtables_context_t::hb_applicable_t subtables[HB_VAR_ARRAY];
 };
 
 template <typename Types>
@@ -889,11 +1024,11 @@ struct ChainSubtable
     unsigned int subtable_type = get_type ();
     TRACE_DISPATCH (this, subtable_type);
     switch (subtable_type) {
-    case Rearrangement:		return_trace (c->dispatch (u.rearrangement, hb_forward<Ts> (ds)...));
-    case Contextual:		return_trace (c->dispatch (u.contextual, hb_forward<Ts> (ds)...));
-    case Ligature:		return_trace (c->dispatch (u.ligature, hb_forward<Ts> (ds)...));
-    case Noncontextual:		return_trace (c->dispatch (u.noncontextual, hb_forward<Ts> (ds)...));
-    case Insertion:		return_trace (c->dispatch (u.insertion, hb_forward<Ts> (ds)...));
+    case Rearrangement:		return_trace (c->dispatch (u.rearrangement, std::forward<Ts> (ds)...));
+    case Contextual:		return_trace (c->dispatch (u.contextual, std::forward<Ts> (ds)...));
+    case Ligature:		return_trace (c->dispatch (u.ligature, std::forward<Ts> (ds)...));
+    case Noncontextual:		return_trace (c->dispatch (u.noncontextual, std::forward<Ts> (ds)...));
+    case Insertion:		return_trace (c->dispatch (u.insertion, std::forward<Ts> (ds)...));
     default:			return_trace (c->default_return_value ());
     }
   }
@@ -908,9 +1043,10 @@ struct ChainSubtable
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (!length.sanitize (c) ||
-	length <= min_size ||
-	!c->check_range (this, length))
+    if (!(length.sanitize (c) &&
+	  hb_barrier () &&
+	  length >= min_size &&
+	  c->check_range (this, length)))
       return_trace (false);
 
     hb_sanitize_with_object_t with (c, this);
@@ -937,6 +1073,8 @@ struct Chain
 {
   typedef typename Types::HBUINT HBUINT;
 
+  unsigned get_subtable_count () const { return subtableCount; }
+
   hb_mask_t compile_flags (const hb_aat_map_builder_t *map) const
   {
     hb_mask_t flags = defaultFlags;
@@ -951,7 +1089,7 @@ struct Chain
 	// Check whether this type/setting pair was requested in the map, and if so, apply its flags.
 	// (The search here only looks at the type and setting fields of feature_info_t.)
 	hb_aat_map_builder_t::feature_info_t info = { type, setting, false, 0 };
-	if (map->features.bsearch (info))
+	if (map->current_features.bsearch (info))
 	{
 	  flags &= feature.disableFlags;
 	  flags |= feature.enableFlags;
@@ -963,13 +1101,22 @@ struct Chain
 	  setting = HB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS;
 	  goto retry;
 	}
+#ifndef HB_NO_AAT
+	else if (type == HB_AAT_LAYOUT_FEATURE_TYPE_LANGUAGE_TAG_TYPE && setting &&
+		 /* TODO: Rudimentary language matching. */
+		 hb_language_matches (map->face->table.ltag->get_language (setting - 1), map->props.language))
+	{
+	  flags &= feature.disableFlags;
+	  flags |= feature.enableFlags;
+	}
+#endif
       }
     }
     return flags;
   }
 
   void apply (hb_aat_apply_context_t *c,
-	      hb_mask_t flags) const
+	      const hb_aat_layout_chain_accelerator_t *accel) const
   {
     const ChainSubtable<Types> *subtable = &StructAfter<ChainSubtable<Types>> (featureZ.as_array (featureCount));
     unsigned int count = subtableCount;
@@ -977,8 +1124,11 @@ struct Chain
     {
       bool reverse;
 
-      if (!(subtable->subFeatureFlags & flags))
+      if (hb_none (hb_iter (c->range_flags) |
+		   hb_map ([&subtable] (const hb_aat_map_t::range_flags_t _) -> bool { return subtable->subFeatureFlags & (_.flags); })))
 	goto skip;
+      c->subtable_flags = subtable->subFeatureFlags;
+      c->machine_glyph_set = accel ? accel->subtables[i].digest : hb_set_digest_t::full ();
 
       if (!(subtable->get_coverage() & ChainSubtable<Types>::AllDirections) &&
 	  HB_DIRECTION_IS_VERTICAL (c->buffer->props.direction) !=
@@ -1017,7 +1167,7 @@ struct Chain
 		bool (subtable->get_coverage () & ChainSubtable<Types>::Backwards) !=
 		HB_DIRECTION_IS_BACKWARD (c->buffer->props.direction);
 
-      if (!c->buffer->message (c->font, "start chainsubtable %d", c->lookup_index))
+      if (!c->buffer->message (c->font, "start chainsubtable %u", c->lookup_index))
 	goto skip;
 
       if (reverse)
@@ -1028,7 +1178,7 @@ struct Chain
       if (reverse)
 	c->buffer->reverse ();
 
-      (void) c->buffer->message (c->font, "end chainsubtable %d", c->lookup_index);
+      (void) c->buffer->message (c->font, "end chainsubtable %u", c->lookup_index);
 
       if (unlikely (!c->buffer->successful)) return;
 
@@ -1040,12 +1190,28 @@ struct Chain
 
   unsigned int get_size () const { return length; }
 
-  bool sanitize (hb_sanitize_context_t *c, unsigned int version HB_UNUSED) const
+  template <typename context_t, typename ...Ts>
+  typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
+  {
+    const ChainSubtable<Types> *subtable = &StructAfter<ChainSubtable<Types>> (featureZ.as_array (featureCount));
+    unsigned int count = subtableCount;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      typename context_t::return_t ret = subtable->dispatch (c, std::forward<Ts> (ds)...);
+      if (c->stop_sublookup_iteration (ret))
+	return ret;
+      subtable = &StructAfter<ChainSubtable<Types>> (*subtable);
+    }
+    return c->default_return_value ();
+  }
+
+  bool sanitize (hb_sanitize_context_t *c, unsigned int version) const
   {
     TRACE_SANITIZE (this);
-    if (!length.sanitize (c) ||
-	length < min_size ||
-	!c->check_range (this, length))
+    if (!(length.sanitize (c) &&
+	  hb_barrier () &&
+	  length >= min_size &&
+	  c->check_range (this, length)))
       return_trace (false);
 
     if (!c->check_array (featureZ.arrayZ, featureCount))
@@ -1057,7 +1223,15 @@ struct Chain
     {
       if (!subtable->sanitize (c))
 	return_trace (false);
+      hb_barrier ();
       subtable = &StructAfter<ChainSubtable<Types>> (*subtable);
+    }
+
+    if (version >= 3)
+    {
+      const SubtableGlyphCoverage *coverage = (const SubtableGlyphCoverage *) subtable;
+      if (!coverage->sanitize (c, count))
+        return_trace (false);
     }
 
     return_trace (true);
@@ -1071,7 +1245,7 @@ struct Chain
 
   UnsizedArrayOf<Feature>	featureZ;	/* Features. */
 /*ChainSubtable	firstSubtable;*//* Subtables. */
-/*subtableGlyphCoverageArray*/	/* Only if version >= 3. We don't use. */
+/*SubtableGlyphCoverage coverages*//* Only if version >= 3. */
 
   public:
   DEFINE_SIZE_MIN (8 + 2 * sizeof (HBUINT));
@@ -1082,34 +1256,106 @@ struct Chain
  * The 'mort'/'morx' Table
  */
 
-template <typename Types, hb_tag_t TAG>
+template <typename T, typename Types, hb_tag_t TAG>
 struct mortmorx
 {
   static constexpr hb_tag_t tableTag = TAG;
 
   bool has_data () const { return version != 0; }
 
+  struct accelerator_t
+  {
+    accelerator_t (hb_face_t *face)
+    {
+      hb_sanitize_context_t sc;
+      this->table = sc.reference_table<T> (face);
+
+      this->chain_count = table->get_chain_count ();
+
+      this->accels = (hb_atomic_ptr_t<hb_aat_layout_chain_accelerator_t> *) hb_calloc (this->chain_count, sizeof (*accels));
+      if (unlikely (!this->accels))
+      {
+	this->chain_count = 0;
+	this->table.destroy ();
+	this->table = hb_blob_get_empty ();
+      }
+    }
+    ~accelerator_t ()
+    {
+      for (unsigned int i = 0; i < this->chain_count; i++)
+	hb_free (this->accels[i]);
+      hb_free (this->accels);
+      this->table.destroy ();
+    }
+
+    hb_blob_t *get_blob () const { return table.get_blob (); }
+
+    template <typename Chain>
+    hb_aat_layout_chain_accelerator_t *get_accel (unsigned chain_index, const Chain &chain, unsigned num_glyphs) const
+    {
+      if (unlikely (chain_index >= chain_count)) return nullptr;
+
+    retry:
+      auto *accel = accels[chain_index].get_acquire ();
+      if (unlikely (!accel))
+      {
+	accel = hb_aat_layout_chain_accelerator_t::create (chain, num_glyphs);
+	if (unlikely (!accel))
+	  return nullptr;
+
+	if (unlikely (!accels[chain_index].cmpexch (nullptr, accel)))
+	{
+	  hb_free (accel);
+	  goto retry;
+	}
+      }
+
+      return accel;
+    }
+
+    hb_blob_ptr_t<T> table;
+    unsigned int chain_count;
+    hb_atomic_ptr_t<hb_aat_layout_chain_accelerator_t> *accels;
+  };
+
+
   void compile_flags (const hb_aat_map_builder_t *mapper,
 		      hb_aat_map_t *map) const
   {
     const Chain<Types> *chain = &firstChain;
     unsigned int count = chainCount;
+    if (unlikely (!map->chain_flags.resize (count)))
+      return;
     for (unsigned int i = 0; i < count; i++)
     {
-      map->chain_flags.push (chain->compile_flags (mapper));
+      map->chain_flags[i].push (hb_aat_map_t::range_flags_t {chain->compile_flags (mapper),
+							     mapper->range_first,
+							     mapper->range_last});
       chain = &StructAfter<Chain<Types>> (*chain);
     }
   }
 
-  void apply (hb_aat_apply_context_t *c) const
+  unsigned get_chain_count () const
+  {
+	  return chainCount;
+  }
+
+  void apply (hb_aat_apply_context_t *c,
+	      const hb_aat_map_t &map,
+	      const accelerator_t &accel) const
   {
     if (unlikely (!c->buffer->successful)) return;
+
+    c->buffer->unsafe_to_concat ();
+
     c->set_lookup_index (0);
     const Chain<Types> *chain = &firstChain;
     unsigned int count = chainCount;
     for (unsigned int i = 0; i < count; i++)
     {
-      chain->apply (c, c->plan->aat_map.chain_flags[i]);
+      auto *chain_accel = accel.get_accel (i, *chain, c->face->get_num_glyphs ());
+      c->range_flags = &map.chain_flags[i];
+      chain->apply (c, chain_accel);
       if (unlikely (!c->buffer->successful)) return;
       chain = &StructAfter<Chain<Types>> (*chain);
     }
@@ -1118,7 +1364,10 @@ struct mortmorx
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (!version.sanitize (c) || !version || !chainCount.sanitize (c))
+    if (!(version.sanitize (c) &&
+	  hb_barrier () &&
+	  version &&
+	  chainCount.sanitize (c)))
       return_trace (false);
 
     const Chain<Types> *chain = &firstChain;
@@ -1127,6 +1376,7 @@ struct mortmorx
     {
       if (!chain->sanitize (c, version))
 	return_trace (false);
+      hb_barrier ();
       chain = &StructAfter<Chain<Types>> (*chain);
     }
 
@@ -1145,8 +1395,15 @@ struct mortmorx
   DEFINE_SIZE_MIN (8);
 };
 
-struct morx : mortmorx<ExtendedTypes, HB_AAT_TAG_morx> {};
-struct mort : mortmorx<ObsoleteTypes, HB_AAT_TAG_mort> {};
+struct morx : mortmorx<morx, ExtendedTypes, HB_AAT_TAG_morx> {};
+struct mort : mortmorx<mort, ObsoleteTypes, HB_AAT_TAG_mort> {};
+
+struct morx_accelerator_t : morx::accelerator_t {
+  morx_accelerator_t (hb_face_t *face) : morx::accelerator_t (face) {}
+};
+struct mort_accelerator_t : mort::accelerator_t {
+  mort_accelerator_t (hb_face_t *face) : mort::accelerator_t (face) {}
+};
 
 
 } /* namespace AAT */

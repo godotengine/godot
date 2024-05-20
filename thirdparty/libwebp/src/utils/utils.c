@@ -11,19 +11,19 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
+#include "src/utils/utils.h"
+
 #include <stdlib.h>
 #include <string.h>  // for memcpy()
-#include "src/webp/decode.h"
+
+#include "src/utils/palette.h"
 #include "src/webp/encode.h"
-#include "src/webp/format_constants.h"  // for MAX_PALETTE_SIZE
-#include "src/utils/color_cache_utils.h"
-#include "src/utils/utils.h"
 
 // If PRINT_MEM_INFO is defined, extra info (like total memory used, number of
 // alloc/free etc) is printed. For debugging/tuning purpose only (it's slow,
 // and not multi-thread safe!).
 // An interesting alternative is valgrind's 'massif' tool:
-//    http://valgrind.org/docs/manual/ms-manual.html
+//    https://valgrind.org/docs/manual/ms-manual.html
 // Here is an example command line:
 /*    valgrind --tool=massif --massif-out-file=massif.out \
                --stacks=yes --alloc-fn=WebPSafeMalloc --alloc-fn=WebPSafeCalloc
@@ -101,6 +101,9 @@ static void Increment(int* const v) {
 #if defined(MALLOC_LIMIT)
     {
       const char* const malloc_limit_str = getenv("MALLOC_LIMIT");
+#if MALLOC_LIMIT > 1
+      mem_limit = (size_t)MALLOC_LIMIT;
+#endif
       if (malloc_limit_str != NULL) {
         mem_limit = atoi(malloc_limit_str);
       }
@@ -169,16 +172,16 @@ static int CheckSizeArgumentsOverflow(uint64_t nmemb, size_t size) {
   const uint64_t total_size = nmemb * size;
   if (nmemb == 0) return 1;
   if ((uint64_t)size > WEBP_MAX_ALLOCABLE_MEMORY / nmemb) return 0;
-  if (total_size != (size_t)total_size) return 0;
+  if (!CheckSizeOverflow(total_size)) return 0;
 #if defined(PRINT_MEM_INFO) && defined(MALLOC_FAIL_AT)
   if (countdown_to_fail > 0 && --countdown_to_fail == 0) {
     return 0;    // fake fail!
   }
 #endif
-#if defined(MALLOC_LIMIT)
+#if defined(PRINT_MEM_INFO) && defined(MALLOC_LIMIT)
   if (mem_limit > 0) {
     const uint64_t new_total_mem = (uint64_t)total_mem + total_size;
-    if (new_total_mem != (size_t)new_total_mem ||
+    if (!CheckSizeOverflow(new_total_mem) ||
         new_total_mem > mem_limit) {
       return 0;   // fake fail!
     }
@@ -231,7 +234,7 @@ void WebPFree(void* ptr) {
 void WebPCopyPlane(const uint8_t* src, int src_stride,
                    uint8_t* dst, int dst_stride, int width, int height) {
   assert(src != NULL && dst != NULL);
-  assert(src_stride >= width && dst_stride >= width);
+  assert(abs(src_stride) >= width && abs(dst_stride) >= width);
   while (height-- > 0) {
     memcpy(dst, src, width);
     src += src_stride;
@@ -249,65 +252,9 @@ void WebPCopyPixels(const WebPPicture* const src, WebPPicture* const dst) {
 
 //------------------------------------------------------------------------------
 
-#define COLOR_HASH_SIZE         (MAX_PALETTE_SIZE * 4)
-#define COLOR_HASH_RIGHT_SHIFT  22  // 32 - log2(COLOR_HASH_SIZE).
-
 int WebPGetColorPalette(const WebPPicture* const pic, uint32_t* const palette) {
-  int i;
-  int x, y;
-  int num_colors = 0;
-  uint8_t in_use[COLOR_HASH_SIZE] = { 0 };
-  uint32_t colors[COLOR_HASH_SIZE];
-  const uint32_t* argb = pic->argb;
-  const int width = pic->width;
-  const int height = pic->height;
-  uint32_t last_pix = ~argb[0];   // so we're sure that last_pix != argb[0]
-  assert(pic != NULL);
-  assert(pic->use_argb);
-
-  for (y = 0; y < height; ++y) {
-    for (x = 0; x < width; ++x) {
-      int key;
-      if (argb[x] == last_pix) {
-        continue;
-      }
-      last_pix = argb[x];
-      key = VP8LHashPix(last_pix, COLOR_HASH_RIGHT_SHIFT);
-      while (1) {
-        if (!in_use[key]) {
-          colors[key] = last_pix;
-          in_use[key] = 1;
-          ++num_colors;
-          if (num_colors > MAX_PALETTE_SIZE) {
-            return MAX_PALETTE_SIZE + 1;  // Exact count not needed.
-          }
-          break;
-        } else if (colors[key] == last_pix) {
-          break;  // The color is already there.
-        } else {
-          // Some other color sits here, so do linear conflict resolution.
-          ++key;
-          key &= (COLOR_HASH_SIZE - 1);  // Key mask.
-        }
-      }
-    }
-    argb += pic->argb_stride;
-  }
-
-  if (palette != NULL) {  // Fill the colors into palette.
-    num_colors = 0;
-    for (i = 0; i < COLOR_HASH_SIZE; ++i) {
-      if (in_use[i]) {
-        palette[num_colors] = colors[i];
-        ++num_colors;
-      }
-    }
-  }
-  return num_colors;
+  return GetColorPalette(pic, palette);
 }
-
-#undef COLOR_HASH_SIZE
-#undef COLOR_HASH_RIGHT_SHIFT
 
 //------------------------------------------------------------------------------
 

@@ -1,7 +1,7 @@
 
 /* pngrtran.c - transforms the data in a row for PNG readers
  *
- * Copyright (c) 2018-2019 Cosmin Truta
+ * Copyright (c) 2018-2024 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -21,7 +21,7 @@
 #ifdef PNG_ARM_NEON_IMPLEMENTATION
 #  if PNG_ARM_NEON_IMPLEMENTATION == 1
 #    define PNG_ARM_NEON_INTRINSICS_AVAILABLE
-#    if defined(_MSC_VER) && defined(_M_ARM64)
+#    if defined(_MSC_VER) && !defined(__clang__) && defined(_M_ARM64)
 #      include <arm64_neon.h>
 #    else
 #      include <arm_neon.h>
@@ -290,21 +290,20 @@ png_set_alpha_mode_fixed(png_structrp png_ptr, int mode,
    int compose = 0;
    png_fixed_point file_gamma;
 
-   png_debug(1, "in png_set_alpha_mode");
+   png_debug(1, "in png_set_alpha_mode_fixed");
 
    if (png_rtran_ok(png_ptr, 0) == 0)
       return;
 
    output_gamma = translate_gamma_flags(png_ptr, output_gamma, 1/*screen*/);
 
-   /* Validate the value to ensure it is in a reasonable range. The value
+   /* Validate the value to ensure it is in a reasonable range.  The value
     * is expected to be 1 or greater, but this range test allows for some
-    * viewing correction values.  The intent is to weed out users of this API
-    * who use the inverse of the gamma value accidentally!  Since some of these
-    * values are reasonable this may have to be changed:
+    * viewing correction values.  The intent is to weed out the API users
+    * who might use the inverse of the gamma value accidentally!
     *
-    * 1.6.x: changed from 0.07..3 to 0.01..100 (to accommodate the optimal 16-bit
-    * gamma of 36, and its reciprocal.)
+    * In libpng 1.6.0, we changed from 0.07..3 to 0.01..100, to accommodate
+    * the optimal 16-bit gamma of 36 and its reciprocal.
     */
    if (output_gamma < 1000 || output_gamma > 10000000)
       png_error(png_ptr, "output gamma out of expected range");
@@ -441,7 +440,7 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
       int i;
 
       png_ptr->quantize_index = (png_bytep)png_malloc(png_ptr,
-          (png_alloc_size_t)((png_uint_32)num_palette * (sizeof (png_byte))));
+          (png_alloc_size_t)num_palette);
       for (i = 0; i < num_palette; i++)
          png_ptr->quantize_index[i] = (png_byte)i;
    }
@@ -458,7 +457,7 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
 
          /* Initialize an array to sort colors */
          png_ptr->quantize_sort = (png_bytep)png_malloc(png_ptr,
-             (png_alloc_size_t)((png_uint_32)num_palette * (sizeof (png_byte))));
+             (png_alloc_size_t)num_palette);
 
          /* Initialize the quantize_sort array */
          for (i = 0; i < num_palette; i++)
@@ -592,11 +591,9 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
 
          /* Initialize palette index arrays */
          png_ptr->index_to_palette = (png_bytep)png_malloc(png_ptr,
-             (png_alloc_size_t)((png_uint_32)num_palette *
-             (sizeof (png_byte))));
+             (png_alloc_size_t)num_palette);
          png_ptr->palette_to_index = (png_bytep)png_malloc(png_ptr,
-             (png_alloc_size_t)((png_uint_32)num_palette *
-             (sizeof (png_byte))));
+             (png_alloc_size_t)num_palette);
 
          /* Initialize the sort array */
          for (i = 0; i < num_palette; i++)
@@ -761,12 +758,11 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
       size_t num_entries = ((size_t)1 << total_bits);
 
       png_ptr->palette_lookup = (png_bytep)png_calloc(png_ptr,
-          (png_alloc_size_t)(num_entries * (sizeof (png_byte))));
+          (png_alloc_size_t)(num_entries));
 
-      distance = (png_bytep)png_malloc(png_ptr, (png_alloc_size_t)(num_entries *
-          (sizeof (png_byte))));
+      distance = (png_bytep)png_malloc(png_ptr, (png_alloc_size_t)num_entries);
 
-      memset(distance, 0xff, num_entries * (sizeof (png_byte)));
+      memset(distance, 0xff, num_entries);
 
       for (i = 0; i < num_palette; i++)
       {
@@ -970,7 +966,7 @@ void PNGFAPI
 png_set_rgb_to_gray_fixed(png_structrp png_ptr, int error_action,
     png_fixed_point red, png_fixed_point green)
 {
-   png_debug(1, "in png_set_rgb_to_gray");
+   png_debug(1, "in png_set_rgb_to_gray_fixed");
 
    /* Need the IHDR here because of the check on color_type below. */
    /* TODO: fix this */

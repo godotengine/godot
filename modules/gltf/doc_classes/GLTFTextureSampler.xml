@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFTextureSampler" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Represents a GLTF texture sampler
+	</brief_description>
+	<description>
+		Represents a texture sampler as defined by the base GLTF spec. Texture samplers in GLTF specify how to sample data from the texture's base image, when rendering the texture on an object.
+	</description>
+	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+	</tutorials>
+	<members>
+		<member name="mag_filter" type="int" setter="set_mag_filter" getter="get_mag_filter" default="9729">
+			Texture's magnification filter, used when texture appears larger on screen than the source image.
+		</member>
+		<member name="min_filter" type="int" setter="set_min_filter" getter="get_min_filter" default="9987">
+			Texture's minification filter, used when the texture appears smaller on screen than the source image.
+		</member>
+		<member name="wrap_s" type="int" setter="set_wrap_s" getter="get_wrap_s" default="10497">
+			Wrapping mode to use for S-axis (horizontal) texture coordinates.
+		</member>
+		<member name="wrap_t" type="int" setter="set_wrap_t" getter="get_wrap_t" default="10497">
+			Wrapping mode to use for T-axis (vertical) texture coordinates.
+		</member>
+	</members>
+</class>

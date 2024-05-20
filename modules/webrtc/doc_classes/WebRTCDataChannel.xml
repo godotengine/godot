@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="WebRTCDataChannel" inherits="PacketPeer" version="4.0">
+<class name="WebRTCDataChannel" inherits="PacketPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -8,88 +8,76 @@
 	</tutorials>
 	<methods>
 		<method name="close">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Closes this data channel, notifying the other peer.
 			</description>
 		</method>
 		<method name="get_buffered_amount" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of bytes currently queued to be sent over this channel.
 			</description>
 		</method>
 		<method name="get_id" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
-				Returns the id assigned to this channel during creation (or auto-assigned during negotiation).
-				If the channel is not negotiated out-of-band the id will only be available after the connection is established (will return [code]65535[/code] until then).
+				Returns the ID assigned to this channel during creation (or auto-assigned during negotiation).
+				If the channel is not negotiated out-of-band the ID will only be available after the connection is established (will return [code]65535[/code] until then).
 			</description>
 		</method>
 		<method name="get_label" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the label assigned to this channel during creation.
 			</description>
 		</method>
 		<method name="get_max_packet_life_time" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the [code]maxPacketLifeTime[/code] value assigned to this channel during creation.
 				Will be [code]65535[/code] if not specified.
 			</description>
 		</method>
 		<method name="get_max_retransmits" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the [code]maxRetransmits[/code] value assigned to this channel during creation.
 				Will be [code]65535[/code] if not specified.
 			</description>
 		</method>
 		<method name="get_protocol" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the sub-protocol assigned to this channel during creation. An empty string if not specified.
 			</description>
 		</method>
 		<method name="get_ready_state" qualifiers="const">
-			<return type="int" enum="WebRTCDataChannel.ChannelState">
-			</return>
+			<return type="int" enum="WebRTCDataChannel.ChannelState" />
 			<description>
 				Returns the current state of this channel, see [enum ChannelState].
 			</description>
 		</method>
 		<method name="is_negotiated" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this channel was created with out-of-band configuration.
 			</description>
 		</method>
 		<method name="is_ordered" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this channel was created with ordering enabled (default).
 			</description>
 		</method>
 		<method name="poll">
-			<return type="int" enum="Error">
-			</return>
+			<return type="int" enum="Error" />
 			<description>
 				Reserved, but not used for now.
 			</description>
 		</method>
 		<method name="was_string_packet" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the last received packet was transferred as text. See [member write_mode].
 			</description>

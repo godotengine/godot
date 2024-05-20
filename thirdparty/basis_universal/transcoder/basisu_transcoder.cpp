@@ -37,6 +37,14 @@
 	#endif
 #endif
 
+// Using unaligned loads and stores causes errors when using UBSan. Jam it off.
+#if defined(__has_feature)
+#if __has_feature(undefined_behavior_sanitizer)
+#undef BASISD_USE_UNALIGNED_WORD_READS
+#define BASISD_USE_UNALIGNED_WORD_READS 0
+#endif
+#endif
+
 #define BASISD_SUPPORTED_BASIS_VERSION (0x13)
 
 #ifndef BASISD_SUPPORT_KTX2
@@ -147,7 +155,7 @@
    // If BASISD_SUPPORT_KTX2_ZSTD is 0, UASTC files compressed with Zstd cannot be loaded.
 	#if BASISD_SUPPORT_KTX2_ZSTD
 		// We only use two Zstd API's: ZSTD_decompress() and ZSTD_isError()
-		#include "../zstd/zstd.h"
+		#include <zstd.h>
 	#endif
 #endif
 
@@ -224,32 +232,7 @@ namespace basist
 
 		return static_cast<uint16_t>(~crc);
 	}
-
-	const uint32_t g_global_selector_cb[] =
-#include "basisu_global_selector_cb.h"
-		;
-
-	const uint32_t g_global_selector_cb_size = sizeof(g_global_selector_cb) / sizeof(g_global_selector_cb[0]);
-
-	void etc1_global_selector_codebook::init(uint32_t N, const uint32_t* pEntries)
-	{
-		m_palette.resize(N);
-		for (uint32_t i = 0; i < N; i++)
-			m_palette[i].set_uint32(pEntries[i]);
-	}
-
-	void etc1_global_selector_codebook::print_code(FILE* pFile)
-	{
-		fprintf(pFile, "{\n");
-		for (uint32_t i = 0; i < m_palette.size(); i++)
-		{
-			fprintf(pFile, "0x%X,", m_palette[i].get_uint32());
-			if ((i & 15) == 15)
-				fprintf(pFile, "\n");
-		}
-		fprintf(pFile, "\n}\n");
-	}
-
+		
 	enum etc_constants
 	{
 		cETC1BytesPerBlock = 8U,
@@ -7532,9 +7515,8 @@ namespace basist
 	}
 #endif // BASISD_SUPPORT_PVRTC2
 
-	basisu_lowlevel_etc1s_transcoder::basisu_lowlevel_etc1s_transcoder(const etc1_global_selector_codebook* pGlobal_sel_codebook) :
+	basisu_lowlevel_etc1s_transcoder::basisu_lowlevel_etc1s_transcoder() :
 		m_pGlobal_codebook(nullptr),
-		m_pGlobal_sel_codebook(pGlobal_sel_codebook),
 		m_selector_history_buf_size(0)
 	{
 	}
@@ -7641,50 +7623,8 @@ namespace basist
 
 		if (used_global_selector_cb)
 		{
-			// global selector palette
-			uint32_t pal_bits = sym_codec.get_bits(4);
-			uint32_t mod_bits = sym_codec.get_bits(4);
-
-			basist::huffman_decoding_table mod_model;
-			if (mod_bits)
-			{
-				if (!sym_codec.read_huffman_table(mod_model))
-				{
-					BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: fail 6\n");
-					return false;
-				}
-				if (!mod_model.is_valid())
-				{
-					BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: fail 6a\n");
-					return false;
-				}
-			}
-
-			for (uint32_t i = 0; i < num_selectors; i++)
-			{
-				uint32_t pal_index = 0;
-				if (pal_bits)
-					pal_index = sym_codec.get_bits(pal_bits);
-
-				uint32_t mod_index = 0;
-				if (mod_bits)
-					mod_index = sym_codec.decode_huffman(mod_model);
-
-				if (pal_index >= m_pGlobal_sel_codebook->size())
-				{
-					BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: fail 7z\n");
-					return false;
-				}
-
-				const etc1_selector_palette_entry e(m_pGlobal_sel_codebook->get_entry(pal_index, etc1_global_palette_entry_modifier(mod_index)));
-
-				// TODO: Optimize this
-				for (uint32_t y = 0; y < 4; y++)
-					for (uint32_t x = 0; x < 4; x++)
-						m_local_selectors[i].set_selector(x, y, e[x + y * 4]);
-
-				m_local_selectors[i].init_flags();
-			}
+			BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: global selector codebooks are unsupported\n");
+			return false;
 		}
 		else
 		{
@@ -7692,146 +7632,70 @@ namespace basist
 
 			if (used_hybrid_selector_cb)
 			{
-				const uint32_t pal_bits = sym_codec.get_bits(4);
-				const uint32_t mod_bits = sym_codec.get_bits(4);
+				BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: hybrid global selector codebooks are unsupported\n");
+				return false;
+			}
+				
+			const bool used_raw_encoding = (sym_codec.get_bits(1) == 1);
 
-				basist::huffman_decoding_table uses_global_cb_bitflags_model;
-				if (!sym_codec.read_huffman_table(uses_global_cb_bitflags_model))
+			if (used_raw_encoding)
+			{
+				for (uint32_t i = 0; i < num_selectors; i++)
 				{
-					BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: fail 7\n");
-					return false;
-				}
-				if (!uses_global_cb_bitflags_model.is_valid())
-				{
-					BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: fail 7a\n");
-					return false;
-				}
-
-				basist::huffman_decoding_table global_mod_indices_model;
-				if (mod_bits)
-				{
-					if (!sym_codec.read_huffman_table(global_mod_indices_model))
+					for (uint32_t j = 0; j < 4; j++)
 					{
-						BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: fail 8\n");
-						return false;
-					}
-					if (!global_mod_indices_model.is_valid())
-					{
-						BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: fail 8a\n");
-						return false;
-					}
-				}
+						uint32_t cur_byte = sym_codec.get_bits(8);
 
-				uint32_t cur_uses_global_cb_bitflags = 0;
-				uint32_t uses_global_cb_bitflags_remaining = 0;
-
-				for (uint32_t q = 0; q < num_selectors; q++)
-				{
-					if (!uses_global_cb_bitflags_remaining)
-					{
-						cur_uses_global_cb_bitflags = sym_codec.decode_huffman(uses_global_cb_bitflags_model);
-
-						uses_global_cb_bitflags_remaining = 8;
-					}
-					uses_global_cb_bitflags_remaining--;
-
-					const bool used_global_cb_flag = (cur_uses_global_cb_bitflags & 1) != 0;
-					cur_uses_global_cb_bitflags >>= 1;
-
-					if (used_global_cb_flag)
-					{
-						const uint32_t pal_index = pal_bits ? sym_codec.get_bits(pal_bits) : 0;
-						const uint32_t mod_index = mod_bits ? sym_codec.decode_huffman(global_mod_indices_model) : 0;
-
-						if (pal_index >= m_pGlobal_sel_codebook->size())
-						{
-							BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: fail 8b\n");
-							return false;
-						}
-
-						const etc1_selector_palette_entry e(m_pGlobal_sel_codebook->get_entry(pal_index, etc1_global_palette_entry_modifier(mod_index)));
-
-						for (uint32_t y = 0; y < 4; y++)
-							for (uint32_t x = 0; x < 4; x++)
-								m_local_selectors[q].set_selector(x, y, e[x + y * 4]);
-					}
-					else
-					{
-						for (uint32_t j = 0; j < 4; j++)
-						{
-							uint32_t cur_byte = sym_codec.get_bits(8);
-
-							for (uint32_t k = 0; k < 4; k++)
-								m_local_selectors[q].set_selector(k, j, (cur_byte >> (k * 2)) & 3);
-						}
+						for (uint32_t k = 0; k < 4; k++)
+							m_local_selectors[i].set_selector(k, j, (cur_byte >> (k * 2)) & 3);
 					}
 
-					m_local_selectors[q].init_flags();
+					m_local_selectors[i].init_flags();
 				}
 			}
 			else
 			{
-				const bool used_raw_encoding = (sym_codec.get_bits(1) == 1);
-
-				if (used_raw_encoding)
+				if (!sym_codec.read_huffman_table(delta_selector_pal_model))
 				{
-					for (uint32_t i = 0; i < num_selectors; i++)
+					BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: fail 10\n");
+					return false;
+				}
+
+				if ((num_selectors > 1) && (!delta_selector_pal_model.is_valid()))
+				{
+					BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: fail 10a\n");
+					return false;
+				}
+
+				uint8_t prev_bytes[4] = { 0, 0, 0, 0 };
+
+				for (uint32_t i = 0; i < num_selectors; i++)
+				{
+					if (!i)
 					{
 						for (uint32_t j = 0; j < 4; j++)
 						{
 							uint32_t cur_byte = sym_codec.get_bits(8);
-
-							for (uint32_t k = 0; k < 4; k++)
-								m_local_selectors[i].set_selector(k, j, (cur_byte >> (k * 2)) & 3);
-						}
-
-						m_local_selectors[i].init_flags();
-					}
-				}
-				else
-				{
-					if (!sym_codec.read_huffman_table(delta_selector_pal_model))
-					{
-						BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: fail 10\n");
-						return false;
-					}
-
-					if ((num_selectors > 1) && (!delta_selector_pal_model.is_valid()))
-					{
-						BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_palettes: fail 10a\n");
-						return false;
-					}
-
-					uint8_t prev_bytes[4] = { 0, 0, 0, 0 };
-
-					for (uint32_t i = 0; i < num_selectors; i++)
-					{
-						if (!i)
-						{
-							for (uint32_t j = 0; j < 4; j++)
-							{
-								uint32_t cur_byte = sym_codec.get_bits(8);
-								prev_bytes[j] = static_cast<uint8_t>(cur_byte);
-
-								for (uint32_t k = 0; k < 4; k++)
-									m_local_selectors[i].set_selector(k, j, (cur_byte >> (k * 2)) & 3);
-							}
-							m_local_selectors[i].init_flags();
-							continue;
-						}
-
-						for (uint32_t j = 0; j < 4; j++)
-						{
-							int delta_byte = sym_codec.decode_huffman(delta_selector_pal_model);
-
-							uint32_t cur_byte = delta_byte ^ prev_bytes[j];
 							prev_bytes[j] = static_cast<uint8_t>(cur_byte);
 
 							for (uint32_t k = 0; k < 4; k++)
 								m_local_selectors[i].set_selector(k, j, (cur_byte >> (k * 2)) & 3);
 						}
 						m_local_selectors[i].init_flags();
+						continue;
 					}
+
+					for (uint32_t j = 0; j < 4; j++)
+					{
+						int delta_byte = sym_codec.decode_huffman(delta_selector_pal_model);
+
+						uint32_t cur_byte = delta_byte ^ prev_bytes[j];
+						prev_bytes[j] = static_cast<uint8_t>(cur_byte);
+
+						for (uint32_t k = 0; k < 4; k++)
+							m_local_selectors[i].set_selector(k, j, (cur_byte >> (k * 2)) & 3);
+					}
+					m_local_selectors[i].init_flags();
 				}
 			}
 		}
@@ -7899,6 +7763,12 @@ namespace basist
 		}
 
 		m_selector_history_buf_size = sym_codec.get_bits(13);
+		// Check for bogus values.
+		if (!m_selector_history_buf_size)
+		{
+			BASISU_DEVEL_ERROR("basisu_lowlevel_etc1s_transcoder::decode_tables: fail 5\n");
+			return false;
+		}
 
 		sym_codec.stop();
 
@@ -7979,8 +7849,11 @@ namespace basist
 
 		decoder_etc_block block;
 		memset(&block, 0, sizeof(block));
+				
+		//block.set_flip_bit(true);
+		// Setting the flip bit to false to be compatible with the Khronos KDFS.
+		block.set_flip_bit(false);
 
-		block.set_flip_bit(true);
 		block.set_diff_bit(true);
 
 		void* pPVRTC_work_mem = nullptr;
@@ -8741,7 +8614,7 @@ namespace basist
 			if (!output_row_pitch_in_blocks_or_pixels)
 				output_row_pitch_in_blocks_or_pixels = orig_width;
 
-			if (!output_rows_in_pixels)
+			if (!output_rows_in_pixels) 
 				output_rows_in_pixels = orig_height;
 
 			// Now make sure the output buffer is large enough, or we'll overwrite memory.
@@ -9440,6 +9313,12 @@ namespace basist
 				{
 					switch (fmt)
 					{
+					case block_format::cUASTC_4x4:
+					{
+						memcpy(pDst_block, pSource_block, sizeof(uastc_block));
+						status = true;
+						break;
+					}
 					case block_format::cETC1:
 					{
 						if (from_alpha)
@@ -9906,8 +9785,7 @@ namespace basist
 		return status;
 	}
 	
-	basisu_transcoder::basisu_transcoder(const etc1_global_selector_codebook* pGlobal_sel_codebook) :
-		m_lowlevel_etc1s_decoder(pGlobal_sel_codebook),
+	basisu_transcoder::basisu_transcoder() :
 		m_ready_to_transcode(false)
 	{
 	}
@@ -10778,7 +10656,7 @@ namespace basist
 			return false;
 		}
 
-		const bool transcode_alpha_data_to_opaque_formats = (decode_flags & cDecodeFlagsTranscodeAlphaDataToOpaqueFormats) != 0;
+		//const bool transcode_alpha_data_to_opaque_formats = (decode_flags & cDecodeFlagsTranscodeAlphaDataToOpaqueFormats) != 0;
 
 		if (decode_flags & cDecodeFlagsPVRTCDecodeToNextPow2)
 		{
@@ -11003,6 +10881,7 @@ namespace basist
 		case block_format::cRGB565: return "RGB565";
 		case block_format::cBGR565: return "BGR565";
 		case block_format::cRGBA4444: return "RGBA4444";
+		case block_format::cUASTC_4x4: return "UASTC_4x4";
 		case block_format::cFXT1_RGB: return "FXT1_RGB";
 		case block_format::cPVRTC2_4_RGB: return "PVRTC2_4_RGB";
 		case block_format::cPVRTC2_4_RGBA: return "PVRTC2_4_RGBA";
@@ -12569,12 +12448,8 @@ namespace basist
 				bits = read_bits64(blk.m_bytes, bit_ofs, basisu::minimum<int>(64, 128 - (int)bit_ofs));
 			else
 			{
-#ifdef __EMSCRIPTEN__
 				bits = blk.m_dwords[2];
 				bits |= (((uint64_t)blk.m_dwords[3]) << 32U);
-#else
-				bits = blk.m_qwords[1];
-#endif
 				
 				if (bit_ofs >= 64U)
 					bits >>= (bit_ofs - 64U);
@@ -16724,8 +16599,8 @@ namespace basist
 #if BASISD_SUPPORT_KTX2
 	const uint8_t g_ktx2_file_identifier[12] = { 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x32, 0x30, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A };
 
-	ktx2_transcoder::ktx2_transcoder(basist::etc1_global_selector_codebook* pGlobal_sel_codebook) :
-		m_etc1s_transcoder(pGlobal_sel_codebook)
+	ktx2_transcoder::ktx2_transcoder() :
+		m_etc1s_transcoder()
 	{
 		clear();
 	}
@@ -16992,7 +16867,7 @@ namespace basist
 		{
 			m_format = basist::basis_tex_format::cETC1S;
 			
-			// 3.10.2: "Whether the image has 1 or 2 slices can be determined from the DFD’s sample count."
+			// 3.10.2: "Whether the image has 1 or 2 slices can be determined from the DFD's sample count."
 			// If m_has_alpha is true it may be 2-channel RRRG or 4-channel RGBA, but we let the caller deal with that.
 			m_has_alpha = (m_header.m_dfd_byte_length == 60);
 			
@@ -17352,7 +17227,7 @@ namespace basist
 			return false;
 		}
 
-		if (!uncomp_data.try_resize(uncomp_size))
+		if (!uncomp_data.try_resize((size_t)uncomp_size))
 		{
 			BASISU_DEVEL_ERROR("ktx2_transcoder::decompress_level_data: Out of memory\n");
 			return false;

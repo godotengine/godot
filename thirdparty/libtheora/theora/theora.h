@@ -34,41 +34,41 @@ extern "C"
  *
  * \section intro Introduction
  *
- * This is the documentation for the libtheora legacy C API, declared in 
+ * This is the documentation for the libtheora legacy C API, declared in
  * the theora.h header, which describes the old interface used before
  * the 1.0 release. This API was widely deployed for several years and
- * remains supported, but for new code we recommend the cleaner API 
+ * remains supported, but for new code we recommend the cleaner API
  * declared in theoradec.h and theoraenc.h.
  *
  * libtheora is the reference implementation for
  * <a href="http://www.theora.org/">Theora</a>, a free video codec.
  * Theora is derived from On2's VP3 codec with improved integration with
  * Ogg multimedia formats by <a href="http://www.xiph.org/">Xiph.Org</a>.
- * 
+ *
  * \section overview Overview
  *
- * This library will both decode and encode theora packets to/from raw YUV 
+ * This library will both decode and encode theora packets to/from raw YUV
  * frames.  In either case, the packets will most likely either come from or
- * need to be embedded in an Ogg stream.  Use 
- * <a href="http://xiph.org/ogg/">libogg</a> or 
+ * need to be embedded in an Ogg stream.  Use
+ * <a href="http://xiph.org/ogg/">libogg</a> or
  * <a href="http://www.annodex.net/software/liboggz/index.html">liboggz</a>
  * to extract/package these packets.
  *
  * \section decoding Decoding Process
  *
  * Decoding can be separated into the following steps:
- * -# initialise theora_info and theora_comment structures using 
+ * -# initialise theora_info and theora_comment structures using
  *    theora_info_init() and theora_comment_init():
  \verbatim
  theora_info     info;
  theora_comment  comment;
-   
+
  theora_info_init(&info);
  theora_comment_init(&comment);
  \endverbatim
- * -# retrieve header packets from Ogg stream (there should be 3) and decode 
- *    into theora_info and theora_comment structures using 
- *    theora_decode_header().  See \ref identification for more information on 
+ * -# retrieve header packets from Ogg stream (there should be 3) and decode
+ *    into theora_info and theora_comment structures using
+ *    theora_decode_header().  See \ref identification for more information on
  *    identifying which packets are theora packets.
  \verbatim
  int i;
@@ -79,14 +79,14 @@ extern "C"
  }
  \endverbatim
  * -# initialise the decoder based on the information retrieved into the
- *    theora_info struct by theora_decode_header().  You will need a 
+ *    theora_info struct by theora_decode_header().  You will need a
  *    theora_state struct.
  \verbatim
  theora_state state;
- 
+
  theora_decode_init(&state, &info);
  \endverbatim
- * -# pass in packets and retrieve decoded frames!  See the yuv_buffer 
+ * -# pass in packets and retrieve decoded frames!  See the yuv_buffer
  *    documentation for information on how to retrieve raw YUV data.
  \verbatim
  yuf_buffer buffer;
@@ -96,20 +96,20 @@ extern "C"
    theora_decode_YUVout(&state, &buffer);
  }
  \endverbatim
- *  
+ *
  *
  * \subsection identification Identifying Theora Packets
  *
- * All streams inside an Ogg file have a unique serial_no attached to the 
- * stream.  Typically, you will want to 
- *  - retrieve the serial_no for each b_o_s (beginning of stream) page 
- *    encountered within the Ogg file; 
- *  - test the first (only) packet on that page to determine if it is a theora 
+ * All streams inside an Ogg file have a unique serial_no attached to the
+ * stream.  Typically, you will want to
+ *  - retrieve the serial_no for each b_o_s (beginning of stream) page
+ *    encountered within the Ogg file;
+ *  - test the first (only) packet on that page to determine if it is a theora
  *    packet;
- *  - once you have found a theora b_o_s page then use the retrieved serial_no 
+ *  - once you have found a theora b_o_s page then use the retrieved serial_no
  *    to identify future packets belonging to the same theora stream.
- * 
- * Note that you \e cannot use theora_packet_isheader() to determine if a 
+ *
+ * Note that you \e cannot use theora_packet_isheader() to determine if a
  * packet is a theora packet or not, as this function does not perform any
  * checking beyond whether a header bit is present.  Instead, use the
  * theora_decode_header() function and check the return value; or examine the
@@ -124,9 +124,9 @@ extern "C"
  * A YUV buffer for passing uncompressed frames to and from the codec.
  * This holds a Y'CbCr frame in planar format. The CbCr planes can be
  * subsampled and have their own separate dimensions and row stride
- * offsets. Note that the strides may be negative in some 
+ * offsets. Note that the strides may be negative in some
  * configurations. For theora the width and height of the largest plane
- * must be a multiple of 16. The actual meaningful picture size and 
+ * must be a multiple of 16. The actual meaningful picture size and
  * offset are stored in the theora_info structure; frames returned by
  * the decoder may need to be cropped for display.
  *
@@ -135,8 +135,8 @@ extern "C"
  * are ordered from left to right.
  *
  * During decode, the yuv_buffer struct is allocated by the user, but all
- * fields (including luma and chroma pointers) are filled by the library.  
- * These pointers address library-internal memory and their contents should 
+ * fields (including luma and chroma pointers) are filled by the library.
+ * These pointers address library-internal memory and their contents should
  * not be modified.
  *
  * Conversely, during encode the user allocates the struct and fills out all
@@ -179,14 +179,14 @@ typedef enum {
   OC_PF_420,    /**< Chroma subsampling by 2 in each direction (4:2:0) */
   OC_PF_RSVD,   /**< Reserved value */
   OC_PF_422,    /**< Horizonatal chroma subsampling by 2 (4:2:2) */
-  OC_PF_444,    /**< No chroma subsampling at all (4:4:4) */
+  OC_PF_444     /**< No chroma subsampling at all (4:4:4) */
 } theora_pixelformat;
 
 /**
  * Theora bitstream info.
  * Contains the basic playback parameters for a stream,
  * corresponding to the initial 'info' header packet.
- * 
+ *
  * Encoded theora frames must be a multiple of 16 in width and height.
  * To handle other frame sizes, a crop rectangle is specified in
  * frame_height and frame_width, offset_x and * offset_y. The offset
@@ -198,10 +198,10 @@ typedef enum {
  * fraction. Aspect ratio is also stored as a rational fraction, and
  * refers to the aspect ratio of the frame pixels, not of the
  * overall frame itself.
- * 
+ *
  * See <a href="http://svn.xiph.org/trunk/theora/examples/encoder_example.c">
  * examples/encoder_example.c</a> for usage examples of the
- * other paramters and good default settings for the encoder parameters.
+ * other parameters and good default settings for the encoder parameters.
  */
 typedef struct {
   ogg_uint32_t  width;		/**< encoded frame width  */
@@ -253,14 +253,14 @@ typedef struct{
 
 } theora_state;
 
-/** 
+/**
  * Comment header metadata.
  *
  * This structure holds the in-stream metadata corresponding to
  * the 'comment' header packet.
  *
  * Meta data is stored as a series of (tag, value) pairs, in
- * length-encoded string vectors. The first occurence of the 
+ * length-encoded string vectors. The first occurence of the
  * '=' character delimits the tag and value. A particular tag
  * may occur more than once. The character set encoding for
  * the strings is always UTF-8, but the tag names are limited
@@ -285,7 +285,7 @@ typedef struct theora_comment{
 /* \anchor decctlcodes_old
  * These are the available request codes for theora_control()
  * when called with a decoder instance.
- * By convention decoder control codes are odd, to distinguish 
+ * By convention decoder control codes are odd, to distinguish
  * them from \ref encctlcodes_old "encoder control codes" which
  * are even.
  *
@@ -306,7 +306,7 @@ typedef struct theora_comment{
 #define TH_DECCTL_GET_PPLEVEL_MAX (1)
 
 /**Set the post-processing level.
- * Sets the level of post-processing to use when decoding the 
+ * Sets the level of post-processing to use when decoding the
  * compressed stream. This must be a value between zero (off)
  * and the maximum returned by TH_DECCTL_GET_PPLEVEL_MAX.
  */
@@ -345,9 +345,9 @@ typedef struct theora_comment{
  * \param[in] buf #th_quant_info
  * \retval OC_FAULT  \a theora_state is <tt>NULL</tt>.
  * \retval OC_EINVAL Encoding has already begun, the quantization parameters
- *                    are not acceptable to this version of the encoder, 
- *                    \a buf is <tt>NULL</tt> and \a buf_sz is not zero, 
- *                    or \a buf is non-<tt>NULL</tt> and \a buf_sz is 
+ *                    are not acceptable to this version of the encoder,
+ *                    \a buf is <tt>NULL</tt> and \a buf_sz is not zero,
+ *                    or \a buf is non-<tt>NULL</tt> and \a buf_sz is
  *                    not <tt>sizeof(#th_quant_info)</tt>.
  * \retval OC_IMPL   Not supported by this implementation.*/
 #define TH_ENCCTL_SET_QUANT_PARAMS (2)
@@ -424,7 +424,7 @@ typedef struct theora_comment{
 #define OC_NEWPACKET   -25      /**< Packet is an (ignorable) unhandled extension */
 #define OC_DUPFRAME    1        /**< Packet is a dropped frame */
 
-/** 
+/**
  * Retrieve a human-readable string to identify the encoder vendor and version.
  * \returns A version string.
  */
@@ -462,7 +462,7 @@ extern int theora_encode_init(theora_state *th, theora_info *ti);
 extern int theora_encode_YUVin(theora_state *t, yuv_buffer *yuv);
 
 /**
- * Request the next packet of encoded video. 
+ * Request the next packet of encoded video.
  * The encoded data is placed in a user-provided ogg_packet structure.
  * \param t A theora_state handle previously initialized for encoding.
  * \param last_p whether this is the last packet the encoder should produce.
@@ -496,7 +496,11 @@ extern int theora_encode_header(theora_state *t, ogg_packet *op);
  * \param op An ogg_packet structure to fill. libtheora will set all
  *           elements of this structure, including a pointer to the encoded
  *           comment data. The memory for the comment data is owned by
- *           libtheora.
+ *           the application, and must be freed by it using _ogg_free().
+ *           On some systems (such as Windows when using dynamic linking), this
+ *           may mean the free is executed in a different module from the
+ *           malloc, which will crash; there is no way to free this memory on
+ *           such systems.
  * \retval 0 Success
  */
 extern int theora_encode_comment(theora_comment *tc, ogg_packet *op);
@@ -581,8 +585,8 @@ extern int theora_decode_packetin(theora_state *th,ogg_packet *op);
  * \param th A theora_state handle previously initialized for decoding.
  * \param yuv A yuv_buffer in which libtheora should place the decoded data.
  *            Note that the buffer struct itself is allocated by the user, but
- *            that the luma and chroma pointers will be filled in by the 
- *            library.  Also note that these luma and chroma regions should be 
+ *            that the luma and chroma pointers will be filled in by the
+ *            library.  Also note that these luma and chroma regions should be
  *            considered read-only by the user.
  * \retval 0 Success
  */
@@ -617,22 +621,22 @@ extern int theora_packet_iskeyframe(ogg_packet *op);
 /**
  * Report the granulepos shift radix
  *
- * When embedded in Ogg, Theora uses a two-part granulepos, 
+ * When embedded in Ogg, Theora uses a two-part granulepos,
  * splitting the 64-bit field into two pieces. The more-significant
  * section represents the frame count at the last keyframe,
  * and the less-significant section represents the count of
  * frames since the last keyframe. In this way the overall
  * field is still non-decreasing with time, but usefully encodes
  * a pointer to the last keyframe, which is necessary for
- * correctly restarting decode after a seek. 
+ * correctly restarting decode after a seek.
  *
  * This function reports the number of bits used to represent
  * the distance to the last keyframe, and thus how the granulepos
  * field must be shifted or masked to obtain the two parts.
- * 
+ *
  * Since libtheora returns compressed data in an ogg_packet
  * structure, this may be generally useful even if the Theora
- * packets are not being used in an Ogg container. 
+ * packets are not being used in an Ogg container.
  *
  * \param ti A previously initialized theora_info struct
  * \returns The bit shift dividing the two granulepos fields
@@ -644,7 +648,7 @@ int theora_granule_shift(theora_info *ti);
 /**
  * Convert a granulepos to an absolute frame index, starting at 0.
  * The granulepos is interpreted in the context of a given theora_state handle.
- * 
+ *
  * Note that while the granulepos encodes the frame count (i.e. starting
  * from 1) this call returns the frame index, starting from zero. Thus
  * One can calculate the presentation time by multiplying the index by
@@ -670,9 +674,7 @@ extern ogg_int64_t theora_granule_frame(theora_state *th,ogg_int64_t granulepos)
  *          This is the "end time" for the frame, or the latest time it should
  *           be displayed.
  *          It is not the presentation time.
- * \retval -1. The given granulepos is undefined (i.e. negative), or
- * \retval -1. The function has been disabled because floating 
- *              point support is not available.
+ * \retval -1. The given granulepos is undefined (i.e. negative).
  */
 extern double theora_granule_time(theora_state *th,ogg_int64_t granulepos);
 
@@ -699,7 +701,7 @@ extern void theora_clear(theora_state *t);
 
 /**
  * Initialize an allocated theora_comment structure
- * \param tc An allocated theora_comment structure 
+ * \param tc An allocated theora_comment structure
  **/
 extern void theora_comment_init(theora_comment *tc);
 
@@ -720,7 +722,7 @@ extern void theora_comment_add(theora_comment *tc, char *comment);
 /**
  * Add a comment to an initialized theora_comment structure.
  * \param tc A previously initialized theora comment structure
- * \param tag A null-terminated string containing the tag 
+ * \param tag A null-terminated string containing the tag
  *            associated with the comment.
  * \param value The corresponding value as a null-terminated string
  *
@@ -752,9 +754,9 @@ extern char *theora_comment_query(theora_comment *tc, char *tag, int count);
  *  \param tc An initialized theora_comment structure
  *  \param tag The tag to look up
  *  \returns The number on instances of a particular tag.
- * 
+ *
  *  Call this first when querying for a specific tag and then interate
- *  over the number of instances with separate calls to 
+ *  over the number of instances with separate calls to
  *  theora_comment_query() to retrieve all instances in order.
  **/
 extern int   theora_comment_query_count(theora_comment *tc, char *tag);
@@ -769,7 +771,7 @@ extern void  theora_comment_clear(theora_comment *tc);
  * This is used to provide advanced control the encoding process.
  * \param th     A #theora_state handle.
  * \param req    The control code to process.
- *                See \ref encctlcodes_old "the list of available 
+ *                See \ref encctlcodes_old "the list of available
  *			control codes" for details.
  * \param buf    The parameters for this control code.
  * \param buf_sz The size of the parameter buffer.*/

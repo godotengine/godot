@@ -1,119 +1,90 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Generic6DOFJoint3D" inherits="Joint3D" version="4.0">
+<class name="Generic6DOFJoint3D" inherits="Joint3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		The generic 6-degrees-of-freedom joint can implement a variety of joint types by locking certain axes' rotation or translation.
+		A physics joint that allows for complex movement and rotation between two 3D physics bodies.
 	</brief_description>
 	<description>
-		The first 3 DOF axes are linear axes, which represent translation of Bodies, and the latter 3 DOF axes represent the angular motion. Each axis can be either locked, or limited.
+		The [Generic6DOFJoint3D] (6 Degrees Of Freedom) joint allows for implementing custom types of joints by locking the rotation and translation of certain axes.
+		The first 3 DOF represent the linear motion of the physics bodies and the last 3 DOF represent the angular motion of the physics bodies. Each axis can be either locked, or limited.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="get_flag_x" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
 			<description>
 			</description>
 		</method>
 		<method name="get_flag_y" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
 			<description>
 			</description>
 		</method>
 		<method name="get_flag_z" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
 			<description>
 			</description>
 		</method>
 		<method name="get_param_x" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param">
-			</argument>
+			<return type="float" />
+			<param index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param" />
 			<description>
 			</description>
 		</method>
 		<method name="get_param_y" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param">
-			</argument>
+			<return type="float" />
+			<param index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param" />
 			<description>
 			</description>
 		</method>
 		<method name="get_param_z" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param">
-			</argument>
+			<return type="float" />
+			<param index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param" />
 			<description>
 			</description>
 		</method>
 		<method name="set_flag_x">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
+			<param index="1" name="value" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_flag_y">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
+			<param index="1" name="value" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_flag_z">
-			<return type="void">
-			</return>
-			<argument index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />
+			<param index="1" name="value" type="bool" />
 			<description>
 			</description>
 		</method>
 		<method name="set_param_x">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param" />
+			<param index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_param_y">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param" />
+			<param index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>
 		<method name="set_param_z">
-			<return type="void">
-			</return>
-			<argument index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param">
-			</argument>
-			<argument index="1" name="value" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="Generic6DOFJoint3D.Param" />
+			<param index="1" name="value" type="float" />
 			<description>
 			</description>
 		</method>
@@ -132,7 +103,7 @@
 		<member name="angular_limit_x/force_limit" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 			The maximum amount of force that can occur, when rotating around the X axis.
 		</member>
-		<member name="angular_limit_x/lower_angle" type="float" setter="_set_angular_lo_limit_x" getter="_get_angular_lo_limit_x" default="0.0">
+		<member name="angular_limit_x/lower_angle" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 			The minimum rotation in negative direction to break loose and rotate around the X axis.
 		</member>
 		<member name="angular_limit_x/restitution" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
@@ -141,11 +112,11 @@
 		<member name="angular_limit_x/softness" type="float" setter="set_param_x" getter="get_param_x" default="0.5">
 			The speed of all rotations across the X axis.
 		</member>
-		<member name="angular_limit_x/upper_angle" type="float" setter="_set_angular_hi_limit_x" getter="_get_angular_hi_limit_x" default="0.0">
+		<member name="angular_limit_x/upper_angle" type="float" setter="set_param_x" getter="get_param_x" default="0.0">
 			The minimum rotation in positive direction to break loose and rotate around the X axis.
 		</member>
 		<member name="angular_limit_y/damping" type="float" setter="set_param_y" getter="get_param_y" default="1.0">
-			The amount of rotational damping across the Y axis. The lower, the more dampening occurs.
+			The amount of rotational damping across the Y axis. The lower, the more damping occurs.
 		</member>
 		<member name="angular_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y" default="true">
 			If [code]true[/code], rotation across the Y axis is limited.
@@ -156,7 +127,7 @@
 		<member name="angular_limit_y/force_limit" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 			The maximum amount of force that can occur, when rotating around the Y axis.
 		</member>
-		<member name="angular_limit_y/lower_angle" type="float" setter="_set_angular_lo_limit_y" getter="_get_angular_lo_limit_y" default="0.0">
+		<member name="angular_limit_y/lower_angle" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 			The minimum rotation in negative direction to break loose and rotate around the Y axis.
 		</member>
 		<member name="angular_limit_y/restitution" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
@@ -165,11 +136,11 @@
 		<member name="angular_limit_y/softness" type="float" setter="set_param_y" getter="get_param_y" default="0.5">
 			The speed of all rotations across the Y axis.
 		</member>
-		<member name="angular_limit_y/upper_angle" type="float" setter="_set_angular_hi_limit_y" getter="_get_angular_hi_limit_y" default="0.0">
+		<member name="angular_limit_y/upper_angle" type="float" setter="set_param_y" getter="get_param_y" default="0.0">
 			The minimum rotation in positive direction to break loose and rotate around the Y axis.
 		</member>
 		<member name="angular_limit_z/damping" type="float" setter="set_param_z" getter="get_param_z" default="1.0">
-			The amount of rotational damping across the Z axis. The lower, the more dampening occurs.
+			The amount of rotational damping across the Z axis. The lower, the more damping occurs.
 		</member>
 		<member name="angular_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z" default="true">
 			If [code]true[/code], rotation across the Z axis is limited.
@@ -180,7 +151,7 @@
 		<member name="angular_limit_z/force_limit" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 			The maximum amount of force that can occur, when rotating around the Z axis.
 		</member>
-		<member name="angular_limit_z/lower_angle" type="float" setter="_set_angular_lo_limit_z" getter="_get_angular_lo_limit_z" default="0.0">
+		<member name="angular_limit_z/lower_angle" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 			The minimum rotation in negative direction to break loose and rotate around the Z axis.
 		</member>
 		<member name="angular_limit_z/restitution" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
@@ -189,7 +160,7 @@
 		<member name="angular_limit_z/softness" type="float" setter="set_param_z" getter="get_param_z" default="0.5">
 			The speed of all rotations across the Z axis.
 		</member>
-		<member name="angular_limit_z/upper_angle" type="float" setter="_set_angular_hi_limit_z" getter="_get_angular_hi_limit_z" default="0.0">
+		<member name="angular_limit_z/upper_angle" type="float" setter="set_param_z" getter="get_param_z" default="0.0">
 			The minimum rotation in positive direction to break loose and rotate around the Z axis.
 		</member>
 		<member name="angular_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x" default="false">
@@ -387,7 +358,7 @@
 			The speed of all rotations across the axes.
 		</constant>
 		<constant name="PARAM_ANGULAR_DAMPING" value="13" enum="Param">
-			The amount of rotational damping across the axes. The lower, the more dampening occurs.
+			The amount of rotational damping across the axes. The lower, the more damping occurs.
 		</constant>
 		<constant name="PARAM_ANGULAR_RESTITUTION" value="14" enum="Param">
 			The amount of rotational restitution across the axes. The lower, the more restitution occurs.

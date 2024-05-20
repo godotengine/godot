@@ -1,41 +1,47 @@
-/*************************************************************************/
-/*  gdscript_tokenizer.h                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_tokenizer.h                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef GDSCRIPT_TOKENIZER_H
 #define GDSCRIPT_TOKENIZER_H
 
+#include "core/templates/hash_map.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/list.h"
-#include "core/templates/map.h"
-#include "core/templates/set.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
+
+#ifdef MINGW_ENABLED
+#undef CONST
+#undef IN
+#undef VOID
+#endif
 
 class GDScriptTokenizer {
 public:
@@ -78,6 +84,7 @@ public:
 			PLUS,
 			MINUS,
 			STAR,
+			STAR_STAR,
 			SLASH,
 			PERCENT,
 			// Assignment
@@ -85,6 +92,7 @@ public:
 			PLUS_EQUAL,
 			MINUS_EQUAL,
 			STAR_EQUAL,
+			STAR_STAR_EQUAL,
 			SLASH_EQUAL,
 			PERCENT_EQUAL,
 			LESS_LESS_EQUAL,
@@ -103,6 +111,7 @@ public:
 			PASS,
 			RETURN,
 			MATCH,
+			WHEN,
 			// Keywords
 			AS,
 			ASSERT,
@@ -169,21 +178,23 @@ public:
 		String source;
 
 		const char *get_name() const;
+		bool can_precede_bin_op() const;
 		bool is_identifier() const;
 		bool is_node_name() const;
-		StringName get_identifier() const { return source; }
+		StringName get_identifier() const { return literal; }
 
 		Token(Type p_type) {
 			type = p_type;
 		}
 
-		Token() {
-		}
+		Token() {}
 	};
 
 #ifdef TOOLS_ENABLED
 	struct CommentData {
 		String comment;
+		// true: Comment starts at beginning of line or after indentation.
+		// false: Inline comment (starts after some code).
 		bool new_line = false;
 		CommentData() {}
 		CommentData(const String &p_comment, bool p_new_line) {
@@ -191,12 +202,26 @@ public:
 			new_line = p_new_line;
 		}
 	};
-	const Map<int, CommentData> &get_comments() const {
-		return comments;
-	}
+	virtual const HashMap<int, CommentData> &get_comments() const = 0;
 #endif // TOOLS_ENABLED
 
-private:
+	static String get_token_name(Token::Type p_token_type);
+
+	virtual int get_cursor_line() const = 0;
+	virtual int get_cursor_column() const = 0;
+	virtual void set_cursor_position(int p_line, int p_column) = 0;
+	virtual void set_multiline_mode(bool p_state) = 0;
+	virtual bool is_past_cursor() const = 0;
+	virtual void push_expression_indented_block() = 0; // For lambdas, or blocks inside expressions.
+	virtual void pop_expression_indented_block() = 0; // For lambdas, or blocks inside expressions.
+	virtual bool is_text() = 0;
+
+	virtual Token scan() = 0;
+
+	virtual ~GDScriptTokenizer() {}
+};
+
+class GDScriptTokenizerText : public GDScriptTokenizer {
 	String source;
 	const char32_t *_source = nullptr;
 	const char32_t *_current = nullptr;
@@ -214,6 +239,7 @@ private:
 	bool multiline_mode = false;
 	List<Token> error_stack;
 	bool pending_newline = false;
+	Token last_token;
 	Token last_newline;
 	int pending_indents = 0;
 	List<int> indent_stack;
@@ -222,9 +248,13 @@ private:
 	char32_t indent_char = '\0';
 	int position = 0;
 	int length = 0;
+	Vector<int> continuation_lines;
+#ifdef DEBUG_ENABLED
+	Vector<String> keyword_list;
+#endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
-	Map<int, CommentData> comments;
+	HashMap<int, CommentData> comments;
 #endif // TOOLS_ENABLED
 
 	_FORCE_INLINE_ bool _is_at_end() { return position >= length; }
@@ -233,8 +263,13 @@ private:
 	bool has_error() const { return !error_stack.is_empty(); }
 	Token pop_error();
 	char32_t _advance();
+	String _get_indent_char_name(char32_t ch);
 	void _skip_whitespace();
 	void check_indent();
+
+#ifdef DEBUG_ENABLED
+	void make_keyword_list();
+#endif // DEBUG_ENABLED
 
 	Token make_error(const String &p_message);
 	void push_error(const String &p_message);
@@ -254,20 +289,28 @@ private:
 	Token annotation();
 
 public:
-	Token scan();
-
 	void set_source_code(const String &p_source_code);
 
-	int get_cursor_line() const;
-	int get_cursor_column() const;
-	void set_cursor_position(int p_line, int p_column);
-	void set_multiline_mode(bool p_state);
-	bool is_past_cursor() const;
-	static String get_token_name(Token::Type p_token_type);
-	void push_expression_indented_block(); // For lambdas, or blocks inside expressions.
-	void pop_expression_indented_block(); // For lambdas, or blocks inside expressions.
+	const Vector<int> &get_continuation_lines() const { return continuation_lines; }
 
-	GDScriptTokenizer();
+	virtual int get_cursor_line() const override;
+	virtual int get_cursor_column() const override;
+	virtual void set_cursor_position(int p_line, int p_column) override;
+	virtual void set_multiline_mode(bool p_state) override;
+	virtual bool is_past_cursor() const override;
+	virtual void push_expression_indented_block() override; // For lambdas, or blocks inside expressions.
+	virtual void pop_expression_indented_block() override; // For lambdas, or blocks inside expressions.
+	virtual bool is_text() override { return true; }
+
+#ifdef TOOLS_ENABLED
+	virtual const HashMap<int, CommentData> &get_comments() const override {
+		return comments;
+	}
+#endif // TOOLS_ENABLED
+
+	virtual Token scan() override;
+
+	GDScriptTokenizerText();
 };
 
-#endif
+#endif // GDSCRIPT_TOKENIZER_H

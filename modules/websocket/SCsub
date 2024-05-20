@@ -7,7 +7,7 @@ env_ws = env_modules.Clone()
 
 thirdparty_obj = []
 
-if env["platform"] == "javascript":
+if env["platform"] == "web":
     # Our JavaScript/C++ interface.
     env.AddJSLibraries(["library_godot_websocket.js"])
 
@@ -18,15 +18,14 @@ elif env["builtin_wslay"]:
         "wslay_net.c",
         "wslay_event.c",
         "wslay_queue.c",
-        "wslay_stack.c",
         "wslay_frame.c",
     ]
     thirdparty_sources = [thirdparty_dir + s for s in thirdparty_sources]
 
-    env_ws.Prepend(CPPPATH=[thirdparty_dir + "includes/"])
+    env_ws.Prepend(CPPPATH=[thirdparty_dir])
     env_ws.Append(CPPDEFINES=["HAVE_CONFIG_H"])
 
-    if env["platform"] == "windows" or env["platform"] == "uwp":
+    if env["platform"] == "windows":
         env_ws.Append(CPPDEFINES=["HAVE_WINSOCK2_H"])
     else:
         env_ws.Append(CPPDEFINES=["HAVE_NETINET_IN_H"])
@@ -42,6 +41,8 @@ elif env["builtin_wslay"]:
 module_obj = []
 
 env_ws.add_source_files(module_obj, "*.cpp")
+if env.editor_build:
+    env_ws.add_source_files(module_obj, "editor/*.cpp")
 env.modules_sources += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.

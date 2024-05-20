@@ -1,45 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Shortcut" inherits="Resource" version="4.0">
+<class name="Shortcut" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A shortcut for binding input.
 	</brief_description>
 	<description>
-		A shortcut for binding input.
-		Shortcuts are commonly used for interacting with a [Control] element from a [InputEvent].
+		Shortcuts are commonly used for interacting with a [Control] element from an [InputEvent] (also known as hotkeys).
+		One shortcut can contain multiple [InputEvent]'s, allowing the possibility of triggering one action with multiple different inputs.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="get_as_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
-				Returns the shortcut's [InputEvent] as a [String].
+				Returns the shortcut's first valid [InputEvent] as a [String].
 			</description>
 		</method>
-		<method name="is_shortcut" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
+		<method name="has_valid_event" qualifiers="const">
+			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the shortcut's [InputEvent] equals [code]event[/code].
+				Returns whether [member events] contains an [InputEvent] which is valid.
 			</description>
 		</method>
-		<method name="is_valid" qualifiers="const">
-			<return type="bool">
-			</return>
+		<method name="matches_event" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="event" type="InputEvent" />
 			<description>
-				If [code]true[/code], this shortcut is valid.
+				Returns whether any [InputEvent] in [member events] equals [param event].
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="shortcut" type="InputEvent" setter="set_shortcut" getter="get_shortcut">
-			The shortcut's [InputEvent].
-			Generally the [InputEvent] is a keyboard key, though it can be any [InputEvent].
+		<member name="events" type="Array" setter="set_events" getter="get_events" default="[]">
+			The shortcut's [InputEvent] array.
+			Generally the [InputEvent] used is an [InputEventKey], though it can be any [InputEvent], including an [InputEventAction].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -32,6 +32,7 @@
 
 #include "hb-directwrite.h"
 
+#include "hb-ms-feature-ranges.hh"
 
 /**
  * SECTION:hb-directwrite
@@ -43,21 +44,11 @@
  **/
 
 /* Declare object creator for dynamic support of DWRITE */
-typedef HRESULT (* WINAPI t_DWriteCreateFactory)(
+typedef HRESULT (WINAPI *t_DWriteCreateFactory)(
   DWRITE_FACTORY_TYPE factoryType,
   REFIID              iid,
   IUnknown            **factory
 );
-
-/*
- * hb-directwrite uses new/delete syntatically but as we let users
- * to override malloc/free, we will redefine new/delete so users
- * won't need to do that by their own.
- */
-void* operator new (size_t size)        { return malloc (size); }
-void* operator new [] (size_t size)     { return malloc (size); }
-void operator delete (void* pointer)    { free (pointer); }
-void operator delete [] (void* pointer) { free (pointer); }
 
 
 /*
@@ -182,7 +173,7 @@ _hb_directwrite_shaper_face_data_create (hb_face_t *face)
 
   t_DWriteCreateFactory p_DWriteCreateFactory;
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif
@@ -190,7 +181,7 @@ _hb_directwrite_shaper_face_data_create (hb_face_t *face)
   p_DWriteCreateFactory = (t_DWriteCreateFactory)
 			  GetProcAddress (data->dwrite_dll, "DWriteCreateFactory");
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
 
@@ -260,16 +251,12 @@ _hb_directwrite_shaper_face_data_destroy (hb_directwrite_face_data_t *data)
       data->dwriteFactory->UnregisterFontFileLoader (data->fontFileLoader);
     data->dwriteFactory->Release ();
   }
-  if (data->fontFileLoader)
-    delete data->fontFileLoader;
-  if (data->fontFileStream)
-    delete data->fontFileStream;
-  if (data->faceBlob)
-    hb_blob_destroy (data->faceBlob);
+  delete data->fontFileLoader;
+  delete data->fontFileStream;
+  hb_blob_destroy (data->faceBlob);
   if (data->dwrite_dll)
     FreeLibrary (data->dwrite_dll);
-  if (data)
-    delete data;
+  delete data;
 }
 
 
@@ -282,17 +269,12 @@ struct hb_directwrite_font_data_t {};
 hb_directwrite_font_data_t *
 _hb_directwrite_shaper_font_data_create (hb_font_t *font)
 {
-  hb_directwrite_font_data_t *data = new hb_directwrite_font_data_t;
-  if (unlikely (!data))
-    return nullptr;
-
-  return data;
+  return (hb_directwrite_font_data_t *) HB_SHAPER_DATA_SUCCEEDED;
 }
 
 void
 _hb_directwrite_shaper_font_data_destroy (hb_directwrite_font_data_t *data)
 {
-  delete data;
 }
 
 
@@ -552,13 +534,12 @@ protected:
  * shaper
  */
 
-static hb_bool_t
-_hb_directwrite_shape_full (hb_shape_plan_t    *shape_plan,
-			    hb_font_t          *font,
-			    hb_buffer_t        *buffer,
-			    const hb_feature_t *features,
-			    unsigned int        num_features,
-			    float               lineWidth)
+hb_bool_t
+_hb_directwrite_shape (hb_shape_plan_t    *shape_plan,
+		       hb_font_t          *font,
+		       hb_buffer_t        *buffer,
+		       const hb_feature_t *features,
+		       unsigned int        num_features)
 {
   hb_face_t *face = font->face;
   const hb_directwrite_face_data_t *face_data = face->data.directwrite;
@@ -611,8 +592,6 @@ _hb_directwrite_shape_full (hb_shape_plan_t    *shape_plan,
       log_clusters[chars_len++] = cluster; /* Surrogates. */
   }
 
-  // TODO: Handle TEST_DISABLE_OPTIONAL_LIGATURES
-
   DWRITE_READING_DIRECTION readingDirection;
   readingDirection = buffer->props.direction ?
 		     DWRITE_READING_DIRECTION_RIGHT_TO_LEFT :
@@ -623,7 +602,7 @@ _hb_directwrite_shape_full (hb_shape_plan_t    *shape_plan,
   * but we never attempt to shape a word longer than 64K characters
   * in a single gfxShapedWord, so we cannot exceed that limit.
   */
-  uint32_t textLength = buffer->len;
+  uint32_t textLength = chars_len;
 
   TextAnalysis analysis (textString, textLength, nullptr, readingDirection);
   TextAnalysis::Run *runHead;
@@ -648,38 +627,54 @@ _hb_directwrite_shape_full (hb_shape_plan_t    *shape_plan,
     mbstowcs ((wchar_t*) localeName,
 	      hb_language_to_string (buffer->props.language), 20);
 
-  // TODO: it does work but doesn't care about ranges
-  DWRITE_TYPOGRAPHIC_FEATURES typographic_features;
-  typographic_features.featureCount = num_features;
+  /*
+   * Set up features.
+   */
+  static_assert ((sizeof (DWRITE_TYPOGRAPHIC_FEATURES) == sizeof (hb_ms_features_t)), "");
+  static_assert ((sizeof (DWRITE_FONT_FEATURE) == sizeof (hb_ms_feature_t)), "");
+  hb_vector_t<hb_ms_features_t *> range_features;
+  hb_vector_t<uint32_t> range_char_counts;
   if (num_features)
   {
-    typographic_features.features = new DWRITE_FONT_FEATURE[num_features];
-    for (unsigned int i = 0; i < num_features; ++i)
-    {
-      typographic_features.features[i].nameTag = (DWRITE_FONT_FEATURE_TAG)
-						 hb_uint32_swap (features[i].tag);
-      typographic_features.features[i].parameter = features[i].value;
-    }
+    hb_vector_t<hb_ms_feature_t> feature_records;
+    hb_vector_t<hb_ms_range_record_t> range_records;
+    if (hb_ms_setup_features (features, num_features, feature_records, range_records))
+      hb_ms_make_feature_ranges (feature_records,
+				 range_records,
+				 0,
+				 chars_len,
+				 log_clusters,
+				 range_features,
+				 range_char_counts);
   }
-  const DWRITE_TYPOGRAPHIC_FEATURES* dwFeatures;
-  dwFeatures = (const DWRITE_TYPOGRAPHIC_FEATURES*) &typographic_features;
-  const uint32_t featureRangeLengths[] = { textLength };
-  //
 
   uint16_t* clusterMap;
   clusterMap = new uint16_t[textLength];
   DWRITE_SHAPING_TEXT_PROPERTIES* textProperties;
   textProperties = new DWRITE_SHAPING_TEXT_PROPERTIES[textLength];
+
 retry_getglyphs:
   uint16_t* glyphIndices = new uint16_t[maxGlyphCount];
   DWRITE_SHAPING_GLYPH_PROPERTIES* glyphProperties;
   glyphProperties = new DWRITE_SHAPING_GLYPH_PROPERTIES[maxGlyphCount];
 
-  hr = analyzer->GetGlyphs (textString, textLength, fontFace, false,
-			    isRightToLeft, &runHead->mScript, localeName,
-			    nullptr, &dwFeatures, featureRangeLengths, 1,
-			    maxGlyphCount, clusterMap, textProperties,
-			    glyphIndices, glyphProperties, &glyphCount);
+  hr = analyzer->GetGlyphs (textString,
+			    chars_len,
+			    fontFace,
+			    false,
+			    isRightToLeft,
+			    &runHead->mScript,
+			    localeName,
+			    nullptr,
+			    (const DWRITE_TYPOGRAPHIC_FEATURES**) range_features.arrayZ,
+			    range_char_counts.arrayZ,
+			    range_features.length,
+			    maxGlyphCount,
+			    clusterMap,
+			    textProperties,
+			    glyphIndices,
+			    glyphProperties,
+			    &glyphCount);
 
   if (unlikely (hr == HRESULT_FROM_WIN32 (ERROR_INSUFFICIENT_BUFFER)))
   {
@@ -715,100 +710,27 @@ retry_getglyphs:
   double x_mult = (double) font->x_scale / fontEmSize;
   double y_mult = (double) font->y_scale / fontEmSize;
 
-  hr = analyzer->GetGlyphPlacements (textString, clusterMap, textProperties,
-				     textLength, glyphIndices, glyphProperties,
-				     glyphCount, fontFace, fontEmSize,
-				     false, isRightToLeft, &runHead->mScript, localeName,
-				     &dwFeatures, featureRangeLengths, 1,
-				     glyphAdvances, glyphOffsets);
+  hr = analyzer->GetGlyphPlacements (textString,
+				     clusterMap,
+				     textProperties,
+				     chars_len,
+				     glyphIndices,
+				     glyphProperties,
+				     glyphCount,
+				     fontFace,
+				     fontEmSize,
+				     false,
+				     isRightToLeft,
+				     &runHead->mScript,
+				     localeName,
+				     (const DWRITE_TYPOGRAPHIC_FEATURES**) range_features.arrayZ,
+				     range_char_counts.arrayZ,
+				     range_features.length,
+				     glyphAdvances,
+				     glyphOffsets);
 
   if (FAILED (hr))
     FAIL ("Analyzer failed to get glyph placements.");
-
-  IDWriteTextAnalyzer1* analyzer1;
-  analyzer->QueryInterface (&analyzer1);
-
-  if (analyzer1 && lineWidth)
-  {
-    DWRITE_JUSTIFICATION_OPPORTUNITY* justificationOpportunities =
-      new DWRITE_JUSTIFICATION_OPPORTUNITY[maxGlyphCount];
-    hr = analyzer1->GetJustificationOpportunities (fontFace, fontEmSize, runHead->mScript,
-						   textLength, glyphCount, textString,
-						   clusterMap, glyphProperties,
-						   justificationOpportunities);
-
-    if (FAILED (hr))
-      FAIL ("Analyzer failed to get justification opportunities.");
-
-    float* justifiedGlyphAdvances = new float[maxGlyphCount];
-    DWRITE_GLYPH_OFFSET* justifiedGlyphOffsets = new DWRITE_GLYPH_OFFSET[glyphCount];
-    hr = analyzer1->JustifyGlyphAdvances (lineWidth, glyphCount, justificationOpportunities,
-					  glyphAdvances, glyphOffsets, justifiedGlyphAdvances,
-					  justifiedGlyphOffsets);
-
-    if (FAILED (hr)) FAIL ("Analyzer failed to get justify glyph advances.");
-
-    DWRITE_SCRIPT_PROPERTIES scriptProperties;
-    hr = analyzer1->GetScriptProperties (runHead->mScript, &scriptProperties);
-    if (FAILED (hr)) FAIL ("Analyzer failed to get script properties.");
-    uint32_t justificationCharacter = scriptProperties.justificationCharacter;
-
-    // if a script justificationCharacter is not space, it can have GetJustifiedGlyphs
-    if (justificationCharacter != 32)
-    {
-      uint16_t* modifiedClusterMap = new uint16_t[textLength];
-    retry_getjustifiedglyphs:
-      uint16_t* modifiedGlyphIndices = new uint16_t[maxGlyphCount];
-      float* modifiedGlyphAdvances = new float[maxGlyphCount];
-      DWRITE_GLYPH_OFFSET* modifiedGlyphOffsets = new DWRITE_GLYPH_OFFSET[maxGlyphCount];
-      uint32_t actualGlyphsCount;
-      hr = analyzer1->GetJustifiedGlyphs (fontFace, fontEmSize, runHead->mScript,
-					  textLength, glyphCount, maxGlyphCount,
-					  clusterMap, glyphIndices, glyphAdvances,
-					  justifiedGlyphAdvances, justifiedGlyphOffsets,
-					  glyphProperties, &actualGlyphsCount,
-					  modifiedClusterMap, modifiedGlyphIndices,
-					  modifiedGlyphAdvances, modifiedGlyphOffsets);
-
-      if (hr == HRESULT_FROM_WIN32 (ERROR_INSUFFICIENT_BUFFER))
-      {
-	maxGlyphCount = actualGlyphsCount;
-	delete [] modifiedGlyphIndices;
-	delete [] modifiedGlyphAdvances;
-	delete [] modifiedGlyphOffsets;
-
-	maxGlyphCount = actualGlyphsCount;
-
-	goto retry_getjustifiedglyphs;
-      }
-      if (FAILED (hr))
-	FAIL ("Analyzer failed to get justified glyphs.");
-
-      delete [] clusterMap;
-      delete [] glyphIndices;
-      delete [] glyphAdvances;
-      delete [] glyphOffsets;
-
-      glyphCount = actualGlyphsCount;
-      clusterMap = modifiedClusterMap;
-      glyphIndices = modifiedGlyphIndices;
-      glyphAdvances = modifiedGlyphAdvances;
-      glyphOffsets = modifiedGlyphOffsets;
-
-      delete [] justifiedGlyphAdvances;
-      delete [] justifiedGlyphOffsets;
-    }
-    else
-    {
-      delete [] glyphAdvances;
-      delete [] glyphOffsets;
-
-      glyphAdvances = justifiedGlyphAdvances;
-      glyphOffsets = justifiedGlyphOffsets;
-    }
-
-    delete [] justificationOpportunities;
-  }
 
   /* Ok, we've got everything we need, now compose output buffer,
    * very, *very*, carefully! */
@@ -863,6 +785,9 @@ retry_getglyphs:
 
   if (isRightToLeft) hb_buffer_reverse (buffer);
 
+  buffer->clear_glyph_flags ();
+  buffer->unsafe_to_break ();
+
   delete [] clusterMap;
   delete [] glyphIndices;
   delete [] textProperties;
@@ -870,41 +795,8 @@ retry_getglyphs:
   delete [] glyphAdvances;
   delete [] glyphOffsets;
 
-  if (num_features)
-    delete [] typographic_features.features;
-
   /* Wow, done! */
   return true;
-}
-
-hb_bool_t
-_hb_directwrite_shape (hb_shape_plan_t    *shape_plan,
-		       hb_font_t          *font,
-		       hb_buffer_t        *buffer,
-		       const hb_feature_t *features,
-		       unsigned int        num_features)
-{
-  return _hb_directwrite_shape_full (shape_plan, font, buffer,
-				     features, num_features, 0);
-}
-
-HB_UNUSED static bool
-_hb_directwrite_shape_experimental_width (hb_font_t          *font,
-					  hb_buffer_t        *buffer,
-					  const hb_feature_t *features,
-					  unsigned int        num_features,
-					  float               width)
-{
-  static const char *shapers = "directwrite";
-  hb_shape_plan_t *shape_plan;
-  shape_plan = hb_shape_plan_create_cached (font->face, &buffer->props,
-					    features, num_features, &shapers);
-  hb_bool_t res = _hb_directwrite_shape_full (shape_plan, font, buffer,
-					      features, num_features, width);
-
-  buffer->unsafe_to_break_all ();
-
-  return res;
 }
 
 struct _hb_directwrite_font_table_context {
@@ -917,7 +809,7 @@ _hb_directwrite_table_data_release (void *data)
 {
   _hb_directwrite_font_table_context *context = (_hb_directwrite_font_table_context *) data;
   context->face->ReleaseFontTable (context->table_context);
-  delete context;
+  hb_free (context);
 }
 
 static hb_blob_t *
@@ -938,7 +830,7 @@ _hb_directwrite_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *
     return nullptr;
   }
 
-  _hb_directwrite_font_table_context *context = new _hb_directwrite_font_table_context;
+  _hb_directwrite_font_table_context *context = (_hb_directwrite_font_table_context *) hb_malloc (sizeof (_hb_directwrite_font_table_context));
   context->face = dw_face;
   context->table_context = table_context;
 

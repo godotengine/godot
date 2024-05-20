@@ -7,17 +7,19 @@ namespace GodotTools.BuildLogger
 {
     public class GodotBuildLogger : ILogger
     {
-        public static readonly string AssemblyPath = Path.GetFullPath(typeof(GodotBuildLogger).Assembly.Location);
-
-        public string Parameters { get; set; }
+        public string? Parameters { get; set; }
         public LoggerVerbosity Verbosity { get; set; }
+
+        private StreamWriter _logStreamWriter = StreamWriter.Null;
+        private StreamWriter _issuesStreamWriter = StreamWriter.Null;
+        private int _indent;
 
         public void Initialize(IEventSource eventSource)
         {
             if (null == Parameters)
                 throw new LoggerException("Log directory parameter not specified.");
 
-            var parameters = Parameters.Split(new[] { ';' });
+            string[] parameters = Parameters.Split(new[] { ';' });
 
             string logDir = parameters[0];
 
@@ -35,8 +37,8 @@ namespace GodotTools.BuildLogger
                 if (!Directory.Exists(logDir))
                     Directory.CreateDirectory(logDir);
 
-                logStreamWriter = new StreamWriter(logFile);
-                issuesStreamWriter = new StreamWriter(issuesFile);
+                _logStreamWriter = new StreamWriter(logFile);
+                _issuesStreamWriter = new StreamWriter(issuesFile);
             }
             catch (Exception ex)
             {
@@ -66,12 +68,12 @@ namespace GodotTools.BuildLogger
         private void eventSource_ProjectStarted(object sender, ProjectStartedEventArgs e)
         {
             WriteLine(e.Message);
-            indent++;
+            _indent++;
         }
 
         private void eventSource_ProjectFinished(object sender, ProjectFinishedEventArgs e)
         {
-            indent--;
+            _indent--;
             WriteLine(e.Message);
         }
 
@@ -87,7 +89,7 @@ namespace GodotTools.BuildLogger
             string errorLine = $@"error,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber}," +
                                $"{e.Code?.CsvEscape() ?? string.Empty},{e.Message.CsvEscape()}," +
                                $"{e.ProjectFile?.CsvEscape() ?? string.Empty}";
-            issuesStreamWriter.WriteLine(errorLine);
+            _issuesStreamWriter.WriteLine(errorLine);
         }
 
         private void eventSource_WarningRaised(object sender, BuildWarningEventArgs e)
@@ -102,7 +104,7 @@ namespace GodotTools.BuildLogger
             string warningLine = $@"warning,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber}," +
                                  $"{e.Code?.CsvEscape() ?? string.Empty},{e.Message.CsvEscape()}," +
                                  $"{e.ProjectFile?.CsvEscape() ?? string.Empty}";
-            issuesStreamWriter.WriteLine(warningLine);
+            _issuesStreamWriter.WriteLine(warningLine);
         }
 
         private void eventSource_MessageRaised(object sender, BuildMessageEventArgs e)
@@ -136,28 +138,24 @@ namespace GodotTools.BuildLogger
 
         private void WriteLine(string line)
         {
-            for (int i = indent; i > 0; i--)
+            for (int i = _indent; i > 0; i--)
             {
-                logStreamWriter.Write("\t");
+                _logStreamWriter.Write("\t");
             }
 
-            logStreamWriter.WriteLine(line);
+            _logStreamWriter.WriteLine(line);
         }
 
         public void Shutdown()
         {
-            logStreamWriter.Close();
-            issuesStreamWriter.Close();
+            _logStreamWriter.Close();
+            _issuesStreamWriter.Close();
         }
 
         private bool IsVerbosityAtLeast(LoggerVerbosity checkVerbosity)
         {
             return Verbosity >= checkVerbosity;
         }
-
-        private StreamWriter logStreamWriter;
-        private StreamWriter issuesStreamWriter;
-        private int indent;
     }
 
     internal static class StringExtensions
@@ -167,7 +165,7 @@ namespace GodotTools.BuildLogger
             bool hasSpecialChar = value.IndexOfAny(new[] { '\"', '\n', '\r', delimiter }) != -1;
 
             if (hasSpecialChar)
-                return "\"" + value.Replace("\"", "\"\"") + "\"";
+                return "\"" + value.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
 
             return value;
         }

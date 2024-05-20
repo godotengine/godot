@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(GODOT_ROOT_DIR ../../../..)
+set(ANDROID_ROOT_DIR "${GODOT_ROOT_DIR}/platform/android" CACHE STRING "")
 
 # Get sources
 file(GLOB_RECURSE SOURCES ${GODOT_ROOT_DIR}/*.c**)
@@ -16,4 +17,6 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME}
         SYSTEM PUBLIC
         ${GODOT_ROOT_DIR}
-        ${GODOT_ROOT_DIR}/modules/gdnative/include)
+        ${ANDROID_ROOT_DIR})
+
+add_definitions(-DUNIX_ENABLED -DVULKAN_ENABLED -DANDROID_ENABLED -DGLES3_ENABLED -DTOOLS_ENABLED)

@@ -1,35 +1,35 @@
-/*************************************************************************/
-/*  dynamic_bvh.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  dynamic_bvh.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef DYNAMICBVH_H
-#define DYNAMICBVH_H
+#ifndef DYNAMIC_BVH_H
+#define DYNAMIC_BVH_H
 
 #include "core/math/aabb.h"
 #include "core/templates/list.h"
@@ -182,21 +182,21 @@ private:
 		Volume volume;
 		Node *parent = nullptr;
 		union {
-			Node *childs[2];
+			Node *children[2];
 			void *data;
 		};
 
-		_FORCE_INLINE_ bool is_leaf() const { return childs[1] == nullptr; }
+		_FORCE_INLINE_ bool is_leaf() const { return children[1] == nullptr; }
 		_FORCE_INLINE_ bool is_internal() const { return (!is_leaf()); }
 
 		_FORCE_INLINE_ int get_index_in_parent() const {
-			ERR_FAIL_COND_V(!parent, 0);
-			return (parent->childs[1] == this) ? 1 : 0;
+			ERR_FAIL_NULL_V(parent, 0);
+			return (parent->children[1] == this) ? 1 : 0;
 		}
 		void get_max_depth(int depth, int &maxdepth) {
 			if (is_internal()) {
-				childs[0]->get_max_depth(depth + 1, maxdepth);
-				childs[1]->get_max_depth(depth + 1, maxdepth);
+				children[0]->get_max_depth(depth + 1, maxdepth);
+				children[1]->get_max_depth(depth + 1, maxdepth);
 			} else {
 				maxdepth = MAX(maxdepth, depth);
 			}
@@ -205,7 +205,7 @@ private:
 		//
 		int count_leaves() const {
 			if (is_internal()) {
-				return childs[0]->count_leaves() + childs[1]->count_leaves();
+				return children[0]->count_leaves() + children[1]->count_leaves();
 			} else {
 				return (1);
 			}
@@ -216,8 +216,8 @@ private:
 		}
 
 		Node() {
-			childs[0] = nullptr;
-			childs[1] = nullptr;
+			children[0] = nullptr;
+			children[1] = nullptr;
 		}
 	};
 
@@ -305,11 +305,11 @@ public:
 		virtual ~DefaultQueryResult() {}
 	};
 
-	template <class QueryResult>
+	template <typename QueryResult>
 	_FORCE_INLINE_ void aabb_query(const AABB &p_aabb, QueryResult &r_result);
-	template <class QueryResult>
+	template <typename QueryResult>
 	_FORCE_INLINE_ void convex_query(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, QueryResult &r_result);
-	template <class QueryResult>
+	template <typename QueryResult>
 	_FORCE_INLINE_ void ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResult &r_result);
 
 	void set_index(uint32_t p_index);
@@ -318,7 +318,7 @@ public:
 	~DynamicBVH();
 };
 
-template <class QueryResult>
+template <typename QueryResult>
 void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 	if (!bvh_root) {
 		return;
@@ -328,7 +328,8 @@ void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 	volume.min = p_box.position;
 	volume.max = p_box.position + p_box.size;
 
-	const Node **stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
+	const Node **alloca_stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
+	const Node **stack = alloca_stack;
 	stack[0] = bvh_root;
 	int32_t depth = 1;
 	int32_t threshold = ALLOCA_STACK_SIZE - 2;
@@ -343,15 +344,16 @@ void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 				if (depth > threshold) {
 					if (aux_stack.is_empty()) {
 						aux_stack.resize(ALLOCA_STACK_SIZE * 2);
-						memcpy(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
+						memcpy(aux_stack.ptr(), alloca_stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
+						alloca_stack = nullptr;
 					} else {
 						aux_stack.resize(aux_stack.size() * 2);
 					}
 					stack = aux_stack.ptr();
 					threshold = aux_stack.size() - 2;
 				}
-				stack[depth++] = n->childs[0];
-				stack[depth++] = n->childs[1];
+				stack[depth++] = n->children[0];
+				stack[depth++] = n->children[1];
 			} else {
 				if (r_result(n->data)) {
 					return;
@@ -361,7 +363,7 @@ void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 	} while (depth > 0);
 }
 
-template <class QueryResult>
+template <typename QueryResult>
 void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, QueryResult &r_result) {
 	if (!bvh_root) {
 		return;
@@ -374,17 +376,13 @@ void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Ve
 			volume.min = p_points[0];
 			volume.max = p_points[0];
 		} else {
-			volume.min.x = MIN(volume.min.x, p_points[i].x);
-			volume.min.y = MIN(volume.min.y, p_points[i].y);
-			volume.min.z = MIN(volume.min.z, p_points[i].z);
-
-			volume.max.x = MAX(volume.max.x, p_points[i].x);
-			volume.max.y = MAX(volume.max.y, p_points[i].y);
-			volume.max.z = MAX(volume.max.z, p_points[i].z);
+			volume.min = volume.min.min(p_points[i]);
+			volume.max = volume.max.max(p_points[i]);
 		}
 	}
 
-	const Node **stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
+	const Node **alloca_stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
+	const Node **stack = alloca_stack;
 	stack[0] = bvh_root;
 	int32_t depth = 1;
 	int32_t threshold = ALLOCA_STACK_SIZE - 2;
@@ -399,15 +397,16 @@ void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Ve
 				if (depth > threshold) {
 					if (aux_stack.is_empty()) {
 						aux_stack.resize(ALLOCA_STACK_SIZE * 2);
-						memcpy(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
+						memcpy(aux_stack.ptr(), alloca_stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
+						alloca_stack = nullptr;
 					} else {
 						aux_stack.resize(aux_stack.size() * 2);
 					}
 					stack = aux_stack.ptr();
 					threshold = aux_stack.size() - 2;
 				}
-				stack[depth++] = n->childs[0];
-				stack[depth++] = n->childs[1];
+				stack[depth++] = n->children[0];
+				stack[depth++] = n->children[1];
 			} else {
 				if (r_result(n->data)) {
 					return;
@@ -416,7 +415,7 @@ void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Ve
 		}
 	} while (depth > 0);
 }
-template <class QueryResult>
+template <typename QueryResult>
 void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResult &r_result) {
 	if (!bvh_root) {
 		return;
@@ -436,7 +435,8 @@ void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResu
 
 	Vector3 bounds[2];
 
-	const Node **stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
+	const Node **alloca_stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
+	const Node **stack = alloca_stack;
 	stack[0] = bvh_root;
 	int32_t depth = 1;
 	int32_t threshold = ALLOCA_STACK_SIZE - 2;
@@ -456,15 +456,16 @@ void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResu
 				if (depth > threshold) {
 					if (aux_stack.is_empty()) {
 						aux_stack.resize(ALLOCA_STACK_SIZE * 2);
-						memcpy(aux_stack.ptr(), stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
+						memcpy(aux_stack.ptr(), alloca_stack, ALLOCA_STACK_SIZE * sizeof(const Node *));
+						alloca_stack = nullptr;
 					} else {
 						aux_stack.resize(aux_stack.size() * 2);
 					}
 					stack = aux_stack.ptr();
 					threshold = aux_stack.size() - 2;
 				}
-				stack[depth++] = node->childs[0];
-				stack[depth++] = node->childs[1];
+				stack[depth++] = node->children[0];
+				stack[depth++] = node->children[1];
 			} else {
 				if (r_result(node->data)) {
 					return;
@@ -474,4 +475,4 @@ void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResu
 	} while (depth > 0);
 }
 
-#endif // DYNAMICBVH_H
+#endif // DYNAMIC_BVH_H

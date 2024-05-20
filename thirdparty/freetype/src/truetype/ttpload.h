@@ -4,7 +4,7 @@
  *
  *   TrueType-specific tables loader (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -31,9 +31,9 @@ FT_BEGIN_HEADER
                      FT_Stream  stream );
 
   FT_LOCAL( FT_ULong )
-  tt_face_get_location( TT_Face   face,
-                        FT_UInt   gindex,
-                        FT_UInt  *asize );
+  tt_face_get_location( FT_Face    face,
+                        FT_UInt    gindex,
+                        FT_ULong  *asize );
 
   FT_LOCAL( void )
   tt_face_done_loca( TT_Face  face );

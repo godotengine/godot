@@ -6,11 +6,11 @@
 #include "default.h"
 #include "device.h"
 #include "builder.h"
-#include "../../common/algorithms/parallel_any_of.h"
 #include "scene_triangle_mesh.h"
 #include "scene_quad_mesh.h"
 #include "scene_user_geometry.h"
 #include "scene_instance.h"
+#include "scene_instance_array.h"
 #include "scene_curves.h"
 #include "scene_line_segments.h"
 #include "scene_subdiv_mesh.h"
@@ -21,12 +21,18 @@
 #include "acceln.h"
 #include "geometry.h"
 
+#if defined(EMBREE_SYCL_SUPPORT)
+#include "../sycl/rthwif_embree_builder.h"
+#endif
+
 namespace embree
 {
+  struct TaskGroup;
+
   /*! Base class all scenes are derived from */
   class Scene : public AccelN
   {
-    ALIGNED_CLASS_(std::alignment_of<Scene>::value);
+    ALIGNED_CLASS_USM_(std::alignment_of<Scene>::value);
 
   public:
     template<typename Ty, bool mblur = false>
@@ -140,6 +146,7 @@ namespace embree
     ~Scene () noexcept;
 
   private:
+    
     /*! class is non-copyable */
     Scene (const Scene& other) DELETED; // do not implement
     Scene& operator= (const Scene& other) DELETED; // do not implement
@@ -159,6 +166,8 @@ namespace embree
     void createInstanceMBAccel();
     void createInstanceExpensiveAccel();
     void createInstanceExpensiveMBAccel();
+    void createInstanceArrayAccel();
+    void createInstanceArrayMBAccel();
     void createGridAccel();
     void createGridMBAccel();
 
@@ -176,12 +185,12 @@ namespace embree
     
     void setSceneFlags(RTCSceneFlags scene_flags);
     RTCSceneFlags getSceneFlags() const;
-    
+
+    void build_cpu_accels();
+    void build_gpu_accels();
     void commit (bool join);
     void commit_task ();
     void build () {}
-
-    void updateInterface();
 
     /* return number of geometries */
     __forceinline size_t size() const { return geometries.size(); }
@@ -205,20 +214,9 @@ namespace embree
     }
 
   protected:
-    
-    __forceinline void checkIfModifiedAndSet () 
-    {
-      if (isModified ()) return;
-      
-      auto geometryIsModified = [this](size_t geomID)->bool {
-        return isGeometryModified(geomID);
-      };
 
-      if (parallel_any_of (size_t(0), geometries.size (), geometryIsModified)) {
-        setModified ();
-      }
-    }
-    
+    void checkIfModifiedAndSet ();
+
   public:
 
     /* get mesh by ID */
@@ -247,7 +245,7 @@ namespace embree
     }
 
     __forceinline Ref<Geometry> get_locked(size_t i)  {
-      Lock<SpinLock> lock(geometriesMutex);
+      Lock<MutexSys> lock(geometriesMutex);
       assert(i < geometries.size()); 
       return geometries[i]; 
     }
@@ -259,8 +257,8 @@ namespace embree
     __forceinline bool isStaticAccel()  const { return !(scene_flags & RTC_SCENE_FLAG_DYNAMIC); }
     __forceinline bool isDynamicAccel() const { return scene_flags & RTC_SCENE_FLAG_DYNAMIC; }
     
-    __forceinline bool hasContextFilterFunction() const {
-      return scene_flags & RTC_SCENE_FLAG_CONTEXT_FILTER_FUNCTION;
+    __forceinline bool hasArgumentFilterFunction() const {
+      return scene_flags & RTC_SCENE_FLAG_FILTER_FUNCTION_IN_ARGUMENTS;
     }
     
     __forceinline bool hasGeometryFilterFunction() {
@@ -268,21 +266,21 @@ namespace embree
     }
       
     __forceinline bool hasFilterFunction() {
-      return hasContextFilterFunction() || hasGeometryFilterFunction();
+      return hasArgumentFilterFunction() || hasGeometryFilterFunction();
     }
     
-    /* test if scene got already build */
-    __forceinline bool isBuild() const { return is_build; }
+    void* createQBVH6Accel();
 
-  public:
-    IDPool<unsigned,0xFFFFFFFE> id_pool;
-    vector<Ref<Geometry>> geometries; //!< list of all user geometries
-    vector<unsigned int> geometryModCounters_;
-    vector<float*> vertices;
-    
   public:
     Device* device;
 
+  public:
+    IDPool<unsigned,0xFFFFFFFE> id_pool;
+    Device::vector<Ref<Geometry>> geometries = device; //!< list of all user geometries
+    avector<unsigned int> geometryModCounters_;
+    Device::vector<float*> vertices = device;
+    
+  public:
     /* these are to detect if we need to recreate the acceleration structures */
     bool flags_modified;
     unsigned int enabled_geometry_types;
@@ -290,24 +288,20 @@ namespace embree
     RTCSceneFlags scene_flags;
     RTCBuildQuality quality_flags;
     MutexSys buildMutex;
-    SpinLock geometriesMutex;
-    bool is_build;
+    MutexSys geometriesMutex;
+
+#if defined(EMBREE_SYCL_SUPPORT)
+  public:
+    BBox3f hwaccel_bounds = empty;
+    AccelBuffer hwaccel;
+#endif
+    
   private:
     bool modified;                   //!< true if scene got modified
 
   public:
-    
-    /*! global lock step task scheduler */
-#if defined(TASKING_INTERNAL) 
-    MutexSys schedulerMutex;
-    Ref<TaskScheduler> scheduler;
-#elif defined(TASKING_TBB) && TASKING_TBB_USE_TASK_ISOLATION
-    tbb::isolated_task_group group;
-#elif defined(TASKING_TBB)
-    tbb::task_group group;
-#elif defined(TASKING_PPL)
-    concurrency::task_group group;
-#endif
+
+    std::unique_ptr<TaskGroup> taskGroup;
     
   public:
     struct BuildProgressMonitorInterface : public BuildProgressMonitor {
@@ -363,9 +357,25 @@ namespace embree
       
       if (mask & Geometry::MTY_INSTANCE_EXPENSIVE)
         count += mblur  ? world.numMBInstancesExpensive : world.numInstancesExpensive;
-      
+
+      if (mask & Geometry::MTY_INSTANCE_ARRAY)
+        count += mblur  ? world.numMBInstanceArrays : world.numInstanceArrays;
+
       if (mask & Geometry::MTY_GRID_MESH)
         count += mblur  ? world.numMBGrids : world.numGrids;
+      
+      return count;
+    }
+
+    __forceinline size_t getNumSubPrimitives(Geometry::GTypeMask mask, bool mblur) const
+    {
+      size_t count = 0;
+      
+      if (mask & Geometry::MTY_GRID_MESH)
+        count += mblur  ? world.numMBSubGrids : world.numSubGrids;
+
+      Geometry::GTypeMask new_mask = (Geometry::GTypeMask)(mask & ~Geometry::MTY_GRID_MESH);
+      count += getNumPrimitives(new_mask, mblur);
       
       return count;
     }

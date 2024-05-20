@@ -126,16 +126,6 @@ static void InitHistogram(VP8Histogram* const histo) {
   histo->last_non_zero = 1;
 }
 
-static void MergeHistograms(const VP8Histogram* const in,
-                            VP8Histogram* const out) {
-  if (in->max_value > out->max_value) {
-    out->max_value = in->max_value;
-  }
-  if (in->last_non_zero > out->last_non_zero) {
-    out->last_non_zero = in->last_non_zero;
-  }
-}
-
 //------------------------------------------------------------------------------
 // Simplified k-Means, to assign Nb segments based on alpha-histogram
 
@@ -285,49 +275,6 @@ static int FastMBAnalyze(VP8EncIterator* const it) {
   return 0;
 }
 
-static int MBAnalyzeBestIntra4Mode(VP8EncIterator* const it,
-                                   int best_alpha) {
-  uint8_t modes[16];
-  const int max_mode = MAX_INTRA4_MODE;
-  int i4_alpha;
-  VP8Histogram total_histo;
-  int cur_histo = 0;
-  InitHistogram(&total_histo);
-
-  VP8IteratorStartI4(it);
-  do {
-    int mode;
-    int best_mode_alpha = DEFAULT_ALPHA;
-    VP8Histogram histos[2];
-    const uint8_t* const src = it->yuv_in_ + Y_OFF_ENC + VP8Scan[it->i4_];
-
-    VP8MakeIntra4Preds(it);
-    for (mode = 0; mode < max_mode; ++mode) {
-      int alpha;
-
-      InitHistogram(&histos[cur_histo]);
-      VP8CollectHistogram(src, it->yuv_p_ + VP8I4ModeOffsets[mode],
-                          0, 1, &histos[cur_histo]);
-      alpha = GetAlpha(&histos[cur_histo]);
-      if (IS_BETTER_ALPHA(alpha, best_mode_alpha)) {
-        best_mode_alpha = alpha;
-        modes[it->i4_] = mode;
-        cur_histo ^= 1;   // keep track of best histo so far.
-      }
-    }
-    // accumulate best histogram
-    MergeHistograms(&histos[cur_histo ^ 1], &total_histo);
-    // Note: we reuse the original samples for predictors
-  } while (VP8IteratorRotateI4(it, it->yuv_in_ + Y_OFF_ENC));
-
-  i4_alpha = GetAlpha(&total_histo);
-  if (IS_BETTER_ALPHA(i4_alpha, best_alpha)) {
-    VP8SetIntra4Mode(it, modes);
-    best_alpha = i4_alpha;
-  }
-  return best_alpha;
-}
-
 static int MBAnalyzeBestUVMode(VP8EncIterator* const it) {
   int best_alpha = DEFAULT_ALPHA;
   int smallest_alpha = 0;
@@ -371,13 +318,6 @@ static void MBAnalyze(VP8EncIterator* const it,
     best_alpha = FastMBAnalyze(it);
   } else {
     best_alpha = MBAnalyzeBestIntra16Mode(it);
-    if (enc->method_ >= 5) {
-      // We go and make a fast decision for intra4/intra16.
-      // It's usually not a good and definitive pick, but helps seeding the
-      // stats about level bit-cost.
-      // TODO(skal): improve criterion.
-      best_alpha = MBAnalyzeBestIntra4Mode(it, best_alpha);
-    }
   }
   best_uv_alpha = MBAnalyzeBestUVMode(it);
 
@@ -451,12 +391,14 @@ static int DoSegmentsJob(void* arg1, void* arg2) {
   return ok;
 }
 
+#ifdef WEBP_USE_THREAD
 static void MergeJobs(const SegmentJob* const src, SegmentJob* const dst) {
   int i;
   for (i = 0; i <= MAX_ALPHA; ++i) dst->alphas[i] += src->alphas[i];
   dst->alpha += src->alpha;
   dst->uv_alpha += src->uv_alpha;
 }
+#endif
 
 // initialize the job struct with some tasks to perform
 static void InitSegmentJob(VP8Encoder* const enc, SegmentJob* const job,
@@ -485,10 +427,10 @@ int VP8EncAnalyze(VP8Encoder* const enc) {
       (enc->method_ <= 1);  // for method 0 - 1, we need preds_[] to be filled.
   if (do_segments) {
     const int last_row = enc->mb_h_;
-    // We give a little more than a half work to the main thread.
-    const int split_row = (9 * last_row + 15) >> 4;
     const int total_mb = last_row * enc->mb_w_;
 #ifdef WEBP_USE_THREAD
+    // We give a little more than a half work to the main thread.
+    const int split_row = (9 * last_row + 15) >> 4;
     const int kMinSplitRow = 2;  // minimal rows needed for mt to be worth it
     const int do_mt = (enc->thread_level_ > 0) && (split_row >= kMinSplitRow);
 #else
@@ -498,6 +440,7 @@ int VP8EncAnalyze(VP8Encoder* const enc) {
         WebPGetWorkerInterface();
     SegmentJob main_job;
     if (do_mt) {
+#ifdef WEBP_USE_THREAD
       SegmentJob side_job;
       // Note the use of '&' instead of '&&' because we must call the functions
       // no matter what.
@@ -515,6 +458,7 @@ int VP8EncAnalyze(VP8Encoder* const enc) {
       }
       worker_interface->End(&side_job.worker);
       if (ok) MergeJobs(&side_job, &main_job);  // merge results together
+#endif  // WEBP_USE_THREAD
     } else {
       // Even for single-thread case, we use the generic Worker tools.
       InitSegmentJob(enc, &main_job, 0, last_row);
@@ -529,6 +473,10 @@ int VP8EncAnalyze(VP8Encoder* const enc) {
     }
   } else {   // Use only one default segment.
     ResetAllMBInfo(enc);
+  }
+  if (!ok) {
+    return WebPEncodingSetError(enc->pic_,
+                                VP8_ENC_ERROR_OUT_OF_MEMORY);  // imprecise
   }
   return ok;
 }

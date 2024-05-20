@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  syntax_highlighter.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  syntax_highlighter.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "syntax_highlighter.h"
 
@@ -43,12 +43,10 @@ Dictionary SyntaxHighlighter::get_line_syntax_highlighting(int p_line) {
 		return color_map;
 	}
 
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_get_line_syntax_highlighting")) {
-		color_map = si->call("_get_line_syntax_highlighting", p_line);
-	} else {
-		color_map = _get_line_syntax_highlighting(p_line);
+	if (!GDVIRTUAL_CALL(_get_line_syntax_highlighting, p_line, color_map)) {
+		color_map = _get_line_syntax_highlighting_impl(p_line);
 	}
+
 	highlighting_cache[p_line] = color_map;
 	return color_map;
 }
@@ -69,9 +67,7 @@ void SyntaxHighlighter::_lines_edited_from(int p_from_line, int p_to_line) {
 void SyntaxHighlighter::clear_highlighting_cache() {
 	highlighting_cache.clear();
 
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_clear_highlighting_cache")) {
-		si->call("_clear_highlighting_cache");
+	if (GDVIRTUAL_CALL(_clear_highlighting_cache)) {
 		return;
 	}
 	_clear_highlighting_cache();
@@ -83,9 +79,7 @@ void SyntaxHighlighter::update_cache() {
 	if (text_edit == nullptr) {
 		return;
 	}
-	ScriptInstance *si = get_script_instance();
-	if (si && si->has_method("_update_cache")) {
-		si->call("_update_cache");
+	if (GDVIRTUAL_CALL(_update_cache)) {
 		return;
 	}
 	_update_cache();
@@ -105,7 +99,7 @@ void SyntaxHighlighter::set_text_edit(TextEdit *p_text_edit) {
 	update_cache();
 }
 
-TextEdit *SyntaxHighlighter::get_text_edit() {
+TextEdit *SyntaxHighlighter::get_text_edit() const {
 	return text_edit;
 }
 
@@ -115,22 +109,14 @@ void SyntaxHighlighter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_highlighting_cache"), &SyntaxHighlighter::clear_highlighting_cache);
 	ClassDB::bind_method(D_METHOD("get_text_edit"), &SyntaxHighlighter::get_text_edit);
 
-	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "_get_line_syntax_highlighting", PropertyInfo(Variant::INT, "line")));
-	BIND_VMETHOD(MethodInfo("_clear_highlighting_cache"));
-	BIND_VMETHOD(MethodInfo("_update_cache"));
+	GDVIRTUAL_BIND(_get_line_syntax_highlighting, "line")
+	GDVIRTUAL_BIND(_clear_highlighting_cache)
+	GDVIRTUAL_BIND(_update_cache)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static bool _is_char(char32_t c) {
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
-}
-
-static bool _is_hex_symbol(char32_t c) {
-	return ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
-}
-
-Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
+Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 	Dictionary color_map;
 
 	bool prev_is_char = false;
@@ -172,17 +158,20 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 		color = font_color;
 		bool is_char = !is_symbol(str[j]);
 		bool is_a_symbol = is_symbol(str[j]);
-		bool is_number = (str[j] >= '0' && str[j] <= '9');
+		bool is_number = is_digit(str[j]);
 
 		/* color regions */
 		if (is_a_symbol || in_region != -1) {
 			int from = j;
-			for (; from < line_length; from++) {
-				if (str[from] == '\\') {
-					from++;
-					continue;
+
+			if (in_region == -1) {
+				for (; from < line_length; from++) {
+					if (str[from] == '\\') {
+						from++;
+						continue;
+					}
+					break;
 				}
-				break;
 			}
 
 			if (from != line_length) {
@@ -214,6 +203,12 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 
 						/* check if it's the whole line */
 						if (end_key_length == 0 || color_regions[c].line_only || from + end_key_length > line_length) {
+							if (from + end_key_length > line_length && (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'")) {
+								// If it's key length and there is a '\', dont skip to highlight esc chars.
+								if (str.find("\\", from) >= 0) {
+									break;
+								}
+							}
 							prev_color = color_regions[in_region].color;
 							highlighter_info["color"] = color_regions[c].color;
 							color_map[j] = highlighter_info;
@@ -233,13 +228,23 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 
 				/* if we are in one find the end key */
 				if (in_region != -1) {
+					bool is_string = (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'");
+
+					Color region_color = color_regions[in_region].color;
+					prev_color = region_color;
+					highlighter_info["color"] = region_color;
+					color_map[j] = highlighter_info;
+
 					/* search the line */
 					int region_end_index = -1;
 					int end_key_length = color_regions[in_region].end_key.length();
 					const char32_t *end_key = color_regions[in_region].end_key.get_data();
 					for (; from < line_length; from++) {
 						if (line_length - from < end_key_length) {
-							break;
+							// Don't break if '\' to highlight esc chars.
+							if (!is_string || str.find("\\", from) < 0) {
+								break;
+							}
 						}
 
 						if (!is_symbol(str[from])) {
@@ -247,7 +252,20 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 						}
 
 						if (str[from] == '\\') {
+							if (is_string) {
+								Dictionary escape_char_highlighter_info;
+								escape_char_highlighter_info["color"] = symbol_color;
+								color_map[from] = escape_char_highlighter_info;
+							}
+
 							from++;
+
+							if (is_string) {
+								Dictionary region_continue_highlighter_info;
+								prev_color = region_color;
+								region_continue_highlighter_info["color"] = region_color;
+								color_map[from + 1] = region_continue_highlighter_info;
+							}
 							continue;
 						}
 
@@ -264,10 +282,6 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 						}
 					}
 
-					prev_color = color_regions[in_region].color;
-					highlighter_info["color"] = color_regions[in_region].color;
-					color_map[j] = highlighter_info;
-
 					j = from + (end_key_length - 1);
 					if (region_end_index == -1) {
 						color_region_cache[p_line] = in_region;
@@ -282,14 +296,14 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 		}
 
 		// Allow ABCDEF in hex notation.
-		if (is_hex_notation && (_is_hex_symbol(str[j]) || is_number)) {
+		if (is_hex_notation && (is_hex_digit(str[j]) || is_number)) {
 			is_number = true;
 		} else {
 			is_hex_notation = false;
 		}
 
 		// Check for dot or underscore or 'x' for hex notation in floating point number or 'e' for scientific notation.
-		if ((str[j] == '.' || str[j] == 'x' || str[j] == '_' || str[j] == 'f' || str[j] == 'e') && !in_word && prev_is_number && !is_number) {
+		if ((str[j] == '.' || str[j] == 'x' || str[j] == '_' || str[j] == 'f' || str[j] == 'e' || (uint_suffix_enabled && str[j] == 'u')) && !in_word && prev_is_number && !is_number) {
 			is_number = true;
 			is_a_symbol = false;
 			is_char = false;
@@ -299,7 +313,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 			}
 		}
 
-		if (!in_word && _is_char(str[j]) && !is_number) {
+		if (!in_word && (is_ascii_alphabet_char(str[j]) || is_underscore(str[j])) && !is_number) {
 			in_word = true;
 		}
 
@@ -322,7 +336,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 			}
 
 			String word = str.substr(j, to - j);
-			Color col = Color();
+			Color col;
 			if (keywords.has(word)) {
 				col = keywords[word];
 			} else if (member_keywords.has(word)) {
@@ -405,7 +419,7 @@ void CodeHighlighter::_clear_highlighting_cache() {
 }
 
 void CodeHighlighter::_update_cache() {
-	font_color = text_edit->get_theme_color(SNAME("font_color"));
+	font_color = text_edit->get_font_color();
 }
 
 void CodeHighlighter::add_keyword_color(const String &p_keyword, const Color &p_color) {
@@ -499,7 +513,7 @@ void CodeHighlighter::add_color_region(const String &p_start_key, const String &
 	color_region.color = p_color;
 	color_region.start_key = p_start_key;
 	color_region.end_key = p_end_key;
-	color_region.line_only = p_line_only || p_end_key == "";
+	color_region.line_only = p_line_only || p_end_key.is_empty();
 	color_regions.insert(at, color_region);
 	clear_highlighting_cache();
 }
@@ -507,7 +521,7 @@ void CodeHighlighter::add_color_region(const String &p_start_key, const String &
 void CodeHighlighter::remove_color_region(const String &p_start_key) {
 	for (int i = 0; i < color_regions.size(); i++) {
 		if (color_regions[i].start_key == p_start_key) {
-			color_regions.remove(i);
+			color_regions.remove_at(i);
 			break;
 		}
 	}
@@ -535,7 +549,7 @@ void CodeHighlighter::set_color_regions(const Dictionary &p_color_regions) {
 		String start_key = key.get_slice(" ", 0);
 		String end_key = key.get_slice_count(" ") > 1 ? key.get_slice(" ", 1) : String();
 
-		add_color_region(start_key, end_key, p_color_regions[key], end_key == "");
+		add_color_region(start_key, end_key, p_color_regions[key], end_key.is_empty());
 	}
 	clear_highlighting_cache();
 }
@@ -601,6 +615,10 @@ void CodeHighlighter::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "keyword_colors"), "set_keyword_colors", "get_keyword_colors");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "member_keyword_colors"), "set_member_keyword_colors", "get_member_keyword_colors");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "color_regions"), "set_color_regions", "get_color_regions");
+}
+
+void CodeHighlighter::set_uint_suffix_enabled(bool p_enabled) {
+	uint_suffix_enabled = p_enabled;
 }
 
 void CodeHighlighter::set_number_color(Color p_color) {

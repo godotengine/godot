@@ -1,29 +1,6 @@
-/*  GRAPHITE2 LICENSING
+// SPDX-License-Identifier: MIT OR MPL-2.0 OR LGPL-2.1-or-later OR GPL-2.0-or-later
+// Copyright 2010, SIL International, All rights reserved.
 
-    Copyright 2010, SIL International
-    All rights reserved.
-
-    This library is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published
-    by the Free Software Foundation; either version 2.1 of License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Lesser General Public License for more details.
-
-    You should also have received a copy of the GNU Lesser General Public
-    License along with this library in the file named "LICENSE".
-    If not, write to the Free Software Foundation, 51 Franklin Street,
-    Suite 500, Boston, MA 02110-1335, USA or visit their web page on the
-    internet at http://www.fsf.org/licenses/lgpl.html.
-
-Alternatively, the contents of this file may be used under the terms of the
-Mozilla Public License (http://mozilla.org/MPL) or the GNU General Public
-License, as published by the Free Software Foundation, either version 2
-of the License or (at your option) any later version.
-*/
 #include "inc/Main.h"
 #include "inc/debug.h"
 #include "inc/Endian.h"
@@ -194,7 +171,7 @@ bool Pass::readPass(const byte * const pass_start, size_t pass_length, size_t su
         m_cPConstraint = vm::Machine::Code(true, pcCode, pcCode + pass_constraint_len,
                                   precontext[0], be::peek<uint16>(sort_keys), *m_silf, face, PASS_TYPE_UNKNOWN);
         if (e.test(!m_cPConstraint, E_OUTOFMEM)
-                || e.test(m_cPConstraint.status() != Code::loaded, m_cPConstraint.status() + E_CODEFAILURE))
+                || e.test(m_cPConstraint.status() != Code::loaded, int(m_cPConstraint.status()) + E_CODEFAILURE))
             return face.error(e);
         face.error_context(face.error_context() - 1);
     }
@@ -266,8 +243,8 @@ bool Pass::readRules(const byte * rule_map, const size_t num_entries,
         r->constraint = new (m_codes+n*2-1) vm::Machine::Code(true,  rc_begin, rc_end, r->preContext, r->sort, *m_silf, face, pt, &prog_pool_free);
 
         if (e.test(!r->action || !r->constraint, E_OUTOFMEM)
-                || e.test(r->action->status() != Code::loaded, r->action->status() + E_CODEFAILURE)
-                || e.test(r->constraint->status() != Code::loaded, r->constraint->status() + E_CODEFAILURE)
+                || e.test(r->action->status() != Code::loaded, int(r->action->status()) + E_CODEFAILURE)
+                || e.test(r->constraint->status() != Code::loaded, int(r->constraint->status()) + E_CODEFAILURE)
                 || e.test(!r->constraint->immutable(), E_MUTABLECCODE))
             return face.error(e);
     }
@@ -1056,12 +1033,17 @@ float Pass::resolveKern(Segment *seg, Slot *slotFix, GR_MAYBE_UNUSED Slot *start
     ymin = min(by + bbb.bl.y, ymin);
     for (nbor = slotFix->next(); nbor; nbor = nbor->next())
     {
-        if (nbor->isChildOf(base))
-            continue;
         if (!gc.check(nbor->gid()))
             return 0.;
         const Rect &bb = seg->theGlyphBBoxTemporary(nbor->gid());
         SlotCollision *cNbor = seg->collisionInfo(nbor);
+        const float nby = nbor->origin().y + cNbor->shift().y;
+        if (nbor->isChildOf(base))
+        {
+            ymax = max(nby + bb.tr.y, ymax);
+            ymin = min(nby + bb.bl.y, ymin);
+            continue;
+        }
         if ((bb.bl.y == 0.f && bb.tr.y == 0.f) || (cNbor->flags() & SlotCollision::COLL_ISSPACE))
         {
             if (m_kernColls == InWord)

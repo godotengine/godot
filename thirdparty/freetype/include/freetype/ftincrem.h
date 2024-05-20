@@ -4,7 +4,7 @@
  *
  *   FreeType incremental loading (specification).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -213,9 +213,14 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   A function used to retrieve the basic metrics of a given glyph index
-   *   before accessing its data.  This is necessary because, in certain
-   *   formats like TrueType, the metrics are stored in a different place
-   *   from the glyph images proper.
+   *   before accessing its data.  This allows for handling font types such
+   *   as PCL~XL Format~1, Class~2 downloaded TrueType fonts, where the glyph
+   *   metrics (`hmtx` and `vmtx` tables) are permitted to be omitted from
+   *   the font, and the relevant metrics included in the header of the glyph
+   *   outline data.  Importantly, this is not intended to allow custom glyph
+   *   metrics (for example, Postscript Metrics dictionaries), because that
+   *   conflicts with the requirements of outline hinting.  Such custom
+   *   metrics must be handled separately, by the calling application.
    *
    * @input:
    *   incremental ::
@@ -235,7 +240,7 @@ FT_BEGIN_HEADER
    *
    * @output:
    *   ametrics ::
-   *     The replacement glyph metrics in font units.
+   *     The glyph metrics in font units.
    *
    */
   typedef FT_Error
@@ -264,7 +269,7 @@ FT_BEGIN_HEADER
    *
    *   get_glyph_metrics ::
    *     The function to get glyph metrics.  May be null if the font does not
-   *     provide overriding glyph metrics.
+   *     require it.
    *
    */
   typedef struct  FT_Incremental_FuncsRec_

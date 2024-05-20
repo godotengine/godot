@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "math.h"
+#include "emath.h"
 #include "vec3.h"
 
 namespace embree
@@ -149,7 +149,7 @@ namespace embree
   }
 
   ////////////////////////////////////////////////////////////////////////////////
-  /// Euclidian Space Operators
+  /// Euclidean Space Operators
   ////////////////////////////////////////////////////////////////////////////////
 
   template<typename T> __forceinline T       dot      ( const Vec4<T>& a, const Vec4<T>& b ) { return madd(a.x,b.x,madd(a.y,b.y,madd(a.z,b.z,a.w*b.w))); }
@@ -205,7 +205,7 @@ namespace embree
 /// SSE / AVX / MIC specializations
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined __SSE__
+#if defined(__SSE__) || defined(__ARM_NEON)
 #include "../simd/sse.h"
 #endif
 
@@ -221,11 +221,13 @@ namespace embree
 {
   template<> __forceinline Vec4<float>::Vec4( const Vec3fx& a ) { x = a.x; y = a.y; z = a.z; w = a.w; }
 
+#if !defined(__SYCL_DEVICE_ONLY__)
+
 #if defined(__AVX__)
   template<> __forceinline Vec4<vfloat4>::Vec4( const Vec3fx& a ) {
     x = a.x; y = a.y; z = a.z; w = a.w;
   }
-#elif defined(__SSE__)
+#elif defined(__SSE__) || defined(__ARM_NEON)
   template<> __forceinline Vec4<vfloat4>::Vec4( const Vec3fx& a ) {
     const vfloat4 v = vfloat4(a.m128); x = shuffle<0,0,0,0>(v); y = shuffle<1,1,1,1>(v); z = shuffle<2,2,2,2>(v); w = shuffle<3,3,3,3>(v);
   }
@@ -240,4 +242,25 @@ namespace embree
 #if defined(__AVX512F__)
   template<> __forceinline Vec4<vfloat16>::Vec4( const Vec3fx& a ) : x(a.x), y(a.y), z(a.z), w(a.w) {}
 #endif
+
+#else
+
+#if defined(__SSE__)
+  template<> __forceinline Vec4<vfloat4>::Vec4(const Vec3fx& a) {
+    x = a.x; y = a.y; z = a.z; w = a.w;
+  }
+#endif
+#if defined(__AVX__)
+  template<> __forceinline Vec4<vfloat8>::Vec4(const Vec3fx& a) {
+    x = a.x; y = a.y; z = a.z; w = a.w;
+  }
+#endif
+#if defined(__AVX512F__)
+  template<> __forceinline Vec4<vfloat16>::Vec4(const Vec3fx& a) {
+    x = a.x; y = a.y; z = a.z; w = a.w;
+  }
+#endif
+  
+#endif
 }
+

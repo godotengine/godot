@@ -393,6 +393,7 @@ namespace embree
 
   __forceinline int toScalar(const vint8& v) { return _mm_cvtsi128_si32(_mm256_castsi256_si128(v)); }
 
+#if !defined(__aarch64__)
   __forceinline vint8 permute(const vint8& v, const __m256i& index) {
     return _mm256_permutevar8x32_epi32(v, index);
   }
@@ -409,6 +410,9 @@ namespace embree
     return _mm256_alignr_epi8(a, b, 4*i);
 #endif
   }  
+
+#endif
+
 
   ////////////////////////////////////////////////////////////////////////////////
   /// Reductions

@@ -1,42 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisibleOnScreenNotifier3D" inherits="VisualInstance3D" version="4.0">
+<class name="VisibleOnScreenNotifier3D" inherits="VisualInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Detects approximately when the node is visible on screen.
+		A box-shaped region of 3D space that detects whether it is visible on screen.
 	</brief_description>
 	<description>
-		The VisibleOnScreenNotifier3D detects when it is visible on the screen. It also notifies when its bounding rectangle enters or exits the screen or a [Camera3D]'s view.
-		If you want nodes to be disabled automatically when they exit the screen, use [VisibleOnScreenEnabler3D] instead.
-		[b]Note:[/b] VisibleOnScreenNotifier3D uses an approximate heuristic for performance reasons. It doesn't take walls and other occlusion into account. The heuristic is an implementation detail and may change in future versions. If you need precise visibility checking, use another method such as adding an [Area3D] node as a child of a [Camera3D] node and/or [method Vector3.dot].
+		[VisibleOnScreenEnabler3D] represents a box-shaped region of 3D space. When any part of this region becomes visible on screen or in a [Camera3D]'s view, it will emit a [signal screen_entered] signal, and likewise it will emit a [signal screen_exited] signal when no part of it remains visible.
+		If you want a node to be enabled automatically when this region is visible on screen, use [VisibleOnScreenEnabler3D].
+		[b]Note:[/b] [VisibleOnScreenNotifier3D] uses an approximate heuristic that doesn't take walls and other occlusion into account, unless occlusion culling is used. It also won't function unless [member Node3D.visible] is set to [code]true[/code].
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="is_on_screen" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
-				If [code]true[/code], the bounding box is on the screen.
-				[b]Note:[/b] It takes one frame for the node's visibility to be assessed once added to the scene tree, so this method will return [code]false[/code] right after it is instantiated, even if it will be on screen in the draw pass.
+				Returns [code]true[/code] if the bounding box is on the screen.
+				[b]Note:[/b] It takes one frame for the [VisibleOnScreenNotifier3D]'s visibility to be assessed once added to the scene tree, so this method will always return [code]false[/code] right after it is instantiated.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="aabb" type="AABB" setter="set_aabb" getter="get_aabb" default="AABB(-1, -1, -1, 2, 2, 2)">
-			The VisibleOnScreenNotifier3D's bounding box.
+			The [VisibleOnScreenNotifier3D]'s bounding box.
 		</member>
 	</members>
 	<signals>
 		<signal name="screen_entered">
 			<description>
-				Emitted when the VisibleOnScreenNotifier3D enters the screen.
+				Emitted when the [VisibleOnScreenNotifier3D] enters the screen.
 			</description>
 		</signal>
 		<signal name="screen_exited">
 			<description>
-				Emitted when the VisibleOnScreenNotifier3D exits the screen.
+				Emitted when the [VisibleOnScreenNotifier3D] exits the screen.
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

@@ -4,7 +4,7 @@
  *
  *   Type 42 font data types (specification only).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2023 by
  * Roberto Alameda.
  *
  * This file is part of the FreeType project, and may only be used,

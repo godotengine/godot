@@ -37,9 +37,6 @@ static WEBP_INLINE uint8_t clip_8b(int v) {
   STORE(3, y, DC - (d));            \
 } while (0)
 
-#define MUL1(a) ((((a) * 20091) >> 16) + (a))
-#define MUL2(a) (((a) * 35468) >> 16)
-
 #if !WEBP_NEON_OMIT_C_CODE
 static void TransformOne_C(const int16_t* in, uint8_t* dst) {
   int C[4 * 4], *tmp;
@@ -48,8 +45,10 @@ static void TransformOne_C(const int16_t* in, uint8_t* dst) {
   for (i = 0; i < 4; ++i) {    // vertical pass
     const int a = in[0] + in[8];    // [-4096, 4094]
     const int b = in[0] - in[8];    // [-4095, 4095]
-    const int c = MUL2(in[4]) - MUL1(in[12]);   // [-3783, 3783]
-    const int d = MUL1(in[4]) + MUL2(in[12]);   // [-3785, 3781]
+    const int c = WEBP_TRANSFORM_AC3_MUL2(in[4]) -
+                  WEBP_TRANSFORM_AC3_MUL1(in[12]);  // [-3783, 3783]
+    const int d = WEBP_TRANSFORM_AC3_MUL1(in[4]) +
+                  WEBP_TRANSFORM_AC3_MUL2(in[12]);  // [-3785, 3781]
     tmp[0] = a + d;   // [-7881, 7875]
     tmp[1] = b + c;   // [-7878, 7878]
     tmp[2] = b - c;   // [-7878, 7878]
@@ -69,8 +68,10 @@ static void TransformOne_C(const int16_t* in, uint8_t* dst) {
     const int dc = tmp[0] + 4;
     const int a =  dc +  tmp[8];
     const int b =  dc -  tmp[8];
-    const int c = MUL2(tmp[4]) - MUL1(tmp[12]);
-    const int d = MUL1(tmp[4]) + MUL2(tmp[12]);
+    const int c =
+        WEBP_TRANSFORM_AC3_MUL2(tmp[4]) - WEBP_TRANSFORM_AC3_MUL1(tmp[12]);
+    const int d =
+        WEBP_TRANSFORM_AC3_MUL1(tmp[4]) + WEBP_TRANSFORM_AC3_MUL2(tmp[12]);
     STORE(0, 0, a + d);
     STORE(1, 0, b + c);
     STORE(2, 0, b - c);
@@ -83,17 +84,15 @@ static void TransformOne_C(const int16_t* in, uint8_t* dst) {
 // Simplified transform when only in[0], in[1] and in[4] are non-zero
 static void TransformAC3_C(const int16_t* in, uint8_t* dst) {
   const int a = in[0] + 4;
-  const int c4 = MUL2(in[4]);
-  const int d4 = MUL1(in[4]);
-  const int c1 = MUL2(in[1]);
-  const int d1 = MUL1(in[1]);
+  const int c4 = WEBP_TRANSFORM_AC3_MUL2(in[4]);
+  const int d4 = WEBP_TRANSFORM_AC3_MUL1(in[4]);
+  const int c1 = WEBP_TRANSFORM_AC3_MUL2(in[1]);
+  const int d1 = WEBP_TRANSFORM_AC3_MUL1(in[1]);
   STORE2(0, a + d4, d1, c1);
   STORE2(1, a + c4, d1, c1);
   STORE2(2, a - c4, d1, c1);
   STORE2(3, a - d4, d1, c1);
 }
-#undef MUL1
-#undef MUL2
 #undef STORE2
 
 static void TransformTwo_C(const int16_t* in, uint8_t* dst, int do_two) {
@@ -734,6 +733,7 @@ VP8SimpleFilterFunc VP8SimpleHFilter16i;
 void (*VP8DitherCombine8x8)(const uint8_t* dither, uint8_t* dst,
                             int dst_stride);
 
+extern VP8CPUInfo VP8GetCPUInfo;
 extern void VP8DspInitSSE2(void);
 extern void VP8DspInitSSE41(void);
 extern void VP8DspInitNEON(void);
@@ -807,10 +807,10 @@ WEBP_DSP_INIT_FUNC(VP8DspInit) {
 
   // If defined, use CPUInfo() to overwrite some pointers with faster versions.
   if (VP8GetCPUInfo != NULL) {
-#if defined(WEBP_USE_SSE2)
+#if defined(WEBP_HAVE_SSE2)
     if (VP8GetCPUInfo(kSSE2)) {
       VP8DspInitSSE2();
-#if defined(WEBP_USE_SSE41)
+#if defined(WEBP_HAVE_SSE41)
       if (VP8GetCPUInfo(kSSE4_1)) {
         VP8DspInitSSE41();
       }
@@ -834,7 +834,7 @@ WEBP_DSP_INIT_FUNC(VP8DspInit) {
 #endif
   }
 
-#if defined(WEBP_USE_NEON)
+#if defined(WEBP_HAVE_NEON)
   if (WEBP_NEON_OMIT_C_CODE ||
       (VP8GetCPUInfo != NULL && VP8GetCPUInfo(kNEON))) {
     VP8DspInitNEON();

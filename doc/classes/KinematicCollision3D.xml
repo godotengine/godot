@@ -1,54 +1,109 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="KinematicCollision3D" inherits="RefCounted" version="4.0">
+<class name="KinematicCollision3D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Collision data for [method PhysicsBody3D.move_and_collide] collisions.
+		Holds collision data from the movement of a [PhysicsBody3D].
 	</brief_description>
 	<description>
-		Contains collision data for [method PhysicsBody3D.move_and_collide] collisions. When a [PhysicsBody3D] is moved using [method PhysicsBody3D.move_and_collide], it stops if it detects a collision with another body. If a collision is detected, a [KinematicCollision3D] object is returned.
-		This object contains information about the collision, including the colliding object, the remaining motion, and the collision position. This information can be used to calculate a collision response.
+		Holds collision data from the movement of a [PhysicsBody3D], usually from [method PhysicsBody3D.move_and_collide]. When a [PhysicsBody3D] is moved, it stops if it detects a collision with another body. If a collision is detected, a [KinematicCollision3D] object is returned.
+		The collision data includes the colliding object, the remaining motion, and the collision position. This data can be used to determine a custom response to the collision.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_angle" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<param index="1" name="up_direction" type="Vector3" default="Vector3(0, 1, 0)" />
+			<description>
+				Returns the collision angle according to [param up_direction], which is [constant Vector3.UP] by default. This value is always positive.
+			</description>
+		</method>
+		<method name="get_collider" qualifiers="const">
+			<return type="Object" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the colliding body's attached [Object] given a collision index (the deepest collision by default).
+			</description>
+		</method>
+		<method name="get_collider_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the unique instance ID of the colliding body's attached [Object] given a collision index (the deepest collision by default). See [method Object.get_instance_id].
+			</description>
+		</method>
+		<method name="get_collider_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the colliding body's [RID] used by the [PhysicsServer3D] given a collision index (the deepest collision by default).
+			</description>
+		</method>
+		<method name="get_collider_shape" qualifiers="const">
+			<return type="Object" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the colliding body's shape given a collision index (the deepest collision by default).
+			</description>
+		</method>
+		<method name="get_collider_shape_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the colliding body's shape index given a collision index (the deepest collision by default). See [CollisionObject3D].
+			</description>
+		</method>
+		<method name="get_collider_velocity" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the colliding body's velocity given a collision index (the deepest collision by default).
+			</description>
+		</method>
+		<method name="get_collision_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of detected collisions.
+			</description>
+		</method>
+		<method name="get_depth" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the colliding body's length of overlap along the collision normal.
+			</description>
+		</method>
+		<method name="get_local_shape" qualifiers="const">
+			<return type="Object" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the moving object's colliding shape given a collision index (the deepest collision by default).
+			</description>
+		</method>
+		<method name="get_normal" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the colliding body's shape's normal at the point of collision given a collision index (the deepest collision by default).
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the point of collision in global coordinates given a collision index (the deepest collision by default).
+			</description>
+		</method>
+		<method name="get_remainder" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the moving object's remaining movement vector.
+			</description>
+		</method>
+		<method name="get_travel" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the moving object's travel before collision.
+			</description>
+		</method>
 	</methods>
-	<members>
-		<member name="collider" type="Object" setter="" getter="get_collider">
-			The colliding body.
-		</member>
-		<member name="collider_id" type="int" setter="" getter="get_collider_id" default="0">
-			The colliding body's unique instance ID. See [method Object.get_instance_id].
-		</member>
-		<member name="collider_metadata" type="Variant" setter="" getter="get_collider_metadata">
-			The colliding body's metadata. See [Object].
-		</member>
-		<member name="collider_rid" type="RID" setter="" getter="get_collider_rid">
-			The colliding body's [RID] used by the [PhysicsServer3D].
-		</member>
-		<member name="collider_shape" type="Object" setter="" getter="get_collider_shape">
-			The colliding body's shape.
-		</member>
-		<member name="collider_shape_index" type="int" setter="" getter="get_collider_shape_index" default="0">
-			The colliding shape's index. See [CollisionObject3D].
-		</member>
-		<member name="collider_velocity" type="Vector3" setter="" getter="get_collider_velocity" default="Vector3(0, 0, 0)">
-			The colliding object's velocity.
-		</member>
-		<member name="local_shape" type="Object" setter="" getter="get_local_shape">
-			The moving object's colliding shape.
-		</member>
-		<member name="normal" type="Vector3" setter="" getter="get_normal" default="Vector3(0, 0, 0)">
-			The colliding body's shape's normal at the point of collision.
-		</member>
-		<member name="position" type="Vector3" setter="" getter="get_position" default="Vector3(0, 0, 0)">
-			The point of collision, in global coordinates.
-		</member>
-		<member name="remainder" type="Vector3" setter="" getter="get_remainder" default="Vector3(0, 0, 0)">
-			The moving object's remaining movement vector.
-		</member>
-		<member name="travel" type="Vector3" setter="" getter="get_travel" default="Vector3(0, 0, 0)">
-			The distance the moving object traveled before collision.
-		</member>
-	</members>
-	<constants>
-	</constants>
 </class>

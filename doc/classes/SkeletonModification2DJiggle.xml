@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SkeletonModification2DJiggle" inherits="SkeletonModification2D" version="4.0">
+<class name="SkeletonModification2DJiggle" inherits="SkeletonModification2D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A modification that jiggles [Bone2D] nodes as they move towards a target.
 	</brief_description>
@@ -12,193 +12,147 @@
 	</tutorials>
 	<methods>
 		<method name="get_collision_mask" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the collision mask used by the Jiggle modifier when collisions are enabled.
 			</description>
 		</method>
 		<method name="get_jiggle_joint_bone2d_node" qualifiers="const">
-			<return type="NodePath">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
+			<return type="NodePath" />
+			<param index="0" name="joint_idx" type="int" />
 			<description>
-				Returns the [Bone2D] node assigned to the Jiggle joint at [code]joint_idx[/code].
+				Returns the [Bone2D] node assigned to the Jiggle joint at [param joint_idx].
 			</description>
 		</method>
 		<method name="get_jiggle_joint_bone_index" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
+			<return type="int" />
+			<param index="0" name="joint_idx" type="int" />
 			<description>
-				Returns the index of the [Bone2D] node assigned to the Jiggle joint at [code]joint_idx[/code].
+				Returns the index of the [Bone2D] node assigned to the Jiggle joint at [param joint_idx].
 			</description>
 		</method>
 		<method name="get_jiggle_joint_damping" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
+			<return type="float" />
+			<param index="0" name="joint_idx" type="int" />
 			<description>
-				Returns the amount of damping of the Jiggle joint at [code]joint_idx[/code].
+				Returns the amount of damping of the Jiggle joint at [param joint_idx].
 			</description>
 		</method>
 		<method name="get_jiggle_joint_gravity" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
+			<return type="Vector2" />
+			<param index="0" name="joint_idx" type="int" />
 			<description>
-				Returns a [Vector2] representing the amount of gravity the Jiggle joint at [code]joint_idx[/code] is influenced by.
+				Returns a [Vector2] representing the amount of gravity the Jiggle joint at [param joint_idx] is influenced by.
 			</description>
 		</method>
 		<method name="get_jiggle_joint_mass" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
+			<return type="float" />
+			<param index="0" name="joint_idx" type="int" />
 			<description>
-				Returns the amount of mass of the jiggle joint at [code]joint_idx[/code].
+				Returns the amount of mass of the jiggle joint at [param joint_idx].
 			</description>
 		</method>
 		<method name="get_jiggle_joint_override" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="joint_idx" type="int" />
 			<description>
-				Returns a boolean that indicates whether the joint at [code]joint_idx[/code] is overriding the default Jiggle joint data defined in the modification.
+				Returns a boolean that indicates whether the joint at [param joint_idx] is overriding the default Jiggle joint data defined in the modification.
 			</description>
 		</method>
 		<method name="get_jiggle_joint_stiffness" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
+			<return type="float" />
+			<param index="0" name="joint_idx" type="int" />
 			<description>
-				Returns the stiffness of the Jiggle joint at [code]joint_idx[/code].
+				Returns the stiffness of the Jiggle joint at [param joint_idx].
 			</description>
 		</method>
 		<method name="get_jiggle_joint_use_gravity" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="joint_idx" type="int" />
 			<description>
-				Returns a boolean that indicates whether the joint at [code]joint_idx[/code] is using gravity or not.
+				Returns a boolean that indicates whether the joint at [param joint_idx] is using gravity or not.
 			</description>
 		</method>
 		<method name="get_use_colliders" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether the jiggle modifier is taking physics colliders into account when solving.
 			</description>
 		</method>
 		<method name="set_collision_mask">
-			<return type="void">
-			</return>
-			<argument index="0" name="collision_mask" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="collision_mask" type="int" />
 			<description>
 				Sets the collision mask that the Jiggle modifier will use when reacting to colliders, if the Jiggle modifier is set to take colliders into account.
 			</description>
 		</method>
 		<method name="set_jiggle_joint_bone2d_node">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
-			<argument index="1" name="bone2d_node" type="NodePath">
-			</argument>
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="bone2d_node" type="NodePath" />
 			<description>
-				Sets the [Bone2D] node assigned to the Jiggle joint at [code]joint_idx[/code].
+				Sets the [Bone2D] node assigned to the Jiggle joint at [param joint_idx].
 			</description>
 		</method>
 		<method name="set_jiggle_joint_bone_index">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
-			<argument index="1" name="bone_idx" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="bone_idx" type="int" />
 			<description>
-				Sets the bone index, [code]bone_index[/code], of the Jiggle joint at [code]joint_idx[/code]. When possible, this will also update the [code]bone2d_node[/code] of the Jiggle joint based on data provided by the linked skeleton.
+				Sets the bone index, [param bone_idx], of the Jiggle joint at [param joint_idx]. When possible, this will also update the [code]bone2d_node[/code] of the Jiggle joint based on data provided by the linked skeleton.
 			</description>
 		</method>
 		<method name="set_jiggle_joint_damping">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
-			<argument index="1" name="damping" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="damping" type="float" />
 			<description>
-				Sets the amount of dampening of the Jiggle joint at [code]joint_idx[/code].
+				Sets the amount of damping of the Jiggle joint at [param joint_idx].
 			</description>
 		</method>
 		<method name="set_jiggle_joint_gravity">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
-			<argument index="1" name="gravity" type="Vector2">
-			</argument>
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="gravity" type="Vector2" />
 			<description>
-				Sets the gravity vector of the Jiggle joint at [code]joint_idx[/code].
+				Sets the gravity vector of the Jiggle joint at [param joint_idx].
 			</description>
 		</method>
 		<method name="set_jiggle_joint_mass">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
-			<argument index="1" name="mass" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="mass" type="float" />
 			<description>
-				Sets the of mass of the Jiggle joint at [code]joint_idx[/code].
+				Sets the of mass of the Jiggle joint at [param joint_idx].
 			</description>
 		</method>
 		<method name="set_jiggle_joint_override">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
-			<argument index="1" name="override" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="override" type="bool" />
 			<description>
-				Sets whether the Jiggle joint at [code]joint_idx[/code] should override the default Jiggle joint settings. Setting this to [code]true[/code] will make the joint use its own settings rather than the default ones attached to the modification.
+				Sets whether the Jiggle joint at [param joint_idx] should override the default Jiggle joint settings. Setting this to [code]true[/code] will make the joint use its own settings rather than the default ones attached to the modification.
 			</description>
 		</method>
 		<method name="set_jiggle_joint_stiffness">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
-			<argument index="1" name="stiffness" type="float">
-			</argument>
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="stiffness" type="float" />
 			<description>
-				Sets the of stiffness of the Jiggle joint at [code]joint_idx[/code].
+				Sets the of stiffness of the Jiggle joint at [param joint_idx].
 			</description>
 		</method>
 		<method name="set_jiggle_joint_use_gravity">
-			<return type="void">
-			</return>
-			<argument index="0" name="joint_idx" type="int">
-			</argument>
-			<argument index="1" name="use_gravity" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="use_gravity" type="bool" />
 			<description>
-				Sets whether the Jiggle joint at [code]joint_idx[/code] should use gravity.
+				Sets whether the Jiggle joint at [param joint_idx] should use gravity.
 			</description>
 		</method>
 		<method name="set_use_colliders">
-			<return type="void">
-			</return>
-			<argument index="0" name="use_colliders" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="use_colliders" type="bool" />
 			<description>
 				If [code]true[/code], the Jiggle modifier will take colliders into account, keeping them from entering into these collision objects.
 			</description>
@@ -206,7 +160,7 @@
 	</methods>
 	<members>
 		<member name="damping" type="float" setter="set_damping" getter="get_damping" default="0.75">
-			The default amount of dampening applied to the Jiggle joints, if they are not overridden. Higher values lead to more of the calculated velocity being applied.
+			The default amount of damping applied to the Jiggle joints, if they are not overridden. Higher values lead to more of the calculated velocity being applied.
 		</member>
 		<member name="gravity" type="Vector2" setter="set_gravity" getter="get_gravity" default="Vector2(0, 6)">
 			The default amount of gravity applied to the Jiggle joints, if they are not overridden.
@@ -227,6 +181,4 @@
 			Whether the gravity vector, [member gravity], should be applied to the Jiggle joints, assuming they are not overriding the default settings.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -1,3 +1,6 @@
+// ReSharper disable ParameterHidesMember
+// ReSharper disable UnusedMember.Global
+
 using System;
 using System.Runtime.CompilerServices;
 
@@ -5,9 +8,9 @@ namespace GodotTools.IdeMessaging.Utils
 {
     public class NotifyAwaiter<T> : INotifyCompletion
     {
-        private Action continuation;
-        private Exception exception;
-        private T result;
+        private Action? continuation;
+        private Exception? exception;
+        private T? result;
 
         public bool IsCompleted { get; private set; }
 
@@ -15,20 +18,20 @@ namespace GodotTools.IdeMessaging.Utils
         {
             if (exception != null)
                 throw exception;
-            return result;
+            return result!;
         }
 
         public void OnCompleted(Action continuation)
         {
             if (this.continuation != null)
-                throw new InvalidOperationException("This awaiter has already been listened");
+                throw new InvalidOperationException("This awaiter already has a continuation.");
             this.continuation = continuation;
         }
 
         public void SetResult(T result)
         {
             if (IsCompleted)
-                throw new InvalidOperationException("This awaiter is already completed");
+                throw new InvalidOperationException("This awaiter is already completed.");
 
             IsCompleted = true;
             this.result = result;
@@ -39,7 +42,7 @@ namespace GodotTools.IdeMessaging.Utils
         public void SetException(Exception exception)
         {
             if (IsCompleted)
-                throw new InvalidOperationException("This awaiter is already completed");
+                throw new InvalidOperationException("This awaiter is already completed.");
 
             IsCompleted = true;
             this.exception = exception;

@@ -1,11 +1,8 @@
 <!--
-Pull requests should always be made for the `master` branch first, as that's
-where development happens and the source of all future stable release branches.
+Please target the `master` branch in priority.
 
-Relevant fixes are cherry-picked for stable branches as needed.
+Relevant fixes are cherry-picked for stable branches as needed by maintainers.
 
-Do not create a pull request for stable branches unless the change is already
-available in the `master` branch and it cannot be easily cherry-picked.
-Alternatively, if the change is only relevant for that branch (e.g. rendering
-fixes for the 3.2 branch).
+To speed up the contribution process and avoid CI errors, please set up pre-commit hooks locally:
+https://docs.godotengine.org/en/latest/contributing/development/code_style_guidelines.html
 -->

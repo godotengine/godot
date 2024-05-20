@@ -1,7 +1,6 @@
 #include <array>
 #include <string.h>
 #include <limits>
-
 #ifdef __ARM_NEON
 #  include <arm_neon.h>
 #endif
@@ -29,8 +28,238 @@
 #  define _bswap64(x) __builtin_bswap64(x)
 #endif
 
+static const uint32_t MaxError = 1065369600; // ((38+76+14) * 255)^2
+// common T-/H-mode table
+static uint8_t tableTH[8] = { 3, 6, 11, 16, 23, 32, 41, 64 };
+
+// thresholds for the early compression-mode decision scheme
+// default: 0.03, 0.09, and 0.38
+float ecmd_threshold[3] = { 0.03f, 0.09f, 0.38f };
+
+static const uint8_t ModeUndecided = 0;
+static const uint8_t ModePlanar = 0x1;
+static const uint8_t ModeTH = 0x2;
+
+const unsigned int R = 2;
+const unsigned int G = 1;
+const unsigned int B = 0;
+
+struct Luma
+{
+#ifdef __AVX2__
+    float max, min;
+    uint8_t minIdx = 255, maxIdx = 255;
+    __m128i luma8;
+#elif defined __ARM_NEON && defined __aarch64__
+    float max, min;
+    uint8_t minIdx = 255, maxIdx = 255;
+    uint8x16_t luma8;
+#else
+    uint8_t max = 0, min = 255, maxIdx = 0, minIdx = 0;
+    uint8_t val[16];
+#endif
+};
+
+#ifdef __AVX2__
+struct Plane
+{
+    uint64_t plane;
+    uint64_t error;
+    __m256i sum4;
+};
+#endif
+
+#if defined __AVX2__ || (defined __ARM_NEON && defined __aarch64__)
+struct Channels
+{
+#ifdef __AVX2__
+    __m128i r8, g8, b8;
+#elif defined __ARM_NEON && defined __aarch64__
+    uint8x16x2_t r, g, b;
+#endif
+};
+#endif
+
 namespace
 {
+static etcpak_force_inline uint8_t clamp( uint8_t min, int16_t val, uint8_t max )
+{
+    return val < min ? min : ( val > max ? max : val );
+}
+
+static etcpak_force_inline uint8_t clampMin( uint8_t min, int16_t val )
+{
+    return val < min ? min : val;
+}
+
+static etcpak_force_inline uint8_t clampMax( int16_t val, uint8_t max )
+{
+    return val > max ? max : val;
+}
+
+// slightly faster than std::sort
+static void insertionSort( uint8_t* arr1, uint8_t* arr2 )
+{
+    for( uint8_t i = 1; i < 16; ++i )
+    {
+        uint8_t value = arr1[i];
+        uint8_t hole = i;
+
+        for( ; hole > 0 && value < arr1[hole - 1]; --hole )
+        {
+            arr1[hole] = arr1[hole - 1];
+            arr2[hole] = arr2[hole - 1];
+        }
+        arr1[hole] = value;
+        arr2[hole] = i;
+    }
+}
+
+//converts indices from  |a0|a1|e0|e1|i0|i1|m0|m1|b0|b1|f0|f1|j0|j1|n0|n1|c0|c1|g0|g1|k0|k1|o0|o1|d0|d1|h0|h1|l0|l1|p0|p1| previously used by T- and H-modes
+//                     into  |p0|o0|n0|m0|l0|k0|j0|i0|h0|g0|f0|e0|d0|c0|b0|a0|p1|o1|n1|m1|l1|k1|j1|i1|h1|g1|f1|e1|d1|c1|b1|a1| which should be used for all modes.
+// NO WARRANTY --- SEE STATEMENT IN TOP OF FILE (C) Ericsson AB 2005-2013. All Rights Reserved.
+static etcpak_force_inline int indexConversion( int pixelIndices )
+{
+    int correctIndices = 0;
+    int LSB[4][4];
+    int MSB[4][4];
+    int shift = 0;
+    for( int y = 3; y >= 0; y-- )
+    {
+        for( int x = 3; x >= 0; x-- )
+        {
+            LSB[x][y] = ( pixelIndices >> shift ) & 1;
+            shift++;
+            MSB[x][y] = ( pixelIndices >> shift ) & 1;
+            shift++;
+        }
+    }
+    shift = 0;
+    for( int x = 0; x < 4; x++ )
+    {
+        for( int y = 0; y < 4; y++ )
+        {
+            correctIndices |= ( LSB[x][y] << shift );
+            correctIndices |= ( MSB[x][y] << ( 16 + shift ) );
+            shift++;
+        }
+    }
+    return correctIndices;
+}
+
+// Swapping two RGB-colors
+// NO WARRANTY --- SEE STATEMENT IN TOP OF FILE (C) Ericsson AB 2005-2013. All Rights Reserved.
+static etcpak_force_inline void swapColors( uint8_t( colors )[2][3] )
+{
+    uint8_t temp = colors[0][R];
+    colors[0][R] = colors[1][R];
+    colors[1][R] = temp;
+
+    temp = colors[0][G];
+    colors[0][G] = colors[1][G];
+    colors[1][G] = temp;
+
+    temp = colors[0][B];
+    colors[0][B] = colors[1][B];
+    colors[1][B] = temp;
+}
+
+
+// calculates quantized colors for T or H modes
+void compressColor( uint8_t( currColor )[2][3], uint8_t( quantColor )[2][3], bool t_mode )
+{
+    if( t_mode )
+    {
+        quantColor[0][R] = clampMax( 15 * ( currColor[0][R] + 8 ) / 255, 15 );
+        quantColor[0][G] = clampMax( 15 * ( currColor[0][G] + 8 ) / 255, 15 );
+        quantColor[0][B] = clampMax( 15 * ( currColor[0][B] + 8 ) / 255, 15 );
+    }
+    else // clamped to [1,14] to get a wider range
+    {
+        quantColor[0][R] = clamp( 1, 15 * ( currColor[0][R] + 8 ) / 255, 14 );
+        quantColor[0][G] = clamp( 1, 15 * ( currColor[0][G] + 8 ) / 255, 14 );
+        quantColor[0][B] = clamp( 1, 15 * ( currColor[0][B] + 8 ) / 255, 14 );
+    }
+
+    // clamped to [1,14] to get a wider range
+    quantColor[1][R] = clamp( 1, 15 * ( currColor[1][R] + 8 ) / 255, 14 );
+    quantColor[1][G] = clamp( 1, 15 * ( currColor[1][G] + 8 ) / 255, 14 );
+    quantColor[1][B] = clamp( 1, 15 * ( currColor[1][B] + 8 ) / 255, 14 );
+}
+
+// three decoding functions come from ETCPACK v2.74 and are slightly changed.
+static etcpak_force_inline void decompressColor( uint8_t( colorsRGB444 )[2][3], uint8_t( colors )[2][3] )
+{
+    // The color should be retrieved as:
+    //
+    // c = round(255/(r_bits^2-1))*comp_color
+    //
+    // This is similar to bit replication
+    //
+    // Note -- this code only work for bit replication from 4 bits and up --- 3 bits needs
+    // two copy operations.
+    colors[0][R] = ( colorsRGB444[0][R] << 4 ) | colorsRGB444[0][R];
+    colors[0][G] = ( colorsRGB444[0][G] << 4 ) | colorsRGB444[0][G];
+    colors[0][B] = ( colorsRGB444[0][B] << 4 ) | colorsRGB444[0][B];
+    colors[1][R] = ( colorsRGB444[1][R] << 4 ) | colorsRGB444[1][R];
+    colors[1][G] = ( colorsRGB444[1][G] << 4 ) | colorsRGB444[1][G];
+    colors[1][B] = ( colorsRGB444[1][B] << 4 ) | colorsRGB444[1][B];
+}
+
+// calculates the paint colors from the block colors
+// using a distance d and one of the H- or T-patterns.
+static void calculatePaintColors59T( uint8_t d, uint8_t( colors )[2][3], uint8_t( pColors )[4][3] )
+{
+    //////////////////////////////////////////////
+    //
+    //		C3      C1		C4----C1---C2
+    //		|		|			  |
+    //		|		|			  |
+    //		|-------|			  |
+    //		|		|			  |
+    //		|		|			  |
+    //		C4      C2			  C3
+    //
+    //////////////////////////////////////////////
+
+    // C4
+    pColors[3][R] = clampMin( 0, colors[1][R] - tableTH[d] );
+    pColors[3][G] = clampMin( 0, colors[1][G] - tableTH[d] );
+    pColors[3][B] = clampMin( 0, colors[1][B] - tableTH[d] );
+
+    // C3
+    pColors[0][R] = colors[0][R];
+    pColors[0][G] = colors[0][G];
+    pColors[0][B] = colors[0][B];
+    // C2
+    pColors[1][R] = clampMax( colors[1][R] + tableTH[d], 255 );
+    pColors[1][G] = clampMax( colors[1][G] + tableTH[d], 255 );
+    pColors[1][B] = clampMax( colors[1][B] + tableTH[d], 255 );
+    // C1
+    pColors[2][R] = colors[1][R];
+    pColors[2][G] = colors[1][G];
+    pColors[2][B] = colors[1][B];
+}
+
+static void calculatePaintColors58H( uint8_t d, uint8_t( colors )[2][3], uint8_t( pColors )[4][3] )
+{
+    pColors[3][R] = clampMin( 0, colors[1][R] - tableTH[d] );
+    pColors[3][G] = clampMin( 0, colors[1][G] - tableTH[d] );
+    pColors[3][B] = clampMin( 0, colors[1][B] - tableTH[d] );
+
+    // C1
+    pColors[0][R] = clampMax( colors[0][R] + tableTH[d], 255 );
+    pColors[0][G] = clampMax( colors[0][G] + tableTH[d], 255 );
+    pColors[0][B] = clampMax( colors[0][B] + tableTH[d], 255 );
+    // C2
+    pColors[1][R] = clampMin( 0, colors[0][R] - tableTH[d] );
+    pColors[1][G] = clampMin( 0, colors[0][G] - tableTH[d] );
+    pColors[1][B] = clampMin( 0, colors[0][B] - tableTH[d] );
+    // C3
+    pColors[2][R] = clampMax( colors[1][R] + tableTH[d], 255 );
+    pColors[2][G] = clampMax( colors[1][G] + tableTH[d], 255 );
+    pColors[2][B] = clampMax( colors[1][B] + tableTH[d], 255 );
+}
 
 #if defined _MSC_VER && !defined __clang__
 static etcpak_force_inline unsigned long _bit_scan_forward( unsigned long mask )
@@ -563,218 +792,202 @@ static etcpak_force_inline __m128i r6g7b6_AVX2(__m128 cof, __m128 chf, __m128 cv
     return _mm_shuffle_epi8(cohv5, _mm_setr_epi8(6, 5, 4, -1, 2, 1, 0, -1, 10, 9, 8, -1, -1, -1, -1, -1));
 }
 
-struct Plane
+static etcpak_force_inline Plane Planar_AVX2( const Channels& ch, uint8_t& mode, bool useHeuristics )
 {
-    uint64_t plane;
-    uint64_t error;
-    __m256i sum4;
-};
+    __m128i t0 = _mm_sad_epu8( ch.r8, _mm_setzero_si128() );
+    __m128i t1 = _mm_sad_epu8( ch.g8, _mm_setzero_si128() );
+    __m128i t2 = _mm_sad_epu8( ch.b8, _mm_setzero_si128() );
 
-static etcpak_force_inline Plane Planar_AVX2(const uint8_t* src)
-{
-    __m128i d0 = _mm_loadu_si128(((__m128i*)src) + 0);
-    __m128i d1 = _mm_loadu_si128(((__m128i*)src) + 1);
-    __m128i d2 = _mm_loadu_si128(((__m128i*)src) + 2);
-    __m128i d3 = _mm_loadu_si128(((__m128i*)src) + 3);
+    __m128i r8s = _mm_shuffle_epi8( ch.r8, _mm_set_epi8( 0xF, 0xE, 0xB, 0xA, 0x7, 0x6, 0x3, 0x2, 0xD, 0xC, 0x9, 0x8, 0x5, 0x4, 0x1, 0x0 ) );
+    __m128i g8s = _mm_shuffle_epi8( ch.g8, _mm_set_epi8( 0xF, 0xE, 0xB, 0xA, 0x7, 0x6, 0x3, 0x2, 0xD, 0xC, 0x9, 0x8, 0x5, 0x4, 0x1, 0x0 ) );
+    __m128i b8s = _mm_shuffle_epi8( ch.b8, _mm_set_epi8( 0xF, 0xE, 0xB, 0xA, 0x7, 0x6, 0x3, 0x2, 0xD, 0xC, 0x9, 0x8, 0x5, 0x4, 0x1, 0x0 ) );
 
-    __m128i rgb0 = _mm_shuffle_epi8(d0, _mm_setr_epi8(0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, -1, -1, -1, -1));
-    __m128i rgb1 = _mm_shuffle_epi8(d1, _mm_setr_epi8(0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, -1, -1, -1, -1));
-    __m128i rgb2 = _mm_shuffle_epi8(d2, _mm_setr_epi8(0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, -1, -1, -1, -1));
-    __m128i rgb3 = _mm_shuffle_epi8(d3, _mm_setr_epi8(0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, -1, -1, -1, -1));
+    __m128i s0 = _mm_sad_epu8( r8s, _mm_setzero_si128() );
+    __m128i s1 = _mm_sad_epu8( g8s, _mm_setzero_si128() );
+    __m128i s2 = _mm_sad_epu8( b8s, _mm_setzero_si128() );
 
-    __m128i rg0 = _mm_unpacklo_epi32(rgb0, rgb1);
-    __m128i rg1 = _mm_unpacklo_epi32(rgb2, rgb3);
-    __m128i b0 = _mm_unpackhi_epi32(rgb0, rgb1);
-    __m128i b1 = _mm_unpackhi_epi32(rgb2, rgb3);
+    __m256i sr0 = _mm256_insertf128_si256( _mm256_castsi128_si256( t0 ), s0, 1 );
+    __m256i sg0 = _mm256_insertf128_si256( _mm256_castsi128_si256( t1 ), s1, 1 );
+    __m256i sb0 = _mm256_insertf128_si256( _mm256_castsi128_si256( t2 ), s2, 1 );
 
-    // swap channels
-    __m128i b8 = _mm_unpacklo_epi64(rg0, rg1);
-    __m128i g8 = _mm_unpackhi_epi64(rg0, rg1);
-    __m128i r8 = _mm_unpacklo_epi64(b0, b1);
+    __m256i sr1 = _mm256_slli_epi64( sr0, 32 );
+    __m256i sg1 = _mm256_slli_epi64( sg0, 16 );
 
-    __m128i t0 = _mm_sad_epu8(r8, _mm_setzero_si128());
-    __m128i t1 = _mm_sad_epu8(g8, _mm_setzero_si128());
-    __m128i t2 = _mm_sad_epu8(b8, _mm_setzero_si128());
+    __m256i srb = _mm256_or_si256( sr1, sb0 );
+    __m256i srgb = _mm256_or_si256( srb, sg1 );
 
-    __m128i r8s = _mm_shuffle_epi8(r8, _mm_set_epi8(0xF, 0xE, 0xB, 0xA, 0x7, 0x6, 0x3, 0x2, 0xD, 0xC, 0x9, 0x8, 0x5, 0x4, 0x1, 0x0));
-    __m128i g8s = _mm_shuffle_epi8(g8, _mm_set_epi8(0xF, 0xE, 0xB, 0xA, 0x7, 0x6, 0x3, 0x2, 0xD, 0xC, 0x9, 0x8, 0x5, 0x4, 0x1, 0x0));
-    __m128i b8s = _mm_shuffle_epi8(b8, _mm_set_epi8(0xF, 0xE, 0xB, 0xA, 0x7, 0x6, 0x3, 0x2, 0xD, 0xC, 0x9, 0x8, 0x5, 0x4, 0x1, 0x0));
+    if( mode != ModePlanar && useHeuristics )
+    {
+        Plane plane;
+        plane.sum4 = _mm256_permute4x64_epi64( srgb, _MM_SHUFFLE( 2, 3, 0, 1 ) );
+        return plane;
+    }
 
-    __m128i s0 = _mm_sad_epu8(r8s, _mm_setzero_si128());
-    __m128i s1 = _mm_sad_epu8(g8s, _mm_setzero_si128());
-    __m128i s2 = _mm_sad_epu8(b8s, _mm_setzero_si128());
+    __m128i t3 = _mm_castps_si128( _mm_shuffle_ps( _mm_castsi128_ps( t0 ), _mm_castsi128_ps( t1 ), _MM_SHUFFLE( 2, 0, 2, 0 ) ) );
+    __m128i t4 = _mm_shuffle_epi32( t2, _MM_SHUFFLE( 3, 1, 2, 0 ) );
+    __m128i t5 = _mm_hadd_epi32( t3, t4 );
+    __m128i t6 = _mm_shuffle_epi32( t5, _MM_SHUFFLE( 1, 1, 1, 1 ) );
+    __m128i t7 = _mm_shuffle_epi32( t5, _MM_SHUFFLE( 2, 2, 2, 2 ) );
 
-    __m256i sr0 = _mm256_insertf128_si256(_mm256_castsi128_si256(t0), s0, 1);
-    __m256i sg0 = _mm256_insertf128_si256(_mm256_castsi128_si256(t1), s1, 1);
-    __m256i sb0 = _mm256_insertf128_si256(_mm256_castsi128_si256(t2), s2, 1);
+    __m256i sr = _mm256_broadcastw_epi16( t5 );
+    __m256i sg = _mm256_broadcastw_epi16( t6 );
+    __m256i sb = _mm256_broadcastw_epi16( t7 );
 
-    __m256i sr1 = _mm256_slli_epi64(sr0, 32);
-    __m256i sg1 = _mm256_slli_epi64(sg0, 16);
+    __m256i r08 = _mm256_cvtepu8_epi16( ch.r8 );
+    __m256i g08 = _mm256_cvtepu8_epi16( ch.g8 );
+    __m256i b08 = _mm256_cvtepu8_epi16( ch.b8 );
 
-    __m256i srb = _mm256_or_si256(sr1, sb0);
-    __m256i srgb = _mm256_or_si256(srb, sg1);
+    __m256i r16 = _mm256_slli_epi16( r08, 4 );
+    __m256i g16 = _mm256_slli_epi16( g08, 4 );
+    __m256i b16 = _mm256_slli_epi16( b08, 4 );
 
-    __m128i t3 = _mm_castps_si128(_mm_shuffle_ps(_mm_castsi128_ps(t0), _mm_castsi128_ps(t1), _MM_SHUFFLE(2, 0, 2, 0)));
-    __m128i t4 = _mm_shuffle_epi32(t2, _MM_SHUFFLE(3, 1, 2, 0));
-    __m128i t5 = _mm_hadd_epi32(t3, t4);
-    __m128i t6 = _mm_shuffle_epi32(t5, _MM_SHUFFLE(1, 1, 1, 1));
-    __m128i t7 = _mm_shuffle_epi32(t5, _MM_SHUFFLE(2, 2, 2, 2));
+    __m256i difR0 = _mm256_sub_epi16( r16, sr );
+    __m256i difG0 = _mm256_sub_epi16( g16, sg );
+    __m256i difB0 = _mm256_sub_epi16( b16, sb );
 
-    __m256i sr = _mm256_broadcastw_epi16(t5);
-    __m256i sg = _mm256_broadcastw_epi16(t6);
-    __m256i sb = _mm256_broadcastw_epi16(t7);
+    __m256i difRyz = _mm256_madd_epi16( difR0, _mm256_set_epi16( 255, 85, -85, -255, 255, 85, -85, -255, 255, 85, -85, -255, 255, 85, -85, -255 ) );
+    __m256i difGyz = _mm256_madd_epi16( difG0, _mm256_set_epi16( 255, 85, -85, -255, 255, 85, -85, -255, 255, 85, -85, -255, 255, 85, -85, -255 ) );
+    __m256i difByz = _mm256_madd_epi16( difB0, _mm256_set_epi16( 255, 85, -85, -255, 255, 85, -85, -255, 255, 85, -85, -255, 255, 85, -85, -255 ) );
 
-    __m256i r08 = _mm256_cvtepu8_epi16(r8);
-    __m256i g08 = _mm256_cvtepu8_epi16(g8);
-    __m256i b08 = _mm256_cvtepu8_epi16(b8);
+    __m256i difRxz = _mm256_madd_epi16( difR0, _mm256_set_epi16( 255, 255, 255, 255, 85, 85, 85, 85, -85, -85, -85, -85, -255, -255, -255, -255 ) );
+    __m256i difGxz = _mm256_madd_epi16( difG0, _mm256_set_epi16( 255, 255, 255, 255, 85, 85, 85, 85, -85, -85, -85, -85, -255, -255, -255, -255 ) );
+    __m256i difBxz = _mm256_madd_epi16( difB0, _mm256_set_epi16( 255, 255, 255, 255, 85, 85, 85, 85, -85, -85, -85, -85, -255, -255, -255, -255 ) );
 
-    __m256i r16 = _mm256_slli_epi16(r08, 4);
-    __m256i g16 = _mm256_slli_epi16(g08, 4);
-    __m256i b16 = _mm256_slli_epi16(b08, 4);
+    __m256i difRGyz = _mm256_hadd_epi32( difRyz, difGyz );
+    __m256i difByzxz = _mm256_hadd_epi32( difByz, difBxz );
 
-    __m256i difR0 = _mm256_sub_epi16(r16, sr);
-    __m256i difG0 = _mm256_sub_epi16(g16, sg);
-    __m256i difB0 = _mm256_sub_epi16(b16, sb);
+    __m256i difRGxz = _mm256_hadd_epi32( difRxz, difGxz );
 
-    __m256i difRyz = _mm256_madd_epi16(difR0, _mm256_set_epi16(255, 85, -85, -255, 255, 85, -85, -255, 255, 85, -85, -255, 255, 85, -85, -255));
-    __m256i difGyz = _mm256_madd_epi16(difG0, _mm256_set_epi16(255, 85, -85, -255, 255, 85, -85, -255, 255, 85, -85, -255, 255, 85, -85, -255));
-    __m256i difByz = _mm256_madd_epi16(difB0, _mm256_set_epi16(255, 85, -85, -255, 255, 85, -85, -255, 255, 85, -85, -255, 255, 85, -85, -255));
+    __m128i sumRGyz = _mm_add_epi32( _mm256_castsi256_si128( difRGyz ), _mm256_extracti128_si256( difRGyz, 1 ) );
+    __m128i sumByzxz = _mm_add_epi32( _mm256_castsi256_si128( difByzxz ), _mm256_extracti128_si256( difByzxz, 1 ) );
+    __m128i sumRGxz = _mm_add_epi32( _mm256_castsi256_si128( difRGxz ), _mm256_extracti128_si256( difRGxz, 1 ) );
 
-    __m256i difRxz = _mm256_madd_epi16(difR0, _mm256_set_epi16(255, 255, 255, 255, 85, 85, 85, 85, -85, -85, -85, -85, -255, -255, -255, -255));
-    __m256i difGxz = _mm256_madd_epi16(difG0, _mm256_set_epi16(255, 255, 255, 255, 85, 85, 85, 85, -85, -85, -85, -85, -255, -255, -255, -255));
-    __m256i difBxz = _mm256_madd_epi16(difB0, _mm256_set_epi16(255, 255, 255, 255, 85, 85, 85, 85, -85, -85, -85, -85, -255, -255, -255, -255));
+    __m128i sumRGByz = _mm_hadd_epi32( sumRGyz, sumByzxz );
+    __m128i sumRGByzxz = _mm_hadd_epi32( sumRGxz, sumByzxz );
 
-    __m256i difRGyz = _mm256_hadd_epi32(difRyz, difGyz);
-    __m256i difByzxz = _mm256_hadd_epi32(difByz, difBxz);
+    __m128i sumRGBxz = _mm_shuffle_epi32( sumRGByzxz, _MM_SHUFFLE( 2, 3, 1, 0 ) );
 
-    __m256i difRGxz = _mm256_hadd_epi32(difRxz, difGxz);
+    __m128 sumRGByzf = _mm_cvtepi32_ps( sumRGByz );
+    __m128 sumRGBxzf = _mm_cvtepi32_ps( sumRGBxz );
 
-    __m128i sumRGyz = _mm_add_epi32(_mm256_castsi256_si128(difRGyz), _mm256_extracti128_si256(difRGyz, 1));
-    __m128i sumByzxz = _mm_add_epi32(_mm256_castsi256_si128(difByzxz), _mm256_extracti128_si256(difByzxz, 1));
-    __m128i sumRGxz = _mm_add_epi32(_mm256_castsi256_si128(difRGxz), _mm256_extracti128_si256(difRGxz, 1));
+    const float value = ( 255 * 255 * 8.0f + 85 * 85 * 8.0f ) * 16.0f;
 
-    __m128i sumRGByz = _mm_hadd_epi32(sumRGyz, sumByzxz);
-    __m128i sumRGByzxz = _mm_hadd_epi32(sumRGxz, sumByzxz);
+    __m128 scale = _mm_set1_ps( -4.0f / value );
 
-    __m128i sumRGBxz = _mm_shuffle_epi32(sumRGByzxz, _MM_SHUFFLE(2, 3, 1, 0));
+    __m128 af = _mm_mul_ps( sumRGBxzf, scale );
+    __m128 bf = _mm_mul_ps( sumRGByzf, scale );
 
-    __m128 sumRGByzf = _mm_cvtepi32_ps(sumRGByz);
-    __m128 sumRGBxzf = _mm_cvtepi32_ps(sumRGBxz);
-
-    const float value = (255 * 255 * 8.0f + 85 * 85 * 8.0f) * 16.0f;
-
-    __m128 scale = _mm_set1_ps(-4.0f / value);
-
-    __m128 af = _mm_mul_ps(sumRGBxzf, scale);
-    __m128 bf = _mm_mul_ps(sumRGByzf, scale);
-
-    __m128 df = _mm_mul_ps(_mm_cvtepi32_ps(t5), _mm_set1_ps(4.0f / 16.0f));
+    __m128 df = _mm_mul_ps( _mm_cvtepi32_ps( t5 ), _mm_set1_ps( 4.0f / 16.0f ) );
 
     // calculating the three colors RGBO, RGBH, and RGBV.  RGB = df - af * x - bf * y;
-    __m128 cof0 = _mm_fnmadd_ps(af, _mm_set1_ps(-255.0f), _mm_fnmadd_ps(bf, _mm_set1_ps(-255.0f), df));
-    __m128 chf0 = _mm_fnmadd_ps(af, _mm_set1_ps( 425.0f), _mm_fnmadd_ps(bf, _mm_set1_ps(-255.0f), df));
-    __m128 cvf0 = _mm_fnmadd_ps(af, _mm_set1_ps(-255.0f), _mm_fnmadd_ps(bf, _mm_set1_ps( 425.0f), df));
+    __m128 cof0 = _mm_fnmadd_ps( af, _mm_set1_ps( -255.0f ), _mm_fnmadd_ps( bf, _mm_set1_ps( -255.0f ), df ) );
+    __m128 chf0 = _mm_fnmadd_ps( af, _mm_set1_ps( 425.0f ), _mm_fnmadd_ps( bf, _mm_set1_ps( -255.0f ), df ) );
+    __m128 cvf0 = _mm_fnmadd_ps( af, _mm_set1_ps( -255.0f ), _mm_fnmadd_ps( bf, _mm_set1_ps( 425.0f ), df ) );
 
     // convert to r6g7b6
-    __m128i cohv = r6g7b6_AVX2(cof0, chf0, cvf0);
+    __m128i cohv = r6g7b6_AVX2( cof0, chf0, cvf0 );
 
-    uint64_t rgbho = _mm_extract_epi64(cohv, 0);
-    uint32_t rgbv0 = _mm_extract_epi32(cohv, 2);
+    uint64_t rgbho = _mm_extract_epi64( cohv, 0 );
+    uint32_t rgbv0 = _mm_extract_epi32( cohv, 2 );
 
     // Error calculation
-    auto ro0 = (rgbho >> 48) & 0x3F;
-    auto go0 = (rgbho >> 40) & 0x7F;
-    auto bo0 = (rgbho >> 32) & 0x3F;
-    auto ro1 = (ro0 >> 4) | (ro0 << 2);
-    auto go1 = (go0 >> 6) | (go0 << 1);
-    auto bo1 = (bo0 >> 4) | (bo0 << 2);
-    auto ro2 = (ro1 << 2) + 2;
-    auto go2 = (go1 << 2) + 2;
-    auto bo2 = (bo1 << 2) + 2;
+    uint64_t error = 0;
+    if( !useHeuristics )
+    {
+        auto ro0 = ( rgbho >> 48 ) & 0x3F;
+        auto go0 = ( rgbho >> 40 ) & 0x7F;
+        auto bo0 = ( rgbho >> 32 ) & 0x3F;
+        auto ro1 = ( ro0 >> 4 ) | ( ro0 << 2 );
+        auto go1 = ( go0 >> 6 ) | ( go0 << 1 );
+        auto bo1 = ( bo0 >> 4 ) | ( bo0 << 2 );
+        auto ro2 = ( ro1 << 2 ) + 2;
+        auto go2 = ( go1 << 2 ) + 2;
+        auto bo2 = ( bo1 << 2 ) + 2;
 
-    __m256i ro3 = _mm256_set1_epi16(ro2);
-    __m256i go3 = _mm256_set1_epi16(go2);
-    __m256i bo3 = _mm256_set1_epi16(bo2);
+        __m256i ro3 = _mm256_set1_epi16( ro2 );
+        __m256i go3 = _mm256_set1_epi16( go2 );
+        __m256i bo3 = _mm256_set1_epi16( bo2 );
 
-    auto rh0 = (rgbho >> 16) & 0x3F;
-    auto gh0 = (rgbho >>  8) & 0x7F;
-    auto bh0 = (rgbho >>  0) & 0x3F;
-    auto rh1 = (rh0 >> 4) | (rh0 << 2);
-    auto gh1 = (gh0 >> 6) | (gh0 << 1);
-    auto bh1 = (bh0 >> 4) | (bh0 << 2);
+        auto rh0 = ( rgbho >> 16 ) & 0x3F;
+        auto gh0 = ( rgbho >> 8 ) & 0x7F;
+        auto bh0 = ( rgbho >> 0 ) & 0x3F;
+        auto rh1 = ( rh0 >> 4 ) | ( rh0 << 2 );
+        auto gh1 = ( gh0 >> 6 ) | ( gh0 << 1 );
+        auto bh1 = ( bh0 >> 4 ) | ( bh0 << 2 );
 
-    auto rh2 = rh1 - ro1;
-    auto gh2 = gh1 - go1;
-    auto bh2 = bh1 - bo1;
+        auto rh2 = rh1 - ro1;
+        auto gh2 = gh1 - go1;
+        auto bh2 = bh1 - bo1;
 
-    __m256i rh3 = _mm256_set1_epi16(rh2);
-    __m256i gh3 = _mm256_set1_epi16(gh2);
-    __m256i bh3 = _mm256_set1_epi16(bh2);
+        __m256i rh3 = _mm256_set1_epi16( rh2 );
+        __m256i gh3 = _mm256_set1_epi16( gh2 );
+        __m256i bh3 = _mm256_set1_epi16( bh2 );
 
-    auto rv0 = (rgbv0 >> 16) & 0x3F;
-    auto gv0 = (rgbv0 >>  8) & 0x7F;
-    auto bv0 = (rgbv0 >>  0) & 0x3F;
-    auto rv1 = (rv0 >> 4) | (rv0 << 2);
-    auto gv1 = (gv0 >> 6) | (gv0 << 1);
-    auto bv1 = (bv0 >> 4) | (bv0 << 2);
+        auto rv0 = ( rgbv0 >> 16 ) & 0x3F;
+        auto gv0 = ( rgbv0 >> 8 ) & 0x7F;
+        auto bv0 = ( rgbv0 >> 0 ) & 0x3F;
+        auto rv1 = ( rv0 >> 4 ) | ( rv0 << 2 );
+        auto gv1 = ( gv0 >> 6 ) | ( gv0 << 1 );
+        auto bv1 = ( bv0 >> 4 ) | ( bv0 << 2 );
 
-    auto rv2 = rv1 - ro1;
-    auto gv2 = gv1 - go1;
-    auto bv2 = bv1 - bo1;
+        auto rv2 = rv1 - ro1;
+        auto gv2 = gv1 - go1;
+        auto bv2 = bv1 - bo1;
 
-    __m256i rv3 = _mm256_set1_epi16(rv2);
-    __m256i gv3 = _mm256_set1_epi16(gv2);
-    __m256i bv3 = _mm256_set1_epi16(bv2);
+        __m256i rv3 = _mm256_set1_epi16( rv2 );
+        __m256i gv3 = _mm256_set1_epi16( gv2 );
+        __m256i bv3 = _mm256_set1_epi16( bv2 );
 
-    __m256i x = _mm256_set_epi16(3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0);
+        __m256i x = _mm256_set_epi16( 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0 );
 
-    __m256i rh4 = _mm256_mullo_epi16(rh3, x);
-    __m256i gh4 = _mm256_mullo_epi16(gh3, x);
-    __m256i bh4 = _mm256_mullo_epi16(bh3, x);
+        __m256i rh4 = _mm256_mullo_epi16( rh3, x );
+        __m256i gh4 = _mm256_mullo_epi16( gh3, x );
+        __m256i bh4 = _mm256_mullo_epi16( bh3, x );
 
-    __m256i y = _mm256_set_epi16(3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0);
+        __m256i y = _mm256_set_epi16( 3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0 );
 
-    __m256i rv4 = _mm256_mullo_epi16(rv3, y);
-    __m256i gv4 = _mm256_mullo_epi16(gv3, y);
-    __m256i bv4 = _mm256_mullo_epi16(bv3, y);
+        __m256i rv4 = _mm256_mullo_epi16( rv3, y );
+        __m256i gv4 = _mm256_mullo_epi16( gv3, y );
+        __m256i bv4 = _mm256_mullo_epi16( bv3, y );
 
-    __m256i rxy = _mm256_add_epi16(rh4, rv4);
-    __m256i gxy = _mm256_add_epi16(gh4, gv4);
-    __m256i bxy = _mm256_add_epi16(bh4, bv4);
+        __m256i rxy = _mm256_add_epi16( rh4, rv4 );
+        __m256i gxy = _mm256_add_epi16( gh4, gv4 );
+        __m256i bxy = _mm256_add_epi16( bh4, bv4 );
 
-    __m256i rp0 = _mm256_add_epi16(rxy, ro3);
-    __m256i gp0 = _mm256_add_epi16(gxy, go3);
-    __m256i bp0 = _mm256_add_epi16(bxy, bo3);
+        __m256i rp0 = _mm256_add_epi16( rxy, ro3 );
+        __m256i gp0 = _mm256_add_epi16( gxy, go3 );
+        __m256i bp0 = _mm256_add_epi16( bxy, bo3 );
 
-    __m256i rp1 = _mm256_srai_epi16(rp0, 2);
-    __m256i gp1 = _mm256_srai_epi16(gp0, 2);
-    __m256i bp1 = _mm256_srai_epi16(bp0, 2);
+        __m256i rp1 = _mm256_srai_epi16( rp0, 2 );
+        __m256i gp1 = _mm256_srai_epi16( gp0, 2 );
+        __m256i bp1 = _mm256_srai_epi16( bp0, 2 );
 
-    __m256i rp2 = _mm256_max_epi16(_mm256_min_epi16(rp1, _mm256_set1_epi16(255)), _mm256_setzero_si256());
-    __m256i gp2 = _mm256_max_epi16(_mm256_min_epi16(gp1, _mm256_set1_epi16(255)), _mm256_setzero_si256());
-    __m256i bp2 = _mm256_max_epi16(_mm256_min_epi16(bp1, _mm256_set1_epi16(255)), _mm256_setzero_si256());
+        __m256i rp2 = _mm256_max_epi16( _mm256_min_epi16( rp1, _mm256_set1_epi16( 255 ) ), _mm256_setzero_si256() );
+        __m256i gp2 = _mm256_max_epi16( _mm256_min_epi16( gp1, _mm256_set1_epi16( 255 ) ), _mm256_setzero_si256() );
+        __m256i bp2 = _mm256_max_epi16( _mm256_min_epi16( bp1, _mm256_set1_epi16( 255 ) ), _mm256_setzero_si256() );
 
-    __m256i rdif = _mm256_sub_epi16(r08, rp2);
-    __m256i gdif = _mm256_sub_epi16(g08, gp2);
-    __m256i bdif = _mm256_sub_epi16(b08, bp2);
+        __m256i rdif = _mm256_sub_epi16( r08, rp2 );
+        __m256i gdif = _mm256_sub_epi16( g08, gp2 );
+        __m256i bdif = _mm256_sub_epi16( b08, bp2 );
 
-    __m256i rerr = _mm256_mullo_epi16(rdif, _mm256_set1_epi16(38));
-    __m256i gerr = _mm256_mullo_epi16(gdif, _mm256_set1_epi16(76));
-    __m256i berr = _mm256_mullo_epi16(bdif, _mm256_set1_epi16(14));
+        __m256i rerr = _mm256_mullo_epi16( rdif, _mm256_set1_epi16( 38 ) );
+        __m256i gerr = _mm256_mullo_epi16( gdif, _mm256_set1_epi16( 76 ) );
+        __m256i berr = _mm256_mullo_epi16( bdif, _mm256_set1_epi16( 14 ) );
 
-    __m256i sum0 = _mm256_add_epi16(rerr, gerr);
-    __m256i sum1 = _mm256_add_epi16(sum0, berr);
+        __m256i sum0 = _mm256_add_epi16( rerr, gerr );
+        __m256i sum1 = _mm256_add_epi16( sum0, berr );
 
-    __m256i sum2 = _mm256_madd_epi16(sum1, sum1);
+        __m256i sum2 = _mm256_madd_epi16( sum1, sum1 );
 
-    __m128i sum3 = _mm_add_epi32(_mm256_castsi256_si128(sum2), _mm256_extracti128_si256(sum2, 1));
+        __m128i sum3 = _mm_add_epi32( _mm256_castsi256_si128( sum2 ), _mm256_extracti128_si256( sum2, 1 ) );
 
-    uint32_t err0 = _mm_extract_epi32(sum3, 0);
-    uint32_t err1 = _mm_extract_epi32(sum3, 1);
-    uint32_t err2 = _mm_extract_epi32(sum3, 2);
-    uint32_t err3 = _mm_extract_epi32(sum3, 3);
+        uint32_t err0 = _mm_extract_epi32( sum3, 0 );
+        uint32_t err1 = _mm_extract_epi32( sum3, 1 );
+        uint32_t err2 = _mm_extract_epi32( sum3, 2 );
+        uint32_t err3 = _mm_extract_epi32( sum3, 3 );
 
-    uint64_t error = err0 + err1 + err2 + err3;
+        error = err0 + err1 + err2 + err3;
+    }
     /**/
 
     uint32_t rgbv = ( rgbv0 & 0x3F ) | ( ( rgbv0 >> 2 ) & 0x1FC0 ) | ( ( rgbv0 >> 3 ) & 0x7E000 );
@@ -793,7 +1006,15 @@ static etcpak_force_inline Plane Planar_AVX2(const uint8_t* src)
     Plane plane;
 
     plane.plane = result;
-    plane.error = error;
+    if( useHeuristics )
+    {
+        plane.error = 0;
+        mode = ModePlanar;
+    }
+    else
+    {
+        plane.error = error;
+    }
     plane.sum4 = _mm256_permute4x64_epi64(srgb, _MM_SHUFFLE(2, 3, 0, 1));
 
     return plane;
@@ -1543,13 +1764,13 @@ static etcpak_force_inline uint8_t convert7(float f)
     return (i + 9 - ((i + 9) >> 8) - ((i + 6) >> 8)) >> 2;
 }
 
-static etcpak_force_inline std::pair<uint64_t, uint64_t> Planar(const uint8_t* src)
+static etcpak_force_inline std::pair<uint64_t, uint64_t> Planar( const uint8_t* src, const uint8_t mode, bool useHeuristics )
 {
     int32_t r = 0;
     int32_t g = 0;
     int32_t b = 0;
 
-    for (int i = 0; i < 16; ++i)
+    for( int i = 0; i < 16; ++i )
     {
         b += src[i * 4 + 0];
         g += src[i * 4 + 1];
@@ -1617,72 +1838,73 @@ static etcpak_force_inline std::pair<uint64_t, uint64_t> Planar(const uint8_t* s
     int32_t cvB = convert6(cvfB);
 
     // Error calculation
-    auto ro0 = coR;
-    auto go0 = coG;
-    auto bo0 = coB;
-    auto ro1 = (ro0 >> 4) | (ro0 << 2);
-    auto go1 = (go0 >> 6) | (go0 << 1);
-    auto bo1 = (bo0 >> 4) | (bo0 << 2);
-    auto ro2 = (ro1 << 2) + 2;
-    auto go2 = (go1 << 2) + 2;
-    auto bo2 = (bo1 << 2) + 2;
-
-    auto rh0 = chR;
-    auto gh0 = chG;
-    auto bh0 = chB;
-    auto rh1 = (rh0 >> 4) | (rh0 << 2);
-    auto gh1 = (gh0 >> 6) | (gh0 << 1);
-    auto bh1 = (bh0 >> 4) | (bh0 << 2);
-
-    auto rh2 = rh1 - ro1;
-    auto gh2 = gh1 - go1;
-    auto bh2 = bh1 - bo1;
-
-    auto rv0 = cvR;
-    auto gv0 = cvG;
-    auto bv0 = cvB;
-    auto rv1 = (rv0 >> 4) | (rv0 << 2);
-    auto gv1 = (gv0 >> 6) | (gv0 << 1);
-    auto bv1 = (bv0 >> 4) | (bv0 << 2);
-
-    auto rv2 = rv1 - ro1;
-    auto gv2 = gv1 - go1;
-    auto bv2 = bv1 - bo1;
-
     uint64_t error = 0;
-
-    for (int i = 0; i < 16; ++i)
+    if( ModePlanar != mode && useHeuristics )
     {
-        int32_t cR = clampu8((rh2 * (i / 4) + rv2 * (i % 4) + ro2) >> 2);
-        int32_t cG = clampu8((gh2 * (i / 4) + gv2 * (i % 4) + go2) >> 2);
-        int32_t cB = clampu8((bh2 * (i / 4) + bv2 * (i % 4) + bo2) >> 2);
+        auto ro0 = coR;
+        auto go0 = coG;
+        auto bo0 = coB;
+        auto ro1 = ( ro0 >> 4 ) | ( ro0 << 2 );
+        auto go1 = ( go0 >> 6 ) | ( go0 << 1 );
+        auto bo1 = ( bo0 >> 4 ) | ( bo0 << 2 );
+        auto ro2 = ( ro1 << 2 ) + 2;
+        auto go2 = ( go1 << 2 ) + 2;
+        auto bo2 = ( bo1 << 2 ) + 2;
 
-        int32_t difB = static_cast<int>(src[i * 4 + 0]) - cB;
-        int32_t difG = static_cast<int>(src[i * 4 + 1]) - cG;
-        int32_t difR = static_cast<int>(src[i * 4 + 2]) - cR;
+        auto rh0 = chR;
+        auto gh0 = chG;
+        auto bh0 = chB;
+        auto rh1 = ( rh0 >> 4 ) | ( rh0 << 2 );
+        auto gh1 = ( gh0 >> 6 ) | ( gh0 << 1 );
+        auto bh1 = ( bh0 >> 4 ) | ( bh0 << 2 );
 
-        int32_t dif = difR * 38 + difG * 76 + difB * 14;
+        auto rh2 = rh1 - ro1;
+        auto gh2 = gh1 - go1;
+        auto bh2 = bh1 - bo1;
 
-        error += dif * dif;
+        auto rv0 = cvR;
+        auto gv0 = cvG;
+        auto bv0 = cvB;
+        auto rv1 = ( rv0 >> 4 ) | ( rv0 << 2 );
+        auto gv1 = ( gv0 >> 6 ) | ( gv0 << 1 );
+        auto bv1 = ( bv0 >> 4 ) | ( bv0 << 2 );
+
+        auto rv2 = rv1 - ro1;
+        auto gv2 = gv1 - go1;
+        auto bv2 = bv1 - bo1;
+        for( int i = 0; i < 16; ++i )
+        {
+            int32_t cR = clampu8( ( rh2 * ( i / 4 ) + rv2 * ( i % 4 ) + ro2 ) >> 2 );
+            int32_t cG = clampu8( ( gh2 * ( i / 4 ) + gv2 * ( i % 4 ) + go2 ) >> 2 );
+            int32_t cB = clampu8( ( bh2 * ( i / 4 ) + bv2 * ( i % 4 ) + bo2 ) >> 2 );
+
+            int32_t difB = static_cast<int>( src[i * 4 + 0] ) - cB;
+            int32_t difG = static_cast<int>( src[i * 4 + 1] ) - cG;
+            int32_t difR = static_cast<int>( src[i * 4 + 2] ) - cR;
+
+            int32_t dif = difR * 38 + difG * 76 + difB * 14;
+
+            error += dif * dif;
+        }
     }
 
     /**/
-    uint32_t rgbv = cvB | (cvG << 6) | (cvR << 13);
-    uint32_t rgbh = chB | (chG << 6) | (chR << 13);
-    uint32_t hi = rgbv | ((rgbh & 0x1FFF) << 19);
-    uint32_t lo = (chR & 0x1) | 0x2 | ((chR << 1) & 0x7C);
-    lo |= ((coB & 0x07) <<  7) | ((coB & 0x18) <<  8) | ((coB & 0x20) << 11);
-    lo |= ((coG & 0x3F) << 17) | ((coG & 0x40) << 18);
+    uint32_t rgbv = cvB | ( cvG << 6 ) | ( cvR << 13 );
+    uint32_t rgbh = chB | ( chG << 6 ) | ( chR << 13 );
+    uint32_t hi = rgbv | ( ( rgbh & 0x1FFF ) << 19 );
+    uint32_t lo = ( chR & 0x1 ) | 0x2 | ( ( chR << 1 ) & 0x7C );
+    lo |= ( ( coB & 0x07 ) << 7 ) | ( ( coB & 0x18 ) << 8 ) | ( ( coB & 0x20 ) << 11 );
+    lo |= ( ( coG & 0x3F ) << 17 ) | ( ( coG & 0x40 ) << 18 );
     lo |= coR << 25;
 
-    const auto idx = (coR & 0x20) | ((coG & 0x20) >> 1) | ((coB & 0x1E) >> 1);
+    const auto idx = ( coR & 0x20 ) | ( ( coG & 0x20 ) >> 1 ) | ( ( coB & 0x1E ) >> 1 );
 
     lo |= g_flags[idx];
 
-    uint64_t result = static_cast<uint32_t>(_bswap(lo));
-    result |= static_cast<uint64_t>(static_cast<uint32_t>(_bswap(hi))) << 32;
+    uint64_t result = static_cast<uint32_t>( _bswap( lo ) );
+    result |= static_cast<uint64_t>( static_cast<uint32_t>( _bswap( hi ) ) ) << 32;
 
-    return std::make_pair(result, error);
+    return std::make_pair( result, error );
 }
 
 #ifdef __ARM_NEON
@@ -1728,7 +1950,7 @@ static etcpak_force_inline int16x8_t Planar_NEON_SumWide( uint8x16_t src )
     uint16x4_t accu2 = vpadd_u16( accu4, accu4 );
     uint16x4_t accu1 = vpadd_u16( accu2, accu2 );
     return vreinterpretq_s16_u16( vcombine_u16( accu1, accu1 ) );
-#else 
+#else
     return vdupq_n_s16( vaddvq_u16( accu8 ) );
 #endif
 }
@@ -1755,7 +1977,7 @@ static etcpak_force_inline int16x4_t convert7_NEON( int32x4_t x )
     return vshr_n_s16( vsub_s16( vsub_s16( p9, vshr_n_s16( p9, 8 ) ), vshr_n_s16( p6, 8 ) ), 2 );
 }
 
-static etcpak_force_inline std::pair<uint64_t, uint64_t> Planar_NEON( const uint8_t* src )
+static etcpak_force_inline std::pair<uint64_t, uint64_t> Planar_NEON( const uint8_t* src, const uint8_t mode, bool useHeuristics )
 {
     uint8x16x4_t srcBlock = vld4q_u8( src );
 
@@ -1799,66 +2021,70 @@ static etcpak_force_inline std::pair<uint64_t, uint64_t> Planar_NEON( const uint
     int16x8_t c_hvoo_br_8 = vorrq_s16( vshrq_n_s16( c_hvoo_br_6, 4 ), vshlq_n_s16( c_hvoo_br_6, 2 ) );
     int16x4_t c_hvox_g_8 = vorr_s16( vshr_n_s16( c_hvox_g_7, 6 ), vshl_n_s16( c_hvox_g_7, 1 ) );
 
-    int16x4_t rec_gxbr_o = vext_s16( c_hvox_g_8, vget_high_s16( c_hvoo_br_8 ), 3 );
+    uint64_t error = 0;
+    if( mode != ModePlanar && useHeuristics )
+    {
+        int16x4_t rec_gxbr_o = vext_s16( c_hvox_g_8, vget_high_s16( c_hvoo_br_8 ), 3 );
 
-    rec_gxbr_o = vadd_s16( vshl_n_s16( rec_gxbr_o, 2 ), vdup_n_s16( 2 ) );
-    int16x8_t rec_ro_wide = vdupq_lane_s16( rec_gxbr_o, 3 );
-    int16x8_t rec_go_wide = vdupq_lane_s16( rec_gxbr_o, 0 );
-    int16x8_t rec_bo_wide = vdupq_lane_s16( rec_gxbr_o, 1 );
+        rec_gxbr_o = vadd_s16( vshl_n_s16( rec_gxbr_o, 2 ), vdup_n_s16( 2 ) );
+        int16x8_t rec_ro_wide = vdupq_lane_s16( rec_gxbr_o, 3 );
+        int16x8_t rec_go_wide = vdupq_lane_s16( rec_gxbr_o, 0 );
+        int16x8_t rec_bo_wide = vdupq_lane_s16( rec_gxbr_o, 1 );
 
-    int16x4_t br_hv2 = vsub_s16( vget_low_s16( c_hvoo_br_8 ), vget_high_s16( c_hvoo_br_8 ) );
-    int16x4_t gg_hv2 = vsub_s16( c_hvox_g_8, vdup_lane_s16( c_hvox_g_8, 2 ) );
+        int16x4_t br_hv2 = vsub_s16( vget_low_s16( c_hvoo_br_8 ), vget_high_s16( c_hvoo_br_8 ) );
+        int16x4_t gg_hv2 = vsub_s16( c_hvox_g_8, vdup_lane_s16( c_hvox_g_8, 2 ) );
 
-    int16x8_t scaleh_lo = { 0, 0, 0, 0, 1, 1, 1, 1 };
-    int16x8_t scaleh_hi = { 2, 2, 2, 2, 3, 3, 3, 3 };
-    int16x8_t scalev = { 0, 1, 2, 3, 0, 1, 2, 3 };
+        int16x8_t scaleh_lo = { 0, 0, 0, 0, 1, 1, 1, 1 };
+        int16x8_t scaleh_hi = { 2, 2, 2, 2, 3, 3, 3, 3 };
+        int16x8_t scalev = { 0, 1, 2, 3, 0, 1, 2, 3 };
 
-    int16x8_t rec_r_1 = vmlaq_lane_s16( rec_ro_wide, scalev, br_hv2, 3 );
-    int16x8_t rec_r_lo = vreinterpretq_s16_u16( vmovl_u8( vqshrun_n_s16( vmlaq_lane_s16( rec_r_1, scaleh_lo, br_hv2, 2 ), 2 ) ) );
-    int16x8_t rec_r_hi = vreinterpretq_s16_u16( vmovl_u8( vqshrun_n_s16( vmlaq_lane_s16( rec_r_1, scaleh_hi, br_hv2, 2 ), 2 ) ) );
+        int16x8_t rec_r_1 = vmlaq_lane_s16( rec_ro_wide, scalev, br_hv2, 3 );
+        int16x8_t rec_r_lo = vreinterpretq_s16_u16( vmovl_u8( vqshrun_n_s16( vmlaq_lane_s16( rec_r_1, scaleh_lo, br_hv2, 2 ), 2 ) ) );
+        int16x8_t rec_r_hi = vreinterpretq_s16_u16( vmovl_u8( vqshrun_n_s16( vmlaq_lane_s16( rec_r_1, scaleh_hi, br_hv2, 2 ), 2 ) ) );
 
-    int16x8_t rec_b_1 = vmlaq_lane_s16( rec_bo_wide, scalev, br_hv2, 1 );
-    int16x8_t rec_b_lo = vreinterpretq_s16_u16( vmovl_u8( vqshrun_n_s16( vmlaq_lane_s16( rec_b_1, scaleh_lo, br_hv2, 0 ), 2 ) ) );
-    int16x8_t rec_b_hi = vreinterpretq_s16_u16( vmovl_u8( vqshrun_n_s16( vmlaq_lane_s16( rec_b_1, scaleh_hi, br_hv2, 0 ), 2 ) ) );
+        int16x8_t rec_b_1 = vmlaq_lane_s16( rec_bo_wide, scalev, br_hv2, 1 );
+        int16x8_t rec_b_lo = vreinterpretq_s16_u16( vmovl_u8( vqshrun_n_s16( vmlaq_lane_s16( rec_b_1, scaleh_lo, br_hv2, 0 ), 2 ) ) );
+        int16x8_t rec_b_hi = vreinterpretq_s16_u16( vmovl_u8( vqshrun_n_s16( vmlaq_lane_s16( rec_b_1, scaleh_hi, br_hv2, 0 ), 2 ) ) );
 
-    int16x8_t rec_g_1 = vmlaq_lane_s16( rec_go_wide, scalev, gg_hv2, 1 );
-    int16x8_t rec_g_lo = vreinterpretq_s16_u16( vmovl_u8( vqshrun_n_s16( vmlaq_lane_s16( rec_g_1, scaleh_lo, gg_hv2, 0 ), 2 ) ) );
-    int16x8_t rec_g_hi = vreinterpretq_s16_u16( vmovl_u8( vqshrun_n_s16( vmlaq_lane_s16( rec_g_1, scaleh_hi, gg_hv2, 0 ), 2 ) ) );
+        int16x8_t rec_g_1 = vmlaq_lane_s16( rec_go_wide, scalev, gg_hv2, 1 );
+        int16x8_t rec_g_lo = vreinterpretq_s16_u16( vmovl_u8( vqshrun_n_s16( vmlaq_lane_s16( rec_g_1, scaleh_lo, gg_hv2, 0 ), 2 ) ) );
+        int16x8_t rec_g_hi = vreinterpretq_s16_u16( vmovl_u8( vqshrun_n_s16( vmlaq_lane_s16( rec_g_1, scaleh_hi, gg_hv2, 0 ), 2 ) ) );
 
-    int16x8_t dif_r_lo = vsubq_s16( vreinterpretq_s16_u16( vmovl_u8( vget_low_u8( srcBlock.val[2] ) ) ), rec_r_lo );
-    int16x8_t dif_r_hi = vsubq_s16( vreinterpretq_s16_u16( vmovl_u8( vget_high_u8( srcBlock.val[2] ) ) ), rec_r_hi );
+        int16x8_t dif_r_lo = vsubq_s16( vreinterpretq_s16_u16( vmovl_u8( vget_low_u8( srcBlock.val[2] ) ) ), rec_r_lo );
+        int16x8_t dif_r_hi = vsubq_s16( vreinterpretq_s16_u16( vmovl_u8( vget_high_u8( srcBlock.val[2] ) ) ), rec_r_hi );
 
-    int16x8_t dif_g_lo = vsubq_s16( vreinterpretq_s16_u16( vmovl_u8( vget_low_u8( srcBlock.val[1] ) ) ), rec_g_lo );
-    int16x8_t dif_g_hi = vsubq_s16( vreinterpretq_s16_u16( vmovl_u8( vget_high_u8( srcBlock.val[1] ) ) ), rec_g_hi );
+        int16x8_t dif_g_lo = vsubq_s16( vreinterpretq_s16_u16( vmovl_u8( vget_low_u8( srcBlock.val[1] ) ) ), rec_g_lo );
+        int16x8_t dif_g_hi = vsubq_s16( vreinterpretq_s16_u16( vmovl_u8( vget_high_u8( srcBlock.val[1] ) ) ), rec_g_hi );
 
-    int16x8_t dif_b_lo = vsubq_s16( vreinterpretq_s16_u16( vmovl_u8( vget_low_u8( srcBlock.val[0] ) ) ), rec_b_lo );
-    int16x8_t dif_b_hi = vsubq_s16( vreinterpretq_s16_u16( vmovl_u8( vget_high_u8( srcBlock.val[0] ) ) ), rec_b_hi );
+        int16x8_t dif_b_lo = vsubq_s16( vreinterpretq_s16_u16( vmovl_u8( vget_low_u8( srcBlock.val[0] ) ) ), rec_b_lo );
+        int16x8_t dif_b_hi = vsubq_s16( vreinterpretq_s16_u16( vmovl_u8( vget_high_u8( srcBlock.val[0] ) ) ), rec_b_hi );
 
-    int16x8_t dif_lo = vmlaq_n_s16( vmlaq_n_s16( vmulq_n_s16( dif_r_lo, 38 ), dif_g_lo, 76 ), dif_b_lo, 14 );
-    int16x8_t dif_hi = vmlaq_n_s16( vmlaq_n_s16( vmulq_n_s16( dif_r_hi, 38 ), dif_g_hi, 76 ), dif_b_hi, 14 );
+        int16x8_t dif_lo = vmlaq_n_s16( vmlaq_n_s16( vmulq_n_s16( dif_r_lo, 38 ), dif_g_lo, 76 ), dif_b_lo, 14 );
+        int16x8_t dif_hi = vmlaq_n_s16( vmlaq_n_s16( vmulq_n_s16( dif_r_hi, 38 ), dif_g_hi, 76 ), dif_b_hi, 14 );
 
-    int16x4_t tmpDif = vget_low_s16( dif_lo );
-    int32x4_t difsq_0 = vmull_s16( tmpDif, tmpDif );
-    tmpDif = vget_high_s16( dif_lo );
-    int32x4_t difsq_1 = vmull_s16( tmpDif, tmpDif );
-    tmpDif = vget_low_s16( dif_hi );
-    int32x4_t difsq_2 = vmull_s16( tmpDif, tmpDif );
-    tmpDif = vget_high_s16( dif_hi );
-    int32x4_t difsq_3 = vmull_s16( tmpDif, tmpDif );
+        int16x4_t tmpDif = vget_low_s16( dif_lo );
+        int32x4_t difsq_0 = vmull_s16( tmpDif, tmpDif );
+        tmpDif = vget_high_s16( dif_lo );
+        int32x4_t difsq_1 = vmull_s16( tmpDif, tmpDif );
+        tmpDif = vget_low_s16( dif_hi );
+        int32x4_t difsq_2 = vmull_s16( tmpDif, tmpDif );
+        tmpDif = vget_high_s16( dif_hi );
+        int32x4_t difsq_3 = vmull_s16( tmpDif, tmpDif );
 
-    uint32x4_t difsq_5 = vaddq_u32( vreinterpretq_u32_s32( difsq_0 ), vreinterpretq_u32_s32( difsq_1 ) );
-    uint32x4_t difsq_6 = vaddq_u32( vreinterpretq_u32_s32( difsq_2 ), vreinterpretq_u32_s32( difsq_3) );
+        uint32x4_t difsq_5 = vaddq_u32( vreinterpretq_u32_s32( difsq_0 ), vreinterpretq_u32_s32( difsq_1 ) );
+        uint32x4_t difsq_6 = vaddq_u32( vreinterpretq_u32_s32( difsq_2 ), vreinterpretq_u32_s32( difsq_3 ) );
 
-    uint64x2_t difsq_7 = vaddl_u32( vget_low_u32( difsq_5 ), vget_high_u32( difsq_5 ) );
-    uint64x2_t difsq_8 = vaddl_u32( vget_low_u32( difsq_6 ), vget_high_u32( difsq_6 ) );
+        uint64x2_t difsq_7 = vaddl_u32( vget_low_u32( difsq_5 ), vget_high_u32( difsq_5 ) );
+        uint64x2_t difsq_8 = vaddl_u32( vget_low_u32( difsq_6 ), vget_high_u32( difsq_6 ) );
 
-    uint64x2_t difsq_9 = vaddq_u64( difsq_7, difsq_8 );
+        uint64x2_t difsq_9 = vaddq_u64( difsq_7, difsq_8 );
 
 #ifdef __aarch64__
-    uint64_t error = vaddvq_u64( difsq_9 );
+        error = vaddvq_u64( difsq_9 );
 #else
-    uint64_t error = vgetq_lane_u64( difsq_9, 0 ) + vgetq_lane_u64( difsq_9, 1 );
+        error = vgetq_lane_u64( difsq_9, 0 ) + vgetq_lane_u64( difsq_9, 1 );
 #endif
+    }
 
     int32_t coR = c_hvoo_br_6[6];
     int32_t coG = c_hvox_g_7[2];
@@ -1891,6 +2117,376 @@ static etcpak_force_inline std::pair<uint64_t, uint64_t> Planar_NEON( const uint
 }
 
 #endif
+
+#ifdef __AVX2__
+uint32_t calculateErrorTH( bool tMode, uint8_t( colorsRGB444 )[2][3], uint8_t& dist, uint32_t& pixIndices, uint8_t startDist, __m128i r8, __m128i g8, __m128i b8 )
+#else
+uint32_t calculateErrorTH( bool tMode, uint8_t* src, uint8_t( colorsRGB444 )[2][3], uint8_t& dist, uint32_t& pixIndices, uint8_t startDist )
+#endif
+{
+    uint32_t blockErr = 0, bestBlockErr = MaxError;
+
+    uint32_t pixColors;
+    uint8_t possibleColors[4][3];
+    uint8_t colors[2][3];
+
+    decompressColor( colorsRGB444, colors );
+
+#ifdef __AVX2__
+    __m128i reverseMask = _mm_set_epi8( 0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15 );
+#endif
+
+    // test distances
+    for( uint8_t d = startDist; d < 8; ++d )
+    {
+        if( d >= 2 && dist == d - 2 ) break;
+
+        blockErr = 0;
+        pixColors = 0;
+
+        if( tMode )
+        {
+            calculatePaintColors59T( d, colors, possibleColors );
+        }
+        else
+        {
+            calculatePaintColors58H( d, colors, possibleColors );
+        }
+
+#ifdef __AVX2__
+        // RGB ordering
+        __m128i b8Rev = _mm_shuffle_epi8( b8, reverseMask );
+        __m128i g8Rev = _mm_shuffle_epi8( g8, reverseMask );
+        __m128i r8Rev = _mm_shuffle_epi8( r8, reverseMask );
+
+        // extends 3x128 bits RGB into 3x256 bits RGB for error comparisions
+        static const __m128i zero = _mm_setzero_si128();
+        __m128i b8Lo = _mm_unpacklo_epi8( b8Rev, zero );
+        __m128i g8Lo = _mm_unpacklo_epi8( g8Rev, zero );
+        __m128i r8Lo = _mm_unpacklo_epi8( r8Rev, zero );
+        __m128i b8Hi = _mm_unpackhi_epi8( b8Rev, zero );
+        __m128i g8Hi = _mm_unpackhi_epi8( g8Rev, zero );
+        __m128i r8Hi = _mm_unpackhi_epi8( r8Rev, zero );
+
+        __m256i b8 = _mm256_set_m128i( b8Hi, b8Lo );
+        __m256i g8 = _mm256_set_m128i( g8Hi, g8Lo );
+        __m256i r8 = _mm256_set_m128i( r8Hi, r8Lo );
+
+        // caculates differences between the pixel colrs and the palette colors
+        __m256i diffb = _mm256_abs_epi16( _mm256_sub_epi16( b8, _mm256_set1_epi16( possibleColors[0][B] ) ) );
+        __m256i diffg = _mm256_abs_epi16( _mm256_sub_epi16( g8, _mm256_set1_epi16( possibleColors[0][G] ) ) );
+        __m256i diffr = _mm256_abs_epi16( _mm256_sub_epi16( r8, _mm256_set1_epi16( possibleColors[0][R] ) ) );
+
+        // luma-based error calculations
+        static const __m256i bWeight = _mm256_set1_epi16( 14 );
+        static const __m256i gWeight = _mm256_set1_epi16( 76 );
+        static const __m256i rWeight = _mm256_set1_epi16( 38 );
+
+        diffb = _mm256_mullo_epi16( diffb, bWeight );
+        diffg = _mm256_mullo_epi16( diffg, gWeight );
+        diffr = _mm256_mullo_epi16( diffr, rWeight );
+
+        // obtains the error with the current palette color
+        __m256i lowestPixErr = _mm256_add_epi16( _mm256_add_epi16( diffb, diffg ), diffr );
+
+        // error calucations with the remaining three palette colors
+        static const uint32_t masks[4] = { 0, 0x55555555, 0xAAAAAAAA, 0xFFFFFFFF };
+        for( uint8_t c = 1; c < 4; c++ )
+        {
+            __m256i diffb = _mm256_abs_epi16( _mm256_sub_epi16( b8, _mm256_set1_epi16( possibleColors[c][B] ) ) );
+            __m256i diffg = _mm256_abs_epi16( _mm256_sub_epi16( g8, _mm256_set1_epi16( possibleColors[c][G] ) ) );
+            __m256i diffr = _mm256_abs_epi16( _mm256_sub_epi16( r8, _mm256_set1_epi16( possibleColors[c][R] ) ) );
+
+            diffb = _mm256_mullo_epi16( diffb, bWeight );
+            diffg = _mm256_mullo_epi16( diffg, gWeight );
+            diffr = _mm256_mullo_epi16( diffr, rWeight );
+
+            // error comparison with the previous best color
+            __m256i pixErrors = _mm256_add_epi16( _mm256_add_epi16( diffb, diffg ), diffr );
+            __m256i minErr = _mm256_min_epu16( lowestPixErr, pixErrors );
+            __m256i cmpRes = _mm256_cmpeq_epi16( pixErrors, minErr );
+            lowestPixErr = minErr;
+
+            // update pixel colors
+            uint32_t updPixColors = _mm256_movemask_epi8( cmpRes );
+            uint32_t prevPixColors = pixColors & ~updPixColors;
+            uint32_t mskPixColors = masks[c] & updPixColors;
+            pixColors = prevPixColors | mskPixColors;
+        }
+
+        // accumulate the block error
+        alignas( 32 ) uint16_t pixErr16[16] = { 0, };
+        _mm256_storeu_si256( (__m256i*)pixErr16, lowestPixErr );
+        for( uint8_t p = 0; p < 16; p++ )
+        {
+            blockErr += (int)( pixErr16[p] ) * pixErr16[p];
+        }
+#else
+        for( size_t y = 0; y < 4; ++y )
+        {
+            for( size_t x = 0; x < 4; ++x )
+            {
+                uint32_t bestPixErr = MaxError;
+                pixColors <<= 2; // Make room for next value
+
+                // Loop possible block colors
+                for( uint8_t c = 0; c < 4; ++c )
+                {
+                    int diff[3];
+                    diff[R] = src[4 * ( x * 4 + y ) + R] - possibleColors[c][R];
+                    diff[G] = src[4 * ( x * 4 + y ) + G] - possibleColors[c][G];
+                    diff[B] = src[4 * ( x * 4 + y ) + B] - possibleColors[c][B];
+
+                    const uint32_t err = 38 * abs( diff[R] ) + 76 * abs( diff[G] ) + 14 * abs( diff[B] );
+                    uint32_t pixErr = err * err;
+
+                    // Choose best error
+                    if( pixErr < bestPixErr )
+                    {
+                        bestPixErr = pixErr;
+                        pixColors ^= ( pixColors & 3 ); // Reset the two first bits
+                        pixColors |= c;
+                    }
+                }
+                blockErr += bestPixErr;
+            }
+        }
+#endif
+
+        if( blockErr < bestBlockErr )
+        {
+            bestBlockErr = blockErr;
+            dist = d;
+            pixIndices = pixColors;
+        }
+    }
+
+    return bestBlockErr;
+}
+
+
+// main T-/H-mode compression function
+#ifdef __AVX2__
+uint32_t compressBlockTH( uint8_t* src, Luma& l, uint32_t& compressed1, uint32_t& compressed2, bool& tMode, __m128i r8, __m128i g8, __m128i b8 )
+#else
+uint32_t compressBlockTH( uint8_t *src, Luma& l, uint32_t& compressed1, uint32_t& compressed2, bool &tMode )
+#endif
+{
+#ifdef __AVX2__
+    alignas( 8 ) uint8_t luma[16] = { 0, };
+    _mm_storeu_si128 ( (__m128i* )luma, l.luma8 );
+#elif defined __ARM_NEON && defined __aarch64__
+    alignas( 8 ) uint8_t luma[16] = { 0 };
+    vst1q_u8( luma, l.luma8 );
+#else
+    uint8_t* luma = l.val;
+#endif
+
+    uint8_t pixIdx[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+
+    // 1) sorts the pairs of (luma, pix_idx)
+    insertionSort( luma, pixIdx );
+
+    // 2) finds the min (left+right)
+    uint8_t minSumRangeIdx = 0;
+    uint16_t minSumRangeValue;
+    uint16_t sum;
+    static const uint8_t diffBonus[15] = {8, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 8};
+    const int16_t temp = luma[15] - luma[0];
+
+    minSumRangeValue = luma[15] - luma[1] + diffBonus[0];
+    for( uint8_t i = 1; i < 14; i++ )
+    {
+        sum = temp - luma[i+1] + luma[i] + diffBonus[i];
+        if( minSumRangeValue > sum )
+        {
+            minSumRangeValue = sum;
+            minSumRangeIdx = i;
+        }
+    }
+
+    sum = luma[14] - luma[0] + diffBonus[14];
+    if( minSumRangeValue > sum )
+    {
+        minSumRangeValue = sum;
+        minSumRangeIdx = 14;
+    }
+    uint8_t lRange, rRange;
+
+    lRange = luma[minSumRangeIdx] - luma[0];
+    rRange = luma[15] - luma[minSumRangeIdx + 1];
+
+    // 3) sets a proper mode
+    bool swap = false;
+    if( lRange >= rRange )
+    {
+        if( lRange >= rRange * 2 )
+        {
+            swap = true;
+            tMode = true;
+        }
+    }
+    else
+    {
+        if( lRange * 2 <= rRange ) tMode = true;
+    }
+    // 4) calculates the two base colors
+    uint8_t rangeIdx[4] = { pixIdx[0], pixIdx[minSumRangeIdx], pixIdx[minSumRangeIdx + 1], pixIdx[15] };
+
+    uint16_t r[4], g[4], b[4];
+    for( uint8_t i = 0; i < 4; ++i )
+    {
+        uint8_t idx = rangeIdx[i] * 4;
+        b[i] = src[idx];
+        g[i] = src[idx + 1];
+        r[i] = src[idx + 2];
+    }
+
+    uint8_t mid_rgb[2][3];
+    if( swap )
+    {
+        mid_rgb[1][B] = ( b[0] + b[1] ) / 2;
+        mid_rgb[1][G] = ( g[0] + g[1] ) / 2;
+        mid_rgb[1][R] = ( r[0] + r[1] ) / 2;
+
+        uint16_t sum_rgb[3] = { 0, 0, 0 };
+        for( uint8_t i = minSumRangeIdx + 1; i < 16; i++ )
+        {
+            uint8_t idx = pixIdx[i] * 4;
+            sum_rgb[B] += src[idx];
+            sum_rgb[G] += src[idx + 1];
+            sum_rgb[R] += src[idx + 2];
+        }
+        const uint8_t temp = 15 - minSumRangeIdx;
+        mid_rgb[0][B] = sum_rgb[B] / temp;
+        mid_rgb[0][G] = sum_rgb[G] / temp;
+        mid_rgb[0][R] = sum_rgb[R] / temp;
+    }
+    else
+    {
+        mid_rgb[0][B] = (b[0] + b[1]) / 2;
+        mid_rgb[0][G] = (g[0] + g[1]) / 2;
+        mid_rgb[0][R] = (r[0] + r[1]) / 2;
+        if( tMode )
+        {
+            uint16_t sum_rgb[3] = { 0, 0, 0 };
+            for( uint8_t i = minSumRangeIdx + 1; i < 16; i++ )
+            {
+                uint8_t idx = pixIdx[i] * 4;
+                sum_rgb[B] += src[idx];
+                sum_rgb[G] += src[idx + 1];
+                sum_rgb[R] += src[idx + 2];
+            }
+            const uint8_t temp = 15 - minSumRangeIdx;
+            mid_rgb[1][B] = sum_rgb[B] / temp;
+            mid_rgb[1][G] = sum_rgb[G] / temp;
+            mid_rgb[1][R] = sum_rgb[R] / temp;
+        }
+        else
+        {
+            mid_rgb[1][B] = (b[2] + b[3]) / 2;
+            mid_rgb[1][G] = (g[2] + g[3]) / 2;
+            mid_rgb[1][R] = (r[2] + r[3]) / 2;
+        }
+    }
+
+    // 5) sets the start distance index
+    uint32_t startDistCandidate;
+    uint32_t avgDist;
+    if( tMode )
+    {
+        if( swap )
+        {
+            avgDist = ( b[1] - b[0] + g[1] - g[0] + r[1] - r[0] ) / 6;
+        }
+        else
+        {
+            avgDist = ( b[3] - b[2] + g[3] - g[2] + r[3] - r[2] ) / 6;
+        }
+    }
+    else
+    {
+        avgDist = ( b[1] - b[0] + g[1] - g[0] + r[1] - r[0] + b[3] - b[2] + g[3] - g[2] + r[3] - r[2] ) / 12;
+    }
+
+    if( avgDist <= 16)
+    {
+        startDistCandidate = 0;
+    }
+    else if( avgDist <= 23 )
+    {
+        startDistCandidate = 1;
+    }
+    else if( avgDist <= 32 )
+    {
+        startDistCandidate = 2;
+    }
+    else if( avgDist <= 41 )
+    {
+        startDistCandidate = 3;
+    }
+    else
+    {
+        startDistCandidate = 4;
+    }
+
+    uint32_t bestErr = MaxError;
+    uint32_t bestPixIndices;
+    uint8_t bestDist = 10;
+    uint8_t colorsRGB444[2][3];
+    compressColor( mid_rgb, colorsRGB444, tMode );
+    compressed1 = 0;
+
+    // 6) finds the best candidate with the lowest error
+#ifdef __AVX2__
+    // Vectorized ver
+    bestErr = calculateErrorTH( tMode, colorsRGB444, bestDist, bestPixIndices, startDistCandidate, r8, g8, b8 );
+#else
+    // Scalar ver
+    bestErr = calculateErrorTH( tMode, src, colorsRGB444, bestDist, bestPixIndices, startDistCandidate );
+#endif
+
+    // 7) outputs the final T or H block
+    if( tMode )
+    {
+        // Put the compress params into the compression block
+        compressed1 |= ( colorsRGB444[0][R] & 0xf ) << 23;
+        compressed1 |= ( colorsRGB444[0][G] & 0xf ) << 19;
+        compressed1 |= ( colorsRGB444[0][B] ) << 15;
+        compressed1 |= ( colorsRGB444[1][R] ) << 11;
+        compressed1 |= ( colorsRGB444[1][G] ) << 7;
+        compressed1 |= ( colorsRGB444[1][B] ) << 3;
+        compressed1 |= bestDist & 0x7;
+    }
+    else
+    {
+        int bestRGB444ColPacked[2];
+        bestRGB444ColPacked[0] = (colorsRGB444[0][R] << 8) + (colorsRGB444[0][G] << 4) + colorsRGB444[0][B];
+        bestRGB444ColPacked[1] = (colorsRGB444[1][R] << 8) + (colorsRGB444[1][G] << 4) + colorsRGB444[1][B];
+        if( ( bestRGB444ColPacked[0] >= bestRGB444ColPacked[1] ) ^ ( ( bestDist & 1 ) == 1 ) )
+        {
+            swapColors( colorsRGB444 );
+            // Reshuffle pixel indices to to exchange C1 with C3, and C2 with C4
+            bestPixIndices = ( 0x55555555 & bestPixIndices ) | ( 0xaaaaaaaa & ( ~bestPixIndices ) );
+        }
+
+        // Put the compress params into the compression block
+        compressed1 |= ( colorsRGB444[0][R] & 0xf ) << 22;
+        compressed1 |= ( colorsRGB444[0][G] & 0xf ) << 18;
+        compressed1 |= ( colorsRGB444[0][B] & 0xf ) << 14;
+        compressed1 |= ( colorsRGB444[1][R] & 0xf ) << 10;
+        compressed1 |= ( colorsRGB444[1][G] & 0xf ) << 6;
+        compressed1 |= ( colorsRGB444[1][B] & 0xf ) << 2;
+        compressed1 |= ( bestDist >> 1 ) & 0x3;
+    }
+
+    bestPixIndices = indexConversion( bestPixIndices );
+    compressed2 = 0;
+    compressed2 = ( compressed2 & ~( ( 0x2 << 31 ) - 1 ) ) | ( bestPixIndices & ( ( 2 << 31 ) - 1 ) );
+
+    return bestErr;
+}
+//#endif
 
 template<class T, class S>
 static etcpak_force_inline uint64_t EncodeSelectors( uint64_t d, const T terr[2][8], const S tsel[16][8], const uint32_t* id, const uint64_t value, const uint64_t error)
@@ -1979,30 +2575,450 @@ static etcpak_force_inline uint64_t ProcessRGB( const uint8_t* src )
 #endif
 }
 
-static etcpak_force_inline uint64_t ProcessRGB_ETC2( const uint8_t* src )
+#ifdef __AVX2__
+// horizontal min/max functions. https://stackoverflow.com/questions/22256525/horizontal-minimum-and-maximum-using-sse
+// if an error occurs in GCC, please change the value of -march in CFLAGS to a specific value for your CPU (e.g., skylake).
+static inline int16_t hMax( __m128i buffer, uint8_t& idx )
+{
+    __m128i tmp1 = _mm_sub_epi8( _mm_set1_epi8( (char)( 255 ) ), buffer );
+    __m128i tmp2 = _mm_min_epu8( tmp1, _mm_srli_epi16( tmp1, 8 ) );
+    __m128i tmp3 = _mm_minpos_epu16( tmp2 );
+    uint8_t result = 255 - (uint8_t)_mm_cvtsi128_si32( tmp3 );
+    __m128i mask = _mm_cmpeq_epi8( buffer, _mm_set1_epi8( result ) );
+    idx = _tzcnt_u32( _mm_movemask_epi8( mask ) );
+
+    return result;
+}
+#elif defined __ARM_NEON && defined __aarch64__
+static inline int16_t hMax( uint8x16_t buffer, uint8_t& idx )
+{
+    const uint8_t max = vmaxvq_u8( buffer );
+    const uint16x8_t vmax = vdupq_n_u16( max );
+    uint8x16x2_t buff_wide = vzipq_u8( buffer, uint8x16_t() );
+    uint16x8_t lowbuf16 = vreinterpretq_u16_u8( buff_wide.val[0] );
+    uint16x8_t hibuf16 = vreinterpretq_u16_u8( buff_wide.val[1] );
+    uint16x8_t low_eqmask = vceqq_u16( lowbuf16, vmax );
+    uint16x8_t hi_eqmask = vceqq_u16( hibuf16, vmax );
+
+    static const uint16_t mask_lsb[] = {
+	    0x1, 0x2, 0x4, 0x8,
+	    0x10, 0x20, 0x40, 0x80 };
+
+    static const uint16_t mask_msb[] = {
+	    0x100, 0x200, 0x400, 0x800,
+	    0x1000, 0x2000, 0x4000, 0x8000 };
+
+    uint16x8_t vmask_lsb = vld1q_u16( mask_lsb );
+    uint16x8_t vmask_msb = vld1q_u16( mask_msb );
+    uint16x8_t pos_lsb = vandq_u16( vmask_lsb, low_eqmask );
+    uint16x8_t pos_msb = vandq_u16( vmask_msb, hi_eqmask );
+    pos_lsb = vpaddq_u16( pos_lsb, pos_lsb );
+    pos_lsb = vpaddq_u16( pos_lsb, pos_lsb );
+    pos_lsb = vpaddq_u16( pos_lsb, pos_lsb );
+    uint64_t idx_lane1 = vgetq_lane_u64( vreinterpretq_u64_u16( pos_lsb ), 0 );
+    pos_msb = vpaddq_u16( pos_msb, pos_msb );
+    pos_msb = vpaddq_u16( pos_msb, pos_msb );
+    pos_msb = vpaddq_u16( pos_msb, pos_msb );
+    uint32_t idx_lane2 = vgetq_lane_u32( vreinterpretq_u32_u16( pos_msb ), 0 );
+    idx = idx_lane1 != 0 ? __builtin_ctz( idx_lane1 ) : __builtin_ctz( idx_lane2 );
+
+    return max;
+}
+#endif
+
+#ifdef __AVX2__
+static inline int16_t hMin( __m128i buffer, uint8_t& idx )
+{
+    __m128i tmp2 = _mm_min_epu8( buffer, _mm_srli_epi16( buffer, 8 ) );
+    __m128i tmp3 = _mm_minpos_epu16( tmp2 );
+    uint8_t result = (uint8_t)_mm_cvtsi128_si32( tmp3 );
+    __m128i mask = _mm_cmpeq_epi8( buffer, _mm_set1_epi8( result ) );
+    idx = _tzcnt_u32( _mm_movemask_epi8( mask ) );
+    return result;
+}
+#elif defined __ARM_NEON && defined __aarch64__
+static inline int16_t hMin( uint8x16_t buffer, uint8_t& idx )
+{
+    const uint8_t min = vminvq_u8( buffer );
+    const uint16x8_t vmin = vdupq_n_u16( min );
+    uint8x16x2_t buff_wide = vzipq_u8( buffer, uint8x16_t() );
+    uint16x8_t lowbuf16 = vreinterpretq_u16_u8( buff_wide.val[0] );
+    uint16x8_t hibuf16 = vreinterpretq_u16_u8( buff_wide.val[1] );
+    uint16x8_t low_eqmask = vceqq_u16( lowbuf16, vmin );
+    uint16x8_t hi_eqmask = vceqq_u16( hibuf16, vmin );
+
+    static const uint16_t mask_lsb[] = {
+	    0x1, 0x2, 0x4, 0x8,
+	    0x10, 0x20, 0x40, 0x80 };
+
+    static const uint16_t mask_msb[] = {
+	    0x100, 0x200, 0x400, 0x800,
+	    0x1000, 0x2000, 0x4000, 0x8000 };
+
+    uint16x8_t vmask_lsb = vld1q_u16( mask_lsb );
+    uint16x8_t vmask_msb = vld1q_u16( mask_msb );
+    uint16x8_t pos_lsb = vandq_u16( vmask_lsb, low_eqmask );
+    uint16x8_t pos_msb = vandq_u16( vmask_msb, hi_eqmask );
+    pos_lsb = vpaddq_u16( pos_lsb, pos_lsb );
+    pos_lsb = vpaddq_u16( pos_lsb, pos_lsb );
+    pos_lsb = vpaddq_u16( pos_lsb, pos_lsb );
+    uint64_t idx_lane1 = vgetq_lane_u64( vreinterpretq_u64_u16( pos_lsb ), 0 );
+    pos_msb = vpaddq_u16( pos_msb, pos_msb );
+    pos_msb = vpaddq_u16( pos_msb, pos_msb );
+    pos_msb = vpaddq_u16( pos_msb, pos_msb );
+    uint32_t idx_lane2 = vgetq_lane_u32( vreinterpretq_u32_u16( pos_msb ), 0 );
+    idx = idx_lane1 != 0 ? __builtin_ctz( idx_lane1 ) : __builtin_ctz( idx_lane2 );
+
+    return min;
+}
+#endif
+
+// During search it is not convenient to store the bits the way they are stored in the
+// file format. Hence, after search, it is converted to this format.
+// NO WARRANTY --- SEE STATEMENT IN TOP OF FILE (C) Ericsson AB 2005-2013. All Rights Reserved.
+static inline void stuff59bits( unsigned int thumbT59W1, unsigned int thumbT59W2, unsigned int& thumbTW1, unsigned int& thumbTW2 )
+{
+    // Put bits in twotimer configuration for 59 (red overflows)
+    //
+    // Go from this bit layout:
+    //
+    //     |63 62 61 60 59|58 57 56 55|54 53 52 51|50 49 48 47|46 45 44 43|42 41 40 39|38 37 36 35|34 33 32|
+    //     |----empty-----|---red 0---|--green 0--|--blue 0---|---red 1---|--green 1--|--blue 1---|--dist--|
+    //
+    //     |31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00|
+    //     |----------------------------------------index bits---------------------------------------------|
+    //
+    //
+    //  To this:
+    //
+    //      63 62 61 60 59 58 57 56 55 54 53 52 51 50 49 48 47 46 45 44 43 42 41 40 39 38 37 36 35 34 33 32
+    //      -----------------------------------------------------------------------------------------------
+    //     |// // //|R0a  |//|R0b  |G0         |B0         |R1         |G1         |B1          |da  |df|db|
+    //      -----------------------------------------------------------------------------------------------
+    //
+    //     |31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00|
+    //     |----------------------------------------index bits---------------------------------------------|
+    //
+    //      63 62 61 60 59 58 57 56 55 54 53 52 51 50 49 48 47 46 45 44 43 42 41 40 39 38 37 36 35 34 33 32
+    //      -----------------------------------------------------------------------------------------------
+    //     | base col1    | dcol 2 | base col1    | dcol 2 | base col 1   | dcol 2 | table  | table  |df|fp|
+    //     | R1' (5 bits) | dR2    | G1' (5 bits) | dG2    | B1' (5 bits) | dB2    | cw 1   | cw 2   |bt|bt|
+    //      ------------------------------------------------------------------------------------------------
+
+    uint8_t R0a;
+    uint8_t bit, a, b, c, d, bits;
+
+    R0a = ( thumbT59W1 >> 25 ) & 0x3;
+
+    // Fix middle part
+    thumbTW1 = thumbT59W1 << 1;
+    // Fix R0a (top two bits of R0)
+    thumbTW1 = ( thumbTW1 & ~( 0x3 << 27 ) ) | ( ( R0a & 0x3 ) << 27 );
+    // Fix db (lowest bit of d)
+    thumbTW1 = ( thumbTW1 & ~0x1 ) | ( thumbT59W1 & 0x1 );
+
+    // Make sure that red overflows:
+    a = ( thumbTW1 >> 28 ) & 0x1;
+    b = ( thumbTW1 >> 27 ) & 0x1;
+    c = ( thumbTW1 >> 25 ) & 0x1;
+    d = ( thumbTW1 >> 24 ) & 0x1;
+
+    // The following bit abcd bit sequences should be padded with ones: 0111, 1010, 1011, 1101, 1110, 1111
+    // The following logical expression checks for the presence of any of those:
+    bit = ( a & c ) | ( !a & b & c & d ) | ( a & b & !c & d );
+    bits = 0xf * bit;
+    thumbTW1 = ( thumbTW1 & ~( 0x7 << 29 ) ) | ( bits & 0x7 ) << 29;
+    thumbTW1 = ( thumbTW1 & ~( 0x1 << 26 ) ) | ( !bit & 0x1 ) << 26;
+
+    // Set diffbit
+    thumbTW1 = ( thumbTW1 & ~0x2 ) | 0x2;
+    thumbTW2 = thumbT59W2;
+}
+
+// During search it is not convenient to store the bits the way they are stored in the
+// file format. Hence, after search, it is converted to this format.
+// NO WARRANTY --- SEE STATEMENT IN TOP OF FILE (C) Ericsson AB 2005-2013. All Rights Reserved.
+static inline void stuff58bits( unsigned int thumbH58W1, unsigned int thumbH58W2, unsigned int& thumbHW1, unsigned int& thumbHW2 )
+{
+    // Put bits in twotimer configuration for 58 (red doesn't overflow, green does)
+    //
+    // Go from this bit layout:
+    //
+    //
+    //     |63 62 61 60 59 58|57 56 55 54|53 52 51 50|49 48 47 46|45 44 43 42|41 40 39 38|37 36 35 34|33 32|
+    //     |-------empty-----|---red 0---|--green 0--|--blue 0---|---red 1---|--green 1--|--blue 1---|d2 d1|
+    //
+    //     |31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00|
+    //     |---------------------------------------index bits----------------------------------------------|
+    //
+    //  To this:
+    //
+    //      63 62 61 60 59 58 57 56 55 54 53 52 51 50 49 48 47 46 45 44 43 42 41 40 39 38 37 36 35 34 33 32
+    //      -----------------------------------------------------------------------------------------------
+    //     |//|R0         |G0      |// // //|G0|B0|//|B0b     |R1         |G1         |B0         |d2|df|d1|
+    //      -----------------------------------------------------------------------------------------------
+    //
+    //     |31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00|
+    //     |---------------------------------------index bits----------------------------------------------|
+    //
+    //      63 62 61 60 59 58 57 56 55 54 53 52 51 50 49 48 47 46 45 44 43 42 41 40 39 38 37 36 35 34 33 32
+    //      -----------------------------------------------------------------------------------------------
+    //     | base col1    | dcol 2 | base col1    | dcol 2 | base col 1   | dcol 2 | table  | table  |df|fp|
+    //     | R1' (5 bits) | dR2    | G1' (5 bits) | dG2    | B1' (5 bits) | dB2    | cw 1   | cw 2   |bt|bt|
+    //      -----------------------------------------------------------------------------------------------
+    //
+    //
+    // Thus, what we are really doing is going from this bit layout:
+    //
+    //
+    //     |63 62 61 60 59 58|57 56 55 54 53 52 51|50 49|48 47 46 45 44 43 42 41 40 39 38 37 36 35 34 33|32   |
+    //     |-------empty-----|part0---------------|part1|part2------------------------------------------|part3|
+    //
+    //  To this:
+    //
+    //      63 62 61 60 59 58 57 56 55 54 53 52 51 50 49 48 47 46 45 44 43 42 41 40 39 38 37 36 35 34 33 32
+    //      --------------------------------------------------------------------------------------------------|
+    //     |//|part0               |// // //|part1|//|part2                                          |df|part3|
+    //      --------------------------------------------------------------------------------------------------|
+
+    unsigned int part0, part1, part2, part3;
+    uint8_t bit, a, b, c, d, bits;
+
+    // move parts
+    part0 = ( thumbH58W1 >> 19 ) & 0x7f;
+    part1 = ( thumbH58W1 >> 17 ) & 0x3;
+    part2 = ( thumbH58W1 >> 1 ) & 0xffff;
+    part3 = thumbH58W1 & 0x1;
+    thumbHW1 = 0;
+    thumbHW1 = ( thumbHW1 & ~( 0x7f << 24 ) ) | ( ( part0 & 0x7f ) << 24 );
+    thumbHW1 = ( thumbHW1 & ~( 0x3 << 19 ) ) | ( ( part1 & 0x3 ) << 19 );
+    thumbHW1 = ( thumbHW1 & ~( 0xffff << 2 ) ) | ( ( part2 & 0xffff ) << 2 );
+    thumbHW1 = ( thumbHW1 & ~0x1 ) | ( part3 & 0x1 );
+
+    // Make sure that red does not overflow:
+    bit = ( thumbHW1 >> 30 ) & 0x1;
+    thumbHW1 = ( thumbHW1 & ~( 0x1 << 31 ) ) | ( ( !bit & 0x1 ) << 31 );
+
+    // Make sure that green overflows:
+    a = ( thumbHW1 >> 20 ) & 0x1;
+    b = ( thumbHW1 >> 19 ) & 0x1;
+    c = ( thumbHW1 >> 17 ) & 0x1;
+    d = ( thumbHW1 >> 16 ) & 0x1;
+    // The following bit abcd bit sequences should be padded with ones: 0111, 1010, 1011, 1101, 1110, 1111
+    // The following logical expression checks for the presence of any of those:
+    bit = ( a & c ) | ( !a & b & c & d ) | ( a & b & !c & d );
+    bits = 0xf * bit;
+    thumbHW1 = ( thumbHW1 & ~( 0x7 << 21 ) ) | ( ( bits & 0x7 ) << 21 );
+    thumbHW1 = ( thumbHW1 & ~( 0x1 << 18 ) ) | ( ( !bit & 0x1 ) << 18 );
+
+    // Set diffbit
+    thumbHW1 = ( thumbHW1 & ~0x2 ) | 0x2;
+    thumbHW2 = thumbH58W2;
+}
+
+#if defined __AVX2__ || (defined __ARM_NEON && defined __aarch64__)
+static etcpak_force_inline Channels GetChannels( const uint8_t* src )
+{
+    Channels ch;
+#ifdef __AVX2__
+    __m128i d0 = _mm_loadu_si128( ( (__m128i*)src ) + 0 );
+    __m128i d1 = _mm_loadu_si128( ( (__m128i*)src ) + 1 );
+    __m128i d2 = _mm_loadu_si128( ( (__m128i*)src ) + 2 );
+    __m128i d3 = _mm_loadu_si128( ( (__m128i*)src ) + 3 );
+
+    __m128i rgb0 = _mm_shuffle_epi8( d0, _mm_setr_epi8( 0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, -1, -1, -1, -1 ) );
+    __m128i rgb1 = _mm_shuffle_epi8( d1, _mm_setr_epi8( 0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, -1, -1, -1, -1 ) );
+    __m128i rgb2 = _mm_shuffle_epi8( d2, _mm_setr_epi8( 0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, -1, -1, -1, -1 ) );
+    __m128i rgb3 = _mm_shuffle_epi8( d3, _mm_setr_epi8( 0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, -1, -1, -1, -1 ) );
+
+    __m128i rg0 = _mm_unpacklo_epi32( rgb0, rgb1 );
+    __m128i rg1 = _mm_unpacklo_epi32( rgb2, rgb3 );
+    __m128i b0 = _mm_unpackhi_epi32( rgb0, rgb1 );
+    __m128i b1 = _mm_unpackhi_epi32( rgb2, rgb3 );
+
+    // swap channels
+    ch.b8 = _mm_unpacklo_epi64( rg0, rg1 );
+    ch.g8 = _mm_unpackhi_epi64( rg0, rg1 );
+    ch.r8 = _mm_unpacklo_epi64( b0, b1 );
+#elif defined __ARM_NEON && defined __aarch64__
+    //load pixel data into 4 rows
+    uint8x16_t px0 = vld1q_u8( src + 0 );
+    uint8x16_t px1 = vld1q_u8( src + 16 );
+    uint8x16_t px2 = vld1q_u8( src + 32 );
+    uint8x16_t px3 = vld1q_u8( src + 48 );
+
+    uint8x16x2_t px0z1 = vzipq_u8( px0, px1 );
+    uint8x16x2_t px2z3 = vzipq_u8( px2, px3 );
+    uint8x16x2_t px01 = vzipq_u8( px0z1.val[0], px0z1.val[1] );
+    uint8x16x2_t rgb01 = vzipq_u8( px01.val[0], px01.val[1] );
+    uint8x16x2_t px23 = vzipq_u8( px2z3.val[0], px2z3.val[1] );
+    uint8x16x2_t rgb23 = vzipq_u8( px23.val[0], px23.val[1] );
+
+    uint8x16_t rr = vreinterpretq_u8_u64( vzip1q_u64( vreinterpretq_u64_u8( rgb01.val[0] ), vreinterpretq_u64_u8( rgb23.val[0] ) ) );
+    uint8x16_t gg = vreinterpretq_u8_u64( vzip2q_u64( vreinterpretq_u64_u8( rgb01.val[0] ), vreinterpretq_u64_u8( rgb23.val[0] ) ) );
+    uint8x16_t bb = vreinterpretq_u8_u64( vzip1q_u64( vreinterpretq_u64_u8( rgb01.val[1] ), vreinterpretq_u64_u8( rgb23.val[1] ) ) );
+
+    uint8x16x2_t red = vzipq_u8( rr, uint8x16_t() );
+    uint8x16x2_t grn = vzipq_u8( gg, uint8x16_t() );
+    uint8x16x2_t blu = vzipq_u8( bb, uint8x16_t() );
+    ch.r = red;
+    ch.b = blu;
+    ch.g = grn;
+#endif
+    return ch;
+}
+#endif
+
+#if defined __AVX2__ || (defined __ARM_NEON && defined __aarch64__)
+static etcpak_force_inline void CalculateLuma( Channels& ch, Luma& luma )
+#else
+static etcpak_force_inline void CalculateLuma( const uint8_t* src, Luma& luma )
+#endif
+{
+#ifdef __AVX2__
+    __m256i b16_luma = _mm256_mullo_epi16( _mm256_cvtepu8_epi16( ch.b8 ), _mm256_set1_epi16( 14 ) );
+    __m256i g16_luma = _mm256_mullo_epi16( _mm256_cvtepu8_epi16( ch.g8 ), _mm256_set1_epi16( 76 ) );
+    __m256i r16_luma = _mm256_mullo_epi16( _mm256_cvtepu8_epi16( ch.r8 ), _mm256_set1_epi16( 38 ) );
+
+    __m256i luma_16bit = _mm256_add_epi16( _mm256_add_epi16( g16_luma, r16_luma ), b16_luma );
+    __m256i luma_8bit_m256i = _mm256_srli_epi16( luma_16bit, 7 );
+    __m128i luma_8bit_lo = _mm256_extractf128_si256( luma_8bit_m256i, 0 );
+    __m128i luma_8bit_hi = _mm256_extractf128_si256( luma_8bit_m256i, 1 );
+
+    static const __m128i interleaving_mask_lo = _mm_set_epi8( 15, 13, 11, 9, 7, 5, 3, 1, 14, 12, 10, 8, 6, 4, 2, 0 );
+    static const __m128i interleaving_mask_hi = _mm_set_epi8( 14, 12, 10, 8, 6, 4, 2, 0, 15, 13, 11, 9, 7, 5, 3, 1 );
+    __m128i luma_8bit_lo_moved = _mm_shuffle_epi8( luma_8bit_lo, interleaving_mask_lo );
+    __m128i luma_8bit_hi_moved = _mm_shuffle_epi8( luma_8bit_hi, interleaving_mask_hi );
+    __m128i luma_8bit = _mm_or_si128( luma_8bit_hi_moved, luma_8bit_lo_moved );
+    luma.luma8 = luma_8bit;
+
+    // min/max calculation
+    luma.min = hMin( luma_8bit, luma.minIdx ) * 0.00392156f;
+    luma.max = hMax( luma_8bit, luma.maxIdx ) * 0.00392156f;
+#elif defined __ARM_NEON && defined __aarch64__
+    //load pixel data into 4 rows
+    uint16x8_t red0 = vmulq_n_u16( vreinterpretq_u16_u8( ch.r.val[0] ), 14 );
+    uint16x8_t red1 = vmulq_n_u16( vreinterpretq_u16_u8( ch.r.val[1] ), 14 );
+    uint16x8_t grn0 = vmulq_n_u16( vreinterpretq_u16_u8( ch.g.val[0] ), 76 );
+    uint16x8_t grn1 = vmulq_n_u16( vreinterpretq_u16_u8( ch.g.val[1] ), 76 );
+    uint16x8_t blu0 = vmulq_n_u16( vreinterpretq_u16_u8( ch.b.val[0] ), 38 );
+    uint16x8_t blu1 = vmulq_n_u16( vreinterpretq_u16_u8( ch.b.val[1] ), 38 );
+
+    //calculate luma for rows 0,1 and 2,3
+    uint16x8_t lum_r01 = vaddq_u16( vaddq_u16( red0, grn0 ), blu0 );
+    uint16x8_t lum_r23 = vaddq_u16( vaddq_u16( red1, grn1 ), blu1 );
+
+    //divide luma values with right shift and narrow results to 8bit
+    uint8x8_t lum_r01_d = vshrn_n_u16( lum_r01, 7 );
+    uint8x8_t lum_r02_d = vshrn_n_u16( lum_r23, 7 );
+
+    luma.luma8 = vcombine_u8( lum_r01_d, lum_r02_d );
+    //find min and max luma value
+    luma.min = hMin( luma.luma8, luma.minIdx ) * 0.00392156f;
+    luma.max = hMax( luma.luma8, luma.maxIdx ) * 0.00392156f;
+#else
+    for( int i = 0; i < 16; ++i )
+    {
+        luma.val[i] = ( src[i * 4 + 2] * 76 + src[i * 4 + 1] * 150 + src[i * 4] * 28 ) / 254; // luma calculation
+        if( luma.min > luma.val[i] )
+        {
+            luma.min = luma.val[i];
+            luma.minIdx = i;
+        }
+        if( luma.max < luma.val[i] )
+        {
+            luma.max = luma.val[i];
+            luma.maxIdx = i;
+        }
+    }
+#endif
+}
+
+static etcpak_force_inline uint8_t SelectModeETC2( const Luma& luma )
+{
+#if defined __AVX2__  || defined __ARM_NEON
+    const float lumaRange = ( luma.max - luma.min );
+#else
+    const float lumaRange = ( luma.max - luma.min ) * ( 1.f / 255.f );
+#endif
+    // filters a very-low-contrast block
+    if( lumaRange <= ecmd_threshold[0] )
+    {
+        return ModePlanar;
+    }
+    // checks whether a pair of the corner pixels in a block has the min/max luma values;
+    // if so, the ETC2 planar mode is enabled, and otherwise, the ETC1 mode is enabled
+    else if( lumaRange <= ecmd_threshold[1] )
+    {
+#ifdef __AVX2__
+        static const __m128i corner_pair = _mm_set_epi8( 1, 1, 1, 1, 1, 1, 1, 1, 0, 15, 3, 12, 12, 3, 15, 0 );
+        __m128i current_max_min = _mm_set_epi8( 0, 0, 0, 0, 0, 0, 0, 0, luma.minIdx, luma.maxIdx, luma.minIdx, luma.maxIdx, luma.minIdx, luma.maxIdx, luma.minIdx, luma.maxIdx );
+
+        __m128i max_min_result = _mm_cmpeq_epi16( corner_pair, current_max_min );
+
+        int mask = _mm_movemask_epi8( max_min_result );
+        if( mask )
+        {
+            return ModePlanar;
+        }
+#else
+        // check whether a pair of the corner pixels in a block has the min/max luma values;
+        // if so, the ETC2 planar mode is enabled.
+        if( ( luma.minIdx == 0 && luma.maxIdx == 15 ) ||
+            ( luma.minIdx == 15 && luma.maxIdx == 0 ) ||
+            ( luma.minIdx == 3 && luma.maxIdx == 12 ) ||
+            ( luma.minIdx == 12 && luma.maxIdx == 3 ) )
+        {
+            return ModePlanar;
+        }
+#endif
+    }
+    // filters a high-contrast block for checking both ETC1 mode and the ETC2 T/H mode
+    else if( lumaRange >= ecmd_threshold[2] )
+    {
+        return ModeTH;
+    }
+    return ModeUndecided;
+}
+
+static etcpak_force_inline uint64_t ProcessRGB_ETC2( const uint8_t* src, bool useHeuristics )
 {
 #ifdef __AVX2__
     uint64_t d = CheckSolid_AVX2( src );
     if( d != 0 ) return d;
+#else
+    uint64_t d = CheckSolid( src );
+    if (d != 0) return d;
+#endif
 
-    auto plane = Planar_AVX2( src );
+    uint8_t mode = ModeUndecided;
+    Luma luma;
+#ifdef __AVX2__
+    Channels ch = GetChannels( src );
+    if( useHeuristics )
+    {
+        CalculateLuma( ch, luma );
+        mode = SelectModeETC2( luma );
+    }
 
-    alignas(32) v4i a[8];
+    auto plane = Planar_AVX2( ch, mode, useHeuristics );
+    if( useHeuristics && mode == ModePlanar ) return plane.plane;
 
+    alignas( 32 ) v4i a[8];
     __m128i err0 = PrepareAverages_AVX2( a, plane.sum4 );
 
     // Get index of minimum error (err0)
-    __m128i err1 = _mm_shuffle_epi32(err0, _MM_SHUFFLE(2, 3, 0, 1));
+    __m128i err1 = _mm_shuffle_epi32( err0, _MM_SHUFFLE( 2, 3, 0, 1 ) );
     __m128i errMin0 = _mm_min_epu32(err0, err1);
 
-    __m128i errMin1 = _mm_shuffle_epi32(errMin0, _MM_SHUFFLE(1, 0, 3, 2));
-    __m128i errMin2 = _mm_min_epu32(errMin1, errMin0);
+    __m128i errMin1 = _mm_shuffle_epi32( errMin0, _MM_SHUFFLE( 1, 0, 3, 2 ) );
+    __m128i errMin2 = _mm_min_epu32( errMin1, errMin0 );
 
-    __m128i errMask = _mm_cmpeq_epi32(errMin2, err0);
+    __m128i errMask = _mm_cmpeq_epi32( errMin2, err0 );
 
-    uint32_t mask = _mm_movemask_epi8(errMask);
+    uint32_t mask = _mm_movemask_epi8( errMask );
 
-    size_t idx = _bit_scan_forward(mask) >> 2;
+    size_t idx = _bit_scan_forward( mask ) >> 2;
 
     d = EncodeAverages_AVX2( a, idx );
 
@@ -2018,16 +3034,56 @@ static etcpak_force_inline uint64_t ProcessRGB_ETC2( const uint8_t* src )
         FindBestFit_2x4_AVX2( terr, tsel, a, idx * 2, src );
     }
 
-    return EncodeSelectors_AVX2( d, terr, tsel, (idx % 2) == 1, plane.plane, plane.error );
-#else
-    uint64_t d = CheckSolid( src );
-    if (d != 0) return d;
+    if( useHeuristics )
+    {
+        if( mode == ModeTH )
+        {
+            uint64_t result = 0;
+            uint64_t error = 0;
+            uint32_t compressed[4] = { 0, 0, 0, 0 };
+            bool tMode = false;
 
-#ifdef __ARM_NEON
-    auto result = Planar_NEON( src );
+            error = compressBlockTH( (uint8_t*)src, luma, compressed[0], compressed[1], tMode, ch.r8, ch.g8, ch.b8 );
+            if( tMode )
+            {
+                stuff59bits( compressed[0], compressed[1], compressed[2], compressed[3] );
+            }
+            else
+            {
+                stuff58bits( compressed[0], compressed[1], compressed[2], compressed[3] );
+            }
+
+            result = (uint32_t)_bswap( compressed[2] );
+            result |= static_cast<uint64_t>( _bswap( compressed[3] ) ) << 32;
+
+            plane.plane = result;
+            plane.error = error;
+        }
+        else
+        {
+            plane.plane = 0;
+            plane.error = MaxError;
+        }
+    }
+
+    return EncodeSelectors_AVX2( d, terr, tsel, ( idx % 2 ) == 1, plane.plane, plane.error );
 #else
-    auto result = Planar( src );
+    if( useHeuristics )
+    {
+#if defined __ARM_NEON && defined __aarch64__
+        Channels ch = GetChannels( src );
+        CalculateLuma( ch, luma );
+#else
+        CalculateLuma( src, luma );
 #endif
+        mode = SelectModeETC2( luma );
+    }
+#ifdef __ARM_NEON
+    auto result = Planar_NEON( src, mode, useHeuristics );
+#else
+    auto result = Planar( src, mode, useHeuristics );
+#endif
+    if( result.second == 0 ) return result.first;
 
     v4i a[8];
     unsigned int err[4] = {};
@@ -2043,6 +3099,33 @@ static etcpak_force_inline uint64_t ProcessRGB_ETC2( const uint8_t* src )
     uint16_t tsel[16][8];
     auto id = g_id[idx];
     FindBestFit( terr, tsel, a, id, src );
+
+    if( useHeuristics )
+    {
+        if( mode == ModeTH )
+        {
+            uint32_t compressed[4] = { 0, 0, 0, 0 };
+            bool tMode = false;
+
+            result.second = compressBlockTH( (uint8_t*)src, luma, compressed[0], compressed[1], tMode );
+            if( tMode )
+            {
+                stuff59bits( compressed[0], compressed[1], compressed[2], compressed[3] );
+            }
+            else
+            {
+                stuff58bits( compressed[0], compressed[1], compressed[2], compressed[3] );
+            }
+
+            result.first = (uint32_t)_bswap( compressed[2] );
+            result.first |= static_cast<uint64_t>( _bswap( compressed[3] ) ) << 32;
+        }
+        else
+        {
+            result.first = 0;
+            result.second = MaxError;
+        }
+    }
 
     return EncodeSelectors( d, terr, tsel, id, result.first, result.second );
 #endif
@@ -2133,9 +3216,9 @@ etcpak_force_inline static uint16x8_t ErrorProbe_EAC_NEON( uint8x8_t recVal, uin
     uint8x8_t srcValWide;
 #ifndef __aarch64__
     if( Index < 8 )
-        srcValWide = vdup_lane_u8( vget_low_u8( alphaBlock ), ClampConstant( Index, 0, 8 ) );
+        srcValWide = vdup_lane_u8( vget_low_u8( alphaBlock ), ClampConstant( Index, 0, 7 ) );
     else
-        srcValWide = vdup_lane_u8( vget_high_u8( alphaBlock ), ClampConstant( Index - 8, 0, 8 ) );
+        srcValWide = vdup_lane_u8( vget_high_u8( alphaBlock ), ClampConstant( Index - 8, 0, 7 ) );
 #else
     srcValWide = vdup_laneq_u8( alphaBlock, Index );
 #endif
@@ -2173,9 +3256,9 @@ etcpak_force_inline static int16x8_t WidenMultiplier_EAC_NEON( int16x8_t multipl
     constexpr int Lane = GetMulSel( Index );
 #ifndef __aarch64__
     if( Lane < 4 )
-        return vdupq_lane_s16( vget_low_s16( multipliers ), ClampConstant( Lane, 0, 4 ) );
+        return vdupq_lane_s16( vget_low_s16( multipliers ), ClampConstant( Lane, 0, 3 ) );
     else
-        return vdupq_lane_s16( vget_high_s16( multipliers ), ClampConstant( Lane - 4, 0, 4 ) );
+        return vdupq_lane_s16( vget_high_s16( multipliers ), ClampConstant( Lane - 4, 0, 3 ) );
 #else
     return vdupq_laneq_s16( multipliers, Lane );
 #endif
@@ -2183,16 +3266,21 @@ etcpak_force_inline static int16x8_t WidenMultiplier_EAC_NEON( int16x8_t multipl
 
 #endif
 
+template<bool checkSolid = true>
 static etcpak_force_inline uint64_t ProcessAlpha_ETC2( const uint8_t* src )
 {
 #if defined __SSE4_1__
-    // Check solid
     __m128i s = _mm_loadu_si128( (__m128i*)src );
-    __m128i solidCmp = _mm_set1_epi8( src[0] );
-    __m128i cmpRes = _mm_cmpeq_epi8( s, solidCmp );
-    if( _mm_testc_si128( cmpRes, _mm_set1_epi32( -1 ) ) )
+
+    if( checkSolid )
     {
-        return src[0];
+        // Check solid
+        __m128i solidCmp = _mm_set1_epi8( src[0] );
+        __m128i cmpRes = _mm_cmpeq_epi8( s, solidCmp );
+        if( _mm_testc_si128( cmpRes, _mm_set1_epi32( -1 ) ) )
+        {
+            return src[0];
+        }
     }
 
     // Calculate min, max
@@ -2601,12 +3689,15 @@ static etcpak_force_inline uint64_t ProcessAlpha_ETC2( const uint8_t* src )
     int srcMid;
     uint8x16_t srcAlphaBlock = vld1q_u8( src );
     {
-        uint8_t ref = src[0];
-        uint8x16_t a0 = vdupq_n_u8( ref );
-        uint8x16_t r = vceqq_u8( srcAlphaBlock, a0 );
-        int64x2_t m = vreinterpretq_s64_u8( r );
-        if( m[0] == -1 && m[1] == -1 )
-            return ref;
+        if( checkSolid )
+        {
+            uint8_t ref = src[0];
+            uint8x16_t a0 = vdupq_n_u8( ref );
+            uint8x16_t r = vceqq_u8( srcAlphaBlock, a0 );
+            int64x2_t m = vreinterpretq_s64_u8( r );
+            if( m[0] == -1 && m[1] == -1 )
+                return ref;
+        }
 
         // srcRange
 #ifdef __aarch64__
@@ -2676,6 +3767,7 @@ static etcpak_force_inline uint64_t ProcessAlpha_ETC2( const uint8_t* src )
 #undef EAC_RECONSTRUCT_VALUE
 
 #else
+    if( checkSolid )
     {
         bool solid = true;
         const uint8_t* ptr = src + 1;
@@ -2766,7 +3858,6 @@ static etcpak_force_inline uint64_t ProcessAlpha_ETC2( const uint8_t* src )
 #endif
 }
 
-
 void CompressEtc1Alpha( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
 {
     int w = 0;
@@ -2826,7 +3917,7 @@ void CompressEtc1Alpha( const uint32_t* src, uint64_t* dst, uint32_t blocks, siz
     while( --blocks );
 }
 
-void CompressEtc2Alpha( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+void CompressEtc2Alpha( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width, bool useHeuristics )
 {
     int w = 0;
     uint32_t buf[4*4];
@@ -2880,7 +3971,7 @@ void CompressEtc2Alpha( const uint32_t* src, uint64_t* dst, uint32_t blocks, siz
             src += width * 3;
             w = 0;
         }
-        *dst++ = ProcessRGB_ETC2( (uint8_t*)buf );
+        *dst++ = ProcessRGB_ETC2( (uint8_t*)buf, useHeuristics );
     }
     while( --blocks );
 }
@@ -2982,7 +4073,7 @@ void CompressEtc1RgbDither( const uint32_t* src, uint64_t* dst, uint32_t blocks,
     while( --blocks );
 }
 
-void CompressEtc2Rgb( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+void CompressEtc2Rgb( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width, bool useHeuristics )
 {
     int w = 0;
     uint32_t buf[4*4];
@@ -3021,12 +4112,12 @@ void CompressEtc2Rgb( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_
             src += width * 3;
             w = 0;
         }
-        *dst++ = ProcessRGB_ETC2( (uint8_t*)buf );
+        *dst++ = ProcessRGB_ETC2( (uint8_t*)buf, useHeuristics );
     }
     while( --blocks );
 }
 
-void CompressEtc2Rgba( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+void CompressEtc2Rgba( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width, bool useHeuristics )
 {
     int w = 0;
     uint32_t rgba[4*4];
@@ -3093,8 +4184,148 @@ void CompressEtc2Rgba( const uint32_t* src, uint64_t* dst, uint32_t blocks, size
             src += width * 3;
             w = 0;
         }
-        *dst++ = ProcessAlpha_ETC2( alpha );
-        *dst++ = ProcessRGB_ETC2( (uint8_t*)rgba );
+        *dst++ = ProcessAlpha_ETC2<true>( alpha );
+        *dst++ = ProcessRGB_ETC2( (uint8_t*)rgba, useHeuristics );
+    }
+    while( --blocks );
+}
+
+void CompressEacR( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+{
+    int w = 0;
+    uint8_t r[4*4];
+    do
+    {
+#ifdef __SSE4_1__
+        __m128 px0 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 0 ) ) );
+        __m128 px1 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 1 ) ) );
+        __m128 px2 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 2 ) ) );
+        __m128 px3 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 3 ) ) );
+
+        _MM_TRANSPOSE4_PS( px0, px1, px2, px3 );
+
+        __m128i c0 = _mm_castps_si128( px0 );
+        __m128i c1 = _mm_castps_si128( px1 );
+        __m128i c2 = _mm_castps_si128( px2 );
+        __m128i c3 = _mm_castps_si128( px3 );
+
+        __m128i mask = _mm_setr_epi32( 0x0e0a0602, -1, -1, -1 );
+
+        __m128i a0 = _mm_shuffle_epi8( c0, mask );
+        __m128i a1 = _mm_shuffle_epi8( c1, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 3, 0, 3 ) ) );
+        __m128i a2 = _mm_shuffle_epi8( c2, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 0, 3, 3 ) ) );
+        __m128i a3 = _mm_shuffle_epi8( c3, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 0, 3, 3, 3 ) ) );
+
+        __m128i s0 = _mm_or_si128( a0, a1 );
+        __m128i s1 = _mm_or_si128( a2, a3 );
+        __m128i s2 = _mm_or_si128( s0, s1 );
+
+        _mm_store_si128( (__m128i*)r, s2 );
+
+        src += 4;
+#else
+        auto ptr8 = r;
+        for( int x=0; x<4; x++ )
+        {
+            auto v = *src;
+            *ptr8++ = (v & 0xff0000) >> 16;
+            src += width;
+            v = *src;
+            *ptr8++ = (v & 0xff0000) >> 16;
+            src += width;
+            v = *src;
+            *ptr8++ = (v & 0xff0000) >> 16;
+            src += width;
+            v = *src;
+            *ptr8++ = (v & 0xff0000) >> 16;
+            src -= width * 3 - 1;
+        }
+#endif
+        if( ++w == width/4 )
+        {
+            src += width * 3;
+            w = 0;
+        }
+        *dst++ = ProcessAlpha_ETC2<false>( r );
+    }
+    while( --blocks );
+}
+
+void CompressEacRg( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+{
+    int w = 0;
+    uint8_t rg[4*4*2];
+    do
+    {
+#ifdef __SSE4_1__
+        __m128 px0 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 0 ) ) );
+        __m128 px1 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 1 ) ) );
+        __m128 px2 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 2 ) ) );
+        __m128 px3 = _mm_castsi128_ps( _mm_loadu_si128( (__m128i*)( src + width * 3 ) ) );
+
+        _MM_TRANSPOSE4_PS( px0, px1, px2, px3 );
+
+        __m128i c0 = _mm_castps_si128( px0 );
+        __m128i c1 = _mm_castps_si128( px1 );
+        __m128i c2 = _mm_castps_si128( px2 );
+        __m128i c3 = _mm_castps_si128( px3 );
+
+        __m128i mask = _mm_setr_epi32( 0x0e0a0602, -1, -1, -1 );
+
+        __m128i r0 = _mm_shuffle_epi8( c0, mask );
+        __m128i r1 = _mm_shuffle_epi8( c1, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 3, 0, 3 ) ) );
+        __m128i r2 = _mm_shuffle_epi8( c2, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 0, 3, 3 ) ) );
+        __m128i r3 = _mm_shuffle_epi8( c3, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 0, 3, 3, 3 ) ) );
+
+        __m128i s0 = _mm_or_si128( r0, r1 );
+        __m128i s1 = _mm_or_si128( r2, r3 );
+        __m128i s2 = _mm_or_si128( s0, s1 );
+
+        _mm_store_si128( (__m128i*)rg, s2 );
+
+        mask = _mm_setr_epi32( 0x0d090501, -1, -1, -1 );
+
+        r0 = _mm_shuffle_epi8( c0, mask );
+        r1 = _mm_shuffle_epi8( c1, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 3, 0, 3 ) ) );
+        r2 = _mm_shuffle_epi8( c2, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 0, 3, 3 ) ) );
+        r3 = _mm_shuffle_epi8( c3, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 0, 3, 3, 3 ) ) );
+
+        s0 = _mm_or_si128( r0, r1 );
+        s1 = _mm_or_si128( r2, r3 );
+        s2 = _mm_or_si128( s0, s1 );
+
+        _mm_store_si128( (__m128i*)&rg[16], s2 );
+        src += 4;
+#else
+        auto ptrr = rg;
+        auto ptrg = ptrr + 16;
+        for( int x=0; x<4; x++ )
+        {
+            auto v = *src;
+            *ptrr++ = (v & 0xff0000) >> 16;
+            *ptrg++ = (v & 0xff00) >> 8;
+            src += width;
+            v = *src;
+            *ptrr++ = (v & 0xff0000) >> 16;
+            *ptrg++ = (v & 0xff00) >> 8;
+            src += width;
+            v = *src;
+            *ptrr++ = (v & 0xff0000) >> 16;
+            *ptrg++ = (v & 0xff00) >> 8;
+            src += width;
+            v = *src;
+            *ptrr++ = (v & 0xff0000) >> 16;
+            *ptrg++ = (v & 0xff00) >> 8;
+            src -= width * 3 - 1;
+        }
+#endif
+        if( ++w == width/4 )
+        {
+            src += width * 3;
+            w = 0;
+        }
+        *dst++ = ProcessAlpha_ETC2<false>( rg );
+        *dst++ = ProcessAlpha_ETC2<false>( &rg[16] );
     }
     while( --blocks );
 }

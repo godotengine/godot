@@ -55,7 +55,9 @@ namespace basisu
             abort();
          }
 
-#ifdef _MSC_VER
+#if BASISU_VECTOR_DETERMINISTIC
+         actual_size = desired_size;
+#elif defined(_MSC_VER)
          actual_size = _msize(new_p);
 #elif HAS_MALLOC_USABLE_SIZE
          actual_size = malloc_usable_size(new_p);
@@ -82,7 +84,9 @@ namespace basisu
             abort();
          }
 
-#ifdef _MSC_VER
+#if BASISU_VECTOR_DETERMINISTIC
+         actual_size = desired_size;
+#elif defined(_MSC_VER)
          actual_size = _msize(new_p);
 #elif HAS_MALLOC_USABLE_SIZE
          actual_size = malloc_usable_size(new_p);

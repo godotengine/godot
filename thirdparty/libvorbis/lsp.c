@@ -6,7 +6,7 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE OggVorbis SOURCE CODE IS (C) COPYRIGHT 1994-2009             *
- * by the Xiph.Org Foundation http://www.xiph.org/                  *
+ * by the Xiph.Org Foundation https://xiph.org/                     *
  *                                                                  *
  ********************************************************************
 
@@ -15,9 +15,10 @@
   The LSP generation code is taken (with minimal modification and a
   few bugfixes) from "On the Computation of the LSP Frequencies" by
   Joseph Rothweiler (see http://www.rothweiler.us for contact info).
+
   The paper is available at:
 
-  http://www.myown1.com/joe/lsf
+  https://web.archive.org/web/20110810174000/http://home.myfairpoint.net/vzenxj75/myown1/joe/lsf/index.html
 
  ********************************************************************/
 

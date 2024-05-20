@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeIntFunc" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeIntFunc" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A scalar integer function to be used within the visual shader graph.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeIntFunc.Function" default="2">
 			A function to be applied to the scalar. See [enum Function] for options.
@@ -24,6 +22,12 @@
 		</constant>
 		<constant name="FUNC_SIGN" value="2" enum="Function">
 			Extracts the sign of the parameter. Translates to [code]sign(x)[/code] in the Godot Shader Language.
+		</constant>
+		<constant name="FUNC_BITWISE_NOT" value="3" enum="Function">
+			Returns the result of bitwise [code]NOT[/code] operation on the integer. Translates to [code]~a[/code] in the Godot Shader Language.
+		</constant>
+		<constant name="FUNC_MAX" value="4" enum="Function">
+			Represents the size of the [enum Function] enum.
 		</constant>
 	</constants>
 </class>

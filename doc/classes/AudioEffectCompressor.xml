@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectCompressor" inherits="AudioEffect" version="4.0">
+<class name="AudioEffectCompressor" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Adds a compressor audio effect to an audio bus.
 		Reduces sounds that exceed a certain threshold level, smooths out the dynamics and increases the overall volume.
@@ -13,9 +13,8 @@
 		- Accentuates transients by using a wider attack, making effects sound more punchy.
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="attack_us" type="float" setter="set_attack_us" getter="get_attack_us" default="20.0">
 			Compressor's reaction time when the signal exceeds the threshold, in microseconds. Value can range from 20 to 2000.
@@ -39,6 +38,4 @@
 			The level above which compression is applied to the audio. Value can range from -60 to 0.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

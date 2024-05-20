@@ -1,81 +1,87 @@
-/*************************************************************************/
-/*  animation_blend_space_1d_editor.h                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_blend_space_1d_editor.h                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef ANIMATION_BLEND_SPACE_1D_EDITOR_H
 #define ANIMATION_BLEND_SPACE_1D_EDITOR_H
 
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
-#include "editor/property_editor.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_blend_space_1d.h"
-#include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/tree.h"
+
+class Button;
+class CheckBox;
+class LineEdit;
+class OptionButton;
+class PanelContainer;
+class SpinBox;
+class VSeparator;
 
 class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendSpace1DEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeBlendSpace1D> blend_space;
+	bool read_only = false;
 
-	HBoxContainer *goto_parent_hb;
-	Button *goto_parent;
+	HBoxContainer *goto_parent_hb = nullptr;
+	Button *goto_parent = nullptr;
 
-	PanelContainer *panel;
-	Button *tool_blend;
-	Button *tool_select;
-	Button *tool_create;
-	VSeparator *tool_erase_sep;
-	Button *tool_erase;
-	Button *snap;
-	SpinBox *snap_value;
+	PanelContainer *panel = nullptr;
+	Button *tool_blend = nullptr;
+	Button *tool_select = nullptr;
+	Button *tool_create = nullptr;
+	VSeparator *tool_erase_sep = nullptr;
+	Button *tool_erase = nullptr;
+	Button *snap = nullptr;
+	SpinBox *snap_value = nullptr;
 
-	LineEdit *label_value;
-	SpinBox *max_value;
-	SpinBox *min_value;
+	LineEdit *label_value = nullptr;
+	SpinBox *max_value = nullptr;
+	SpinBox *min_value = nullptr;
 
-	HBoxContainer *edit_hb;
-	SpinBox *edit_value;
-	Button *open_editor;
+	CheckBox *sync = nullptr;
+	OptionButton *interpolation = nullptr;
 
-	int selected_point;
+	HBoxContainer *edit_hb = nullptr;
+	SpinBox *edit_value = nullptr;
+	Button *open_editor = nullptr;
 
-	Control *blend_space_draw;
+	int selected_point = -1;
 
-	PanelContainer *error_panel;
-	Label *error_label;
+	Control *blend_space_draw = nullptr;
 
-	bool updating;
+	PanelContainer *error_panel = nullptr;
+	Label *error_label = nullptr;
 
-	UndoRedo *undo_redo;
+	bool updating = false;
 
 	static AnimationNodeBlendSpace1DEditor *singleton;
 
@@ -88,14 +94,14 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	void _labels_changed(String);
 	void _snap_toggled();
 
-	PopupMenu *menu;
-	PopupMenu *animations_menu;
+	PopupMenu *menu = nullptr;
+	PopupMenu *animations_menu = nullptr;
 	Vector<String> animations_to_add;
-	float add_point_pos;
-	Vector<float> points;
+	float add_point_pos = 0.0f;
+	Vector<real_t> points;
 
-	bool dragging_selected_attempt;
-	bool dragging_selected;
+	bool dragging_selected_attempt = false;
+	bool dragging_selected = false;
 	Vector2 drag_from;
 	Vector2 drag_ofs;
 
@@ -109,9 +115,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	void _edit_point_pos(double);
 	void _open_editor();
 
-	void _goto_parent();
-
-	EditorFileDialog *open_file;
+	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
 

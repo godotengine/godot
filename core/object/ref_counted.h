@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  ref_counted.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  ref_counted.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef REF_COUNTED_H
 #define REF_COUNTED_H
@@ -47,13 +47,13 @@ public:
 	bool init_ref();
 	bool reference(); // returns false if refcount is at zero and didn't get increased
 	bool unreference();
-	int reference_get_count() const;
+	int get_reference_count() const;
 
 	RefCounted();
 	~RefCounted() {}
 };
 
-template <class T>
+template <typename T>
 class Ref {
 	T *reference = nullptr;
 
@@ -71,7 +71,7 @@ class Ref {
 	}
 
 	void ref_pointer(T *p_ref) {
-		ERR_FAIL_COND(!p_ref);
+		ERR_FAIL_NULL(p_ref);
 
 		if (p_ref->init_ref()) {
 			reference = p_ref;
@@ -97,26 +97,15 @@ public:
 		return reference != p_r.reference;
 	}
 
-	_FORCE_INLINE_ T *operator->() {
+	_FORCE_INLINE_ T *operator*() const {
 		return reference;
 	}
 
-	_FORCE_INLINE_ T *operator*() {
+	_FORCE_INLINE_ T *operator->() const {
 		return reference;
 	}
 
-	_FORCE_INLINE_ const T *operator->() const {
-		return reference;
-	}
-
-	_FORCE_INLINE_ const T *ptr() const {
-		return reference;
-	}
-	_FORCE_INLINE_ T *ptr() {
-		return reference;
-	}
-
-	_FORCE_INLINE_ const T *operator*() const {
+	_FORCE_INLINE_ T *ptr() const {
 		return reference;
 	}
 
@@ -128,7 +117,7 @@ public:
 		ref(p_from);
 	}
 
-	template <class T_Other>
+	template <typename T_Other>
 	void operator=(const Ref<T_Other> &p_from) {
 		RefCounted *refb = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_from.ptr()));
 		if (!refb) {
@@ -160,7 +149,7 @@ public:
 		}
 	}
 
-	template <class T_Other>
+	template <typename T_Other>
 	void reference_ptr(T_Other *p_ptr) {
 		if (reference == p_ptr) {
 			return;
@@ -177,7 +166,7 @@ public:
 		ref(p_from);
 	}
 
-	template <class T_Other>
+	template <typename T_Other>
 	Ref(const Ref<T_Other> &p_from) {
 		RefCounted *refb = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_from.ptr()));
 		if (!refb) {
@@ -223,8 +212,9 @@ public:
 		reference = nullptr;
 	}
 
-	void instantiate() {
-		ref(memnew(T));
+	template <typename... VarArgs>
+	void instantiate(VarArgs... p_params) {
+		ref(memnew(T(p_params...)));
 	}
 
 	Ref() {}
@@ -233,8 +223,6 @@ public:
 		unref();
 	}
 };
-
-typedef Ref<RefCounted> REF;
 
 class WeakRef : public RefCounted {
 	GDCLASS(WeakRef, RefCounted);
@@ -247,36 +235,43 @@ protected:
 public:
 	Variant get_ref() const;
 	void set_obj(Object *p_object);
-	void set_ref(const REF &p_ref);
+	void set_ref(const Ref<RefCounted> &p_ref);
 
 	WeakRef() {}
 };
 
-template <class T>
+template <typename T>
 struct PtrToArg<Ref<T>> {
 	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
-		return Ref<T>(const_cast<T *>(reinterpret_cast<const T *>(p_ptr)));
+		if (p_ptr == nullptr) {
+			return Ref<T>();
+		}
+		// p_ptr points to a RefCounted object
+		return Ref<T>(const_cast<T *>(*reinterpret_cast<T *const *>(p_ptr)));
 	}
 
 	typedef Ref<T> EncodeT;
 
 	_FORCE_INLINE_ static void encode(Ref<T> p_val, const void *p_ptr) {
-		*(Ref<RefCounted> *)p_ptr = p_val;
+		// p_ptr points to an EncodeT object which is a Ref<T> object.
+		*(const_cast<Ref<RefCounted> *>(reinterpret_cast<const Ref<RefCounted> *>(p_ptr))) = p_val;
 	}
 };
 
-template <class T>
+template <typename T>
 struct PtrToArg<const Ref<T> &> {
 	typedef Ref<T> EncodeT;
 
 	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
-		return Ref<T>((T *)p_ptr);
+		if (p_ptr == nullptr) {
+			return Ref<T>();
+		}
+		// p_ptr points to a RefCounted object
+		return Ref<T>(*((T *const *)p_ptr));
 	}
 };
 
-#ifdef DEBUG_METHODS_ENABLED
-
-template <class T>
+template <typename T>
 struct GetTypeInfo<Ref<T>> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
@@ -286,7 +281,7 @@ struct GetTypeInfo<Ref<T>> {
 	}
 };
 
-template <class T>
+template <typename T>
 struct GetTypeInfo<const Ref<T> &> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
@@ -296,6 +291,16 @@ struct GetTypeInfo<const Ref<T> &> {
 	}
 };
 
-#endif // DEBUG_METHODS_ENABLED
+template <typename T>
+struct VariantInternalAccessor<Ref<T>> {
+	static _FORCE_INLINE_ Ref<T> get(const Variant *v) { return Ref<T>(*VariantInternal::get_object(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::refcounted_object_assign(v, p_ref.ptr()); }
+};
+
+template <typename T>
+struct VariantInternalAccessor<const Ref<T> &> {
+	static _FORCE_INLINE_ Ref<T> get(const Variant *v) { return Ref<T>(*VariantInternal::get_object(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::refcounted_object_assign(v, p_ref.ptr()); }
+};
 
 #endif // REF_COUNTED_H

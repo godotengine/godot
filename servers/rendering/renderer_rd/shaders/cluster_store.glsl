@@ -6,7 +6,7 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	uint cluster_render_data_size; // how much data for a single cluster takes
 	uint max_render_element_count_div_32; //divided by 32
 	uvec2 cluster_screen_size;

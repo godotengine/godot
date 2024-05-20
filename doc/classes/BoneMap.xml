@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BoneMap" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Describes a mapping of bone names for retargeting [Skeleton3D] into common names defined by a [SkeletonProfile].
+	</brief_description>
+	<description>
+		This class contains a dictionary that uses a list of bone names in [SkeletonProfile] as key names.
+		By assigning the actual [Skeleton3D] bone name as the key value, it maps the [Skeleton3D] to the [SkeletonProfile].
+	</description>
+	<tutorials>
+		<link title="Retargeting 3D Skeletons">$DOCS_URL/tutorials/assets_pipeline/retargeting_3d_skeletons.html</link>
+	</tutorials>
+	<methods>
+		<method name="find_profile_bone_name" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="skeleton_bone_name" type="StringName" />
+			<description>
+				Returns a profile bone name having [param skeleton_bone_name]. If not found, an empty [StringName] will be returned.
+				In the retargeting process, the returned bone name is the bone name of the target skeleton.
+			</description>
+		</method>
+		<method name="get_skeleton_bone_name" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="profile_bone_name" type="StringName" />
+			<description>
+				Returns a skeleton bone name is mapped to [param profile_bone_name].
+				In the retargeting process, the returned bone name is the bone name of the source skeleton.
+			</description>
+		</method>
+		<method name="set_skeleton_bone_name">
+			<return type="void" />
+			<param index="0" name="profile_bone_name" type="StringName" />
+			<param index="1" name="skeleton_bone_name" type="StringName" />
+			<description>
+				Maps a skeleton bone name to [param profile_bone_name].
+				In the retargeting process, the setting bone name is the bone name of the source skeleton.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="profile" type="SkeletonProfile" setter="set_profile" getter="get_profile">
+			A [SkeletonProfile] of the mapping target. Key names in the [BoneMap] are synchronized with it.
+		</member>
+	</members>
+	<signals>
+		<signal name="bone_map_updated">
+			<description>
+				This signal is emitted when change the key value in the [BoneMap]. This is used to validate mapping and to update [BoneMap] editor.
+			</description>
+		</signal>
+		<signal name="profile_updated">
+			<description>
+				This signal is emitted when change the value in profile or change the reference of profile. This is used to update key names in the [BoneMap] and to redraw the [BoneMap] editor.
+			</description>
+		</signal>
+	</signals>
+</class>

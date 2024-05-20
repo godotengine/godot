@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  animation_blend_space_1d.h                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_blend_space_1d.h                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef ANIMATION_BLEND_SPACE_1D_H
 #define ANIMATION_BLEND_SPACE_1D_H
@@ -36,6 +36,14 @@
 class AnimationNodeBlendSpace1D : public AnimationRootNode {
 	GDCLASS(AnimationNodeBlendSpace1D, AnimationRootNode);
 
+public:
+	enum BlendMode {
+		BLEND_MODE_INTERPOLATED,
+		BLEND_MODE_DISCRETE,
+		BLEND_MODE_DISCRETE_CARRY,
+	};
+
+protected:
 	enum {
 		MAX_BLEND_POINTS = 64
 	};
@@ -58,13 +66,19 @@ class AnimationNodeBlendSpace1D : public AnimationRootNode {
 
 	void _add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node);
 
-	void _tree_changed();
-
 	StringName blend_position = "blend_position";
+	StringName closest = "closest";
 
-protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	BlendMode blend_mode = BLEND_MODE_INTERPOLATED;
+
+	bool sync = false;
+
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
+
+	virtual void _tree_changed() override;
+	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name) override;
+	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node) override;
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
@@ -93,13 +107,21 @@ public:
 	void set_value_label(const String &p_label);
 	String get_value_label() const;
 
-	float process(float p_time, bool p_seek) override;
+	void set_blend_mode(BlendMode p_blend_mode);
+	BlendMode get_blend_mode() const;
+
+	void set_use_sync(bool p_sync);
+	bool is_using_sync() const;
+
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 	String get_caption() const override;
 
-	Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;
+	Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;
 
 	AnimationNodeBlendSpace1D();
 	~AnimationNodeBlendSpace1D();
 };
+
+VARIANT_ENUM_CAST(AnimationNodeBlendSpace1D::BlendMode)
 
 #endif // ANIMATION_BLEND_SPACE_1D_H

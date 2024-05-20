@@ -1,32 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Popup" inherits="Window" version="4.0">
+<class name="Popup" inherits="Window" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base container control for popups and dialogs.
+		Base class for contextual windows and panels with fixed position.
 	</brief_description>
 	<description>
-		Popup is a base [Control] used to show dialogs and popups. It's a subwindow and modal by default (see [Control]) and has helpers for custom popup behavior.
+		[Popup] is a base class for contextual windows and panels with fixed position. It's a modal by default (see [member Window.popup_window]) and provides methods for implementing custom popup behavior.
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" override="true" default="true" />
-		<member name="close_on_parent_focus" type="bool" setter="set_close_on_parent_focus" getter="get_close_on_parent_focus" default="true">
-			If [code]true[/code], the [Popup] will close when its parent is focused.
-		</member>
-		<member name="transient" type="bool" setter="set_transient" getter="is_transient" override="true" default="true" />
-		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" override="true" default="true" />
-		<member name="visible" type="bool" setter="set_visible" getter="is_visible" override="true" default="false" />
-		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" override="true" default="true" />
+		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" overrides="Window" default="true" />
+		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" overrides="Window" default="true" />
+		<member name="transient" type="bool" setter="set_transient" getter="is_transient" overrides="Window" default="true" />
+		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" overrides="Window" default="true" />
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible" overrides="Window" default="false" />
+		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" overrides="Window" default="true" />
 	</members>
 	<signals>
 		<signal name="popup_hide">
 			<description>
-				Emitted when a popup is hidden.
+				Emitted when the popup is hidden.
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

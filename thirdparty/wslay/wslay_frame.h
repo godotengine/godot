@@ -33,6 +33,7 @@
 
 enum wslay_frame_state {
   PREP_HEADER,
+  PREP_HEADER_NOBUF,
   SEND_HEADER,
   SEND_PAYLOAD,
   RECV_HEADER1,

@@ -1,120 +1,83 @@
 name: 🏁 Windows Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 # SCONS_CACHE for windows must be set in the build environment
 env:
+  # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
-  SCONSFLAGS: platform=windows verbose=yes warnings=all werror=yes debug_symbols=no --jobs=2 module_text_server_fb_enabled=yes
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes d3d12=yes
   SCONS_CACHE_MSVC_CONFIG: true
-  SCONS_CACHE_LIMIT: 3072
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-windows
+  cancel-in-progress: true
 
 jobs:
-  windows-editor:
+  build-windows:
     # Windows 10 with latest image
     runs-on: "windows-latest"
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Editor (target=editor, tests=yes)
+            cache-name: windows-editor
+            target: editor
+            tests: true
+            # Skip debug symbols, they're way too big with MSVC.
+            sconsflags: debug_symbols=no vsproj=yes vsproj_gen_only=no windows_subsystem=console
+            bin: "./bin/godot.windows.editor.x86_64.exe"
 
-    # Windows Editor - checkout with the plugin
-    name: Editor (target=release_debug, tools=yes, tests=yes)
-
-    steps:
-    - uses: actions/checkout@v2
-
-      # Upload cache on completion and check it out now
-      # Editing this is pretty dangerous for Windows since it can break and needs to be properly tested with a fresh cache.
-    - name: Load .scons_cache directory
-      id: windows-editor-cache
-      uses: actions/cache@v2
-      with:
-        path: /.scons_cache/
-        key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-        restore-keys: |
-          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
-          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
-
-    # Use python 3.x release (works cross platform; best to keep self contained in it's own step)
-    - name: Set up Python 3.x
-      uses: actions/setup-python@v2
-      with:
-        # Semantic version range syntax or exact version of a Python version
-        python-version: '3.x'
-        # Optional - x64 or x86 architecture, defaults to x64
-        architecture: 'x64'
-
-    # Setup scons, print python version and scons version info, so if anything is broken it won't run the build.
-    - name: Configuring Python packages
-      run: |
-        python -c "import sys; print(sys.version)"
-        python -m pip install scons
-        python --version
-        scons --version
-
-    # We should always be explicit with our flags usage here since it's gonna be sure to always set those flags
-    - name: Compilation
-      env:
-        SCONS_CACHE: /.scons_cache/
-      run: |
-        scons tools=yes tests=yes target=release_debug
-        ls -l bin/
-
-    # Execute unit tests for the editor
-    - name: Unit Tests
-      run: |
-        ./bin/godot.windows.opt.tools.64.exe --test
-
-    - uses: actions/upload-artifact@v2
-      with:
-        name: ${{ github.job }}
-        path: bin/*
-        retention-days: 14
-
-  windows-template:
-    runs-on: "windows-latest"
-    name: Template (target=release, tools=no)
+          - name: Template (target=template_release)
+            cache-name: windows-template
+            target: template_release
+            tests: false
+            sconsflags: debug_symbols=no
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    # Upload cache on completion and check it out now
-    # Editing this is pretty dangerous for Windows since it can break and needs to be properly tested with a fresh cache.
-    - name: Load .scons_cache directory
-      id: windows-template-cache
-      uses: RevoluPowered/cache@v2.1
-      with:
-        path: /.scons_cache/
-        key: ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-        restore-keys: |
-          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
-          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
-          ${{github.job}}-${{env.GODOT_BASE_BRANCH}}
+      - name: Setup Godot build cache
+        uses: ./.github/actions/godot-cache
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
 
-    # Use python 3.x release (works cross platform)
-    - name: Set up Python 3.x
-      uses: actions/setup-python@v2
-      with:
-        # Semantic version range syntax or exact version of a Python version
-        python-version: '3.x'
-        # Optional - x64 or x86 architecture, defaults to x64
-        architecture: 'x64'
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
 
-    # You can test your matrix by printing the current Python version
-    - name: Configuring Python packages
-      run: |
-        python -c "import sys; print(sys.version)"
-        python -m pip install scons
-        python --version
-        scons --version
+      - name: Download Direct3D 12 SDK components
+        run: python ./misc/scripts/install_d3d12_sdk_windows.py
 
-    - name: Compilation
-      env:
-        SCONS_CACHE: /.scons_cache/
-      run: |
-        scons target=release tools=no
-        ls -l bin/
+      - name: Setup MSVC problem matcher
+        uses: ammaraskar/msvc-problem-matcher@master
 
-    - uses: actions/upload-artifact@v2
-      with:
-        name: ${{ github.job }}
-        path: bin/*
-        retention-days: 14
+      - name: Compilation
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
+          platform: windows
+          target: ${{ matrix.target }}
+          tests: ${{ matrix.tests }}
+
+      - name: Prepare artifact
+        run: |
+          Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ matrix.cache-name }}
+
+      # Execute unit tests for the editor
+      - name: Unit tests
+        if: ${{ matrix.tests }}
+        run: |
+          ${{ matrix.bin }} --version
+          ${{ matrix.bin }} --help
+          ${{ matrix.bin }} --test --force-colors

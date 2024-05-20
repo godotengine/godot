@@ -1,0 +1,8 @@
+Header 1,Header 2,Header 3,Header 4
+GOOD_MORNING,"Good Morning","Guten Morgen","Bonjour"
+GOOD_EVENING,"Good Evening","",""""""
+Without quotes,"With, comma","With ""inner"" quotes","With ""inner"", quotes"","" and comma","With ""inner
+split"" quotes and
+line breaks","With \nnewline chars"
+Some other~delimiter~should still work, shouldn't it?
+What about	tab separated	lines, good?

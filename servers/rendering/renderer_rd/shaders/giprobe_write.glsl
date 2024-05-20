@@ -7,7 +7,6 @@
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 #define NO_CHILDREN 0xFFFFFFFF
-#define GREY_VEC vec3(0.33333, 0.33333, 0.33333)
 
 struct CellChildren {
 	uint children[8];
@@ -59,7 +58,7 @@ lights;
 
 #endif
 
-layout(push_constant, binding = 0, std430) uniform Params {
+layout(push_constant, std430) uniform Params {
 	ivec3 limits;
 	uint stack_size;
 
@@ -202,12 +201,7 @@ void main() {
 	vec3 emission = vec3(ivec3(cell_data.data[cell_index].emission & 0x3FF, (cell_data.data[cell_index].emission >> 10) & 0x7FF, cell_data.data[cell_index].emission >> 21)) * params.emission_scale;
 	vec4 normal = unpackSnorm4x8(cell_data.data[cell_index].normal);
 
-#ifdef MODE_ANISOTROPIC
-	vec3 accum[6] = vec3[](vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
-	const vec3 accum_dirs[6] = vec3[](vec3(1.0, 0.0, 0.0), vec3(-1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 0.0, -1.0));
-#else
 	vec3 accum = vec3(0.0);
-#endif
 
 	for (uint i = 0; i < params.light_count; i++) {
 		float attenuation;
@@ -242,77 +236,35 @@ void main() {
 
 		vec3 light = lights.data[i].color * albedo.rgb * attenuation * lights.data[i].energy;
 
-#ifdef MODE_ANISOTROPIC
-		for (uint j = 0; j < 6; j++) {
-			accum[j] += max(0.0, dot(accum_dir, -light_dir)) * light + emission;
-		}
-#else
 		if (length(normal.xyz) > 0.2) {
 			accum += max(0.0, dot(normal.xyz, -light_dir)) * light + emission;
 		} else {
 			//all directions
 			accum += light + emission;
 		}
-#endif
 	}
 
-#ifdef MODE_ANISOTROPIC
-
-	output.data[cell_index * 6 + 0] = vec4(accum[0], 0.0);
-	output.data[cell_index * 6 + 1] = vec4(accum[1], 0.0);
-	output.data[cell_index * 6 + 2] = vec4(accum[2], 0.0);
-	output.data[cell_index * 6 + 3] = vec4(accum[3], 0.0);
-	output.data[cell_index * 6 + 4] = vec4(accum[4], 0.0);
-	output.data[cell_index * 6 + 5] = vec4(accum[5], 0.0);
-#else
 	output.data[cell_index] = vec4(accum, 0.0);
-
-#endif
 
 #endif //MODE_COMPUTE_LIGHT
 
 #ifdef MODE_UPDATE_MIPMAPS
 
 	{
-#ifdef MODE_ANISOTROPIC
-		vec3 light_accum[6] = vec3[](vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
-#else
 		vec3 light_accum = vec3(0.0);
-#endif
 		float count = 0.0;
 		for (uint i = 0; i < 8; i++) {
 			uint child_index = cell_children.data[cell_index].children[i];
 			if (child_index == NO_CHILDREN) {
 				continue;
 			}
-#ifdef MODE_ANISOTROPIC
-			light_accum[1] += output.data[child_index * 6 + 0].rgb;
-			light_accum[2] += output.data[child_index * 6 + 1].rgb;
-			light_accum[3] += output.data[child_index * 6 + 2].rgb;
-			light_accum[4] += output.data[child_index * 6 + 3].rgb;
-			light_accum[5] += output.data[child_index * 6 + 4].rgb;
-			light_accum[6] += output.data[child_index * 6 + 5].rgb;
-
-#else
 			light_accum += output.data[child_index].rgb;
-
-#endif
 
 			count += 1.0;
 		}
 
 		float divisor = mix(8.0, count, params.propagation);
-#ifdef MODE_ANISOTROPIC
-		output.data[cell_index * 6 + 0] = vec4(light_accum[0] / divisor, 0.0);
-		output.data[cell_index * 6 + 1] = vec4(light_accum[1] / divisor, 0.0);
-		output.data[cell_index * 6 + 2] = vec4(light_accum[2] / divisor, 0.0);
-		output.data[cell_index * 6 + 3] = vec4(light_accum[3] / divisor, 0.0);
-		output.data[cell_index * 6 + 4] = vec4(light_accum[4] / divisor, 0.0);
-		output.data[cell_index * 6 + 5] = vec4(light_accum[5] / divisor, 0.0);
-
-#else
 		output.data[cell_index] = vec4(light_accum / divisor, 0.0);
-#endif
 	}
 #endif
 

@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventAction" inherits="InputEvent" version="4.0">
+<class name="InputEventAction" inherits="InputEvent" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Input event type for actions.
+		An input event type for actions.
 	</brief_description>
 	<description>
-		Contains a generic action which can be targeted from several types of inputs. Actions can be created from the [b]Input Map[/b] tab in the [b]Project &gt; Project Settings[/b] menu. See [method Node._input].
+		Contains a generic action which can be targeted from several types of inputs. Actions and their events can be set in the [b]Input Map[/b] tab in [b]Project &gt; Project Settings[/b], or with the [InputMap] class.
+		[b]Note:[/b] Unlike the other [InputEvent] subclasses which map to unique physical events, this virtual one is not emitted by the engine. This class is useful to emit actions manually with [method Input.parse_input_event], which are then received in [method Node._input]. To check if a physical event matches an action from the Input Map, use [method InputEvent.is_action] and [method InputEvent.is_action_pressed].
 	</description>
 	<tutorials>
-		<link title="InputEvent: Actions">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html#actions</link>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="Using InputEvent: Actions">$DOCS_URL/tutorials/inputs/inputevent.html#actions</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="action" type="StringName" setter="set_action" getter="get_action" default="&amp;&quot;&quot;">
 			The action's name. Actions are accessed via this [String].
@@ -24,6 +23,4 @@
 			The action's strength between 0 and 1. This value is considered as equal to 0 if pressed is [code]false[/code]. The event strength allows faking analog joypad motion events, by specifying how strongly the joypad axis is bent or pressed.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

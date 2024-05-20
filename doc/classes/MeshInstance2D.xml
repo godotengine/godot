@@ -1,23 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshInstance2D" inherits="Node2D" version="4.0">
+<class name="MeshInstance2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Node used for displaying a [Mesh] in 2D.
 	</brief_description>
 	<description>
-		Node used for displaying a [Mesh] in 2D. Can be constructed from an existing [Sprite2D] via a tool in the editor toolbar. Select "Sprite2D" then "Convert to Mesh2D", select settings in popup and press "Create Mesh2D".
+		Node used for displaying a [Mesh] in 2D. A [MeshInstance2D] can be automatically created from an existing [Sprite2D] via a tool in the editor toolbar. Select the [Sprite2D] node, then choose [b]Sprite2D &gt; Convert to MeshInstance2D[/b] at the top of the 2D editor viewport.
 	</description>
 	<tutorials>
-		<link title="2D meshes">https://docs.godotengine.org/en/latest/tutorials/2d/2d_meshes.html</link>
+		<link title="2D meshes">$DOCS_URL/tutorials/2d/2d_meshes.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			The [Mesh] that will be drawn by the [MeshInstance2D].
-		</member>
-		<member name="normal_map" type="Texture2D" setter="set_normal_map" getter="get_normal_map">
-			The normal map that will be used if using the default [CanvasItemMaterial].
-			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The [Texture2D] that will be used if using the default [CanvasItemMaterial]. Can be accessed as [code]TEXTURE[/code] in CanvasItem shader.
@@ -30,6 +24,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

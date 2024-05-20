@@ -1,120 +1,119 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Godot;
 using GodotTools.Internals;
+using JetBrains.Rider.PathLocator;
 
 namespace GodotTools.Ides.Rider
 {
     public static class RiderPathManager
     {
-        public static readonly string EditorPathSettingName = "mono/editor/editor_path_optional";
+        private const string EditorPathSettingName = "dotnet/editor/editor_path_optional";
 
-        private static string GetRiderPathFromSettings()
+        private static readonly RiderPathLocator RiderPathLocator;
+        private static readonly RiderFileOpener RiderFileOpener;
+
+        static RiderPathManager()
         {
-            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
+            var riderLocatorEnvironment = new RiderLocatorEnvironment();
+            RiderPathLocator = new RiderPathLocator(riderLocatorEnvironment);
+            RiderFileOpener = new RiderFileOpener(riderLocatorEnvironment);
+        }
+
+        private static string? GetRiderPathFromSettings()
+        {
+            var editorSettings = EditorInterface.Singleton.GetEditorSettings();
             if (editorSettings.HasSetting(EditorPathSettingName))
+            {
                 return (string)editorSettings.GetSetting(EditorPathSettingName);
+            }
+
             return null;
         }
 
         public static void Initialize()
         {
-            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-            var editor = (ExternalEditorId)editorSettings.GetSetting("mono/editor/external_editor");
+            var editorSettings = EditorInterface.Singleton.GetEditorSettings();
+            var editor = editorSettings.GetSetting(GodotSharpEditor.Settings.ExternalEditor).As<ExternalEditorId>();
             if (editor == ExternalEditorId.Rider)
             {
                 if (!editorSettings.HasSetting(EditorPathSettingName))
                 {
-                    Globals.EditorDef(EditorPathSettingName, "Optional");
+                    Globals.EditorDef(EditorPathSettingName, "");
                     editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
                     {
-                        ["type"] = Variant.Type.String,
+                        ["type"] = (int)Variant.Type.String,
                         ["name"] = EditorPathSettingName,
-                        ["hint"] = PropertyHint.File,
+                        ["hint"] = (int)PropertyHint.File,
                         ["hint_string"] = ""
                     });
                 }
 
                 var riderPath = (string)editorSettings.GetSetting(EditorPathSettingName);
-                if (IsRiderAndExists(riderPath))
+                if (File.Exists(riderPath))
                 {
                     Globals.EditorDef(EditorPathSettingName, riderPath);
                     return;
                 }
 
                 var paths = RiderPathLocator.GetAllRiderPaths();
-
-                if (!paths.Any())
+                if (paths.Length == 0)
+                {
                     return;
+                }
 
-                var newPath = paths.Last().Path;
+                string newPath = paths.Last().Path;
                 Globals.EditorDef(EditorPathSettingName, newPath);
                 editorSettings.SetSetting(EditorPathSettingName, newPath);
             }
         }
 
-        public static bool IsExternalEditorSetToRider(EditorSettings editorSettings)
-        {
-            return editorSettings.HasSetting(EditorPathSettingName) && IsRider((string)editorSettings.GetSetting(EditorPathSettingName));
-        }
-
         public static bool IsRider(string path)
         {
-            if (string.IsNullOrEmpty(path))
+            if (path.IndexOfAny(Path.GetInvalidPathChars()) != -1)
+            {
                 return false;
+            }
 
             var fileInfo = new FileInfo(path);
-            var filename = fileInfo.Name.ToLowerInvariant();
-            return filename.StartsWith("rider", StringComparison.Ordinal);
+            return fileInfo.Name.StartsWith("rider", StringComparison.OrdinalIgnoreCase);
         }
 
-        private static string CheckAndUpdatePath(string riderPath)
+        private static string? CheckAndUpdatePath(string? riderPath)
         {
-            if (IsRiderAndExists(riderPath))
+            if (File.Exists(riderPath))
             {
                 return riderPath;
             }
 
-            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-            var paths = RiderPathLocator.GetAllRiderPaths();
-
-            if (!paths.Any())
+            var allInfos = RiderPathLocator.GetAllRiderPaths();
+            if (allInfos.Length == 0)
+            {
                 return null;
+            }
 
-            var newPath = paths.Last().Path;
+            // RiderPathLocator includes Rider and Fleet locations, prefer Rider when available.
+            var preferredInfo = allInfos.LastOrDefault(info => IsRider(info.Path), allInfos[allInfos.Length - 1]);
+            string newPath = preferredInfo.Path;
+
+            var editorSettings = EditorInterface.Singleton.GetEditorSettings();
             editorSettings.SetSetting(EditorPathSettingName, newPath);
             Globals.EditorDef(EditorPathSettingName, newPath);
             return newPath;
         }
 
-        private static bool IsRiderAndExists(string riderPath)
+        public static void OpenFile(string slnPath, string scriptPath, int line, int column)
         {
-            return !string.IsNullOrEmpty(riderPath) && IsRider(riderPath) && new FileInfo(riderPath).Exists;
-        }
+            string? pathFromSettings = GetRiderPathFromSettings();
+            string? path = CheckAndUpdatePath(pathFromSettings);
+            if (string.IsNullOrEmpty(path))
+            {
+                GD.PushError($"Error when trying to run code editor: JetBrains Rider or Fleet. Could not find path to the editor.");
+                return;
+            }
 
-        public static void OpenFile(string slnPath, string scriptPath, int line)
-        {
-            var pathFromSettings = GetRiderPathFromSettings();
-            var path = CheckAndUpdatePath(pathFromSettings);
-
-            var args = new List<string>();
-            args.Add(slnPath);
-            if (line >= 0)
-            {
-                args.Add("--line");
-                args.Add((line + 1).ToString()); // https://github.com/JetBrains/godot-support/issues/61
-            }
-            args.Add(scriptPath);
-            try
-            {
-                Utils.OS.RunProcess(path, args);
-            }
-            catch (Exception e)
-            {
-                GD.PushError($"Error when trying to run code editor: JetBrains Rider. Exception message: '{e.Message}'");
-            }
+            RiderFileOpener.OpenFile(path, slnPath, scriptPath, line, column);
         }
     }
 }

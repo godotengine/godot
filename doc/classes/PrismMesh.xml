@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PrismMesh" inherits="PrimitiveMesh" version="4.0">
+<class name="PrismMesh" inherits="PrimitiveMesh" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Class representing a prism-shaped [PrimitiveMesh].
 	</brief_description>
@@ -8,13 +8,11 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="left_to_right" type="float" setter="set_left_to_right" getter="get_left_to_right" default="0.5">
 			Displacement of the upper edge along the X axis. 0.0 positions edge straight above the bottom-left edge.
 		</member>
-		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(2, 2, 2)">
+		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(1, 1, 1)">
 			Size of the prism.
 		</member>
 		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth" default="0">
@@ -27,6 +25,4 @@
 			Number of added edge loops along the X axis.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

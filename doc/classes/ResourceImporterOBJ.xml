@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterOBJ" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Imports an OBJ 3D model as an independent [Mesh] or scene.
+	</brief_description>
+	<description>
+		Unlike [ResourceImporterScene], [ResourceImporterOBJ] will import a single [Mesh] resource by default instead of importing a [PackedScene]. This makes it easier to use the [Mesh] resource in nodes that expect direct [Mesh] resources, such as [GridMap], [GPUParticles3D] or [CPUParticles3D]. Note that it is still possible to save mesh resources from 3D scenes using the [b]Advanced Import Settings[/b] dialog, regardless of the source format.
+		See also [ResourceImporterScene], which is used for more advanced 3D formats such as glTF.
+	</description>
+	<tutorials>
+		<link title="Importing 3D scenes">$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/index.html</link>
+	</tutorials>
+	<members>
+		<member name="force_disable_mesh_compression" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], mesh compression will not be used. Consider enabling if you notice blocky artifacts in your mesh normals or UVs, or if you have meshes that are larger than a few thousand meters in each direction.
+		</member>
+		<member name="generate_tangents" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], generate vertex tangents using [url=http://www.mikktspace.com/]Mikktspace[/url] if the source mesh doesn't have tangent data. When possible, it's recommended to let the 3D modeling software generate tangents on export instead on relying on this option. Tangents are required for correct display of normal and height maps, along with any material/shader features that require tangents.
+			If you don't need material features that require tangents, disabling this can reduce output file size and speed up importing if the source 3D file doesn't contain tangents.
+		</member>
+		<member name="offset_mesh" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
+			Offsets the mesh's data by the specified value. This can be used to work around misaligned meshes without having to modify the source file.
+		</member>
+		<member name="optimize_mesh" type="bool" setter="" getter="" default="true">
+			Unused parameter. This currently has no effect.
+		</member>
+		<member name="scale_mesh" type="Vector3" setter="" getter="" default="Vector3(1, 1, 1)">
+			Scales the mesh's data by the specified value. This can be used to work around misscaled meshes without having to modify the source file.
+		</member>
+	</members>
+</class>

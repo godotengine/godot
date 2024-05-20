@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.Build.Construction;
@@ -14,14 +15,22 @@ namespace GodotTools.ProjectEditor
         public static ProjectRootElement GenGameProject(string name)
         {
             if (name.Length == 0)
-                throw new ArgumentException("Project name is empty", nameof(name));
+                throw new ArgumentException("Project name is empty.", nameof(name));
 
             var root = ProjectRootElement.Create(NewProjectFileOptions.None);
 
             root.Sdk = GodotSdkAttrValue;
 
             var mainGroup = root.AddPropertyGroup();
-            mainGroup.AddProperty("TargetFramework", "netstandard2.1");
+            mainGroup.AddProperty("TargetFramework", "net6.0");
+
+            var net7 = mainGroup.AddProperty("TargetFramework", "net7.0");
+            net7.Condition = " '$(GodotTargetPlatform)' == 'android' ";
+
+            var net8 = mainGroup.AddProperty("TargetFramework", "net8.0");
+            net8.Condition = " '$(GodotTargetPlatform)' == 'ios' ";
+
+            mainGroup.AddProperty("EnableDynamicLoading", "true");
 
             string sanitizedName = IdentifierUtils.SanitizeQualifiedIdentifier(name, allowEmptyIdentifiers: true);
 
@@ -35,7 +44,7 @@ namespace GodotTools.ProjectEditor
         public static string GenAndSaveGameProject(string dir, string name)
         {
             if (name.Length == 0)
-                throw new ArgumentException("Project name is empty", nameof(name));
+                throw new ArgumentException("Project name is empty.", nameof(name));
 
             string path = Path.Combine(dir, name + ".csproj");
 
@@ -44,7 +53,7 @@ namespace GodotTools.ProjectEditor
             // Save (without BOM)
             root.Save(path, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
-            return Guid.NewGuid().ToString().ToUpper();
+            return Guid.NewGuid().ToString().ToUpperInvariant();
         }
     }
 }

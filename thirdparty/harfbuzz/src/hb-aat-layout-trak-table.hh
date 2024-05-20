@@ -62,11 +62,11 @@ struct TrackTableEntry
   }
 
   protected:
-  HBFixed	track;		/* Track value for this record. */
+  F16DOT16	track;		/* Track value for this record. */
   NameID	trackNameID;	/* The 'name' table index for this track.
 				 * (a short word or phrase like "loose"
 				 * or "very tight") */
-  NNOffsetTo<UnsizedArrayOf<FWORD>>
+  NNOffset16To<UnsizedArrayOf<FWORD>>
 		valuesZ;	/* Offset from start of tracking table to
 				 * per-size tracking values for this track. */
 
@@ -82,7 +82,7 @@ struct TrackData
 			const void *base) const
   {
     unsigned int sizes = nSizes;
-    hb_array_t<const HBFixed> size_table ((base+sizeTable).arrayZ, sizes);
+    hb_array_t<const F16DOT16> size_table ((base+sizeTable).arrayZ, sizes);
 
     float s0 = size_table[idx].to_float ();
     float s1 = size_table[idx + 1].to_float ();
@@ -111,16 +111,16 @@ struct TrackData
 	break;
       }
     }
-    if (!trackTableEntry) return 0.;
+    if (!trackTableEntry) return 0;
 
     /*
      * Choose size.
      */
     unsigned int sizes = nSizes;
-    if (!sizes) return 0.;
+    if (!sizes) return 0;
     if (sizes == 1) return trackTableEntry->get_value (base, 0, sizes);
 
-    hb_array_t<const HBFixed> size_table ((base+sizeTable).arrayZ, sizes);
+    hb_array_t<const F16DOT16> size_table ((base+sizeTable).arrayZ, sizes);
     unsigned int size_index;
     for (size_index = 0; size_index < sizes - 1; size_index++)
       if (size_table[size_index].to_float () >= ptem)
@@ -134,6 +134,7 @@ struct TrackData
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  sizeTable.sanitize (c, base, nSizes) &&
 			  trackTable.sanitize (c, nTracks, base, nSizes)));
   }
@@ -141,7 +142,7 @@ struct TrackData
   protected:
   HBUINT16	nTracks;	/* Number of separate tracks included in this table. */
   HBUINT16	nSizes;		/* Number of point sizes included in this table. */
-  LNNOffsetTo<UnsizedArrayOf<HBFixed>>
+  NNOffset32To<UnsizedArrayOf<F16DOT16>>
 		sizeTable;	/* Offset from start of the tracking table to
 				 * Array[nSizes] of size values.. */
   UnsizedArrayOf<TrackTableEntry>
@@ -203,6 +204,7 @@ struct trak
     TRACE_SANITIZE (this);
 
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  version.major == 1 &&
 			  horizData.sanitize (c, this, this) &&
 			  vertData.sanitize (c, this, this)));
@@ -212,10 +214,10 @@ struct trak
   FixedVersion<>version;	/* Version of the tracking table
 				 * (0x00010000u for version 1.0). */
   HBUINT16	format;		/* Format of the tracking table (set to 0). */
-  OffsetTo<TrackData>
+  Offset16To<TrackData>
 		horizData;	/* Offset from start of tracking table to TrackData
 				 * for horizontal text (or 0 if none). */
-  OffsetTo<TrackData>
+  Offset16To<TrackData>
 		vertData;	/* Offset from start of tracking table to TrackData
 				 * for vertical text (or 0 if none). */
   HBUINT16	reserved;	/* Reserved. Set to 0. */

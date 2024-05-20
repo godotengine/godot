@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.godotengine.godot"
     android:versionCode="1"
     android:versionName="1.0">
 
@@ -13,12 +12,23 @@
 
         <service android:name=".GodotDownloaderService" />
 
-    </application>
+        <activity
+            android:name=".utils.ProcessPhoenix"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:process=":phoenix"
+            android:exported="false"
+            />
 
-    <instrumentation
-        android:icon="@mipmap/icon"
-        android:label="@string/godot_project_name_string"
-        android:name="org.godotengine.godot.GodotInstrumentation"
-        android:targetPackage="org.godotengine.godot" />
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/godot_provider_paths" />
+        </provider>
+
+    </application>
 
 </manifest>

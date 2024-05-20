@@ -4,7 +4,7 @@
  *
  *   FreeType PFR bitmap loader (body).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -282,7 +282,7 @@
                           FT_ULong*  found_offset,
                           FT_ULong*  found_size )
   {
-    FT_UInt   min, max, char_len;
+    FT_UInt   min, max, mid, char_len;
     FT_Bool   two = FT_BOOL( *flags & PFR_BITMAP_2BYTE_CHARCODE );
     FT_Byte*  buff;
 
@@ -310,8 +310,8 @@
       if ( lim > limit )
       {
         FT_TRACE0(( "pfr_lookup_bitmap_data:"
-                    " number of bitmap records too large,\n"
-                    "                       "
+                    " number of bitmap records too large,\n" ));
+        FT_TRACE0(( "                       "
                     " thus ignoring all bitmaps in this strike\n" ));
         *flags &= ~PFR_BITMAP_VALID_CHARCODES;
       }
@@ -328,8 +328,8 @@
           if ( (FT_Long)code <= prev_code )
           {
             FT_TRACE0(( "pfr_lookup_bitmap_data:"
-                        " bitmap records are not sorted,\n"
-                        "                       "
+                        " bitmap records are not sorted,\n" ));
+            FT_TRACE0(( "                       "
                         " thus ignoring all bitmaps in this strike\n" ));
             *flags &= ~PFR_BITMAP_VALID_CHARCODES;
             break;
@@ -349,14 +349,14 @@
 
     min = 0;
     max = count;
+    mid = min + ( max - min ) / 2;
 
     /* binary search */
     while ( min < max )
     {
-      FT_UInt  mid, code;
+      FT_UInt  code;
 
 
-      mid  = ( min + max ) >> 1;
       buff = base + mid * char_len;
 
       if ( two )
@@ -370,6 +370,11 @@
         min = mid + 1;
       else
         goto Found_It;
+
+      /* reasonable prediction in a continuous block */
+      mid += char_code - code;
+      if ( mid >= max || mid < min )
+        mid = min + ( max - min ) / 2;
     }
 
   Fail:
@@ -391,7 +396,7 @@
   }
 
 
-  /* load bitmap metrics.  `*padvance' must be set to the default value */
+  /* load bitmap metrics.  `*aadvance' must be set to the default value */
   /* before calling this function                                       */
   /*                                                                    */
   static FT_Error
@@ -575,7 +580,7 @@
   /*************************************************************************/
   /*************************************************************************/
 
-  FT_LOCAL( FT_Error )
+  FT_LOCAL_DEF( FT_Error )
   pfr_slot_load_bitmap( PFR_Slot  glyph,
                         PFR_Size  size,
                         FT_UInt   glyph_index,
@@ -628,7 +633,7 @@
       if ( strike->flags & PFR_BITMAP_3BYTE_OFFSET )
         char_len += 1;
 
-      /* access data directly in the frame to speed lookups */
+      /* access data directly in the frame to speed up lookups */
       if ( FT_STREAM_SEEK( phys->bct_offset + strike->bct_offset ) ||
            FT_FRAME_ENTER( char_len * strike->num_bitmaps )        )
         goto Exit;
@@ -744,8 +749,8 @@
            ypos > FT_INT_MAX - (FT_Long)ysize ||
            ypos + (FT_Long)ysize < FT_INT_MIN )
       {
-        FT_TRACE1(( "pfr_slot_load_bitmap:" ));
-        FT_TRACE1(( "huge bitmap glyph %ldx%ld over FT_GlyphSlot\n",
+        FT_TRACE1(( "pfr_slot_load_bitmap:"
+                    " huge bitmap glyph %ldx%ld over FT_GlyphSlot\n",
                      xpos, ypos ));
         error = FT_THROW( Invalid_Pixel_Size );
       }

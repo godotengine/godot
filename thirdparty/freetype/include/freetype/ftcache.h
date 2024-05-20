@@ -4,7 +4,7 @@
  *
  *   FreeType Cache subsystem (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -43,61 +43,61 @@ FT_BEGIN_HEADER
    *   objects, as well as caching information like character maps and glyph
    *   images while limiting their maximum memory usage.
    *
-   *   Note that all types and functions begin with the `FTC_` prefix.
+   *   Note that all types and functions begin with the `FTC_` prefix rather
+   *   than the usual `FT_` prefix in the rest of FreeType.
    *
-   *   The cache is highly portable and thus doesn't know anything about the
-   *   fonts installed on your system, or how to access them.  This implies
-   *   the following scheme:
+   *   The cache is highly portable and, thus, doesn't know anything about
+   *   the fonts installed on your system, or how to access them.  Therefore,
+   *   it requires the following.
    *
-   *   First, available or installed font faces are uniquely identified by
-   *   @FTC_FaceID values, provided to the cache by the client.  Note that
-   *   the cache only stores and compares these values, and doesn't try to
-   *   interpret them in any way.
+   *   * @FTC_FaceID, an arbitrary non-zero value that uniquely identifies
+   *     available or installed font faces, has to be provided to the
+   *     cache by the client.  Note that the cache only stores and compares
+   *     these values and doesn't try to interpret them in any way, but they
+   *     have to be persistent on the client side.
    *
-   *   Second, the cache calls, only when needed, a client-provided function
-   *   to convert an @FTC_FaceID into a new @FT_Face object.  The latter is
-   *   then completely managed by the cache, including its termination
-   *   through @FT_Done_Face.  To monitor termination of face objects, the
-   *   finalizer callback in the `generic` field of the @FT_Face object can
-   *   be used, which might also be used to store the @FTC_FaceID of the
-   *   face.
+   *   * @FTC_Face_Requester, a method to convert an @FTC_FaceID into a new
+   *     @FT_Face object when necessary, has to be provided to the cache by
+   *     the client.  The @FT_Face object is completely managed by the cache,
+   *     including its termination through @FT_Done_Face.  To monitor
+   *     termination of face objects, the finalizer callback in the `generic`
+   *     field of the @FT_Face object can be used, which might also be used
+   *     to store the @FTC_FaceID of the face.
    *
-   *   Clients are free to map face IDs to anything else.  The most simple
-   *   usage is to associate them to a (pathname,face_index) pair that is
-   *   used to call @FT_New_Face.  However, more complex schemes are also
-   *   possible.
+   *   Clients are free to map face IDs to anything useful.  The most simple
+   *   usage is, for example, to associate them to a `{pathname,face_index}`
+   *   pair that is then used by @FTC_Face_Requester to call @FT_New_Face.
+   *   However, more complex schemes are also possible.
    *
    *   Note that for the cache to work correctly, the face ID values must be
    *   **persistent**, which means that the contents they point to should not
    *   change at runtime, or that their value should not become invalid.
-   *
    *   If this is unavoidable (e.g., when a font is uninstalled at runtime),
-   *   you should call @FTC_Manager_RemoveFaceID as soon as possible, to let
+   *   you should call @FTC_Manager_RemoveFaceID as soon as possible to let
    *   the cache get rid of any references to the old @FTC_FaceID it may keep
    *   internally.  Failure to do so will lead to incorrect behaviour or even
-   *   crashes.
+   *   crashes in @FTC_Face_Requester.
    *
    *   To use the cache, start with calling @FTC_Manager_New to create a new
    *   @FTC_Manager object, which models a single cache instance.  You can
    *   then look up @FT_Face and @FT_Size objects with
-   *   @FTC_Manager_LookupFace and @FTC_Manager_LookupSize, respectively.
+   *   @FTC_Manager_LookupFace and @FTC_Manager_LookupSize, respectively, and
+   *   use them in any FreeType work stream.  You can also cache other
+   *   FreeType objects as follows.
    *
-   *   If you want to use the charmap caching, call @FTC_CMapCache_New, then
-   *   later use @FTC_CMapCache_Lookup to perform the equivalent of
-   *   @FT_Get_Char_Index, only much faster.
+   *   * If you want to use the charmap caching, call @FTC_CMapCache_New,
+   *     then later use @FTC_CMapCache_Lookup to perform the equivalent of
+   *     @FT_Get_Char_Index, only much faster.
    *
-   *   If you want to use the @FT_Glyph caching, call @FTC_ImageCache, then
-   *   later use @FTC_ImageCache_Lookup to retrieve the corresponding
-   *   @FT_Glyph objects from the cache.
+   *   * If you want to use the @FT_Glyph caching, call @FTC_ImageCache_New,
+   *     then later use @FTC_ImageCache_Lookup to retrieve the corresponding
+   *     @FT_Glyph objects from the cache.
    *
-   *   If you need lots of small bitmaps, it is much more memory efficient to
-   *   call @FTC_SBitCache_New followed by @FTC_SBitCache_Lookup.  This
-   *   returns @FTC_SBitRec structures, which are used to store small bitmaps
-   *   directly.  (A small bitmap is one whose metrics and dimensions all fit
-   *   into 8-bit integers).
-   *
-   *   We hope to also provide a kerning cache in the near future.
-   *
+   *   * If you need lots of small bitmaps, it is much more memory-efficient
+   *     to call @FTC_SBitCache_New followed by @FTC_SBitCache_Lookup.  This
+   *     returns @FTC_SBitRec structures, which are used to store small
+   *     bitmaps directly.  (A small bitmap is one whose metrics and
+   *     dimensions all fit into 8-bit integers).
    *
    * @order:
    *   FTC_Manager
@@ -424,7 +424,7 @@ FT_BEGIN_HEADER
    *   pixel ::
    *     A Boolean.  If 1, the `width` and `height` fields are interpreted as
    *     integer pixel character sizes.  Otherwise, they are expressed as
-   *     1/64th of points.
+   *     1/64 of points.
    *
    *   x_res ::
    *     Only used when `pixel` is value~0 to indicate the horizontal

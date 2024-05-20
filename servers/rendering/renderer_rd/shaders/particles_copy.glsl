@@ -16,6 +16,9 @@ struct ParticleData {
 	uint flags;
 	vec4 color;
 	vec4 custom;
+#ifdef USERDATA_COUNT
+	vec4 userdata[USERDATA_COUNT];
+#endif
 };
 
 layout(set = 0, binding = 1, std430) restrict readonly buffer Particles {
@@ -42,7 +45,10 @@ layout(set = 2, binding = 0, std430) restrict readonly buffer TrailBindPoses {
 }
 trail_bind_poses;
 
-layout(push_constant, binding = 0, std430) uniform Params {
+#define PARAMS_FLAG_ORDER_BY_LIFETIME 1
+#define PARAMS_FLAG_COPY_MODE_2D 2
+
+layout(push_constant, std430) uniform Params {
 	vec3 sort_direction;
 	uint total_particles;
 
@@ -54,10 +60,12 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	vec3 align_up;
 	uint align_mode;
 
-	bool order_by_lifetime;
 	uint lifetime_split;
 	bool lifetime_reverse;
-	uint pad;
+	uint motion_vectors_current_offset;
+	uint flags;
+
+	mat4 inv_emission_transform;
 }
 params;
 
@@ -98,7 +106,7 @@ void main() {
 		particle = uint(sort_buffer.data[particle].y); //use index from sort buffer
 	}
 #else
-	if (params.order_by_lifetime) {
+	if (bool(params.flags & PARAMS_FLAG_ORDER_BY_LIFETIME)) {
 		if (params.trail_size > 1) {
 			uint limit = (params.total_particles / params.trail_size) - params.lifetime_split;
 
@@ -174,7 +182,6 @@ void main() {
 			case TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY: {
 				vec3 v = particles.data[particle].velocity;
 				vec3 sv = v - params.sort_direction * dot(params.sort_direction, v); //screen velocity
-				float s = (length(txform[0]) + length(txform[1]) + length(txform[2])) / 3.0;
 
 				if (length(sv) == 0) {
 					sv = params.align_up;
@@ -182,9 +189,9 @@ void main() {
 
 				sv = normalize(sv);
 
-				txform[0].xyz = normalize(cross(sv, params.sort_direction)) * s;
-				txform[1].xyz = sv * s;
-				txform[2].xyz = params.sort_direction * s;
+				txform[0].xyz = normalize(cross(sv, params.sort_direction)) * length(txform[0]);
+				txform[1].xyz = sv * length(txform[1]);
+				txform[2].xyz = params.sort_direction * length(txform[2]);
 
 			} break;
 		}
@@ -196,30 +203,35 @@ void main() {
 			txform = txform * trail_bind_poses.data[part_ofs];
 		}
 
-		txform = transpose(txform);
+		if (bool(params.flags & PARAMS_FLAG_COPY_MODE_2D)) {
+			// In global mode, bring 2D particles to local coordinates
+			// as they will be drawn with the node position as origin.
+			txform = params.inv_emission_transform * txform;
+		}
 	} else {
-		txform = mat4(vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0)); //zero scale, becomes invisible
+		// Set scale to zero and translate to -INF so particle will be invisible
+		// even for materials that ignore rotation/scale (i.e. billboards).
+		txform = mat4(vec4(0.0), vec4(0.0), vec4(0.0), vec4(-1.0 / 0.0, -1.0 / 0.0, -1.0 / 0.0, 0.0));
 	}
+	txform = transpose(txform);
 
-#ifdef MODE_2D
+	uint instance_index = gl_GlobalInvocationID.x + params.motion_vectors_current_offset;
+	if (bool(params.flags & PARAMS_FLAG_COPY_MODE_2D)) {
+		uint write_offset = instance_index * (2 + 1 + 1); //xform + color + custom
 
-	uint write_offset = gl_GlobalInvocationID.x * (2 + 1 + 1); //xform + color + custom
+		instances.data[write_offset + 0] = txform[0];
+		instances.data[write_offset + 1] = txform[1];
+		instances.data[write_offset + 2] = particles.data[particle].color;
+		instances.data[write_offset + 3] = particles.data[particle].custom;
+	} else {
+		uint write_offset = instance_index * (3 + 1 + 1); //xform + color + custom
 
-	instances.data[write_offset + 0] = txform[0];
-	instances.data[write_offset + 1] = txform[1];
-	instances.data[write_offset + 2] = particles.data[particle].color;
-	instances.data[write_offset + 3] = particles.data[particle].custom;
-
-#else
-
-	uint write_offset = gl_GlobalInvocationID.x * (3 + 1 + 1); //xform + color + custom
-
-	instances.data[write_offset + 0] = txform[0];
-	instances.data[write_offset + 1] = txform[1];
-	instances.data[write_offset + 2] = txform[2];
-	instances.data[write_offset + 3] = particles.data[particle].color;
-	instances.data[write_offset + 4] = particles.data[particle].custom;
-#endif //MODE_2D
+		instances.data[write_offset + 0] = txform[0];
+		instances.data[write_offset + 1] = txform[1];
+		instances.data[write_offset + 2] = txform[2];
+		instances.data[write_offset + 3] = particles.data[particle].color;
+		instances.data[write_offset + 4] = particles.data[particle].custom;
+	}
 
 #endif
 }

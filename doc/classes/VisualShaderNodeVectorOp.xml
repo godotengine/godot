@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeVectorOp" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeVectorOp" inherits="VisualShaderNodeVectorBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A vector operator to be used within the visual shader graph.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeVectorOp.Operator" default="0">
 			The operator to be used. See [enum Operator] for options.
@@ -51,6 +49,9 @@
 		</constant>
 		<constant name="OP_STEP" value="11" enum="Operator">
 			Vector step operator. Returns [code]0.0[/code] if [code]a[/code] is smaller than [code]b[/code] and [code]1.0[/code] otherwise.
+		</constant>
+		<constant name="OP_ENUM_SIZE" value="12" enum="Operator">
+			Represents the size of the [enum Operator] enum.
 		</constant>
 	</constants>
 </class>

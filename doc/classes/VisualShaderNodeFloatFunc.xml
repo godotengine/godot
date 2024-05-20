@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeFloatFunc" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeFloatFunc" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A scalar floating-point function to be used within the visual shader graph.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeFloatFunc.Function" default="13">
 			A function to be applied to the scalar. See [enum Function] for options.
@@ -67,7 +65,7 @@
 		<constant name="FUNC_CEIL" value="16" enum="Function">
 			Finds the nearest integer that is greater than or equal to the parameter. Translates to [code]ceil(x)[/code] in the Godot Shader Language.
 		</constant>
-		<constant name="FUNC_FRAC" value="17" enum="Function">
+		<constant name="FUNC_FRACT" value="17" enum="Function">
 			Computes the fractional part of the argument. Translates to [code]fract(x)[/code] in the Godot Shader Language.
 		</constant>
 		<constant name="FUNC_SATURATE" value="18" enum="Function">
@@ -111,6 +109,9 @@
 		</constant>
 		<constant name="FUNC_ONEMINUS" value="31" enum="Function">
 			Subtracts scalar [code]x[/code] from 1 (i.e. [code]1 - x[/code]).
+		</constant>
+		<constant name="FUNC_MAX" value="32" enum="Function">
+			Represents the size of the [enum Function] enum.
 		</constant>
 	</constants>
 </class>

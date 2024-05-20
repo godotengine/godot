@@ -1,52 +1,41 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="UPNPDevice" inherits="RefCounted" version="4.0">
+<class name="UPNPDevice" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		UPNP device.
+		Universal Plug and Play (UPnP) device.
 	</brief_description>
 	<description>
-		UPNP device. See [UPNP] for UPNP discovery and utility functions. Provides low-level access to UPNP control commands. Allows to manage port mappings (port forwarding) and to query network information of the device (like local and external IP address and status). Note that methods on this class are synchronous and block the calling thread.
+		Universal Plug and Play (UPnP) device. See [UPNP] for UPnP discovery and utility functions. Provides low-level access to UPNP control commands. Allows to manage port mappings (port forwarding) and to query network information of the device (like local and external IP address and status). Note that methods on this class are synchronous and block the calling thread.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="add_port_mapping" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="port_internal" type="int" default="0">
-			</argument>
-			<argument index="2" name="desc" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="3" name="proto" type="String" default="&quot;UDP&quot;">
-			</argument>
-			<argument index="4" name="duration" type="int" default="0">
-			</argument>
+			<return type="int" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="port_internal" type="int" default="0" />
+			<param index="2" name="desc" type="String" default="&quot;&quot;" />
+			<param index="3" name="proto" type="String" default="&quot;UDP&quot;" />
+			<param index="4" name="duration" type="int" default="0" />
 			<description>
 				Adds a port mapping to forward the given external port on this [UPNPDevice] for the given protocol to the local machine. See [method UPNP.add_port_mapping].
 			</description>
 		</method>
 		<method name="delete_port_mapping" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="port" type="int">
-			</argument>
-			<argument index="1" name="proto" type="String" default="&quot;UDP&quot;">
-			</argument>
+			<return type="int" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="proto" type="String" default="&quot;UDP&quot;" />
 			<description>
 				Deletes the port mapping identified by the given port and protocol combination on this device. See [method UPNP.delete_port_mapping].
 			</description>
 		</method>
 		<method name="is_valid_gateway" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this is a valid IGD (InternetGatewayDevice) which potentially supports port forwarding.
 			</description>
 		</method>
 		<method name="query_external_address" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
 				Returns the external IP address of this [UPNPDevice] or an empty string.
 			</description>
@@ -82,7 +71,7 @@
 		<constant name="IGD_STATUS_HTTP_EMPTY" value="2" enum="IGDStatus">
 			Empty HTTP response.
 		</constant>
-		<constant name="IGD_STATUS_NO_URLS" value="3" enum="IGDStatus">
+		<constant name="IGD_STATUS_NO_URLS" value="3" enum="IGDStatus" deprecated="This value is no longer used.">
 			Returned response contained no URLs.
 		</constant>
 		<constant name="IGD_STATUS_NO_IGD" value="4" enum="IGDStatus">
@@ -97,7 +86,7 @@
 		<constant name="IGD_STATUS_INVALID_CONTROL" value="7" enum="IGDStatus">
 			Invalid control.
 		</constant>
-		<constant name="IGD_STATUS_MALLOC_ERROR" value="8" enum="IGDStatus">
+		<constant name="IGD_STATUS_MALLOC_ERROR" value="8" enum="IGDStatus" deprecated="This value is no longer used.">
 			Memory allocation error.
 		</constant>
 		<constant name="IGD_STATUS_UNKNOWN_ERROR" value="9" enum="IGDStatus">

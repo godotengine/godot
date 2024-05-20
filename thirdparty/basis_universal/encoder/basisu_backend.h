@@ -17,11 +17,86 @@
 #include "../transcoder/basisu.h"
 #include "basisu_enc.h"
 #include "../transcoder/basisu_transcoder_internal.h"
-#include "../transcoder/basisu_global_selector_palette.h"
 #include "basisu_frontend.h"
 
 namespace basisu
 {
+	struct etc1_selector_palette_entry
+	{
+		etc1_selector_palette_entry()
+		{
+			clear();
+		}
+
+		void clear()
+		{
+			basisu::clear_obj(*this);
+		}
+
+		uint8_t operator[] (uint32_t i) const { assert(i < 16); return m_selectors[i]; }
+		uint8_t& operator[] (uint32_t i) { assert(i < 16); return m_selectors[i]; }
+
+		void set_uint32(uint32_t v)
+		{
+			for (uint32_t byte_index = 0; byte_index < 4; byte_index++)
+			{
+				uint32_t b = (v >> (byte_index * 8)) & 0xFF;
+
+				m_selectors[byte_index * 4 + 0] = b & 3;
+				m_selectors[byte_index * 4 + 1] = (b >> 2) & 3;
+				m_selectors[byte_index * 4 + 2] = (b >> 4) & 3;
+				m_selectors[byte_index * 4 + 3] = (b >> 6) & 3;
+			}
+		}
+
+		uint32_t get_uint32() const
+		{
+			return get_byte(0) | (get_byte(1) << 8) | (get_byte(2) << 16) | (get_byte(3) << 24);
+		}
+
+		uint32_t get_byte(uint32_t byte_index) const
+		{
+			assert(byte_index < 4);
+
+			return m_selectors[byte_index * 4 + 0] |
+				(m_selectors[byte_index * 4 + 1] << 2) |
+				(m_selectors[byte_index * 4 + 2] << 4) |
+				(m_selectors[byte_index * 4 + 3] << 6);
+		}
+
+		uint8_t operator()(uint32_t x, uint32_t y) const { assert((x < 4) && (y < 4)); return m_selectors[x + y * 4]; }
+		uint8_t& operator()(uint32_t x, uint32_t y) { assert((x < 4) && (y < 4)); return m_selectors[x + y * 4]; }
+
+		bool operator< (const etc1_selector_palette_entry& other) const
+		{
+			for (uint32_t i = 0; i < 16; i++)
+			{
+				if (m_selectors[i] < other.m_selectors[i])
+					return true;
+				else if (m_selectors[i] != other.m_selectors[i])
+					return false;
+			}
+
+			return false;
+		}
+
+		bool operator== (const etc1_selector_palette_entry& other) const
+		{
+			for (uint32_t i = 0; i < 16; i++)
+			{
+				if (m_selectors[i] != other.m_selectors[i])
+					return false;
+			}
+
+			return true;
+		}
+
+	private:
+		uint8_t m_selectors[16];
+	};
+
+	typedef basisu::vector<etc1_selector_palette_entry> etc1_selector_palette_entry_vec;
+
 	struct encoder_block
 	{
 		encoder_block()
@@ -78,13 +153,10 @@ namespace basisu
 		float m_endpoint_rdo_quality_thresh;
 		float m_selector_rdo_quality_thresh;
 		uint32_t m_compression_level;
-
-		bool m_use_global_sel_codebook;
-		uint32_t m_global_sel_codebook_pal_bits;
-		uint32_t m_global_sel_codebook_mod_bits;
-		bool m_use_hybrid_sel_codebooks;
-
+								
 		bool m_used_global_codebooks;
+
+		bool m_validate;
 
 		basisu_backend_params()
 		{
@@ -99,12 +171,8 @@ namespace basisu
 			m_endpoint_rdo_quality_thresh = 0.0f;
 			m_selector_rdo_quality_thresh = 0.0f;
 			m_compression_level = 0;
-
-			m_use_global_sel_codebook = false;
-			m_global_sel_codebook_pal_bits = ETC1_GLOBAL_SELECTOR_CODEBOOK_MAX_PAL_BITS;
-			m_global_sel_codebook_mod_bits = basist::etc1_global_palette_entry_modifier::cTotalBits;
-			m_use_hybrid_sel_codebooks = false;
 			m_used_global_codebooks = false;
+			m_validate = true;
 		}
 	};
 
@@ -205,7 +273,7 @@ namespace basisu
 
 		void clear();
 
-		void init(basisu_frontend *pFront_end, basisu_backend_params &params, const basisu_backend_slice_desc_vec &slice_desc, const basist::etc1_global_selector_codebook *pGlobal_sel_codebook);
+		void init(basisu_frontend *pFront_end, basisu_backend_params &params, const basisu_backend_slice_desc_vec &slice_desc);
 
 		uint32_t encode();
 
@@ -217,10 +285,9 @@ namespace basisu
 		basisu_backend_params m_params;
 		basisu_backend_slice_desc_vec m_slices;
 		basisu_backend_output m_output;
-		const basist::etc1_global_selector_codebook *m_pGlobal_sel_codebook;
-
+		
 		etc1_endpoint_palette_entry_vec m_endpoint_palette;
-		basist::etc1_selector_palette_entry_vec m_selector_palette;
+		etc1_selector_palette_entry_vec m_selector_palette;
 
 		struct etc1_global_selector_cb_entry_desc
 		{

@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT common tables validation (body).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2023 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -46,16 +46,11 @@
   /*************************************************************************/
   /*************************************************************************/
 
-  static int
-  gxv_compare_ushort_offset( FT_UShort*  a,
-                             FT_UShort*  b )
+  FT_COMPARE_DEF( int )
+  gxv_compare_ushort_offset( const void*  a,
+                             const void*  b )
   {
-    if ( *a < *b )
-      return -1;
-    else if ( *a > *b )
-      return 1;
-    else
-      return 0;
+    return  *(FT_UShort*)a - *(FT_UShort*)b;
   }
 
 
@@ -78,7 +73,7 @@
     buff[nmemb] = limit;
 
     ft_qsort( buff, ( nmemb + 1 ), sizeof ( FT_UShort ),
-              ( int(*)(const void*, const void*) )gxv_compare_ushort_offset );
+              gxv_compare_ushort_offset );
 
     if ( buff[nmemb] > limit )
       FT_INVALID_OFFSET;
@@ -111,13 +106,17 @@
   /*************************************************************************/
   /*************************************************************************/
 
-  static int
-  gxv_compare_ulong_offset( FT_ULong*  a,
-                            FT_ULong*  b )
+  FT_COMPARE_DEF( int )
+  gxv_compare_ulong_offset( const void*  a,
+                            const void*  b )
   {
-    if ( *a < *b )
+    FT_ULong  a_ = *(FT_ULong*)a;
+    FT_ULong  b_ = *(FT_ULong*)b;
+
+
+    if ( a_ < b_ )
       return -1;
-    else if ( *a > *b )
+    else if ( a_ > b_ )
       return 1;
     else
       return 0;
@@ -143,7 +142,7 @@
     buff[nmemb] = limit;
 
     ft_qsort( buff, ( nmemb + 1 ), sizeof ( FT_ULong ),
-              ( int(*)(const void*, const void*) )gxv_compare_ulong_offset );
+              gxv_compare_ulong_offset );
 
     if ( buff[nmemb] > limit )
       FT_INVALID_OFFSET;
@@ -439,7 +438,7 @@
       GXV_LIMIT_CHECK( 2 );
       if ( p + 2 >= limit )     /* some fonts have too-short fmt0 array */
       {
-        GXV_TRACE(( "too short, glyphs %d - %d are missing\n",
+        GXV_TRACE(( "too short, glyphs %d - %ld are missing\n",
                     i, gxvalid->face->num_glyphs ));
         GXV_SET_ERR_IF_PARANOID( FT_INVALID_GLYPH_ID );
         break;
@@ -534,7 +533,7 @@
 
       if ( lastGlyph < firstGlyph )
       {
-        GXV_TRACE(( "reverse ordered range specification at unit %d:",
+        GXV_TRACE(( "reverse ordered range specification at unit %d:"
                     " lastGlyph %d < firstGlyph %d ",
                     unit, lastGlyph, firstGlyph ));
         GXV_SET_ERR_IF_PARANOID( FT_INVALID_GLYPH_ID );
@@ -605,7 +604,7 @@
 
       if ( lastGlyph < firstGlyph )
       {
-        GXV_TRACE(( "reverse ordered range specification at unit %d:",
+        GXV_TRACE(( "reverse ordered range specification at unit %d:"
                     " lastGlyph %d < firstGlyph %d ",
                     unit, lastGlyph, firstGlyph ));
         GXV_SET_ERR_IF_PARANOID( FT_INVALID_GLYPH_ID );
@@ -825,7 +824,7 @@
     face = gxvalid->face;
     if ( face->num_glyphs < gid )
     {
-      GXV_TRACE(( " gxv_glyphid_check() gid overflow: num_glyphs %d < %d\n",
+      GXV_TRACE(( " gxv_glyphid_check() gid overflow: num_glyphs %ld < %d\n",
                   face->num_glyphs, gid ));
       GXV_SET_ERR_IF_PARANOID( FT_INVALID_GLYPH_ID );
     }
@@ -1034,7 +1033,7 @@
     GXV_NAME_ENTER( "StateArray" );
 
     GXV_TRACE(( "parse %d bytes by stateSize=%d maxClassID=%d\n",
-                (int)(*length_p), stateSize, (int)(maxClassID) ));
+                (int)( *length_p ), stateSize, (int)maxClassID ));
 
     /*
      * 2 states are predefined and must be described in StateArray:
@@ -1419,7 +1418,7 @@
     GXV_NAME_ENTER( "XStateArray" );
 
     GXV_TRACE(( "parse % 3d bytes by stateSize=% 3d maxClassID=% 3d\n",
-                (int)(*length_p), stateSize, (int)(maxClassID) ));
+                (int)( *length_p ), (int)stateSize, (int)maxClassID ));
 
     /*
      * 2 states are predefined and must be described:
@@ -1493,9 +1492,11 @@
       state = (FT_UShort)( newState_idx / ( 1 + maxClassID ) );
       if ( 0 != ( newState_idx % ( 1 + maxClassID ) ) )
       {
-        FT_TRACE4(( "-> new state = %d (supposed)\n"
-                    "but newState index 0x%04x is not aligned to %d-classes\n",
-                    state, newState_idx,  1 + maxClassID ));
+        FT_TRACE4(( "-> new state = %d (supposed)\n",
+                    state ));
+        FT_TRACE4(( "but newState index 0x%04x"
+                    " is not aligned to %d-classes\n",
+                    newState_idx, 1 + maxClassID ));
         GXV_SET_ERR_IF_PARANOID( FT_INVALID_OFFSET );
       }
 
@@ -1581,10 +1582,10 @@
     stateArray = FT_NEXT_ULONG( p );
     entryTable = FT_NEXT_ULONG( p );
 
-    GXV_TRACE(( "nClasses =0x%08x\n", gxvalid->xstatetable.nClasses ));
-    GXV_TRACE(( "offset to classTable=0x%08x\n", classTable ));
-    GXV_TRACE(( "offset to stateArray=0x%08x\n", stateArray ));
-    GXV_TRACE(( "offset to entryTable=0x%08x\n", entryTable ));
+    GXV_TRACE(( "nClasses =0x%08lx\n", gxvalid->xstatetable.nClasses ));
+    GXV_TRACE(( "offset to classTable=0x%08lx\n", classTable ));
+    GXV_TRACE(( "offset to stateArray=0x%08lx\n", stateArray ));
+    GXV_TRACE(( "offset to entryTable=0x%08lx\n", entryTable ));
 
     if ( gxvalid->xstatetable.nClasses > 0xFFFFU )
       FT_INVALID_DATA;

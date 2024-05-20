@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectLimiter" inherits="AudioEffect" version="4.0">
+<class name="AudioEffectLimiter" inherits="AudioEffect" deprecated="Use [AudioEffectHardLimiter] instead." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Adds a soft-clip limiter audio effect to an Audio bus.
 	</brief_description>
@@ -8,9 +8,8 @@
 		Soft clipping starts to reduce the peaks a little below the threshold level and progressively increases its effect as the input level increases such that the threshold is never exceeded.
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="ceiling_db" type="float" setter="set_ceiling_db" getter="get_ceiling_db" default="-0.1">
 			The waveform's maximum allowed value, in decibels. Value can range from -20 to -0.1.
@@ -24,6 +23,4 @@
 			Threshold from which the limiter begins to be active, in decibels. Value can range from -30 to 0.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorFileSystem" inherits="Node" version="4.0">
+<class name="EditorFileSystem" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Resource filesystem, as the editor sees it.
 	</brief_description>
@@ -11,72 +11,64 @@
 	</tutorials>
 	<methods>
 		<method name="get_file_type" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Gets the type of the file, given the full path.
+				Returns the resource type of the file, given the full path. This returns a string such as [code]"Resource"[/code] or [code]"GDScript"[/code], [i]not[/i] a file extension such as [code]".gd"[/code].
 			</description>
 		</method>
 		<method name="get_filesystem">
-			<return type="EditorFileSystemDirectory">
-			</return>
+			<return type="EditorFileSystemDirectory" />
 			<description>
 				Gets the root directory object.
 			</description>
 		</method>
 		<method name="get_filesystem_path">
-			<return type="EditorFileSystemDirectory">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="EditorFileSystemDirectory" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Returns a view into the filesystem at [code]path[/code].
+				Returns a view into the filesystem at [param path].
 			</description>
 		</method>
 		<method name="get_scanning_progress" qualifiers="const">
-			<return type="float">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the scan progress for 0 to 1 if the FS is being scanned.
 			</description>
 		</method>
 		<method name="is_scanning" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
-				Returns [code]true[/code] of the filesystem is being scanned.
+				Returns [code]true[/code] if the filesystem is being scanned.
+			</description>
+		</method>
+		<method name="reimport_files">
+			<return type="void" />
+			<param index="0" name="files" type="PackedStringArray" />
+			<description>
+				Reimports a set of files. Call this if these files or their [code].import[/code] files were directly edited by script or an external program.
+				If the file type changed or the file was newly created, use [method update_file] or [method scan].
+				[b]Note:[/b] This function blocks until the import is finished. However, the main loop iteration, including timers and [method Node._process], will occur during the import process due to progress bar updates. Avoid calls to [method reimport_files] or [method scan] while an import is in progress.
 			</description>
 		</method>
 		<method name="scan">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Scan the filesystem for changes.
 			</description>
 		</method>
 		<method name="scan_sources">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Check if the source of any imported resource changed.
 			</description>
 		</method>
 		<method name="update_file">
-			<return type="void">
-			</return>
-			<argument index="0" name="path" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Update a file information. Call this if an external program (not Godot) modified the file.
-			</description>
-		</method>
-		<method name="update_script_classes">
-			<return type="void">
-			</return>
-			<description>
-				Scans the script files and updates the list of custom class names.
+				Add a file in an existing directory, or schedule file information to be updated on editor restart. Can be used to update text files saved by an external program.
+				This will not import the file. To reimport, call [method reimport_files] or [method scan] methods.
 			</description>
 		</method>
 	</methods>
@@ -87,27 +79,27 @@
 			</description>
 		</signal>
 		<signal name="resources_reimported">
-			<argument index="0" name="resources" type="PackedStringArray">
-			</argument>
+			<param index="0" name="resources" type="PackedStringArray" />
 			<description>
 				Emitted if a resource is reimported.
 			</description>
 		</signal>
 		<signal name="resources_reload">
-			<argument index="0" name="resources" type="PackedStringArray">
-			</argument>
+			<param index="0" name="resources" type="PackedStringArray" />
 			<description>
 				Emitted if at least one resource is reloaded when the filesystem is scanned.
 			</description>
 		</signal>
+		<signal name="script_classes_updated">
+			<description>
+				Emitted when the list of global script classes gets updated.
+			</description>
+		</signal>
 		<signal name="sources_changed">
-			<argument index="0" name="exist" type="bool">
-			</argument>
+			<param index="0" name="exist" type="bool" />
 			<description>
 				Emitted if the source of any imported file changed.
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

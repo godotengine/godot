@@ -79,8 +79,8 @@ namespace embree
     static __forceinline void store (void* ptr, const vint8& f) { _mm256_store_ps((float*)ptr,_mm256_castsi256_ps(f)); }
     static __forceinline void storeu(void* ptr, const vint8& f) { _mm256_storeu_ps((float*)ptr,_mm256_castsi256_ps(f)); }
     
-    static __forceinline void store (const vboolf8& mask, void* ptr, const vint8& f) { _mm256_maskstore_ps((float*)ptr,(__m256i)mask,_mm256_castsi256_ps(f)); }
-    static __forceinline void storeu(const vboolf8& mask, void* ptr, const vint8& f) { _mm256_maskstore_ps((float*)ptr,(__m256i)mask,_mm256_castsi256_ps(f)); }
+    static __forceinline void store (const vboolf8& mask, void* ptr, const vint8& f) { _mm256_maskstore_ps((float*)ptr,_mm256_castps_si256(mask.v),_mm256_castsi256_ps(f)); }
+    static __forceinline void storeu(const vboolf8& mask, void* ptr, const vint8& f) { _mm256_maskstore_ps((float*)ptr,_mm256_castps_si256(mask.v),_mm256_castsi256_ps(f)); }
 
     static __forceinline void store_nt(void* ptr, const vint8& v) {
       _mm256_stream_ps((float*)ptr,_mm256_castsi256_ps(v));

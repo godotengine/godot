@@ -47,12 +47,13 @@ struct WebPRescaler {
 };
 
 // Initialize a rescaler given scratch area 'work' and dimensions of src & dst.
-void WebPRescalerInit(WebPRescaler* const rescaler,
-                      int src_width, int src_height,
-                      uint8_t* const dst,
-                      int dst_width, int dst_height, int dst_stride,
-                      int num_channels,
-                      rescaler_t* const work);
+// Returns false in case of error.
+int WebPRescalerInit(WebPRescaler* const rescaler,
+                     int src_width, int src_height,
+                     uint8_t* const dst,
+                     int dst_width, int dst_height, int dst_stride,
+                     int num_channels,
+                     rescaler_t* const work);
 
 // If either 'scaled_width' or 'scaled_height' (but not both) is 0 the value
 // will be calculated preserving the aspect ratio, otherwise the values are

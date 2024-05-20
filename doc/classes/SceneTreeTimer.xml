@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneTreeTimer" inherits="RefCounted" version="4.0">
+<class name="SceneTreeTimer" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		One-shot timer.
 	</brief_description>
@@ -10,26 +10,26 @@
 		[gdscript]
 		func some_function():
 		    print("Timer started.")
-		    yield(get_tree().create_timer(1.0), "timeout")
+		    await get_tree().create_timer(1.0).timeout
 		    print("Timer ended.")
 		[/gdscript]
 		[csharp]
-		public async void SomeFunction()
+		public async Task SomeFunction()
 		{
 		    GD.Print("Timer started.");
-		    await ToSignal(GetTree().CreateTimer(1.0f), "timeout");
+		    await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
 		    GD.Print("Timer ended.");
 		}
 		[/csharp]
 		[/codeblocks]
+		The timer will be dereferenced after its time elapses. To preserve the timer, you can keep a reference to it. See [RefCounted].
+		[b]Note:[/b] The timer is processed after all of the nodes in the current frame, i.e. node's [method Node._process] method would be called before the timer (or [method Node._physics_process] if [code]process_in_physics[/code] in [method SceneTree.create_timer] has been set to [code]true[/code]).
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="time_left" type="float" setter="set_time_left" getter="get_time_left">
-			The time remaining.
+			The time remaining (in seconds).
 		</member>
 	</members>
 	<signals>
@@ -39,6 +39,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

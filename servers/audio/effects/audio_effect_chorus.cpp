@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  audio_effect_chorus.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_effect_chorus.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_effect_chorus.h"
 #include "core/math/math_funcs.h"
@@ -95,9 +95,9 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 
 		//vol modifier
 
-		AudioFrame vol_modifier = AudioFrame(base->wet, base->wet) * Math::db2linear(v.level);
-		vol_modifier.l *= CLAMP(1.0 - v.pan, 0, 1);
-		vol_modifier.r *= CLAMP(1.0 + v.pan, 0, 1);
+		AudioFrame vol_modifier = AudioFrame(base->wet, base->wet) * Math::db_to_linear(v.level);
+		vol_modifier.left *= CLAMP(1.0 - v.pan, 0, 1);
+		vol_modifier.right *= CLAMP(1.0 + v.pan, 0, 1);
 
 		for (int i = 0; i < p_frame_count; i++) {
 			/** COMPUTE WAVEFORM **/
@@ -272,11 +272,11 @@ float AudioEffectChorus::get_dry() const {
 	return dry;
 }
 
-void AudioEffectChorus::_validate_property(PropertyInfo &property) const {
-	if (property.name.begins_with("voice/")) {
-		int voice_idx = property.name.get_slice("/", 1).to_int();
+void AudioEffectChorus::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name.begins_with("voice/")) {
+		int voice_idx = p_property.name.get_slice("/", 1).to_int();
 		if (voice_idx > voice_count) {
-			property.usage = PROPERTY_USAGE_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }
@@ -313,32 +313,32 @@ void AudioEffectChorus::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dry", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dry", "get_dry");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wet", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_wet", "get_wet");
 
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/1/delay_ms", PROPERTY_HINT_RANGE, "0,50,0.01"), "set_voice_delay_ms", "get_voice_delay_ms", 0);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/1/rate_hz", PROPERTY_HINT_RANGE, "0.1,20,0.1"), "set_voice_rate_hz", "get_voice_rate_hz", 0);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/1/depth_ms", PROPERTY_HINT_RANGE, "0,20,0.01"), "set_voice_depth_ms", "get_voice_depth_ms", 0);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/1/level_db", PROPERTY_HINT_RANGE, "-60,24,0.1"), "set_voice_level_db", "get_voice_level_db", 0);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/1/cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1"), "set_voice_cutoff_hz", "get_voice_cutoff_hz", 0);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/1/delay_ms", PROPERTY_HINT_RANGE, "0,50,0.01,suffix:ms"), "set_voice_delay_ms", "get_voice_delay_ms", 0);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/1/rate_hz", PROPERTY_HINT_RANGE, "0.1,20,0.1,suffix:Hz"), "set_voice_rate_hz", "get_voice_rate_hz", 0);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/1/depth_ms", PROPERTY_HINT_RANGE, "0,20,0.01,suffix:ms"), "set_voice_depth_ms", "get_voice_depth_ms", 0);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/1/level_db", PROPERTY_HINT_RANGE, "-60,24,0.1,suffix:dB"), "set_voice_level_db", "get_voice_level_db", 0);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/1/cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1,suffix:Hz"), "set_voice_cutoff_hz", "get_voice_cutoff_hz", 0);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/1/pan", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_voice_pan", "get_voice_pan", 0);
 
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/2/delay_ms", PROPERTY_HINT_RANGE, "0,50,0.01"), "set_voice_delay_ms", "get_voice_delay_ms", 1);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/2/rate_hz", PROPERTY_HINT_RANGE, "0.1,20,0.1"), "set_voice_rate_hz", "get_voice_rate_hz", 1);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/2/depth_ms", PROPERTY_HINT_RANGE, "0,20,0.01"), "set_voice_depth_ms", "get_voice_depth_ms", 1);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/2/level_db", PROPERTY_HINT_RANGE, "-60,24,0.1"), "set_voice_level_db", "get_voice_level_db", 1);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/2/cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1"), "set_voice_cutoff_hz", "get_voice_cutoff_hz", 1);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/2/delay_ms", PROPERTY_HINT_RANGE, "0,50,0.01,suffix:ms"), "set_voice_delay_ms", "get_voice_delay_ms", 1);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/2/rate_hz", PROPERTY_HINT_RANGE, "0.1,20,0.1,suffix:Hz"), "set_voice_rate_hz", "get_voice_rate_hz", 1);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/2/depth_ms", PROPERTY_HINT_RANGE, "0,20,0.01,suffix:ms"), "set_voice_depth_ms", "get_voice_depth_ms", 1);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/2/level_db", PROPERTY_HINT_RANGE, "-60,24,0.1,suffix:dB"), "set_voice_level_db", "get_voice_level_db", 1);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/2/cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1,suffix:Hz"), "set_voice_cutoff_hz", "get_voice_cutoff_hz", 1);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/2/pan", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_voice_pan", "get_voice_pan", 1);
 
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/3/delay_ms", PROPERTY_HINT_RANGE, "0,50,0.01"), "set_voice_delay_ms", "get_voice_delay_ms", 2);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/3/rate_hz", PROPERTY_HINT_RANGE, "0.1,20,0.1"), "set_voice_rate_hz", "get_voice_rate_hz", 2);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/3/depth_ms", PROPERTY_HINT_RANGE, "0,20,0.01"), "set_voice_depth_ms", "get_voice_depth_ms", 2);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/3/level_db", PROPERTY_HINT_RANGE, "-60,24,0.1"), "set_voice_level_db", "get_voice_level_db", 2);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/3/cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1"), "set_voice_cutoff_hz", "get_voice_cutoff_hz", 2);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/3/delay_ms", PROPERTY_HINT_RANGE, "0,50,0.01,suffix:ms"), "set_voice_delay_ms", "get_voice_delay_ms", 2);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/3/rate_hz", PROPERTY_HINT_RANGE, "0.1,20,0.1,suffix:Hz"), "set_voice_rate_hz", "get_voice_rate_hz", 2);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/3/depth_ms", PROPERTY_HINT_RANGE, "0,20,0.01,suffix:ms"), "set_voice_depth_ms", "get_voice_depth_ms", 2);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/3/level_db", PROPERTY_HINT_RANGE, "-60,24,0.1,suffix:dB"), "set_voice_level_db", "get_voice_level_db", 2);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/3/cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1,suffix:Hz"), "set_voice_cutoff_hz", "get_voice_cutoff_hz", 2);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/3/pan", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_voice_pan", "get_voice_pan", 2);
 
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/4/delay_ms", PROPERTY_HINT_RANGE, "0,50,0.01"), "set_voice_delay_ms", "get_voice_delay_ms", 3);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/4/rate_hz", PROPERTY_HINT_RANGE, "0.1,20,0.1"), "set_voice_rate_hz", "get_voice_rate_hz", 3);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/4/depth_ms", PROPERTY_HINT_RANGE, "0,20,0.01"), "set_voice_depth_ms", "get_voice_depth_ms", 3);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/4/level_db", PROPERTY_HINT_RANGE, "-60,24,0.1"), "set_voice_level_db", "get_voice_level_db", 3);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/4/cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1"), "set_voice_cutoff_hz", "get_voice_cutoff_hz", 3);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/4/delay_ms", PROPERTY_HINT_RANGE, "0,50,0.01,suffix:ms"), "set_voice_delay_ms", "get_voice_delay_ms", 3);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/4/rate_hz", PROPERTY_HINT_RANGE, "0.1,20,0.1,suffix:Hz"), "set_voice_rate_hz", "get_voice_rate_hz", 3);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/4/depth_ms", PROPERTY_HINT_RANGE, "0,20,0.01,suffix:ms"), "set_voice_depth_ms", "get_voice_depth_ms", 3);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/4/level_db", PROPERTY_HINT_RANGE, "-60,24,0.1,suffix:dB"), "set_voice_level_db", "get_voice_level_db", 3);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/4/cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1,suffix:Hz"), "set_voice_cutoff_hz", "get_voice_cutoff_hz", 3);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "voice/4/pan", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_voice_pan", "get_voice_pan", 3);
 }
 

@@ -93,15 +93,16 @@ hb_icu_script_to_script (UScriptCode script)
 UScriptCode
 hb_icu_script_from_script (hb_script_t script)
 {
+  UScriptCode out = USCRIPT_INVALID_CODE;
+
   if (unlikely (script == HB_SCRIPT_INVALID))
-    return USCRIPT_INVALID_CODE;
+    return out;
 
-  unsigned int numScriptCode = 1 + u_getIntPropertyMaxValue (UCHAR_SCRIPT);
-  for (unsigned int i = 0; i < numScriptCode; i++)
-    if (unlikely (hb_icu_script_to_script ((UScriptCode) i) == script))
-      return (UScriptCode) i;
+  UErrorCode icu_err = U_ZERO_ERROR;
+  const unsigned char buf[5] = {HB_UNTAG (script), 0};
+  uscript_getCode ((const char *) buf, &out, 1, &icu_err);
 
-  return USCRIPT_UNKNOWN;
+  return out;
 }
 
 
@@ -233,9 +234,7 @@ hb_icu_unicode_decompose (hb_unicode_funcs_t *ufuncs HB_UNUSED,
 }
 
 
-#if HB_USE_ATEXIT
-static void free_static_icu_funcs ();
-#endif
+static inline void free_static_icu_funcs ();
 
 static struct hb_icu_unicode_funcs_lazy_loader_t : hb_unicode_funcs_lazy_loader_t<hb_icu_unicode_funcs_lazy_loader_t>
 {
@@ -257,21 +256,17 @@ static struct hb_icu_unicode_funcs_lazy_loader_t : hb_unicode_funcs_lazy_loader_
 
     hb_unicode_funcs_make_immutable (funcs);
 
-#if HB_USE_ATEXIT
-    atexit (free_static_icu_funcs);
-#endif
+    hb_atexit (free_static_icu_funcs);
 
     return funcs;
   }
 } static_icu_funcs;
 
-#if HB_USE_ATEXIT
-static
+static inline
 void free_static_icu_funcs ()
 {
   static_icu_funcs.free_instance ();
 }
-#endif
 
 /**
  * hb_icu_get_unicode_funcs:

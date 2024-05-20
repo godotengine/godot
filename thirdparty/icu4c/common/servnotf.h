@@ -40,7 +40,7 @@ public:
 public:
     static UClassID U_EXPORT2 getStaticClassID();
 
-    virtual UClassID getDynamicClassID() const;
+    virtual UClassID getDynamicClassID() const override;
 
 public:
 #ifdef SERVICE_DEBUG
@@ -75,9 +75,9 @@ class U_COMMON_API ICUNotifier : public UMemory  {
 private: UVector* listeners;
          
 public: 
-    ICUNotifier(void);
+    ICUNotifier();
     
-    virtual ~ICUNotifier(void);
+    virtual ~ICUNotifier();
     
     /**
      * Add a listener to be notified when notifyChanged is called.
@@ -101,7 +101,7 @@ public:
      * indefinitely block the calling thread.  Callers should beware of
      * deadlock situations.  
      */
-    virtual void notifyChanged(void);
+    virtual void notifyChanged();
     
 protected: 
     /**

@@ -57,6 +57,42 @@ enum
   // Reserved = 0xFFFC				/* Reserved for future use — set to zero. */
 };
 
+static bool axis_value_is_outside_axis_range (hb_tag_t axis_tag, float axis_value,
+                                              const hb_hashmap_t<hb_tag_t, Triple> *user_axes_location)
+{
+  if (!user_axes_location->has (axis_tag))
+    return false;
+
+  double axis_value_double = static_cast<double>(axis_value);
+  Triple axis_range = user_axes_location->get (axis_tag);
+  return (axis_value_double < axis_range.minimum || axis_value_double > axis_range.maximum);
+}
+
+struct StatAxisRecord
+{
+  int cmp (hb_tag_t key) const { return tag.cmp (key); }
+
+  hb_ot_name_id_t get_name_id () const { return nameID; }
+
+  hb_tag_t get_axis_tag () const { return tag; }
+
+  bool sanitize (hb_sanitize_context_t *c) const
+  {
+    TRACE_SANITIZE (this);
+    return_trace (likely (c->check_struct (this)));
+  }
+
+  protected:
+  Tag		tag;		/* A tag identifying the axis of design variation. */
+  NameID	nameID;		/* The name ID for entries in the 'name' table that
+				 * provide a display string for this axis. */
+  HBUINT16	ordering;	/* A value that applications can use to determine
+				 * primary sorting of face names, or for ordering
+				 * of descriptors when composing family or face names. */
+  public:
+  DEFINE_SIZE_STATIC (8);
+};
+
 struct AxisValueFormat1
 {
   unsigned int get_axis_index () const { return axisIndex; }
@@ -64,10 +100,37 @@ struct AxisValueFormat1
 
   hb_ot_name_id_t get_value_name_id () const { return valueNameID; }
 
+  hb_tag_t get_axis_tag (const hb_array_t<const StatAxisRecord> axis_records) const
+  {
+    unsigned axis_idx = get_axis_index ();
+    return axis_records[axis_idx].get_axis_tag ();
+  }
+
+  bool keep_axis_value (const hb_array_t<const StatAxisRecord> axis_records,
+                        const hb_hashmap_t<hb_tag_t, Triple> *user_axes_location) const
+  {
+    hb_tag_t axis_tag = get_axis_tag (axis_records);
+    float axis_value = get_value ();
+
+    return !axis_value_is_outside_axis_range (axis_tag, axis_value, user_axes_location);
+  }
+
+  bool subset (hb_subset_context_t *c,
+               const hb_array_t<const StatAxisRecord> axis_records) const
+  {
+    TRACE_SUBSET (this);
+    const hb_hashmap_t<hb_tag_t, Triple>* user_axes_location = &c->plan->user_axes_location;
+
+    if (keep_axis_value (axis_records, user_axes_location))
+      return_trace (c->serializer->embed (this));
+
+    return_trace (false);
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   protected:
@@ -80,7 +143,7 @@ struct AxisValueFormat1
   NameID	valueNameID;	/* The name ID for entries in the 'name' table
 				 * that provide a display string for this
 				 * attribute value. */
-  HBFixed	value;		/* A numeric value for this attribute value. */
+  F16DOT16	value;		/* A numeric value for this attribute value. */
   public:
   DEFINE_SIZE_STATIC (12);
 };
@@ -92,10 +155,37 @@ struct AxisValueFormat2
 
   hb_ot_name_id_t get_value_name_id () const { return valueNameID; }
 
+  hb_tag_t get_axis_tag (const hb_array_t<const StatAxisRecord> axis_records) const
+  {
+    unsigned axis_idx = get_axis_index ();
+    return axis_records[axis_idx].get_axis_tag ();
+  }
+
+  bool keep_axis_value (const hb_array_t<const StatAxisRecord> axis_records,
+                        const hb_hashmap_t<hb_tag_t, Triple> *user_axes_location) const
+  {
+    hb_tag_t axis_tag = get_axis_tag (axis_records);
+    float axis_value = get_value ();
+
+    return !axis_value_is_outside_axis_range (axis_tag, axis_value, user_axes_location);
+  }
+
+  bool subset (hb_subset_context_t *c,
+               const hb_array_t<const StatAxisRecord> axis_records) const
+  {
+    TRACE_SUBSET (this);
+    const hb_hashmap_t<hb_tag_t, Triple>* user_axes_location = &c->plan->user_axes_location;
+
+    if (keep_axis_value (axis_records, user_axes_location))
+      return_trace (c->serializer->embed (this));
+
+    return_trace (false);
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   protected:
@@ -108,10 +198,10 @@ struct AxisValueFormat2
   NameID	valueNameID;	/* The name ID for entries in the 'name' table
 				 * that provide a display string for this
 				 * attribute value. */
-  HBFixed	nominalValue;	/* A numeric value for this attribute value. */
-  HBFixed	rangeMinValue;	/* The minimum value for a range associated
+  F16DOT16	nominalValue;	/* A numeric value for this attribute value. */
+  F16DOT16	rangeMinValue;	/* The minimum value for a range associated
 				 * with the specified name ID. */
-  HBFixed	rangeMaxValue;	/* The maximum value for a range associated
+  F16DOT16	rangeMaxValue;	/* The maximum value for a range associated
 				 * with the specified name ID. */
   public:
   DEFINE_SIZE_STATIC (20);
@@ -124,10 +214,37 @@ struct AxisValueFormat3
 
   hb_ot_name_id_t get_value_name_id () const { return valueNameID; }
 
+  hb_tag_t get_axis_tag (const hb_array_t<const StatAxisRecord> axis_records) const
+  {
+    unsigned axis_idx = get_axis_index ();
+    return axis_records[axis_idx].get_axis_tag ();
+  }
+
+  bool keep_axis_value (const hb_array_t<const StatAxisRecord> axis_records,
+                        const hb_hashmap_t<hb_tag_t, Triple> *user_axes_location) const
+  {
+    hb_tag_t axis_tag = get_axis_tag (axis_records);
+    float axis_value = get_value ();
+
+    return !axis_value_is_outside_axis_range (axis_tag, axis_value, user_axes_location);
+  }
+
+  bool subset (hb_subset_context_t *c,
+               const hb_array_t<const StatAxisRecord> axis_records) const
+  {
+    TRACE_SUBSET (this);
+    const hb_hashmap_t<hb_tag_t, Triple>* user_axes_location = &c->plan->user_axes_location;
+
+    if (keep_axis_value (axis_records, user_axes_location))
+      return_trace (c->serializer->embed (this));
+
+    return_trace (false);
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   protected:
@@ -140,8 +257,8 @@ struct AxisValueFormat3
   NameID	valueNameID;	/* The name ID for entries in the 'name' table
 				 * that provide a display string for this
 				 * attribute value. */
-  HBFixed	value;		/* A numeric value for this attribute value. */
-  HBFixed	linkedValue;	/* The numeric value for a style-linked mapping
+  F16DOT16	value;		/* A numeric value for this attribute value. */
+  F16DOT16	linkedValue;	/* The numeric value for a style-linked mapping
 				 * from this value. */
   public:
   DEFINE_SIZE_STATIC (16);
@@ -155,14 +272,14 @@ struct AxisValueRecord
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (c->check_struct (this));
   }
 
   protected:
   HBUINT16	axisIndex;	/* Zero-base index into the axis record array
 				 * identifying the axis to which this value
 				 * applies. Must be less than designAxisCount. */
-  HBFixed	value;		/* A numeric value for this attribute value. */
+  F16DOT16	value;		/* A numeric value for this attribute value. */
   public:
   DEFINE_SIZE_STATIC (6);
 };
@@ -172,12 +289,47 @@ struct AxisValueFormat4
   const AxisValueRecord &get_axis_record (unsigned int axis_index) const
   { return axisValues.as_array (axisCount)[axis_index]; }
 
+  bool keep_axis_value (const hb_array_t<const StatAxisRecord> axis_records,
+                        const hb_hashmap_t<hb_tag_t, Triple> *user_axes_location) const
+  {
+    hb_array_t<const AxisValueRecord> axis_value_records = axisValues.as_array (axisCount);
+
+    for (const auto& rec : axis_value_records)
+    {
+      unsigned axis_idx = rec.get_axis_index ();
+      float axis_value = rec.get_value ();
+      hb_tag_t axis_tag = axis_records[axis_idx].get_axis_tag ();
+
+      if (axis_value_is_outside_axis_range (axis_tag, axis_value, user_axes_location))
+        return false;
+    }
+
+    return true;
+  }
+
+  bool subset (hb_subset_context_t *c,
+               const hb_array_t<const StatAxisRecord> axis_records) const
+  {
+    TRACE_SUBSET (this);
+    const hb_hashmap_t<hb_tag_t, Triple> *user_axes_location = &c->plan->user_axes_location;
+    if (!keep_axis_value (axis_records, user_axes_location))
+      return_trace (false);
+
+    unsigned total_size = min_size + axisCount * AxisValueRecord::static_size;
+    auto *out = c->serializer->allocate_size<AxisValueFormat4> (total_size);
+    if (unlikely (!out)) return_trace (false);
+    hb_memcpy (out, this, total_size);
+    return_trace (true);
+  }
+
   hb_ot_name_id_t get_value_name_id () const { return valueNameID; }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
+    return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
+                          axisValues.sanitize (c, axisCount)));
   }
 
   protected:
@@ -198,7 +350,7 @@ struct AxisValueFormat4
 
 struct AxisValue
 {
-  bool get_value (unsigned int axis_index) const
+  float get_value (unsigned int axis_index) const
   {
     switch (u.format)
     {
@@ -206,7 +358,7 @@ struct AxisValue
     case 2: return u.format2.get_value ();
     case 3: return u.format3.get_value ();
     case 4: return u.format4.get_axis_record (axis_index).get_value ();
-    default:return 0;
+    default:return 0.f;
     }
   }
 
@@ -234,11 +386,39 @@ struct AxisValue
     }
   }
 
+  template <typename context_t, typename ...Ts>
+  typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
+  {
+    if (unlikely (!c->may_dispatch (this, &u.format))) return c->no_dispatch_return_value ();
+    TRACE_DISPATCH (this, u.format);
+    switch (u.format) {
+    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+    case 3: return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
+    case 4: return_trace (c->dispatch (u.format4, std::forward<Ts> (ds)...));
+    default:return_trace (c->default_return_value ());
+    }
+  }
+
+  bool keep_axis_value (const hb_array_t<const StatAxisRecord> axis_records,
+                        hb_hashmap_t<hb_tag_t, Triple> *user_axes_location) const
+  {
+    switch (u.format)
+    {
+    case 1: return u.format1.keep_axis_value (axis_records, user_axes_location);
+    case 2: return u.format2.keep_axis_value (axis_records, user_axes_location);
+    case 3: return u.format3.keep_axis_value (axis_records, user_axes_location);
+    case 4: return u.format4.keep_axis_value (axis_records, user_axes_location);
+    default:return false;
+    }
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this)))
       return_trace (false);
+    hb_barrier ();
 
     switch (u.format)
     {
@@ -263,27 +443,33 @@ struct AxisValue
   DEFINE_SIZE_UNION (2, format);
 };
 
-struct StatAxisRecord
+struct AxisValueOffsetArray: UnsizedArrayOf<Offset16To<AxisValue>>
 {
-  int cmp (hb_tag_t key) const { return tag.cmp (key); }
-
-  hb_ot_name_id_t get_name_id () const { return nameID; }
-
-  bool sanitize (hb_sanitize_context_t *c) const
+  bool subset (hb_subset_context_t *c,
+               unsigned axisValueCount,
+               unsigned& count,
+               const hb_array_t<const StatAxisRecord> axis_records) const
   {
-    TRACE_SANITIZE (this);
-    return_trace (likely (c->check_struct (this)));
-  }
+    TRACE_SUBSET (this);
 
-  protected:
-  Tag		tag;		/* A tag identifying the axis of design variation. */
-  NameID	nameID;		/* The name ID for entries in the 'name' table that
-				 * provide a display string for this axis. */
-  HBUINT16	ordering;	/* A value that applications can use to determine
-				 * primary sorting of face names, or for ordering
-				 * of descriptors when composing family or face names. */
-  public:
-  DEFINE_SIZE_STATIC (8);
+    auto axisValueOffsets = as_array (axisValueCount);
+    count = 0;
+    for (const auto& offset : axisValueOffsets)
+    {
+      if (!offset) continue;
+      auto o_snap = c->serializer->snapshot ();
+      auto *o = c->serializer->embed (offset);
+      if (!o) return_trace (false);
+      if (!o->serialize_subset (c, offset, this, axis_records))
+      {
+        c->serializer->revert (o_snap);
+        continue;
+      }
+      count++;
+    }
+
+    return_trace (count);
+  }
 };
 
 struct STAT
@@ -297,10 +483,10 @@ struct STAT
     unsigned int axis_index;
     if (!get_design_axes ().lfind (tag, &axis_index)) return false;
 
-    hb_array_t<const OffsetTo<AxisValue>> axis_values = get_axis_value_offsets ();
+    hb_array_t<const Offset16To<AxisValue>> axis_values = get_axis_value_offsets ();
     for (unsigned int i = 0; i < axis_values.length; i++)
     {
-      const AxisValue& axis_value = this+axis_values[i];
+      const AxisValue& axis_value = this+offsetToAxisValueOffsets+axis_values[i];
       if (axis_value.get_axis_index () == axis_index)
       {
 	if (value)
@@ -329,7 +515,8 @@ struct STAT
     return axis_value.get_value_name_id ();
   }
 
-  void collect_name_ids (hb_set_t *nameids_to_retain) const
+  void collect_name_ids (hb_hashmap_t<hb_tag_t, Triple> *user_axes_location,
+                         hb_set_t *nameids_to_retain /* OUT */) const
   {
     if (!has_data ()) return;
 
@@ -338,17 +525,45 @@ struct STAT
     | hb_sink (nameids_to_retain)
     ;
 
+    auto designAxes = get_design_axes ();
+
     + get_axis_value_offsets ()
     | hb_map (hb_add (&(this + offsetToAxisValueOffsets)))
+    | hb_filter ([&] (const AxisValue& _)
+                 { return _.keep_axis_value (designAxes, user_axes_location); })
     | hb_map (&AxisValue::get_value_name_id)
     | hb_sink (nameids_to_retain)
     ;
+
+    nameids_to_retain->add (elidedFallbackNameID);
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    STAT *out = c->serializer->embed (this);
+    if (unlikely (!out)) return_trace (false);
+
+    auto designAxes = get_design_axes ();
+    for (unsigned i = 0; i < (unsigned)designAxisCount; i++)
+      if (unlikely (!c->serializer->embed (designAxes[i])))
+          return_trace (false);
+
+    if (designAxisCount)
+      c->serializer->check_assign (out->designAxesOffset, this->get_size (),
+                                   HB_SERIALIZE_ERROR_INT_OVERFLOW);
+
+    unsigned count = 0;
+    out->offsetToAxisValueOffsets.serialize_subset (c, offsetToAxisValueOffsets, this,
+                                                    axisValueCount, count, designAxes);
+    return_trace (c->serializer->check_assign (out->axisValueCount, count, HB_SERIALIZE_ERROR_INT_OVERFLOW));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  version.major == 1 &&
 			  version.minor > 0 &&
 			  designAxesOffset.sanitize (c, this, designAxisCount) &&
@@ -359,7 +574,7 @@ struct STAT
   hb_array_t<const StatAxisRecord> const get_design_axes () const
   { return (this+designAxesOffset).as_array (designAxisCount); }
 
-  hb_array_t<const OffsetTo<AxisValue>> const get_axis_value_offsets () const
+  hb_array_t<const Offset16To<AxisValue>> const get_axis_value_offsets () const
   { return (this+offsetToAxisValueOffsets).as_array (axisValueCount); }
 
 
@@ -373,7 +588,7 @@ struct STAT
 				 * in the 'fvar' table. In all fonts, must
 				 * be greater than zero if axisValueCount
 				 * is greater than zero. */
-  LNNOffsetTo<UnsizedArrayOf<StatAxisRecord>>
+  NNOffset32To<UnsizedArrayOf<StatAxisRecord>>
 		designAxesOffset;
 				/* Offset in bytes from the beginning of
 				 * the STAT table to the start of the design
@@ -381,7 +596,7 @@ struct STAT
 				 * set to zero; if designAxisCount is greater
 				 * than zero, must be greater than zero. */
   HBUINT16	axisValueCount;	/* The number of axis value tables. */
-  LNNOffsetTo<UnsizedArrayOf<OffsetTo<AxisValue>>>
+  NNOffset32To<AxisValueOffsetArray>
 		offsetToAxisValueOffsets;
 				/* Offset in bytes from the beginning of
 				 * the STAT table to the start of the design

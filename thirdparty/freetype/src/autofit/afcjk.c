@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines for CJK writing system (body).
  *
- * Copyright (C) 2006-2020 by
+ * Copyright (C) 2006-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -37,11 +37,6 @@
 #include "aferrors.h"
 
 
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-#include "afwarp.h"
-#endif
-
-
   /**************************************************************************
    *
    * The macro FT_COMPONENT is used in trace mode.  It is an implicit
@@ -72,11 +67,11 @@
     AF_GlyphHintsRec  hints[1];
 
 
-    FT_TRACE5(( "\n"
-                "cjk standard widths computation (style `%s')\n"
-                "===================================================\n"
-                "\n",
+    FT_TRACE5(( "\n" ));
+    FT_TRACE5(( "cjk standard widths computation (style `%s')\n",
                 af_style_names[metrics->root.style_class->style] ));
+    FT_TRACE5(( "===================================================\n" ));
+    FT_TRACE5(( "\n" ));
 
     af_glyph_hints_init( hints, face->memory );
 
@@ -314,9 +309,9 @@
     /* style's entry in the `af_blue_stringset' array, computing its */
     /* extremum points (depending on the string properties)          */
 
-    FT_TRACE5(( "cjk blue zones computation\n"
-                "==========================\n"
-                "\n" ));
+    FT_TRACE5(( "cjk blue zones computation\n" ));
+    FT_TRACE5(( "==========================\n" ));
+    FT_TRACE5(( "\n" ));
 
 #ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
     shaper_buf = af_shaper_buf_create( face );
@@ -422,16 +417,14 @@
 
         {
           FT_Int  nn;
-          FT_Int  first = 0;
-          FT_Int  last  = -1;
+          FT_Int  pp, first, last;
 
 
-          for ( nn = 0; nn < outline.n_contours; first = last + 1, nn++ )
+          last = -1;
+          for ( nn = 0; nn < outline.n_contours; nn++ )
           {
-            FT_Int  pp;
-
-
-            last = outline.contours[nn];
+            first = last + 1;
+            last  = outline.contours[nn];
 
             /* Avoid single-point contours since they are never rasterized. */
             /* In some fonts, they correspond to mark attachment points     */
@@ -555,9 +548,8 @@
       if ( AF_CJK_IS_TOP_BLUE( bs ) )
         blue->flags |= AF_CJK_BLUE_TOP;
 
-      FT_TRACE5(( "    -> reference = %ld\n"
-                  "       overshoot = %ld\n",
-                  *blue_ref, *blue_shoot ));
+      FT_TRACE5(( "    -> reference = %ld\n", *blue_ref ));
+      FT_TRACE5(( "       overshoot = %ld\n", *blue_shoot ));
 
     } /* end for loop */
 
@@ -575,8 +567,8 @@
   af_cjk_metrics_check_digits( AF_CJKMetrics  metrics,
                                FT_Face        face )
   {
-    FT_Bool   started = 0, same_width = 1;
-    FT_Fixed  advance = 0, old_advance = 0;
+    FT_Bool  started = 0, same_width = 1;
+    FT_Long  advance = 0, old_advance = 0;
 
     /* If HarfBuzz is not available, we need a pointer to a single */
     /* unsigned long value.                                        */
@@ -641,10 +633,11 @@
   /* Initialize global metrics. */
 
   FT_LOCAL_DEF( FT_Error )
-  af_cjk_metrics_init( AF_CJKMetrics  metrics,
-                       FT_Face        face )
+  af_cjk_metrics_init( AF_StyleMetrics  metrics_,  /* AF_CJKMetrics */
+                       FT_Face          face )
   {
-    FT_CharMap  oldmap = face->charmap;
+    AF_CJKMetrics  metrics = (AF_CJKMetrics)metrics_;
+    FT_CharMap     oldmap  = face->charmap;
 
 
     metrics->units_per_em = face->units_per_EM;
@@ -656,7 +649,7 @@
       af_cjk_metrics_check_digits( metrics, face );
     }
 
-    FT_Set_Charmap( face, oldmap );
+    face->charmap = oldmap;
     return FT_Err_Ok;
   }
 
@@ -743,13 +736,15 @@
 
         blue->shoot.fit = blue->ref.fit - delta2;
 
-        FT_TRACE5(( ">> active cjk blue zone %c%d[%ld/%ld]:\n"
-                    "     ref:   cur=%.2f fit=%.2f\n"
-                    "     shoot: cur=%.2f fit=%.2f\n",
+        FT_TRACE5(( ">> active cjk blue zone %c%d[%ld/%ld]:\n",
                     ( dim == AF_DIMENSION_HORZ ) ? 'H' : 'V',
-                    nn, blue->ref.org, blue->shoot.org,
-                    blue->ref.cur / 64.0, blue->ref.fit / 64.0,
-                    blue->shoot.cur / 64.0, blue->shoot.fit / 64.0 ));
+                    nn, blue->ref.org, blue->shoot.org ));
+        FT_TRACE5(( "     ref:   cur=%.2f fit=%.2f\n",
+                    (double)blue->ref.cur / 64,
+                    (double)blue->ref.fit / 64 ));
+        FT_TRACE5(( "     shoot: cur=%.2f fit=%.2f\n",
+                    (double)blue->shoot.cur / 64,
+                    (double)blue->shoot.fit / 64 ));
 
         blue->flags |= AF_CJK_BLUE_ACTIVE;
       }
@@ -760,9 +755,12 @@
   /* Scale global values in both directions. */
 
   FT_LOCAL_DEF( void )
-  af_cjk_metrics_scale( AF_CJKMetrics  metrics,
-                        AF_Scaler      scaler )
+  af_cjk_metrics_scale( AF_StyleMetrics  metrics_,   /* AF_CJKMetrics */
+                        AF_Scaler        scaler )
   {
+    AF_CJKMetrics  metrics = (AF_CJKMetrics)metrics_;
+
+
     /* we copy the whole structure since the x and y scaling values */
     /* are not modified, contrary to e.g. the `latin' auto-hinter   */
     metrics->root.scaler = *scaler;
@@ -775,11 +773,14 @@
   /* Extract standard_width from writing system/script specific */
   /* metrics class.                                             */
 
-  FT_LOCAL_DEF( void )
-  af_cjk_get_standard_widths( AF_CJKMetrics  metrics,
-                              FT_Pos*        stdHW,
-                              FT_Pos*        stdVW )
+  FT_CALLBACK_DEF( void )
+  af_cjk_get_standard_widths( AF_StyleMetrics  metrics_,  /* AF_CJKMetrics */
+                              FT_Pos*          stdHW,
+                              FT_Pos*          stdVW )
   {
+    AF_CJKMetrics  metrics = (AF_CJKMetrics)metrics_;
+
+
     if ( stdHW )
       *stdHW = metrics->axis[AF_DIMENSION_VERT].standard_width;
 
@@ -849,7 +850,7 @@
   {
     AF_AxisHints  axis          = &hints->axis[dim];
     AF_Segment    segments      = axis->segments;
-    AF_Segment    segment_limit = segments + axis->num_segments;
+    AF_Segment    segment_limit = FT_OFFSET( segments, axis->num_segments );
     AF_Direction  major_dir     = axis->major_dir;
     AF_Segment    seg1, seg2;
     FT_Pos        len_threshold;
@@ -1011,7 +1012,7 @@
     AF_CJKAxis    laxis  = &((AF_CJKMetrics)hints->metrics)->axis[dim];
 
     AF_Segment    segments      = axis->segments;
-    AF_Segment    segment_limit = segments + axis->num_segments;
+    AF_Segment    segment_limit = FT_OFFSET( segments, axis->num_segments );
     AF_Segment    seg;
 
     FT_Fixed      scale;
@@ -1050,7 +1051,7 @@
     {
       AF_Edge  found = NULL;
       FT_Pos   best  = 0xFFFFU;
-      FT_Int   ee;
+      FT_UInt  ee;
 
 
       /* look for an edge corresponding to the segment */
@@ -1159,7 +1160,7 @@
      */
     {
       AF_Edge  edges      = axis->edges;
-      AF_Edge  edge_limit = edges + axis->num_edges;
+      AF_Edge  edge_limit = FT_OFFSET( edges, axis->num_edges );
       AF_Edge  edge;
 
 
@@ -1297,7 +1298,7 @@
   {
     AF_AxisHints  axis       = &hints->axis[dim];
     AF_Edge       edge       = axis->edges;
-    AF_Edge       edge_limit = edge + axis->num_edges;
+    AF_Edge       edge_limit = FT_OFFSET( edge, axis->num_edges );
     AF_CJKAxis    cjk        = &metrics->axis[dim];
     FT_Fixed      scale      = cjk->scale;
     FT_Pos        best_dist0;  /* initial threshold */
@@ -1380,9 +1381,10 @@
   /* Initalize hinting engine. */
 
   FT_LOCAL_DEF( FT_Error )
-  af_cjk_hints_init( AF_GlyphHints  hints,
-                     AF_CJKMetrics  metrics )
+  af_cjk_hints_init( AF_GlyphHints    hints,
+                     AF_StyleMetrics  metrics_ )   /* AF_CJKMetrics */
   {
+    AF_CJKMetrics   metrics = (AF_CJKMetrics)metrics_;
     FT_Render_Mode  mode;
     FT_UInt32       scaler_flags, other_flags;
 
@@ -1400,11 +1402,6 @@
 
     /* compute flags depending on render mode, etc. */
     mode = metrics->root.scaler.render_mode;
-
-#if 0 /* AF_CONFIG_OPTION_USE_WARPER */
-    if ( mode == FT_RENDER_MODE_LCD || mode == FT_RENDER_MODE_LCD_V )
-      metrics->root.scaler.render_mode = mode = FT_RENDER_MODE_NORMAL;
-#endif
 
     scaler_flags = hints->scaler_flags;
     other_flags  = 0;
@@ -1433,12 +1430,6 @@
       other_flags |= AF_LATIN_HINTS_MONO;
 
     scaler_flags |= AF_SCALER_FLAG_NO_ADVANCE;
-
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-    /* get (global) warper flag */
-    if ( !metrics->root.globals->module->warping )
-      scaler_flags |= AF_SCALER_FLAG_NO_WARPER;
-#endif
 
     hints->scaler_flags = scaler_flags;
     hints->other_flags  = other_flags;
@@ -1643,11 +1634,13 @@
 
     stem_edge->pos = base_edge->pos + fitted_width;
 
-    FT_TRACE5(( "  CJKLINK: edge %ld @%d (opos=%.2f) linked to %.2f,"
+    FT_TRACE5(( "  CJKLINK: edge %td @%d (opos=%.2f) linked to %.2f,"
                 " dist was %.2f, now %.2f\n",
                 stem_edge - hints->axis[dim].edges, stem_edge->fpos,
-                stem_edge->opos / 64.0, stem_edge->pos / 64.0,
-                dist / 64.0, fitted_width / 64.0 ));
+                (double)stem_edge->opos / 64,
+                (double)stem_edge->pos / 64,
+                (double)dist / 64,
+                (double)fitted_width / 64 ));
   }
 
 
@@ -1815,7 +1808,7 @@
   {
     AF_AxisHints  axis       = &hints->axis[dim];
     AF_Edge       edges      = axis->edges;
-    AF_Edge       edge_limit = edges + axis->num_edges;
+    AF_Edge       edge_limit = FT_OFFSET( edges, axis->num_edges );
     FT_PtrDist    n_edges;
     AF_Edge       edge;
     AF_Edge       anchor   = NULL;
@@ -1865,10 +1858,10 @@
           continue;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
-        FT_TRACE5(( "  CJKBLUE: edge %ld @%d (opos=%.2f) snapped to %.2f,"
+        FT_TRACE5(( "  CJKBLUE: edge %td @%d (opos=%.2f) snapped to %.2f,"
                     " was %.2f\n",
-                    edge1 - edges, edge1->fpos, edge1->opos / 64.0,
-                    blue->fit / 64.0, edge1->pos / 64.0 ));
+                    edge1 - edges, edge1->fpos, (double)edge1->opos / 64,
+                    (double)blue->fit / 64, (double)edge1->pos / 64 ));
 
         num_actions++;
 #endif
@@ -1929,7 +1922,7 @@
       /* this should not happen, but it's better to be safe */
       if ( edge2->blue_edge )
       {
-        FT_TRACE5(( "ASSERTION FAILED for edge %ld\n", edge2-edges ));
+        FT_TRACE5(( "ASSERTION FAILED for edge %td\n", edge2 - edges ));
 
         af_cjk_align_linked_edge( hints, dim, edge2, edge );
         edge->flags |= AF_EDGE_DONE;
@@ -2041,8 +2034,8 @@
 #if 0
       printf( "stem (%d,%d) adjusted (%.1f,%.1f)\n",
                edge - edges, edge2 - edges,
-               ( edge->pos - edge->opos ) / 64.0,
-               ( edge2->pos - edge2->opos ) / 64.0 );
+               (double)( edge->pos - edge->opos ) / 64,
+               (double)( edge2->pos - edge2->opos ) / 64 );
 #endif
 
       anchor = edge;
@@ -2194,7 +2187,7 @@
   {
     AF_AxisHints  axis       = & hints->axis[dim];
     AF_Edge       edges      = axis->edges;
-    AF_Edge       edge_limit = edges + axis->num_edges;
+    AF_Edge       edge_limit = FT_OFFSET( edges, axis->num_edges );
     AF_Edge       edge;
     FT_Bool       snapping;
 
@@ -2281,11 +2274,13 @@
   /* Apply the complete hinting algorithm to a CJK glyph. */
 
   FT_LOCAL_DEF( FT_Error )
-  af_cjk_hints_apply( FT_UInt        glyph_index,
-                      AF_GlyphHints  hints,
-                      FT_Outline*    outline,
-                      AF_CJKMetrics  metrics )
+  af_cjk_hints_apply( FT_UInt          glyph_index,
+                      AF_GlyphHints    hints,
+                      FT_Outline*      outline,
+                      AF_StyleMetrics  metrics_ )   /* AF_CJKMetrics */
   {
+    AF_CJKMetrics  metrics = (AF_CJKMetrics)metrics_;
+
     FT_Error  error;
     int       dim;
 
@@ -2322,25 +2317,6 @@
       if ( ( dim == AF_DIMENSION_HORZ && AF_HINTS_DO_HORIZONTAL( hints ) ) ||
            ( dim == AF_DIMENSION_VERT && AF_HINTS_DO_VERTICAL( hints ) )   )
       {
-
-#ifdef AF_CONFIG_OPTION_USE_WARPER
-        if ( dim == AF_DIMENSION_HORZ                                  &&
-             metrics->root.scaler.render_mode == FT_RENDER_MODE_NORMAL &&
-             AF_HINTS_DO_WARP( hints )                                 )
-        {
-          AF_WarperRec  warper;
-          FT_Fixed      scale;
-          FT_Pos        delta;
-
-
-          af_warper_compute( &warper, hints, (AF_Dimension)dim,
-                             &scale, &delta );
-          af_glyph_hints_scale_dim( hints, (AF_Dimension)dim,
-                                    scale, delta );
-          continue;
-        }
-#endif /* AF_CONFIG_OPTION_USE_WARPER */
-
         af_cjk_hint_edges( hints, (AF_Dimension)dim );
         af_cjk_align_edge_points( hints, (AF_Dimension)dim );
         af_glyph_hints_align_strong_points( hints, (AF_Dimension)dim );

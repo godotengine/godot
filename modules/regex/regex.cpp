@@ -1,34 +1,35 @@
-/*************************************************************************/
-/*  regex.cpp                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  regex.cpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "regex.h"
+
 #include "core/os/memory.h"
 
 extern "C" {
@@ -40,7 +41,9 @@ static void *_regex_malloc(PCRE2_SIZE size, void *user) {
 }
 
 static void _regex_free(void *ptr, void *user) {
-	memfree(ptr);
+	if (ptr) {
+		memfree(ptr);
+	}
 }
 
 int RegExMatch::_find(const Variant &p_name) const {
@@ -50,11 +53,10 @@ int RegExMatch::_find(const Variant &p_name) const {
 			return -1;
 		}
 		return i;
-
-	} else if (p_name.get_type() == Variant::STRING) {
-		const Map<String, int>::Element *found = names.find((String)p_name);
+	} else if (p_name.get_type() == Variant::STRING || p_name.get_type() == Variant::STRING_NAME) {
+		HashMap<String, int>::ConstIterator found = names.find((String)p_name);
 		if (found) {
-			return found->value();
+			return found->value;
 		}
 	}
 
@@ -75,15 +77,15 @@ int RegExMatch::get_group_count() const {
 Dictionary RegExMatch::get_names() const {
 	Dictionary result;
 
-	for (const Map<String, int>::Element *i = names.front(); i != nullptr; i = i->next()) {
-		result[i->key()] = i->value();
+	for (const KeyValue<String, int> &E : names) {
+		result[E.key] = E.value;
 	}
 
 	return result;
 }
 
-Array RegExMatch::get_strings() const {
-	Array result;
+PackedStringArray RegExMatch::get_strings() const {
+	PackedStringArray result;
 
 	int size = data.size();
 
@@ -159,6 +161,13 @@ void RegEx::_pattern_info(uint32_t what, void *where) const {
 	pcre2_pattern_info_32((pcre2_code_32 *)code, what, where);
 }
 
+Ref<RegEx> RegEx::create_from_string(const String &p_pattern) {
+	Ref<RegEx> ret;
+	ret.instantiate();
+	ret->compile(p_pattern);
+	return ret;
+}
+
 void RegEx::clear() {
 	if (code) {
 		pcre2_code_free_32((pcre2_code_32 *)code);
@@ -194,6 +203,7 @@ Error RegEx::compile(const String &p_pattern) {
 
 Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) const {
 	ERR_FAIL_COND_V(!is_valid(), nullptr);
+	ERR_FAIL_COND_V_MSG(p_offset < 0, nullptr, "RegEx search offset must be >= 0");
 
 	Ref<RegExMatch> result = memnew(RegExMatch);
 
@@ -257,23 +267,28 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 	return result;
 }
 
-Array RegEx::search_all(const String &p_subject, int p_offset, int p_end) const {
-	int last_end = -1;
-	Array result;
+TypedArray<RegExMatch> RegEx::search_all(const String &p_subject, int p_offset, int p_end) const {
+	ERR_FAIL_COND_V_MSG(p_offset < 0, Array(), "RegEx search offset must be >= 0");
+
+	int last_end = 0;
+	TypedArray<RegExMatch> result;
 	Ref<RegExMatch> match = search(p_subject, p_offset, p_end);
+
 	while (match.is_valid()) {
-		if (last_end == match->get_end(0)) {
-			break;
-		}
-		result.push_back(match);
 		last_end = match->get_end(0);
-		match = search(p_subject, match->get_end(0), p_end);
+		if (match->get_start(0) == last_end) {
+			last_end++;
+		}
+
+		result.push_back(match);
+		match = search(p_subject, last_end, p_end);
 	}
 	return result;
 }
 
 String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_all, int p_offset, int p_end) const {
 	ERR_FAIL_COND_V(!is_valid(), String());
+	ERR_FAIL_COND_V_MSG(p_offset < 0, String(), "RegEx sub offset must be >= 0");
 
 	// safety_zone is the number of chars we allocate in addition to the number of chars expected in order to
 	// guard against the PCRE API writing one additional \0 at the end. PCRE's API docs are unclear on whether
@@ -319,7 +334,7 @@ String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_a
 		return String();
 	}
 
-	return String(output.ptr(), olength);
+	return String(output.ptr(), olength) + p_subject.substr(length);
 }
 
 bool RegEx::is_valid() const {
@@ -340,8 +355,8 @@ int RegEx::get_group_count() const {
 	return count;
 }
 
-Array RegEx::get_names() const {
-	Array result;
+PackedStringArray RegEx::get_names() const {
+	PackedStringArray result;
 
 	ERR_FAIL_COND_V(!is_valid(), result);
 
@@ -355,7 +370,7 @@ Array RegEx::get_names() const {
 
 	for (uint32_t i = 0; i < count; i++) {
 		String name = &table[i * entry_size + 1];
-		if (result.find(name) < 0) {
+		if (!result.has(name)) {
 			result.append(name);
 		}
 	}
@@ -380,6 +395,8 @@ RegEx::~RegEx() {
 }
 
 void RegEx::_bind_methods() {
+	ClassDB::bind_static_method("RegEx", D_METHOD("create_from_string", "pattern"), &RegEx::create_from_string);
+
 	ClassDB::bind_method(D_METHOD("clear"), &RegEx::clear);
 	ClassDB::bind_method(D_METHOD("compile", "pattern"), &RegEx::compile);
 	ClassDB::bind_method(D_METHOD("search", "subject", "offset", "end"), &RegEx::search, DEFVAL(0), DEFVAL(-1));

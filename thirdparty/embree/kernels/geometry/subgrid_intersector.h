@@ -23,7 +23,7 @@ namespace embree
       typedef SubGridQBVHN<N> Primitive;
       typedef SubGridQuadMIntersector1MoellerTrumbore<4,filter> Precalculations;
 
-      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, IntersectContext* context, const SubGrid& subgrid)
+      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, RayQueryContext* context, const SubGrid& subgrid)
       {
         STAT3(normal.trav_prims,1,1,1);
         const GridMesh* mesh    = context->scene->get<GridMesh>(subgrid.geomID());
@@ -33,7 +33,7 @@ namespace embree
         pre.intersect(ray,context,v0,v1,v2,v3,g,subgrid);
       }
 
-      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, IntersectContext* context, const SubGrid& subgrid)
+      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, RayQueryContext* context, const SubGrid& subgrid)
       {
         STAT3(shadow.trav_prims,1,1,1);
         const GridMesh* mesh    = context->scene->get<GridMesh>(subgrid.geomID());
@@ -54,7 +54,7 @@ namespace embree
       }
 
       template<bool robust>
-        static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
+        static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, RayQueryContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
       {
         BVHNQuantizedBaseNodeIntersector1<N,robust> isec1;
 
@@ -76,7 +76,7 @@ namespace embree
         }
       }
       template<bool robust>        
-        static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
+        static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, RayQueryContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
 
       {
         BVHNQuantizedBaseNodeIntersector1<N,robust> isec1;
@@ -126,7 +126,7 @@ namespace embree
       typedef SubGridQBVHN<N> Primitive;
       typedef SubGridQuadMIntersector1Pluecker<4,filter> Precalculations;
 
-      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, IntersectContext* context, const SubGrid& subgrid)
+      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, RayQueryContext* context, const SubGrid& subgrid)
       {
         STAT3(normal.trav_prims,1,1,1);
         const GridMesh* mesh    = context->scene->get<GridMesh>(subgrid.geomID());
@@ -136,7 +136,7 @@ namespace embree
         pre.intersect(ray,context,v0,v1,v2,v3,g,subgrid);
       }
 
-      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, IntersectContext* context, const SubGrid& subgrid)
+      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, RayQueryContext* context, const SubGrid& subgrid)
       {
         STAT3(shadow.trav_prims,1,1,1);
         const GridMesh* mesh    = context->scene->get<GridMesh>(subgrid.geomID());
@@ -156,7 +156,7 @@ namespace embree
       }
 
       template<bool robust>
-        static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
+        static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, RayQueryContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
       {
         BVHNQuantizedBaseNodeIntersector1<N,robust> isec1;
 
@@ -179,7 +179,7 @@ namespace embree
       }
 
       template<bool robust>        
-        static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
+        static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, RayQueryContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
       {
         BVHNQuantizedBaseNodeIntersector1<N,robust> isec1;
 
@@ -231,7 +231,7 @@ namespace embree
       typedef SubGridQBVHN<N> Primitive;
       typedef SubGridQuadMIntersectorKMoellerTrumbore<4,K,filter> Precalculations;
 
-      static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, IntersectContext* context, const SubGrid& subgrid)
+      static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, RayQueryContext* context, const SubGrid& subgrid)
       {
         Vec3fa vtx[16];
         const GridMesh* mesh    = context->scene->get<GridMesh>(subgrid.geomID());
@@ -249,7 +249,7 @@ namespace embree
         }
       }
 
-      static __forceinline vbool<K> occluded(const vbool<K>& valid_i, Precalculations& pre, RayK<K>& ray, IntersectContext* context, const SubGrid& subgrid)
+      static __forceinline vbool<K> occluded(const vbool<K>& valid_i, Precalculations& pre, RayK<K>& ray, RayQueryContext* context, const SubGrid& subgrid)
       {
         vbool<K> valid0 = valid_i;
         Vec3fa vtx[16];
@@ -264,13 +264,13 @@ namespace embree
           const Vec3vf<K> p2 = vtx[i*4+2];
           const Vec3vf<K> p3 = vtx[i*4+3];
           STAT3(shadow.trav_prims,1,popcnt(valid0),K);
-          if (pre.intersectK(valid0,ray,p0,p1,p2,p3,g,subgrid,i,OccludedKEpilogM<4,K,filter>(valid0,ray,context,subgrid.geomID(),subgrid.primID(),i)))
-            break;
+          pre.intersectK(valid0,ray,p0,p1,p2,p3,g,subgrid,i,OccludedKEpilogM<4,K,filter>(valid0,ray,context,subgrid.geomID(),subgrid.primID(),i));
+          if (none(valid0)) break;
         }
         return !valid0;
       }
       
-      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const SubGrid& subgrid)
+      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const SubGrid& subgrid)
       {
         STAT3(normal.trav_prims,1,1,1);
         const GridMesh* mesh    = context->scene->get<GridMesh>(subgrid.geomID());
@@ -280,7 +280,7 @@ namespace embree
         pre.intersect1(ray,k,context,v0,v1,v2,v3,g,subgrid);
       }
 
-      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const SubGrid& subgrid)
+      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const SubGrid& subgrid)
       {
         STAT3(shadow.trav_prims,1,1,1);
         const GridMesh* mesh    = context->scene->get<GridMesh>(subgrid.geomID());
@@ -290,7 +290,7 @@ namespace embree
       }
 
         template<bool robust>
-          static __forceinline void intersect(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, IntersectContext* context, const Primitive* prim, size_t num, const TravRayK<K, robust> &tray, size_t& lazy_node)
+          static __forceinline void intersect(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, RayQueryContext* context, const Primitive* prim, size_t num, const TravRayK<K, robust> &tray, size_t& lazy_node)
         {
           BVHNQuantizedBaseNodeIntersectorK<N,K,robust> isecK;
           for (size_t j=0;j<num;j++)
@@ -307,7 +307,7 @@ namespace embree
         }
 
         template<bool robust>        
-        static __forceinline vbool<K> occluded(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, IntersectContext* context, const Primitive* prim, size_t num, const TravRayK<K, robust> &tray, size_t& lazy_node)
+        static __forceinline vbool<K> occluded(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, RayQueryContext* context, const Primitive* prim, size_t num, const TravRayK<K, robust> &tray, size_t& lazy_node)
         {
           BVHNQuantizedBaseNodeIntersectorK<N,K,robust> isecK;
           vbool<K> valid0 = valid;
@@ -327,7 +327,7 @@ namespace embree
         }
         
         template<bool robust>        
-          static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
+          static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
         {
           BVHNQuantizedBaseNodeIntersector1<N,robust> isec1;
 
@@ -347,7 +347,7 @@ namespace embree
         }
         
         template<bool robust>
-        static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
+        static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
         {
           BVHNQuantizedBaseNodeIntersector1<N,robust> isec1;
 
@@ -375,7 +375,7 @@ namespace embree
       typedef SubGridQBVHN<N> Primitive;
       typedef SubGridQuadMIntersectorKPluecker<4,K,filter> Precalculations;
 
-      static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, IntersectContext* context, const SubGrid& subgrid)
+      static __forceinline void intersect(const vbool<K>& valid_i, Precalculations& pre, RayHitK<K>& ray, RayQueryContext* context, const SubGrid& subgrid)
       {
         Vec3fa vtx[16];
         const GridMesh* mesh    = context->scene->get<GridMesh>(subgrid.geomID());
@@ -393,7 +393,7 @@ namespace embree
         }
       }
 
-      static __forceinline vbool<K> occluded(const vbool<K>& valid_i, Precalculations& pre, RayK<K>& ray, IntersectContext* context, const SubGrid& subgrid)
+      static __forceinline vbool<K> occluded(const vbool<K>& valid_i, Precalculations& pre, RayK<K>& ray, RayQueryContext* context, const SubGrid& subgrid)
       {
         vbool<K> valid0 = valid_i;
         Vec3fa vtx[16];
@@ -408,15 +408,13 @@ namespace embree
           const Vec3vf<K> p2 = vtx[i*4+2];
           const Vec3vf<K> p3 = vtx[i*4+3];
           STAT3(shadow.trav_prims,1,popcnt(valid0),K);
-          //if (pre.intersectK(valid0,ray,p0,p1,p2,p3,g,subgrid,i,OccludedKEpilogM<4,K,filter>(valid0,ray,context,subgrid.geomID(),subgrid.primID(),i)))
-          if (pre.occludedK(valid0,ray,p0,p1,p2,p3,g,subgrid,i,OccludedKEpilogM<4,K,filter>(valid0,ray,context,subgrid.geomID(),subgrid.primID(),i)))
-	    
-            break;
+          pre.occludedK(valid0,ray,p0,p1,p2,p3,g,subgrid,i,OccludedKEpilogM<4,K,filter>(valid0,ray,context,subgrid.geomID(),subgrid.primID(),i));
+          if (none(valid0)) break;
         }
         return !valid0;
       }
       
-      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const SubGrid& subgrid)
+      static __forceinline void intersect(Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const SubGrid& subgrid)
       {
         STAT3(normal.trav_prims,1,1,1);
         const GridMesh* mesh    = context->scene->get<GridMesh>(subgrid.geomID());
@@ -426,7 +424,7 @@ namespace embree
         pre.intersect1(ray,k,context,v0,v1,v2,v3,g,subgrid);
       }
 
-      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const SubGrid& subgrid)
+      static __forceinline bool occluded(Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const SubGrid& subgrid)
       {
         STAT3(shadow.trav_prims,1,1,1);
         const GridMesh* mesh    = context->scene->get<GridMesh>(subgrid.geomID());
@@ -436,7 +434,7 @@ namespace embree
       }
       
         template<bool robust>
-          static __forceinline void intersect(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, IntersectContext* context, const Primitive* prim, size_t num, const TravRayK<K, robust> &tray, size_t& lazy_node)
+          static __forceinline void intersect(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, RayQueryContext* context, const Primitive* prim, size_t num, const TravRayK<K, robust> &tray, size_t& lazy_node)
         {
           BVHNQuantizedBaseNodeIntersectorK<N,K,robust> isecK;
           for (size_t j=0;j<num;j++)
@@ -453,7 +451,7 @@ namespace embree
         }
 
         template<bool robust>        
-        static __forceinline vbool<K> occluded(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, IntersectContext* context, const Primitive* prim, size_t num, const TravRayK<K, robust> &tray, size_t& lazy_node)
+        static __forceinline vbool<K> occluded(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, RayQueryContext* context, const Primitive* prim, size_t num, const TravRayK<K, robust> &tray, size_t& lazy_node)
         {
           BVHNQuantizedBaseNodeIntersectorK<N,K,robust> isecK;
           vbool<K> valid0 = valid;
@@ -473,7 +471,7 @@ namespace embree
         }
         
         template<bool robust>        
-          static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
+          static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
         {
           BVHNQuantizedBaseNodeIntersector1<N,robust> isec1;
 
@@ -493,7 +491,7 @@ namespace embree
         }
         
         template<bool robust>
-        static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
+        static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const Primitive* prim, size_t num, const TravRay<N,robust> &tray, size_t& lazy_node)
         {
           BVHNQuantizedBaseNodeIntersector1<N,robust> isec1;
 

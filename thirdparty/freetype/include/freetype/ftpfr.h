@@ -4,7 +4,7 @@
  *
  *   FreeType API for accessing PFR-specific data (specification only).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -161,7 +161,7 @@ FT_BEGIN_HEADER
    *
    * @note:
    *    You can use the `x_scale` or `y_scale` results of @FT_Get_PFR_Metrics
-   *    to convert the advance to device subpixels (i.e., 1/64th of pixels).
+   *    to convert the advance to device subpixels (i.e., 1/64 of pixels).
    */
   FT_EXPORT( FT_Error )
   FT_Get_PFR_Advance( FT_Face   face,

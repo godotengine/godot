@@ -105,12 +105,9 @@ HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS_SIMPLE
   unsigned int
   modified_combining_class (hb_codepoint_t u)
   {
-    /* XXX This hack belongs to the USE shaper (for Tai Tham):
-     * Reorder SAKOT to ensure it comes after any tone marks. */
+    /* Reorder SAKOT to ensure it comes after any tone marks. */
     if (unlikely (u == 0x1A60u)) return 254;
-
-    /* XXX This hack belongs to the Tibetan shaper:
-     * Reorder PADMA to ensure it comes after any vowel marks. */
+    /* Reorder PADMA to ensure it comes after any vowel marks. */
     if (unlikely (u == 0x0FC6u)) return 254;
     /* Reorder TSA -PHRU to reorder before U+0F74 */
     if (unlikely (u == 0x0F39u)) return 127;
@@ -121,7 +118,7 @@ HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS_SIMPLE
   static hb_bool_t
   is_variation_selector (hb_codepoint_t unicode)
   {
-    /* U+180B..180D MONGOLIAN FREE VARIATION SELECTORs are handled in the
+    /* U+180B..180D, U+180F MONGOLIAN FREE VARIATION SELECTORs are handled in the
      * Arabic shaper.  No need to match them here. */
     return unlikely (hb_in_ranges<hb_codepoint_t> (unicode,
 						   0xFE00u, 0xFE0Fu, /* VARIATION SELECTOR-1..16 */
@@ -136,7 +133,7 @@ HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS_SIMPLE
    * As such, we make exceptions for those four.
    * Also ignoring U+1BCA0..1BCA3. https://github.com/harfbuzz/harfbuzz/issues/503
    *
-   * Unicode 7.0:
+   * Unicode 14.0:
    * $ grep '; Default_Ignorable_Code_Point ' DerivedCoreProperties.txt | sed 's/;.*#/#/'
    * 00AD          # Cf       SOFT HYPHEN
    * 034F          # Mn       COMBINING GRAPHEME JOINER
@@ -145,6 +142,7 @@ HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS_SIMPLE
    * 17B4..17B5    # Mn   [2] KHMER VOWEL INHERENT AQ..KHMER VOWEL INHERENT AA
    * 180B..180D    # Mn   [3] MONGOLIAN FREE VARIATION SELECTOR ONE..MONGOLIAN FREE VARIATION SELECTOR THREE
    * 180E          # Cf       MONGOLIAN VOWEL SEPARATOR
+   * 180F          # Mn       MONGOLIAN FREE VARIATION SELECTOR FOUR
    * 200B..200F    # Cf   [5] ZERO WIDTH SPACE..RIGHT-TO-LEFT MARK
    * 202A..202E    # Cf   [5] LEFT-TO-RIGHT EMBEDDING..RIGHT-TO-LEFT OVERRIDE
    * 2060..2064    # Cf   [5] WORD JOINER..INVISIBLE PLUS
@@ -289,8 +287,8 @@ DECLARE_NULL_INSTANCE (hb_unicode_funcs_t);
 #define HB_MODIFIED_COMBINING_CLASS_CCC15 18 /* tsere */
 #define HB_MODIFIED_COMBINING_CLASS_CCC16 19 /* segol */
 #define HB_MODIFIED_COMBINING_CLASS_CCC17 20 /* patah */
-#define HB_MODIFIED_COMBINING_CLASS_CCC18 21 /* qamats */
-#define HB_MODIFIED_COMBINING_CLASS_CCC19 14 /* holam */
+#define HB_MODIFIED_COMBINING_CLASS_CCC18 21 /* qamats & qamats qatan */
+#define HB_MODIFIED_COMBINING_CLASS_CCC19 14 /* holam & holam haser for vav*/
 #define HB_MODIFIED_COMBINING_CLASS_CCC20 24 /* qubuts */
 #define HB_MODIFIED_COMBINING_CLASS_CCC21 12 /* dagesh */
 #define HB_MODIFIED_COMBINING_CLASS_CCC22 25 /* meteg */
@@ -359,6 +357,13 @@ DECLARE_NULL_INSTANCE (hb_unicode_funcs_t);
 	  FLAG (HB_UNICODE_GENERAL_CATEGORY_ENCLOSING_MARK) | \
 	  FLAG (HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)))
 
+#define HB_UNICODE_GENERAL_CATEGORY_IS_LETTER(gen_cat) \
+	(FLAG_UNSAFE (gen_cat) & \
+	 (FLAG (HB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER) | \
+	  FLAG (HB_UNICODE_GENERAL_CATEGORY_MODIFIER_LETTER) | \
+	  FLAG (HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER) | \
+	  FLAG (HB_UNICODE_GENERAL_CATEGORY_TITLECASE_LETTER) | \
+	  FLAG (HB_UNICODE_GENERAL_CATEGORY_UPPERCASE_LETTER)))
 
 /*
  * Ranges, used for bsearch tables.

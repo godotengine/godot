@@ -71,7 +71,7 @@ struct gasp
 
   protected:
   HBUINT16	version;	/* Version number (set to 1) */
-  ArrayOf<GaspRange>
+  Array16Of<GaspRange>
 		gaspRanges;	/* Number of records to follow
 				 * Sorted by ppem */
   public:

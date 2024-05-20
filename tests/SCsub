@@ -6,10 +6,6 @@ env.tests_sources = []
 
 env_tests = env.Clone()
 
-# Include GDNative headers.
-if env["module_gdnative_enabled"]:
-    env_tests.Append(CPPPATH=["#modules/gdnative/include"])
-
 # We must disable the THREAD_LOCAL entirely in doctest to prevent crashes on debugging
 # Since we link with /MT thread_local is always expired when the header is used
 # So the debugger crashes the engine and it causes weird errors
@@ -17,10 +13,8 @@ if env["module_gdnative_enabled"]:
 if env_tests["platform"] == "windows":
     env_tests.Append(CPPDEFINES=[("DOCTEST_THREAD_LOCAL", "")])
 
-# Increase number of addressable sections in object files
-# due to doctest's heavy use of templates and macros.
-if env_tests.msvc:
-    env_tests.Append(CCFLAGS=["/bigobj"])
+if env["disable_exceptions"]:
+    env_tests.Append(CPPDEFINES=["DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS"])
 
 env_tests.add_source_files(env.tests_sources, "*.cpp")
 

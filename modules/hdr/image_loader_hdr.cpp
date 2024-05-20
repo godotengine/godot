@@ -1,39 +1,39 @@
-/*************************************************************************/
-/*  image_loader_hdr.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  image_loader_hdr.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "image_loader_hdr.h"
 
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
+Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	String header = f->get_token();
 
 	ERR_FAIL_COND_V_MSG(header != "#?RADIANCE" && header != "#?RGBE", ERR_FILE_UNRECOGNIZED, "Unsupported header information in HDR: " + header + ".");
@@ -41,7 +41,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	while (true) {
 		String line = f->get_line();
 		ERR_FAIL_COND_V(f->eof_reached(), ERR_FILE_UNRECOGNIZED);
-		if (line == "") { // empty line indicates end of header
+		if (line.is_empty()) { // empty line indicates end of header
 			break;
 		}
 		if (line.begins_with("FORMAT=")) { // leave option to implement other commands
@@ -65,7 +65,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 	Vector<uint8_t> imgdata;
 
-	imgdata.resize(height * width * sizeof(uint32_t));
+	imgdata.resize(height * width * (int)sizeof(uint32_t));
 
 	{
 		uint8_t *w = imgdata.ptrw();
@@ -75,7 +75,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		if (width < 8 || width >= 32768) {
 			// Read flat data
 
-			f->get_buffer(ptr, width * height * 4);
+			f->get_buffer(ptr, (uint64_t)width * height * 4);
 		} else {
 			// Read RLE-encoded data
 
@@ -131,8 +131,8 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 					ptr[1] * exp / 255.0,
 					ptr[2] * exp / 255.0);
 
-			if (p_force_linear) {
-				c = c.to_linear();
+			if (p_flags & FLAG_FORCE_LINEAR) {
+				c = c.srgb_to_linear();
 			}
 
 			*(uint32_t *)ptr = c.to_rgbe9995();
@@ -140,7 +140,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		}
 	}
 
-	p_image->create(width, height, false, Image::FORMAT_RGBE9995, imgdata);
+	p_image->set_data(width, height, false, Image::FORMAT_RGBE9995, imgdata);
 
 	return OK;
 }

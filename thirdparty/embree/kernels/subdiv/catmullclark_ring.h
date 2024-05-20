@@ -388,7 +388,7 @@ namespace embree
       return (Vertex_t)(n*n*vtx+4.0f*E+F) / ((n+5.0f)*n);      
     }
     
-    /* gets limit tangent in the direction of egde vtx -> ring[0] */
+    /* gets limit tangent in the direction of edge vtx -> ring[0] */
     __forceinline Vertex getLimitTangent() const 
     {
       if (unlikely(std::isinf(vertex_crease_weight)))
@@ -429,7 +429,7 @@ namespace embree
       return sigma * (alpha + beta);
     }
     
-    /* gets limit tangent in the direction of egde vtx -> ring[edge_valence-2] */
+    /* gets limit tangent in the direction of edge vtx -> ring[edge_valence-2] */
     __forceinline Vertex getSecondLimitTangent() const 
     {
       if (unlikely(std::isinf(vertex_crease_weight)))
@@ -763,7 +763,7 @@ namespace embree
     }
 
 
-    /* gets limit tangent in the direction of egde vtx -> ring[0] */
+    /* gets limit tangent in the direction of edge vtx -> ring[0] */
     __forceinline Vertex getLimitTangent() const 
     {
       CatmullClark1Ring cc_vtx;
@@ -779,7 +779,7 @@ namespace embree
       return 2.0f * cc_vtx.getLimitTangent();
     }
 
-    /* gets limit tangent in the direction of egde vtx -> ring[edge_valence-2] */
+    /* gets limit tangent in the direction of edge vtx -> ring[edge_valence-2] */
     __forceinline Vertex getSecondLimitTangent() const 
     {
       CatmullClark1Ring cc_vtx;

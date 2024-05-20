@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeCurveXYZTexture" inherits="VisualShaderNodeResizableBase" version="4.0">
+<class name="VisualShaderNodeCurveXYZTexture" inherits="VisualShaderNodeResizableBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Performs a [CurveXYZTexture] lookup within the visual shader graph.
 	</brief_description>
@@ -8,13 +8,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="texture" type="CurveXYZTexture" setter="set_texture" getter="get_texture">
 			The source texture.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -4,7 +4,7 @@
  *
  *   FreeType CharMap cache (body)
  *
- * Copyright (C) 2000-2020 by
+ * Copyright (C) 2000-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -116,7 +116,7 @@
     FT_UInt        nn;
 
 
-    if ( !FT_NEW( node ) )
+    if ( !FT_QNEW( node ) )
     {
       node->face_id    = query->face_id;
       node->cmap_index = query->cmap_index;
@@ -273,12 +273,11 @@
     if ( error )
       goto Exit;
 
-    FT_ASSERT( (FT_UInt)( char_code - FTC_CMAP_NODE( node )->first ) <
-                FTC_CMAP_INDICES_MAX );
+    FT_ASSERT( char_code - FTC_CMAP_NODE( node )->first <
+               FTC_CMAP_INDICES_MAX );
 
     /* something rotten can happen with rogue clients */
-    if ( (FT_UInt)( char_code - FTC_CMAP_NODE( node )->first >=
-                    FTC_CMAP_INDICES_MAX ) )
+    if ( char_code - FTC_CMAP_NODE( node )->first >= FTC_CMAP_INDICES_MAX )
       return 0; /* XXX: should return appropriate error */
 
     gindex = FTC_CMAP_NODE( node )->indices[char_code -
@@ -296,21 +295,19 @@
       if ( error )
         goto Exit;
 
-      if ( (FT_UInt)cmap_index < (FT_UInt)face->num_charmaps )
+      if ( cmap_index < face->num_charmaps )
       {
-        FT_CharMap  old, cmap  = NULL;
+        FT_CharMap  old  = face->charmap;
+        FT_CharMap  cmap = face->charmaps[cmap_index];
 
 
-        old  = face->charmap;
-        cmap = face->charmaps[cmap_index];
-
-        if ( old != cmap && !no_cmap_change )
-          FT_Set_Charmap( face, cmap );
+        if ( !no_cmap_change )
+          face->charmap = cmap;
 
         gindex = FT_Get_Char_Index( face, char_code );
 
-        if ( old != cmap && !no_cmap_change )
-          FT_Set_Charmap( face, old );
+        if ( !no_cmap_change )
+          face->charmap = old;
       }
 
       FTC_CMAP_NODE( node )->indices[char_code -

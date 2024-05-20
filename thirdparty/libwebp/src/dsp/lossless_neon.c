@@ -146,9 +146,9 @@ static void ConvertBGRAToRGB_NEON(const uint32_t* src,
 #define LOAD_U32P_AS_U8(IN) vreinterpret_u8_u32(vld1_u32((IN)))
 #define LOADQ_U32_AS_U8(IN) vreinterpretq_u8_u32(vdupq_n_u32((IN)))
 #define LOADQ_U32P_AS_U8(IN) vreinterpretq_u8_u32(vld1q_u32((IN)))
-#define GET_U8_AS_U32(IN) vget_lane_u32(vreinterpret_u32_u8((IN)), 0);
-#define GETQ_U8_AS_U32(IN) vgetq_lane_u32(vreinterpretq_u32_u8((IN)), 0);
-#define STOREQ_U8_AS_U32P(OUT, IN) vst1q_u32((OUT), vreinterpretq_u32_u8((IN)));
+#define GET_U8_AS_U32(IN) vget_lane_u32(vreinterpret_u32_u8((IN)), 0)
+#define GETQ_U8_AS_U32(IN) vgetq_lane_u32(vreinterpretq_u32_u8((IN)), 0)
+#define STOREQ_U8_AS_U32P(OUT, IN) vst1q_u32((OUT), vreinterpretq_u32_u8((IN)))
 #define ROTATE32_LEFT(L) vextq_u8((L), (L), 12)    // D|C|B|A -> C|B|A|D
 
 static WEBP_INLINE uint8x8_t Average2_u8_NEON(uint32_t a0, uint32_t a1) {
@@ -188,17 +188,21 @@ static WEBP_INLINE uint32_t Average3_NEON(uint32_t a0, uint32_t a1,
   return avg;
 }
 
-static uint32_t Predictor5_NEON(uint32_t left, const uint32_t* const top) {
-  return Average3_NEON(left, top[0], top[1]);
+static uint32_t Predictor5_NEON(const uint32_t* const left,
+                                const uint32_t* const top) {
+  return Average3_NEON(*left, top[0], top[1]);
 }
-static uint32_t Predictor6_NEON(uint32_t left, const uint32_t* const top) {
-  return Average2_NEON(left, top[-1]);
+static uint32_t Predictor6_NEON(const uint32_t* const left,
+                                const uint32_t* const top) {
+  return Average2_NEON(*left, top[-1]);
 }
-static uint32_t Predictor7_NEON(uint32_t left, const uint32_t* const top) {
-  return Average2_NEON(left, top[0]);
+static uint32_t Predictor7_NEON(const uint32_t* const left,
+                                const uint32_t* const top) {
+  return Average2_NEON(*left, top[0]);
 }
-static uint32_t Predictor13_NEON(uint32_t left, const uint32_t* const top) {
-  return ClampedAddSubtractHalf_NEON(left, top[0], top[-1]);
+static uint32_t Predictor13_NEON(const uint32_t* const left,
+                                 const uint32_t* const top) {
+  return ClampedAddSubtractHalf_NEON(*left, top[0], top[-1]);
 }
 
 // Batch versions of those functions.
@@ -494,7 +498,7 @@ static void PredictorAdd13_NEON(const uint32_t* in, const uint32_t* upper,
 
 // vtbl?_u8 are marked unavailable for iOS arm64 with Xcode < 6.3, use
 // non-standard versions there.
-#if defined(__APPLE__) && defined(__aarch64__) && \
+#if defined(__APPLE__) && WEBP_AARCH64 && \
     defined(__apple_build_version__) && (__apple_build_version__< 6020037)
 #define USE_VTBLQ
 #endif

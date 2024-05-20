@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PCKPacker" inherits="RefCounted" version="4.0">
+<class name="PCKPacker" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Creates packages that can be loaded into a running project.
 	</brief_description>
@@ -13,7 +13,7 @@
 		packer.flush()
 		[/gdscript]
 		[csharp]
-		var packer = new PCKPacker();
+		var packer = new PckPacker();
 		packer.PckStart("test.pck");
 		packer.AddFile("res://text.txt", "text.txt");
 		packer.Flush();
@@ -25,43 +25,30 @@
 	</tutorials>
 	<methods>
 		<method name="add_file">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="pck_path" type="String">
-			</argument>
-			<argument index="1" name="source_path" type="String">
-			</argument>
-			<argument index="2" name="encrypt" type="bool" default="false">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="pck_path" type="String" />
+			<param index="1" name="source_path" type="String" />
+			<param index="2" name="encrypt" type="bool" default="false" />
 			<description>
-				Adds the [code]source_path[/code] file to the current PCK package at the [code]pck_path[/code] internal path (should start with [code]res://[/code]).
+				Adds the [param source_path] file to the current PCK package at the [param pck_path] internal path (should start with [code]res://[/code]).
 			</description>
 		</method>
 		<method name="flush">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="verbose" type="bool" default="false">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="verbose" type="bool" default="false" />
 			<description>
-				Writes the files specified using all [method add_file] calls since the last flush. If [code]verbose[/code] is [code]true[/code], a list of files added will be printed to the console for easier debugging.
+				Writes the files specified using all [method add_file] calls since the last flush. If [param verbose] is [code]true[/code], a list of files added will be printed to the console for easier debugging.
 			</description>
 		</method>
 		<method name="pck_start">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="pck_name" type="String">
-			</argument>
-			<argument index="1" name="alignment" type="int" default="0">
-			</argument>
-			<argument index="2" name="key" type="String" default="&quot;&quot;">
-			</argument>
-			<argument index="3" name="encrypt_directory" type="bool" default="false">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="pck_name" type="String" />
+			<param index="1" name="alignment" type="int" default="32" />
+			<param index="2" name="key" type="String" default="&quot;0000000000000000000000000000000000000000000000000000000000000000&quot;" />
+			<param index="3" name="encrypt_directory" type="bool" default="false" />
 			<description>
-				Creates a new PCK file with the name [code]pck_name[/code]. The [code].pck[/code] file extension isn't added automatically, so it should be part of [code]pck_name[/code] (even though it's not required).
+				Creates a new PCK file with the name [param pck_name]. The [code].pck[/code] file extension isn't added automatically, so it should be part of [param pck_name] (even though it's not required).
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

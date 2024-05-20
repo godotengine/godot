@@ -30,15 +30,20 @@ namespace embree
     template<typename ArrayArray>
       __forceinline ParallelForForState (ArrayArray& array2, const size_t minStepSize) {
       init(array2,minStepSize);
+    }
+
+    template<typename SizeFunc>
+    __forceinline ParallelForForState (const size_t numArrays, const SizeFunc& getSize, const size_t minStepSize) {
+      init(numArrays,getSize,minStepSize);
     } 
 
-    template<typename ArrayArray>
-      __forceinline void init ( ArrayArray& array2, const size_t minStepSize )
+    template<typename SizeFunc>
+    __forceinline void init ( const size_t numArrays, const SizeFunc& getSize, const size_t minStepSize )
     {
       /* first calculate total number of elements */
       size_t N = 0;
-      for (size_t i=0; i<array2.size(); i++) {
-	N += array2[i] ? array2[i]->size() : 0;
+      for (size_t i=0; i<numArrays; i++) {
+	N += getSize(i);
       }
       this->N = N;
 
@@ -54,8 +59,8 @@ namespace embree
       size_t k0 = (++taskIndex)*N/taskCount;
       for (size_t i=0, k=0; taskIndex < taskCount; i++) 
       {
-	assert(i<array2.size());
-	size_t j=0, M = array2[i] ? array2[i]->size() : 0;
+	assert(i<numArrays);
+	size_t j=0, M = getSize(i);
 	while (j<M && k+M-j >= k0 && taskIndex < taskCount) {
 	  assert(taskIndex<taskCount);
 	  i0[taskIndex] = i;
@@ -67,6 +72,12 @@ namespace embree
       }
     }
 
+    template<typename ArrayArray>
+      __forceinline void init ( ArrayArray& array2, const size_t minStepSize )
+    {
+      init(array2.size(),[&](size_t i) { return array2[i] ? array2[i]->size() : 0; },minStepSize);
+    }
+    
     __forceinline size_t size() const {
       return N;
     }

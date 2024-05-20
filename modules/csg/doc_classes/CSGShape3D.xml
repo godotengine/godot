@@ -1,66 +1,56 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CSGShape3D" inherits="GeometryInstance3D" version="4.0">
+<class name="CSGShape3D" inherits="GeometryInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		The CSG base class.
 	</brief_description>
 	<description>
 		This is the CSG base class that provides CSG operation support to the various CSG nodes in Godot.
+		[b]Note:[/b] CSG nodes are intended to be used for level prototyping. Creating CSG nodes has a significant CPU cost compared to creating a [MeshInstance3D] with a [PrimitiveMesh]. Moving a CSG node within another CSG node also has a significant CPU cost, so it should be avoided during gameplay.
 	</description>
 	<tutorials>
+		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_collision_layer_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
+		<method name="get_collision_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns an individual bit on the collision mask.
+				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
-		<method name="get_collision_mask_bit" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
+		<method name="get_collision_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns an individual bit on the collision mask.
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_meshes" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Array" />
 			<description>
 				Returns an [Array] with two elements, the first is the [Transform3D] of this node and the second is the root [Mesh] of this node. Only works when this node is the root shape.
 			</description>
 		</method>
 		<method name="is_root_shape" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this is a root shape and is thus the object that is rendered.
 			</description>
 		</method>
-		<method name="set_collision_layer_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+		<method name="set_collision_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
-				Sets individual bits on the layer mask. Use this if you only need to change one layer's value.
+				Based on [param value], enables or disables the specified layer in the [member collision_layer], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
-		<method name="set_collision_mask_bit">
-			<return type="void">
-			</return>
-			<argument index="0" name="bit" type="int">
-			</argument>
-			<argument index="1" name="value" type="bool">
-			</argument>
+		<method name="set_collision_mask_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
 			<description>
-				Sets individual bits on the collision mask. Use this if you only need to change one layer's value.
+				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 	</methods>
@@ -71,19 +61,22 @@
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
 			The physics layers this area is in.
 			Collidable objects can exist in any of 32 different layers. These layers work like a tagging system, and are not visual. A collidable can use these layers to select with which objects it can collide, using the collision_mask property.
-			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The physics layers this CSG shape scans for collisions. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+			The physics layers this CSG shape scans for collisions. Only effective if [member use_collision] is [code]true[/code]. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		</member>
+		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
+			The priority used to solve colliding when occurring penetration. Only effective if [member use_collision] is [code]true[/code]. The higher the priority is, the lower the penetration into the object will be. This can for example be used to prevent the player from breaking through the boundaries of a level.
 		</member>
 		<member name="operation" type="int" setter="set_operation" getter="get_operation" enum="CSGShape3D.Operation" default="0">
 			The operation that is performed on this shape. This is ignored for the first CSG child node as the operation is between this node and the previous child of this nodes parent.
 		</member>
 		<member name="snap" type="float" setter="set_snap" getter="get_snap" default="0.001">
-			Snap makes the mesh snap to a given distance so that the faces of two meshes can be perfectly aligned. A lower value results in greater precision but may be harder to adjust.
+			Snap makes the mesh vertices snap to a given distance so that the faces of two meshes can be perfectly aligned. A lower value results in greater precision but may be harder to adjust.
 		</member>
 		<member name="use_collision" type="bool" setter="set_use_collision" getter="is_using_collision" default="false">
-			Adds a collision shape to the physics engine for our CSG shape. This will always act like a static body. Note that the collision shape is still active even if the CSG shape itself is hidden.
+			Adds a collision shape to the physics engine for our CSG shape. This will always act like a static body. Note that the collision shape is still active even if the CSG shape itself is hidden. See also [member collision_mask] and [member collision_priority].
 		</member>
 	</members>
 	<constants>

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  audio_effect_reverb.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_effect_reverb.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_effect_reverb.h"
 #include "servers/audio_server.h"
@@ -51,20 +51,20 @@ void AudioEffectReverbInstance::process(const AudioFrame *p_src_frames, AudioFra
 		int to_mix = MIN(todo, Reverb::INPUT_BUFFER_MAX_SIZE);
 
 		for (int j = 0; j < to_mix; j++) {
-			tmp_src[j] = p_src_frames[offset + j].l;
+			tmp_src[j] = p_src_frames[offset + j].left;
 		}
 
 		reverb[0].process(tmp_src, tmp_dst, to_mix);
 
 		for (int j = 0; j < to_mix; j++) {
-			p_dst_frames[offset + j].l = tmp_dst[j];
-			tmp_src[j] = p_src_frames[offset + j].r;
+			p_dst_frames[offset + j].left = tmp_dst[j];
+			tmp_src[j] = p_src_frames[offset + j].right;
 		}
 
 		reverb[1].process(tmp_src, tmp_dst, to_mix);
 
 		for (int j = 0; j < to_mix; j++) {
-			p_dst_frames[offset + j].r = tmp_dst[j];
+			p_dst_frames[offset + j].right = tmp_dst[j];
 		}
 
 		offset += to_mix;
@@ -176,7 +176,7 @@ void AudioEffectReverb::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hpf"), &AudioEffectReverb::get_hpf);
 
 	ADD_GROUP("Predelay", "predelay_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "predelay_msec", PROPERTY_HINT_RANGE, "20,500,1"), "set_predelay_msec", "get_predelay_msec");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "predelay_msec", PROPERTY_HINT_RANGE, "20,500,1,suffix:ms"), "set_predelay_msec", "get_predelay_msec");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "predelay_feedback", PROPERTY_HINT_RANGE, "0,0.98,0.01"), "set_predelay_feedback", "get_predelay_feedback");
 	ADD_GROUP("", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "room_size", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_room_size", "get_room_size");

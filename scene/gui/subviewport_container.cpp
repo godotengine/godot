@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  subviewport_container.cpp                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  subviewport_container.cpp                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "subviewport_container.h"
 
@@ -45,17 +45,22 @@ Size2 SubViewportContainer::get_minimum_size() const {
 		}
 
 		Size2 minsize = c->get_size();
-		ms.width = MAX(ms.width, minsize.width);
-		ms.height = MAX(ms.height, minsize.height);
+		ms = ms.max(minsize);
 	}
 
 	return ms;
 }
 
 void SubViewportContainer::set_stretch(bool p_enable) {
+	if (stretch == p_enable) {
+		return;
+	}
+
 	stretch = p_enable;
+	recalc_force_viewport_sizes();
+	update_minimum_size();
 	queue_sort();
-	update();
+	queue_redraw();
 }
 
 bool SubViewportContainer::is_stretch_enabled() const {
@@ -70,132 +75,211 @@ void SubViewportContainer::set_stretch_shrink(int p_shrink) {
 
 	shrink = p_shrink;
 
+	recalc_force_viewport_sizes();
+	queue_redraw();
+}
+
+void SubViewportContainer::recalc_force_viewport_sizes() {
 	if (!stretch) {
 		return;
 	}
 
+	// If stretch is enabled, make sure that all child SubViwewports have the correct size.
 	for (int i = 0; i < get_child_count(); i++) {
 		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 		if (!c) {
 			continue;
 		}
 
-		c->set_size(get_size() / shrink);
+		c->set_size_force(get_size() / shrink);
 	}
-
-	update();
 }
 
 int SubViewportContainer::get_stretch_shrink() const {
 	return shrink;
 }
 
+Vector<int> SubViewportContainer::get_allowed_size_flags_horizontal() const {
+	return Vector<int>();
+}
+
+Vector<int> SubViewportContainer::get_allowed_size_flags_vertical() const {
+	return Vector<int>();
+}
+
 void SubViewportContainer::_notification(int p_what) {
-	if (p_what == NOTIFICATION_RESIZED) {
-		if (!stretch) {
+	switch (p_what) {
+		case NOTIFICATION_RESIZED: {
+			recalc_force_viewport_sizes();
+		} break;
+
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			for (int i = 0; i < get_child_count(); i++) {
+				SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+				if (!c) {
+					continue;
+				}
+
+				if (is_visible_in_tree()) {
+					c->set_update_mode(SubViewport::UPDATE_ALWAYS);
+				} else {
+					c->set_update_mode(SubViewport::UPDATE_DISABLED);
+				}
+
+				c->set_handle_input_locally(false); //do not handle input locally here
+			}
+		} break;
+
+		case NOTIFICATION_DRAW: {
+			for (int i = 0; i < get_child_count(); i++) {
+				SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+				if (!c) {
+					continue;
+				}
+
+				if (stretch) {
+					draw_texture_rect(c->get_texture(), Rect2(Vector2(), get_size()));
+				} else {
+					draw_texture_rect(c->get_texture(), Rect2(Vector2(), c->get_size()));
+				}
+			}
+		} break;
+
+		case NOTIFICATION_FOCUS_ENTER: {
+			// If focused, send InputEvent to the SubViewport before the Gui-Input stage.
+			set_process_input(true);
+			set_process_unhandled_input(false);
+		} break;
+
+		case NOTIFICATION_FOCUS_EXIT: {
+			// A different Control has focus and should receive Gui-Input before the InputEvent is sent to the SubViewport.
+			set_process_input(false);
+			set_process_unhandled_input(true);
+		} break;
+	}
+}
+
+void SubViewportContainer::_notify_viewports(int p_notification) {
+	for (int i = 0; i < get_child_count(); i++) {
+		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
+		if (!c) {
+			continue;
+		}
+		c->notification(p_notification);
+	}
+}
+
+void SubViewportContainer::input(const Ref<InputEvent> &p_event) {
+	_propagate_nonpositional_event(p_event);
+}
+
+void SubViewportContainer::unhandled_input(const Ref<InputEvent> &p_event) {
+	_propagate_nonpositional_event(p_event);
+}
+
+void SubViewportContainer::_propagate_nonpositional_event(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
+	if (_is_propagated_in_gui_input(p_event)) {
+		return;
+	}
+
+	bool send;
+	if (GDVIRTUAL_CALL(_propagate_input_event, p_event, send)) {
+		if (!send) {
 			return;
 		}
-
-		for (int i = 0; i < get_child_count(); i++) {
-			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-			if (!c) {
-				continue;
-			}
-
-			c->set_size(get_size() / shrink);
-		}
 	}
 
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		for (int i = 0; i < get_child_count(); i++) {
-			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-			if (!c) {
-				continue;
-			}
-
-			if (is_visible_in_tree()) {
-				c->set_update_mode(SubViewport::UPDATE_ALWAYS);
-			} else {
-				c->set_update_mode(SubViewport::UPDATE_DISABLED);
-			}
-
-			c->set_handle_input_locally(false); //do not handle input locally here
-		}
-	}
-
-	if (p_what == NOTIFICATION_DRAW) {
-		for (int i = 0; i < get_child_count(); i++) {
-			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-			if (!c) {
-				continue;
-			}
-
-			if (stretch) {
-				draw_texture_rect(c->get_texture(), Rect2(Vector2(), get_size()));
-			} else {
-				draw_texture_rect(c->get_texture(), Rect2(Vector2(), c->get_size()));
-			}
-		}
-	}
+	_send_event_to_viewports(p_event);
 }
 
-void SubViewportContainer::_input(const Ref<InputEvent> &p_event) {
+void SubViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
 
-	Transform2D xform = get_global_transform();
-
-	if (stretch) {
-		Transform2D scale_xf;
-		scale_xf.scale(Vector2(shrink, shrink));
-		xform *= scale_xf;
-	}
-
-	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
-
-	for (int i = 0; i < get_child_count(); i++) {
-		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-		if (!c || c->is_input_disabled()) {
-			continue;
-		}
-
-		c->input(ev);
-	}
-}
-
-void SubViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(p_event.is_null());
-
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (!_is_propagated_in_gui_input(p_event)) {
 		return;
 	}
 
-	Transform2D xform = get_global_transform();
-
-	if (stretch) {
-		Transform2D scale_xf;
-		scale_xf.scale(Vector2(shrink, shrink));
-		xform *= scale_xf;
+	bool send;
+	if (GDVIRTUAL_CALL(_propagate_input_event, p_event, send)) {
+		if (!send) {
+			return;
+		}
 	}
 
-	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
+	if (stretch && shrink > 1) {
+		Transform2D xform;
+		xform.scale(Vector2(1, 1) / shrink);
+		_send_event_to_viewports(p_event->xformed_by(xform));
+	} else {
+		_send_event_to_viewports(p_event);
+	}
+}
 
+void SubViewportContainer::_send_event_to_viewports(const Ref<InputEvent> &p_event) {
 	for (int i = 0; i < get_child_count(); i++) {
 		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 		if (!c || c->is_input_disabled()) {
 			continue;
 		}
 
-		c->unhandled_input(ev);
+		c->push_input(p_event);
 	}
+}
+
+bool SubViewportContainer::_is_propagated_in_gui_input(const Ref<InputEvent> &p_event) {
+	// Propagation of events with a position property happen in gui_input
+	// Propagation of other events happen in input
+	if (Object::cast_to<InputEventMouse>(*p_event) || Object::cast_to<InputEventScreenDrag>(*p_event) || Object::cast_to<InputEventScreenTouch>(*p_event) || Object::cast_to<InputEventGesture>(*p_event)) {
+		return true;
+	}
+	return false;
+}
+
+void SubViewportContainer::add_child_notify(Node *p_child) {
+	if (Object::cast_to<SubViewport>(p_child)) {
+		queue_redraw();
+	}
+}
+
+void SubViewportContainer::remove_child_notify(Node *p_child) {
+	if (Object::cast_to<SubViewport>(p_child)) {
+		queue_redraw();
+	}
+}
+
+PackedStringArray SubViewportContainer::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
+
+	bool has_viewport = false;
+	for (int i = 0; i < get_child_count(); i++) {
+		if (Object::cast_to<SubViewport>(get_child(i))) {
+			has_viewport = true;
+			break;
+		}
+	}
+	if (!has_viewport) {
+		warnings.push_back(RTR("This node doesn't have a SubViewport as child, so it can't display its intended content.\nConsider adding a SubViewport as a child to provide something displayable."));
+	}
+
+	if (get_default_cursor_shape() != Control::CURSOR_ARROW) {
+		warnings.push_back(RTR("The default mouse cursor shape of SubViewportContainer has no effect.\nConsider leaving it at its initial value `CURSOR_ARROW`."));
+	}
+
+	return warnings;
 }
 
 void SubViewportContainer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_unhandled_input", "event"), &SubViewportContainer::_unhandled_input);
-	ClassDB::bind_method(D_METHOD("_input", "event"), &SubViewportContainer::_input);
 	ClassDB::bind_method(D_METHOD("set_stretch", "enable"), &SubViewportContainer::set_stretch);
 	ClassDB::bind_method(D_METHOD("is_stretch_enabled"), &SubViewportContainer::is_stretch_enabled);
 
@@ -204,9 +288,11 @@ void SubViewportContainer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stretch"), "set_stretch", "is_stretch_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_shrink"), "set_stretch_shrink", "get_stretch_shrink");
+
+	GDVIRTUAL_BIND(_propagate_input_event, "event");
 }
 
 SubViewportContainer::SubViewportContainer() {
-	set_process_input(true);
 	set_process_unhandled_input(true);
+	set_focus_mode(FOCUS_CLICK);
 }

@@ -1,204 +1,158 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Geometry2D" inherits="Object" version="4.0">
+<class name="Geometry2D" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Helper node to calculate generic geometry operations in 2D space.
+		Provides methods for some common 2D geometric operations.
 	</brief_description>
 	<description>
-		Geometry2D provides users with a set of helper functions to create geometric shapes, compute intersections between shapes, and process various other geometric operations.
+		Provides a set of helper functions to create geometric shapes, compute intersections between shapes, and process various other geometric operations in 2D.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="clip_polygons">
-			<return type="Array">
-			</return>
-			<argument index="0" name="polygon_a" type="PackedVector2Array">
-			</argument>
-			<argument index="1" name="polygon_b" type="PackedVector2Array">
-			</argument>
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygon_a" type="PackedVector2Array" />
+			<param index="1" name="polygon_b" type="PackedVector2Array" />
 			<description>
-				Clips [code]polygon_a[/code] against [code]polygon_b[/code] and returns an array of clipped polygons. This performs [constant OPERATION_DIFFERENCE] between polygons. Returns an empty array if [code]polygon_b[/code] completely overlaps [code]polygon_a[/code].
-				If [code]polygon_b[/code] is enclosed by [code]polygon_a[/code], returns an outer polygon (boundary) and inner polygon (hole) which could be distinguished by calling [method is_polygon_clockwise].
+				Clips [param polygon_a] against [param polygon_b] and returns an array of clipped polygons. This performs [constant OPERATION_DIFFERENCE] between polygons. Returns an empty array if [param polygon_b] completely overlaps [param polygon_a].
+				If [param polygon_b] is enclosed by [param polygon_a], returns an outer polygon (boundary) and inner polygon (hole) which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
 		<method name="clip_polyline_with_polygon">
-			<return type="Array">
-			</return>
-			<argument index="0" name="polyline" type="PackedVector2Array">
-			</argument>
-			<argument index="1" name="polygon" type="PackedVector2Array">
-			</argument>
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polyline" type="PackedVector2Array" />
+			<param index="1" name="polygon" type="PackedVector2Array" />
 			<description>
-				Clips [code]polyline[/code] against [code]polygon[/code] and returns an array of clipped polylines. This performs [constant OPERATION_DIFFERENCE] between the polyline and the polygon. This operation can be thought of as cutting a line with a closed shape.
+				Clips [param polyline] against [param polygon] and returns an array of clipped polylines. This performs [constant OPERATION_DIFFERENCE] between the polyline and the polygon. This operation can be thought of as cutting a line with a closed shape.
 			</description>
 		</method>
 		<method name="convex_hull">
-			<return type="PackedVector2Array">
-			</return>
-			<argument index="0" name="points" type="PackedVector2Array">
-			</argument>
+			<return type="PackedVector2Array" />
+			<param index="0" name="points" type="PackedVector2Array" />
 			<description>
 				Given an array of [Vector2]s, returns the convex hull as a list of points in counterclockwise order. The last point is the same as the first one.
 			</description>
 		</method>
-		<method name="exclude_polygons">
-			<return type="Array">
-			</return>
-			<argument index="0" name="polygon_a" type="PackedVector2Array">
-			</argument>
-			<argument index="1" name="polygon_b" type="PackedVector2Array">
-			</argument>
+		<method name="decompose_polygon_in_convex">
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygon" type="PackedVector2Array" />
 			<description>
-				Mutually excludes common area defined by intersection of [code]polygon_a[/code] and [code]polygon_b[/code] (see [method intersect_polygons]) and returns an array of excluded polygons. This performs [constant OPERATION_XOR] between polygons. In other words, returns all but common area between polygons.
+				Decomposes the [param polygon] into multiple convex hulls and returns an array of [PackedVector2Array].
+			</description>
+		</method>
+		<method name="exclude_polygons">
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygon_a" type="PackedVector2Array" />
+			<param index="1" name="polygon_b" type="PackedVector2Array" />
+			<description>
+				Mutually excludes common area defined by intersection of [param polygon_a] and [param polygon_b] (see [method intersect_polygons]) and returns an array of excluded polygons. This performs [constant OPERATION_XOR] between polygons. In other words, returns all but common area between polygons.
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
-			<argument index="1" name="s1" type="Vector2">
-			</argument>
-			<argument index="2" name="s2" type="Vector2">
-			</argument>
+			<return type="Vector2" />
+			<param index="0" name="point" type="Vector2" />
+			<param index="1" name="s1" type="Vector2" />
+			<param index="2" name="s2" type="Vector2" />
 			<description>
-				Returns the 2D point on the 2D segment ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point will always be inside the specified segment.
+				Returns the 2D point on the 2D segment ([param s1], [param s2]) that is closest to [param point]. The returned point will always be inside the specified segment.
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment_uncapped">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
-			<argument index="1" name="s1" type="Vector2">
-			</argument>
-			<argument index="2" name="s2" type="Vector2">
-			</argument>
+			<return type="Vector2" />
+			<param index="0" name="point" type="Vector2" />
+			<param index="1" name="s1" type="Vector2" />
+			<param index="2" name="s2" type="Vector2" />
 			<description>
-				Returns the 2D point on the 2D line defined by ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point can be inside the segment ([code]s1[/code], [code]s2[/code]) or outside of it, i.e. somewhere on the line extending from the segment.
+				Returns the 2D point on the 2D line defined by ([param s1], [param s2]) that is closest to [param point]. The returned point can be inside the segment ([param s1], [param s2]) or outside of it, i.e. somewhere on the line extending from the segment.
 			</description>
 		</method>
 		<method name="get_closest_points_between_segments">
-			<return type="PackedVector2Array">
-			</return>
-			<argument index="0" name="p1" type="Vector2">
-			</argument>
-			<argument index="1" name="q1" type="Vector2">
-			</argument>
-			<argument index="2" name="p2" type="Vector2">
-			</argument>
-			<argument index="3" name="q2" type="Vector2">
-			</argument>
+			<return type="PackedVector2Array" />
+			<param index="0" name="p1" type="Vector2" />
+			<param index="1" name="q1" type="Vector2" />
+			<param index="2" name="p2" type="Vector2" />
+			<param index="3" name="q2" type="Vector2" />
 			<description>
-				Given the two 2D segments ([code]p1[/code], [code]q1[/code]) and ([code]p2[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PackedVector2Array] that contains this point on ([code]p1[/code], [code]q1[/code]) as well the accompanying point on ([code]p2[/code], [code]q2[/code]).
+				Given the two 2D segments ([param p1], [param q1]) and ([param p2], [param q2]), finds those two points on the two segments that are closest to each other. Returns a [PackedVector2Array] that contains this point on ([param p1], [param q1]) as well the accompanying point on ([param p2], [param q2]).
 			</description>
 		</method>
 		<method name="intersect_polygons">
-			<return type="Array">
-			</return>
-			<argument index="0" name="polygon_a" type="PackedVector2Array">
-			</argument>
-			<argument index="1" name="polygon_b" type="PackedVector2Array">
-			</argument>
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygon_a" type="PackedVector2Array" />
+			<param index="1" name="polygon_b" type="PackedVector2Array" />
 			<description>
-				Intersects [code]polygon_a[/code] with [code]polygon_b[/code] and returns an array of intersected polygons. This performs [constant OPERATION_INTERSECTION] between polygons. In other words, returns common area shared by polygons. Returns an empty array if no intersection occurs.
+				Intersects [param polygon_a] with [param polygon_b] and returns an array of intersected polygons. This performs [constant OPERATION_INTERSECTION] between polygons. In other words, returns common area shared by polygons. Returns an empty array if no intersection occurs.
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
 		<method name="intersect_polyline_with_polygon">
-			<return type="Array">
-			</return>
-			<argument index="0" name="polyline" type="PackedVector2Array">
-			</argument>
-			<argument index="1" name="polygon" type="PackedVector2Array">
-			</argument>
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polyline" type="PackedVector2Array" />
+			<param index="1" name="polygon" type="PackedVector2Array" />
 			<description>
-				Intersects [code]polyline[/code] with [code]polygon[/code] and returns an array of intersected polylines. This performs [constant OPERATION_INTERSECTION] between the polyline and the polygon. This operation can be thought of as chopping a line with a closed shape.
+				Intersects [param polyline] with [param polygon] and returns an array of intersected polylines. This performs [constant OPERATION_INTERSECTION] between the polyline and the polygon. This operation can be thought of as chopping a line with a closed shape.
 			</description>
 		</method>
 		<method name="is_point_in_circle">
-			<return type="bool">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
-			<argument index="1" name="circle_position" type="Vector2">
-			</argument>
-			<argument index="2" name="circle_radius" type="float">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="point" type="Vector2" />
+			<param index="1" name="circle_position" type="Vector2" />
+			<param index="2" name="circle_radius" type="float" />
 			<description>
-				Returns [code]true[/code] if [code]point[/code] is inside the circle or if it's located exactly [i]on[/i] the circle's boundary, otherwise returns [code]false[/code].
+				Returns [code]true[/code] if [param point] is inside the circle or if it's located exactly [i]on[/i] the circle's boundary, otherwise returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_point_in_polygon">
-			<return type="bool">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
-			<argument index="1" name="polygon" type="PackedVector2Array">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="point" type="Vector2" />
+			<param index="1" name="polygon" type="PackedVector2Array" />
 			<description>
-				Returns [code]true[/code] if [code]point[/code] is inside [code]polygon[/code] or if it's located exactly [i]on[/i] polygon's boundary, otherwise returns [code]false[/code].
+				Returns [code]true[/code] if [param point] is inside [param polygon] or if it's located exactly [i]on[/i] polygon's boundary, otherwise returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_polygon_clockwise">
-			<return type="bool">
-			</return>
-			<argument index="0" name="polygon" type="PackedVector2Array">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="polygon" type="PackedVector2Array" />
 			<description>
-				Returns [code]true[/code] if [code]polygon[/code]'s vertices are ordered in clockwise order, otherwise returns [code]false[/code].
+				Returns [code]true[/code] if [param polygon]'s vertices are ordered in clockwise order, otherwise returns [code]false[/code].
 			</description>
 		</method>
 		<method name="line_intersects_line">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="from_a" type="Vector2">
-			</argument>
-			<argument index="1" name="dir_a" type="Vector2">
-			</argument>
-			<argument index="2" name="from_b" type="Vector2">
-			</argument>
-			<argument index="3" name="dir_b" type="Vector2">
-			</argument>
+			<return type="Variant" />
+			<param index="0" name="from_a" type="Vector2" />
+			<param index="1" name="dir_a" type="Vector2" />
+			<param index="2" name="from_b" type="Vector2" />
+			<param index="3" name="dir_b" type="Vector2" />
 			<description>
-				Checks if the two lines ([code]from_a[/code], [code]dir_a[/code]) and ([code]from_b[/code], [code]dir_b[/code]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns an empty [Variant].
+				Checks if the two lines ([param from_a], [param dir_a]) and ([param from_b], [param dir_b]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns [code]null[/code].
 				[b]Note:[/b] The lines are specified using direction vectors, not end points.
 			</description>
 		</method>
 		<method name="make_atlas">
-			<return type="Dictionary">
-			</return>
-			<argument index="0" name="sizes" type="PackedVector2Array">
-			</argument>
+			<return type="Dictionary" />
+			<param index="0" name="sizes" type="PackedVector2Array" />
 			<description>
-				Given an array of [Vector2]s representing tiles, builds an atlas. The returned dictionary has two keys: [code]points[/code] is a vector of [Vector2] that specifies the positions of each tile, [code]size[/code] contains the overall size of the whole atlas as [Vector2].
+				Given an array of [Vector2]s representing tiles, builds an atlas. The returned dictionary has two keys: [code]points[/code] is a [PackedVector2Array] that specifies the positions of each tile, [code]size[/code] contains the overall size of the whole atlas as [Vector2i].
 			</description>
 		</method>
 		<method name="merge_polygons">
-			<return type="Array">
-			</return>
-			<argument index="0" name="polygon_a" type="PackedVector2Array">
-			</argument>
-			<argument index="1" name="polygon_b" type="PackedVector2Array">
-			</argument>
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygon_a" type="PackedVector2Array" />
+			<param index="1" name="polygon_b" type="PackedVector2Array" />
 			<description>
-				Merges (combines) [code]polygon_a[/code] and [code]polygon_b[/code] and returns an array of merged polygons. This performs [constant OPERATION_UNION] between polygons.
+				Merges (combines) [param polygon_a] and [param polygon_b] and returns an array of merged polygons. This performs [constant OPERATION_UNION] between polygons.
 				The operation may result in an outer polygon (boundary) and multiple inner polygons (holes) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
 		<method name="offset_polygon">
-			<return type="Array">
-			</return>
-			<argument index="0" name="polygon" type="PackedVector2Array">
-			</argument>
-			<argument index="1" name="delta" type="float">
-			</argument>
-			<argument index="2" name="join_type" type="int" enum="Geometry2D.PolyJoinType" default="0">
-			</argument>
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygon" type="PackedVector2Array" />
+			<param index="1" name="delta" type="float" />
+			<param index="2" name="join_type" type="int" enum="Geometry2D.PolyJoinType" default="0" />
 			<description>
-				Inflates or deflates [code]polygon[/code] by [code]delta[/code] units (pixels). If [code]delta[/code] is positive, makes the polygon grow outward. If [code]delta[/code] is negative, shrinks the polygon inward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. Returns an empty array if [code]delta[/code] is negative and the absolute value of it approximately exceeds the minimum bounding rectangle dimensions of the polygon.
-				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum PolyJoinType].
+				Inflates or deflates [param polygon] by [param delta] units (pixels). If [param delta] is positive, makes the polygon grow outward. If [param delta] is negative, shrinks the polygon inward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. Returns an empty array if [param delta] is negative and the absolute value of it approximately exceeds the minimum bounding rectangle dimensions of the polygon.
+				Each polygon's vertices will be rounded as determined by [param join_type], see [enum PolyJoinType].
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 				[b]Note:[/b] To translate the polygon's vertices specifically, multiply them to a [Transform2D]:
 				[codeblocks]
@@ -206,82 +160,72 @@
 				var polygon = PackedVector2Array([Vector2(0, 0), Vector2(100, 0), Vector2(100, 100), Vector2(0, 100)])
 				var offset = Vector2(50, 50)
 				polygon = Transform2D(0, offset) * polygon
-				print(polygon) # prints [Vector2(50, 50), Vector2(150, 50), Vector2(150, 150), Vector2(50, 150)]
+				print(polygon) # prints [(50, 50), (150, 50), (150, 150), (50, 150)]
 				[/gdscript]
 				[csharp]
 				var polygon = new Vector2[] { new Vector2(0, 0), new Vector2(100, 0), new Vector2(100, 100), new Vector2(0, 100) };
 				var offset = new Vector2(50, 50);
-				// TODO: This code is not valid right now. Ping @aaronfranke about it before Godot 4.0 is out.
-				//polygon = (Vector2[]) new Transform2D(0, offset).Xform(polygon);
-				//GD.Print(polygon); // prints [Vector2(50, 50), Vector2(150, 50), Vector2(150, 150), Vector2(50, 150)]
+				polygon = new Transform2D(0, offset) * polygon;
+				GD.Print((Variant)polygon); // prints [(50, 50), (150, 50), (150, 150), (50, 150)]
 				[/csharp]
 				[/codeblocks]
 			</description>
 		</method>
 		<method name="offset_polyline">
-			<return type="Array">
-			</return>
-			<argument index="0" name="polyline" type="PackedVector2Array">
-			</argument>
-			<argument index="1" name="delta" type="float">
-			</argument>
-			<argument index="2" name="join_type" type="int" enum="Geometry2D.PolyJoinType" default="0">
-			</argument>
-			<argument index="3" name="end_type" type="int" enum="Geometry2D.PolyEndType" default="3">
-			</argument>
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polyline" type="PackedVector2Array" />
+			<param index="1" name="delta" type="float" />
+			<param index="2" name="join_type" type="int" enum="Geometry2D.PolyJoinType" default="0" />
+			<param index="3" name="end_type" type="int" enum="Geometry2D.PolyEndType" default="3" />
 			<description>
-				Inflates or deflates [code]polyline[/code] by [code]delta[/code] units (pixels), producing polygons. If [code]delta[/code] is positive, makes the polyline grow outward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. If [code]delta[/code] is negative, returns an empty array.
-				Each polygon's vertices will be rounded as determined by [code]join_type[/code], see [enum PolyJoinType].
-				Each polygon's endpoints will be rounded as determined by [code]end_type[/code], see [enum PolyEndType].
+				Inflates or deflates [param polyline] by [param delta] units (pixels), producing polygons. If [param delta] is positive, makes the polyline grow outward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. If [param delta] is negative, returns an empty array.
+				Each polygon's vertices will be rounded as determined by [param join_type], see [enum PolyJoinType].
+				Each polygon's endpoints will be rounded as determined by [param end_type], see [enum PolyEndType].
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
 		<method name="point_is_inside_triangle" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="point" type="Vector2">
-			</argument>
-			<argument index="1" name="a" type="Vector2">
-			</argument>
-			<argument index="2" name="b" type="Vector2">
-			</argument>
-			<argument index="3" name="c" type="Vector2">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="point" type="Vector2" />
+			<param index="1" name="a" type="Vector2" />
+			<param index="2" name="b" type="Vector2" />
+			<param index="3" name="c" type="Vector2" />
 			<description>
-				Returns if [code]point[/code] is inside the triangle specified by [code]a[/code], [code]b[/code] and [code]c[/code].
+				Returns if [param point] is inside the triangle specified by [param a], [param b] and [param c].
+			</description>
+		</method>
+		<method name="segment_intersects_circle">
+			<return type="float" />
+			<param index="0" name="segment_from" type="Vector2" />
+			<param index="1" name="segment_to" type="Vector2" />
+			<param index="2" name="circle_position" type="Vector2" />
+			<param index="3" name="circle_radius" type="float" />
+			<description>
+				Given the 2D segment ([param segment_from], [param segment_to]), returns the position on the segment (as a number between 0 and 1) at which the segment hits the circle that is located at position [param circle_position] and has radius [param circle_radius]. If the segment does not intersect the circle, -1 is returned (this is also the case if the line extending the segment would intersect the circle, but the segment does not).
 			</description>
 		</method>
 		<method name="segment_intersects_segment">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="from_a" type="Vector2">
-			</argument>
-			<argument index="1" name="to_a" type="Vector2">
-			</argument>
-			<argument index="2" name="from_b" type="Vector2">
-			</argument>
-			<argument index="3" name="to_b" type="Vector2">
-			</argument>
+			<return type="Variant" />
+			<param index="0" name="from_a" type="Vector2" />
+			<param index="1" name="to_a" type="Vector2" />
+			<param index="2" name="from_b" type="Vector2" />
+			<param index="3" name="to_b" type="Vector2" />
 			<description>
-				Checks if the two segments ([code]from_a[/code], [code]to_a[/code]) and ([code]from_b[/code], [code]to_b[/code]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns an empty [Variant].
+				Checks if the two segments ([param from_a], [param to_a]) and ([param from_b], [param to_b]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns [code]null[/code].
 			</description>
 		</method>
 		<method name="triangulate_delaunay">
-			<return type="PackedInt32Array">
-			</return>
-			<argument index="0" name="points" type="PackedVector2Array">
-			</argument>
+			<return type="PackedInt32Array" />
+			<param index="0" name="points" type="PackedVector2Array" />
 			<description>
-				Triangulates the area specified by discrete set of [code]points[/code] such that no point is inside the circumcircle of any resulting triangle. Returns a [PackedInt32Array] where each triangle consists of three consecutive point indices into [code]points[/code] (i.e. the returned array will have [code]n * 3[/code] elements, with [code]n[/code] being the number of found triangles). If the triangulation did not succeed, an empty [PackedInt32Array] is returned.
+				Triangulates the area specified by discrete set of [param points] such that no point is inside the circumcircle of any resulting triangle. Returns a [PackedInt32Array] where each triangle consists of three consecutive point indices into [param points] (i.e. the returned array will have [code]n * 3[/code] elements, with [code]n[/code] being the number of found triangles). If the triangulation did not succeed, an empty [PackedInt32Array] is returned.
 			</description>
 		</method>
 		<method name="triangulate_polygon">
-			<return type="PackedInt32Array">
-			</return>
-			<argument index="0" name="polygon" type="PackedVector2Array">
-			</argument>
+			<return type="PackedInt32Array" />
+			<param index="0" name="polygon" type="PackedVector2Array" />
 			<description>
-				Triangulates the polygon specified by the points in [code]polygon[/code]. Returns a [PackedInt32Array] where each triangle consists of three consecutive point indices into [code]polygon[/code] (i.e. the returned array will have [code]n * 3[/code] elements, with [code]n[/code] being the number of found triangles). If the triangulation did not succeed, an empty [PackedInt32Array] is returned.
+				Triangulates the polygon specified by the points in [param polygon]. Returns a [PackedInt32Array] where each triangle consists of three consecutive point indices into [param polygon] (i.e. the returned array will have [code]n * 3[/code] elements, with [code]n[/code] being the number of found triangles). Output triangles will always be counter clockwise, and the contour will be flipped if it's clockwise. If the triangulation did not succeed, an empty [PackedInt32Array] is returned.
 			</description>
 		</method>
 	</methods>

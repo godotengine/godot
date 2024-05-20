@@ -1,41 +1,40 @@
-/*************************************************************************/
-/*  delaunay_3d.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  delaunay_3d.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef DELAUNAY_3D_H
 #define DELAUNAY_3D_H
 
 #include "core/io/file_access.h"
 #include "core/math/aabb.h"
-#include "core/math/camera_matrix.h"
+#include "core/math/projection.h"
 #include "core/math/vector3.h"
-#include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/vector.h"
@@ -47,7 +46,8 @@ class Delaunay3D {
 	struct Simplex;
 
 	enum {
-		ACCEL_GRID_SIZE = 16
+		ACCEL_GRID_SIZE = 16,
+		QUANTIZATION_MAX = 1 << 16 // A power of two smaller than the 23 bit significand of a float.
 	};
 	struct GridPos {
 		Vector3i pos;
@@ -101,13 +101,13 @@ class Delaunay3D {
 		_FORCE_INLINE_ static uint32_t hash(const Triangle &p_triangle) {
 			uint32_t h = hash_djb2_one_32(p_triangle.triangle[0]);
 			h = hash_djb2_one_32(p_triangle.triangle[1], h);
-			return hash_djb2_one_32(p_triangle.triangle[2], h);
+			return hash_fmix32(hash_djb2_one_32(p_triangle.triangle[2], h));
 		}
 	};
 
 	_FORCE_INLINE_ static void circum_sphere_compute(const Vector3 *p_points, Simplex *p_simplex) {
-		// the only part in the algorithm where there may be precision errors is this one, so ensure that
-		// we do it as maximum precision as possible
+		// The only part in the algorithm where there may be precision errors is this one,
+		// so ensure that we do it with the maximum precision possible.
 
 		R128 v0_x = p_points[p_simplex->points[0]].x;
 		R128 v0_y = p_points[p_simplex->points[0]].y;
@@ -122,7 +122,7 @@ class Delaunay3D {
 		R128 v3_y = p_points[p_simplex->points[3]].y;
 		R128 v3_z = p_points[p_simplex->points[3]].z;
 
-		//Create the rows of our "unrolled" 3x3 matrix
+		// Create the rows of our "unrolled" 3x3 matrix.
 		R128 row1_x = v1_x - v0_x;
 		R128 row1_y = v1_y - v0_y;
 		R128 row1_z = v1_z - v0_z;
@@ -139,10 +139,10 @@ class Delaunay3D {
 		R128 sq_lenght2 = row2_x * row2_x + row2_y * row2_y + row2_z * row2_z;
 		R128 sq_lenght3 = row3_x * row3_x + row3_y * row3_y + row3_z * row3_z;
 
-		//Compute the determinant of said matrix
+		// Compute the determinant of said matrix.
 		R128 determinant = row1_x * (row2_y * row3_z - row3_y * row2_z) - row2_x * (row1_y * row3_z - row3_y * row1_z) + row3_x * (row1_y * row2_z - row2_y * row1_z);
 
-		// Compute the volume of the tetrahedron, and precompute a scalar quantity for re-use in the formula
+		// Compute the volume of the tetrahedron, and precompute a scalar quantity for reuse in the formula.
 		R128 volume = determinant / R128(6.f);
 		R128 i12volume = R128(1.f) / (volume * R128(12.f));
 
@@ -150,8 +150,7 @@ class Delaunay3D {
 		R128 center_y = v0_y + i12volume * (-(row2_x * row3_z - row3_x * row2_z) * sq_lenght1 + (row1_x * row3_z - row3_x * row1_z) * sq_lenght2 - (row1_x * row2_z - row2_x * row1_z) * sq_lenght3);
 		R128 center_z = v0_z + i12volume * ((row2_x * row3_y - row3_x * row2_y) * sq_lenght1 - (row1_x * row3_y - row3_x * row1_y) * sq_lenght2 + (row1_x * row2_y - row2_x * row1_y) * sq_lenght3);
 
-		//Once we know the center, the radius is clearly the distance to any vertex
-
+		// Once we know the center, the radius is clearly the distance to any vertex.
 		R128 rel1_x = center_x - v0_x;
 		R128 rel1_y = center_y - v0_y;
 		R128 rel1_z = center_z - v0_z;
@@ -175,38 +174,25 @@ class Delaunay3D {
 
 		R128 radius2 = rel2_x * rel2_x + rel2_y * rel2_y + rel2_z * rel2_z;
 
-		return radius2 < (p_simplex.circum_r2 - R128(0.00001));
+		return radius2 < (p_simplex.circum_r2 - R128(0.0000000001));
+		// When this tolerance is too big, it can result in overlapping simplices.
+		// When it's too small, large amounts of planar simplices are created.
 	}
 
 	static bool simplex_is_coplanar(const Vector3 *p_points, const Simplex &p_simplex) {
-		Plane p(p_points[p_simplex.points[0]], p_points[p_simplex.points[1]], p_points[p_simplex.points[2]]);
-		if (ABS(p.distance_to(p_points[p_simplex.points[3]])) < CMP_EPSILON) {
-			return true;
+		// Checking every possible distance like this is overkill, but only checking
+		// one is not enough. If the simplex is almost planar then the vectors p1-p2
+		// and p1-p3 can be practically collinear, which makes Plane unreliable.
+		for (uint32_t i = 0; i < 4; i++) {
+			Plane p(p_points[p_simplex.points[i]], p_points[p_simplex.points[(i + 1) % 4]], p_points[p_simplex.points[(i + 2) % 4]]);
+			// This tolerance should not be smaller than the one used with
+			// Plane::has_point() when creating the LightmapGI probe BSP tree.
+			if (ABS(p.distance_to(p_points[p_simplex.points[(i + 3) % 4]])) < 0.001) {
+				return true;
+			}
 		}
 
-		CameraMatrix cm;
-
-		cm.matrix[0][0] = p_points[p_simplex.points[0]].x;
-		cm.matrix[0][1] = p_points[p_simplex.points[1]].x;
-		cm.matrix[0][2] = p_points[p_simplex.points[2]].x;
-		cm.matrix[0][3] = p_points[p_simplex.points[3]].x;
-
-		cm.matrix[1][0] = p_points[p_simplex.points[0]].y;
-		cm.matrix[1][1] = p_points[p_simplex.points[1]].y;
-		cm.matrix[1][2] = p_points[p_simplex.points[2]].y;
-		cm.matrix[1][3] = p_points[p_simplex.points[3]].y;
-
-		cm.matrix[2][0] = p_points[p_simplex.points[0]].z;
-		cm.matrix[2][1] = p_points[p_simplex.points[1]].z;
-		cm.matrix[2][2] = p_points[p_simplex.points[2]].z;
-		cm.matrix[2][3] = p_points[p_simplex.points[3]].z;
-
-		cm.matrix[3][0] = 1.0;
-		cm.matrix[3][1] = 1.0;
-		cm.matrix[3][2] = 1.0;
-		cm.matrix[3][3] = 1.0;
-
-		return ABS(cm.determinant()) <= CMP_EPSILON;
+		return false;
 	}
 
 public:
@@ -217,9 +203,10 @@ public:
 	static Vector<OutputSimplex> tetrahedralize(const Vector<Vector3> &p_points) {
 		uint32_t point_count = p_points.size();
 		Vector3 *points = (Vector3 *)memalloc(sizeof(Vector3) * (point_count + 4));
+		const Vector3 *src_points = p_points.ptr();
+		Vector3 proportions;
 
 		{
-			const Vector3 *src_points = p_points.ptr();
 			AABB rect;
 			for (uint32_t i = 0; i < point_count; i++) {
 				Vector3 point = src_points[i];
@@ -228,17 +215,25 @@ public:
 				} else {
 					rect.expand_to(point);
 				}
-				points[i] = point;
 			}
+
+			real_t longest_axis = rect.size[rect.get_longest_axis_index()];
+			proportions = Vector3(longest_axis, longest_axis, longest_axis) / rect.size;
 
 			for (uint32_t i = 0; i < point_count; i++) {
-				points[i] = (points[i] - rect.position) / rect.size;
+				// Scale points to the unit cube to better utilize R128 precision
+				// and quantize to stabilize triangulation over a wide range of
+				// distances.
+				points[i] = Vector3(Vector3i((src_points[i] - rect.position) / longest_axis * QUANTIZATION_MAX)) / QUANTIZATION_MAX;
 			}
 
-			float delta_max = Math::sqrt(2.0) * 20.0;
+			const real_t delta_max = Math::sqrt(2.0) * 100.0;
 			Vector3 center = Vector3(0.5, 0.5, 0.5);
 
-			// any simplex that contains everything is good
+			// The larger the root simplex is, the more likely it is that the
+			// triangulation is convex. If it's not absolutely huge, there can
+			// be missing simplices that are not created for the outermost faces
+			// of the point cloud if the point density is very low there.
 			points[point_count + 0] = center + Vector3(0, 1, 0) * delta_max;
 			points[point_count + 1] = center + Vector3(0, -1, 1) * delta_max;
 			points[point_count + 2] = center + Vector3(1, -1, -1) * delta_max;
@@ -273,7 +268,7 @@ public:
 		for (uint32_t i = 0; i < point_count; i++) {
 			bool unique = true;
 			for (uint32_t j = i + 1; j < point_count; j++) {
-				if (points[i].is_equal_approx(points[j])) {
+				if (points[i] == points[j]) {
 					unique = false;
 					break;
 				}
@@ -282,10 +277,8 @@ public:
 				continue;
 			}
 
-			Vector3i grid_pos = Vector3i(points[i] * ACCEL_GRID_SIZE);
-			grid_pos.x = CLAMP(grid_pos.x, 0, ACCEL_GRID_SIZE - 1);
-			grid_pos.y = CLAMP(grid_pos.y, 0, ACCEL_GRID_SIZE - 1);
-			grid_pos.z = CLAMP(grid_pos.z, 0, ACCEL_GRID_SIZE - 1);
+			Vector3i grid_pos = Vector3i(points[i] * proportions * ACCEL_GRID_SIZE);
+			grid_pos = grid_pos.clampi(0, ACCEL_GRID_SIZE - 1);
 
 			for (List<Simplex *>::Element *E = acceleration_grid[grid_pos.x][grid_pos.y][grid_pos.z].front(); E;) {
 				List<Simplex *>::Element *N = E->next(); //may be deleted
@@ -304,6 +297,9 @@ public:
 						Triangle t = Triangle(simplex->points[triangle_order[k][0]], simplex->points[triangle_order[k][1]], simplex->points[triangle_order[k][2]]);
 						uint32_t *p = triangles_inserted.lookup_ptr(t);
 						if (p) {
+							// This Delaunay implementation uses the Bowyer-Watson algorithm.
+							// The rule is that you don't reuse any triangles that were
+							// shared by any of the retriangulated simplices.
 							triangles[*p].bad = true;
 						} else {
 							triangles_inserted.insert(t, triangles.size());
@@ -311,24 +307,22 @@ public:
 						}
 					}
 
-					//remove simplex and continue
 					simplex_list.erase(simplex->SE);
 
-					for (uint32_t k = 0; k < simplex->grid_positions.size(); k++) {
-						Vector3i p = simplex->grid_positions[k].pos;
-						acceleration_grid[p.x][p.y][p.z].erase(simplex->grid_positions[k].E);
+					for (const GridPos &gp : simplex->grid_positions) {
+						Vector3i p = gp.pos;
+						acceleration_grid[p.x][p.y][p.z].erase(gp.E);
 					}
 					memdelete(simplex);
 				}
 				E = N;
 			}
 
-			uint32_t good_triangles = 0;
-			for (uint32_t j = 0; j < triangles.size(); j++) {
-				if (triangles[j].bad) {
+			for (const Triangle &triangle : triangles) {
+				if (triangle.bad) {
 					continue;
 				}
-				Simplex *new_simplex = memnew(Simplex(triangles[j].triangle[0], triangles[j].triangle[1], triangles[j].triangle[2], i));
+				Simplex *new_simplex = memnew(Simplex(triangle.triangle[0], triangle.triangle[1], triangle.triangle[2], i));
 				circum_sphere_compute(points, new_simplex);
 				new_simplex->SE = simplex_list.push_back(new_simplex);
 				{
@@ -337,17 +331,12 @@ public:
 					center.y = double(new_simplex->circum_center_y);
 					center.z = double(new_simplex->circum_center_z);
 
-					float radius2 = Math::sqrt(double(new_simplex->circum_r2));
-					radius2 += 0.0001; //
+					const real_t radius2 = Math::sqrt(double(new_simplex->circum_r2)) + 0.0001;
 					Vector3 extents = Vector3(radius2, radius2, radius2);
-					Vector3i from = Vector3i((center - extents) * ACCEL_GRID_SIZE);
-					Vector3i to = Vector3i((center + extents) * ACCEL_GRID_SIZE);
-					from.x = CLAMP(from.x, 0, ACCEL_GRID_SIZE - 1);
-					from.y = CLAMP(from.y, 0, ACCEL_GRID_SIZE - 1);
-					from.z = CLAMP(from.z, 0, ACCEL_GRID_SIZE - 1);
-					to.x = CLAMP(to.x, 0, ACCEL_GRID_SIZE - 1);
-					to.y = CLAMP(to.y, 0, ACCEL_GRID_SIZE - 1);
-					to.z = CLAMP(to.z, 0, ACCEL_GRID_SIZE - 1);
+					Vector3i from = Vector3i((center - extents) * proportions * ACCEL_GRID_SIZE);
+					Vector3i to = Vector3i((center + extents) * proportions * ACCEL_GRID_SIZE);
+					from = from.clampi(0, ACCEL_GRID_SIZE - 1);
+					to = to.clampi(0, ACCEL_GRID_SIZE - 1);
 
 					for (int32_t x = from.x; x <= to.x; x++) {
 						for (int32_t y = from.y; y <= to.y; y++) {
@@ -360,11 +349,8 @@ public:
 						}
 					}
 				}
-
-				good_triangles++;
 			}
 
-			//print_line("at point " + itos(i) + "/" + itos(point_count) + " simplices added " + itos(good_triangles) + "/" + itos(simplex_list.size()) + " - triangles: " + itos(triangles.size()));
 			triangles.clear();
 			triangles_inserted.clear();
 		}
@@ -383,7 +369,7 @@ public:
 					break;
 				}
 			}
-			if (invalid || simplex_is_coplanar(points, *simplex)) {
+			if (invalid || simplex_is_coplanar(src_points, *simplex)) {
 				memdelete(simplex);
 				continue;
 			}

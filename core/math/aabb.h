@@ -1,58 +1,57 @@
-/*************************************************************************/
-/*  aabb.h                                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  aabb.h                                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef AABB_H
 #define AABB_H
 
-#include "core/math/math_defs.h"
 #include "core/math/plane.h"
 #include "core/math/vector3.h"
 
 /**
- * AABB / AABB (Axis Aligned Bounding Box)
- * This is implemented by a point (position) and the box size
+ * AABB (Axis Aligned Bounding Box)
+ * This is implemented by a point (position) and the box size.
  */
+
 class Variant;
 
-class AABB {
-public:
+struct _NO_DISCARD_ AABB {
 	Vector3 position;
 	Vector3 size;
 
-	real_t get_area() const; /// get area
-	_FORCE_INLINE_ bool has_no_area() const {
-		return (size.x <= 0 || size.y <= 0 || size.z <= 0);
+	real_t get_volume() const;
+	_FORCE_INLINE_ bool has_volume() const {
+		return size.x > 0.0f && size.y > 0.0f && size.z > 0.0f;
 	}
 
-	_FORCE_INLINE_ bool has_no_surface() const {
-		return (size.x <= 0 && size.y <= 0 && size.z <= 0);
+	_FORCE_INLINE_ bool has_surface() const {
+		return size.x > 0.0f || size.y > 0.0f || size.z > 0.0f;
 	}
 
 	const Vector3 &get_position() const { return position; }
@@ -64,6 +63,7 @@ public:
 	bool operator!=(const AABB &p_rval) const;
 
 	bool is_equal_approx(const AABB &p_aabb) const;
+	bool is_finite() const;
 	_FORCE_INLINE_ bool intersects(const AABB &p_aabb) const; /// Both AABBs overlap
 	_FORCE_INLINE_ bool intersects_inclusive(const AABB &p_aabb) const; /// Both AABBs (or their faces) overlap
 	_FORCE_INLINE_ bool encloses(const AABB &p_aabb) const; /// p_aabb is completely inside this
@@ -71,9 +71,14 @@ public:
 	AABB merge(const AABB &p_with) const;
 	void merge_with(const AABB &p_aabb); ///merge with another AABB
 	AABB intersection(const AABB &p_aabb) const; ///get box where two intersect, empty if no intersection occurs
-	bool intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_clip = nullptr, Vector3 *r_normal = nullptr) const;
-	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_clip = nullptr, Vector3 *r_normal = nullptr) const;
-	_FORCE_INLINE_ bool smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const;
+	_FORCE_INLINE_ bool smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t p_t0, real_t p_t1) const;
+
+	bool intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_intersection_point = nullptr, Vector3 *r_normal = nullptr) const;
+	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir) const {
+		bool inside;
+		return find_intersects_ray(p_from, p_dir, inside);
+	}
+	bool find_intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, bool &r_inside, Vector3 *r_intersection_point = nullptr, Vector3 *r_normal = nullptr) const;
 
 	_FORCE_INLINE_ bool intersects_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count) const;
 	_FORCE_INLINE_ bool inside_convex_shape(const Plane *p_planes, int p_plane_count) const;
@@ -101,7 +106,7 @@ public:
 	_FORCE_INLINE_ void expand_to(const Vector3 &p_vector); /** expand to contain a point if necessary */
 
 	_FORCE_INLINE_ AABB abs() const {
-		return AABB(Vector3(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0), position.z + MIN(size.z, 0)), size.abs());
+		return AABB(position + size.minf(0), size.abs());
 	}
 
 	Variant intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to) const;
@@ -118,6 +123,10 @@ public:
 		return position + size;
 	}
 
+	_FORCE_INLINE_ Vector3 get_center() const {
+		return position + (size * 0.5f);
+	}
+
 	operator String() const;
 
 	_FORCE_INLINE_ AABB() {}
@@ -128,6 +137,11 @@ public:
 };
 
 inline bool AABB::intersects(const AABB &p_aabb) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
 	if (position.x >= (p_aabb.position.x + p_aabb.size.x)) {
 		return false;
 	}
@@ -151,6 +165,11 @@ inline bool AABB::intersects(const AABB &p_aabb) const {
 }
 
 inline bool AABB::intersects_inclusive(const AABB &p_aabb) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
 	if (position.x > (p_aabb.position.x + p_aabb.size.x)) {
 		return false;
 	}
@@ -174,6 +193,11 @@ inline bool AABB::intersects_inclusive(const AABB &p_aabb) const {
 }
 
 inline bool AABB::encloses(const AABB &p_aabb) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
 	Vector3 src_min = position;
 	Vector3 src_max = position + size;
 	Vector3 dst_min = p_aabb.position;
@@ -181,22 +205,22 @@ inline bool AABB::encloses(const AABB &p_aabb) const {
 
 	return (
 			(src_min.x <= dst_min.x) &&
-			(src_max.x > dst_max.x) &&
+			(src_max.x >= dst_max.x) &&
 			(src_min.y <= dst_min.y) &&
-			(src_max.y > dst_max.y) &&
+			(src_max.y >= dst_max.y) &&
 			(src_min.z <= dst_min.z) &&
-			(src_max.z > dst_max.z));
+			(src_max.z >= dst_max.z));
 }
 
 Vector3 AABB::get_support(const Vector3 &p_normal) const {
-	Vector3 half_extents = size * 0.5;
+	Vector3 half_extents = size * 0.5f;
 	Vector3 ofs = position + half_extents;
 
 	return Vector3(
 				   (p_normal.x > 0) ? half_extents.x : -half_extents.x,
 				   (p_normal.y > 0) ? half_extents.y : -half_extents.y,
 				   (p_normal.z > 0) ? half_extents.z : -half_extents.z) +
-		   ofs;
+			ofs;
 }
 
 Vector3 AABB::get_endpoint(int p_point) const {
@@ -223,7 +247,7 @@ Vector3 AABB::get_endpoint(int p_point) const {
 }
 
 bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count) const {
-	Vector3 half_extents = size * 0.5;
+	Vector3 half_extents = size * 0.5f;
 	Vector3 ofs = position + half_extents;
 
 	for (int i = 0; i < p_plane_count; i++) {
@@ -265,7 +289,7 @@ bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, con
 }
 
 bool AABB::inside_convex_shape(const Plane *p_planes, int p_plane_count) const {
-	Vector3 half_extents = size * 0.5;
+	Vector3 half_extents = size * 0.5f;
 	Vector3 ofs = position + half_extents;
 
 	for (int i = 0; i < p_plane_count; i++) {
@@ -284,6 +308,11 @@ bool AABB::inside_convex_shape(const Plane *p_planes, int p_plane_count) const {
 }
 
 bool AABB::has_point(const Vector3 &p_point) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
 	if (p_point.x < position.x) {
 		return false;
 	}
@@ -307,6 +336,11 @@ bool AABB::has_point(const Vector3 &p_point) const {
 }
 
 inline void AABB::expand_to(const Vector3 &p_vector) {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
 	Vector3 begin = position;
 	Vector3 end = position + size;
 
@@ -335,7 +369,7 @@ inline void AABB::expand_to(const Vector3 &p_vector) {
 }
 
 void AABB::project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &r_max) const {
-	Vector3 half_extents(size.x * 0.5, size.y * 0.5, size.z * 0.5);
+	Vector3 half_extents(size.x * 0.5f, size.y * 0.5f, size.z * 0.5f);
 	Vector3 center(position.x + half_extents.x, position.y + half_extents.y, position.z + half_extents.z);
 
 	real_t length = p_plane.normal.abs().dot(half_extents);
@@ -372,10 +406,15 @@ inline real_t AABB::get_shortest_axis_size() const {
 	return max_size;
 }
 
-bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const {
-	real_t divx = 1.0 / p_dir.x;
-	real_t divy = 1.0 / p_dir.y;
-	real_t divz = 1.0 / p_dir.z;
+bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t p_t0, real_t p_t1) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
+	real_t divx = 1.0f / p_dir.x;
+	real_t divy = 1.0f / p_dir.y;
+	real_t divz = 1.0f / p_dir.z;
 
 	Vector3 upbound = position + size;
 	real_t tmin, tmax, tymin, tymax, tzmin, tzmax;
@@ -418,16 +457,16 @@ bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real
 	if (tzmax < tmax) {
 		tmax = tzmax;
 	}
-	return ((tmin < t1) && (tmax > t0));
+	return ((tmin < p_t1) && (tmax > p_t0));
 }
 
 void AABB::grow_by(real_t p_amount) {
 	position.x -= p_amount;
 	position.y -= p_amount;
 	position.z -= p_amount;
-	size.x += 2.0 * p_amount;
-	size.y += 2.0 * p_amount;
-	size.z += 2.0 * p_amount;
+	size.x += 2.0f * p_amount;
+	size.y += 2.0f * p_amount;
+	size.z += 2.0f * p_amount;
 }
 
 void AABB::quantize(real_t p_unit) {

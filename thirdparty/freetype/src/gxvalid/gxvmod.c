@@ -4,7 +4,7 @@
  *
  *   FreeType's TrueTypeGX/AAT validation module implementation (body).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2023 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -62,7 +62,7 @@
     if ( error )
       goto Exit;
 
-    if ( FT_ALLOC( *table, *table_len ) )
+    if ( FT_QALLOC( *table, *table_len ) )
       goto Exit;
 
     error = FT_Load_Sfnt_Table( face, tag, 0, *table, table_len );
@@ -76,27 +76,31 @@
           FT_Byte* volatile  _sfnt          = NULL; \
           FT_ULong            len_ ## _sfnt = 0
 
-#define GXV_TABLE_LOAD( _sfnt )                                     \
-          if ( ( FT_VALIDATE_ ## _sfnt ## _INDEX < table_count ) && \
-               ( gx_flags & FT_VALIDATE_ ## _sfnt )            )    \
-          {                                                         \
-            error = gxv_load_table( face, TTAG_ ## _sfnt,           \
-                                    &_sfnt, &len_ ## _sfnt );       \
-            if ( error )                                            \
-              goto Exit;                                            \
-          }
+#define GXV_TABLE_LOAD( _sfnt )                                       \
+          FT_BEGIN_STMNT                                              \
+            if ( ( FT_VALIDATE_ ## _sfnt ## _INDEX < table_count ) && \
+                 ( gx_flags & FT_VALIDATE_ ## _sfnt )            )    \
+            {                                                         \
+              error = gxv_load_table( face, TTAG_ ## _sfnt,           \
+                                      &_sfnt, &len_ ## _sfnt );       \
+              if ( error )                                            \
+                goto Exit;                                            \
+            }                                                         \
+          FT_END_STMNT
 
-#define GXV_TABLE_VALIDATE( _sfnt )                                  \
-          if ( _sfnt )                                               \
-          {                                                          \
-            ft_validator_init( &valid, _sfnt, _sfnt + len_ ## _sfnt, \
-                               FT_VALIDATE_DEFAULT );                \
-            if ( ft_setjmp( valid.jump_buffer ) == 0 )               \
-              gxv_ ## _sfnt ## _validate( _sfnt, face, &valid );     \
-            error = valid.error;                                     \
-            if ( error )                                             \
-              goto Exit;                                             \
-          }
+#define GXV_TABLE_VALIDATE( _sfnt )                                    \
+          FT_BEGIN_STMNT                                               \
+            if ( _sfnt )                                               \
+            {                                                          \
+              ft_validator_init( &valid, _sfnt, _sfnt + len_ ## _sfnt, \
+                                 FT_VALIDATE_DEFAULT );                \
+              if ( ft_setjmp( valid.jump_buffer ) == 0 )               \
+                gxv_ ## _sfnt ## _validate( _sfnt, face, &valid );     \
+              error = valid.error;                                     \
+              if ( error )                                             \
+                goto Exit;                                             \
+            }                                                          \
+          FT_END_STMNT
 
 #define GXV_TABLE_SET( _sfnt )                                        \
           if ( FT_VALIDATE_ ## _sfnt ## _INDEX < table_count )        \

@@ -1,54 +1,71 @@
-/*************************************************************************/
-/*  godot_plugin_jni.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_plugin_jni.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_plugin_jni.h"
 
-#include <core/config/engine.h>
-#include <core/config/project_settings.h>
-#include <core/error/error_macros.h>
-#include <platform/android/api/jni_singleton.h>
-#include <platform/android/jni_utils.h>
-#include <platform/android/string_android.h>
+#include "api/jni_singleton.h"
+#include "jni_utils.h"
+#include "string_android.h"
+
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 
 static HashMap<String, JNISingleton *> jni_singletons;
 
+void unregister_plugins_singletons() {
+	for (const KeyValue<String, JNISingleton *> &E : jni_singletons) {
+		Engine::get_singleton()->remove_singleton(E.key);
+		ProjectSettings::get_singleton()->set(E.key, Variant());
+
+		if (E.value) {
+			memdelete(E.value);
+		}
+	}
+	jni_singletons.clear();
+}
+
 extern "C" {
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jclass clazz, jstring name, jobject obj) {
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jclass clazz, jstring name, jobject obj) {
 	String singname = jstring_to_string(name, env);
+
+	ERR_FAIL_COND_V(jni_singletons.has(singname), false);
+
 	JNISingleton *s = (JNISingleton *)ClassDB::instantiate("JNISingleton");
 	s->set_instance(env->NewGlobalRef(obj));
 	jni_singletons[singname] = s;
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton(singname, s));
 	ProjectSettings::get_singleton()->set(singname, s);
+	return true;
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterMethod(JNIEnv *env, jclass clazz, jstring sname, jstring name, jstring ret, jobjectArray args) {
@@ -114,45 +131,18 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitS
 	String signal_name = jstring_to_string(j_signal_name, env);
 
 	int count = env->GetArrayLength(j_signal_params);
-	ERR_FAIL_COND_MSG(count > VARIANT_ARG_MAX, "Maximum argument count exceeded!");
 
-	Variant variant_params[VARIANT_ARG_MAX];
-	const Variant *args[VARIANT_ARG_MAX];
+	Variant *variant_params = (Variant *)alloca(sizeof(Variant) * count);
+	const Variant **args = (const Variant **)alloca(sizeof(Variant *) * count);
 
 	for (int i = 0; i < count; i++) {
 		jobject j_param = env->GetObjectArrayElement(j_signal_params, i);
-		variant_params[i] = _jobject_to_variant(env, j_param);
+		ERR_FAIL_NULL(j_param);
+		memnew_placement(&variant_params[i], Variant(_jobject_to_variant(env, j_param)));
 		args[i] = &variant_params[i];
 		env->DeleteLocalRef(j_param);
-	};
-
-	singleton->emit_signal(SNAME(signal_name), args, count);
-}
-
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterGDNativeLibraries(JNIEnv *env, jclass clazz, jobjectArray gdnlib_paths) {
-	int gdnlib_count = env->GetArrayLength(gdnlib_paths);
-	if (gdnlib_count == 0) {
-		return;
 	}
 
-	// Retrieve the current list of gdnative libraries.
-	Array singletons = Array();
-	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons")) {
-		singletons = ProjectSettings::get_singleton()->get("gdnative/singletons");
-	}
-
-	// Insert the libraries provided by the plugin
-	for (int i = 0; i < gdnlib_count; i++) {
-		jstring relative_path = (jstring)env->GetObjectArrayElement(gdnlib_paths, i);
-
-		String path = "res://" + jstring_to_string(relative_path, env);
-		if (!singletons.has(path)) {
-			singletons.push_back(path);
-		}
-		env->DeleteLocalRef(relative_path);
-	}
-
-	// Insert the updated list back into project settings.
-	ProjectSettings::get_singleton()->set("gdnative/singletons", singletons);
+	singleton->emit_signalp(StringName(signal_name), args, count);
 }
 }

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ENetPacketPeer" inherits="PacketPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A wrapper class for an [url=http://enet.bespin.org/group__peer.html]ENetPeer[/url].
+	</brief_description>
+	<description>
+		A PacketPeer implementation representing a peer of an [ENetConnection].
+		This class cannot be instantiated directly but can be retrieved during [method ENetConnection.service] or via [method ENetConnection.get_peers].
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
+	</description>
+	<tutorials>
+		<link title="API documentation on the ENet website">http://enet.bespin.org/usergroup0.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_channels" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of channels allocated for communication with peer.
+			</description>
+		</method>
+		<method name="get_remote_address" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the IP address of this peer.
+			</description>
+		</method>
+		<method name="get_remote_port" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the remote port of this peer.
+			</description>
+		</method>
+		<method name="get_state" qualifiers="const">
+			<return type="int" enum="ENetPacketPeer.PeerState" />
+			<description>
+				Returns the current peer state. See [enum PeerState].
+			</description>
+		</method>
+		<method name="get_statistic">
+			<return type="float" />
+			<param index="0" name="statistic" type="int" enum="ENetPacketPeer.PeerStatistic" />
+			<description>
+				Returns the requested [param statistic] for this peer. See [enum PeerStatistic].
+			</description>
+		</method>
+		<method name="is_active" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the peer is currently active (i.e. the associated [ENetConnection] is still valid).
+			</description>
+		</method>
+		<method name="peer_disconnect">
+			<return type="void" />
+			<param index="0" name="data" type="int" default="0" />
+			<description>
+				Request a disconnection from a peer. An [constant ENetConnection.EVENT_DISCONNECT] will be generated during [method ENetConnection.service] once the disconnection is complete.
+			</description>
+		</method>
+		<method name="peer_disconnect_later">
+			<return type="void" />
+			<param index="0" name="data" type="int" default="0" />
+			<description>
+				Request a disconnection from a peer, but only after all queued outgoing packets are sent. An [constant ENetConnection.EVENT_DISCONNECT] will be generated during [method ENetConnection.service] once the disconnection is complete.
+			</description>
+		</method>
+		<method name="peer_disconnect_now">
+			<return type="void" />
+			<param index="0" name="data" type="int" default="0" />
+			<description>
+				Force an immediate disconnection from a peer. No [constant ENetConnection.EVENT_DISCONNECT] will be generated. The foreign peer is not guaranteed to receive the disconnect notification, and is reset immediately upon return from this function.
+			</description>
+		</method>
+		<method name="ping">
+			<return type="void" />
+			<description>
+				Sends a ping request to a peer. ENet automatically pings all connected peers at regular intervals, however, this function may be called to ensure more frequent ping requests.
+			</description>
+		</method>
+		<method name="ping_interval">
+			<return type="void" />
+			<param index="0" name="ping_interval" type="int" />
+			<description>
+				Sets the [param ping_interval] in milliseconds at which pings will be sent to a peer. Pings are used both to monitor the liveness of the connection and also to dynamically adjust the throttle during periods of low traffic so that the throttle has reasonable responsiveness during traffic spikes. The default ping interval is [code]500[/code] milliseconds.
+			</description>
+		</method>
+		<method name="reset">
+			<return type="void" />
+			<description>
+				Forcefully disconnects a peer. The foreign host represented by the peer is not notified of the disconnection and will timeout on its connection to the local host.
+			</description>
+		</method>
+		<method name="send">
+			<return type="int" enum="Error" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="packet" type="PackedByteArray" />
+			<param index="2" name="flags" type="int" />
+			<description>
+				Queues a [param packet] to be sent over the specified [param channel]. See [code]FLAG_*[/code] constants for available packet flags.
+			</description>
+		</method>
+		<method name="set_timeout">
+			<return type="void" />
+			<param index="0" name="timeout" type="int" />
+			<param index="1" name="timeout_min" type="int" />
+			<param index="2" name="timeout_max" type="int" />
+			<description>
+				Sets the timeout parameters for a peer. The timeout parameters control how and when a peer will timeout from a failure to acknowledge reliable traffic. Timeout values are expressed in milliseconds.
+				The [param timeout] is a factor that, multiplied by a value based on the average round trip time, will determine the timeout limit for a reliable packet. When that limit is reached, the timeout will be doubled, and the peer will be disconnected if that limit has reached [param timeout_min]. The [param timeout_max] parameter, on the other hand, defines a fixed timeout for which any packet must be acknowledged or the peer will be dropped.
+			</description>
+		</method>
+		<method name="throttle_configure">
+			<return type="void" />
+			<param index="0" name="interval" type="int" />
+			<param index="1" name="acceleration" type="int" />
+			<param index="2" name="deceleration" type="int" />
+			<description>
+				Configures throttle parameter for a peer.
+				Unreliable packets are dropped by ENet in response to the varying conditions of the Internet connection to the peer. The throttle represents a probability that an unreliable packet should not be dropped and thus sent by ENet to the peer. By measuring fluctuations in round trip times of reliable packets over the specified [param interval], ENet will either increase the probability by the amount specified in the [param acceleration] parameter, or decrease it by the amount specified in the [param deceleration] parameter (both are ratios to [constant PACKET_THROTTLE_SCALE]).
+				When the throttle has a value of [constant PACKET_THROTTLE_SCALE], no unreliable packets are dropped by ENet, and so 100% of all unreliable packets will be sent.
+				When the throttle has a value of [code]0[/code], all unreliable packets are dropped by ENet, and so 0% of all unreliable packets will be sent.
+				Intermediate values for the throttle represent intermediate probabilities between 0% and 100% of unreliable packets being sent. The bandwidth limits of the local and foreign hosts are taken into account to determine a sensible limit for the throttle probability above which it should not raise even in the best of conditions.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="STATE_DISCONNECTED" value="0" enum="PeerState">
+			The peer is disconnected.
+		</constant>
+		<constant name="STATE_CONNECTING" value="1" enum="PeerState">
+			The peer is currently attempting to connect.
+		</constant>
+		<constant name="STATE_ACKNOWLEDGING_CONNECT" value="2" enum="PeerState">
+			The peer has acknowledged the connection request.
+		</constant>
+		<constant name="STATE_CONNECTION_PENDING" value="3" enum="PeerState">
+			The peer is currently connecting.
+		</constant>
+		<constant name="STATE_CONNECTION_SUCCEEDED" value="4" enum="PeerState">
+			The peer has successfully connected, but is not ready to communicate with yet ([constant STATE_CONNECTED]).
+		</constant>
+		<constant name="STATE_CONNECTED" value="5" enum="PeerState">
+			The peer is currently connected and ready to communicate with.
+		</constant>
+		<constant name="STATE_DISCONNECT_LATER" value="6" enum="PeerState">
+			The peer is slated to disconnect after it has no more outgoing packets to send.
+		</constant>
+		<constant name="STATE_DISCONNECTING" value="7" enum="PeerState">
+			The peer is currently disconnecting.
+		</constant>
+		<constant name="STATE_ACKNOWLEDGING_DISCONNECT" value="8" enum="PeerState">
+			The peer has acknowledged the disconnection request.
+		</constant>
+		<constant name="STATE_ZOMBIE" value="9" enum="PeerState">
+			The peer has lost connection, but is not considered truly disconnected (as the peer didn't acknowledge the disconnection request).
+		</constant>
+		<constant name="PEER_PACKET_LOSS" value="0" enum="PeerStatistic">
+			Mean packet loss of reliable packets as a ratio with respect to the [constant PACKET_LOSS_SCALE].
+		</constant>
+		<constant name="PEER_PACKET_LOSS_VARIANCE" value="1" enum="PeerStatistic">
+			Packet loss variance.
+		</constant>
+		<constant name="PEER_PACKET_LOSS_EPOCH" value="2" enum="PeerStatistic">
+			The time at which packet loss statistics were last updated (in milliseconds since the connection started). The interval for packet loss statistics updates is 10 seconds, and at least one packet must have been sent since the last statistics update.
+		</constant>
+		<constant name="PEER_ROUND_TRIP_TIME" value="3" enum="PeerStatistic">
+			Mean packet round trip time for reliable packets.
+		</constant>
+		<constant name="PEER_ROUND_TRIP_TIME_VARIANCE" value="4" enum="PeerStatistic">
+			Variance of the mean round trip time.
+		</constant>
+		<constant name="PEER_LAST_ROUND_TRIP_TIME" value="5" enum="PeerStatistic">
+			Last recorded round trip time for a reliable packet.
+		</constant>
+		<constant name="PEER_LAST_ROUND_TRIP_TIME_VARIANCE" value="6" enum="PeerStatistic">
+			Variance of the last trip time recorded.
+		</constant>
+		<constant name="PEER_PACKET_THROTTLE" value="7" enum="PeerStatistic">
+			The peer's current throttle status.
+		</constant>
+		<constant name="PEER_PACKET_THROTTLE_LIMIT" value="8" enum="PeerStatistic">
+			The maximum number of unreliable packets that should not be dropped. This value is always greater than or equal to [code]1[/code]. The initial value is equal to [constant PACKET_THROTTLE_SCALE].
+		</constant>
+		<constant name="PEER_PACKET_THROTTLE_COUNTER" value="9" enum="PeerStatistic">
+			Internal value used to increment the packet throttle counter. The value is hardcoded to [code]7[/code] and cannot be changed. You probably want to look at [constant PEER_PACKET_THROTTLE_ACCELERATION] instead.
+		</constant>
+		<constant name="PEER_PACKET_THROTTLE_EPOCH" value="10" enum="PeerStatistic">
+			The time at which throttle statistics were last updated (in milliseconds since the connection started). The interval for throttle statistics updates is [constant PEER_PACKET_THROTTLE_INTERVAL].
+		</constant>
+		<constant name="PEER_PACKET_THROTTLE_ACCELERATION" value="11" enum="PeerStatistic">
+			The throttle's acceleration factor. Higher values will make ENet adapt to fluctuating network conditions faster, causing unrelaible packets to be sent [i]more[/i] often. The default value is [code]2[/code].
+		</constant>
+		<constant name="PEER_PACKET_THROTTLE_DECELERATION" value="12" enum="PeerStatistic">
+			The throttle's deceleration factor. Higher values will make ENet adapt to fluctuating network conditions faster, causing unrelaible packets to be sent [i]less[/i] often. The default value is [code]2[/code].
+		</constant>
+		<constant name="PEER_PACKET_THROTTLE_INTERVAL" value="13" enum="PeerStatistic">
+			The interval over which the lowest mean round trip time should be measured for use by the throttle mechanism (in milliseconds). The default value is [code]5000[/code].
+		</constant>
+		<constant name="PACKET_LOSS_SCALE" value="65536">
+			The reference scale for packet loss. See [method get_statistic] and [constant PEER_PACKET_LOSS].
+		</constant>
+		<constant name="PACKET_THROTTLE_SCALE" value="32">
+			The reference value for throttle configuration. The default value is [code]32[/code]. See [method throttle_configure].
+		</constant>
+		<constant name="FLAG_RELIABLE" value="1">
+			Mark the packet to be sent as reliable.
+		</constant>
+		<constant name="FLAG_UNSEQUENCED" value="2">
+			Mark the packet to be sent unsequenced (unreliable).
+		</constant>
+		<constant name="FLAG_UNRELIABLE_FRAGMENT" value="8">
+			Mark the packet to be sent unreliable even if the packet is too big and needs fragmentation (increasing the chance of it being dropped).
+		</constant>
+	</constants>
+</class>

@@ -1,29 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ColorRect" inherits="Control" version="4.0">
+<class name="ColorRect" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Colored rectangle.
+		A control that displays a solid color rectangle.
 	</brief_description>
 	<description>
-		Displays a rectangle filled with a solid [member color]. If you need to display the border alone, consider using [ReferenceRect] instead.
+		Displays a rectangle filled with a solid [member color]. If you need to display the border alone, consider using a [Panel] instead.
 	</description>
 	<tutorials>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
-			The fill color.
-			[codeblocks]
-			[gdscript]
-			$ColorRect.color = Color(1, 0, 0, 1) # Set ColorRect's color to red.
-			[/gdscript]
-			[csharp]
-			GetNode&lt;ColorRect&gt;("ColorRect").Color = new Color(1, 0, 0, 1); // Set ColorRect's color to red.
-			[/csharp]
-			[/codeblocks]
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
+			The fill color of the rectangle.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsRayQueryParameters2D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides parameters for [method PhysicsDirectSpaceState2D.intersect_ray].
+	</brief_description>
+	<description>
+		By changing various properties of this object, such as the ray position, you can configure the parameters for [method PhysicsDirectSpaceState2D.intersect_ray].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create" qualifiers="static">
+			<return type="PhysicsRayQueryParameters2D" />
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
+			<param index="2" name="collision_mask" type="int" default="4294967295" />
+			<param index="3" name="exclude" type="RID[]" default="[]" />
+			<description>
+				Returns a new, pre-configured [PhysicsRayQueryParameters2D] object. Use it to quickly create query parameters using the most common options.
+				[codeblock]
+				var query = PhysicsRayQueryParameters2D.create(global_position, global_position + Vector2(0, 100))
+				var collision = get_world_2d().direct_space_state.intersect_ray(query)
+				[/codeblock]
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
+			If [code]true[/code], the query will take [Area2D]s into account.
+		</member>
+		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled" default="true">
+			If [code]true[/code], the query will take [PhysicsBody2D]s into account.
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="4294967295">
+			The physics layers the query will detect (as a bitmask). By default, all collision layers are detected. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		</member>
+		<member name="exclude" type="RID[]" setter="set_exclude" getter="get_exclude" default="[]">
+			The list of object [RID]s that will be excluded from collisions. Use [method CollisionObject2D.get_rid] to get the [RID] associated with a [CollisionObject2D]-derived node.
+		</member>
+		<member name="from" type="Vector2" setter="set_from" getter="get_from" default="Vector2(0, 0)">
+			The starting point of the ray being queried for, in global coordinates.
+		</member>
+		<member name="hit_from_inside" type="bool" setter="set_hit_from_inside" getter="is_hit_from_inside_enabled" default="false">
+			If [code]true[/code], the query will detect a hit when starting inside shapes. In this case the collision normal will be [code]Vector2(0, 0)[/code]. Does not affect concave polygon shapes.
+		</member>
+		<member name="to" type="Vector2" setter="set_to" getter="get_to" default="Vector2(0, 0)">
+			The ending point of the ray being queried for, in global coordinates.
+		</member>
+	</members>
+</class>

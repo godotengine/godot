@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SphereMesh" inherits="PrimitiveMesh" version="4.0">
+<class name="SphereMesh" inherits="PrimitiveMesh" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Class representing a spherical [PrimitiveMesh].
 	</brief_description>
@@ -8,10 +8,8 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">
 			Full height of the sphere.
 		</member>
 		<member name="is_hemisphere" type="bool" setter="set_is_hemisphere" getter="get_is_hemisphere" default="false">
@@ -21,13 +19,11 @@
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="64">
 			Number of radial segments on the sphere.
 		</member>
-		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 			Radius of sphere.
 		</member>
 		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="32">
 			Number of segments along the height of the sphere.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

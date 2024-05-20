@@ -7,43 +7,9 @@ Import("env_modules")
 
 env_mono = env_modules.Clone()
 
-if env_mono["tools"]:
-    # NOTE: It is safe to generate this file here, since this is still executed serially
-    import build_scripts.gen_cs_glue_version as gen_cs_glue_version
-
-    gen_cs_glue_version.generate_header("glue/GodotSharp", "glue/cs_glue_version.gen.h")
-
-# Glue sources
-if env_mono["mono_glue"]:
-    env_mono.Append(CPPDEFINES=["MONO_GLUE_ENABLED"])
-
-    import os.path
-
-    if not os.path.isfile("glue/mono_glue.gen.cpp"):
-        raise RuntimeError("Mono glue sources not found. Did you forget to run '--generate-mono-glue'?")
-
-if env_mono["tools"] or env_mono["target"] != "release":
-    env_mono.Append(CPPDEFINES=["GD_MONO_HOT_RELOAD"])
-
 # Configure Mono
 
 mono_configure.configure(env, env_mono)
-
-if env_mono["tools"] and env_mono["mono_glue"] and env_mono["build_cil"]:
-    # Build Godot API solution
-    import build_scripts.api_solution_build as api_solution_build
-
-    api_sln_cmd = api_solution_build.build(env_mono)
-
-    # Build GodotTools
-    import build_scripts.godot_tools_build as godot_tools_build
-
-    godot_tools_build.build(env_mono, api_sln_cmd)
-
-    # Build Godot.NET.Sdk
-    import build_scripts.godot_net_sdk_build as godot_net_sdk_build
-
-    godot_net_sdk_build.build(env_mono)
 
 # Add sources
 
@@ -52,11 +18,6 @@ env_mono.add_source_files(env.modules_sources, "glue/*.cpp")
 env_mono.add_source_files(env.modules_sources, "mono_gd/*.cpp")
 env_mono.add_source_files(env.modules_sources, "utils/*.cpp")
 
-env_mono.add_source_files(env.modules_sources, "mono_gd/support/*.cpp")
-
-if env["platform"] in ["osx", "iphone"]:
-    env_mono.add_source_files(env.modules_sources, "mono_gd/support/*.mm")
-    env_mono.add_source_files(env.modules_sources, "mono_gd/support/*.m")
-
-if env["tools"]:
+if env.editor_build:
     env_mono.add_source_files(env.modules_sources, "editor/*.cpp")
+    SConscript("editor/script_templates/SCsub")

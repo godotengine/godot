@@ -1,5 +1,4 @@
-
-// Copyright 2009-2020 Intel Corporation
+// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-#define RTC_HASH "7c53133eb21424f7f0ae1e25bf357e358feaf6ab"
+#define RTC_HASH "daa8de0e714e18ad5e5c9841b67c1950d9c91c51"

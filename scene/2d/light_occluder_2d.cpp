@@ -1,37 +1,37 @@
-/*************************************************************************/
-/*  light_occluder_2d.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  light_occluder_2d.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "light_occluder_2d.h"
-#include "core/math/geometry_2d.h"
 
 #include "core/config/engine.h"
+#include "core/math/geometry_2d.h"
 
 #define LINE_GRAB_WIDTH 8
 
@@ -148,52 +148,72 @@ OccluderPolygon2D::OccluderPolygon2D() {
 }
 
 OccluderPolygon2D::~OccluderPolygon2D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(occ_polygon);
 }
 
 void LightOccluder2D::_poly_changed() {
 #ifdef DEBUG_ENABLED
-	update();
+	queue_redraw();
 #endif
 }
 
+void LightOccluder2D::_physics_interpolated_changed() {
+	RenderingServer::get_singleton()->canvas_light_occluder_set_interpolated(occluder, is_physics_interpolated());
+}
+
 void LightOccluder2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_CANVAS) {
-		RS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, get_canvas());
-		RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
-		RS::get_singleton()->canvas_light_occluder_set_enabled(occluder, is_visible_in_tree());
-	}
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
-	}
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		RS::get_singleton()->canvas_light_occluder_set_enabled(occluder, is_visible_in_tree());
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_CANVAS: {
+			RS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, get_canvas());
+			RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
+			RS::get_singleton()->canvas_light_occluder_set_enabled(occluder, is_visible_in_tree());
+		} break;
 
-	if (p_what == NOTIFICATION_DRAW) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			if (occluder_polygon.is_valid()) {
-				Vector<Vector2> poly = occluder_polygon->get_polygon();
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
+		} break;
 
-				if (poly.size()) {
-					if (occluder_polygon->is_closed()) {
-						Vector<Color> color;
-						color.push_back(Color(0, 0, 0, 0.6));
-						draw_polygon(Variant(poly), color);
-					} else {
-						int ps = poly.size();
-						const Vector2 *r = poly.ptr();
-						for (int i = 0; i < ps - 1; i++) {
-							draw_line(r[i], r[i + 1], Color(0, 0, 0, 0.6), 3);
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			RS::get_singleton()->canvas_light_occluder_set_enabled(occluder, is_visible_in_tree());
+		} break;
+
+		case NOTIFICATION_DRAW: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				if (occluder_polygon.is_valid()) {
+					Vector<Vector2> poly = occluder_polygon->get_polygon();
+
+					if (poly.size()) {
+						if (occluder_polygon->is_closed()) {
+							Vector<Color> color;
+							color.push_back(Color(0, 0, 0, 0.6));
+							draw_polygon(Variant(poly), color);
+						} else {
+							int ps = poly.size();
+							const Vector2 *r = poly.ptr();
+							for (int i = 0; i < ps - 1; i++) {
+								draw_line(r[i], r[i + 1], Color(0, 0, 0, 0.6), 3);
+							}
 						}
 					}
 				}
 			}
-		}
-	}
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_CANVAS) {
-		RS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, RID());
+		case NOTIFICATION_EXIT_CANVAS: {
+			RS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, RID());
+		} break;
+
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (is_visible_in_tree() && is_physics_interpolated()) {
+				// Explicitly make sure the transform is up to date in RenderingServer before
+				// resetting. This is necessary because NOTIFICATION_TRANSFORM_CHANGED
+				// is normally deferred, and a client change to transform will not always be sent
+				// before the reset, so we need to guarantee this.
+				RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
+				RS::get_singleton()->canvas_light_occluder_reset_physics_interpolation(occluder);
+			}
+		} break;
 	}
 }
 
@@ -210,7 +230,7 @@ bool LightOccluder2D::_edit_is_selected_on_click(const Point2 &p_point, double p
 void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon) {
 #ifdef DEBUG_ENABLED
 	if (occluder_polygon.is_valid()) {
-		occluder_polygon->disconnect("changed", callable_mp(this, &LightOccluder2D::_poly_changed));
+		occluder_polygon->disconnect_changed(callable_mp(this, &LightOccluder2D::_poly_changed));
 	}
 #endif
 	occluder_polygon = p_polygon;
@@ -223,9 +243,9 @@ void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polyg
 
 #ifdef DEBUG_ENABLED
 	if (occluder_polygon.is_valid()) {
-		occluder_polygon->connect("changed", callable_mp(this, &LightOccluder2D::_poly_changed));
+		occluder_polygon->connect_changed(callable_mp(this, &LightOccluder2D::_poly_changed));
 	}
-	update();
+	queue_redraw();
 #endif
 }
 
@@ -242,15 +262,15 @@ int LightOccluder2D::get_occluder_light_mask() const {
 	return mask;
 }
 
-TypedArray<String> LightOccluder2D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray LightOccluder2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!occluder_polygon.is_valid()) {
-		warnings.push_back(TTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));
+		warnings.push_back(RTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));
 	}
 
 	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().size() == 0) {
-		warnings.push_back(TTR("The occluder polygon for this occluder is empty. Please draw a polygon."));
+		warnings.push_back(RTR("The occluder polygon for this occluder is empty. Please draw a polygon."));
 	}
 
 	return warnings;
@@ -281,12 +301,13 @@ void LightOccluder2D::_bind_methods() {
 
 LightOccluder2D::LightOccluder2D() {
 	occluder = RS::get_singleton()->canvas_light_occluder_create();
-	mask = 1;
 
 	set_notify_transform(true);
 	set_as_sdf_collision(true);
 }
 
 LightOccluder2D::~LightOccluder2D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+
 	RS::get_singleton()->free(occluder);
 }

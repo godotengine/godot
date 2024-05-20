@@ -1,34 +1,35 @@
-/*************************************************************************/
-/*  mesh_data_tool.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  mesh_data_tool.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "mesh_data_tool.h"
+#include "mesh_data_tool.compat.inc"
 
 void MeshDataTool::clear() {
 	vertices.clear();
@@ -107,9 +108,9 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 		bo = arrays[Mesh::ARRAY_BONES].operator Vector<int>().ptr();
 	}
 
-	const real_t *we = nullptr;
+	const float *we = nullptr;
 	if (arrays[Mesh::ARRAY_WEIGHTS].get_type() != Variant::NIL) {
-		we = arrays[Mesh::ARRAY_WEIGHTS].operator Vector<real_t>().ptr();
+		we = arrays[Mesh::ARRAY_WEIGHTS].operator Vector<float>().ptr();
 	}
 
 	vertices.resize(vcount);
@@ -150,7 +151,7 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 		vertices.write[i] = v;
 	}
 
-	Map<Point2i, int> edge_indices;
+	HashMap<Point2i, int> edge_indices;
 
 	for (int i = 0; i < icount; i += 3) {
 		Vertex *v[3] = { &vertices.write[r[i + 0]], &vertices.write[r[i + 1]], &vertices.write[r[i + 2]] };
@@ -190,7 +191,7 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 	return OK;
 }
 
-Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
+Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh, uint64_t p_compression_flags) {
 	ERR_FAIL_COND_V(p_mesh.is_null(), ERR_INVALID_PARAMETER);
 	Array arr;
 	arr.resize(Mesh::ARRAY_MAX);
@@ -327,13 +328,13 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 
 	Ref<ArrayMesh> ncmesh = p_mesh;
 	int sc = ncmesh->get_surface_count();
-	ncmesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr);
+	ncmesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr, TypedArray<Array>(), Dictionary(), p_compression_flags);
 	ncmesh->surface_set_material(sc, material);
 
 	return OK;
 }
 
-int MeshDataTool::get_format() const {
+uint64_t MeshDataTool::get_format() const {
 	return format;
 }
 
@@ -421,6 +422,7 @@ Vector<int> MeshDataTool::get_vertex_bones(int p_idx) const {
 
 void MeshDataTool::set_vertex_bones(int p_idx, const Vector<int> &p_bones) {
 	ERR_FAIL_INDEX(p_idx, vertices.size());
+	ERR_FAIL_COND(p_bones.size() != 4);
 	vertices.write[p_idx].bones = p_bones;
 	format |= Mesh::ARRAY_FORMAT_BONES;
 }
@@ -432,6 +434,7 @@ Vector<float> MeshDataTool::get_vertex_weights(int p_idx) const {
 
 void MeshDataTool::set_vertex_weights(int p_idx, const Vector<float> &p_weights) {
 	ERR_FAIL_INDEX(p_idx, vertices.size());
+	ERR_FAIL_COND(p_weights.size() != 4);
 	vertices.write[p_idx].weights = p_weights;
 	format |= Mesh::ARRAY_FORMAT_WEIGHTS;
 }
@@ -519,7 +522,7 @@ void MeshDataTool::set_material(const Ref<Material> &p_material) {
 void MeshDataTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &MeshDataTool::clear);
 	ClassDB::bind_method(D_METHOD("create_from_surface", "mesh", "surface"), &MeshDataTool::create_from_surface);
-	ClassDB::bind_method(D_METHOD("commit_to_surface", "mesh"), &MeshDataTool::commit_to_surface);
+	ClassDB::bind_method(D_METHOD("commit_to_surface", "mesh", "compression_flags"), &MeshDataTool::commit_to_surface, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("get_format"), &MeshDataTool::get_format);
 

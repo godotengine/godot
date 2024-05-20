@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RDFramebufferPass" inherits="RefCounted" version="4.0">
+<class name="RDFramebufferPass" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Framebuffer pass attachment description.
+		Framebuffer pass attachment description (used by [RenderingDevice]).
 	</brief_description>
 	<description>
 		This class contains the list of attachment descriptions for a framebuffer pass. Each points with an index to a previously supplied list of texture attachments.
-	Multipass framebuffers can optimize some configurations in mobile, on desktop they provide little to no advantage.
+		Multipass framebuffers can optimize some configurations in mobile. On desktop, they provide little to no advantage.
+		This object is used by [RenderingDevice].
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="color_attachments" type="PackedInt32Array" setter="set_color_attachments" getter="get_color_attachments" default="PackedInt32Array()">
 			Color attachments in order starting from 0. If this attachment is not used by the shader, pass ATTACHMENT_UNUSED to skip.
@@ -30,6 +29,7 @@
 	</members>
 	<constants>
 		<constant name="ATTACHMENT_UNUSED" value="-1">
+			Attachment is unused.
 		</constant>
 	</constants>
 </class>

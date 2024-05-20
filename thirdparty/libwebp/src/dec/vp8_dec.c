@@ -86,6 +86,8 @@ void VP8Delete(VP8Decoder* const dec) {
 
 int VP8SetError(VP8Decoder* const dec,
                 VP8StatusCode error, const char* const msg) {
+  // VP8_STATUS_SUSPENDED is only meaningful in incremental decoding.
+  assert(dec->incremental_ || error != VP8_STATUS_SUSPENDED);
   // The oldest error reported takes precedence over the new one.
   if (dec->status_ == VP8_STATUS_OK) {
     dec->status_ = error;
@@ -190,12 +192,12 @@ static int ParseSegmentHeader(VP8BitReader* br,
 }
 
 // Paragraph 9.5
-// This function returns VP8_STATUS_SUSPENDED if we don't have all the
-// necessary data in 'buf'.
-// This case is not necessarily an error (for incremental decoding).
-// Still, no bitreader is ever initialized to make it possible to read
-// unavailable memory.
-// If we don't even have the partitions' sizes, than VP8_STATUS_NOT_ENOUGH_DATA
+// If we don't have all the necessary data in 'buf', this function returns
+// VP8_STATUS_SUSPENDED in incremental decoding, VP8_STATUS_NOT_ENOUGH_DATA
+// otherwise.
+// In incremental decoding, this case is not necessarily an error. Still, no
+// bitreader is ever initialized to make it possible to read unavailable memory.
+// If we don't even have the partitions' sizes, then VP8_STATUS_NOT_ENOUGH_DATA
 // is returned, and this is an unrecoverable error.
 // If the partitions were positioned ok, VP8_STATUS_OK is returned.
 static VP8StatusCode ParsePartitions(VP8Decoder* const dec,
@@ -225,8 +227,10 @@ static VP8StatusCode ParsePartitions(VP8Decoder* const dec,
     sz += 3;
   }
   VP8InitBitReader(dec->parts_ + last_part, part_start, size_left);
-  return (part_start < buf_end) ? VP8_STATUS_OK :
-           VP8_STATUS_SUSPENDED;   // Init is ok, but there's not enough data
+  if (part_start < buf_end) return VP8_STATUS_OK;
+  return dec->incremental_
+             ? VP8_STATUS_SUSPENDED  // Init is ok, but there's not enough data
+             : VP8_STATUS_NOT_ENOUGH_DATA;
 }
 
 // Paragraph 9.4
@@ -335,7 +339,7 @@ int VP8GetHeaders(VP8Decoder* const dec, VP8Io* const io) {
     io->scaled_width = io->width;
     io->scaled_height = io->height;
 
-    io->mb_w = io->width;   // sanity check
+    io->mb_w = io->width;   // for soundness
     io->mb_h = io->height;  // ditto
 
     VP8ResetProba(&dec->proba_);
@@ -403,7 +407,7 @@ static const uint8_t kZigzag[16] = {
   0, 1, 4, 8,  5, 2, 3, 6,  9, 12, 13, 10,  7, 11, 14, 15
 };
 
-// See section 13-2: http://tools.ietf.org/html/rfc6386#section-13.2
+// See section 13-2: https://datatracker.ietf.org/doc/html/rfc6386#section-13.2
 static int GetLargeValue(VP8BitReader* const br, const uint8_t* const p) {
   int v;
   if (!VP8GetBit(br, p[3], "coeffs")) {
@@ -494,13 +498,13 @@ static int GetCoeffsAlt(VP8BitReader* const br,
   return 16;
 }
 
-static WEBP_TSAN_IGNORE_FUNCTION void InitGetCoeffs(void) {
-  if (GetCoeffs == NULL) {
-    if (VP8GetCPUInfo != NULL && VP8GetCPUInfo(kSlowSSSE3)) {
-      GetCoeffs = GetCoeffsAlt;
-    } else {
-      GetCoeffs = GetCoeffsFast;
-    }
+extern VP8CPUInfo VP8GetCPUInfo;
+
+WEBP_DSP_INIT_FUNC(InitGetCoeffs) {
+  if (VP8GetCPUInfo != NULL && VP8GetCPUInfo(kSlowSSSE3)) {
+    GetCoeffs = GetCoeffsAlt;
+  } else {
+    GetCoeffs = GetCoeffsFast;
   }
 }
 

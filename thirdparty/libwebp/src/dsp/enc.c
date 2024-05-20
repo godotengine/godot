@@ -109,10 +109,6 @@ static WEBP_TSAN_IGNORE_FUNCTION void InitTables(void) {
 #define STORE(x, y, v) \
   dst[(x) + (y) * BPS] = clip_8b(ref[(x) + (y) * BPS] + ((v) >> 3))
 
-static const int kC1 = 20091 + (1 << 16);
-static const int kC2 = 35468;
-#define MUL(a, b) (((a) * (b)) >> 16)
-
 static WEBP_INLINE void ITransformOne(const uint8_t* ref, const int16_t* in,
                                       uint8_t* dst) {
   int C[4 * 4], *tmp;
@@ -121,8 +117,10 @@ static WEBP_INLINE void ITransformOne(const uint8_t* ref, const int16_t* in,
   for (i = 0; i < 4; ++i) {    // vertical pass
     const int a = in[0] + in[8];
     const int b = in[0] - in[8];
-    const int c = MUL(in[4], kC2) - MUL(in[12], kC1);
-    const int d = MUL(in[4], kC1) + MUL(in[12], kC2);
+    const int c =
+        WEBP_TRANSFORM_AC3_MUL2(in[4]) - WEBP_TRANSFORM_AC3_MUL1(in[12]);
+    const int d =
+        WEBP_TRANSFORM_AC3_MUL1(in[4]) + WEBP_TRANSFORM_AC3_MUL2(in[12]);
     tmp[0] = a + d;
     tmp[1] = b + c;
     tmp[2] = b - c;
@@ -134,10 +132,12 @@ static WEBP_INLINE void ITransformOne(const uint8_t* ref, const int16_t* in,
   tmp = C;
   for (i = 0; i < 4; ++i) {    // horizontal pass
     const int dc = tmp[0] + 4;
-    const int a =  dc +  tmp[8];
-    const int b =  dc -  tmp[8];
-    const int c = MUL(tmp[4], kC2) - MUL(tmp[12], kC1);
-    const int d = MUL(tmp[4], kC1) + MUL(tmp[12], kC2);
+    const int a = dc + tmp[8];
+    const int b = dc - tmp[8];
+    const int c =
+        WEBP_TRANSFORM_AC3_MUL2(tmp[4]) - WEBP_TRANSFORM_AC3_MUL1(tmp[12]);
+    const int d =
+        WEBP_TRANSFORM_AC3_MUL1(tmp[4]) + WEBP_TRANSFORM_AC3_MUL2(tmp[12]);
     STORE(0, i, a + d);
     STORE(1, i, b + c);
     STORE(2, i, b - c);
@@ -222,7 +222,6 @@ static void FTransformWHT_C(const int16_t* in, int16_t* out) {
 }
 #endif  // !WEBP_NEON_OMIT_C_CODE
 
-#undef MUL
 #undef STORE
 
 //------------------------------------------------------------------------------
@@ -732,6 +731,7 @@ VP8QuantizeBlockWHT VP8EncQuantizeBlockWHT;
 VP8BlockCopy VP8Copy4x4;
 VP8BlockCopy VP8Copy16x8;
 
+extern VP8CPUInfo VP8GetCPUInfo;
 extern void VP8EncDspInitSSE2(void);
 extern void VP8EncDspInitSSE41(void);
 extern void VP8EncDspInitNEON(void);
@@ -773,10 +773,10 @@ WEBP_DSP_INIT_FUNC(VP8EncDspInit) {
 
   // If defined, use CPUInfo() to overwrite some pointers with faster versions.
   if (VP8GetCPUInfo != NULL) {
-#if defined(WEBP_USE_SSE2)
+#if defined(WEBP_HAVE_SSE2)
     if (VP8GetCPUInfo(kSSE2)) {
       VP8EncDspInitSSE2();
-#if defined(WEBP_USE_SSE41)
+#if defined(WEBP_HAVE_SSE41)
       if (VP8GetCPUInfo(kSSE4_1)) {
         VP8EncDspInitSSE41();
       }
@@ -800,7 +800,7 @@ WEBP_DSP_INIT_FUNC(VP8EncDspInit) {
 #endif
   }
 
-#if defined(WEBP_USE_NEON)
+#if defined(WEBP_HAVE_NEON)
   if (WEBP_NEON_OMIT_C_CODE ||
       (VP8GetCPUInfo != NULL && VP8GetCPUInfo(kNEON))) {
     VP8EncDspInitNEON();

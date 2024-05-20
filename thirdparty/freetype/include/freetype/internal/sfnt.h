@@ -4,7 +4,7 @@
  *
  *   High-level 'sfnt' driver interface (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -314,6 +314,33 @@ FT_BEGIN_HEADER
   /**************************************************************************
    *
    * @functype:
+   *   TT_Load_Svg_Doc_Func
+   *
+   * @description:
+   *   Scan the SVG document list to find the document containing the glyph
+   *   that has the ID 'glyph*XXX*', where *XXX* is the value of
+   *   `glyph_index` as a decimal integer.
+   *
+   * @inout:
+   *   glyph ::
+   *     The glyph slot from which pointers to the SVG document list is to be
+   *     grabbed.  The results are stored back in the slot.
+   *
+   * @input:
+   *   glyph_index ::
+   *     The index of the glyph that is to be looked up.
+   *
+   * @return:
+   *   FreeType error code.  0 means success.
+   */
+  typedef FT_Error
+  (*TT_Load_Svg_Doc_Func)( FT_GlyphSlot  glyph,
+                           FT_UInt       glyph_index );
+
+
+  /**************************************************************************
+   *
+   * @functype:
    *   TT_Set_SBit_Strike_Func
    *
    * @description:
@@ -527,6 +554,170 @@ FT_BEGIN_HEADER
   /**************************************************************************
    *
    * @functype:
+   *   TT_Get_Color_Glyph_Paint_Func
+   *
+   * @description:
+   *   Find the root @FT_OpaquePaint object for a given glyph ID.
+   *
+   * @input:
+   *   face ::
+   *     The target face object.
+   *
+   *   base_glyph ::
+   *     The glyph index the colored glyph layers are associated with.
+   *
+   * @output:
+   *   paint ::
+   *     The root @FT_OpaquePaint object.
+   *
+   * @return:
+   *   Value~1 if everything is OK.  If no color glyph is found, or the root
+   *   paint could not be retrieved, value~0 gets returned.  In case of an
+   *   error, value~0 is returned also.
+   */
+  typedef FT_Bool
+  ( *TT_Get_Color_Glyph_Paint_Func )( TT_Face                   face,
+                                      FT_UInt                   base_glyph,
+                                      FT_Color_Root_Transform   root_transform,
+                                      FT_OpaquePaint           *paint );
+
+
+  /**************************************************************************
+   *
+   * @functype:
+   *   TT_Get_Color_Glyph_ClipBox_Func
+   *
+   * @description:
+   *   Search for a 'COLR' v1 clip box for the specified `base_glyph` and
+   *   fill the `clip_box` parameter with the 'COLR' v1 'ClipBox' information
+   *   if one is found.
+   *
+   * @input:
+   *   face ::
+   *     A handle to the parent face object.
+   *
+   *   base_glyph ::
+   *     The glyph index for which to retrieve the clip box.
+   *
+   * @output:
+   *   clip_box ::
+   *     The clip box for the requested `base_glyph` if one is found.  The
+   *     clip box is computed taking scale and transformations configured on
+   *     the @FT_Face into account.  @FT_ClipBox contains @FT_Vector values
+   *     in 26.6 format.
+   *
+   * @note:
+   *     To retrieve the clip box in font units, reset scale to units-per-em
+   *     and remove transforms configured using @FT_Set_Transform.
+   *
+   * @return:
+   *   Value~1 if a ClipBox is found.  If no clip box is found or an
+   *   error occured, value~0 is returned.
+   */
+  typedef FT_Bool
+  ( *TT_Get_Color_Glyph_ClipBox_Func )( TT_Face      face,
+                                        FT_UInt      base_glyph,
+                                        FT_ClipBox*  clip_box );
+
+
+  /**************************************************************************
+   *
+   * @functype:
+   *   TT_Get_Paint_Layers_Func
+   *
+   * @description:
+   *   Access the layers of a `PaintColrLayers` table.
+   *
+   * @input:
+   *   face ::
+   *     The target face object.
+   *
+   * @inout:
+   *   iterator ::
+   *     The @FT_LayerIterator from an @FT_PaintColrLayers object, for which
+   *     the layers are to be retrieved.  The internal state of the iterator
+   *     is incremented after one call to this function for retrieving one
+   *     layer.
+   *
+   * @output:
+   *   paint ::
+   *     The root @FT_OpaquePaint object referencing the actual paint table.
+   *
+   * @return:
+   *   Value~1 if everything is OK.  Value~0 gets returned when the paint
+   *   object can not be retrieved or any other error occurs.
+   */
+  typedef FT_Bool
+  ( *TT_Get_Paint_Layers_Func )( TT_Face            face,
+                                 FT_LayerIterator*  iterator,
+                                 FT_OpaquePaint    *paint );
+
+
+  /**************************************************************************
+   *
+   * @functype:
+   *   TT_Get_Colorline_Stops_Func
+   *
+   * @description:
+   *   Get the gradient and solid fill information for a given glyph.
+   *
+   * @input:
+   *   face ::
+   *     The target face object.
+   *
+   * @inout:
+   *   iterator ::
+   *     An @FT_ColorStopIterator object.  For the first call you should set
+   *     `iterator->p` to `NULL`.  For all following calls, simply use the
+   *     same object again.
+   *
+   * @output:
+   *   color_stop ::
+   *     Color index and alpha value for the retrieved color stop.
+   *
+   * @return:
+   *   Value~1 if everything is OK.  If there are no more color stops,
+   *   value~0 gets returned.  In case of an error, value~0 is returned
+   *   also.
+   */
+  typedef FT_Bool
+  ( *TT_Get_Colorline_Stops_Func )( TT_Face                face,
+                                    FT_ColorStop          *color_stop,
+                                    FT_ColorStopIterator*  iterator );
+
+
+  /**************************************************************************
+   *
+   * @functype:
+   *   TT_Get_Paint_Func
+   *
+   * @description:
+   *   Get the paint details for a given @FT_OpaquePaint object.
+   *
+   * @input:
+   *   face ::
+   *     The target face object.
+   *
+   *   opaque_paint ::
+   *     The @FT_OpaquePaint object.
+   *
+   * @output:
+   *   paint ::
+   *     An @FT_COLR_Paint object holding the details on `opaque_paint`.
+   *
+   * @return:
+   *   Value~1 if everything is OK.  Value~0 if no details can be found for
+   *   this paint or any other error occured.
+   */
+  typedef FT_Bool
+  ( *TT_Get_Paint_Func )( TT_Face         face,
+                          FT_OpaquePaint  opaque_paint,
+                          FT_COLR_Paint  *paint );
+
+
+  /**************************************************************************
+   *
+   * @functype:
    *   TT_Blend_Colr_Func
    *
    * @description:
@@ -709,73 +900,83 @@ FT_BEGIN_HEADER
    */
   typedef struct  SFNT_Interface_
   {
-    TT_Loader_GotoTableFunc      goto_table;
+    TT_Loader_GotoTableFunc  goto_table;
 
-    TT_Init_Face_Func            init_face;
-    TT_Load_Face_Func            load_face;
-    TT_Done_Face_Func            done_face;
-    FT_Module_Requester          get_interface;
+    TT_Init_Face_Func    init_face;
+    TT_Load_Face_Func    load_face;
+    TT_Done_Face_Func    done_face;
+    FT_Module_Requester  get_interface;
 
-    TT_Load_Any_Func             load_any;
+    TT_Load_Any_Func  load_any;
 
     /* these functions are called by `load_face' but they can also  */
     /* be called from external modules, if there is a need to do so */
-    TT_Load_Table_Func           load_head;
-    TT_Load_Metrics_Func         load_hhea;
-    TT_Load_Table_Func           load_cmap;
-    TT_Load_Table_Func           load_maxp;
-    TT_Load_Table_Func           load_os2;
-    TT_Load_Table_Func           load_post;
+    TT_Load_Table_Func    load_head;
+    TT_Load_Metrics_Func  load_hhea;
+    TT_Load_Table_Func    load_cmap;
+    TT_Load_Table_Func    load_maxp;
+    TT_Load_Table_Func    load_os2;
+    TT_Load_Table_Func    load_post;
 
-    TT_Load_Table_Func           load_name;
-    TT_Free_Table_Func           free_name;
+    TT_Load_Table_Func  load_name;
+    TT_Free_Table_Func  free_name;
 
     /* this field was called `load_kerning' up to version 2.1.10 */
-    TT_Load_Table_Func           load_kern;
+    TT_Load_Table_Func  load_kern;
 
-    TT_Load_Table_Func           load_gasp;
-    TT_Load_Table_Func           load_pclt;
+    TT_Load_Table_Func  load_gasp;
+    TT_Load_Table_Func  load_pclt;
 
     /* see `ttload.h'; this field was called `load_bitmap_header' up to */
     /* version 2.1.10                                                   */
-    TT_Load_Table_Func           load_bhed;
+    TT_Load_Table_Func  load_bhed;
 
-    TT_Load_SBit_Image_Func      load_sbit_image;
+    TT_Load_SBit_Image_Func  load_sbit_image;
 
     /* see `ttpost.h' */
-    TT_Get_PS_Name_Func          get_psname;
-    TT_Free_Table_Func           free_psnames;
+    TT_Get_PS_Name_Func  get_psname;
+    TT_Free_Table_Func   free_psnames;
 
     /* starting here, the structure differs from version 2.1.7 */
 
     /* this field was introduced in version 2.1.8, named `get_psname' */
-    TT_Face_GetKerningFunc       get_kerning;
+    TT_Face_GetKerningFunc  get_kerning;
 
     /* new elements introduced after version 2.1.10 */
 
     /* load the font directory, i.e., the offset table and */
     /* the table directory                                 */
-    TT_Load_Table_Func           load_font_dir;
-    TT_Load_Metrics_Func         load_hmtx;
+    TT_Load_Table_Func    load_font_dir;
+    TT_Load_Metrics_Func  load_hmtx;
 
-    TT_Load_Table_Func           load_eblc;
-    TT_Free_Table_Func           free_eblc;
+    TT_Load_Table_Func  load_eblc;
+    TT_Free_Table_Func  free_eblc;
 
     TT_Set_SBit_Strike_Func      set_sbit_strike;
     TT_Load_Strike_Metrics_Func  load_strike_metrics;
 
-    TT_Load_Table_Func           load_cpal;
-    TT_Load_Table_Func           load_colr;
-    TT_Free_Table_Func           free_cpal;
-    TT_Free_Table_Func           free_colr;
-    TT_Set_Palette_Func          set_palette;
-    TT_Get_Colr_Layer_Func       get_colr_layer;
-    TT_Blend_Colr_Func           colr_blend;
+    TT_Load_Table_Func               load_cpal;
+    TT_Load_Table_Func               load_colr;
+    TT_Free_Table_Func               free_cpal;
+    TT_Free_Table_Func               free_colr;
+    TT_Set_Palette_Func              set_palette;
+    TT_Get_Colr_Layer_Func           get_colr_layer;
+    TT_Get_Color_Glyph_Paint_Func    get_colr_glyph_paint;
+    TT_Get_Color_Glyph_ClipBox_Func  get_color_glyph_clipbox;
+    TT_Get_Paint_Layers_Func         get_paint_layers;
+    TT_Get_Colorline_Stops_Func      get_colorline_stops;
+    TT_Get_Paint_Func                get_paint;
+    TT_Blend_Colr_Func               colr_blend;
 
-    TT_Get_Metrics_Func          get_metrics;
+    TT_Get_Metrics_Func  get_metrics;
 
-    TT_Get_Name_Func             get_name;
-    TT_Get_Name_ID_Func          get_name_id;
+    TT_Get_Name_Func     get_name;
+    TT_Get_Name_ID_Func  get_name_id;
+
+    /* OpenType SVG Support */
+    TT_Load_Table_Func    load_svg;
+    TT_Free_Table_Func    free_svg;
+    TT_Load_Svg_Doc_Func  load_svg_doc;
 
   } SFNT_Interface;
 
@@ -820,10 +1021,18 @@ FT_BEGIN_HEADER
           free_colr_,                    \
           set_palette_,                  \
           get_colr_layer_,               \
+          get_colr_glyph_paint_,         \
+          get_color_glyph_clipbox,       \
+          get_paint_layers_,             \
+          get_colorline_stops_,          \
+          get_paint_,                    \
           colr_blend_,                   \
           get_metrics_,                  \
           get_name_,                     \
-          get_name_id_ )                 \
+          get_name_id_,                  \
+          load_svg_,                     \
+          free_svg_,                     \
+          load_svg_doc_ )                \
   static const SFNT_Interface  class_ =  \
   {                                      \
     goto_table_,                         \
@@ -860,10 +1069,18 @@ FT_BEGIN_HEADER
     free_colr_,                          \
     set_palette_,                        \
     get_colr_layer_,                     \
+    get_colr_glyph_paint_,               \
+    get_color_glyph_clipbox,             \
+    get_paint_layers_,                   \
+    get_colorline_stops_,                \
+    get_paint_,                          \
     colr_blend_,                         \
     get_metrics_,                        \
     get_name_,                           \
-    get_name_id_                         \
+    get_name_id_,                        \
+    load_svg_,                           \
+    free_svg_,                           \
+    load_svg_doc_                        \
   };
 
 

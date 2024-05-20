@@ -1,49 +1,52 @@
-/*************************************************************************/
-/*  animation_tree.h                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_tree.h                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef ANIMATION_GRAPH_PLAYER_H
-#define ANIMATION_GRAPH_PLAYER_H
+#ifndef ANIMATION_TREE_H
+#define ANIMATION_TREE_H
 
-#include "animation_player.h"
-#include "scene/3d/node_3d.h"
-#include "scene/3d/skeleton_3d.h"
+#include "animation_mixer.h"
 #include "scene/resources/animation.h"
 
+#define HUGE_LENGTH 31540000 // 31540000 seconds mean 1 year... is it too long? It must be longer than any Animation length and Transition xfade time to prevent time inversion for AnimationNodeStateMachine.
+
 class AnimationNodeBlendTree;
-class AnimationPlayer;
+class AnimationNodeStartState;
+class AnimationNodeEndState;
 class AnimationTree;
 
 class AnimationNode : public Resource {
 	GDCLASS(AnimationNode, Resource);
 
 public:
+	friend class AnimationTree;
+
 	enum FilterAction {
 		FILTER_IGNORE,
 		FILTER_PASS,
@@ -55,69 +58,109 @@ public:
 		String name;
 	};
 
+	bool closable = false;
 	Vector<Input> inputs;
-
-	float process_input(int p_input, float p_time, bool p_seek, float p_blend);
-
-	friend class AnimationTree;
-
-	struct AnimationState {
-		Ref<Animation> animation;
-		float time = 0.0;
-		float delta = 0.0;
-		const Vector<float> *track_blends = nullptr;
-		float blend = 0.0;
-		bool seeked = false;
-	};
-
-	struct State {
-		int track_count = 0;
-		HashMap<NodePath, int> track_map;
-		List<AnimationState> animation_states;
-		bool valid = false;
-		AnimationPlayer *player = nullptr;
-		AnimationTree *tree = nullptr;
-		String invalid_reasons;
-		uint64_t last_pass = 0;
-	};
-
-	Vector<float> blends;
-	State *state = nullptr;
-
-	float _pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, float p_time, bool p_seek, const Vector<StringName> &p_connections);
-	void _pre_update_animations(HashMap<NodePath, int> *track_map);
-
-	//all this is temporary
-	StringName base_path;
-	Vector<StringName> connections;
-	AnimationNode *parent = nullptr;
-
 	HashMap<NodePath, bool> filter;
 	bool filter_enabled = false;
+
+	// To propagate information from upstream for use in estimation of playback progress.
+	// These values must be taken from the result of blend_node() or blend_input() and must be essentially read-only.
+	// For example, if you want to change the position, you need to change the pi.time value of PlaybackInfo passed to blend_input(pi) and get the result.
+	struct NodeTimeInfo {
+		// Retain the previous frame values. These are stored into the AnimationTree's Map and exposing them as read-only values.
+		double length = 0.0;
+		double position = 0.0;
+		double delta = 0.0;
+
+		// Needs internally to estimate remain time, the previous frame values are not retained.
+		Animation::LoopMode loop_mode = Animation::LOOP_NONE;
+		bool is_just_looped = false; // For breaking loop, it is true when just looped.
+		bool is_infinity = false; // For unpredictable state machine's end.
+
+		bool is_looping() {
+			return loop_mode != Animation::LOOP_NONE;
+		}
+		double get_remain(bool p_break_loop = false) {
+			if ((is_looping() && !p_break_loop) || is_infinity) {
+				return HUGE_LENGTH;
+			}
+			if (p_break_loop && is_just_looped) {
+				return 0;
+			}
+			return length - position;
+		}
+	};
+
+	// Temporary state for blending process which needs to be stored in each AnimationNodes.
+	struct NodeState {
+		StringName base_path;
+		AnimationNode *parent = nullptr;
+		Vector<StringName> connections;
+		Vector<real_t> track_weights;
+	} node_state;
+
+	// Temporary state for blending process which needs to be started in the AnimationTree, pass through the AnimationNodes, and then return to the AnimationTree.
+	struct ProcessState {
+		AnimationTree *tree = nullptr;
+		HashMap<NodePath, int> track_map; // TODO: Is there a better way to manage filter/tracks?
+		bool is_testing = false;
+		bool valid = false;
+		String invalid_reasons;
+		uint64_t last_pass = 0;
+	} *process_state = nullptr;
 
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
-	float _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, float *r_max = nullptr);
+
+	// The time information is passed from upstream to downstream by AnimationMixer::PlaybackInfo::p_playback_info until AnimationNodeAnimation processes it.
+	// Conversely, AnimationNodeAnimation returns the processed result as NodeTimeInfo from downstream to upstream.
+	NodeTimeInfo _blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationNode *p_new_parent, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false, real_t *r_activity = nullptr);
+	NodeTimeInfo _pre_process(ProcessState *p_process_state, AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false);
 
 protected:
-	void blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend);
-	float blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
-	float blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
+	StringName current_length = "current_length";
+	StringName current_position = "current_position";
+	StringName current_delta = "current_delta";
+
+	virtual NodeTimeInfo process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false); // To organize time information. Virtualizing for especially AnimationNodeAnimation needs to take "backward" into account.
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false); // Main process.
+
+	void blend_animation(const StringName &p_animation, AnimationMixer::PlaybackInfo p_playback_info);
+	NodeTimeInfo blend_node(Ref<AnimationNode> p_node, const StringName &p_subpath, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
+	NodeTimeInfo blend_input(int p_input, AnimationMixer::PlaybackInfo p_playback_info, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
+
+	// Bind-able methods to expose for compatibility, moreover AnimationMixer::PlaybackInfo is not exposed.
+	void blend_animation_ex(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE);
+	double blend_node_ex(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
+	double blend_input_ex(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
+
 	void make_invalid(const String &p_reason);
+	AnimationTree *get_animation_tree() const;
 
 	static void _bind_methods();
 
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
-	void _set_parent(Object *p_parent);
+	GDVIRTUAL0RC(Dictionary, _get_child_nodes)
+	GDVIRTUAL0RC(Array, _get_parameter_list)
+	GDVIRTUAL1RC(Ref<AnimationNode>, _get_child_by_name, StringName)
+	GDVIRTUAL1RC(Variant, _get_parameter_default_value, StringName)
+	GDVIRTUAL1RC(bool, _is_parameter_read_only, StringName)
+	GDVIRTUAL4RC(double, _process, double, bool, bool, bool)
+	GDVIRTUAL0RC(String, _get_caption)
+	GDVIRTUAL0RC(bool, _has_filter)
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
+	virtual bool is_parameter_read_only(const StringName &p_parameter) const;
 
 	void set_parameter(const StringName &p_name, const Variant &p_value);
 	Variant get_parameter(const StringName &p_name) const;
+
+	void set_node_time_info(const NodeTimeInfo &p_node_time_info); // Wrapper of set_parameter().
+	virtual NodeTimeInfo get_node_time_info() const; // Wrapper of get_parameter().
 
 	struct ChildNode {
 		StringName name;
@@ -126,15 +169,14 @@ public:
 
 	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
 
-	virtual float process(float p_time, bool p_seek);
 	virtual String get_caption() const;
 
+	virtual bool add_input(const String &p_name);
+	virtual void remove_input(int p_index);
+	virtual bool set_input_name(int p_input, const String &p_name);
+	virtual String get_input_name(int p_input) const;
 	int get_input_count() const;
-	String get_input_name(int p_input);
-
-	void add_input(const String &p_name);
-	void set_input_name(int p_input, const String &p_name);
-	void remove_input(int p_index);
+	int find_input(const String &p_name) const;
 
 	void set_filter_path(const NodePath &p_path, bool p_enable);
 	bool is_path_filtered(const NodePath &p_path) const;
@@ -142,186 +184,140 @@ public:
 	void set_filter_enabled(bool p_enable);
 	bool is_filter_enabled() const;
 
+	void set_deletable(bool p_closable);
+	bool is_deletable() const;
+
 	virtual bool has_filter() const;
 
-	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name);
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
+
+	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const;
+	Ref<AnimationNode> find_node_by_path(const String &p_name) const;
 
 	AnimationNode();
 };
 
 VARIANT_ENUM_CAST(AnimationNode::FilterAction)
 
-//root node does not allow inputs
+// Root node does not allow inputs.
 class AnimationRootNode : public AnimationNode {
 	GDCLASS(AnimationRootNode, AnimationNode);
+
+protected:
+	virtual void _tree_changed();
+	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
+	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node);
 
 public:
 	AnimationRootNode() {}
 };
 
-class AnimationTree : public Node {
-	GDCLASS(AnimationTree, Node);
+class AnimationNodeStartState : public AnimationRootNode {
+	GDCLASS(AnimationNodeStartState, AnimationRootNode);
+};
 
+class AnimationNodeEndState : public AnimationRootNode {
+	GDCLASS(AnimationNodeEndState, AnimationRootNode);
+};
+
+class AnimationTree : public AnimationMixer {
+	GDCLASS(AnimationTree, AnimationMixer);
+
+#ifndef DISABLE_DEPRECATED
 public:
 	enum AnimationProcessCallback {
 		ANIMATION_PROCESS_PHYSICS,
 		ANIMATION_PROCESS_IDLE,
 		ANIMATION_PROCESS_MANUAL,
 	};
+#endif // DISABLE_DEPRECATED
 
 private:
-	struct TrackCache {
-		bool root_motion = false;
-		uint64_t setup_pass = 0;
-		uint64_t process_pass = 0;
-		Animation::TrackType type = Animation::TrackType::TYPE_ANIMATION;
-		Object *object = nullptr;
-		ObjectID object_id;
+	Ref<AnimationRootNode> root_animation_node;
+	NodePath advance_expression_base_node = NodePath(String("."));
 
-		TrackCache() {
-		}
-		virtual ~TrackCache() {}
-	};
-
-	struct TrackCacheTransform : public TrackCache {
-#ifndef _3D_DISABLED
-		Node3D *node_3d = nullptr;
-		Skeleton3D *skeleton = nullptr;
-#endif // _3D_DISABLED
-		int bone_idx = -1;
-		Vector3 loc;
-		Quaternion rot;
-		float rot_blend_accum = 0.0;
-		Vector3 scale;
-
-		TrackCacheTransform() {
-			type = Animation::TYPE_TRANSFORM3D;
-		}
-	};
-
-	struct TrackCacheValue : public TrackCache {
-		Variant value;
-		Vector<StringName> subpath;
-		TrackCacheValue() { type = Animation::TYPE_VALUE; }
-	};
-
-	struct TrackCacheMethod : public TrackCache {
-		TrackCacheMethod() { type = Animation::TYPE_METHOD; }
-	};
-
-	struct TrackCacheBezier : public TrackCache {
-		float value = 0.0;
-		Vector<StringName> subpath;
-		TrackCacheBezier() {
-			type = Animation::TYPE_BEZIER;
-		}
-	};
-
-	struct TrackCacheAudio : public TrackCache {
-		bool playing = false;
-		float start = 0.0;
-		float len = 0.0;
-
-		TrackCacheAudio() {
-			type = Animation::TYPE_AUDIO;
-		}
-	};
-
-	struct TrackCacheAnimation : public TrackCache {
-		bool playing = false;
-
-		TrackCacheAnimation() {
-			type = Animation::TYPE_ANIMATION;
-		}
-	};
-
-	HashMap<NodePath, TrackCache *> track_cache;
-	Set<TrackCache *> playing_caches;
-
-	Ref<AnimationNode> root;
-
-	AnimationProcessCallback process_callback = ANIMATION_PROCESS_IDLE;
-	bool active = false;
-	NodePath animation_player;
-
-	AnimationNode::State state;
-	bool cache_valid = false;
-	void _node_removed(Node *p_node);
-	void _caches_cleared();
-
-	void _clear_caches();
-	bool _update_caches(AnimationPlayer *player);
-	void _process_graph(float p_delta);
-
-	uint64_t setup_pass = 1;
+	AnimationNode::ProcessState process_state;
 	uint64_t process_pass = 1;
 
 	bool started = true;
 
-	NodePath root_motion_track;
-	Transform3D root_motion_transform;
-
 	friend class AnimationNode;
-	bool properties_dirty = true;
-	void _tree_changed();
-	void _update_properties();
+
 	List<PropertyInfo> properties;
 	HashMap<StringName, HashMap<StringName, StringName>> property_parent_map;
-	HashMap<StringName, Variant> property_map;
+	HashMap<ObjectID, StringName> property_reference_map;
+	HashMap<StringName, Pair<Variant, bool>> property_map; // Property value and read-only flag.
+
+	bool properties_dirty = true;
+
+	void _update_properties();
+	void _update_properties_for_node(const String &p_base_path, Ref<AnimationNode> p_node);
+
+	void _tree_changed();
+	void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
+	void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node);
 
 	struct Activity {
 		uint64_t last_pass = 0;
-		float activity = 0.0;
+		real_t activity = 0.0;
 	};
-
 	HashMap<StringName, Vector<Activity>> input_activity_map;
 	HashMap<StringName, Vector<Activity> *> input_activity_map_get;
 
-	void _update_properties_for_node(const String &p_base_path, Ref<AnimationNode> node);
+	NodePath animation_player;
 
-	ObjectID last_animation_player;
+	void _setup_animation_player();
+	void _animation_player_changed();
 
-protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-
+	virtual void _validate_property(PropertyInfo &p_property) const override;
 	void _notification(int p_what);
+
 	static void _bind_methods();
 
+	virtual void _set_active(bool p_active) override;
+
+	// Make animation instances.
+	virtual bool _blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map) override;
+
+#ifndef DISABLE_DEPRECATED
+	void _set_process_callback_bind_compat_80813(AnimationProcessCallback p_mode);
+	AnimationProcessCallback _get_process_callback_bind_compat_80813() const;
+	void _set_tree_root_bind_compat_80813(const Ref<AnimationNode> &p_root);
+	Ref<AnimationNode> _get_tree_root_bind_compat_80813() const;
+
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
-	void set_tree_root(const Ref<AnimationNode> &p_root);
-	Ref<AnimationNode> get_tree_root() const;
-
-	void set_active(bool p_active);
-	bool is_active() const;
-
-	void set_process_callback(AnimationProcessCallback p_mode);
-	AnimationProcessCallback get_process_callback() const;
-
-	void set_animation_player(const NodePath &p_player);
+	void set_animation_player(const NodePath &p_path);
 	NodePath get_animation_player() const;
 
-	TypedArray<String> get_configuration_warnings() const override;
+	void set_root_animation_node(const Ref<AnimationRootNode> &p_animation_node);
+	Ref<AnimationRootNode> get_root_animation_node() const;
+
+	void set_advance_expression_base_node(const NodePath &p_path);
+	NodePath get_advance_expression_base_node() const;
+
+	PackedStringArray get_configuration_warnings() const override;
 
 	bool is_state_invalid() const;
 	String get_invalid_state_reason() const;
 
-	void set_root_motion_track(const NodePath &p_track);
-	NodePath get_root_motion_track() const;
-
-	Transform3D get_root_motion_transform() const;
-
-	float get_connection_activity(const StringName &p_path, int p_connection) const;
-	void advance(float p_time);
-
-	void rename_parameter(const String &p_base, const String &p_new_base);
+	real_t get_connection_activity(const StringName &p_path, int p_connection) const;
 
 	uint64_t get_last_process_pass() const;
+
 	AnimationTree();
 	~AnimationTree();
 };
 
-VARIANT_ENUM_CAST(AnimationTree::AnimationProcessCallback)
+#ifndef DISABLE_DEPRECATED
+VARIANT_ENUM_CAST(AnimationTree::AnimationProcessCallback);
+#endif // DISABLE_DEPRECATED
 
-#endif // ANIMATION_GRAPH_PLAYER_H
+#endif // ANIMATION_TREE_H

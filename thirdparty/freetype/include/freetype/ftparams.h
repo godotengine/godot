@@ -4,7 +4,7 @@
  *
  *   FreeType API for possible FT_Parameter tags (specification only).
  *
- * Copyright (C) 2017-2020 by
+ * Copyright (C) 2017-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -110,6 +110,21 @@ FT_BEGIN_HEADER
    */
 #define FT_PARAM_TAG_INCREMENTAL \
           FT_MAKE_TAG( 'i', 'n', 'c', 'r' )
+
+
+  /**************************************************************************
+   *
+   * @enum:
+   *   FT_PARAM_TAG_IGNORE_SBIX
+   *
+   * @description:
+   *   A tag for @FT_Parameter to make @FT_Open_Face ignore an 'sbix' table
+   *   while loading a font.  Use this if @FT_FACE_FLAG_SBIX is set and you
+   *   want to access the outline glyphs in the font.
+   *
+   */
+#define FT_PARAM_TAG_IGNORE_SBIX \
+          FT_MAKE_TAG( 'i', 's', 'b', 'x' )
 
 
   /**************************************************************************

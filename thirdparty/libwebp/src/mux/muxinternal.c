@@ -155,17 +155,18 @@ WebPMuxError ChunkSetHead(WebPChunk* const chunk,
 
 WebPMuxError ChunkAppend(WebPChunk* const chunk,
                          WebPChunk*** const chunk_list) {
+  WebPMuxError err;
   assert(chunk_list != NULL && *chunk_list != NULL);
 
   if (**chunk_list == NULL) {
-    ChunkSetHead(chunk, *chunk_list);
+    err = ChunkSetHead(chunk, *chunk_list);
   } else {
     WebPChunk* last_chunk = **chunk_list;
     while (last_chunk->next_ != NULL) last_chunk = last_chunk->next_;
-    ChunkSetHead(chunk, &last_chunk->next_);
-    *chunk_list = &last_chunk->next_;
+    err = ChunkSetHead(chunk, &last_chunk->next_);
+    if (err == WEBP_MUX_OK) *chunk_list = &last_chunk->next_;
   }
-  return WEBP_MUX_OK;
+  return err;
 }
 
 //------------------------------------------------------------------------------

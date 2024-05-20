@@ -47,9 +47,19 @@ namespace GodotTools.OpenVisualStudio
             if (dte == null)
             {
                 // Open a new instance
+                dte = TryVisualStudioLaunch("VisualStudio.DTE.17.0");
 
-                var visualStudioDteType = Type.GetTypeFromProgID("VisualStudio.DTE.16.0", throwOnError: true);
-                dte = (DTE)Activator.CreateInstance(visualStudioDteType);
+                if (dte == null)
+                {
+                    // Launch of VS 2022 failed, fallback to 2019
+                    dte = TryVisualStudioLaunch("VisualStudio.DTE.16.0");
+
+                    if (dte == null)
+                    {
+                        Console.Error.WriteLine("Visual Studio not found");
+                        return 1;
+                    }
+                }
 
                 dte.UserControl = true;
 
@@ -125,7 +135,7 @@ namespace GodotTools.OpenVisualStudio
             {
                 var mainWindow = dte.MainWindow;
                 mainWindow.Activate();
-                SetForegroundWindow(new IntPtr(mainWindow.HWnd));
+                SetForegroundWindow(mainWindow.HWnd);
 
                 MessageFilter.Revoke();
             }
@@ -133,7 +143,22 @@ namespace GodotTools.OpenVisualStudio
             return 0;
         }
 
-        private static DTE FindInstanceEditingSolution(string solutionPath)
+        private static DTE? TryVisualStudioLaunch(string version)
+        {
+            try
+            {
+                var visualStudioDteType = Type.GetTypeFromProgID(version, throwOnError: true);
+                var dte = (DTE?)Activator.CreateInstance(visualStudioDteType!);
+
+                return dte;
+            }
+            catch (COMException)
+            {
+                return null;
+            }
+        }
+
+        private static DTE? FindInstanceEditingSolution(string solutionPath)
         {
             if (GetRunningObjectTable(0, out IRunningObjectTable pprot) != 0)
                 return null;
@@ -164,7 +189,7 @@ namespace GodotTools.OpenVisualStudio
                         continue;
 
                     // The digits after the colon are the process ID
-                    if (!Regex.IsMatch(ppszDisplayName, "!VisualStudio.DTE.16.0:[0-9]"))
+                    if (!Regex.IsMatch(ppszDisplayName, "!VisualStudio.DTE.1[6-7].0:[0-9]"))
                         continue;
 
                     if (pprot.GetObject(moniker[0], out object ppunkObject) == 0)
@@ -185,7 +210,7 @@ namespace GodotTools.OpenVisualStudio
             return null;
         }
 
-        static string NormalizePath(string path)
+        private static string NormalizePath(string path)
         {
             return new Uri(Path.GetFullPath(path)).LocalPath
                 .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
@@ -199,7 +224,7 @@ namespace GodotTools.OpenVisualStudio
             // Class containing the IOleMessageFilter
             // thread error-handling functions
 
-            private static IOleMessageFilter _oldFilter;
+            private static IOleMessageFilter? _oldFilter;
 
             // Start the filter
             public static void Register()
@@ -230,8 +255,8 @@ namespace GodotTools.OpenVisualStudio
             // Thread call was rejected, so try again.
             int IOleMessageFilter.RetryRejectedCall(IntPtr hTaskCallee, int dwTickCount, int dwRejectType)
             {
+                // flag = SERVERCALL_RETRYLATER
                 if (dwRejectType == 2)
-                    // flag = SERVERCALL_RETRYLATER
                 {
                     // Retry the thread call immediately if return >= 0 & < 100
                     return 99;
@@ -249,7 +274,7 @@ namespace GodotTools.OpenVisualStudio
 
             // Implement the IOleMessageFilter interface
             [DllImport("ole32.dll")]
-            private static extern int CoRegisterMessageFilter(IOleMessageFilter newFilter, out IOleMessageFilter oldFilter);
+            private static extern int CoRegisterMessageFilter(IOleMessageFilter? newFilter, out IOleMessageFilter? oldFilter);
         }
 
         [ComImport(), Guid("00000016-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]

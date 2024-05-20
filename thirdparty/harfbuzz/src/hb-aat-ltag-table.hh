@@ -46,11 +46,13 @@ struct FTStringRange
   bool sanitize (hb_sanitize_context_t *c, const void *base) const
   {
     TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this) && (base+tag).sanitize (c, length));
+    return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
+		  (base+tag).sanitize (c, length));
   }
 
   protected:
-  NNOffsetTo<UnsizedArrayOf<HBUINT8>>
+  NNOffset16To<UnsizedArrayOf<HBUINT8>>
 		tag;		/* Offset from the start of the table to
 				 * the beginning of the string */
   HBUINT16	length;		/* String length (in bytes) */
@@ -73,6 +75,7 @@ struct ltag
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  version >= 1 &&
 			  tagRanges.sanitize (c, this)));
   }
@@ -80,7 +83,7 @@ struct ltag
   protected:
   HBUINT32	version;	/* Table version; currently 1 */
   HBUINT32	flags;		/* Table flags; currently none defined */
-  LArrayOf<FTStringRange>
+  Array32Of<FTStringRange>
 		tagRanges;	/* Range for each tag's string */
   public:
   DEFINE_SIZE_ARRAY (12, tagRanges);

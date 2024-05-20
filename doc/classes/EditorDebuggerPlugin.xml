@@ -1,103 +1,88 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorDebuggerPlugin" inherits="Control" version="4.0">
+<class name="EditorDebuggerPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A base class to implement debugger plugins.
 	</brief_description>
 	<description>
-		All debugger plugin scripts must extend [EditorDebuggerPlugin]. It provides functions related to editor side of debugger.
-		You don't need to instantiate this class. That is handled by the debugger itself. [Control] nodes can be added as child nodes to provide a GUI front-end for the plugin.
-		Do not queue_free/reparent it's instance otherwise the instance becomes unusable.
+		[EditorDebuggerPlugin] provides functions related to the editor side of the debugger.
+		To interact with the debugger, an instance of this class must be added to the editor via [method EditorPlugin.add_debugger_plugin].
+		Once added, the [method _setup_session] callback will be called for every [EditorDebuggerSession] available to the plugin, and when new ones are created (the sessions may be inactive during this stage).
+		You can retrieve the available [EditorDebuggerSession]s via [method get_sessions] or get a specific one via [method get_session].
+		[codeblocks]
+		[gdscript]
+		@tool
+		extends EditorPlugin
+
+		class ExampleEditorDebugger extends EditorDebuggerPlugin:
+
+		    func _has_capture(prefix):
+		        # Return true if you wish to handle message with this prefix.
+		        return prefix == "my_plugin"
+
+		    func _capture(message, data, session_id):
+		        if message == "my_plugin:ping":
+		            get_session(session_id).send_message("my_plugin:echo", data)
+
+		    func _setup_session(session_id):
+		        # Add a new tab in the debugger session UI containing a label.
+		        var label = Label.new()
+		        label.name = "Example plugin"
+		        label.text = "Example plugin"
+		        var session = get_session(session_id)
+		        # Listens to the session started and stopped signals.
+		        session.started.connect(func (): print("Session started"))
+		        session.stopped.connect(func (): print("Session stopped"))
+		        session.add_session_tab(label)
+
+		var debugger = ExampleEditorDebugger.new()
+
+		func _enter_tree():
+		    add_debugger_plugin(debugger)
+
+		func _exit_tree():
+		    remove_debugger_plugin(debugger)
+		[/gdscript]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="has_capture">
-			<return type="bool">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
+		<method name="_capture" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="data" type="Array" />
+			<param index="2" name="session_id" type="int" />
 			<description>
-				Returns [code]true[/code] if a message capture with given name is present otherwise [code]false[/code].
+				Override this method to process incoming messages. The [param session_id] is the ID of the [EditorDebuggerSession] that received the message (which you can retrieve via [method get_session]).
 			</description>
 		</method>
-		<method name="is_breaked">
-			<return type="bool">
-			</return>
+		<method name="_has_capture" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="capture" type="String" />
 			<description>
-				Returns [code]true[/code] if the game is in break state otherwise [code]false[/code].
+				Override this method to enable receiving messages from the debugger. If [param capture] is "my_message" then messages starting with "my_message:" will be passes to the [method _capture] method.
 			</description>
 		</method>
-		<method name="is_debuggable">
-			<return type="bool">
-			</return>
+		<method name="_setup_session" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="session_id" type="int" />
 			<description>
-				Returns [code]true[/code] if the game can be debugged otherwise [code]false[/code].
+				Override this method to be notified whenever a new [EditorDebuggerSession] is created (the session may be inactive during this stage).
 			</description>
 		</method>
-		<method name="is_session_active">
-			<return type="bool">
-			</return>
+		<method name="get_session">
+			<return type="EditorDebuggerSession" />
+			<param index="0" name="id" type="int" />
 			<description>
-				Returns [code]true[/code] if there is an instance of the game running with the attached debugger otherwise [code]false[/code].
+				Returns the [EditorDebuggerSession] with the given [param id].
 			</description>
 		</method>
-		<method name="register_message_capture">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<argument index="1" name="callable" type="Callable">
-			</argument>
+		<method name="get_sessions">
+			<return type="Array" />
 			<description>
-				Registers a message capture with given [code]name[/code]. If [code]name[/code] is "my_message" then messages starting with "my_message:" will be called with the given callable.
-				Callable must accept a message string and a data array as argument. If the message and data are valid then callable must return [code]true[/code] otherwise [code]false[/code].
-			</description>
-		</method>
-		<method name="send_message">
-			<return type="void">
-			</return>
-			<argument index="0" name="message" type="String">
-			</argument>
-			<argument index="1" name="data" type="Array">
-			</argument>
-			<description>
-				Sends a message with given [code]message[/code] and [code]data[/code] array.
-			</description>
-		</method>
-		<method name="unregister_message_capture">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<description>
-				Unregisters the message capture with given name.
+				Returns an array of [EditorDebuggerSession] currently available to this debugger plugin.
+				[b]Note:[/b] Sessions in the array may be inactive, check their state via [method EditorDebuggerSession.is_active].
 			</description>
 		</method>
 	</methods>
-	<signals>
-		<signal name="breaked">
-			<argument index="0" name="can_debug" type="bool">
-			</argument>
-			<description>
-				Emitted when the game enters a break state.
-			</description>
-		</signal>
-		<signal name="continued">
-			<description>
-				Emitted when the game exists a break state.
-			</description>
-		</signal>
-		<signal name="started">
-			<description>
-				Emitted when the debugging starts.
-			</description>
-		</signal>
-		<signal name="stopped">
-			<description>
-				Emitted when the debugging stops.
-			</description>
-		</signal>
-	</signals>
-	<constants>
-	</constants>
 </class>

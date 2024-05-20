@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamOggVorbis" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A class representing an Ogg Vorbis audio stream.
+	</brief_description>
+	<description>
+		The AudioStreamOggVorbis class is a specialized [AudioStream] for handling Ogg Vorbis file formats. It offers functionality for loading and playing back Ogg Vorbis files, as well as managing looping and other playback properties. This class is part of the audio stream system, which also supports WAV files through the [AudioStreamWAV] class.
+	</description>
+	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+	</tutorials>
+	<methods>
+		<method name="load_from_buffer" qualifiers="static">
+			<return type="AudioStreamOggVorbis" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Creates a new AudioStreamOggVorbis instance from the given buffer. The buffer must contain Ogg Vorbis data.
+			</description>
+		</method>
+		<method name="load_from_file" qualifiers="static">
+			<return type="AudioStreamOggVorbis" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Creates a new AudioStreamOggVorbis instance from the given file path. The file must be in Ogg Vorbis format.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bar_beats" type="int" setter="set_bar_beats" getter="get_bar_beats" default="4">
+		</member>
+		<member name="beat_count" type="int" setter="set_beat_count" getter="get_beat_count" default="0">
+		</member>
+		<member name="bpm" type="float" setter="set_bpm" getter="get_bpm" default="0.0">
+		</member>
+		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
+			If [code]true[/code], the audio will play again from the specified [member loop_offset] once it is done playing. Useful for ambient sounds and background music.
+		</member>
+		<member name="loop_offset" type="float" setter="set_loop_offset" getter="get_loop_offset" default="0.0">
+			Time in seconds at which the stream starts after being looped.
+		</member>
+		<member name="packet_sequence" type="OggPacketSequence" setter="set_packet_sequence" getter="get_packet_sequence">
+			Contains the raw Ogg data for this stream.
+		</member>
+	</members>
+</class>

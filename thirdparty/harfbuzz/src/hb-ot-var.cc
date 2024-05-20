@@ -56,7 +56,7 @@
  *
  * Tests whether a face includes any OpenType variation data in the `fvar` table.
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  * Since: 1.4.2
  **/
@@ -162,7 +162,7 @@ hb_ot_var_get_axis_infos (hb_face_t             *face,
  * Fetches the variation-axis information corresponding to the specified axis tag
  * in the specified face.
  *
- * Return value: %true if data found, %false otherwise
+ * Return value: `true` if data found, `false` otherwise
  *
  * Since: 2.2.0
  **/
@@ -302,6 +302,9 @@ hb_ot_var_normalize_variations (hb_face_t            *face,
  * Normalizes the given design-space coordinates. The minimum and maximum
  * values for the axis are mapped to the interval [-1,1], with the default
  * axis value mapped to 0.
+ *
+ * The normalized values have 14 bits of fixed-point sub-integer precision as per
+ * OpenType specification.
  *
  * Any additional scaling defined in the face's `avar` table is also
  * applied, as described at https://docs.microsoft.com/en-us/typography/opentype/spec/avar

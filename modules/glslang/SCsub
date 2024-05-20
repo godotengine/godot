@@ -12,48 +12,46 @@ thirdparty_obj = []
 if env["builtin_glslang"]:
     thirdparty_dir = "#thirdparty/glslang/"
     thirdparty_sources = [
-        "glslang/CInterface/glslang_c_interface.cpp",
-        "glslang/MachineIndependent/RemoveTree.cpp",
-        "glslang/MachineIndependent/ParseHelper.cpp",
-        "glslang/MachineIndependent/iomapper.cpp",
-        "glslang/MachineIndependent/propagateNoContraction.cpp",
-        "glslang/MachineIndependent/Intermediate.cpp",
-        "glslang/MachineIndependent/linkValidate.cpp",
+        "glslang/GenericCodeGen/CodeGen.cpp",
+        "glslang/GenericCodeGen/Link.cpp",
         "glslang/MachineIndependent/attribute.cpp",
-        "glslang/MachineIndependent/Scan.cpp",
-        "glslang/MachineIndependent/Initialize.cpp",
         "glslang/MachineIndependent/Constant.cpp",
-        "glslang/MachineIndependent/reflection.cpp",
+        "glslang/MachineIndependent/glslang_tab.cpp",
+        "glslang/MachineIndependent/InfoSink.cpp",
+        "glslang/MachineIndependent/Initialize.cpp",
+        "glslang/MachineIndependent/Intermediate.cpp",
+        "glslang/MachineIndependent/intermOut.cpp",
+        "glslang/MachineIndependent/IntermTraverse.cpp",
+        "glslang/MachineIndependent/iomapper.cpp",
         "glslang/MachineIndependent/limits.cpp",
-        "glslang/MachineIndependent/preprocessor/PpScanner.cpp",
-        "glslang/MachineIndependent/preprocessor/PpTokens.cpp",
+        "glslang/MachineIndependent/linkValidate.cpp",
+        "glslang/MachineIndependent/parseConst.cpp",
+        "glslang/MachineIndependent/ParseContextBase.cpp",
+        "glslang/MachineIndependent/ParseHelper.cpp",
+        "glslang/MachineIndependent/PoolAlloc.cpp",
         "glslang/MachineIndependent/preprocessor/PpAtom.cpp",
         "glslang/MachineIndependent/preprocessor/PpContext.cpp",
         "glslang/MachineIndependent/preprocessor/Pp.cpp",
-        "glslang/MachineIndependent/InfoSink.cpp",
-        "glslang/MachineIndependent/intermOut.cpp",
-        "glslang/MachineIndependent/SymbolTable.cpp",
-        "glslang/MachineIndependent/glslang_tab.cpp",
-        "glslang/MachineIndependent/Versions.cpp",
+        "glslang/MachineIndependent/preprocessor/PpScanner.cpp",
+        "glslang/MachineIndependent/preprocessor/PpTokens.cpp",
+        "glslang/MachineIndependent/propagateNoContraction.cpp",
+        "glslang/MachineIndependent/reflection.cpp",
+        "glslang/MachineIndependent/RemoveTree.cpp",
+        "glslang/MachineIndependent/Scan.cpp",
         "glslang/MachineIndependent/ShaderLang.cpp",
-        "glslang/MachineIndependent/parseConst.cpp",
-        "glslang/MachineIndependent/PoolAlloc.cpp",
-        "glslang/MachineIndependent/ParseContextBase.cpp",
-        "glslang/MachineIndependent/IntermTraverse.cpp",
-        "glslang/GenericCodeGen/Link.cpp",
-        "glslang/GenericCodeGen/CodeGen.cpp",
-        "OGLCompilersDLL/InitializeDll.cpp",
-        "SPIRV/CInterface/spirv_c_interface.cpp",
-        "SPIRV/InReadableOrder.cpp",
-        "SPIRV/GlslangToSpv.cpp",
-        "SPIRV/SpvBuilder.cpp",
-        "SPIRV/SpvTools.cpp",
+        "glslang/MachineIndependent/SpirvIntrinsics.cpp",
+        "glslang/MachineIndependent/SymbolTable.cpp",
+        "glslang/MachineIndependent/Versions.cpp",
+        "glslang/ResourceLimits/ResourceLimits.cpp",
         "SPIRV/disassemble.cpp",
         "SPIRV/doc.cpp",
-        "SPIRV/SPVRemapper.cpp",
-        "SPIRV/SpvPostProcess.cpp",
+        "SPIRV/GlslangToSpv.cpp",
+        "SPIRV/InReadableOrder.cpp",
         "SPIRV/Logger.cpp",
-        "StandAlone/ResourceLimits.cpp",
+        "SPIRV/SpvBuilder.cpp",
+        "SPIRV/SpvPostProcess.cpp",
+        "SPIRV/SPVRemapper.cpp",
+        "SPIRV/SpvTools.cpp",
     ]
 
     if env["platform"] == "windows":
@@ -64,10 +62,12 @@ if env["builtin_glslang"]:
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     # Treat glslang headers as system headers to avoid raising warnings. Not supported on MSVC.
+    # Include `#thirdparty` to workaround mismatch between location of `SPIRV` in library source
+    # and in installed public headers.
     if not env.msvc:
-        env_glslang.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path])
+        env_glslang.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path, "-isystem", Dir("#thirdparty").path])
     else:
-        env_glslang.Prepend(CPPPATH=[thirdparty_dir])
+        env_glslang.Prepend(CPPPATH=[thirdparty_dir, "#thirdparty"])
 
     env_glslang.Append(CPPDEFINES=["ENABLE_OPT=0"])
 

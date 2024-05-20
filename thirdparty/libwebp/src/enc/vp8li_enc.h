@@ -69,9 +69,11 @@ typedef struct {
   int use_palette_;
   int palette_size_;
   uint32_t palette_[MAX_PALETTE_SIZE];
+  // Sorted version of palette_ for cache purposes.
+  uint32_t palette_sorted_[MAX_PALETTE_SIZE];
 
   // Some 'scratch' (potentially large) objects.
-  struct VP8LBackwardRefs refs_[3];  // Backward Refs array for temporaries.
+  struct VP8LBackwardRefs refs_[4];  // Backward Refs array for temporaries.
   VP8LHashChain hash_chain_;         // HashChain data for constructing
                                      // backward references.
 } VP8LEncoder;
@@ -86,10 +88,9 @@ int VP8LEncodeImage(const WebPConfig* const config,
                     const WebPPicture* const picture);
 
 // Encodes the main image stream using the supplied bit writer.
-// If 'use_cache' is false, disables the use of color cache.
-WebPEncodingError VP8LEncodeStream(const WebPConfig* const config,
-                                   const WebPPicture* const picture,
-                                   VP8LBitWriter* const bw, int use_cache);
+// Returns false in case of error (stored in picture->error_code).
+int VP8LEncodeStream(const WebPConfig* const config,
+                     const WebPPicture* const picture, VP8LBitWriter* const bw);
 
 #if (WEBP_NEAR_LOSSLESS == 1)
 // in near_lossless.c
@@ -101,13 +102,18 @@ int VP8ApplyNearLossless(const WebPPicture* const picture, int quality,
 //------------------------------------------------------------------------------
 // Image transforms in predictor.c.
 
-void VP8LResidualImage(int width, int height, int bits, int low_effort,
-                       uint32_t* const argb, uint32_t* const argb_scratch,
-                       uint32_t* const image, int near_lossless, int exact,
-                       int used_subtract_green);
+// pic and percent are for progress.
+// Returns false in case of error (stored in pic->error_code).
+int VP8LResidualImage(int width, int height, int bits, int low_effort,
+                      uint32_t* const argb, uint32_t* const argb_scratch,
+                      uint32_t* const image, int near_lossless, int exact,
+                      int used_subtract_green, const WebPPicture* const pic,
+                      int percent_range, int* const percent);
 
-void VP8LColorSpaceTransform(int width, int height, int bits, int quality,
-                             uint32_t* const argb, uint32_t* image);
+int VP8LColorSpaceTransform(int width, int height, int bits, int quality,
+                            uint32_t* const argb, uint32_t* image,
+                            const WebPPicture* const pic, int percent_range,
+                            int* const percent);
 
 //------------------------------------------------------------------------------
 

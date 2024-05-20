@@ -11,8 +11,8 @@
 */
 ENET_API void enet_address_set_ip(ENetAddress * address, const uint8_t * ip, size_t size);
 
-ENET_API void enet_host_dtls_server_setup (ENetHost *, void *, void *);
-ENET_API void enet_host_dtls_client_setup (ENetHost *, void *, uint8_t, const char *);
+ENET_API int enet_host_dtls_server_setup (ENetHost *, void *);
+ENET_API int enet_host_dtls_client_setup (ENetHost *, const char *, void *);
 ENET_API void enet_host_refuse_new_connections (ENetHost *, int);
 
 #endif // __ENET_GODOT_EXT_H__

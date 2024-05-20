@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SphereShape3D" inherits="Shape3D" version="4.0">
+<class name="SphereShape3D" inherits="Shape3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Sphere shape for 3D collisions.
+		A 3D sphere shape used for physics collision.
 	</brief_description>
 	<description>
-		Sphere shape for 3D collisions, which can be set into a [PhysicsBody3D] or [Area3D]. This shape is useful for modeling sphere-like 3D objects.
+		A 3D sphere shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D].
+		[b]Performance:[/b] [SphereShape3D] is fast to check collisions against. It is faster than [BoxShape3D], [CapsuleShape3D], and [CylinderShape3D].
 	</description>
 	<tutorials>
-		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 			The sphere's radius. The shape's diameter is double the radius.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

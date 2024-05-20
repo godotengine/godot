@@ -1,74 +1,75 @@
-/*************************************************************************/
-/*  crypto_mbedtls.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  crypto_mbedtls.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "crypto_mbedtls.h"
-
-#include "core/io/file_access.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/compression.h"
+#include "core/io/file_access.h"
+#include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
-#define PEM_BEGIN_CRT "-----BEGIN CERTIFICATE-----\n"
-#define PEM_END_CRT "-----END CERTIFICATE-----\n"
 
 #include <mbedtls/debug.h>
 #include <mbedtls/md.h>
 #include <mbedtls/pem.h>
 
+#define PEM_BEGIN_CRT "-----BEGIN CERTIFICATE-----\n"
+#define PEM_END_CRT "-----END CERTIFICATE-----\n"
+#define PEM_MIN_SIZE 54
+
 CryptoKey *CryptoKeyMbedTLS::create() {
 	return memnew(CryptoKeyMbedTLS);
 }
 
-Error CryptoKeyMbedTLS::load(String p_path, bool p_public_only) {
+Error CryptoKeyMbedTLS::load(const String &p_path, bool p_public_only) {
 	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Key is in use");
 
 	PackedByteArray out;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open CryptoKeyMbedTLS file '" + p_path + "'.");
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot open CryptoKeyMbedTLS file '" + p_path + "'.");
 
 	uint64_t flen = f->get_length();
 	out.resize(flen + 1);
 	f->get_buffer(out.ptrw(), flen);
 	out.write[flen] = 0; // string terminator
-	memdelete(f);
 
 	int ret = 0;
 	if (p_public_only) {
 		ret = mbedtls_pk_parse_public_key(&pkey, out.ptr(), out.size());
 	} else {
-		ret = mbedtls_pk_parse_key(&pkey, out.ptr(), out.size(), nullptr, 0);
+		ret = _parse_key(out.ptr(), out.size());
 	}
 	// We MUST zeroize the memory for safety!
 	mbedtls_platform_zeroize(out.ptrw(), out.size());
@@ -78,9 +79,9 @@ Error CryptoKeyMbedTLS::load(String p_path, bool p_public_only) {
 	return OK;
 }
 
-Error CryptoKeyMbedTLS::save(String p_path, bool p_public_only) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot save CryptoKeyMbedTLS file '" + p_path + "'.");
+Error CryptoKeyMbedTLS::save(const String &p_path, bool p_public_only) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot save CryptoKeyMbedTLS file '" + p_path + "'.");
 
 	unsigned char w[16000];
 	memset(w, 0, sizeof(w));
@@ -92,24 +93,22 @@ Error CryptoKeyMbedTLS::save(String p_path, bool p_public_only) {
 		ret = mbedtls_pk_write_key_pem(&pkey, w, sizeof(w));
 	}
 	if (ret != 0) {
-		memdelete(f);
 		mbedtls_platform_zeroize(w, sizeof(w)); // Zeroize anything we might have written.
 		ERR_FAIL_V_MSG(FAILED, "Error writing key '" + itos(ret) + "'.");
 	}
 
 	size_t len = strlen((char *)w);
 	f->store_buffer(w, len);
-	memdelete(f);
 	mbedtls_platform_zeroize(w, sizeof(w)); // Zeroize temporary buffer.
 	return OK;
 }
 
-Error CryptoKeyMbedTLS::load_from_string(String p_string_key, bool p_public_only) {
+Error CryptoKeyMbedTLS::load_from_string(const String &p_string_key, bool p_public_only) {
 	int ret = 0;
 	if (p_public_only) {
 		ret = mbedtls_pk_parse_public_key(&pkey, (unsigned char *)p_string_key.utf8().get_data(), p_string_key.utf8().size());
 	} else {
-		ret = mbedtls_pk_parse_key(&pkey, (unsigned char *)p_string_key.utf8().get_data(), p_string_key.utf8().size(), nullptr, 0);
+		ret = _parse_key((unsigned char *)p_string_key.utf8().get_data(), p_string_key.utf8().size());
 	}
 	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing key '" + itos(ret) + "'.");
 
@@ -135,40 +134,64 @@ String CryptoKeyMbedTLS::save_to_string(bool p_public_only) {
 	return s;
 }
 
+int CryptoKeyMbedTLS::_parse_key(const uint8_t *p_buf, int p_size) {
+#if MBEDTLS_VERSION_MAJOR >= 3
+	mbedtls_entropy_context rng_entropy;
+	mbedtls_ctr_drbg_context rng_drbg;
+
+	mbedtls_ctr_drbg_init(&rng_drbg);
+	mbedtls_entropy_init(&rng_entropy);
+	int ret = mbedtls_ctr_drbg_seed(&rng_drbg, mbedtls_entropy_func, &rng_entropy, nullptr, 0);
+	ERR_FAIL_COND_V_MSG(ret != 0, ret, vformat("mbedtls_ctr_drbg_seed returned -0x%x\n", (unsigned int)-ret));
+
+	ret = mbedtls_pk_parse_key(&pkey, p_buf, p_size, nullptr, 0, mbedtls_ctr_drbg_random, &rng_drbg);
+	mbedtls_ctr_drbg_free(&rng_drbg);
+	mbedtls_entropy_free(&rng_entropy);
+	return ret;
+#else
+	return mbedtls_pk_parse_key(&pkey, p_buf, p_size, nullptr, 0);
+#endif
+}
+
 X509Certificate *X509CertificateMbedTLS::create() {
 	return memnew(X509CertificateMbedTLS);
 }
 
-Error X509CertificateMbedTLS::load(String p_path) {
-	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is in use");
+Error X509CertificateMbedTLS::load(const String &p_path) {
+	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is already in use.");
 
 	PackedByteArray out;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open X509CertificateMbedTLS file '" + p_path + "'.");
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, vformat("Cannot open X509CertificateMbedTLS file '%s'.", p_path));
 
 	uint64_t flen = f->get_length();
 	out.resize(flen + 1);
 	f->get_buffer(out.ptrw(), flen);
 	out.write[flen] = 0; // string terminator
-	memdelete(f);
 
 	int ret = mbedtls_x509_crt_parse(&cert, out.ptr(), out.size());
-	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing some certificates: " + itos(ret));
+	ERR_FAIL_COND_V_MSG(ret < 0, FAILED, vformat("Error parsing X509 certificates from file '%s': %d.", p_path, ret));
+	if (ret > 0) { // Some certs parsed fine, don't error.
+		print_verbose(vformat("MbedTLS: Some X509 certificates could not be parsed from file '%s' (%d certificates skipped).", p_path, ret));
+	}
 
 	return OK;
 }
 
 Error X509CertificateMbedTLS::load_from_memory(const uint8_t *p_buffer, int p_len) {
-	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is in use");
+	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is already in use.");
 
 	int ret = mbedtls_x509_crt_parse(&cert, p_buffer, p_len);
-	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing certificates: " + itos(ret));
+	ERR_FAIL_COND_V_MSG(ret < 0, FAILED, vformat("Error parsing X509 certificates: %d.", ret));
+	if (ret > 0) { // Some certs parsed fine, don't error.
+		print_verbose(vformat("MbedTLS: Some X509 certificates could not be parsed (%d certificates skipped).", ret));
+	}
 	return OK;
 }
 
-Error X509CertificateMbedTLS::save(String p_path) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot save X509CertificateMbedTLS file '" + p_path + "'.");
+Error X509CertificateMbedTLS::save(const String &p_path) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, vformat("Cannot save X509CertificateMbedTLS file '%s'.", p_path));
 
 	mbedtls_x509_crt *crt = &cert;
 	while (crt) {
@@ -176,14 +199,44 @@ Error X509CertificateMbedTLS::save(String p_path) {
 		size_t wrote = 0;
 		int ret = mbedtls_pem_write_buffer(PEM_BEGIN_CRT, PEM_END_CRT, cert.raw.p, cert.raw.len, w, sizeof(w), &wrote);
 		if (ret != 0 || wrote == 0) {
-			memdelete(f);
 			ERR_FAIL_V_MSG(FAILED, "Error writing certificate '" + itos(ret) + "'.");
 		}
 
 		f->store_buffer(w, wrote - 1); // don't write the string terminator
 		crt = crt->next;
 	}
-	memdelete(f);
+	return OK;
+}
+
+String X509CertificateMbedTLS::save_to_string() {
+	String buffer;
+	mbedtls_x509_crt *crt = &cert;
+	while (crt) {
+		unsigned char w[4096];
+		size_t wrote = 0;
+		int ret = mbedtls_pem_write_buffer(PEM_BEGIN_CRT, PEM_END_CRT, cert.raw.p, cert.raw.len, w, sizeof(w), &wrote);
+		ERR_FAIL_COND_V_MSG(ret != 0 || wrote == 0, String(), "Error saving the certificate.");
+
+		buffer += String((char *)w, wrote);
+		crt = crt->next;
+	}
+	if (buffer.length() <= PEM_MIN_SIZE) {
+		// When the returned value of variable 'buffer' would consist of no Base-64 data, return an empty String instead.
+		return String();
+	}
+	return buffer;
+}
+
+Error X509CertificateMbedTLS::load_from_string(const String &p_string_key) {
+	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is already in use.");
+	CharString cs = p_string_key.utf8();
+
+	int ret = mbedtls_x509_crt_parse(&cert, (const unsigned char *)cs.get_data(), cs.size());
+	ERR_FAIL_COND_V_MSG(ret < 0, FAILED, vformat("Error parsing X509 certificates: %d.", ret));
+	if (ret > 0) { // Some certs parsed fine, don't error.
+		print_verbose(vformat("MbedTLS: Some X509 certificates could not be parsed (%d certificates skipped).", ret));
+	}
+
 	return OK;
 }
 
@@ -201,7 +254,7 @@ HMACContext *HMACContextMbedTLS::create() {
 	return memnew(HMACContextMbedTLS);
 }
 
-Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, PackedByteArray p_key) {
+Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, const PackedByteArray &p_key) {
 	ERR_FAIL_COND_V_MSG(ctx != nullptr, ERR_FILE_ALREADY_IN_USE, "HMACContext already started.");
 
 	// HMAC keys can be any size.
@@ -221,8 +274,8 @@ Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, PackedByte
 	return ret ? FAILED : OK;
 }
 
-Error HMACContextMbedTLS::update(PackedByteArray p_data) {
-	ERR_FAIL_COND_V_MSG(ctx == nullptr, ERR_INVALID_DATA, "Start must be called before update.");
+Error HMACContextMbedTLS::update(const PackedByteArray &p_data) {
+	ERR_FAIL_NULL_V_MSG(ctx, ERR_INVALID_DATA, "Start must be called before update.");
 
 	ERR_FAIL_COND_V_MSG(p_data.is_empty(), ERR_INVALID_PARAMETER, "Src must not be empty.");
 
@@ -231,7 +284,7 @@ Error HMACContextMbedTLS::update(PackedByteArray p_data) {
 }
 
 PackedByteArray HMACContextMbedTLS::finish() {
-	ERR_FAIL_COND_V_MSG(ctx == nullptr, PackedByteArray(), "Start must be called before finish.");
+	ERR_FAIL_NULL_V_MSG(ctx, PackedByteArray(), "Start must be called before finish.");
 	ERR_FAIL_COND_V_MSG(hash_len == 0, PackedByteArray(), "Unsupported hash type.");
 
 	PackedByteArray out;
@@ -304,29 +357,35 @@ X509CertificateMbedTLS *CryptoMbedTLS::get_default_certificates() {
 	return default_certs;
 }
 
-void CryptoMbedTLS::load_default_certificates(String p_path) {
+void CryptoMbedTLS::load_default_certificates(const String &p_path) {
 	ERR_FAIL_COND(default_certs != nullptr);
 
 	default_certs = memnew(X509CertificateMbedTLS);
-	ERR_FAIL_COND(default_certs == nullptr);
+	ERR_FAIL_NULL(default_certs);
 
-	if (p_path != "") {
+	if (!p_path.is_empty()) {
 		// Use certs defined in project settings.
 		default_certs->load(p_path);
-	}
+	} else {
+		// Try to use system certs otherwise.
+		String system_certs = OS::get_singleton()->get_system_ca_certificates();
+		if (!system_certs.is_empty()) {
+			CharString cs = system_certs.utf8();
+			default_certs->load_from_memory((const uint8_t *)cs.get_data(), cs.size());
+			print_verbose("Loaded system CA certificates");
+		}
 #ifdef BUILTIN_CERTS_ENABLED
-	else {
-		// Use builtin certs only if user did not override it in project settings.
-		PackedByteArray out;
-		out.resize(_certs_uncompressed_size + 1);
-		Compression::decompress(out.ptrw(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
-		out.write[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
-#ifdef DEBUG_ENABLED
-		print_verbose("Loaded builtin certs");
+		else {
+			// Use builtin certs if there are no system certs.
+			PackedByteArray certs;
+			certs.resize(_certs_uncompressed_size + 1);
+			Compression::decompress(certs.ptrw(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
+			certs.write[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
+			default_certs->load_from_memory(certs.ptr(), certs.size());
+			print_verbose("Loaded builtin CA certificates");
+		}
 #endif
-		default_certs->load_from_memory(out.ptr(), out.size());
 	}
-#endif
 }
 
 Ref<CryptoKey> CryptoMbedTLS::generate_rsa(int p_bytes) {
@@ -340,7 +399,7 @@ Ref<CryptoKey> CryptoMbedTLS::generate_rsa(int p_bytes) {
 	return out;
 }
 
-Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after) {
+Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoKey> p_key, const String &p_issuer_name, const String &p_not_before, const String &p_not_after) {
 	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
 	ERR_FAIL_COND_V_MSG(key.is_null(), nullptr, "Invalid private key argument.");
 	mbedtls_x509write_cert crt;
@@ -353,12 +412,17 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 	mbedtls_x509write_crt_set_version(&crt, MBEDTLS_X509_CRT_VERSION_3);
 	mbedtls_x509write_crt_set_md_alg(&crt, MBEDTLS_MD_SHA256);
 
+	uint8_t rand_serial[20];
+	mbedtls_ctr_drbg_random(&ctr_drbg, rand_serial, sizeof(rand_serial));
+
+#if MBEDTLS_VERSION_MAJOR >= 3
+	mbedtls_x509write_crt_set_serial_raw(&crt, rand_serial, sizeof(rand_serial));
+#else
 	mbedtls_mpi serial;
 	mbedtls_mpi_init(&serial);
-	uint8_t rand_serial[20];
-	mbedtls_ctr_drbg_random(&ctr_drbg, rand_serial, 20);
-	ERR_FAIL_COND_V(mbedtls_mpi_read_binary(&serial, rand_serial, 20), nullptr);
+	ERR_FAIL_COND_V(mbedtls_mpi_read_binary(&serial, rand_serial, sizeof(rand_serial)), nullptr);
 	mbedtls_x509write_crt_set_serial(&crt, &serial);
+#endif
 
 	mbedtls_x509write_crt_set_validity(&crt, p_not_before.utf8().get_data(), p_not_after.utf8().get_data());
 	mbedtls_x509write_crt_set_basic_constraints(&crt, 1, -1);
@@ -367,7 +431,9 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 	unsigned char buf[4096];
 	memset(buf, 0, 4096);
 	int ret = mbedtls_x509write_crt_pem(&crt, buf, 4096, mbedtls_ctr_drbg_random, &ctr_drbg);
+#if MBEDTLS_VERSION_MAJOR < 3
 	mbedtls_mpi_free(&serial);
+#endif
 	mbedtls_x509write_crt_free(&crt);
 	ERR_FAIL_COND_V_MSG(ret != 0, nullptr, "Failed to generate certificate: " + itos(ret));
 	buf[4095] = '\0'; // Make sure strlen can't fail.
@@ -379,9 +445,19 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 }
 
 PackedByteArray CryptoMbedTLS::generate_random_bytes(int p_bytes) {
+	ERR_FAIL_COND_V(p_bytes < 0, PackedByteArray());
 	PackedByteArray out;
 	out.resize(p_bytes);
-	mbedtls_ctr_drbg_random(&ctr_drbg, out.ptrw(), p_bytes);
+	int left = p_bytes;
+	int pos = 0;
+	// Ensure we generate random in chunks of no more than MBEDTLS_CTR_DRBG_MAX_REQUEST bytes or mbedtls_ctr_drbg_random will fail.
+	while (left > 0) {
+		int to_read = MIN(left, MBEDTLS_CTR_DRBG_MAX_REQUEST);
+		int ret = mbedtls_ctr_drbg_random(&ctr_drbg, out.ptrw() + pos, to_read);
+		ERR_FAIL_COND_V_MSG(ret != 0, PackedByteArray(), vformat("Failed to generate %d random bytes(s). Error: %d.", p_bytes, ret));
+		left -= to_read;
+		pos += to_read;
+	}
 	return out;
 }
 
@@ -402,7 +478,7 @@ mbedtls_md_type_t CryptoMbedTLS::md_type_from_hashtype(HashingContext::HashType 
 	}
 }
 
-Vector<uint8_t> CryptoMbedTLS::sign(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Ref<CryptoKey> p_key) {
+Vector<uint8_t> CryptoMbedTLS::sign(HashingContext::HashType p_hash_type, const Vector<uint8_t> &p_hash, Ref<CryptoKey> p_key) {
 	int size;
 	mbedtls_md_type_t type = CryptoMbedTLS::md_type_from_hashtype(p_hash_type, size);
 	ERR_FAIL_COND_V_MSG(type == MBEDTLS_MD_NONE, Vector<uint8_t>(), "Invalid hash type.");
@@ -411,16 +487,24 @@ Vector<uint8_t> CryptoMbedTLS::sign(HashingContext::HashType p_hash_type, Vector
 	ERR_FAIL_COND_V_MSG(!key.is_valid(), Vector<uint8_t>(), "Invalid key provided.");
 	ERR_FAIL_COND_V_MSG(key->is_public_only(), Vector<uint8_t>(), "Invalid key provided. Cannot sign with public_only keys.");
 	size_t sig_size = 0;
+#if MBEDTLS_VERSION_MAJOR >= 3
+	unsigned char buf[MBEDTLS_PK_SIGNATURE_MAX_SIZE];
+#else
 	unsigned char buf[MBEDTLS_MPI_MAX_SIZE];
+#endif
 	Vector<uint8_t> out;
-	int ret = mbedtls_pk_sign(&(key->pkey), type, p_hash.ptr(), size, buf, &sig_size, mbedtls_ctr_drbg_random, &ctr_drbg);
+	int ret = mbedtls_pk_sign(&(key->pkey), type, p_hash.ptr(), size, buf,
+#if MBEDTLS_VERSION_MAJOR >= 3
+			sizeof(buf),
+#endif
+			&sig_size, mbedtls_ctr_drbg_random, &ctr_drbg);
 	ERR_FAIL_COND_V_MSG(ret, out, "Error while signing: " + itos(ret));
 	out.resize(sig_size);
 	memcpy(out.ptrw(), buf, sig_size);
 	return out;
 }
 
-bool CryptoMbedTLS::verify(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Vector<uint8_t> p_signature, Ref<CryptoKey> p_key) {
+bool CryptoMbedTLS::verify(HashingContext::HashType p_hash_type, const Vector<uint8_t> &p_hash, const Vector<uint8_t> &p_signature, Ref<CryptoKey> p_key) {
 	int size;
 	mbedtls_md_type_t type = CryptoMbedTLS::md_type_from_hashtype(p_hash_type, size);
 	ERR_FAIL_COND_V_MSG(type == MBEDTLS_MD_NONE, false, "Invalid hash type.");
@@ -430,7 +514,7 @@ bool CryptoMbedTLS::verify(HashingContext::HashType p_hash_type, Vector<uint8_t>
 	return mbedtls_pk_verify(&(key->pkey), type, p_hash.ptr(), size, p_signature.ptr(), p_signature.size()) == 0;
 }
 
-Vector<uint8_t> CryptoMbedTLS::encrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_plaintext) {
+Vector<uint8_t> CryptoMbedTLS::encrypt(Ref<CryptoKey> p_key, const Vector<uint8_t> &p_plaintext) {
 	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
 	ERR_FAIL_COND_V_MSG(!key.is_valid(), Vector<uint8_t>(), "Invalid key provided.");
 	uint8_t buf[1024];
@@ -443,7 +527,7 @@ Vector<uint8_t> CryptoMbedTLS::encrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_p
 	return out;
 }
 
-Vector<uint8_t> CryptoMbedTLS::decrypt(Ref<CryptoKey> p_key, Vector<uint8_t> p_ciphertext) {
+Vector<uint8_t> CryptoMbedTLS::decrypt(Ref<CryptoKey> p_key, const Vector<uint8_t> &p_ciphertext) {
 	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
 	ERR_FAIL_COND_V_MSG(!key.is_valid(), Vector<uint8_t>(), "Invalid key provided.");
 	ERR_FAIL_COND_V_MSG(key->is_public_only(), Vector<uint8_t>(), "Invalid key provided. Cannot decrypt using a public_only key.");

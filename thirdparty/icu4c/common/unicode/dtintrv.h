@@ -76,7 +76,7 @@ public:
      * @return          The class ID for all objects of this class.
      * @stable ICU 4.0
      */
-    static UClassID U_EXPORT2 getStaticClassID(void);
+    static UClassID U_EXPORT2 getStaticClassID();
 
     /**
      * Returns a unique class ID POLYMORPHICALLY. Pure virtual override. This
@@ -89,9 +89,8 @@ public:
      *                  other classes have different class IDs.
      * @stable ICU 4.0
      */
-    virtual UClassID getDynamicClassID(void) const;
+    virtual UClassID getDynamicClassID() const override;
 
-    
     /**
      * Copy constructor.
      * @stable ICU 4.0
@@ -109,14 +108,14 @@ public:
      * @return true if the two DateIntervals are the same
      * @stable ICU 4.0
      */
-    virtual UBool operator==(const DateInterval& other) const;
+    virtual bool operator==(const DateInterval& other) const;
 
     /**
      * Non-equality operator
      * @return true if the two DateIntervals are not the same
      * @stable ICU 4.0
      */
-    inline UBool operator!=(const DateInterval& other) const;
+    inline bool operator!=(const DateInterval& other) const;
 
 
     /**
@@ -131,7 +130,7 @@ private:
     /** 
      * Default constructor, not implemented.
      */
-    DateInterval();
+    DateInterval() = delete;
 
     UDate fromDate;
     UDate toDate;
@@ -151,7 +150,7 @@ DateInterval::getToDate() const {
 }
 
 
-inline UBool 
+inline bool
 DateInterval::operator!=(const DateInterval& other) const { 
     return ( !operator==(other) );
 }

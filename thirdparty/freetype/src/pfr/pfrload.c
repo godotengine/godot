@@ -4,7 +4,7 @@
  *
  *   FreeType PFR loader (body).
  *
- * Copyright (C) 2002-2020 by
+ * Copyright (C) 2002-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -268,9 +268,7 @@
          header->version     > 4           ||
          header->header_size < 58          ||
          header->signature2 != 0x0D0A      )    /* CR/LF  */
-    {
       result = 0;
-    }
 
     return result;
   }
@@ -406,11 +404,9 @@
       }
 
       if ( flags & PFR_LOG_BOLD )
-      {
         log_font->bold_thickness = ( flags & PFR_LOG_2BYTE_BOLD )
                                    ? PFR_NEXT_SHORT( p )
                                    : PFR_NEXT_BYTE( p );
-      }
 
       if ( flags & PFR_LOG_EXTRA_ITEMS )
       {
@@ -453,15 +449,16 @@
 
   /* load bitmap strikes lists */
   FT_CALLBACK_DEF( FT_Error )
-  pfr_extra_item_load_bitmap_info( FT_Byte*     p,
-                                   FT_Byte*     limit,
-                                   PFR_PhyFont  phy_font )
+  pfr_extra_item_load_bitmap_info( FT_Byte*  p,
+                                   FT_Byte*  limit,
+                                   void*     phy_font_ )
   {
-    FT_Memory   memory = phy_font->memory;
-    PFR_Strike  strike;
-    FT_UInt     flags0;
-    FT_UInt     n, count, size1;
-    FT_Error    error = FT_Err_Ok;
+    PFR_PhyFont  phy_font = (PFR_PhyFont)phy_font_;
+    FT_Memory    memory   = phy_font->memory;
+    PFR_Strike   strike;
+    FT_UInt      flags0;
+    FT_UInt      n, count, size1;
+    FT_Error     error    = FT_Err_Ok;
 
 
     PFR_CHECK( 5 );
@@ -553,19 +550,20 @@
    * family.
    */
   FT_CALLBACK_DEF( FT_Error )
-  pfr_extra_item_load_font_id( FT_Byte*     p,
-                               FT_Byte*     limit,
-                               PFR_PhyFont  phy_font )
+  pfr_extra_item_load_font_id( FT_Byte*  p,
+                               FT_Byte*  limit,
+                               void*     phy_font_ )
   {
-    FT_Error   error  = FT_Err_Ok;
-    FT_Memory  memory = phy_font->memory;
-    FT_UInt    len    = (FT_UInt)( limit - p );
+    PFR_PhyFont  phy_font = (PFR_PhyFont)phy_font_;
+    FT_Error     error    = FT_Err_Ok;
+    FT_Memory    memory   = phy_font->memory;
+    FT_UInt      len      = (FT_UInt)( limit - p );
 
 
     if ( phy_font->font_id )
       goto Exit;
 
-    if ( FT_ALLOC( phy_font->font_id, len + 1 ) )
+    if ( FT_QALLOC( phy_font->font_id, len + 1 ) )
       goto Exit;
 
     /* copy font ID name, and terminate it for safety */
@@ -579,14 +577,15 @@
 
   /* load stem snap tables */
   FT_CALLBACK_DEF( FT_Error )
-  pfr_extra_item_load_stem_snaps( FT_Byte*     p,
-                                  FT_Byte*     limit,
-                                  PFR_PhyFont  phy_font )
+  pfr_extra_item_load_stem_snaps( FT_Byte*  p,
+                                  FT_Byte*  limit,
+                                  void*     phy_font_ )
   {
-    FT_UInt    count, num_vert, num_horz;
-    FT_Int*    snaps  = NULL;
-    FT_Error   error  = FT_Err_Ok;
-    FT_Memory  memory = phy_font->memory;
+    PFR_PhyFont  phy_font = (PFR_PhyFont)phy_font_;
+    FT_UInt      count, num_vert, num_horz;
+    FT_Int*      snaps    = NULL;
+    FT_Error     error    = FT_Err_Ok;
+    FT_Memory    memory   = phy_font->memory;
 
 
     if ( phy_font->vertical.stem_snaps )
@@ -601,10 +600,10 @@
 
     PFR_CHECK( count * 2 );
 
-    if ( FT_NEW_ARRAY( snaps, count ) )
+    if ( FT_QNEW_ARRAY( snaps, count ) )
       goto Exit;
 
-    phy_font->vertical.stem_snaps = snaps;
+    phy_font->vertical.stem_snaps   = snaps;
     phy_font->horizontal.stem_snaps = snaps + num_vert;
 
     for ( ; count > 0; count--, snaps++ )
@@ -621,13 +620,13 @@
   }
 
 
-
   /* load kerning pair data */
   FT_CALLBACK_DEF( FT_Error )
-  pfr_extra_item_load_kerning_pairs( FT_Byte*     p,
-                                     FT_Byte*     limit,
-                                     PFR_PhyFont  phy_font )
+  pfr_extra_item_load_kerning_pairs( FT_Byte*  p,
+                                     FT_Byte*  limit,
+                                     void*     phy_font_ )
   {
+    PFR_PhyFont  phy_font = (PFR_PhyFont)phy_font_;
     PFR_KernItem  item   = NULL;
     FT_Error      error  = FT_Err_Ok;
     FT_Memory     memory = phy_font->memory;
@@ -720,10 +719,10 @@
 
   static const PFR_ExtraItemRec  pfr_phy_font_extra_items[] =
   {
-    { 1, (PFR_ExtraItem_ParseFunc)pfr_extra_item_load_bitmap_info },
-    { 2, (PFR_ExtraItem_ParseFunc)pfr_extra_item_load_font_id },
-    { 3, (PFR_ExtraItem_ParseFunc)pfr_extra_item_load_stem_snaps },
-    { 4, (PFR_ExtraItem_ParseFunc)pfr_extra_item_load_kerning_pairs },
+    { 1, pfr_extra_item_load_bitmap_info },
+    { 2, pfr_extra_item_load_font_id },
+    { 3, pfr_extra_item_load_stem_snaps },
+    { 4, pfr_extra_item_load_kerning_pairs },
     { 0, NULL }
   };
 
@@ -761,7 +760,7 @@
 
     if ( ok )
     {
-      if ( FT_ALLOC( result, len + 1 ) )
+      if ( FT_QALLOC( result, len + 1 ) )
         goto Exit;
 
       FT_MEM_COPY( result, p, len );
@@ -857,8 +856,16 @@
     phy_font->bbox.yMax          = PFR_NEXT_SHORT( p );
     phy_font->flags      = flags = PFR_NEXT_BYTE( p );
 
+    if ( !phy_font->outline_resolution ||
+         !phy_font->metrics_resolution )
+    {
+      error = FT_THROW( Invalid_Table );
+      FT_ERROR(( "pfr_phy_font_load: invalid resolution\n" ));
+      goto Fail;
+    }
+
     /* get the standard advance for non-proportional fonts */
-    if ( !(flags & PFR_PHY_PROPORTIONAL) )
+    if ( !( flags & PFR_PHY_PROPORTIONAL ) )
     {
       PFR_CHECK( 2 );
       phy_font->standard_advance = PFR_NEXT_SHORT( p );
@@ -869,14 +876,13 @@
     {
       error = pfr_extra_items_parse( &p, limit,
                                      pfr_phy_font_extra_items, phy_font );
-
       if ( error )
         goto Fail;
     }
 
     /* In certain fonts, the auxiliary bytes contain interesting   */
     /* information.  These are not in the specification but can be */
-    /* guessed by looking at the content of a few PFR0 fonts.      */
+    /* guessed by looking at the content of a few 'PFR0' fonts.    */
     PFR_CHECK( 3 );
     num_aux = PFR_NEXT_ULONG( p );
 
@@ -953,7 +959,7 @@
 
       PFR_CHECK( count * 2 );
 
-      if ( FT_NEW_ARRAY( phy_font->blue_values, count ) )
+      if ( FT_QNEW_ARRAY( phy_font->blue_values, count ) )
         goto Fail;
 
       for ( n = 0; n < count; n++ )
@@ -975,6 +981,13 @@
       phy_font->num_chars    = count = PFR_NEXT_USHORT( p );
       phy_font->chars_offset = offset + (FT_Offset)( p - stream->cursor );
 
+      if ( !phy_font->num_chars )
+      {
+        error = FT_THROW( Invalid_Table );
+        FT_ERROR(( "pfr_phy_font_load: no glyphs\n" ));
+        goto Fail;
+      }
+
       Size = 1 + 1 + 2;
       if ( flags & PFR_PHY_2BYTE_CHARCODE )
         Size += 1;
@@ -993,7 +1006,7 @@
 
       PFR_CHECK_SIZE( count * Size );
 
-      if ( FT_NEW_ARRAY( phy_font->chars, count ) )
+      if ( FT_QNEW_ARRAY( phy_font->chars, count ) )
         goto Fail;
 
       for ( n = 0; n < count; n++ )

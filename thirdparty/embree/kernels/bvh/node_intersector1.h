@@ -5,6 +5,15 @@
 
 #include "node_intersector.h"
 
+#if defined(__AVX2__)
+#define __FMA_X4__
+#endif
+
+#if defined(__aarch64__)
+#define __FMA_X4__
+#endif
+
+
 namespace embree
 {
   namespace isa
@@ -29,9 +38,15 @@ namespace embree
         org = Vec3vf<N>(ray_org.x,ray_org.y,ray_org.z);
         dir = Vec3vf<N>(ray_dir.x,ray_dir.y,ray_dir.z);
         rdir = Vec3vf<N>(ray_rdir.x,ray_rdir.y,ray_rdir.z);
-#if defined(__AVX2__) || defined(__ARM_NEON)
+#if defined(__FMA_X4__)
         const Vec3fa ray_org_rdir = ray_org*ray_rdir;
+#if !defined(__aarch64__)
         org_rdir = Vec3vf<N>(ray_org_rdir.x,ray_org_rdir.y,ray_org_rdir.z);
+#else
+          //for aarch64, we do not have msub equal instruction, so we negeate orig and use madd
+          //x86 will use msub
+        neg_org_rdir = Vec3vf<N>(-ray_org_rdir.x,-ray_org_rdir.y,-ray_org_rdir.z);
+#endif
 #endif
         nearX = ray_rdir.x >= 0.0f ? 0*sizeof(vfloat<N>) : 1*sizeof(vfloat<N>);
         nearY = ray_rdir.y >= 0.0f ? 2*sizeof(vfloat<N>) : 3*sizeof(vfloat<N>);
@@ -49,8 +64,12 @@ namespace embree
         org  = Vec3vf<N>(ray_org.x[k], ray_org.y[k], ray_org.z[k]);
         dir  = Vec3vf<N>(ray_dir.x[k], ray_dir.y[k], ray_dir.z[k]);
         rdir = Vec3vf<N>(ray_rdir.x[k], ray_rdir.y[k], ray_rdir.z[k]);
-#if defined(__AVX2__) || defined(__ARM_NEON)
-	org_rdir = org*rdir;
+#if defined(__FMA_X4__)
+#if !defined(__aarch64__)
+        org_rdir = org*rdir;
+#else
+        neg_org_rdir = -(org*rdir);
+#endif
 #endif
 	nearX = nearXYZ.x[k];
 	nearY = nearXYZ.y[k];
@@ -62,8 +81,14 @@ namespace embree
 
       Vec3fa org_xyz, dir_xyz;
       Vec3vf<N> org, dir, rdir;
-#if defined(__AVX2__) || defined(__ARM_NEON)
+#if defined(__FMA_X4__)
+#if !defined(__aarch64__)
       Vec3vf<N> org_rdir;
+#else
+        //aarch64 version are keeping negation of the org_rdir and use madd
+        //x86 uses msub
+      Vec3vf<N> neg_org_rdir;
+#endif
 #endif
       size_t nearX, nearY, nearZ;
       size_t farX, farY, farZ;
@@ -404,13 +429,22 @@ namespace embree
     template<>
       __forceinline size_t intersectNode<4>(const typename BVH4::AABBNode* node, const TravRay<4,false>& ray, vfloat4& dist)
     {
-#if defined(__AVX2__) || defined(__ARM_NEON)
+#if defined(__FMA_X4__)
+#if defined(__aarch64__)
+      const vfloat4 tNearX = madd(vfloat4::load((float*)((const char*)&node->lower_x+ray.nearX)), ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat4 tNearY = madd(vfloat4::load((float*)((const char*)&node->lower_x+ray.nearY)), ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat4 tNearZ = madd(vfloat4::load((float*)((const char*)&node->lower_x+ray.nearZ)), ray.rdir.z, ray.neg_org_rdir.z);
+      const vfloat4 tFarX  = madd(vfloat4::load((float*)((const char*)&node->lower_x+ray.farX )), ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat4 tFarY  = madd(vfloat4::load((float*)((const char*)&node->lower_x+ray.farY )), ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat4 tFarZ  = madd(vfloat4::load((float*)((const char*)&node->lower_x+ray.farZ )), ray.rdir.z, ray.neg_org_rdir.z);
+#else
       const vfloat4 tNearX = msub(vfloat4::load((float*)((const char*)&node->lower_x+ray.nearX)), ray.rdir.x, ray.org_rdir.x);
       const vfloat4 tNearY = msub(vfloat4::load((float*)((const char*)&node->lower_x+ray.nearY)), ray.rdir.y, ray.org_rdir.y);
       const vfloat4 tNearZ = msub(vfloat4::load((float*)((const char*)&node->lower_x+ray.nearZ)), ray.rdir.z, ray.org_rdir.z);
       const vfloat4 tFarX  = msub(vfloat4::load((float*)((const char*)&node->lower_x+ray.farX )), ray.rdir.x, ray.org_rdir.x);
       const vfloat4 tFarY  = msub(vfloat4::load((float*)((const char*)&node->lower_x+ray.farY )), ray.rdir.y, ray.org_rdir.y);
       const vfloat4 tFarZ  = msub(vfloat4::load((float*)((const char*)&node->lower_x+ray.farZ )), ray.rdir.z, ray.org_rdir.z);
+#endif
 #else
       const vfloat4 tNearX = (vfloat4::load((float*)((const char*)&node->lower_x+ray.nearX)) - ray.org.x) * ray.rdir.x;
       const vfloat4 tNearY = (vfloat4::load((float*)((const char*)&node->lower_x+ray.nearY)) - ray.org.y) * ray.rdir.y;
@@ -450,13 +484,23 @@ namespace embree
     template<>
       __forceinline size_t intersectNode<8>(const typename BVH8::AABBNode* node, const TravRay<8,false>& ray, vfloat8& dist)
     {
-#if defined(__AVX2__) || defined(__ARM_NEON)
+#if defined(__AVX2__)
+#if defined(__aarch64__)
+      const vfloat8 tNearX = madd(vfloat8::load((float*)((const char*)&node->lower_x+ray.nearX)), ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat8 tNearY = madd(vfloat8::load((float*)((const char*)&node->lower_x+ray.nearY)), ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat8 tNearZ = madd(vfloat8::load((float*)((const char*)&node->lower_x+ray.nearZ)), ray.rdir.z, ray.neg_org_rdir.z);
+      const vfloat8 tFarX  = madd(vfloat8::load((float*)((const char*)&node->lower_x+ray.farX )), ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat8 tFarY  = madd(vfloat8::load((float*)((const char*)&node->lower_x+ray.farY )), ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat8 tFarZ  = madd(vfloat8::load((float*)((const char*)&node->lower_x+ray.farZ )), ray.rdir.z, ray.neg_org_rdir.z);
+#else
       const vfloat8 tNearX = msub(vfloat8::load((float*)((const char*)&node->lower_x+ray.nearX)), ray.rdir.x, ray.org_rdir.x);
       const vfloat8 tNearY = msub(vfloat8::load((float*)((const char*)&node->lower_x+ray.nearY)), ray.rdir.y, ray.org_rdir.y);
       const vfloat8 tNearZ = msub(vfloat8::load((float*)((const char*)&node->lower_x+ray.nearZ)), ray.rdir.z, ray.org_rdir.z);
       const vfloat8 tFarX  = msub(vfloat8::load((float*)((const char*)&node->lower_x+ray.farX )), ray.rdir.x, ray.org_rdir.x);
       const vfloat8 tFarY  = msub(vfloat8::load((float*)((const char*)&node->lower_x+ray.farY )), ray.rdir.y, ray.org_rdir.y);
       const vfloat8 tFarZ  = msub(vfloat8::load((float*)((const char*)&node->lower_x+ray.farZ )), ray.rdir.z, ray.org_rdir.z);
+#endif
+
 #else
       const vfloat8 tNearX = (vfloat8::load((float*)((const char*)&node->lower_x+ray.nearX)) - ray.org.x) * ray.rdir.x;
       const vfloat8 tNearY = (vfloat8::load((float*)((const char*)&node->lower_x+ray.nearY)) - ray.org.y) * ray.rdir.y;
@@ -522,13 +566,22 @@ namespace embree
       const vfloat<N>* pFarX  = (const vfloat<N>*)((const char*)&node->lower_x+ray.farX);
       const vfloat<N>* pFarY  = (const vfloat<N>*)((const char*)&node->lower_x+ray.farY);
       const vfloat<N>* pFarZ  = (const vfloat<N>*)((const char*)&node->lower_x+ray.farZ);
-#if defined(__AVX2__) || defined(__ARM_NEON)
+#if defined(__FMA_X4__)
+#if defined(__aarch64__)
+      const vfloat<N> tNearX = madd(madd(time,pNearX[6],vfloat<N>(pNearX[0])), ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat<N> tNearY = madd(madd(time,pNearY[6],vfloat<N>(pNearY[0])), ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat<N> tNearZ = madd(madd(time,pNearZ[6],vfloat<N>(pNearZ[0])), ray.rdir.z, ray.neg_org_rdir.z);
+      const vfloat<N> tFarX  = madd(madd(time,pFarX [6],vfloat<N>(pFarX [0])), ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat<N> tFarY  = madd(madd(time,pFarY [6],vfloat<N>(pFarY [0])), ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat<N> tFarZ  = madd(madd(time,pFarZ [6],vfloat<N>(pFarZ [0])), ray.rdir.z, ray.neg_org_rdir.z);
+#else
       const vfloat<N> tNearX = msub(madd(time,pNearX[6],vfloat<N>(pNearX[0])), ray.rdir.x, ray.org_rdir.x);
       const vfloat<N> tNearY = msub(madd(time,pNearY[6],vfloat<N>(pNearY[0])), ray.rdir.y, ray.org_rdir.y);
       const vfloat<N> tNearZ = msub(madd(time,pNearZ[6],vfloat<N>(pNearZ[0])), ray.rdir.z, ray.org_rdir.z);
       const vfloat<N> tFarX  = msub(madd(time,pFarX [6],vfloat<N>(pFarX [0])), ray.rdir.x, ray.org_rdir.x);
       const vfloat<N> tFarY  = msub(madd(time,pFarY [6],vfloat<N>(pFarY [0])), ray.rdir.y, ray.org_rdir.y);
       const vfloat<N> tFarZ  = msub(madd(time,pFarZ [6],vfloat<N>(pFarZ [0])), ray.rdir.z, ray.org_rdir.z);
+#endif
 #else
       const vfloat<N> tNearX = (madd(time,pNearX[6],vfloat<N>(pNearX[0])) - ray.org.x) * ray.rdir.x;
       const vfloat<N> tNearY = (madd(time,pNearY[6],vfloat<N>(pNearY[0])) - ray.org.y) * ray.rdir.y;
@@ -537,7 +590,7 @@ namespace embree
       const vfloat<N> tFarY  = (madd(time,pFarY [6],vfloat<N>(pFarY [0])) - ray.org.y) * ray.rdir.y;
       const vfloat<N> tFarZ  = (madd(time,pFarZ [6],vfloat<N>(pFarZ [0])) - ray.org.z) * ray.rdir.z;
 #endif
-#if defined(__AVX2__) && !defined(__AVX512F__) // HSW
+#if defined(__FMA_X4__) && !defined(__AVX512F__) // HSW
       const vfloat<N> tNear = maxi(tNearX,tNearY,tNearZ,ray.tnear);
       const vfloat<N> tFar  = mini(tFarX ,tFarY ,tFarZ ,ray.tfar);
       const vbool<N> vmask = asInt(tNear) > asInt(tFar);
@@ -598,13 +651,22 @@ namespace embree
       const vfloat<N>* pFarX  = (const vfloat<N>*)((const char*)&node->lower_x+ray.farX);
       const vfloat<N>* pFarY  = (const vfloat<N>*)((const char*)&node->lower_x+ray.farY);
       const vfloat<N>* pFarZ  = (const vfloat<N>*)((const char*)&node->lower_x+ray.farZ);
-#if defined (__AVX2__) || defined(__ARM_NEON)
+#if defined (__FMA_X4__)
+#if defined(__aarch64__)
+      const vfloat<N> tNearX = madd(madd(time,pNearX[6],vfloat<N>(pNearX[0])), ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat<N> tNearY = madd(madd(time,pNearY[6],vfloat<N>(pNearY[0])), ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat<N> tNearZ = madd(madd(time,pNearZ[6],vfloat<N>(pNearZ[0])), ray.rdir.z, ray.neg_org_rdir.z);
+      const vfloat<N> tFarX  = madd(madd(time,pFarX [6],vfloat<N>(pFarX [0])), ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat<N> tFarY  = madd(madd(time,pFarY [6],vfloat<N>(pFarY [0])), ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat<N> tFarZ  = madd(madd(time,pFarZ [6],vfloat<N>(pFarZ [0])), ray.rdir.z, ray.neg_org_rdir.z);
+#else
       const vfloat<N> tNearX = msub(madd(time,pNearX[6],vfloat<N>(pNearX[0])), ray.rdir.x, ray.org_rdir.x);
       const vfloat<N> tNearY = msub(madd(time,pNearY[6],vfloat<N>(pNearY[0])), ray.rdir.y, ray.org_rdir.y);
       const vfloat<N> tNearZ = msub(madd(time,pNearZ[6],vfloat<N>(pNearZ[0])), ray.rdir.z, ray.org_rdir.z);
       const vfloat<N> tFarX  = msub(madd(time,pFarX [6],vfloat<N>(pFarX [0])), ray.rdir.x, ray.org_rdir.x);
       const vfloat<N> tFarY  = msub(madd(time,pFarY [6],vfloat<N>(pFarY [0])), ray.rdir.y, ray.org_rdir.y);
       const vfloat<N> tFarZ  = msub(madd(time,pFarZ [6],vfloat<N>(pFarZ [0])), ray.rdir.z, ray.org_rdir.z);
+#endif
 #else
       const vfloat<N> tNearX = (madd(time,pNearX[6],vfloat<N>(pNearX[0])) - ray.org.x) * ray.rdir.x;
       const vfloat<N> tNearY = (madd(time,pNearY[6],vfloat<N>(pNearY[0])) - ray.org.y) * ray.rdir.y;
@@ -613,7 +675,7 @@ namespace embree
       const vfloat<N> tFarY  = (madd(time,pFarY [6],vfloat<N>(pFarY [0])) - ray.org.y) * ray.rdir.y;
       const vfloat<N> tFarZ  = (madd(time,pFarZ [6],vfloat<N>(pFarZ [0])) - ray.org.z) * ray.rdir.z;
 #endif
-#if defined(__AVX2__) && !defined(__AVX512F__)
+#if defined(__FMA_X4__) && !defined(__AVX512F__)
       const vfloat<N> tNear = maxi(maxi(tNearX,tNearY),maxi(tNearZ,ray.tnear));
       const vfloat<N> tFar  = mini(mini(tFarX ,tFarY ),mini(tFarZ ,ray.tfar ));
 #else
@@ -687,13 +749,22 @@ namespace embree
       const vfloat4 lower_z = madd(node->dequantize<4>(ray.nearZ >> 2),scale_z,start_z);
       const vfloat4 upper_z = madd(node->dequantize<4>(ray.farZ  >> 2),scale_z,start_z);
 
-#if defined(__AVX2__) || defined(__ARM_NEON)
+#if defined(__FMA_X4__)
+#if defined(__aarch64__)
+      const vfloat4 tNearX = madd(lower_x, ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat4 tNearY = madd(lower_y, ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat4 tNearZ = madd(lower_z, ray.rdir.z, ray.neg_org_rdir.z);
+      const vfloat4 tFarX  = madd(upper_x, ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat4 tFarY  = madd(upper_y, ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat4 tFarZ  = madd(upper_z, ray.rdir.z, ray.neg_org_rdir.z);
+#else
       const vfloat4 tNearX = msub(lower_x, ray.rdir.x, ray.org_rdir.x);
       const vfloat4 tNearY = msub(lower_y, ray.rdir.y, ray.org_rdir.y);
       const vfloat4 tNearZ = msub(lower_z, ray.rdir.z, ray.org_rdir.z);
       const vfloat4 tFarX  = msub(upper_x, ray.rdir.x, ray.org_rdir.x);
       const vfloat4 tFarY  = msub(upper_y, ray.rdir.y, ray.org_rdir.y);
       const vfloat4 tFarZ  = msub(upper_z, ray.rdir.z, ray.org_rdir.z);
+#endif
 #else
       const vfloat4 tNearX = (lower_x - ray.org.x) * ray.rdir.x;
       const vfloat4 tNearY = (lower_y - ray.org.y) * ray.rdir.y;
@@ -703,7 +774,7 @@ namespace embree
       const vfloat4 tFarZ  = (upper_z - ray.org.z) * ray.rdir.z;
 #endif
       
-#if defined(__SSE4_1__) && !defined(__AVX512F__) // up to HSW
+#if defined(__aarch64__) || defined(__SSE4_1__) && !defined(__AVX512F__) // up to HSW
       const vfloat4 tNear = maxi(tNearX,tNearY,tNearZ,ray.tnear);
       const vfloat4 tFar  = mini(tFarX ,tFarY ,tFarZ ,ray.tfar);
       const vbool4 vmask = asInt(tNear) > asInt(tFar);
@@ -775,13 +846,22 @@ namespace embree
       const vfloat8 lower_z = madd(node->dequantize<8>(ray.nearZ >> 2),scale_z,start_z);
       const vfloat8 upper_z = madd(node->dequantize<8>(ray.farZ  >> 2),scale_z,start_z);
 
-#if defined(__AVX2__) || defined(__ARM_NEON)
+#if defined(__AVX2__)
+#if defined(__aarch64__)
+      const vfloat8 tNearX = madd(lower_x, ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat8 tNearY = madd(lower_y, ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat8 tNearZ = madd(lower_z, ray.rdir.z, ray.neg_org_rdir.z);
+      const vfloat8 tFarX  = madd(upper_x, ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat8 tFarY  = madd(upper_y, ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat8 tFarZ  = madd(upper_z, ray.rdir.z, ray.neg_org_rdir.z);
+#else
       const vfloat8 tNearX = msub(lower_x, ray.rdir.x, ray.org_rdir.x);
       const vfloat8 tNearY = msub(lower_y, ray.rdir.y, ray.org_rdir.y);
       const vfloat8 tNearZ = msub(lower_z, ray.rdir.z, ray.org_rdir.z);
       const vfloat8 tFarX  = msub(upper_x, ray.rdir.x, ray.org_rdir.x);
       const vfloat8 tFarY  = msub(upper_y, ray.rdir.y, ray.org_rdir.y);
       const vfloat8 tFarZ  = msub(upper_z, ray.rdir.z, ray.org_rdir.z);
+#endif
 #else
       const vfloat8 tNearX = (lower_x - ray.org.x) * ray.rdir.x;
       const vfloat8 tNearY = (lower_y - ray.org.y) * ray.rdir.y;
@@ -857,13 +937,22 @@ namespace embree
       const vfloat<N> upper_y   = node->dequantizeUpperY(time);
       const vfloat<N> lower_z   = node->dequantizeLowerZ(time);
       const vfloat<N> upper_z   = node->dequantizeUpperZ(time);     
-#if defined(__AVX2__) || defined(__ARM_NEON)
+#if defined(__FMA_X4__)
+#if defined(__aarch64__)
+      const vfloat<N> tNearX = madd(lower_x, ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat<N> tNearY = madd(lower_y, ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat<N> tNearZ = madd(lower_z, ray.rdir.z, ray.neg_org_rdir.z);
+      const vfloat<N> tFarX  = madd(upper_x, ray.rdir.x, ray.neg_org_rdir.x);
+      const vfloat<N> tFarY  = madd(upper_y, ray.rdir.y, ray.neg_org_rdir.y);
+      const vfloat<N> tFarZ  = madd(upper_z, ray.rdir.z, ray.neg_org_rdir.z);
+#else
       const vfloat<N> tNearX = msub(lower_x, ray.rdir.x, ray.org_rdir.x);
       const vfloat<N> tNearY = msub(lower_y, ray.rdir.y, ray.org_rdir.y);
       const vfloat<N> tNearZ = msub(lower_z, ray.rdir.z, ray.org_rdir.z);
       const vfloat<N> tFarX  = msub(upper_x, ray.rdir.x, ray.org_rdir.x);
       const vfloat<N> tFarY  = msub(upper_y, ray.rdir.y, ray.org_rdir.y);
       const vfloat<N> tFarZ  = msub(upper_z, ray.rdir.z, ray.org_rdir.z);
+#endif
 #else
       const vfloat<N> tNearX = (lower_x - ray.org.x) * ray.rdir.x;
       const vfloat<N> tNearY = (lower_y - ray.org.y) * ray.rdir.y;

@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectDistortion" inherits="AudioEffect" version="4.0">
+<class name="AudioEffectDistortion" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Adds a distortion audio effect to an Audio bus.
-		Modify the sound to make it distorted.
+		Modifies the sound to make it distorted.
 	</brief_description>
 	<description>
 		Different types are available: clip, tan, lo-fi (bit crushing), overdrive, or waveshape.
-		By distorting the waveform the frequency content change, which will often make the sound "crunchy" or "abrasive". For games, it can simulate sound coming from some saturated device or speaker very efficiently.
+		By distorting the waveform the frequency content changes, which will often make the sound "crunchy" or "abrasive". For games, it can simulate sound coming from some saturated device or speaker very efficiently.
 	</description>
 	<tutorials>
-		<link title="Audio buses">https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html</link>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="drive" type="float" setter="set_drive" getter="get_drive" default="0.0">
 			Distortion power. Value can range from 0 to 1.
@@ -24,10 +22,10 @@
 			Distortion type.
 		</member>
 		<member name="post_gain" type="float" setter="set_post_gain" getter="get_post_gain" default="0.0">
-			Increases or decreases the volume after the effect. Value can range from -80 to 24.
+			Increases or decreases the volume after the effect, in decibels. Value can range from -80 to 24.
 		</member>
 		<member name="pre_gain" type="float" setter="set_pre_gain" getter="get_pre_gain" default="0.0">
-			Increases or decreases the volume before the effect. Value can range from -60 to 60.
+			Increases or decreases the volume before the effect, in decibels. Value can range from -60 to 60.
 		</member>
 	</members>
 	<constants>
@@ -37,10 +35,10 @@
 		<constant name="MODE_ATAN" value="1" enum="Mode">
 		</constant>
 		<constant name="MODE_LOFI" value="2" enum="Mode">
-			Low-resolution digital distortion effect. You can use it to emulate the sound of early digital audio devices.
+			Low-resolution digital distortion effect (bit depth reduction). You can use it to emulate the sound of early digital audio devices.
 		</constant>
 		<constant name="MODE_OVERDRIVE" value="3" enum="Mode">
-			Emulates the warm distortion produced by a field effect transistor, which is commonly used in solid-state musical instrument amplifiers.
+			Emulates the warm distortion produced by a field effect transistor, which is commonly used in solid-state musical instrument amplifiers. The [member drive] property has no effect in this mode.
 		</constant>
 		<constant name="MODE_WAVESHAPE" value="4" enum="Mode">
 			Waveshaper distortions are used mainly by electronic musicians to achieve an extra-abrasive sound.

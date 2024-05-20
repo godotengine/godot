@@ -1,58 +1,158 @@
-/*************************************************************************/
-/*  geometry_3d.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  geometry_3d.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "geometry_3d.h"
 
-#include "core/string/print_string.h"
-
-#include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/polypartition.h"
 
-void Geometry3D::MeshData::optimize_vertices() {
-	Map<int, int> vtx_remap;
+void Geometry3D::get_closest_points_between_segments(const Vector3 &p_p0, const Vector3 &p_p1, const Vector3 &p_q0, const Vector3 &p_q1, Vector3 &r_ps, Vector3 &r_qt) {
+	// Based on David Eberly's Computation of Distance Between Line Segments algorithm.
 
-	for (int i = 0; i < faces.size(); i++) {
-		for (int j = 0; j < faces[i].indices.size(); j++) {
-			int idx = faces[i].indices[j];
-			if (!vtx_remap.has(idx)) {
-				int ni = vtx_remap.size();
-				vtx_remap[idx] = ni;
+	Vector3 p = p_p1 - p_p0;
+	Vector3 q = p_q1 - p_q0;
+	Vector3 r = p_p0 - p_q0;
+
+	real_t a = p.dot(p);
+	real_t b = p.dot(q);
+	real_t c = q.dot(q);
+	real_t d = p.dot(r);
+	real_t e = q.dot(r);
+
+	real_t s = 0.0f;
+	real_t t = 0.0f;
+
+	real_t det = a * c - b * b;
+	if (det > CMP_EPSILON) {
+		// Non-parallel segments
+		real_t bte = b * e;
+		real_t ctd = c * d;
+
+		if (bte <= ctd) {
+			// s <= 0.0f
+			if (e <= 0.0f) {
+				// t <= 0.0f
+				s = (-d >= a ? 1 : (-d > 0.0f ? -d / a : 0.0f));
+				t = 0.0f;
+			} else if (e < c) {
+				// 0.0f < t < 1
+				s = 0.0f;
+				t = e / c;
+			} else {
+				// t >= 1
+				s = (b - d >= a ? 1 : (b - d > 0.0f ? (b - d) / a : 0.0f));
+				t = 1;
 			}
+		} else {
+			// s > 0.0f
+			s = bte - ctd;
+			if (s >= det) {
+				// s >= 1
+				if (b + e <= 0.0f) {
+					// t <= 0.0f
+					s = (-d <= 0.0f ? 0.0f : (-d < a ? -d / a : 1));
+					t = 0.0f;
+				} else if (b + e < c) {
+					// 0.0f < t < 1
+					s = 1;
+					t = (b + e) / c;
+				} else {
+					// t >= 1
+					s = (b - d <= 0.0f ? 0.0f : (b - d < a ? (b - d) / a : 1));
+					t = 1;
+				}
+			} else {
+				// 0.0f < s < 1
+				real_t ate = a * e;
+				real_t btd = b * d;
 
-			faces.write[i].indices.write[j] = vtx_remap[idx];
+				if (ate <= btd) {
+					// t <= 0.0f
+					s = (-d <= 0.0f ? 0.0f : (-d >= a ? 1 : -d / a));
+					t = 0.0f;
+				} else {
+					// t > 0.0f
+					t = ate - btd;
+					if (t >= det) {
+						// t >= 1
+						s = (b - d <= 0.0f ? 0.0f : (b - d >= a ? 1 : (b - d) / a));
+						t = 1;
+					} else {
+						// 0.0f < t < 1
+						s /= det;
+						t /= det;
+					}
+				}
+			}
+		}
+	} else {
+		// Parallel segments
+		if (e <= 0.0f) {
+			s = (-d <= 0.0f ? 0.0f : (-d >= a ? 1 : -d / a));
+			t = 0.0f;
+		} else if (e >= c) {
+			s = (b - d <= 0.0f ? 0.0f : (b - d >= a ? 1 : (b - d) / a));
+			t = 1;
+		} else {
+			s = 0.0f;
+			t = e / c;
 		}
 	}
 
-	for (int i = 0; i < edges.size(); i++) {
-		int a = edges[i].a;
-		int b = edges[i].b;
+	r_ps = (1 - s) * p_p0 + s * p_p1;
+	r_qt = (1 - t) * p_q0 + t * p_q1;
+}
+
+real_t Geometry3D::get_closest_distance_between_segments(const Vector3 &p_p0, const Vector3 &p_p1, const Vector3 &p_q0, const Vector3 &p_q1) {
+	Vector3 ps;
+	Vector3 qt;
+	get_closest_points_between_segments(p_p0, p_p1, p_q0, p_q1, ps, qt);
+	Vector3 st = qt - ps;
+	return st.length();
+}
+
+void Geometry3D::MeshData::optimize_vertices() {
+	HashMap<int, int> vtx_remap;
+
+	for (MeshData::Face &face : faces) {
+		for (int &index : face.indices) {
+			if (!vtx_remap.has(index)) {
+				int ni = vtx_remap.size();
+				vtx_remap[index] = ni;
+			}
+			index = vtx_remap[index];
+		}
+	}
+
+	for (MeshData::Edge &edge : edges) {
+		int a = edge.vertex_a;
+		int b = edge.vertex_b;
 
 		if (!vtx_remap.has(a)) {
 			int ni = vtx_remap.size();
@@ -63,16 +163,16 @@ void Geometry3D::MeshData::optimize_vertices() {
 			vtx_remap[b] = ni;
 		}
 
-		edges.write[i].a = vtx_remap[a];
-		edges.write[i].b = vtx_remap[b];
+		edge.vertex_a = vtx_remap[a];
+		edge.vertex_b = vtx_remap[b];
 	}
 
-	Vector<Vector3> new_vertices;
+	LocalVector<Vector3> new_vertices;
 	new_vertices.resize(vtx_remap.size());
 
-	for (int i = 0; i < vertices.size(); i++) {
+	for (uint32_t i = 0; i < vertices.size(); i++) {
 		if (vtx_remap.has(i)) {
-			new_vertices.write[vtx_remap[i]] = vertices[i];
+			new_vertices[vtx_remap[i]] = vertices[i];
 		}
 	}
 	vertices = new_vertices;
@@ -94,149 +194,6 @@ struct _FaceClassify {
 	Face3 face;
 	_FaceClassify() {}
 };
-
-static bool _connect_faces(_FaceClassify *p_faces, int len, int p_group) {
-	// Connect faces, error will occur if an edge is shared between more than 2 faces.
-	// Clear connections.
-
-	bool error = false;
-
-	for (int i = 0; i < len; i++) {
-		for (int j = 0; j < 3; j++) {
-			p_faces[i].links[j].clear();
-		}
-	}
-
-	for (int i = 0; i < len; i++) {
-		if (p_faces[i].group != p_group) {
-			continue;
-		}
-		for (int j = i + 1; j < len; j++) {
-			if (p_faces[j].group != p_group) {
-				continue;
-			}
-
-			for (int k = 0; k < 3; k++) {
-				Vector3 vi1 = p_faces[i].face.vertex[k];
-				Vector3 vi2 = p_faces[i].face.vertex[(k + 1) % 3];
-
-				for (int l = 0; l < 3; l++) {
-					Vector3 vj2 = p_faces[j].face.vertex[l];
-					Vector3 vj1 = p_faces[j].face.vertex[(l + 1) % 3];
-
-					if (vi1.distance_to(vj1) < 0.00001 &&
-							vi2.distance_to(vj2) < 0.00001) {
-						if (p_faces[i].links[k].face != -1) {
-							ERR_PRINT("already linked\n");
-							error = true;
-							break;
-						}
-						if (p_faces[j].links[l].face != -1) {
-							ERR_PRINT("already linked\n");
-							error = true;
-							break;
-						}
-
-						p_faces[i].links[k].face = j;
-						p_faces[i].links[k].edge = l;
-						p_faces[j].links[l].face = i;
-						p_faces[j].links[l].edge = k;
-					}
-				}
-				if (error) {
-					break;
-				}
-			}
-			if (error) {
-				break;
-			}
-		}
-		if (error) {
-			break;
-		}
-	}
-
-	for (int i = 0; i < len; i++) {
-		p_faces[i].valid = true;
-		for (int j = 0; j < 3; j++) {
-			if (p_faces[i].links[j].face == -1) {
-				p_faces[i].valid = false;
-			}
-		}
-	}
-	return error;
-}
-
-static bool _group_face(_FaceClassify *p_faces, int len, int p_index, int p_group) {
-	if (p_faces[p_index].group >= 0) {
-		return false;
-	}
-
-	p_faces[p_index].group = p_group;
-
-	for (int i = 0; i < 3; i++) {
-		ERR_FAIL_INDEX_V(p_faces[p_index].links[i].face, len, true);
-		_group_face(p_faces, len, p_faces[p_index].links[i].face, p_group);
-	}
-
-	return true;
-}
-
-Vector<Vector<Face3>> Geometry3D::separate_objects(Vector<Face3> p_array) {
-	Vector<Vector<Face3>> objects;
-
-	int len = p_array.size();
-
-	const Face3 *arrayptr = p_array.ptr();
-
-	Vector<_FaceClassify> fc;
-
-	fc.resize(len);
-
-	_FaceClassify *_fcptr = fc.ptrw();
-
-	for (int i = 0; i < len; i++) {
-		_fcptr[i].face = arrayptr[i];
-	}
-
-	bool error = _connect_faces(_fcptr, len, -1);
-
-	ERR_FAIL_COND_V_MSG(error, Vector<Vector<Face3>>(), "Invalid geometry.");
-
-	// Group connected faces in separate objects.
-
-	int group = 0;
-	for (int i = 0; i < len; i++) {
-		if (!_fcptr[i].valid) {
-			continue;
-		}
-		if (_group_face(_fcptr, len, i, group)) {
-			group++;
-		}
-	}
-
-	// Group connected faces in separate objects.
-
-	for (int i = 0; i < len; i++) {
-		_fcptr[i].face = arrayptr[i];
-	}
-
-	if (group >= 0) {
-		objects.resize(group);
-		Vector<Face3> *group_faces = objects.ptrw();
-
-		for (int i = 0; i < len; i++) {
-			if (!_fcptr[i].valid) {
-				continue;
-			}
-			if (_fcptr[i].group >= 0 && _fcptr[i].group < group) {
-				group_faces[_fcptr[i].group].push_back(_fcptr[i].face);
-			}
-		}
-	}
-
-	return objects;
-}
 
 /*** GEOMETRY WRAPPER ***/
 
@@ -281,16 +238,16 @@ static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int
 	int div_y = len_y > 1 ? 2 : 1;
 	int div_z = len_z > 1 ? 2 : 1;
 
-#define _SPLIT(m_i, m_div, m_v, m_len_v, m_new_v, m_new_len_v) \
-	if (m_div == 1) {                                          \
-		m_new_v = m_v;                                         \
-		m_new_len_v = 1;                                       \
-	} else if (m_i == 0) {                                     \
-		m_new_v = m_v;                                         \
-		m_new_len_v = m_len_v / 2;                             \
-	} else {                                                   \
-		m_new_v = m_v + m_len_v / 2;                           \
-		m_new_len_v = m_len_v - m_len_v / 2;                   \
+#define SPLIT_DIV(m_i, m_div, m_v, m_len_v, m_new_v, m_new_len_v) \
+	if (m_div == 1) {                                             \
+		m_new_v = m_v;                                            \
+		m_new_len_v = 1;                                          \
+	} else if (m_i == 0) {                                        \
+		m_new_v = m_v;                                            \
+		m_new_len_v = m_len_v / 2;                                \
+	} else {                                                      \
+		m_new_v = m_v + m_len_v / 2;                              \
+		m_new_len_v = m_len_v - m_len_v / 2;                      \
 	}
 
 	int new_x;
@@ -301,18 +258,20 @@ static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int
 	int new_len_z;
 
 	for (int i = 0; i < div_x; i++) {
-		_SPLIT(i, div_x, x, len_x, new_x, new_len_x);
+		SPLIT_DIV(i, div_x, x, len_x, new_x, new_len_x);
 
 		for (int j = 0; j < div_y; j++) {
-			_SPLIT(j, div_y, y, len_y, new_y, new_len_y);
+			SPLIT_DIV(j, div_y, y, len_y, new_y, new_len_y);
 
 			for (int k = 0; k < div_z; k++) {
-				_SPLIT(k, div_z, z, len_z, new_z, new_len_z);
+				SPLIT_DIV(k, div_z, z, len_z, new_z, new_len_z);
 
 				_plot_face(p_cell_status, new_x, new_y, new_z, new_len_x, new_len_y, new_len_z, voxelsize, p_face);
 			}
 		}
 	}
+
+#undef SPLIT_DIV
 }
 
 static inline void _mark_outside(uint8_t ***p_cell_status, int x, int y, int z, int len_x, int len_y, int len_z) {
@@ -434,7 +393,7 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 		return;
 	}
 
-#define vert(m_idx) Vector3(((m_idx)&4) >> 2, ((m_idx)&2) >> 1, (m_idx)&1)
+#define vert(m_idx) Vector3(((m_idx) & 4) >> 2, ((m_idx) & 2) >> 1, (m_idx) & 1)
 
 	static const uint8_t indices[6][4] = {
 		{ 7, 6, 4, 5 },
@@ -490,12 +449,11 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 	}
 }
 
-Vector<Face3> Geometry3D::wrap_geometry(Vector<Face3> p_array, real_t *p_error) {
-#define _MIN_SIZE 1.0
-#define _MAX_LENGTH 20
-
+Vector<Face3> Geometry3D::wrap_geometry(const Vector<Face3> &p_array, real_t *p_error) {
 	int face_count = p_array.size();
 	const Face3 *faces = p_array.ptr();
+	constexpr double min_size = 1.0;
+	constexpr int max_length = 20;
 
 	AABB global_aabb;
 
@@ -507,27 +465,27 @@ Vector<Face3> Geometry3D::wrap_geometry(Vector<Face3> p_array, real_t *p_error) 
 		}
 	}
 
-	global_aabb.grow_by(0.01); // Avoid numerical error.
+	global_aabb.grow_by(0.01f); // Avoid numerical error.
 
 	// Determine amount of cells in grid axis.
 	int div_x, div_y, div_z;
 
-	if (global_aabb.size.x / _MIN_SIZE < _MAX_LENGTH) {
-		div_x = (int)(global_aabb.size.x / _MIN_SIZE) + 1;
+	if (global_aabb.size.x / min_size < max_length) {
+		div_x = (int)(global_aabb.size.x / min_size) + 1;
 	} else {
-		div_x = _MAX_LENGTH;
+		div_x = max_length;
 	}
 
-	if (global_aabb.size.y / _MIN_SIZE < _MAX_LENGTH) {
-		div_y = (int)(global_aabb.size.y / _MIN_SIZE) + 1;
+	if (global_aabb.size.y / min_size < max_length) {
+		div_y = (int)(global_aabb.size.y / min_size) + 1;
 	} else {
-		div_y = _MAX_LENGTH;
+		div_y = max_length;
 	}
 
-	if (global_aabb.size.z / _MIN_SIZE < _MAX_LENGTH) {
-		div_z = (int)(global_aabb.size.z / _MIN_SIZE) + 1;
+	if (global_aabb.size.z / min_size < max_length) {
+		div_z = (int)(global_aabb.size.z / min_size) + 1;
 	} else {
-		div_z = _MAX_LENGTH;
+		div_z = max_length;
 	}
 
 	Vector3 voxelsize = global_aabb.size;
@@ -637,31 +595,32 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 
 		Vector3 ref = Vector3(0.0, 1.0, 0.0);
 
-		if (ABS(p.normal.dot(ref)) > 0.95) {
+		if (ABS(p.normal.dot(ref)) > 0.95f) {
 			ref = Vector3(0.0, 0.0, 1.0); // Change axis.
 		}
 
 		Vector3 right = p.normal.cross(ref).normalized();
 		Vector3 up = p.normal.cross(right).normalized();
 
-		Vector<Vector3> vertices;
+		Vector3 center = p.get_center();
 
-		Vector3 center = p.center();
 		// make a quad clockwise
-		vertices.push_back(center - up * subplane_size + right * subplane_size);
-		vertices.push_back(center - up * subplane_size - right * subplane_size);
-		vertices.push_back(center + up * subplane_size - right * subplane_size);
-		vertices.push_back(center + up * subplane_size + right * subplane_size);
+		LocalVector<Vector3> vertices = {
+			center - up * subplane_size + right * subplane_size,
+			center - up * subplane_size - right * subplane_size,
+			center + up * subplane_size - right * subplane_size,
+			center + up * subplane_size + right * subplane_size
+		};
 
 		for (int j = 0; j < p_planes.size(); j++) {
 			if (j == i) {
 				continue;
 			}
 
-			Vector<Vector3> new_vertices;
+			LocalVector<Vector3> new_vertices;
 			Plane clip = p_planes[j];
 
-			if (clip.normal.dot(p.normal) > 0.95) {
+			if (clip.normal.dot(p.normal) > 0.95f) {
 				continue;
 			}
 
@@ -669,7 +628,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 				break;
 			}
 
-			for (int k = 0; k < vertices.size(); k++) {
+			for (uint32_t k = 0; k < vertices.size(); k++) {
 				int k_n = (k + 1) % vertices.size();
 
 				Vector3 edge0_A = vertices[k];
@@ -711,10 +670,10 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 		MeshData::Face face;
 
 		// Add face indices.
-		for (int j = 0; j < vertices.size(); j++) {
+		for (const Vector3 &vertex : vertices) {
 			int idx = -1;
-			for (int k = 0; k < mesh.vertices.size(); k++) {
-				if (mesh.vertices[k].distance_to(vertices[j]) < 0.001) {
+			for (uint32_t k = 0; k < mesh.vertices.size(); k++) {
+				if (mesh.vertices[k].distance_to(vertex) < 0.001f) {
 					idx = k;
 					break;
 				}
@@ -722,7 +681,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 
 			if (idx == -1) {
 				idx = mesh.vertices.size();
-				mesh.vertices.push_back(vertices[j]);
+				mesh.vertices.push_back(vertex);
 			}
 
 			face.indices.push_back(idx);
@@ -732,28 +691,34 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 
 		// Add edge.
 
-		for (int j = 0; j < face.indices.size(); j++) {
+		for (uint32_t j = 0; j < face.indices.size(); j++) {
 			int a = face.indices[j];
 			int b = face.indices[(j + 1) % face.indices.size()];
 
 			bool found = false;
-			for (int k = 0; k < mesh.edges.size(); k++) {
-				if (mesh.edges[k].a == a && mesh.edges[k].b == b) {
+			int found_idx = -1;
+			for (uint32_t k = 0; k < mesh.edges.size(); k++) {
+				if (mesh.edges[k].vertex_a == a && mesh.edges[k].vertex_b == b) {
 					found = true;
+					found_idx = k;
 					break;
 				}
-				if (mesh.edges[k].b == a && mesh.edges[k].a == b) {
+				if (mesh.edges[k].vertex_b == a && mesh.edges[k].vertex_a == b) {
 					found = true;
+					found_idx = k;
 					break;
 				}
 			}
 
 			if (found) {
+				mesh.edges[found_idx].face_b = j;
 				continue;
 			}
 			MeshData::Edge edge;
-			edge.a = a;
-			edge.b = b;
+			edge.vertex_a = a;
+			edge.vertex_b = b;
+			edge.face_a = j;
+			edge.face_b = -1;
 			mesh.edges.push_back(edge);
 		}
 	}
@@ -762,14 +727,14 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 }
 
 Vector<Plane> Geometry3D::build_box_planes(const Vector3 &p_extents) {
-	Vector<Plane> planes;
-
-	planes.push_back(Plane(Vector3(1, 0, 0), p_extents.x));
-	planes.push_back(Plane(Vector3(-1, 0, 0), p_extents.x));
-	planes.push_back(Plane(Vector3(0, 1, 0), p_extents.y));
-	planes.push_back(Plane(Vector3(0, -1, 0), p_extents.y));
-	planes.push_back(Plane(Vector3(0, 0, 1), p_extents.z));
-	planes.push_back(Plane(Vector3(0, 0, -1), p_extents.z));
+	Vector<Plane> planes = {
+		Plane(Vector3(1, 0, 0), p_extents.x),
+		Plane(Vector3(-1, 0, 0), p_extents.x),
+		Plane(Vector3(0, 1, 0), p_extents.y),
+		Plane(Vector3(0, -1, 0), p_extents.y),
+		Plane(Vector3(0, 0, 1), p_extents.z),
+		Plane(Vector3(0, 0, -1), p_extents.z)
+	};
 
 	return planes;
 }
@@ -791,8 +756,8 @@ Vector<Plane> Geometry3D::build_cylinder_planes(real_t p_radius, real_t p_height
 	Vector3 axis;
 	axis[p_axis] = 1.0;
 
-	planes.push_back(Plane(axis, p_height * 0.5));
-	planes.push_back(Plane(-axis, p_height * 0.5));
+	planes.push_back(Plane(axis, p_height * 0.5f));
+	planes.push_back(Plane(-axis, p_height * 0.5f));
 
 	return planes;
 }
@@ -819,11 +784,9 @@ Vector<Plane> Geometry3D::build_sphere_planes(real_t p_radius, int p_lats, int p
 		planes.push_back(Plane(normal, p_radius));
 
 		for (int j = 1; j <= p_lats; j++) {
-			// FIXME: This is stupid.
-			Vector3 angle = normal.lerp(axis, j / (real_t)p_lats).normalized();
-			Vector3 pos = angle * p_radius;
-			planes.push_back(Plane(pos, angle));
-			planes.push_back(Plane(pos * axis_neg, angle * axis_neg));
+			Vector3 plane_normal = normal.lerp(axis, j / (real_t)p_lats).normalized();
+			planes.push_back(Plane(plane_normal, p_radius));
+			planes.push_back(Plane(plane_normal * axis_neg, p_radius));
 		}
 	}
 
@@ -852,10 +815,10 @@ Vector<Plane> Geometry3D::build_capsule_planes(real_t p_radius, real_t p_height,
 		planes.push_back(Plane(normal, p_radius));
 
 		for (int j = 1; j <= p_lats; j++) {
-			Vector3 angle = normal.lerp(axis, j / (real_t)p_lats).normalized();
-			Vector3 pos = axis * p_height * 0.5 + angle * p_radius;
-			planes.push_back(Plane(pos, angle));
-			planes.push_back(Plane(pos * axis_neg, angle * axis_neg));
+			Vector3 plane_normal = normal.lerp(axis, j / (real_t)p_lats).normalized();
+			Vector3 position = axis * p_height * 0.5f + plane_normal * p_radius;
+			planes.push_back(Plane(plane_normal, position));
+			planes.push_back(Plane(plane_normal * axis_neg, position * axis_neg));
 		}
 	}
 
@@ -879,7 +842,7 @@ Vector<Vector3> Geometry3D::compute_convex_mesh_points(const Plane *p_planes, in
 					for (int n = 0; n < p_plane_count; n++) {
 						if (n != i && n != j && n != k) {
 							real_t dp = p_planes[n].normal.dot(convex_shape_point);
-							if (dp - p_planes[n].d > CMP_EPSILON) {
+							if (dp - p_planes[n].d > (real_t)CMP_EPSILON) {
 								excluded = true;
 								break;
 							}
@@ -904,8 +867,8 @@ Vector<Vector3> Geometry3D::compute_convex_mesh_points(const Plane *p_planes, in
 /* dt of 1d function using squared distance */
 static void edt(float *f, int stride, int n) {
 	float *d = (float *)alloca(sizeof(float) * n + sizeof(int) * n + sizeof(float) * (n + 1));
-	int *v = (int *)&(d[n]);
-	float *z = (float *)&v[n];
+	int *v = reinterpret_cast<int *>(&(d[n]));
+	float *z = reinterpret_cast<float *>(&v[n]);
 
 	int k = 0;
 	v[0] = 0;

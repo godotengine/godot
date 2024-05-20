@@ -1,39 +1,39 @@
-/*************************************************************************/
-/*  resource_importer_wav.cpp                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  resource_importer_wav.cpp                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "resource_importer_wav.h"
 
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
-#include "scene/resources/audio_stream_sample.h"
+#include "scene/resources/audio_stream_wav.h"
 
 const float TRIM_DB_LIMIT = -50;
 const int TRIM_FADE_OUT_FRAMES = 500;
@@ -55,11 +55,16 @@ String ResourceImporterWAV::get_save_extension() const {
 }
 
 String ResourceImporterWAV::get_resource_type() const {
-	return "AudioStreamSample";
+	return "AudioStreamWAV";
 }
 
-bool ResourceImporterWAV::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool ResourceImporterWAV::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	if (p_option == "force/max_rate_hz" && !bool(p_options["force/max_rate"])) {
+		return false;
+	}
+
+	// Don't show begin/end loop points if loop mode is auto-detected or disabled.
+	if ((int)p_options["edit/loop_mode"] < 2 && (p_option == "edit/loop_begin" || p_option == "edit/loop_end")) {
 		return false;
 	}
 
@@ -74,22 +79,25 @@ String ResourceImporterWAV::get_preset_name(int p_idx) const {
 	return String();
 }
 
-void ResourceImporterWAV::get_import_options(List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterWAV::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/8_bit"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/mono"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/max_rate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "force/max_rate_hz", PROPERTY_HINT_RANGE, "11025,192000,1,exp"), 44100));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/trim"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/normalize"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/loop"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Disabled,RAM (Ima-ADPCM)"), 0));
+	// Keep the `edit/loop_mode` enum in sync with AudioStreamWAV::LoopMode (note: +1 offset due to "Detect From WAV").
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_mode", PROPERTY_HINT_ENUM, "Detect From WAV,Disabled,Forward,Ping-Pong,Backward", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_begin"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "edit/loop_end"), -1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Disabled,RAM (Ima-ADPCM),QOA (Quite OK Audio)"), 0));
 }
 
-Error ResourceImporterWAV::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterWAV::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	/* STEP 1, READ WAVE FILE */
 
 	Error err;
-	FileAccess *file = FileAccess::open(p_source_file, FileAccess::READ, &err);
+	Ref<FileAccess> file = FileAccess::open(p_source_file, FileAccess::READ, &err);
 
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_OPEN, "Cannot open file '" + p_source_file + "'.");
 
@@ -99,9 +107,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	file->get_buffer((uint8_t *)&riff, 4); //RIFF
 
 	if (riff[0] != 'R' || riff[1] != 'I' || riff[2] != 'F' || riff[3] != 'F') {
-		file->close();
-		memdelete(file);
-		ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, vformat("Not a WAV file. File should start with 'RIFF', but found '%s', in file of size %d bytes", riff, file->get_length()));
 	}
 
 	/* GET FILESIZE */
@@ -109,20 +115,22 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 	/* CHECK WAVE */
 
-	char wave[4];
-
-	file->get_buffer((uint8_t *)&wave, 4); //RIFF
+	char wave[5];
+	wave[4] = 0;
+	file->get_buffer((uint8_t *)&wave, 4); //WAVE
 
 	if (wave[0] != 'W' || wave[1] != 'A' || wave[2] != 'V' || wave[3] != 'E') {
-		file->close();
-		memdelete(file);
-		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Not a WAV file (no WAVE RIFF header).");
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, vformat("Not a WAV file. Header should contain 'WAVE', but found '%s', in file of size %d bytes", wave, file->get_length()));
 	}
+
+	// Let users override potential loop points from the WAV.
+	// We parse the WAV loop points only with "Detect From WAV" (0).
+	int import_loop_mode = p_options["edit/loop_mode"];
 
 	int format_bits = 0;
 	int format_channels = 0;
 
-	AudioStreamSample::LoopMode loop = AudioStreamSample::LOOP_DISABLED;
+	AudioStreamWAV::LoopMode loop_mode = AudioStreamWAV::LOOP_DISABLED;
 	uint16_t compression_code = 1;
 	bool format_found = false;
 	bool data_found = false;
@@ -154,15 +162,11 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			//Consider revision for engine version 3.0
 			compression_code = file->get_16();
 			if (compression_code != 1 && compression_code != 3) {
-				file->close();
-				memdelete(file);
-				ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM instead.");
+				ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM or IEEE float instead.");
 			}
 
 			format_channels = file->get_16();
 			if (format_channels != 1 && format_channels != 2) {
-				file->close();
-				memdelete(file);
 				ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Format not supported for WAVE file (not stereo or mono).");
 			}
 
@@ -173,9 +177,11 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			format_bits = file->get_16(); // bits per sample
 
 			if (format_bits % 8 || format_bits == 0) {
-				file->close();
-				memdelete(file);
 				ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Invalid amount of bits in the sample (should be one of 8, 16, 24 or 32).");
+			}
+
+			if (compression_code == 3 && format_bits % 32) {
+				ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Invalid amount of bits in the IEEE float sample (should be 32 or 64).");
 			}
 
 			/* Don't need anything else, continue */
@@ -194,8 +200,6 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			frames = chunksize;
 
 			if (format_channels == 0) {
-				file->close();
-				memdelete(file);
 				ERR_FAIL_COND_V(format_channels == 0, ERR_INVALID_DATA);
 			}
 			frames /= format_channels;
@@ -208,57 +212,65 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 			data.resize(frames * format_channels);
 
-			if (format_bits == 8) {
-				for (int i = 0; i < frames * format_channels; i++) {
-					// 8 bit samples are UNSIGNED
+			if (compression_code == 1) {
+				if (format_bits == 8) {
+					for (int i = 0; i < frames * format_channels; i++) {
+						// 8 bit samples are UNSIGNED
 
-					data.write[i] = int8_t(file->get_8() - 128) / 128.f;
-				}
-			} else if (format_bits == 32 && compression_code == 3) {
-				for (int i = 0; i < frames * format_channels; i++) {
-					//32 bit IEEE Float
-
-					data.write[i] = file->get_float();
-				}
-			} else if (format_bits == 16) {
-				for (int i = 0; i < frames * format_channels; i++) {
-					//16 bit SIGNED
-
-					data.write[i] = int16_t(file->get_16()) / 32768.f;
-				}
-			} else {
-				for (int i = 0; i < frames * format_channels; i++) {
-					//16+ bits samples are SIGNED
-					// if sample is > 16 bits, just read extra bytes
-
-					uint32_t s = 0;
-					for (int b = 0; b < (format_bits >> 3); b++) {
-						s |= ((uint32_t)file->get_8()) << (b * 8);
+						data.write[i] = int8_t(file->get_8() - 128) / 128.f;
 					}
-					s <<= (32 - format_bits);
+				} else if (format_bits == 16) {
+					for (int i = 0; i < frames * format_channels; i++) {
+						//16 bit SIGNED
 
-					data.write[i] = (int32_t(s) >> 16) / 32768.f;
+						data.write[i] = int16_t(file->get_16()) / 32768.f;
+					}
+				} else {
+					for (int i = 0; i < frames * format_channels; i++) {
+						//16+ bits samples are SIGNED
+						// if sample is > 16 bits, just read extra bytes
+
+						uint32_t s = 0;
+						for (int b = 0; b < (format_bits >> 3); b++) {
+							s |= ((uint32_t)file->get_8()) << (b * 8);
+						}
+						s <<= (32 - format_bits);
+
+						data.write[i] = (int32_t(s) >> 16) / 32768.f;
+					}
+				}
+			} else if (compression_code == 3) {
+				if (format_bits == 32) {
+					for (int i = 0; i < frames * format_channels; i++) {
+						//32 bit IEEE Float
+
+						data.write[i] = file->get_float();
+					}
+				} else if (format_bits == 64) {
+					for (int i = 0; i < frames * format_channels; i++) {
+						//64 bit IEEE Float
+
+						data.write[i] = file->get_double();
+					}
 				}
 			}
 
 			if (file->eof_reached()) {
-				file->close();
-				memdelete(file);
 				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Premature end of file.");
 			}
 		}
 
-		if (chunkID[0] == 's' && chunkID[1] == 'm' && chunkID[2] == 'p' && chunkID[3] == 'l') {
-			//loop point info!
+		if (import_loop_mode == 0 && chunkID[0] == 's' && chunkID[1] == 'm' && chunkID[2] == 'p' && chunkID[3] == 'l') {
+			// Loop point info!
 
 			/**
-			*	Consider exploring next document:
-			*		http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/RIFFNEW.pdf
-			*	Especially on page:
-			*		16 - 17
-			*	Timestamp:
-			*		22:38 06.07.2017 GMT
-			**/
+			 *	Consider exploring next document:
+			 *		http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/RIFFNEW.pdf
+			 *	Especially on page:
+			 *		16 - 17
+			 *	Timestamp:
+			 *		22:38 06.07.2017 GMT
+			 **/
 
 			for (int i = 0; i < 10; i++) {
 				file->get_32(); // i wish to know why should i do this... no doc!
@@ -270,21 +282,20 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			int loop_type = file->get_32();
 			if (loop_type == 0x00 || loop_type == 0x01 || loop_type == 0x02) {
 				if (loop_type == 0x00) {
-					loop = AudioStreamSample::LOOP_FORWARD;
+					loop_mode = AudioStreamWAV::LOOP_FORWARD;
 				} else if (loop_type == 0x01) {
-					loop = AudioStreamSample::LOOP_PING_PONG;
+					loop_mode = AudioStreamWAV::LOOP_PINGPONG;
 				} else if (loop_type == 0x02) {
-					loop = AudioStreamSample::LOOP_BACKWARD;
+					loop_mode = AudioStreamWAV::LOOP_BACKWARD;
 				}
 				loop_begin = file->get_32();
 				loop_end = file->get_32();
 			}
 		}
-		file->seek(file_pos + chunksize);
+		// Move to the start of the next chunk. Note that RIFF requires a padding byte for odd
+		// chunk sizes.
+		file->seek(file_pos + chunksize + (chunksize & 1));
 	}
-
-	file->close();
-	memdelete(file);
 
 	// STEP 2, APPLY CONVERSIONS
 
@@ -317,24 +328,14 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			int ipos = 0;
 
 			for (int i = 0; i < new_data_frames; i++) {
-				//simple cubic interpolation should be enough.
-
-				float mu = frac;
+				// Cubic interpolation should be enough.
 
 				float y0 = data[MAX(0, ipos - 1) * format_channels + c];
 				float y1 = data[ipos * format_channels + c];
 				float y2 = data[MIN(frames - 1, ipos + 1) * format_channels + c];
 				float y3 = data[MIN(frames - 1, ipos + 2) * format_channels + c];
 
-				float mu2 = mu * mu;
-				float a0 = y3 - y2 - y0 + y1;
-				float a1 = y0 - y1 - a0;
-				float a2 = y2 - y0;
-				float a3 = y1;
-
-				float res = (a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3);
-
-				new_data.write[i * format_channels + c] = res;
+				new_data.write[i * format_channels + c] = Math::cubic_interpolate(y1, y2, y0, y3, frac);
 
 				// update position and always keep fractional part within ]0...1]
 				// in order to avoid 32bit floating point precision errors
@@ -346,7 +347,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			}
 		}
 
-		if (loop) {
+		if (loop_mode) {
 			loop_begin = (int)(loop_begin * (float)new_data_frames / (float)frames);
 			loop_end = (int)(loop_end * (float)new_data_frames / (float)frames);
 		}
@@ -377,11 +378,11 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 	bool trim = p_options["edit/trim"];
 
-	if (trim && !loop && format_channels > 0) {
+	if (trim && (loop_mode == AudioStreamWAV::LOOP_DISABLED) && format_channels > 0) {
 		int first = 0;
 		int last = (frames / format_channels) - 1;
 		bool found = false;
-		float limit = Math::db2linear(TRIM_DB_LIMIT);
+		float limit = Math::db_to_linear(TRIM_DB_LIMIT);
 
 		for (int i = 0; i < data.size() / format_channels; i++) {
 			float ampChannelSum = 0;
@@ -421,12 +422,17 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		}
 	}
 
-	bool make_loop = p_options["edit/loop"];
-
-	if (make_loop && !loop) {
-		loop = AudioStreamSample::LOOP_FORWARD;
-		loop_begin = 0;
-		loop_end = frames;
+	if (import_loop_mode >= 2) {
+		loop_mode = (AudioStreamWAV::LoopMode)(import_loop_mode - 1);
+		loop_begin = p_options["edit/loop_begin"];
+		loop_end = p_options["edit/loop_end"];
+		// Wrap around to max frames, so `-1` can be used to select the end, etc.
+		if (loop_begin < 0) {
+			loop_begin = CLAMP(loop_begin + frames + 1, 0, frames);
+		}
+		if (loop_end < 0) {
+			loop_end = CLAMP(loop_end + frames + 1, 0, frames);
+		}
 	}
 
 	int compression = p_options["compress/mode"];
@@ -448,13 +454,13 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		is16 = false;
 	}
 
-	Vector<uint8_t> dst_data;
-	AudioStreamSample::Format dst_format;
+	Vector<uint8_t> pcm_data;
+	AudioStreamWAV::Format dst_format;
 
 	if (compression == 1) {
-		dst_format = AudioStreamSample::FORMAT_IMA_ADPCM;
+		dst_format = AudioStreamWAV::FORMAT_IMA_ADPCM;
 		if (format_channels == 1) {
-			_compress_ima_adpcm(data, dst_data);
+			_compress_ima_adpcm(data, pcm_data);
 		} else {
 			//byte interleave
 			Vector<float> left;
@@ -476,9 +482,9 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			_compress_ima_adpcm(right, bright);
 
 			int dl = bleft.size();
-			dst_data.resize(dl * 2);
+			pcm_data.resize(dl * 2);
 
-			uint8_t *w = dst_data.ptrw();
+			uint8_t *w = pcm_data.ptrw();
 			const uint8_t *rl = bleft.ptr();
 			const uint8_t *rr = bright.ptr();
 
@@ -489,14 +495,15 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		}
 
 	} else {
-		dst_format = is16 ? AudioStreamSample::FORMAT_16_BITS : AudioStreamSample::FORMAT_8_BITS;
-		dst_data.resize(data.size() * (is16 ? 2 : 1));
+		dst_format = is16 ? AudioStreamWAV::FORMAT_16_BITS : AudioStreamWAV::FORMAT_8_BITS;
+		bool enforce16 = is16 || compression == 2;
+		pcm_data.resize(data.size() * (enforce16 ? 2 : 1));
 		{
-			uint8_t *w = dst_data.ptrw();
+			uint8_t *w = pcm_data.ptrw();
 
 			int ds = data.size();
 			for (int i = 0; i < ds; i++) {
-				if (is16) {
+				if (enforce16) {
 					int16_t v = CLAMP(data[i] * 32768, -32768, 32767);
 					encode_uint16(v, &w[i * 2]);
 				} else {
@@ -507,17 +514,34 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		}
 	}
 
-	Ref<AudioStreamSample> sample;
+	Vector<uint8_t> dst_data;
+	if (compression == 2) {
+		dst_format = AudioStreamWAV::FORMAT_QOA;
+		qoa_desc desc = { 0, 0, 0, { { { 0 }, { 0 } } } };
+		uint32_t qoa_len = 0;
+
+		desc.samplerate = rate;
+		desc.samples = frames;
+		desc.channels = format_channels;
+
+		void *encoded = qoa_encode((short *)pcm_data.ptrw(), &desc, &qoa_len);
+		dst_data.resize(qoa_len);
+		memcpy(dst_data.ptrw(), encoded, qoa_len);
+	} else {
+		dst_data = pcm_data;
+	}
+
+	Ref<AudioStreamWAV> sample;
 	sample.instantiate();
 	sample->set_data(dst_data);
 	sample->set_format(dst_format);
 	sample->set_mix_rate(rate);
-	sample->set_loop_mode(loop);
+	sample->set_loop_mode(loop_mode);
 	sample->set_loop_begin(loop_begin);
 	sample->set_loop_end(loop_end);
 	sample->set_stereo(format_channels == 2);
 
-	ResourceSaver::save(p_save_path + ".sample", sample);
+	ResourceSaver::save(sample, p_save_path + ".sample");
 
 	return OK;
 }

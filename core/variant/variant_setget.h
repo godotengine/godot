@@ -1,39 +1,38 @@
-/*************************************************************************/
-/*  variant_setget.h                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  variant_setget.h                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef VARIANT_SETGET_H
 #define VARIANT_SETGET_H
 
 #include "variant.h"
 
-#include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/object/class_db.h"
 #include "core/templates/local_vector.h"
@@ -281,6 +280,16 @@ SETGET_NUMBER_STRUCT(Vector3i, int64_t, x)
 SETGET_NUMBER_STRUCT(Vector3i, int64_t, y)
 SETGET_NUMBER_STRUCT(Vector3i, int64_t, z)
 
+SETGET_NUMBER_STRUCT(Vector4, double, x)
+SETGET_NUMBER_STRUCT(Vector4, double, y)
+SETGET_NUMBER_STRUCT(Vector4, double, z)
+SETGET_NUMBER_STRUCT(Vector4, double, w)
+
+SETGET_NUMBER_STRUCT(Vector4i, int64_t, x)
+SETGET_NUMBER_STRUCT(Vector4i, int64_t, y)
+SETGET_NUMBER_STRUCT(Vector4i, int64_t, z)
+SETGET_NUMBER_STRUCT(Vector4i, int64_t, w)
+
 SETGET_STRUCT(Rect2, Vector2, position)
 SETGET_STRUCT(Rect2, Vector2, size)
 SETGET_STRUCT_FUNC(Rect2, Vector2, end, set_end, get_end)
@@ -293,9 +302,9 @@ SETGET_STRUCT(AABB, Vector3, position)
 SETGET_STRUCT(AABB, Vector3, size)
 SETGET_STRUCT_FUNC(AABB, Vector3, end, set_end, get_end)
 
-SETGET_STRUCT_CUSTOM(Transform2D, Vector2, x, elements[0])
-SETGET_STRUCT_CUSTOM(Transform2D, Vector2, y, elements[1])
-SETGET_STRUCT_CUSTOM(Transform2D, Vector2, origin, elements[2])
+SETGET_STRUCT_CUSTOM(Transform2D, Vector2, x, columns[0])
+SETGET_STRUCT_CUSTOM(Transform2D, Vector2, y, columns[1])
+SETGET_STRUCT_CUSTOM(Transform2D, Vector2, origin, columns[2])
 
 SETGET_NUMBER_STRUCT_CUSTOM(Plane, double, x, normal.x)
 SETGET_NUMBER_STRUCT_CUSTOM(Plane, double, y, normal.y)
@@ -308,12 +317,17 @@ SETGET_NUMBER_STRUCT(Quaternion, double, y)
 SETGET_NUMBER_STRUCT(Quaternion, double, z)
 SETGET_NUMBER_STRUCT(Quaternion, double, w)
 
-SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, x, set_axis, get_axis, 0)
-SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, y, set_axis, get_axis, 1)
-SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, z, set_axis, get_axis, 2)
+SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, x, set_column, get_column, 0)
+SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, y, set_column, get_column, 1)
+SETGET_STRUCT_FUNC_INDEX(Basis, Vector3, z, set_column, get_column, 2)
 
 SETGET_STRUCT(Transform3D, Basis, basis)
 SETGET_STRUCT(Transform3D, Vector3, origin)
+
+SETGET_STRUCT_CUSTOM(Projection, Vector4, x, columns[0])
+SETGET_STRUCT_CUSTOM(Projection, Vector4, y, columns[1])
+SETGET_STRUCT_CUSTOM(Projection, Vector4, z, columns[2])
+SETGET_STRUCT_CUSTOM(Projection, Vector4, w, columns[3])
 
 SETGET_NUMBER_STRUCT(Color, double, r)
 SETGET_NUMBER_STRUCT(Color, double, g)
@@ -328,5 +342,9 @@ SETGET_NUMBER_STRUCT_FUNC(Color, int64_t, a8, set_a8, get_a8)
 SETGET_NUMBER_STRUCT_FUNC(Color, double, h, set_h, get_h)
 SETGET_NUMBER_STRUCT_FUNC(Color, double, s, set_s, get_s)
 SETGET_NUMBER_STRUCT_FUNC(Color, double, v, set_v, get_v)
+
+SETGET_NUMBER_STRUCT_FUNC(Color, double, ok_hsl_h, set_ok_hsl_h, get_ok_hsl_h)
+SETGET_NUMBER_STRUCT_FUNC(Color, double, ok_hsl_s, set_ok_hsl_s, get_ok_hsl_s)
+SETGET_NUMBER_STRUCT_FUNC(Color, double, ok_hsl_l, set_ok_hsl_l, get_ok_hsl_l)
 
 #endif // VARIANT_SETGET_H

@@ -30,7 +30,7 @@ UVector32::UVector32(UErrorCode &status) :
     count(0),
     capacity(0),
     maxCapacity(0),
-    elements(NULL)
+    elements(nullptr)
 {
     _init(DEFAULT_CAPACITY, status);
 }
@@ -39,7 +39,7 @@ UVector32::UVector32(int32_t initialCapacity, UErrorCode &status) :
     count(0),
     capacity(0),
     maxCapacity(0),
-    elements(0)
+    elements(nullptr)
 {
     _init(initialCapacity, status);
 }
@@ -58,7 +58,7 @@ void UVector32::_init(int32_t initialCapacity, UErrorCode &status) {
         initialCapacity = uprv_min(DEFAULT_CAPACITY, maxCapacity);
     }
     elements = (int32_t *)uprv_malloc(sizeof(int32_t)*initialCapacity);
-    if (elements == 0) {
+    if (elements == nullptr) {
         status = U_MEMORY_ALLOCATION_ERROR;
     } else {
         capacity = initialCapacity;
@@ -67,7 +67,7 @@ void UVector32::_init(int32_t initialCapacity, UErrorCode &status) {
 
 UVector32::~UVector32() {
     uprv_free(elements);
-    elements = 0;
+    elements = nullptr;
 }
 
 /**
@@ -83,15 +83,15 @@ void UVector32::assign(const UVector32& other, UErrorCode &ec) {
 }
 
 
-UBool UVector32::operator==(const UVector32& other) {
+bool UVector32::operator==(const UVector32& other) const {
     int32_t i;
-    if (count != other.count) return FALSE;
+    if (count != other.count) return false;
     for (i=0; i<count; ++i) {
         if (elements[i] != other.elements[i]) {
-            return FALSE;
+            return false;
         }
     }
-    return TRUE;
+    return true;
 }
 
 
@@ -117,40 +117,40 @@ void UVector32::insertElementAt(int32_t elem, int32_t index, UErrorCode &status)
 UBool UVector32::containsAll(const UVector32& other) const {
     for (int32_t i=0; i<other.size(); ++i) {
         if (indexOf(other.elements[i]) < 0) {
-            return FALSE;
+            return false;
         }
     }
-    return TRUE;
+    return true;
 }
 
 UBool UVector32::containsNone(const UVector32& other) const {
     for (int32_t i=0; i<other.size(); ++i) {
         if (indexOf(other.elements[i]) >= 0) {
-            return FALSE;
+            return false;
         }
     }
-    return TRUE;
+    return true;
 }
 
 UBool UVector32::removeAll(const UVector32& other) {
-    UBool changed = FALSE;
+    UBool changed = false;
     for (int32_t i=0; i<other.size(); ++i) {
         int32_t j = indexOf(other.elements[i]);
         if (j >= 0) {
             removeElementAt(j);
-            changed = TRUE;
+            changed = true;
         }
     }
     return changed;
 }
 
 UBool UVector32::retainAll(const UVector32& other) {
-    UBool changed = FALSE;
+    UBool changed = false;
     for (int32_t j=size()-1; j>=0; --j) {
         int32_t i = other.indexOf(elements[j]);
         if (i < 0) {
             removeElementAt(j);
-            changed = TRUE;
+            changed = true;
         }
     }
     return changed;
@@ -165,7 +165,7 @@ void UVector32::removeElementAt(int32_t index) {
     }
 }
 
-void UVector32::removeAllElements(void) {
+void UVector32::removeAllElements() {
     count = 0;
 }
 
@@ -173,14 +173,14 @@ UBool   UVector32::equals(const UVector32 &other) const {
     int      i;
 
     if (this->count != other.count) {
-        return FALSE;
+        return false;
     }
     for (i=0; i<count; i++) {
         if (elements[i] != other.elements[i]) {
-            return FALSE;
+            return false;
         }
     }
-    return TRUE;
+    return true;
 }
 
 
@@ -199,22 +199,22 @@ int32_t UVector32::indexOf(int32_t key, int32_t startIndex) const {
 
 UBool UVector32::expandCapacity(int32_t minimumCapacity, UErrorCode &status) {
     if (U_FAILURE(status)) {
-        return FALSE;
+        return false;
     }
     if (minimumCapacity < 0) {
         status = U_ILLEGAL_ARGUMENT_ERROR;
-        return FALSE;
+        return false;
     }
     if (capacity >= minimumCapacity) {
-        return TRUE;
+        return true;
     }
     if (maxCapacity>0 && minimumCapacity>maxCapacity) {
         status = U_BUFFER_OVERFLOW_ERROR;
-        return FALSE;
+        return false;
     }
     if (capacity > (INT32_MAX - 1) / 2) {  // integer overflow check
         status = U_ILLEGAL_ARGUMENT_ERROR;
-        return FALSE;
+        return false;
     }
     int32_t newCap = capacity * 2;
     if (newCap < minimumCapacity) {
@@ -226,17 +226,17 @@ UBool UVector32::expandCapacity(int32_t minimumCapacity, UErrorCode &status) {
     if (newCap > (int32_t)(INT32_MAX / sizeof(int32_t))) {  // integer overflow check
         // We keep the original memory contents on bad minimumCapacity/maxCapacity.
         status = U_ILLEGAL_ARGUMENT_ERROR;
-        return FALSE;
+        return false;
     }
     int32_t* newElems = (int32_t *)uprv_realloc(elements, sizeof(int32_t)*newCap);
-    if (newElems == NULL) {
+    if (newElems == nullptr) {
         // We keep the original contents on the memory failure on realloc.
         status = U_MEMORY_ALLOCATION_ERROR;
-        return FALSE;
+        return false;
     }
     elements = newElems;
     capacity = newCap;
-    return TRUE;
+    return true;
 }
 
 void UVector32::setMaxCapacity(int32_t limit) {
@@ -257,7 +257,7 @@ void UVector32::setMaxCapacity(int32_t limit) {
     // New maximum capacity is smaller than the current size.
     // Realloc the storage to the new, smaller size.
     int32_t* newElems = (int32_t *)uprv_realloc(elements, sizeof(int32_t)*maxCapacity);
-    if (newElems == NULL) {
+    if (newElems == nullptr) {
         // Realloc to smaller failed.
         //   Just keep what we had.  No need to call it a failure.
         return;
@@ -273,7 +273,7 @@ void UVector32::setMaxCapacity(int32_t limit) {
  * Change the size of this vector as follows: If newSize is smaller,
  * then truncate the array, possibly deleting held elements for i >=
  * newSize.  If newSize is larger, grow the array, filling in new
- * slots with NULL.
+ * slots with nullptr.
  */
 void UVector32::setSize(int32_t newSize) {
     int32_t i;

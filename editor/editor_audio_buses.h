@@ -1,38 +1,37 @@
-/*************************************************************************/
-/*  editor_audio_buses.h                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_audio_buses.h                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef EDITORAUDIOBUSES_H
-#define EDITORAUDIOBUSES_H
+#ifndef EDITOR_AUDIO_BUSES_H
+#define EDITOR_AUDIO_BUSES_H
 
-#include "editor/editor_file_dialog.h"
-#include "editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
@@ -48,14 +47,15 @@
 #include "scene/gui/tree.h"
 
 class EditorAudioBuses;
+class EditorFileDialog;
 
 class EditorAudioBus : public PanelContainer {
 	GDCLASS(EditorAudioBus, PanelContainer);
 
 	Ref<Texture2D> disabled_vu;
-	LineEdit *track_name;
-	MenuButton *bus_options;
-	VSlider *slider;
+	LineEdit *track_name = nullptr;
+	MenuButton *bus_options = nullptr;
+	VSlider *slider = nullptr;
 
 	int cc;
 	static const int CHANNELS_MAX = 4;
@@ -70,27 +70,27 @@ class EditorAudioBus : public PanelContainer {
 		TextureProgressBar *vu_r = nullptr;
 	} channel[CHANNELS_MAX];
 
-	OptionButton *send;
+	OptionButton *send = nullptr;
 
-	PopupMenu *effect_options;
-	PopupMenu *bus_popup;
-	PopupMenu *delete_effect_popup;
+	PopupMenu *effect_options = nullptr;
+	PopupMenu *bus_popup = nullptr;
+	PopupMenu *delete_effect_popup = nullptr;
 
-	Panel *audio_value_preview_box;
-	Label *audio_value_preview_label;
-	Timer *preview_timer;
+	Panel *audio_value_preview_box = nullptr;
+	Label *audio_value_preview_label = nullptr;
+	Timer *preview_timer = nullptr;
 
-	Button *solo;
-	Button *mute;
-	Button *bypass;
+	Button *solo = nullptr;
+	Button *mute = nullptr;
+	Button *bypass = nullptr;
 
-	Tree *effects;
+	Tree *effects = nullptr;
 
-	bool updating_bus;
+	bool updating_bus = false;
 	bool is_master;
-	mutable bool hovering_drop;
+	mutable bool hovering_drop = false;
 
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _effects_gui_input(Ref<InputEvent> p_event);
 	void _bus_popup_pressed(int p_option);
 
@@ -109,7 +109,7 @@ class EditorAudioBus : public PanelContainer {
 	void _effect_add(int p_which);
 	void _effect_selected();
 	void _delete_effect_pressed(int p_option);
-	void _effect_rmb(const Vector2 &p_pos);
+	void _effect_rmb(const Vector2 &p_pos, MouseButton p_button);
 	void _update_visible_channels();
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;
@@ -122,7 +122,7 @@ class EditorAudioBus : public PanelContainer {
 
 	friend class EditorAudioBuses;
 
-	EditorAudioBuses *buses;
+	EditorAudioBuses *buses = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -141,7 +141,7 @@ class EditorAudioBusDrop : public Control {
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
-	mutable bool hovering_drop;
+	mutable bool hovering_drop = false;
 
 protected:
 	static void _bind_methods();
@@ -154,29 +154,29 @@ public:
 class EditorAudioBuses : public VBoxContainer {
 	GDCLASS(EditorAudioBuses, VBoxContainer);
 
-	HBoxContainer *top_hb;
+	HBoxContainer *top_hb = nullptr;
 
-	ScrollContainer *bus_scroll;
-	HBoxContainer *bus_hb;
+	ScrollContainer *bus_scroll = nullptr;
+	HBoxContainer *bus_hb = nullptr;
 
-	EditorAudioBusDrop *drop_end;
+	EditorAudioBusDrop *drop_end = nullptr;
 
-	Label *file;
+	Label *file = nullptr;
 
-	Button *add;
-	Button *load;
-	Button *save_as;
-	Button *_default;
-	Button *_new;
+	Button *add = nullptr;
+	Button *load = nullptr;
+	Button *save_as = nullptr;
+	Button *_default = nullptr;
+	Button *_new = nullptr;
 
-	Timer *save_timer;
+	Timer *save_timer = nullptr;
 	String edited_path;
 
-	void _add_bus();
-	void _update_buses();
+	void _rebuild_buses();
 	void _update_bus(int p_index);
 	void _update_sends();
 
+	void _add_bus();
 	void _delete_bus(Object *p_which);
 	void _duplicate_bus(int p_which);
 	void _reset_bus_volume(Object *p_which);
@@ -192,8 +192,8 @@ class EditorAudioBuses : public VBoxContainer {
 	void _load_default_layout();
 	void _new_layout();
 
-	EditorFileDialog *file_dialog;
-	bool new_layout;
+	EditorFileDialog *file_dialog = nullptr;
+	bool new_layout = false;
 
 	void _file_dialog_callback(const String &p_string);
 
@@ -230,11 +230,10 @@ private:
 			render_db_value = n.render_db_value;
 		}
 
-		_FORCE_INLINE_ AudioNotch &operator=(const EditorAudioMeterNotches::AudioNotch &n) {
+		_FORCE_INLINE_ void operator=(const EditorAudioMeterNotches::AudioNotch &n) {
 			relative_position = n.relative_position;
 			db_value = n.db_value;
 			render_db_value = n.render_db_value;
-			return *this;
 		}
 
 		_FORCE_INLINE_ AudioNotch() {}
@@ -242,29 +241,37 @@ private:
 
 	List<AudioNotch> notches;
 
+	struct ThemeCache {
+		Color notch_color;
+
+		Ref<Font> font;
+		int font_size = 0;
+	} theme_cache;
+
 public:
 	const float line_length = 5.0f;
 	const float label_space = 2.0f;
 	const float btm_padding = 9.0f;
 	const float top_padding = 5.0f;
-	Color notch_color;
 
 	void add_notch(float p_normalized_offset, float p_db_value, bool p_render_value = false);
 	Size2 get_minimum_size() const override;
 
 private:
+	virtual void _update_theme_item_cache() override;
+
 	static void _bind_methods();
 	void _notification(int p_what);
 	void _draw_audio_notches();
 
 public:
-	EditorAudioMeterNotches();
+	EditorAudioMeterNotches() {}
 };
 
 class AudioBusesEditorPlugin : public EditorPlugin {
 	GDCLASS(AudioBusesEditorPlugin, EditorPlugin);
 
-	EditorAudioBuses *audio_bus_editor;
+	EditorAudioBuses *audio_bus_editor = nullptr;
 
 public:
 	virtual String get_name() const override { return "SampleLibrary"; }
@@ -277,4 +284,4 @@ public:
 	~AudioBusesEditorPlugin();
 };
 
-#endif // EDITORAUDIOBUSES_H
+#endif // EDITOR_AUDIO_BUSES_H

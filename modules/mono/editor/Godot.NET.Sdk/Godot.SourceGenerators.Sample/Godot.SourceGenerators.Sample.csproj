@@ -1,12 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>11</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- $(GodotProjectDir) would normally be defined by the Godot.NET.Sdk -->
     <GodotProjectDir>$(MSBuildProjectDirectory)</GodotProjectDir>
+    <GodotProjectDirBase64 Condition=" $([MSBuild]::VersionGreaterThanOrEquals($(MSBuildAssemblyVersion), '17.3')) ">$([MSBuild]::ConvertToBase64('$(GodotProjectDir)'))</GodotProjectDirBase64>
+    <!-- For compiling GetGodotPropertyDefaultValues. -->
+    <DefineConstants>$(DefineConstants);TOOLS</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>

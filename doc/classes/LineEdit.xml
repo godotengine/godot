@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LineEdit" inherits="Control" version="4.0">
+<class name="LineEdit" inherits="Control" keywords="text, input" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Control that provides single-line string editing.
+		An input field for single-line text.
 	</brief_description>
 	<description>
-		LineEdit provides a single-line string editor, used for text fields.
-		It features many built-in shortcuts which will always be available ([kbd]Ctrl[/kbd] here maps to [kbd]Cmd[/kbd] on macOS):
+		[LineEdit] provides an input field for editing a single line of text. It features many built-in shortcuts that are always available ([kbd]Ctrl[/kbd] here maps to [kbd]Cmd[/kbd] on macOS):
 		- [kbd]Ctrl + C[/kbd]: Copy
 		- [kbd]Ctrl + X[/kbd]: Cut
 		- [kbd]Ctrl + V[/kbd] or [kbd]Ctrl + Y[/kbd]: Paste/"yank"
@@ -17,14 +16,14 @@
 		- [kbd]Ctrl + A[/kbd]: Select all text
 		- [kbd]Up Arrow[/kbd]/[kbd]Down Arrow[/kbd]: Move the caret to the beginning/end of the line
 		On macOS, some extra keyboard shortcuts are available:
-		- [kbd]Ctrl + F[/kbd]: Same as [kbd]Right Arrow[/kbd], move the caret one character right
-		- [kbd]Ctrl + B[/kbd]: Same as [kbd]Left Arrow[/kbd], move the caret one character left
-		- [kbd]Ctrl + P[/kbd]: Same as [kbd]Up Arrow[/kbd], move the caret to the previous line
-		- [kbd]Ctrl + N[/kbd]: Same as [kbd]Down Arrow[/kbd], move the caret to the next line
-		- [kbd]Ctrl + D[/kbd]: Same as [kbd]Delete[/kbd], delete the character on the right side of caret
-		- [kbd]Ctrl + H[/kbd]: Same as [kbd]Backspace[/kbd], delete the character on the left side of the caret
-		- [kbd]Ctrl + A[/kbd]: Same as [kbd]Home[/kbd], move the caret to the beginning of the line
-		- [kbd]Ctrl + E[/kbd]: Same as [kbd]End[/kbd], move the caret to the end of the line
+		- [kbd]Cmd + F[/kbd]: Same as [kbd]Right Arrow[/kbd], move the caret one character right
+		- [kbd]Cmd + B[/kbd]: Same as [kbd]Left Arrow[/kbd], move the caret one character left
+		- [kbd]Cmd + P[/kbd]: Same as [kbd]Up Arrow[/kbd], move the caret to the previous line
+		- [kbd]Cmd + N[/kbd]: Same as [kbd]Down Arrow[/kbd], move the caret to the next line
+		- [kbd]Cmd + D[/kbd]: Same as [kbd]Delete[/kbd], delete the character on the right side of caret
+		- [kbd]Cmd + H[/kbd]: Same as [kbd]Backspace[/kbd], delete the character on the left side of the caret
+		- [kbd]Cmd + A[/kbd]: Same as [kbd]Home[/kbd], move the caret to the beginning of the line
+		- [kbd]Cmd + E[/kbd]: Same as [kbd]End[/kbd], move the caret to the end of the line
 		- [kbd]Cmd + Left Arrow[/kbd]: Same as [kbd]Home[/kbd], move the caret to the beginning of the line
 		- [kbd]Cmd + Right Arrow[/kbd]: Same as [kbd]End[/kbd], move the caret to the end of the line
 	</description>
@@ -32,101 +31,133 @@
 	</tutorials>
 	<methods>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Erases the [LineEdit]'s [member text].
 			</description>
 		</method>
-		<method name="clear_opentype_features">
-			<return type="void">
-			</return>
-			<description>
-				Removes all OpenType features.
-			</description>
-		</method>
 		<method name="delete_char_at_caret">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Deletes one character at the caret's current position (equivalent to pressing [kbd]Delete[/kbd]).
 			</description>
 		</method>
 		<method name="delete_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="from_column" type="int">
-			</argument>
-			<argument index="1" name="to_column" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="from_column" type="int" />
+			<param index="1" name="to_column" type="int" />
 			<description>
-				Deletes a section of the [member text] going from position [code]from_column[/code] to [code]to_column[/code]. Both parameters should be within the text's length.
+				Deletes a section of the [member text] going from position [param from_column] to [param to_column]. Both parameters should be within the text's length.
 			</description>
 		</method>
 		<method name="deselect">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the current selection.
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
-			<return type="PopupMenu">
-			</return>
+			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] of this [LineEdit]. By default, this menu is displayed when right-clicking on the [LineEdit].
-			</description>
-		</method>
-		<method name="get_opentype_feature" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
-			<description>
-				Returns OpenType feature [code]tag[/code].
+				You can add custom menu items or remove standard ones. Make sure your IDs don't conflict with the standard ones (see [enum MenuItems]). For example:
+				[codeblocks]
+				[gdscript]
+				func _ready():
+				    var menu = get_menu()
+				    # Remove all items after "Redo".
+				    menu.item_count = menu.get_item_index(MENU_REDO) + 1
+				    # Add custom items.
+				    menu.add_separator()
+				    menu.add_item("Insert Date", MENU_MAX + 1)
+				    # Connect callback.
+				    menu.id_pressed.connect(_on_item_pressed)
+
+				func _on_item_pressed(id):
+				    if id == MENU_MAX + 1:
+				        insert_text_at_caret(Time.get_date_string_from_system())
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    var menu = GetMenu();
+				    // Remove all items after "Redo".
+				    menu.ItemCount = menu.GetItemIndex(LineEdit.MenuItems.Redo) + 1;
+				    // Add custom items.
+				    menu.AddSeparator();
+				    menu.AddItem("Insert Date", LineEdit.MenuItems.Max + 1);
+				    // Add event handler.
+				    menu.IdPressed += OnItemPressed;
+				}
+
+				public void OnItemPressed(int id)
+				{
+				    if (id == LineEdit.MenuItems.Max + 1)
+				    {
+				        InsertTextAtCaret(Time.GetDateStringFromSystem());
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
 			</description>
 		</method>
 		<method name="get_scroll_offset" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="float" />
 			<description>
 				Returns the scroll offset due to [member caret_column], as a number of characters.
 			</description>
 		</method>
-		<method name="insert_text_at_caret">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
+		<method name="get_selected_text">
+			<return type="String" />
 			<description>
-				Inserts [code]text[/code] at the caret. If the resulting value is longer than [member max_length], nothing happens.
+				Returns the text inside the selection.
+			</description>
+		</method>
+		<method name="get_selection_from_column" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the selection begin column.
+			</description>
+		</method>
+		<method name="get_selection_to_column" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the selection end column.
+			</description>
+		</method>
+		<method name="has_selection" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the user has selected text.
+			</description>
+		</method>
+		<method name="insert_text_at_caret">
+			<return type="void" />
+			<param index="0" name="text" type="String" />
+			<description>
+				Inserts [param text] at the caret. If the resulting value is longer than [member max_length], nothing happens.
 			</description>
 		</method>
 		<method name="is_menu_visible" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns whether the menu is visible. Use this instead of [code]get_menu().visible[/code] to improve performance (so the creation of the menu is avoided).
 			</description>
 		</method>
 		<method name="menu_option">
-			<return type="void">
-			</return>
-			<argument index="0" name="option" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="option" type="int" />
 			<description>
 				Executes a given action as defined in the [enum MenuItems] enum.
 			</description>
 		</method>
 		<method name="select">
-			<return type="void">
-			</return>
-			<argument index="0" name="from" type="int" default="0">
-			</argument>
-			<argument index="1" name="to" type="int" default="-1">
-			</argument>
+			<return type="void" />
+			<param index="0" name="from" type="int" default="0" />
+			<param index="1" name="to" type="int" default="-1" />
 			<description>
-				Selects characters inside [LineEdit] between [code]from[/code] and [code]to[/code]. By default, [code]from[/code] is at the beginning and [code]to[/code] at the end.
+				Selects characters inside [LineEdit] between [param from] and [param to]. By default, [param from] is at the beginning and [param to] at the end.
 				[codeblocks]
 				[gdscript]
 				text = "Welcome"
@@ -144,33 +175,21 @@
 			</description>
 		</method>
 		<method name="select_all">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Selects the whole [String].
 			</description>
 		</method>
-		<method name="set_opentype_feature">
-			<return type="void">
-			</return>
-			<argument index="0" name="tag" type="String">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
-			<description>
-				Returns OpenType feature [code]tag[/code]. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align" default="0">
-			Text alignment as defined in the [enum Align] enum.
+		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
+			Text alignment as defined in the [enum HorizontalAlignment] enum.
 		</member>
 		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
-			If [code]true[/code], the caret (text cursor) blinks.
+			If [code]true[/code], makes the caret blink.
 		</member>
-		<member name="caret_blink_speed" type="float" setter="set_caret_blink_speed" getter="get_caret_blink_speed" default="0.65">
-			Duration (in seconds) of a caret's blinking cycle.
+		<member name="caret_blink_interval" type="float" setter="set_caret_blink_interval" getter="get_caret_blink_interval" default="0.65">
+			The interval at which the caret blinks (in seconds).
 		</member>
 		<member name="caret_column" type="int" setter="set_caret_column" getter="get_caret_column" default="0">
 			The caret's column position inside the [LineEdit]. When set, the text may scroll to accommodate it.
@@ -180,29 +199,38 @@
 		</member>
 		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="false">
 			Allow moving caret, selecting and removing the individual composite character components.
-			Note: [kbd]Backspace[/kbd] is always removing individual composite character components.
+			[b]Note:[/b] [kbd]Backspace[/kbd] is always removing individual composite character components.
 		</member>
 		<member name="clear_button_enabled" type="bool" setter="set_clear_button_enabled" getter="is_clear_button_enabled" default="false">
-			If [code]true[/code], the [LineEdit] will show a clear button if [code]text[/code] is not empty, which can be used to clear the text quickly.
+			If [code]true[/code], the [LineEdit] will show a clear button if [member text] is not empty, which can be used to clear the text quickly.
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], the context menu will appear when right-clicked.
 		</member>
+		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" default="true">
+			If [code]true[/code], the selected text will be deselected when focus is lost.
+		</member>
+		<member name="drag_and_drop_selection_enabled" type="bool" setter="set_drag_and_drop_selection_enabled" getter="is_drag_and_drop_selection_enabled" default="true">
+			If [code]true[/code], allow drag and drop of selected text.
+		</member>
 		<member name="draw_control_chars" type="bool" setter="set_draw_control_chars" getter="get_draw_control_chars" default="false">
 			If [code]true[/code], control characters are displayed.
 		</member>
-		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
 		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length_enabled" getter="is_expand_to_text_length_enabled" default="false">
 			If [code]true[/code], the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
 		</member>
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
+		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
+			If [code]true[/code], the [LineEdit] doesn't display decoration.
+		</member>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			Language code used for line-breaking and text shaping algorithms. If left empty, current locale is used instead.
 		</member>
 		<member name="max_length" type="int" setter="set_max_length" getter="get_max_length" default="0">
-			Maximum amount of characters that can be entered inside the [LineEdit]. If [code]0[/code], there is no limit.
+			Maximum number of characters that can be entered inside the [LineEdit]. If [code]0[/code], there is no limit.
 			When a limit is defined, characters that would exceed [member max_length] are truncated. This happens both for existing [member text] contents when setting the max length, or for new text inserted in the [LineEdit], including pasting. If any input text is truncated, the [signal text_change_rejected] signal is emitted with the truncated substring as parameter.
 			[b]Example:[/b]
 			[codeblocks]
@@ -226,10 +254,11 @@
 			[/csharp]
 			[/codeblocks]
 		</member>
-		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" override="true" enum="Control.CursorShape" default="1" />
-		<member name="placeholder_alpha" type="float" setter="set_placeholder_alpha" getter="get_placeholder_alpha" default="0.6">
-			Opacity of the [member placeholder_text]. From [code]0[/code] to [code]1[/code].
+		<member name="middle_mouse_paste_enabled" type="bool" setter="set_middle_mouse_paste_enabled" getter="is_middle_mouse_paste_enabled" default="true">
+			If [code]false[/code], using middle mouse button to paste clipboard will be disabled.
+			[b]Note:[/b] This method is only implemented on Linux.
 		</member>
+		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" overrides="Control" enum="Control.CursorShape" default="1" />
 		<member name="placeholder_text" type="String" setter="set_placeholder" getter="get_placeholder" default="&quot;&quot;">
 			Text shown when the [LineEdit] is empty. It is [b]not[/b] the [LineEdit]'s default value (see [member text]).
 		</member>
@@ -239,8 +268,11 @@
 		<member name="secret" type="bool" setter="set_secret" getter="is_secret" default="false">
 			If [code]true[/code], every character is replaced with the secret character (see [member secret_character]).
 		</member>
-		<member name="secret_character" type="String" setter="set_secret_character" getter="get_secret_character" default="&quot;*&quot;">
-			The character to use to mask secret input (defaults to "*"). Only a single character can be used as the secret character.
+		<member name="secret_character" type="String" setter="set_secret_character" getter="get_secret_character" default="&quot;•&quot;">
+			The character to use to mask secret input. Only a single character can be used as the secret character. If it is longer than one character, only the first one will be used. If it is empty, a space will be used instead.
+		</member>
+		<member name="select_all_on_focus" type="bool" setter="set_select_all_on_focus" getter="is_select_all_on_focus" default="false">
+			If [code]true[/code], the [LineEdit] will select the whole text when it gains focus.
 		</member>
 		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
 			If [code]false[/code], it's impossible to select the text using mouse nor keyboard.
@@ -248,7 +280,7 @@
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
 			If [code]false[/code], using shortcuts will be disabled.
 		</member>
-		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
+		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="TextServer.StructuredTextParser" default="0">
 			Set BiDi algorithm override for the structured text.
 		</member>
 		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[]">
@@ -264,43 +296,31 @@
 		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
 			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.
 		</member>
+		<member name="virtual_keyboard_type" type="int" setter="set_virtual_keyboard_type" getter="get_virtual_keyboard_type" enum="LineEdit.VirtualKeyboardType" default="0">
+			Specifies the type of virtual keyboard to show.
+		</member>
 	</members>
 	<signals>
 		<signal name="text_change_rejected">
-			<argument index="0" name="rejected_substring" type="String">
-			</argument>
+			<param index="0" name="rejected_substring" type="String" />
 			<description>
-				Emitted when appending text that overflows the [member max_length]. The appended text is truncated to fit [member max_length], and the part that couldn't fit is passed as the [code]rejected_substring[/code] argument.
+				Emitted when appending text that overflows the [member max_length]. The appended text is truncated to fit [member max_length], and the part that couldn't fit is passed as the [param rejected_substring] argument.
 			</description>
 		</signal>
 		<signal name="text_changed">
-			<argument index="0" name="new_text" type="String">
-			</argument>
+			<param index="0" name="new_text" type="String" />
 			<description>
 				Emitted when the text changes.
 			</description>
 		</signal>
 		<signal name="text_submitted">
-			<argument index="0" name="new_text" type="String">
-			</argument>
+			<param index="0" name="new_text" type="String" />
 			<description>
 				Emitted when the user presses [constant KEY_ENTER] on the [LineEdit].
 			</description>
 		</signal>
 	</signals>
 	<constants>
-		<constant name="ALIGN_LEFT" value="0" enum="Align">
-			Aligns the text on the left-hand side of the [LineEdit].
-		</constant>
-		<constant name="ALIGN_CENTER" value="1" enum="Align">
-			Centers the text in the middle of the [LineEdit].
-		</constant>
-		<constant name="ALIGN_RIGHT" value="2" enum="Align">
-			Aligns the text on the right-hand side of the [LineEdit].
-		</constant>
-		<constant name="ALIGN_FILL" value="3" enum="Align">
-			Expand row to fit the [LineEdit]'s width.
-		</constant>
 		<constant name="MENU_CUT" value="0" enum="MenuItems">
 			Cuts (copies and clears) the selected text.
 		</constant>
@@ -323,121 +343,159 @@
 		<constant name="MENU_REDO" value="6" enum="MenuItems">
 			Reverse the last undo action.
 		</constant>
-		<constant name="MENU_DIR_INHERITED" value="7" enum="MenuItems">
+		<constant name="MENU_SUBMENU_TEXT_DIR" value="7" enum="MenuItems">
+			ID of "Text Writing Direction" submenu.
+		</constant>
+		<constant name="MENU_DIR_INHERITED" value="8" enum="MenuItems">
 			Sets text direction to inherited.
 		</constant>
-		<constant name="MENU_DIR_AUTO" value="8" enum="MenuItems">
+		<constant name="MENU_DIR_AUTO" value="9" enum="MenuItems">
 			Sets text direction to automatic.
 		</constant>
-		<constant name="MENU_DIR_LTR" value="9" enum="MenuItems">
+		<constant name="MENU_DIR_LTR" value="10" enum="MenuItems">
 			Sets text direction to left-to-right.
 		</constant>
-		<constant name="MENU_DIR_RTL" value="10" enum="MenuItems">
+		<constant name="MENU_DIR_RTL" value="11" enum="MenuItems">
 			Sets text direction to right-to-left.
 		</constant>
-		<constant name="MENU_DISPLAY_UCC" value="11" enum="MenuItems">
+		<constant name="MENU_DISPLAY_UCC" value="12" enum="MenuItems">
 			Toggles control character display.
 		</constant>
-		<constant name="MENU_INSERT_LRM" value="12" enum="MenuItems">
+		<constant name="MENU_SUBMENU_INSERT_UCC" value="13" enum="MenuItems">
+			ID of "Insert Control Character" submenu.
+		</constant>
+		<constant name="MENU_INSERT_LRM" value="14" enum="MenuItems">
 			Inserts left-to-right mark (LRM) character.
 		</constant>
-		<constant name="MENU_INSERT_RLM" value="13" enum="MenuItems">
+		<constant name="MENU_INSERT_RLM" value="15" enum="MenuItems">
 			Inserts right-to-left mark (RLM) character.
 		</constant>
-		<constant name="MENU_INSERT_LRE" value="14" enum="MenuItems">
+		<constant name="MENU_INSERT_LRE" value="16" enum="MenuItems">
 			Inserts start of left-to-right embedding (LRE) character.
 		</constant>
-		<constant name="MENU_INSERT_RLE" value="15" enum="MenuItems">
+		<constant name="MENU_INSERT_RLE" value="17" enum="MenuItems">
 			Inserts start of right-to-left embedding (RLE) character.
 		</constant>
-		<constant name="MENU_INSERT_LRO" value="16" enum="MenuItems">
+		<constant name="MENU_INSERT_LRO" value="18" enum="MenuItems">
 			Inserts start of left-to-right override (LRO) character.
 		</constant>
-		<constant name="MENU_INSERT_RLO" value="17" enum="MenuItems">
+		<constant name="MENU_INSERT_RLO" value="19" enum="MenuItems">
 			Inserts start of right-to-left override (RLO) character.
 		</constant>
-		<constant name="MENU_INSERT_PDF" value="18" enum="MenuItems">
+		<constant name="MENU_INSERT_PDF" value="20" enum="MenuItems">
 			Inserts pop direction formatting (PDF) character.
 		</constant>
-		<constant name="MENU_INSERT_ALM" value="19" enum="MenuItems">
+		<constant name="MENU_INSERT_ALM" value="21" enum="MenuItems">
 			Inserts Arabic letter mark (ALM) character.
 		</constant>
-		<constant name="MENU_INSERT_LRI" value="20" enum="MenuItems">
+		<constant name="MENU_INSERT_LRI" value="22" enum="MenuItems">
 			Inserts left-to-right isolate (LRI) character.
 		</constant>
-		<constant name="MENU_INSERT_RLI" value="21" enum="MenuItems">
+		<constant name="MENU_INSERT_RLI" value="23" enum="MenuItems">
 			Inserts right-to-left isolate (RLI) character.
 		</constant>
-		<constant name="MENU_INSERT_FSI" value="22" enum="MenuItems">
+		<constant name="MENU_INSERT_FSI" value="24" enum="MenuItems">
 			Inserts first strong isolate (FSI) character.
 		</constant>
-		<constant name="MENU_INSERT_PDI" value="23" enum="MenuItems">
+		<constant name="MENU_INSERT_PDI" value="25" enum="MenuItems">
 			Inserts pop direction isolate (PDI) character.
 		</constant>
-		<constant name="MENU_INSERT_ZWJ" value="24" enum="MenuItems">
+		<constant name="MENU_INSERT_ZWJ" value="26" enum="MenuItems">
 			Inserts zero width joiner (ZWJ) character.
 		</constant>
-		<constant name="MENU_INSERT_ZWNJ" value="25" enum="MenuItems">
+		<constant name="MENU_INSERT_ZWNJ" value="27" enum="MenuItems">
 			Inserts zero width non-joiner (ZWNJ) character.
 		</constant>
-		<constant name="MENU_INSERT_WJ" value="26" enum="MenuItems">
+		<constant name="MENU_INSERT_WJ" value="28" enum="MenuItems">
 			Inserts word joiner (WJ) character.
 		</constant>
-		<constant name="MENU_INSERT_SHY" value="27" enum="MenuItems">
+		<constant name="MENU_INSERT_SHY" value="29" enum="MenuItems">
 			Inserts soft hyphen (SHY) character.
 		</constant>
-		<constant name="MENU_MAX" value="28" enum="MenuItems">
+		<constant name="MENU_MAX" value="30" enum="MenuItems">
 			Represents the size of the [enum MenuItems] enum.
+		</constant>
+		<constant name="KEYBOARD_TYPE_DEFAULT" value="0" enum="VirtualKeyboardType">
+			Default text virtual keyboard.
+		</constant>
+		<constant name="KEYBOARD_TYPE_MULTILINE" value="1" enum="VirtualKeyboardType">
+			Multiline virtual keyboard.
+		</constant>
+		<constant name="KEYBOARD_TYPE_NUMBER" value="2" enum="VirtualKeyboardType">
+			Virtual number keypad, useful for PIN entry.
+		</constant>
+		<constant name="KEYBOARD_TYPE_NUMBER_DECIMAL" value="3" enum="VirtualKeyboardType">
+			Virtual number keypad, useful for entering fractional numbers.
+		</constant>
+		<constant name="KEYBOARD_TYPE_PHONE" value="4" enum="VirtualKeyboardType">
+			Virtual phone number keypad.
+		</constant>
+		<constant name="KEYBOARD_TYPE_EMAIL_ADDRESS" value="5" enum="VirtualKeyboardType">
+			Virtual keyboard with additional keys to assist with typing email addresses.
+		</constant>
+		<constant name="KEYBOARD_TYPE_PASSWORD" value="6" enum="VirtualKeyboardType">
+			Virtual keyboard for entering a password. On most platforms, this should disable autocomplete and autocapitalization.
+			[b]Note:[/b] This is not supported on Web. Instead, this behaves identically to [constant KEYBOARD_TYPE_DEFAULT].
+		</constant>
+		<constant name="KEYBOARD_TYPE_URL" value="7" enum="VirtualKeyboardType">
+			Virtual keyboard with additional keys to assist with typing URLs.
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="caret_color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
-			Color of the [LineEdit]'s caret (text cursor).
+		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Color of the [LineEdit]'s caret (text cursor). This can be set to a fully transparent color to hide the caret entirely.
 		</theme_item>
-		<theme_item name="clear" type="Texture2D">
-			Texture for the clear button. See [member clear_button_enabled].
-		</theme_item>
-		<theme_item name="clear_button_color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="clear_button_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Color used as default tint for the clear button.
 		</theme_item>
-		<theme_item name="clear_button_color_pressed" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="clear_button_color_pressed" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Color used for the clear button when it's pressed.
 		</theme_item>
-		<theme_item name="focus" type="StyleBox">
-			Background used when [LineEdit] has GUI focus.
-		</theme_item>
-		<theme_item name="font" type="Font">
-			Font used for the text.
-		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Default font color.
 		</theme_item>
-		<theme_item name="font_outline_color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the [LineEdit].
 		</theme_item>
-		<theme_item name="font_selected_color" type="Color" default="Color(0, 0, 0, 1)">
+		<theme_item name="font_placeholder_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.6)">
+			Font color for [member placeholder_text].
+		</theme_item>
+		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Font color for selected text (inside the selection rectangle).
 		</theme_item>
-		<theme_item name="font_size" type="int">
-			Font size of the [LineEdit]'s text.
-		</theme_item>
-		<theme_item name="font_uneditable_color" type="Color" default="Color(0.88, 0.88, 0.88, 0.5)">
+		<theme_item name="font_uneditable_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Font color when editing is disabled.
 		</theme_item>
-		<theme_item name="minimum_character_width" type="int" default="4">
-			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of 'M' characters (i.e. this amount of 'M' characters can be displayed without scrolling).
+		<theme_item name="selection_color" data_type="color" type="Color" default="Color(0.5, 0.5, 0.5, 1)">
+			Color of the selection rectangle.
 		</theme_item>
-		<theme_item name="normal" type="StyleBox">
+		<theme_item name="caret_width" data_type="constant" type="int" default="1">
+			The caret's width in pixels. Greater values can be used to improve accessibility by ensuring the caret is easily visible, or to ensure consistency with a large font size.
+		</theme_item>
+		<theme_item name="minimum_character_width" data_type="constant" type="int" default="4">
+			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of 'M' characters (i.e. this number of 'M' characters can be displayed without scrolling).
+		</theme_item>
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+			The size of the text outline.
+			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			Font used for the text.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the [LineEdit]'s text.
+		</theme_item>
+		<theme_item name="clear" data_type="icon" type="Texture2D">
+			Texture for the clear button. See [member clear_button_enabled].
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			Background used when [LineEdit] has GUI focus. The [theme_item focus] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
 			Default background for the [LineEdit].
 		</theme_item>
-		<theme_item name="outline_size" type="int" default="0">
-			The size of the text outline.
-		</theme_item>
-		<theme_item name="read_only" type="StyleBox">
+		<theme_item name="read_only" data_type="style" type="StyleBox" keywords="enabled, disabled, editable">
 			Background used when [LineEdit] is in read-only mode ([member editable] is set to [code]false[/code]).
-		</theme_item>
-		<theme_item name="selection_color" type="Color" default="Color(0.49, 0.49, 0.49, 1)">
-			Color of the selection rectangle.
 		</theme_item>
 	</theme_items>
 </class>

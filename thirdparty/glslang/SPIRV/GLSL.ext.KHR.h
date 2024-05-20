@@ -29,7 +29,7 @@
 #define GLSLextKHR_H
 
 static const int GLSLextKHRVersion = 100;
-static const int GLSLextKHRRevision = 2;
+static const int GLSLextKHRRevision = 3;
 
 static const char* const E_SPV_KHR_shader_ballot                = "SPV_KHR_shader_ballot";
 static const char* const E_SPV_KHR_subgroup_vote                = "SPV_KHR_subgroup_vote";
@@ -50,5 +50,11 @@ static const char* const E_SPV_KHR_ray_tracing                  = "SPV_KHR_ray_t
 static const char* const E_SPV_KHR_ray_query                    = "SPV_KHR_ray_query";
 static const char* const E_SPV_KHR_fragment_shading_rate        = "SPV_KHR_fragment_shading_rate";
 static const char* const E_SPV_KHR_terminate_invocation         = "SPV_KHR_terminate_invocation";
+static const char* const E_SPV_KHR_workgroup_memory_explicit_layout = "SPV_KHR_workgroup_memory_explicit_layout";
+static const char* const E_SPV_KHR_subgroup_uniform_control_flow = "SPV_KHR_subgroup_uniform_control_flow";
+static const char* const E_SPV_KHR_fragment_shader_barycentric = "SPV_KHR_fragment_shader_barycentric";
+static const char* const E_SPV_AMD_shader_early_and_late_fragment_tests = "SPV_AMD_shader_early_and_late_fragment_tests";
+static const char* const E_SPV_KHR_ray_tracing_position_fetch   = "SPV_KHR_ray_tracing_position_fetch";
+static const char* const E_SPV_KHR_cooperative_matrix           = "SPV_KHR_cooperative_matrix";
 
 #endif  // #ifndef GLSLextKHR_H

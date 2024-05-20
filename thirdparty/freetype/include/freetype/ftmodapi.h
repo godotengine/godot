@@ -4,7 +4,7 @@
  *
  *   FreeType modules public interface (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -45,10 +45,12 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   The definitions below are used to manage modules within FreeType.
-   *   Modules can be added, upgraded, and removed at runtime.  Additionally,
-   *   some module properties can be controlled also.
+   *   Internal and external modules can be added, upgraded, and removed at
+   *   runtime.  For example, an alternative renderer or proprietary font
+   *   driver can be registered and prioritized.  Additionally, some module
+   *   properties can also be controlled.
    *
-   *   Here is a list of possible values of the `module_name` field in the
+   *   Here is a list of existing values of the `module_name` field in the
    *   @FT_Module_Class structure.
    *
    *   ```
@@ -86,6 +88,7 @@ FT_BEGIN_HEADER
    *   FT_Remove_Module
    *   FT_Add_Default_Modules
    *
+   *   FT_FACE_DRIVER_NAME
    *   FT_Property_Set
    *   FT_Property_Get
    *   FT_Set_Default_Properties
@@ -330,6 +333,27 @@ FT_BEGIN_HEADER
 
   /**************************************************************************
    *
+   * @macro:
+   *   FT_FACE_DRIVER_NAME
+   *
+   * @description:
+   *   A macro that retrieves the name of a font driver from a face object.
+   *
+   * @note:
+   *   The font driver name is a valid `module_name` for @FT_Property_Set
+   *   and @FT_Property_Get.  This is not the same as @FT_Get_Font_Format.
+   *
+   * @since:
+   *   2.11
+   *
+   */
+#define FT_FACE_DRIVER_NAME( face )                                     \
+          ( ( *FT_REINTERPRET_CAST( FT_Module_Class**,                  \
+                                    ( face )->driver ) )->module_name )
+
+
+  /**************************************************************************
+   *
    * @function:
    *    FT_Property_Set
    *
@@ -485,8 +509,7 @@ FT_BEGIN_HEADER
    *
    *   ```
    *     FREETYPE_PROPERTIES=truetype:interpreter-version=35 \
-   *                         cff:no-stem-darkening=0 \
-   *                         autofitter:warping=1
+   *                         cff:no-stem-darkening=0
    *   ```
    *
    * @inout:

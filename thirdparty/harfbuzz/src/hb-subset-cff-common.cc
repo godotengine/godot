@@ -38,13 +38,12 @@
 
 using namespace CFF;
 
-/**
- * hb_plan_subset_cff_fdselect
- * Determine an optimal FDSelect format according to a provided plan.
+
+/* Determine an optimal FDSelect format according to a provided plan.
  *
  * Return value: FDSelect format, size, and ranges for the most compact subset FDSelect
  * along with a font index remapping table
- **/
+ */
 
 bool
 hb_plan_subset_cff_fdselect (const hb_subset_plan_t *plan,
@@ -67,36 +66,45 @@ hb_plan_subset_cff_fdselect (const hb_subset_plan_t *plan,
 
   {
     /* use hb_set to determine the subset of font dicts */
-    hb_set_t *set = hb_set_create ();
-    if (unlikely (set == &Null (hb_set_t))) return false;
+    hb_set_t set;
     hb_codepoint_t prev_fd = CFF_UNDEF_CODE;
-    for (hb_codepoint_t i = 0; i < subset_num_glyphs; i++)
+    hb_pair_t<unsigned, hb_codepoint_t> last_range {0, 0};
+    auto it = hb_iter (plan->new_to_old_gid_list);
+    auto _ = *it;
+    for (hb_codepoint_t gid = 0; gid < subset_num_glyphs; gid++)
     {
-      hb_codepoint_t glyph;
-      hb_codepoint_t fd;
-      if (!plan->old_gid_for_new_gid (i, &glyph))
+      hb_codepoint_t old_glyph;
+      if (gid == _.first)
+      {
+	old_glyph = _.second;
+	_ = *++it;
+      }
+      else
       {
 	/* fonttools retains FDSelect & font dicts for missing glyphs. do the same */
-	glyph = i;
+	old_glyph = gid;
       }
-      fd = src.get_fd (glyph);
-      set->add (fd);
+      if (old_glyph >= last_range.second)
+	last_range = src.get_fd_range (old_glyph);
+      unsigned fd = last_range.first;
 
       if (fd != prev_fd)
       {
+	set.add (fd);
 	num_ranges++;
 	prev_fd = fd;
-	code_pair_t pair = { fd, i };
-	fdselect_ranges.push (pair);
+	fdselect_ranges.push (code_pair_t { fd, gid });
+
+	if (gid == old_glyph)
+	  gid = hb_min (_.first - 1, last_range.second - 1);
       }
     }
 
-    subset_fd_count = set->get_population ();
+    subset_fd_count = set.get_population ();
     if (subset_fd_count == fdCount)
     {
       /* all font dicts belong to the subset. no need to subset FDSelect & FDArray */
       fdmap.identity (fdCount);
-      hb_set_destroy (set);
     }
     else
     {
@@ -104,9 +112,8 @@ hb_plan_subset_cff_fdselect (const hb_subset_plan_t *plan,
       fdmap.reset ();
 
       hb_codepoint_t fd = CFF_UNDEF_CODE;
-      while (set->next (&fd))
+      while (set.next (&fd))
 	fdmap.add (fd);
-      hb_set_destroy (set);
       if (unlikely (fdmap.get_population () != subset_fd_count))
 	return false;
     }
@@ -169,10 +176,7 @@ serialize_fdselect_3_4 (hb_serialize_context_t *c,
   return_trace (true);
 }
 
-/**
- * hb_serialize_cff_fdselect
- * Serialize a subset FDSelect format planned above.
- **/
+/* Serialize a subset FDSelect format planned above. */
 bool
 hb_serialize_cff_fdselect (hb_serialize_context_t *c,
 			   const unsigned int num_glyphs,

@@ -1,34 +1,37 @@
-/*************************************************************************/
-/*  light_occluder_2d_editor_plugin.cpp                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  light_occluder_2d_editor_plugin.cpp                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "light_occluder_2d_editor_plugin.h"
+
+#include "editor/editor_node.h"
+#include "editor/editor_undo_redo_manager.h"
 
 Ref<OccluderPolygon2D> LightOccluder2DEditor::_ensure_occluder() const {
 	Ref<OccluderPolygon2D> occluder = node->get_occluder_polygon();
@@ -81,6 +84,7 @@ void LightOccluder2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) co
 
 void LightOccluder2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) {
 	Ref<OccluderPolygon2D> occluder = _ensure_occluder();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->add_do_method(occluder.ptr(), "set_polygon", p_polygon);
 	undo_redo->add_undo_method(occluder.ptr(), "set_polygon", p_previous);
 }
@@ -94,19 +98,17 @@ void LightOccluder2DEditor::_create_resource() {
 		return;
 	}
 
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Create Occluder Polygon"));
 	undo_redo->add_do_method(node, "set_occluder_polygon", Ref<OccluderPolygon2D>(memnew(OccluderPolygon2D)));
-	undo_redo->add_undo_method(node, "set_occluder_polygon", Variant(REF()));
+	undo_redo->add_undo_method(node, "set_occluder_polygon", Variant(Ref<RefCounted>()));
 	undo_redo->commit_action();
 
 	_menu_option(MODE_CREATE);
 }
 
-LightOccluder2DEditor::LightOccluder2DEditor(EditorNode *p_editor) :
-		AbstractPolygon2DEditor(p_editor) {
-	node = nullptr;
-}
+LightOccluder2DEditor::LightOccluder2DEditor() {}
 
-LightOccluder2DEditorPlugin::LightOccluder2DEditorPlugin(EditorNode *p_node) :
-		AbstractPolygon2DEditorPlugin(p_node, memnew(LightOccluder2DEditor(p_node)), "LightOccluder2D") {
+LightOccluder2DEditorPlugin::LightOccluder2DEditorPlugin() :
+		AbstractPolygon2DEditorPlugin(memnew(LightOccluder2DEditor), "LightOccluder2D") {
 }

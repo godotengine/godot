@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.7.4.  */
+/* A Bison parser, made by GNU Bison 3.8.2.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -217,285 +217,305 @@ extern int yydebug;
     FCOOPMATNV = 418,              /* FCOOPMATNV  */
     ICOOPMATNV = 419,              /* ICOOPMATNV  */
     UCOOPMATNV = 420,              /* UCOOPMATNV  */
-    SAMPLERCUBEARRAY = 421,        /* SAMPLERCUBEARRAY  */
-    SAMPLERCUBEARRAYSHADOW = 422,  /* SAMPLERCUBEARRAYSHADOW  */
-    ISAMPLERCUBEARRAY = 423,       /* ISAMPLERCUBEARRAY  */
-    USAMPLERCUBEARRAY = 424,       /* USAMPLERCUBEARRAY  */
-    SAMPLER1D = 425,               /* SAMPLER1D  */
-    SAMPLER1DARRAY = 426,          /* SAMPLER1DARRAY  */
-    SAMPLER1DARRAYSHADOW = 427,    /* SAMPLER1DARRAYSHADOW  */
-    ISAMPLER1D = 428,              /* ISAMPLER1D  */
-    SAMPLER1DSHADOW = 429,         /* SAMPLER1DSHADOW  */
-    SAMPLER2DRECT = 430,           /* SAMPLER2DRECT  */
-    SAMPLER2DRECTSHADOW = 431,     /* SAMPLER2DRECTSHADOW  */
-    ISAMPLER2DRECT = 432,          /* ISAMPLER2DRECT  */
-    USAMPLER2DRECT = 433,          /* USAMPLER2DRECT  */
-    SAMPLERBUFFER = 434,           /* SAMPLERBUFFER  */
-    ISAMPLERBUFFER = 435,          /* ISAMPLERBUFFER  */
-    USAMPLERBUFFER = 436,          /* USAMPLERBUFFER  */
-    SAMPLER2DMS = 437,             /* SAMPLER2DMS  */
-    ISAMPLER2DMS = 438,            /* ISAMPLER2DMS  */
-    USAMPLER2DMS = 439,            /* USAMPLER2DMS  */
-    SAMPLER2DMSARRAY = 440,        /* SAMPLER2DMSARRAY  */
-    ISAMPLER2DMSARRAY = 441,       /* ISAMPLER2DMSARRAY  */
-    USAMPLER2DMSARRAY = 442,       /* USAMPLER2DMSARRAY  */
-    SAMPLEREXTERNALOES = 443,      /* SAMPLEREXTERNALOES  */
-    SAMPLEREXTERNAL2DY2YEXT = 444, /* SAMPLEREXTERNAL2DY2YEXT  */
-    ISAMPLER1DARRAY = 445,         /* ISAMPLER1DARRAY  */
-    USAMPLER1D = 446,              /* USAMPLER1D  */
-    USAMPLER1DARRAY = 447,         /* USAMPLER1DARRAY  */
-    F16SAMPLER1D = 448,            /* F16SAMPLER1D  */
-    F16SAMPLER2D = 449,            /* F16SAMPLER2D  */
-    F16SAMPLER3D = 450,            /* F16SAMPLER3D  */
-    F16SAMPLER2DRECT = 451,        /* F16SAMPLER2DRECT  */
-    F16SAMPLERCUBE = 452,          /* F16SAMPLERCUBE  */
-    F16SAMPLER1DARRAY = 453,       /* F16SAMPLER1DARRAY  */
-    F16SAMPLER2DARRAY = 454,       /* F16SAMPLER2DARRAY  */
-    F16SAMPLERCUBEARRAY = 455,     /* F16SAMPLERCUBEARRAY  */
-    F16SAMPLERBUFFER = 456,        /* F16SAMPLERBUFFER  */
-    F16SAMPLER2DMS = 457,          /* F16SAMPLER2DMS  */
-    F16SAMPLER2DMSARRAY = 458,     /* F16SAMPLER2DMSARRAY  */
-    F16SAMPLER1DSHADOW = 459,      /* F16SAMPLER1DSHADOW  */
-    F16SAMPLER2DSHADOW = 460,      /* F16SAMPLER2DSHADOW  */
-    F16SAMPLER1DARRAYSHADOW = 461, /* F16SAMPLER1DARRAYSHADOW  */
-    F16SAMPLER2DARRAYSHADOW = 462, /* F16SAMPLER2DARRAYSHADOW  */
-    F16SAMPLER2DRECTSHADOW = 463,  /* F16SAMPLER2DRECTSHADOW  */
-    F16SAMPLERCUBESHADOW = 464,    /* F16SAMPLERCUBESHADOW  */
-    F16SAMPLERCUBEARRAYSHADOW = 465, /* F16SAMPLERCUBEARRAYSHADOW  */
-    IMAGE1D = 466,                 /* IMAGE1D  */
-    IIMAGE1D = 467,                /* IIMAGE1D  */
-    UIMAGE1D = 468,                /* UIMAGE1D  */
-    IMAGE2D = 469,                 /* IMAGE2D  */
-    IIMAGE2D = 470,                /* IIMAGE2D  */
-    UIMAGE2D = 471,                /* UIMAGE2D  */
-    IMAGE3D = 472,                 /* IMAGE3D  */
-    IIMAGE3D = 473,                /* IIMAGE3D  */
-    UIMAGE3D = 474,                /* UIMAGE3D  */
-    IMAGE2DRECT = 475,             /* IMAGE2DRECT  */
-    IIMAGE2DRECT = 476,            /* IIMAGE2DRECT  */
-    UIMAGE2DRECT = 477,            /* UIMAGE2DRECT  */
-    IMAGECUBE = 478,               /* IMAGECUBE  */
-    IIMAGECUBE = 479,              /* IIMAGECUBE  */
-    UIMAGECUBE = 480,              /* UIMAGECUBE  */
-    IMAGEBUFFER = 481,             /* IMAGEBUFFER  */
-    IIMAGEBUFFER = 482,            /* IIMAGEBUFFER  */
-    UIMAGEBUFFER = 483,            /* UIMAGEBUFFER  */
-    IMAGE1DARRAY = 484,            /* IMAGE1DARRAY  */
-    IIMAGE1DARRAY = 485,           /* IIMAGE1DARRAY  */
-    UIMAGE1DARRAY = 486,           /* UIMAGE1DARRAY  */
-    IMAGE2DARRAY = 487,            /* IMAGE2DARRAY  */
-    IIMAGE2DARRAY = 488,           /* IIMAGE2DARRAY  */
-    UIMAGE2DARRAY = 489,           /* UIMAGE2DARRAY  */
-    IMAGECUBEARRAY = 490,          /* IMAGECUBEARRAY  */
-    IIMAGECUBEARRAY = 491,         /* IIMAGECUBEARRAY  */
-    UIMAGECUBEARRAY = 492,         /* UIMAGECUBEARRAY  */
-    IMAGE2DMS = 493,               /* IMAGE2DMS  */
-    IIMAGE2DMS = 494,              /* IIMAGE2DMS  */
-    UIMAGE2DMS = 495,              /* UIMAGE2DMS  */
-    IMAGE2DMSARRAY = 496,          /* IMAGE2DMSARRAY  */
-    IIMAGE2DMSARRAY = 497,         /* IIMAGE2DMSARRAY  */
-    UIMAGE2DMSARRAY = 498,         /* UIMAGE2DMSARRAY  */
-    F16IMAGE1D = 499,              /* F16IMAGE1D  */
-    F16IMAGE2D = 500,              /* F16IMAGE2D  */
-    F16IMAGE3D = 501,              /* F16IMAGE3D  */
-    F16IMAGE2DRECT = 502,          /* F16IMAGE2DRECT  */
-    F16IMAGECUBE = 503,            /* F16IMAGECUBE  */
-    F16IMAGE1DARRAY = 504,         /* F16IMAGE1DARRAY  */
-    F16IMAGE2DARRAY = 505,         /* F16IMAGE2DARRAY  */
-    F16IMAGECUBEARRAY = 506,       /* F16IMAGECUBEARRAY  */
-    F16IMAGEBUFFER = 507,          /* F16IMAGEBUFFER  */
-    F16IMAGE2DMS = 508,            /* F16IMAGE2DMS  */
-    F16IMAGE2DMSARRAY = 509,       /* F16IMAGE2DMSARRAY  */
-    I64IMAGE1D = 510,              /* I64IMAGE1D  */
-    U64IMAGE1D = 511,              /* U64IMAGE1D  */
-    I64IMAGE2D = 512,              /* I64IMAGE2D  */
-    U64IMAGE2D = 513,              /* U64IMAGE2D  */
-    I64IMAGE3D = 514,              /* I64IMAGE3D  */
-    U64IMAGE3D = 515,              /* U64IMAGE3D  */
-    I64IMAGE2DRECT = 516,          /* I64IMAGE2DRECT  */
-    U64IMAGE2DRECT = 517,          /* U64IMAGE2DRECT  */
-    I64IMAGECUBE = 518,            /* I64IMAGECUBE  */
-    U64IMAGECUBE = 519,            /* U64IMAGECUBE  */
-    I64IMAGEBUFFER = 520,          /* I64IMAGEBUFFER  */
-    U64IMAGEBUFFER = 521,          /* U64IMAGEBUFFER  */
-    I64IMAGE1DARRAY = 522,         /* I64IMAGE1DARRAY  */
-    U64IMAGE1DARRAY = 523,         /* U64IMAGE1DARRAY  */
-    I64IMAGE2DARRAY = 524,         /* I64IMAGE2DARRAY  */
-    U64IMAGE2DARRAY = 525,         /* U64IMAGE2DARRAY  */
-    I64IMAGECUBEARRAY = 526,       /* I64IMAGECUBEARRAY  */
-    U64IMAGECUBEARRAY = 527,       /* U64IMAGECUBEARRAY  */
-    I64IMAGE2DMS = 528,            /* I64IMAGE2DMS  */
-    U64IMAGE2DMS = 529,            /* U64IMAGE2DMS  */
-    I64IMAGE2DMSARRAY = 530,       /* I64IMAGE2DMSARRAY  */
-    U64IMAGE2DMSARRAY = 531,       /* U64IMAGE2DMSARRAY  */
-    TEXTURECUBEARRAY = 532,        /* TEXTURECUBEARRAY  */
-    ITEXTURECUBEARRAY = 533,       /* ITEXTURECUBEARRAY  */
-    UTEXTURECUBEARRAY = 534,       /* UTEXTURECUBEARRAY  */
-    TEXTURE1D = 535,               /* TEXTURE1D  */
-    ITEXTURE1D = 536,              /* ITEXTURE1D  */
-    UTEXTURE1D = 537,              /* UTEXTURE1D  */
-    TEXTURE1DARRAY = 538,          /* TEXTURE1DARRAY  */
-    ITEXTURE1DARRAY = 539,         /* ITEXTURE1DARRAY  */
-    UTEXTURE1DARRAY = 540,         /* UTEXTURE1DARRAY  */
-    TEXTURE2DRECT = 541,           /* TEXTURE2DRECT  */
-    ITEXTURE2DRECT = 542,          /* ITEXTURE2DRECT  */
-    UTEXTURE2DRECT = 543,          /* UTEXTURE2DRECT  */
-    TEXTUREBUFFER = 544,           /* TEXTUREBUFFER  */
-    ITEXTUREBUFFER = 545,          /* ITEXTUREBUFFER  */
-    UTEXTUREBUFFER = 546,          /* UTEXTUREBUFFER  */
-    TEXTURE2DMS = 547,             /* TEXTURE2DMS  */
-    ITEXTURE2DMS = 548,            /* ITEXTURE2DMS  */
-    UTEXTURE2DMS = 549,            /* UTEXTURE2DMS  */
-    TEXTURE2DMSARRAY = 550,        /* TEXTURE2DMSARRAY  */
-    ITEXTURE2DMSARRAY = 551,       /* ITEXTURE2DMSARRAY  */
-    UTEXTURE2DMSARRAY = 552,       /* UTEXTURE2DMSARRAY  */
-    F16TEXTURE1D = 553,            /* F16TEXTURE1D  */
-    F16TEXTURE2D = 554,            /* F16TEXTURE2D  */
-    F16TEXTURE3D = 555,            /* F16TEXTURE3D  */
-    F16TEXTURE2DRECT = 556,        /* F16TEXTURE2DRECT  */
-    F16TEXTURECUBE = 557,          /* F16TEXTURECUBE  */
-    F16TEXTURE1DARRAY = 558,       /* F16TEXTURE1DARRAY  */
-    F16TEXTURE2DARRAY = 559,       /* F16TEXTURE2DARRAY  */
-    F16TEXTURECUBEARRAY = 560,     /* F16TEXTURECUBEARRAY  */
-    F16TEXTUREBUFFER = 561,        /* F16TEXTUREBUFFER  */
-    F16TEXTURE2DMS = 562,          /* F16TEXTURE2DMS  */
-    F16TEXTURE2DMSARRAY = 563,     /* F16TEXTURE2DMSARRAY  */
-    SUBPASSINPUT = 564,            /* SUBPASSINPUT  */
-    SUBPASSINPUTMS = 565,          /* SUBPASSINPUTMS  */
-    ISUBPASSINPUT = 566,           /* ISUBPASSINPUT  */
-    ISUBPASSINPUTMS = 567,         /* ISUBPASSINPUTMS  */
-    USUBPASSINPUT = 568,           /* USUBPASSINPUT  */
-    USUBPASSINPUTMS = 569,         /* USUBPASSINPUTMS  */
-    F16SUBPASSINPUT = 570,         /* F16SUBPASSINPUT  */
-    F16SUBPASSINPUTMS = 571,       /* F16SUBPASSINPUTMS  */
-    LEFT_OP = 572,                 /* LEFT_OP  */
-    RIGHT_OP = 573,                /* RIGHT_OP  */
-    INC_OP = 574,                  /* INC_OP  */
-    DEC_OP = 575,                  /* DEC_OP  */
-    LE_OP = 576,                   /* LE_OP  */
-    GE_OP = 577,                   /* GE_OP  */
-    EQ_OP = 578,                   /* EQ_OP  */
-    NE_OP = 579,                   /* NE_OP  */
-    AND_OP = 580,                  /* AND_OP  */
-    OR_OP = 581,                   /* OR_OP  */
-    XOR_OP = 582,                  /* XOR_OP  */
-    MUL_ASSIGN = 583,              /* MUL_ASSIGN  */
-    DIV_ASSIGN = 584,              /* DIV_ASSIGN  */
-    ADD_ASSIGN = 585,              /* ADD_ASSIGN  */
-    MOD_ASSIGN = 586,              /* MOD_ASSIGN  */
-    LEFT_ASSIGN = 587,             /* LEFT_ASSIGN  */
-    RIGHT_ASSIGN = 588,            /* RIGHT_ASSIGN  */
-    AND_ASSIGN = 589,              /* AND_ASSIGN  */
-    XOR_ASSIGN = 590,              /* XOR_ASSIGN  */
-    OR_ASSIGN = 591,               /* OR_ASSIGN  */
-    SUB_ASSIGN = 592,              /* SUB_ASSIGN  */
-    STRING_LITERAL = 593,          /* STRING_LITERAL  */
-    LEFT_PAREN = 594,              /* LEFT_PAREN  */
-    RIGHT_PAREN = 595,             /* RIGHT_PAREN  */
-    LEFT_BRACKET = 596,            /* LEFT_BRACKET  */
-    RIGHT_BRACKET = 597,           /* RIGHT_BRACKET  */
-    LEFT_BRACE = 598,              /* LEFT_BRACE  */
-    RIGHT_BRACE = 599,             /* RIGHT_BRACE  */
-    DOT = 600,                     /* DOT  */
-    COMMA = 601,                   /* COMMA  */
-    COLON = 602,                   /* COLON  */
-    EQUAL = 603,                   /* EQUAL  */
-    SEMICOLON = 604,               /* SEMICOLON  */
-    BANG = 605,                    /* BANG  */
-    DASH = 606,                    /* DASH  */
-    TILDE = 607,                   /* TILDE  */
-    PLUS = 608,                    /* PLUS  */
-    STAR = 609,                    /* STAR  */
-    SLASH = 610,                   /* SLASH  */
-    PERCENT = 611,                 /* PERCENT  */
-    LEFT_ANGLE = 612,              /* LEFT_ANGLE  */
-    RIGHT_ANGLE = 613,             /* RIGHT_ANGLE  */
-    VERTICAL_BAR = 614,            /* VERTICAL_BAR  */
-    CARET = 615,                   /* CARET  */
-    AMPERSAND = 616,               /* AMPERSAND  */
-    QUESTION = 617,                /* QUESTION  */
-    INVARIANT = 618,               /* INVARIANT  */
-    HIGH_PRECISION = 619,          /* HIGH_PRECISION  */
-    MEDIUM_PRECISION = 620,        /* MEDIUM_PRECISION  */
-    LOW_PRECISION = 621,           /* LOW_PRECISION  */
-    PRECISION = 622,               /* PRECISION  */
-    PACKED = 623,                  /* PACKED  */
-    RESOURCE = 624,                /* RESOURCE  */
-    SUPERP = 625,                  /* SUPERP  */
-    FLOATCONSTANT = 626,           /* FLOATCONSTANT  */
-    INTCONSTANT = 627,             /* INTCONSTANT  */
-    UINTCONSTANT = 628,            /* UINTCONSTANT  */
-    BOOLCONSTANT = 629,            /* BOOLCONSTANT  */
-    IDENTIFIER = 630,              /* IDENTIFIER  */
-    TYPE_NAME = 631,               /* TYPE_NAME  */
-    CENTROID = 632,                /* CENTROID  */
-    IN = 633,                      /* IN  */
-    OUT = 634,                     /* OUT  */
-    INOUT = 635,                   /* INOUT  */
-    STRUCT = 636,                  /* STRUCT  */
-    VOID = 637,                    /* VOID  */
-    WHILE = 638,                   /* WHILE  */
-    BREAK = 639,                   /* BREAK  */
-    CONTINUE = 640,                /* CONTINUE  */
-    DO = 641,                      /* DO  */
-    ELSE = 642,                    /* ELSE  */
-    FOR = 643,                     /* FOR  */
-    IF = 644,                      /* IF  */
-    DISCARD = 645,                 /* DISCARD  */
-    RETURN = 646,                  /* RETURN  */
-    SWITCH = 647,                  /* SWITCH  */
-    CASE = 648,                    /* CASE  */
-    DEFAULT = 649,                 /* DEFAULT  */
-    TERMINATE_INVOCATION = 650,    /* TERMINATE_INVOCATION  */
-    TERMINATE_RAY = 651,           /* TERMINATE_RAY  */
-    IGNORE_INTERSECTION = 652,     /* IGNORE_INTERSECTION  */
-    UNIFORM = 653,                 /* UNIFORM  */
-    SHARED = 654,                  /* SHARED  */
-    BUFFER = 655,                  /* BUFFER  */
-    FLAT = 656,                    /* FLAT  */
-    SMOOTH = 657,                  /* SMOOTH  */
-    LAYOUT = 658,                  /* LAYOUT  */
-    DOUBLECONSTANT = 659,          /* DOUBLECONSTANT  */
-    INT16CONSTANT = 660,           /* INT16CONSTANT  */
-    UINT16CONSTANT = 661,          /* UINT16CONSTANT  */
-    FLOAT16CONSTANT = 662,         /* FLOAT16CONSTANT  */
-    INT32CONSTANT = 663,           /* INT32CONSTANT  */
-    UINT32CONSTANT = 664,          /* UINT32CONSTANT  */
-    INT64CONSTANT = 665,           /* INT64CONSTANT  */
-    UINT64CONSTANT = 666,          /* UINT64CONSTANT  */
-    SUBROUTINE = 667,              /* SUBROUTINE  */
-    DEMOTE = 668,                  /* DEMOTE  */
-    PAYLOADNV = 669,               /* PAYLOADNV  */
-    PAYLOADINNV = 670,             /* PAYLOADINNV  */
-    HITATTRNV = 671,               /* HITATTRNV  */
-    CALLDATANV = 672,              /* CALLDATANV  */
-    CALLDATAINNV = 673,            /* CALLDATAINNV  */
-    PAYLOADEXT = 674,              /* PAYLOADEXT  */
-    PAYLOADINEXT = 675,            /* PAYLOADINEXT  */
-    HITATTREXT = 676,              /* HITATTREXT  */
-    CALLDATAEXT = 677,             /* CALLDATAEXT  */
-    CALLDATAINEXT = 678,           /* CALLDATAINEXT  */
-    PATCH = 679,                   /* PATCH  */
-    SAMPLE = 680,                  /* SAMPLE  */
-    NONUNIFORM = 681,              /* NONUNIFORM  */
-    COHERENT = 682,                /* COHERENT  */
-    VOLATILE = 683,                /* VOLATILE  */
-    RESTRICT = 684,                /* RESTRICT  */
-    READONLY = 685,                /* READONLY  */
-    WRITEONLY = 686,               /* WRITEONLY  */
-    DEVICECOHERENT = 687,          /* DEVICECOHERENT  */
-    QUEUEFAMILYCOHERENT = 688,     /* QUEUEFAMILYCOHERENT  */
-    WORKGROUPCOHERENT = 689,       /* WORKGROUPCOHERENT  */
-    SUBGROUPCOHERENT = 690,        /* SUBGROUPCOHERENT  */
-    NONPRIVATE = 691,              /* NONPRIVATE  */
-    SHADERCALLCOHERENT = 692,      /* SHADERCALLCOHERENT  */
-    NOPERSPECTIVE = 693,           /* NOPERSPECTIVE  */
-    EXPLICITINTERPAMD = 694,       /* EXPLICITINTERPAMD  */
-    PERVERTEXNV = 695,             /* PERVERTEXNV  */
-    PERPRIMITIVENV = 696,          /* PERPRIMITIVENV  */
-    PERVIEWNV = 697,               /* PERVIEWNV  */
-    PERTASKNV = 698,               /* PERTASKNV  */
-    PRECISE = 699                  /* PRECISE  */
+    COOPMAT = 421,                 /* COOPMAT  */
+    HITOBJECTNV = 422,             /* HITOBJECTNV  */
+    HITOBJECTATTRNV = 423,         /* HITOBJECTATTRNV  */
+    SAMPLERCUBEARRAY = 424,        /* SAMPLERCUBEARRAY  */
+    SAMPLERCUBEARRAYSHADOW = 425,  /* SAMPLERCUBEARRAYSHADOW  */
+    ISAMPLERCUBEARRAY = 426,       /* ISAMPLERCUBEARRAY  */
+    USAMPLERCUBEARRAY = 427,       /* USAMPLERCUBEARRAY  */
+    SAMPLER1D = 428,               /* SAMPLER1D  */
+    SAMPLER1DARRAY = 429,          /* SAMPLER1DARRAY  */
+    SAMPLER1DARRAYSHADOW = 430,    /* SAMPLER1DARRAYSHADOW  */
+    ISAMPLER1D = 431,              /* ISAMPLER1D  */
+    SAMPLER1DSHADOW = 432,         /* SAMPLER1DSHADOW  */
+    SAMPLER2DRECT = 433,           /* SAMPLER2DRECT  */
+    SAMPLER2DRECTSHADOW = 434,     /* SAMPLER2DRECTSHADOW  */
+    ISAMPLER2DRECT = 435,          /* ISAMPLER2DRECT  */
+    USAMPLER2DRECT = 436,          /* USAMPLER2DRECT  */
+    SAMPLERBUFFER = 437,           /* SAMPLERBUFFER  */
+    ISAMPLERBUFFER = 438,          /* ISAMPLERBUFFER  */
+    USAMPLERBUFFER = 439,          /* USAMPLERBUFFER  */
+    SAMPLER2DMS = 440,             /* SAMPLER2DMS  */
+    ISAMPLER2DMS = 441,            /* ISAMPLER2DMS  */
+    USAMPLER2DMS = 442,            /* USAMPLER2DMS  */
+    SAMPLER2DMSARRAY = 443,        /* SAMPLER2DMSARRAY  */
+    ISAMPLER2DMSARRAY = 444,       /* ISAMPLER2DMSARRAY  */
+    USAMPLER2DMSARRAY = 445,       /* USAMPLER2DMSARRAY  */
+    SAMPLEREXTERNALOES = 446,      /* SAMPLEREXTERNALOES  */
+    SAMPLEREXTERNAL2DY2YEXT = 447, /* SAMPLEREXTERNAL2DY2YEXT  */
+    ISAMPLER1DARRAY = 448,         /* ISAMPLER1DARRAY  */
+    USAMPLER1D = 449,              /* USAMPLER1D  */
+    USAMPLER1DARRAY = 450,         /* USAMPLER1DARRAY  */
+    F16SAMPLER1D = 451,            /* F16SAMPLER1D  */
+    F16SAMPLER2D = 452,            /* F16SAMPLER2D  */
+    F16SAMPLER3D = 453,            /* F16SAMPLER3D  */
+    F16SAMPLER2DRECT = 454,        /* F16SAMPLER2DRECT  */
+    F16SAMPLERCUBE = 455,          /* F16SAMPLERCUBE  */
+    F16SAMPLER1DARRAY = 456,       /* F16SAMPLER1DARRAY  */
+    F16SAMPLER2DARRAY = 457,       /* F16SAMPLER2DARRAY  */
+    F16SAMPLERCUBEARRAY = 458,     /* F16SAMPLERCUBEARRAY  */
+    F16SAMPLERBUFFER = 459,        /* F16SAMPLERBUFFER  */
+    F16SAMPLER2DMS = 460,          /* F16SAMPLER2DMS  */
+    F16SAMPLER2DMSARRAY = 461,     /* F16SAMPLER2DMSARRAY  */
+    F16SAMPLER1DSHADOW = 462,      /* F16SAMPLER1DSHADOW  */
+    F16SAMPLER2DSHADOW = 463,      /* F16SAMPLER2DSHADOW  */
+    F16SAMPLER1DARRAYSHADOW = 464, /* F16SAMPLER1DARRAYSHADOW  */
+    F16SAMPLER2DARRAYSHADOW = 465, /* F16SAMPLER2DARRAYSHADOW  */
+    F16SAMPLER2DRECTSHADOW = 466,  /* F16SAMPLER2DRECTSHADOW  */
+    F16SAMPLERCUBESHADOW = 467,    /* F16SAMPLERCUBESHADOW  */
+    F16SAMPLERCUBEARRAYSHADOW = 468, /* F16SAMPLERCUBEARRAYSHADOW  */
+    IMAGE1D = 469,                 /* IMAGE1D  */
+    IIMAGE1D = 470,                /* IIMAGE1D  */
+    UIMAGE1D = 471,                /* UIMAGE1D  */
+    IMAGE2D = 472,                 /* IMAGE2D  */
+    IIMAGE2D = 473,                /* IIMAGE2D  */
+    UIMAGE2D = 474,                /* UIMAGE2D  */
+    IMAGE3D = 475,                 /* IMAGE3D  */
+    IIMAGE3D = 476,                /* IIMAGE3D  */
+    UIMAGE3D = 477,                /* UIMAGE3D  */
+    IMAGE2DRECT = 478,             /* IMAGE2DRECT  */
+    IIMAGE2DRECT = 479,            /* IIMAGE2DRECT  */
+    UIMAGE2DRECT = 480,            /* UIMAGE2DRECT  */
+    IMAGECUBE = 481,               /* IMAGECUBE  */
+    IIMAGECUBE = 482,              /* IIMAGECUBE  */
+    UIMAGECUBE = 483,              /* UIMAGECUBE  */
+    IMAGEBUFFER = 484,             /* IMAGEBUFFER  */
+    IIMAGEBUFFER = 485,            /* IIMAGEBUFFER  */
+    UIMAGEBUFFER = 486,            /* UIMAGEBUFFER  */
+    IMAGE1DARRAY = 487,            /* IMAGE1DARRAY  */
+    IIMAGE1DARRAY = 488,           /* IIMAGE1DARRAY  */
+    UIMAGE1DARRAY = 489,           /* UIMAGE1DARRAY  */
+    IMAGE2DARRAY = 490,            /* IMAGE2DARRAY  */
+    IIMAGE2DARRAY = 491,           /* IIMAGE2DARRAY  */
+    UIMAGE2DARRAY = 492,           /* UIMAGE2DARRAY  */
+    IMAGECUBEARRAY = 493,          /* IMAGECUBEARRAY  */
+    IIMAGECUBEARRAY = 494,         /* IIMAGECUBEARRAY  */
+    UIMAGECUBEARRAY = 495,         /* UIMAGECUBEARRAY  */
+    IMAGE2DMS = 496,               /* IMAGE2DMS  */
+    IIMAGE2DMS = 497,              /* IIMAGE2DMS  */
+    UIMAGE2DMS = 498,              /* UIMAGE2DMS  */
+    IMAGE2DMSARRAY = 499,          /* IMAGE2DMSARRAY  */
+    IIMAGE2DMSARRAY = 500,         /* IIMAGE2DMSARRAY  */
+    UIMAGE2DMSARRAY = 501,         /* UIMAGE2DMSARRAY  */
+    F16IMAGE1D = 502,              /* F16IMAGE1D  */
+    F16IMAGE2D = 503,              /* F16IMAGE2D  */
+    F16IMAGE3D = 504,              /* F16IMAGE3D  */
+    F16IMAGE2DRECT = 505,          /* F16IMAGE2DRECT  */
+    F16IMAGECUBE = 506,            /* F16IMAGECUBE  */
+    F16IMAGE1DARRAY = 507,         /* F16IMAGE1DARRAY  */
+    F16IMAGE2DARRAY = 508,         /* F16IMAGE2DARRAY  */
+    F16IMAGECUBEARRAY = 509,       /* F16IMAGECUBEARRAY  */
+    F16IMAGEBUFFER = 510,          /* F16IMAGEBUFFER  */
+    F16IMAGE2DMS = 511,            /* F16IMAGE2DMS  */
+    F16IMAGE2DMSARRAY = 512,       /* F16IMAGE2DMSARRAY  */
+    I64IMAGE1D = 513,              /* I64IMAGE1D  */
+    U64IMAGE1D = 514,              /* U64IMAGE1D  */
+    I64IMAGE2D = 515,              /* I64IMAGE2D  */
+    U64IMAGE2D = 516,              /* U64IMAGE2D  */
+    I64IMAGE3D = 517,              /* I64IMAGE3D  */
+    U64IMAGE3D = 518,              /* U64IMAGE3D  */
+    I64IMAGE2DRECT = 519,          /* I64IMAGE2DRECT  */
+    U64IMAGE2DRECT = 520,          /* U64IMAGE2DRECT  */
+    I64IMAGECUBE = 521,            /* I64IMAGECUBE  */
+    U64IMAGECUBE = 522,            /* U64IMAGECUBE  */
+    I64IMAGEBUFFER = 523,          /* I64IMAGEBUFFER  */
+    U64IMAGEBUFFER = 524,          /* U64IMAGEBUFFER  */
+    I64IMAGE1DARRAY = 525,         /* I64IMAGE1DARRAY  */
+    U64IMAGE1DARRAY = 526,         /* U64IMAGE1DARRAY  */
+    I64IMAGE2DARRAY = 527,         /* I64IMAGE2DARRAY  */
+    U64IMAGE2DARRAY = 528,         /* U64IMAGE2DARRAY  */
+    I64IMAGECUBEARRAY = 529,       /* I64IMAGECUBEARRAY  */
+    U64IMAGECUBEARRAY = 530,       /* U64IMAGECUBEARRAY  */
+    I64IMAGE2DMS = 531,            /* I64IMAGE2DMS  */
+    U64IMAGE2DMS = 532,            /* U64IMAGE2DMS  */
+    I64IMAGE2DMSARRAY = 533,       /* I64IMAGE2DMSARRAY  */
+    U64IMAGE2DMSARRAY = 534,       /* U64IMAGE2DMSARRAY  */
+    TEXTURECUBEARRAY = 535,        /* TEXTURECUBEARRAY  */
+    ITEXTURECUBEARRAY = 536,       /* ITEXTURECUBEARRAY  */
+    UTEXTURECUBEARRAY = 537,       /* UTEXTURECUBEARRAY  */
+    TEXTURE1D = 538,               /* TEXTURE1D  */
+    ITEXTURE1D = 539,              /* ITEXTURE1D  */
+    UTEXTURE1D = 540,              /* UTEXTURE1D  */
+    TEXTURE1DARRAY = 541,          /* TEXTURE1DARRAY  */
+    ITEXTURE1DARRAY = 542,         /* ITEXTURE1DARRAY  */
+    UTEXTURE1DARRAY = 543,         /* UTEXTURE1DARRAY  */
+    TEXTURE2DRECT = 544,           /* TEXTURE2DRECT  */
+    ITEXTURE2DRECT = 545,          /* ITEXTURE2DRECT  */
+    UTEXTURE2DRECT = 546,          /* UTEXTURE2DRECT  */
+    TEXTUREBUFFER = 547,           /* TEXTUREBUFFER  */
+    ITEXTUREBUFFER = 548,          /* ITEXTUREBUFFER  */
+    UTEXTUREBUFFER = 549,          /* UTEXTUREBUFFER  */
+    TEXTURE2DMS = 550,             /* TEXTURE2DMS  */
+    ITEXTURE2DMS = 551,            /* ITEXTURE2DMS  */
+    UTEXTURE2DMS = 552,            /* UTEXTURE2DMS  */
+    TEXTURE2DMSARRAY = 553,        /* TEXTURE2DMSARRAY  */
+    ITEXTURE2DMSARRAY = 554,       /* ITEXTURE2DMSARRAY  */
+    UTEXTURE2DMSARRAY = 555,       /* UTEXTURE2DMSARRAY  */
+    F16TEXTURE1D = 556,            /* F16TEXTURE1D  */
+    F16TEXTURE2D = 557,            /* F16TEXTURE2D  */
+    F16TEXTURE3D = 558,            /* F16TEXTURE3D  */
+    F16TEXTURE2DRECT = 559,        /* F16TEXTURE2DRECT  */
+    F16TEXTURECUBE = 560,          /* F16TEXTURECUBE  */
+    F16TEXTURE1DARRAY = 561,       /* F16TEXTURE1DARRAY  */
+    F16TEXTURE2DARRAY = 562,       /* F16TEXTURE2DARRAY  */
+    F16TEXTURECUBEARRAY = 563,     /* F16TEXTURECUBEARRAY  */
+    F16TEXTUREBUFFER = 564,        /* F16TEXTUREBUFFER  */
+    F16TEXTURE2DMS = 565,          /* F16TEXTURE2DMS  */
+    F16TEXTURE2DMSARRAY = 566,     /* F16TEXTURE2DMSARRAY  */
+    SUBPASSINPUT = 567,            /* SUBPASSINPUT  */
+    SUBPASSINPUTMS = 568,          /* SUBPASSINPUTMS  */
+    ISUBPASSINPUT = 569,           /* ISUBPASSINPUT  */
+    ISUBPASSINPUTMS = 570,         /* ISUBPASSINPUTMS  */
+    USUBPASSINPUT = 571,           /* USUBPASSINPUT  */
+    USUBPASSINPUTMS = 572,         /* USUBPASSINPUTMS  */
+    F16SUBPASSINPUT = 573,         /* F16SUBPASSINPUT  */
+    F16SUBPASSINPUTMS = 574,       /* F16SUBPASSINPUTMS  */
+    SPIRV_INSTRUCTION = 575,       /* SPIRV_INSTRUCTION  */
+    SPIRV_EXECUTION_MODE = 576,    /* SPIRV_EXECUTION_MODE  */
+    SPIRV_EXECUTION_MODE_ID = 577, /* SPIRV_EXECUTION_MODE_ID  */
+    SPIRV_DECORATE = 578,          /* SPIRV_DECORATE  */
+    SPIRV_DECORATE_ID = 579,       /* SPIRV_DECORATE_ID  */
+    SPIRV_DECORATE_STRING = 580,   /* SPIRV_DECORATE_STRING  */
+    SPIRV_TYPE = 581,              /* SPIRV_TYPE  */
+    SPIRV_STORAGE_CLASS = 582,     /* SPIRV_STORAGE_CLASS  */
+    SPIRV_BY_REFERENCE = 583,      /* SPIRV_BY_REFERENCE  */
+    SPIRV_LITERAL = 584,           /* SPIRV_LITERAL  */
+    ATTACHMENTEXT = 585,           /* ATTACHMENTEXT  */
+    IATTACHMENTEXT = 586,          /* IATTACHMENTEXT  */
+    UATTACHMENTEXT = 587,          /* UATTACHMENTEXT  */
+    LEFT_OP = 588,                 /* LEFT_OP  */
+    RIGHT_OP = 589,                /* RIGHT_OP  */
+    INC_OP = 590,                  /* INC_OP  */
+    DEC_OP = 591,                  /* DEC_OP  */
+    LE_OP = 592,                   /* LE_OP  */
+    GE_OP = 593,                   /* GE_OP  */
+    EQ_OP = 594,                   /* EQ_OP  */
+    NE_OP = 595,                   /* NE_OP  */
+    AND_OP = 596,                  /* AND_OP  */
+    OR_OP = 597,                   /* OR_OP  */
+    XOR_OP = 598,                  /* XOR_OP  */
+    MUL_ASSIGN = 599,              /* MUL_ASSIGN  */
+    DIV_ASSIGN = 600,              /* DIV_ASSIGN  */
+    ADD_ASSIGN = 601,              /* ADD_ASSIGN  */
+    MOD_ASSIGN = 602,              /* MOD_ASSIGN  */
+    LEFT_ASSIGN = 603,             /* LEFT_ASSIGN  */
+    RIGHT_ASSIGN = 604,            /* RIGHT_ASSIGN  */
+    AND_ASSIGN = 605,              /* AND_ASSIGN  */
+    XOR_ASSIGN = 606,              /* XOR_ASSIGN  */
+    OR_ASSIGN = 607,               /* OR_ASSIGN  */
+    SUB_ASSIGN = 608,              /* SUB_ASSIGN  */
+    STRING_LITERAL = 609,          /* STRING_LITERAL  */
+    LEFT_PAREN = 610,              /* LEFT_PAREN  */
+    RIGHT_PAREN = 611,             /* RIGHT_PAREN  */
+    LEFT_BRACKET = 612,            /* LEFT_BRACKET  */
+    RIGHT_BRACKET = 613,           /* RIGHT_BRACKET  */
+    LEFT_BRACE = 614,              /* LEFT_BRACE  */
+    RIGHT_BRACE = 615,             /* RIGHT_BRACE  */
+    DOT = 616,                     /* DOT  */
+    COMMA = 617,                   /* COMMA  */
+    COLON = 618,                   /* COLON  */
+    EQUAL = 619,                   /* EQUAL  */
+    SEMICOLON = 620,               /* SEMICOLON  */
+    BANG = 621,                    /* BANG  */
+    DASH = 622,                    /* DASH  */
+    TILDE = 623,                   /* TILDE  */
+    PLUS = 624,                    /* PLUS  */
+    STAR = 625,                    /* STAR  */
+    SLASH = 626,                   /* SLASH  */
+    PERCENT = 627,                 /* PERCENT  */
+    LEFT_ANGLE = 628,              /* LEFT_ANGLE  */
+    RIGHT_ANGLE = 629,             /* RIGHT_ANGLE  */
+    VERTICAL_BAR = 630,            /* VERTICAL_BAR  */
+    CARET = 631,                   /* CARET  */
+    AMPERSAND = 632,               /* AMPERSAND  */
+    QUESTION = 633,                /* QUESTION  */
+    INVARIANT = 634,               /* INVARIANT  */
+    HIGH_PRECISION = 635,          /* HIGH_PRECISION  */
+    MEDIUM_PRECISION = 636,        /* MEDIUM_PRECISION  */
+    LOW_PRECISION = 637,           /* LOW_PRECISION  */
+    PRECISION = 638,               /* PRECISION  */
+    PACKED = 639,                  /* PACKED  */
+    RESOURCE = 640,                /* RESOURCE  */
+    SUPERP = 641,                  /* SUPERP  */
+    FLOATCONSTANT = 642,           /* FLOATCONSTANT  */
+    INTCONSTANT = 643,             /* INTCONSTANT  */
+    UINTCONSTANT = 644,            /* UINTCONSTANT  */
+    BOOLCONSTANT = 645,            /* BOOLCONSTANT  */
+    IDENTIFIER = 646,              /* IDENTIFIER  */
+    TYPE_NAME = 647,               /* TYPE_NAME  */
+    CENTROID = 648,                /* CENTROID  */
+    IN = 649,                      /* IN  */
+    OUT = 650,                     /* OUT  */
+    INOUT = 651,                   /* INOUT  */
+    STRUCT = 652,                  /* STRUCT  */
+    VOID = 653,                    /* VOID  */
+    WHILE = 654,                   /* WHILE  */
+    BREAK = 655,                   /* BREAK  */
+    CONTINUE = 656,                /* CONTINUE  */
+    DO = 657,                      /* DO  */
+    ELSE = 658,                    /* ELSE  */
+    FOR = 659,                     /* FOR  */
+    IF = 660,                      /* IF  */
+    DISCARD = 661,                 /* DISCARD  */
+    RETURN = 662,                  /* RETURN  */
+    SWITCH = 663,                  /* SWITCH  */
+    CASE = 664,                    /* CASE  */
+    DEFAULT = 665,                 /* DEFAULT  */
+    TERMINATE_INVOCATION = 666,    /* TERMINATE_INVOCATION  */
+    TERMINATE_RAY = 667,           /* TERMINATE_RAY  */
+    IGNORE_INTERSECTION = 668,     /* IGNORE_INTERSECTION  */
+    UNIFORM = 669,                 /* UNIFORM  */
+    SHARED = 670,                  /* SHARED  */
+    BUFFER = 671,                  /* BUFFER  */
+    TILEIMAGEEXT = 672,            /* TILEIMAGEEXT  */
+    FLAT = 673,                    /* FLAT  */
+    SMOOTH = 674,                  /* SMOOTH  */
+    LAYOUT = 675,                  /* LAYOUT  */
+    DOUBLECONSTANT = 676,          /* DOUBLECONSTANT  */
+    INT16CONSTANT = 677,           /* INT16CONSTANT  */
+    UINT16CONSTANT = 678,          /* UINT16CONSTANT  */
+    FLOAT16CONSTANT = 679,         /* FLOAT16CONSTANT  */
+    INT32CONSTANT = 680,           /* INT32CONSTANT  */
+    UINT32CONSTANT = 681,          /* UINT32CONSTANT  */
+    INT64CONSTANT = 682,           /* INT64CONSTANT  */
+    UINT64CONSTANT = 683,          /* UINT64CONSTANT  */
+    SUBROUTINE = 684,              /* SUBROUTINE  */
+    DEMOTE = 685,                  /* DEMOTE  */
+    PAYLOADNV = 686,               /* PAYLOADNV  */
+    PAYLOADINNV = 687,             /* PAYLOADINNV  */
+    HITATTRNV = 688,               /* HITATTRNV  */
+    CALLDATANV = 689,              /* CALLDATANV  */
+    CALLDATAINNV = 690,            /* CALLDATAINNV  */
+    PAYLOADEXT = 691,              /* PAYLOADEXT  */
+    PAYLOADINEXT = 692,            /* PAYLOADINEXT  */
+    HITATTREXT = 693,              /* HITATTREXT  */
+    CALLDATAEXT = 694,             /* CALLDATAEXT  */
+    CALLDATAINEXT = 695,           /* CALLDATAINEXT  */
+    PATCH = 696,                   /* PATCH  */
+    SAMPLE = 697,                  /* SAMPLE  */
+    NONUNIFORM = 698,              /* NONUNIFORM  */
+    COHERENT = 699,                /* COHERENT  */
+    VOLATILE = 700,                /* VOLATILE  */
+    RESTRICT = 701,                /* RESTRICT  */
+    READONLY = 702,                /* READONLY  */
+    WRITEONLY = 703,               /* WRITEONLY  */
+    DEVICECOHERENT = 704,          /* DEVICECOHERENT  */
+    QUEUEFAMILYCOHERENT = 705,     /* QUEUEFAMILYCOHERENT  */
+    WORKGROUPCOHERENT = 706,       /* WORKGROUPCOHERENT  */
+    SUBGROUPCOHERENT = 707,        /* SUBGROUPCOHERENT  */
+    NONPRIVATE = 708,              /* NONPRIVATE  */
+    SHADERCALLCOHERENT = 709,      /* SHADERCALLCOHERENT  */
+    NOPERSPECTIVE = 710,           /* NOPERSPECTIVE  */
+    EXPLICITINTERPAMD = 711,       /* EXPLICITINTERPAMD  */
+    PERVERTEXEXT = 712,            /* PERVERTEXEXT  */
+    PERVERTEXNV = 713,             /* PERVERTEXNV  */
+    PERPRIMITIVENV = 714,          /* PERPRIMITIVENV  */
+    PERVIEWNV = 715,               /* PERVIEWNV  */
+    PERTASKNV = 716,               /* PERTASKNV  */
+    PERPRIMITIVEEXT = 717,         /* PERPRIMITIVEEXT  */
+    TASKPAYLOADWORKGROUPEXT = 718, /* TASKPAYLOADWORKGROUPEXT  */
+    PRECISE = 719                  /* PRECISE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -504,7 +524,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 97 "MachineIndependent/glslang.y"
+#line 72 "MachineIndependent/glslang.y"
 
     struct {
         glslang::TSourceLoc loc;
@@ -527,6 +547,9 @@ union YYSTYPE
             glslang::TIntermNodePair nodePair;
             glslang::TIntermTyped* intermTypedNode;
             glslang::TAttributes* attributes;
+            glslang::TSpirvRequirement* spirvReq;
+            glslang::TSpirvInstruction* spirvInst;
+            glslang::TSpirvTypeParameters* spirvTypeParams;
         };
         union {
             glslang::TPublicType type;
@@ -537,10 +560,10 @@ union YYSTYPE
             glslang::TArraySizes* arraySizes;
             glslang::TIdentifierList* identifierList;
         };
-        glslang::TArraySizes* typeParameters;
+        glslang::TTypeParameters* typeParameters;
     } interm;
 
-#line 544 "MachineIndependent/glslang_tab.cpp.h"
+#line 567 "MachineIndependent/glslang_tab.cpp.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -550,6 +573,8 @@ typedef union YYSTYPE YYSTYPE;
 
 
 
+
 int yyparse (glslang::TParseContext* pParseContext);
+
 
 #endif /* !YY_YY_MACHINEINDEPENDENT_GLSLANG_TAB_CPP_H_INCLUDED  */

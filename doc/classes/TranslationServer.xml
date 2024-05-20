@@ -1,111 +1,169 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TranslationServer" inherits="Object" version="4.0">
+<class name="TranslationServer" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Server that manages all translations.
+		The server responsible for language translations.
 	</brief_description>
 	<description>
-		Server that manages all translations. Translations can be set to it and removed from it.
+		The server that manages all language translations. Translations can be added to or removed from it.
 	</description>
 	<tutorials>
-		<link title="Internationalizing games">https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html</link>
-		<link title="Locales">https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html</link>
+		<link title="Internationalizing games">$DOCS_URL/tutorials/i18n/internationalizing_games.html</link>
+		<link title="Locales">$DOCS_URL/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_translation">
-			<return type="void">
-			</return>
-			<argument index="0" name="translation" type="Translation">
-			</argument>
+			<return type="void" />
+			<param index="0" name="translation" type="Translation" />
 			<description>
 				Adds a [Translation] resource.
 			</description>
 		</method>
 		<method name="clear">
-			<return type="void">
-			</return>
+			<return type="void" />
 			<description>
 				Clears the server from all translations.
 			</description>
 		</method>
-		<method name="get_loaded_locales" qualifiers="const">
-			<return type="Array">
-			</return>
+		<method name="compare_locales" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="locale_a" type="String" />
+			<param index="1" name="locale_b" type="String" />
 			<description>
-				Returns an Array of all loaded locales of the game.
+				Compares two locales and returns a similarity score between [code]0[/code] (no match) and [code]10[/code] (full match).
+			</description>
+		</method>
+		<method name="get_all_countries" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of known country codes.
+			</description>
+		</method>
+		<method name="get_all_languages" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns array of known language codes.
+			</description>
+		</method>
+		<method name="get_all_scripts" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of known script codes.
+			</description>
+		</method>
+		<method name="get_country_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="country" type="String" />
+			<description>
+				Returns a readable country name for the [param country] code.
+			</description>
+		</method>
+		<method name="get_language_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="language" type="String" />
+			<description>
+				Returns a readable language name for the [param language] code.
+			</description>
+		</method>
+		<method name="get_loaded_locales" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of all loaded locales of the project.
 			</description>
 		</method>
 		<method name="get_locale" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
-				Returns the current locale of the game.
+				Returns the current locale of the project.
+				See also [method OS.get_locale] and [method OS.get_locale_language] to query the locale of the user system.
 			</description>
 		</method>
 		<method name="get_locale_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="locale" type="String">
-			</argument>
+			<return type="String" />
+			<param index="0" name="locale" type="String" />
 			<description>
 				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
 			</description>
 		</method>
-		<method name="get_translation_object">
-			<return type="Translation">
-			</return>
-			<argument index="0" name="locale" type="String">
-			</argument>
+		<method name="get_script_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="script" type="String" />
 			<description>
-				Returns the [Translation] instance based on the [code]locale[/code] passed in.
-				It will return a [code]nullptr[/code] if there is no [Translation] instance that matches the [code]locale[/code].
+				Returns a readable script name for the [param script] code.
+			</description>
+		</method>
+		<method name="get_tool_locale">
+			<return type="String" />
+			<description>
+				Returns the current locale of the editor.
+				[b]Note:[/b] When called from an exported project returns the same value as [method get_locale].
+			</description>
+		</method>
+		<method name="get_translation_object">
+			<return type="Translation" />
+			<param index="0" name="locale" type="String" />
+			<description>
+				Returns the [Translation] instance based on the [param locale] passed in.
+				It will return [code]null[/code] if there is no [Translation] instance that matches the [param locale].
+			</description>
+		</method>
+		<method name="pseudolocalize" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="message" type="StringName" />
+			<description>
+				Returns the pseudolocalized string based on the [param message] passed in.
+			</description>
+		</method>
+		<method name="reload_pseudolocalization">
+			<return type="void" />
+			<description>
+				Reparses the pseudolocalization options and reloads the translation.
 			</description>
 		</method>
 		<method name="remove_translation">
-			<return type="void">
-			</return>
-			<argument index="0" name="translation" type="Translation">
-			</argument>
+			<return type="void" />
+			<param index="0" name="translation" type="Translation" />
 			<description>
 				Removes the given translation from the server.
 			</description>
 		</method>
 		<method name="set_locale">
-			<return type="void">
-			</return>
-			<argument index="0" name="locale" type="String">
-			</argument>
+			<return type="void" />
+			<param index="0" name="locale" type="String" />
 			<description>
-				Sets the locale of the game.
+				Sets the locale of the project. The [param locale] string will be standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
+				If translations have been loaded beforehand for the new locale, they will be applied.
+			</description>
+		</method>
+		<method name="standardize_locale" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="locale" type="String" />
+			<description>
+				Returns a [param locale] string standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
 			</description>
 		</method>
 		<method name="translate" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="message" type="StringName">
-			</argument>
-			<argument index="1" name="context" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="StringName" />
+			<param index="0" name="message" type="StringName" />
+			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns the current locale's translation for the given message (key) and context.
 			</description>
 		</method>
 		<method name="translate_plural" qualifiers="const">
-			<return type="StringName">
-			</return>
-			<argument index="0" name="message" type="StringName">
-			</argument>
-			<argument index="1" name="plural_message" type="StringName">
-			</argument>
-			<argument index="2" name="n" type="int">
-			</argument>
-			<argument index="3" name="context" type="StringName" default="&quot;&quot;">
-			</argument>
+			<return type="StringName" />
+			<param index="0" name="message" type="StringName" />
+			<param index="1" name="plural_message" type="StringName" />
+			<param index="2" name="n" type="int" />
+			<param index="3" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Returns the current locale's translation for the given message (key), plural_message and context.
-				The number [code]n[/code] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
+				Returns the current locale's translation for the given message (key), plural message and context.
+				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
+	<members>
+		<member name="pseudolocalization_enabled" type="bool" setter="set_pseudolocalization_enabled" getter="is_pseudolocalization_enabled" default="false">
+			If [code]true[/code], enables the use of pseudolocalization. See [member ProjectSettings.internationalization/pseudolocalization/use_pseudolocalization] for details.
+		</member>
+	</members>
 </class>

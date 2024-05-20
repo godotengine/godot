@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Path3D" inherits="Node3D" version="4.0">
+<class name="Path3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Contains a [Curve3D] path for [PathFollow3D] nodes to follow.
 	</brief_description>
@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="curve" type="Curve3D" setter="set_curve" getter="get_curve">
 			A [Curve3D] describing the path.
@@ -23,6 +21,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-	</constants>
 </class>

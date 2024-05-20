@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorScriptPicker" inherits="EditorResourcePicker" version="4.0">
+<class name="EditorScriptPicker" inherits="EditorResourcePicker" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Godot editor's control for selecting the [code]script[/code] property of a [Node].
 	</brief_description>
@@ -9,13 +9,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="script_owner" type="Node" setter="set_script_owner" getter="get_script_owner">
 			The owner [Node] of the script property that holds the edited resource.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

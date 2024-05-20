@@ -164,7 +164,7 @@ typedef enum
  * @HB_UNICODE_COMBINING_CLASS_CCC122: [Lao]
  * @HB_UNICODE_COMBINING_CLASS_CCC129: [Tibetan]
  * @HB_UNICODE_COMBINING_CLASS_CCC130: [Tibetan]
- * @HB_UNICODE_COMBINING_CLASS_CCC133: [Tibetan]
+ * @HB_UNICODE_COMBINING_CLASS_CCC132: [Tibetan] Since: 7.2.0
  * @HB_UNICODE_COMBINING_CLASS_ATTACHED_BELOW_LEFT: Marks attached at the bottom left
  * @HB_UNICODE_COMBINING_CLASS_ATTACHED_BELOW: Marks attached directly below
  * @HB_UNICODE_COMBINING_CLASS_ATTACHED_ABOVE: Marks attached directly above
@@ -246,7 +246,7 @@ typedef enum
   /* Tibetan */
   HB_UNICODE_COMBINING_CLASS_CCC129	= 129,
   HB_UNICODE_COMBINING_CLASS_CCC130	= 130,
-  HB_UNICODE_COMBINING_CLASS_CCC133	= 132,
+  HB_UNICODE_COMBINING_CLASS_CCC132	= 132,
 
 
   HB_UNICODE_COMBINING_CLASS_ATTACHED_BELOW_LEFT	= 200,
@@ -317,8 +317,8 @@ hb_unicode_funcs_set_user_data (hb_unicode_funcs_t *ufuncs,
 
 
 HB_EXTERN void *
-hb_unicode_funcs_get_user_data (hb_unicode_funcs_t *ufuncs,
-				hb_user_data_key_t *key);
+hb_unicode_funcs_get_user_data (const hb_unicode_funcs_t *ufuncs,
+				hb_user_data_key_t       *key);
 
 
 HB_EXTERN void
@@ -429,7 +429,7 @@ typedef hb_script_t			(*hb_unicode_script_func_t)		(hb_unicode_funcs_t *ufuncs,
  * The method must return an #hb_bool_t indicating the success
  * of the composition.
  * 
- * Return value: %true is @a,@b composed, %false otherwise
+ * Return value: `true` is @a,@b composed, `false` otherwise
  *
  **/
 typedef hb_bool_t			(*hb_unicode_compose_func_t)		(hb_unicode_funcs_t *ufuncs,
@@ -453,7 +453,7 @@ typedef hb_bool_t			(*hb_unicode_compose_func_t)		(hb_unicode_funcs_t *ufuncs,
  * output parameters (if successful). The method must return an
  * #hb_bool_t indicating the success of the composition.
  * 
- * Return value: %true if @ab decomposed, %false otherwise
+ * Return value: `true` if @ab decomposed, `false` otherwise
  *
  **/
 typedef hb_bool_t			(*hb_unicode_decompose_func_t)		(hb_unicode_funcs_t *ufuncs,

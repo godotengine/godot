@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EncodedObjectAsID" inherits="RefCounted" version="4.0">
+<class name="EncodedObjectAsID" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Holds a reference to an [Object]'s instance ID.
 	</brief_description>
@@ -9,13 +9,9 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="object_id" type="int" setter="set_object_id" getter="get_object_id" default="0">
 			The [Object] identifier stored in this [EncodedObjectAsID] instance. The object instance can be retrieved with [method @GlobalScope.instance_from_id].
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

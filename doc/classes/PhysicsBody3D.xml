@@ -1,98 +1,88 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsBody3D" inherits="CollisionObject3D" version="4.0">
+<class name="PhysicsBody3D" inherits="CollisionObject3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for all objects affected by physics in 3D space.
+		Abstract base class for 3D game objects affected by physics.
 	</brief_description>
 	<description>
-		PhysicsBody3D is an abstract base class for implementing a physics body. All *Body types inherit from it.
+		[PhysicsBody3D] is an abstract base class for 3D game objects affected by physics. All 3D physics bodies inherit from it.
+		[b]Warning:[/b] With a non-uniform scale, this node will likely not behave as expected. It is advised to keep its scale the same on all axes and adjust its collision shape(s) instead.
 	</description>
 	<tutorials>
-		<link title="Physics introduction">https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
+		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_collision_exception_with">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="Node">
-			</argument>
+			<return type="void" />
+			<param index="0" name="body" type="Node" />
 			<description>
 				Adds a body to the list of bodies that this body can't collide with.
 			</description>
 		</method>
 		<method name="get_axis_lock" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis">
-			</argument>
+			<return type="bool" />
+			<param index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis" />
 			<description>
-				Returns [code]true[/code] if the specified linear or rotational [code]axis[/code] is locked.
+				Returns [code]true[/code] if the specified linear or rotational [param axis] is locked.
 			</description>
 		</method>
 		<method name="get_collision_exceptions">
-			<return type="PhysicsBody3D[]">
-			</return>
+			<return type="PhysicsBody3D[]" />
 			<description>
 				Returns an array of nodes that were added as collision exceptions for this body.
 			</description>
 		</method>
-		<method name="move_and_collide">
-			<return type="KinematicCollision3D">
-			</return>
-			<argument index="0" name="rel_vec" type="Vector3">
-			</argument>
-			<argument index="1" name="infinite_inertia" type="bool" default="true">
-			</argument>
-			<argument index="2" name="exclude_raycast_shapes" type="bool" default="true">
-			</argument>
-			<argument index="3" name="test_only" type="bool" default="false">
-			</argument>
-			<argument index="4" name="safe_margin" type="float" default="0.001">
-			</argument>
+		<method name="get_gravity" qualifiers="const">
+			<return type="Vector3" />
 			<description>
-				Moves the body along the vector [code]rel_vec[/code]. The body will stop if it collides. Returns a [KinematicCollision3D], which contains information about the collision.
-				If [code]test_only[/code] is [code]true[/code], the body does not move but the would-be collision information is given.
-				[code]safe_margin[/code] is the extra margin used for collision recovery (see [member CharacterBody3D.collision/safe_margin] for more details).
+				Returns the gravity vector computed from all sources that can affect the body, including all gravity overrides from [Area3D] nodes and the global world gravity.
+			</description>
+		</method>
+		<method name="move_and_collide">
+			<return type="KinematicCollision3D" />
+			<param index="0" name="motion" type="Vector3" />
+			<param index="1" name="test_only" type="bool" default="false" />
+			<param index="2" name="safe_margin" type="float" default="0.001" />
+			<param index="3" name="recovery_as_collision" type="bool" default="false" />
+			<param index="4" name="max_collisions" type="int" default="1" />
+			<description>
+				Moves the body along the vector [param motion]. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param motion] should be computed using [code]delta[/code].
+				The body will stop if it collides. Returns a [KinematicCollision3D], which contains information about the collision when stopped, or when touching another body along the motion.
+				If [param test_only] is [code]true[/code], the body does not move but the would-be collision information is given.
+				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody3D.safe_margin] for more details).
+				If [param recovery_as_collision] is [code]true[/code], any depenetration from the recovery phase is also reported as a collision; this is used e.g. by [CharacterBody3D] for improving floor detection during floor snapping.
+				[param max_collisions] allows to retrieve more than one collision result.
 			</description>
 		</method>
 		<method name="remove_collision_exception_with">
-			<return type="void">
-			</return>
-			<argument index="0" name="body" type="Node">
-			</argument>
+			<return type="void" />
+			<param index="0" name="body" type="Node" />
 			<description>
 				Removes a body from the list of bodies that this body can't collide with.
 			</description>
 		</method>
 		<method name="set_axis_lock">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis">
-			</argument>
-			<argument index="1" name="lock" type="bool">
-			</argument>
+			<return type="void" />
+			<param index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis" />
+			<param index="1" name="lock" type="bool" />
 			<description>
-				Locks or unlocks the specified linear or rotational [code]axis[/code] depending on the value of [code]lock[/code].
+				Locks or unlocks the specified linear or rotational [param axis] depending on the value of [param lock].
 			</description>
 		</method>
-		<method name="test_move">
-			<return type="bool">
-			</return>
-			<argument index="0" name="from" type="Transform3D">
-			</argument>
-			<argument index="1" name="rel_vec" type="Vector3">
-			</argument>
-			<argument index="2" name="infinite_inertia" type="bool" default="true">
-			</argument>
-			<argument index="3" name="exclude_raycast_shapes" type="bool" default="true">
-			</argument>
-			<argument index="4" name="collision" type="KinematicCollision3D" default="null">
-			</argument>
-			<argument index="5" name="safe_margin" type="float" default="0.001">
-			</argument>
+		<method name="test_move" keywords="check, collision, sweep">
+			<return type="bool" />
+			<param index="0" name="from" type="Transform3D" />
+			<param index="1" name="motion" type="Vector3" />
+			<param index="2" name="collision" type="KinematicCollision3D" default="null" />
+			<param index="3" name="safe_margin" type="float" default="0.001" />
+			<param index="4" name="recovery_as_collision" type="bool" default="false" />
+			<param index="5" name="max_collisions" type="int" default="1" />
 			<description>
-				Checks for collisions without moving the body. Virtually sets the node's position, scale and rotation to that of the given [Transform3D], then tries to move the body along the vector [code]rel_vec[/code]. Returns [code]true[/code] if a collision would occur.
-				[code]collision[/code] is an optional object of type [KinematicCollision3D], which contains additional information about the collision (should there be one).
-				[code]safe_margin[/code] is the extra margin used for collision recovery (see [member CharacterBody3D.collision/safe_margin] for more details).
+				Checks for collisions without moving the body. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param motion] should be computed using [code]delta[/code].
+				Virtually sets the node's position, scale and rotation to that of the given [Transform3D], then tries to move the body along the vector [param motion]. Returns [code]true[/code] if a collision would stop the body from moving along the whole path.
+				[param collision] is an optional object of type [KinematicCollision3D], which contains additional information about the collision when stopped, or when touching another body along the motion.
+				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody3D.safe_margin] for more details).
+				If [param recovery_as_collision] is [code]true[/code], any depenetration from the recovery phase is also reported as a collision; this is useful for checking whether the body would [i]touch[/i] any other bodies.
+				[param max_collisions] allows to retrieve more than one collision result.
 			</description>
 		</method>
 	</methods>
@@ -116,6 +106,4 @@
 			Lock the body's linear movement in the Z axis.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PropertyTweener" inherits="Tweener" version="4.0">
+<class name="PropertyTweener" inherits="Tweener" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Interpolates an [Object]'s property over time.
 	</brief_description>
@@ -11,10 +11,10 @@
 	</tutorials>
 	<methods>
 		<method name="as_relative">
-			<return type="PropertyTweener">
-			</return>
+			<return type="PropertyTweener" />
 			<description>
-				When called, the final value will be used as a relative value instead. Example:
+				When called, the final value will be used as a relative value instead.
+				[b]Example:[/b]
 				[codeblock]
 				var tween = get_tree().create_tween()
 				tween.tween_property(self, "position", Vector2.RIGHT * 100, 1).as_relative() #the node will move by 100 pixels to the right
@@ -22,21 +22,19 @@
 			</description>
 		</method>
 		<method name="from">
-			<return type="PropertyTweener">
-			</return>
-			<argument index="0" name="value" type="Variant">
-			</argument>
+			<return type="PropertyTweener" />
+			<param index="0" name="value" type="Variant" />
 			<description>
-				Sets a custom initial value to the [PropertyTweener]. Example:
+				Sets a custom initial value to the [PropertyTweener].
+				[b]Example:[/b]
 				[codeblock]
 				var tween = get_tree().create_tween()
-				tween.tween_property(self, "position", Vector2(200, 100), 1).from(Vector2(100, 100) #this will move the node from position (100, 100) to (200, 100)
+				tween.tween_property(self, "position", Vector2(200, 100), 1).from(Vector2(100, 100)) #this will move the node from position (100, 100) to (200, 100)
 				[/codeblock]
 			</description>
 		</method>
 		<method name="from_current">
-			<return type="PropertyTweener">
-			</return>
+			<return type="PropertyTweener" />
 			<description>
 				Makes the [PropertyTweener] use the current property value (i.e. at the time of creating this [PropertyTweener]) as a starting point. This is equivalent of using [method from] with the current value. These two calls will do the same:
 				[codeblock]
@@ -45,34 +43,45 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="set_custom_interpolator">
+			<return type="PropertyTweener" />
+			<param index="0" name="interpolator_method" type="Callable" />
+			<description>
+				Allows interpolating the value with a custom easing function. The provided [param interpolator_method] will be called with a value ranging from [code]0.0[/code] to [code]1.0[/code] and is expected to return a value within the same range (values outside the range can be used for overshoot). The return value of the method is then used for interpolation between initial and final value. Note that the parameter passed to the method is still subject to the tweener's own easing.
+				[b]Example:[/b]
+				[codeblock]
+				@export var curve: Curve
+
+				func _ready():
+				    var tween = create_tween()
+				    # Interpolate the value using a custom curve.
+				    tween.tween_property(self, "position:x", 300, 1).as_relative().set_custom_interpolator(tween_curve)
+
+				func tween_curve(v):
+				    return curve.sample_baked(v)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="set_delay">
-			<return type="PropertyTweener">
-			</return>
-			<argument index="0" name="delay" type="float">
-			</argument>
+			<return type="PropertyTweener" />
+			<param index="0" name="delay" type="float" />
 			<description>
 				Sets the time in seconds after which the [PropertyTweener] will start interpolating. By default there's no delay.
 			</description>
 		</method>
 		<method name="set_ease">
-			<return type="PropertyTweener">
-			</return>
-			<argument index="0" name="ease" type="int" enum="Tween.EaseType">
-			</argument>
+			<return type="PropertyTweener" />
+			<param index="0" name="ease" type="int" enum="Tween.EaseType" />
 			<description>
 				Sets the type of used easing from [enum Tween.EaseType]. If not set, the default easing is used from the [Tween] that contains this Tweener.
 			</description>
 		</method>
 		<method name="set_trans">
-			<return type="PropertyTweener">
-			</return>
-			<argument index="0" name="trans" type="int" enum="Tween.TransitionType">
-			</argument>
+			<return type="PropertyTweener" />
+			<param index="0" name="trans" type="int" enum="Tween.TransitionType" />
 			<description>
 				Sets the type of used transition from [enum Tween.TransitionType]. If not set, the default transition is used from the [Tween] that contains this Tweener.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

@@ -4,7 +4,7 @@
  *
  *   High-level SFNT driver interface (body).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -34,6 +34,10 @@
 #ifdef TT_CONFIG_OPTION_COLOR_LAYERS
 #include "ttcolr.h"
 #include "ttcpal.h"
+#endif
+
+#ifdef FT_CONFIG_OPTION_SVG
+#include "ttsvg.h"
 #endif
 
 #ifdef TT_CONFIG_OPTION_POSTSCRIPT_NAMES
@@ -75,41 +79,57 @@
    *
    */
 
-  static void*
-  get_sfnt_table( TT_Face      face,
+  FT_CALLBACK_DEF( FT_Error )
+  sfnt_load_table( FT_Face    face,    /* TT_Face */
+                   FT_ULong   tag,
+                   FT_Long    offset,
+                   FT_Byte*   buffer,
+                   FT_ULong*  length )
+  {
+    TT_Face  ttface = (TT_Face)face;
+
+
+    return tt_face_load_any( ttface, tag, offset, buffer, length );
+  }
+
+
+  FT_CALLBACK_DEF( void* )
+  get_sfnt_table( FT_Face      face,  /* TT_Face */
                   FT_Sfnt_Tag  tag )
   {
+    TT_Face  ttface = (TT_Face)face;
+
     void*  table;
 
 
     switch ( tag )
     {
     case FT_SFNT_HEAD:
-      table = &face->header;
+      table = &ttface->header;
       break;
 
     case FT_SFNT_HHEA:
-      table = &face->horizontal;
+      table = &ttface->horizontal;
       break;
 
     case FT_SFNT_VHEA:
-      table = face->vertical_info ? &face->vertical : NULL;
+      table = ttface->vertical_info ? &ttface->vertical : NULL;
       break;
 
     case FT_SFNT_OS2:
-      table = ( face->os2.version == 0xFFFFU ) ? NULL : &face->os2;
+      table = ( ttface->os2.version == 0xFFFFU ) ? NULL : &ttface->os2;
       break;
 
     case FT_SFNT_POST:
-      table = &face->postscript;
+      table = &ttface->postscript;
       break;
 
     case FT_SFNT_MAXP:
-      table = &face->max_profile;
+      table = &ttface->max_profile;
       break;
 
     case FT_SFNT_PCLT:
-      table = face->pclt.Version ? &face->pclt : NULL;
+      table = ttface->pclt.Version ? &ttface->pclt : NULL;
       break;
 
     default:
@@ -120,26 +140,29 @@
   }
 
 
-  static FT_Error
-  sfnt_table_info( TT_Face    face,
+  FT_CALLBACK_DEF( FT_Error )
+  sfnt_table_info( FT_Face    face,    /* TT_Face */
                    FT_UInt    idx,
                    FT_ULong  *tag,
                    FT_ULong  *offset,
                    FT_ULong  *length )
   {
+    TT_Face  ttface = (TT_Face)face;
+
+
     if ( !offset || !length )
       return FT_THROW( Invalid_Argument );
 
     if ( !tag )
-      *length = face->num_tables;
+      *length = ttface->num_tables;
     else
     {
-      if ( idx >= face->num_tables )
+      if ( idx >= ttface->num_tables )
         return FT_THROW( Table_Missing );
 
-      *tag    = face->dir_tables[idx].Tag;
-      *offset = face->dir_tables[idx].Offset;
-      *length = face->dir_tables[idx].Length;
+      *tag    = ttface->dir_tables[idx].Tag;
+      *offset = ttface->dir_tables[idx].Offset;
+      *length = ttface->dir_tables[idx].Length;
     }
 
     return FT_Err_Ok;
@@ -149,9 +172,9 @@
   FT_DEFINE_SERVICE_SFNT_TABLEREC(
     sfnt_service_sfnt_table,
 
-    (FT_SFNT_TableLoadFunc)tt_face_load_any,     /* load_table */
-    (FT_SFNT_TableGetFunc) get_sfnt_table,       /* get_table  */
-    (FT_SFNT_TableInfoFunc)sfnt_table_info       /* table_info */
+    sfnt_load_table,  /* FT_SFNT_TableLoadFunc load_table */
+    get_sfnt_table,   /* FT_SFNT_TableGetFunc  get_table  */
+    sfnt_table_info   /* FT_SFNT_TableInfoFunc table_info */
   )
 
 
@@ -162,7 +185,7 @@
    *
    */
 
-  static FT_Error
+  FT_CALLBACK_DEF( FT_Error )
   sfnt_get_glyph_name( FT_Face     face,
                        FT_UInt     glyph_index,
                        FT_Pointer  buffer,
@@ -180,7 +203,7 @@
   }
 
 
-  static FT_UInt
+  FT_CALLBACK_DEF( FT_UInt )
   sfnt_get_name_index( FT_Face           face,
                        const FT_String*  glyph_name )
   {
@@ -217,8 +240,8 @@
   FT_DEFINE_SERVICE_GLYPHDICTREC(
     sfnt_service_glyph_dict,
 
-    (FT_GlyphDict_GetNameFunc)  sfnt_get_glyph_name,    /* get_name   */
-    (FT_GlyphDict_NameIndexFunc)sfnt_get_name_index     /* name_index */
+    sfnt_get_glyph_name,  /* FT_GlyphDict_GetNameFunc   get_name   */
+    sfnt_get_name_index   /* FT_GlyphDict_NameIndexFunc name_index */
   )
 
 #endif /* TT_CONFIG_OPTION_POSTSCRIPT_NAMES */
@@ -374,61 +397,61 @@
       {
       case 15:
         k4 ^= (FT_UInt32)tail[14] << 16;
-        /* fall through */
+        FALL_THROUGH;
       case 14:
         k4 ^= (FT_UInt32)tail[13] << 8;
-        /* fall through */
+        FALL_THROUGH;
       case 13:
         k4 ^= (FT_UInt32)tail[12];
         k4 *= c4;
         k4  = ROTL32( k4, 18 );
         k4 *= c1;
         h4 ^= k4;
-        /* fall through */
+        FALL_THROUGH;
 
       case 12:
         k3 ^= (FT_UInt32)tail[11] << 24;
-        /* fall through */
+        FALL_THROUGH;
       case 11:
         k3 ^= (FT_UInt32)tail[10] << 16;
-        /* fall through */
+        FALL_THROUGH;
       case 10:
         k3 ^= (FT_UInt32)tail[9] << 8;
-        /* fall through */
+        FALL_THROUGH;
       case 9:
         k3 ^= (FT_UInt32)tail[8];
         k3 *= c3;
         k3  = ROTL32( k3, 17 );
         k3 *= c4;
         h3 ^= k3;
-        /* fall through */
+        FALL_THROUGH;
 
       case 8:
         k2 ^= (FT_UInt32)tail[7] << 24;
-        /* fall through */
+        FALL_THROUGH;
       case 7:
         k2 ^= (FT_UInt32)tail[6] << 16;
-        /* fall through */
+        FALL_THROUGH;
       case 6:
         k2 ^= (FT_UInt32)tail[5] << 8;
-        /* fall through */
+        FALL_THROUGH;
       case 5:
         k2 ^= (FT_UInt32)tail[4];
         k2 *= c2;
         k2  = ROTL32( k2, 16 );
         k2 *= c3;
         h2 ^= k2;
-        /* fall through */
+        FALL_THROUGH;
 
       case 4:
         k1 ^= (FT_UInt32)tail[3] << 24;
-        /* fall through */
+        FALL_THROUGH;
       case 3:
         k1 ^= (FT_UInt32)tail[2] << 16;
-        /* fall through */
+        FALL_THROUGH;
       case 2:
         k1 ^= (FT_UInt32)tail[1] << 8;
-        /* fall through */
+        FALL_THROUGH;
       case 1:
         k1 ^= (FT_UInt32)tail[0];
         k1 *= c1;
@@ -491,17 +514,15 @@
                   char_type_func  char_type,
                   FT_Bool         report_invalid_characters )
   {
-    FT_Error  error = FT_Err_Ok;
+    FT_Error  error;
 
     char*       result = NULL;
     FT_String*  r;
     FT_Char*    p;
     FT_UInt     len;
 
-    FT_UNUSED( error );
 
-
-    if ( FT_ALLOC( result, entry->stringLength / 2 + 1 ) )
+    if ( FT_QALLOC( result, entry->stringLength / 2 + 1 ) )
       return NULL;
 
     if ( FT_STREAM_SEEK( entry->stringOffset ) ||
@@ -521,15 +542,14 @@
           FT_TRACE0(( "get_win_string:"
                       " Character 0x%X invalid in PS name string\n",
                       ((unsigned)p[0])*256 + (unsigned)p[1] ));
-        break;
+        continue;
       }
     }
-    if ( !len )
-      *r = '\0';
+    *r = '\0';
 
     FT_FRAME_EXIT();
 
-    if ( !len )
+    if ( r != result )
       return result;
 
   get_win_string_error:
@@ -550,17 +570,15 @@
                     char_type_func  char_type,
                     FT_Bool         report_invalid_characters )
   {
-    FT_Error  error = FT_Err_Ok;
+    FT_Error  error;
 
     char*       result = NULL;
     FT_String*  r;
     FT_Char*    p;
     FT_UInt     len;
 
-    FT_UNUSED( error );
 
-
-    if ( FT_ALLOC( result, entry->stringLength + 1 ) )
+    if ( FT_QALLOC( result, entry->stringLength + 1 ) )
       return NULL;
 
     if ( FT_STREAM_SEEK( entry->stringOffset ) ||
@@ -580,15 +598,14 @@
           FT_TRACE0(( "get_apple_string:"
                       " Character `%c' (0x%X) invalid in PS name string\n",
                       *p, *p ));
-        break;
+        continue;
       }
     }
-    if ( !len )
-      *r = '\0';
+    *r = '\0';
 
     FT_FRAME_EXIT();
 
-    if ( !len )
+    if ( r != result )
       return result;
 
   get_apple_string_error:
@@ -602,7 +619,7 @@
   }
 
 
-  static FT_Bool
+  FT_CALLBACK_DEF( FT_Bool )
   sfnt_get_name_id( TT_Face    face,
                     FT_UShort  id,
                     FT_Int    *win,
@@ -657,7 +674,7 @@
 
 
   /*
-   * Find the shortest decimal representation of a 16.16 fixed point
+   * Find the shortest decimal representation of a 16.16 fixed-point
    * number.  The function fills `buf' with the result, returning a pointer
    * to the position after the representation's last byte.
    */
@@ -733,7 +750,7 @@
         an equivalent representation of `fixed'.
 
         The above FOR loop always finds the larger of the two values; I
-        verified this by iterating over all possible fixed point numbers.
+        verified this by iterating over all possible fixed-point numbers.
 
         If the remainder is 17232*10, both values are equally good, and we
         take the next even number (following IEEE 754's `round to nearest,
@@ -741,7 +758,7 @@
 
         If the remainder is smaller than 17232*10, the lower of the two
         numbers is nearer to the exact result (values 17232 and 34480 were
-        also found by testing all possible fixed point values).
+        also found by testing all possible fixed-point values).
 
         We use this to find a shorter decimal representation.  If not ending
         with digit zero, we take the representation with less error.
@@ -819,9 +836,9 @@
 
       if ( !found )
       {
-        /* as a last resort we try the family name; note that this is */
-        /* not in the Adobe TechNote, but GX fonts (which predate the */
-        /* TechNote) benefit from this behaviour                      */
+        /* according to the 'name' documentation in the OpenType   */
+        /* specification the font family name is to be used if the */
+        /* typographic family name is missing, so let's do that    */
         found = sfnt_get_name_id( face,
                                   TT_NAME_ID_FONT_FAMILY,
                                   &win,
@@ -853,6 +870,10 @@
       {
         FT_TRACE0(( "sfnt_get_var_ps_name:"
                     " No valid PS name prefix for font instances found\n" ));
+        /* XXX It probably makes sense to never let this fail */
+        /*     since an arbitrary prefix should work, too.    */
+        /*     On the other hand, it is very unlikely that    */
+        /*     we ever reach this code at all.                */
         return NULL;
       }
 
@@ -868,8 +889,8 @@
         result[len] = '\0';
 
         FT_TRACE0(( "sfnt_get_var_ps_name:"
-                    " Shortening variation PS name prefix\n"
-                    "                     "
+                    " Shortening variation PS name prefix\n" ));
+        FT_TRACE0(( "                     "
                     " to %d characters\n", len ));
       }
 
@@ -920,16 +941,16 @@
         if ( !subfamily_name )
         {
           FT_TRACE1(( "sfnt_get_var_ps_name:"
-                      " can't construct named instance PS name;\n"
-                      "                     "
+                      " can't construct named instance PS name;\n" ));
+          FT_TRACE1(( "                     "
                       " trying to construct normal instance PS name\n" ));
           goto construct_instance_name;
         }
 
         /* after the prefix we have character `-' followed by the   */
         /* subfamily name (using only characters a-z, A-Z, and 0-9) */
-        if ( FT_ALLOC( result, face->var_postscript_prefix_len +
-                               1 + ft_strlen( subfamily_name ) + 1 ) )
+        if ( FT_QALLOC( result, face->var_postscript_prefix_len +
+                                1 + ft_strlen( subfamily_name ) + 1 ) )
           return NULL;
 
         ft_strcpy( result, face->var_postscript_prefix );
@@ -957,9 +978,9 @@
     construct_instance_name:
       axis = mm_var->axis;
 
-      if ( FT_ALLOC( result,
-                     face->var_postscript_prefix_len +
-                       num_coords * MAX_VALUE_DESCRIPTOR_LEN + 1 ) )
+      if ( FT_QALLOC( result,
+                      face->var_postscript_prefix_len +
+                        num_coords * MAX_VALUE_DESCRIPTOR_LEN + 1 ) )
         return NULL;
 
       p = result;
@@ -993,6 +1014,7 @@
         if ( t != ' ' && ft_isalnum( t ) )
           *p++ = t;
       }
+      *p++ = '\0';
     }
 
   check_length:
@@ -1040,47 +1062,49 @@
 #endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
 
 
-  static const char*
-  sfnt_get_ps_name( TT_Face  face )
+  FT_CALLBACK_DEF( const char* )
+  sfnt_get_ps_name( FT_Face  face )    /* TT_Face */
   {
+    TT_Face  ttface = (TT_Face)face;
+
     FT_Int       found, win, apple;
     const char*  result = NULL;
 
 
-    if ( face->postscript_name )
-      return face->postscript_name;
+    if ( ttface->postscript_name )
+      return ttface->postscript_name;
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-    if ( face->blend                                 &&
-         ( FT_IS_NAMED_INSTANCE( FT_FACE( face ) ) ||
-           FT_IS_VARIATION( FT_FACE( face ) )      ) )
+    if ( ttface->blend                    &&
+         ( FT_IS_NAMED_INSTANCE( face ) ||
+           FT_IS_VARIATION( face )      ) )
     {
-      face->postscript_name = sfnt_get_var_ps_name( face );
-      return face->postscript_name;
+      ttface->postscript_name = sfnt_get_var_ps_name( ttface );
+      return ttface->postscript_name;
     }
 #endif
 
     /* scan the name table to see whether we have a Postscript name here, */
     /* either in Macintosh or Windows platform encodings                  */
-    found = sfnt_get_name_id( face, TT_NAME_ID_PS_NAME, &win, &apple );
+    found = sfnt_get_name_id( ttface, TT_NAME_ID_PS_NAME, &win, &apple );
     if ( !found )
       return NULL;
 
     /* prefer Windows entries over Apple */
     if ( win != -1 )
-      result = get_win_string( face->root.memory,
-                               face->name_table.stream,
-                               face->name_table.names + win,
+      result = get_win_string( FT_FACE_MEMORY( face ),
+                               ttface->name_table.stream,
+                               ttface->name_table.names + win,
                                sfnt_is_postscript,
                                1 );
     if ( !result && apple != -1 )
-      result = get_apple_string( face->root.memory,
-                                 face->name_table.stream,
-                                 face->name_table.names + apple,
+      result = get_apple_string( FT_FACE_MEMORY( face ),
+                                 ttface->name_table.stream,
+                                 ttface->name_table.names + apple,
                                  sfnt_is_postscript,
                                  1 );
 
-    face->postscript_name = result;
+    ttface->postscript_name = result;
 
     return result;
   }
@@ -1089,7 +1113,7 @@
   FT_DEFINE_SERVICE_PSFONTNAMEREC(
     sfnt_service_ps_name,
 
-    (FT_PsName_GetFunc)sfnt_get_ps_name       /* get_ps_font_name */
+    sfnt_get_ps_name  /* FT_PsName_GetFunc get_ps_font_name */
   )
 
 
@@ -1099,14 +1123,14 @@
   FT_DEFINE_SERVICE_TTCMAPSREC(
     tt_service_get_cmap_info,
 
-    (TT_CMap_Info_GetFunc)tt_get_cmap_info    /* get_cmap_info */
+    tt_get_cmap_info  /* TT_CMap_Info_GetFunc get_cmap_info */
   )
 
 
 #ifdef TT_CONFIG_OPTION_BDF
 
   static FT_Error
-  sfnt_get_charset_id( TT_Face       face,
+  sfnt_get_charset_id( FT_Face       face,
                        const char*  *acharset_encoding,
                        const char*  *acharset_registry )
   {
@@ -1144,8 +1168,8 @@
   FT_DEFINE_SERVICE_BDFRec(
     sfnt_service_bdf,
 
-    (FT_BDF_GetCharsetIdFunc)sfnt_get_charset_id,     /* get_charset_id */
-    (FT_BDF_GetPropertyFunc) tt_face_find_bdf_prop    /* get_property   */
+    sfnt_get_charset_id,   /* FT_BDF_GetCharsetIdFunc get_charset_id */
+    tt_face_find_bdf_prop  /* FT_BDF_GetPropertyFunc  get_property   */
   )
 
 
@@ -1213,6 +1237,14 @@
 #define PUT_COLOR_LAYERS( a )  NULL
 #endif
 
+#ifdef FT_CONFIG_OPTION_SVG
+#define PUT_SVG_SUPPORT( a )  a
+#else
+#define PUT_SVG_SUPPORT( a )  NULL
+#endif
+
+#define PUT_COLOR_LAYERS_V1( a )  PUT_COLOR_LAYERS( a )
+
 #ifdef TT_CONFIG_OPTION_POSTSCRIPT_NAMES
 #define PUT_PS_NAMES( a )  a
 #else
@@ -1271,9 +1303,9 @@
                             /* TT_Free_Table_Func      free_eblc       */
 
     PUT_EMBEDDED_BITMAPS( tt_face_set_sbit_strike     ),
-                   /* TT_Set_SBit_Strike_Func      set_sbit_strike     */
+                  /* TT_Set_SBit_Strike_Func      set_sbit_strike      */
     PUT_EMBEDDED_BITMAPS( tt_face_load_strike_metrics ),
-                   /* TT_Load_Strike_Metrics_Func  load_strike_metrics */
+                  /* TT_Load_Strike_Metrics_Func  load_strike_metrics  */
 
     PUT_COLOR_LAYERS( tt_face_load_cpal ),
                             /* TT_Load_Table_Func      load_cpal       */
@@ -1287,13 +1319,32 @@
                             /* TT_Set_Palette_Func     set_palette     */
     PUT_COLOR_LAYERS( tt_face_get_colr_layer ),
                             /* TT_Get_Colr_Layer_Func  get_colr_layer  */
+
+    PUT_COLOR_LAYERS_V1( tt_face_get_colr_glyph_paint ),
+              /* TT_Get_Color_Glyph_Paint_Func    get_colr_glyph_paint */
+    PUT_COLOR_LAYERS_V1( tt_face_get_color_glyph_clipbox ),
+              /* TT_Get_Color_Glyph_ClipBox_Func  get_clipbox          */
+    PUT_COLOR_LAYERS_V1( tt_face_get_paint_layers ),
+              /* TT_Get_Paint_Layers_Func         get_paint_layers     */
+    PUT_COLOR_LAYERS_V1( tt_face_get_colorline_stops ),
+              /* TT_Get_Paint                     get_paint            */
+    PUT_COLOR_LAYERS_V1( tt_face_get_paint ),
+              /* TT_Get_Colorline_Stops_Func      get_colorline_stops  */
+
     PUT_COLOR_LAYERS( tt_face_colr_blend_layer ),
                             /* TT_Blend_Colr_Func      colr_blend      */
 
     tt_face_get_metrics,    /* TT_Get_Metrics_Func     get_metrics     */
 
     tt_face_get_name,       /* TT_Get_Name_Func        get_name        */
-    sfnt_get_name_id        /* TT_Get_Name_ID_Func     get_name_id     */
+    sfnt_get_name_id,       /* TT_Get_Name_ID_Func     get_name_id     */
+
+    PUT_SVG_SUPPORT( tt_face_load_svg ),
+                            /* TT_Load_Table_Func      load_svg        */
+    PUT_SVG_SUPPORT( tt_face_free_svg ),
+                            /* TT_Free_Table_Func      free_svg        */
+    PUT_SVG_SUPPORT( tt_face_load_svg_doc )
+                            /* TT_Load_Svg_Doc_Func    load_svg_doc    */
   )
 
 
@@ -1309,9 +1360,9 @@
 
     (const void*)&sfnt_interface,  /* module specific interface */
 
-    (FT_Module_Constructor)NULL,               /* module_init   */
-    (FT_Module_Destructor) NULL,               /* module_done   */
-    (FT_Module_Requester)  sfnt_get_interface  /* get_interface */
+    NULL,               /* FT_Module_Constructor module_init   */
+    NULL,               /* FT_Module_Destructor  module_done   */
+    sfnt_get_interface  /* FT_Module_Requester   get_interface */
   )
 
 

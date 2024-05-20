@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFDocumentExtension" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		[GLTFDocument] extension class.
+	</brief_description>
+	<description>
+		Extends the functionality of the [GLTFDocument] class by allowing you to run arbitrary code at various stages of GLTF import or export.
+		To use, make a new class extending GLTFDocumentExtension, override any methods you need, make an instance of your class, and register it using [method GLTFDocument.register_gltf_document_extension].
+		[b]Note:[/b] Like GLTFDocument itself, all GLTFDocumentExtension classes must be stateless in order to function properly. If you need to store data, use the [code]set_additional_data[/code] and [code]get_additional_data[/code] methods in [GLTFState] or [GLTFNode].
+	</description>
+	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+	</tutorials>
+	<methods>
+		<method name="_convert_scene_node" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="gltf_node" type="GLTFNode" />
+			<param index="2" name="scene_node" type="Node" />
+			<description>
+				Part of the export process. This method is run after [method _export_preflight] and before [method _export_preserialize].
+				Runs when converting the data from a Godot scene node. This method can be used to process the Godot scene node data into a format that can be used by [method _export_node].
+			</description>
+		</method>
+		<method name="_export_node" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="gltf_node" type="GLTFNode" />
+			<param index="2" name="json" type="Dictionary" />
+			<param index="3" name="node" type="Node" />
+			<description>
+				Part of the export process. This method is run after [method _get_saveable_image_formats] and before [method _export_post]. If this [GLTFDocumentExtension] is used for exporting images, this runs after [method _serialize_texture_json].
+				This method can be used to modify the final JSON of each node. Data should be primarily stored in [param gltf_node] prior to serializing the JSON, but the original Godot [param node] is also provided if available. The node may be null if not available, such as when exporting GLTF data not generated from a Godot scene.
+			</description>
+		</method>
+		<method name="_export_post" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<description>
+				Part of the export process. This method is run last, after all other parts of the export process.
+				This method can be used to modify the final JSON of the generated GLTF file.
+			</description>
+		</method>
+		<method name="_export_preflight" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="root" type="Node" />
+			<description>
+				Part of the export process. This method is run first, before all other parts of the export process.
+				The return value is used to determine if this [GLTFDocumentExtension] instance should be used for exporting a given GLTF file. If [constant OK], the export will use this [GLTFDocumentExtension] instance. If not overridden, [constant OK] is returned.
+			</description>
+		</method>
+		<method name="_export_preserialize" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<description>
+				Part of the export process. This method is run after [method _convert_scene_node] and before [method _get_saveable_image_formats].
+				This method can be used to alter the state before performing serialization. It runs every time when generating a buffer with [method GLTFDocument.generate_buffer] or writing to the file system with [method GLTFDocument.write_to_filesystem].
+			</description>
+		</method>
+		<method name="_generate_scene_node" qualifiers="virtual">
+			<return type="Node3D" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="gltf_node" type="GLTFNode" />
+			<param index="2" name="scene_parent" type="Node" />
+			<description>
+				Part of the import process. This method is run after [method _import_post_parse] and before [method _import_node].
+				Runs when generating a Godot scene node from a GLTFNode. The returned node will be added to the scene tree. Multiple nodes can be generated in this step if they are added as a child of the returned node.
+				[b]Note:[/b] The [param scene_parent] parameter may be null if this is the single root node.
+			</description>
+		</method>
+		<method name="_get_image_file_extension" qualifiers="virtual">
+			<return type="String" />
+			<description>
+				Returns the file extension to use for saving image data into, for example, [code]".png"[/code]. If defined, when this extension is used to handle images, and the images are saved to a separate file, the image bytes will be copied to a file with this extension. If this is set, there should be a [ResourceImporter] class able to import the file. If not defined or empty, Godot will save the image into a PNG file.
+			</description>
+		</method>
+		<method name="_get_saveable_image_formats" qualifiers="virtual">
+			<return type="PackedStringArray" />
+			<description>
+				Part of the export process. This method is run after [method _convert_scene_node] and before [method _export_node].
+				Returns an array of the image formats that can be saved/exported by this extension. This extension will only be selected as the image exporter if the [GLTFDocument]'s [member GLTFDocument.image_format] is in this array. If this [GLTFDocumentExtension] is selected as the image exporter, one of the [method _save_image_at_path] or [method _serialize_image_to_bytes] methods will run next, otherwise [method _export_node] will run next. If the format name contains [code]"Lossy"[/code], the lossy quality slider will be displayed.
+			</description>
+		</method>
+		<method name="_get_supported_extensions" qualifiers="virtual">
+			<return type="PackedStringArray" />
+			<description>
+				Part of the import process. This method is run after [method _import_preflight] and before [method _parse_node_extensions].
+				Returns an array of the GLTF extensions supported by this GLTFDocumentExtension class. This is used to validate if a GLTF file with required extensions can be loaded.
+			</description>
+		</method>
+		<method name="_import_node" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="gltf_node" type="GLTFNode" />
+			<param index="2" name="json" type="Dictionary" />
+			<param index="3" name="node" type="Node" />
+			<description>
+				Part of the import process. This method is run after [method _generate_scene_node] and before [method _import_post].
+				This method can be used to make modifications to each of the generated Godot scene nodes.
+			</description>
+		</method>
+		<method name="_import_post" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="root" type="Node" />
+			<description>
+				Part of the import process. This method is run last, after all other parts of the import process.
+				This method can be used to modify the final Godot scene generated by the import process.
+			</description>
+		</method>
+		<method name="_import_post_parse" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<description>
+				Part of the import process. This method is run after [method _parse_node_extensions] and before [method _generate_scene_node].
+				This method can be used to modify any of the data imported so far after parsing, before generating the nodes and then running the final per-node import step.
+			</description>
+		</method>
+		<method name="_import_preflight" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="extensions" type="PackedStringArray" />
+			<description>
+				Part of the import process. This method is run first, before all other parts of the import process.
+				The return value is used to determine if this [GLTFDocumentExtension] instance should be used for importing a given GLTF file. If [constant OK], the import will use this [GLTFDocumentExtension] instance. If not overridden, [constant OK] is returned.
+			</description>
+		</method>
+		<method name="_parse_image_data" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="image_data" type="PackedByteArray" />
+			<param index="2" name="mime_type" type="String" />
+			<param index="3" name="ret_image" type="Image" />
+			<description>
+				Part of the import process. This method is run after [method _parse_node_extensions] and before [method _parse_texture_json].
+				Runs when parsing image data from a GLTF file. The data could be sourced from a separate file, a URI, or a buffer, and then is passed as a byte array.
+			</description>
+		</method>
+		<method name="_parse_node_extensions" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="gltf_node" type="GLTFNode" />
+			<param index="2" name="extensions" type="Dictionary" />
+			<description>
+				Part of the import process. This method is run after [method _get_supported_extensions] and before [method _import_post_parse].
+				Runs when parsing the node extensions of a GLTFNode. This method can be used to process the extension JSON data into a format that can be used by [method _generate_scene_node]. The return value should be a member of the [enum Error] enum.
+			</description>
+		</method>
+		<method name="_parse_texture_json" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="texture_json" type="Dictionary" />
+			<param index="2" name="ret_gltf_texture" type="GLTFTexture" />
+			<description>
+				Part of the import process. This method is run after [method _parse_image_data] and before [method _generate_scene_node].
+				Runs when parsing the texture JSON from the GLTF textures array. This can be used to set the source image index to use as the texture.
+			</description>
+		</method>
+		<method name="_save_image_at_path" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="image" type="Image" />
+			<param index="2" name="file_path" type="String" />
+			<param index="3" name="image_format" type="String" />
+			<param index="4" name="lossy_quality" type="float" />
+			<description>
+				Part of the export process. This method is run after [method _get_saveable_image_formats] and before [method _serialize_texture_json].
+				This method is run when saving images separately from the GLTF file. When images are embedded, [method _serialize_image_to_bytes] runs instead. Note that these methods only run when this [GLTFDocumentExtension] is selected as the image exporter.
+			</description>
+		</method>
+		<method name="_serialize_image_to_bytes" qualifiers="virtual">
+			<return type="PackedByteArray" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="image" type="Image" />
+			<param index="2" name="image_dict" type="Dictionary" />
+			<param index="3" name="image_format" type="String" />
+			<param index="4" name="lossy_quality" type="float" />
+			<description>
+				Part of the export process. This method is run after [method _get_saveable_image_formats] and before [method _serialize_texture_json].
+				This method is run when embedding images in the GLTF file. When images are saved separately, [method _save_image_at_path] runs instead. Note that these methods only run when this [GLTFDocumentExtension] is selected as the image exporter.
+				This method must set the image MIME type in the [param image_dict] with the [code]"mimeType"[/code] key. For example, for a PNG image, it would be set to [code]"image/png"[/code]. The return value must be a [PackedByteArray] containing the image data.
+			</description>
+		</method>
+		<method name="_serialize_texture_json" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="texture_json" type="Dictionary" />
+			<param index="2" name="gltf_texture" type="GLTFTexture" />
+			<param index="3" name="image_format" type="String" />
+			<description>
+				Part of the export process. This method is run after [method _save_image_at_path] or [method _serialize_image_to_bytes], and before [method _export_node]. Note that this method only runs when this [GLTFDocumentExtension] is selected as the image exporter.
+				This method can be used to set up the extensions for the texture JSON by editing [param texture_json]. The extension must also be added as used extension with [method GLTFState.add_used_extension], be sure to set [code]required[/code] to [code]true[/code] if you are not providing a fallback.
+			</description>
+		</method>
+	</methods>
+</class>

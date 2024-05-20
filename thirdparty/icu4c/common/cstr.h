@@ -28,7 +28,7 @@
  * default code page conversion, which will do the best job possible,
  * but may be lossy, depending on the platform.
  *
- * If no other conversion is available, use invariant conversion and substitue
+ * If no other conversion is available, use invariant conversion and substitute
  * '?' for non-invariant characters.
  *
  * Example Usage:
@@ -51,8 +51,8 @@ class U_COMMON_API CStr : public UMemory {
 
   private:
     CharString s;
-    CStr(const CStr &other);               //  Forbid copying of this class.
-    CStr &operator =(const CStr &other);   //  Forbid assignment.
+    CStr(const CStr &other) = delete;               //  Forbid copying of this class.
+    CStr &operator =(const CStr &other) = delete;   //  Forbid assignment.
 };
 
 U_NAMESPACE_END

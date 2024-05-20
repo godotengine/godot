@@ -4,7 +4,7 @@
  *
  *   WOFFF2 format management (specification).
  *
- * Copyright (C) 2019-2020 by
+ * Copyright (C) 2019-2023 by
  * Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -26,6 +26,7 @@
 
 FT_BEGIN_HEADER
 
+#ifdef FT_CONFIG_OPTION_USE_BROTLI
 
   /* Leave the first byte open to store `flag_byte'. */
 #define WOFF2_FLAGS_TRANSFORM   1 << 8
@@ -55,6 +56,7 @@ FT_BEGIN_HEADER
 #define GLYF_REPEAT          1 << 3
 #define GLYF_THIS_X_IS_SAME  1 << 4
 #define GLYF_THIS_Y_IS_SAME  1 << 5
+#define GLYF_OVERLAP_SIMPLE  1 << 6
 
   /* Other constants */
 #define CONTOUR_OFFSET_END_POINT  10
@@ -66,6 +68,7 @@ FT_BEGIN_HEADER
                    FT_Int*    face_index,
                    FT_Long*   num_faces );
 
+#endif /* FT_CONFIG_OPTION_USE_BROTLI */
 
 FT_END_HEADER
 

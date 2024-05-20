@@ -2,9 +2,9 @@
  *
  * woff2tags.h
  *
- *   WOFFF2 Font table tags (specification).
+ *   WOFF2 Font table tags (specification).
  *
- * Copyright (C) 2019-2020 by
+ * Copyright (C) 2019-2023 by
  * Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -26,10 +26,12 @@
 
 FT_BEGIN_HEADER
 
+#ifdef FT_CONFIG_OPTION_USE_BROTLI
 
-  FT_LOCAL( FT_ULong )
+  FT_LOCAL( FT_Tag )
   woff2_known_tags( FT_Byte  index );
 
+#endif
 
 FT_END_HEADER
 

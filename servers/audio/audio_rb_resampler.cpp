@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  audio_rb_resampler.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  audio_rb_resampler.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "audio_rb_resampler.h"
 #include "core/math/math_funcs.h"
@@ -43,7 +43,7 @@ int AudioRBResampler::get_channel_count() const {
 
 // Linear interpolation based sample rate conversion (low quality)
 // Note that AudioStreamPlaybackResampled::mix has better algorithm,
-// but it wasn't obvious to integrate that with VideoPlayer
+// but it wasn't obvious to integrate that with VideoStreamPlayer
 template <int C>
 uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_increment) {
 	uint32_t read = offset & MIX_FRAC_MASK;
@@ -57,14 +57,14 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 		uint32_t pos_next = (pos + 1) & rb_mask;
 
 		// since this is a template with a known compile time value (C), conditionals go away when compiling.
-		if (C == 1) {
+		if constexpr (C == 1) {
 			float v0 = rb[pos];
 			float v0n = rb[pos_next];
 			v0 += (v0n - v0) * frac;
 			p_dest[i] = AudioFrame(v0, v0);
 		}
 
-		if (C == 2) {
+		if constexpr (C == 2) {
 			float v0 = rb[(pos << 1) + 0];
 			float v1 = rb[(pos << 1) + 1];
 			float v0n = rb[(pos_next << 1) + 0];
@@ -76,7 +76,7 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 		}
 
 		// This will probably never be used, but added anyway
-		if (C == 4) {
+		if constexpr (C == 4) {
 			float v0 = rb[(pos << 2) + 0];
 			float v1 = rb[(pos << 2) + 1];
 			float v0n = rb[(pos_next << 2) + 0];
@@ -86,7 +86,7 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 			p_dest[i] = AudioFrame(v0, v1);
 		}
 
-		if (C == 6) {
+		if constexpr (C == 6) {
 			float v0 = rb[(pos * 6) + 0];
 			float v1 = rb[(pos * 6) + 1];
 			float v0n = rb[(pos_next * 6) + 0];
@@ -176,8 +176,9 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 		rb_bits = desired_rb_bits;
 		rb_len = (1 << rb_bits);
 		rb_mask = rb_len - 1;
-		rb = memnew_arr(float, rb_len *p_channels);
-		read_buf = memnew_arr(float, rb_len *p_channels);
+		const size_t array_size = rb_len * (size_t)p_channels;
+		rb = memnew_arr(float, array_size);
+		read_buf = memnew_arr(float, array_size);
 	}
 
 	src_mix_rate = p_src_mix_rate;

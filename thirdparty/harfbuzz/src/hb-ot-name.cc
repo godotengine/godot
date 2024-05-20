@@ -52,7 +52,7 @@
  * array is owned by the @face and should not be modified.  It can be
  * used as long as @face is alive.
  *
- * Returns: (out) (transfer none) (array length=num_entries): Array of available name entries.
+ * Returns: (transfer none) (array length=num_entries): Array of available name entries.
  * Since: 2.1.0
  **/
 const hb_ot_name_entry_t *
@@ -62,52 +62,6 @@ hb_ot_name_list_names (hb_face_t    *face,
   const OT::name_accelerator_t &name = *face->table.name;
   if (num_entries) *num_entries = name.names.length;
   return (const hb_ot_name_entry_t *) name.names;
-}
-
-
-template <typename in_utf_t, typename out_utf_t>
-static inline unsigned int
-hb_ot_name_convert_utf (hb_bytes_t                       bytes,
-			unsigned int                    *text_size /* IN/OUT */,
-			typename out_utf_t::codepoint_t *text /* OUT */)
-{
-  unsigned int src_len = bytes.length / sizeof (typename in_utf_t::codepoint_t);
-  const typename in_utf_t::codepoint_t *src = (const typename in_utf_t::codepoint_t *) bytes.arrayZ;
-  const typename in_utf_t::codepoint_t *src_end = src + src_len;
-
-  typename out_utf_t::codepoint_t *dst = text;
-
-  hb_codepoint_t unicode;
-  const hb_codepoint_t replacement = HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT;
-
-  if (text_size && *text_size)
-  {
-    (*text_size)--; /* Same room for NUL-termination. */
-    const typename out_utf_t::codepoint_t *dst_end = text + *text_size;
-
-    while (src < src_end && dst < dst_end)
-    {
-      const typename in_utf_t::codepoint_t *src_next = in_utf_t::next (src, src_end, &unicode, replacement);
-      typename out_utf_t::codepoint_t *dst_next = out_utf_t::encode (dst, dst_end, unicode);
-      if (dst_next == dst)
-	break; /* Out-of-room. */
-
-      dst = dst_next;
-      src = src_next;
-    }
-
-    *text_size = dst - text;
-    *dst = 0; /* NUL-terminate. */
-  }
-
-  /* Accumulate length of rest. */
-  unsigned int dst_len = dst - text;
-  while (src < src_end)
-  {
-    src = in_utf_t::next (src, src_end, &unicode, replacement);
-    dst_len += out_utf_t::encode_len (unicode);
-  }
-  return dst_len;
 }
 
 template <typename utf_t>
@@ -130,10 +84,10 @@ hb_ot_name_get_utf (hb_face_t       *face,
     hb_bytes_t bytes = name.get_name (idx);
 
     if (width == 2) /* UTF16-BE */
-      return hb_ot_name_convert_utf<hb_utf16_be_t, utf_t> (bytes, text_size, text);
+      return OT::hb_ot_name_convert_utf<hb_utf16_be_t, utf_t> (bytes, text_size, text);
 
     if (width == 1) /* ASCII */
-      return hb_ot_name_convert_utf<hb_ascii_t, utf_t> (bytes, text_size, text);
+      return OT::hb_ot_name_convert_utf<hb_ascii_t, utf_t> (bytes, text_size, text);
   }
 
   if (text_size)
@@ -156,7 +110,8 @@ hb_ot_name_get_utf (hb_face_t       *face,
  *
  * Fetches a font name from the OpenType 'name' table.
  * If @language is #HB_LANGUAGE_INVALID, English ("en") is assumed.
- * Returns string in UTF-8 encoding.
+ * Returns string in UTF-8 encoding. A NUL terminator is always written
+ * for convenience, and isn't included in the output @text_size.
  *
  * Returns: full length of the requested string, or 0 if not found.
  * Since: 2.1.0
@@ -183,7 +138,8 @@ hb_ot_name_get_utf8 (hb_face_t       *face,
  *
  * Fetches a font name from the OpenType 'name' table.
  * If @language is #HB_LANGUAGE_INVALID, English ("en") is assumed.
- * Returns string in UTF-16 encoding.
+ * Returns string in UTF-16 encoding. A NUL terminator is always written
+ * for convenience, and isn't included in the output @text_size.
  *
  * Returns: full length of the requested string, or 0 if not found.
  * Since: 2.1.0
@@ -209,7 +165,8 @@ hb_ot_name_get_utf16 (hb_face_t       *face,
  *
  * Fetches a font name from the OpenType 'name' table.
  * If @language is #HB_LANGUAGE_INVALID, English ("en") is assumed.
- * Returns string in UTF-32 encoding.
+ * Returns string in UTF-32 encoding. A NUL terminator is always written
+ * for convenience, and isn't included in the output @text_size.
  *
  * Returns: full length of the requested string, or 0 if not found.
  * Since: 2.1.0
@@ -223,6 +180,5 @@ hb_ot_name_get_utf32 (hb_face_t       *face,
 {
   return hb_ot_name_get_utf<hb_utf32_t> (face, name_id, language, text_size, text);
 }
-
 
 #endif

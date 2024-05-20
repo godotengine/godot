@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using Microsoft.Build.Construction;
+using Microsoft.Build.Locator;
 
 namespace GodotTools.ProjectEditor
 {
@@ -19,7 +21,20 @@ namespace GodotTools.ProjectEditor
 
     public static class ProjectUtils
     {
-        public static MSBuildProject Open(string path)
+        public static void MSBuildLocatorRegisterLatest(out Version version, out string path)
+        {
+            var instance = MSBuildLocator.QueryVisualStudioInstances()
+                .OrderByDescending(x => x.Version)
+                .First();
+            MSBuildLocator.RegisterInstance(instance);
+            version = instance.Version;
+            path = instance.MSBuildPath;
+        }
+
+        public static void MSBuildLocatorRegisterMSBuildPath(string msbuildPath)
+            => MSBuildLocator.RegisterMSBuildPath(msbuildPath);
+
+        public static MSBuildProject? Open(string path)
         {
             var root = ProjectRootElement.Open(path);
             return root != null ? new MSBuildProject(root) : null;
@@ -42,7 +57,8 @@ namespace GodotTools.ProjectEditor
             var root = project.Root;
             string godotSdkAttrValue = ProjectGenerator.GodotSdkAttrValue;
 
-            if (!string.IsNullOrEmpty(root.Sdk) && root.Sdk.Trim().Equals(godotSdkAttrValue, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(root.Sdk) &&
+                root.Sdk.Trim().Equals(godotSdkAttrValue, StringComparison.OrdinalIgnoreCase))
                 return;
 
             root.Sdk = godotSdkAttrValue;

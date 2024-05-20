@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeVectorBase" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A base type for the nodes that perform vector operations within the visual shader graph.
+	</brief_description>
+	<description>
+		This is an abstract class. See the derived types for descriptions of the possible operations.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="op_type" type="int" setter="set_op_type" getter="get_op_type" enum="VisualShaderNodeVectorBase.OpType" default="1">
+			A vector type that this operation is performed on.
+		</member>
+	</members>
+	<constants>
+		<constant name="OP_TYPE_VECTOR_2D" value="0" enum="OpType">
+			A 2D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_3D" value="1" enum="OpType">
+			A 3D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_4D" value="2" enum="OpType">
+			A 4D vector type.
+		</constant>
+		<constant name="OP_TYPE_MAX" value="3" enum="OpType">
+			Represents the size of the [enum OpType] enum.
+		</constant>
+	</constants>
+</class>

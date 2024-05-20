@@ -4,13 +4,8 @@ Import("env")
 Import("env_modules")
 
 env_webrtc = env_modules.Clone()
-use_gdnative = env_webrtc["module_gdnative_enabled"]
 
-if use_gdnative:  # GDNative is retained in Javascript for export compatibility
-    env_webrtc.Append(CPPDEFINES=["WEBRTC_GDNATIVE_ENABLED"])
-    env_webrtc.Prepend(CPPPATH=["#modules/gdnative/include/"])
-
-if env["platform"] == "javascript":
+if env["platform"] == "web":
     # Our JavaScript/C++ interface.
     env.AddJSLibraries(["library_godot_webrtc.js"])
 

@@ -1,43 +1,46 @@
-/*************************************************************************/
-/*  image.cpp                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  image.cpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "image.h"
 
+#include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
 #include "core/templates/hash_map.h"
+#include "core/variant/dictionary.h"
 
 #include <stdio.h>
+#include <cmath>
 
 const char *Image::format_names[Image::FORMAT_MAX] = {
 	"Lum8", //luminance
@@ -65,10 +68,6 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"BPTC_RGBA",
 	"BPTC_RGBF",
 	"BPTC_RGBFU",
-	"PVRTC1_2", //pvrtc
-	"PVRTC1_2A",
-	"PVRTC1_4",
-	"PVRTC1_4A",
 	"ETC", //etc1
 	"ETC2_R11", //etc2
 	"ETC2_R11S", //signed", NOT srgb.
@@ -79,27 +78,31 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"ETC2_RGB8A1",
 	"ETC2_RA_AS_RG",
 	"FORMAT_DXT5_RA_AS_RG",
+	"ASTC_4x4",
+	"ASTC_4x4_HDR",
+	"ASTC_8x8",
+	"ASTC_8x8_HDR",
 };
 
 SavePNGFunc Image::save_png_func = nullptr;
+SaveJPGFunc Image::save_jpg_func = nullptr;
 SaveEXRFunc Image::save_exr_func = nullptr;
 
 SavePNGBufferFunc Image::save_png_buffer_func = nullptr;
+SaveEXRBufferFunc Image::save_exr_buffer_func = nullptr;
+SaveJPGBufferFunc Image::save_jpg_buffer_func = nullptr;
 
-void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data, const uint8_t *p_pixel) {
-	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
+SaveWebPFunc Image::save_webp_func = nullptr;
+SaveWebPBufferFunc Image::save_webp_buffer_func = nullptr;
 
-	for (uint32_t i = 0; i < p_pixelsize; i++) {
-		p_data[ofs + i] = p_pixel[i];
-	}
+void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel) {
+	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
+	memcpy(p_data + ofs, p_pixel, p_pixel_size);
 }
 
-void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixelsize, const uint8_t *p_data, uint8_t *p_pixel) {
-	uint32_t ofs = (p_y * width + p_x) * p_pixelsize;
-
-	for (uint32_t i = 0; i < p_pixelsize; i++) {
-		p_pixel[i] = p_data[ofs + i];
-	}
+void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixel_size, const uint8_t *p_data, uint8_t *p_pixel) {
+	uint32_t ofs = (p_y * width + p_x) * p_pixel_size;
+	memcpy(p_pixel, p_data + ofs, p_pixel_size);
 }
 
 int Image::get_format_pixel_size(Format p_format) {
@@ -154,14 +157,6 @@ int Image::get_format_pixel_size(Format p_format) {
 			return 1; //float /
 		case FORMAT_BPTC_RGBFU:
 			return 1; //unsigned float
-		case FORMAT_PVRTC1_2:
-			return 1; //pvrtc
-		case FORMAT_PVRTC1_2A:
-			return 1;
-		case FORMAT_PVRTC1_4:
-			return 1;
-		case FORMAT_PVRTC1_4A:
-			return 1;
 		case FORMAT_ETC:
 			return 1; //etc1
 		case FORMAT_ETC2_R11:
@@ -182,6 +177,14 @@ int Image::get_format_pixel_size(Format p_format) {
 			return 1;
 		case FORMAT_DXT5_RA_AS_RG:
 			return 1;
+		case FORMAT_ASTC_4x4:
+			return 1;
+		case FORMAT_ASTC_4x4_HDR:
+			return 1;
+		case FORMAT_ASTC_8x8:
+			return 1;
+		case FORMAT_ASTC_8x8_HDR:
+			return 1;
 		case FORMAT_MAX: {
 		}
 	}
@@ -198,16 +201,6 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 
 			r_w = 4;
 			r_h = 4;
-		} break;
-		case FORMAT_PVRTC1_2:
-		case FORMAT_PVRTC1_2A: {
-			r_w = 16;
-			r_h = 8;
-		} break;
-		case FORMAT_PVRTC1_4A:
-		case FORMAT_PVRTC1_4: {
-			r_w = 8;
-			r_h = 8;
 		} break;
 		case FORMAT_ETC: {
 			r_w = 4;
@@ -232,7 +225,18 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 			r_h = 4;
 
 		} break;
+		case FORMAT_ASTC_4x4:
+		case FORMAT_ASTC_4x4_HDR: {
+			r_w = 4;
+			r_h = 4;
 
+		} break;
+		case FORMAT_ASTC_8x8:
+		case FORMAT_ASTC_8x8_HDR: {
+			r_w = 8;
+			r_h = 8;
+
+		} break;
 		default: {
 			r_w = 1;
 			r_h = 1;
@@ -241,10 +245,10 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 }
 
 int Image::get_format_pixel_rshift(Format p_format) {
-	if (p_format == FORMAT_DXT1 || p_format == FORMAT_RGTC_R || p_format == FORMAT_PVRTC1_4 || p_format == FORMAT_PVRTC1_4A || p_format == FORMAT_ETC || p_format == FORMAT_ETC2_R11 || p_format == FORMAT_ETC2_R11S || p_format == FORMAT_ETC2_RGB8 || p_format == FORMAT_ETC2_RGB8A1) {
-		return 1;
-	} else if (p_format == FORMAT_PVRTC1_2 || p_format == FORMAT_PVRTC1_2A) {
+	if (p_format == FORMAT_ASTC_8x8) {
 		return 2;
+	} else if (p_format == FORMAT_DXT1 || p_format == FORMAT_RGTC_R || p_format == FORMAT_ETC || p_format == FORMAT_ETC2_R11 || p_format == FORMAT_ETC2_R11S || p_format == FORMAT_ETC2_RGB8 || p_format == FORMAT_ETC2_RGB8A1) {
+		return 1;
 	} else {
 		return 0;
 	}
@@ -258,14 +262,6 @@ int Image::get_format_block_size(Format p_format) {
 		case FORMAT_RGTC_R: //bc4
 		case FORMAT_RGTC_RG: { //bc5		case case FORMAT_DXT1:
 
-			return 4;
-		}
-		case FORMAT_PVRTC1_2:
-		case FORMAT_PVRTC1_2A: {
-			return 4;
-		}
-		case FORMAT_PVRTC1_4A:
-		case FORMAT_PVRTC1_4: {
 			return 4;
 		}
 		case FORMAT_ETC: {
@@ -288,6 +284,14 @@ int Image::get_format_block_size(Format p_format) {
 
 		{
 			return 4;
+		}
+		case FORMAT_ASTC_4x4:
+		case FORMAT_ASTC_4x4_HDR: {
+			return 4;
+		}
+		case FORMAT_ASTC_8x8:
+		case FORMAT_ASTC_8x8_HDR: {
+			return 8;
 		}
 		default: {
 		}
@@ -413,25 +417,25 @@ Image::Image3DValidateError Image::validate_3d_image(Image::Format p_format, int
 String Image::get_3d_image_validation_error_text(Image3DValidateError p_error) {
 	switch (p_error) {
 		case VALIDATE_3D_OK: {
-			return TTR("Ok");
+			return "Ok";
 		} break;
 		case VALIDATE_3D_ERR_IMAGE_EMPTY: {
-			return TTR("Empty Image found");
+			return "Empty Image found";
 		} break;
 		case VALIDATE_3D_ERR_MISSING_IMAGES: {
-			return TTR("Missing Images");
+			return "Missing Images";
 		} break;
 		case VALIDATE_3D_ERR_EXTRA_IMAGES: {
-			return TTR("Too many Images");
+			return "Too many Images";
 		} break;
 		case VALIDATE_3D_ERR_IMAGE_SIZE_MISMATCH: {
-			return TTR("Image size mismatch");
+			return "Image size mismatch";
 		} break;
 		case VALIDATE_3D_ERR_IMAGE_FORMAT_MISMATCH: {
-			return TTR("Image format mismatch");
+			return "Image format mismatch";
 		} break;
 		case VALIDATE_3D_ERR_IMAGE_HAS_MIPMAPS: {
-			return TTR("Image has included mipmaps");
+			return "Image has included mipmaps";
 		} break;
 	}
 	return String();
@@ -445,8 +449,8 @@ int Image::get_height() const {
 	return height;
 }
 
-Vector2 Image::get_size() const {
-	return Vector2(width, height);
+Size2i Image::get_size() const {
+	return Size2i(width, height);
 }
 
 bool Image::has_mipmaps() const {
@@ -464,16 +468,16 @@ int Image::get_mipmap_count() const {
 //using template generates perfectly optimized code due to constant expression reduction and unused variable removal present in all compilers
 template <uint32_t read_bytes, bool read_alpha, uint32_t write_bytes, bool write_alpha, bool read_gray, bool write_gray>
 static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p_dst) {
-	uint32_t max_bytes = MAX(read_bytes, write_bytes);
+	constexpr uint32_t max_bytes = MAX(read_bytes, write_bytes);
 
 	for (int y = 0; y < p_height; y++) {
 		for (int x = 0; x < p_width; x++) {
 			const uint8_t *rofs = &p_src[((y * p_width) + x) * (read_bytes + (read_alpha ? 1 : 0))];
 			uint8_t *wofs = &p_dst[((y * p_width) + x) * (write_bytes + (write_alpha ? 1 : 0))];
 
-			uint8_t rgba[4];
+			uint8_t rgba[4] = { 0, 0, 0, 255 };
 
-			if (read_gray) {
+			if constexpr (read_gray) {
 				rgba[0] = rofs[0];
 				rgba[1] = rofs[0];
 				rgba[2] = rofs[0];
@@ -483,20 +487,21 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 				}
 			}
 
-			if (read_alpha || write_alpha) {
+			if constexpr (read_alpha || write_alpha) {
 				rgba[3] = read_alpha ? rofs[read_bytes] : 255;
 			}
 
-			if (write_gray) {
-				//TODO: not correct grayscale, should use fixed point version of actual weights
-				wofs[0] = uint8_t((uint16_t(rofs[0]) + uint16_t(rofs[1]) + uint16_t(rofs[2])) / 3);
+			if constexpr (write_gray) {
+				// REC.709
+				const uint8_t luminance = (13938U * rgba[0] + 46869U * rgba[1] + 4729U * rgba[2] + 32768U) >> 16U;
+				wofs[0] = luminance;
 			} else {
 				for (uint32_t i = 0; i < write_bytes; i++) {
 					wofs[i] = rgba[i];
 				}
 			}
 
-			if (write_alpha) {
+			if constexpr (write_alpha) {
 				wofs[write_bytes] = rgba[3];
 			}
 		}
@@ -504,6 +509,7 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 }
 
 void Image::convert(Format p_new_format) {
+	ERR_FAIL_INDEX_MSG(p_new_format, FORMAT_MAX, "The Image format specified (" + itos(p_new_format) + ") is out of range. See Image's Format enum.");
 	if (data.size() == 0) {
 		return;
 	}
@@ -512,21 +518,31 @@ void Image::convert(Format p_new_format) {
 		return;
 	}
 
-	if (format > FORMAT_RGBE9995 || p_new_format > FORMAT_RGBE9995) {
+	// Includes the main image.
+	const int mipmap_count = get_mipmap_count() + 1;
+
+	if (Image::is_format_compressed(format) || Image::is_format_compressed(p_new_format)) {
 		ERR_FAIL_MSG("Cannot convert to <-> from compressed formats. Use compress() and decompress() instead.");
 
 	} else if (format > FORMAT_RGBA8 || p_new_format > FORMAT_RGBA8) {
 		//use put/set pixel which is slower but works with non byte formats
-		Image new_img(width, height, false, p_new_format);
+		Image new_img(width, height, mipmaps, p_new_format);
 
-		for (int i = 0; i < width; i++) {
-			for (int j = 0; j < height; j++) {
-				new_img.set_pixel(i, j, get_pixel(i, j));
+		for (int mip = 0; mip < mipmap_count; mip++) {
+			Ref<Image> src_mip = get_image_from_mipmap(mip);
+			Ref<Image> new_mip = new_img.get_image_from_mipmap(mip);
+
+			for (int y = 0; y < src_mip->height; y++) {
+				for (int x = 0; x < src_mip->width; x++) {
+					new_mip->set_pixel(x, y, src_mip->get_pixel(x, y));
+				}
 			}
-		}
 
-		if (has_mipmaps()) {
-			new_img.generate_mipmaps();
+			int mip_offset = 0;
+			int mip_size = 0;
+			new_img.get_mipmap_offset_and_size(mip, mip_offset, mip_size);
+
+			memcpy(new_img.data.ptrw() + mip_offset, new_mip->data.ptr(), mip_size);
 		}
 
 		_copy_internals_from(new_img);
@@ -534,113 +550,115 @@ void Image::convert(Format p_new_format) {
 		return;
 	}
 
-	Image new_img(width, height, false, p_new_format);
-
-	const uint8_t *rptr = data.ptr();
-	uint8_t *wptr = new_img.data.ptrw();
+	Image new_img(width, height, mipmaps, p_new_format);
 
 	int conversion_type = format | p_new_format << 8;
 
-	switch (conversion_type) {
-		case FORMAT_L8 | (FORMAT_LA8 << 8):
-			_convert<1, false, 1, true, true, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_L8 | (FORMAT_R8 << 8):
-			_convert<1, false, 1, false, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_L8 | (FORMAT_RG8 << 8):
-			_convert<1, false, 2, false, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_L8 | (FORMAT_RGB8 << 8):
-			_convert<1, false, 3, false, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_L8 | (FORMAT_RGBA8 << 8):
-			_convert<1, false, 3, true, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_LA8 | (FORMAT_L8 << 8):
-			_convert<1, true, 1, false, true, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_LA8 | (FORMAT_R8 << 8):
-			_convert<1, true, 1, false, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_LA8 | (FORMAT_RG8 << 8):
-			_convert<1, true, 2, false, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_LA8 | (FORMAT_RGB8 << 8):
-			_convert<1, true, 3, false, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_LA8 | (FORMAT_RGBA8 << 8):
-			_convert<1, true, 3, true, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_R8 | (FORMAT_L8 << 8):
-			_convert<1, false, 1, false, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_R8 | (FORMAT_LA8 << 8):
-			_convert<1, false, 1, true, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_R8 | (FORMAT_RG8 << 8):
-			_convert<1, false, 2, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_R8 | (FORMAT_RGB8 << 8):
-			_convert<1, false, 3, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_R8 | (FORMAT_RGBA8 << 8):
-			_convert<1, false, 3, true, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RG8 | (FORMAT_L8 << 8):
-			_convert<2, false, 1, false, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RG8 | (FORMAT_LA8 << 8):
-			_convert<2, false, 1, true, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RG8 | (FORMAT_R8 << 8):
-			_convert<2, false, 1, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RG8 | (FORMAT_RGB8 << 8):
-			_convert<2, false, 3, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RG8 | (FORMAT_RGBA8 << 8):
-			_convert<2, false, 3, true, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGB8 | (FORMAT_L8 << 8):
-			_convert<3, false, 1, false, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGB8 | (FORMAT_LA8 << 8):
-			_convert<3, false, 1, true, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGB8 | (FORMAT_R8 << 8):
-			_convert<3, false, 1, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGB8 | (FORMAT_RG8 << 8):
-			_convert<3, false, 2, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGB8 | (FORMAT_RGBA8 << 8):
-			_convert<3, false, 3, true, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGBA8 | (FORMAT_L8 << 8):
-			_convert<3, true, 1, false, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGBA8 | (FORMAT_LA8 << 8):
-			_convert<3, true, 1, true, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGBA8 | (FORMAT_R8 << 8):
-			_convert<3, true, 1, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGBA8 | (FORMAT_RG8 << 8):
-			_convert<3, true, 2, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGBA8 | (FORMAT_RGB8 << 8):
-			_convert<3, true, 3, false, false, false>(width, height, rptr, wptr);
-			break;
-	}
+	for (int mip = 0; mip < mipmap_count; mip++) {
+		int mip_offset = 0;
+		int mip_size = 0;
+		int mip_width = 0;
+		int mip_height = 0;
+		get_mipmap_offset_size_and_dimensions(mip, mip_offset, mip_size, mip_width, mip_height);
 
-	bool gen_mipmaps = mipmaps;
+		const uint8_t *rptr = data.ptr() + mip_offset;
+		uint8_t *wptr = new_img.data.ptrw() + new_img.get_mipmap_offset(mip);
+
+		switch (conversion_type) {
+			case FORMAT_L8 | (FORMAT_LA8 << 8):
+				_convert<1, false, 1, true, true, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_L8 | (FORMAT_R8 << 8):
+				_convert<1, false, 1, false, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_L8 | (FORMAT_RG8 << 8):
+				_convert<1, false, 2, false, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_L8 | (FORMAT_RGB8 << 8):
+				_convert<1, false, 3, false, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_L8 | (FORMAT_RGBA8 << 8):
+				_convert<1, false, 3, true, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_LA8 | (FORMAT_L8 << 8):
+				_convert<1, true, 1, false, true, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_LA8 | (FORMAT_R8 << 8):
+				_convert<1, true, 1, false, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_LA8 | (FORMAT_RG8 << 8):
+				_convert<1, true, 2, false, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_LA8 | (FORMAT_RGB8 << 8):
+				_convert<1, true, 3, false, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_LA8 | (FORMAT_RGBA8 << 8):
+				_convert<1, true, 3, true, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_R8 | (FORMAT_L8 << 8):
+				_convert<1, false, 1, false, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_R8 | (FORMAT_LA8 << 8):
+				_convert<1, false, 1, true, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_R8 | (FORMAT_RG8 << 8):
+				_convert<1, false, 2, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_R8 | (FORMAT_RGB8 << 8):
+				_convert<1, false, 3, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_R8 | (FORMAT_RGBA8 << 8):
+				_convert<1, false, 3, true, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RG8 | (FORMAT_L8 << 8):
+				_convert<2, false, 1, false, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RG8 | (FORMAT_LA8 << 8):
+				_convert<2, false, 1, true, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RG8 | (FORMAT_R8 << 8):
+				_convert<2, false, 1, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RG8 | (FORMAT_RGB8 << 8):
+				_convert<2, false, 3, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RG8 | (FORMAT_RGBA8 << 8):
+				_convert<2, false, 3, true, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGB8 | (FORMAT_L8 << 8):
+				_convert<3, false, 1, false, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGB8 | (FORMAT_LA8 << 8):
+				_convert<3, false, 1, true, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGB8 | (FORMAT_R8 << 8):
+				_convert<3, false, 1, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGB8 | (FORMAT_RG8 << 8):
+				_convert<3, false, 2, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGB8 | (FORMAT_RGBA8 << 8):
+				_convert<3, false, 3, true, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGBA8 | (FORMAT_L8 << 8):
+				_convert<3, true, 1, false, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGBA8 | (FORMAT_LA8 << 8):
+				_convert<3, true, 1, true, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGBA8 | (FORMAT_R8 << 8):
+				_convert<3, true, 1, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGBA8 | (FORMAT_RG8 << 8):
+				_convert<3, true, 2, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGBA8 | (FORMAT_RGB8 << 8):
+				_convert<3, true, 3, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+		}
+	}
 
 	_copy_internals_from(new_img);
-
-	if (gen_mipmaps) {
-		generate_mipmaps();
-	}
 }
 
 Image::Format Image::get_format() const {
@@ -661,7 +679,7 @@ static double _bicubic_interp_kernel(double x) {
 	return bc;
 }
 
-template <int CC, class T>
+template <int CC, typename T>
 static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 	// get source image size
 	int width = p_src_width;
@@ -669,7 +687,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 	double xfac = (double)width / p_dst_width;
 	double yfac = (double)height / p_dst_height;
 	// coordinates of source points and coefficients
-	double ox, oy, dx, dy, k1, k2;
+	double ox, oy, dx, dy;
 	int ox1, oy1, ox2, oy2;
 	// destination pixel values
 	// width and height decreased by 1
@@ -700,7 +718,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 
 			for (int n = -1; n < 3; n++) {
 				// get Y coefficient
-				k1 = _bicubic_interp_kernel(dy - (double)n);
+				[[maybe_unused]] double k1 = _bicubic_interp_kernel(dy - (double)n);
 
 				oy2 = oy1 + n;
 				if (oy2 < 0) {
@@ -712,7 +730,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 
 				for (int m = -1; m < 3; m++) {
 					// get X coefficient
-					k2 = k1 * _bicubic_interp_kernel((double)m - dx);
+					[[maybe_unused]] double k2 = k1 * _bicubic_interp_kernel((double)m - dx);
 
 					ox2 = ox1 + m;
 					if (ox2 < 0) {
@@ -726,7 +744,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 					const T *__restrict p = ((T *)p_src) + (oy2 * p_src_width + ox2) * CC;
 
 					for (int i = 0; i < CC; i++) {
-						if (sizeof(T) == 2) { //half float
+						if constexpr (sizeof(T) == 2) { //half float
 							color[i] = Math::half_to_float(p[i]);
 						} else {
 							color[i] += p[i] * k2;
@@ -736,9 +754,9 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 			}
 
 			for (int i = 0; i < CC; i++) {
-				if (sizeof(T) == 1) { //byte
+				if constexpr (sizeof(T) == 1) { //byte
 					dst[i] = CLAMP(Math::fast_ftoi(color[i]), 0, 255);
-				} else if (sizeof(T) == 2) { //half float
+				} else if constexpr (sizeof(T) == 2) { //half float
 					dst[i] = Math::make_half_float(color[i]);
 				} else {
 					dst[i] = color[i];
@@ -748,7 +766,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 	}
 }
 
-template <int CC, class T>
+template <int CC, typename T>
 static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 	enum {
 		FRAC_BITS = 8,
@@ -787,7 +805,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 			src_xofs_right *= CC;
 
 			for (uint32_t l = 0; l < CC; l++) {
-				if (sizeof(T) == 1) { //uint8
+				if constexpr (sizeof(T) == 1) { //uint8
 					uint32_t p00 = p_src[y_ofs_up + src_xofs_left + l] << FRAC_BITS;
 					uint32_t p10 = p_src[y_ofs_up + src_xofs_right + l] << FRAC_BITS;
 					uint32_t p01 = p_src[y_ofs_down + src_xofs_left + l] << FRAC_BITS;
@@ -797,8 +815,8 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 					uint32_t interp_down = p01 + (((p11 - p01) * src_xofs_frac) >> FRAC_BITS);
 					uint32_t interp = interp_up + (((interp_down - interp_up) * src_yofs_frac) >> FRAC_BITS);
 					interp >>= FRAC_BITS;
-					p_dst[i * p_dst_width * CC + j * CC + l] = interp;
-				} else if (sizeof(T) == 2) { //half float
+					p_dst[i * p_dst_width * CC + j * CC + l] = uint8_t(interp);
+				} else if constexpr (sizeof(T) == 2) { //half float
 
 					float xofs_frac = float(src_xofs_frac) / (1 << FRAC_BITS);
 					float yofs_frac = float(src_yofs_frac) / (1 << FRAC_BITS);
@@ -815,7 +833,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 					float interp = interp_up + ((interp_down - interp_up) * yofs_frac);
 
 					dst[i * p_dst_width * CC + j * CC + l] = Math::make_half_float(interp);
-				} else if (sizeof(T) == 4) { //float
+				} else if constexpr (sizeof(T) == 4) { //float
 
 					float xofs_frac = float(src_xofs_frac) / (1 << FRAC_BITS);
 					float yofs_frac = float(src_yofs_frac) / (1 << FRAC_BITS);
@@ -838,7 +856,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 	}
 }
 
-template <int CC, class T>
+template <int CC, typename T>
 static void _scale_nearest(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 	for (uint32_t i = 0; i < p_dst_height; i++) {
 		uint32_t src_yofs = i * p_src_height / p_dst_height;
@@ -865,7 +883,7 @@ static float _lanczos(float p_x) {
 	return Math::abs(p_x) >= LANCZOS_TYPE ? 0 : Math::sincn(p_x) * Math::sincn(p_x / LANCZOS_TYPE);
 }
 
-template <int CC, class T>
+template <int CC, typename T>
 static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 	int32_t src_width = p_src_width;
 	int32_t src_height = p_src_height;
@@ -906,7 +924,7 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 					const T *__restrict src_data = ((const T *)p_src) + (buffer_y * src_width + target_x) * CC;
 
 					for (uint32_t i = 0; i < CC; i++) {
-						if (sizeof(T) == 2) { //half float
+						if constexpr (sizeof(T) == 2) { //half float
 							pixel[i] += Math::half_to_float(src_data[i]) * lanczos_val;
 						} else {
 							pixel[i] += src_data[i] * lanczos_val;
@@ -963,9 +981,9 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 				for (uint32_t i = 0; i < CC; i++) {
 					pixel[i] /= weight;
 
-					if (sizeof(T) == 1) { //byte
+					if constexpr (sizeof(T) == 1) { //byte
 						dst_data[i] = CLAMP(Math::fast_ftoi(pixel[i]), 0, 255);
-					} else if (sizeof(T) == 2) { //half float
+					} else if constexpr (sizeof(T) == 2) { //half float
 						dst_data[i] = Math::make_half_float(pixel[i]);
 					} else { // float
 						dst_data[i] = pixel[i];
@@ -1011,7 +1029,7 @@ void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 }
 
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
-	ERR_FAIL_COND_MSG(data.size() == 0, "Cannot resize image before creating it, use create() or create_from_data() first.");
+	ERR_FAIL_COND_MSG(data.is_empty(), "Cannot resize image before creating it, use set_data() first.");
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
 
 	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
@@ -1046,7 +1064,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	}
 	bool interpolate_mipmaps = mipmap_aware && mip1 != mip2;
 	if (interpolate_mipmaps) {
-		dst2.create(p_width, p_height, false, format);
+		dst2.initialize_data(p_width, p_height, false, format);
 	}
 
 	bool had_mipmaps = mipmaps;
@@ -1368,6 +1386,158 @@ void Image::crop(int p_width, int p_height) {
 	crop_from_point(0, 0, p_width, p_height);
 }
 
+void Image::rotate_90(ClockDirection p_direction) {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot rotate in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(width <= 0, "The Image width specified (" + itos(width) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(height <= 0, "The Image height specified (" + itos(height) + " pixels) must be greater than 0 pixels.");
+
+	bool used_mipmaps = has_mipmaps();
+	if (used_mipmaps) {
+		clear_mipmaps();
+	}
+
+	// In-place 90 degrees rotation by following the permutation cycles.
+	{
+		// Explanation by example (clockwise):
+		//
+		//  abc      da
+		//  def  ->  eb
+		//           fc
+		//
+		// In memory:
+		//  012345    012345
+		//  abcdef -> daebfc
+		//
+		// Permutation cycles:
+		//  (0  --a-->  1  --b-->  3  --d-->  0)
+		//  (2  --c-->  5  --f-->  4  --e-->  2)
+		//
+		// Applying cycles (backwards):
+		//  0->s  s=a (store)
+		//  3->0  abcdef -> dbcdef
+		//  1->3  dbcdef -> dbcbef
+		//  s->1  dbcbef -> dacbef
+		//
+		//  2->s  s=c
+		//  4->2  dacbef -> daebef
+		//  5->4  daebef -> daebff
+		//  s->5  daebff -> daebfc
+
+		const int w = width;
+		const int h = height;
+		const int size = w * h;
+
+		uint8_t *data_ptr = data.ptrw();
+		uint32_t pixel_size = get_format_pixel_size(format);
+
+		uint8_t single_pixel_buffer[16];
+
+#define PREV_INDEX_IN_CYCLE(index) (p_direction == CLOCKWISE) ? ((h - 1 - (index % h)) * w + (index / h)) : ((index % h) * w + (w - 1 - (index / h)))
+
+		if (w == h) { // Square case, 4-length cycles only (plus irrelevant thus skipped 1-length cycle in the middle for odd-sized squares).
+			for (int y = 0; y < h / 2; y++) {
+				for (int x = 0; x < (w + 1) / 2; x++) {
+					int current = y * w + x;
+					memcpy(single_pixel_buffer, data_ptr + current * pixel_size, pixel_size);
+					for (int i = 0; i < 3; i++) {
+						int prev = PREV_INDEX_IN_CYCLE(current);
+						memcpy(data_ptr + current * pixel_size, data_ptr + prev * pixel_size, pixel_size);
+						current = prev;
+					}
+					memcpy(data_ptr + current * pixel_size, single_pixel_buffer, pixel_size);
+				}
+			}
+		} else { // Rectangular case (w != h), kinda unpredictable cycles.
+			int permuted_pixels_count = 0;
+
+			for (int i = 0; i < size; i++) {
+				int prev = PREV_INDEX_IN_CYCLE(i);
+				if (prev == i) {
+					// 1-length cycle, pixel remains at the same index.
+					permuted_pixels_count++;
+					continue;
+				}
+
+				// Check whether we already processed this cycle.
+				// We iterate over it and if we'll find an index smaller than `i` then we already
+				// processed this cycle because we always start at the smallest index in the cycle.
+				// TODO: Improve this naive approach, can be done better.
+				while (prev > i) {
+					prev = PREV_INDEX_IN_CYCLE(prev);
+				}
+				if (prev < i) {
+					continue;
+				}
+
+				// Save the in-cycle pixel with the smallest index (`i`).
+				memcpy(single_pixel_buffer, data_ptr + i * pixel_size, pixel_size);
+
+				// Overwrite pixels one by one by the preceding pixel in the cycle.
+				int current = i;
+				prev = PREV_INDEX_IN_CYCLE(current);
+				while (prev != i) {
+					memcpy(data_ptr + current * pixel_size, data_ptr + prev * pixel_size, pixel_size);
+					permuted_pixels_count++;
+
+					current = prev;
+					prev = PREV_INDEX_IN_CYCLE(current);
+				};
+
+				// Overwrite the remaining pixel in the cycle by the saved pixel with the smallest index.
+				memcpy(data_ptr + current * pixel_size, single_pixel_buffer, pixel_size);
+				permuted_pixels_count++;
+
+				if (permuted_pixels_count == size) {
+					break;
+				}
+			}
+
+			width = h;
+			height = w;
+		}
+
+#undef PREV_INDEX_IN_CYCLE
+	}
+
+	if (used_mipmaps) {
+		generate_mipmaps();
+	}
+}
+
+void Image::rotate_180() {
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot rotate in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(width <= 0, "The Image width specified (" + itos(width) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(height <= 0, "The Image height specified (" + itos(height) + " pixels) must be greater than 0 pixels.");
+
+	bool used_mipmaps = has_mipmaps();
+	if (used_mipmaps) {
+		clear_mipmaps();
+	}
+
+	{
+		uint8_t *data_ptr = data.ptrw();
+		uint32_t pixel_size = get_format_pixel_size(format);
+
+		uint8_t single_pixel_buffer[16];
+
+		uint8_t *from_begin_ptr = data_ptr;
+		uint8_t *from_end_ptr = data_ptr + (width * height - 1) * pixel_size;
+
+		while (from_begin_ptr < from_end_ptr) {
+			memcpy(single_pixel_buffer, from_begin_ptr, pixel_size);
+			memcpy(from_begin_ptr, from_end_ptr, pixel_size);
+			memcpy(from_end_ptr, single_pixel_buffer, pixel_size);
+
+			from_begin_ptr += pixel_size;
+			from_end_ptr -= pixel_size;
+		}
+	}
+
+	if (used_mipmaps) {
+		generate_mipmaps();
+	}
+}
+
 void Image::flip_y() {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot flip_y in compressed or custom image formats.");
 
@@ -1472,12 +1642,11 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 		}
 
 		// Set mipmap size.
-		// It might be necessary to put this after the minimum mipmap size check because of the possible occurrence of "1 >> 1".
 		if (r_mm_width) {
-			*r_mm_width = bw >> 1;
+			*r_mm_width = w;
 		}
 		if (r_mm_height) {
-			*r_mm_height = bh >> 1;
+			*r_mm_height = h;
 		}
 
 		// Reach target mipmap.
@@ -1493,16 +1662,16 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 }
 
 bool Image::_can_modify(Format p_format) const {
-	return p_format <= FORMAT_RGBE9995;
+	return !Image::is_format_compressed(p_format);
 }
 
-template <class Component, int CC, bool renormalize,
+template <typename Component, int CC, bool renormalize,
 		void (*average_func)(Component &, const Component &, const Component &, const Component &, const Component &),
 		void (*renormalize_func)(Component *)>
 static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint32_t p_width, uint32_t p_height) {
 	//fast power of 2 mipmap generation
-	uint32_t dst_w = MAX(p_width >> 1, 1);
-	uint32_t dst_h = MAX(p_height >> 1, 1);
+	uint32_t dst_w = MAX(p_width >> 1, 1u);
+	uint32_t dst_h = MAX(p_height >> 1, 1u);
 
 	int right_step = (p_width == 1) ? 0 : CC;
 	int down_step = (p_height == 1) ? 0 : (p_width * CC);
@@ -1531,7 +1700,7 @@ static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint3
 }
 
 void Image::shrink_x2() {
-	ERR_FAIL_COND(data.size() == 0);
+	ERR_FAIL_COND(data.is_empty());
 
 	if (mipmaps) {
 		//just use the lower mipmap as base and copy all
@@ -1541,7 +1710,7 @@ void Image::shrink_x2() {
 
 		int new_size = data.size() - ofs;
 		new_img.resize(new_size);
-		ERR_FAIL_COND(new_img.size() == 0);
+		ERR_FAIL_COND(new_img.is_empty());
 
 		{
 			uint8_t *w = new_img.ptrw();
@@ -1560,8 +1729,8 @@ void Image::shrink_x2() {
 		ERR_FAIL_COND(!_can_modify(format));
 		int ps = get_format_pixel_size(format);
 		new_img.resize((width / 2) * (height / 2) * ps);
-		ERR_FAIL_COND(new_img.size() == 0);
-		ERR_FAIL_COND(data.size() == 0);
+		ERR_FAIL_COND(new_img.is_empty());
+		ERR_FAIL_COND(data.is_empty());
 
 		{
 			uint8_t *w = new_img.ptrw();
@@ -1762,8 +1931,7 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 }
 
 Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, const Ref<Image> &p_normal_map) {
-	Vector<double> normal_sat_vec; //summed area table
-	double *normal_sat = nullptr; //summed area table for normal map
+	LocalVector<double> normal_sat_vec; //summed area table
 	int normal_w = 0, normal_h = 0;
 
 	ERR_FAIL_COND_V_MSG(p_normal_map.is_null() || p_normal_map->is_empty(), ERR_INVALID_PARAMETER, "Must provide a valid normal map for roughness mipmaps");
@@ -1777,8 +1945,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 	normal_h = nm->get_height();
 
 	normal_sat_vec.resize(normal_w * normal_h * 3);
-
-	normal_sat = normal_sat_vec.ptrw();
+	double *normal_sat = normal_sat_vec.ptr();
 
 	//create summed area table
 
@@ -1853,24 +2020,26 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 					avg[2] += normal_sat[tofs + 2];
 				}
 
-				if (from_y > 0) {
+				if (from_y > 0 && to_x > 0) {
 					uint32_t tofs = ((from_y - 1) * normal_w + to_x) * 3;
 					avg[0] -= normal_sat[tofs + 0];
 					avg[1] -= normal_sat[tofs + 1];
 					avg[2] -= normal_sat[tofs + 2];
 				}
 
-				if (from_x > 0) {
+				if (from_x > 0 && to_y > 0) {
 					uint32_t tofs = (to_y * normal_w + (from_x - 1)) * 3;
 					avg[0] -= normal_sat[tofs + 0];
 					avg[1] -= normal_sat[tofs + 1];
 					avg[2] -= normal_sat[tofs + 2];
 				}
 
-				uint32_t tofs = (to_y * normal_w + to_x) * 3;
-				avg[0] += normal_sat[tofs + 0];
-				avg[1] += normal_sat[tofs + 1];
-				avg[2] += normal_sat[tofs + 2];
+				if (to_y > 0 && to_x > 0) {
+					uint32_t tofs = (to_y * normal_w + to_x) * 3;
+					avg[0] += normal_sat[tofs + 0];
+					avg[1] += normal_sat[tofs + 1];
+					avg[2] += normal_sat[tofs + 2];
+				}
 
 				double div = double(size_x * size_y);
 				Vector3 vec(avg[0] / div, avg[1] / div, avg[2] / div);
@@ -1944,9 +2113,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 			uint8_t* wr = imgdata.ptrw();
 			memcpy(wr.ptr(), ptr, size);
 			wr = uint8_t*();
-			Ref<Image> im;
-			im.instantiate();
-			im->create(w, h, false, format, imgdata);
+			Ref<Image> im = Image::create_from_data(w, h, false, format, imgdata);
 			im->save_png("res://mipmap_" + itos(i) + ".png");
 		}
 #endif
@@ -1979,13 +2146,34 @@ Vector<uint8_t> Image::get_data() const {
 	return data;
 }
 
-void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
-	ERR_FAIL_COND_MSG(p_width <= 0, "Image width must be greater than 0.");
-	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
-	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
-	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
-	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
-	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
+Ref<Image> Image::create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
+	Ref<Image> image;
+	image.instantiate();
+	image->initialize_data(p_width, p_height, p_use_mipmaps, p_format);
+	return image;
+}
+
+Ref<Image> Image::create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
+	Ref<Image> image;
+	image.instantiate();
+	image->initialize_data(p_width, p_height, p_use_mipmaps, p_format, p_data);
+	return image;
+}
+
+void Image::set_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
+	initialize_data(p_width, p_height, p_use_mipmaps, p_format, p_data);
+}
+
+void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
+	ERR_FAIL_COND_MSG(p_width <= 0, "The Image width specified (" + itos(p_width) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(p_height <= 0, "The Image height specified (" + itos(p_height) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH,
+			"The Image width specified (" + itos(p_width) + " pixels) cannot be greater than " + itos(MAX_WIDTH) + "pixels.");
+	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT,
+			"The Image height specified (" + itos(p_height) + " pixels) cannot be greater than " + itos(MAX_HEIGHT) + "pixels.");
+	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS,
+			"Too many pixels for Image. Maximum is " + itos(MAX_WIDTH) + "x" + itos(MAX_HEIGHT) + " = " + itos(MAX_PIXELS) + "pixels.");
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "The Image format specified (" + itos(p_format) + ") is out of range. See Image's Format enum.");
 
 	int mm = 0;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
@@ -2002,18 +2190,35 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	format = p_format;
 }
 
-void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
-	ERR_FAIL_COND_MSG(p_width <= 0, "Image width must be greater than 0.");
-	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
-	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
-	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
-	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS, "Too many pixels for image, maximum is " + itos(MAX_PIXELS));
-	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "Image format out of range, please see Image's Format enum.");
+void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND_MSG(p_width <= 0, "The Image width specified (" + itos(p_width) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(p_height <= 0, "The Image height specified (" + itos(p_height) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH,
+			"The Image width specified (" + itos(p_width) + " pixels) cannot be greater than " + itos(MAX_WIDTH) + " pixels.");
+	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT,
+			"The Image height specified (" + itos(p_height) + " pixels) cannot be greater than " + itos(MAX_HEIGHT) + " pixels.");
+	ERR_FAIL_COND_MSG(p_width * p_height > MAX_PIXELS,
+			"Too many pixels for Image. Maximum is " + itos(MAX_WIDTH) + "x" + itos(MAX_HEIGHT) + " = " + itos(MAX_PIXELS) + "pixels .");
+	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "The Image format specified (" + itos(p_format) + ") is out of range. See Image's Format enum.");
 
 	int mm;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
 
-	ERR_FAIL_COND_MSG(p_data.size() != size, "Expected data size of " + itos(size) + " bytes in Image::create(), got instead " + itos(p_data.size()) + " bytes.");
+	if (unlikely(p_data.size() != size)) {
+		String description_mipmaps = get_format_name(p_format) + " ";
+		if (p_use_mipmaps) {
+			const int num_mipmaps = get_image_required_mipmaps(p_width, p_height, p_format);
+			if (num_mipmaps != 1) {
+				description_mipmaps += vformat("with %d mipmaps", num_mipmaps);
+			} else {
+				description_mipmaps += "with 1 mipmap";
+			}
+		} else {
+			description_mipmaps += "without mipmaps";
+		}
+		const String description = vformat("%dx%dx%d (%s)", p_width, p_height, get_format_pixel_size(p_format), description_mipmaps);
+		ERR_FAIL_MSG(vformat("Expected Image data size of %s = %d bytes, got %d bytes instead.", description, size, p_data.size()));
+	}
 
 	height = p_height;
 	width = p_width;
@@ -2023,7 +2228,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	mipmaps = p_use_mipmaps;
 }
 
-void Image::create(const char **p_xpm) {
+void Image::initialize_data(const char **p_xpm) {
 	int size_width = 0;
 	int size_height = 0;
 	int pixelchars = 0;
@@ -2095,7 +2300,7 @@ void Image::create(const char **p_xpm) {
 						for (int i = 0; i < 6; i++) {
 							char v = line_ptr[i];
 
-							if (v >= '0' && v <= '9') {
+							if (is_digit(v)) {
 								v -= '0';
 							} else if (v >= 'A' && v <= 'F') {
 								v = (v - 'A') + 10;
@@ -2138,7 +2343,7 @@ void Image::create(const char **p_xpm) {
 				}
 				if (line == colormap_size) {
 					status = READING_PIXELS;
-					create(size_width, size_height, false, has_alpha ? FORMAT_RGBA8 : FORMAT_RGB8);
+					initialize_data(size_width, size_height, false, has_alpha ? FORMAT_RGBA8 : FORMAT_RGB8);
 					data_write = data.ptrw();
 					pixel_size = has_alpha ? 4 : 3;
 				}
@@ -2152,7 +2357,7 @@ void Image::create(const char **p_xpm) {
 					}
 
 					Color *colorptr = colormap.getptr(pixelstr);
-					ERR_FAIL_COND(!colorptr);
+					ERR_FAIL_NULL(colorptr);
 					uint8_t pixel[4];
 					for (uint32_t i = 0; i < pixel_size; i++) {
 						pixel[i] = CLAMP((*colorptr)[i] * 255, 0, 255);
@@ -2228,8 +2433,6 @@ bool Image::is_invisible() const {
 
 		} break;
 
-		case FORMAT_PVRTC1_2A:
-		case FORMAT_PVRTC1_4A:
 		case FORMAT_DXT3:
 		case FORMAT_DXT5: {
 			detected = true;
@@ -2270,8 +2473,6 @@ Image::AlphaMode Image::detect_alpha() const {
 			}
 
 		} break;
-		case FORMAT_PVRTC1_2A:
-		case FORMAT_PVRTC1_4A:
 		case FORMAT_DXT3:
 		case FORMAT_DXT5: {
 			detected = true;
@@ -2298,12 +2499,35 @@ Error Image::load(const String &p_path) {
 	return ImageLoader::load_image(p_path, this);
 }
 
+Ref<Image> Image::load_from_file(const String &p_path) {
+#ifdef DEBUG_ENABLED
+	if (p_path.begins_with("res://") && ResourceLoader::exists(p_path)) {
+		WARN_PRINT("Loaded resource as image file, this will not work on export: '" + p_path + "'. Instead, import the image file as an Image resource and load it normally as a resource.");
+	}
+#endif
+	Ref<Image> image;
+	image.instantiate();
+	Error err = ImageLoader::load_image(p_path, image);
+	if (err != OK) {
+		ERR_FAIL_V_MSG(Ref<Image>(), vformat("Failed to load image. Error %d", err));
+	}
+	return image;
+}
+
 Error Image::save_png(const String &p_path) const {
 	if (save_png_func == nullptr) {
 		return ERR_UNAVAILABLE;
 	}
 
 	return save_png_func(p_path, Ref<Image>((Image *)this));
+}
+
+Error Image::save_jpg(const String &p_path, float p_quality) const {
+	if (save_jpg_func == nullptr) {
+		return ERR_UNAVAILABLE;
+	}
+
+	return save_jpg_func(p_path, Ref<Image>((Image *)this), p_quality);
 }
 
 Vector<uint8_t> Image::save_png_to_buffer() const {
@@ -2314,12 +2538,45 @@ Vector<uint8_t> Image::save_png_to_buffer() const {
 	return save_png_buffer_func(Ref<Image>((Image *)this));
 }
 
+Vector<uint8_t> Image::save_jpg_to_buffer(float p_quality) const {
+	if (save_jpg_buffer_func == nullptr) {
+		return Vector<uint8_t>();
+	}
+
+	return save_jpg_buffer_func(Ref<Image>((Image *)this), p_quality);
+}
+
 Error Image::save_exr(const String &p_path, bool p_grayscale) const {
 	if (save_exr_func == nullptr) {
 		return ERR_UNAVAILABLE;
 	}
 
 	return save_exr_func(p_path, Ref<Image>((Image *)this), p_grayscale);
+}
+
+Vector<uint8_t> Image::save_exr_to_buffer(bool p_grayscale) const {
+	if (save_exr_buffer_func == nullptr) {
+		return Vector<uint8_t>();
+	}
+	return save_exr_buffer_func(Ref<Image>((Image *)this), p_grayscale);
+}
+
+Error Image::save_webp(const String &p_path, const bool p_lossy, const float p_quality) const {
+	if (save_webp_func == nullptr) {
+		return ERR_UNAVAILABLE;
+	}
+	ERR_FAIL_COND_V_MSG(p_lossy && !(0.0f <= p_quality && p_quality <= 1.0f), ERR_INVALID_PARAMETER, "The WebP lossy quality was set to " + rtos(p_quality) + ", which is not valid. WebP lossy quality must be between 0.0 and 1.0 (inclusive).");
+
+	return save_webp_func(p_path, Ref<Image>((Image *)this), p_lossy, p_quality);
+}
+
+Vector<uint8_t> Image::save_webp_to_buffer(const bool p_lossy, const float p_quality) const {
+	if (save_webp_buffer_func == nullptr) {
+		return Vector<uint8_t>();
+	}
+	ERR_FAIL_COND_V_MSG(p_lossy && !(0.0f <= p_quality && p_quality <= 1.0f), Vector<uint8_t>(), "The WebP lossy quality was set to " + rtos(p_quality) + ", which is not valid. WebP lossy quality must be between 0.0 and 1.0 (inclusive).");
+
+	return save_webp_buffer_func(Ref<Image>((Image *)this), p_lossy, p_quality);
 }
 
 int Image::get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps) {
@@ -2359,7 +2616,11 @@ int Image::get_image_mipmap_offset_and_dimensions(int p_width, int p_height, For
 }
 
 bool Image::is_compressed() const {
-	return format > FORMAT_RGBE9995;
+	return is_format_compressed(format);
+}
+
+bool Image::is_format_compressed(Format p_format) {
+	return p_format > FORMAT_RGBE9995;
 }
 
 Error Image::decompress() {
@@ -2367,45 +2628,47 @@ Error Image::decompress() {
 		_image_decompress_bc(this);
 	} else if (format >= FORMAT_BPTC_RGBA && format <= FORMAT_BPTC_RGBFU && _image_decompress_bptc) {
 		_image_decompress_bptc(this);
-	} else if (format >= FORMAT_PVRTC1_2 && format <= FORMAT_PVRTC1_4A && _image_decompress_pvrtc) {
-		_image_decompress_pvrtc(this);
 	} else if (format == FORMAT_ETC && _image_decompress_etc1) {
 		_image_decompress_etc1(this);
 	} else if (format >= FORMAT_ETC2_R11 && format <= FORMAT_ETC2_RA_AS_RG && _image_decompress_etc2) {
 		_image_decompress_etc2(this);
+	} else if (format >= FORMAT_ASTC_4x4 && format <= FORMAT_ASTC_8x8_HDR && _image_decompress_astc) {
+		_image_decompress_astc(this);
 	} else {
 		return ERR_UNAVAILABLE;
 	}
 	return OK;
 }
 
-Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_lossy_quality) {
+Error Image::compress(CompressMode p_mode, CompressSource p_source, ASTCFormat p_astc_format) {
 	ERR_FAIL_INDEX_V_MSG(p_mode, COMPRESS_MAX, ERR_INVALID_PARAMETER, "Invalid compress mode.");
 	ERR_FAIL_INDEX_V_MSG(p_source, COMPRESS_SOURCE_MAX, ERR_INVALID_PARAMETER, "Invalid compress source.");
-	return compress_from_channels(p_mode, detect_used_channels(p_source), p_lossy_quality);
+	return compress_from_channels(p_mode, detect_used_channels(p_source), p_astc_format);
 }
 
-Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, float p_lossy_quality) {
+Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format) {
+	ERR_FAIL_COND_V(data.is_empty(), ERR_INVALID_DATA);
+
 	switch (p_mode) {
 		case COMPRESS_S3TC: {
-			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
-			_image_compress_bc_func(this, p_lossy_quality, p_channels);
-		} break;
-		case COMPRESS_PVRTC1_4: {
-			ERR_FAIL_COND_V(!_image_compress_pvrtc1_4bpp_func, ERR_UNAVAILABLE);
-			_image_compress_pvrtc1_4bpp_func(this);
+			ERR_FAIL_NULL_V(_image_compress_bc_func, ERR_UNAVAILABLE);
+			_image_compress_bc_func(this, p_channels);
 		} break;
 		case COMPRESS_ETC: {
-			ERR_FAIL_COND_V(!_image_compress_etc1_func, ERR_UNAVAILABLE);
-			_image_compress_etc1_func(this, p_lossy_quality);
+			ERR_FAIL_NULL_V(_image_compress_etc1_func, ERR_UNAVAILABLE);
+			_image_compress_etc1_func(this);
 		} break;
 		case COMPRESS_ETC2: {
-			ERR_FAIL_COND_V(!_image_compress_etc2_func, ERR_UNAVAILABLE);
-			_image_compress_etc2_func(this, p_lossy_quality, p_channels);
+			ERR_FAIL_NULL_V(_image_compress_etc2_func, ERR_UNAVAILABLE);
+			_image_compress_etc2_func(this, p_channels);
 		} break;
 		case COMPRESS_BPTC: {
-			ERR_FAIL_COND_V(!_image_compress_bptc_func, ERR_UNAVAILABLE);
-			_image_compress_bptc_func(this, p_lossy_quality, p_channels);
+			ERR_FAIL_NULL_V(_image_compress_bptc_func, ERR_UNAVAILABLE);
+			_image_compress_bptc_func(this, p_channels);
+		} break;
+		case COMPRESS_ASTC: {
+			ERR_FAIL_NULL_V(_image_compress_astc_func, ERR_UNAVAILABLE);
+			_image_compress_astc_func(this, p_astc_format);
 		} break;
 		case COMPRESS_MAX: {
 			ERR_FAIL_V(ERR_INVALID_PARAMETER);
@@ -2421,7 +2684,7 @@ Image::Image(const char **p_xpm) {
 	mipmaps = false;
 	format = FORMAT_L8;
 
-	create(p_xpm);
+	initialize_data(p_xpm);
 }
 
 Image::Image(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
@@ -2430,7 +2693,7 @@ Image::Image(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
 	mipmaps = p_use_mipmaps;
 	format = FORMAT_L8;
 
-	create(p_width, p_height, p_use_mipmaps, p_format);
+	initialize_data(p_width, p_height, p_use_mipmaps, p_format);
 }
 
 Image::Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
@@ -2439,18 +2702,18 @@ Image::Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const V
 	mipmaps = p_mipmaps;
 	format = FORMAT_L8;
 
-	create(p_width, p_height, p_mipmaps, p_format, p_data);
+	initialize_data(p_width, p_height, p_mipmaps, p_format, p_data);
 }
 
-Rect2 Image::get_used_rect() const {
+Rect2i Image::get_used_rect() const {
 	if (format != FORMAT_LA8 && format != FORMAT_RGBA8 && format != FORMAT_RGBAF && format != FORMAT_RGBAH && format != FORMAT_RGBA4444 && format != FORMAT_RGB565) {
-		return Rect2(Point2(), Size2(width, height));
+		return Rect2i(0, 0, width, height);
 	}
 
 	int len = data.size();
 
 	if (len == 0) {
-		return Rect2();
+		return Rect2i();
 	}
 
 	int minx = 0xFFFFFF, miny = 0xFFFFFFF;
@@ -2476,20 +2739,53 @@ Rect2 Image::get_used_rect() const {
 	}
 
 	if (maxx == -1) {
-		return Rect2();
+		return Rect2i();
 	} else {
-		return Rect2(minx, miny, maxx - minx + 1, maxy - miny + 1);
+		return Rect2i(minx, miny, maxx - minx + 1, maxy - miny + 1);
 	}
 }
 
-Ref<Image> Image::get_rect(const Rect2 &p_area) const {
-	Ref<Image> img = memnew(Image(p_area.size.x, p_area.size.y, mipmaps, format));
-	img->blit_rect(Ref<Image>((Image *)this), p_area, Point2(0, 0));
+Ref<Image> Image::get_region(const Rect2i &p_region) const {
+	Ref<Image> img = memnew(Image(p_region.size.x, p_region.size.y, mipmaps, format));
+	img->blit_rect(Ref<Image>((Image *)this), p_region, Point2i(0, 0));
 	return img;
 }
 
-void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
+void Image::_get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest, Rect2i &r_clipped_src_rect, Rect2i &r_clipped_dest_rect) const {
+	r_clipped_dest_rect.position = p_dest;
+	r_clipped_src_rect = p_src_rect;
+
+	if (r_clipped_src_rect.position.x < 0) {
+		r_clipped_dest_rect.position.x -= r_clipped_src_rect.position.x;
+		r_clipped_src_rect.size.x += r_clipped_src_rect.position.x;
+		r_clipped_src_rect.position.x = 0;
+	}
+	if (r_clipped_src_rect.position.y < 0) {
+		r_clipped_dest_rect.position.y -= r_clipped_src_rect.position.y;
+		r_clipped_src_rect.size.y += r_clipped_src_rect.position.y;
+		r_clipped_src_rect.position.y = 0;
+	}
+
+	if (r_clipped_dest_rect.position.x < 0) {
+		r_clipped_src_rect.position.x -= r_clipped_dest_rect.position.x;
+		r_clipped_src_rect.size.x += r_clipped_dest_rect.position.x;
+		r_clipped_dest_rect.position.x = 0;
+	}
+	if (r_clipped_dest_rect.position.y < 0) {
+		r_clipped_src_rect.position.y -= r_clipped_dest_rect.position.y;
+		r_clipped_src_rect.size.y += r_clipped_dest_rect.position.y;
+		r_clipped_dest_rect.position.y = 0;
+	}
+
+	r_clipped_src_rect.size.x = MAX(0, MIN(r_clipped_src_rect.size.x, MIN(p_src->width - r_clipped_src_rect.position.x, width - r_clipped_dest_rect.position.x)));
+	r_clipped_src_rect.size.y = MAX(0, MIN(r_clipped_src_rect.size.y, MIN(p_src->height - r_clipped_src_rect.position.y, height - r_clipped_dest_rect.position.y)));
+
+	r_clipped_dest_rect.size.x = r_clipped_src_rect.size.x;
+	r_clipped_dest_rect.size.y = r_clipped_src_rect.size.y;
+}
+
+void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
+	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blit_rect an image: invalid source Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	ERR_FAIL_COND(dsize == 0);
@@ -2497,21 +2793,12 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	ERR_FAIL_COND(format != p_src->format);
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot blit_rect in compressed or custom image formats.");
 
-	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).intersection(p_src_rect);
-
-	if (p_dest.x < 0) {
-		clipped_src_rect.position.x = ABS(p_dest.x);
-	}
-	if (p_dest.y < 0) {
-		clipped_src_rect.position.y = ABS(p_dest.y);
-	}
-
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	Rect2i src_rect;
+	Rect2i dest_rect;
+	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
+	if (!src_rect.has_area() || !dest_rect.has_area()) {
 		return;
 	}
-
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
-	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	uint8_t *wp = data.ptrw();
 	uint8_t *dst_data_ptr = wp;
@@ -2523,8 +2810,8 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
-			int src_x = clipped_src_rect.position.x + j;
-			int src_y = clipped_src_rect.position.y + i;
+			int src_x = src_rect.position.x + j;
+			int src_y = src_rect.position.y + i;
 
 			int dst_x = dest_rect.position.x + j;
 			int dst_y = dest_rect.position.y + i;
@@ -2539,9 +2826,9 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	}
 }
 
-void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
-	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
+void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
+	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blit_rect_mask an image: invalid source Image object.");
+	ERR_FAIL_COND_MSG(p_mask.is_null(), "Cannot blit_rect_mask an image: invalid mask Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	int maskdsize = p_mask->data.size();
@@ -2552,21 +2839,12 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	ERR_FAIL_COND_MSG(p_src->height != p_mask->height, "Source image height is different from mask height.");
 	ERR_FAIL_COND(format != p_src->format);
 
-	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).intersection(p_src_rect);
-
-	if (p_dest.x < 0) {
-		clipped_src_rect.position.x = ABS(p_dest.x);
-	}
-	if (p_dest.y < 0) {
-		clipped_src_rect.position.y = ABS(p_dest.y);
-	}
-
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	Rect2i src_rect;
+	Rect2i dest_rect;
+	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
+	if (!src_rect.has_area() || !dest_rect.has_area()) {
 		return;
 	}
-
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
-	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	uint8_t *wp = data.ptrw();
 	uint8_t *dst_data_ptr = wp;
@@ -2580,8 +2858,8 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
-			int src_x = clipped_src_rect.position.x + j;
-			int src_y = clipped_src_rect.position.y + i;
+			int src_x = src_rect.position.x + j;
+			int src_y = src_rect.position.y + i;
 
 			if (msk->get_pixel(src_x, src_y).a != 0) {
 				int dst_x = dest_rect.position.x + j;
@@ -2598,36 +2876,27 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	}
 }
 
-void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
+void Image::blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest) {
+	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blend_rect an image: invalid source Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	ERR_FAIL_COND(dsize == 0);
 	ERR_FAIL_COND(srcdsize == 0);
 	ERR_FAIL_COND(format != p_src->format);
 
-	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).intersection(p_src_rect);
-
-	if (p_dest.x < 0) {
-		clipped_src_rect.position.x = ABS(p_dest.x);
-	}
-	if (p_dest.y < 0) {
-		clipped_src_rect.position.y = ABS(p_dest.y);
-	}
-
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	Rect2i src_rect;
+	Rect2i dest_rect;
+	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
+	if (!src_rect.has_area() || !dest_rect.has_area()) {
 		return;
 	}
-
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
-	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	Ref<Image> img = p_src;
 
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
-			int src_x = clipped_src_rect.position.x + j;
-			int src_y = clipped_src_rect.position.y + i;
+			int src_x = src_rect.position.x + j;
+			int src_y = src_rect.position.y + i;
 
 			int dst_x = dest_rect.position.x + j;
 			int dst_y = dest_rect.position.y + i;
@@ -2642,9 +2911,9 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 	}
 }
 
-void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
-	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
-	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
+void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2i &p_src_rect, const Point2i &p_dest) {
+	ERR_FAIL_COND_MSG(p_src.is_null(), "Cannot blend_rect_mask an image: invalid source Image object.");
+	ERR_FAIL_COND_MSG(p_mask.is_null(), "Cannot blend_rect_mask an image: invalid mask Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	int maskdsize = p_mask->data.size();
@@ -2655,29 +2924,20 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 	ERR_FAIL_COND_MSG(p_src->height != p_mask->height, "Source image height is different from mask height.");
 	ERR_FAIL_COND(format != p_src->format);
 
-	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).intersection(p_src_rect);
-
-	if (p_dest.x < 0) {
-		clipped_src_rect.position.x = ABS(p_dest.x);
-	}
-	if (p_dest.y < 0) {
-		clipped_src_rect.position.y = ABS(p_dest.y);
-	}
-
-	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0) {
+	Rect2i src_rect;
+	Rect2i dest_rect;
+	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
+	if (!src_rect.has_area() || !dest_rect.has_area()) {
 		return;
 	}
-
-	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
-	Rect2i dest_rect = Rect2i(0, 0, width, height).intersection(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	Ref<Image> img = p_src;
 	Ref<Image> msk = p_mask;
 
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
-			int src_x = clipped_src_rect.position.x + j;
-			int src_y = clipped_src_rect.position.y + i;
+			int src_x = src_rect.position.x + j;
+			int src_y = src_rect.position.y + i;
 
 			// If the mask's pixel is transparent then we skip it
 			//Color c = msk->get_pixel(src_x, src_y);
@@ -2697,44 +2957,84 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 	}
 }
 
-void Image::fill(const Color &c) {
+// Repeats `p_pixel` `p_count` times in consecutive memory.
+// Results in the original pixel and `p_count - 1` subsequent copies of it.
+void Image::_repeat_pixel_over_subsequent_memory(uint8_t *p_pixel, int p_pixel_size, int p_count) {
+	int offset = 1;
+	for (int stride = 1; offset + stride <= p_count; stride *= 2) {
+		memcpy(p_pixel + offset * p_pixel_size, p_pixel, stride * p_pixel_size);
+		offset += stride;
+	}
+	if (offset < p_count) {
+		memcpy(p_pixel + offset * p_pixel_size, p_pixel, (p_count - offset) * p_pixel_size);
+	}
+}
+
+void Image::fill(const Color &p_color) {
+	if (data.size() == 0) {
+		return;
+	}
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill in compressed or custom image formats.");
 
-	uint8_t *wp = data.ptrw();
-	uint8_t *dst_data_ptr = wp;
+	uint8_t *dst_data_ptr = data.ptrw();
 
 	int pixel_size = get_format_pixel_size(format);
 
-	// put first pixel with the format-aware API
-	set_pixel(0, 0, c);
+	// Put first pixel with the format-aware API.
+	_set_color_at_ofs(dst_data_ptr, 0, p_color);
 
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			uint8_t *dst = &dst_data_ptr[(y * width + x) * pixel_size];
+	_repeat_pixel_over_subsequent_memory(dst_data_ptr, pixel_size, width * height);
+}
 
-			for (int k = 0; k < pixel_size; k++) {
-				dst[k] = dst_data_ptr[k];
-			}
+void Image::fill_rect(const Rect2i &p_rect, const Color &p_color) {
+	if (data.size() == 0) {
+		return;
+	}
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill rect in compressed or custom image formats.");
+
+	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect.abs());
+	if (!r.has_area()) {
+		return;
+	}
+
+	uint8_t *dst_data_ptr = data.ptrw();
+
+	int pixel_size = get_format_pixel_size(format);
+
+	// Put first pixel with the format-aware API.
+	uint8_t *rect_first_pixel_ptr = &dst_data_ptr[(r.position.y * width + r.position.x) * pixel_size];
+	_set_color_at_ofs(rect_first_pixel_ptr, 0, p_color);
+
+	if (r.size.x == width) {
+		// No need to fill rows separately.
+		_repeat_pixel_over_subsequent_memory(rect_first_pixel_ptr, pixel_size, width * r.size.y);
+	} else {
+		_repeat_pixel_over_subsequent_memory(rect_first_pixel_ptr, pixel_size, r.size.x);
+		for (int y = 1; y < r.size.y; y++) {
+			memcpy(rect_first_pixel_ptr + y * width * pixel_size, rect_first_pixel_ptr, r.size.x * pixel_size);
 		}
 	}
 }
 
 ImageMemLoadFunc Image::_png_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_png_mem_unpacker_func = nullptr;
 ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
+ScalableImageMemLoadFunc Image::_svg_scalable_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_ktx_mem_loader_func = nullptr;
 
-void (*Image::_image_compress_bc_func)(Image *, float, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_bptc_func)(Image *, float, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_pvrtc1_4bpp_func)(Image *) = nullptr;
-void (*Image::_image_compress_etc1_func)(Image *, float) = nullptr;
-void (*Image::_image_compress_etc2_func)(Image *, float, Image::UsedChannels) = nullptr;
-void (*Image::_image_decompress_pvrtc)(Image *) = nullptr;
+void (*Image::_image_compress_bc_func)(Image *, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_etc1_func)(Image *) = nullptr;
+void (*Image::_image_compress_etc2_func)(Image *, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_astc_func)(Image *, Image::ASTCFormat) = nullptr;
 void (*Image::_image_decompress_bc)(Image *) = nullptr;
 void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;
 void (*Image::_image_decompress_etc2)(Image *) = nullptr;
+void (*Image::_image_decompress_astc)(Image *) = nullptr;
 
 Vector<uint8_t> (*Image::webp_lossy_packer)(const Ref<Image> &, float) = nullptr;
 Vector<uint8_t> (*Image::webp_lossless_packer)(const Ref<Image> &) = nullptr;
@@ -2743,6 +3043,7 @@ Vector<uint8_t> (*Image::png_packer)(const Ref<Image> &) = nullptr;
 Ref<Image> (*Image::png_unpacker)(const Vector<uint8_t> &) = nullptr;
 Vector<uint8_t> (*Image::basis_universal_packer)(const Ref<Image> &, Image::UsedChannels) = nullptr;
 Ref<Image> (*Image::basis_universal_unpacker)(const Vector<uint8_t> &) = nullptr;
+Ref<Image> (*Image::basis_universal_unpacker_ptr)(const uint8_t *, int) = nullptr;
 
 void Image::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("width"));
@@ -2766,7 +3067,7 @@ void Image::_set_data(const Dictionary &p_data) {
 
 	ERR_FAIL_COND(ddformat == FORMAT_MAX);
 
-	create(dwidth, dheight, dmipmaps, ddformat, ddata);
+	initialize_data(dwidth, dheight, dmipmaps, ddformat, ddata);
 }
 
 Dictionary Image::_get_data() const {
@@ -3003,6 +3304,18 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 	_set_color_at_ofs(data.ptrw(), ofs, p_color);
 }
 
+const uint8_t *Image::ptr() const {
+	return data.ptr();
+}
+
+uint8_t *Image::ptrw() {
+	return data.ptrw();
+}
+
+int64_t Image::data_size() const {
+	return data.size();
+}
+
 void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot adjust_bcs in compressed or custom image formats.");
 
@@ -3025,8 +3338,8 @@ void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation)
 	}
 }
 
-Image::UsedChannels Image::detect_used_channels(CompressSource p_source) {
-	ERR_FAIL_COND_V(data.size() == 0, USED_CHANNELS_RGBA);
+Image::UsedChannels Image::detect_used_channels(CompressSource p_source) const {
+	ERR_FAIL_COND_V(data.is_empty(), USED_CHANNELS_RGBA);
 	ERR_FAIL_COND_V(is_compressed(), USED_CHANNELS_RGBA);
 	bool r = false, g = false, b = false, a = false, c = false;
 
@@ -3117,6 +3430,7 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("convert", "format"), &Image::convert);
 
+	ClassDB::bind_method(D_METHOD("get_mipmap_count"), &Image::get_mipmap_count);
 	ClassDB::bind_method(D_METHOD("get_mipmap_offset", "mipmap"), &Image::get_mipmap_offset);
 
 	ClassDB::bind_method(D_METHOD("resize_to_po2", "square", "interpolation"), &Image::resize_to_po2, DEFVAL(false), DEFVAL(INTERPOLATE_BILINEAR));
@@ -3129,24 +3443,34 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
-	ClassDB::bind_method(D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::_create_empty);
-	ClassDB::bind_method(D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::_create_from_data);
+	ClassDB::bind_static_method("Image", D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::create_empty);
+	ClassDB::bind_static_method("Image", D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::create_from_data);
+	ClassDB::bind_method(D_METHOD("set_data", "width", "height", "use_mipmaps", "format", "data"), &Image::set_data);
 
 	ClassDB::bind_method(D_METHOD("is_empty"), &Image::is_empty);
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &Image::load);
+	ClassDB::bind_static_method("Image", D_METHOD("load_from_file", "path"), &Image::load_from_file);
 	ClassDB::bind_method(D_METHOD("save_png", "path"), &Image::save_png);
 	ClassDB::bind_method(D_METHOD("save_png_to_buffer"), &Image::save_png_to_buffer);
+	ClassDB::bind_method(D_METHOD("save_jpg", "path", "quality"), &Image::save_jpg, DEFVAL(0.75));
+	ClassDB::bind_method(D_METHOD("save_jpg_to_buffer", "quality"), &Image::save_jpg_to_buffer, DEFVAL(0.75));
 	ClassDB::bind_method(D_METHOD("save_exr", "path", "grayscale"), &Image::save_exr, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("save_exr_to_buffer", "grayscale"), &Image::save_exr_to_buffer, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("save_webp", "path", "lossy", "quality"), &Image::save_webp, DEFVAL(false), DEFVAL(0.75f));
+	ClassDB::bind_method(D_METHOD("save_webp_to_buffer", "lossy", "quality"), &Image::save_webp_to_buffer, DEFVAL(false), DEFVAL(0.75f));
 
 	ClassDB::bind_method(D_METHOD("detect_alpha"), &Image::detect_alpha);
 	ClassDB::bind_method(D_METHOD("is_invisible"), &Image::is_invisible);
 
 	ClassDB::bind_method(D_METHOD("detect_used_channels", "source"), &Image::detect_used_channels, DEFVAL(COMPRESS_SOURCE_GENERIC));
-	ClassDB::bind_method(D_METHOD("compress", "mode", "source", "lossy_quality"), &Image::compress, DEFVAL(COMPRESS_SOURCE_GENERIC), DEFVAL(0.7));
-	ClassDB::bind_method(D_METHOD("compress_from_channels", "mode", "channels", "lossy_quality"), &Image::compress_from_channels, DEFVAL(0.7));
+	ClassDB::bind_method(D_METHOD("compress", "mode", "source", "astc_format"), &Image::compress, DEFVAL(COMPRESS_SOURCE_GENERIC), DEFVAL(ASTC_FORMAT_4x4));
+	ClassDB::bind_method(D_METHOD("compress_from_channels", "mode", "channels", "astc_format"), &Image::compress_from_channels, DEFVAL(ASTC_FORMAT_4x4));
 	ClassDB::bind_method(D_METHOD("decompress"), &Image::decompress);
 	ClassDB::bind_method(D_METHOD("is_compressed"), &Image::is_compressed);
+
+	ClassDB::bind_method(D_METHOD("rotate_90", "direction"), &Image::rotate_90);
+	ClassDB::bind_method(D_METHOD("rotate_180"), &Image::rotate_180);
 
 	ClassDB::bind_method(D_METHOD("fix_alpha_edges"), &Image::fix_alpha_edges);
 	ClassDB::bind_method(D_METHOD("premultiply_alpha"), &Image::premultiply_alpha);
@@ -3155,14 +3479,17 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rgbe_to_srgb"), &Image::rgbe_to_srgb);
 	ClassDB::bind_method(D_METHOD("bump_map_to_normal_map", "bump_scale"), &Image::bump_map_to_normal_map, DEFVAL(1.0));
 
+	ClassDB::bind_method(D_METHOD("compute_image_metrics", "compared_image", "use_luma"), &Image::compute_image_metrics);
+
 	ClassDB::bind_method(D_METHOD("blit_rect", "src", "src_rect", "dst"), &Image::blit_rect);
 	ClassDB::bind_method(D_METHOD("blit_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blit_rect_mask);
 	ClassDB::bind_method(D_METHOD("blend_rect", "src", "src_rect", "dst"), &Image::blend_rect);
 	ClassDB::bind_method(D_METHOD("blend_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blend_rect_mask);
 	ClassDB::bind_method(D_METHOD("fill", "color"), &Image::fill);
+	ClassDB::bind_method(D_METHOD("fill_rect", "rect", "color"), &Image::fill_rect);
 
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &Image::get_used_rect);
-	ClassDB::bind_method(D_METHOD("get_rect", "rect"), &Image::get_rect);
+	ClassDB::bind_method(D_METHOD("get_region", "region"), &Image::get_region);
 
 	ClassDB::bind_method(D_METHOD("copy_from", "src"), &Image::copy_internals_from);
 
@@ -3181,6 +3508,10 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_webp_from_buffer", "buffer"), &Image::load_webp_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_tga_from_buffer", "buffer"), &Image::load_tga_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_bmp_from_buffer", "buffer"), &Image::load_bmp_from_buffer);
+	ClassDB::bind_method(D_METHOD("load_ktx_from_buffer", "buffer"), &Image::load_ktx_from_buffer);
+
+	ClassDB::bind_method(D_METHOD("load_svg_from_buffer", "buffer", "scale"), &Image::load_svg_from_buffer, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("load_svg_from_string", "svg_str", "scale"), &Image::load_svg_from_string, DEFVAL(1.0));
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
 
@@ -3212,10 +3543,6 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBA); //btpc bc6h
 	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBF); //float /
 	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBFU); //unsigned float
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_2); //pvrtc
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_2A);
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_4);
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC1_4A);
 	BIND_ENUM_CONSTANT(FORMAT_ETC); //etc1
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11); //etc2
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11S); //signed ); NOT srgb.
@@ -3226,6 +3553,10 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_RGB8A1);
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_RA_AS_RG);
 	BIND_ENUM_CONSTANT(FORMAT_DXT5_RA_AS_RG);
+	BIND_ENUM_CONSTANT(FORMAT_ASTC_4x4);
+	BIND_ENUM_CONSTANT(FORMAT_ASTC_4x4_HDR);
+	BIND_ENUM_CONSTANT(FORMAT_ASTC_8x8);
+	BIND_ENUM_CONSTANT(FORMAT_ASTC_8x8_HDR);
 	BIND_ENUM_CONSTANT(FORMAT_MAX);
 
 	BIND_ENUM_CONSTANT(INTERPOLATE_NEAREST);
@@ -3239,10 +3570,11 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALPHA_BLEND);
 
 	BIND_ENUM_CONSTANT(COMPRESS_S3TC);
-	BIND_ENUM_CONSTANT(COMPRESS_PVRTC1_4);
 	BIND_ENUM_CONSTANT(COMPRESS_ETC);
 	BIND_ENUM_CONSTANT(COMPRESS_ETC2);
 	BIND_ENUM_CONSTANT(COMPRESS_BPTC);
+	BIND_ENUM_CONSTANT(COMPRESS_ASTC);
+	BIND_ENUM_CONSTANT(COMPRESS_MAX);
 
 	BIND_ENUM_CONSTANT(USED_CHANNELS_L);
 	BIND_ENUM_CONSTANT(USED_CHANNELS_LA);
@@ -3254,13 +3586,16 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_GENERIC);
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_SRGB);
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_NORMAL);
+
+	BIND_ENUM_CONSTANT(ASTC_FORMAT_4x4);
+	BIND_ENUM_CONSTANT(ASTC_FORMAT_8x8);
 }
 
-void Image::set_compress_bc_func(void (*p_compress_func)(Image *, float, UsedChannels)) {
+void Image::set_compress_bc_func(void (*p_compress_func)(Image *, UsedChannels)) {
 	_image_compress_bc_func = p_compress_func;
 }
 
-void Image::set_compress_bptc_func(void (*p_compress_func)(Image *, float, UsedChannels)) {
+void Image::set_compress_bptc_func(void (*p_compress_func)(Image *, UsedChannels)) {
 	_image_compress_bptc_func = p_compress_func;
 }
 
@@ -3288,13 +3623,11 @@ Ref<Image> Image::rgbe_to_srgb() {
 
 	ERR_FAIL_COND_V(format != FORMAT_RGBE9995, Ref<Image>());
 
-	Ref<Image> new_image;
-	new_image.instantiate();
-	new_image->create(width, height, false, Image::FORMAT_RGB8);
+	Ref<Image> new_image = create_empty(width, height, false, Image::FORMAT_RGB8);
 
 	for (int row = 0; row < height; row++) {
 		for (int col = 0; col < width; col++) {
-			new_image->set_pixel(col, row, get_pixel(col, row).to_srgb());
+			new_image->set_pixel(col, row, get_pixel(col, row).linear_to_srgb());
 		}
 	}
 
@@ -3331,6 +3664,7 @@ Ref<Image> Image::get_image_from_mipmap(int p_mipamp) const {
 
 void Image::bump_map_to_normal_map(float bump_scale) {
 	ERR_FAIL_COND(!_can_modify(format));
+	clear_mipmaps();
 	convert(Image::FORMAT_RF);
 
 	Vector<uint8_t> result_image; //rgba output
@@ -3340,7 +3674,7 @@ void Image::bump_map_to_normal_map(float bump_scale) {
 		const uint8_t *rp = data.ptr();
 		uint8_t *wp = result_image.ptrw();
 
-		ERR_FAIL_COND(!rp);
+		ERR_FAIL_NULL(rp);
 
 		unsigned char *write_ptr = wp;
 		float *read_ptr = (float *)rp;
@@ -3422,9 +3756,9 @@ void Image::premultiply_alpha() {
 		for (int j = 0; j < width; j++) {
 			uint8_t *ptr = &data_ptr[(i * width + j) * 4];
 
-			ptr[0] = (uint16_t(ptr[0]) * uint16_t(ptr[3])) >> 8;
-			ptr[1] = (uint16_t(ptr[1]) * uint16_t(ptr[3])) >> 8;
-			ptr[2] = (uint16_t(ptr[2]) * uint16_t(ptr[3])) >> 8;
+			ptr[0] = (uint16_t(ptr[0]) * uint16_t(ptr[3]) + 255U) >> 8;
+			ptr[1] = (uint16_t(ptr[1]) * uint16_t(ptr[3]) + 255U) >> 8;
+			ptr[2] = (uint16_t(ptr[2]) * uint16_t(ptr[3]) + 255U) >> 8;
 		}
 	}
 }
@@ -3457,7 +3791,7 @@ void Image::fix_alpha_edges() {
 			}
 
 			int closest_dist = max_dist;
-			uint8_t closest_color[3];
+			uint8_t closest_color[3] = { 0 };
 
 			int from_x = MAX(0, j - max_radius);
 			int to_x = MIN(width - 1, j + max_radius);
@@ -3528,9 +3862,39 @@ Error Image::load_bmp_from_buffer(const Vector<uint8_t> &p_array) {
 	return _load_from_buffer(p_array, _bmp_mem_loader_func);
 }
 
+Error Image::load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale) {
+	ERR_FAIL_NULL_V_MSG(
+			_svg_scalable_mem_loader_func,
+			ERR_UNAVAILABLE,
+			"The SVG module isn't enabled. Recompile the Godot editor or export template binary with the `module_svg_enabled=yes` SCons option.");
+
+	int buffer_size = p_array.size();
+
+	ERR_FAIL_COND_V(buffer_size == 0, ERR_INVALID_PARAMETER);
+
+	Ref<Image> image = _svg_scalable_mem_loader_func(p_array.ptr(), buffer_size, scale);
+	ERR_FAIL_COND_V(!image.is_valid(), ERR_PARSE_ERROR);
+
+	copy_internals_from(image);
+
+	return OK;
+}
+
+Error Image::load_svg_from_string(const String &p_svg_str, float scale) {
+	return load_svg_from_buffer(p_svg_str.to_utf8_buffer(), scale);
+}
+
+Error Image::load_ktx_from_buffer(const Vector<uint8_t> &p_array) {
+	ERR_FAIL_NULL_V_MSG(
+			_ktx_mem_loader_func,
+			ERR_UNAVAILABLE,
+			"The KTX module isn't enabled. Recompile the Godot editor or export template binary with the `module_ktx_enabled=yes` SCons option.");
+	return _load_from_buffer(p_array, _ktx_mem_loader_func);
+}
+
 void Image::convert_rg_to_ra_rgba8() {
 	ERR_FAIL_COND(format != FORMAT_RGBA8);
-	ERR_FAIL_COND(!data.size());
+	ERR_FAIL_COND(data.is_empty());
 
 	int s = data.size();
 	uint8_t *w = data.ptrw();
@@ -3543,7 +3907,7 @@ void Image::convert_rg_to_ra_rgba8() {
 
 void Image::convert_ra_rgba8_to_rg() {
 	ERR_FAIL_COND(format != FORMAT_RGBA8);
-	ERR_FAIL_COND(!data.size());
+	ERR_FAIL_COND(data.is_empty());
 
 	int s = data.size();
 	uint8_t *w = data.ptrw();
@@ -3554,11 +3918,24 @@ void Image::convert_ra_rgba8_to_rg() {
 	}
 }
 
+void Image::convert_rgba8_to_bgra8() {
+	ERR_FAIL_COND(format != FORMAT_RGBA8);
+	ERR_FAIL_COND(data.is_empty());
+
+	int s = data.size();
+	uint8_t *w = data.ptrw();
+	for (int i = 0; i < s; i += 4) {
+		uint8_t r = w[i];
+		w[i] = w[i + 2]; // Swap R to B
+		w[i + 2] = r; // Swap B to R
+	}
+}
+
 Error Image::_load_from_buffer(const Vector<uint8_t> &p_array, ImageMemLoadFunc p_loader) {
 	int buffer_size = p_array.size();
 
 	ERR_FAIL_COND_V(buffer_size == 0, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(!p_loader, ERR_INVALID_PARAMETER);
+	ERR_FAIL_NULL_V(p_loader, ERR_INVALID_PARAMETER);
 
 	const uint8_t *r = p_array.ptr();
 
@@ -3632,6 +4009,10 @@ Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 	if (is_empty() && _jpg_mem_loader_func) {
 		copy_internals_from(_jpg_mem_loader_func(p_mem_png_jpg, p_len));
 	}
+
+	if (is_empty() && _webp_mem_loader_func) {
+		copy_internals_from(_webp_mem_loader_func(p_mem_png_jpg, p_len));
+	}
 }
 
 Ref<Resource> Image::duplicate(bool p_subresources) const {
@@ -3643,4 +4024,129 @@ Ref<Resource> Image::duplicate(bool p_subresources) const {
 
 void Image::set_as_black() {
 	memset(data.ptrw(), 0, data.size());
+}
+
+Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool p_luma_metric) {
+	// https://github.com/richgel999/bc7enc_rdo/blob/master/LICENSE
+	//
+	// This is free and unencumbered software released into the public domain.
+	// Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+	// software, either in source code form or as a compiled binary, for any purpose,
+	// commercial or non - commercial, and by any means.
+	// In jurisdictions that recognize copyright laws, the author or authors of this
+	// software dedicate any and all copyright interest in the software to the public
+	// domain. We make this dedication for the benefit of the public at large and to
+	// the detriment of our heirs and successors. We intend this dedication to be an
+	// overt act of relinquishment in perpetuity of all present and future rights to
+	// this software under copyright law.
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+	// AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+	// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+	// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	Dictionary result;
+	result["max"] = INFINITY;
+	result["mean"] = INFINITY;
+	result["mean_squared"] = INFINITY;
+	result["root_mean_squared"] = INFINITY;
+	result["peak_snr"] = 0.0f;
+
+	ERR_FAIL_NULL_V(p_compared_image, result);
+	Error err = OK;
+	Ref<Image> compared_image = duplicate(true);
+	if (compared_image->is_compressed()) {
+		err = compared_image->decompress();
+	}
+	ERR_FAIL_COND_V(err != OK, result);
+	Ref<Image> source_image = p_compared_image->duplicate(true);
+	if (source_image->is_compressed()) {
+		err = source_image->decompress();
+	}
+	ERR_FAIL_COND_V(err != OK, result);
+
+	ERR_FAIL_COND_V(err != OK, result);
+
+	ERR_FAIL_COND_V_MSG((compared_image->get_format() >= Image::FORMAT_RH) && (compared_image->get_format() <= Image::FORMAT_RGBE9995), result, "Metrics on HDR images are not supported.");
+	ERR_FAIL_COND_V_MSG((source_image->get_format() >= Image::FORMAT_RH) && (source_image->get_format() <= Image::FORMAT_RGBE9995), result, "Metrics on HDR images are not supported.");
+
+	double image_metric_max, image_metric_mean, image_metric_mean_squared, image_metric_root_mean_squared, image_metric_peak_snr = 0.0;
+	const bool average_component_error = true;
+
+	const uint32_t w = MIN(compared_image->get_width(), source_image->get_width());
+	const uint32_t h = MIN(compared_image->get_height(), source_image->get_height());
+
+	// Histogram approach originally due to Charles Bloom.
+	double hist[256];
+	memset(hist, 0, sizeof(hist));
+
+	for (uint32_t y = 0; y < h; y++) {
+		for (uint32_t x = 0; x < w; x++) {
+			const Color color_a = compared_image->get_pixel(x, y);
+
+			const Color color_b = source_image->get_pixel(x, y);
+
+			if (!p_luma_metric) {
+				ERR_FAIL_COND_V_MSG(color_a.r > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				ERR_FAIL_COND_V_MSG(color_b.r > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				hist[Math::abs(color_a.get_r8() - color_b.get_r8())]++;
+				ERR_FAIL_COND_V_MSG(color_a.g > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				ERR_FAIL_COND_V_MSG(color_b.g > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				hist[Math::abs(color_a.get_g8() - color_b.get_g8())]++;
+				ERR_FAIL_COND_V_MSG(color_a.b > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				ERR_FAIL_COND_V_MSG(color_b.b > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				hist[Math::abs(color_a.get_b8() - color_b.get_b8())]++;
+				ERR_FAIL_COND_V_MSG(color_a.a > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				ERR_FAIL_COND_V_MSG(color_b.a > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				hist[Math::abs(color_a.get_a8() - color_b.get_a8())]++;
+			} else {
+				ERR_FAIL_COND_V_MSG(color_a.r > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				ERR_FAIL_COND_V_MSG(color_b.r > 1.0f, Dictionary(), "Can't compare HDR colors.");
+				// REC709 weightings
+				int luma_a = (13938U * color_a.get_r8() + 46869U * color_a.get_g8() + 4729U * color_a.get_b8() + 32768U) >> 16U;
+				int luma_b = (13938U * color_b.get_r8() + 46869U * color_b.get_g8() + 4729U * color_b.get_b8() + 32768U) >> 16U;
+				hist[Math::abs(luma_a - luma_b)]++;
+			}
+		}
+	}
+
+	image_metric_max = 0;
+	double sum = 0.0f, sum2 = 0.0f;
+	for (uint32_t i = 0; i < 256; i++) {
+		if (!hist[i]) {
+			continue;
+		}
+
+		image_metric_max = i;
+
+		double x = i * hist[i];
+
+		sum += x;
+		sum2 += i * x;
+	}
+
+	// See http://richg42.blogspot.com/2016/09/how-to-compute-psnr-from-old-berkeley.html
+	double total_values = w * h;
+
+	if (average_component_error) {
+		total_values *= 4;
+	}
+
+	image_metric_mean = CLAMP(sum / total_values, 0.0f, 255.0f);
+	image_metric_mean_squared = CLAMP(sum2 / total_values, 0.0f, 255.0f * 255.0f);
+
+	image_metric_root_mean_squared = sqrt(image_metric_mean_squared);
+
+	if (!image_metric_root_mean_squared) {
+		image_metric_peak_snr = 1e+10f;
+	} else {
+		image_metric_peak_snr = CLAMP(log10(255.0f / image_metric_root_mean_squared) * 20.0f, 0.0f, 500.0f);
+	}
+	result["max"] = image_metric_max;
+	result["mean"] = image_metric_mean;
+	result["mean_squared"] = image_metric_mean_squared;
+	result["root_mean_squared"] = image_metric_root_mean_squared;
+	result["peak_snr"] = image_metric_peak_snr;
+	return result;
 }

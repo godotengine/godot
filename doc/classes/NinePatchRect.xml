@@ -1,32 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NinePatchRect" inherits="Control" version="4.0">
+<class name="NinePatchRect" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Scalable texture-based frame that tiles the texture's centers and sides, but keeps the corners' original size. Perfect for panels and dialog boxes.
+		A control that displays a texture by keeping its corners intact, but tiling its edges and center.
 	</brief_description>
 	<description>
-		Also known as 9-slice panels, NinePatchRect produces clean panels of any size, based on a small texture. To do so, it splits the texture in a 3×3 grid. When you scale the node, it tiles the texture's sides horizontally or vertically, the center on both axes but it doesn't scale or tile the corners.
+		Also known as 9-slice panels, [NinePatchRect] produces clean panels of any size based on a small texture. To do so, it splits the texture in a 3×3 grid. When you scale the node, it tiles the texture's edges horizontally or vertically, tiles the center on both axes, and leaves the corners unchanged.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="get_patch_margin" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
+			<return type="int" />
+			<param index="0" name="margin" type="int" enum="Side" />
 			<description>
 				Returns the size of the margin on the specified [enum Side].
 			</description>
 		</method>
 		<method name="set_patch_margin">
-			<return type="void">
-			</return>
-			<argument index="0" name="margin" type="int" enum="Side">
-			</argument>
-			<argument index="1" name="value" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<param index="1" name="value" type="int" />
 			<description>
-				Sets the size of the margin on the specified [enum Side] to [code]value[/code] pixels.
+				Sets the size of the margin on the specified [enum Side] to [param value] pixels.
 			</description>
 		</method>
 	</methods>
@@ -40,7 +35,7 @@
 		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled" default="true">
 			If [code]true[/code], draw the panel's center. Else, only draw the 9-slice's borders.
 		</member>
-		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="2" />
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="2" />
 		<member name="patch_margin_bottom" type="int" setter="set_patch_margin" getter="get_patch_margin" default="0">
 			The height of the 9-slice's bottom row. A margin of 16 means the 9-slice's bottom corners and side will have a height of 16 pixels. You can set all 4 margin values individually to create panels with non-uniform borders.
 		</member>
@@ -73,11 +68,9 @@
 		</constant>
 		<constant name="AXIS_STRETCH_MODE_TILE" value="1" enum="AxisStretchMode">
 			Repeats the center texture across the NinePatchRect. This won't cause any visible distortion. The texture must be seamless for this to work without displaying artifacts between edges.
-			[b]Note:[/b] Only supported when using the GLES3 renderer. When using the GLES2 renderer, this will behave like [constant AXIS_STRETCH_MODE_STRETCH].
 		</constant>
 		<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2" enum="AxisStretchMode">
 			Repeats the center texture across the NinePatchRect, but will also stretch the texture to make sure each tile is visible in full. This may cause the texture to be distorted, but less than [constant AXIS_STRETCH_MODE_STRETCH]. The texture must be seamless for this to work without displaying artifacts between edges.
-			[b]Note:[/b] Only supported when using the GLES3 renderer. When using the GLES2 renderer, this will behave like [constant AXIS_STRETCH_MODE_STRETCH].
 		</constant>
 	</constants>
 </class>

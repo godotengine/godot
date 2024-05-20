@@ -1,39 +1,49 @@
-/*************************************************************************/
-/*  video_stream_theora.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  video_stream_theora.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "video_stream_theora.h"
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "scene/resources/image_texture.h"
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4127)
+#endif
 
 #include "thirdparty/misc/yuv2rgb.h"
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 int VideoStreamPlaybackTheora::buffer_data() {
 	char *buffer = ogg_sync_buffer(&oy, 4096);
@@ -91,8 +101,6 @@ void VideoStreamPlaybackTheora::video_write() {
 		uint8_t *w = frame_data.ptrw();
 		char *dst = (char *)w;
 
-		//uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y/2);
-
 		if (px_fmt == TH_PF_444) {
 			yuv444_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
 
@@ -101,20 +109,20 @@ void VideoStreamPlaybackTheora::video_write() {
 
 		} else if (px_fmt == TH_PF_420) {
 			yuv420_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
-		};
+		}
 
 		format = Image::FORMAT_RGBA8;
 	}
 
 	Ref<Image> img = memnew(Image(size.x, size.y, 0, Image::FORMAT_RGBA8, frame_data)); //zero copy image creation
 
-	texture->update(img); //zero copy send to visual server
+	texture->update(img); //zero copy send to rendering server
 
 	frames_pending = 1;
 }
 
 void VideoStreamPlaybackTheora::clear() {
-	if (!file) {
+	if (file.is_null()) {
 		return;
 	}
 
@@ -123,7 +131,7 @@ void VideoStreamPlaybackTheora::clear() {
 		if (vorbis_p >= 3) {
 			vorbis_block_clear(&vb);
 			vorbis_dsp_clear(&vd);
-		};
+		}
 		vorbis_comment_clear(&vc);
 		vorbis_info_clear(&vi);
 		vorbis_p = 0;
@@ -152,12 +160,9 @@ void VideoStreamPlaybackTheora::clear() {
 	theora_eos = false;
 	vorbis_eos = false;
 
-	if (file) {
-		memdelete(file);
-	}
-	file = nullptr;
+	file.unref();
 	playing = false;
-};
+}
 
 void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	ERR_FAIL_COND(playing);
@@ -165,11 +170,8 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	th_setup_info *ts = nullptr;
 
 	file_name = p_file;
-	if (file) {
-		memdelete(file);
-	}
 	file = FileAccess::open(p_file, FileAccess::READ);
-	ERR_FAIL_COND_MSG(!file, "Cannot open file '" + p_file + "'.");
+	ERR_FAIL_COND_MSG(file.is_null(), "Cannot open file '" + p_file + "'.");
 
 #ifdef THEORA_USE_THREAD_STREAMING
 	thread_exit = false;
@@ -180,7 +182,6 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	ring_buffer.write(read_buffer.ptr(), read);
 
 	thread.start(_streaming_thread, this);
-
 #endif
 
 	ogg_sync_init(&oy);
@@ -251,10 +252,13 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 	/* we're expecting more header packets. */
 	while ((theora_p && theora_p < 3) || (vorbis_p && vorbis_p < 3)) {
-		int ret;
+		int ret = 0;
 
 		/* look for further theora headers */
-		while (theora_p && (theora_p < 3) && (ret = ogg_stream_packetout(&to, &op))) {
+		if (theora_p && theora_p < 3) {
+			ret = ogg_stream_packetout(&to, &op);
+		}
+		while (theora_p && theora_p < 3 && ret) {
 			if (ret < 0) {
 				fprintf(stderr, "Error parsing Theora stream headers; corrupt stream?\n");
 				clear();
@@ -265,11 +269,15 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 				clear();
 				return;
 			}
+			ret = ogg_stream_packetout(&to, &op);
 			theora_p++;
 		}
 
 		/* look for more vorbis header packets */
-		while (vorbis_p && (vorbis_p < 3) && (ret = ogg_stream_packetout(&vo, &op))) {
+		if (vorbis_p && vorbis_p < 3) {
+			ret = ogg_stream_packetout(&vo, &op);
+		}
+		while (vorbis_p && vorbis_p < 3 && ret) {
 			if (ret < 0) {
 				fprintf(stderr, "Error parsing Vorbis stream headers; corrupt stream?\n");
 				clear();
@@ -285,6 +293,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 			if (vorbis_p == 3) {
 				break;
 			}
+			ret = ogg_stream_packetout(&vo, &op);
 		}
 
 		/* The header pages/packets will arrive before anything else we
@@ -334,9 +343,8 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		size.x = w;
 		size.y = h;
 
-		Ref<Image> img;
-		img.instantiate();
-		img->create(w, h, false, Image::FORMAT_RGBA8);
+		Ref<Image> img = Image::create_empty(w, h, false, Image::FORMAT_RGBA8);
+		texture->set_image(img);
 
 	} else {
 		/* tear down the partial theora setup */
@@ -360,28 +368,28 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	buffering = true;
 	time = 0;
 	audio_frames_wrote = 0;
-};
+}
 
-float VideoStreamPlaybackTheora::get_time() const {
+double VideoStreamPlaybackTheora::get_time() const {
 	// FIXME: AudioServer output latency was fixed in af9bb0e, previously it used to
 	// systematically return 0. Now that it gives a proper latency, it broke this
 	// code where the delay compensation likely never really worked.
 	return time - /* AudioServer::get_singleton()->get_output_latency() - */ delay_compensation;
-};
+}
 
 Ref<Texture2D> VideoStreamPlaybackTheora::get_texture() const {
 	return texture;
 }
 
-void VideoStreamPlaybackTheora::update(float p_delta) {
-	if (!file) {
+void VideoStreamPlaybackTheora::update(double p_delta) {
+	if (file.is_null()) {
 		return;
 	}
 
 	if (!playing || paused) {
 		//printf("not playing\n");
 		return;
-	};
+	}
 
 #ifdef THEORA_USE_THREAD_STREAMING
 	thread_sem->post();
@@ -449,7 +457,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 					}
 				} else { /* we need more data; break out to suck in another page */
 					break;
-				};
+				}
 			}
 
 			audio_done = videobuf_time < (audio_frames_wrote / float(vi.rate));
@@ -462,12 +470,6 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 		while (theora_p && !frame_done) {
 			/* theora is one in, one out... */
 			if (ogg_stream_packetout(&to, &op) > 0) {
-				if (false && pp_inc) {
-					pp_level += pp_inc;
-					th_decode_ctl(td, TH_DECCTL_SET_PPLEVEL, &pp_level,
-							sizeof(pp_level));
-					pp_inc = 0;
-				}
 				/*HACK: This should be set after a seek or a gap, but we might not have
 				a granulepos for the first packet (we only have them for the last
 				packet on a page), so we just set it as often as we get it.
@@ -505,14 +507,14 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 		}
 
 #ifdef THEORA_USE_THREAD_STREAMING
-		if (file && thread_eof && no_theora && theora_eos && ring_buffer.data_left() == 0) {
+		if (file.is_valid() && thread_eof && no_theora && theora_eos && ring_buffer.data_left() == 0) {
 #else
-		if (file && /*!videobuf_ready && */ no_theora && theora_eos) {
+		if (file.is_valid() && /*!videobuf_ready && */ no_theora && theora_eos) {
 #endif
 			//printf("video done, stopping\n");
 			stop();
 			return;
-		};
+		}
 
 		if (!frame_done || !audio_done) {
 			//what's the point of waiting for audio to grab a page?
@@ -534,7 +536,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 			//printf("frame at %f not ready (time %f), ready %i\n", (float)videobuf_time, get_time(), videobuf_ready);
 		}
 
-		float tdiff = videobuf_time - get_time();
+		double tdiff = videobuf_time - get_time();
 		/*If we have lots of extra time, increase the post-processing level.*/
 		if (tdiff > ti.fps_denominator * 0.25 / ti.fps_numerator) {
 			pp_inc = pp_level < pp_level_max ? 1 : 0;
@@ -544,7 +546,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 	}
 
 	video_write();
-};
+}
 
 void VideoStreamPlaybackTheora::play() {
 	if (!playing) {
@@ -554,9 +556,9 @@ void VideoStreamPlaybackTheora::play() {
 	}
 
 	playing = true;
-	delay_compensation = ProjectSettings::get_singleton()->get("audio/video/video_delay_compensation_ms");
+	delay_compensation = GLOBAL_GET("audio/video/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
-};
+}
 
 void VideoStreamPlaybackTheora::stop() {
 	if (playing) {
@@ -565,50 +567,30 @@ void VideoStreamPlaybackTheora::stop() {
 	}
 	playing = false;
 	time = 0;
-};
+}
 
 bool VideoStreamPlaybackTheora::is_playing() const {
 	return playing;
-};
+}
 
 void VideoStreamPlaybackTheora::set_paused(bool p_paused) {
 	paused = p_paused;
-};
+}
 
 bool VideoStreamPlaybackTheora::is_paused() const {
 	return paused;
-};
-
-void VideoStreamPlaybackTheora::set_loop(bool p_enable) {
 }
 
-bool VideoStreamPlaybackTheora::has_loop() const {
-	return false;
-};
-
-float VideoStreamPlaybackTheora::get_length() const {
+double VideoStreamPlaybackTheora::get_length() const {
 	return 0;
-};
+}
 
-String VideoStreamPlaybackTheora::get_stream_name() const {
-	return "";
-};
-
-int VideoStreamPlaybackTheora::get_loop_count() const {
-	return 0;
-};
-
-float VideoStreamPlaybackTheora::get_playback_position() const {
+double VideoStreamPlaybackTheora::get_playback_position() const {
 	return get_time();
-};
-
-void VideoStreamPlaybackTheora::seek(float p_time) {
-	WARN_PRINT_ONCE("Seeking in Theora and WebM videos is not implemented yet (it's only supported for GDNative-provided video streams).");
 }
 
-void VideoStreamPlaybackTheora::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
-	mix_callback = p_callback;
-	mix_udata = p_userdata;
+void VideoStreamPlaybackTheora::seek(double p_time) {
+	WARN_PRINT_ONCE("Seeking in Theora videos is not implemented yet (it's only supported for GDExtension-provided video streams).");
 }
 
 int VideoStreamPlaybackTheora::get_channels() const {
@@ -626,7 +608,7 @@ int VideoStreamPlaybackTheora::get_mix_rate() const {
 #ifdef THEORA_USE_THREAD_STREAMING
 
 void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
-	VideoStreamPlaybackTheora *vs = (VideoStreamPlaybackTheora *)ud;
+	VideoStreamPlaybackTheora *vs = static_cast<VideoStreamPlaybackTheora *>(ud);
 
 	while (!vs->thread_exit) {
 		//just fill back the buffer
@@ -655,36 +637,24 @@ VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 	thread_sem = Semaphore::create();
 
 #endif
-};
+}
 
 VideoStreamPlaybackTheora::~VideoStreamPlaybackTheora() {
 #ifdef THEORA_USE_THREAD_STREAMING
-
 	memdelete(thread_sem);
 #endif
 	clear();
-
-	if (file) {
-		memdelete(file);
-	}
 };
 
-void VideoStreamTheora::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_file", "file"), &VideoStreamTheora::set_file);
-	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamTheora::get_file);
+void VideoStreamTheora::_bind_methods() {}
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_file", "get_file");
-}
-
-////////////
-
-RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	if (!f) {
+Ref<Resource> ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
 		if (r_error) {
 			*r_error = ERR_CANT_OPEN;
 		}
-		return RES();
+		return Ref<Resource>();
 	}
 
 	VideoStreamTheora *stream = memnew(VideoStreamTheora);
@@ -696,8 +666,6 @@ RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_origi
 		*r_error = OK;
 	}
 
-	f->close();
-	memdelete(f);
 	return ogv_stream;
 }
 

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  joypad_windows.h                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  joypad_windows.h                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef JOYPAD_WINDOWS_H
 #define JOYPAD_WINDOWS_H
@@ -35,7 +35,7 @@
 
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
-#include <xinput.h> // on unix the file is called "xinput.h", on windows I'm sure it won't mind
+#include <xinput.h>
 
 #ifndef SAFE_RELEASE // when Windows Media Device M? is not present
 #define SAFE_RELEASE(x) \
@@ -77,7 +77,7 @@ private:
 		DWORD last_pad;
 
 		LPDIRECTINPUTDEVICE8 di_joy;
-		List<LONG> joy_axis;
+		LocalVector<LONG> joy_axis;
 		GUID guid;
 
 		dinput_gamepad() {
@@ -85,9 +85,12 @@ private:
 			last_pad = -1;
 			attached = false;
 			confirmed = false;
+			di_joy = nullptr;
+			guid = {};
 
-			for (int i = 0; i < MAX_JOY_BUTTONS; i++)
+			for (int i = 0; i < MAX_JOY_BUTTONS; i++) {
 				last_buttons[i] = false;
+			}
 		}
 	};
 
@@ -104,10 +107,10 @@ private:
 	typedef DWORD(WINAPI *XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE *pState);
 	typedef DWORD(WINAPI *XInputSetState_t)(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration);
 
-	HWND *hWnd;
+	HWND *hWnd = nullptr;
 	HANDLE xinput_dll;
 	LPDIRECTINPUT8 dinput;
-	Input *input;
+	Input *input = nullptr;
 
 	int id_to_change;
 	int slider_count;
@@ -132,7 +135,7 @@ private:
 	void joypad_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
 	void joypad_vibration_stop_xinput(int p_device, uint64_t p_timestamp);
 
-	Input::JoyAxisValue axis_correct(int p_val, bool p_xinput = false, bool p_trigger = false, bool p_negate = false) const;
+	float axis_correct(int p_val, bool p_xinput = false, bool p_trigger = false, bool p_negate = false) const;
 	XInputGetState_t xinput_get_state;
 	XInputSetState_t xinput_set_state;
 };

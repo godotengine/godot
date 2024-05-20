@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LabelSettings" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides common settings to customize the text in a [Label].
+	</brief_description>
+	<description>
+		[LabelSettings] is a resource that provides common settings to customize the text in a [Label]. It will take priority over the properties defined in [member Control.theme]. The resource can be shared between multiple labels and changed on the fly, so it's convenient and flexible way to setup text style.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="font" type="Font" setter="set_font" getter="get_font">
+			[Font] used for the text.
+		</member>
+		<member name="font_color" type="Color" setter="set_font_color" getter="get_font_color" default="Color(1, 1, 1, 1)">
+			Color of the text.
+		</member>
+		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="16">
+			Size of the text.
+		</member>
+		<member name="line_spacing" type="float" setter="set_line_spacing" getter="get_line_spacing" default="3.0">
+			Vertical space between lines when the text is multiline.
+		</member>
+		<member name="outline_color" type="Color" setter="set_outline_color" getter="get_outline_color" default="Color(1, 1, 1, 1)">
+			The color of the outline.
+		</member>
+		<member name="outline_size" type="int" setter="set_outline_size" getter="get_outline_size" default="0">
+			Text outline size.
+		</member>
+		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color(0, 0, 0, 0)">
+			Color of the shadow effect. If alpha is [code]0[/code], no shadow will be drawn.
+		</member>
+		<member name="shadow_offset" type="Vector2" setter="set_shadow_offset" getter="get_shadow_offset" default="Vector2(1, 1)">
+			Offset of the shadow effect, in pixels.
+		</member>
+		<member name="shadow_size" type="int" setter="set_shadow_size" getter="get_shadow_size" default="1">
+			Size of the shadow effect.
+		</member>
+	</members>
+</class>

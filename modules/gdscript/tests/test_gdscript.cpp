@@ -1,34 +1,40 @@
-/*************************************************************************/
-/*  test_gdscript.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_gdscript.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "test_gdscript.h"
+
+#include "../gdscript_analyzer.h"
+#include "../gdscript_compiler.h"
+#include "../gdscript_parser.h"
+#include "../gdscript_tokenizer.h"
+#include "../gdscript_tokenizer_buffer.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
@@ -38,11 +44,6 @@
 #include "core/string/string_builder.h"
 #include "scene/resources/packed_scene.h"
 
-#include "modules/gdscript/gdscript_analyzer.h"
-#include "modules/gdscript/gdscript_compiler.h"
-#include "modules/gdscript/gdscript_parser.h"
-#include "modules/gdscript/gdscript_tokenizer.h"
-
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
@@ -50,13 +51,13 @@
 namespace GDScriptTests {
 
 static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) {
-	GDScriptTokenizer tokenizer;
+	GDScriptTokenizerText tokenizer;
 	tokenizer.set_source_code(p_code);
 
 	int tab_size = 4;
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton()) {
-		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/indent/size");
+		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
 	}
 #endif // TOOLS_ENABLED
 	String tab = String(" ").repeat(tab_size);
@@ -107,6 +108,53 @@ static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) 
 	print_line(current.get_name()); // Should be EOF
 }
 
+static void test_tokenizer_buffer(const Vector<uint8_t> &p_buffer, const Vector<String> &p_lines);
+
+static void test_tokenizer_buffer(const String &p_code, const Vector<String> &p_lines) {
+	Vector<uint8_t> binary = GDScriptTokenizerBuffer::parse_code_string(p_code, GDScriptTokenizerBuffer::COMPRESS_NONE);
+	test_tokenizer_buffer(binary, p_lines);
+}
+
+static void test_tokenizer_buffer(const Vector<uint8_t> &p_buffer, const Vector<String> &p_lines) {
+	GDScriptTokenizerBuffer tokenizer;
+	tokenizer.set_code_buffer(p_buffer);
+
+	int tab_size = 4;
+#ifdef TOOLS_ENABLED
+	if (EditorSettings::get_singleton()) {
+		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
+	}
+#endif // TOOLS_ENABLED
+	String tab = String(" ").repeat(tab_size);
+
+	GDScriptTokenizer::Token current = tokenizer.scan();
+	while (current.type != GDScriptTokenizer::Token::TK_EOF) {
+		StringBuilder token;
+		token += " --> "; // Padding for line number.
+
+		for (int l = current.start_line; l <= current.end_line && l <= p_lines.size(); l++) {
+			print_line(vformat("%04d %s", l, p_lines[l - 1]).replace("\t", tab));
+		}
+
+		token += current.get_name();
+
+		if (current.type == GDScriptTokenizer::Token::ERROR || current.type == GDScriptTokenizer::Token::LITERAL || current.type == GDScriptTokenizer::Token::IDENTIFIER || current.type == GDScriptTokenizer::Token::ANNOTATION) {
+			token += "(";
+			token += Variant::get_type_name(current.literal.get_type());
+			token += ") ";
+			token += current.literal;
+		}
+
+		print_line(token.as_string());
+
+		print_line("-------------------------------------------------------");
+
+		current = tokenizer.scan();
+	}
+
+	print_line(current.get_name()); // Should be EOF
+}
+
 static void test_parser(const String &p_code, const String &p_script_path, const Vector<String> &p_lines) {
 	GDScriptParser parser;
 	Error err = parser.parse(p_code, p_script_path, false);
@@ -119,7 +167,7 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 	}
 
 	GDScriptAnalyzer analyzer(&parser);
-	analyzer.analyze();
+	err = analyzer.analyze();
 
 	if (err != OK) {
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
@@ -132,6 +180,35 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 	GDScriptParser::TreePrinter printer;
 	printer.print_tree(parser);
 #endif
+}
+
+static void recursively_disassemble_functions(const Ref<GDScript> script, const Vector<String> &p_lines) {
+	for (const KeyValue<StringName, GDScriptFunction *> &E : script->get_member_functions()) {
+		const GDScriptFunction *func = E.value;
+
+		const MethodInfo &mi = func->get_method_info();
+		String signature = "Disassembling " + mi.name + "(";
+		for (List<PropertyInfo>::ConstIterator arg_itr = mi.arguments.begin(); arg_itr != mi.arguments.end(); ++arg_itr) {
+			if (arg_itr != mi.arguments.begin()) {
+				signature += ", ";
+			}
+			signature += arg_itr->name;
+		}
+		print_line(signature + ")");
+#ifdef TOOLS_ENABLED
+		func->disassemble(p_lines);
+#endif
+		print_line("");
+		print_line("");
+	}
+
+	for (const KeyValue<StringName, Ref<GDScript>> &F : script->get_subclasses()) {
+		const Ref<GDScript> inner_script = F.value;
+		print_line("");
+		print_line(vformat("Inner Class: %s", inner_script->get_local_name()));
+		print_line("");
+		recursively_disassemble_functions(inner_script, p_lines);
+	}
 }
 
 static void test_compiler(const String &p_code, const String &p_script_path, const Vector<String> &p_lines) {
@@ -172,23 +249,7 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 		return;
 	}
 
-	for (const Map<StringName, GDScriptFunction *>::Element *E = script->get_member_functions().front(); E; E = E->next()) {
-		const GDScriptFunction *func = E->value();
-
-		String signature = "Disassembling " + func->get_name().operator String() + "(";
-		for (int i = 0; i < func->get_argument_count(); i++) {
-			if (i > 0) {
-				signature += ", ";
-			}
-			signature += func->get_argument_name(i);
-		}
-		print_line(signature + ")");
-#ifdef TOOLS_ENABLED
-		func->disassemble(p_lines);
-#endif
-		print_line("");
-		print_line("");
-	}
+	recursively_disassemble_functions(script, p_lines);
 }
 
 void test(TestType p_type) {
@@ -199,16 +260,26 @@ void test(TestType p_type) {
 	}
 
 	String test = cmdlargs.back()->get();
-	if (!test.ends_with(".gd")) {
+	if (!test.ends_with(".gd") && !test.ends_with(".gdc")) {
 		print_line("This test expects a path to a GDScript file as its last parameter. Got: " + test);
 		return;
 	}
 
-	FileAccessRef fa = FileAccess::open(test, FileAccess::READ);
-	ERR_FAIL_COND_MSG(!fa, "Could not open file: " + test);
+	Ref<FileAccess> fa = FileAccess::open(test, FileAccess::READ);
+	ERR_FAIL_COND_MSG(fa.is_null(), "Could not open file: " + test);
 
 	// Initialize the language for the test routine.
 	init_language(fa->get_path_absolute().get_base_dir());
+
+	// Load global classes.
+	TypedArray<Dictionary> script_classes = ProjectSettings::get_singleton()->get_global_class_list();
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary c = script_classes[i];
+		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
+			continue;
+		}
+		ScriptServer::add_global_class(c["class"], c["base"], c["language"], c["path"]);
+	}
 
 	Vector<uint8_t> buf;
 	uint64_t flen = fa->get_length();
@@ -231,6 +302,13 @@ void test(TestType p_type) {
 	switch (p_type) {
 		case TEST_TOKENIZER:
 			test_tokenizer(code, lines);
+			break;
+		case TEST_TOKENIZER_BUFFER:
+			if (test.ends_with(".gdc")) {
+				test_tokenizer_buffer(buf, lines);
+			} else {
+				test_tokenizer_buffer(code, lines);
+			}
 			break;
 		case TEST_PARSER:
 			test_parser(code, test, lines);

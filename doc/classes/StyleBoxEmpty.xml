@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StyleBoxEmpty" inherits="StyleBox" version="4.0">
+<class name="StyleBoxEmpty" inherits="StyleBox" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Empty stylebox (does not display anything).
+		An empty [StyleBox] (does not display anything).
 	</brief_description>
 	<description>
-		Empty stylebox (really does not display anything).
+		An empty [StyleBox] that can be used to display nothing instead of the default style (e.g. it can "disable" [code]focus[/code] styles).
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
 </class>

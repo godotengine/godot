@@ -1,196 +1,161 @@
-/*************************************************************************/
-/*  gd_mono_cache.h                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gd_mono_cache.h                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef GD_MONO_CACHE_H
 #define GD_MONO_CACHE_H
 
-#include "gd_mono_header.h"
-#include "gd_mono_method_thunk.h"
+#include "../csharp_script.h"
+#include "../interop_types.h"
+#include "../mono_gc_handle.h"
+
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/callable.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
+
+#include <stdint.h>
+
+class CSharpScript;
 
 namespace GDMonoCache {
 
-struct CachedData {
-	// -----------------------------------------------
-	// corlib classes
-
-	// Let's use the no-namespace format for these too
-	GDMonoClass *class_MonoObject; // object
-	GDMonoClass *class_bool; // bool
-	GDMonoClass *class_int8_t; // sbyte
-	GDMonoClass *class_int16_t; // short
-	GDMonoClass *class_int32_t; // int
-	GDMonoClass *class_int64_t; // long
-	GDMonoClass *class_uint8_t; // byte
-	GDMonoClass *class_uint16_t; // ushort
-	GDMonoClass *class_uint32_t; // uint
-	GDMonoClass *class_uint64_t; // ulong
-	GDMonoClass *class_float; // float
-	GDMonoClass *class_double; // double
-	GDMonoClass *class_String; // string
-	GDMonoClass *class_IntPtr; // System.IntPtr
-
-	GDMonoClass *class_System_Collections_IEnumerable;
-	GDMonoClass *class_System_Collections_ICollection;
-	GDMonoClass *class_System_Collections_IDictionary;
-
-#ifdef DEBUG_ENABLED
-	GDMonoClass *class_System_Diagnostics_StackTrace;
-	GDMonoMethodThunkR<MonoArray *, MonoObject *> methodthunk_System_Diagnostics_StackTrace_GetFrames;
-	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_bool;
-	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_Exception_bool;
+#ifndef GD_CLR_STDCALL
+#ifdef WIN32
+#define GD_CLR_STDCALL __stdcall
+#else
+#define GD_CLR_STDCALL
+#endif
 #endif
 
-	GDMonoClass *class_KeyNotFoundException;
-
-	MonoClass *rawclass_Dictionary;
-	// -----------------------------------------------
-
-	GDMonoClass *class_Vector2;
-	GDMonoClass *class_Vector2i;
-	GDMonoClass *class_Rect2;
-	GDMonoClass *class_Rect2i;
-	GDMonoClass *class_Transform2D;
-	GDMonoClass *class_Vector3;
-	GDMonoClass *class_Vector3i;
-	GDMonoClass *class_Basis;
-	GDMonoClass *class_Quaternion;
-	GDMonoClass *class_Transform3D;
-	GDMonoClass *class_AABB;
-	GDMonoClass *class_Color;
-	GDMonoClass *class_Plane;
-	GDMonoClass *class_StringName;
-	GDMonoClass *class_NodePath;
-	GDMonoClass *class_RID;
-	GDMonoClass *class_GodotObject;
-	GDMonoClass *class_GodotResource;
-	GDMonoClass *class_Node;
-	GDMonoClass *class_Control;
-	GDMonoClass *class_Node3D;
-	GDMonoClass *class_WeakRef;
-	GDMonoClass *class_Callable;
-	GDMonoClass *class_SignalInfo;
-	GDMonoClass *class_Array;
-	GDMonoClass *class_Dictionary;
-	GDMonoClass *class_MarshalUtils;
-	GDMonoClass *class_ISerializationListener;
-
-#ifdef DEBUG_ENABLED
-	GDMonoClass *class_DebuggingUtils;
-	GDMonoMethodThunk<MonoObject *, MonoString **, int *, MonoString **> methodthunk_DebuggingUtils_GetStackFrameInfo;
-#endif
-
-	GDMonoClass *class_ExportAttribute;
-	GDMonoField *field_ExportAttribute_hint;
-	GDMonoField *field_ExportAttribute_hintString;
-	GDMonoClass *class_SignalAttribute;
-	GDMonoClass *class_ToolAttribute;
-	GDMonoClass *class_RemoteAttribute;
-	GDMonoClass *class_MasterAttribute;
-	GDMonoClass *class_PuppetAttribute;
-	GDMonoClass *class_GodotMethodAttribute;
-	GDMonoField *field_GodotMethodAttribute_methodName;
-	GDMonoClass *class_ScriptPathAttribute;
-	GDMonoField *field_ScriptPathAttribute_path;
-	GDMonoClass *class_AssemblyHasScriptsAttribute;
-	GDMonoField *field_AssemblyHasScriptsAttribute_requiresLookup;
-	GDMonoField *field_AssemblyHasScriptsAttribute_scriptTypes;
-
-	GDMonoField *field_GodotObject_ptr;
-	GDMonoField *field_StringName_ptr;
-	GDMonoField *field_NodePath_ptr;
-	GDMonoField *field_Image_ptr;
-	GDMonoField *field_RID_ptr;
-
-	GDMonoMethodThunk<MonoObject *> methodthunk_GodotObject_Dispose;
-	GDMonoMethodThunkR<Array *, MonoObject *> methodthunk_Array_GetPtr;
-	GDMonoMethodThunkR<Dictionary *, MonoObject *> methodthunk_Dictionary_GetPtr;
-	GDMonoMethodThunk<MonoObject *, MonoArray *> methodthunk_SignalAwaiter_SignalCallback;
-	GDMonoMethodThunk<MonoObject *> methodthunk_GodotTaskScheduler_Activate;
-
-	GDMonoMethodThunkR<MonoBoolean, MonoObject *, MonoObject *> methodthunk_Delegate_Equals;
-
-	GDMonoMethodThunkR<MonoBoolean, MonoDelegate *, MonoObject *> methodthunk_DelegateUtils_TrySerializeDelegate;
-	GDMonoMethodThunkR<MonoBoolean, MonoObject *, MonoDelegate **> methodthunk_DelegateUtils_TryDeserializeDelegate;
-
-	// Start of MarshalUtils methods
-
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericArray;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericDictionary;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsSystemGenericList;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsSystemGenericDictionary;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIEnumerable;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericICollection;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIDictionary;
-
-	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **> methodthunk_MarshalUtils_ArrayGetElementType;
-	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **, MonoReflectionType **> methodthunk_MarshalUtils_DictionaryGetKeyValueTypes;
-
-	GDMonoMethodThunkR<MonoReflectionType *, MonoReflectionType *> methodthunk_MarshalUtils_MakeGenericArrayType;
-	GDMonoMethodThunkR<MonoReflectionType *, MonoReflectionType *, MonoReflectionType *> methodthunk_MarshalUtils_MakeGenericDictionaryType;
-
-	// End of MarshalUtils methods
-
-	Ref<MonoGCHandleRef> task_scheduler_handle;
-
-	bool corlib_cache_updated;
-	bool godot_api_cache_updated;
-
-	void clear_corlib_cache();
-	void clear_godot_api_cache();
-
-	CachedData() {
-		clear_corlib_cache();
-		clear_godot_api_cache();
-	}
+struct godotsharp_property_info {
+	godot_string_name name; // Not owned
+	godot_string hint_string;
+	Variant::Type type;
+	PropertyHint hint;
+	PropertyUsageFlags usage;
+	bool exported;
 };
 
-extern CachedData cached_data;
+struct godotsharp_property_def_val_pair {
+	godot_string_name name; // Not owned
+	godot_variant value;
+};
 
-void update_corlib_cache();
-void update_godot_api_cache();
+struct ManagedCallbacks {
+	using Callback_ScriptManagerBridge_GetPropertyInfoList_Add = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const String *, void *p_props, int32_t p_count);
+	using Callback_ScriptManagerBridge_GetPropertyDefaultValues_Add = void(GD_CLR_STDCALL *)(CSharpScript *p_script, void *p_def_vals, int32_t p_count);
 
-inline void clear_corlib_cache() {
-	cached_data.clear_corlib_cache();
-}
+	using FuncSignalAwaiter_SignalCallback = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Variant **, int32_t, bool *);
+	using FuncDelegateUtils_InvokeWithVariantArgs = void(GD_CLR_STDCALL *)(GCHandleIntPtr, void *, const Variant **, int32_t, const Variant *);
+	using FuncDelegateUtils_DelegateEquals = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, GCHandleIntPtr);
+	using FuncDelegateUtils_DelegateHash = int32_t(GD_CLR_STDCALL *)(GCHandleIntPtr);
+	using FuncDelegateUtils_GetArgumentCount = int32_t(GD_CLR_STDCALL *)(GCHandleIntPtr, bool *);
+	using FuncDelegateUtils_TrySerializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const Array *);
+	using FuncDelegateUtils_TryDeserializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(const Array *, GCHandleIntPtr *);
+	using FuncScriptManagerBridge_FrameCallback = void(GD_CLR_STDCALL *)();
+	using FuncScriptManagerBridge_CreateManagedForGodotObjectBinding = GCHandleIntPtr(GD_CLR_STDCALL *)(const StringName *, Object *);
+	using FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstance = bool(GD_CLR_STDCALL *)(const CSharpScript *, Object *, const Variant **, int32_t);
+	using FuncScriptManagerBridge_GetScriptNativeName = void(GD_CLR_STDCALL *)(const CSharpScript *, StringName *);
+	using FuncScriptManagerBridge_GetGlobalClassName = void(GD_CLR_STDCALL *)(const String *, String *, String *, String *);
+	using FuncScriptManagerBridge_SetGodotObjectPtr = void(GD_CLR_STDCALL *)(GCHandleIntPtr, Object *);
+	using FuncScriptManagerBridge_RaiseEventSignal = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int32_t, bool *);
+	using FuncScriptManagerBridge_ScriptIsOrInherits = bool(GD_CLR_STDCALL *)(const CSharpScript *, const CSharpScript *);
+	using FuncScriptManagerBridge_AddScriptBridge = bool(GD_CLR_STDCALL *)(const CSharpScript *, const String *);
+	using FuncScriptManagerBridge_GetOrCreateScriptBridgeForPath = void(GD_CLR_STDCALL *)(const String *, Ref<CSharpScript> *);
+	using FuncScriptManagerBridge_RemoveScriptBridge = void(GD_CLR_STDCALL *)(const CSharpScript *);
+	using FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass = bool(GD_CLR_STDCALL *)(const CSharpScript *);
+	using FuncScriptManagerBridge_UpdateScriptClassInfo = void(GD_CLR_STDCALL *)(const CSharpScript *, CSharpScript::TypeInfo *, Array *, Dictionary *, Dictionary *, Ref<CSharpScript> *);
+	using FuncScriptManagerBridge_SwapGCHandleForType = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, GCHandleIntPtr *, bool);
+	using FuncScriptManagerBridge_GetPropertyInfoList = void(GD_CLR_STDCALL *)(CSharpScript *, Callback_ScriptManagerBridge_GetPropertyInfoList_Add);
+	using FuncScriptManagerBridge_GetPropertyDefaultValues = void(GD_CLR_STDCALL *)(CSharpScript *, Callback_ScriptManagerBridge_GetPropertyDefaultValues_Add);
+	using FuncScriptManagerBridge_CallStatic = bool(GD_CLR_STDCALL *)(const CSharpScript *, const StringName *, const Variant **, int32_t, Callable::CallError *, Variant *);
+	using FuncCSharpInstanceBridge_Call = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int32_t, Callable::CallError *, Variant *);
+	using FuncCSharpInstanceBridge_Set = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant *);
+	using FuncCSharpInstanceBridge_Get = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, Variant *);
+	using FuncCSharpInstanceBridge_CallDispose = void(GD_CLR_STDCALL *)(GCHandleIntPtr, bool);
+	using FuncCSharpInstanceBridge_CallToString = void(GD_CLR_STDCALL *)(GCHandleIntPtr, String *, bool *);
+	using FuncCSharpInstanceBridge_HasMethodUnknownParams = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *);
+	using FuncCSharpInstanceBridge_SerializeState = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Dictionary *, const Dictionary *);
+	using FuncCSharpInstanceBridge_DeserializeState = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Dictionary *, const Dictionary *);
+	using FuncGCHandleBridge_FreeGCHandle = void(GD_CLR_STDCALL *)(GCHandleIntPtr);
+	using FuncGCHandleBridge_GCHandleIsTargetCollectible = bool(GD_CLR_STDCALL *)(GCHandleIntPtr);
+	using FuncDebuggingUtils_GetCurrentStackInfo = void(GD_CLR_STDCALL *)(Vector<ScriptLanguage::StackInfo> *);
+	using FuncDisposablesTracker_OnGodotShuttingDown = void(GD_CLR_STDCALL *)();
+	using FuncGD_OnCoreApiAssemblyLoaded = void(GD_CLR_STDCALL *)(bool);
 
-inline void clear_godot_api_cache() {
-	cached_data.clear_godot_api_cache();
-}
+	FuncSignalAwaiter_SignalCallback SignalAwaiter_SignalCallback;
+	FuncDelegateUtils_InvokeWithVariantArgs DelegateUtils_InvokeWithVariantArgs;
+	FuncDelegateUtils_DelegateEquals DelegateUtils_DelegateEquals;
+	FuncDelegateUtils_DelegateHash DelegateUtils_DelegateHash;
+	FuncDelegateUtils_GetArgumentCount DelegateUtils_GetArgumentCount;
+	FuncDelegateUtils_TrySerializeDelegateWithGCHandle DelegateUtils_TrySerializeDelegateWithGCHandle;
+	FuncDelegateUtils_TryDeserializeDelegateWithGCHandle DelegateUtils_TryDeserializeDelegateWithGCHandle;
+	FuncScriptManagerBridge_FrameCallback ScriptManagerBridge_FrameCallback;
+	FuncScriptManagerBridge_CreateManagedForGodotObjectBinding ScriptManagerBridge_CreateManagedForGodotObjectBinding;
+	FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstance ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance;
+	FuncScriptManagerBridge_GetScriptNativeName ScriptManagerBridge_GetScriptNativeName;
+	FuncScriptManagerBridge_GetGlobalClassName ScriptManagerBridge_GetGlobalClassName;
+	FuncScriptManagerBridge_SetGodotObjectPtr ScriptManagerBridge_SetGodotObjectPtr;
+	FuncScriptManagerBridge_RaiseEventSignal ScriptManagerBridge_RaiseEventSignal;
+	FuncScriptManagerBridge_ScriptIsOrInherits ScriptManagerBridge_ScriptIsOrInherits;
+	FuncScriptManagerBridge_AddScriptBridge ScriptManagerBridge_AddScriptBridge;
+	FuncScriptManagerBridge_GetOrCreateScriptBridgeForPath ScriptManagerBridge_GetOrCreateScriptBridgeForPath;
+	FuncScriptManagerBridge_RemoveScriptBridge ScriptManagerBridge_RemoveScriptBridge;
+	FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
+	FuncScriptManagerBridge_UpdateScriptClassInfo ScriptManagerBridge_UpdateScriptClassInfo;
+	FuncScriptManagerBridge_SwapGCHandleForType ScriptManagerBridge_SwapGCHandleForType;
+	FuncScriptManagerBridge_GetPropertyInfoList ScriptManagerBridge_GetPropertyInfoList;
+	FuncScriptManagerBridge_GetPropertyDefaultValues ScriptManagerBridge_GetPropertyDefaultValues;
+	FuncScriptManagerBridge_CallStatic ScriptManagerBridge_CallStatic;
+	FuncCSharpInstanceBridge_Call CSharpInstanceBridge_Call;
+	FuncCSharpInstanceBridge_Set CSharpInstanceBridge_Set;
+	FuncCSharpInstanceBridge_Get CSharpInstanceBridge_Get;
+	FuncCSharpInstanceBridge_CallDispose CSharpInstanceBridge_CallDispose;
+	FuncCSharpInstanceBridge_CallToString CSharpInstanceBridge_CallToString;
+	FuncCSharpInstanceBridge_HasMethodUnknownParams CSharpInstanceBridge_HasMethodUnknownParams;
+	FuncCSharpInstanceBridge_SerializeState CSharpInstanceBridge_SerializeState;
+	FuncCSharpInstanceBridge_DeserializeState CSharpInstanceBridge_DeserializeState;
+	FuncGCHandleBridge_FreeGCHandle GCHandleBridge_FreeGCHandle;
+	FuncGCHandleBridge_GCHandleIsTargetCollectible GCHandleBridge_GCHandleIsTargetCollectible;
+	FuncDebuggingUtils_GetCurrentStackInfo DebuggingUtils_GetCurrentStackInfo;
+	FuncDisposablesTracker_OnGodotShuttingDown DisposablesTracker_OnGodotShuttingDown;
+	FuncGD_OnCoreApiAssemblyLoaded GD_OnCoreApiAssemblyLoaded;
+};
+
+extern ManagedCallbacks managed_callbacks;
+extern bool godot_api_cache_updated;
+
+void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks);
+
 } // namespace GDMonoCache
-
-#define CACHED_CLASS(m_class) (GDMonoCache::cached_data.class_##m_class)
-#define CACHED_CLASS_RAW(m_class) (GDMonoCache::cached_data.class_##m_class->get_mono_ptr())
-#define CACHED_RAW_MONO_CLASS(m_class) (GDMonoCache::cached_data.rawclass_##m_class)
-#define CACHED_FIELD(m_class, m_field) (GDMonoCache::cached_data.field_##m_class##_##m_field)
-#define CACHED_METHOD(m_class, m_method) (GDMonoCache::cached_data.method_##m_class##_##m_method)
-#define CACHED_METHOD_THUNK(m_class, m_method) (GDMonoCache::cached_data.methodthunk_##m_class##_##m_method)
-#define CACHED_PROPERTY(m_class, m_property) (GDMonoCache::cached_data.property_##m_class##_##m_property)
 
 #endif // GD_MONO_CACHE_H

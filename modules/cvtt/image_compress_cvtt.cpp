@@ -1,37 +1,37 @@
-/*************************************************************************/
-/*  image_compress_cvtt.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  image_compress_cvtt.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "image_compress_cvtt.h"
 
+#include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
-#include "core/os/thread.h"
 #include "core/string/print_string.h"
 #include "core/templates/safe_refcount.h"
 
@@ -41,12 +41,12 @@ struct CVTTCompressionJobParams {
 	bool is_hdr = false;
 	bool is_signed = false;
 	int bytes_per_pixel = 0;
-
+	cvtt::BC7EncodingPlan bc7_plan;
 	cvtt::Options options;
 };
 
 struct CVTTCompressionRowTask {
-	const uint8_t *in_mm_bytes;
+	const uint8_t *in_mm_bytes = nullptr;
 	uint8_t *out_mm_bytes = nullptr;
 	int y_start = 0;
 	int width = 0;
@@ -55,7 +55,7 @@ struct CVTTCompressionRowTask {
 
 struct CVTTCompressionJobQueue {
 	CVTTCompressionJobParams job_params;
-	const CVTTCompressionRowTask *job_tasks;
+	const CVTTCompressionRowTask *job_tasks = nullptr;
 	uint32_t num_tasks = 0;
 	SafeNumeric<uint32_t> current_task;
 };
@@ -116,7 +116,7 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 				cvtt::Kernels::EncodeBC6HU(output_blocks, input_blocks_hdr, p_job_params.options);
 			}
 		} else {
-			cvtt::Kernels::EncodeBC7(output_blocks, input_blocks_ldr, p_job_params.options);
+			cvtt::Kernels::EncodeBC7(output_blocks, input_blocks_ldr, p_job_params.options, p_job_params.bc7_plan);
 		}
 
 		unsigned int num_real_blocks = ((w - x_start) + 3) / 4;
@@ -129,19 +129,22 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 	}
 }
 
-static void _digest_job_queue(void *p_job_queue) {
+static void _digest_job_queue(void *p_job_queue, uint32_t p_index) {
 	CVTTCompressionJobQueue *job_queue = static_cast<CVTTCompressionJobQueue *>(p_job_queue);
+	uint32_t num_tasks = job_queue->num_tasks;
+	uint32_t total_threads = WorkerThreadPool::get_singleton()->get_thread_count();
+	uint32_t start = p_index * num_tasks / total_threads;
+	uint32_t end = (p_index + 1 == total_threads) ? num_tasks : ((p_index + 1) * num_tasks / total_threads);
 
-	for (uint32_t next_task = job_queue->current_task.increment(); next_task <= job_queue->num_tasks; next_task = job_queue->current_task.increment()) {
-		_digest_row_task(job_queue->job_params, job_queue->job_tasks[next_task - 1]);
+	for (uint32_t i = start; i < end; i++) {
+		_digest_row_task(job_queue->job_params, job_queue->job_tasks[i]);
 	}
 }
 
-void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChannels p_channels) {
-	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA) {
+void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
+	if (p_image->is_compressed()) {
 		return; //do not compress, already compressed
 	}
-
 	int w = p_image->get_width();
 	int h = p_image->get_height();
 
@@ -153,22 +156,8 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 	}
 
 	cvtt::Options options;
-	uint32_t flags = cvtt::Flags::Fastest;
-
-	if (p_lossy_quality > 0.85) {
-		flags = cvtt::Flags::Ultra;
-	} else if (p_lossy_quality > 0.75) {
-		flags = cvtt::Flags::Better;
-	} else if (p_lossy_quality > 0.55) {
-		flags = cvtt::Flags::Default;
-	} else if (p_lossy_quality > 0.35) {
-		flags = cvtt::Flags::Fast;
-	} else if (p_lossy_quality > 0.15) {
-		flags = cvtt::Flags::Faster;
-	}
-
+	uint32_t flags = cvtt::Flags::Default;
 	flags |= cvtt::Flags::BC7_RespectPunchThrough;
-
 	if (p_channels == Image::USED_CHANNELS_RG) { //guessing this is a normal map
 		flags |= cvtt::Flags::Uniform;
 	}
@@ -215,12 +204,14 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 	job_queue.job_params.is_signed = is_signed;
 	job_queue.job_params.options = options;
 	job_queue.job_params.bytes_per_pixel = is_hdr ? 6 : 4;
+	cvtt::Kernels::ConfigureBC7EncodingPlanFromQuality(job_queue.job_params.bc7_plan, 5);
 
-#ifdef NO_THREADS
-	int num_job_threads = 0;
-#else
-	int num_job_threads = OS::get_singleton()->can_use_threads() ? (OS::get_singleton()->get_processor_count() - 1) : 0;
-#endif
+	// Amdahl's law (Wikipedia)
+	// If a program needs 20 hours to complete using a single thread, but a one-hour portion of the program cannot be parallelized,
+	// therefore only the remaining 19 hours (p = 0.95) of execution time can be parallelized, then regardless of how many threads are devoted
+	// to a parallelized execution of this program, the minimum execution time cannot be less than one hour.
+	//
+	// The number of executions with different inputs can be increased while the latency is the same.
 
 	Vector<CVTTCompressionRowTask> tasks;
 
@@ -241,11 +232,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 			row_task.in_mm_bytes = in_bytes;
 			row_task.out_mm_bytes = out_bytes;
 
-			if (num_job_threads > 0) {
-				tasks.push_back(row_task);
-			} else {
-				_digest_row_task(job_queue.job_params, row_task);
-			}
+			tasks.push_back(row_task);
 
 			out_bytes += 16 * (bw / 4);
 		}
@@ -255,31 +242,14 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 		h = MAX(h / 2, 1);
 	}
 
-	if (num_job_threads > 0) {
-		Vector<Thread *> threads;
-		threads.resize(num_job_threads);
+	const CVTTCompressionRowTask *tasks_rb = tasks.ptr();
 
-		Thread **threads_wb = threads.ptrw();
+	job_queue.job_tasks = &tasks_rb[0];
+	job_queue.num_tasks = static_cast<uint32_t>(tasks.size());
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&_digest_job_queue, &job_queue, WorkerThreadPool::get_singleton()->get_thread_count(), -1, true, SNAME("CVTT Compress"));
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
-		const CVTTCompressionRowTask *tasks_rb = tasks.ptr();
-
-		job_queue.job_tasks = &tasks_rb[0];
-		job_queue.current_task.set(0);
-		job_queue.num_tasks = static_cast<uint32_t>(tasks.size());
-
-		for (int i = 0; i < num_job_threads; i++) {
-			threads_wb[i] = memnew(Thread);
-			threads_wb[i]->start(_digest_job_queue, &job_queue);
-		}
-		_digest_job_queue(&job_queue);
-
-		for (int i = 0; i < num_job_threads; i++) {
-			threads_wb[i]->wait_to_finish();
-			memdelete(threads_wb[i]);
-		}
-	}
-
-	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+	p_image->set_data(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }
 
 void image_decompress_cvtt(Image *p_image) {
@@ -332,8 +302,6 @@ void image_decompress_cvtt(Image *p_image) {
 			int y_end = y_start + 4;
 
 			for (int x_start = 0; x_start < w; x_start += 4 * cvtt::NumParallelBlocks) {
-				int x_end = x_start + 4 * cvtt::NumParallelBlocks;
-
 				uint8_t input_blocks[16 * cvtt::NumParallelBlocks];
 				memset(input_blocks, 0, sizeof(input_blocks));
 
@@ -344,6 +312,8 @@ void image_decompress_cvtt(Image *p_image) {
 
 				memcpy(input_blocks, in_bytes, 16 * num_real_blocks);
 				in_bytes += 16 * num_real_blocks;
+
+				int x_end = x_start + 4 * num_real_blocks;
 
 				if (is_hdr) {
 					if (is_signed) {
@@ -388,6 +358,5 @@ void image_decompress_cvtt(Image *p_image) {
 		w >>= 1;
 		h >>= 1;
 	}
-
-	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+	p_image->set_data(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }

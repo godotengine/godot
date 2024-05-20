@@ -144,7 +144,20 @@ namespace embree
   }
 
   bool State::checkISASupport() {
+#if defined(__ARM_NEON)
+    /*
+     * NEON CPU type is a mixture of NEON and SSE2
+     */
+
+    bool hasSSE2 = (getCPUFeatures() & enabled_cpu_features) & CPU_FEATURE_SSE2;
+
+    /* this will be true when explicitly initialize Device with `isa=neon` config */
+    bool hasNEON = (getCPUFeatures() & enabled_cpu_features) & CPU_FEATURE_NEON;
+
+    return hasSSE2 || hasNEON;
+#else
     return (getCPUFeatures() & enabled_cpu_features) == enabled_cpu_features;
+#endif
   }
   
   void State::verify()
@@ -157,7 +170,9 @@ namespace embree
      * functions */
 #if defined(DEBUG)
 #if defined(EMBREE_TARGET_SSE2)
+#if !defined(__ARM_NEON)
     assert(sse2::getISA() <= SSE2);
+#endif
 #endif
 #if defined(EMBREE_TARGET_SSE42)
     assert(sse42::getISA() <= SSE42);
@@ -177,10 +192,17 @@ namespace embree
   const char* symbols[3] = { "=", ",", "|" };
 
   bool State::parseFile(const FileName& fileName)
-  {
-    FILE* f = fopen(fileName.c_str(),"r");
-    if (!f) return false;
-    Ref<Stream<int> > file = new FileStream(f,fileName);
+  { 
+    Ref<Stream<int> > file;
+    // -- GODOT start --
+    // try {
+      file = new FileStream(fileName);
+    // }
+    // catch (std::runtime_error& e) {
+    //   (void) e;
+    //   return false;
+    // }
+    // -- GODOT end --
     
     std::vector<std::string> syms;
     for (size_t i=0; i<sizeof(symbols)/sizeof(void*); i++) 
@@ -378,7 +400,7 @@ namespace embree
         grid_accel = cin->get().Identifier();
       else if (tok == Token::Id("grid_accel_mb") && cin->trySymbol("="))
         grid_accel_mb = cin->get().Identifier();
-      
+
       else if (tok == Token::Id("verbose") && cin->trySymbol("="))
         verbose = cin->get().Int();
       else if (tok == Token::Id("benchmark") && cin->trySymbol("="))
@@ -404,7 +426,7 @@ namespace embree
           } while (cin->trySymbol("|"));
         }
       }
-      
+
       else if (tok == Token::Id("max_spatial_split_replications") && cin->trySymbol("="))
         max_spatial_split_replications = cin->get().Float();
 

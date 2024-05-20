@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  GodotPluginRegistry.java                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  GodotPluginRegistry.java                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 package org.godotengine.godot.plugin;
 
@@ -42,8 +42,8 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -52,14 +52,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class GodotPluginRegistry {
 	private static final String TAG = GodotPluginRegistry.class.getSimpleName();
 
+	/**
+	 * Prefix used for version 1 of the Godot plugin, mostly compatible with Godot 3.x
+	 */
 	private static final String GODOT_PLUGIN_V1_NAME_PREFIX = "org.godotengine.plugin.v1.";
+	/**
+	 * Prefix used for version 2 of the Godot plugin, compatible with Godot 4.2+
+	 */
+	private static final String GODOT_PLUGIN_V2_NAME_PREFIX = "org.godotengine.plugin.v2.";
 
 	private static GodotPluginRegistry instance;
 	private final ConcurrentHashMap<String, GodotPlugin> registry;
 
-	private GodotPluginRegistry(Godot godot) {
+	private GodotPluginRegistry() {
 		registry = new ConcurrentHashMap<>();
-		loadPlugins(godot);
 	}
 
 	/**
@@ -86,12 +92,14 @@ public final class GodotPluginRegistry {
 	 * documentation.
 	 *
 	 * @param godot Godot instance
+	 * @param runtimePlugins Set of plugins provided at runtime for registration
 	 * @return A singleton instance of {@link GodotPluginRegistry}. This ensures that only one instance
 	 * of each Godot Android plugins is available at runtime.
 	 */
-	public static GodotPluginRegistry initializePluginRegistry(Godot godot) {
+	public static GodotPluginRegistry initializePluginRegistry(Godot godot, Set<GodotPlugin> runtimePlugins) {
 		if (instance == null) {
-			instance = new GodotPluginRegistry(godot);
+			instance = new GodotPluginRegistry();
+			instance.loadPlugins(godot, runtimePlugins);
 		}
 
 		return instance;
@@ -101,7 +109,7 @@ public final class GodotPluginRegistry {
 	 * Return the plugin registry if it's initialized.
 	 * Throws a {@link IllegalStateException} exception if not.
 	 *
-	 * @throws IllegalStateException if {@link GodotPluginRegistry#initializePluginRegistry(Godot)} has not been called prior to calling this method.
+	 * @throws IllegalStateException if {@link GodotPluginRegistry#initializePluginRegistry(Godot, Set)} has not been called prior to calling this method.
 	 */
 	public static GodotPluginRegistry getPluginRegistry() throws IllegalStateException {
 		if (instance == null) {
@@ -111,7 +119,16 @@ public final class GodotPluginRegistry {
 		return instance;
 	}
 
-	private void loadPlugins(Godot godot) {
+	private void loadPlugins(Godot godot, Set<GodotPlugin> runtimePlugins) {
+		// Register the runtime plugins
+		if (runtimePlugins != null && !runtimePlugins.isEmpty()) {
+			for (GodotPlugin plugin : runtimePlugins) {
+				Log.i(TAG, "Registering runtime plugin " + plugin.getPluginName());
+				registry.put(plugin.getPluginName(), plugin);
+			}
+		}
+
+		// Register the manifest plugins
 		try {
 			final Activity activity = godot.getActivity();
 			ApplicationInfo appInfo = activity
@@ -123,11 +140,17 @@ public final class GodotPluginRegistry {
 				return;
 			}
 
-			int godotPluginV1NamePrefixLength = GODOT_PLUGIN_V1_NAME_PREFIX.length();
 			for (String metaDataName : metaData.keySet()) {
 				// Parse the meta-data looking for entry with the Godot plugin name prefix.
-				if (metaDataName.startsWith(GODOT_PLUGIN_V1_NAME_PREFIX)) {
-					String pluginName = metaDataName.substring(godotPluginV1NamePrefixLength).trim();
+				String pluginName = null;
+				if (metaDataName.startsWith(GODOT_PLUGIN_V2_NAME_PREFIX)) {
+					pluginName = metaDataName.substring(GODOT_PLUGIN_V2_NAME_PREFIX.length()).trim();
+				} else if (metaDataName.startsWith(GODOT_PLUGIN_V1_NAME_PREFIX)) {
+					pluginName = metaDataName.substring(GODOT_PLUGIN_V1_NAME_PREFIX.length()).trim();
+					Log.w(TAG, "Godot v1 plugin are deprecated in Godot 4.2 and higher: " + pluginName);
+				}
+
+				if (!TextUtils.isEmpty(pluginName)) {
 					Log.i(TAG, "Initializing Godot plugin " + pluginName);
 
 					// Retrieve the plugin class full name.
@@ -149,15 +172,7 @@ public final class GodotPluginRegistry {
 							}
 							registry.put(pluginName, pluginHandle);
 							Log.i(TAG, "Completed initialization for Godot plugin " + pluginHandle.getPluginName());
-						} catch (ClassNotFoundException e) {
-							Log.w(TAG, "Unable to load Godot plugin " + pluginName, e);
-						} catch (IllegalAccessException e) {
-							Log.w(TAG, "Unable to load Godot plugin " + pluginName, e);
-						} catch (InstantiationException e) {
-							Log.w(TAG, "Unable to load Godot plugin " + pluginName, e);
-						} catch (NoSuchMethodException e) {
-							Log.w(TAG, "Unable to load Godot plugin " + pluginName, e);
-						} catch (InvocationTargetException e) {
+						} catch (Exception e) {
 							Log.w(TAG, "Unable to load Godot plugin " + pluginName, e);
 						}
 					} else {
@@ -165,7 +180,7 @@ public final class GodotPluginRegistry {
 					}
 				}
 			}
-		} catch (PackageManager.NameNotFoundException e) {
+		} catch (Exception e) {
 			Log.e(TAG, "Unable load Godot Android plugins from the manifest file.", e);
 		}
 	}

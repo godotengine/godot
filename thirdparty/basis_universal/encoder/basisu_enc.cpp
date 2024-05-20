@@ -13,15 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include "basisu_enc.h"
-#include "lodepng.h"
 #include "basisu_resampler.h"
 #include "basisu_resampler_filters.h"
 #include "basisu_etc.h"
 #include "../transcoder/basisu_transcoder.h"
 #include "basisu_bc7enc.h"
-#include "apg_bmp.h"
 #include "jpgd.h"
+#include "pvpngreader.h"
+#include "basisu_opencl.h"
 #include <vector>
+
+#define MINIZ_HEADER_FILE_ONLY
+#define MINIZ_NO_ZLIB_COMPATIBLE_NAMES
+#include "basisu_miniz.h"
 
 #if defined(_WIN32)
 // For QueryPerformanceCounter/QueryPerformanceFrequency
@@ -158,32 +162,62 @@ namespace basisu
 	 { 0x6E, 0x3B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},   // U+007E (~)
 	 { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}    // U+007F
 	};
-			
+
+	bool g_library_initialized;
+	std::mutex g_encoder_init_mutex;
+
 	// Encoder library initialization (just call once at startup)
-	void basisu_encoder_init()
+	void basisu_encoder_init(bool use_opencl, bool opencl_force_serialization)
 	{
+		std::lock_guard<std::mutex> lock(g_encoder_init_mutex);
+
+		if (g_library_initialized)
+			return;
+
 		detect_sse41();
 
 		basist::basisu_transcoder_init();
 		pack_etc1_solid_color_init();
 		//uastc_init();
 		bc7enc_compress_block_init(); // must be after uastc_init()
+
+		// Don't bother initializing the OpenCL module at all if it's been completely disabled.
+		if (use_opencl)
+		{
+			opencl_init(opencl_force_serialization);
+		}
+
+		interval_timer::init(); // make sure interval_timer globals are initialized from main thread to avoid TSAN reports
+
+		g_library_initialized = true;
 	}
 
-	void error_printf(const char *pFmt, ...)
+	void basisu_encoder_deinit()
 	{
-		char buf[2048];
+		opencl_deinit();
 
-		va_list args;
-		va_start(args, pFmt);
+		g_library_initialized = false;
+	}
+
+	void error_vprintf(const char* pFmt, va_list args)
+	{
+		char buf[8192];
+
 #ifdef _WIN32		
 		vsprintf_s(buf, sizeof(buf), pFmt, args);
 #else
 		vsnprintf(buf, sizeof(buf), pFmt, args);
 #endif
-		va_end(args);
 
 		fprintf(stderr, "ERROR: %s", buf);
+	}
+
+	void error_printf(const char *pFmt, ...)
+	{
+		va_list args;
+		va_start(args, pFmt);
+		error_vprintf(pFmt, args);
+		va_end(args);
 	}
 
 #if defined(_WIN32)
@@ -195,7 +229,7 @@ namespace basisu
 	{
 		QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(pTicks));
 	}
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__EMSCRIPTEN__)
 #include <sys/time.h>
 	inline void query_counter(timer_ticks* pTicks)
 	{
@@ -284,59 +318,6 @@ namespace basisu
 	}
 		
 	const uint32_t MAX_32BIT_ALLOC_SIZE = 250000000;
-
-	bool load_bmp(const char* pFilename, image& img)
-	{
-		int w = 0, h = 0;
-		unsigned int n_chans = 0;
-		unsigned char* pImage_data = apg_bmp_read(pFilename, &w, &h, &n_chans);
-				
-		if ((!pImage_data) || (!w) || (!h) || ((n_chans != 3) && (n_chans != 4)))
-		{
-			error_printf("Failed loading .BMP image \"%s\"!\n", pFilename);
-
-			if (pImage_data)
-				apg_bmp_free(pImage_data);
-						
-			return false;
-		}
-
-		if (sizeof(void *) == sizeof(uint32_t))
-		{
-			if ((w * h * n_chans) > MAX_32BIT_ALLOC_SIZE)
-			{
-				error_printf("Image \"%s\" is too large (%ux%u) to process in a 32-bit build!\n", pFilename, w, h);
-
-				if (pImage_data)
-					apg_bmp_free(pImage_data);
-
-				return false;
-			}
-		}
-		
-		img.resize(w, h);
-
-		const uint8_t *pSrc = pImage_data;
-		for (int y = 0; y < h; y++)
-		{
-			color_rgba *pDst = &img(0, y);
-
-			for (int x = 0; x < w; x++)
-			{
-				pDst->r = pSrc[0];
-				pDst->g = pSrc[1];
-				pDst->b = pSrc[2];
-				pDst->a = (n_chans == 3) ? 255 : pSrc[3];
-
-				pSrc += n_chans;
-				++pDst;
-			}
-		}
-
-		apg_bmp_free(pImage_data);
-
-		return true;
-	}
 		
 	bool load_tga(const char* pFilename, image& img)
 	{
@@ -392,53 +373,35 @@ namespace basisu
 
 	bool load_png(const uint8_t *pBuf, size_t buf_size, image &img, const char *pFilename)
 	{
+		interval_timer tm;
+		tm.start();
+		
 		if (!buf_size)
 			return false;
 
-		unsigned err = 0, w = 0, h = 0;
-
-		if (sizeof(void*) == sizeof(uint32_t))
+		uint32_t width = 0, height = 0, num_chans = 0;
+		void* pImage = pv_png::load_png(pBuf, buf_size, 4, width, height, num_chans);
+		if (!pBuf)
 		{
-			// Inspect the image first on 32-bit builds, to see if the image would require too much memory.
-			lodepng::State state;
-			err = lodepng_inspect(&w, &h, &state, pBuf, buf_size);
-			if ((err != 0) || (!w) || (!h))
-				return false;
-
-			const uint32_t exepected_alloc_size = w * h * sizeof(uint32_t);
-
-			// If the file is too large on 32-bit builds then just bail now, to prevent causing a memory exception.
-			if (exepected_alloc_size >= MAX_32BIT_ALLOC_SIZE)
-			{
-				error_printf("Image \"%s\" is too large (%ux%u) to process in a 32-bit build!\n", (pFilename != nullptr) ? pFilename : "<memory>", w, h);
-				return false;
-			}
-
-			w = h = 0;
+			error_printf("pv_png::load_png failed while loading image \"%s\"\n", pFilename);
+			return false;
 		}
 
-		std::vector<uint8_t> out;
-		err = lodepng::decode(out, w, h, pBuf, buf_size);
-		if ((err != 0) || (!w) || (!h))
-			return false;
+		img.grant_ownership(reinterpret_cast<color_rgba*>(pImage), width, height);
 
-		if (out.size() != (w * h * 4))
-			return false;
-
-		img.resize(w, h);
-
-		memcpy(img.get_ptr(), &out[0], out.size());
+		//debug_printf("Total load_png() time: %3.3f secs\n", tm.get_elapsed_secs());
 
 		return true;
 	}
 		
 	bool load_png(const char* pFilename, image& img)
 	{
-		std::vector<uint8_t> buffer;
-		unsigned err = lodepng::load_file(buffer, std::string(pFilename));
-		if (err)
+		uint8_vec buffer;
+		if (!read_file_to_vec(pFilename, buffer))
+		{
+			error_printf("load_png: Failed reading file \"%s\"!\n", pFilename);
 			return false;
-
+		}
 
 		return load_png(buffer.data(), buffer.size(), img, pFilename);
 	}
@@ -446,7 +409,7 @@ namespace basisu
 	bool load_jpg(const char *pFilename, image& img)
 	{
 		int width = 0, height = 0, actual_comps = 0;
-		uint8_t *pImage_data = jpgd::decompress_jpeg_image_from_file(pFilename, &width, &height, &actual_comps, 4, jpgd::jpeg_decoder::cFlagLinearChromaFiltering);
+		uint8_t *pImage_data = jpgd::decompress_jpeg_image_from_file(pFilename, &width, &height, &actual_comps, 4, jpgd::jpeg_decoder::cFlagBoxChromaFiltering);
 		if (!pImage_data)
 			return false;
 		
@@ -468,8 +431,6 @@ namespace basisu
 
 		if (strcasecmp(pExt, "png") == 0)
 			return load_png(pFilename, img);
-		if (strcasecmp(pExt, "bmp") == 0)
-			return load_bmp(pFilename, img);
 		if (strcasecmp(pExt, "tga") == 0)
 			return load_tga(pFilename, img);
 		if ( (strcasecmp(pExt, "jpg") == 0) || (strcasecmp(pExt, "jfif") == 0) || (strcasecmp(pExt, "jpeg") == 0) )
@@ -482,61 +443,67 @@ namespace basisu
 	{
 		if (!img.get_total_pixels())
 			return false;
-
-		const uint32_t MAX_PNG_IMAGE_DIM = 32768;
-		if ((img.get_width() > MAX_PNG_IMAGE_DIM) || (img.get_height() > MAX_PNG_IMAGE_DIM))
-			return false;
-
-		std::vector<uint8_t> out;
-		unsigned err = 0;
 				
+		void* pPNG_data = nullptr;
+		size_t PNG_data_size = 0;
+
 		if (image_save_flags & cImageSaveGrayscale)
 		{
-			uint8_vec g_pixels(img.get_width() * img.get_height());
-			uint8_t *pDst = &g_pixels[0];
+			uint8_vec g_pixels(img.get_total_pixels());
+			uint8_t* pDst = &g_pixels[0];
 
 			for (uint32_t y = 0; y < img.get_height(); y++)
 				for (uint32_t x = 0; x < img.get_width(); x++)
 					*pDst++ = img(x, y)[grayscale_comp];
 
-			err = lodepng::encode(out, (const uint8_t*)&g_pixels[0], img.get_width(), img.get_height(), LCT_GREY, 8);
+			pPNG_data = buminiz::tdefl_write_image_to_png_file_in_memory_ex(g_pixels.data(), img.get_width(), img.get_height(), 1, &PNG_data_size, 1, false);
 		}
 		else
 		{
-			bool has_alpha = img.has_alpha();
-			if ((!has_alpha) || ((image_save_flags & cImageSaveIgnoreAlpha) != 0))
+			bool has_alpha = false;
+			
+			if ((image_save_flags & cImageSaveIgnoreAlpha) == 0)
+				has_alpha = img.has_alpha();
+
+			if (!has_alpha)
 			{
-				const uint64_t total_bytes = (uint64_t)img.get_width() * 3U * (uint64_t)img.get_height();
-				if (total_bytes > INT_MAX)
-					return false;
-				uint8_vec rgb_pixels(static_cast<size_t>(total_bytes));
-				uint8_t *pDst = &rgb_pixels[0];
-								
+				uint8_vec rgb_pixels(img.get_total_pixels() * 3);
+				uint8_t* pDst = &rgb_pixels[0];
+
 				for (uint32_t y = 0; y < img.get_height(); y++)
 				{
+					const color_rgba* pSrc = &img(0, y);
 					for (uint32_t x = 0; x < img.get_width(); x++)
 					{
-						const color_rgba& c = img(x, y);
-						pDst[0] = c.r;
-						pDst[1] = c.g;
-						pDst[2] = c.b;
+						pDst[0] = pSrc->r;
+						pDst[1] = pSrc->g;
+						pDst[2] = pSrc->b;
+						
+						pSrc++;
 						pDst += 3;
 					}
 				}
 
-				err = lodepng::encode(out, (const uint8_t*)& rgb_pixels[0], img.get_width(), img.get_height(), LCT_RGB, 8);
+				pPNG_data = buminiz::tdefl_write_image_to_png_file_in_memory_ex(rgb_pixels.data(), img.get_width(), img.get_height(), 3, &PNG_data_size, 1, false);
 			}
 			else
 			{
-				err = lodepng::encode(out, (const uint8_t*)img.get_ptr(), img.get_width(), img.get_height(), LCT_RGBA, 8);
+				pPNG_data = buminiz::tdefl_write_image_to_png_file_in_memory_ex(img.get_ptr(), img.get_width(), img.get_height(), 4, &PNG_data_size, 1, false);
 			}
 		}
 
-		err = lodepng::save_file(out, std::string(pFilename));
-		if (err)
+		if (!pPNG_data)
 			return false;
 
-		return true;
+		bool status = write_data_to_file(pFilename, pPNG_data, PNG_data_size);
+		if (!status)
+		{
+			error_printf("save_png: Failed writing to filename \"%s\"!\n", pFilename);
+		}
+
+		free(pPNG_data);
+						
+		return status;
 	}
 		
 	bool read_file_to_vec(const char* pFilename, uint8_vec& data)
@@ -1620,7 +1587,8 @@ namespace basisu
 
 	void job_pool::job_thread(uint32_t index)
 	{
-		debug_printf("job_pool::job_thread: starting %u\n", index);
+		BASISU_NOTE_UNUSED(index);
+		//debug_printf("job_pool::job_thread: starting %u\n", index);
 		
 		while (true)
 		{
@@ -1656,7 +1624,7 @@ namespace basisu
 				m_no_more_jobs.notify_all();
 		}
 
-		debug_printf("job_pool::job_thread: exiting\n");
+		//debug_printf("job_pool::job_thread: exiting\n");
 	}
 
 	// .TGA image loading
@@ -1779,7 +1747,7 @@ namespace basisu
 			return nullptr;
 		}
 
-		const uint32_t bytes_per_line = hdr.m_width * tga_bytes_per_pixel;
+		//const uint32_t bytes_per_line = hdr.m_width * tga_bytes_per_pixel;
 
 		const uint8_t *pSrc = pBuf + sizeof(tga_header);
 		uint32_t bytes_remaining = buf_size - sizeof(tga_header);

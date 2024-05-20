@@ -1,10 +1,18 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+ext {
+    PUBLISH_ARTIFACT_ID = 'godot'
+}
+
+apply from: "../scripts/publish-module.gradle"
 
 dependencies {
-    implementation libraries.supportCoreUtils
-    implementation libraries.kotlinStdLib
-    implementation libraries.v4Support
+    implementation "androidx.fragment:fragment:$versions.fragmentVersion"
+
+    testImplementation "junit:junit:4.13.2"
 }
 
 def pathToRootDir = "../../../../"
@@ -12,19 +20,41 @@ def pathToRootDir = "../../../../"
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
-
     ndkVersion versions.ndkVersion
 
     defaultConfig {
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
 
-        manifestPlaceholders = [godotLibraryVersion: getGodotLibraryVersion()]
+        manifestPlaceholders = [godotLibraryVersion: getGodotLibraryVersionName()]
     }
+
+    namespace = "org.godotengine.godot"
 
     compileOptions {
         sourceCompatibility versions.javaVersion
         targetCompatibility versions.javaVersion
+    }
+
+    kotlinOptions {
+        jvmTarget = versions.javaVersion
+    }
+
+    buildFeatures {
+        aidl = true
+        buildConfig = true
+    }
+
+    buildTypes {
+        dev {
+            initWith debug
+        }
+    }
+
+    flavorDimensions "products"
+    productFlavors {
+        editor {}
+        template {}
     }
 
     lintOptions {
@@ -46,28 +76,62 @@ android {
         main {
             manifest.srcFile 'AndroidManifest.xml'
             java.srcDirs = ['src']
+            test.java.srcDirs = ['srcTest/java']
             res.srcDirs = ['res']
             aidl.srcDirs = ['aidl']
             assets.srcDirs = ['assets']
         }
+
         debug.jniLibs.srcDirs = ['libs/debug']
+        dev.jniLibs.srcDirs = ['libs/dev']
         release.jniLibs.srcDirs = ['libs/release']
+
+        // Editor jni library
+        editorRelease.jniLibs.srcDirs = ['libs/tools/release']
+        editorDebug.jniLibs.srcDirs = ['libs/tools/debug']
+        editorDev.jniLibs.srcDirs = ['libs/tools/dev']
     }
 
     libraryVariants.all { variant ->
+        def flavorName = variant.getFlavorName()
+        if (flavorName == null || flavorName == "") {
+            throw new GradleException("Invalid product flavor: $flavorName")
+        }
+
+        def buildType = variant.buildType.name
+        if (buildType == null || buildType == "" || !supportedFlavorsBuildTypes[flavorName].contains(buildType)) {
+            throw new GradleException("Invalid build type: $buildType")
+        }
+
+        boolean devBuild = buildType == "dev"
+        boolean debugSymbols = devBuild || isAndroidStudio()
+        boolean runTests = devBuild
+        boolean productionBuild = !devBuild
+        boolean storeRelease = buildType == "release"
+
+        def sconsTarget = flavorName
+        if (sconsTarget == "template") {
+            // Tests are not supported on template builds
+            runTests = false
+            switch (buildType) {
+                case "release":
+                    sconsTarget += "_release"
+                    break
+                case "debug":
+                case "dev":
+                default:
+                    sconsTarget += "_debug"
+                    break
+            }
+        }
+
+        // Update the name of the generated library
+        def outputSuffix = "${sconsTarget}"
+        if (devBuild) {
+            outputSuffix = "${outputSuffix}.dev"
+        }
         variant.outputs.all { output ->
-            output.outputFileName = "godot-lib.${variant.name}.aar"
-        }
-
-        def buildType = variant.buildType.name.capitalize()
-
-        def releaseTarget = buildType.toLowerCase()
-        if (releaseTarget == null || releaseTarget == "") {
-            throw new GradleException("Invalid build type: " + buildType)
-        }
-
-        if (!supportedAbis.contains(defaultAbi)) {
-            throw new GradleException("Invalid default abi: " + defaultAbi)
+            output.outputFileName = "godot-lib.${outputSuffix}.aar"
         }
 
         // Find scons' executable path
@@ -76,17 +140,15 @@ android {
         def sconsExts = (org.gradle.internal.os.OperatingSystem.current().isWindows()
             ? [".bat", ".cmd", ".ps1", ".exe"]
             : [""])
-        logger.lifecycle("Looking for $sconsName executable path")
+        logger.debug("Looking for $sconsName executable path")
         for (ext in sconsExts) {
             String sconsNameExt = sconsName + ext
-            logger.lifecycle("Checking $sconsNameExt")
-
+            logger.debug("Checking $sconsNameExt")
             sconsExecutableFile = org.gradle.internal.os.OperatingSystem.current().findInPath(sconsNameExt)
             if (sconsExecutableFile != null) {
                 // We're done!
                 break
             }
-
             // Check all the options in path
             List<File> allOptions = org.gradle.internal.os.OperatingSystem.current().findAllInPath(sconsNameExt)
             if (!allOptions.isEmpty()) {
@@ -95,21 +157,33 @@ android {
                 break
             }
         }
-
         if (sconsExecutableFile == null) {
             throw new GradleException("Unable to find executable path for the '$sconsName' command.")
         } else {
-            logger.lifecycle("Found executable path for $sconsName: ${sconsExecutableFile.absolutePath}")
+            logger.debug("Found executable path for $sconsName: ${sconsExecutableFile.absolutePath}")
         }
 
-        // Creating gradle task to generate the native libraries for the default abi.
-        def taskName = getSconsTaskName(buildType)
-        tasks.create(name: taskName, type: Exec) {
-            executable sconsExecutableFile.absolutePath
-            args "--directory=${pathToRootDir}", "platform=android", "target=${releaseTarget}", "android_arch=${defaultAbi}", "-j" + Runtime.runtime.availableProcessors()
-        }
+        for (String selectedAbi : selectedAbis) {
+            if (!supportedAbis.contains(selectedAbi)) {
+                throw new GradleException("Invalid selected abi: $selectedAbi")
+            }
 
-        // Schedule the tasks so the generated libs are present before the aar file is packaged.
-        tasks["merge${buildType}JniLibFolders"].dependsOn taskName
+            // Creating gradle task to generate the native libraries for the selected abi.
+            def taskName = getSconsTaskName(flavorName, buildType, selectedAbi)
+            tasks.create(name: taskName, type: Exec) {
+                executable sconsExecutableFile.absolutePath
+                args "--directory=${pathToRootDir}", "platform=android", "store_release=${storeRelease}", "production=${productionBuild}", "dev_mode=${devBuild}", "dev_build=${devBuild}", "debug_symbols=${debugSymbols}", "tests=${runTests}", "target=${sconsTarget}", "arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
+            }
+
+            // Schedule the tasks so the generated libs are present before the aar file is packaged.
+            tasks["merge${flavorName.capitalize()}${buildType.capitalize()}JniLibFolders"].dependsOn taskName
+        }
+    }
+
+    publishing {
+        singleVariant("templateRelease") {
+            withSourcesJar()
+            withJavadocJar()
+        }
     }
 }

@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace GodotTools.IdeMessaging
 {
     public readonly struct GodotIdeMetadata
@@ -23,12 +25,9 @@ namespace GodotTools.IdeMessaging
             return !(a == b);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals([NotNullWhen(true)] object? obj)
         {
-            if (obj is GodotIdeMetadata metadata)
-                return metadata == this;
-
-            return false;
+            return obj is GodotIdeMetadata metadata && metadata == this;
         }
 
         public bool Equals(GodotIdeMetadata other)

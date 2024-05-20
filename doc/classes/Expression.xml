@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Expression" inherits="RefCounted" version="4.0">
+<class name="Expression" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A class that stores an expression you can execute.
 	</brief_description>
@@ -12,7 +12,7 @@
 		var expression = Expression.new()
 
 		func _ready():
-		    $LineEdit.connect("text_submitted", self, "_on_text_submitted")
+		    $LineEdit.text_submitted.connect(self._on_text_submitted)
 
 		func _on_text_submitted(command):
 		    var error = expression.parse(command)
@@ -24,23 +24,23 @@
 		        $LineEdit.text = str(result)
 		[/gdscript]
 		[csharp]
-		public Expression expression = new Expression();
+		private Expression _expression = new Expression();
 
 		public override void _Ready()
 		{
-		    GetNode("LineEdit").Connect("text_submitted", this, nameof(OnTextEntered));
+		    GetNode&lt;LineEdit&gt;("LineEdit").TextSubmitted += OnTextEntered;
 		}
 
 		private void OnTextEntered(string command)
 		{
-		    Error error = expression.Parse(command);
+		    Error error = _expression.Parse(command);
 		    if (error != Error.Ok)
 		    {
-		        GD.Print(expression.GetErrorText());
+		        GD.Print(_expression.GetErrorText());
 		        return;
 		    }
-		    object result = expression.Execute();
-		    if (!expression.HasExecuteFailed())
+		    Variant result = _expression.Execute();
+		    if (!_expression.HasExecuteFailed())
 		    {
 		        GetNode&lt;LineEdit&gt;("LineEdit").Text = result.ToString();
 		    }
@@ -49,49 +49,40 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
+		<link title="Evaluating Expressions">$DOCS_URL/tutorials/scripting/evaluating_expressions.html</link>
 	</tutorials>
 	<methods>
 		<method name="execute">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="inputs" type="Array" default="[]">
-			</argument>
-			<argument index="1" name="base_instance" type="Object" default="null">
-			</argument>
-			<argument index="2" name="show_error" type="bool" default="true">
-			</argument>
+			<return type="Variant" />
+			<param index="0" name="inputs" type="Array" default="[]" />
+			<param index="1" name="base_instance" type="Object" default="null" />
+			<param index="2" name="show_error" type="bool" default="true" />
+			<param index="3" name="const_calls_only" type="bool" default="false" />
 			<description>
 				Executes the expression that was previously parsed by [method parse] and returns the result. Before you use the returned object, you should check if the method failed by calling [method has_execute_failed].
 				If you defined input variables in [method parse], you can specify their values in the inputs array, in the same order.
 			</description>
 		</method>
 		<method name="get_error_text" qualifiers="const">
-			<return type="String">
-			</return>
+			<return type="String" />
 			<description>
-				Returns the error text if [method parse] has failed.
+				Returns the error text if [method parse] or [method execute] has failed.
 			</description>
 		</method>
 		<method name="has_execute_failed" qualifiers="const">
-			<return type="bool">
-			</return>
+			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if [method execute] has failed.
 			</description>
 		</method>
 		<method name="parse">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="expression" type="String">
-			</argument>
-			<argument index="1" name="input_names" type="PackedStringArray" default="PackedStringArray()">
-			</argument>
+			<return type="int" enum="Error" />
+			<param index="0" name="expression" type="String" />
+			<param index="1" name="input_names" type="PackedStringArray" default="PackedStringArray()" />
 			<description>
 				Parses the expression and returns an [enum Error] code.
-				You can optionally specify names of variables that may appear in the expression with [code]input_names[/code], so that you can bind them when it gets executed.
+				You can optionally specify names of variables that may appear in the expression with [param input_names], so that you can bind them when it gets executed.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
 </class>

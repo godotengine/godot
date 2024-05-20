@@ -4,7 +4,7 @@
  *
  *   FreeType convenience functions to handle glyphs (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -126,7 +126,7 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   A handle to an object used to model a bitmap glyph image.  This is a
-   *   sub-class of @FT_Glyph, and a pointer to @FT_BitmapGlyphRec.
+   *   'sub-class' of @FT_Glyph, and a pointer to @FT_BitmapGlyphRec.
    */
   typedef struct FT_BitmapGlyphRec_*  FT_BitmapGlyph;
 
@@ -142,7 +142,7 @@ FT_BEGIN_HEADER
    *
    * @fields:
    *   root ::
-   *     The root @FT_Glyph fields.
+   *     The root fields of @FT_Glyph.
    *
    *   left ::
    *     The left-side bearing, i.e., the horizontal distance from the
@@ -181,7 +181,7 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   A handle to an object used to model an outline glyph image.  This is a
-   *   sub-class of @FT_Glyph, and a pointer to @FT_OutlineGlyphRec.
+   *   'sub-class' of @FT_Glyph, and a pointer to @FT_OutlineGlyphRec.
    */
   typedef struct FT_OutlineGlyphRec_*  FT_OutlineGlyph;
 
@@ -220,6 +220,92 @@ FT_BEGIN_HEADER
     FT_Outline   outline;
 
   } FT_OutlineGlyphRec;
+
+
+  /**************************************************************************
+   *
+   * @type:
+   *   FT_SvgGlyph
+   *
+   * @description:
+   *   A handle to an object used to model an SVG glyph.  This is a
+   *   'sub-class' of @FT_Glyph, and a pointer to @FT_SvgGlyphRec.
+   *
+   * @since:
+   *   2.12
+   */
+  typedef struct FT_SvgGlyphRec_*  FT_SvgGlyph;
+
+
+  /**************************************************************************
+   *
+   * @struct:
+   *   FT_SvgGlyphRec
+   *
+   * @description:
+   *   A structure used for OT-SVG glyphs.  This is a 'sub-class' of
+   *   @FT_GlyphRec.
+   *
+   * @fields:
+   *   root ::
+   *     The root @FT_GlyphRec fields.
+   *
+   *   svg_document ::
+   *     A pointer to the SVG document.
+   *
+   *   svg_document_length ::
+   *     The length of `svg_document`.
+   *
+   *   glyph_index ::
+   *     The index of the glyph to be rendered.
+   *
+   *   metrics ::
+   *     A metrics object storing the size information.
+   *
+   *   units_per_EM ::
+   *     The size of the EM square.
+   *
+   *   start_glyph_id ::
+   *     The first glyph ID in the glyph range covered by this document.
+   *
+   *   end_glyph_id ::
+   *     The last glyph ID in the glyph range covered by this document.
+   *
+   *   transform ::
+   *     A 2x2 transformation matrix to apply to the glyph while rendering
+   *     it.
+   *
+   *   delta ::
+   *     Translation to apply to the glyph while rendering.
+   *
+   * @note:
+   *   The Glyph Management API requires @FT_Glyph or its 'sub-class' to have
+   *   all the information needed to completely define the glyph's rendering.
+   *   Outline-based glyphs can directly apply transformations to the outline
+   *   but this is not possible for an SVG document that hasn't been parsed.
+   *   Therefore, the transformation is stored along with the document.  In
+   *   the absence of a 'ViewBox' or 'Width'/'Height' attribute, the size of
+   *   the ViewPort should be assumed to be 'units_per_EM'.
+   */
+  typedef struct  FT_SvgGlyphRec_
+  {
+    FT_GlyphRec  root;
+
+    FT_Byte*  svg_document;
+    FT_ULong  svg_document_length;
+
+    FT_UInt  glyph_index;
+
+    FT_Size_Metrics  metrics;
+    FT_UShort        units_per_EM;
+
+    FT_UShort  start_glyph_id;
+    FT_UShort  end_glyph_id;
+
+    FT_Matrix  transform;
+    FT_Vector  delta;
+
+  } FT_SvgGlyphRec;
 
 
   /**************************************************************************
@@ -269,7 +355,7 @@ FT_BEGIN_HEADER
    *
    * @output:
    *   aglyph ::
-   *     A handle to the glyph object.
+   *     A handle to the glyph object.  `NULL` in case of error.
    *
    * @return:
    *   FreeType error code.  0~means success.
@@ -299,7 +385,7 @@ FT_BEGIN_HEADER
    *
    * @output:
    *   target ::
-   *     A handle to the target glyph object.  0~in case of error.
+   *     A handle to the target glyph object.  `NULL` in case of error.
    *
    * @return:
    *   FreeType error code.  0~means success.
@@ -327,7 +413,7 @@ FT_BEGIN_HEADER
    *
    *   delta ::
    *     A pointer to a 2d vector to apply.  Coordinates are expressed in
-   *     1/64th of a pixel.
+   *     1/64 of a pixel.
    *
    * @return:
    *   FreeType error code (if not 0, the glyph format is not scalable).
@@ -337,9 +423,9 @@ FT_BEGIN_HEADER
    *   vector.
    */
   FT_EXPORT( FT_Error )
-  FT_Glyph_Transform( FT_Glyph    glyph,
-                      FT_Matrix*  matrix,
-                      FT_Vector*  delta );
+  FT_Glyph_Transform( FT_Glyph          glyph,
+                      const FT_Matrix*  matrix,
+                      const FT_Vector*  delta );
 
 
   /**************************************************************************
@@ -414,7 +500,7 @@ FT_BEGIN_HEADER
    * @output:
    *   acbox ::
    *     The glyph coordinate bounding box.  Coordinates are expressed in
-   *     1/64th of pixels if it is grid-fitted.
+   *     1/64 of pixels if it is grid-fitted.
    *
    * @note:
    *   Coordinates are relative to the glyph origin, using the y~upwards
@@ -498,9 +584,9 @@ FT_BEGIN_HEADER
    *   The glyph image is translated with the `origin` vector before
    *   rendering.
    *
-   *   The first parameter is a pointer to an @FT_Glyph handle, that will be
+   *   The first parameter is a pointer to an @FT_Glyph handle that will be
    *   _replaced_ by this function (with newly allocated data).  Typically,
-   *   you would use (omitting error handling):
+   *   you would do something like the following (omitting error handling).
    *
    *   ```
    *     FT_Glyph        glyph;
@@ -517,7 +603,7 @@ FT_BEGIN_HEADER
    *     if ( glyph->format != FT_GLYPH_FORMAT_BITMAP )
    *     {
    *       error = FT_Glyph_To_Bitmap( &glyph, FT_RENDER_MODE_NORMAL,
-   *                                     0, 1 );
+   *                                   0, 1 );
    *       if ( error ) // `glyph' unchanged
    *         ...
    *     }
@@ -532,7 +618,7 @@ FT_BEGIN_HEADER
    *     FT_Done_Glyph( glyph );
    *   ```
    *
-   *   Here is another example, again without error handling:
+   *   Here is another example, again without error handling.
    *
    *   ```
    *     FT_Glyph  glyphs[MAX_GLYPHS]
@@ -569,10 +655,10 @@ FT_BEGIN_HEADER
    *   ```
    */
   FT_EXPORT( FT_Error )
-  FT_Glyph_To_Bitmap( FT_Glyph*       the_glyph,
-                      FT_Render_Mode  render_mode,
-                      FT_Vector*      origin,
-                      FT_Bool         destroy );
+  FT_Glyph_To_Bitmap( FT_Glyph*         the_glyph,
+                      FT_Render_Mode    render_mode,
+                      const FT_Vector*  origin,
+                      FT_Bool           destroy );
 
 
   /**************************************************************************
@@ -585,7 +671,7 @@ FT_BEGIN_HEADER
    *
    * @input:
    *   glyph ::
-   *     A handle to the target glyph object.
+   *     A handle to the target glyph object.  Can be `NULL`.
    */
   FT_EXPORT( void )
   FT_Done_Glyph( FT_Glyph  glyph );

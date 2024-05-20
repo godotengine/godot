@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CircleShape2D" inherits="Shape2D" version="4.0">
+<class name="CircleShape2D" inherits="Shape2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Circular shape for 2D collisions.
+		A 2D circle shape used for physics collision.
 	</brief_description>
 	<description>
-		Circular shape for 2D collisions. This shape is useful for modeling balls or small characters and its collision detection with everything else is very fast.
+		A 2D circle shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape2D].
+		[b]Performance:[/b] [CircleShape2D] is fast to check collisions against. It is faster than [RectangleShape2D] and [CapsuleShape2D].
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="10.0">
 			The circle's radius.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

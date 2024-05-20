@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatform" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Identifies a supported export platform, and internally provides the functionality of exporting to that platform.
+	</brief_description>
+	<description>
+		Base resource that provides the functionality of exporting a release build of a project to a platform, from the editor. Stores platform-specific metadata such as the name and supported features of the platform, and performs the exporting of projects, PCK files, and ZIP files. Uses an export template for the platform provided at the time of project exporting.
+		Used in scripting by [EditorExportPlugin] to configure platform-specific customization of scenes and resources. See [method EditorExportPlugin._begin_customize_scenes] and [method EditorExportPlugin._begin_customize_resources] for more details.
+	</description>
+	<tutorials>
+		<link title="Console support in Godot">$DOCS_URL/tutorials/platform/consoles.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_os_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the export operating system handled by this [EditorExportPlatform] class, as a friendly string. Possible return values are [code]Windows[/code], [code]Linux[/code], [code]macOS[/code], [code]Android[/code], [code]iOS[/code], and [code]Web[/code].
+			</description>
+		</method>
+	</methods>
+</class>

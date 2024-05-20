@@ -3,444 +3,435 @@
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "common.h"
 
-#if defined(MBEDTLS_ASN1_WRITE_C)
+#if defined(MBEDTLS_ASN1_WRITE_C) || defined(MBEDTLS_X509_USE_C) || \
+    defined(MBEDTLS_PSA_UTIL_HAVE_ECDSA)
 
 #include "mbedtls/asn1write.h"
+#include "mbedtls/error.h"
 
 #include <string.h>
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#define mbedtls_calloc    calloc
-#define mbedtls_free       free
+
+#if defined(MBEDTLS_ASN1_PARSE_C)
+#include "mbedtls/asn1.h"
 #endif
 
-int mbedtls_asn1_write_len( unsigned char **p, unsigned char *start, size_t len )
+int mbedtls_asn1_write_len(unsigned char **p, const unsigned char *start, size_t len)
 {
-    if( len < 0x80 )
-    {
-        if( *p - start < 1 )
-            return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
-
-        *--(*p) = (unsigned char) len;
-        return( 1 );
-    }
-
-    if( len <= 0xFF )
-    {
-        if( *p - start < 2 )
-            return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
-
-        *--(*p) = (unsigned char) len;
-        *--(*p) = 0x81;
-        return( 2 );
-    }
-
-    if( len <= 0xFFFF )
-    {
-        if( *p - start < 3 )
-            return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
-
-        *--(*p) = ( len       ) & 0xFF;
-        *--(*p) = ( len >>  8 ) & 0xFF;
-        *--(*p) = 0x82;
-        return( 3 );
-    }
-
-    if( len <= 0xFFFFFF )
-    {
-        if( *p - start < 4 )
-            return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
-
-        *--(*p) = ( len       ) & 0xFF;
-        *--(*p) = ( len >>  8 ) & 0xFF;
-        *--(*p) = ( len >> 16 ) & 0xFF;
-        *--(*p) = 0x83;
-        return( 4 );
-    }
-
 #if SIZE_MAX > 0xFFFFFFFF
-    if( len <= 0xFFFFFFFF )
+    if (len > 0xFFFFFFFF) {
+        return MBEDTLS_ERR_ASN1_INVALID_LENGTH;
+    }
 #endif
-    {
-        if( *p - start < 5 )
-            return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
 
-        *--(*p) = ( len       ) & 0xFF;
-        *--(*p) = ( len >>  8 ) & 0xFF;
-        *--(*p) = ( len >> 16 ) & 0xFF;
-        *--(*p) = ( len >> 24 ) & 0xFF;
-        *--(*p) = 0x84;
-        return( 5 );
+    int required = 1;
+
+    if (len >= 0x80) {
+        for (size_t l = len; l != 0; l >>= 8) {
+            required++;
+        }
     }
 
-#if SIZE_MAX > 0xFFFFFFFF
-    return( MBEDTLS_ERR_ASN1_INVALID_LENGTH );
-#endif
+    if (required > (*p - start)) {
+        return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+    }
+
+    do {
+        *--(*p) = MBEDTLS_BYTE_0(len);
+        len >>= 8;
+    } while (len);
+
+    if (required > 1) {
+        *--(*p) = (unsigned char) (0x80 + required - 1);
+    }
+
+    return required;
 }
 
-int mbedtls_asn1_write_tag( unsigned char **p, unsigned char *start, unsigned char tag )
+int mbedtls_asn1_write_tag(unsigned char **p, const unsigned char *start, unsigned char tag)
 {
-    if( *p - start < 1 )
-        return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
+    if (*p - start < 1) {
+        return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+    }
 
     *--(*p) = tag;
 
-    return( 1 );
+    return 1;
+}
+#endif /* MBEDTLS_ASN1_WRITE_C || MBEDTLS_X509_USE_C || MBEDTLS_PSA_UTIL_HAVE_ECDSA */
+
+#if defined(MBEDTLS_ASN1_WRITE_C)
+static int mbedtls_asn1_write_len_and_tag(unsigned char **p,
+                                          const unsigned char *start,
+                                          size_t len,
+                                          unsigned char tag)
+{
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+
+    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_len(p, start, len));
+    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_tag(p, start, tag));
+
+    return (int) len;
 }
 
-int mbedtls_asn1_write_raw_buffer( unsigned char **p, unsigned char *start,
-                           const unsigned char *buf, size_t size )
+int mbedtls_asn1_write_raw_buffer(unsigned char **p, const unsigned char *start,
+                                  const unsigned char *buf, size_t size)
 {
     size_t len = 0;
 
-    if( *p < start || (size_t)( *p - start ) < size )
-        return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
+    if (*p < start || (size_t) (*p - start) < size) {
+        return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+    }
 
     len = size;
     (*p) -= len;
-    memcpy( *p, buf, len );
+    memcpy(*p, buf, len);
 
-    return( (int) len );
+    return (int) len;
 }
 
 #if defined(MBEDTLS_BIGNUM_C)
-int mbedtls_asn1_write_mpi( unsigned char **p, unsigned char *start, const mbedtls_mpi *X )
+int mbedtls_asn1_write_mpi(unsigned char **p, const unsigned char *start, const mbedtls_mpi *X)
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
     // Write the MPI
     //
-    len = mbedtls_mpi_size( X );
+    len = mbedtls_mpi_size(X);
 
-    if( *p < start || (size_t)( *p - start ) < len )
-        return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
+    /* DER represents 0 with a sign bit (0=nonnegative) and 7 value bits, not
+     * as 0 digits. We need to end up with 020100, not with 0200. */
+    if (len == 0) {
+        len = 1;
+    }
+
+    if (*p < start || (size_t) (*p - start) < len) {
+        return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+    }
 
     (*p) -= len;
-    MBEDTLS_MPI_CHK( mbedtls_mpi_write_binary( X, *p, len ) );
+    MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(X, *p, len));
 
     // DER format assumes 2s complement for numbers, so the leftmost bit
     // should be 0 for positive numbers and 1 for negative numbers.
     //
-    if( X->s ==1 && **p & 0x80 )
-    {
-        if( *p - start < 1 )
-            return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
+    if (X->s == 1 && **p & 0x80) {
+        if (*p - start < 1) {
+            return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+        }
 
         *--(*p) = 0x00;
         len += 1;
     }
 
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( p, start, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start, MBEDTLS_ASN1_INTEGER ) );
-
-    ret = (int) len;
+    ret = mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_INTEGER);
 
 cleanup:
-    return( ret );
+    return ret;
 }
 #endif /* MBEDTLS_BIGNUM_C */
 
-int mbedtls_asn1_write_null( unsigned char **p, unsigned char *start )
+int mbedtls_asn1_write_null(unsigned char **p, const unsigned char *start)
 {
-    int ret;
-    size_t len = 0;
-
     // Write NULL
     //
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( p, start, 0) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start, MBEDTLS_ASN1_NULL ) );
-
-    return( (int) len );
+    return mbedtls_asn1_write_len_and_tag(p, start, 0, MBEDTLS_ASN1_NULL);
 }
 
-int mbedtls_asn1_write_oid( unsigned char **p, unsigned char *start,
-                    const char *oid, size_t oid_len )
+int mbedtls_asn1_write_oid(unsigned char **p, const unsigned char *start,
+                           const char *oid, size_t oid_len)
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_raw_buffer( p, start,
-                                  (const unsigned char *) oid, oid_len ) );
-    MBEDTLS_ASN1_CHK_ADD( len , mbedtls_asn1_write_len( p, start, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len , mbedtls_asn1_write_tag( p, start, MBEDTLS_ASN1_OID ) );
-
-    return( (int) len );
+    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_raw_buffer(p, start,
+                                                            (const unsigned char *) oid, oid_len));
+    return mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_OID);
 }
 
-int mbedtls_asn1_write_algorithm_identifier( unsigned char **p, unsigned char *start,
-                                     const char *oid, size_t oid_len,
-                                     size_t par_len )
+int mbedtls_asn1_write_algorithm_identifier(unsigned char **p, const unsigned char *start,
+                                            const char *oid, size_t oid_len,
+                                            size_t par_len)
 {
-    int ret;
-    size_t len = 0;
-
-    if( par_len == 0 )
-        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_null( p, start ) );
-    else
-        len += par_len;
-
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_oid( p, start, oid, oid_len ) );
-
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( p, start, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start,
-                                       MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE ) );
-
-    return( (int) len );
+    return mbedtls_asn1_write_algorithm_identifier_ext(p, start, oid, oid_len, par_len, 1);
 }
 
-int mbedtls_asn1_write_bool( unsigned char **p, unsigned char *start, int boolean )
+int mbedtls_asn1_write_algorithm_identifier_ext(unsigned char **p, const unsigned char *start,
+                                                const char *oid, size_t oid_len,
+                                                size_t par_len, int has_par)
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
-    if( *p - start < 1 )
-        return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
+    if (has_par) {
+        if (par_len == 0) {
+            MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_null(p, start));
+        } else {
+            len += par_len;
+        }
+    }
+
+    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_oid(p, start, oid, oid_len));
+
+    return mbedtls_asn1_write_len_and_tag(p, start, len,
+                                          MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE);
+}
+
+int mbedtls_asn1_write_bool(unsigned char **p, const unsigned char *start, int boolean)
+{
+    size_t len = 0;
+
+    if (*p - start < 1) {
+        return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+    }
 
     *--(*p) = (boolean) ? 255 : 0;
     len++;
 
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( p, start, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start, MBEDTLS_ASN1_BOOLEAN ) );
-
-    return( (int) len );
+    return mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_BOOLEAN);
 }
 
-int mbedtls_asn1_write_int( unsigned char **p, unsigned char *start, int val )
+static int asn1_write_tagged_int(unsigned char **p, const unsigned char *start, int val, int tag)
 {
-    int ret;
     size_t len = 0;
 
-    if( *p - start < 1 )
-        return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
+    do {
+        if (*p - start < 1) {
+            return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+        }
+        len += 1;
+        *--(*p) = val & 0xff;
+        val >>= 8;
+    } while (val > 0);
 
-    len += 1;
-    *--(*p) = val;
-
-    if( val > 0 && **p & 0x80 )
-    {
-        if( *p - start < 1 )
-            return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
-
+    if (**p & 0x80) {
+        if (*p - start < 1) {
+            return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+        }
         *--(*p) = 0x00;
         len += 1;
     }
 
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( p, start, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start, MBEDTLS_ASN1_INTEGER ) );
-
-    return( (int) len );
+    return mbedtls_asn1_write_len_and_tag(p, start, len, tag);
 }
 
-int mbedtls_asn1_write_tagged_string( unsigned char **p, unsigned char *start, int tag,
-    const char *text, size_t text_len )
+int mbedtls_asn1_write_int(unsigned char **p, const unsigned char *start, int val)
 {
-    int ret;
+    return asn1_write_tagged_int(p, start, val, MBEDTLS_ASN1_INTEGER);
+}
+
+int mbedtls_asn1_write_enum(unsigned char **p, const unsigned char *start, int val)
+{
+    return asn1_write_tagged_int(p, start, val, MBEDTLS_ASN1_ENUMERATED);
+}
+
+int mbedtls_asn1_write_tagged_string(unsigned char **p, const unsigned char *start, int tag,
+                                     const char *text, size_t text_len)
+{
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_raw_buffer( p, start,
-        (const unsigned char *) text, text_len ) );
+    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_raw_buffer(p, start,
+                                                            (const unsigned char *) text,
+                                                            text_len));
 
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( p, start, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start, tag ) );
-
-    return( (int) len );
+    return mbedtls_asn1_write_len_and_tag(p, start, len, tag);
 }
 
-int mbedtls_asn1_write_utf8_string( unsigned char **p, unsigned char *start,
-    const char *text, size_t text_len )
+int mbedtls_asn1_write_utf8_string(unsigned char **p, const unsigned char *start,
+                                   const char *text, size_t text_len)
 {
-    return( mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_UTF8_STRING, text, text_len) );
+    return mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_UTF8_STRING, text, text_len);
 }
 
-int mbedtls_asn1_write_printable_string( unsigned char **p, unsigned char *start,
-                                 const char *text, size_t text_len )
+int mbedtls_asn1_write_printable_string(unsigned char **p, const unsigned char *start,
+                                        const char *text, size_t text_len)
 {
-    return( mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_PRINTABLE_STRING, text, text_len) );
+    return mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_PRINTABLE_STRING, text,
+                                            text_len);
 }
 
-int mbedtls_asn1_write_ia5_string( unsigned char **p, unsigned char *start,
-                           const char *text, size_t text_len )
+int mbedtls_asn1_write_ia5_string(unsigned char **p, const unsigned char *start,
+                                  const char *text, size_t text_len)
 {
-    return( mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_IA5_STRING, text, text_len) );
+    return mbedtls_asn1_write_tagged_string(p, start, MBEDTLS_ASN1_IA5_STRING, text, text_len);
 }
 
-int mbedtls_asn1_write_bitstring( unsigned char **p, unsigned char *start,
-                          const unsigned char *buf, size_t bits )
+int mbedtls_asn1_write_named_bitstring(unsigned char **p,
+                                       const unsigned char *start,
+                                       const unsigned char *buf,
+                                       size_t bits)
 {
-    int ret;
+    size_t unused_bits, byte_len;
+    const unsigned char *cur_byte;
+    unsigned char cur_byte_shifted;
+    unsigned char bit;
+
+    byte_len = (bits + 7) / 8;
+    unused_bits = (byte_len * 8) - bits;
+
+    /*
+     * Named bitstrings require that trailing 0s are excluded in the encoding
+     * of the bitstring. Trailing 0s are considered part of the 'unused' bits
+     * when encoding this value in the first content octet
+     */
+    if (bits != 0) {
+        cur_byte = buf + byte_len - 1;
+        cur_byte_shifted = *cur_byte >> unused_bits;
+
+        for (;;) {
+            bit = cur_byte_shifted & 0x1;
+            cur_byte_shifted >>= 1;
+
+            if (bit != 0) {
+                break;
+            }
+
+            bits--;
+            if (bits == 0) {
+                break;
+            }
+
+            if (bits % 8 == 0) {
+                cur_byte_shifted = *--cur_byte;
+            }
+        }
+    }
+
+    return mbedtls_asn1_write_bitstring(p, start, buf, bits);
+}
+
+int mbedtls_asn1_write_bitstring(unsigned char **p, const unsigned char *start,
+                                 const unsigned char *buf, size_t bits)
+{
     size_t len = 0;
     size_t unused_bits, byte_len;
 
-    byte_len = ( bits + 7 ) / 8;
-    unused_bits = ( byte_len * 8 ) - bits;
+    byte_len = (bits + 7) / 8;
+    unused_bits = (byte_len * 8) - bits;
 
-    if( *p < start || (size_t)( *p - start ) < byte_len + 1 )
-        return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
+    if (*p < start || (size_t) (*p - start) < byte_len + 1) {
+        return MBEDTLS_ERR_ASN1_BUF_TOO_SMALL;
+    }
 
     len = byte_len + 1;
 
     /* Write the bitstring. Ensure the unused bits are zeroed */
-    if( byte_len > 0 )
-    {
+    if (byte_len > 0) {
         byte_len--;
-        *--( *p ) = buf[byte_len] & ~( ( 0x1 << unused_bits ) - 1 );
-        ( *p ) -= byte_len;
-        memcpy( *p, buf, byte_len );
+        *--(*p) = buf[byte_len] & ~((0x1 << unused_bits) - 1);
+        (*p) -= byte_len;
+        memcpy(*p, buf, byte_len);
     }
 
     /* Write unused bits */
-    *--( *p ) = (unsigned char)unused_bits;
+    *--(*p) = (unsigned char) unused_bits;
 
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( p, start, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start, MBEDTLS_ASN1_BIT_STRING ) );
-
-    return( (int) len );
+    return mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_BIT_STRING);
 }
 
-int mbedtls_asn1_write_octet_string( unsigned char **p, unsigned char *start,
-                             const unsigned char *buf, size_t size )
+int mbedtls_asn1_write_octet_string(unsigned char **p, const unsigned char *start,
+                                    const unsigned char *buf, size_t size)
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_raw_buffer( p, start, buf, size ) );
+    MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_raw_buffer(p, start, buf, size));
 
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_len( p, start, len ) );
-    MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_tag( p, start, MBEDTLS_ASN1_OCTET_STRING ) );
-
-    return( (int) len );
+    return mbedtls_asn1_write_len_and_tag(p, start, len, MBEDTLS_ASN1_OCTET_STRING);
 }
 
 
+#if !defined(MBEDTLS_ASN1_PARSE_C)
 /* This is a copy of the ASN.1 parsing function mbedtls_asn1_find_named_data(),
  * which is replicated to avoid a dependency ASN1_WRITE_C on ASN1_PARSE_C. */
 static mbedtls_asn1_named_data *asn1_find_named_data(
-                                               mbedtls_asn1_named_data *list,
-                                               const char *oid, size_t len )
+    mbedtls_asn1_named_data *list,
+    const char *oid, size_t len)
 {
-    while( list != NULL )
-    {
-        if( list->oid.len == len &&
-            memcmp( list->oid.p, oid, len ) == 0 )
-        {
+    while (list != NULL) {
+        if (list->oid.len == len &&
+            memcmp(list->oid.p, oid, len) == 0) {
             break;
         }
 
         list = list->next;
     }
 
-    return( list );
+    return list;
 }
+#else
+#define asn1_find_named_data(list, oid, len) \
+    ((mbedtls_asn1_named_data *) mbedtls_asn1_find_named_data(list, oid, len))
+#endif
 
 mbedtls_asn1_named_data *mbedtls_asn1_store_named_data(
-                                        mbedtls_asn1_named_data **head,
-                                        const char *oid, size_t oid_len,
-                                        const unsigned char *val,
-                                        size_t val_len )
+    mbedtls_asn1_named_data **head,
+    const char *oid, size_t oid_len,
+    const unsigned char *val,
+    size_t val_len)
 {
     mbedtls_asn1_named_data *cur;
 
-    if( ( cur = asn1_find_named_data( *head, oid, oid_len ) ) == NULL )
-    {
+    if ((cur = asn1_find_named_data(*head, oid, oid_len)) == NULL) {
         // Add new entry if not present yet based on OID
         //
-        cur = (mbedtls_asn1_named_data*)mbedtls_calloc( 1,
-                                            sizeof(mbedtls_asn1_named_data) );
-        if( cur == NULL )
-            return( NULL );
-
-        cur->oid.len = oid_len;
-        cur->oid.p = mbedtls_calloc( 1, oid_len );
-        if( cur->oid.p == NULL )
-        {
-            mbedtls_free( cur );
-            return( NULL );
+        cur = (mbedtls_asn1_named_data *) mbedtls_calloc(1,
+                                                         sizeof(mbedtls_asn1_named_data));
+        if (cur == NULL) {
+            return NULL;
         }
 
-        memcpy( cur->oid.p, oid, oid_len );
+        cur->oid.len = oid_len;
+        cur->oid.p = mbedtls_calloc(1, oid_len);
+        if (cur->oid.p == NULL) {
+            mbedtls_free(cur);
+            return NULL;
+        }
+
+        memcpy(cur->oid.p, oid, oid_len);
 
         cur->val.len = val_len;
-        cur->val.p = mbedtls_calloc( 1, val_len );
-        if( cur->val.p == NULL )
-        {
-            mbedtls_free( cur->oid.p );
-            mbedtls_free( cur );
-            return( NULL );
+        if (val_len != 0) {
+            cur->val.p = mbedtls_calloc(1, val_len);
+            if (cur->val.p == NULL) {
+                mbedtls_free(cur->oid.p);
+                mbedtls_free(cur);
+                return NULL;
+            }
         }
 
         cur->next = *head;
         *head = cur;
-    }
-    else if( cur->val.len < val_len )
-    {
+    } else if (val_len == 0) {
+        mbedtls_free(cur->val.p);
+        cur->val.p = NULL;
+    } else if (cur->val.len != val_len) {
         /*
          * Enlarge existing value buffer if needed
          * Preserve old data until the allocation succeeded, to leave list in
          * a consistent state in case allocation fails.
          */
-        void *p = mbedtls_calloc( 1, val_len );
-        if( p == NULL )
-            return( NULL );
+        void *p = mbedtls_calloc(1, val_len);
+        if (p == NULL) {
+            return NULL;
+        }
 
-        mbedtls_free( cur->val.p );
+        mbedtls_free(cur->val.p);
         cur->val.p = p;
         cur->val.len = val_len;
     }
 
-    if( val != NULL )
-        memcpy( cur->val.p, val, val_len );
+    if (val != NULL && val_len != 0) {
+        memcpy(cur->val.p, val, val_len);
+    }
 
-    return( cur );
+    return cur;
 }
 #endif /* MBEDTLS_ASN1_WRITE_C */

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  plane.h                                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  plane.h                                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef PLANE_H
 #define PLANE_H
@@ -35,25 +35,24 @@
 
 class Variant;
 
-class Plane {
-public:
+struct _NO_DISCARD_ Plane {
 	Vector3 normal;
 	real_t d = 0;
 
 	void set_normal(const Vector3 &p_normal);
-	_FORCE_INLINE_ Vector3 get_normal() const { return normal; }; ///Point is coplanar, CMP_EPSILON for precision
+	_FORCE_INLINE_ Vector3 get_normal() const { return normal; };
 
 	void normalize();
 	Plane normalized() const;
 
 	/* Plane-Point operations */
 
-	_FORCE_INLINE_ Vector3 center() const { return normal * d; }
+	_FORCE_INLINE_ Vector3 get_center() const { return normal * d; }
 	Vector3 get_any_perpendicular_normal() const;
 
 	_FORCE_INLINE_ bool is_point_over(const Vector3 &p_point) const; ///< Point is over plane
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_point) const;
-	_FORCE_INLINE_ bool has_point(const Vector3 &p_point, real_t _epsilon = CMP_EPSILON) const;
+	_FORCE_INLINE_ bool has_point(const Vector3 &p_point, real_t p_tolerance = CMP_EPSILON) const;
 
 	/* intersections */
 
@@ -75,6 +74,7 @@ public:
 	Plane operator-() const { return Plane(-normal, -d); }
 	bool is_equal_approx(const Plane &p_plane) const;
 	bool is_equal_approx_any_side(const Plane &p_plane) const;
+	bool is_finite() const;
 
 	_FORCE_INLINE_ bool operator==(const Plane &p_plane) const;
 	_FORCE_INLINE_ bool operator!=(const Plane &p_plane) const;
@@ -85,8 +85,8 @@ public:
 			normal(p_a, p_b, p_c),
 			d(p_d) {}
 
-	_FORCE_INLINE_ Plane(const Vector3 &p_normal, real_t p_d);
-	_FORCE_INLINE_ Plane(const Vector3 &p_point, const Vector3 &p_normal);
+	_FORCE_INLINE_ Plane(const Vector3 &p_normal, real_t p_d = 0.0);
+	_FORCE_INLINE_ Plane(const Vector3 &p_normal, const Vector3 &p_point);
 	_FORCE_INLINE_ Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_point3, ClockDirection p_dir = CLOCKWISE);
 };
 
@@ -98,10 +98,10 @@ real_t Plane::distance_to(const Vector3 &p_point) const {
 	return (normal.dot(p_point) - d);
 }
 
-bool Plane::has_point(const Vector3 &p_point, real_t _epsilon) const {
+bool Plane::has_point(const Vector3 &p_point, real_t p_tolerance) const {
 	real_t dist = normal.dot(p_point) - d;
 	dist = ABS(dist);
-	return (dist <= _epsilon);
+	return (dist <= p_tolerance);
 }
 
 Plane::Plane(const Vector3 &p_normal, real_t p_d) :
@@ -109,7 +109,7 @@ Plane::Plane(const Vector3 &p_normal, real_t p_d) :
 		d(p_d) {
 }
 
-Plane::Plane(const Vector3 &p_point, const Vector3 &p_normal) :
+Plane::Plane(const Vector3 &p_normal, const Vector3 &p_point) :
 		normal(p_normal),
 		d(p_normal.dot(p_point)) {
 }

@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT feat table validation (body).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2023 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -90,7 +90,7 @@
 
     if ( feature >= gxv_feat_registry_length )
     {
-      GXV_TRACE(( "feature number %d is out of range %d\n",
+      GXV_TRACE(( "feature number %d is out of range %lu\n",
                   feature, gxv_feat_registry_length ));
       GXV_SET_ERR_IF_PARANOID( FT_INVALID_DATA );
       goto Exit;

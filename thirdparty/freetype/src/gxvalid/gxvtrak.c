@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT trak table validation (body).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2023 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -130,7 +130,7 @@
          p = table + j * ( 4 + 2 + 2 );
          t = FT_NEXT_LONG( p );
          if ( t == track )
-           GXV_TRACE(( "duplicated entries found for track value 0x%x\n",
+           GXV_TRACE(( "duplicated entries found for track value 0x%lx\n",
                         track ));
       }
     }
@@ -243,7 +243,7 @@
     vertOffset  = FT_NEXT_USHORT( p );
     reserved    = FT_NEXT_USHORT( p );
 
-    GXV_TRACE(( " (version = 0x%08x)\n", version ));
+    GXV_TRACE(( " (version = 0x%08lx)\n", version ));
     GXV_TRACE(( " (format = 0x%04x)\n", format ));
     GXV_TRACE(( " (horizOffset = 0x%04x)\n", horizOffset ));
     GXV_TRACE(( " (vertOffset = 0x%04x)\n", vertOffset ));

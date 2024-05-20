@@ -4,8 +4,8 @@
 # To use it, install this file in `/etc/bash_completion.d` then restart your shell.
 # You can also `source` this file directly in your shell startup file.
 #
-# Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md).
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@ _complete_godot_options() {
 --quiet
 --editor
 --project-manager
+--debug-server
 --quit
 --language
 --path
@@ -45,36 +46,56 @@ _complete_godot_options() {
 --remote-fs
 --remote-fs-password
 --audio-driver
---video-driver
+--audio-output-latency
+--display-driver
+--rendering-method
+--rendering-driver
+--gpu-index
+--text-driver
+--tablet-driver
+--headless
+--log-file
+--write-movie
 --fullscreen
 --maximized
 --windowed
 --always-on-top
 --resolution
 --position
---low-dpi
---no-window
+--single-window
+--xr-mode
 --debug
 --breakpoints
 --profiling
+--gpu-profile
+--gpu-validation
+--gpu-abort
 --remote-debug
 --debug-collisions
 --debug-navigation
+--debug-stringnames
+--max-fps
 --frame-delay
 --time-scale
+--disable-vsync
 --disable-render-loop
 --disable-crash-handler
 --fixed-fps
 --print-fps
 --script
 --check-only
---export
+--export-release
 --export-debug
 --export-pack
+--convert-3to4
+--validate-conversion-3to4
 --doctool
 --no-docbase
 --build-solutions
---gdnative-generate-json-api
+--dump-gdextension-interface
+--dump-extension-api
+--benchmark
+--benchmark-file
 --test
 " -- "$1"))
 }
@@ -100,10 +121,18 @@ _complete_godot_bash() {
     local IFS=$' \n\t'
     # shellcheck disable=SC2207
     COMPREPLY=($(compgen -W "unsafe safe separate" -- "$cur"))
-  elif [[ $prev == "--video-driver" ]]; then
+  elif [[ $prev == "--rendering-method" ]]; then
     local IFS=$' \n\t'
     # shellcheck disable=SC2207
-    COMPREPLY=($(compgen -W "Vulkan GLES2" -- "$cur"))
+    COMPREPLY=($(compgen -W "forward_plus mobile gl_compatibility" -- "$cur"))
+  elif [[ $prev == "--rendering-driver" ]]; then
+    local IFS=$' \n\t'
+    # shellcheck disable=SC2207
+    COMPREPLY=($(compgen -W "vulkan opengl3 dummy" -- "$cur"))
+	elif [[ $prev == "--xr-mode" ]]; then
+    local IFS=$' \n\t'
+    # shellcheck disable=SC2207
+    COMPREPLY=($(compgen -W "default off on" -- "$cur"))
   elif [[ $prev == "--path" || $prev == "--doctool" ]]; then
     local IFS=$'\n\t'
     # shellcheck disable=SC2207

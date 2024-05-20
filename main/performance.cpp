@@ -1,43 +1,49 @@
-/*************************************************************************/
-/*  performance.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  performance.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "performance.h"
 
-#include "core/object/message_queue.h"
 #include "core/os/os.h"
+#include "core/variant/typed_array.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
-#include "servers/physics_server_2d.h"
-#include "servers/physics_server_3d.h"
+#include "servers/navigation_server_3d.h"
 #include "servers/rendering_server.h"
+
+// 2D
+#include "servers/physics_server_2d.h"
+
+#ifndef _3D_DISABLED
+#include "servers/physics_server_3d.h"
+#endif // _3D_DISABLED
 
 Performance *Performance::singleton = nullptr;
 
@@ -53,6 +59,7 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(TIME_FPS);
 	BIND_ENUM_CONSTANT(TIME_PROCESS);
 	BIND_ENUM_CONSTANT(TIME_PHYSICS_PROCESS);
+	BIND_ENUM_CONSTANT(TIME_NAVIGATION_PROCESS);
 	BIND_ENUM_CONSTANT(MEMORY_STATIC);
 	BIND_ENUM_CONSTANT(MEMORY_STATIC_MAX);
 	BIND_ENUM_CONSTANT(MEMORY_MESSAGE_BUFFER_MAX);
@@ -69,11 +76,21 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(PHYSICS_2D_ACTIVE_OBJECTS);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_ISLAND_COUNT);
+#ifndef _3D_DISABLED
 	BIND_ENUM_CONSTANT(PHYSICS_3D_ACTIVE_OBJECTS);
 	BIND_ENUM_CONSTANT(PHYSICS_3D_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PHYSICS_3D_ISLAND_COUNT);
+#endif // _3D_DISABLED
 	BIND_ENUM_CONSTANT(AUDIO_OUTPUT_LATENCY);
-
+	BIND_ENUM_CONSTANT(NAVIGATION_ACTIVE_MAPS);
+	BIND_ENUM_CONSTANT(NAVIGATION_REGION_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_AGENT_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_LINK_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_POLYGON_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_EDGE_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_EDGE_MERGE_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_EDGE_CONNECTION_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_EDGE_FREE_COUNT);
 	BIND_ENUM_CONSTANT(MONITOR_MAX);
 }
 
@@ -89,29 +106,41 @@ int Performance::_get_node_count() const {
 String Performance::get_monitor_name(Monitor p_monitor) const {
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, String());
 	static const char *names[MONITOR_MAX] = {
-		"time/fps",
-		"time/process",
-		"time/physics_process",
-		"memory/static",
-		"memory/static_max",
-		"memory/msg_buf_max",
-		"object/objects",
-		"object/resources",
-		"object/nodes",
-		"object/orphan_nodes",
-		"raster/total_objects_drawn",
-		"raster/total_primitives_drawn",
-		"raster/total_draw_calls",
-		"video/video_mem",
-		"video/texture_mem",
-		"video/buffer_mem",
-		"physics_2d/active_objects",
-		"physics_2d/collision_pairs",
-		"physics_2d/islands",
-		"physics_3d/active_objects",
-		"physics_3d/collision_pairs",
-		"physics_3d/islands",
-		"audio/driver/output_latency",
+		PNAME("time/fps"),
+		PNAME("time/process"),
+		PNAME("time/physics_process"),
+		PNAME("time/navigation_process"),
+		PNAME("memory/static"),
+		PNAME("memory/static_max"),
+		PNAME("memory/msg_buf_max"),
+		PNAME("object/objects"),
+		PNAME("object/resources"),
+		PNAME("object/nodes"),
+		PNAME("object/orphan_nodes"),
+		PNAME("raster/total_objects_drawn"),
+		PNAME("raster/total_primitives_drawn"),
+		PNAME("raster/total_draw_calls"),
+		PNAME("video/video_mem"),
+		PNAME("video/texture_mem"),
+		PNAME("video/buffer_mem"),
+		PNAME("physics_2d/active_objects"),
+		PNAME("physics_2d/collision_pairs"),
+		PNAME("physics_2d/islands"),
+#ifndef _3D_DISABLED
+		PNAME("physics_3d/active_objects"),
+		PNAME("physics_3d/collision_pairs"),
+		PNAME("physics_3d/islands"),
+#endif // _3D_DISABLED
+		PNAME("audio/driver/output_latency"),
+		PNAME("navigation/active_maps"),
+		PNAME("navigation/regions"),
+		PNAME("navigation/agents"),
+		PNAME("navigation/links"),
+		PNAME("navigation/polygons"),
+		PNAME("navigation/edges"),
+		PNAME("navigation/edges_merged"),
+		PNAME("navigation/edges_connected"),
+		PNAME("navigation/edges_free"),
 
 	};
 
@@ -126,6 +155,8 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return _process_time;
 		case TIME_PHYSICS_PROCESS:
 			return _physics_process_time;
+		case TIME_NAVIGATION_PROCESS:
+			return _navigation_process_time;
 		case MEMORY_STATIC:
 			return Memory::get_mem_usage();
 		case MEMORY_STATIC_MAX:
@@ -158,14 +189,42 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_COLLISION_PAIRS);
 		case PHYSICS_2D_ISLAND_COUNT:
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ISLAND_COUNT);
+#ifdef _3D_DISABLED
+		case PHYSICS_3D_ACTIVE_OBJECTS:
+			return 0;
+		case PHYSICS_3D_COLLISION_PAIRS:
+			return 0;
+		case PHYSICS_3D_ISLAND_COUNT:
+			return 0;
+#else
 		case PHYSICS_3D_ACTIVE_OBJECTS:
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_ACTIVE_OBJECTS);
 		case PHYSICS_3D_COLLISION_PAIRS:
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_COLLISION_PAIRS);
 		case PHYSICS_3D_ISLAND_COUNT:
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_ISLAND_COUNT);
+#endif // _3D_DISABLED
+
 		case AUDIO_OUTPUT_LATENCY:
 			return AudioServer::get_singleton()->get_output_latency();
+		case NAVIGATION_ACTIVE_MAPS:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_ACTIVE_MAPS);
+		case NAVIGATION_REGION_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_REGION_COUNT);
+		case NAVIGATION_AGENT_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_AGENT_COUNT);
+		case NAVIGATION_LINK_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_LINK_COUNT);
+		case NAVIGATION_POLYGON_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_POLYGON_COUNT);
+		case NAVIGATION_EDGE_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_COUNT);
+		case NAVIGATION_EDGE_MERGE_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_MERGE_COUNT);
+		case NAVIGATION_EDGE_CONNECTION_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_CONNECTION_COUNT);
+		case NAVIGATION_EDGE_FREE_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_FREE_COUNT);
 
 		default: {
 		}
@@ -181,26 +240,38 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_TIME,
 		MONITOR_TYPE_TIME,
-		MONITOR_TYPE_MEMORY,
-		MONITOR_TYPE_MEMORY,
-		MONITOR_TYPE_MEMORY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_MEMORY,
-		MONITOR_TYPE_MEMORY,
-		MONITOR_TYPE_MEMORY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_TIME,
+		MONITOR_TYPE_MEMORY,
+		MONITOR_TYPE_MEMORY,
+		MONITOR_TYPE_MEMORY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_MEMORY,
+		MONITOR_TYPE_MEMORY,
+		MONITOR_TYPE_MEMORY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+#ifndef _3D_DISABLED
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+#endif // _3D_DISABLED
+		MONITOR_TYPE_TIME,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
 
 	};
 
@@ -213,6 +284,10 @@ void Performance::set_process_time(double p_pt) {
 
 void Performance::set_physics_process_time(double p_pt) {
 	_physics_process_time = p_pt;
+}
+
+void Performance::set_navigation_process_time(double p_pt) {
+	_navigation_process_time = p_pt;
 }
 
 void Performance::add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args) {
@@ -240,15 +315,15 @@ Variant Performance::get_custom_monitor(const StringName &p_id) {
 	return return_value;
 }
 
-Array Performance::get_custom_monitor_names() {
+TypedArray<StringName> Performance::get_custom_monitor_names() {
 	if (!_monitor_map.size()) {
-		return Array();
+		return TypedArray<StringName>();
 	}
-	Array return_array;
+	TypedArray<StringName> return_array;
 	return_array.resize(_monitor_map.size());
 	int index = 0;
-	for (OrderedHashMap<StringName, MonitorCall>::Element i = _monitor_map.front(); i; i = i.next()) {
-		return_array.set(index, i.key());
+	for (KeyValue<StringName, MonitorCall> i : _monitor_map) {
+		return_array.set(index, i.key);
 		index++;
 	}
 	return return_array;
@@ -261,6 +336,7 @@ uint64_t Performance::get_monitor_modification_time() {
 Performance::Performance() {
 	_process_time = 0;
 	_physics_process_time = 0;
+	_navigation_process_time = 0;
 	_monitor_modification_time = 0;
 	singleton = this;
 }
@@ -283,7 +359,7 @@ Variant Performance::MonitorCall::call(bool &r_error, String &r_error_message) {
 	int argc = _arguments.size();
 	Variant return_value;
 	Callable::CallError error;
-	_callable.call(args, argc, return_value, error);
+	_callable.callp(args, argc, return_value, error);
 	r_error = (error.error != Callable::CallError::CALL_OK);
 	if (r_error) {
 		r_error_message = Variant::get_callable_error_text(_callable, args, argc, error);

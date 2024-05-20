@@ -4,7 +4,7 @@
  *
  *   FreeType's OpenType validation module implementation (body).
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -53,7 +53,7 @@
     if ( error )
       goto Exit;
 
-    if ( FT_ALLOC( *table, *table_len ) )
+    if ( FT_QALLOC( *table, *table_len ) )
       goto Exit;
 
     error = FT_Load_Sfnt_Table( face, tag, 0, *table, table_len );
@@ -94,7 +94,7 @@
      */
     if ( face->num_glyphs > 0xFFFFL )
     {
-      FT_TRACE1(( "otv_validate: Invalid glyphs index (0x0000FFFF - 0x%08x) ",
+      FT_TRACE1(( "otv_validate: Invalid glyphs index (0x0000FFFF - 0x%08lx) ",
                   face->num_glyphs ));
       FT_TRACE1(( "are not handled by OpenType tables\n" ));
       num_glyphs = 0xFFFF;

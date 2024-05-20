@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  paged_array.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  paged_array.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef PAGED_ARRAY_H
 #define PAGED_ARRAY_H
@@ -35,11 +35,13 @@
 #include "core/os/spin_lock.h"
 #include "core/typedefs.h"
 
+#include <type_traits>
+
 // PagedArray is used mainly for filling a very large array from multiple threads efficiently and without causing major fragmentation
 
 // PageArrayPool manages central page allocation in a thread safe matter
 
-template <class T>
+template <typename T>
 class PagedArrayPool {
 	T **page_pool = nullptr;
 	uint32_t pages_allocated = 0;
@@ -51,7 +53,12 @@ class PagedArrayPool {
 	SpinLock spin_lock;
 
 public:
-	uint32_t alloc_page() {
+	struct PageInfo {
+		T *page = nullptr;
+		uint32_t page_id = 0;
+	};
+
+	PageInfo alloc_page() {
 		spin_lock.lock();
 		if (unlikely(pages_available == 0)) {
 			uint32_t pages_used = pages_allocated;
@@ -67,13 +74,11 @@ public:
 		}
 
 		pages_available--;
-		uint32_t page = available_page_pool[pages_available];
+		uint32_t page_id = available_page_pool[pages_available];
+		T *page = page_pool[page_id];
 		spin_lock.unlock();
 
-		return page;
-	}
-	T *get_page(uint32_t p_page_id) {
-		return page_pool[p_page_id];
+		return PageInfo{ page, page_id };
 	}
 
 	void free_page(uint32_t p_page_id) {
@@ -110,7 +115,7 @@ public:
 	}
 
 	void configure(uint32_t p_page_size) {
-		ERR_FAIL_COND(page_pool != nullptr); //sanity check
+		ERR_FAIL_COND(page_pool != nullptr); // Safety check.
 		ERR_FAIL_COND(p_page_size == 0);
 		page_size = nearest_power_of_2_templated(p_page_size);
 	}
@@ -129,7 +134,7 @@ public:
 // It does so by allocating pages from a PagedArrayPool.
 // It is safe to use multiple PagedArrays from different threads, sharing a single PagedArrayPool
 
-template <class T>
+template <typename T>
 class PagedArray {
 	PagedArrayPool<T> *page_pool = nullptr;
 
@@ -183,21 +188,21 @@ public:
 			uint32_t new_page_count = page_count + 1;
 
 			if (unlikely(new_page_count > max_pages_used)) {
-				ERR_FAIL_COND(page_pool == nullptr); //sanity check
+				ERR_FAIL_NULL(page_pool); // Safety check.
 
 				_grow_page_array(); //keep out of inline
 			}
 
-			uint32_t page_id = page_pool->alloc_page();
-			page_data[page_count] = page_pool->get_page(page_id);
-			page_ids[page_count] = page_id;
+			typename PagedArrayPool<T>::PageInfo page_info = page_pool->alloc_page();
+			page_data[page_count] = page_info.page;
+			page_ids[page_count] = page_info.page_id;
 		}
 
 		// place the new value
 		uint32_t page = count >> page_size_shift;
 		uint32_t offset = count & page_size_mask;
 
-		if (!__has_trivial_constructor(T)) {
+		if constexpr (!std::is_trivially_constructible_v<T>) {
 			memnew_placement(&page_data[page][offset], T(p_value));
 		} else {
 			page_data[page][offset] = p_value;
@@ -209,7 +214,7 @@ public:
 	_FORCE_INLINE_ void pop_back() {
 		ERR_FAIL_COND(count == 0);
 
-		if (!__has_trivial_destructor(T)) {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
 			uint32_t page = (count - 1) >> page_size_shift;
 			uint32_t offset = (count - 1) & page_size_mask;
 			page_data[page][offset].~T();
@@ -224,9 +229,15 @@ public:
 		count--;
 	}
 
+	void remove_at_unordered(uint64_t p_index) {
+		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
+		(*this)[p_index] = (*this)[count - 1];
+		pop_back();
+	}
+
 	void clear() {
 		//destruct if needed
-		if (!__has_trivial_destructor(T)) {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
 			for (uint64_t i = 0; i < count; i++) {
 				uint32_t page = i >> page_size_shift;
 				uint32_t offset = i & page_size_mask;
@@ -266,7 +277,7 @@ public:
 		uint32_t remainder = count & page_size_mask;
 
 		T *remainder_page = nullptr;
-		uint32_t remainder_page_id;
+		uint32_t remainder_page_id = 0;
 
 		if (remainder > 0) {
 			uint32_t last_page = _get_pages_in_use() - 1;
@@ -276,10 +287,10 @@ public:
 
 		count -= remainder;
 
-		uint32_t src_pages = p_array._get_pages_in_use();
+		uint32_t src_page_index = 0;
 		uint32_t page_size = page_size_mask + 1;
 
-		for (uint32_t i = 0; i < src_pages; i++) {
+		while (p_array.count > 0) {
 			uint32_t page_count = _get_pages_in_use();
 			uint32_t new_page_count = page_count + 1;
 
@@ -287,16 +298,14 @@ public:
 				_grow_page_array(); //keep out of inline
 			}
 
-			page_data[page_count] = p_array.page_data[i];
-			page_ids[page_count] = p_array.page_ids[i];
-			if (i == src_pages - 1) {
-				//last page, only increment with remainder
-				count += p_array.count & page_size_mask;
-			} else {
-				count += page_size;
-			}
+			page_data[page_count] = p_array.page_data[src_page_index];
+			page_ids[page_count] = p_array.page_ids[src_page_index];
+
+			uint32_t take = MIN(p_array.count, page_size); //pages to take away
+			p_array.count -= take;
+			count += take;
+			src_page_index++;
 		}
-		p_array.count = 0; //take away the other array pages
 
 		//handle the remainder page if exists
 		if (remainder_page) {
@@ -309,13 +318,13 @@ public:
 				uint32_t to_copy = MIN(page_size - new_remainder, remainder);
 
 				for (uint32_t i = 0; i < to_copy; i++) {
-					if (!__has_trivial_constructor(T)) {
+					if constexpr (!std::is_trivially_constructible_v<T>) {
 						memnew_placement(&dst_page[i + new_remainder], T(remainder_page[i + remainder - to_copy]));
 					} else {
 						dst_page[i + new_remainder] = remainder_page[i + remainder - to_copy];
 					}
 
-					if (!__has_trivial_destructor(T)) {
+					if constexpr (!std::is_trivially_destructible_v<T>) {
 						remainder_page[i + remainder - to_copy].~T();
 					}
 				}
@@ -352,7 +361,7 @@ public:
 	}
 
 	void set_page_pool(PagedArrayPool<T> *p_page_pool) {
-		ERR_FAIL_COND(max_pages_used > 0); //sanity check
+		ERR_FAIL_COND(max_pages_used > 0); // Safety check.
 
 		page_pool = p_page_pool;
 		page_size_mask = page_pool->get_page_size_mask();

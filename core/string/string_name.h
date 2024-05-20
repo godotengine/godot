@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  string_name.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  string_name.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef STRING_NAME_H
 #define STRING_NAME_H
@@ -34,6 +34,8 @@
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
 #include "core/templates/safe_refcount.h"
+
+#define UNIQUE_NODE_PREFIX "%"
 
 class Main;
 
@@ -69,11 +71,6 @@ class StringName {
 
 	_Data *_data = nullptr;
 
-	union _HashUnion {
-		_Data *ptr;
-		uint32_t hash;
-	};
-
 	void unref();
 	friend void register_core_types();
 	friend void unregister_core_types();
@@ -100,8 +97,29 @@ public:
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
 	bool operator!=(const String &p_name) const;
+	bool operator!=(const char *p_name) const;
+
+	_FORCE_INLINE_ bool is_node_unique_name() const {
+		if (!_data) {
+			return false;
+		}
+		if (_data->cname != nullptr) {
+			return (char32_t)_data->cname[0] == (char32_t)UNIQUE_NODE_PREFIX[0];
+		} else {
+			return (char32_t)_data->name[0] == (char32_t)UNIQUE_NODE_PREFIX[0];
+		}
+	}
 	_FORCE_INLINE_ bool operator<(const StringName &p_name) const {
 		return _data < p_name._data;
+	}
+	_FORCE_INLINE_ bool operator<=(const StringName &p_name) const {
+		return _data <= p_name._data;
+	}
+	_FORCE_INLINE_ bool operator>(const StringName &p_name) const {
+		return _data > p_name._data;
+	}
+	_FORCE_INLINE_ bool operator>=(const StringName &p_name) const {
+		return _data >= p_name._data;
 	}
 	_FORCE_INLINE_ bool operator==(const StringName &p_name) const {
 		// the real magic of all this mess happens here.
@@ -163,6 +181,8 @@ public:
 	StringName(const String &p_name, bool p_static = false);
 	StringName(const StaticCString &p_static_string, bool p_static = false);
 	StringName() {}
+
+	static void assign_static_unique_class_name(StringName *ptr, const char *p_name);
 	_FORCE_INLINE_ ~StringName() {
 		if (likely(configured) && _data) { //only free if configured
 			unref();
@@ -180,6 +200,18 @@ bool operator==(const char *p_name, const StringName &p_string_name);
 bool operator!=(const char *p_name, const StringName &p_string_name);
 
 StringName _scs_create(const char *p_chr, bool p_static = false);
+
+/*
+ * The SNAME macro is used to speed up StringName creation, as it allows caching it after the first usage in a very efficient way.
+ * It should NOT be used everywhere, but instead in places where high performance is required and the creation of a StringName
+ * can be costly. Places where it should be used are:
+ * - Control::get_theme_*(<name> and Window::get_theme_*(<name> functions.
+ * - emit_signal(<name>,..) function
+ * - call_deferred(<name>,..) function
+ * - Comparisons to a StringName in overridden _set and _get methods.
+ *
+ * Use in places that can be called hundreds of times per frame (or more) is recommended, but this situation is very rare. If in doubt, do not use.
+ */
 
 #define SNAME(m_arg) ([]() -> const StringName & { static StringName sname = _scs_create(m_arg, true); return sname; })()
 

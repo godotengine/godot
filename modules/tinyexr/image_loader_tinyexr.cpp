@@ -1,41 +1,43 @@
-/*************************************************************************/
-/*  image_loader_tinyexr.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  image_loader_tinyexr.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "image_loader_tinyexr.h"
 
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
+#include <zlib.h> // Should come before including tinyexr.
+
 #include "thirdparty/tinyexr/tinyexr.h"
 
-Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
+Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	Vector<uint8_t> src_image;
 	uint64_t src_image_len = f->get_length();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
@@ -44,8 +46,6 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 	uint8_t *w = src_image.ptrw();
 
 	f->get_buffer(&w[0], src_image_len);
-
-	f->close();
 
 	// Re-implementation of tinyexr's LoadEXRFromMemory using Godot types to store the Image data
 	// and Godot's error codes.
@@ -68,6 +68,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 	if (ret != TINYEXR_SUCCESS) {
 		if (err) {
 			ERR_PRINT(String(err));
+			FreeEXRErrorMessage(err);
 		}
 		return ERR_FILE_CORRUPT;
 	}
@@ -86,6 +87,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 	if (ret != TINYEXR_SUCCESS) {
 		if (err) {
 			ERR_PRINT(String(err));
+			FreeEXRErrorMessage(err);
 		}
 		return ERR_FILE_CORRUPT;
 	}
@@ -229,8 +231,8 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 							color.a = *a_channel++;
 						}
 
-						if (p_force_linear) {
-							color = color.to_linear();
+						if (p_flags & FLAG_FORCE_LINEAR) {
+							color = color.srgb_to_linear();
 						}
 
 						*row_w++ = Math::make_half_float(color.r);
@@ -260,8 +262,8 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 							color.a = *a_channel++;
 						}
 
-						if (p_force_linear) {
-							color = color.to_linear();
+						if (p_flags & FLAG_FORCE_LINEAR) {
+							color = color.srgb_to_linear();
 						}
 
 						*row_w++ = color.r;
@@ -280,7 +282,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 		}
 	}
 
-	p_image->create(exr_image.width, exr_image.height, false, format, imgdata);
+	p_image->set_data(exr_image.width, exr_image.height, false, format, imgdata);
 
 	FreeEXRHeader(&exr_header);
 	FreeEXRImage(&exr_image);

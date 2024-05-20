@@ -1,501 +1,319 @@
-/*************************************************************************/
-/*  enet_multiplayer_peer.cpp                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  enet_multiplayer_peer.cpp                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "enet_multiplayer_peer.h"
+
 #include "core/io/ip.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
-
-void ENetMultiplayerPeer::set_transfer_mode(TransferMode p_mode) {
-	transfer_mode = p_mode;
-}
-
-MultiplayerPeer::TransferMode ENetMultiplayerPeer::get_transfer_mode() const {
-	return transfer_mode;
-}
 
 void ENetMultiplayerPeer::set_target_peer(int p_peer) {
 	target_peer = p_peer;
 }
 
 int ENetMultiplayerPeer::get_packet_peer() const {
-	ERR_FAIL_COND_V_MSG(!active, 1, "The multiplayer instance isn't currently active.");
-	ERR_FAIL_COND_V(incoming_packets.size() == 0, 1);
+	ERR_FAIL_COND_V_MSG(!_is_active(), 1, "The multiplayer instance isn't currently active.");
+	ERR_FAIL_COND_V(incoming_packets.is_empty(), 1);
 
 	return incoming_packets.front()->get().from;
 }
 
+MultiplayerPeer::TransferMode ENetMultiplayerPeer::get_packet_mode() const {
+	ERR_FAIL_COND_V_MSG(!_is_active(), TRANSFER_MODE_RELIABLE, "The multiplayer instance isn't currently active.");
+	ERR_FAIL_COND_V(incoming_packets.is_empty(), TRANSFER_MODE_RELIABLE);
+	return incoming_packets.front()->get().transfer_mode;
+}
+
 int ENetMultiplayerPeer::get_packet_channel() const {
-	ERR_FAIL_COND_V_MSG(!active, -1, "The multiplayer instance isn't currently active.");
-	ERR_FAIL_COND_V(incoming_packets.size() == 0, -1);
-
-	return incoming_packets.front()->get().channel;
+	ERR_FAIL_COND_V_MSG(!_is_active(), 1, "The multiplayer instance isn't currently active.");
+	ERR_FAIL_COND_V(incoming_packets.is_empty(), 1);
+	int ch = incoming_packets.front()->get().channel;
+	if (ch >= SYSCH_MAX) { // First 2 channels are reserved.
+		return ch - SYSCH_MAX + 1;
+	}
+	return 0;
 }
 
-int ENetMultiplayerPeer::get_last_packet_channel() const {
-	ERR_FAIL_COND_V_MSG(!active, -1, "The multiplayer instance isn't currently active.");
-	ERR_FAIL_COND_V(!current_packet.packet, -1);
-
-	return current_packet.channel;
-}
-
-Error ENetMultiplayerPeer::create_server(int p_port, int p_max_clients, int p_in_bandwidth, int p_out_bandwidth) {
-	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
-	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
-	ERR_FAIL_COND_V_MSG(p_max_clients < 1 || p_max_clients > 4095, ERR_INVALID_PARAMETER, "The number of clients must be set between 1 and 4095 (inclusive).");
-	ERR_FAIL_COND_V_MSG(p_in_bandwidth < 0, ERR_INVALID_PARAMETER, "The incoming bandwidth limit must be greater than or equal to 0 (0 disables the limit).");
-	ERR_FAIL_COND_V_MSG(p_out_bandwidth < 0, ERR_INVALID_PARAMETER, "The outgoing bandwidth limit must be greater than or equal to 0 (0 disables the limit).");
-	ERR_FAIL_COND_V(dtls_enabled && (dtls_key.is_null() || dtls_cert.is_null()), ERR_INVALID_PARAMETER);
-
-	ENetAddress address;
-	memset(&address, 0, sizeof(address));
-
-#ifdef GODOT_ENET
-	if (bind_ip.is_wildcard()) {
-		address.wildcard = 1;
-	} else {
-		enet_address_set_ip(&address, bind_ip.get_ipv6(), 16);
+Error ENetMultiplayerPeer::create_server(int p_port, int p_max_clients, int p_max_channels, int p_in_bandwidth, int p_out_bandwidth) {
+	ERR_FAIL_COND_V_MSG(_is_active(), ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
+	set_refuse_new_connections(false);
+	Ref<ENetConnection> host;
+	host.instantiate();
+	Error err = host->create_host_bound(bind_ip, p_port, p_max_clients, 0, p_max_channels > 0 ? p_max_channels + SYSCH_MAX : 0, p_out_bandwidth);
+	if (err != OK) {
+		return err;
 	}
-#else
-	if (bind_ip.is_wildcard()) {
-		address.host = 0;
-	} else {
-		ERR_FAIL_COND_V(!bind_ip.is_ipv4(), ERR_INVALID_PARAMETER);
-		address.host = *(uint32_t *)bind_ip.get_ipv4();
-	}
-#endif
-	address.port = p_port;
 
-	host = enet_host_create(&address /* the address to bind the server host to */,
-			p_max_clients /* allow up to 32 clients and/or outgoing connections */,
-			channel_count /* allow up to channel_count to be used */,
-			p_in_bandwidth /* limit incoming bandwidth if > 0 */,
-			p_out_bandwidth /* limit outgoing bandwidth if > 0 */);
-
-	ERR_FAIL_COND_V_MSG(!host, ERR_CANT_CREATE, "Couldn't create an ENet multiplayer server.");
-#ifdef GODOT_ENET
-	if (dtls_enabled) {
-		enet_host_dtls_server_setup(host, dtls_key.ptr(), dtls_cert.ptr());
-	}
-	enet_host_refuse_new_connections(host, refuse_connections);
-#endif
-
-	_setup_compressor();
-	active = true;
-	server = true;
-	refuse_connections = false;
+	active_mode = MODE_SERVER;
 	unique_id = 1;
+	connection_status = CONNECTION_CONNECTED;
+	hosts[0] = host;
+	return OK;
+}
+
+Error ENetMultiplayerPeer::create_client(const String &p_address, int p_port, int p_channel_count, int p_in_bandwidth, int p_out_bandwidth, int p_local_port) {
+	ERR_FAIL_COND_V_MSG(_is_active(), ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
+	set_refuse_new_connections(false);
+	Ref<ENetConnection> host;
+	host.instantiate();
+	Error err;
+	if (p_local_port) {
+		err = host->create_host_bound(bind_ip, p_local_port, 1, 0, p_in_bandwidth, p_out_bandwidth);
+	} else {
+		err = host->create_host(1, 0, p_in_bandwidth, p_out_bandwidth);
+	}
+	if (err != OK) {
+		return err;
+	}
+
+	unique_id = generate_unique_id();
+
+	Ref<ENetPacketPeer> peer = host->connect_to_host(p_address, p_port, p_channel_count > 0 ? p_channel_count + SYSCH_MAX : 0, unique_id);
+	if (peer.is_null()) {
+		host->destroy();
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Couldn't connect to the ENet multiplayer server.");
+	}
+
+	// Need to wait for CONNECT event.
+	connection_status = CONNECTION_CONNECTING;
+	active_mode = MODE_CLIENT;
+	peers[1] = peer;
+	hosts[0] = host;
+
+	return OK;
+}
+
+Error ENetMultiplayerPeer::create_mesh(int p_id) {
+	ERR_FAIL_COND_V_MSG(p_id <= 0, ERR_INVALID_PARAMETER, "The unique ID must be greater then 0");
+	ERR_FAIL_COND_V_MSG(_is_active(), ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
+	active_mode = MODE_MESH;
+	unique_id = p_id;
 	connection_status = CONNECTION_CONNECTED;
 	return OK;
 }
-Error ENetMultiplayerPeer::create_client(const String &p_address, int p_port, int p_in_bandwidth, int p_out_bandwidth, int p_local_port) {
-	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "The multiplayer instance is already active.");
-	ERR_FAIL_COND_V_MSG(p_port < 1 || p_port > 65535, ERR_INVALID_PARAMETER, "The remote port number must be between 1 and 65535 (inclusive).");
-	ERR_FAIL_COND_V_MSG(p_local_port < 0 || p_local_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
-	ERR_FAIL_COND_V_MSG(p_in_bandwidth < 0, ERR_INVALID_PARAMETER, "The incoming bandwidth limit must be greater than or equal to 0 (0 disables the limit).");
-	ERR_FAIL_COND_V_MSG(p_out_bandwidth < 0, ERR_INVALID_PARAMETER, "The outgoing bandwidth limit must be greater than or equal to 0 (0 disables the limit).");
 
-	ENetAddress c_client;
-
-#ifdef GODOT_ENET
-	if (bind_ip.is_wildcard()) {
-		c_client.wildcard = 1;
-	} else {
-		enet_address_set_ip(&c_client, bind_ip.get_ipv6(), 16);
-	}
-#else
-	if (bind_ip.is_wildcard()) {
-		c_client.host = 0;
-	} else {
-		ERR_FAIL_COND_V_MSG(!bind_ip.is_ipv4(), ERR_INVALID_PARAMETER, "Wildcard IP addresses are only permitted in IPv4, not IPv6.");
-		c_client.host = *(uint32_t *)bind_ip.get_ipv4();
-	}
-#endif
-
-	c_client.port = p_local_port;
-
-	host = enet_host_create(&c_client /* create a client host */,
-			1 /* only allow 1 outgoing connection */,
-			channel_count /* allow up to channel_count to be used */,
-			p_in_bandwidth /* limit incoming bandwidth if > 0 */,
-			p_out_bandwidth /* limit outgoing bandwidth if > 0 */);
-
-	ERR_FAIL_COND_V_MSG(!host, ERR_CANT_CREATE, "Couldn't create the ENet client host.");
-#ifdef GODOT_ENET
-	if (dtls_enabled) {
-		enet_host_dtls_client_setup(host, dtls_cert.ptr(), dtls_verify, p_address.utf8().get_data());
-	}
-	enet_host_refuse_new_connections(host, refuse_connections);
-#endif
-
-	_setup_compressor();
-
-	IPAddress ip;
-	if (p_address.is_valid_ip_address()) {
-		ip = p_address;
-	} else {
-#ifdef GODOT_ENET
-		ip = IP::get_singleton()->resolve_hostname(p_address);
-#else
-		ip = IP::get_singleton()->resolve_hostname(p_address, IP::TYPE_IPV4);
-#endif
-
-		ERR_FAIL_COND_V_MSG(!ip.is_valid(), ERR_CANT_RESOLVE, "Couldn't resolve the server IP address or domain name.");
-	}
-
-	ENetAddress address;
-#ifdef GODOT_ENET
-	enet_address_set_ip(&address, ip.get_ipv6(), 16);
-#else
-	ERR_FAIL_COND_V_MSG(!ip.is_ipv4(), ERR_INVALID_PARAMETER, "Connecting to an IPv6 server isn't supported when using vanilla ENet. Recompile Godot with the bundled ENet library.");
-	address.host = *(uint32_t *)ip.get_ipv4();
-#endif
-	address.port = p_port;
-
-	unique_id = _gen_unique_id();
-
-	// Initiate connection, allocating enough channels
-	ENetPeer *peer = enet_host_connect(host, &address, channel_count, unique_id);
-
-	if (peer == nullptr) {
-		enet_host_destroy(host);
-		ERR_FAIL_COND_V_MSG(!peer, ERR_CANT_CREATE, "Couldn't connect to the ENet multiplayer server.");
-	}
-
-	// Technically safe to ignore the peer or anything else.
-
-	connection_status = CONNECTION_CONNECTING;
-	active = true;
-	server = false;
-	refuse_connections = false;
-
+Error ENetMultiplayerPeer::add_mesh_peer(int p_id, Ref<ENetConnection> p_host) {
+	ERR_FAIL_COND_V(p_host.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(active_mode != MODE_MESH, ERR_UNCONFIGURED, "The multiplayer instance is not configured as a mesh. Call 'create_mesh' first.");
+	List<Ref<ENetPacketPeer>> host_peers;
+	p_host->get_peers(host_peers);
+	ERR_FAIL_COND_V_MSG(host_peers.size() != 1 || host_peers.front()->get()->get_state() != ENetPacketPeer::STATE_CONNECTED, ERR_INVALID_PARAMETER, "The provided host must have exactly one peer in the connected state.");
+	hosts[p_id] = p_host;
+	peers[p_id] = host_peers.front()->get();
+	emit_signal(SNAME("peer_connected"), p_id);
 	return OK;
 }
 
+void ENetMultiplayerPeer::_store_packet(int32_t p_source, ENetConnection::Event &p_event) {
+	Packet packet;
+	packet.packet = p_event.packet;
+	packet.channel = p_event.channel_id;
+	packet.from = p_source;
+	if (p_event.packet->flags & ENET_PACKET_FLAG_RELIABLE) {
+		packet.transfer_mode = TRANSFER_MODE_RELIABLE;
+	} else if (p_event.packet->flags & ENET_PACKET_FLAG_UNSEQUENCED) {
+		packet.transfer_mode = TRANSFER_MODE_UNRELIABLE;
+	} else {
+		packet.transfer_mode = TRANSFER_MODE_UNRELIABLE_ORDERED;
+	}
+	packet.packet->referenceCount++;
+	incoming_packets.push_back(packet);
+}
+
+void ENetMultiplayerPeer::_disconnect_inactive_peers() {
+	HashSet<int> to_drop;
+	for (const KeyValue<int, Ref<ENetPacketPeer>> &E : peers) {
+		if (E.value->is_active()) {
+			continue;
+		}
+		to_drop.insert(E.key);
+	}
+	for (const int &P : to_drop) {
+		peers.erase(P);
+		if (hosts.has(P)) {
+			hosts.erase(P);
+		}
+		ERR_CONTINUE(active_mode == MODE_CLIENT && P != TARGET_PEER_SERVER);
+		emit_signal(SNAME("peer_disconnected"), P);
+	}
+}
+
 void ENetMultiplayerPeer::poll() {
-	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
+	ERR_FAIL_COND_MSG(!_is_active(), "The multiplayer instance isn't currently active.");
 
 	_pop_current_packet();
 
-	ENetEvent event;
-	/* Keep servicing until there are no available events left in queue. */
-	while (true) {
-		if (!host || !active) { // Might have been disconnected while emitting a notification
-			return;
-		}
+	_disconnect_inactive_peers();
 
-		int ret = enet_host_service(host, &event, 0);
-
-		if (ret < 0) {
-			// Error, do something?
-			break;
-		} else if (ret == 0) {
-			break;
-		}
-
-		switch (event.type) {
-			case ENET_EVENT_TYPE_CONNECT: {
-				// Store any relevant client information here.
-
-				if (server && refuse_connections) {
-					enet_peer_reset(event.peer);
-					break;
-				}
-
-				// A client joined with an invalid ID (negative values, 0, and 1 are reserved).
-				// Probably trying to exploit us.
-				if (server && ((int)event.data < 2 || peer_map.has((int)event.data))) {
-					enet_peer_reset(event.peer);
-					ERR_CONTINUE(true);
-				}
-
-				int *new_id = memnew(int);
-				*new_id = event.data;
-
-				if (*new_id == 0) { // Data zero is sent by server (ENet won't let you configure this). Server is always 1.
-					*new_id = 1;
-				}
-
-				event.peer->data = new_id;
-
-				peer_map[*new_id] = event.peer;
-
-				connection_status = CONNECTION_CONNECTED; // If connecting, this means it connected to something!
-
-				emit_signal(SNAME("peer_connected"), *new_id);
-
-				if (server) {
-					// Do not notify other peers when server_relay is disabled.
-					if (!server_relay) {
-						break;
+	switch (active_mode) {
+		case MODE_CLIENT: {
+			if (!peers.has(1)) {
+				close();
+				return;
+			}
+			ENetConnection::Event event;
+			ENetConnection::EventType ret = hosts[0]->service(0, event);
+			do {
+				if (ret == ENetConnection::EVENT_CONNECT) {
+					connection_status = CONNECTION_CONNECTED;
+					emit_signal(SNAME("peer_connected"), 1);
+				} else if (ret == ENetConnection::EVENT_DISCONNECT) {
+					if (connection_status == CONNECTION_CONNECTED) {
+						// Client just disconnected from server.
+						emit_signal(SNAME("peer_disconnected"), 1);
 					}
-
-					// Someone connected, notify all the peers available
-					for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-						if (E->key() == *new_id) {
-							continue;
-						}
-						// Send existing peers to new peer
-						ENetPacket *packet = enet_packet_create(nullptr, 8, ENET_PACKET_FLAG_RELIABLE);
-						encode_uint32(SYSMSG_ADD_PEER, &packet->data[0]);
-						encode_uint32(E->key(), &packet->data[4]);
-						enet_peer_send(event.peer, SYSCH_CONFIG, packet);
-						// Send the new peer to existing peers
-						packet = enet_packet_create(nullptr, 8, ENET_PACKET_FLAG_RELIABLE);
-						encode_uint32(SYSMSG_ADD_PEER, &packet->data[0]);
-						encode_uint32(*new_id, &packet->data[4]);
-						enet_peer_send(E->get(), SYSCH_CONFIG, packet);
-					}
-				} else {
-					emit_signal(SNAME("connection_succeeded"));
+					close();
+				} else if (ret == ENetConnection::EVENT_RECEIVE) {
+					_store_packet(1, event);
+				} else if (ret != ENetConnection::EVENT_NONE) {
+					close(); // Error.
 				}
-
-			} break;
-			case ENET_EVENT_TYPE_DISCONNECT: {
-				// Reset the peer's client information.
-
-				int *id = (int *)event.peer->data;
-
-				if (!id) {
-					if (!server) {
-						emit_signal(SNAME("connection_failed"));
+			} while (hosts.has(0) && hosts[0]->check_events(ret, event) > 0);
+		} break;
+		case MODE_SERVER: {
+			ENetConnection::Event event;
+			ENetConnection::EventType ret = hosts[0]->service(0, event);
+			do {
+				if (ret == ENetConnection::EVENT_CONNECT) {
+					if (is_refusing_new_connections()) {
+						event.peer->reset();
+						continue;
 					}
-					// Never fully connected.
-					break;
+					// Client joined with invalid ID, probably trying to exploit us.
+					if (event.data < 2 || peers.has((int)event.data)) {
+						event.peer->reset();
+						continue;
+					}
+					int id = event.data;
+					event.peer->set_meta(SNAME("_net_id"), id);
+					peers[id] = event.peer;
+					emit_signal(SNAME("peer_connected"), id);
+				} else if (ret == ENetConnection::EVENT_DISCONNECT) {
+					int id = event.peer->get_meta(SNAME("_net_id"));
+					if (!peers.has(id)) {
+						// Never fully connected.
+						continue;
+					}
+					emit_signal(SNAME("peer_disconnected"), id);
+					peers.erase(id);
+				} else if (ret == ENetConnection::EVENT_RECEIVE) {
+					int32_t source = event.peer->get_meta(SNAME("_net_id"));
+					_store_packet(source, event);
+				} else if (ret != ENetConnection::EVENT_NONE) {
+					close(); // Error
 				}
-
-				if (!server) {
-					// Client just disconnected from server.
-					emit_signal(SNAME("server_disconnected"));
-					close_connection();
-					return;
-				} else if (server_relay) {
-					// Server just received a client disconnect and is in relay mode, notify everyone else.
-					for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-						if (E->key() == *id) {
-							continue;
-						}
-
-						ENetPacket *packet = enet_packet_create(nullptr, 8, ENET_PACKET_FLAG_RELIABLE);
-						encode_uint32(SYSMSG_REMOVE_PEER, &packet->data[0]);
-						encode_uint32(*id, &packet->data[4]);
-						enet_peer_send(E->get(), SYSCH_CONFIG, packet);
-					}
-				}
-
-				emit_signal(SNAME("peer_disconnected"), *id);
-				peer_map.erase(*id);
-				memdelete(id);
-			} break;
-			case ENET_EVENT_TYPE_RECEIVE: {
-				if (event.channelID == SYSCH_CONFIG) {
-					// Some config message
-					ERR_CONTINUE(event.packet->dataLength < 8);
-
-					// Only server can send config messages
-					ERR_CONTINUE(server);
-
-					int msg = decode_uint32(&event.packet->data[0]);
-					int id = decode_uint32(&event.packet->data[4]);
-
-					switch (msg) {
-						case SYSMSG_ADD_PEER: {
-							peer_map[id] = nullptr;
-							emit_signal(SNAME("peer_connected"), id);
-
-						} break;
-						case SYSMSG_REMOVE_PEER: {
-							peer_map.erase(id);
-							emit_signal(SNAME("peer_disconnected"), id);
-						} break;
-					}
-
-					enet_packet_destroy(event.packet);
-				} else if (event.channelID < channel_count) {
-					Packet packet;
-					packet.packet = event.packet;
-
-					uint32_t *id = (uint32_t *)event.peer->data;
-
-					ERR_CONTINUE(event.packet->dataLength < 8);
-
-					uint32_t source = decode_uint32(&event.packet->data[0]);
-					int target = decode_uint32(&event.packet->data[4]);
-
-					packet.from = source;
-					packet.channel = event.channelID;
-
-					if (server) {
-						// Someone is cheating and trying to fake the source!
-						ERR_CONTINUE(source != *id);
-
-						packet.from = *id;
-
-						if (target == 1) {
-							// To myself and only myself
-							incoming_packets.push_back(packet);
-						} else if (!server_relay) {
-							// When relaying is disabled, other destinations will only be processed by the server.
-							if (target == 0 || target < -1) {
-								incoming_packets.push_back(packet);
-							}
-							continue;
-						} else if (target == 0) {
-							// Re-send to everyone but sender :|
-
-							incoming_packets.push_back(packet);
-							// And make copies for sending
-							for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-								if (uint32_t(E->key()) == source) { // Do not resend to self
-									continue;
-								}
-
-								ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, packet.packet->flags);
-
-								enet_peer_send(E->get(), event.channelID, packet2);
-							}
-
-						} else if (target < 0) {
-							// To all but one
-
-							// And make copies for sending
-							for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-								if (uint32_t(E->key()) == source || E->key() == -target) { // Do not resend to self, also do not send to excluded
-									continue;
-								}
-
-								ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, packet.packet->flags);
-
-								enet_peer_send(E->get(), event.channelID, packet2);
-							}
-
-							if (-target != 1) {
-								// Server is not excluded
-								incoming_packets.push_back(packet);
-							} else {
-								// Server is excluded, erase packet
-								enet_packet_destroy(packet.packet);
-							}
-
-						} else {
-							// To someone else, specifically
-							ERR_CONTINUE(!peer_map.has(target));
-							enet_peer_send(peer_map[target], event.channelID, packet.packet);
-						}
+			} while (hosts.has(0) && hosts[0]->check_events(ret, event) > 0);
+		} break;
+		case MODE_MESH: {
+			HashSet<int> to_drop;
+			for (KeyValue<int, Ref<ENetConnection>> &E : hosts) {
+				ENetConnection::Event event;
+				ENetConnection::EventType ret = E.value->service(0, event);
+				do {
+					if (ret == ENetConnection::EVENT_CONNECT) {
+						event.peer->reset();
+					} else if (ret == ENetConnection::EVENT_RECEIVE) {
+						_store_packet(E.key, event);
+					} else if (ret == ENetConnection::EVENT_NONE) {
+						break; // Keep polling the others.
 					} else {
-						incoming_packets.push_back(packet);
+						to_drop.insert(E.key); // Error or disconnect.
+						break; // Keep polling the others.
 					}
-
-					// Destroy packet later
-				} else {
-					ERR_CONTINUE(true);
+				} while (E.value->check_events(ret, event) > 0);
+			}
+			for (const int &P : to_drop) {
+				if (peers.has(P)) {
+					emit_signal(SNAME("peer_disconnected"), P);
+					peers.erase(P);
 				}
-
-			} break;
-			case ENET_EVENT_TYPE_NONE: {
-				// Do nothing
-			} break;
-		}
+				hosts.erase(P);
+			}
+		} break;
+		default:
+			return;
 	}
 }
 
 bool ENetMultiplayerPeer::is_server() const {
-	ERR_FAIL_COND_V_MSG(!active, false, "The multiplayer instance isn't currently active.");
-
-	return server;
+	return active_mode == MODE_SERVER;
 }
 
-void ENetMultiplayerPeer::close_connection(uint32_t wait_usec) {
-	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
+bool ENetMultiplayerPeer::is_server_relay_supported() const {
+	return active_mode == MODE_SERVER || active_mode == MODE_CLIENT;
+}
+
+void ENetMultiplayerPeer::disconnect_peer(int p_peer, bool p_force) {
+	ERR_FAIL_COND(!_is_active() || !peers.has(p_peer));
+	peers[p_peer]->peer_disconnect(0); // Will be removed during next poll.
+	if (active_mode == MODE_CLIENT || active_mode == MODE_SERVER) {
+		hosts[0]->flush();
+	} else {
+		ERR_FAIL_COND(!hosts.has(p_peer));
+		hosts[p_peer]->flush();
+	}
+	if (p_force) {
+		peers.erase(p_peer);
+		if (hosts.has(p_peer)) {
+			hosts.erase(p_peer);
+		}
+		if (active_mode == MODE_CLIENT) {
+			hosts.clear(); // Avoid flushing again.
+			close();
+		}
+	}
+}
+
+void ENetMultiplayerPeer::close() {
+	if (!_is_active()) {
+		return;
+	}
 
 	_pop_current_packet();
 
-	bool peers_disconnected = false;
-	for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-		if (E->get()) {
-			enet_peer_disconnect_now(E->get(), unique_id);
-			int *id = (int *)(E->get()->data);
-			memdelete(id);
-			peers_disconnected = true;
+	for (KeyValue<int, Ref<ENetPacketPeer>> &E : peers) {
+		if (E.value.is_valid() && E.value->get_state() == ENetPacketPeer::STATE_CONNECTED) {
+			E.value->peer_disconnect_now(0);
 		}
 	}
-
-	if (peers_disconnected) {
-		enet_host_flush(host);
-
-		if (wait_usec > 0) {
-			OS::get_singleton()->delay_usec(wait_usec); // Wait for disconnection packets to send
-		}
+	for (KeyValue<int, Ref<ENetConnection>> &E : hosts) {
+		E.value->flush();
 	}
 
-	enet_host_destroy(host);
-	active = false;
+	active_mode = MODE_NONE;
 	incoming_packets.clear();
-	peer_map.clear();
-	unique_id = 1; // Server is 1
+	peers.clear();
+	hosts.clear();
+	unique_id = 0;
 	connection_status = CONNECTION_DISCONNECTED;
-}
-
-void ENetMultiplayerPeer::disconnect_peer(int p_peer, bool now) {
-	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
-	ERR_FAIL_COND_MSG(!is_server(), "Can't disconnect a peer when not acting as a server.");
-	ERR_FAIL_COND_MSG(!peer_map.has(p_peer), vformat("Peer ID %d not found in the list of peers.", p_peer));
-
-	if (now) {
-		int *id = (int *)peer_map[p_peer]->data;
-		enet_peer_disconnect_now(peer_map[p_peer], 0);
-
-		// enet_peer_disconnect_now doesn't generate ENET_EVENT_TYPE_DISCONNECT,
-		// notify everyone else, send disconnect signal & remove from peer_map like in poll()
-		if (server_relay) {
-			for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
-				if (E->key() == p_peer) {
-					continue;
-				}
-
-				ENetPacket *packet = enet_packet_create(nullptr, 8, ENET_PACKET_FLAG_RELIABLE);
-				encode_uint32(SYSMSG_REMOVE_PEER, &packet->data[0]);
-				encode_uint32(p_peer, &packet->data[4]);
-				enet_peer_send(E->get(), SYSCH_CONFIG, packet);
-			}
-		}
-
-		if (id) {
-			memdelete(id);
-		}
-
-		emit_signal(SNAME("peer_disconnected"), p_peer);
-		peer_map.erase(p_peer);
-	} else {
-		enet_peer_disconnect_later(peer_map[p_peer], 0);
-	}
+	set_refuse_new_connections(false);
 }
 
 int ENetMultiplayerPeer::get_available_packet_count() const {
@@ -503,37 +321,35 @@ int ENetMultiplayerPeer::get_available_packet_count() const {
 }
 
 Error ENetMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
-	ERR_FAIL_COND_V_MSG(incoming_packets.size() == 0, ERR_UNAVAILABLE, "No incoming packets available.");
+	ERR_FAIL_COND_V_MSG(incoming_packets.is_empty(), ERR_UNAVAILABLE, "No incoming packets available.");
 
 	_pop_current_packet();
 
 	current_packet = incoming_packets.front()->get();
 	incoming_packets.pop_front();
 
-	*r_buffer = (const uint8_t *)(&current_packet.packet->data[8]);
-	r_buffer_size = current_packet.packet->dataLength - 8;
+	*r_buffer = (const uint8_t *)(current_packet.packet->data);
+	r_buffer_size = current_packet.packet->dataLength;
 
 	return OK;
 }
 
 Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
-	ERR_FAIL_COND_V_MSG(!active, ERR_UNCONFIGURED, "The multiplayer instance isn't currently active.");
+	ERR_FAIL_COND_V_MSG(!_is_active(), ERR_UNCONFIGURED, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V_MSG(connection_status != CONNECTION_CONNECTED, ERR_UNCONFIGURED, "The multiplayer instance isn't currently connected to any server or client.");
+	ERR_FAIL_COND_V_MSG(target_peer != 0 && !peers.has(ABS(target_peer)), ERR_INVALID_PARAMETER, vformat("Invalid target peer: %d", target_peer));
+	ERR_FAIL_COND_V(active_mode == MODE_CLIENT && !peers.has(1), ERR_BUG);
 
 	int packet_flags = 0;
 	int channel = SYSCH_RELIABLE;
-
-	switch (transfer_mode) {
+	int tr_channel = get_transfer_channel();
+	switch (get_transfer_mode()) {
 		case TRANSFER_MODE_UNRELIABLE: {
-			if (always_ordered) {
-				packet_flags = 0;
-			} else {
-				packet_flags = ENET_PACKET_FLAG_UNSEQUENCED;
-			}
+			packet_flags = ENET_PACKET_FLAG_UNSEQUENCED | ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
 			channel = SYSCH_UNRELIABLE;
 		} break;
 		case TRANSFER_MODE_UNRELIABLE_ORDERED: {
-			packet_flags = 0;
+			packet_flags = ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
 			channel = SYSCH_UNRELIABLE;
 		} break;
 		case TRANSFER_MODE_RELIABLE: {
@@ -541,52 +357,62 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 			channel = SYSCH_RELIABLE;
 		} break;
 	}
-
-	if (transfer_channel > SYSCH_CONFIG) {
-		channel = transfer_channel;
+	if (tr_channel > 0) {
+		channel = SYSCH_MAX + tr_channel - 1;
 	}
 
-	Map<int, ENetPeer *>::Element *E = nullptr;
-
-	if (target_peer != 0) {
-		E = peer_map.find(ABS(target_peer));
-		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, vformat("Invalid target peer: %d", target_peer));
+#ifdef DEBUG_ENABLED
+	if ((packet_flags & ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT) && p_buffer_size > ENET_HOST_DEFAULT_MTU) {
+		WARN_PRINT_ONCE(vformat("Sending %d bytes unreliably which is above the MTU (%d), this will result in higher packet loss", p_buffer_size, ENET_HOST_DEFAULT_MTU));
 	}
+#endif
 
-	ENetPacket *packet = enet_packet_create(nullptr, p_buffer_size + 8, packet_flags);
-	encode_uint32(unique_id, &packet->data[0]); // Source ID
-	encode_uint32(target_peer, &packet->data[4]); // Dest ID
-	memcpy(&packet->data[8], p_buffer, p_buffer_size);
+	ENetPacket *packet = enet_packet_create(nullptr, p_buffer_size, packet_flags);
+	memcpy(&packet->data[0], p_buffer, p_buffer_size);
 
-	if (server) {
+	if (is_server()) {
 		if (target_peer == 0) {
-			enet_host_broadcast(host, channel, packet);
+			hosts[0]->broadcast(channel, packet);
+
 		} else if (target_peer < 0) {
-			// Send to all but one
-			// and make copies for sending
-
+			// Send to all but one and make copies for sending.
 			int exclude = -target_peer;
-
-			for (Map<int, ENetPeer *>::Element *F = peer_map.front(); F; F = F->next()) {
-				if (F->key() == exclude) { // Exclude packet
+			for (KeyValue<int, Ref<ENetPacketPeer>> &E : peers) {
+				if (E.key == exclude) {
 					continue;
 				}
-
-				ENetPacket *packet2 = enet_packet_create(packet->data, packet->dataLength, packet_flags);
-
-				enet_peer_send(F->get(), channel, packet2);
+				E.value->send(channel, packet);
 			}
-
-			enet_packet_destroy(packet); // Original packet no longer needed
+			_destroy_unused(packet);
 		} else {
-			enet_peer_send(E->get(), channel, packet);
+			peers[target_peer]->send(channel, packet);
 		}
-	} else {
-		ERR_FAIL_COND_V(!peer_map.has(1), ERR_BUG);
-		enet_peer_send(peer_map[1], channel, packet); // Send to server for broadcast
-	}
+		ERR_FAIL_COND_V(!hosts.has(0), ERR_BUG);
+		hosts[0]->flush();
 
-	enet_host_flush(host);
+	} else if (active_mode == MODE_CLIENT) {
+		peers[1]->send(channel, packet); // Send to server for broadcast.
+		ERR_FAIL_COND_V(!hosts.has(0), ERR_BUG);
+		hosts[0]->flush();
+
+	} else {
+		if (target_peer <= 0) {
+			int exclude = ABS(target_peer);
+			for (KeyValue<int, Ref<ENetPacketPeer>> &E : peers) {
+				if (E.key == exclude) {
+					continue;
+				}
+				E.value->send(channel, packet);
+				ERR_CONTINUE(!hosts.has(E.key));
+				hosts[E.key]->flush();
+			}
+			_destroy_unused(packet);
+		} else {
+			peers[target_peer]->send(channel, packet);
+			ERR_FAIL_COND_V(!hosts.has(target_peer), ERR_BUG);
+			hosts[target_peer]->flush();
+		}
+	}
 
 	return OK;
 }
@@ -597,7 +423,8 @@ int ENetMultiplayerPeer::get_max_packet_size() const {
 
 void ENetMultiplayerPeer::_pop_current_packet() {
 	if (current_packet.packet) {
-		enet_packet_destroy(current_packet.packet);
+		current_packet.packet->referenceCount--;
+		_destroy_unused(current_packet.packet);
 		current_packet.packet = nullptr;
 		current_packet.from = 0;
 		current_packet.channel = -1;
@@ -608,284 +435,61 @@ MultiplayerPeer::ConnectionStatus ENetMultiplayerPeer::get_connection_status() c
 	return connection_status;
 }
 
-uint32_t ENetMultiplayerPeer::_gen_unique_id() const {
-	uint32_t hash = 0;
-
-	while (hash == 0 || hash == 1) {
-		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_ticks_usec());
-		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_unix_time(), hash);
-		hash = hash_djb2_one_32(
-				(uint32_t)OS::get_singleton()->get_user_data_dir().hash64(), hash);
-		hash = hash_djb2_one_32(
-				(uint32_t)((uint64_t)this), hash); // Rely on ASLR heap
-		hash = hash_djb2_one_32(
-				(uint32_t)((uint64_t)&hash), hash); // Rely on ASLR stack
-
-		hash = hash & 0x7FFFFFFF; // Make it compatible with unsigned, since negative ID is used for exclusion
-	}
-
-	return hash;
-}
-
 int ENetMultiplayerPeer::get_unique_id() const {
-	ERR_FAIL_COND_V_MSG(!active, 0, "The multiplayer instance isn't currently active.");
+	ERR_FAIL_COND_V_MSG(!_is_active(), 0, "The multiplayer instance isn't currently active.");
 	return unique_id;
 }
 
-void ENetMultiplayerPeer::set_refuse_new_connections(bool p_enable) {
-	refuse_connections = p_enable;
+void ENetMultiplayerPeer::set_refuse_new_connections(bool p_enabled) {
 #ifdef GODOT_ENET
-	if (active) {
-		enet_host_refuse_new_connections(host, p_enable);
-	}
-#endif
-}
-
-bool ENetMultiplayerPeer::is_refusing_new_connections() const {
-	return refuse_connections;
-}
-
-void ENetMultiplayerPeer::set_compression_mode(CompressionMode p_mode) {
-	compression_mode = p_mode;
-}
-
-ENetMultiplayerPeer::CompressionMode ENetMultiplayerPeer::get_compression_mode() const {
-	return compression_mode;
-}
-
-size_t ENetMultiplayerPeer::enet_compress(void *context, const ENetBuffer *inBuffers, size_t inBufferCount, size_t inLimit, enet_uint8 *outData, size_t outLimit) {
-	ENetMultiplayerPeer *enet = (ENetMultiplayerPeer *)(context);
-
-	if (size_t(enet->src_compressor_mem.size()) < inLimit) {
-		enet->src_compressor_mem.resize(inLimit);
-	}
-
-	int total = inLimit;
-	int ofs = 0;
-	while (total) {
-		for (size_t i = 0; i < inBufferCount; i++) {
-			int to_copy = MIN(total, int(inBuffers[i].dataLength));
-			memcpy(&enet->src_compressor_mem.write[ofs], inBuffers[i].data, to_copy);
-			ofs += to_copy;
-			total -= to_copy;
+	if (_is_active()) {
+		for (KeyValue<int, Ref<ENetConnection>> &E : hosts) {
+			E.value->refuse_new_connections(p_enabled);
 		}
 	}
-
-	Compression::Mode mode;
-
-	switch (enet->compression_mode) {
-		case COMPRESS_FASTLZ: {
-			mode = Compression::MODE_FASTLZ;
-		} break;
-		case COMPRESS_ZLIB: {
-			mode = Compression::MODE_DEFLATE;
-		} break;
-		case COMPRESS_ZSTD: {
-			mode = Compression::MODE_ZSTD;
-		} break;
-		default: {
-			ERR_FAIL_V_MSG(0, vformat("Invalid ENet compression mode: %d", enet->compression_mode));
-		}
-	}
-
-	int req_size = Compression::get_max_compressed_buffer_size(ofs, mode);
-	if (enet->dst_compressor_mem.size() < req_size) {
-		enet->dst_compressor_mem.resize(req_size);
-	}
-	int ret = Compression::compress(enet->dst_compressor_mem.ptrw(), enet->src_compressor_mem.ptr(), ofs, mode);
-
-	if (ret < 0) {
-		return 0;
-	}
-
-	if (ret > int(outLimit)) {
-		return 0; // Do not bother
-	}
-
-	memcpy(outData, enet->dst_compressor_mem.ptr(), ret);
-
-	return ret;
-}
-
-size_t ENetMultiplayerPeer::enet_decompress(void *context, const enet_uint8 *inData, size_t inLimit, enet_uint8 *outData, size_t outLimit) {
-	ENetMultiplayerPeer *enet = (ENetMultiplayerPeer *)(context);
-	int ret = -1;
-	switch (enet->compression_mode) {
-		case COMPRESS_FASTLZ: {
-			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_FASTLZ);
-		} break;
-		case COMPRESS_ZLIB: {
-			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_DEFLATE);
-		} break;
-		case COMPRESS_ZSTD: {
-			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_ZSTD);
-		} break;
-		default: {
-		}
-	}
-	if (ret < 0) {
-		return 0;
-	} else {
-		return ret;
-	}
-}
-
-void ENetMultiplayerPeer::_setup_compressor() {
-	switch (compression_mode) {
-		case COMPRESS_NONE: {
-			enet_host_compress(host, nullptr);
-		} break;
-		case COMPRESS_RANGE_CODER: {
-			enet_host_compress_with_range_coder(host);
-		} break;
-		case COMPRESS_FASTLZ:
-		case COMPRESS_ZLIB:
-		case COMPRESS_ZSTD: {
-			enet_host_compress(host, &enet_compressor);
-		} break;
-	}
-}
-
-void ENetMultiplayerPeer::enet_compressor_destroy(void *context) {
-	// Nothing to do
-}
-
-IPAddress ENetMultiplayerPeer::get_peer_address(int p_peer_id) const {
-	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), IPAddress(), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
-	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, IPAddress(), "Can't get the address of peers other than the server (ID -1) when acting as a client.");
-	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == nullptr, IPAddress(), vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
-
-	IPAddress out;
-#ifdef GODOT_ENET
-	out.set_ipv6((uint8_t *)&(peer_map[p_peer_id]->address.host));
-#else
-	out.set_ipv4((uint8_t *)&(peer_map[p_peer_id]->address.host));
 #endif
-
-	return out;
+	MultiplayerPeer::set_refuse_new_connections(p_enabled);
 }
 
-int ENetMultiplayerPeer::get_peer_port(int p_peer_id) const {
-	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), 0, vformat("Peer ID %d not found in the list of peers.", p_peer_id));
-	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, 0, "Can't get the address of peers other than the server (ID -1) when acting as a client.");
-	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == nullptr, 0, vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
-#ifdef GODOT_ENET
-	return peer_map[p_peer_id]->address.port;
-#else
-	return peer_map[p_peer_id]->address.port;
-#endif
+Ref<ENetConnection> ENetMultiplayerPeer::get_host() const {
+	ERR_FAIL_COND_V(!_is_active(), nullptr);
+	ERR_FAIL_COND_V(active_mode == MODE_MESH, nullptr);
+	return hosts[0];
 }
 
-int ENetMultiplayerPeer::get_local_port() const {
-	ERR_FAIL_COND_V_MSG(!active || !host, 0, "The multiplayer instance isn't currently active.");
-	return host->address.port;
+Ref<ENetPacketPeer> ENetMultiplayerPeer::get_peer(int p_id) const {
+	ERR_FAIL_COND_V(!_is_active(), nullptr);
+	ERR_FAIL_COND_V(!peers.has(p_id), nullptr);
+	ERR_FAIL_COND_V(active_mode == MODE_CLIENT && p_id != 1, nullptr);
+	return peers[p_id];
 }
 
-void ENetMultiplayerPeer::set_peer_timeout(int p_peer_id, int p_timeout_limit, int p_timeout_min, int p_timeout_max) {
-	ERR_FAIL_COND_MSG(!peer_map.has(p_peer_id), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
-	ERR_FAIL_COND_MSG(!is_server() && p_peer_id != 1, "Can't change the timeout of peers other then the server when acting as a client.");
-	ERR_FAIL_COND_MSG(peer_map[p_peer_id] == nullptr, vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
-	ERR_FAIL_COND_MSG(p_timeout_limit > p_timeout_min || p_timeout_min > p_timeout_max, "Timeout limit must be less than minimum timeout, which itself must be less then maximum timeout");
-	enet_peer_timeout(peer_map[p_peer_id], p_timeout_limit, p_timeout_min, p_timeout_max);
-}
-
-void ENetMultiplayerPeer::set_transfer_channel(int p_channel) {
-	ERR_FAIL_COND_MSG(p_channel < -1 || p_channel >= channel_count, vformat("The transfer channel must be set between 0 and %d, inclusive (got %d).", channel_count - 1, p_channel));
-	ERR_FAIL_COND_MSG(p_channel == SYSCH_CONFIG, vformat("The channel %d is reserved.", SYSCH_CONFIG));
-	transfer_channel = p_channel;
-}
-
-int ENetMultiplayerPeer::get_transfer_channel() const {
-	return transfer_channel;
-}
-
-void ENetMultiplayerPeer::set_channel_count(int p_channel) {
-	ERR_FAIL_COND_MSG(active, "The channel count can't be set while the multiplayer instance is active.");
-	ERR_FAIL_COND_MSG(p_channel < SYSCH_MAX, vformat("The channel count must be greater than or equal to %d to account for reserved channels (got %d).", SYSCH_MAX, p_channel));
-	channel_count = p_channel;
-}
-
-int ENetMultiplayerPeer::get_channel_count() const {
-	return channel_count;
-}
-
-void ENetMultiplayerPeer::set_always_ordered(bool p_ordered) {
-	always_ordered = p_ordered;
-}
-
-bool ENetMultiplayerPeer::is_always_ordered() const {
-	return always_ordered;
-}
-
-void ENetMultiplayerPeer::set_server_relay_enabled(bool p_enabled) {
-	ERR_FAIL_COND_MSG(active, "Server relaying can't be toggled while the multiplayer instance is active.");
-
-	server_relay = p_enabled;
-}
-
-bool ENetMultiplayerPeer::is_server_relay_enabled() const {
-	return server_relay;
+void ENetMultiplayerPeer::_destroy_unused(ENetPacket *p_packet) {
+	if (p_packet->referenceCount == 0) {
+		enet_packet_destroy(p_packet);
+	}
 }
 
 void ENetMultiplayerPeer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &ENetMultiplayerPeer::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "in_bandwidth", "out_bandwidth", "local_port"), &ENetMultiplayerPeer::create_client, DEFVAL(0), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("close_connection", "wait_usec"), &ENetMultiplayerPeer::close_connection, DEFVAL(100));
-	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "now"), &ENetMultiplayerPeer::disconnect_peer, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &ENetMultiplayerPeer::set_compression_mode);
-	ClassDB::bind_method(D_METHOD("get_compression_mode"), &ENetMultiplayerPeer::get_compression_mode);
+	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "max_channels", "in_bandwidth", "out_bandwidth"), &ENetMultiplayerPeer::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("create_client", "address", "port", "channel_count", "in_bandwidth", "out_bandwidth", "local_port"), &ENetMultiplayerPeer::create_client, DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("create_mesh", "unique_id"), &ENetMultiplayerPeer::create_mesh);
+	ClassDB::bind_method(D_METHOD("add_mesh_peer", "peer_id", "host"), &ENetMultiplayerPeer::add_mesh_peer);
 	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &ENetMultiplayerPeer::set_bind_ip);
-	ClassDB::bind_method(D_METHOD("set_dtls_enabled", "enabled"), &ENetMultiplayerPeer::set_dtls_enabled);
-	ClassDB::bind_method(D_METHOD("is_dtls_enabled"), &ENetMultiplayerPeer::is_dtls_enabled);
-	ClassDB::bind_method(D_METHOD("set_dtls_key", "key"), &ENetMultiplayerPeer::set_dtls_key);
-	ClassDB::bind_method(D_METHOD("set_dtls_certificate", "certificate"), &ENetMultiplayerPeer::set_dtls_certificate);
-	ClassDB::bind_method(D_METHOD("set_dtls_verify_enabled", "enabled"), &ENetMultiplayerPeer::set_dtls_verify_enabled);
-	ClassDB::bind_method(D_METHOD("is_dtls_verify_enabled"), &ENetMultiplayerPeer::is_dtls_verify_enabled);
-	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &ENetMultiplayerPeer::get_peer_address);
-	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &ENetMultiplayerPeer::get_peer_port);
-	ClassDB::bind_method(D_METHOD("get_local_port"), &ENetMultiplayerPeer::get_local_port);
-	ClassDB::bind_method(D_METHOD("set_peer_timeout", "id", "timeout_limit", "timeout_min", "timeout_max"), &ENetMultiplayerPeer::set_peer_timeout);
 
-	ClassDB::bind_method(D_METHOD("get_packet_channel"), &ENetMultiplayerPeer::get_packet_channel);
-	ClassDB::bind_method(D_METHOD("get_last_packet_channel"), &ENetMultiplayerPeer::get_last_packet_channel);
-	ClassDB::bind_method(D_METHOD("set_transfer_channel", "channel"), &ENetMultiplayerPeer::set_transfer_channel);
-	ClassDB::bind_method(D_METHOD("get_transfer_channel"), &ENetMultiplayerPeer::get_transfer_channel);
-	ClassDB::bind_method(D_METHOD("set_channel_count", "channels"), &ENetMultiplayerPeer::set_channel_count);
-	ClassDB::bind_method(D_METHOD("get_channel_count"), &ENetMultiplayerPeer::get_channel_count);
-	ClassDB::bind_method(D_METHOD("set_always_ordered", "ordered"), &ENetMultiplayerPeer::set_always_ordered);
-	ClassDB::bind_method(D_METHOD("is_always_ordered"), &ENetMultiplayerPeer::is_always_ordered);
-	ClassDB::bind_method(D_METHOD("set_server_relay_enabled", "enabled"), &ENetMultiplayerPeer::set_server_relay_enabled);
-	ClassDB::bind_method(D_METHOD("is_server_relay_enabled"), &ENetMultiplayerPeer::is_server_relay_enabled);
+	ClassDB::bind_method(D_METHOD("get_host"), &ENetMultiplayerPeer::get_host);
+	ClassDB::bind_method(D_METHOD("get_peer", "id"), &ENetMultiplayerPeer::get_peer);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_mode", PROPERTY_HINT_ENUM, "None,Range Coder,FastLZ,ZLib,ZStd"), "set_compression_mode", "get_compression_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_channel"), "set_transfer_channel", "get_transfer_channel");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "channel_count"), "set_channel_count", "get_channel_count");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "always_ordered"), "set_always_ordered", "is_always_ordered");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "server_relay"), "set_server_relay_enabled", "is_server_relay_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dtls_verify"), "set_dtls_verify_enabled", "is_dtls_verify_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_dtls"), "set_dtls_enabled", "is_dtls_enabled");
-
-	BIND_ENUM_CONSTANT(COMPRESS_NONE);
-	BIND_ENUM_CONSTANT(COMPRESS_RANGE_CODER);
-	BIND_ENUM_CONSTANT(COMPRESS_FASTLZ);
-	BIND_ENUM_CONSTANT(COMPRESS_ZLIB);
-	BIND_ENUM_CONSTANT(COMPRESS_ZSTD);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "host", PROPERTY_HINT_RESOURCE_TYPE, "ENetConnection", PROPERTY_USAGE_NONE), "", "get_host");
 }
 
 ENetMultiplayerPeer::ENetMultiplayerPeer() {
-	enet_compressor.context = this;
-	enet_compressor.compress = enet_compress;
-	enet_compressor.decompress = enet_decompress;
-	enet_compressor.destroy = enet_compressor_destroy;
-
 	bind_ip = IPAddress("*");
 }
 
 ENetMultiplayerPeer::~ENetMultiplayerPeer() {
-	if (active) {
-		close_connection();
+	if (_is_active()) {
+		close();
 	}
 }
 
@@ -895,32 +499,4 @@ void ENetMultiplayerPeer::set_bind_ip(const IPAddress &p_ip) {
 	ERR_FAIL_COND_MSG(!p_ip.is_valid() && !p_ip.is_wildcard(), vformat("Invalid bind IP address: %s", String(p_ip)));
 
 	bind_ip = p_ip;
-}
-
-void ENetMultiplayerPeer::set_dtls_enabled(bool p_enabled) {
-	ERR_FAIL_COND(active);
-	dtls_enabled = p_enabled;
-}
-
-bool ENetMultiplayerPeer::is_dtls_enabled() const {
-	return dtls_enabled;
-}
-
-void ENetMultiplayerPeer::set_dtls_verify_enabled(bool p_enabled) {
-	ERR_FAIL_COND(active);
-	dtls_verify = p_enabled;
-}
-
-bool ENetMultiplayerPeer::is_dtls_verify_enabled() const {
-	return dtls_verify;
-}
-
-void ENetMultiplayerPeer::set_dtls_key(Ref<CryptoKey> p_key) {
-	ERR_FAIL_COND(active);
-	dtls_key = p_key;
-}
-
-void ENetMultiplayerPeer::set_dtls_certificate(Ref<X509Certificate> p_cert) {
-	ERR_FAIL_COND(active);
-	dtls_cert = p_cert;
 }

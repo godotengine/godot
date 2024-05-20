@@ -1,26 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OmniLight3D" inherits="Light3D" version="4.0">
+<class name="OmniLight3D" inherits="Light3D" keywords="point" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Omnidirectional light, such as a light bulb or a candle.
 	</brief_description>
 	<description>
 		An Omnidirectional light is a type of [Light3D] that emits light in all directions. The light is attenuated by distance and this attenuation can be configured by changing its energy, radius, and attenuation parameters.
+		[b]Note:[/b] When using the Mobile rendering method, only 8 omni lights can be displayed on each mesh resource. Attempting to display more than 8 omni lights on a single mesh resource will result in omni lights flickering in and out as the camera moves. When using the Compatibility rendering method, only 8 omni lights can be displayed on each mesh resource by default, but this can be increased by adjusting [member ProjectSettings.rendering/limits/opengl/max_lights_per_object].
+		[b]Note:[/b] When using the Mobile or Compatibility rendering methods, omni lights will only correctly affect meshes whose visibility AABB intersects with the light's AABB. If using a shader to deform the mesh in a way that makes it go outside its AABB, [member GeometryInstance3D.extra_cull_margin] must be increased on the mesh. Otherwise, the light may not be visible on the mesh.
 	</description>
 	<tutorials>
-		<link title="3D lights and shadows">https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
+		<link title="3D lights and shadows">$DOCS_URL/tutorials/3d/lights_and_shadows.html</link>
+		<link title="Faking global illumination">$DOCS_URL/tutorials/3d/global_illumination/faking_global_illumination.html</link>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="omni_attenuation" type="float" setter="set_param" getter="get_param" default="1.0">
-			The light's attenuation (drop-off) curve. A number of presets are available in the [b]Inspector[/b] by right-clicking the curve.
+			Controls the distance attenuation function for omnilights.
+			A value of [code]0.0[/code] smoothly attenuates light at the edge of the range. A value of [code]1.0[/code] approaches a physical lighting model. A value of [code]0.5[/code] approximates linear attenuation.
+			[b]Note:[/b] Setting it to [code]1.0[/code] may result in distant objects receiving minimal light, even within range. For example, with a range of [code]4096[/code], an object at [code]100[/code] units receives less than [code]0.1[/code] energy.
+			[b]Note:[/b] Using negative or values higher than [code]10.0[/code] may lead to unexpected results.
 		</member>
 		<member name="omni_range" type="float" setter="set_param" getter="get_param" default="5.0">
 			The light's radius. Note that the effectively lit area may appear to be smaller depending on the [member omni_attenuation] in use. No matter the [member omni_attenuation] in use, the light will never reach anything outside this radius.
+			[b]Note:[/b] [member omni_range] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).
 		</member>
 		<member name="omni_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="OmniLight3D.ShadowMode" default="1">
 			See [enum ShadowMode].
 		</member>
+		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="1.0" />
 	</members>
 	<constants>
 		<constant name="SHADOW_DUAL_PARABOLOID" value="0" enum="ShadowMode">

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasItemMaterial" inherits="Material" version="4.0">
+<class name="CanvasItemMaterial" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A material for [CanvasItem]s.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="CanvasItemMaterial.BlendMode" default="0">
 			The manner in which a material's rendering is applied to underlying textures.
@@ -30,7 +28,7 @@
 			[b]Note:[/b] This property is only used and visible in the editor if [member particles_animation] is [code]true[/code].
 		</member>
 		<member name="particles_animation" type="bool" setter="set_particles_animation" getter="get_particles_animation" default="false">
-			If [code]true[/code], enable spritesheet-based animation features when assigned to [GPUParticles2D] and [CPUParticles2D] nodes. The [member ParticlesMaterial.anim_speed] or [member CPUParticles2D.anim_speed] should also be set to a positive value for the animation to play.
+			If [code]true[/code], enable spritesheet-based animation features when assigned to [GPUParticles2D] and [CPUParticles2D] nodes. The [member ParticleProcessMaterial.anim_speed_max] or [member CPUParticles2D.anim_speed_max] should also be set to a positive value for the animation to play.
 			This property (and other [code]particles_anim_*[/code] properties that depend on it) has no effect on other types of nodes.
 		</member>
 	</members>

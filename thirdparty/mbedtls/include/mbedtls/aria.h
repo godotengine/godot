@@ -12,81 +12,31 @@
 /*
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
- *
- *  This file is provided under the Apache License 2.0, or the
- *  GNU General Public License v2.0 or later.
- *
- *  **********
- *  Apache License 2.0:
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- *  **********
- *
- *  **********
- *  GNU General Public License v2.0 or later:
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *  **********
  */
 
 #ifndef MBEDTLS_ARIA_H
 #define MBEDTLS_ARIA_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
-#include "platform_util.h"
+#include "mbedtls/platform_util.h"
 
 #define MBEDTLS_ARIA_ENCRYPT     1 /**< ARIA encryption. */
 #define MBEDTLS_ARIA_DECRYPT     0 /**< ARIA decryption. */
 
 #define MBEDTLS_ARIA_BLOCKSIZE   16 /**< ARIA block size in bytes. */
-#define MBEDTLS_ARIA_MAX_ROUNDS  16 /**< Maxiumum number of rounds in ARIA. */
+#define MBEDTLS_ARIA_MAX_ROUNDS  16 /**< Maximum number of rounds in ARIA. */
 #define MBEDTLS_ARIA_MAX_KEYSIZE 32 /**< Maximum size of an ARIA key in bytes. */
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-#define MBEDTLS_ERR_ARIA_INVALID_KEY_LENGTH   MBEDTLS_DEPRECATED_NUMERIC_CONSTANT( -0x005C )
-#endif /* !MBEDTLS_DEPRECATED_REMOVED */
-#define MBEDTLS_ERR_ARIA_BAD_INPUT_DATA -0x005C /**< Bad input data. */
+/** Bad input data. */
+#define MBEDTLS_ERR_ARIA_BAD_INPUT_DATA -0x005C
 
-#define MBEDTLS_ERR_ARIA_INVALID_INPUT_LENGTH -0x005E /**< Invalid data input length. */
-
-/* MBEDTLS_ERR_ARIA_FEATURE_UNAVAILABLE is deprecated and should not be used.
- */
-#define MBEDTLS_ERR_ARIA_FEATURE_UNAVAILABLE  -0x005A  /**< Feature not available. For example, an unsupported ARIA key size. */
-
-/* MBEDTLS_ERR_ARIA_HW_ACCEL_FAILED is deprecated and should not be used. */
-#define MBEDTLS_ERR_ARIA_HW_ACCEL_FAILED      -0x0058  /**< ARIA hardware accelerator failed. */
+/** Invalid data input length. */
+#define MBEDTLS_ERR_ARIA_INVALID_INPUT_LENGTH -0x005E
 
 #ifdef __cplusplus
 extern "C" {
@@ -99,11 +49,10 @@ extern "C" {
 /**
  * \brief The ARIA context-type definition.
  */
-typedef struct mbedtls_aria_context
-{
-    unsigned char nr;           /*!< The number of rounds (12, 14 or 16) */
+typedef struct mbedtls_aria_context {
+    unsigned char MBEDTLS_PRIVATE(nr);           /*!< The number of rounds (12, 14 or 16) */
     /*! The ARIA round keys. */
-    uint32_t rk[MBEDTLS_ARIA_MAX_ROUNDS + 1][MBEDTLS_ARIA_BLOCKSIZE / 4];
+    uint32_t MBEDTLS_PRIVATE(rk)[MBEDTLS_ARIA_MAX_ROUNDS + 1][MBEDTLS_ARIA_BLOCKSIZE / 4];
 }
 mbedtls_aria_context;
 
@@ -119,7 +68,7 @@ mbedtls_aria_context;
  *
  * \param ctx      The ARIA context to initialize. This must not be \c NULL.
  */
-void mbedtls_aria_init( mbedtls_aria_context *ctx );
+void mbedtls_aria_init(mbedtls_aria_context *ctx);
 
 /**
  * \brief          This function releases and clears the specified ARIA context.
@@ -128,7 +77,7 @@ void mbedtls_aria_init( mbedtls_aria_context *ctx );
  *                 case this function returns immediately. If it is not \c NULL,
  *                 it must point to an initialized ARIA context.
  */
-void mbedtls_aria_free( mbedtls_aria_context *ctx );
+void mbedtls_aria_free(mbedtls_aria_context *ctx);
 
 /**
  * \brief          This function sets the encryption key.
@@ -145,10 +94,11 @@ void mbedtls_aria_free( mbedtls_aria_context *ctx );
  * \return         \c 0 on success.
  * \return         A negative error code on failure.
  */
-int mbedtls_aria_setkey_enc( mbedtls_aria_context *ctx,
-                             const unsigned char *key,
-                             unsigned int keybits );
+int mbedtls_aria_setkey_enc(mbedtls_aria_context *ctx,
+                            const unsigned char *key,
+                            unsigned int keybits);
 
+#if !defined(MBEDTLS_BLOCK_CIPHER_NO_DECRYPT)
 /**
  * \brief          This function sets the decryption key.
  *
@@ -164,9 +114,10 @@ int mbedtls_aria_setkey_enc( mbedtls_aria_context *ctx,
  * \return         \c 0 on success.
  * \return         A negative error code on failure.
  */
-int mbedtls_aria_setkey_dec( mbedtls_aria_context *ctx,
-                             const unsigned char *key,
-                             unsigned int keybits );
+int mbedtls_aria_setkey_dec(mbedtls_aria_context *ctx,
+                            const unsigned char *key,
+                            unsigned int keybits);
+#endif /* !MBEDTLS_BLOCK_CIPHER_NO_DECRYPT */
 
 /**
  * \brief          This function performs an ARIA single-block encryption or
@@ -188,9 +139,9 @@ int mbedtls_aria_setkey_dec( mbedtls_aria_context *ctx,
  * \return         \c 0 on success.
  * \return         A negative error code on failure.
  */
-int mbedtls_aria_crypt_ecb( mbedtls_aria_context *ctx,
-                            const unsigned char input[MBEDTLS_ARIA_BLOCKSIZE],
-                            unsigned char output[MBEDTLS_ARIA_BLOCKSIZE] );
+int mbedtls_aria_crypt_ecb(mbedtls_aria_context *ctx,
+                           const unsigned char input[MBEDTLS_ARIA_BLOCKSIZE],
+                           unsigned char output[MBEDTLS_ARIA_BLOCKSIZE]);
 
 #if defined(MBEDTLS_CIPHER_MODE_CBC)
 /**
@@ -234,12 +185,12 @@ int mbedtls_aria_crypt_ecb( mbedtls_aria_context *ctx,
  * \return         \c 0 on success.
  * \return         A negative error code on failure.
  */
-int mbedtls_aria_crypt_cbc( mbedtls_aria_context *ctx,
-                            int mode,
-                            size_t length,
-                            unsigned char iv[MBEDTLS_ARIA_BLOCKSIZE],
-                            const unsigned char *input,
-                            unsigned char *output );
+int mbedtls_aria_crypt_cbc(mbedtls_aria_context *ctx,
+                           int mode,
+                           size_t length,
+                           unsigned char iv[MBEDTLS_ARIA_BLOCKSIZE],
+                           const unsigned char *input,
+                           unsigned char *output);
 #endif /* MBEDTLS_CIPHER_MODE_CBC */
 
 #if defined(MBEDTLS_CIPHER_MODE_CFB)
@@ -284,23 +235,19 @@ int mbedtls_aria_crypt_cbc( mbedtls_aria_context *ctx,
  * \return         \c 0 on success.
  * \return         A negative error code on failure.
  */
-int mbedtls_aria_crypt_cfb128( mbedtls_aria_context *ctx,
-                               int mode,
-                               size_t length,
-                               size_t *iv_off,
-                               unsigned char iv[MBEDTLS_ARIA_BLOCKSIZE],
-                               const unsigned char *input,
-                               unsigned char *output );
+int mbedtls_aria_crypt_cfb128(mbedtls_aria_context *ctx,
+                              int mode,
+                              size_t length,
+                              size_t *iv_off,
+                              unsigned char iv[MBEDTLS_ARIA_BLOCKSIZE],
+                              const unsigned char *input,
+                              unsigned char *output);
 #endif /* MBEDTLS_CIPHER_MODE_CFB */
 
 #if defined(MBEDTLS_CIPHER_MODE_CTR)
 /**
  * \brief      This function performs an ARIA-CTR encryption or decryption
  *             operation.
- *
- *             This function performs the operation defined in the \p mode
- *             parameter (encrypt/decrypt), on the input data buffer
- *             defined in the \p input parameter.
  *
  *             Due to the nature of CTR, you must use the same key schedule
  *             for both encryption and decryption operations. Therefore, you
@@ -344,7 +291,7 @@ int mbedtls_aria_crypt_cfb128( mbedtls_aria_context *ctx,
  *             for example, with 96-bit random nonces, you should not encrypt
  *             more than 2**32 messages with the same key.
  *
- *             Note that for both stategies, sizes are measured in blocks and
+ *             Note that for both strategies, sizes are measured in blocks and
  *             that an ARIA block is 16 bytes.
  *
  * \warning    Upon return, \p stream_block contains sensitive data. Its
@@ -371,13 +318,13 @@ int mbedtls_aria_crypt_cfb128( mbedtls_aria_context *ctx,
  * \return                 \c 0 on success.
  * \return                 A negative error code on failure.
  */
-int mbedtls_aria_crypt_ctr( mbedtls_aria_context *ctx,
-                            size_t length,
-                            size_t *nc_off,
-                            unsigned char nonce_counter[MBEDTLS_ARIA_BLOCKSIZE],
-                            unsigned char stream_block[MBEDTLS_ARIA_BLOCKSIZE],
-                            const unsigned char *input,
-                            unsigned char *output );
+int mbedtls_aria_crypt_ctr(mbedtls_aria_context *ctx,
+                           size_t length,
+                           size_t *nc_off,
+                           unsigned char nonce_counter[MBEDTLS_ARIA_BLOCKSIZE],
+                           unsigned char stream_block[MBEDTLS_ARIA_BLOCKSIZE],
+                           const unsigned char *input,
+                           unsigned char *output);
 #endif /* MBEDTLS_CIPHER_MODE_CTR */
 
 #if defined(MBEDTLS_SELF_TEST)
@@ -386,7 +333,7 @@ int mbedtls_aria_crypt_ctr( mbedtls_aria_context *ctx,
  *
  * \return         \c 0 on success, or \c 1 on failure.
  */
-int mbedtls_aria_self_test( int verbose );
+int mbedtls_aria_self_test(int verbose);
 #endif /* MBEDTLS_SELF_TEST */
 
 #ifdef __cplusplus

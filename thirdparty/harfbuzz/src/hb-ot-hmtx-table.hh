@@ -28,8 +28,10 @@
 #define HB_OT_HMTX_TABLE_HH
 
 #include "hb-open-type.hh"
+#include "hb-ot-maxp-table.hh"
 #include "hb-ot-hhea-table.hh"
 #include "hb-ot-var-hvar-table.hh"
+#include "hb-ot-var-mvar-table.hh"
 #include "hb-ot-metrics.hh"
 
 /*
@@ -42,11 +44,14 @@
 #define HB_OT_TAG_vmtx HB_TAG('v','m','t','x')
 
 
-HB_INTERNAL int
-_glyf_get_side_bearing_var (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical);
+HB_INTERNAL bool
+_glyf_get_leading_bearing_with_var_unscaled (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical, int *lsb);
 
 HB_INTERNAL unsigned
-_glyf_get_advance_var (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical);
+_glyf_get_advance_with_var_unscaled (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical);
+
+HB_INTERNAL bool
+_glyf_get_leading_bearing_without_var_unscaled (hb_face_t *face, hb_codepoint_t gid, bool is_vertical, int *lsb);
 
 
 namespace OT {
@@ -61,7 +66,7 @@ struct LongMetric
 };
 
 
-template <typename T, typename H>
+template <typename T/*Data table type*/, typename H/*Header table type*/, typename V/*Var table type*/>
 struct hmtxvmtx
 {
   bool sanitize (hb_sanitize_context_t *c HB_UNUSED) const
@@ -72,11 +77,15 @@ struct hmtxvmtx
     return_trace (true);
   }
 
+  const hb_hashmap_t<hb_codepoint_t, hb_pair_t<unsigned, int>>* get_mtx_map (const hb_subset_plan_t *plan) const
+  { return T::is_horizontal ? &plan->hmtx_map : &plan->vmtx_map; }
 
-  bool subset_update_header (hb_subset_plan_t *plan,
-			     unsigned int num_hmetrics) const
+  bool subset_update_header (hb_subset_context_t *c,
+			     unsigned int num_hmetrics,
+			     const hb_hashmap_t<hb_codepoint_t, hb_pair_t<unsigned, int>> *mtx_map,
+			     const hb_vector_t<unsigned> &bounds_vec) const
   {
-    hb_blob_t *src_blob = hb_sanitize_context_t ().reference_table<H> (plan->source, H::tableTag);
+    hb_blob_t *src_blob = hb_sanitize_context_t ().reference_table<H> (c->plan->source, H::tableTag);
     hb_blob_t *dest_blob = hb_blob_copy_writable_or_fail (src_blob);
     hb_blob_destroy (src_blob);
 
@@ -86,9 +95,83 @@ struct hmtxvmtx
 
     unsigned int length;
     H *table = (H *) hb_blob_get_data (dest_blob, &length);
-    table->numberOfLongMetrics = num_hmetrics;
+    c->serializer->check_assign (table->numberOfLongMetrics, num_hmetrics, HB_SERIALIZE_ERROR_INT_OVERFLOW);
 
-    bool result = plan->add_table (H::tableTag, dest_blob);
+#ifndef HB_NO_VAR
+    if (c->plan->normalized_coords)
+    {
+      auto &MVAR = *c->plan->source->table.MVAR;
+      if (T::is_horizontal)
+      {
+	HB_ADD_MVAR_VAR (HB_OT_METRICS_TAG_HORIZONTAL_CARET_RISE,   caretSlopeRise);
+	HB_ADD_MVAR_VAR (HB_OT_METRICS_TAG_HORIZONTAL_CARET_RUN,    caretSlopeRun);
+	HB_ADD_MVAR_VAR (HB_OT_METRICS_TAG_HORIZONTAL_CARET_OFFSET, caretOffset);
+      }
+      else
+      {
+	HB_ADD_MVAR_VAR (HB_OT_METRICS_TAG_VERTICAL_CARET_RISE,     caretSlopeRise);
+	HB_ADD_MVAR_VAR (HB_OT_METRICS_TAG_VERTICAL_CARET_RUN,      caretSlopeRun);
+	HB_ADD_MVAR_VAR (HB_OT_METRICS_TAG_VERTICAL_CARET_OFFSET,   caretOffset);
+      }
+
+      bool empty = true;
+      int min_lsb = 0x7FFF;
+      int min_rsb = 0x7FFF;
+      int max_extent = -0x7FFF;
+      unsigned max_adv = 0;
+      for (const auto _ : *mtx_map)
+      {
+        hb_codepoint_t gid = _.first;
+        unsigned adv = _.second.first;
+        int lsb = _.second.second;
+        max_adv = hb_max (max_adv, adv);
+
+        if (bounds_vec[gid] != 0xFFFFFFFF)
+        {
+	  empty = false;
+          unsigned bound_width = bounds_vec[gid];
+          int rsb = adv - lsb - bound_width;
+          int extent = lsb + bound_width;
+          min_lsb = hb_min (min_lsb, lsb);
+          min_rsb = hb_min (min_rsb, rsb);
+          max_extent = hb_max (max_extent, extent);
+        }
+      }
+
+      table->advanceMax = max_adv;
+      if (!empty)
+      {
+        table->minLeadingBearing = min_lsb;
+        table->minTrailingBearing = min_rsb;
+        table->maxExtent = max_extent;
+      }
+
+      if (T::is_horizontal)
+      {
+        const auto &OS2 = *c->plan->source->table.OS2;
+        if (OS2.has_data () &&
+            table->ascender == OS2.sTypoAscender &&
+            table->descender == OS2.sTypoDescender &&
+            table->lineGap == OS2.sTypoLineGap)
+        {
+          table->ascender = static_cast<int> (roundf (OS2.sTypoAscender +
+                                                      MVAR.get_var (HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER,
+                                                                    c->plan->normalized_coords.arrayZ,
+                                                                    c->plan->normalized_coords.length)));
+          table->descender = static_cast<int> (roundf (OS2.sTypoDescender +
+                                                       MVAR.get_var (HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER,
+                                                                     c->plan->normalized_coords.arrayZ,
+                                                                     c->plan->normalized_coords.length)));
+          table->lineGap = static_cast<int> (roundf (OS2.sTypoLineGap +
+                                                     MVAR.get_var (HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP,
+                                                                   c->plan->normalized_coords.arrayZ,
+                                                                   c->plan->normalized_coords.length)));
+        }
+      }
+    }
+#endif
+
+    bool result = c->plan->add_table (H::tableTag, dest_blob);
     hb_blob_destroy (dest_blob);
 
     return result;
@@ -98,25 +181,32 @@ struct hmtxvmtx
 	   hb_requires (hb_is_iterator (Iterator))>
   void serialize (hb_serialize_context_t *c,
 		  Iterator it,
-		  unsigned num_advances)
+		  const hb_vector_t<hb_codepoint_pair_t> new_to_old_gid_list,
+		  unsigned num_long_metrics,
+                  unsigned total_num_metrics)
   {
-    unsigned idx = 0;
-    for (auto _ : it)
+    LongMetric* long_metrics = c->allocate_size<LongMetric> (num_long_metrics * LongMetric::static_size);
+    FWORD* short_metrics = c->allocate_size<FWORD> ((total_num_metrics - num_long_metrics) * FWORD::static_size);
+    if (!long_metrics || !short_metrics) return;
+
+    short_metrics -= num_long_metrics;
+
+    for (auto _ : new_to_old_gid_list)
     {
-      if (idx < num_advances)
+      hb_codepoint_t gid = _.first;
+      auto mtx = *it++;
+
+      if (gid < num_long_metrics)
       {
-	LongMetric lm;
-	lm.advance = _.first;
-	lm.sb = _.second;
-	if (unlikely (!c->embed<LongMetric> (&lm))) return;
+	LongMetric& lm = long_metrics[gid];
+	lm.advance = mtx.first;
+	lm.sb = mtx.second;
       }
+      // TODO(beyond-64k): This assumes that maxp.numGlyphs is 0xFFFF.
+      else if (gid < 0x10000u)
+        short_metrics[gid] = mtx.second;
       else
-      {
-	FWORD *sb = c->allocate_size<FWORD> (FWORD::static_size);
-	if (unlikely (!sb)) return;
-	*sb = _.second;
-      }
-      idx++;
+        ((UFWORD*) short_metrics)[gid] = mtx.first;
     }
   }
 
@@ -124,33 +214,57 @@ struct hmtxvmtx
   {
     TRACE_SUBSET (this);
 
-    T *table_prime = c->serializer->start_embed <T> ();
-    if (unlikely (!table_prime)) return_trace (false);
+    auto *table_prime = c->serializer->start_embed <T> ();
 
-    accelerator_t _mtx;
-    _mtx.init (c->plan->source);
-    unsigned num_advances = _mtx.num_advances_for_subset (c->plan);
+    accelerator_t _mtx (c->plan->source);
+    unsigned num_long_metrics;
+    const hb_hashmap_t<hb_codepoint_t, hb_pair_t<unsigned, int>> *mtx_map = get_mtx_map (c->plan);
+    {
+      /* Determine num_long_metrics to encode. */
+      auto& plan = c->plan;
+
+      // TODO Don't consider retaingid holes here.
+
+      num_long_metrics = hb_min (plan->num_output_glyphs (), 0xFFFFu);
+      unsigned int last_advance = get_new_gid_advance_unscaled (plan, mtx_map, num_long_metrics - 1, _mtx);
+      while (num_long_metrics > 1 &&
+	     last_advance == get_new_gid_advance_unscaled (plan, mtx_map, num_long_metrics - 2, _mtx))
+      {
+	num_long_metrics--;
+      }
+    }
 
     auto it =
-    + hb_range (c->plan->num_output_glyphs ())
-    | hb_map ([c, &_mtx] (unsigned _)
+    + hb_iter (c->plan->new_to_old_gid_list)
+    | hb_map ([c, &_mtx, mtx_map] (hb_codepoint_pair_t _)
 	      {
-		hb_codepoint_t old_gid;
-		if (!c->plan->old_gid_for_new_gid (_, &old_gid))
-		  return hb_pair (0u, 0);
-		return hb_pair (_mtx.get_advance (old_gid), _mtx.get_side_bearing (old_gid));
+		hb_codepoint_t new_gid = _.first;
+		hb_codepoint_t old_gid = _.second;
+
+		hb_pair_t<unsigned, int> *v = nullptr;
+		if (!mtx_map->has (new_gid, &v))
+		{
+		  int lsb = 0;
+		  if (!_mtx.get_leading_bearing_without_var_unscaled (old_gid, &lsb))
+		    (void) _glyf_get_leading_bearing_without_var_unscaled (c->plan->source, old_gid, !T::is_horizontal, &lsb);
+		  return hb_pair (_mtx.get_advance_without_var_unscaled (old_gid), +lsb);
+		}
+		return *v;
 	      })
     ;
 
-    table_prime->serialize (c->serializer, it, num_advances);
+    table_prime->serialize (c->serializer,
+			    it,
+			    c->plan->new_to_old_gid_list,
+			    num_long_metrics,
+			    c->plan->num_output_glyphs ());
 
-    _mtx.fini ();
-
-    if (unlikely (c->serializer->ran_out_of_room || c->serializer->in_error ()))
+    if (unlikely (c->serializer->in_error ()))
       return_trace (false);
 
     // Amend header num hmetrics
-    if (unlikely (!subset_update_header (c->plan, num_advances)))
+    if (unlikely (!subset_update_header (c, num_long_metrics, mtx_map,
+                                         T::is_horizontal ? c->plan->bounds_width_vec : c->plan->bounds_height_vec)))
       return_trace (false);
 
     return_trace (true);
@@ -160,137 +274,178 @@ struct hmtxvmtx
   {
     friend struct hmtxvmtx;
 
-    void init (hb_face_t *face,
-	       unsigned int default_advance_ = 0)
+    accelerator_t (hb_face_t *face)
     {
-      default_advance = default_advance_ ? default_advance_ : hb_face_get_upem (face);
-
-      num_advances = T::is_horizontal ? face->table.hhea->numberOfLongMetrics : face->table.vhea->numberOfLongMetrics;
-
       table = hb_sanitize_context_t ().reference_table<hmtxvmtx> (face, T::tableTag);
+      var_table = hb_sanitize_context_t ().reference_table<V> (face, T::variationsTag);
 
-      /* Cap num_metrics() and num_advances() based on table length. */
+      default_advance = T::is_horizontal ? hb_face_get_upem (face) / 2 : hb_face_get_upem (face);
+
+      /* Populate count variables and sort them out as we go */
+
       unsigned int len = table.get_length ();
-      if (unlikely (num_advances * 4 > len))
-	num_advances = len / 4;
-      num_metrics = num_advances + (len - 4 * num_advances) / 2;
+      if (len & 1)
+        len--;
 
-      /* We MUST set num_metrics to zero if num_advances is zero.
+      num_long_metrics = T::is_horizontal ?
+			 face->table.hhea->numberOfLongMetrics :
+#ifndef HB_NO_VERTICAL
+			 face->table.vhea->numberOfLongMetrics
+#else
+			 0
+#endif
+			 ;
+      if (unlikely (num_long_metrics * 4 > len))
+	num_long_metrics = len / 4;
+      len -= num_long_metrics * 4;
+
+      num_bearings = face->table.maxp->get_num_glyphs ();
+
+      if (unlikely (num_bearings < num_long_metrics))
+        num_bearings = num_long_metrics;
+      if (unlikely ((num_bearings - num_long_metrics) * 2 > len))
+        num_bearings = num_long_metrics + len / 2;
+      len -= (num_bearings - num_long_metrics) * 2;
+
+      /* We MUST set num_bearings to zero if num_long_metrics is zero.
        * Our get_advance() depends on that. */
-      if (unlikely (!num_advances))
-      {
-	num_metrics = num_advances = 0;
-	table.destroy ();
-	table = hb_blob_get_empty ();
-      }
+      if (unlikely (!num_long_metrics))
+	num_bearings = num_long_metrics = 0;
 
-      var_table = hb_sanitize_context_t ().reference_table<HVARVVAR> (face, T::variationsTag);
+      num_advances = num_bearings + len / 2;
+      num_glyphs = face->get_num_glyphs ();
+      if (num_glyphs < num_advances)
+        num_glyphs = num_advances;
     }
-
-    void fini ()
+    ~accelerator_t ()
     {
       table.destroy ();
       var_table.destroy ();
     }
 
-    int get_side_bearing (hb_codepoint_t glyph) const
+    bool has_data () const { return (bool) num_bearings; }
+
+    bool get_leading_bearing_without_var_unscaled (hb_codepoint_t glyph,
+						   int *lsb) const
     {
-      if (glyph < num_advances)
-	return table->longMetricZ[glyph].sb;
+      if (glyph < num_long_metrics)
+      {
+	*lsb = table->longMetricZ[glyph].sb;
+	return true;
+      }
 
-      if (unlikely (glyph >= num_metrics))
-	return 0;
+      if (unlikely (glyph >= num_bearings))
+	return false;
 
-      const FWORD *bearings = (const FWORD *) &table->longMetricZ[num_advances];
-      return bearings[glyph - num_advances];
+      const FWORD *bearings = (const FWORD *) &table->longMetricZ[num_long_metrics];
+      *lsb = bearings[glyph - num_long_metrics];
+      return true;
     }
 
-    int get_side_bearing (hb_font_t *font, hb_codepoint_t glyph) const
+    bool get_leading_bearing_with_var_unscaled (hb_font_t *font,
+						hb_codepoint_t glyph,
+						int *lsb) const
     {
-      int side_bearing = get_side_bearing (glyph);
+      if (!font->num_coords)
+	return get_leading_bearing_without_var_unscaled (glyph, lsb);
 
 #ifndef HB_NO_VAR
-      if (unlikely (glyph >= num_metrics) || !font->num_coords)
-	return side_bearing;
+      float delta;
+      if (var_table->get_lsb_delta_unscaled (glyph, font->coords, font->num_coords, &delta) &&
+	  get_leading_bearing_without_var_unscaled (glyph, lsb))
+      {
+	*lsb += roundf (delta);
+	return true;
+      }
 
-      if (var_table.get_length ())
-	return side_bearing + var_table->get_side_bearing_var (glyph, font->coords, font->num_coords); // TODO Optimize?!
-
-      return _glyf_get_side_bearing_var (font, glyph, T::tableTag == HB_OT_TAG_vmtx);
+      return _glyf_get_leading_bearing_with_var_unscaled (font, glyph, T::tableTag == HB_OT_TAG_vmtx, lsb);
 #else
-      return side_bearing;
+      return false;
 #endif
     }
 
-    unsigned int get_advance (hb_codepoint_t glyph) const
+    unsigned int get_advance_without_var_unscaled (hb_codepoint_t glyph) const
     {
-      if (unlikely (glyph >= num_metrics))
-      {
-	/* If num_metrics is zero, it means we don't have the metrics table
-	 * for this direction: return default advance.  Otherwise, it means that the
-	 * glyph index is out of bound: return zero. */
-	if (num_metrics)
-	  return 0;
-	else
-	  return default_advance;
-      }
+      /* OpenType case. */
+      if (glyph < num_bearings)
+	return table->longMetricZ[hb_min (glyph, (uint32_t) num_long_metrics - 1)].advance;
 
-      return table->longMetricZ[hb_min (glyph, (uint32_t) num_advances - 1)].advance;
+      /* If num_advances is zero, it means we don't have the metrics table
+       * for this direction: return default advance.  Otherwise, there's a
+       * well-defined answer. */
+      if (unlikely (!num_advances))
+	return default_advance;
+
+#ifdef HB_NO_BEYOND_64K
+      return 0;
+#endif
+
+      if (unlikely (glyph >= num_glyphs))
+        return 0;
+
+      /* num_bearings <= glyph < num_glyphs;
+       * num_bearings <= num_advances */
+
+      if (num_bearings == num_advances)
+        return get_advance_without_var_unscaled (num_bearings - 1);
+
+      const FWORD *bearings = (const FWORD *) &table->longMetricZ[num_long_metrics];
+      const UFWORD *advances = (const UFWORD *) &bearings[num_bearings - num_long_metrics];
+
+      return advances[hb_min (glyph - num_bearings, num_advances - num_bearings - 1)];
     }
 
-    unsigned int get_advance (hb_codepoint_t  glyph,
-			      hb_font_t      *font) const
+    unsigned get_advance_with_var_unscaled (hb_codepoint_t  glyph,
+					    hb_font_t      *font,
+					    ItemVariationStore::cache_t *store_cache = nullptr) const
     {
-      unsigned int advance = get_advance (glyph);
+      unsigned int advance = get_advance_without_var_unscaled (glyph);
 
 #ifndef HB_NO_VAR
-      if (unlikely (glyph >= num_metrics) || !font->num_coords)
+      if (unlikely (glyph >= num_bearings) || !font->num_coords)
 	return advance;
 
       if (var_table.get_length ())
-	return advance + roundf (var_table->get_advance_var (glyph, font)); // TODO Optimize?!
+	return advance + roundf (var_table->get_advance_delta_unscaled (glyph,
+									font->coords, font->num_coords,
+									store_cache));
 
-      return _glyf_get_advance_var (font, glyph, T::tableTag == HB_OT_TAG_vmtx);
+      unsigned glyf_advance = _glyf_get_advance_with_var_unscaled (font, glyph, T::tableTag == HB_OT_TAG_vmtx);
+      return glyf_advance ? glyf_advance : advance;
 #else
       return advance;
 #endif
     }
 
-    unsigned int num_advances_for_subset (const hb_subset_plan_t *plan) const
-    {
-      unsigned int num_advances = plan->num_output_glyphs ();
-      unsigned int last_advance = _advance_for_new_gid (plan,
-							num_advances - 1);
-      while (num_advances > 1 &&
-	     last_advance == _advance_for_new_gid (plan,
-						   num_advances - 2))
-      {
-	num_advances--;
-      }
-
-      return num_advances;
-    }
-
-    private:
-    unsigned int _advance_for_new_gid (const hb_subset_plan_t *plan,
-				       hb_codepoint_t new_gid) const
-    {
-      hb_codepoint_t old_gid;
-      if (!plan->old_gid_for_new_gid (new_gid, &old_gid))
-	return 0;
-
-      return get_advance (old_gid);
-    }
-
     protected:
-    unsigned int num_metrics;
-    unsigned int num_advances;
+    // 0 <= num_long_metrics <= num_bearings <= num_advances <= num_glyphs
+    unsigned num_long_metrics;
+    unsigned num_bearings;
+    unsigned num_advances;
+    unsigned num_glyphs;
+
     unsigned int default_advance;
 
-    private:
+    public:
     hb_blob_ptr_t<hmtxvmtx> table;
-    hb_blob_ptr_t<HVARVVAR> var_table;
+    hb_blob_ptr_t<V> var_table;
   };
+
+  /* get advance: when no variations, call get_advance_without_var_unscaled.
+   * when there're variations, get advance value from mtx_map in subset_plan*/
+  unsigned get_new_gid_advance_unscaled (const hb_subset_plan_t *plan,
+                                         const hb_hashmap_t<hb_codepoint_t, hb_pair_t<unsigned, int>> *mtx_map,
+                                         unsigned new_gid,
+                                         const accelerator_t &_mtx) const
+  {
+    if (mtx_map->is_empty ())
+    {
+      hb_codepoint_t old_gid = 0;
+      return plan->old_gid_for_new_gid (new_gid, &old_gid) ?
+             _mtx.get_advance_without_var_unscaled (old_gid) : 0;
+    }
+    return mtx_map->get (new_gid).first;
+  }
 
   protected:
   UnsizedArrayOf<LongMetric>
@@ -316,23 +471,29 @@ struct hmtxvmtx
 				 * the end. This allows a monospaced
 				 * font to vary the side bearing
 				 * values for each glyph. */
+/*UnsizedArrayOf<UFWORD>advancesX;*/
+				/* TODO Document. */
   public:
   DEFINE_SIZE_ARRAY (0, longMetricZ);
 };
 
-struct hmtx : hmtxvmtx<hmtx, hhea> {
+struct hmtx : hmtxvmtx<hmtx, hhea, HVAR> {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_hmtx;
   static constexpr hb_tag_t variationsTag = HB_OT_TAG_HVAR;
   static constexpr bool is_horizontal = true;
 };
-struct vmtx : hmtxvmtx<vmtx, vhea> {
+struct vmtx : hmtxvmtx<vmtx, vhea, VVAR> {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_vmtx;
   static constexpr hb_tag_t variationsTag = HB_OT_TAG_VVAR;
   static constexpr bool is_horizontal = false;
 };
 
-struct hmtx_accelerator_t : hmtx::accelerator_t {};
-struct vmtx_accelerator_t : vmtx::accelerator_t {};
+struct hmtx_accelerator_t : hmtx::accelerator_t {
+  hmtx_accelerator_t (hb_face_t *face) : hmtx::accelerator_t (face) {}
+};
+struct vmtx_accelerator_t : vmtx::accelerator_t {
+  vmtx_accelerator_t (hb_face_t *face) : vmtx::accelerator_t (face) {}
+};
 
 } /* namespace OT */
 

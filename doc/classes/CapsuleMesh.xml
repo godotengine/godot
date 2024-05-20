@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CapsuleMesh" inherits="PrimitiveMesh" version="4.0">
+<class name="CapsuleMesh" inherits="PrimitiveMesh" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Class representing a capsule-shaped [PrimitiveMesh].
 	</brief_description>
@@ -8,23 +8,18 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
-		<member name="mid_height" type="float" setter="set_mid_height" getter="get_mid_height" default="1.0">
-			Height of the middle cylindrical part of the capsule (without the hemispherical ends).
-			[b]Note:[/b] The capsule's total height is equal to [member mid_height] + 2 * [member radius].
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+			Total height of the capsule mesh (including the hemispherical ends).
 		</member>
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="64">
 			Number of radial segments on the capsule mesh.
 		</member>
-		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 			Radius of the capsule mesh.
 		</member>
 		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="8">
 			Number of rings along the height of the capsule.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

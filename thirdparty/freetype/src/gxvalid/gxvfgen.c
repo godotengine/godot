@@ -5,7 +5,7 @@
  *   Generate feature registry data for gxv `feat' validator.
  *   This program is derived from gxfeatreg.c in gxlayout.
  *
- * Copyright (C) 2004-2020 by
+ * Copyright (C) 2004-2023 by
  * Masatake YAMATO and Redhat K.K.
  *
  * This file may only be used,
@@ -97,7 +97,8 @@
 #define EMPTYFEAT {0, 0, {NULL}}
 
 
-  static GX_Feature_RegistryRec featreg_table[] = {
+  static GX_Feature_RegistryRec featreg_table[] =
+  {
     {                                       /* 0 */
       "All Typographic Features",
       0,

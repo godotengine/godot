@@ -1,44 +1,45 @@
-/*************************************************************************/
-/*  asset_library_editor_plugin.h                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  asset_library_editor_plugin.h                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef ASSET_LIBRARY_EDITOR_PLUGIN_H
 #define ASSET_LIBRARY_EDITOR_PLUGIN_H
 
 #include "editor/editor_asset_installer.h"
-#include "editor/editor_plugin.h"
-#include "editor/editor_plugin_settings.h"
+#include "editor/plugins/editor_plugin.h"
+#include "editor/plugins/editor_plugin_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/progress_bar.h"
@@ -49,19 +50,22 @@
 #include "scene/gui/texture_button.h"
 #include "scene/main/http_request.h"
 
+class EditorFileDialog;
+class MenuButton;
+
 class EditorAssetLibraryItem : public PanelContainer {
 	GDCLASS(EditorAssetLibraryItem, PanelContainer);
 
-	TextureButton *icon;
-	LinkButton *title;
-	LinkButton *category;
-	LinkButton *author;
-	TextureRect *stars[5];
-	Label *price;
+	TextureButton *icon = nullptr;
+	LinkButton *title = nullptr;
+	LinkButton *category = nullptr;
+	LinkButton *author = nullptr;
+	Label *price = nullptr;
 
-	int asset_id;
-	int category_id;
-	int author_id;
+	String title_text;
+	int asset_id = 0;
+	int category_id = 0;
+	int author_id = 0;
 
 	void _asset_clicked();
 	void _category_clicked();
@@ -76,17 +80,20 @@ protected:
 public:
 	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost);
 
-	EditorAssetLibraryItem();
+	void clamp_width(int p_max_width);
+
+	EditorAssetLibraryItem(bool p_clickable = false);
 };
 
 class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	GDCLASS(EditorAssetLibraryItemDescription, ConfirmationDialog);
 
-	EditorAssetLibraryItem *item;
-	RichTextLabel *description;
-	ScrollContainer *previews;
-	HBoxContainer *preview_hb;
-	PanelContainer *previews_bg;
+	EditorAssetLibraryItem *item = nullptr;
+	RichTextLabel *description = nullptr;
+	VBoxContainer *previews_vbox = nullptr;
+	ScrollContainer *previews = nullptr;
+	HBoxContainer *preview_hb = nullptr;
+	PanelContainer *previews_bg = nullptr;
 
 	struct Preview {
 		int id = 0;
@@ -97,11 +104,11 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	};
 
 	Vector<Preview> preview_images;
-	TextureRect *preview;
+	TextureRect *preview = nullptr;
 
 	void set_image(int p_type, int p_index, const Ref<Texture2D> &p_image);
 
-	int asset_id;
+	int asset_id = 0;
 	String download_url;
 	String title;
 	String sha256;
@@ -126,32 +133,32 @@ public:
 	EditorAssetLibraryItemDescription();
 };
 
-class EditorAssetLibraryItemDownload : public PanelContainer {
-	GDCLASS(EditorAssetLibraryItemDownload, PanelContainer);
+class EditorAssetLibraryItemDownload : public MarginContainer {
+	GDCLASS(EditorAssetLibraryItemDownload, MarginContainer);
 
-	TextureRect *icon;
-	Label *title;
-	ProgressBar *progress;
-	Button *install;
-	Button *retry;
-	TextureButton *dismiss;
+	PanelContainer *panel = nullptr;
+	TextureRect *icon = nullptr;
+	Label *title = nullptr;
+	ProgressBar *progress = nullptr;
+	Button *install_button = nullptr;
+	Button *retry_button = nullptr;
+	TextureButton *dismiss_button = nullptr;
 
-	AcceptDialog *download_error;
-	HTTPRequest *download;
+	AcceptDialog *download_error = nullptr;
+	HTTPRequest *download = nullptr;
 	String host;
 	String sha256;
-	Label *status;
+	Label *status = nullptr;
 
 	int prev_status;
 
-	int asset_id;
+	int asset_id = 0;
 
 	bool external_install;
 
-	EditorAssetInstaller *asset_installer;
+	EditorAssetInstaller *asset_installer = nullptr;
 
 	void _close();
-	void _install();
 	void _make_request();
 	void _http_download_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
 
@@ -163,6 +170,10 @@ public:
 	void set_external_install(bool p_enable) { external_install = p_enable; }
 	int get_asset_id() { return asset_id; }
 	void configure(const String &p_title, int p_asset_id, const Ref<Texture2D> &p_preview, const String &p_download_url, const String &p_sha256_hash);
+
+	bool can_install() const;
+	void install();
+
 	EditorAssetLibraryItemDownload();
 };
 
@@ -171,41 +182,50 @@ class EditorAssetLibrary : public PanelContainer {
 
 	String host;
 
-	EditorFileDialog *asset_open;
-	EditorAssetInstaller *asset_installer;
+	EditorFileDialog *asset_open = nullptr;
+	EditorAssetInstaller *asset_installer = nullptr;
 
 	void _asset_open();
 	void _asset_file_selected(const String &p_file);
 	void _update_repository_options();
 
-	PanelContainer *library_scroll_bg;
-	ScrollContainer *library_scroll;
-	VBoxContainer *library_vb;
-	Label *library_loading;
-	Label *library_error;
-	LineEdit *filter;
-	Timer *filter_debounce_timer;
-	OptionButton *categories;
-	OptionButton *repository;
-	OptionButton *sort;
-	HBoxContainer *error_hb;
-	TextureRect *error_tr;
-	Label *error_label;
-	MenuButton *support;
+	PanelContainer *library_scroll_bg = nullptr;
+	ScrollContainer *library_scroll = nullptr;
+	VBoxContainer *library_vb = nullptr;
+	VBoxContainer *library_message_box = nullptr;
+	Label *library_message = nullptr;
+	Button *library_message_button = nullptr;
+	Callable library_message_action;
 
-	HBoxContainer *contents;
+	void _set_library_message(const String &p_message);
+	void _set_library_message_with_action(const String &p_message, const String &p_action_text, const Callable &p_action);
 
-	HBoxContainer *asset_top_page;
-	GridContainer *asset_items;
-	HBoxContainer *asset_bottom_page;
+	LineEdit *filter = nullptr;
+	Timer *filter_debounce_timer = nullptr;
+	OptionButton *categories = nullptr;
+	OptionButton *repository = nullptr;
+	OptionButton *sort = nullptr;
+	HBoxContainer *error_hb = nullptr;
+	TextureRect *error_tr = nullptr;
+	Label *error_label = nullptr;
+	MenuButton *support = nullptr;
 
-	HTTPRequest *request;
+	HBoxContainer *contents = nullptr;
 
-	bool templates_only;
-	bool initial_loading;
+	HBoxContainer *asset_top_page = nullptr;
+	GridContainer *asset_items = nullptr;
+	HBoxContainer *asset_bottom_page = nullptr;
+
+	HTTPRequest *request = nullptr;
+
+	bool templates_only = false;
+	bool initial_loading = true;
+	bool loading_blocked = false;
+
+	void _force_online_mode();
 
 	enum Support {
-		SUPPORT_OFFICIAL,
+		SUPPORT_FEATURED,
 		SUPPORT_COMMUNITY,
 		SUPPORT_TESTING,
 		SUPPORT_MAX
@@ -224,6 +244,7 @@ class EditorAssetLibrary : public PanelContainer {
 	static const char *sort_key[SORT_MAX];
 	static const char *sort_text[SORT_MAX];
 	static const char *support_key[SUPPORT_MAX];
+	static const char *support_text[SUPPORT_MAX];
 
 	///MainListing
 
@@ -242,20 +263,21 @@ class EditorAssetLibrary : public PanelContainer {
 		String image_url;
 		HTTPRequest *request = nullptr;
 		ObjectID target;
+		int asset_id = -1;
 	};
 
 	int last_queue_id;
-	Map<int, ImageQueue> image_queue;
+	HashMap<int, ImageQueue> image_queue;
 
-	void _image_update(bool use_cache, bool final, const PackedByteArray &p_data, int p_queue_id);
+	void _image_update(bool p_use_cache, bool p_final, const PackedByteArray &p_data, int p_queue_id);
 	void _image_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, int p_queue_id);
-	void _request_image(ObjectID p_for, String p_image_url, ImageType p_type, int p_image_index);
+	void _request_image(ObjectID p_for, int p_asset_id, String p_image_url, ImageType p_type, int p_image_index);
 	void _update_image_queue();
 
 	HBoxContainer *_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items);
 
 	//
-	EditorAssetLibraryItemDescription *description;
+	EditorAssetLibraryItemDescription *description = nullptr;
 	//
 
 	enum RequestType {
@@ -268,12 +290,12 @@ class EditorAssetLibrary : public PanelContainer {
 	RequestType requesting;
 	Dictionary category_map;
 
-	ScrollContainer *downloads_scroll;
-	HBoxContainer *downloads_hb;
+	ScrollContainer *downloads_scroll = nullptr;
+	HBoxContainer *downloads_hb = nullptr;
 
 	void _install_asset();
 
-	void _select_author(int p_id);
+	void _select_author(const String &p_author);
 	void _select_category(int p_id);
 	void _select_asset(int p_id);
 
@@ -285,13 +307,18 @@ class EditorAssetLibrary : public PanelContainer {
 	void _search_text_submitted(const String &p_text = "");
 	void _api_request(const String &p_request, RequestType p_request_type, const String &p_arguments = "");
 	void _http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
-	void _http_download_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
 	void _filter_debounce_timer_timeout();
+	void _request_current_config();
+	EditorAssetLibraryItemDownload *_get_asset_in_progress(int p_asset_id) const;
 
 	void _repository_changed(int p_repository_id);
 	void _support_toggled(int p_support);
 
 	void _install_external_asset(String p_zip_path, String p_title);
+
+	int asset_items_column_width = 0;
+
+	void _update_asset_items_columns();
 
 	friend class EditorAssetLibraryItemDescription;
 	friend class EditorAssetLibraryItem;
@@ -299,7 +326,7 @@ class EditorAssetLibrary : public PanelContainer {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-	void _unhandled_key_input(const Ref<InputEvent> &p_event);
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void disable_community_support();
@@ -310,10 +337,11 @@ public:
 class AssetLibraryEditorPlugin : public EditorPlugin {
 	GDCLASS(AssetLibraryEditorPlugin, EditorPlugin);
 
-	EditorAssetLibrary *addon_library;
-	EditorNode *editor;
+	EditorAssetLibrary *addon_library = nullptr;
 
 public:
+	static bool is_available();
+
 	virtual String get_name() const override { return "AssetLib"; }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override {}
@@ -323,8 +351,8 @@ public:
 	//virtual Dictionary get_state() const;
 	//virtual void set_state(const Dictionary& p_state);
 
-	AssetLibraryEditorPlugin(EditorNode *p_node);
+	AssetLibraryEditorPlugin();
 	~AssetLibraryEditorPlugin();
 };
 
-#endif // EDITORASSETLIBRARY_H
+#endif // ASSET_LIBRARY_EDITOR_PLUGIN_H

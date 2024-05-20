@@ -1,39 +1,168 @@
-/*************************************************************************/
-/*  path_3d.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  path_3d.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "path_3d.h"
 
-#include "core/config/engine.h"
-#include "scene/scene_string_names.h"
+Path3D::Path3D() {
+	SceneTree *st = SceneTree::get_singleton();
+	if (st && st->is_debugging_paths_hint()) {
+		debug_instance = RS::get_singleton()->instance_create();
+		set_notify_transform(true);
+		_update_debug_mesh();
+	}
+}
+
+Path3D::~Path3D() {
+	if (debug_instance.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
+		RS::get_singleton()->free(debug_instance);
+	}
+	if (debug_mesh.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
+		RS::get_singleton()->free(debug_mesh->get_rid());
+	}
+}
+
+void Path3D::set_update_callback(Callable p_callback) {
+	update_callback = p_callback;
+}
 
 void Path3D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			SceneTree *st = SceneTree::get_singleton();
+			if (st && st->is_debugging_paths_hint()) {
+				_update_debug_mesh();
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			SceneTree *st = SceneTree::get_singleton();
+			if (st && st->is_debugging_paths_hint()) {
+				RS::get_singleton()->instance_set_visible(debug_instance, false);
+			}
+		} break;
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (is_inside_tree()) {
+				if (debug_instance.is_valid()) {
+					RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
+				}
+
+				update_callback.call();
+			}
+		} break;
+	}
+}
+
+void Path3D::_update_debug_mesh() {
+	SceneTree *st = SceneTree::get_singleton();
+	if (!(st && st->is_debugging_paths_hint())) {
+		return;
+	}
+
+	if (!debug_mesh.is_valid()) {
+		debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	}
+
+	if (!(curve.is_valid())) {
+		RS::get_singleton()->instance_set_visible(debug_instance, false);
+		return;
+	}
+	if (curve->get_point_count() < 2) {
+		RS::get_singleton()->instance_set_visible(debug_instance, false);
+		return;
+	}
+
+	real_t interval = 0.1;
+	const real_t length = curve->get_baked_length();
+
+	if (length <= CMP_EPSILON) {
+		RS::get_singleton()->instance_set_visible(debug_instance, false);
+		return;
+	}
+
+	const int sample_count = int(length / interval) + 2;
+	interval = length / (sample_count - 1);
+
+	Vector<Vector3> ribbon;
+	ribbon.resize(sample_count);
+	Vector3 *ribbon_ptr = ribbon.ptrw();
+
+	Vector<Vector3> bones;
+	bones.resize(sample_count * 4);
+	Vector3 *bones_ptr = bones.ptrw();
+
+	for (int i = 0; i < sample_count; i++) {
+		const Transform3D r = curve->sample_baked_with_rotation(i * interval, true, true);
+
+		const Vector3 p1 = r.origin;
+		const Vector3 side = r.basis.get_column(0);
+		const Vector3 up = r.basis.get_column(1);
+		const Vector3 forward = r.basis.get_column(2);
+
+		// Path3D as a ribbon.
+		ribbon_ptr[i] = p1;
+
+		// Fish Bone.
+		const Vector3 p_left = p1 + (side + forward - up * 0.3) * 0.06;
+		const Vector3 p_right = p1 + (-side + forward - up * 0.3) * 0.06;
+
+		const int bone_idx = i * 4;
+
+		bones_ptr[bone_idx] = p1;
+		bones_ptr[bone_idx + 1] = p_left;
+		bones_ptr[bone_idx + 2] = p1;
+		bones_ptr[bone_idx + 3] = p_right;
+	}
+
+	Array ribbon_array;
+	ribbon_array.resize(Mesh::ARRAY_MAX);
+	ribbon_array[Mesh::ARRAY_VERTEX] = ribbon;
+
+	Array bone_array;
+	bone_array.resize(Mesh::ARRAY_MAX);
+	bone_array[Mesh::ARRAY_VERTEX] = bones;
+
+	debug_mesh->clear_surfaces();
+	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINE_STRIP, ribbon_array);
+	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, bone_array);
+
+	RS::get_singleton()->instance_set_base(debug_instance, debug_mesh->get_rid());
+	RS::get_singleton()->mesh_surface_set_material(debug_mesh->get_rid(), 0, st->get_debug_paths_material()->get_rid());
+	RS::get_singleton()->mesh_surface_set_material(debug_mesh->get_rid(), 1, st->get_debug_paths_material()->get_rid());
+	if (is_inside_tree()) {
+		RS::get_singleton()->instance_set_scenario(debug_instance, get_world_3d()->get_scenario());
+		RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
+		RS::get_singleton()->instance_set_visible(debug_instance, is_visible_in_tree());
+	}
 }
 
 void Path3D::_curve_changed() {
@@ -44,27 +173,32 @@ void Path3D::_curve_changed() {
 		emit_signal(SNAME("curve_changed"));
 	}
 
-	// update the configuration warnings of all children of type PathFollow
-	// previously used for PathFollowOriented (now enforced orientation is done in PathFollow)
+	// Update the configuration warnings of all children of type PathFollow
+	// previously used for PathFollowOriented (now enforced orientation is done in PathFollow). Also trigger transform update on PathFollow3Ds in deferred mode.
 	if (is_inside_tree()) {
 		for (int i = 0; i < get_child_count(); i++) {
 			PathFollow3D *child = Object::cast_to<PathFollow3D>(get_child(i));
 			if (child) {
 				child->update_configuration_warnings();
+				child->update_transform();
 			}
 		}
+	}
+	SceneTree *st = SceneTree::get_singleton();
+	if (st && st->is_debugging_paths_hint()) {
+		_update_debug_mesh();
 	}
 }
 
 void Path3D::set_curve(const Ref<Curve3D> &p_curve) {
 	if (curve.is_valid()) {
-		curve->disconnect("changed", callable_mp(this, &Path3D::_curve_changed));
+		curve->disconnect_changed(callable_mp(this, &Path3D::_curve_changed));
 	}
 
 	curve = p_curve;
 
 	if (curve.is_valid()) {
-		curve->connect("changed", callable_mp(this, &Path3D::_curve_changed));
+		curve->connect_changed(callable_mp(this, &Path3D::_curve_changed));
 	}
 	_curve_changed();
 }
@@ -82,9 +216,24 @@ void Path3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("curve_changed"));
 }
 
-//////////////
+// Update transform, in deferred mode by default to avoid superfluity.
+void PathFollow3D::update_transform(bool p_immediate) {
+	transform_dirty = true;
 
-void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
+	if (p_immediate) {
+		_update_transform();
+	} else {
+		callable_mp(this, &PathFollow3D::_update_transform).call_deferred();
+	}
+}
+
+// Update transform immediately .
+void PathFollow3D::_update_transform() {
+	if (!transform_dirty) {
+		return;
+	}
+	transform_dirty = false;
+
 	if (!path) {
 		return;
 	}
@@ -94,112 +243,39 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		return;
 	}
 
-	float bl = c->get_baked_length();
+	real_t bl = c->get_baked_length();
 	if (bl == 0.0) {
 		return;
 	}
-	float bi = c->get_bake_interval();
-	float o_next = offset + bi;
 
-	if (loop) {
-		o_next = Math::fposmod(o_next, bl);
-	} else if (rotation_mode == ROTATION_ORIENTED && o_next >= bl) {
-		o_next = bl;
-	}
+	Transform3D t;
 
-	Vector3 pos = c->interpolate_baked(offset, cubic);
-	Transform3D t = get_transform();
-	// Vector3 pos_offset = Vector3(h_offset, v_offset, 0); not used in all cases
-	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
-
-	if (rotation_mode == ROTATION_ORIENTED) {
-		Vector3 forward = c->interpolate_baked(o_next, cubic) - pos;
-
-		if (forward.length_squared() < CMP_EPSILON2) {
-			forward = Vector3(0, 0, 1);
-		} else {
-			forward.normalize();
-		}
-
-		Vector3 up = c->interpolate_baked_up_vector(offset, true);
-
-		if (o_next < offset) {
-			Vector3 up1 = c->interpolate_baked_up_vector(o_next, true);
-			Vector3 axis = up.cross(up1);
-
-			if (axis.length_squared() < CMP_EPSILON2) {
-				axis = forward;
-			} else {
-				axis.normalize();
-			}
-
-			up.rotate(axis, up.angle_to(up1) * 0.5f);
-		}
-
-		Vector3 scale = t.basis.get_scale();
-		Vector3 sideways = up.cross(forward).normalized();
-		up = forward.cross(sideways).normalized();
-
-		t.basis.set(sideways, up, forward);
-		t.basis.scale_local(scale);
-
-		t.origin = pos + sideways * h_offset + up * v_offset;
-	} else if (rotation_mode != ROTATION_NONE) {
-		// perform parallel transport
-		//
-		// see C. Dougan, The Parallel Transport Frame, Game Programming Gems 2 for example
-		// for a discussion about why not Frenet frame.
-
+	if (rotation_mode == ROTATION_NONE) {
+		Vector3 pos = c->sample_baked(progress, cubic);
 		t.origin = pos;
+	} else {
+		t = c->sample_baked_with_rotation(progress, cubic, false);
+		Vector3 tangent = -t.basis.get_column(2); // Retain tangent for applying tilt.
+		t = PathFollow3D::correct_posture(t, rotation_mode);
 
-		if (p_update_xyz_rot && delta_offset != 0) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree.
-			Vector3 t_prev = (pos - c->interpolate_baked(offset - delta_offset, cubic)).normalized();
-			Vector3 t_cur = (c->interpolate_baked(offset + delta_offset, cubic) - pos).normalized();
-
-			Vector3 axis = t_prev.cross(t_cur);
-			float dot = t_prev.dot(t_cur);
-			float angle = Math::acos(CLAMP(dot, -1, 1));
-
-			if (likely(!Math::is_zero_approx(angle))) {
-				if (rotation_mode == ROTATION_Y) {
-					// assuming we're referring to global Y-axis. is this correct?
-					axis.x = 0;
-					axis.z = 0;
-				} else if (rotation_mode == ROTATION_XY) {
-					axis.z = 0;
-				} else if (rotation_mode == ROTATION_XYZ) {
-					// all components are allowed
-				}
-
-				if (likely(!Math::is_zero_approx(axis.length()))) {
-					t.rotate_basis(axis.normalized(), angle);
-				}
-			}
-
-			// do the additional tilting
-			float tilt_angle = c->interpolate_baked_tilt(offset);
-			Vector3 tilt_axis = t_cur; // not sure what tilt is supposed to do, is this correct??
-
-			if (likely(!Math::is_zero_approx(Math::abs(tilt_angle)))) {
-				if (rotation_mode == ROTATION_Y) {
-					tilt_axis.x = 0;
-					tilt_axis.z = 0;
-				} else if (rotation_mode == ROTATION_XY) {
-					tilt_axis.z = 0;
-				} else if (rotation_mode == ROTATION_XYZ) {
-					// all components are allowed
-				}
-
-				if (likely(!Math::is_zero_approx(tilt_axis.length()))) {
-					t.rotate_basis(tilt_axis.normalized(), tilt_angle);
-				}
-			}
+		// Switch Z+ and Z- if necessary.
+		if (use_model_front) {
+			t.basis *= Basis::from_scale(Vector3(-1.0, 1.0, -1.0));
 		}
 
-		t.translate(Vector3(h_offset, v_offset, 0));
-	} else {
-		t.origin = pos + Vector3(h_offset, v_offset, 0);
+		// Apply tilt *after* correct_posture().
+		if (tilt_enabled) {
+			const real_t tilt = c->sample_baked_tilt(progress);
+
+			const Basis twist(tangent, tilt);
+			t.basis = twist * t.basis;
+		}
 	}
+
+	// Apply offset and scale.
+	Vector3 scale = get_transform().basis.get_scale();
+	t.translate_local(Vector3(h_offset, v_offset, 0));
+	t.basis.scale_local(scale);
 
 	set_transform(t);
 }
@@ -211,46 +287,46 @@ void PathFollow3D::_notification(int p_what) {
 			if (parent) {
 				path = Object::cast_to<Path3D>(parent);
 				if (path) {
-					_update_transform(false);
+					update_transform();
 				}
 			}
-
 		} break;
+
 		case NOTIFICATION_EXIT_TREE: {
 			path = nullptr;
 		} break;
 	}
 }
 
-void PathFollow3D::set_cubic_interpolation(bool p_enable) {
-	cubic = p_enable;
+void PathFollow3D::set_cubic_interpolation_enabled(bool p_enabled) {
+	cubic = p_enabled;
 }
 
-bool PathFollow3D::get_cubic_interpolation() const {
+bool PathFollow3D::is_cubic_interpolation_enabled() const {
 	return cubic;
 }
 
-void PathFollow3D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "offset") {
-		float max = 10000;
+void PathFollow3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "offset") {
+		real_t max = 10000;
 		if (path && path->get_curve().is_valid()) {
 			max = path->get_curve()->get_baked_length();
 		}
 
-		property.hint_string = "0," + rtos(max) + ",0.01,or_lesser,or_greater";
+		p_property.hint_string = "0," + rtos(max) + ",0.01,or_less,or_greater";
 	}
 }
 
-TypedArray<String> PathFollow3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray PathFollow3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!Object::cast_to<Path3D>(get_parent())) {
-			warnings.push_back(TTR("PathFollow3D only works when set as a child of a Path3D node."));
+			warnings.push_back(RTR("PathFollow3D only works when set as a child of a Path3D node."));
 		} else {
-			Path3D *path = Object::cast_to<Path3D>(get_parent());
-			if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled() && rotation_mode == ROTATION_ORIENTED) {
-				warnings.push_back(TTR("PathFollow3D's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path3D's Curve resource."));
+			Path3D *p = Object::cast_to<Path3D>(get_parent());
+			if (p->get_curve().is_valid() && !p->get_curve()->is_up_vector_enabled() && rotation_mode == ROTATION_ORIENTED) {
+				warnings.push_back(RTR("PathFollow3D's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path3D's Curve resource."));
 			}
 		}
 	}
@@ -258,9 +334,40 @@ TypedArray<String> PathFollow3D::get_configuration_warnings() const {
 	return warnings;
 }
 
+Transform3D PathFollow3D::correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode) {
+	Transform3D t = p_transform;
+
+	// Modify frame according to rotation mode.
+	if (p_rotation_mode == PathFollow3D::ROTATION_NONE) {
+		// Clear rotation.
+		t.basis = Basis();
+	} else if (p_rotation_mode == PathFollow3D::ROTATION_ORIENTED) {
+		Vector3 tangent = -t.basis.get_column(2);
+
+		// Y-axis points up by default.
+		t.basis = Basis::looking_at(tangent);
+	} else {
+		// Lock some euler axes.
+		Vector3 euler = t.basis.get_euler_normalized(EulerOrder::YXZ);
+		if (p_rotation_mode == PathFollow3D::ROTATION_Y) {
+			// Only Y-axis allowed.
+			euler[0] = 0;
+			euler[2] = 0;
+		} else if (p_rotation_mode == PathFollow3D::ROTATION_XY) {
+			// XY allowed.
+			euler[2] = 0;
+		}
+
+		Basis locked = Basis::from_euler(euler, EulerOrder::YXZ);
+		t.basis = locked;
+	}
+
+	return t;
+}
+
 void PathFollow3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &PathFollow3D::set_offset);
-	ClassDB::bind_method(D_METHOD("get_offset"), &PathFollow3D::get_offset);
+	ClassDB::bind_method(D_METHOD("set_progress", "progress"), &PathFollow3D::set_progress);
+	ClassDB::bind_method(D_METHOD("get_progress"), &PathFollow3D::get_progress);
 
 	ClassDB::bind_method(D_METHOD("set_h_offset", "h_offset"), &PathFollow3D::set_h_offset);
 	ClassDB::bind_method(D_METHOD("get_h_offset"), &PathFollow3D::get_h_offset);
@@ -268,25 +375,35 @@ void PathFollow3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_v_offset", "v_offset"), &PathFollow3D::set_v_offset);
 	ClassDB::bind_method(D_METHOD("get_v_offset"), &PathFollow3D::get_v_offset);
 
-	ClassDB::bind_method(D_METHOD("set_unit_offset", "unit_offset"), &PathFollow3D::set_unit_offset);
-	ClassDB::bind_method(D_METHOD("get_unit_offset"), &PathFollow3D::get_unit_offset);
+	ClassDB::bind_method(D_METHOD("set_progress_ratio", "ratio"), &PathFollow3D::set_progress_ratio);
+	ClassDB::bind_method(D_METHOD("get_progress_ratio"), &PathFollow3D::get_progress_ratio);
 
 	ClassDB::bind_method(D_METHOD("set_rotation_mode", "rotation_mode"), &PathFollow3D::set_rotation_mode);
 	ClassDB::bind_method(D_METHOD("get_rotation_mode"), &PathFollow3D::get_rotation_mode);
 
-	ClassDB::bind_method(D_METHOD("set_cubic_interpolation", "enable"), &PathFollow3D::set_cubic_interpolation);
-	ClassDB::bind_method(D_METHOD("get_cubic_interpolation"), &PathFollow3D::get_cubic_interpolation);
+	ClassDB::bind_method(D_METHOD("set_cubic_interpolation", "enabled"), &PathFollow3D::set_cubic_interpolation_enabled);
+	ClassDB::bind_method(D_METHOD("get_cubic_interpolation"), &PathFollow3D::is_cubic_interpolation_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_use_model_front", "enabled"), &PathFollow3D::set_use_model_front);
+	ClassDB::bind_method(D_METHOD("is_using_model_front"), &PathFollow3D::is_using_model_front);
 
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow3D::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow3D::has_loop);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser,or_greater"), "set_offset", "get_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_offset", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_unit_offset", "get_unit_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset"), "set_h_offset", "get_h_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset"), "set_v_offset", "get_v_offset");
+	ClassDB::bind_method(D_METHOD("set_tilt_enabled", "enabled"), &PathFollow3D::set_tilt_enabled);
+	ClassDB::bind_method(D_METHOD("is_tilt_enabled"), &PathFollow3D::is_tilt_enabled);
+
+	ClassDB::bind_static_method("PathFollow3D", D_METHOD("correct_posture", "transform", "rotation_mode"), &PathFollow3D::correct_posture);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_less,or_greater,suffix:m"), "set_progress", "get_progress");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_less,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM, "None,Y,XY,XYZ,Oriented"), "set_rotation_mode", "get_rotation_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_model_front"), "set_use_model_front", "is_using_model_front");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tilt_enabled"), "set_tilt_enabled", "is_tilt_enabled");
 
 	BIND_ENUM_CONSTANT(ROTATION_NONE);
 	BIND_ENUM_CONSTANT(ROTATION_Y);
@@ -295,63 +412,63 @@ void PathFollow3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROTATION_ORIENTED);
 }
 
-void PathFollow3D::set_offset(float p_offset) {
-	delta_offset = p_offset - offset;
-	offset = p_offset;
+void PathFollow3D::set_progress(real_t p_progress) {
+	ERR_FAIL_COND(!isfinite(p_progress));
+	progress = p_progress;
 
 	if (path) {
 		if (path->get_curve().is_valid()) {
-			float path_length = path->get_curve()->get_baked_length();
+			real_t path_length = path->get_curve()->get_baked_length();
 
-			if (loop) {
-				offset = Math::fposmod(offset, path_length);
-				if (!Math::is_zero_approx(p_offset) && Math::is_zero_approx(offset)) {
-					offset = path_length;
+			if (loop && path_length) {
+				progress = Math::fposmod(progress, path_length);
+				if (!Math::is_zero_approx(p_progress) && Math::is_zero_approx(progress)) {
+					progress = path_length;
 				}
 			} else {
-				offset = CLAMP(offset, 0, path_length);
+				progress = CLAMP(progress, 0, path_length);
 			}
 		}
 
-		_update_transform();
+		update_transform();
 	}
 }
 
-void PathFollow3D::set_h_offset(float p_h_offset) {
+void PathFollow3D::set_h_offset(real_t p_h_offset) {
 	h_offset = p_h_offset;
 	if (path) {
-		_update_transform();
+		update_transform();
 	}
 }
 
-float PathFollow3D::get_h_offset() const {
+real_t PathFollow3D::get_h_offset() const {
 	return h_offset;
 }
 
-void PathFollow3D::set_v_offset(float p_v_offset) {
+void PathFollow3D::set_v_offset(real_t p_v_offset) {
 	v_offset = p_v_offset;
 	if (path) {
-		_update_transform();
+		update_transform();
 	}
 }
 
-float PathFollow3D::get_v_offset() const {
+real_t PathFollow3D::get_v_offset() const {
 	return v_offset;
 }
 
-float PathFollow3D::get_offset() const {
-	return offset;
+real_t PathFollow3D::get_progress() const {
+	return progress;
 }
 
-void PathFollow3D::set_unit_offset(float p_unit_offset) {
+void PathFollow3D::set_progress_ratio(real_t p_ratio) {
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
-		set_offset(p_unit_offset * path->get_curve()->get_baked_length());
+		set_progress(p_ratio * path->get_curve()->get_baked_length());
 	}
 }
 
-float PathFollow3D::get_unit_offset() const {
+real_t PathFollow3D::get_progress_ratio() const {
 	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
-		return get_offset() / path->get_curve()->get_baked_length();
+		return get_progress() / path->get_curve()->get_baked_length();
 	} else {
 		return 0;
 	}
@@ -361,17 +478,36 @@ void PathFollow3D::set_rotation_mode(RotationMode p_rotation_mode) {
 	rotation_mode = p_rotation_mode;
 
 	update_configuration_warnings();
-	_update_transform();
+	update_transform();
 }
 
 PathFollow3D::RotationMode PathFollow3D::get_rotation_mode() const {
 	return rotation_mode;
 }
 
+void PathFollow3D::set_use_model_front(bool p_use_model_front) {
+	use_model_front = p_use_model_front;
+	update_transform();
+}
+
+bool PathFollow3D::is_using_model_front() const {
+	return use_model_front;
+}
+
 void PathFollow3D::set_loop(bool p_loop) {
 	loop = p_loop;
+	update_transform();
 }
 
 bool PathFollow3D::has_loop() const {
 	return loop;
+}
+
+void PathFollow3D::set_tilt_enabled(bool p_enabled) {
+	tilt_enabled = p_enabled;
+	update_transform();
+}
+
+bool PathFollow3D::is_tilt_enabled() const {
+	return tilt_enabled;
 }

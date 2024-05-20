@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRInterfaceExtension" inherits="XRInterface" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for XR interface extensions (plugins).
+	</brief_description>
+	<description>
+		External XR interface plugins should inherit from this class.
+	</description>
+	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="_end_frame" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called if interface is active and queues have been submitted.
+			</description>
+		</method>
+		<method name="_get_anchor_detection_is_enabled" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Return [code]true[/code] if anchor detection is enabled for this interface.
+			</description>
+		</method>
+		<method name="_get_camera_feed_id" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Returns the camera feed ID for the [CameraFeed] registered with the [CameraServer] that should be presented as the background on an AR capable device (if applicable).
+			</description>
+		</method>
+		<method name="_get_camera_transform" qualifiers="virtual">
+			<return type="Transform3D" />
+			<description>
+				Returns the [Transform3D] that positions the [XRCamera3D] in the world.
+			</description>
+		</method>
+		<method name="_get_capabilities" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Returns the capabilities of this interface.
+			</description>
+		</method>
+		<method name="_get_color_texture" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+				Return color texture into which to render (if applicable).
+			</description>
+		</method>
+		<method name="_get_depth_texture" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+				Return depth texture into which to render (if applicable).
+			</description>
+		</method>
+		<method name="_get_name" qualifiers="virtual const">
+			<return type="StringName" />
+			<description>
+				Returns the name of this interface.
+			</description>
+		</method>
+		<method name="_get_play_area" qualifiers="virtual const">
+			<return type="PackedVector3Array" />
+			<description>
+				Returns a [PackedVector3Array] that represents the play areas boundaries (if applicable).
+			</description>
+		</method>
+		<method name="_get_play_area_mode" qualifiers="virtual const">
+			<return type="int" enum="XRInterface.PlayAreaMode" />
+			<description>
+				Returns the play area mode that sets up our play area.
+			</description>
+		</method>
+		<method name="_get_projection_for_view" qualifiers="virtual">
+			<return type="PackedFloat64Array" />
+			<param index="0" name="view" type="int" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="z_near" type="float" />
+			<param index="3" name="z_far" type="float" />
+			<description>
+				Returns the projection matrix for the given view as a [PackedFloat64Array].
+			</description>
+		</method>
+		<method name="_get_render_target_size" qualifiers="virtual">
+			<return type="Vector2" />
+			<description>
+				Returns the size of our render target for this interface, this overrides the size of the [Viewport] marked as the xr viewport.
+			</description>
+		</method>
+		<method name="_get_suggested_pose_names" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Returns a [PackedStringArray] with pose names configured by this interface. Note that user configuration can override this list.
+			</description>
+		</method>
+		<method name="_get_suggested_tracker_names" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a [PackedStringArray] with tracker names configured by this interface. Note that user configuration can override this list.
+			</description>
+		</method>
+		<method name="_get_system_info" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<description>
+				Returns a [Dictionary] with system information related to this interface.
+			</description>
+		</method>
+		<method name="_get_tracking_status" qualifiers="virtual const">
+			<return type="int" enum="XRInterface.TrackingStatus" />
+			<description>
+				Returns a [enum XRInterface.TrackingStatus] specifying the current status of our tracking.
+			</description>
+		</method>
+		<method name="_get_transform_for_view" qualifiers="virtual">
+			<return type="Transform3D" />
+			<param index="0" name="view" type="int" />
+			<param index="1" name="cam_transform" type="Transform3D" />
+			<description>
+				Returns a [Transform3D] for a given view.
+			</description>
+		</method>
+		<method name="_get_velocity_texture" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+				Return velocity texture into which to render (if applicable).
+			</description>
+		</method>
+		<method name="_get_view_count" qualifiers="virtual">
+			<return type="int" />
+			<description>
+				Returns the number of views this interface requires, 1 for mono, 2 for stereoscopic.
+			</description>
+		</method>
+		<method name="_get_vrs_texture" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_initialize" qualifiers="virtual">
+			<return type="bool" />
+			<description>
+				Initializes the interface, returns [code]true[/code] on success.
+			</description>
+		</method>
+		<method name="_is_initialized" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this interface has been initialized.
+			</description>
+		</method>
+		<method name="_post_draw_viewport" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="render_target" type="RID" />
+			<param index="1" name="screen_rect" type="Rect2" />
+			<description>
+				Called after the XR [Viewport] draw logic has completed.
+			</description>
+		</method>
+		<method name="_pre_draw_viewport" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="render_target" type="RID" />
+			<description>
+				Called if this is our primary [XRInterfaceExtension] before we start processing a [Viewport] for every active XR [Viewport], returns [code]true[/code] if that viewport should be rendered. An XR interface may return [code]false[/code] if the user has taken off their headset and we can pause rendering.
+			</description>
+		</method>
+		<method name="_pre_render" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called if this [XRInterfaceExtension] is active before rendering starts. Most XR interfaces will sync tracking at this point in time.
+			</description>
+		</method>
+		<method name="_process" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called if this [XRInterfaceExtension] is active before our physics and game process is called. Most XR interfaces will update its [XRPositionalTracker]s at this point in time.
+			</description>
+		</method>
+		<method name="_set_anchor_detection_is_enabled" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables anchor detection on this interface if supported.
+			</description>
+		</method>
+		<method name="_set_play_area_mode" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
+			<description>
+				Set the play area mode for this interface.
+			</description>
+		</method>
+		<method name="_supports_play_area_mode" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
+			<description>
+				Returns [code]true[/code] if this interface supports this play area mode.
+			</description>
+		</method>
+		<method name="_trigger_haptic_pulse" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="action_name" type="String" />
+			<param index="1" name="tracker_name" type="StringName" />
+			<param index="2" name="frequency" type="float" />
+			<param index="3" name="amplitude" type="float" />
+			<param index="4" name="duration_sec" type="float" />
+			<param index="5" name="delay_sec" type="float" />
+			<description>
+				Triggers a haptic pulse to be emitted on the specified tracker.
+			</description>
+		</method>
+		<method name="_uninitialize" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Uninitialize the interface.
+			</description>
+		</method>
+		<method name="add_blit">
+			<return type="void" />
+			<param index="0" name="render_target" type="RID" />
+			<param index="1" name="src_rect" type="Rect2" />
+			<param index="2" name="dst_rect" type="Rect2i" />
+			<param index="3" name="use_layer" type="bool" />
+			<param index="4" name="layer" type="int" />
+			<param index="5" name="apply_lens_distortion" type="bool" />
+			<param index="6" name="eye_center" type="Vector2" />
+			<param index="7" name="k1" type="float" />
+			<param index="8" name="k2" type="float" />
+			<param index="9" name="upscale" type="float" />
+			<param index="10" name="aspect_ratio" type="float" />
+			<description>
+				Blits our render results to screen optionally applying lens distortion. This can only be called while processing [code]_commit_views[/code].
+			</description>
+		</method>
+		<method name="get_color_texture">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="get_depth_texture">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="get_render_target_texture">
+			<return type="RID" />
+			<param index="0" name="render_target" type="RID" />
+			<description>
+				Returns a valid [RID] for a texture to which we should render the current frame if supported by the interface.
+			</description>
+		</method>
+		<method name="get_velocity_texture">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

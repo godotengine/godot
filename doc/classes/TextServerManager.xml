@@ -1,82 +1,81 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextServerManager" inherits="Object" version="4.0">
+<class name="TextServerManager" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Manager for the font and complex text layout servers.
+		A singleton for managing [TextServer] implementations.
 	</brief_description>
 	<description>
-		[TextServerManager] is the API backend for loading, enumeration and switching [TextServer]s.
-		Note: Switching text server at runtime is possible, but will invalidate all fonts and text buffers. Make sure to unload all controls, fonts, and themes before doing so.
+		[TextServerManager] is the API backend for loading, enumerating, and switching [TextServer]s.
+		[b]Note:[/b] Switching text server at runtime is possible, but will invalidate all fonts and text buffers. Make sure to unload all controls, fonts, and themes before doing so.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="find_interface" qualifiers="const">
-			<return type="TextServer">
-			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
+		<method name="add_interface">
+			<return type="void" />
+			<param index="0" name="interface" type="TextServer" />
 			<description>
-				Finds an interface by its name.
+				Registers a [TextServer] interface.
+			</description>
+		</method>
+		<method name="find_interface" qualifiers="const">
+			<return type="TextServer" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Finds an interface by its [param name].
 			</description>
 		</method>
 		<method name="get_interface" qualifiers="const">
-			<return type="TextServer">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="TextServer" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Returns the interface registered at a given index.
 			</description>
 		</method>
 		<method name="get_interface_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of interfaces currently registered.
 			</description>
 		</method>
-		<method name="get_interface_features" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<description>
-				Returns text server supported features (binary OR).
-			</description>
-		</method>
-		<method name="get_interface_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
-			<description>
-				Returns the interface name registered at a given index.
-			</description>
-		</method>
 		<method name="get_interfaces" qualifiers="const">
-			<return type="Array">
-			</return>
+			<return type="Dictionary[]" />
 			<description>
-				Returns a list of available interfaces the index and name of each interface.
+				Returns a list of available interfaces, with the index and name of each interface.
 			</description>
 		</method>
 		<method name="get_primary_interface" qualifiers="const">
-			<return type="TextServer">
-			</return>
+			<return type="TextServer" />
 			<description>
-				Returns the primary [TextServer] interface.
+				Returns the primary [TextServer] interface currently in use.
+			</description>
+		</method>
+		<method name="remove_interface">
+			<return type="void" />
+			<param index="0" name="interface" type="TextServer" />
+			<description>
+				Removes an interface. All fonts and shaped text caches should be freed before removing an interface.
 			</description>
 		</method>
 		<method name="set_primary_interface">
-			<return type="bool">
-			</return>
-			<argument index="0" name="index" type="int">
-			</argument>
+			<return type="void" />
+			<param index="0" name="index" type="TextServer" />
 			<description>
-				Sets (and initializes it if required) interface registered at a given index as the primary. Invalidates all references to the fonts and text buffers.
+				Sets the primary [TextServer] interface.
 			</description>
 		</method>
 	</methods>
-	<constants>
-	</constants>
+	<signals>
+		<signal name="interface_added">
+			<param index="0" name="interface_name" type="StringName" />
+			<description>
+				Emitted when a new interface has been added.
+			</description>
+		</signal>
+		<signal name="interface_removed">
+			<param index="0" name="interface_name" type="StringName" />
+			<description>
+				Emitted when an interface is removed.
+			</description>
+		</signal>
+	</signals>
 </class>

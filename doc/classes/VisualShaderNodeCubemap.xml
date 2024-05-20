@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeCubemap" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeCubemap" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [Cubemap] sampling node to be used within the visual shader graph.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-	</methods>
 	<members>
 		<member name="cube_map" type="Cubemap" setter="set_cube_map" getter="get_cube_map">
 			The [Cubemap] texture to sample when using [constant SOURCE_TEXTURE] as [member source].
@@ -28,14 +26,20 @@
 		<constant name="SOURCE_PORT" value="1" enum="Source">
 			Use the [Cubemap] sampler reference passed via the [code]samplerCube[/code] port. If this is set to [member source], the [member cube_map] texture is ignored.
 		</constant>
+		<constant name="SOURCE_MAX" value="2" enum="Source">
+			Represents the size of the [enum Source] enum.
+		</constant>
 		<constant name="TYPE_DATA" value="0" enum="TextureType">
 			No hints are added to the uniform declaration.
 		</constant>
 		<constant name="TYPE_COLOR" value="1" enum="TextureType">
-			Adds [code]hint_albedo[/code] as hint to the uniform declaration for proper sRGB to linear conversion.
+			Adds [code]source_color[/code] as hint to the uniform declaration for proper sRGB to linear conversion.
 		</constant>
 		<constant name="TYPE_NORMAL_MAP" value="2" enum="TextureType">
 			Adds [code]hint_normal[/code] as hint to the uniform declaration, which internally converts the texture for proper usage as normal map.
+		</constant>
+		<constant name="TYPE_MAX" value="3" enum="TextureType">
+			Represents the size of the [enum TextureType] enum.
 		</constant>
 	</constants>
 </class>

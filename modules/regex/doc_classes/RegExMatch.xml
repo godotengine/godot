@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RegExMatch" inherits="RefCounted" version="4.0">
+<class name="RegExMatch" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Contains the results of a [RegEx] search.
 	</brief_description>
@@ -10,37 +10,30 @@
 	</tutorials>
 	<methods>
 		<method name="get_end" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="Variant" default="0">
-			</argument>
+			<return type="int" />
+			<param index="0" name="name" type="Variant" default="0" />
 			<description>
 				Returns the end position of the match within the source string. The end position of capturing groups can be retrieved by providing its group number as an integer or its string name (if it's a named group). The default value of 0 refers to the whole pattern.
 				Returns -1 if the group did not match or doesn't exist.
 			</description>
 		</method>
 		<method name="get_group_count" qualifiers="const">
-			<return type="int">
-			</return>
+			<return type="int" />
 			<description>
 				Returns the number of capturing groups.
 			</description>
 		</method>
 		<method name="get_start" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="name" type="Variant" default="0">
-			</argument>
+			<return type="int" />
+			<param index="0" name="name" type="Variant" default="0" />
 			<description>
 				Returns the starting position of the match within the source string. The starting position of capturing groups can be retrieved by providing its group number as an integer or its string name (if it's a named group). The default value of 0 refers to the whole pattern.
 				Returns -1 if the group did not match or doesn't exist.
 			</description>
 		</method>
 		<method name="get_string" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="name" type="Variant" default="0">
-			</argument>
+			<return type="String" />
+			<param index="0" name="name" type="Variant" default="0" />
 			<description>
 				Returns the substring of the match from the source string. Capturing groups can be retrieved by providing its group number as an integer or its string name (if it's a named group). The default value of 0 refers to the whole pattern.
 				Returns an empty string if the group did not match or doesn't exist.
@@ -51,13 +44,11 @@
 		<member name="names" type="Dictionary" setter="" getter="get_names" default="{}">
 			A dictionary of named groups and its corresponding group number. Only groups that were matched are included. If multiple groups have the same name, that name would refer to the first matching one.
 		</member>
-		<member name="strings" type="Array" setter="" getter="get_strings" default="[]">
+		<member name="strings" type="PackedStringArray" setter="" getter="get_strings" default="PackedStringArray()">
 			An [Array] of the match and its capturing groups.
 		</member>
 		<member name="subject" type="String" setter="" getter="get_subject" default="&quot;&quot;">
 			The source string used with the search pattern to find this matching result.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

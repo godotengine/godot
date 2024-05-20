@@ -23,17 +23,23 @@ namespace embree
 
       __forceinline void finalize() {}
 
-      __forceinline Vec2f uv(const size_t i) const
-      {
+      __forceinline Vec2f uv(const size_t i) const {
         return Vec2f(vu[i], vv[i]);
       }
-      __forceinline float t(const size_t i) const
-      {
+      __forceinline Vec2vf<M> uv() const {
+        return Vec2vf<M>(vu, vv);
+      }
+      __forceinline float t(const size_t i) const {
         return vt[i];
       }
-      __forceinline Vec3fa Ng(const size_t i) const
-      {
+      __forceinline vfloat<M> t() const {
+        return vt;
+      }
+      __forceinline Vec3fa Ng(const size_t i) const {
         return Vec3fa(vNg.x[i], vNg.y[i], vNg.z[i]);
+      }
+      __forceinline Vec3vf<M> Ng() const { 
+        return vNg;
       }
 
      public:
@@ -43,16 +49,45 @@ namespace embree
       Vec3vf<M> vNg;
     };
 
+    template<>
+    struct DiscIntersectorHitM<1>
+    {
+      __forceinline DiscIntersectorHitM() {}
+
+      __forceinline DiscIntersectorHitM(const float& u, const float& v, const float& t, const Vec3fa& Ng)
+          : vu(u), vv(v), vt(t), vNg(Ng) {}
+
+      __forceinline void finalize() {}
+
+      __forceinline Vec2f uv() const {
+        return Vec2f(vu, vv);
+      }
+
+      __forceinline float t() const {
+        return vt;
+      }
+
+      __forceinline Vec3fa Ng() const { 
+        return vNg;
+      }
+
+     public:
+      float vu;
+      float vv;
+      float vt;
+      Vec3fa vNg;
+    };
+
     template<int M>
     struct DiscIntersector1
     {
       typedef CurvePrecalculations1 Precalculations;
 
-      template<typename Epilog>
+      template<typename Ray, typename Epilog>
       static __forceinline bool intersect(
           const vbool<M>& valid_i,
           Ray& ray,
-          IntersectContext* context,
+          RayQueryContext* context,
           const Points* geom,
           const Precalculations& pre,
           const Vec4vf<M>& v0i,
@@ -68,15 +103,15 @@ namespace embree
         const Vec3vf<M> center = v0.xyz();
         const vfloat<M> radius = v0.w;
 
+        /* compute ray distance projC0 to hit point with ray oriented plane */
         const Vec3vf<M> c0     = center - ray_org;
         const vfloat<M> projC0 = dot(c0, ray_dir) * rd2;
 
         valid &= (vfloat<M>(ray.tnear()) <= projC0) & (projC0 <= vfloat<M>(ray.tfar));
-        if (EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR != 0.0f)
-          valid &= projC0 > float(EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR) * radius * pre.depth_scale;  // ignore self intersections
         if (unlikely(none(valid)))
           return false;
-        
+
+        /* check if hit point lies inside disc */
         const Vec3vf<M> perp   = c0 - projC0 * ray_dir;
         const vfloat<M> l2     = dot(perp, perp);
         const vfloat<M> r2     = radius * radius;
@@ -84,14 +119,23 @@ namespace embree
         if (unlikely(none(valid)))
           return false;
 
+        /* We reject hits where the ray origin lies inside the ray
+         * oriented disc to avoid self intersections. */
+#if defined(EMBREE_DISC_POINT_SELF_INTERSECTION_AVOIDANCE)
+        const vfloat<M> m2 = dot(c0, c0);
+        valid &= (m2 > r2);
+        if (unlikely(none(valid)))
+          return false;
+#endif
+        
         DiscIntersectorHitM<M> hit(zero, zero, projC0, -ray_dir);
         return epilog(valid, hit);
       }
 
-      template<typename Epilog>
+      template<typename Ray, typename Epilog>
       static __forceinline bool intersect(const vbool<M>& valid_i,
                                           Ray& ray,
-                                          IntersectContext* context,
+                                          RayQueryContext* context,
                                           const Points* geom,
                                           const Precalculations& pre,
                                           const Vec4vf<M>& v0i,
@@ -136,7 +180,7 @@ namespace embree
       static __forceinline bool intersect(const vbool<M>& valid_i,
                                           RayK<K>& ray,
                                           size_t k,
-                                          IntersectContext* context,
+                                          RayQueryContext* context,
                                           const Points* geom,
                                           const Precalculations& pre,
                                           const Vec4vf<M>& v0i,
@@ -152,21 +196,30 @@ namespace embree
         const Vec3vf<M> center = v0.xyz();
         const vfloat<M> radius = v0.w;
 
+        /* compute ray distance projC0 to hit point with ray oriented plane */
         const Vec3vf<M> c0     = center - ray_org;
         const vfloat<M> projC0 = dot(c0, ray_dir) * rd2;
 
         valid &= (vfloat<M>(ray.tnear()[k]) <= projC0) & (projC0 <= vfloat<M>(ray.tfar[k]));
-        if (EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR != 0.0f)
-          valid &= projC0 > float(EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR) * radius * pre.depth_scale[k];  // ignore self intersections
         if (unlikely(none(valid)))
           return false;
 
+        /* check if hit point lies inside disc */
         const Vec3vf<M> perp   = c0 - projC0 * ray_dir;
         const vfloat<M> l2     = dot(perp, perp);
         const vfloat<M> r2     = radius * radius;
         valid &= (l2 <= r2);
         if (unlikely(none(valid)))
           return false;
+
+        /* We reject hits where the ray origin lies inside the ray
+         * oriented disc to avoid self intersections. */
+#if defined(EMBREE_DISC_POINT_SELF_INTERSECTION_AVOIDANCE)
+        const vfloat<M> m2 = dot(c0, c0);
+        valid &= (m2 > r2);
+        if (unlikely(none(valid)))
+          return false;
+#endif
 
         DiscIntersectorHitM<M> hit(zero, zero, projC0, -ray_dir);
         return epilog(valid, hit);
@@ -176,7 +229,7 @@ namespace embree
       static __forceinline bool intersect(const vbool<M>& valid_i,
                                           RayK<K>& ray,
                                           size_t k,
-                                          IntersectContext* context,
+                                          RayQueryContext* context,
                                           const Points* geom,
                                           const Precalculations& pre,
                                           const Vec4vf<M>& v0i,

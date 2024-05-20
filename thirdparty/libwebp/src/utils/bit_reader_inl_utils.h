@@ -55,7 +55,7 @@ void VP8LoadFinalBytes(VP8BitReader* const br);
 
 // makes sure br->value_ has at least BITS bits worth of data
 static WEBP_UBSAN_IGNORE_UNDEF WEBP_INLINE
-void VP8LoadNewBytes(VP8BitReader* const br) {
+void VP8LoadNewBytes(VP8BitReader* WEBP_RESTRICT const br) {
   assert(br != NULL && br->buf_ != NULL);
   // Read 'BITS' bits at a time if possible.
   if (br->buf_ < br->buf_max_) {
@@ -104,7 +104,7 @@ void VP8LoadNewBytes(VP8BitReader* const br) {
 }
 
 // Read a bit with proba 'prob'. Speed-critical function!
-static WEBP_INLINE int VP8GetBit(VP8BitReader* const br,
+static WEBP_INLINE int VP8GetBit(VP8BitReader* WEBP_RESTRICT const br,
                                  int prob, const char label[]) {
   // Don't move this declaration! It makes a big speed difference to store
   // 'range' *before* calling VP8LoadNewBytes(), even if this function doesn't
@@ -137,7 +137,8 @@ static WEBP_INLINE int VP8GetBit(VP8BitReader* const br,
 
 // simplified version of VP8GetBit() for prob=0x80 (note shift is always 1 here)
 static WEBP_UBSAN_IGNORE_UNSIGNED_OVERFLOW WEBP_INLINE
-int VP8GetSigned(VP8BitReader* const br, int v, const char label[]) {
+int VP8GetSigned(VP8BitReader* WEBP_RESTRICT const br, int v,
+                 const char label[]) {
   if (br->bits_ < 0) {
     VP8LoadNewBytes(br);
   }
@@ -147,15 +148,15 @@ int VP8GetSigned(VP8BitReader* const br, int v, const char label[]) {
     const range_t value = (range_t)(br->value_ >> pos);
     const int32_t mask = (int32_t)(split - value) >> 31;  // -1 or 0
     br->bits_ -= 1;
-    br->range_ += mask;
+    br->range_ += (range_t)mask;
     br->range_ |= 1;
-    br->value_ -= (bit_t)((split + 1) & mask) << pos;
+    br->value_ -= (bit_t)((split + 1) & (uint32_t)mask) << pos;
     BT_TRACK(br);
     return (v ^ mask) - mask;
   }
 }
 
-static WEBP_INLINE int VP8GetBitAlt(VP8BitReader* const br,
+static WEBP_INLINE int VP8GetBitAlt(VP8BitReader* WEBP_RESTRICT const br,
                                     int prob, const char label[]) {
   // Don't move this declaration! It makes a big speed difference to store
   // 'range' *before* calling VP8LoadNewBytes(), even if this function doesn't

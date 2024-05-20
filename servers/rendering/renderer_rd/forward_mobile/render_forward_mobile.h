@@ -1,76 +1,87 @@
-/*************************************************************************/
-/*  render_forward_mobile.h                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  render_forward_mobile.h                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
-#ifndef RENDERING_SERVER_SCENE_RENDER_FORWARD_MOBILE_H
-#define RENDERING_SERVER_SCENE_RENDER_FORWARD_MOBILE_H
+#ifndef RENDER_FORWARD_MOBILE_H
+#define RENDER_FORWARD_MOBILE_H
 
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/renderer_storage_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/utilities.h"
+
+#define RB_SCOPE_MOBILE SNAME("mobile")
 
 namespace RendererSceneRenderImplementation {
 
 class RenderForwardMobile : public RendererSceneRenderRD {
 	friend SceneShaderForwardMobile;
 
-	struct ForwardIDAllocator {
-		LocalVector<bool> allocations;
-		LocalVector<uint8_t> map;
-	};
-
-	ForwardIDAllocator forward_id_allocators[FORWARD_ID_MAX];
-
-	virtual ForwardID _allocate_forward_id(ForwardIDType p_type) override;
-	virtual void _free_forward_id(ForwardIDType p_type, ForwardID p_id) override;
-	virtual void _map_forward_id(ForwardIDType p_type, ForwardID p_id, uint32_t p_index) override;
-	virtual bool _uses_forward_ids() const override { return true; }
-
 protected:
+	struct GeometryInstanceSurfaceDataCache;
+
+private:
+	static RenderForwardMobile *singleton;
+
 	/* Scene Shader */
 
 	enum {
 		SCENE_UNIFORM_SET = 0,
 		RENDER_PASS_UNIFORM_SET = 1,
 		TRANSFORMS_UNIFORM_SET = 2,
-		MATERIAL_UNIFORM_SET = 3
+		MATERIAL_UNIFORM_SET = 3,
 	};
 
 	enum {
-		SPEC_CONSTANT_SOFT_SHADOW_SAMPLES = 6,
-		SPEC_CONSTANT_PENUMBRA_SHADOW_SAMPLES = 7,
-		SPEC_CONSTANT_DIRECTIONAL_SOFT_SHADOW_SAMPLES = 8,
-		SPEC_CONSTANT_DIRECTIONAL_PENUMBRA_SHADOW_SAMPLES = 9,
-		SPEC_CONSTANT_DECAL_FILTER = 10,
-		SPEC_CONSTANT_PROJECTOR_FILTER = 11,
+
+		SPEC_CONSTANT_USING_PROJECTOR = 0,
+		SPEC_CONSTANT_USING_SOFT_SHADOWS = 1,
+		SPEC_CONSTANT_USING_DIRECTIONAL_SOFT_SHADOWS = 2,
+
+		SPEC_CONSTANT_SOFT_SHADOW_SAMPLES = 3,
+		SPEC_CONSTANT_PENUMBRA_SHADOW_SAMPLES = 4,
+		SPEC_CONSTANT_DIRECTIONAL_SOFT_SHADOW_SAMPLES = 5,
+		SPEC_CONSTANT_DIRECTIONAL_PENUMBRA_SHADOW_SAMPLES = 6,
+
+		SPEC_CONSTANT_DECAL_USE_MIPMAPS = 7,
+		SPEC_CONSTANT_PROJECTOR_USE_MIPMAPS = 8,
+
+		SPEC_CONSTANT_DISABLE_OMNI_LIGHTS = 9,
+		SPEC_CONSTANT_DISABLE_SPOT_LIGHTS = 10,
+		SPEC_CONSTANT_DISABLE_REFLECTION_PROBES = 11,
+		SPEC_CONSTANT_DISABLE_DIRECTIONAL_LIGHTS = 12,
+
+		SPEC_CONSTANT_DISABLE_DECALS = 13,
+		SPEC_CONSTANT_DISABLE_FOG = 14,
+		SPEC_CONSTANT_USE_DEPTH_FOG = 16,
+
 	};
 
 	enum {
@@ -92,29 +103,25 @@ protected:
 
 	/* Render Buffer */
 
-	struct RenderBufferDataForwardMobile : public RenderBufferData {
-		RID color;
-		RID depth;
-		// RID normal_roughness_buffer;
+	class RenderBufferDataForwardMobile : public RenderBufferCustomDataRD {
+		GDCLASS(RenderBufferDataForwardMobile, RenderBufferCustomDataRD);
 
-		RS::ViewportMSAA msaa;
-		RD::TextureSamples texture_samples;
+	public:
+		enum FramebufferConfigType {
+			FB_CONFIG_RENDER_PASS, // Single pass framebuffer for normal rendering.
+			FB_CONFIG_RENDER_AND_POST_PASS, // Two subpasses, one for normal rendering, one for post processing.
+			FB_CONFIG_MAX
+		};
 
-		RID color_msaa;
-		RID depth_msaa;
-		// RID normal_roughness_buffer_msaa;
+		RID get_color_fbs(FramebufferConfigType p_config_type);
+		virtual void free_data() override;
+		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override;
 
-		RID color_fb;
-		int width, height;
-		uint32_t view_count;
-
-		void clear();
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, uint32_t p_view_count);
-
-		~RenderBufferDataForwardMobile();
+	private:
+		RenderSceneBuffersRD *render_buffers = nullptr;
 	};
 
-	virtual RenderBufferData *_create_render_buffer_data() override;
+	virtual void setup_render_buffer_data(Ref<RenderSceneBuffersRD> p_render_buffers) override;
 
 	/* Rendering */
 
@@ -131,8 +138,6 @@ protected:
 		// PASS_MODE_SDF,
 	};
 
-	struct GeometryInstanceForwardMobile;
-	struct GeometryInstanceSurfaceDataCache;
 	struct RenderElementInfo;
 
 	struct RenderListParameters {
@@ -146,14 +151,14 @@ protected:
 		RID render_pass_uniform_set;
 		bool force_wireframe = false;
 		Vector2 uv_offset;
-		Plane lod_plane;
+		uint32_t spec_constant_base_flags = 0;
 		float lod_distance_multiplier = 0.0;
-		float screen_lod_threshold = 0.0;
+		float screen_mesh_lod_threshold = 0.0;
 		RD::FramebufferFormatID framebuffer_format = 0;
 		uint32_t element_offset = 0;
-		uint32_t barrier = RD::BARRIER_MASK_ALL;
+		uint32_t subpass = 0;
 
-		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, RID p_render_pass_uniform_set, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), const Plane &p_lod_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0, uint32_t p_barrier = RD::BARRIER_MASK_ALL) {
+		RenderListParameters(GeometryInstanceSurfaceDataCache **p_elements, RenderElementInfo *p_element_info, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, RID p_render_pass_uniform_set, uint32_t p_spec_constant_base_flags = 0, bool p_force_wireframe = false, const Vector2 &p_uv_offset = Vector2(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, uint32_t p_view_count = 1, uint32_t p_element_offset = 0) {
 			elements = p_elements;
 			element_info = p_element_info;
 			element_count = p_element_count;
@@ -164,44 +169,36 @@ protected:
 			render_pass_uniform_set = p_render_pass_uniform_set;
 			force_wireframe = p_force_wireframe;
 			uv_offset = p_uv_offset;
-			lod_plane = p_lod_plane;
 			lod_distance_multiplier = p_lod_distance_multiplier;
-			screen_lod_threshold = p_screen_lod_threshold;
+			screen_mesh_lod_threshold = p_screen_mesh_lod_threshold;
 			element_offset = p_element_offset;
-			barrier = p_barrier;
+			spec_constant_base_flags = p_spec_constant_base_flags;
 		}
 	};
 
-	virtual RD::DataFormat _render_buffers_get_color_format() override;
-	virtual bool _render_buffers_can_be_storage() override;
+	/* Render shadows */
 
-	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, bool p_use_directional_shadow_atlas = false, int p_index = 0);
-	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) override;
+	void _render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<RenderGeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_mesh_lod_threshold = 0.0, bool p_open_pass = true, bool p_close_pass = true, bool p_clear_region = true, RenderingMethod::RenderInfo *p_render_info = nullptr, const Transform3D &p_main_cam_transform = Transform3D());
+	void _render_shadow_begin();
+	void _render_shadow_append(RID p_framebuffer, const PagedArray<RenderGeometryInstance *> &p_instances, const Projection &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true, RenderingMethod::RenderInfo *p_render_info = nullptr, const Transform3D &p_main_cam_transform = Transform3D());
+	void _render_shadow_process();
+	void _render_shadow_end();
 
-	virtual void _render_shadow_begin() override;
-	virtual void _render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true, RendererScene::RenderInfo *p_render_info = nullptr) override;
-	virtual void _render_shadow_process() override;
-	virtual void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL) override;
+	/* Render Scene */
 
-	virtual void _render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
-	virtual void _render_uv2(const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
-	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) override;
-	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) override;
+	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, const RendererRD::MaterialStorage::Samplers &p_samplers, bool p_use_directional_shadow_atlas = false, int p_index = 0);
+	void _pre_opaque_render(RenderDataRD *p_render_data);
 
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
 
-	virtual void _base_uniforms_changed() override;
 	void _update_render_base_uniform_set();
-	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) override;
 
-	void _fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_append = false);
+	void _update_instance_data_buffer(RenderListType p_render_list);
 	void _fill_instance_data(RenderListType p_render_list, uint32_t p_offset = 0, int32_t p_max_elements = -1, bool p_update_buffer = true);
-	// void _update_instance_data_buffer(RenderListType p_render_list);
-
-	static RenderForwardMobile *singleton;
+	void _fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_append = false);
 
 	void _setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false, int p_index = 0);
-	void _setup_lightmaps(const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform);
+	void _setup_lightmaps(const RenderDataRD *p_render_data, const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform);
 
 	RID render_base_uniform_set;
 	LocalVector<RID> render_pass_uniform_sets;
@@ -210,6 +207,8 @@ protected:
 
 	struct LightmapData {
 		float normal_xform[12];
+		float pad[3];
+		float exposure_normalization;
 	};
 
 	struct LightmapCaptureData {
@@ -219,76 +218,33 @@ protected:
 	/* Scene state */
 
 	struct SceneState {
-		// This struct is loaded into Set 1 - Binding 0, populated at start of rendering a frame, must match with shader code
-		struct UBO {
-			float projection_matrix[16];
-			float inv_projection_matrix[16];
-			float camera_matrix[16];
-			float inv_camera_matrix[16];
+		LocalVector<RID> uniform_buffers;
 
-			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
-			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
-
-			float viewport_size[2];
-			float screen_pixel_size[2];
-
-			float directional_penumbra_shadow_kernel[128]; //32 vec4s
-			float directional_soft_shadow_kernel[128];
-			float penumbra_shadow_kernel[128];
-			float soft_shadow_kernel[128];
-
-			float ambient_light_color_energy[4];
-
-			float ambient_color_sky_mix;
-			uint32_t use_ambient_light;
-			uint32_t use_ambient_cubemap;
-			uint32_t use_reflection_cubemap;
-
-			float radiance_inverse_xform[12];
-
-			float shadow_atlas_pixel_size[2];
-			float directional_shadow_pixel_size[2];
-
-			uint32_t directional_light_count;
-			float dual_paraboloid_side;
-			float z_far;
-			float z_near;
-
-			uint32_t ssao_enabled;
-			float ssao_light_affect;
-			float ssao_ao_affect;
-			uint32_t roughness_limiter_enabled;
-
-			float roughness_limiter_amount;
-			float roughness_limiter_limit;
-			uint32_t roughness_limiter_pad[2];
-
-			float ao_color[4];
-
-			// Fog
-			uint32_t fog_enabled;
-			float fog_density;
-			float fog_height;
-			float fog_height_density;
-
-			float fog_light_color[3];
-			float fog_sun_scatter;
-
-			float fog_aerial_perspective;
-			uint32_t material_uv2_mode;
-
-			float time;
-			float reflection_multiplier;
-
-			uint32_t pancake_shadows;
-			uint32_t pad1;
-			uint32_t pad2;
-			uint32_t pad3;
+		struct PushConstant {
+			float uv_offset[2];
+			uint32_t base_index;
+			uint32_t pad;
 		};
 
-		UBO ubo;
+		struct InstanceData {
+			float transform[16];
+			uint32_t flags;
+			uint32_t instance_uniforms_ofs; // Base offset in global buffer for instance variables.
+			uint32_t gi_offset; // GI information when using lightmapping (VCT or lightmap index).
+			uint32_t layer_mask = 1;
+			float lightmap_uv_scale[4]; // Doubles as uv_offset when needed.
+			uint32_t reflection_probes[2]; // Packed reflection probes.
+			uint32_t omni_lights[2]; // Packed omni lights.
+			uint32_t spot_lights[2]; // Packed spot lights.
+			uint32_t decals[2]; // Packed spot lights.
+			float compressed_aabb_position[4];
+			float compressed_aabb_size[4];
+			float uv_scale[4];
+		};
 
-		LocalVector<RID> uniform_buffers;
+		RID instance_buffer[RENDER_LIST_MAX];
+		uint32_t instance_buffer_size[RENDER_LIST_MAX] = { 0, 0, 0 };
+		LocalVector<InstanceData> instance_data[RENDER_LIST_MAX];
 
 		// !BAS! We need to change lightmaps, we're not going to do this with a buffer but pushing the used lightmap in
 		LightmapData lightmaps[MAX_LIGHTMAPS];
@@ -298,7 +254,7 @@ protected:
 		uint32_t max_lightmaps;
 		RID lightmap_buffer;
 
-		LightmapCaptureData *lightmap_captures;
+		LightmapCaptureData *lightmap_captures = nullptr;
 		uint32_t max_lightmap_captures;
 		RID lightmap_capture_buffer;
 
@@ -316,11 +272,10 @@ protected:
 			RID rp_uniform_set;
 			Plane camera_plane;
 			float lod_distance_multiplier;
-			float screen_lod_threshold;
+			float screen_mesh_lod_threshold;
 
 			RID framebuffer;
 			RD::InitialAction initial_depth_action;
-			RD::FinalAction final_depth_action;
 			Rect2i rect;
 		};
 
@@ -394,28 +349,44 @@ protected:
 
 	template <PassMode p_pass_mode>
 	_FORCE_INLINE_ void _render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element);
-
 	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element);
-
-	LocalVector<RD::DrawListID> thread_draw_lists;
-	void _render_list_thread_function(uint32_t p_thread, RenderListParameters *p_params);
-	void _render_list_with_threads(RenderListParameters *p_params, RID p_framebuffer, RD::InitialAction p_initial_color_action, RD::FinalAction p_final_color_action, RD::InitialAction p_initial_depth_action, RD::FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2(), const Vector<RID> &p_storage_textures = Vector<RID>());
-
-	uint32_t render_list_thread_threshold = 500;
+	void _render_list_with_draw_list(RenderListParameters *p_params, RID p_framebuffer, RD::InitialAction p_initial_color_action, RD::FinalAction p_final_color_action, RD::InitialAction p_initial_depth_action, RD::FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 0.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
 
 	RenderList render_list[RENDER_LIST_MAX];
 
+protected:
+	/* setup */
+	virtual void _update_shader_quality_settings() override;
+
+	virtual float _render_buffers_get_luminance_multiplier() override;
+	virtual RD::DataFormat _render_buffers_get_color_format() override;
+	virtual bool _render_buffers_can_be_storage() override;
+
+	virtual RID _render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
+	virtual RID _render_buffers_get_velocity_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
+
+	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override{};
+	virtual void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override{};
+	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override{};
+
+	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) override{};
+	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) override{};
+
 	/* Geometry instance */
 
-	// check which ones of these apply, probably all except GI and SDFGI
+	class GeometryInstanceForwardMobile;
+
+	// When changing any of these enums, remember to change the corresponding enums in the shader files as well.
 	enum {
-		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 5,
-		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 6,
-		INSTANCE_DATA_FLAG_USE_SDFGI = 1 << 7,
-		INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE = 1 << 8,
-		INSTANCE_DATA_FLAG_USE_LIGHTMAP = 1 << 9,
-		INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP = 1 << 10,
-		INSTANCE_DATA_FLAG_USE_VOXEL_GI = 1 << 11,
+		INSTANCE_DATA_FLAGS_DYNAMIC = 1 << 3,
+		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 4,
+		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 5,
+		INSTANCE_DATA_FLAG_USE_SDFGI = 1 << 6,
+		INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE = 1 << 7,
+		INSTANCE_DATA_FLAG_USE_LIGHTMAP = 1 << 8,
+		INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP = 1 << 9,
+		INSTANCE_DATA_FLAG_USE_VOXEL_GI = 1 << 10,
+		INSTANCE_DATA_FLAG_PARTICLES = 1 << 11,
 		INSTANCE_DATA_FLAG_MULTIMESH = 1 << 12,
 		INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D = 1 << 13,
 		INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR = 1 << 14,
@@ -475,6 +446,7 @@ protected:
 		void *surface = nullptr;
 		RID material_uniform_set;
 		SceneShaderForwardMobile::ShaderData *shader = nullptr;
+		SceneShaderForwardMobile::MaterialData *material = nullptr;
 
 		void *surface_shadow = nullptr;
 		RID material_uniform_set_shadow;
@@ -484,100 +456,107 @@ protected:
 		GeometryInstanceForwardMobile *owner = nullptr;
 	};
 
-	// !BAS! GeometryInstanceForwardClustered and GeometryInstanceForwardMobile will likely have a lot of overlap
-	// may need to think about making this its own class like GeometryInstanceRD?
-
-	struct GeometryInstanceForwardMobile : public GeometryInstance {
-		// setup
-		uint32_t base_flags = 0;
-		uint32_t flags_cache = 0;
-
-		// this structure maps to our push constant in our shader and is populated right before our draw call
-		struct PushConstant {
-			float transform[16];
-			uint32_t flags;
-			uint32_t instance_uniforms_ofs; //base offset in global buffer for instance variables
-			uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap index)
-			uint32_t layer_mask = 1;
-			float lightmap_uv_scale[4]; // doubles as uv_offset when needed
-			uint32_t reflection_probes[2]; // packed reflection probes
-			uint32_t omni_lights[2]; // packed omni lights
-			uint32_t spot_lights[2]; // packed spot lights
-			uint32_t decals[2]; // packed spot lights
-		};
-
-		// PushConstant push_constant; // we populate this from our instance data
-
+	class GeometryInstanceForwardMobile : public RenderGeometryInstanceBase {
+	public:
 		//used during rendering
-		uint32_t layer_mask = 1;
 		RID transforms_uniform_set;
-		float depth = 0;
-		bool mirror = false;
-		Transform3D transform;
-		bool store_transform_cache = true; // if true we copy our transform into our PushConstant, if false we use our transforms UBO and clear our PushConstants transform
-		bool non_uniform_scale = false;
-		AABB transformed_aabb; //needed for LOD
-		float lod_bias = 0.0;
-		float lod_model_scale = 1.0;
-		int32_t shader_parameters_offset = -1;
+		bool use_projector = false;
+		bool use_soft_shadow = false;
+		bool store_transform_cache = true; // If true we copy our transform into our per-draw buffer, if false we use our transforms UBO and clear our per-draw transform.
 		uint32_t instance_count = 0;
 		uint32_t trail_steps = 1;
-		RID mesh_instance;
 
 		// lightmap
 		uint32_t gi_offset_cache = 0; // !BAS! Should rename this to lightmap_offset_cache, in forward clustered this was shared between gi and lightmap
-		uint32_t lightmap_slice_index;
-		Rect2 lightmap_uv_scale;
 		RID lightmap_instance;
+		Rect2 lightmap_uv_scale;
+		uint32_t lightmap_slice_index;
 		GeometryInstanceLightmapSH *lightmap_sh = nullptr;
 
 		// culled light info
 		uint32_t reflection_probe_count = 0;
-		ForwardID reflection_probes[MAX_RDL_CULL];
+		RendererRD::ForwardID reflection_probes[MAX_RDL_CULL];
 		uint32_t omni_light_count = 0;
-		ForwardID omni_lights[MAX_RDL_CULL];
+		RendererRD::ForwardID omni_lights[MAX_RDL_CULL];
 		uint32_t spot_light_count = 0;
-		ForwardID spot_lights[MAX_RDL_CULL];
+		RendererRD::ForwardID spot_lights[MAX_RDL_CULL];
 		uint32_t decals_count = 0;
-		ForwardID decals[MAX_RDL_CULL];
+		RendererRD::ForwardID decals[MAX_RDL_CULL];
 
 		GeometryInstanceSurfaceDataCache *surface_caches = nullptr;
 
 		// do we use this?
 		SelfList<GeometryInstanceForwardMobile> dirty_list_element;
 
-		struct Data {
-			//data used less often goes into regular heap
-			RID base;
-			RS::InstanceType base_type;
-
-			RID skeleton;
-			Vector<RID> surface_materials;
-			RID material_override;
-			AABB aabb;
-
-			bool use_baked_light = false;
-			bool cast_double_sided_shadows = false;
-			// bool mirror = false; // !BAS! Does not seem used, we already have this in the main struct
-
-			bool dirty_dependencies = false;
-
-			RendererStorage::DependencyTracker dependency_tracker;
-		};
-
-		Data *data = nullptr;
-
 		GeometryInstanceForwardMobile() :
 				dirty_list_element(this) {}
+
+		virtual void _mark_dirty() override;
+
+		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
+		virtual void set_lightmap_capture(const Color *p_sh9) override;
+
+		virtual void pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) override;
+		virtual void pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override;
+		virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) override;
+		virtual void pair_voxel_gi_instances(const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override {}
+
+		virtual void set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) override;
 	};
 
-	_FORCE_INLINE_ void _fill_push_constant_instance_indices(GeometryInstanceForwardMobile::PushConstant *p_push_constant, const GeometryInstanceForwardMobile *p_instance);
+	/* Rendering */
 
-	void _update_shader_quality_settings() override;
+	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) override;
+
+	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) override;
+	virtual void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
+	virtual void _render_sdfgi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) override;
+	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) override;
+
+	/* Forward ID */
+
+	class ForwardIDStorageMobile : public RendererRD::ForwardIDStorage {
+	public:
+		struct ForwardIDAllocator {
+			LocalVector<bool> allocations;
+			LocalVector<uint8_t> map;
+			LocalVector<uint64_t> last_pass;
+		};
+
+		ForwardIDAllocator forward_id_allocators[RendererRD::FORWARD_ID_MAX];
+
+	public:
+		virtual RendererRD::ForwardID allocate_forward_id(RendererRD::ForwardIDType p_type) override;
+		virtual void free_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id) override;
+		virtual void map_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id, uint32_t p_index, uint64_t p_last_pass) override;
+		virtual bool uses_forward_ids() const override { return true; }
+	};
+
+	ForwardIDStorageMobile *forward_id_storage_mobile = nullptr;
+
+	void fill_push_constant_instance_indices(SceneState::InstanceData *p_instance_data, const GeometryInstanceForwardMobile *p_instance);
+
+	virtual RendererRD::ForwardIDStorage *create_forward_id_storage() override {
+		forward_id_storage_mobile = memnew(ForwardIDStorageMobile);
+		return forward_id_storage_mobile;
+	}
 
 public:
-	static void _geometry_instance_dependency_changed(RendererStorage::DependencyChangedNotification p_notification, RendererStorage::DependencyTracker *p_tracker);
-	static void _geometry_instance_dependency_deleted(const RID &p_dependency, RendererStorage::DependencyTracker *p_tracker);
+	static RenderForwardMobile *get_singleton() { return singleton; }
+
+	virtual RID reflection_probe_create_framebuffer(RID p_color, RID p_depth) override;
+
+	/* SDFGI UPDATE */
+
+	virtual void sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) override {}
+	virtual int sdfgi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const override { return 0; }
+	virtual AABB sdfgi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override { return AABB(); }
+	virtual uint32_t sdfgi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override { return 0; }
+
+	/* GEOMETRY INSTANCE */
+
+	static void _geometry_instance_dependency_changed(Dependency::DependencyChangedNotification p_notification, DependencyTracker *p_tracker);
+	static void _geometry_instance_dependency_deleted(const RID &p_dependency, DependencyTracker *p_tracker);
 
 	SelfList<GeometryInstanceForwardMobile>::List geometry_instance_dirty_list;
 
@@ -586,48 +565,27 @@ public:
 	PagedAllocator<GeometryInstanceLightmapSH> geometry_instance_lightmap_sh;
 
 	void _geometry_instance_add_surface_with_material(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh);
+	void _geometry_instance_add_surface_with_material_chain(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, RID p_mat_src, RID p_mesh);
 	void _geometry_instance_add_surface(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, RID p_material, RID p_mesh);
-	void _geometry_instance_mark_dirty(GeometryInstance *p_geometry_instance);
-	void _geometry_instance_update(GeometryInstance *p_geometry_instance);
+	void _geometry_instance_update(RenderGeometryInstance *p_geometry_instance);
 	void _update_dirty_geometry_instances();
 
-	virtual GeometryInstance *geometry_instance_create(RID p_base) override;
-	virtual void geometry_instance_set_skeleton(GeometryInstance *p_geometry_instance, RID p_skeleton) override;
-	virtual void geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) override;
-	virtual void geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_materials) override;
-	virtual void geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) override;
-	virtual void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override;
-	virtual void geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) override;
-	virtual void geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) override;
-	virtual void geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) override;
-	virtual void geometry_instance_set_use_dynamic_gi(GeometryInstance *p_geometry_instance, bool p_enable) override;
-	virtual void geometry_instance_set_use_lightmap(GeometryInstance *p_geometry_instance, RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
-	virtual void geometry_instance_set_lightmap_capture(GeometryInstance *p_geometry_instance, const Color *p_sh9) override;
-	virtual void geometry_instance_set_instance_shader_parameters_offset(GeometryInstance *p_geometry_instance, int32_t p_offset) override;
-	virtual void geometry_instance_set_cast_double_sided_shadows(GeometryInstance *p_geometry_instance, bool p_enable) override;
-
-	virtual Transform3D geometry_instance_get_transform(GeometryInstance *p_instance) override;
-	virtual AABB geometry_instance_get_aabb(GeometryInstance *p_instance) override;
-
-	virtual void geometry_instance_free(GeometryInstance *p_geometry_instance) override;
+	virtual RenderGeometryInstance *geometry_instance_create(RID p_base) override;
+	virtual void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) override;
 
 	virtual uint32_t geometry_instance_get_pair_mask() override;
-	virtual void geometry_instance_pair_light_instances(GeometryInstance *p_geometry_instance, const RID *p_light_instances, uint32_t p_light_instance_count) override;
-	virtual void geometry_instance_pair_reflection_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override;
-	virtual void geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count) override;
-	virtual void geometry_instance_pair_voxel_gi_instances(GeometryInstance *p_geometry_instance, const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override;
-
-	virtual void geometry_instance_set_softshadow_projector_pairing(GeometryInstance *p_geometry_instance, bool p_softshadow, bool p_projector) override;
 
 	virtual bool free(RID p_rid) override;
 
+	virtual void base_uniforms_changed() override;
+
 	virtual bool is_dynamic_gi_supported() const override;
-	virtual bool is_clustered_enabled() const override;
 	virtual bool is_volumetric_supported() const override;
 	virtual uint32_t get_max_elements() const override;
 
-	RenderForwardMobile(RendererStorageRD *p_storage);
+	RenderForwardMobile();
 	~RenderForwardMobile();
 };
 } // namespace RendererSceneRenderImplementation
-#endif // !RENDERING_SERVER_SCENE_RENDER_FORWARD_MOBILE_H
+
+#endif // RENDER_FORWARD_MOBILE_H

@@ -46,21 +46,23 @@ struct DeviceRecord
 
   template<typename Iterator,
 	   hb_requires (hb_is_iterator (Iterator))>
-  bool serialize (hb_serialize_context_t *c, unsigned pixelSize, Iterator it)
+  bool serialize (hb_serialize_context_t *c,
+		  unsigned pixelSize,
+		  Iterator it,
+		  const hb_vector_t<hb_codepoint_pair_t> new_to_old_gid_list,
+		  unsigned num_glyphs)
   {
     TRACE_SERIALIZE (this);
 
-    unsigned length = it.len ();
-
-    if (unlikely (!c->extend (*this, length)))  return_trace (false);
+    if (unlikely (!c->extend (this, num_glyphs)))  return_trace (false);
 
     this->pixelSize = pixelSize;
     this->maxWidth =
     + it
     | hb_reduce (hb_max, 0u);
 
-    + it
-    | hb_sink (widthsZ.as_array (length));
+    for (auto &_ : new_to_old_gid_list)
+      widthsZ[_.first] = *it++;
 
     return_trace (true);
   }
@@ -69,6 +71,7 @@ struct DeviceRecord
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  c->check_range (this, sizeDeviceRecord)));
   }
 
@@ -76,7 +79,7 @@ struct DeviceRecord
   HBUINT8			maxWidth;	/* Maximum width. */
   UnsizedArrayOf<HBUINT8>	widthsZ;	/* Array of widths (numGlyphs is from the 'maxp' table). */
   public:
-  DEFINE_SIZE_ARRAY (2, widthsZ);
+  DEFINE_SIZE_UNBOUNDED (2);
 };
 
 
@@ -87,17 +90,13 @@ struct hdmx
   unsigned int get_size () const
   { return min_size + numRecords * sizeDeviceRecord; }
 
-  const DeviceRecord& operator [] (unsigned int i) const
-  {
-    /* XXX Null(DeviceRecord) is NOT safe as it's num-glyphs lengthed.
-     * https://github.com/harfbuzz/harfbuzz/issues/1300 */
-    if (unlikely (i >= numRecords)) return Null (DeviceRecord);
-    return StructAtOffset<DeviceRecord> (&this->firstDeviceRecord, i * sizeDeviceRecord);
-  }
-
   template<typename Iterator,
 	   hb_requires (hb_is_iterator (Iterator))>
-  bool serialize (hb_serialize_context_t *c, unsigned version, Iterator it)
+  bool serialize (hb_serialize_context_t *c,
+		  unsigned version,
+		  Iterator it,
+		  const hb_vector_t<hb_codepoint_pair_t> &new_to_old_gid_list,
+		  unsigned num_glyphs)
   {
     TRACE_SERIALIZE (this);
 
@@ -105,12 +104,12 @@ struct hdmx
 
     this->version = version;
     this->numRecords = it.len ();
-    this->sizeDeviceRecord = DeviceRecord::get_size (it ? (*it).second.len () : 0);
+    this->sizeDeviceRecord = DeviceRecord::get_size (num_glyphs);
 
     for (const hb_item_type<Iterator>& _ : +it)
-      c->start_embed<DeviceRecord> ()->serialize (c, _.first, _.second);
+      c->start_embed<DeviceRecord> ()->serialize (c, _.first, _.second, new_to_old_gid_list, num_glyphs);
 
-    return_trace (c->successful);
+    return_trace (c->successful ());
   }
 
 
@@ -118,31 +117,30 @@ struct hdmx
   {
     TRACE_SUBSET (this);
 
-    hdmx *hdmx_prime = c->serializer->start_embed <hdmx> ();
-    if (unlikely (!hdmx_prime)) return_trace (false);
+    auto *hdmx_prime = c->serializer->start_embed <hdmx> ();
 
+    unsigned num_input_glyphs = get_num_glyphs ();
     auto it =
     + hb_range ((unsigned) numRecords)
-    | hb_map ([c, this] (unsigned _)
+    | hb_map ([c, num_input_glyphs, this] (unsigned _)
 	{
 	  const DeviceRecord *device_record =
 	    &StructAtOffset<DeviceRecord> (&firstDeviceRecord,
 					   _ * sizeDeviceRecord);
 	  auto row =
-	    + hb_range (c->plan->num_output_glyphs ())
-	    | hb_map (c->plan->reverse_glyph_map)
-	    | hb_map ([this, c, device_record] (hb_codepoint_t _)
+	    + hb_iter (c->plan->new_to_old_gid_list)
+	    | hb_map ([num_input_glyphs, device_record] (hb_codepoint_pair_t _)
 		      {
-			if (c->plan->is_empty_glyph (_))
-			  return Null (HBUINT8);
-			return device_record->widthsZ.as_array (get_num_glyphs ()) [_];
+			return device_record->widthsZ.as_array (num_input_glyphs) [_.second];
 		      })
 	    ;
 	  return hb_pair ((unsigned) device_record->pixelSize, +row);
 	})
     ;
 
-    hdmx_prime->serialize (c->serializer, version, it);
+    hdmx_prime->serialize (c->serializer, version, it,
+			   c->plan->new_to_old_gid_list,
+			   c->plan->num_output_glyphs ());
     return_trace (true);
   }
 
@@ -155,7 +153,9 @@ struct hdmx
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  !hb_unsigned_mul_overflows (numRecords, sizeDeviceRecord) &&
+                  min_size + numRecords * sizeDeviceRecord > numRecords * sizeDeviceRecord &&
 		  sizeDeviceRecord >= DeviceRecord::min_size &&
 		  c->check_range (this, get_size ()));
   }
