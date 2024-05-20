@@ -126,7 +126,7 @@ namespace Godot.SourceGenerators
             var members = symbol.GetMembers();
 
             // Parse interfaces associated with this class and try to generate signals in the current class symbol
-            var interfaceSignalDelegateSymbols = symbol.Interfaces
+            var interfaceSignalDelegateSymbols = symbol.AllInterfaces
                 .Where(s => s.TypeKind == TypeKind.Interface && s.Kind == SymbolKind.NamedType)
                 .Cast<INamedTypeSymbol>()
                 .Select(n => n.GetMembers()

@@ -12,6 +12,10 @@ namespace Godot.SourceGenerators.Sample
         public delegate void OnHealthChangedEventHandler(int health);
     }
 
+    public interface INested : IHealth
+    {
+    }
+
     public interface ISpell
     {
         [Signal]
@@ -33,6 +37,14 @@ namespace Godot.SourceGenerators.Sample
     }
 
     public partial class EventSignalsFromInterfacesSecond : Node, IHealth
+    {
+        public override void _Ready()
+        {
+            OnHealthChanged += (int health) => { GD.Print($"{nameof(OnHealthChanged)} {health}"); };
+        }
+    }
+
+    public partial class EventSignalsFromInterfacesThird : Node, INested
     {
         public override void _Ready()
         {
