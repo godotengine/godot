@@ -153,14 +153,14 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data;
 				if (p_compression_mode == COMPRESSION_MODE_LOSSY) {
-					data = Image::webp_lossy_packer(p_image->get_image_from_mipmap(i), p_lossy_quality);
+					data = Image::webp_lossy_packer(i ? p_image->get_image_from_mipmap(i) : p_image, p_lossy_quality);
 					encode_uint16(DATA_FORMAT_WEBP, buffer.ptrw() + 2);
 				} else {
 					if (use_webp) {
-						data = Image::webp_lossless_packer(p_image->get_image_from_mipmap(i));
+						data = Image::webp_lossless_packer(i ? p_image->get_image_from_mipmap(i) : p_image);
 						encode_uint16(DATA_FORMAT_WEBP, buffer.ptrw() + 2);
 					} else {
-						data = Image::png_packer(p_image->get_image_from_mipmap(i));
+						data = Image::png_packer(i ? p_image->get_image_from_mipmap(i) : p_image);
 						encode_uint16(DATA_FORMAT_PNG, buffer.ptrw() + 2);
 					}
 				}
