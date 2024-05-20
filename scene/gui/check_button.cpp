@@ -63,7 +63,7 @@ Size2 CheckButton::get_icon_size() const {
 		tex_size = tex_size.max(off_tex->get_size());
 	}
 
-	return tex_size;
+	return _fit_icon_size(tex_size);
 }
 
 Size2 CheckButton::get_minimum_size() const {
@@ -134,9 +134,9 @@ void CheckButton::_notification(int p_what) {
 			ofs.y = (get_size().height - tex_size.height) / 2 + theme_cache.check_v_offset;
 
 			if (is_pressed()) {
-				on_tex->draw(ci, ofs);
+				on_tex->draw_rect(ci, Rect2(ofs, _fit_icon_size(on_tex->get_size())));
 			} else {
-				off_tex->draw(ci, ofs);
+				off_tex->draw_rect(ci, Rect2(ofs, _fit_icon_size(off_tex->get_size())));
 			}
 		} break;
 	}
