@@ -497,8 +497,8 @@ void EditorFeatureProfileManager::_hide_requested() {
 	_cancel_pressed(); // From AcceptDialog.
 }
 
-void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected) {
-	TreeItem *class_item = class_list->create_item(p_parent);
+void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected, int p_class_insert_index) {
+	TreeItem *class_item = class_list->create_item(p_parent, p_class_insert_index);
 	class_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class));
 	String text = p_class;
@@ -647,7 +647,7 @@ void EditorFeatureProfileManager::_class_list_item_edited() {
 		String class_selected = md;
 		edited->set_disable_class(class_selected, !checked);
 		_save_and_update();
-		_update_selected_profile();
+		_update_profile_tree_from(item);
 	} else if (md.get_type() == Variant::INT) {
 		int feature_selected = md;
 		edited->set_disable_feature(EditorFeatureProfile::Feature(feature_selected), !checked);
@@ -703,17 +703,27 @@ void EditorFeatureProfileManager::_property_item_edited() {
 		String property_selected = md;
 		edited->set_disable_class_property(class_name, property_selected, !checked);
 		_save_and_update();
-		_update_selected_profile();
+		_update_profile_tree_from(class_list->get_selected());
 	} else if (md.get_type() == Variant::INT) {
 		int feature_selected = md;
 		switch (feature_selected) {
 			case CLASS_OPTION_DISABLE_EDITOR: {
 				edited->set_disable_class_editor(class_name, !checked);
 				_save_and_update();
-				_update_selected_profile();
+				_update_profile_tree_from(class_list->get_selected());
 			} break;
 		}
 	}
+}
+
+void EditorFeatureProfileManager::_update_profile_tree_from(TreeItem *p_edited) {
+	String edited_class = p_edited->get_metadata(0);
+
+	TreeItem *edited_parent = p_edited->get_parent();
+	int class_insert_index = p_edited->get_index();
+	p_edited->get_parent()->remove_child(p_edited);
+
+	_fill_classes_from(edited_parent, edited_class, edited_class, class_insert_index);
 }
 
 void EditorFeatureProfileManager::_update_selected_profile() {
@@ -915,7 +925,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	profile_actions[PROFILE_CLEAR] = memnew(Button(TTR("Reset to Default")));
 	name_hbc->add_child(profile_actions[PROFILE_CLEAR]);
 	profile_actions[PROFILE_CLEAR]->set_disabled(true);
-	profile_actions[PROFILE_CLEAR]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_CLEAR));
+	profile_actions[PROFILE_CLEAR]->connect(SceneStringName(pressed), callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_CLEAR));
 
 	main_vbc->add_margin_child(TTR("Current Profile:"), name_hbc);
 
@@ -930,12 +940,12 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 
 	profile_actions[PROFILE_NEW] = memnew(Button(TTR("Create Profile")));
 	profiles_hbc->add_child(profile_actions[PROFILE_NEW]);
-	profile_actions[PROFILE_NEW]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_NEW));
+	profile_actions[PROFILE_NEW]->connect(SceneStringName(pressed), callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_NEW));
 
 	profile_actions[PROFILE_ERASE] = memnew(Button(TTR("Remove Profile")));
 	profiles_hbc->add_child(profile_actions[PROFILE_ERASE]);
 	profile_actions[PROFILE_ERASE]->set_disabled(true);
-	profile_actions[PROFILE_ERASE]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_ERASE));
+	profile_actions[PROFILE_ERASE]->connect(SceneStringName(pressed), callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_ERASE));
 
 	main_vbc->add_margin_child(TTR("Available Profiles:"), profiles_hbc);
 
@@ -944,18 +954,18 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	profile_actions[PROFILE_SET] = memnew(Button(TTR("Make Current")));
 	current_profile_hbc->add_child(profile_actions[PROFILE_SET]);
 	profile_actions[PROFILE_SET]->set_disabled(true);
-	profile_actions[PROFILE_SET]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_SET));
+	profile_actions[PROFILE_SET]->connect(SceneStringName(pressed), callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_SET));
 
 	current_profile_hbc->add_child(memnew(VSeparator));
 
 	profile_actions[PROFILE_IMPORT] = memnew(Button(TTR("Import")));
 	current_profile_hbc->add_child(profile_actions[PROFILE_IMPORT]);
-	profile_actions[PROFILE_IMPORT]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_IMPORT));
+	profile_actions[PROFILE_IMPORT]->connect(SceneStringName(pressed), callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_IMPORT));
 
 	profile_actions[PROFILE_EXPORT] = memnew(Button(TTR("Export")));
 	current_profile_hbc->add_child(profile_actions[PROFILE_EXPORT]);
 	profile_actions[PROFILE_EXPORT]->set_disabled(true);
-	profile_actions[PROFILE_EXPORT]->connect("pressed", callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_EXPORT));
+	profile_actions[PROFILE_EXPORT]->connect(SceneStringName(pressed), callable_mp(this, &EditorFeatureProfileManager::_profile_action).bind(PROFILE_EXPORT));
 
 	main_vbc->add_child(current_profile_hbc);
 

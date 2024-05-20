@@ -1120,15 +1120,15 @@ ThemeItemImportTree::ThemeItemImportTree() {
 		select_all_items_button->set_flat(true);
 		select_all_items_button->set_tooltip_text(select_all_items_tooltip);
 		button_set->add_child(select_all_items_button);
-		select_all_items_button->connect("pressed", callable_mp(this, &ThemeItemImportTree::_select_all_data_type_pressed).bind(i));
+		select_all_items_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_select_all_data_type_pressed).bind(i));
 		select_full_items_button->set_flat(true);
 		select_full_items_button->set_tooltip_text(select_full_items_tooltip);
 		button_set->add_child(select_full_items_button);
-		select_full_items_button->connect("pressed", callable_mp(this, &ThemeItemImportTree::_select_full_data_type_pressed).bind(i));
+		select_full_items_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_select_full_data_type_pressed).bind(i));
 		deselect_all_items_button->set_flat(true);
 		deselect_all_items_button->set_tooltip_text(deselect_all_items_tooltip);
 		button_set->add_child(deselect_all_items_button);
-		deselect_all_items_button->connect("pressed", callable_mp(this, &ThemeItemImportTree::_deselect_all_data_type_pressed).bind(i));
+		deselect_all_items_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_deselect_all_data_type_pressed).bind(i));
 
 		total_selected_items_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 		total_selected_items_label->hide();
@@ -1159,12 +1159,12 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	import_collapse_types_button->set_flat(true);
 	import_collapse_types_button->set_tooltip_text(TTR("Collapse types."));
 	import_buttons->add_child(import_collapse_types_button);
-	import_collapse_types_button->connect("pressed", callable_mp(this, &ThemeItemImportTree::_toggle_type_items).bind(true));
+	import_collapse_types_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_toggle_type_items).bind(true));
 	import_expand_types_button = memnew(Button);
 	import_expand_types_button->set_flat(true);
 	import_expand_types_button->set_tooltip_text(TTR("Expand types."));
 	import_buttons->add_child(import_expand_types_button);
-	import_expand_types_button->connect("pressed", callable_mp(this, &ThemeItemImportTree::_toggle_type_items).bind(false));
+	import_expand_types_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_toggle_type_items).bind(false));
 
 	import_buttons->add_child(memnew(VSeparator));
 
@@ -1173,26 +1173,26 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	import_select_all_button->set_text(TTR("Select All"));
 	import_select_all_button->set_tooltip_text(TTR("Select all Theme items."));
 	import_buttons->add_child(import_select_all_button);
-	import_select_all_button->connect("pressed", callable_mp(this, &ThemeItemImportTree::_select_all_items_pressed));
+	import_select_all_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_select_all_items_pressed));
 	import_select_full_button = memnew(Button);
 	import_select_full_button->set_flat(true);
 	import_select_full_button->set_text(TTR("Select With Data"));
 	import_select_full_button->set_tooltip_text(TTR("Select all Theme items with item data."));
 	import_buttons->add_child(import_select_full_button);
-	import_select_full_button->connect("pressed", callable_mp(this, &ThemeItemImportTree::_select_full_items_pressed));
+	import_select_full_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_select_full_items_pressed));
 	import_deselect_all_button = memnew(Button);
 	import_deselect_all_button->set_flat(true);
 	import_deselect_all_button->set_text(TTR("Deselect All"));
 	import_deselect_all_button->set_tooltip_text(TTR("Deselect all Theme items."));
 	import_buttons->add_child(import_deselect_all_button);
-	import_deselect_all_button->connect("pressed", callable_mp(this, &ThemeItemImportTree::_deselect_all_items_pressed));
+	import_deselect_all_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_deselect_all_items_pressed));
 
 	import_buttons->add_spacer();
 
 	Button *import_add_selected_button = memnew(Button);
 	import_add_selected_button->set_text(TTR("Import Selected"));
 	import_buttons->add_child(import_add_selected_button);
-	import_add_selected_button->connect("pressed", callable_mp(this, &ThemeItemImportTree::_import_selected));
+	import_add_selected_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_import_selected));
 }
 
 ///////////////////////
@@ -1950,7 +1950,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_add_type_hb->add_child(edit_add_type_value);
 	edit_add_type_button = memnew(Button);
 	edit_add_type_hb->add_child(edit_add_type_button);
-	edit_add_type_button->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_add_theme_type).bind(""));
+	edit_add_type_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_add_theme_type).bind(""));
 
 	VBoxContainer *edit_items_vb = memnew(VBoxContainer);
 	edit_items_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1968,42 +1968,42 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_add_color->set_flat(true);
 	edit_items_add_color->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_color);
-	edit_items_add_color->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_COLOR));
+	edit_items_add_color->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_COLOR));
 
 	edit_items_add_constant = memnew(Button);
 	edit_items_add_constant->set_tooltip_text(TTR("Add Constant Item"));
 	edit_items_add_constant->set_flat(true);
 	edit_items_add_constant->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_constant);
-	edit_items_add_constant->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_CONSTANT));
+	edit_items_add_constant->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_CONSTANT));
 
 	edit_items_add_font = memnew(Button);
 	edit_items_add_font->set_tooltip_text(TTR("Add Font Item"));
 	edit_items_add_font->set_flat(true);
 	edit_items_add_font->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_font);
-	edit_items_add_font->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_FONT));
+	edit_items_add_font->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_FONT));
 
 	edit_items_add_font_size = memnew(Button);
 	edit_items_add_font_size->set_tooltip_text(TTR("Add Font Size Item"));
 	edit_items_add_font_size->set_flat(true);
 	edit_items_add_font_size->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_font_size);
-	edit_items_add_font_size->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_FONT_SIZE));
+	edit_items_add_font_size->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_FONT_SIZE));
 
 	edit_items_add_icon = memnew(Button);
 	edit_items_add_icon->set_tooltip_text(TTR("Add Icon Item"));
 	edit_items_add_icon->set_flat(true);
 	edit_items_add_icon->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_icon);
-	edit_items_add_icon->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_ICON));
+	edit_items_add_icon->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_ICON));
 
 	edit_items_add_stylebox = memnew(Button);
 	edit_items_add_stylebox->set_tooltip_text(TTR("Add StyleBox Item"));
 	edit_items_add_stylebox->set_flat(true);
 	edit_items_add_stylebox->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_stylebox);
-	edit_items_add_stylebox->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_STYLEBOX));
+	edit_items_add_stylebox->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_STYLEBOX));
 
 	edit_items_toolbar->add_child(memnew(VSeparator));
 
@@ -2016,21 +2016,21 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_remove_class->set_flat(true);
 	edit_items_remove_class->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_remove_class);
-	edit_items_remove_class->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_remove_class_items));
+	edit_items_remove_class->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_remove_class_items));
 
 	edit_items_remove_custom = memnew(Button);
 	edit_items_remove_custom->set_tooltip_text(TTR("Remove Custom Items"));
 	edit_items_remove_custom->set_flat(true);
 	edit_items_remove_custom->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_remove_custom);
-	edit_items_remove_custom->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_remove_custom_items));
+	edit_items_remove_custom->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_remove_custom_items));
 
 	edit_items_remove_all = memnew(Button);
 	edit_items_remove_all->set_tooltip_text(TTR("Remove All Items"));
 	edit_items_remove_all->set_flat(true);
 	edit_items_remove_all->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_remove_all);
-	edit_items_remove_all->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_remove_all_items));
+	edit_items_remove_all->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_remove_all_items));
 
 	edit_items_tree = memnew(Tree);
 	edit_items_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -2096,7 +2096,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	import_another_file_hb->add_child(import_another_theme_value);
 	import_another_theme_button = memnew(Button);
 	import_another_file_hb->add_child(import_another_theme_button);
-	import_another_theme_button->connect("pressed", callable_mp(this, &ThemeItemEditorDialog::_open_select_another_theme));
+	import_another_theme_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_select_another_theme));
 
 	import_another_theme_dialog = memnew(EditorFileDialog);
 	import_another_theme_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
@@ -2296,7 +2296,7 @@ VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
 	item_add_button->set_text(TTR("Add"));
 	item_add_button->set_disabled(true);
 	item_add_hb->add_child(item_add_button);
-	item_add_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_item_add_cbk).bind(p_data_type, item_add_edit));
+	item_add_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_add_cbk).bind(p_data_type, item_add_edit));
 	item_add_edit->set_meta("button", item_add_button);
 	item_add_edit->connect("text_changed", callable_mp(this, &ThemeTypeEditor::_update_add_button).bind(item_add_edit));
 
@@ -2472,21 +2472,21 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		item_rename_button->set_tooltip_text(TTR("Rename Item"));
 		item_rename_button->set_flat(true);
 		item_name_container->add_child(item_rename_button);
-		item_rename_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_item_rename_cbk).bind(p_data_type, p_item_name, item_name_container));
+		item_rename_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_rename_cbk).bind(p_data_type, p_item_name, item_name_container));
 
 		Button *item_remove_button = memnew(Button);
 		item_remove_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
 		item_remove_button->set_tooltip_text(TTR("Remove Item"));
 		item_remove_button->set_flat(true);
 		item_name_container->add_child(item_remove_button);
-		item_remove_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_item_remove_cbk).bind(p_data_type, p_item_name));
+		item_remove_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_remove_cbk).bind(p_data_type, p_item_name));
 
 		Button *item_rename_confirm_button = memnew(Button);
 		item_rename_confirm_button->set_icon(get_editor_theme_icon(SNAME("ImportCheck")));
 		item_rename_confirm_button->set_tooltip_text(TTR("Confirm Item Rename"));
 		item_rename_confirm_button->set_flat(true);
 		item_name_container->add_child(item_rename_confirm_button);
-		item_rename_confirm_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_item_rename_confirmed).bind(p_data_type, p_item_name, item_name_container));
+		item_rename_confirm_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_rename_confirmed).bind(p_data_type, p_item_name, item_name_container));
 		item_rename_confirm_button->hide();
 
 		Button *item_rename_cancel_button = memnew(Button);
@@ -2494,7 +2494,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		item_rename_cancel_button->set_tooltip_text(TTR("Cancel Item Rename"));
 		item_rename_cancel_button->set_flat(true);
 		item_name_container->add_child(item_rename_cancel_button);
-		item_rename_cancel_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_item_rename_canceled).bind(p_data_type, p_item_name, item_name_container));
+		item_rename_cancel_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_rename_canceled).bind(p_data_type, p_item_name, item_name_container));
 		item_rename_cancel_button->hide();
 	} else {
 		item_name->add_theme_color_override("font_color", get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
@@ -2504,7 +2504,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 		item_override_button->set_tooltip_text(TTR("Override Item"));
 		item_override_button->set_flat(true);
 		item_name_container->add_child(item_override_button);
-		item_override_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_item_override_cbk).bind(p_data_type, p_item_name));
+		item_override_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_override_cbk).bind(p_data_type, p_item_name));
 	}
 
 	return item_control;
@@ -2712,7 +2712,7 @@ void ThemeTypeEditor::_update_type_items() {
 			pin_leader_button->set_icon(get_editor_theme_icon(SNAME("Pin")));
 			pin_leader_button->set_tooltip_text(TTR("Unpin this StyleBox as a main style."));
 			item_control->add_child(pin_leader_button);
-			pin_leader_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_on_unpin_leader_button_pressed));
+			pin_leader_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_on_unpin_leader_button_pressed));
 
 			item_control->add_child(item_editor);
 
@@ -2755,7 +2755,7 @@ void ThemeTypeEditor::_update_type_items() {
 				pin_leader_button->set_icon(get_editor_theme_icon(SNAME("Pin")));
 				pin_leader_button->set_tooltip_text(TTR("Pin this StyleBox as a main style. Editing its properties will update the same properties in all other StyleBoxes of this type."));
 				item_control->add_child(pin_leader_button);
-				pin_leader_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_on_pin_leader_button_pressed).bind(item_editor, E.key));
+				pin_leader_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_on_pin_leader_button_pressed).bind(item_editor, E.key));
 			} else {
 				if (ThemeDB::get_singleton()->get_default_theme()->has_stylebox(E.key, edited_type)) {
 					item_editor->set_edited_resource(ThemeDB::get_singleton()->get_default_theme()->get_stylebox(E.key, edited_type));
@@ -3446,7 +3446,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	add_type_button = memnew(Button);
 	add_type_button->set_tooltip_text(TTR("Add a type from a list of available types or create a new one."));
 	type_list_hb->add_child(add_type_button);
-	add_type_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_add_type_button_cbk));
+	add_type_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_add_type_button_cbk));
 
 	HBoxContainer *type_controls = memnew(HBoxContainer);
 	main_vb->add_child(type_controls);
@@ -3457,14 +3457,14 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	show_default_items_button->set_tooltip_text(TTR("Show default type items alongside items that have been overridden."));
 	show_default_items_button->set_pressed(true);
 	type_controls->add_child(show_default_items_button);
-	show_default_items_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_update_type_items));
+	show_default_items_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_update_type_items));
 
 	Button *add_default_items_button = memnew(Button);
 	add_default_items_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_default_items_button->set_text(TTR("Override All"));
 	add_default_items_button->set_tooltip_text(TTR("Override all default type items."));
 	type_controls->add_child(add_default_items_button);
-	add_default_items_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_add_default_type_items));
+	add_default_items_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_add_default_type_items));
 
 	data_type_tabs = memnew(TabContainer);
 	data_type_tabs->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
@@ -3510,7 +3510,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_variation_button = memnew(Button);
 	type_variation_hb->add_child(type_variation_button);
 	type_variation_button->set_tooltip_text(TTR("Select the variation base type from a list of available types."));
-	type_variation_button->connect("pressed", callable_mp(this, &ThemeTypeEditor::_add_type_variation_cbk));
+	type_variation_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_add_type_variation_cbk));
 
 	type_variation_locked = memnew(Label);
 	type_variation_vb->add_child(type_variation_locked);
@@ -3691,19 +3691,19 @@ ThemeEditor::ThemeEditor() {
 	Button *theme_save_button = memnew(Button);
 	theme_save_button->set_text(TTR("Save"));
 	theme_save_button->set_flat(true);
-	theme_save_button->connect("pressed", callable_mp(this, &ThemeEditor::_theme_save_button_cbk).bind(false));
+	theme_save_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_save_button_cbk).bind(false));
 	top_menu->add_child(theme_save_button);
 
 	Button *theme_save_as_button = memnew(Button);
 	theme_save_as_button->set_text(TTR("Save As..."));
 	theme_save_as_button->set_flat(true);
-	theme_save_as_button->connect("pressed", callable_mp(this, &ThemeEditor::_theme_save_button_cbk).bind(true));
+	theme_save_as_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_save_button_cbk).bind(true));
 	top_menu->add_child(theme_save_as_button);
 
 	Button *theme_close_button = memnew(Button);
 	theme_close_button->set_text(TTR("Close"));
 	theme_close_button->set_flat(true);
-	theme_close_button->connect("pressed", callable_mp(this, &ThemeEditor::_theme_close_button_cbk));
+	theme_close_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_close_button_cbk));
 	top_menu->add_child(theme_close_button);
 
 	top_menu->add_child(memnew(VSeparator));
@@ -3712,7 +3712,7 @@ ThemeEditor::ThemeEditor() {
 	theme_edit_button->set_text(TTR("Manage Items..."));
 	theme_edit_button->set_tooltip_text(TTR("Add, remove, organize and import Theme items."));
 	theme_edit_button->set_flat(true);
-	theme_edit_button->connect("pressed", callable_mp(this, &ThemeEditor::_theme_edit_button_cbk));
+	theme_edit_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_edit_button_cbk));
 	top_menu->add_child(theme_edit_button);
 
 	theme_type_editor = memnew(ThemeTypeEditor);
@@ -3748,7 +3748,7 @@ ThemeEditor::ThemeEditor() {
 	add_preview_button = memnew(Button);
 	add_preview_button->set_text(TTR("Add Preview"));
 	add_preview_button_hb->add_child(add_preview_button);
-	add_preview_button->connect("pressed", callable_mp(this, &ThemeEditor::_add_preview_button_cbk));
+	add_preview_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_add_preview_button_cbk));
 
 	DefaultThemeEditorPreview *default_preview_tab = memnew(DefaultThemeEditorPreview);
 	preview_tabs_content->add_child(default_preview_tab);

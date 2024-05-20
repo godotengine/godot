@@ -120,7 +120,7 @@ void BoneMapperItem::create_editor() {
 
 	picker_button = memnew(Button);
 	picker_button->set_icon(get_editor_theme_icon(SNAME("ClassList")));
-	picker_button->connect("pressed", callable_mp(this, &BoneMapperItem::_open_picker));
+	picker_button->connect(SceneStringName(pressed), callable_mp(this, &BoneMapperItem::_open_picker));
 	hbox->add_child(picker_button);
 
 	add_child(memnew(HSeparator));
@@ -301,7 +301,7 @@ void BoneMapper::create_editor() {
 	clear_mapping_button = memnew(Button);
 	clear_mapping_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
 	clear_mapping_button->set_tooltip_text(TTR("Clear mappings in current group."));
-	clear_mapping_button->connect("pressed", callable_mp(this, &BoneMapper::_clear_mapping_current_group));
+	clear_mapping_button->connect(SceneStringName(pressed), callable_mp(this, &BoneMapper::_clear_mapping_current_group));
 	group_hbox->add_child(clear_mapping_button);
 
 	bone_mapper_field = memnew(AspectRatioContainer);
@@ -422,7 +422,7 @@ void BoneMapper::recreate_editor() {
 	for (int i = 0; i < len; i++) {
 		if (profile->get_group(i) == profile->get_group_name(current_group_idx)) {
 			BoneMapperButton *mb = memnew(BoneMapperButton(profile->get_bone_name(i), profile->is_required(i), current_bone_idx == i));
-			mb->connect("pressed", callable_mp(this, &BoneMapper::set_current_bone_idx).bind(i), CONNECT_DEFERRED);
+			mb->connect(SceneStringName(pressed), callable_mp(this, &BoneMapper::set_current_bone_idx).bind(i), CONNECT_DEFERRED);
 			mb->set_h_grow_direction(GROW_DIRECTION_BOTH);
 			mb->set_v_grow_direction(GROW_DIRECTION_BOTH);
 			Vector2 vc = profile->get_handle_offset(i);

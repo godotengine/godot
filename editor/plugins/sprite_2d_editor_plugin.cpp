@@ -647,7 +647,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	hb->add_spacer();
 	update_preview = memnew(Button);
 	update_preview->set_text(TTR("Update Preview"));
-	update_preview->connect("pressed", callable_mp(this, &Sprite2DEditor::_update_mesh_data));
+	update_preview->connect(SceneStringName(pressed), callable_mp(this, &Sprite2DEditor::_update_mesh_data));
 	hb->add_child(update_preview);
 	vb->add_margin_child(TTR("Settings:"), hb);
 

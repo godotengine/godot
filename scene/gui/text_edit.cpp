@@ -558,8 +558,6 @@ void TextEdit::_notification(int p_what) {
 
 			int visible_rows = get_visible_line_count() + 1;
 
-			Color color = !editable ? theme_cache.font_readonly_color : theme_cache.font_color;
-
 			if (theme_cache.background_color.a > 0.01) {
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), theme_cache.background_color);
 			}
@@ -734,7 +732,7 @@ void TextEdit::_notification(int p_what) {
 			if (draw_minimap) {
 				int minimap_visible_lines = get_minimap_visible_lines();
 				int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
-				int minimap_tab_size = minimap_char_size.x * text.get_tab_size();
+				int tab_size = text.get_tab_size();
 
 				// Calculate viewport size and y offset.
 				int viewport_height = (draw_amount - 1) * minimap_line_height;
@@ -839,68 +837,74 @@ void TextEdit::_notification(int p_what) {
 							}
 						}
 
-						Color previous_color;
+						Color next_color = current_color;
 						int characters = 0;
-						int tabs = 0;
+						int tab_alignment = 0;
+						int xpos = xmargin_end + 2 + indent_px;
 						for (int j = 0; j < str.length(); j++) {
-							const Variant *color_data = color_map.getptr(last_wrap_column + j);
-							if (color_data != nullptr) {
-								current_color = (color_data->operator Dictionary()).get("color", theme_cache.font_color);
-								if (!editable) {
-									current_color.a = theme_cache.font_readonly_color.a;
-								}
-							}
-							color = current_color;
-
-							if (j == 0) {
-								previous_color = color;
-							}
-
-							int xpos = indent_px + ((xmargin_end + minimap_char_size.x) + (minimap_char_size.x * j)) + tabs;
-							bool out_of_bounds = (xpos >= xmargin_end + minimap_width);
-
-							bool whitespace = is_whitespace(str[j]);
-							if (!whitespace) {
-								characters++;
-
-								if (j < str.length() - 1 && color == previous_color && !out_of_bounds) {
-									continue;
-								}
-
-								// If we've changed color we are at the start of a new section, therefore we need to go back to the end
-								// of the previous section to draw it, we'll also add the character back on.
-								if (color != previous_color) {
-									characters--;
-									j--;
-
-									if (str[j] == '\t') {
-										tabs -= minimap_tab_size;
+							bool next_is_whitespace = false;
+							bool next_is_tab = false;
+							// Get the number of characters to draw together.
+							for (characters = 0; j + characters < str.length(); characters++) {
+								int next_char_index = j + characters;
+								const Variant *color_data = color_map.getptr(last_wrap_column + next_char_index);
+								if (color_data != nullptr) {
+									next_color = (color_data->operator Dictionary()).get("color", theme_cache.font_color);
+									if (!editable) {
+										next_color.a = theme_cache.font_readonly_color.a;
 									}
+									next_color.a *= 0.6;
+								}
+								if (characters == 0) {
+									current_color = next_color;
+								}
+								if (next_color != current_color) {
+									break;
+								}
+								next_is_whitespace = is_whitespace(str[next_char_index]);
+								if (next_is_whitespace) {
+									if (str[next_char_index] == '\t') {
+										next_is_tab = true;
+									}
+									break;
+								}
+								bool out_of_bounds = xpos + minimap_char_size.x * characters >= xmargin_end + minimap_width;
+								if (out_of_bounds) {
+									break;
 								}
 							}
-
-							if (characters > 0) {
-								previous_color.a *= 0.6;
-								// Take one for zero indexing, and if we hit whitespace / the end of a word.
-								int chars = MAX(0, (j - (characters - 1)) - (whitespace ? 1 : 0)) + 1;
-								int char_x_ofs = indent_px + ((xmargin_end + minimap_char_size.x) + (minimap_char_size.x * chars)) + tabs;
-								if (rtl) {
-									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(size.width - char_x_ofs - minimap_char_size.x * characters, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), previous_color);
-								} else {
-									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(char_x_ofs, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), previous_color);
-								}
-							}
-
-							if (out_of_bounds) {
+							if (!next_is_whitespace && characters == 0) {
 								break;
 							}
 
-							if (str[j] == '\t') {
-								tabs += minimap_tab_size;
+							if (characters > 0) {
+								if (rtl) {
+									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(size.width - xpos - minimap_char_size.x * characters, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
+								} else {
+									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(xpos, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
+								}
 							}
 
-							previous_color = color;
-							characters = 0;
+							j += characters - 1;
+							xpos += minimap_char_size.x * characters;
+							tab_alignment += characters;
+
+							if (next_is_whitespace) {
+								if (next_is_tab) {
+									tab_alignment %= tab_size;
+									xpos += minimap_char_size.x * (tab_size - tab_alignment);
+									tab_alignment = 0;
+								} else {
+									xpos += minimap_char_size.x;
+									tab_alignment += 1;
+								}
+								j += 1;
+							}
+
+							if (xpos >= xmargin_end + minimap_width) {
+								// Out of bounds.
+								break;
+							}
 						}
 					}
 				}
@@ -1188,6 +1192,7 @@ void TextEdit::_notification(int p_what) {
 
 					if (!clipped && lookup_symbol_word.length() != 0) { // Highlight word
 						if (is_ascii_alphabet_char(lookup_symbol_word[0]) || lookup_symbol_word[0] == '_' || lookup_symbol_word[0] == '.') {
+							Color highlight_underline_color = !editable ? theme_cache.font_readonly_color : theme_cache.font_color;
 							int lookup_symbol_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
 							int lookup_symbol_word_len = lookup_symbol_word.length();
 							while (lookup_symbol_word_col != -1) {
@@ -1205,7 +1210,7 @@ void TextEdit::_notification(int p_what) {
 									}
 									rect.position.y += ceil(TS->shaped_text_get_ascent(rid)) + ceil(theme_cache.font->get_underline_position(theme_cache.font_size));
 									rect.size.y = MAX(1, theme_cache.font->get_underline_thickness(theme_cache.font_size));
-									draw_rect(rect, color);
+									draw_rect(rect, highlight_underline_color);
 								}
 
 								lookup_symbol_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, lookup_symbol_word_col + lookup_symbol_word_len);
@@ -7973,7 +7978,7 @@ void TextEdit::_update_minimap_click() {
 	Point2 mp = get_local_mouse_pos();
 
 	int xmargin_end = get_size().width - theme_cache.style_normal->get_margin(SIDE_RIGHT);
-	if (!dragging_minimap && (mp.x < xmargin_end - minimap_width || mp.y > xmargin_end)) {
+	if (!dragging_minimap && (mp.x < xmargin_end - minimap_width || mp.x > xmargin_end)) {
 		minimap_clicked = false;
 		return;
 	}

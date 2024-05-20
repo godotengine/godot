@@ -3228,7 +3228,11 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 		GDScriptCache::add_static_script(p_script);
 	}
 
-	return GDScriptCache::finish_compiling(main_script->path);
+	err = GDScriptCache::finish_compiling(main_script->path);
+	if (err) {
+		main_script->valid = false;
+	}
+	return err;
 }
 
 String GDScriptCompiler::get_error() const {

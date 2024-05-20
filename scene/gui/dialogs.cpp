@@ -316,7 +316,7 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 	}
 
 	if (!p_action.is_empty()) {
-		button->connect("pressed", callable_mp(this, &AcceptDialog::_custom_action).bind(p_action));
+		button->connect(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_custom_action).bind(p_action));
 	}
 
 	return button;
@@ -330,7 +330,7 @@ Button *AcceptDialog::add_cancel_button(const String &p_cancel) {
 
 	Button *b = swap_cancel_ok ? add_button(c, true) : add_button(c);
 
-	b->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
+	b->connect(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_cancel_pressed));
 
 	return b;
 }
@@ -346,11 +346,11 @@ void AcceptDialog::remove_button(Button *p_button) {
 	}
 
 	p_button->disconnect(SceneStringName(visibility_changed), callable_mp(this, &AcceptDialog::_custom_button_visibility_changed));
-	if (p_button->is_connected("pressed", callable_mp(this, &AcceptDialog::_custom_action))) {
-		p_button->disconnect("pressed", callable_mp(this, &AcceptDialog::_custom_action));
+	if (p_button->is_connected(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_custom_action))) {
+		p_button->disconnect(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_custom_action));
 	}
-	if (p_button->is_connected("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed))) {
-		p_button->disconnect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
+	if (p_button->is_connected(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_cancel_pressed))) {
+		p_button->disconnect(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_cancel_pressed));
 	}
 
 	if (right_spacer) {
@@ -433,7 +433,7 @@ AcceptDialog::AcceptDialog() {
 	buttons_hbox->add_child(ok_button);
 	buttons_hbox->add_spacer();
 
-	ok_button->connect("pressed", callable_mp(this, &AcceptDialog::_ok_pressed));
+	ok_button->connect(SceneStringName(pressed), callable_mp(this, &AcceptDialog::_ok_pressed));
 
 	set_title(ETR("Alert!"));
 }

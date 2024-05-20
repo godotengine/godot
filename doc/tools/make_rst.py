@@ -677,17 +677,6 @@ class ScriptLanguageParityCheck:
 
 # Entry point for the RST generator.
 def main() -> None:
-    # Enable ANSI escape code support on Windows 10 and later (for colored console output).
-    # <https://bugs.python.org/issue29059>
-    if platform.system().lower() == "windows":
-        from ctypes import windll, c_int, byref  # type: ignore
-
-        stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
-        mode = c_int(0)
-        windll.kernel32.GetConsoleMode(c_int(stdout_handle), byref(mode))
-        mode = c_int(mode.value | 4)
-        windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
-
     parser = argparse.ArgumentParser()
     parser.add_argument("path", nargs="+", help="A path to an XML file or a directory containing XML files to parse.")
     parser.add_argument("--filter", default="", help="The filepath pattern for XML files to filter.")
@@ -711,7 +700,25 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    should_color = args.color or (hasattr(sys.stdout, "isatty") and sys.stdout.isatty())
+    should_color = bool(args.color or sys.stdout.isatty() or os.environ.get("CI"))
+
+    # Enable ANSI escape code support on Windows 10 and later (for colored console output).
+    # <https://github.com/python/cpython/issues/73245>
+    if should_color and sys.stdout.isatty() and sys.platform == "win32":
+        try:
+            from ctypes import windll, byref, WinError  # type: ignore
+            from ctypes.wintypes import DWORD  # type: ignore
+
+            stdout_handle = windll.kernel32.GetStdHandle(DWORD(-11))
+            mode = DWORD(0)
+            if not windll.kernel32.GetConsoleMode(stdout_handle, byref(mode)):
+                raise WinError()
+            mode = DWORD(mode.value | 4)
+            if not windll.kernel32.SetConsoleMode(stdout_handle, mode):
+                raise WinError()
+        except Exception:
+            should_color = False
+
     STYLES["red"] = "\x1b[91m" if should_color else ""
     STYLES["green"] = "\x1b[92m" if should_color else ""
     STYLES["yellow"] = "\x1b[93m" if should_color else ""

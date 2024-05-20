@@ -585,17 +585,20 @@ bool EditorExportPlatformWeb::poll_export() {
 		}
 	}
 
+	int prev = menu_options;
+	menu_options = preset.is_valid();
 	HTTPServerState prev_server_state = server_state;
 	server_state = HTTP_SERVER_STATE_OFF;
 	if (server->is_listening()) {
-		if (preset.is_null()) {
+		if (preset.is_null() || menu_options == 0) {
 			server->stop();
 		} else {
 			server_state = HTTP_SERVER_STATE_ON;
+			menu_options += 1;
 		}
 	}
 
-	return server_state != prev_server_state;
+	return server_state != prev_server_state || menu_options != prev;
 }
 
 Ref<ImageTexture> EditorExportPlatformWeb::get_option_icon(int p_index) const {

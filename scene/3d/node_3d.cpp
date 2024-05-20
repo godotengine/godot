@@ -192,7 +192,7 @@ void Node3D::_notification(int p_what) {
 			ERR_FAIL_NULL(data.viewport);
 
 			if (get_script_instance()) {
-				get_script_instance()->call(SceneStringName(_enter_world));
+				get_script_instance()->call(SNAME("_enter_world"));
 			}
 
 #ifdef TOOLS_ENABLED
@@ -210,7 +210,7 @@ void Node3D::_notification(int p_what) {
 #endif
 
 			if (get_script_instance()) {
-				get_script_instance()->call(SceneStringName(_exit_world));
+				get_script_instance()->call(SNAME("_exit_world"));
 			}
 
 			data.viewport = nullptr;
@@ -582,7 +582,7 @@ void Node3D::set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transfor
 	}
 
 	if (is_part_of_edited_scene()) {
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SceneStringName(_set_subgizmo_selection), this, p_gizmo, p_id, p_transform);
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SNAME("_set_subgizmo_selection"), this, p_gizmo, p_id, p_transform);
 	}
 #endif
 }
@@ -599,7 +599,7 @@ void Node3D::clear_subgizmo_selection() {
 	}
 
 	if (is_part_of_edited_scene()) {
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SceneStringName(_clear_subgizmo_selection), this);
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SNAME("_clear_subgizmo_selection"), this);
 	}
 #endif
 }

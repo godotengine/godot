@@ -1263,7 +1263,7 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 			action_menu->begin_bulk_theme_override();
 			action_menu->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
 			action_menu->add_theme_style_override("hover", get_theme_stylebox("hover", "Button"));
-			action_menu->add_theme_style_override("pressed", get_theme_stylebox("pressed", "Button"));
+			action_menu->add_theme_style_override(SceneStringName(pressed), get_theme_stylebox(SceneStringName(pressed), "Button"));
 			action_menu->end_bulk_theme_override();
 
 			if (animation_player != nullptr && animation_player->is_playing()) {
@@ -1649,13 +1649,13 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_play_button->set_flat(true);
 	animation_play_button->set_focus_mode(Control::FOCUS_NONE);
 	animation_play_button->set_shortcut(ED_SHORTCUT("scene_import_settings/play_selected_animation", TTR("Selected Animation Play/Pause"), Key::SPACE));
-	animation_play_button->connect(SNAME("pressed"), callable_mp(this, &SceneImportSettingsDialog::_play_animation));
+	animation_play_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_play_animation));
 
 	animation_stop_button = memnew(Button);
 	animation_hbox->add_child(animation_stop_button);
 	animation_stop_button->set_flat(true);
 	animation_stop_button->set_focus_mode(Control::FOCUS_NONE);
-	animation_stop_button->connect(SNAME("pressed"), callable_mp(this, &SceneImportSettingsDialog::_stop_current_animation));
+	animation_stop_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_stop_current_animation));
 
 	animation_slider = memnew(HSlider);
 	animation_hbox->add_child(animation_slider);
@@ -1684,7 +1684,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	light_rotate_switch->set_toggle_mode(true);
 	light_rotate_switch->set_pressed(true);
 	light_rotate_switch->set_tooltip_text(TTR("Rotate Lights With Model"));
-	light_rotate_switch->connect("pressed", callable_mp(this, &SceneImportSettingsDialog::_on_light_rotate_switch_pressed));
+	light_rotate_switch->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_on_light_rotate_switch_pressed));
 	vb_light->add_child(light_rotate_switch);
 
 	light_1_switch = memnew(Button);
@@ -1692,7 +1692,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	light_1_switch->set_toggle_mode(true);
 	light_1_switch->set_pressed(true);
 	light_1_switch->set_tooltip_text(TTR("Primary Light"));
-	light_1_switch->connect("pressed", callable_mp(this, &SceneImportSettingsDialog::_on_light_1_switch_pressed));
+	light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_on_light_1_switch_pressed));
 	vb_light->add_child(light_1_switch);
 
 	light_2_switch = memnew(Button);
@@ -1700,7 +1700,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	light_2_switch->set_toggle_mode(true);
 	light_2_switch->set_pressed(true);
 	light_2_switch->set_tooltip_text(TTR("Secondary Light"));
-	light_2_switch->connect("pressed", callable_mp(this, &SceneImportSettingsDialog::_on_light_2_switch_pressed));
+	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_on_light_2_switch_pressed));
 	vb_light->add_child(light_2_switch);
 
 	camera = memnew(Camera3D);

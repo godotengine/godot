@@ -47,7 +47,7 @@ Files extracted from upstream source:
 ## astcenc
 
 - Upstream: https://github.com/ARM-software/astc-encoder
-- Version: 4.7.0 (1a51f2915121275038677317c8bf61f1a78b590c, 2024)
+- Version: 4.8.0 (0d6c9047c5ad19640e2d60fdb8f11a16675e7938, 2024)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -194,7 +194,7 @@ commits.
 ## enet
 
 - Upstream: https://github.com/lsalzman/enet
-- Version: git (c44b7d0f7ff21edb702745e4c019d0537928c373, 2024)
+- Version: 1.3.18 (2662c0de09e36f2a2030ccc2c528a3e4c9e8138a, 2024)
 - License: MIT
 
 Files extracted from upstream source:
@@ -377,7 +377,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 8.4.0 (63973005bc07aba599b47fdd4cf788647b601ccd, 2024)
+- Version: 8.5.0 (30485ee8c3d43c553afb9d78b9924cb71c8d2f19, 2024)
 - License: MIT
 
 Files extracted from upstream source:
@@ -517,7 +517,7 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.3.2 (ca332209cb5567c9b249c86788cb2dbf8847e760, 2023)
+- Version: 1.4.0 (845d5476a866141ba35ac133f856fa62f0b7445f, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

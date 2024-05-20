@@ -898,6 +898,12 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 				return true;
 			}
 		}
+
+		// This prevents interactions with a port hotzone that is behind another node.
+		Rect2 graph_node_rect = Rect2(graph_node->get_position(), graph_node->get_size() * zoom);
+		if (graph_node_rect.has_point(click_pos * zoom)) {
+			break;
+		}
 	}
 
 	return false;
@@ -1026,6 +1032,12 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 					}
 					return;
 				}
+			}
+
+			// This prevents interactions with a port hotzone that is behind another node.
+			Rect2 graph_node_rect = Rect2(graph_node->get_position(), graph_node->get_size() * zoom);
+			if (graph_node_rect.has_point(click_pos * zoom)) {
+				break;
 			}
 		}
 	}
@@ -2824,7 +2836,7 @@ GraphEdit::GraphEdit() {
 	zoom_minus_button->set_tooltip_text(ETR("Zoom Out"));
 	zoom_minus_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(zoom_minus_button);
-	zoom_minus_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_minus));
+	zoom_minus_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_minus));
 
 	zoom_reset_button = memnew(Button);
 	zoom_reset_button->set_theme_type_variation("FlatButton");
@@ -2832,7 +2844,7 @@ GraphEdit::GraphEdit() {
 	zoom_reset_button->set_tooltip_text(ETR("Zoom Reset"));
 	zoom_reset_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(zoom_reset_button);
-	zoom_reset_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_reset));
+	zoom_reset_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_reset));
 
 	zoom_plus_button = memnew(Button);
 	zoom_plus_button->set_theme_type_variation("FlatButton");
@@ -2840,7 +2852,7 @@ GraphEdit::GraphEdit() {
 	zoom_plus_button->set_tooltip_text(ETR("Zoom In"));
 	zoom_plus_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(zoom_plus_button);
-	zoom_plus_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_plus));
+	zoom_plus_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_plus));
 
 	// Grid controls.
 
@@ -2852,7 +2864,7 @@ GraphEdit::GraphEdit() {
 	toggle_grid_button->set_tooltip_text(ETR("Toggle the visual grid."));
 	toggle_grid_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(toggle_grid_button);
-	toggle_grid_button->connect("pressed", callable_mp(this, &GraphEdit::_show_grid_toggled));
+	toggle_grid_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_show_grid_toggled));
 
 	toggle_snapping_button = memnew(Button);
 	toggle_snapping_button->set_theme_type_variation("FlatButton");
@@ -2862,7 +2874,7 @@ GraphEdit::GraphEdit() {
 	toggle_snapping_button->set_pressed(snapping_enabled);
 	toggle_snapping_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(toggle_snapping_button);
-	toggle_snapping_button->connect("pressed", callable_mp(this, &GraphEdit::_snapping_toggled));
+	toggle_snapping_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_snapping_toggled));
 
 	snapping_distance_spinbox = memnew(SpinBox);
 	snapping_distance_spinbox->set_visible(show_grid_buttons);
@@ -2884,12 +2896,12 @@ GraphEdit::GraphEdit() {
 	minimap_button->set_pressed(show_grid);
 	minimap_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(minimap_button);
-	minimap_button->connect("pressed", callable_mp(this, &GraphEdit::_minimap_toggled));
+	minimap_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_minimap_toggled));
 
 	arrange_button = memnew(Button);
 	arrange_button->set_theme_type_variation("FlatButton");
 	arrange_button->set_visible(show_arrange_button);
-	arrange_button->connect("pressed", callable_mp(this, &GraphEdit::arrange_nodes));
+	arrange_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::arrange_nodes));
 	arrange_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(arrange_button);
 	arrange_button->set_tooltip_text(ETR("Automatically arrange selected nodes."));

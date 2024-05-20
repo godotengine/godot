@@ -952,7 +952,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_center_view = memnew(Button);
 	button_center_view->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
 	button_center_view->set_grow_direction_preset(Control::PRESET_TOP_RIGHT);
-	button_center_view->connect("pressed", callable_mp(this, &GenericTilePolygonEditor::_center_view));
+	button_center_view->connect(SceneStringName(pressed), callable_mp(this, &GenericTilePolygonEditor::_center_view));
 	button_center_view->set_theme_type_variation("FlatButton");
 	button_center_view->set_tooltip_text(TTR("Center View"));
 	button_center_view->set_disabled(true);

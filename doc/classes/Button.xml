@@ -122,7 +122,7 @@
 			The horizontal space between [Button]'s icon and text. Negative values will be treated as [code]0[/code] when used.
 		</theme_item>
 		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
-			The maximum allowed width of the [Button]'s icon. This limit is applied on top of the default size of the icon, or its expanded size if [member expand_icon] is [code]true[/code]. The height is adjusted according to the icon's ratio.
+			The maximum allowed width of the [Button]'s icon. This limit is applied on top of the default size of the icon, or its expanded size if [member expand_icon] is [code]true[/code]. The height is adjusted according to the icon's ratio. If the button has additional icons (e.g. [CheckBox]), they will also be limited.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.

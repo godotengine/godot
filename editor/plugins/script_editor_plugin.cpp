@@ -731,6 +731,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	_update_members_overview();
 	_update_help_overview();
 	_update_selected_editor_menu();
+	_update_online_doc();
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
 }
@@ -903,6 +904,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 			_go_to_tab(idx);
 		} else {
 			_update_selected_editor_menu();
+			_update_online_doc();
 		}
 
 		_update_history_arrows();
@@ -1350,7 +1352,21 @@ void ScriptEditor::_menu_option(int p_option) {
 			help_search_dialog->popup_dialog();
 		} break;
 		case SEARCH_WEBSITE: {
-			OS::get_singleton()->shell_open(VERSION_DOCS_URL "/");
+			Control *tab = tab_container->get_current_tab_control();
+
+			EditorHelp *eh = Object::cast_to<EditorHelp>(tab);
+			bool native_class_doc = false;
+			if (eh) {
+				const HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(eh->get_class());
+				native_class_doc = E && !E->value.is_script_doc;
+			}
+			if (native_class_doc) {
+				String name = eh->get_class().to_lower();
+				String doc_url = vformat(VERSION_DOCS_URL "/classes/class_%s.html", name);
+				OS::get_singleton()->shell_open(doc_url);
+			} else {
+				OS::get_singleton()->shell_open(VERSION_DOCS_URL "/");
+			}
 		} break;
 		case WINDOW_NEXT: {
 			_history_forward();
@@ -2026,6 +2042,26 @@ void ScriptEditor::_update_help_overview() {
 	for (int i = 0; i < sections.size(); i++) {
 		help_overview->add_item(sections[i].first);
 		help_overview->set_item_metadata(i, sections[i].second);
+	}
+}
+
+void ScriptEditor::_update_online_doc() {
+	Node *current = tab_container->get_tab_control(tab_container->get_current_tab());
+
+	EditorHelp *eh = Object::cast_to<EditorHelp>(current);
+	bool native_class_doc = false;
+	if (eh) {
+		const HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(eh->get_class());
+		native_class_doc = E && !E->value.is_script_doc;
+	}
+	if (native_class_doc) {
+		String name = eh->get_class();
+		String tooltip = vformat(TTR("Open '%s' in Godot online documentation."), name);
+		site_search->set_text(TTR("Open in Online Docs"));
+		site_search->set_tooltip_text(tooltip);
+	} else {
+		site_search->set_text(TTR("Online Docs"));
+		site_search->set_tooltip_text(TTR("Open Godot online documentation."));
 	}
 }
 
@@ -4086,6 +4122,9 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Previous"), KeyModifierMask::ALT | Key::LEFT), WINDOW_PREV);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_next", TTR("History Next"), KeyModifierMask::ALT | Key::RIGHT), WINDOW_NEXT);
+	ED_SHORTCUT_OVERRIDE("script_editor/history_previous", "macos", KeyModifierMask::ALT | KeyModifierMask::META | Key::LEFT);
+	ED_SHORTCUT_OVERRIDE("script_editor/history_next", "macos", KeyModifierMask::ALT | KeyModifierMask::META | Key::RIGHT);
+
 	file_menu->get_popup()->add_separator();
 
 	theme_submenu = memnew(PopupMenu);
@@ -4147,15 +4186,13 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	site_search = memnew(Button);
 	site_search->set_flat(true);
-	site_search->set_text(TTR("Online Docs"));
-	site_search->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_WEBSITE));
+	site_search->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
-	site_search->set_tooltip_text(TTR("Open Godot online documentation."));
 
 	help_search = memnew(Button);
 	help_search->set_flat(true);
 	help_search->set_text(TTR("Search Help"));
-	help_search->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_HELP));
+	help_search->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_HELP));
 	menu_hb->add_child(help_search);
 	help_search->set_tooltip_text(TTR("Search the reference documentation."));
 
@@ -4163,14 +4200,14 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	script_back = memnew(Button);
 	script_back->set_flat(true);
-	script_back->connect("pressed", callable_mp(this, &ScriptEditor::_history_back));
+	script_back->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_back));
 	menu_hb->add_child(script_back);
 	script_back->set_disabled(true);
 	script_back->set_tooltip_text(TTR("Go to previous edited document."));
 
 	script_forward = memnew(Button);
 	script_forward->set_flat(true);
-	script_forward->connect("pressed", callable_mp(this, &ScriptEditor::_history_forward));
+	script_forward->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_forward));
 	menu_hb->add_child(script_forward);
 	script_forward->set_disabled(true);
 	script_forward->set_tooltip_text(TTR("Go to next edited document."));
@@ -4271,6 +4308,8 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	Ref<EditorJSONSyntaxHighlighter> json_syntax_highlighter;
 	json_syntax_highlighter.instantiate();
 	register_syntax_highlighter(json_syntax_highlighter);
+
+	_update_online_doc();
 }
 
 ScriptEditor::~ScriptEditor() {

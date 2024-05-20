@@ -204,7 +204,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 								} else {
 									for (int j = 0; j < key_len; j++) {
 										Basis sc = Basis().scaled(static_cast<Vector3>(anim->track_get_key_value(i, j)));
-										anim->track_set_key_value(i, j, (global_transform.basis * sc).get_scale());
+										anim->track_set_key_value(i, j, (global_transform.orthonormalized().basis * sc).get_scale());
 									}
 								}
 							}

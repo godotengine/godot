@@ -554,10 +554,10 @@
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or subclass member variable that would shadow a variable that is inherited from a parent class.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_expression" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling an expression that may have no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_ternary" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a ternary expression that has no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a ternary expression that may have no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/static_called_on_instance" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a static method from an instance of a class instead of from the class directly.
@@ -2713,8 +2713,8 @@
 		<member name="rendering/renderer/rendering_method.web" type="String" setter="" getter="" default="&quot;gl_compatibility&quot;">
 			Override for [member rendering/renderer/rendering_method] on web.
 		</member>
-		<member name="rendering/rendering_device/d3d12/agility_sdk_version" type="int" setter="" getter="" default="610">
-			Version code of the Direct3D 12 Agility SDK to use ([code]D3D12SDKVersion[/code]).
+		<member name="rendering/rendering_device/d3d12/agility_sdk_version" type="int" setter="" getter="" default="613">
+			Version code of the [url=https://devblogs.microsoft.com/directx/directx12agility/]Direct3D 12 Agility SDK[/url] to use ([code]D3D12SDKVersion[/code]). This must match the [i]minor[/i] version that is installed next to the editor binary and in the export templates directory for the current editor version. For example, if you have [code]1.613.3[/code] installed, you need to input [code]613[/code] here.
 		</member>
 		<member name="rendering/rendering_device/d3d12/max_misc_descriptors_per_frame" type="int" setter="" getter="" default="512">
 			The number of entries in the miscellaneous descriptors heap the Direct3D 12 rendering driver uses each frame, used for various operations like clearing a texture.

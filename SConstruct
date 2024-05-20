@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-EnsureSConsVersion(3, 0, 0)
+EnsureSConsVersion(3, 1, 2)
 EnsurePythonVersion(3, 6)
 
 # System
@@ -15,16 +15,6 @@ from collections import OrderedDict
 from importlib.util import spec_from_file_location, module_from_spec
 from SCons import __version__ as scons_raw_version
 
-# Enable ANSI escape code support on Windows 10 and later (for colored console output).
-# <https://github.com/python/cpython/issues/73245>
-if sys.platform == "win32":
-    from ctypes import windll, c_int, byref
-
-    stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
-    mode = c_int(0)
-    windll.kernel32.GetConsoleMode(c_int(stdout_handle), byref(mode))
-    mode = c_int(mode.value | 4)
-    windll.kernel32.SetConsoleMode(c_int(stdout_handle), mode)
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
@@ -74,6 +64,24 @@ from platform_methods import architectures, architecture_aliases
 if ARGUMENTS.get("target", "editor") == "editor":
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
     _helper_module("editor.template_builders", "editor/template_builders.py")
+
+# Enable ANSI escape code support on Windows 10 and later (for colored console output).
+# <https://github.com/python/cpython/issues/73245>
+if sys.stdout.isatty() and sys.platform == "win32":
+    try:
+        from ctypes import windll, byref, WinError  # type: ignore
+        from ctypes.wintypes import DWORD  # type: ignore
+
+        stdout_handle = windll.kernel32.GetStdHandle(DWORD(-11))
+        mode = DWORD(0)
+        if not windll.kernel32.GetConsoleMode(stdout_handle, byref(mode)):
+            raise WinError()
+        mode = DWORD(mode.value | 4)
+        if not windll.kernel32.SetConsoleMode(stdout_handle, mode):
+            raise WinError()
+    except Exception as e:
+        methods._colorize = False
+        print_error(f"Failed to enable ANSI escape code support, disabling color output.\n{e}")
 
 # Scan possible build platforms
 
@@ -288,6 +296,9 @@ opts.Add("ccflags", "Custom flags for both the C and C++ compilers")
 opts.Add("cxxflags", "Custom flags for the C++ compiler")
 opts.Add("cflags", "Custom flags for the C compiler")
 opts.Add("linkflags", "Custom flags for the linker")
+opts.Add("asflags", "Custom flags for the assembler")
+opts.Add("arflags", "Custom flags for the archive tool")
+opts.Add("rcflags", "Custom flags for Windows resource compiler")
 
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
@@ -363,7 +374,7 @@ if env["platform"] in platform_opts:
         opts.Add(opt)
 
 # Update the environment to take platform-specific options into account.
-opts.Update(env, {**ARGUMENTS, **env})
+opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
 
 # Detect modules.
 modules_detected = OrderedDict()
@@ -423,7 +434,7 @@ for name, path in modules_detected.items():
 env.modules_detected = modules_detected
 
 # Update the environment again after all the module options are added.
-opts.Update(env, {**ARGUMENTS, **env})
+opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
 Help(opts.GenerateHelpText(env))
 
 # add default include paths
@@ -534,6 +545,9 @@ env.Append(CCFLAGS=env.get("ccflags", "").split())
 env.Append(CXXFLAGS=env.get("cxxflags", "").split())
 env.Append(CFLAGS=env.get("cflags", "").split())
 env.Append(LINKFLAGS=env.get("linkflags", "").split())
+env.Append(ASFLAGS=env.get("asflags", "").split())
+env.Append(ARFLAGS=env.get("arflags", "").split())
+env.Append(RCFLAGS=env.get("rcflags", "").split())
 
 # Feature build profile
 env.disabled_classes = []
@@ -615,22 +629,12 @@ if methods.using_gcc(env):
             "Couldn't detect compiler version, skipping version checks. "
             "Build may fail if the compiler doesn't support C++17 fully."
         )
-    # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
-    # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
-    elif cc_version_major == 8 and cc_version_minor < 4:
+    elif cc_version_major < 9:
         print_error(
-            "Detected GCC 8 version < 8.4, which is not supported due to a "
-            "regression in its C++17 guaranteed copy elision support. Use a "
-            'newer GCC version, or Clang 6 or later by passing "use_llvm=yes" '
-            "to the SCons command line."
-        )
-        Exit(255)
-    elif cc_version_major < 7:
-        print_error(
-            "Detected GCC version older than 7, which does not fully support "
-            "C++17. Supported versions are GCC 7, 9 and later. Use a newer GCC "
-            'version, or Clang 6 or later by passing "use_llvm=yes" to the '
-            "SCons command line."
+            "Detected GCC version older than 9, which does not fully support "
+            "C++17, or has bugs when compiling Godot. Supported versions are 9 "
+            "and later. Use a newer GCC version, or Clang 6 or later by passing "
+            '"use_llvm=yes" to the SCons command line.'
         )
         Exit(255)
     elif cc_version_metadata1 == "win32":

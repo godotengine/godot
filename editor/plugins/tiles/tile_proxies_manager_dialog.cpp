@@ -463,7 +463,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	Button *add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
 	add_button->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	add_button->connect("pressed", callable_mp(this, &TileProxiesManagerDialog::_add_button_pressed));
+	add_button->connect(SceneStringName(pressed), callable_mp(this, &TileProxiesManagerDialog::_add_button_pressed));
 	vbox_container->add_child(add_button);
 
 	h_separator = memnew(HSeparator);
@@ -480,13 +480,13 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	Button *clear_invalid_button = memnew(Button);
 	clear_invalid_button->set_text(TTR("Clear Invalid"));
 	clear_invalid_button->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	clear_invalid_button->connect("pressed", callable_mp(this, &TileProxiesManagerDialog::_clear_invalid_button_pressed));
+	clear_invalid_button->connect(SceneStringName(pressed), callable_mp(this, &TileProxiesManagerDialog::_clear_invalid_button_pressed));
 	hboxcontainer->add_child(clear_invalid_button);
 
 	Button *clear_all_button = memnew(Button);
 	clear_all_button->set_text(TTR("Clear All"));
 	clear_all_button->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	clear_all_button->connect("pressed", callable_mp(this, &TileProxiesManagerDialog::_clear_all_button_pressed));
+	clear_all_button->connect(SceneStringName(pressed), callable_mp(this, &TileProxiesManagerDialog::_clear_all_button_pressed));
 	hboxcontainer->add_child(clear_all_button);
 
 	h_separator = memnew(HSeparator);

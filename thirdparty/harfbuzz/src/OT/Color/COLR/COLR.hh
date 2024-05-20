@@ -159,23 +159,35 @@ struct hb_colrv1_closure_context_t :
   void add_palette_index (unsigned palette_index)
   { palette_indices->add (palette_index); }
 
+  void add_var_idxes (unsigned first_var_idx, unsigned num_idxes)
+  {
+    if (!num_idxes || first_var_idx == VarIdx::NO_VARIATION) return;
+    variation_indices->add_range (first_var_idx, first_var_idx + num_idxes - 1);
+  }
+
   public:
   const void *base;
   hb_set_t visited_paint;
   hb_set_t *glyphs;
   hb_set_t *layer_indices;
   hb_set_t *palette_indices;
+  hb_set_t *variation_indices;
+  unsigned num_var_idxes;
   unsigned nesting_level_left;
 
   hb_colrv1_closure_context_t (const void *base_,
                                hb_set_t *glyphs_,
                                hb_set_t *layer_indices_,
                                hb_set_t *palette_indices_,
+                               hb_set_t *variation_indices_,
+                               unsigned num_var_idxes_ = 1,
                                unsigned nesting_level_left_ = HB_MAX_NESTING_LEVEL) :
                           base (base_),
                           glyphs (glyphs_),
                           layer_indices (layer_indices_),
                           palette_indices (palette_indices_),
+                          variation_indices (variation_indices_),
+                          num_var_idxes (num_var_idxes_),
                           nesting_level_left (nesting_level_left_)
   {}
 };
@@ -242,7 +254,12 @@ struct Variable
   }
 
   void closurev1 (hb_colrv1_closure_context_t* c) const
-  { value.closurev1 (c); }
+  {
+    c->num_var_idxes = 0;
+    // update c->num_var_idxes during value closure
+    value.closurev1 (c);
+    c->add_var_idxes (varIdxBase, c->num_var_idxes);
+  }
 
   bool subset (hb_subset_context_t *c,
                const ItemVarStoreInstancer &instancer) const
@@ -252,8 +269,18 @@ struct Variable
     if (c->plan->all_axes_pinned)
       return_trace (true);
 
-    //TODO: update varIdxBase for partial-instancing
-    return_trace (c->serializer->embed (varIdxBase));
+    VarIdx new_varidx;
+    new_varidx = varIdxBase;
+    if (varIdxBase != VarIdx::NO_VARIATION)
+    {
+      hb_pair_t<unsigned, int> *new_varidx_delta;
+      if (!c->plan->colrv1_variation_idx_delta_map.has (varIdxBase, &new_varidx_delta))
+        return_trace (false);
+
+      new_varidx = hb_first (*new_varidx_delta);
+    }
+
+    return_trace (c->serializer->embed (new_varidx));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -345,7 +372,10 @@ struct NoVariable
 struct ColorStop
 {
   void closurev1 (hb_colrv1_closure_context_t* c) const
-  { c->add_palette_index (paletteIndex); }
+  {
+    c->add_palette_index (paletteIndex);
+    c->num_var_idxes = 2;
+  }
 
   bool subset (hb_subset_context_t *c,
                const ItemVarStoreInstancer &instancer,
@@ -542,6 +572,9 @@ struct Affine2x3
     return_trace (c->check_struct (this));
   }
 
+  void closurev1 (hb_colrv1_closure_context_t* c) const
+  { c->num_var_idxes = 6; }
+
   bool subset (hb_subset_context_t *c,
                const ItemVarStoreInstancer &instancer,
                uint32_t varIdxBase) const
@@ -617,7 +650,10 @@ struct PaintColrLayers
 struct PaintSolid
 {
   void closurev1 (hb_colrv1_closure_context_t* c) const
-  { c->add_palette_index (paletteIndex); }
+  {
+    c->add_palette_index (paletteIndex);
+    c->num_var_idxes = 1;
+  }
 
   bool subset (hb_subset_context_t *c,
                const ItemVarStoreInstancer &instancer,
@@ -666,7 +702,10 @@ template <template<typename> class Var>
 struct PaintLinearGradient
 {
   void closurev1 (hb_colrv1_closure_context_t* c) const
-  { (this+colorLine).closurev1 (c); }
+  {
+    (this+colorLine).closurev1 (c);
+    c->num_var_idxes = 6;
+  }
 
   bool subset (hb_subset_context_t *c,
                const ItemVarStoreInstancer &instancer,
@@ -733,7 +772,10 @@ template <template<typename> class Var>
 struct PaintRadialGradient
 {
   void closurev1 (hb_colrv1_closure_context_t* c) const
-  { (this+colorLine).closurev1 (c); }
+  {
+    (this+colorLine).closurev1 (c);
+    c->num_var_idxes = 6;
+  }
 
   bool subset (hb_subset_context_t *c,
                const ItemVarStoreInstancer &instancer,
@@ -800,7 +842,10 @@ template <template<typename> class Var>
 struct PaintSweepGradient
 {
   void closurev1 (hb_colrv1_closure_context_t* c) const
-  { (this+colorLine).closurev1 (c); }
+  {
+    (this+colorLine).closurev1 (c);
+    c->num_var_idxes = 4;
+  }
 
   bool subset (hb_subset_context_t *c,
                const ItemVarStoreInstancer &instancer,
@@ -1544,6 +1589,9 @@ struct ClipBoxFormat2 : Variable<ClipBoxFormat1>
       clip_box.yMax += roundf (instancer (varIdxBase, 3));
     }
   }
+
+  void closurev1 (hb_colrv1_closure_context_t* c) const
+  { c->variation_indices->add_range (varIdxBase, varIdxBase + 3); }
 };
 
 struct ClipBox
@@ -1556,6 +1604,14 @@ struct ClipBox
     case 1: return_trace (u.format1.subset (c, instancer, VarIdx::NO_VARIATION));
     case 2: return_trace (u.format2.subset (c, instancer));
     default:return_trace (c->default_return_value ());
+    }
+  }
+
+  void closurev1 (hb_colrv1_closure_context_t* c) const
+  {
+    switch (u.format) {
+    case 2: u.format2.closurev1 (c);
+    default:return;
     }
   }
 
@@ -1605,6 +1661,12 @@ struct ClipRecord
 {
   int cmp (hb_codepoint_t g) const
   { return g < startGlyphID ? -1 : g <= endGlyphID ? 0 : +1; }
+
+  void closurev1 (hb_colrv1_closure_context_t* c, const void *base) const
+  {
+    if (!c->glyphs->intersects (startGlyphID, endGlyphID)) return;
+    (base+clipBox).closurev1 (c);
+  }
 
   bool subset (hb_subset_context_t *c,
                const void *base,
@@ -1941,6 +2003,76 @@ struct LayerList : Array32OfOffset32To<Paint>
   }
 };
 
+struct delta_set_index_map_subset_plan_t
+{
+  unsigned get_inner_bit_count () const { return inner_bit_count; }
+  unsigned get_width ()           const { return ((outer_bit_count + inner_bit_count + 7) / 8); }
+  hb_array_t<const uint32_t> get_output_map () const { return output_map.as_array (); }
+
+  delta_set_index_map_subset_plan_t (const hb_map_t &new_deltaset_idx_varidx_map)
+  {
+    map_count = 0;
+    outer_bit_count = 0;
+    inner_bit_count = 1;
+    output_map.init ();
+
+    /* search backwards */
+    unsigned count = new_deltaset_idx_varidx_map.get_population ();
+    if (!count) return;
+
+    unsigned last_idx = (unsigned)-1;
+    unsigned last_varidx = (unsigned)-1;
+
+    for (unsigned i = count; i; i--)
+    {
+      unsigned delta_set_idx = i - 1;
+      unsigned var_idx = new_deltaset_idx_varidx_map.get (delta_set_idx);
+      if (i == count)
+      {
+        last_idx = delta_set_idx;
+        last_varidx = var_idx;
+        continue;
+      }
+      if (var_idx != last_varidx)
+        break;
+      last_idx = delta_set_idx;
+    }
+
+    map_count = last_idx + 1;
+  }
+
+  bool remap (const hb_map_t &new_deltaset_idx_varidx_map)
+  {
+    /* recalculate bit_count */
+    outer_bit_count = 1;
+    inner_bit_count = 1;
+
+    if (unlikely (!output_map.resize (map_count, false))) return false;
+
+    for (unsigned idx = 0; idx < map_count; idx++)
+    {
+      uint32_t *var_idx;
+      if (!new_deltaset_idx_varidx_map.has (idx, &var_idx)) return false;
+      output_map.arrayZ[idx] = *var_idx;
+
+      unsigned outer = (*var_idx) >> 16;
+      unsigned bit_count = (outer == 0) ? 1 : hb_bit_storage (outer);
+      outer_bit_count = hb_max (bit_count, outer_bit_count);
+      
+      unsigned inner = (*var_idx) & 0xFFFF;
+      bit_count = (inner == 0) ? 1 : hb_bit_storage (inner);
+      inner_bit_count = hb_max (bit_count, inner_bit_count);
+    }
+    return true;
+  }
+
+  private:
+  unsigned map_count;
+  unsigned outer_bit_count;
+  unsigned inner_bit_count;
+  hb_vector_t<uint32_t> output_map;
+};
+
 struct COLR
 {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_COLR;
@@ -1992,8 +2124,22 @@ struct COLR
 
     void closure_forV1 (hb_set_t *glyphset,
                         hb_set_t *layer_indices,
-                        hb_set_t *palette_indices) const
-    { colr->closure_forV1 (glyphset, layer_indices, palette_indices); }
+                        hb_set_t *palette_indices,
+                        hb_set_t *variation_indices,
+                        hb_set_t *delta_set_indices) const
+    { colr->closure_forV1 (glyphset, layer_indices, palette_indices, variation_indices, delta_set_indices); }
+
+    bool has_var_store () const
+    { return colr->has_var_store (); }
+
+    const ItemVariationStore &get_var_store () const
+    { return colr->get_var_store (); }
+
+    bool has_delta_set_index_map () const
+    { return colr->has_delta_set_index_map (); }
+
+    const DeltaSetIndexMap &get_delta_set_index_map () const
+    { return colr->get_delta_set_index_map (); }
 
     private:
     hb_blob_ptr_t<COLR> colr;
@@ -2030,14 +2176,16 @@ struct COLR
 
   void closure_forV1 (hb_set_t *glyphset,
                       hb_set_t *layer_indices,
-                      hb_set_t *palette_indices) const
+                      hb_set_t *palette_indices,
+                      hb_set_t *variation_indices,
+                      hb_set_t *delta_set_indices) const
   {
     if (version != 1) return;
     hb_barrier ();
 
     hb_set_t visited_glyphs;
 
-    hb_colrv1_closure_context_t c (this, &visited_glyphs, layer_indices, palette_indices);
+    hb_colrv1_closure_context_t c (this, &visited_glyphs, layer_indices, palette_indices, variation_indices);
     const BaseGlyphList &baseglyph_paintrecords = this+baseGlyphList;
 
     for (const BaseGlyphPaintRecord &baseglyph_paintrecord: baseglyph_paintrecords.iter ())
@@ -2049,6 +2197,22 @@ struct COLR
       paint.dispatch (&c);
     }
     hb_set_union (glyphset, &visited_glyphs);
+
+    const ClipList &cliplist = this+clipList;
+    c.glyphs = glyphset;
+    for (const ClipRecord &clip_record : cliplist.clips.iter())
+      clip_record.closurev1 (&c, &cliplist);
+
+    // if a DeltaSetIndexMap is included, collected variation indices are
+    // actually delta set indices, we need to map them into variation indices
+    if (has_delta_set_index_map ())
+    {
+      const DeltaSetIndexMap &var_idx_map = this+varIdxMap;
+      delta_set_indices->set (*variation_indices);
+      variation_indices->clear ();
+      for (unsigned delta_set_idx : *delta_set_indices)
+        variation_indices->add (var_idx_map.map (delta_set_idx));
+    }
   }
 
   const LayerList& get_layerList () const
@@ -2056,6 +2220,18 @@ struct COLR
 
   const BaseGlyphList& get_baseglyphList () const
   { return (this+baseGlyphList); }
+
+  bool has_var_store () const
+  { return version >= 1 && varStore != 0; }
+
+  bool has_delta_set_index_map () const
+  { return version >= 1 && varIdxMap != 0; }
+
+  const DeltaSetIndexMap &get_delta_set_index_map () const
+  { return (version == 0 || varIdxMap == 0) ? Null (DeltaSetIndexMap) : this+varIdxMap; }
+
+  const ItemVariationStore &get_var_store () const
+  { return (version == 0 || varStore == 0) ? Null (ItemVariationStore) : this+varStore; }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -2132,6 +2308,88 @@ struct COLR
     return record;
   }
 
+  bool downgrade_to_V0 (const hb_set_t &glyphset) const
+  {
+    //no more COLRv1 glyphs, downgrade to version 0
+    for (const BaseGlyphPaintRecord& _ : get_baseglyphList ())
+      if (glyphset.has (_.glyphId))
+        return false;
+
+    return true;
+  }
+
+  bool subset_varstore (hb_subset_context_t *c,
+                        COLR* out /* OUT */) const
+  {
+    TRACE_SUBSET (this);
+    if (!varStore || c->plan->all_axes_pinned ||
+        !c->plan->colrv1_variation_idx_delta_map)
+      return_trace (true);
+
+    const ItemVariationStore& var_store = this+varStore;
+    if (c->plan->normalized_coords)
+    {
+      item_variations_t item_vars;
+      /* turn off varstore optimization when varIdxMap is null, so we maintain
+       * original var_idx sequence */
+      bool optimize = (varIdxMap != 0) ? true : false;
+      if (!item_vars.instantiate (var_store, c->plan,
+                                  optimize, /* optimization */
+                                  optimize, /* use_no_variation_idx = false */
+                                  c->plan->colrv1_varstore_inner_maps.as_array ()))
+        return_trace (false);
+
+      if (!out->varStore.serialize_serialize (c->serializer,
+                                              item_vars.has_long_word (),
+                                              c->plan->axis_tags,
+                                              item_vars.get_region_list (),
+                                              item_vars.get_vardata_encodings ()))
+        return_trace (false);
+
+      /* if varstore is optimized, update colrv1_new_deltaset_idx_varidx_map in
+       * subset plan */
+      if (optimize)
+      {
+        const hb_map_t &varidx_map = item_vars.get_varidx_map ();
+        for (auto _ : c->plan->colrv1_new_deltaset_idx_varidx_map.iter_ref ())
+        {
+          uint32_t varidx = _.second;
+          uint32_t *new_varidx;
+          if (varidx_map.has (varidx, &new_varidx))
+            _.second = *new_varidx;
+          else
+            _.second = VarIdx::NO_VARIATION;
+        }
+      }
+    }
+    else
+    {
+      if (unlikely (!out->varStore.serialize_serialize (c->serializer,
+                                                        &var_store,
+                                                        c->plan->colrv1_varstore_inner_maps.as_array ())))
+        return_trace (false);
+    }
+
+    return_trace (true);
+  }
+
+  bool subset_delta_set_index_map (hb_subset_context_t *c,
+                                   COLR* out /* OUT */) const
+  {
+    TRACE_SUBSET (this);
+    if (!varIdxMap || c->plan->all_axes_pinned ||
+        !c->plan->colrv1_new_deltaset_idx_varidx_map)
+      return_trace (true);
+
+    const hb_map_t &deltaset_idx_varidx_map = c->plan->colrv1_new_deltaset_idx_varidx_map;
+    delta_set_index_map_subset_plan_t index_map_plan (deltaset_idx_varidx_map);
+
+    if (unlikely (!index_map_plan.remap (deltaset_idx_varidx_map)))
+      return_trace (false);
+
+    return_trace (out->varIdxMap.serialize_serialize (c->serializer, index_map_plan));
+  }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -2200,34 +2458,28 @@ struct COLR
     auto *colr_prime = c->serializer->start_embed<COLR> ();
     if (unlikely (!c->serializer->extend_min (colr_prime)))  return_trace (false);
 
-    if (version == 0)
-    return_trace (colr_prime->serialize_V0 (c->serializer, version, base_it, layer_it));
+    if (version == 0 || downgrade_to_V0 (glyphset))
+    return_trace (colr_prime->serialize_V0 (c->serializer, 0, base_it, layer_it));
 
-    auto snap = c->serializer->snapshot ();
+    //start version 1
     if (!c->serializer->allocate_size<void> (5 * HBUINT32::static_size)) return_trace (false);
+    if (!colr_prime->serialize_V0 (c->serializer, version, base_it, layer_it)) return_trace (false);
+
+    /* subset ItemVariationStore first, cause varidx_map needs to be updated
+     * after instancing */
+    if (!subset_varstore (c, colr_prime)) return_trace (false);
 
     ItemVarStoreInstancer instancer (varStore ? &(this+varStore) : nullptr,
 	                         varIdxMap ? &(this+varIdxMap) : nullptr,
 	                         c->plan->normalized_coords.as_array ());
 
     if (!colr_prime->baseGlyphList.serialize_subset (c, baseGlyphList, this, instancer))
-    {
-      if (c->serializer->in_error ()) return_trace (false);
-      //no more COLRv1 glyphs: downgrade to version 0
-      c->serializer->revert (snap);
-      return_trace (colr_prime->serialize_V0 (c->serializer, 0, base_it, layer_it));
-    }
-
-    if (!colr_prime->serialize_V0 (c->serializer, version, base_it, layer_it)) return_trace (false);
+      return_trace (false);
 
     colr_prime->layerList.serialize_subset (c, layerList, this, instancer);
     colr_prime->clipList.serialize_subset (c, clipList, this, instancer);
-    if (!varStore || c->plan->all_axes_pinned)
-      return_trace (true);
 
-    colr_prime->varIdxMap.serialize_copy (c->serializer, varIdxMap, this);
-    colr_prime->varStore.serialize_copy (c->serializer, varStore, this);
-    return_trace (true);
+    return_trace (subset_delta_set_index_map (c, colr_prime));
   }
 
   const Paint *get_base_glyph_paint (hb_codepoint_t glyph) const

@@ -885,10 +885,10 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(parent_name);
 	register_text_enter(parent_name);
 	parent_search_button = memnew(Button);
-	parent_search_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_class_in_tree));
+	parent_search_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_browse_class_in_tree));
 	hb->add_child(parent_search_button);
 	parent_browse_button = memnew(Button);
-	parent_browse_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_path).bind(true, false));
+	parent_browse_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_browse_path).bind(true, false));
 	hb->add_child(parent_browse_button);
 	gc->add_child(memnew(Label(TTR("Inherits:"))));
 	gc->add_child(hb);
@@ -900,7 +900,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	use_templates = memnew(CheckBox);
 	use_templates->set_pressed(is_using_templates);
-	use_templates->connect("pressed", callable_mp(this, &ScriptCreateDialog::_use_template_pressed));
+	use_templates->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_use_template_pressed));
 	template_hb->add_child(use_templates);
 
 	template_inactive_message = "";
@@ -916,7 +916,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	built_in = memnew(CheckBox);
 	built_in->set_text(TTR("On"));
-	built_in->connect("pressed", callable_mp(this, &ScriptCreateDialog::_built_in_pressed));
+	built_in->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_built_in_pressed));
 	gc->add_child(memnew(Label(TTR("Built-in Script:"))));
 	gc->add_child(built_in);
 
@@ -930,7 +930,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(file_path);
 	register_text_enter(file_path);
 	path_button = memnew(Button);
-	path_button->connect("pressed", callable_mp(this, &ScriptCreateDialog::_browse_path).bind(false, true));
+	path_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_browse_path).bind(false, true));
 	hb->add_child(path_button);
 	Label *label = memnew(Label(TTR("Path:")));
 	gc->add_child(label);

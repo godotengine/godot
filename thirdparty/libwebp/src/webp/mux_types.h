@@ -79,7 +79,8 @@ static WEBP_INLINE void WebPDataClear(WebPData* webp_data) {
 
 // Allocates necessary storage for 'dst' and copies the contents of 'src'.
 // Returns true on success.
-static WEBP_INLINE int WebPDataCopy(const WebPData* src, WebPData* dst) {
+WEBP_NODISCARD static WEBP_INLINE int WebPDataCopy(const WebPData* src,
+                                                   WebPData* dst) {
   if (src == NULL || dst == NULL) return 0;
   WebPDataInit(dst);
   if (src->bytes != NULL && src->size != 0) {

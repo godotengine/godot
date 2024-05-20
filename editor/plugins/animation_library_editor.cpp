@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "animation_library_editor.h"
+
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -811,11 +812,11 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	hb->add_spacer(true);
 	new_library_button = memnew(Button(TTR("New Library")));
 	new_library_button->set_tooltip_text(TTR("Create new empty animation library."));
-	new_library_button->connect("pressed", callable_mp(this, &AnimationLibraryEditor::_add_library));
+	new_library_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationLibraryEditor::_add_library));
 	hb->add_child(new_library_button);
 	load_library_button = memnew(Button(TTR("Load Library")));
 	load_library_button->set_tooltip_text(TTR("Load animation library from disk."));
-	load_library_button->connect("pressed", callable_mp(this, &AnimationLibraryEditor::_load_library));
+	load_library_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationLibraryEditor::_load_library));
 	hb->add_child(load_library_button);
 	vb->add_child(hb);
 	tree = memnew(Tree);

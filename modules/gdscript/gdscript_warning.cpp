@@ -74,7 +74,7 @@ String GDScriptWarning::get_message() const {
 		case UNREACHABLE_PATTERN:
 			return "Unreachable pattern (pattern after wildcard or bind).";
 		case STANDALONE_EXPRESSION:
-			return "Standalone expression (the line has no effect).";
+			return "Standalone expression (the line may have no effect).";
 		case STANDALONE_TERNARY:
 			return "Standalone ternary operator: the return value is being discarded.";
 		case INCOMPATIBLE_TERNARY:
