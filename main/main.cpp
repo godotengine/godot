@@ -2229,11 +2229,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			if (globals->has_setting("display/window/size/window_width_override") &&
 					globals->has_setting("display/window/size/window_height_override")) {
-				int desired_width = globals->get("display/window/size/window_width_override");
+				int desired_width = GLOBAL_GET("display/window/size/window_width_override");
 				if (desired_width > 0) {
 					window_size.width = desired_width;
 				}
-				int desired_height = globals->get("display/window/size/window_height_override");
+				int desired_height = GLOBAL_GET("display/window/size/window_height_override");
 				if (desired_height > 0) {
 					window_size.height = desired_height;
 				}
@@ -4336,9 +4336,6 @@ void Main::cleanup(bool p_force) {
 	if (globals) {
 		memdelete(globals);
 	}
-	if (engine) {
-		memdelete(engine);
-	}
 
 	if (OS::get_singleton()->is_restart_on_exit_set()) {
 		//attempt to restart with arguments
@@ -4355,6 +4352,10 @@ void Main::cleanup(bool p_force) {
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	unregister_core_types();
+
+	if (engine) {
+		memdelete(engine);
+	}
 
 	OS::get_singleton()->benchmark_end_measure("Shutdown", "Total");
 	OS::get_singleton()->benchmark_dump();

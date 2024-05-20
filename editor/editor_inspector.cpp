@@ -2728,6 +2728,8 @@ void EditorInspector::update_tree() {
 	// TODO: Can be useful to store more context for the focusable, such as the caret position in LineEdit.
 	StringName current_selected = property_selected;
 	int current_focusable = -1;
+	// Temporarily disable focus following to avoid jumping while the inspector is updating.
+	set_follow_focus(false);
 
 	if (property_focusable != -1) {
 		// Check that focusable is actually focusable.
@@ -3485,6 +3487,7 @@ void EditorInspector::update_tree() {
 		// Updating inspector might invalidate some editing owners.
 		EditorNode::get_singleton()->hide_unused_editors();
 	}
+	set_follow_focus(true);
 }
 
 void EditorInspector::update_property(const String &p_prop) {
