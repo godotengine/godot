@@ -737,9 +737,21 @@ void Node3DEditorViewport::_select_clicked(bool p_allow_locked) {
 		return;
 	}
 
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+
+	// Prevent selection of nodes not owned by the edited scene.
+	while (node && node != edited_scene->get_parent()) {
+		Node *node_owner = node->get_owner();
+		if (node_owner == edited_scene || node == edited_scene || (node_owner != nullptr && edited_scene->is_editable_instance(node_owner))) {
+			break;
+		}
+		node = node->get_parent();
+		selected = Object::cast_to<Node3D>(node);
+	}
+
 	if (!p_allow_locked) {
 		// Replace the node by the group if grouped
-		while (node && node != EditorNode::get_singleton()->get_edited_scene()->get_parent()) {
+		while (node && node != edited_scene->get_parent()) {
 			Node3D *selected_tmp = Object::cast_to<Node3D>(node);
 			if (selected_tmp && node->has_meta("_edit_group_")) {
 				selected = selected_tmp;
@@ -1042,25 +1054,34 @@ void Node3DEditorViewport::_select_region() {
 
 		found_nodes.insert(sp);
 
-		Node *item = Object::cast_to<Node>(sp);
-		if (item != edited_scene) {
-			item = edited_scene->get_deepest_editable_node(item);
+		Node *node = Object::cast_to<Node>(sp);
+		if (node != edited_scene) {
+			node = edited_scene->get_deepest_editable_node(node);
+		}
+
+		// Prevent selection of nodes not owned by the edited scene.
+		while (node && node != edited_scene->get_parent()) {
+			Node *node_owner = node->get_owner();
+			if (node_owner == edited_scene || node == edited_scene || (node_owner != nullptr && edited_scene->is_editable_instance(node_owner))) {
+				break;
+			}
+			node = node->get_parent();
 		}
 
 		// Replace the node by the group if grouped
-		if (item->is_class("Node3D")) {
-			Node3D *sel = Object::cast_to<Node3D>(item);
-			while (item && item != EditorNode::get_singleton()->get_edited_scene()->get_parent()) {
-				Node3D *selected_tmp = Object::cast_to<Node3D>(item);
-				if (selected_tmp && item->has_meta("_edit_group_")) {
+		if (node->is_class("Node3D")) {
+			Node3D *sel = Object::cast_to<Node3D>(node);
+			while (node && node != EditorNode::get_singleton()->get_edited_scene()->get_parent()) {
+				Node3D *selected_tmp = Object::cast_to<Node3D>(node);
+				if (selected_tmp && node->has_meta("_edit_group_")) {
 					sel = selected_tmp;
 				}
-				item = item->get_parent();
+				node = node->get_parent();
 			}
-			item = sel;
+			node = sel;
 		}
 
-		if (_is_node_locked(item)) {
+		if (_is_node_locked(node)) {
 			continue;
 		}
 
@@ -1072,7 +1093,7 @@ void Node3DEditorViewport::_select_region() {
 			}
 
 			if (seg->intersect_frustum(camera, frustum)) {
-				selected.push_back(item);
+				selected.push_back(node);
 			}
 		}
 	}
@@ -1529,23 +1550,35 @@ bool Node3DEditorViewport ::_is_node_locked(const Node *p_node) {
 }
 
 void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
-	_find_items_at_pos(b->get_position(), selection_results, spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
+	Vector<_RayResult> potential_selection_results;
+	_find_items_at_pos(b->get_position(), potential_selection_results, spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
 
-	Node *scene = EditorNode::get_singleton()->get_edited_scene();
+	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 
-	for (int i = 0; i < selection_results.size(); i++) {
-		Node3D *item = selection_results[i].item;
-		if (item != scene && item->get_owner() != scene && item != scene->get_deepest_editable_node(item)) {
-			//invalid result
-			selection_results.remove_at(i);
-			i--;
+	// Filter to a list of nodes which include either the edited scene or nodes directly owned by the edited scene.
+	// If a node has an invalid owner, recursively check their parents until a valid node is found.
+	for (int i = 0; i < potential_selection_results.size(); i++) {
+		Node3D *node = potential_selection_results[i].item;
+		while (true) {
+			if (node == nullptr || node == edited_scene->get_parent()) {
+				break;
+			} else {
+				Node *node_owner = node->get_owner();
+				if (node == edited_scene || node_owner == edited_scene || (node_owner != nullptr && edited_scene->is_editable_instance(node_owner))) {
+					if (selection_results.has(node)) {
+						selection_results.append(node);
+					}
+					break;
+				}
+			}
+			node = Object::cast_to<Node3D>(node->get_parent());
 		}
 	}
 
 	clicked_wants_append = b->is_shift_pressed();
 
 	if (selection_results.size() == 1) {
-		clicked = selection_results[0].item->get_instance_id();
+		clicked = selection_results[0]->get_instance_id();
 		selection_results.clear();
 
 		if (clicked.is_valid()) {
@@ -1556,7 +1589,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		StringName root_name = root_path.get_name(root_path.get_name_count() - 1);
 
 		for (int i = 0; i < selection_results.size(); i++) {
-			Node3D *spat = selection_results[i].item;
+			Node3D *spat = selection_results[i];
 
 			Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(spat, "Node");
 
@@ -3748,7 +3781,7 @@ void Node3DEditorViewport::_selection_result_pressed(int p_result) {
 		return;
 	}
 
-	clicked = selection_results_menu[p_result].item->get_instance_id();
+	clicked = selection_results_menu[p_result]->get_instance_id();
 
 	if (clicked.is_valid()) {
 		_select_clicked(spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
