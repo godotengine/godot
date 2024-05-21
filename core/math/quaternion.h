@@ -115,7 +115,11 @@ struct _NO_DISCARD_ Quaternion {
 
 	operator String() const;
 
-	_FORCE_INLINE_ Quaternion() {}
+	_FORCE_INLINE_ Quaternion():
+			x(0),
+			y(0),
+			z(0),
+			w(1) {}
 
 	_FORCE_INLINE_ Quaternion(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
 			x(p_x),

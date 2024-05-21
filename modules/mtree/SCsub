@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_mtree = env_modules.Clone()
+
+env_mtree.Append(CPPDEFINES=["_SILENCE_CXX17_NEGATORS_DEPRECATION_WARNING"])
+
+env_mtree.add_source_files(env.modules_sources, "*.cpp")
+env_mtree.add_source_files(env.modules_sources, "utilities/*.cpp")
+env_mtree.add_source_files(env.modules_sources, "tree/*.cpp")
+env_mtree.add_source_files(env.modules_sources, "mesh/*.cpp")
+env_mtree.add_source_files(env.modules_sources, "tree_functions/*.cpp")
+env_mtree.add_source_files(env.modules_sources, "meshers/base_types/*.cpp")
+env_mtree.add_source_files(env.modules_sources, "meshers/manifold_mesher/*.cpp")
+env_mtree.add_source_files(env.modules_sources, "meshers/splines_mesher/*.cpp")

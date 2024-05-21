@@ -14,6 +14,47 @@
 
 #include "modules/limboai/bt/bt_player.h"
 
+class CharacterAnimatorNodeBase;
+// 动画库
+class CharacterAnimationLibrary : public Resource
+{
+    GDCLASS(CharacterAnimationLibrary, Resource);
+
+    static void _bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("set_animation_library", "animation_library"), &CharacterAnimationLibrary::set_animation_library);
+        ClassDB::bind_method(D_METHOD("get_animation_library"), &CharacterAnimationLibrary::get_animation_library);
+
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animation_library",PROPERTY_HINT_ARRAY_TYPE,"String"), "set_animation_library", "get_animation_library");
+    }
+    struct AnimationItem
+    {
+        String path;
+        Ref<CharacterAnimatorNodeBase> node;
+        bool is_loaded = false;
+    };
+
+public:
+    void set_animation_library(const TypedArray<String>& p_animation_library) { animation_library = p_animation_library; init_animation_library();}
+    TypedArray<String> get_animation_library() { return animation_library; }
+    void init_animation_library()
+    {
+        AnimationItem item;
+        for (int i = 0; i < animation_library.size(); i++)
+        {
+            item.path = animation_library[i];
+            String name = item.path.get_file().get_basename();
+            if(name.size() > 0)
+            {
+                animations.insert(name, item);
+            }
+        }
+    }
+public:
+    TypedArray<String> animation_library;
+    HashMap<StringName, AnimationItem> animations;
+};
+
 // 动画遮罩
 class CharacterAnimatorMask : public Resource
 {
@@ -104,6 +145,7 @@ public:
     Ref<CharacterBoneMap> bone_map;
     Ref<class CharacterAnimatorNodeBase> child_node;
     bool is_init = false;
+    float last_using_time = 0;
 };
 class CharacterAnimatorNodeBase : public Resource
 {
@@ -450,12 +492,9 @@ public:
     void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) 
     {
          blackboard_plan = p_blackboard_plan; 
-         if(p_blackboard_plan.is_valid() )
-         {
-            if(enter_condtion.is_valid()){
-             enter_condtion->blackboard_plan = p_blackboard_plan;
-            }
-         }
+        if(enter_condtion.is_valid()){
+            enter_condtion->set_blackboard_plan(p_blackboard_plan);
+        }
     }
     Ref<BlackboardPlan> get_blackboard_plan() { return blackboard_plan; }
 
@@ -483,8 +522,9 @@ public:
     void set_stop_check_condtion(const Ref<CharacterAnimatorCondition>& p_stop_check_condtion) { stop_check_condtion = p_stop_check_condtion; }
     Ref<CharacterAnimatorCondition> get_stop_check_condtion() { return stop_check_condtion; }
     
-    void init_blackboard()
+    static void init_blackboard(Ref<BlackboardPlan> p_blackboard_plan)
     {
+        Ref<BlackboardPlan> blackboard_plan = p_blackboard_plan;
         if(blackboard_plan.is_null())
         {
             return ;
@@ -580,6 +620,7 @@ class CharacterAnimator : public RefCounted
     static void _bind_methods();
 
     List<CharacterAnimatorLayer*> m_LayerList;
+    
     TypedArray<CharacterAnimatorLayerConfig> animation_layer_arrays;
     class CharacterBodyMain* m_Body = nullptr;
     bool is_init = false;

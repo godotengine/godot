@@ -2,6 +2,42 @@
 #include "body_animator.h"
 
 
+void AnimatorAIStateConditionBase::set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) 
+{
+        blackboard_plan = p_blackboard_plan; 
+        CharacterAnimationLogicNode::init_blackboard(blackboard_plan);
+}
+void AnimatorAIStateConditionBase::set_compare_type_name(const StringName& p_type)
+{
+    if(p_type == "==")
+        compareType = AnimatorAICompareType::Equal;
+    else if(p_type == "<")
+        compareType = AnimatorAICompareType::Less;
+    else if(p_type == "<=")
+        compareType = AnimatorAICompareType::LessEqual;
+    else if(p_type == ">")
+        compareType = AnimatorAICompareType::Greater;
+    else if(p_type == ">=")
+        compareType = AnimatorAICompareType::GreaterEqual;
+    else if(p_type == "!=")
+        compareType = AnimatorAICompareType::NotEqual;
+}
+StringName AnimatorAIStateConditionBase::get_compare_type_name()
+{
+    if(compareType == AnimatorAICompareType::Equal)
+        return "==";
+    else if(compareType == AnimatorAICompareType::Less)
+        return "<";
+    else if(compareType == AnimatorAICompareType::LessEqual)
+        return "<=";
+    else if(compareType == AnimatorAICompareType::Greater)
+        return ">";
+    else if(compareType == AnimatorAICompareType::GreaterEqual)
+        return ">=";
+    else if(compareType == AnimatorAICompareType::NotEqual)
+        return "!=";
+    return "==";
+}
 void AnimatorAIStateConditionBase::_bind_methods()
 {
     
@@ -17,8 +53,13 @@ void AnimatorAIStateConditionBase::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_compare_type", "type"), &AnimatorAIStateConditionBase::set_compare_type);
     ClassDB::bind_method(D_METHOD("get_compare_type"), &AnimatorAIStateConditionBase::get_compare_type);
 
+    ClassDB::bind_method(D_METHOD("set_blackboard_plan", "plan"), &AnimatorAIStateConditionBase::set_blackboard_plan);
+    ClassDB::bind_method(D_METHOD("get_blackboard_plan"), &AnimatorAIStateConditionBase::get_blackboard_plan);
+
     ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "compare_type_name", PROPERTY_HINT_ENUM_DYNAMIC_LIST,"get_compare_value"), "set_compare_type_name", "get_compare_type_name");
     ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "blackbord_property_name",PROPERTY_HINT_ENUM_DYNAMIC_LIST,"get_blackbord_propertys"), "set_blackbord_property_name", "get_blackbord_property_name");
+
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "blackboard_plan", PROPERTY_HINT_RESOURCE_TYPE, "BlackboardPlan"), "set_blackboard_plan", "get_blackboard_plan");
 }
 
 
@@ -39,4 +80,31 @@ void CharacterAnimatorCondition::_bind_methods()
 void CharacterAnimationLogicRoot::sort()
 {
     node_list.sort_custom<CharacterAnimationLogicNode::SortCharacterAnimationLogicNode>();
+}
+
+void CharacterAnimationLogicRoot::_bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("set_node_list","node_list"),&CharacterAnimationLogicRoot::set_node_list);
+    ClassDB::bind_method(D_METHOD("get_node_list"),&CharacterAnimationLogicRoot::get_node_list);
+
+    ClassDB::bind_method(D_METHOD("set_bt_sort","id"),&CharacterAnimationLogicRoot::set_bt_sort);
+    ClassDB::bind_method(D_METHOD("get_bt_sort"),&CharacterAnimationLogicRoot::get_bt_sort);
+
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "node_list", PROPERTY_HINT_ARRAY_TYPE,RESOURCE_TYPE_HINT("CharacterAnimationLogicNode")), "set_node_list", "get_node_list");
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "bt_sort",PROPERTY_HINT_BUTTON,"#FF22AA;Sort;sort"), "set_bt_sort", "get_bt_sort");
+
+}
+
+void CharacterAnimatorConditionList::update_blackboard_plan()
+{
+    CharacterAnimationLogicNode::init_blackboard(blackboard_plan);
+    for (uint32_t i = 0; i < conditions.size(); ++i)
+    {
+        if(conditions[i].is_null())
+        {
+            continue;
+        }
+        conditions[i]->set_blackboard_plan(blackboard_plan);
+    }
+
 }

@@ -42,7 +42,8 @@ public:
     void set_compare_type(AnimatorAICompareType p_type) { compareType = p_type; update_name();}
     AnimatorAICompareType get_compare_type() { return compareType; }
 
-    void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) { blackboard_plan = p_blackboard_plan; }
+    void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan);
+    Ref<BlackboardPlan> get_blackboard_plan() { return blackboard_plan; }
 
     Array get_compare_value() 
     {
@@ -60,38 +61,9 @@ public:
     {
         return Array();
     }
-    void set_compare_type_name(const StringName& p_type)
-    {
-        if(p_type == "==")
-            compareType = AnimatorAICompareType::Equal;
-        else if(p_type == "<")
-            compareType = AnimatorAICompareType::Less;
-        else if(p_type == "<=")
-            compareType = AnimatorAICompareType::LessEqual;
-        else if(p_type == ">")
-            compareType = AnimatorAICompareType::Greater;
-        else if(p_type == ">=")
-            compareType = AnimatorAICompareType::GreaterEqual;
-        else if(p_type == "!=")
-            compareType = AnimatorAICompareType::NotEqual;
-    }
-    StringName get_compare_type_name()
-    {
-        if(compareType == AnimatorAICompareType::Equal)
-            return "==";
-        else if(compareType == AnimatorAICompareType::Less)
-            return "<";
-        else if(compareType == AnimatorAICompareType::LessEqual)
-            return "<=";
-        else if(compareType == AnimatorAICompareType::Greater)
-            return ">";
-        else if(compareType == AnimatorAICompareType::GreaterEqual)
-            return ">=";
-        else if(compareType == AnimatorAICompareType::NotEqual)
-            return "!=";
-        return "==";
-    }
-    protected:
+    void set_compare_type_name(const StringName& p_type);
+    StringName get_compare_type_name();
+protected:
     Ref<BlackboardPlan> blackboard_plan;
     StringName propertyName;
     AnimatorAICompareType compareType;
@@ -107,13 +79,14 @@ class AnimatorAIStateFloatCondition : public AnimatorAIStateConditionBase
         ClassDB::bind_method(D_METHOD("set_value","value"),&AnimatorAIStateFloatCondition::set_value);
         ClassDB::bind_method(D_METHOD("get_value"),&AnimatorAIStateFloatCondition::get_value);
 
-        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "value"), "set_value", "get_value");
+        ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "value"), "set_value", "get_value");
     }
 
 protected:
     void set_value(float p_value)
     {
         value = p_value;
+        update_name();
     }
     float get_value()
     {
@@ -127,6 +100,16 @@ protected:
         ret.append(StringName("<"));
         ret.append(StringName("<="));
         return Array();
+    }
+    virtual void update_name()
+    {
+        #if TOOLS_ENABLED
+        String nm = String(propertyName)  + " " + get_compare_type_name();
+        {
+            nm += " " + String::num(value);
+        }
+        set_name( nm );
+        #endif
     }
     virtual Array _get_blackbord_propertys() override
     {
@@ -186,7 +169,7 @@ class AnimatorAIStateIntCondition : public AnimatorAIStateConditionBase
         ClassDB::bind_method(D_METHOD("set_value","value"),&AnimatorAIStateIntCondition::set_value);
         ClassDB::bind_method(D_METHOD("get_value"),&AnimatorAIStateIntCondition::get_value);
 
-        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "value"), "set_value", "get_value");
+        ADD_PROPERTY(PropertyInfo(Variant::INT, "value"), "set_value", "get_value");
     }
 
 protected:
@@ -297,6 +280,85 @@ protected:
 
 };
 // 字符串表达式
+class AnimatorAIStateBoolCondition : public AnimatorAIStateConditionBase
+{
+    GDCLASS(AnimatorAIStateBoolCondition,AnimatorAIStateConditionBase)
+
+    static void _bind_methods()
+    {
+        ClassDB::bind_method(D_METHOD("set_value","value"),&AnimatorAIStateBoolCondition::set_value);
+        ClassDB::bind_method(D_METHOD("get_value"),&AnimatorAIStateBoolCondition::get_value);
+
+        ADD_PROPERTY(PropertyInfo(Variant::BOOL, "value"), "set_value", "get_value");
+    }
+
+protected:
+    void set_value(bool p_value)
+    {
+        value = p_value;
+        update_name();
+    }
+    bool get_value()
+    {
+        return value;
+    }
+
+    virtual void update_name()
+    {
+        #if TOOLS_ENABLED
+        String nm = String(propertyName)  + " " + get_compare_type_name();
+        {
+            nm += " ";
+            nm += (value ? "true" : "false");
+        }
+        set_name( nm );
+        #endif
+    }
+    virtual Array _get_compare_value() override
+    {
+        Array ret;
+        ret.append(StringName("=="));
+        ret.append(StringName("!="));
+        return Array();
+    }
+    virtual Array _get_blackbord_propertys() override
+    {
+        Array rs;
+        if(!blackboard_plan.is_null())
+        {
+            blackboard_plan->get_property_names_by_type(Variant::BOOL,rs);
+        }
+        return rs;
+    }
+    virtual bool is_enable(Blackboard* p_blackboard,bool p_is_include)override
+    {
+        if(!p_blackboard->has_var(propertyName))
+        {
+            if(p_is_include)
+            {
+                return true;
+            }
+            return false;
+        }
+        bool curr = p_blackboard->get_var(propertyName, false);
+        switch (compareType)
+        {
+            case AnimatorAICompareType::Equal:
+                return curr == value;
+            case AnimatorAICompareType::NotEqual:
+                return curr != value;
+        }
+        if(p_is_include)
+        {
+            return true;
+        }
+        return false;
+    }
+    bool value;
+};
+
+
+// 字符串表达式
 class AnimatorAIStateStringNameCondition : public AnimatorAIStateConditionBase
 {
     GDCLASS(AnimatorAIStateStringNameCondition,AnimatorAIStateConditionBase)
@@ -374,9 +436,9 @@ protected:
     StringName value;
 };
 // 角色动画的条件
-class CharacterAnimatorConditionList : public Resource
+class CharacterAnimatorConditionList : public RefCounted
 {
-    GDCLASS(CharacterAnimatorConditionList, Resource)
+    GDCLASS(CharacterAnimatorConditionList, RefCounted)
     static void _bind_methods()
     {
         ClassDB::bind_method(D_METHOD("set_conditions","conditions"),&CharacterAnimatorConditionList::set_conditions);
@@ -388,7 +450,7 @@ public:
     void set_conditions(const Array& p_conditions)
     {
         conditions.clear();
-        for(uint32_t i = 0; i < p_conditions.size(); ++i)
+        for(int32_t i = 0; i < p_conditions.size(); ++i)
         {
             conditions.push_back(static_cast<Ref<AnimatorAIStateConditionBase>>(p_conditions[i]));
         }
@@ -435,18 +497,7 @@ public:
         return true;
     }
     void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) { blackboard_plan = p_blackboard_plan; update_blackboard_plan();}
-    void update_blackboard_plan()
-    {
-        for (uint32_t i = 0; i < conditions.size(); ++i)
-        {
-            if(conditions[i].is_null())
-            {
-                continue;
-            }
-            conditions[i]->set_blackboard_plan(blackboard_plan);
-        }
-
-    }
+    void update_blackboard_plan();
 
 public:
     LocalVector<Ref<AnimatorAIStateConditionBase>> conditions;
@@ -454,10 +505,10 @@ public:
     
 };
 // 角色动画的条件
-class CharacterAnimatorCondition : public Resource
+class CharacterAnimatorCondition : public RefCounted
 {
 
-    GDCLASS(CharacterAnimatorCondition, Resource)
+    GDCLASS(CharacterAnimatorCondition, RefCounted)
     static void _bind_methods();
 public :
     void set_include_condition(const Ref<CharacterAnimatorConditionList>& p_include_condition) 
@@ -475,7 +526,12 @@ public :
     Ref<CharacterAnimatorConditionList> get_exclude_condition() { return exclude_condition; }
     void update_blackboard_plan()
     {
-
+        if(include_condition.is_valid()){
+            include_condition->set_blackboard_plan(blackboard_plan);
+        }
+        if(exclude_condition.is_valid()){
+            exclude_condition->set_blackboard_plan(blackboard_plan);
+        }
     }
 public:
     void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) { blackboard_plan = p_blackboard_plan; update_blackboard_plan();}
@@ -504,26 +560,15 @@ public:
     
 };
 class CharacterAnimationLogicNode;
-class CharacterAnimationLogicRoot : public Resource
+class CharacterAnimationLogicRoot : public RefCounted
 {
-    GDCLASS(CharacterAnimationLogicRoot,Resource)
-    static void _bind_methods()
-    {
-        ClassDB::bind_method(D_METHOD("set_node_list","node_list"),&CharacterAnimationLogicRoot::set_node_list);
-        ClassDB::bind_method(D_METHOD("get_node_list"),&CharacterAnimationLogicRoot::get_node_list);
-
-        ClassDB::bind_method(D_METHOD("set_bt_sort","id"),&CharacterAnimationLogicRoot::set_bt_sort);
-        ClassDB::bind_method(D_METHOD("get_bt_sort"),&CharacterAnimationLogicRoot::get_bt_sort);
-
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "node_list", PROPERTY_HINT_ARRAY_TYPE,RESOURCE_TYPE_HINT("CharacterAnimationLogicNode")), "set_node_list", "get_node_list");
-        ADD_PROPERTY(PropertyInfo(Variant::INT, "bt_sort",PROPERTY_HINT_BUTTON,"#FF22AA;Sort;sort"), "set_bt_sort", "get_bt_sort");
-
-    }
+    GDCLASS(CharacterAnimationLogicRoot,RefCounted)
+    static void _bind_methods();
 public:
     void sort();
     void set_node_list(const Array& p_node_list)
     {
-        for(uint32_t i = 0; i < p_node_list.size(); ++i)
+        for(int32_t i = 0; i < p_node_list.size(); ++i)
         {
             node_list.push_back(p_node_list[i]);
         }
@@ -561,7 +606,6 @@ class CharacterAnimationLogicLayer : public Resource
 
         ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "default_state_name"), "set_default_state_name", "get_default_state_name");
     }
-
 public:
 
     void set_default_state_name(const StringName& p_default_state_name) { default_state_name = p_default_state_name; }

@@ -239,6 +239,8 @@ protected:
     // 身体部件信息
     HashMap<StringName,Ref<CharacterBodyPartInstane>> bodyPart;
     Ref<CharacterAnimator>    animator;
+    
+    Ref<CharacterAnimationLibrary> animation_library;
     Ref<class CharacterController>  controller;
     // 初始化数据
     Dictionary init_data;
