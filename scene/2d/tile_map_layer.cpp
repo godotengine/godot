@@ -1195,7 +1195,7 @@ void TileMapLayer::_navigation_draw_cell_debug(const RID &p_canvas_item, const V
 
 void TileMapLayer::_scenes_update(bool p_force_cleanup) {
 	// Check if we should cleanup everything.
-	bool forced_cleanup = p_force_cleanup || !enabled || !is_inside_tree() || tile_set.is_null();
+	bool forced_cleanup = p_force_cleanup || !enabled || tile_set.is_null();
 
 	if (forced_cleanup) {
 		// Clean everything.
@@ -1203,7 +1203,7 @@ void TileMapLayer::_scenes_update(bool p_force_cleanup) {
 			_scenes_clear_cell(kv.value);
 		}
 	} else {
-		if (_scenes_was_cleaned_up || dirty.flags[DIRTY_FLAGS_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE]) {
+		if (_scenes_was_cleaned_up || dirty.flags[DIRTY_FLAGS_TILE_SET]) {
 			// Update all cells.
 			for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
 				_scenes_update_cell(kv.value);
@@ -1691,8 +1691,8 @@ void TileMapLayer::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] = true;
-			// Update immediately on exiting, and force cleanup.
-			_internal_update(true);
+			// Update immediately on exiting, but do not force cleanup.
+			_internal_update(false);
 		} break;
 
 		case TileMap::NOTIFICATION_ENTER_CANVAS: {
@@ -1702,8 +1702,8 @@ void TileMapLayer::_notification(int p_what) {
 
 		case TileMap::NOTIFICATION_EXIT_CANVAS: {
 			dirty.flags[DIRTY_FLAGS_LAYER_IN_CANVAS] = true;
-			// Update immediately on exiting, and force cleanup.
-			_internal_update(true);
+			// Update immediately on exiting, but do not force cleanup.
+			_internal_update(false);
 		} break;
 
 		case TileMap::NOTIFICATION_VISIBILITY_CHANGED: {
