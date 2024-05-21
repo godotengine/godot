@@ -56,6 +56,7 @@
 #include "editor/shader_create_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_tree.h"
+#include "scene/audio/audio_stream_player.h"
 #include "scene/gui/check_box.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
@@ -254,8 +255,8 @@ void SceneTreeDock::instantiate_scenes(const Vector<String> &p_files, Node *p_pa
 	_perform_instantiate_scenes(p_files, parent, -1);
 }
 
-void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, Node *parent, int p_pos) {
-	ERR_FAIL_NULL(parent);
+void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, Node *p_parent, int p_pos) {
+	ERR_FAIL_NULL(p_parent);
 
 	Vector<Node *> instances;
 
@@ -302,25 +303,25 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Instantiate Scene(s)"));
+	undo_redo->create_action_for_history(TTRN("Instantiate Scene", "Instantiate Scenes", instances.size()), editor_data->get_current_edited_scene_history_id());
+	undo_redo->add_do_method(editor_selection, "clear");
 
 	for (int i = 0; i < instances.size(); i++) {
 		Node *instantiated_scene = instances[i];
 
-		undo_redo->add_do_method(parent, "add_child", instantiated_scene, true);
+		undo_redo->add_do_method(p_parent, "add_child", instantiated_scene, true);
 		if (p_pos >= 0) {
-			undo_redo->add_do_method(parent, "move_child", instantiated_scene, p_pos + i);
+			undo_redo->add_do_method(p_parent, "move_child", instantiated_scene, p_pos + i);
 		}
 		undo_redo->add_do_method(instantiated_scene, "set_owner", edited_scene);
-		undo_redo->add_do_method(editor_selection, "clear");
 		undo_redo->add_do_method(editor_selection, "add_node", instantiated_scene);
 		undo_redo->add_do_reference(instantiated_scene);
-		undo_redo->add_undo_method(parent, "remove_child", instantiated_scene);
+		undo_redo->add_undo_method(p_parent, "remove_child", instantiated_scene);
 
-		String new_name = parent->validate_child_name(instantiated_scene);
+		String new_name = p_parent->validate_child_name(instantiated_scene);
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		undo_redo->add_do_method(ed, "live_debug_instantiate_node", edited_scene->get_path_to(parent), p_files[i], new_name);
-		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)).path_join(new_name)));
+		undo_redo->add_do_method(ed, "live_debug_instantiate_node", edited_scene->get_path_to(p_parent), p_files[i], new_name);
+		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(p_parent)).path_join(new_name)));
 	}
 
 	undo_redo->commit_action();
@@ -328,6 +329,75 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 	for (int i = 0; i < instances.size(); i++) {
 		emit_signal(SNAME("node_created"), instances[i]);
 	}
+}
+
+void SceneTreeDock::_perform_create_audio_stream_players(const Vector<String> &p_files, Node *p_parent, int p_pos) {
+	ERR_FAIL_NULL(p_parent);
+
+	StringName node_type = "AudioStreamPlayer";
+	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+		if (Object::cast_to<Node2D>(p_parent)) {
+			node_type = "AudioStreamPlayer2D";
+		} else if (Object::cast_to<Node3D>(p_parent)) {
+			node_type = "AudioStreamPlayer3D";
+		}
+	}
+
+	Vector<Node *> nodes;
+	bool error = false;
+
+	for (const String &path : p_files) {
+		Ref<AudioStream> stream = ResourceLoader::load(path);
+		if (stream.is_null()) {
+			current_option = -1;
+			accept->set_text(vformat(TTR("Error loading audio stream from %s"), path));
+			accept->popup_centered();
+			error = true;
+			break;
+		}
+
+		Node *player = Object::cast_to<Node>(ClassDB::instantiate(node_type));
+		player->set("stream", stream);
+
+		// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
+		const String &node_name = Node::adjust_name_casing(path.get_file().get_basename());
+		if (!node_name.is_empty()) {
+			player->set_name(node_name);
+		}
+
+		nodes.push_back(player);
+	}
+
+	if (error) {
+		for (Node *node : nodes) {
+			memdelete(node);
+		}
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action_for_history(TTRN("Create AudioStreamPlayer", "Create AudioStreamPlayers", nodes.size()), editor_data->get_current_edited_scene_history_id());
+	undo_redo->add_do_method(editor_selection, "clear");
+
+	for (int i = 0; i < nodes.size(); i++) {
+		Node *node = nodes[i];
+
+		undo_redo->add_do_method(p_parent, "add_child", node, true);
+		if (p_pos >= 0) {
+			undo_redo->add_do_method(p_parent, "move_child", node, p_pos + i);
+		}
+		undo_redo->add_do_method(node, "set_owner", edited_scene);
+		undo_redo->add_do_method(editor_selection, "add_node", node);
+		undo_redo->add_do_reference(node);
+		undo_redo->add_undo_method(p_parent, "remove_child", node);
+
+		String new_name = p_parent->validate_child_name(node);
+		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(p_parent), node->get_class(), new_name);
+		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(p_parent)).path_join(new_name)));
+	}
+
+	undo_redo->commit_action();
 }
 
 void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base) {
@@ -3196,15 +3266,13 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to, int p_type) {
 	Node *node = get_node(p_to);
 	ERR_FAIL_NULL(node);
+	ERR_FAIL_COND(p_files.is_empty());
 
-	if (scene_tree->get_scene_tree()->get_drop_mode_flags() & Tree::DROP_MODE_INBETWEEN) {
-		// Dropped PackedScene, instance it.
-		int to_pos = -1;
-		_normalize_drop(node, to_pos, p_type);
-		_perform_instantiate_scenes(p_files, node, to_pos);
-	} else {
-		const String &res_path = p_files[0];
-		StringName res_type = EditorFileSystem::get_singleton()->get_file_type(res_path);
+	const String &res_path = p_files[0];
+	const StringName res_type = EditorFileSystem::get_singleton()->get_file_type(res_path);
+
+	// Dropping as property when possible.
+	if (p_type == 0 && p_files.size() == 1) {
 		List<String> valid_properties;
 
 		List<PropertyInfo> pinfo;
@@ -3238,9 +3306,21 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 			menu_properties->reset_size();
 			menu_properties->set_position(get_screen_position() + get_local_mouse_position());
 			menu_properties->popup();
-		} else if (!valid_properties.is_empty()) {
-			_perform_property_drop(node, valid_properties.front()->get(), ResourceLoader::load(res_path));
+			return;
 		}
+		if (!valid_properties.is_empty()) {
+			_perform_property_drop(node, valid_properties.front()->get(), ResourceLoader::load(res_path));
+			return;
+		}
+	}
+
+	// Either instantiate scenes or create AudioStreamPlayers.
+	int to_pos = -1;
+	_normalize_drop(node, to_pos, p_type);
+	if (res_type == "PackedScene") {
+		_perform_instantiate_scenes(p_files, node, to_pos);
+	} else {
+		_perform_create_audio_stream_players(p_files, node, to_pos);
 	}
 }
 
