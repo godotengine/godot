@@ -773,11 +773,19 @@ protected:
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	virtual const StringName *_get_class_namev() const {
-		static StringName _class_name_static;
-		if (unlikely(!_class_name_static)) {
-			StringName::assign_static_unique_class_name(&_class_name_static, "Object");
+		static std::queue<StringName> _class_name_statics;
+		static int versionYoloLocal = -1;
+		if (unlikely(Main::versionYolo != versionYoloLocal)) {
+			versionYoloLocal = Main::versionYolo;
+			if (_class_name_statics.size() > 0) {
+				/*_class_name_statics.pop();*/
+			}
+			_class_name_statics.push(StringName());
+		}     
+		if (unlikely(!_class_name_statics.back())) {
+			StringName::assign_static_unique_class_name(&_class_name_statics.back(), "Object");
 		}
-		return &_class_name_static;
+		return &_class_name_statics.back();
 	}
 
 	TypedArray<StringName> _get_meta_list_bind() const;
