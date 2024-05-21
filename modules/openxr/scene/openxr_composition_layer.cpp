@@ -165,7 +165,9 @@ void OpenXRCompositionLayer::set_layer_viewport(SubViewport *p_viewport) {
 		return;
 	}
 
-	ERR_FAIL_COND_EDMSG(is_viewport_in_use(p_viewport), RTR("Cannot use the same SubViewport with multiple OpenXR composition layers. Clear it from its current layer first."));
+	if (p_viewport != nullptr) {
+		ERR_FAIL_COND_EDMSG(is_viewport_in_use(p_viewport), RTR("Cannot use the same SubViewport with multiple OpenXR composition layers. Clear it from its current layer first."));
+	}
 
 	layer_viewport = p_viewport;
 
