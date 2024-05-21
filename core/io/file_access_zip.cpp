@@ -277,7 +277,7 @@ void FileAccessZip::seek_end(int64_t p_position) {
 
 uint64_t FileAccessZip::get_position() const {
 	ERR_FAIL_NULL_V(zfile, 0);
-	return unztell(zfile);
+	return unztell64(zfile);
 }
 
 uint64_t FileAccessZip::get_length() const {

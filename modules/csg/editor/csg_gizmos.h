@@ -35,7 +35,7 @@
 
 #include "../csg_shape.h"
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 
 class Gizmo3DHelper;

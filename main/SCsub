@@ -20,7 +20,7 @@ env_main.CommandNoCache(
     env.Run(main_builders.make_splash),
 )
 
-if not env_main["no_editor_splash"]:
+if env_main.editor_build and not env_main["no_editor_splash"]:
     env_main.Depends("#main/splash_editor.gen.h", "#main/splash_editor.png")
     env_main.CommandNoCache(
         "#main/splash_editor.gen.h",

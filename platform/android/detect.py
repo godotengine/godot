@@ -2,7 +2,7 @@ import os
 import sys
 import platform
 import subprocess
-
+from methods import print_warning, print_error
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -76,7 +76,6 @@ def get_flags():
 # Check if Android NDK version is installed
 # If not, install it.
 def install_ndk_if_needed(env: "SConsEnvironment"):
-    print("Checking for Android NDK...")
     sdk_root = env["ANDROID_HOME"]
     if not os.path.exists(get_android_ndk_root(env)):
         extension = ".bat" if os.name == "nt" else ""
@@ -87,13 +86,11 @@ def install_ndk_if_needed(env: "SConsEnvironment"):
             ndk_download_args = "ndk;" + get_ndk_version()
             subprocess.check_call([sdkmanager, ndk_download_args])
         else:
-            print("Cannot find " + sdkmanager)
-            print(
-                "Please ensure ANDROID_HOME is correct and cmdline-tools are installed, or install NDK version "
-                + get_ndk_version()
-                + " manually."
+            print_error(
+                f'Cannot find "{sdkmanager}". Please ensure ANDROID_HOME is correct and cmdline-tools'
+                f' are installed, or install NDK version "{get_ndk_version()}" manually.'
             )
-            sys.exit()
+            sys.exit(255)
     env["ANDROID_NDK_ROOT"] = get_android_ndk_root(env)
 
 
@@ -101,15 +98,15 @@ def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
     if env["arch"] not in supported_arches:
-        print(
+        print_error(
             'Unsupported CPU architecture "%s" for Android. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit()
+        sys.exit(255)
 
     if get_min_sdk_version(env["ndk_platform"]) < get_min_target_api():
-        print(
-            "WARNING: minimum supported Android target api is %d. Forcing target api %d."
+        print_warning(
+            "Minimum supported Android target api is %d. Forcing target api %d."
             % (get_min_target_api(), get_min_target_api())
         )
         env["ndk_platform"] = "android-" + str(get_min_target_api())

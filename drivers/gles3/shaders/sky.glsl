@@ -209,14 +209,6 @@ void main() {
 #endif
 	color = linear_to_srgb(color);
 
-#ifdef USE_BCS
-	color = apply_bcs(color, bcs);
-#endif
-
-#ifdef USE_COLOR_CORRECTION
-	color = apply_color_correction(color, color_correction);
-#endif
-
 	frag_color.rgb = color * luminance_multiplier;
 	frag_color.a = alpha;
 

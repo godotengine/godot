@@ -5,6 +5,16 @@
 	</brief_description>
 	<description>
 		[TextServer] is the API backend for managing fonts and rendering text.
+		[b]Note:[/b] This is a low-level API, consider using [TextLine], [TextParagraph], and [Font] classes instead.
+		This is an abstract class, so to get the currently active [TextServer] instance, use the following code:
+		[codeblocks]
+		[gdscript]
+		var ts = TextServerManager.get_primary_interface()
+		[/gdscript]
+		[csharp]
+		var ts = TextServerManager.GetPrimaryInterface();
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -1101,6 +1111,13 @@
 				If the [constant FEATURE_UNICODE_IDENTIFIERS] feature is not supported, a valid identifier must:
 				- Begin with a Unicode character of class XID_Start or [code]"_"[/code].
 				- May contain Unicode characters of class XID_Continue in the other positions.
+			</description>
+		</method>
+		<method name="is_valid_letter" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="unicode" type="int" />
+			<description>
+				Returns [code]true[/code] if the given code point is a valid letter, i.e. it belongs to the Unicode category "L".
 			</description>
 		</method>
 		<method name="load_support_data">

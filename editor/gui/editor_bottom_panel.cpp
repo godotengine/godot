@@ -265,7 +265,7 @@ EditorBottomPanel::EditorBottomPanel() {
 		build_date = TTR("(unknown)");
 	}
 	version_btn->set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
-	version_btn->connect("pressed", callable_mp(this, &EditorBottomPanel::_version_button_pressed));
+	version_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorBottomPanel::_version_button_pressed));
 	version_btn->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	bottom_hbox->add_child(version_btn);
 

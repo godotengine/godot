@@ -63,6 +63,7 @@ class OS {
 	bool _stdout_enabled = true;
 	bool _stderr_enabled = true;
 	bool _writing_movie = false;
+	bool _in_editor = false;
 
 	CompositeLogger *_logger = nullptr;
 
@@ -184,7 +185,7 @@ public:
 	virtual int get_process_id() const;
 	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
 	virtual int get_process_exit_code(const ProcessID &p_pid) const = 0;
-	virtual void vibrate_handheld(int p_duration_ms = 500) {}
+	virtual void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0) {}
 
 	virtual Error shell_open(const String &p_uri);
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);

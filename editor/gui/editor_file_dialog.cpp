@@ -1929,6 +1929,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_overwrite_warning", "disable"), &EditorFileDialog::set_disable_overwrite_warning);
 	ClassDB::bind_method(D_METHOD("is_overwrite_warning_disabled"), &EditorFileDialog::is_overwrite_warning_disabled);
 	ClassDB::bind_method(D_METHOD("add_side_menu", "menu", "title"), &EditorFileDialog::add_side_menu, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("popup_file_dialog"), &EditorFileDialog::popup_file_dialog);
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &EditorFileDialog::invalidate);
 
@@ -1963,6 +1964,7 @@ void EditorFileDialog::_bind_methods() {
 	Option defaults;
 
 	base_property_helper.set_prefix("option_");
+	base_property_helper.set_array_length_getter(&EditorFileDialog::get_option_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), defaults.name, &EditorFileDialog::set_option_name, &EditorFileDialog::get_option_name);
 	base_property_helper.register_property(PropertyInfo(Variant::PACKED_STRING_ARRAY, "values"), defaults.values, &EditorFileDialog::set_option_values, &EditorFileDialog::get_option_values);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "default"), defaults.default_idx, &EditorFileDialog::set_option_default, &EditorFileDialog::get_option_default);
@@ -2086,11 +2088,9 @@ EditorFileDialog::EditorFileDialog() {
 	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KeyModifierMask::CMD_OR_CTRL | Key::UP);
 	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KeyModifierMask::CMD_OR_CTRL | Key::DOWN);
 
-	if (EditorSettings::get_singleton()) {
-		ED_SHORTCUT_OVERRIDE("file_dialog/toggle_hidden_files", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::PERIOD);
-		ED_SHORTCUT_OVERRIDE("file_dialog/toggle_favorite", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::F);
-		ED_SHORTCUT_OVERRIDE("file_dialog/toggle_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::V);
-	}
+	ED_SHORTCUT_OVERRIDE("file_dialog/toggle_hidden_files", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::PERIOD);
+	ED_SHORTCUT_OVERRIDE("file_dialog/toggle_favorite", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::F);
+	ED_SHORTCUT_OVERRIDE("file_dialog/toggle_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::V);
 
 	pathhb = memnew(HBoxContainer);
 	vbc->add_child(pathhb);
@@ -2109,9 +2109,9 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(dir_next);
 	pathhb->add_child(dir_up);
 
-	dir_prev->connect("pressed", callable_mp(this, &EditorFileDialog::_go_back));
-	dir_next->connect("pressed", callable_mp(this, &EditorFileDialog::_go_forward));
-	dir_up->connect("pressed", callable_mp(this, &EditorFileDialog::_go_up));
+	dir_prev->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_go_back));
+	dir_next->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_go_forward));
+	dir_up->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_go_up));
 
 	Label *l = memnew(Label(TTR("Path:")));
 	l->set_theme_type_variation("HeaderSmall");
@@ -2128,14 +2128,14 @@ EditorFileDialog::EditorFileDialog() {
 	refresh = memnew(Button);
 	refresh->set_theme_type_variation("FlatButton");
 	refresh->set_tooltip_text(TTR("Refresh files."));
-	refresh->connect("pressed", callable_mp(this, &EditorFileDialog::update_file_list));
+	refresh->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::update_file_list));
 	pathhb->add_child(refresh);
 
 	favorite = memnew(Button);
 	favorite->set_theme_type_variation("FlatButton");
 	favorite->set_toggle_mode(true);
 	favorite->set_tooltip_text(TTR("(Un)favorite current folder."));
-	favorite->connect("pressed", callable_mp(this, &EditorFileDialog::_favorite_pressed));
+	favorite->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_favorite_pressed));
 	pathhb->add_child(favorite);
 
 	show_hidden = memnew(Button);
@@ -2153,7 +2153,7 @@ EditorFileDialog::EditorFileDialog() {
 
 	mode_thumbnails = memnew(Button);
 	mode_thumbnails->set_theme_type_variation("FlatButton");
-	mode_thumbnails->connect("pressed", callable_mp(this, &EditorFileDialog::set_display_mode).bind(DISPLAY_THUMBNAILS));
+	mode_thumbnails->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::set_display_mode).bind(DISPLAY_THUMBNAILS));
 	mode_thumbnails->set_toggle_mode(true);
 	mode_thumbnails->set_pressed(display_mode == DISPLAY_THUMBNAILS);
 	mode_thumbnails->set_button_group(view_mode_group);
@@ -2162,7 +2162,7 @@ EditorFileDialog::EditorFileDialog() {
 
 	mode_list = memnew(Button);
 	mode_list->set_theme_type_variation("FlatButton");
-	mode_list->connect("pressed", callable_mp(this, &EditorFileDialog::set_display_mode).bind(DISPLAY_LIST));
+	mode_list->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::set_display_mode).bind(DISPLAY_LIST));
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(display_mode == DISPLAY_LIST);
 	mode_list->set_button_group(view_mode_group);
@@ -2181,7 +2181,7 @@ EditorFileDialog::EditorFileDialog() {
 	makedir = memnew(Button);
 	makedir->set_theme_type_variation("FlatButton");
 	makedir->set_tooltip_text(TTR("Create a new folder."));
-	makedir->connect("pressed", callable_mp(this, &EditorFileDialog::_make_dir));
+	makedir->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_make_dir));
 	pathhb->add_child(makedir);
 
 	body_hsplit = memnew(HSplitContainer);
@@ -2215,11 +2215,11 @@ EditorFileDialog::EditorFileDialog() {
 	fav_up = memnew(Button);
 	fav_up->set_theme_type_variation("FlatButton");
 	fav_hb->add_child(fav_up);
-	fav_up->connect("pressed", callable_mp(this, &EditorFileDialog::_favorite_move_up));
+	fav_up->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_favorite_move_up));
 	fav_down = memnew(Button);
 	fav_down->set_theme_type_variation("FlatButton");
 	fav_hb->add_child(fav_down);
-	fav_down->connect("pressed", callable_mp(this, &EditorFileDialog::_favorite_move_down));
+	fav_down->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_favorite_move_down));
 
 	favorites = memnew(ItemList);
 	favorites->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);

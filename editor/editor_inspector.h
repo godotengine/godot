@@ -67,6 +67,12 @@ public:
 		MENU_OPEN_DOCUMENTATION,
 	};
 
+	enum ColorationMode {
+		COLORATION_CONTAINER_RESOURCE,
+		COLORATION_RESOURCE,
+		COLORATION_EXTERNAL,
+	};
+
 private:
 	String label;
 	int text_size;
@@ -130,6 +136,8 @@ private:
 	void _update_pin_flags();
 
 protected:
+	bool has_borders = false;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void _set_read_only(bool p_read_only);
@@ -140,6 +148,8 @@ protected:
 
 	virtual Variant _get_cache_value(const StringName &p_prop, bool &r_valid) const;
 	virtual StringName _get_revert_property() const;
+
+	void _update_property_bg();
 
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
@@ -176,6 +186,8 @@ public:
 
 	void set_keying(bool p_keying);
 	bool is_keying() const;
+
+	virtual bool is_colored(ColorationMode p_mode) { return false; }
 
 	void set_deletable(bool p_enable);
 	bool is_deletable() const;
@@ -482,7 +494,8 @@ class EditorInspector : public ScrollContainer {
 	//
 
 	LineEdit *search_box = nullptr;
-	bool show_categories = false;
+	bool show_standard_categories = false;
+	bool show_custom_categories = false;
 	bool hide_script = true;
 	bool hide_metadata = true;
 	bool use_doc_hints = false;
@@ -557,8 +570,6 @@ class EditorInspector : public ScrollContainer {
 
 	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
 
-	void _update_inspector_bg();
-
 	ConfirmationDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;
 	OptionButton *add_meta_type = nullptr;
@@ -600,7 +611,7 @@ public:
 
 	void set_autoclear(bool p_enable);
 
-	void set_show_categories(bool p_show);
+	void set_show_categories(bool p_show_standard, bool p_show_custom);
 	void set_use_doc_hints(bool p_enable);
 	void set_hide_script(bool p_hide);
 	void set_hide_metadata(bool p_hide);

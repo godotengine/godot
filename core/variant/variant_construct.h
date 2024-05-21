@@ -33,7 +33,6 @@
 
 #include "variant.h"
 
-#include "core/core_string_names.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/compression.h"
@@ -97,6 +96,7 @@ MAKE_PTRCONSTRUCT(PackedStringArray);
 MAKE_PTRCONSTRUCT(PackedVector2Array);
 MAKE_PTRCONSTRUCT(PackedVector3Array);
 MAKE_PTRCONSTRUCT(PackedColorArray);
+MAKE_PTRCONSTRUCT(PackedVector4Array);
 MAKE_PTRCONSTRUCT(Variant);
 
 template <typename T, typename... P>

@@ -216,7 +216,7 @@ ProjectListItemControl::ProjectListItemControl() {
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite_button->set_mouse_filter(MOUSE_FILTER_PASS);
 	favorite_box->add_child(favorite_button);
-	favorite_button->connect("pressed", callable_mp(this, &ProjectListItemControl::_favorite_button_pressed));
+	favorite_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_favorite_button_pressed));
 
 	project_icon = memnew(TextureRect);
 	project_icon->set_name("ProjectIcon");
@@ -262,7 +262,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		explore_button->set_name("ExploreButton");
 		explore_button->set_flat(true);
 		path_hb->add_child(explore_button);
-		explore_button->connect("pressed", callable_mp(this, &ProjectListItemControl::_explore_button_pressed));
+		explore_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_explore_button_pressed));
 
 		project_path = memnew(Label);
 		project_path->set_name("ProjectPath");
@@ -545,7 +545,7 @@ void ProjectList::sort_projects() {
 			}
 
 			// When searching, display projects whose name or path contain the search term and whose tags match the searched tags.
-			item_visible = !missing_tags && (search_term.is_empty() || item.project_name.findn(search_term) != -1 || search_path.findn(search_term) != -1);
+			item_visible = !missing_tags && (search_term.is_empty() || item.project_name.containsn(search_term) || search_path.containsn(search_term));
 		}
 
 		item.control->set_visible(item_visible);
@@ -711,7 +711,7 @@ void ProjectList::_create_project_item_control(int p_index) {
 	hb->set_is_missing(item.missing);
 	hb->set_is_grayed(item.grayed);
 
-	hb->connect("gui_input", callable_mp(this, &ProjectList::_list_item_input).bind(hb));
+	hb->connect(SceneStringName(gui_input), callable_mp(this, &ProjectList::_list_item_input).bind(hb));
 	hb->connect("favorite_pressed", callable_mp(this, &ProjectList::_on_favorite_pressed).bind(hb));
 
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)

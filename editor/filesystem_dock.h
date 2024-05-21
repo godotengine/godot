@@ -59,6 +59,7 @@ class FileSystemTree : public Tree {
 class FileSystemList : public ItemList {
 	GDCLASS(FileSystemList, ItemList);
 
+	bool popup_edit_commited = true;
 	VBoxContainer *popup_editor_vb = nullptr;
 	Popup *popup_editor = nullptr;
 	LineEdit *line_editor = nullptr;
@@ -116,6 +117,7 @@ private:
 		FILE_INSTANTIATE,
 		FILE_ADD_FAVORITE,
 		FILE_REMOVE_FAVORITE,
+		FILE_SHOW_IN_FILESYSTEM,
 		FILE_DEPENDENCIES,
 		FILE_OWNERS,
 		FILE_MOVE,

@@ -167,7 +167,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, read_only ? -1 : 0, get_theme_color(SNAME("font_color"), SNAME("Label")));
 			name->connect("text_submitted", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(agnode), CONNECT_DEFERRED);
-			name->connect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
+			name->connect(SceneStringName(focus_exited), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
 			name->connect("text_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
 			base = 1;
 			agnode->set_deletable(true);
@@ -177,7 +177,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 				delete_button->set_flat(true);
 				delete_button->set_focus_mode(FOCUS_NONE);
 				delete_button->set_icon(get_editor_theme_icon(SNAME("Close")));
-				delete_button->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_node_request).bind(E), CONNECT_DEFERRED);
+				delete_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_node_request).bind(E), CONNECT_DEFERRED);
 				node->get_titlebar_hbox()->add_child(delete_button);
 			}
 		}
@@ -216,7 +216,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			open_in_editor->set_text(TTR("Open Editor"));
 			open_in_editor->set_icon(get_editor_theme_icon(SNAME("Edit")));
 			node->add_child(open_in_editor);
-			open_in_editor->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_open_in_editor).bind(E), CONNECT_DEFERRED);
+			open_in_editor->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_open_in_editor).bind(E), CONNECT_DEFERRED);
 			open_in_editor->set_h_size_flags(SIZE_SHRINK_CENTER);
 		}
 
@@ -230,7 +230,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			}
 			inspect_filters->set_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
 			node->add_child(inspect_filters);
-			inspect_filters->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_inspect_filters).bind(E), CONNECT_DEFERRED);
+			inspect_filters->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_inspect_filters).bind(E), CONNECT_DEFERRED);
 			inspect_filters->set_h_size_flags(SIZE_SHRINK_CENTER);
 		}
 
@@ -1232,22 +1232,22 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 
 	filter_enabled = memnew(CheckBox);
 	filter_enabled->set_text(TTR("Enable Filtering"));
-	filter_enabled->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_toggled));
+	filter_enabled->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_toggled));
 	filter_hbox->add_child(filter_enabled);
 
 	filter_fill_selection = memnew(Button);
 	filter_fill_selection->set_text(TTR("Fill Selected Children"));
-	filter_fill_selection->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_fill_selection));
+	filter_fill_selection->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_fill_selection));
 	filter_hbox->add_child(filter_fill_selection);
 
 	filter_invert_selection = memnew(Button);
 	filter_invert_selection->set_text(TTR("Invert"));
-	filter_invert_selection->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_invert_selection));
+	filter_invert_selection->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_invert_selection));
 	filter_hbox->add_child(filter_invert_selection);
 
 	filter_clear_selection = memnew(Button);
 	filter_clear_selection->set_text(TTR("Clear"));
-	filter_clear_selection->connect("pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_clear_selection));
+	filter_clear_selection->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_filter_clear_selection));
 	filter_hbox->add_child(filter_clear_selection);
 
 	filters = memnew(Tree);

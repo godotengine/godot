@@ -112,7 +112,7 @@
 		</method>
 		<method name="play_with_capture">
 			<return type="void" />
-			<param index="0" name="name" type="StringName" />
+			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
 			<param index="1" name="duration" type="float" default="-1.0" />
 			<param index="2" name="custom_blend" type="float" default="-1" />
 			<param index="3" name="custom_speed" type="float" default="1.0" />
@@ -120,12 +120,13 @@
 			<param index="5" name="trans_type" type="int" enum="Tween.TransitionType" default="0" />
 			<param index="6" name="ease_type" type="int" enum="Tween.EaseType" default="0" />
 			<description>
-				See [method AnimationMixer.capture]. It is almost the same as the following:
+				See also [method AnimationMixer.capture].
+				You can use this method to use more detailed options for capture than those performed by [member playback_auto_capture]. When [member playback_auto_capture] is [code]false[/code], this method is almost the same as the following:
 				[codeblock]
 				capture(name, duration, trans_type, ease_type)
 				play(name, custom_blend, custom_speed, from_end)
 				[/codeblock]
-				If name is blank, it specifies [member assigned_animation].
+				If [param name] is blank, it specifies [member assigned_animation].
 				If [param duration] is a negative value, the duration is set to the interval between the current position and the first key, when [param from_end] is [code]true[/code], uses the interval between the current position and the last key instead.
 				[b]Note:[/b] The [param duration] takes [member speed_scale] into account, but [param custom_speed] does not, because the capture cache is interpolated with the blend result and the result may contain multiple animations.
 			</description>
@@ -209,6 +210,20 @@
 		<member name="movie_quit_on_finish" type="bool" setter="set_movie_quit_on_finish_enabled" getter="is_movie_quit_on_finish_enabled" default="false">
 			If [code]true[/code] and the engine is running in Movie Maker mode (see [MovieWriter]), exits the engine with [method SceneTree.quit] as soon as an animation is done playing in this [AnimationPlayer]. A message is printed when the engine quits for this reason.
 			[b]Note:[/b] This obeys the same logic as the [signal AnimationMixer.animation_finished] signal, so it will not quit the engine if the animation is set to be looping.
+		</member>
+		<member name="playback_auto_capture" type="bool" setter="set_auto_capture" getter="is_auto_capture" default="true">
+			If [code]true[/code], performs [method AnimationMixer.capture] before playback automatically. This means just [method play_with_capture] is executed with default arguments instead of [method play].
+			[b]Note:[/b] Capture interpolation is only performed if the animation contains a capture track. See also [constant Animation.UPDATE_CAPTURE].
+		</member>
+		<member name="playback_auto_capture_duration" type="float" setter="set_auto_capture_duration" getter="get_auto_capture_duration" default="-1.0">
+			See also [method play_with_capture] and [method AnimationMixer.capture].
+			If [member playback_auto_capture_duration] is negative value, the duration is set to the interval between the current position and the first key.
+		</member>
+		<member name="playback_auto_capture_ease_type" type="int" setter="set_auto_capture_ease_type" getter="get_auto_capture_ease_type" enum="Tween.EaseType" default="0">
+			The ease type of the capture interpolation. See also [enum Tween.EaseType].
+		</member>
+		<member name="playback_auto_capture_transition_type" type="int" setter="set_auto_capture_transition_type" getter="get_auto_capture_transition_type" enum="Tween.TransitionType" default="0">
+			The transition type of the capture interpolation. See also [enum Tween.TransitionType].
 		</member>
 		<member name="playback_default_blend_time" type="float" setter="set_default_blend_time" getter="get_default_blend_time" default="0.0">
 			The default time in which to blend animations. Ranges from 0 to 4096 with 0.01 precision.

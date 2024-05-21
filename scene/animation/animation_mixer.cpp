@@ -35,7 +35,6 @@
 #include "core/config/project_settings.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
-#include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
 #ifndef _3D_DISABLED
@@ -301,7 +300,7 @@ Error AnimationMixer::add_animation_library(const StringName &p_name, const Ref<
 	ald.library->connect(SNAME("animation_added"), callable_mp(this, &AnimationMixer::_animation_added).bind(p_name));
 	ald.library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationMixer::_animation_removed).bind(p_name));
 	ald.library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationMixer::_animation_renamed).bind(p_name));
-	ald.library->connect(SNAME("animation_changed"), callable_mp(this, &AnimationMixer::_animation_changed));
+	ald.library->connect(SceneStringName(animation_changed), callable_mp(this, &AnimationMixer::_animation_changed));
 
 	_animation_set_cache_update();
 
@@ -325,7 +324,7 @@ void AnimationMixer::remove_animation_library(const StringName &p_name) {
 	animation_libraries[at_pos].library->disconnect(SNAME("animation_added"), callable_mp(this, &AnimationMixer::_animation_added));
 	animation_libraries[at_pos].library->disconnect(SNAME("animation_removed"), callable_mp(this, &AnimationMixer::_animation_removed));
 	animation_libraries[at_pos].library->disconnect(SNAME("animation_renamed"), callable_mp(this, &AnimationMixer::_animation_renamed));
-	animation_libraries[at_pos].library->disconnect(SNAME("animation_changed"), callable_mp(this, &AnimationMixer::_animation_changed));
+	animation_libraries[at_pos].library->disconnect(SceneStringName(animation_changed), callable_mp(this, &AnimationMixer::_animation_changed));
 
 	animation_libraries.remove_at(at_pos);
 	_animation_set_cache_update();
@@ -628,9 +627,9 @@ bool AnimationMixer::_update_caches() {
 #endif
 
 	Ref<Animation> reset_anim;
-	bool has_reset_anim = has_animation(SceneStringNames::get_singleton()->RESET);
+	bool has_reset_anim = has_animation(SceneStringName(RESET));
 	if (has_reset_anim) {
-		reset_anim = get_animation(SceneStringNames::get_singleton()->RESET);
+		reset_anim = get_animation(SceneStringName(RESET));
 	}
 	for (const StringName &E : sname) {
 		Ref<Animation> anim = get_animation(E);
@@ -1617,7 +1616,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 					if (seeked) {
 						// Seek.
-						int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
+						int idx = a->track_find_key(i, time, Animation::FIND_MODE_NEAREST, true);
 						if (idx < 0) {
 							continue;
 						}
@@ -1630,6 +1629,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						double at_anim_pos = 0.0;
 						switch (anim->get_loop_mode()) {
 							case Animation::LOOP_NONE: {
+								if (!is_external_seeking && ((!backward && time >= pos + (double)anim->get_length()) || (backward && time <= pos))) {
+									continue; // Do nothing if current time is outside of length when started.
+								}
 								at_anim_pos = MIN((double)anim->get_length(), time - pos); // Seek to end.
 							} break;
 							case Animation::LOOP_LINEAR: {
@@ -1641,7 +1643,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							default:
 								break;
 						}
-						if (player2->is_playing()) {
+						if (player2->is_playing() || !is_external_seeking) {
 							player2->seek(at_anim_pos, false, p_update_only);
 							player2->play(anim_name);
 							t->playing = true;
@@ -1923,7 +1925,7 @@ bool AnimationMixer::is_reset_on_save_enabled() const {
 }
 
 bool AnimationMixer::can_apply_reset() const {
-	return has_animation(SceneStringNames::get_singleton()->RESET);
+	return has_animation(SceneStringName(RESET));
 }
 
 void AnimationMixer::_build_backup_track_cache() {
@@ -2010,7 +2012,7 @@ Ref<AnimatedValuesBackup> AnimationMixer::make_backup() {
 	Ref<AnimatedValuesBackup> backup;
 	backup.instantiate();
 
-	Ref<Animation> reset_anim = animation_set[SceneStringNames::get_singleton()->RESET].animation;
+	Ref<Animation> reset_anim = animation_set[SceneStringName(RESET)].animation;
 	ERR_FAIL_COND_V(reset_anim.is_null(), Ref<AnimatedValuesBackup>());
 
 	_blend_init();
@@ -2019,7 +2021,7 @@ Ref<AnimatedValuesBackup> AnimationMixer::make_backup() {
 	pi.delta = 0;
 	pi.seeked = true;
 	pi.weight = 1.0;
-	make_animation_instance(SceneStringNames::get_singleton()->RESET, pi);
+	make_animation_instance(SceneStringName(RESET), pi);
 	_build_backup_track_cache();
 
 	backup->set_data(track_cache);
@@ -2031,7 +2033,7 @@ Ref<AnimatedValuesBackup> AnimationMixer::make_backup() {
 void AnimationMixer::reset() {
 	ERR_FAIL_COND(!can_apply_reset());
 
-	Ref<Animation> reset_anim = animation_set[SceneStringNames::get_singleton()->RESET].animation;
+	Ref<Animation> reset_anim = animation_set[SceneStringName(RESET)].animation;
 	ERR_FAIL_COND(reset_anim.is_null());
 
 	Node *root_node_object = get_node_or_null(root_node);
@@ -2041,11 +2043,11 @@ void AnimationMixer::reset() {
 	root_node_object->add_child(aux_player);
 	Ref<AnimationLibrary> al;
 	al.instantiate();
-	al->add_animation(SceneStringNames::get_singleton()->RESET, reset_anim);
+	al->add_animation(SceneStringName(RESET), reset_anim);
 	aux_player->set_reset_on_save_enabled(false);
 	aux_player->set_root_node(aux_player->get_path_to(root_node_object));
 	aux_player->add_animation_library("", al);
-	aux_player->set_assigned_animation(SceneStringNames::get_singleton()->RESET);
+	aux_player->set_assigned_animation(SceneStringName(RESET));
 	aux_player->seek(0.0f, true);
 	aux_player->queue_free();
 }
@@ -2065,7 +2067,7 @@ Ref<AnimatedValuesBackup> AnimationMixer::apply_reset(bool p_user_initiated) {
 	}
 	ERR_FAIL_COND_V(!can_apply_reset(), Ref<AnimatedValuesBackup>());
 
-	Ref<Animation> reset_anim = animation_set[SceneStringNames::get_singleton()->RESET].animation;
+	Ref<Animation> reset_anim = animation_set[SceneStringName(RESET)].animation;
 	ERR_FAIL_COND_V(reset_anim.is_null(), Ref<AnimatedValuesBackup>());
 
 	Ref<AnimatedValuesBackup> backup_current = make_backup();
@@ -2090,7 +2092,7 @@ Ref<AnimatedValuesBackup> AnimationMixer::apply_reset(bool p_user_initiated) {
 void AnimationMixer::capture(const StringName &p_name, double p_duration, Tween::TransitionType p_trans_type, Tween::EaseType p_ease_type) {
 	ERR_FAIL_COND(!active);
 	ERR_FAIL_COND(!has_animation(p_name));
-	ERR_FAIL_COND(Math::is_zero_approx(p_duration));
+	ERR_FAIL_COND(p_duration <= 0);
 	Ref<Animation> reference_animation = get_animation(p_name);
 
 	if (!cache_valid) {
@@ -2283,7 +2285,7 @@ void AnimationMixer::_bind_methods() {
 }
 
 AnimationMixer::AnimationMixer() {
-	root_node = SceneStringNames::get_singleton()->path_pp;
+	root_node = SceneStringName(path_pp);
 }
 
 AnimationMixer::~AnimationMixer() {

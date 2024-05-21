@@ -7,8 +7,11 @@
 #define THORVG_JPG_LOADER_SUPPORT
 #define THORVG_THREAD_SUPPORT
 
+// Added conditionally if webp module is enabled.
+//#define THORVG_WEBP_LOADER_SUPPORT
+
 // For internal debugging:
 //#define THORVG_LOG_ENABLED
 
-#define THORVG_VERSION_STRING "0.12.10"
+#define THORVG_VERSION_STRING "0.13.3"
 #endif

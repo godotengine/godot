@@ -501,7 +501,7 @@ void GraphEdit::_graph_element_resize_request(const Vector2 &p_new_minsize, Node
 	// Snap the new size to the grid if snapping is enabled.
 	Vector2 new_size = p_new_minsize;
 	if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-		new_size = new_size.snapped(Vector2(snapping_distance, snapping_distance));
+		new_size = new_size.snappedf(snapping_distance);
 	}
 
 	// Disallow resizing the frame to a size smaller than the minimum size of the attached nodes.
@@ -601,7 +601,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		GraphNode *graph_node = Object::cast_to<GraphNode>(graph_element);
 		if (graph_node) {
 			graph_node->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated).bind(graph_element));
-			graph_node->connect("item_rect_changed", callable_mp(this, &GraphEdit::_graph_node_rect_changed).bind(graph_node));
+			graph_node->connect(SceneStringName(item_rect_changed), callable_mp(this, &GraphEdit::_graph_node_rect_changed).bind(graph_node));
 			_ensure_node_order_from(graph_node);
 		}
 
@@ -618,8 +618,8 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		}
 		graph_element->connect("raise_request", callable_mp(this, &GraphEdit::_ensure_node_order_from).bind(graph_element));
 		graph_element->connect("resize_request", callable_mp(this, &GraphEdit::_graph_element_resize_request).bind(graph_element));
-		graph_element->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw));
-		graph_element->connect("item_rect_changed", callable_mp((CanvasItem *)minimap, &GraphEditMinimap::queue_redraw));
+		graph_element->connect(SceneStringName(item_rect_changed), callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw));
+		graph_element->connect(SceneStringName(item_rect_changed), callable_mp((CanvasItem *)minimap, &GraphEditMinimap::queue_redraw));
 
 		graph_element->set_scale(Vector2(zoom, zoom));
 		_graph_element_moved(graph_element);
@@ -651,7 +651,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 		GraphNode *graph_node = Object::cast_to<GraphNode>(graph_element);
 		if (graph_node) {
 			graph_node->disconnect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated));
-			graph_node->disconnect("item_rect_changed", callable_mp(this, &GraphEdit::_graph_node_rect_changed));
+			graph_node->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &GraphEdit::_graph_node_rect_changed));
 
 			// Invalidate all adjacent connections, so that they are removed before the next redraw.
 			for (const Ref<Connection> &conn : connection_map[graph_node->get_name()]) {
@@ -692,7 +692,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 
 		// In case of the whole GraphEdit being destroyed these references can already be freed.
 		if (minimap != nullptr && minimap->is_inside_tree()) {
-			graph_element->disconnect("item_rect_changed", callable_mp((CanvasItem *)minimap, &GraphEditMinimap::queue_redraw));
+			graph_element->disconnect(SceneStringName(item_rect_changed), callable_mp((CanvasItem *)minimap, &GraphEditMinimap::queue_redraw));
 		}
 	}
 }
@@ -851,7 +851,7 @@ void GraphEdit::_set_position_of_frame_attached_nodes(GraphFrame *p_frame, const
 
 		Vector2 pos = (attached_node->get_drag_from() * zoom + drag_accum) / zoom;
 		if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-			pos = pos.snapped(Vector2(snapping_distance, snapping_distance));
+			pos = pos.snappedf(snapping_distance);
 		}
 
 		// Recursively move graph frames.
@@ -897,6 +897,12 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 			if (is_in_output_hotzone(graph_node, j, p_point / zoom, port_size)) {
 				return true;
 			}
+		}
+
+		// This prevents interactions with a port hotzone that is behind another node.
+		Rect2 graph_node_rect = Rect2(graph_node->get_position(), graph_node->get_size() * zoom);
+		if (graph_node_rect.has_point(click_pos * zoom)) {
+			break;
 		}
 	}
 
@@ -1027,6 +1033,12 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 					return;
 				}
 			}
+
+			// This prevents interactions with a port hotzone that is behind another node.
+			Rect2 graph_node_rect = Rect2(graph_node->get_position(), graph_node->get_size() * zoom);
+			if (graph_node_rect.has_point(click_pos * zoom)) {
+				break;
+			}
 		}
 	}
 
@@ -1059,7 +1071,7 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 						port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
 						int type = graph_node->get_output_port_type(j);
-						if ((type == connecting_type ||
+						if ((type == connecting_type || graph_node->is_ignoring_valid_connection_type() ||
 									valid_connection_types.has(ConnectionType(type, connecting_type))) &&
 								is_in_output_hotzone(graph_node, j, mpos, port_size)) {
 							if (!is_node_hover_valid(graph_node->get_name(), j, connecting_from_node, connecting_from_port_index)) {
@@ -1084,7 +1096,7 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 						port_size.height = MAX(port_size.height, child ? child->get_size().y : 0);
 
 						int type = graph_node->get_input_port_type(j);
-						if ((type == connecting_type || valid_connection_types.has(ConnectionType(connecting_type, type))) &&
+						if ((type == connecting_type || graph_node->is_ignoring_valid_connection_type() || valid_connection_types.has(ConnectionType(connecting_type, type))) &&
 								is_in_input_hotzone(graph_node, j, mpos, port_size)) {
 							if (!is_node_hover_valid(connecting_from_node, connecting_from_port_index, graph_node->get_name(), j)) {
 								continue;
@@ -1117,6 +1129,8 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 					emit_signal(SNAME("connection_from_empty"), connecting_from_node, connecting_from_port_index, mb->get_position());
 				}
 			}
+		} else {
+			set_selected(get_node_or_null(NodePath(connecting_from_node)));
 		}
 
 		if (connecting) {
@@ -1636,12 +1650,12 @@ void GraphEdit::_draw_grid() {
 
 void GraphEdit::set_selected(Node *p_child) {
 	for (int i = get_child_count() - 1; i >= 0; i--) {
-		GraphNode *graph_node = Object::cast_to<GraphNode>(get_child(i));
-		if (!graph_node) {
+		GraphElement *graph_element = Object::cast_to<GraphElement>(get_child(i));
+		if (!graph_element) {
 			continue;
 		}
 
-		graph_node->set_selected(graph_node == p_child);
+		graph_element->set_selected(graph_element == p_child);
 	}
 }
 
@@ -1678,7 +1692,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				// Snapping can be toggled temporarily by holding down Ctrl.
 				// This is done here as to not toggle the grid when holding down Ctrl.
 				if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-					pos = pos.snapped(Vector2(snapping_distance, snapping_distance));
+					pos = pos.snappedf(snapping_distance);
 				}
 
 				graph_element->set_position_offset(pos);
@@ -2755,12 +2769,12 @@ GraphEdit::GraphEdit() {
 	add_child(top_layer, false, INTERNAL_MODE_BACK);
 	top_layer->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	top_layer->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	top_layer->connect("draw", callable_mp(this, &GraphEdit::_top_layer_draw));
-	top_layer->connect("focus_exited", callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
+	top_layer->connect(SceneStringName(draw), callable_mp(this, &GraphEdit::_top_layer_draw));
+	top_layer->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
 	connections_layer = memnew(Control);
 	add_child(connections_layer, false);
-	connections_layer->connect("draw", callable_mp(this, &GraphEdit::_update_connections));
+	connections_layer->connect(SceneStringName(draw), callable_mp(this, &GraphEdit::_update_connections));
 	connections_layer->set_name("_connection_layer");
 	connections_layer->set_disable_visibility_clip(true); // Necessary, so it can draw freely and be offset.
 	connections_layer->set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -2772,7 +2786,7 @@ GraphEdit::GraphEdit() {
 
 	top_connection_layer->set_mouse_filter(MOUSE_FILTER_PASS);
 	top_connection_layer->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	top_connection_layer->connect("gui_input", callable_mp(this, &GraphEdit::_top_connection_layer_input));
+	top_connection_layer->connect(SceneStringName(gui_input), callable_mp(this, &GraphEdit::_top_connection_layer_input));
 
 	dragged_connection_line = memnew(Line2D);
 	dragged_connection_line->set_texture_mode(Line2D::LINE_TEXTURE_STRETCH);
@@ -2822,7 +2836,7 @@ GraphEdit::GraphEdit() {
 	zoom_minus_button->set_tooltip_text(ETR("Zoom Out"));
 	zoom_minus_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(zoom_minus_button);
-	zoom_minus_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_minus));
+	zoom_minus_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_minus));
 
 	zoom_reset_button = memnew(Button);
 	zoom_reset_button->set_theme_type_variation("FlatButton");
@@ -2830,7 +2844,7 @@ GraphEdit::GraphEdit() {
 	zoom_reset_button->set_tooltip_text(ETR("Zoom Reset"));
 	zoom_reset_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(zoom_reset_button);
-	zoom_reset_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_reset));
+	zoom_reset_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_reset));
 
 	zoom_plus_button = memnew(Button);
 	zoom_plus_button->set_theme_type_variation("FlatButton");
@@ -2838,7 +2852,7 @@ GraphEdit::GraphEdit() {
 	zoom_plus_button->set_tooltip_text(ETR("Zoom In"));
 	zoom_plus_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(zoom_plus_button);
-	zoom_plus_button->connect("pressed", callable_mp(this, &GraphEdit::_zoom_plus));
+	zoom_plus_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_plus));
 
 	// Grid controls.
 
@@ -2850,7 +2864,7 @@ GraphEdit::GraphEdit() {
 	toggle_grid_button->set_tooltip_text(ETR("Toggle the visual grid."));
 	toggle_grid_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(toggle_grid_button);
-	toggle_grid_button->connect("pressed", callable_mp(this, &GraphEdit::_show_grid_toggled));
+	toggle_grid_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_show_grid_toggled));
 
 	toggle_snapping_button = memnew(Button);
 	toggle_snapping_button->set_theme_type_variation("FlatButton");
@@ -2860,7 +2874,7 @@ GraphEdit::GraphEdit() {
 	toggle_snapping_button->set_pressed(snapping_enabled);
 	toggle_snapping_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(toggle_snapping_button);
-	toggle_snapping_button->connect("pressed", callable_mp(this, &GraphEdit::_snapping_toggled));
+	toggle_snapping_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_snapping_toggled));
 
 	snapping_distance_spinbox = memnew(SpinBox);
 	snapping_distance_spinbox->set_visible(show_grid_buttons);
@@ -2882,12 +2896,12 @@ GraphEdit::GraphEdit() {
 	minimap_button->set_pressed(show_grid);
 	minimap_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(minimap_button);
-	minimap_button->connect("pressed", callable_mp(this, &GraphEdit::_minimap_toggled));
+	minimap_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_minimap_toggled));
 
 	arrange_button = memnew(Button);
 	arrange_button->set_theme_type_variation("FlatButton");
 	arrange_button->set_visible(show_arrange_button);
-	arrange_button->connect("pressed", callable_mp(this, &GraphEdit::arrange_nodes));
+	arrange_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::arrange_nodes));
 	arrange_button->set_focus_mode(FOCUS_NONE);
 	menu_hbox->add_child(arrange_button);
 	arrange_button->set_tooltip_text(ETR("Automatically arrange selected nodes."));
@@ -2909,7 +2923,7 @@ GraphEdit::GraphEdit() {
 	minimap->set_offset(Side::SIDE_TOP, -minimap_size.height - MINIMAP_OFFSET);
 	minimap->set_offset(Side::SIDE_RIGHT, -MINIMAP_OFFSET);
 	minimap->set_offset(Side::SIDE_BOTTOM, -MINIMAP_OFFSET);
-	minimap->connect("draw", callable_mp(this, &GraphEdit::_minimap_draw));
+	minimap->connect(SceneStringName(draw), callable_mp(this, &GraphEdit::_minimap_draw));
 
 	set_clip_contents(true);
 

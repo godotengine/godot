@@ -58,7 +58,7 @@
 		</method>
 		<method name="create_status_indicator">
 			<return type="int" />
-			<param index="0" name="icon" type="Image" />
+			<param index="0" name="icon" type="Texture2D" />
 			<param index="1" name="tooltip" type="String" />
 			<param index="2" name="callback" type="Callable" />
 			<description>
@@ -1103,8 +1103,9 @@
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the scale factor of the specified screen by index.
-				[b]Note:[/b] On macOS returned value is [code]2.0[/code] for hiDPI (Retina) screen, and [code]1.0[/code] for all other cases.
-				[b]Note:[/b] This method is implemented only on macOS.
+				[b]Note:[/b] On macOS, the returned value is [code]2.0[/code] for hiDPI (Retina) screens, and [code]1.0[/code] for all other cases.
+				[b]Note:[/b] On Linux (Wayland), the returned value is accurate only when [param screen] is [constant SCREEN_OF_MAIN_WINDOW]. Due to API limitations, passing a direct index will return a rounded-up integer, if the screen has a fractional scale (e.g. [code]1.25[/code] would get rounded up to [code]2.0[/code]).
+				[b]Note:[/b] This method is implemented only on macOS and Linux (Wayland).
 			</description>
 		</method>
 		<method name="screen_get_size" qualifiers="const">
@@ -1167,20 +1168,41 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
 			</description>
 		</method>
+		<method name="status_indicator_get_rect" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the rectangle for the given status indicator [param id] in screen coordinates. If the status indicator is not visible, returns an empty [Rect2].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
 		<method name="status_indicator_set_callback">
 			<return type="void" />
 			<param index="0" name="id" type="int" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
 				Sets the application status indicator activation callback.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="status_indicator_set_icon">
 			<return type="void" />
 			<param index="0" name="id" type="int" />
-			<param index="1" name="icon" type="Image" />
+			<param index="1" name="icon" type="Texture2D" />
 			<description>
 				Sets the application status indicator icon.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="status_indicator_set_menu">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="menu_rid" type="RID" />
+			<description>
+				Sets the application status indicator native popup menu.
+				[b]Note:[/b] On macOS, the menu is activated by any mouse button. Its activation callback is [i]not[/i] triggered.
+				[b]Note:[/b] On Windows, the menu is activated by the right mouse button, selecting the status icon and pressing [kbd]Shift + F10[/kbd], or the applications key. The menu's activation callback for the other mouse buttons is still triggered.
+				[b]Note:[/b] Native popup is only supported if [NativeMenu] supports the [constant NativeMenu.FEATURE_POPUP_MENU] feature.
 			</description>
 		</method>
 		<method name="status_indicator_set_tooltip">
@@ -1189,6 +1211,7 @@
 			<param index="1" name="tooltip" type="String" />
 			<description>
 				Sets the application status indicator tooltip.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="tablet_get_current_driver" qualifiers="const">
@@ -1602,7 +1625,7 @@
 			<param index="0" name="max_size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the maximum size of the window specified by [param window_id] in pixels. Normally, the user will not be able to drag the window to make it smaller than the specified size. See also [method window_get_max_size].
+				Sets the maximum size of the window specified by [param window_id] in pixels. Normally, the user will not be able to drag the window to make it larger than the specified size. See also [method window_get_max_size].
 				[b]Note:[/b] It's recommended to change this value using [member Window.max_size] instead.
 				[b]Note:[/b] Using third-party tools, it is possible for users to disable window geometry restrictions and therefore bypass this limit.
 			</description>
@@ -1612,7 +1635,7 @@
 			<param index="0" name="min_size" type="Vector2i" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the minimum size for the given window to [param min_size] (in pixels). Normally, the user will not be able to drag the window to make it larger than the specified size. See also [method window_get_min_size].
+				Sets the minimum size for the given window to [param min_size] in pixels. Normally, the user will not be able to drag the window to make it smaller than the specified size. See also [method window_get_min_size].
 				[b]Note:[/b] It's recommended to change this value using [member Window.min_size] instead.
 				[b]Note:[/b] By default, the main window has a minimum size of [code]Vector2i(64, 64)[/code]. This prevents issues that can arise when the window is resized to a near-zero size.
 				[b]Note:[/b] Using third-party tools, it is possible for users to disable window geometry restrictions and therefore bypass this limit.

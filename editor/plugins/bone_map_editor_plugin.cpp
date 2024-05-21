@@ -120,7 +120,7 @@ void BoneMapperItem::create_editor() {
 
 	picker_button = memnew(Button);
 	picker_button->set_icon(get_editor_theme_icon(SNAME("ClassList")));
-	picker_button->connect("pressed", callable_mp(this, &BoneMapperItem::_open_picker));
+	picker_button->connect(SceneStringName(pressed), callable_mp(this, &BoneMapperItem::_open_picker));
 	hbox->add_child(picker_button);
 
 	add_child(memnew(HSeparator));
@@ -301,7 +301,7 @@ void BoneMapper::create_editor() {
 	clear_mapping_button = memnew(Button);
 	clear_mapping_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
 	clear_mapping_button->set_tooltip_text(TTR("Clear mappings in current group."));
-	clear_mapping_button->connect("pressed", callable_mp(this, &BoneMapper::_clear_mapping_current_group));
+	clear_mapping_button->connect(SceneStringName(pressed), callable_mp(this, &BoneMapper::_clear_mapping_current_group));
 	group_hbox->add_child(clear_mapping_button);
 
 	bone_mapper_field = memnew(AspectRatioContainer);
@@ -422,7 +422,7 @@ void BoneMapper::recreate_editor() {
 	for (int i = 0; i < len; i++) {
 		if (profile->get_group(i) == profile->get_group_name(current_group_idx)) {
 			BoneMapperButton *mb = memnew(BoneMapperButton(profile->get_bone_name(i), profile->is_required(i), current_bone_idx == i));
-			mb->connect("pressed", callable_mp(this, &BoneMapper::set_current_bone_idx).bind(i), CONNECT_DEFERRED);
+			mb->connect(SceneStringName(pressed), callable_mp(this, &BoneMapper::set_current_bone_idx).bind(i), CONNECT_DEFERRED);
 			mb->set_h_grow_direction(GROW_DIRECTION_BOTH);
 			mb->set_v_grow_direction(GROW_DIRECTION_BOTH);
 			Vector2 vc = profile->get_handle_offset(i);
@@ -861,6 +861,8 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	picklist.clear();
 
 	// 4-1. Guess Finger
+	int tips_index = -1;
+	bool thumb_tips_size = 0;
 	bool named_finger_is_found = false;
 	LocalVector<String> fingers;
 	fingers.push_back("thumb|pollex");
@@ -893,6 +895,33 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 				while (finger != left_hand_or_palm && finger >= 0) {
 					search_path.push_back(finger);
 					finger = skeleton->get_bone_parent(finger);
+				}
+				// Tips detection by name matching with "distal" from root.
+				for (int j = search_path.size() - 1; j >= 0; j--) {
+					if (RegEx("distal").search(skeleton->get_bone_name(search_path[j]).to_lower()).is_valid()) {
+						tips_index = j - 1;
+						break;
+					}
+				}
+				// Tips detection by name matching with "tip|leaf" from end.
+				if (tips_index < 0) {
+					for (int j = 0; j < search_path.size(); j++) {
+						if (RegEx("tip|leaf").search(skeleton->get_bone_name(search_path[j]).to_lower()).is_valid()) {
+							tips_index = j;
+							break;
+						}
+					}
+				}
+				// Tips detection by thumb children size.
+				if (tips_index < 0) {
+					if (i == 0) {
+						thumb_tips_size = MAX(0, search_path.size() - 3);
+					}
+					tips_index = thumb_tips_size - 1;
+				}
+				// Remove tips.
+				for (int j = 0; j <= tips_index; j++) {
+					search_path.remove_at(0);
 				}
 				search_path.reverse();
 				if (search_path.size() == 1) {
@@ -941,6 +970,14 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 					}
 				}
 				search_path.push_back(finger_root);
+				// Tips detection by thumb children size.
+				if (i == 0) {
+					thumb_tips_size = MAX(0, search_path.size() - 3);
+				}
+				tips_index = thumb_tips_size - 1;
+				for (int j = 0; j <= tips_index; j++) {
+					search_path.remove_at(0);
+				}
 				search_path.reverse();
 				if (search_path.size() == 1) {
 					p_bone_map->_set_skeleton_bone_name(left_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));
@@ -958,6 +995,9 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 			picklist.clear();
 		}
 	}
+
+	tips_index = -1;
+	thumb_tips_size = 0;
 	named_finger_is_found = false;
 	if (right_hand_or_palm != -1) {
 		LocalVector<LocalVector<String>> right_fingers_map;
@@ -984,6 +1024,33 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 				while (finger != right_hand_or_palm && finger >= 0) {
 					search_path.push_back(finger);
 					finger = skeleton->get_bone_parent(finger);
+				}
+				// Tips detection by name matching with "distal" from root.
+				for (int j = search_path.size() - 1; j >= 0; j--) {
+					if (RegEx("distal").search(skeleton->get_bone_name(search_path[j]).to_lower()).is_valid()) {
+						tips_index = j - 1;
+						break;
+					}
+				}
+				// Tips detection by name matching with "tip|leaf" from end.
+				if (tips_index < 0) {
+					for (int j = 0; j < search_path.size(); j++) {
+						if (RegEx("tip|leaf").search(skeleton->get_bone_name(search_path[j]).to_lower()).is_valid()) {
+							tips_index = j;
+							break;
+						}
+					}
+				}
+				// Tips detection by thumb children size.
+				if (tips_index < 0) {
+					if (i == 0) {
+						thumb_tips_size = MAX(0, search_path.size() - 3);
+					}
+					tips_index = thumb_tips_size - 1;
+				}
+				// Remove tips.
+				for (int j = 0; j <= tips_index; j++) {
+					search_path.remove_at(0);
 				}
 				search_path.reverse();
 				if (search_path.size() == 1) {
@@ -1032,6 +1099,14 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 					}
 				}
 				search_path.push_back(finger_root);
+				// Tips detection by thumb children size.
+				if (i == 0) {
+					thumb_tips_size = MAX(0, search_path.size() - 3);
+				}
+				tips_index = thumb_tips_size - 1;
+				for (int j = 0; j <= tips_index; j++) {
+					search_path.remove_at(0);
+				}
 				search_path.reverse();
 				if (search_path.size() == 1) {
 					p_bone_map->_set_skeleton_bone_name(right_fingers_map[i][0], skeleton->get_bone_name(search_path[0]));

@@ -46,13 +46,17 @@ class OpenXRCompositionLayer : public Node3D {
 	GDCLASS(OpenXRCompositionLayer, Node3D);
 
 	SubViewport *layer_viewport = nullptr;
+	bool enable_hole_punch = false;
 	MeshInstance3D *fallback = nullptr;
 	bool should_update_fallback_mesh = false;
+	bool openxr_session_running = false;
 
 	Dictionary extension_property_values;
 
+	bool _should_use_fallback_node();
 	void _create_fallback_node();
 	void _reset_fallback_material();
+	void _remove_fallback_node();
 
 protected:
 	OpenXRAPI *openxr_api = nullptr;
@@ -73,11 +77,15 @@ protected:
 
 	void update_fallback_mesh();
 
-	static HashSet<SubViewport *> viewports_in_use;
+	static Vector<OpenXRCompositionLayer *> composition_layer_nodes;
+	bool is_viewport_in_use(SubViewport *p_viewport);
 
 public:
 	void set_layer_viewport(SubViewport *p_viewport);
 	SubViewport *get_layer_viewport() const;
+
+	void set_enable_hole_punch(bool p_enable);
+	bool get_enable_hole_punch() const;
 
 	void set_sort_order(int p_order);
 	int get_sort_order() const;

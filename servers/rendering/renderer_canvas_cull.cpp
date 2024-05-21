@@ -38,6 +38,12 @@
 #include "rendering_server_globals.h"
 #include "servers/rendering/storage/texture_storage.h"
 
+// Use the same antialiasing feather size as StyleBoxFlat's default
+// (but doubled, as it's specified for both sides here).
+// This value is empirically determined to provide good antialiasing quality
+// while not making lines appear too soft.
+const static float FEATHER_SIZE = 1.25f;
+
 void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, uint32_t p_canvas_cull_mask, RenderingMethod::RenderInfo *r_render_info) {
 	RENDER_TIMESTAMP("Cull CanvasItem Tree");
 
@@ -638,11 +644,8 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 	}
 
 	if (p_antialiased) {
-		// Use the same antialiasing feather size as StyleBoxFlat's default
-		// (but doubled, as it's specified for both sides here).
-		// This value is empirically determined to provide good antialiasing quality
-		// while not making lines appear too soft.
-		float border_size = 1.25f;
+		float border_size = FEATHER_SIZE;
+
 		if (0.0f <= p_width && p_width < 1.0f) {
 			border_size *= p_width;
 		}
@@ -651,7 +654,7 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		Vector2 border = dir * border_size;
 		Vector2 border2 = dir2 * border_size;
 
-		Color transparent = Color(p_color.r, p_color.g, p_color.b, 0.0);
+		Color transparent = Color(p_color, 0.0);
 
 		{
 			Item::CommandPrimitive *left_border = canvas_item->alloc_command<Item::CommandPrimitive>();
@@ -903,11 +906,7 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 	Color *colors_ptr = colors.ptrw();
 
 	if (p_antialiased) {
-		// Use the same antialiasing feather size as StyleBoxFlat's default
-		// (but doubled, as it's specified for both sides here).
-		// This value is empirically determined to provide good antialiasing quality
-		// while not making lines appear too soft.
-		float border_size = 1.25f;
+		float border_size = FEATHER_SIZE;
 		if (p_width < 1.0f) {
 			border_size *= p_width;
 		}
@@ -1094,12 +1093,15 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 	pline->polygon.create(indices, points, colors);
 }
 
-void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
+void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width, bool p_antialiased) {
 	ERR_FAIL_COND(p_points.is_empty() || p_points.size() % 2 != 0);
 	ERR_FAIL_COND(p_colors.size() != 1 && p_colors.size() * 2 != p_points.size());
 
 	// TODO: `canvas_item_add_line`(`multiline`, `polyline`) share logic, should factor out.
 	if (p_width < 0) {
+		if (p_antialiased) {
+			WARN_PRINT("Antialiasing is not supported for thin multilines drawn using line strips (`p_width < 0`).");
+		}
 		Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 		ERR_FAIL_NULL(canvas_item);
 
@@ -1127,7 +1129,7 @@ void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Poin
 				Vector2 from = p_points[i * 2 + 0];
 				Vector2 to = p_points[i * 2 + 1];
 
-				canvas_item_add_line(p_item, from, to, color, p_width);
+				canvas_item_add_line(p_item, from, to, color, p_width, p_antialiased);
 			}
 		} else { //} else if (p_colors.size() << 1 == p_points.size()) {
 			for (int i = 0; i < p_colors.size(); i++) {
@@ -1135,13 +1137,13 @@ void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Poin
 				Vector2 from = p_points[i * 2 + 0];
 				Vector2 to = p_points[i * 2 + 1];
 
-				canvas_item_add_line(p_item, from, to, color, p_width);
+				canvas_item_add_line(p_item, from, to, color, p_width, p_antialiased);
 			}
 		}
 	}
 }
 
-void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, const Color &p_color) {
+void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, const Color &p_color, bool p_antialiased) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
@@ -1149,45 +1151,251 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 	ERR_FAIL_NULL(rect);
 	rect->modulate = p_color;
 	rect->rect = p_rect;
+
+	// Add feathers.
+	if (p_antialiased) {
+		float border_size = FEATHER_SIZE;
+
+		const real_t size = MIN(p_rect.size.width, p_rect.size.height);
+		if (0.0f <= size && size < 1.0f) {
+			border_size *= size;
+		}
+
+		const Vector2 vec_down = Vector2(0.0f, p_rect.size.height);
+		const Vector2 vec_right = Vector2(p_rect.size.width, 0.0f);
+
+		const Vector2 begin_left = p_rect.position;
+		const Vector2 begin_right = p_rect.position + vec_down;
+		const Vector2 end_left = p_rect.position + vec_right;
+		const Vector2 end_right = p_rect.position + p_rect.size;
+
+		const Vector2 dir = Vector2(0.0f, -1.0f);
+		const Vector2 dir2 = Vector2(-1.0f, 0.0f);
+		const Vector2 border = dir * border_size;
+		const Vector2 border2 = dir2 * border_size;
+
+		Color transparent = Color(p_color, 0.0);
+
+		{
+			Item::CommandPrimitive *left_border = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_NULL(left_border);
+
+			left_border->points[0] = begin_left;
+			left_border->points[1] = begin_left + border;
+			left_border->points[2] = end_left + border;
+			left_border->points[3] = end_left;
+
+			left_border->colors[0] = p_color;
+			left_border->colors[1] = transparent;
+			left_border->colors[2] = transparent;
+			left_border->colors[3] = p_color;
+
+			left_border->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *right_border = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_NULL(right_border);
+
+			right_border->points[0] = begin_right;
+			right_border->points[1] = begin_right - border;
+			right_border->points[2] = end_right - border;
+			right_border->points[3] = end_right;
+
+			right_border->colors[0] = p_color;
+			right_border->colors[1] = transparent;
+			right_border->colors[2] = transparent;
+			right_border->colors[3] = p_color;
+
+			right_border->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *top_border = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_NULL(top_border);
+
+			top_border->points[0] = begin_left;
+			top_border->points[1] = begin_left + border2;
+			top_border->points[2] = begin_right + border2;
+			top_border->points[3] = begin_right;
+
+			top_border->colors[0] = p_color;
+			top_border->colors[1] = transparent;
+			top_border->colors[2] = transparent;
+			top_border->colors[3] = p_color;
+
+			top_border->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *bottom_border = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_NULL(bottom_border);
+
+			bottom_border->points[0] = end_left;
+			bottom_border->points[1] = end_left - border2;
+			bottom_border->points[2] = end_right - border2;
+			bottom_border->points[3] = end_right;
+
+			bottom_border->colors[0] = p_color;
+			bottom_border->colors[1] = transparent;
+			bottom_border->colors[2] = transparent;
+			bottom_border->colors[3] = p_color;
+
+			bottom_border->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *top_left_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_NULL(top_left_corner);
+
+			top_left_corner->points[0] = begin_left;
+			top_left_corner->points[1] = begin_left + border2;
+			top_left_corner->points[2] = begin_left + border + border2;
+			top_left_corner->points[3] = begin_left + border;
+
+			top_left_corner->colors[0] = p_color;
+			top_left_corner->colors[1] = transparent;
+			top_left_corner->colors[2] = transparent;
+			top_left_corner->colors[3] = transparent;
+
+			top_left_corner->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *top_right_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_NULL(top_right_corner);
+
+			top_right_corner->points[0] = begin_right;
+			top_right_corner->points[1] = begin_right + border2;
+			top_right_corner->points[2] = begin_right - border + border2;
+			top_right_corner->points[3] = begin_right - border;
+
+			top_right_corner->colors[0] = p_color;
+			top_right_corner->colors[1] = transparent;
+			top_right_corner->colors[2] = transparent;
+			top_right_corner->colors[3] = transparent;
+
+			top_right_corner->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *bottom_left_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_NULL(bottom_left_corner);
+
+			bottom_left_corner->points[0] = end_left;
+			bottom_left_corner->points[1] = end_left - border2;
+			bottom_left_corner->points[2] = end_left + border - border2;
+			bottom_left_corner->points[3] = end_left + border;
+
+			bottom_left_corner->colors[0] = p_color;
+			bottom_left_corner->colors[1] = transparent;
+			bottom_left_corner->colors[2] = transparent;
+			bottom_left_corner->colors[3] = transparent;
+
+			bottom_left_corner->point_count = 4;
+		}
+		{
+			Item::CommandPrimitive *bottom_right_corner = canvas_item->alloc_command<Item::CommandPrimitive>();
+			ERR_FAIL_NULL(bottom_right_corner);
+
+			bottom_right_corner->points[0] = end_right;
+			bottom_right_corner->points[1] = end_right - border2;
+			bottom_right_corner->points[2] = end_right - border - border2;
+			bottom_right_corner->points[3] = end_right - border;
+
+			bottom_right_corner->colors[0] = p_color;
+			bottom_right_corner->colors[1] = transparent;
+			bottom_right_corner->colors[2] = transparent;
+			bottom_right_corner->colors[3] = transparent;
+
+			bottom_right_corner->point_count = 4;
+		}
+	}
 }
 
-void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color) {
+void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color, bool p_antialiased) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
-	Item::CommandPolygon *circle = canvas_item->alloc_command<Item::CommandPolygon>();
-	ERR_FAIL_NULL(circle);
+	static const int circle_segments = 64;
 
-	circle->primitive = RS::PRIMITIVE_TRIANGLES;
+	{
+		Item::CommandPolygon *circle = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_NULL(circle);
 
-	Vector<int> indices;
-	Vector<Vector2> points;
+		circle->primitive = RS::PRIMITIVE_TRIANGLES;
 
-	static const int circle_points = 64;
+		Vector<int> indices;
+		Vector<Vector2> points;
 
-	points.resize(circle_points);
-	Vector2 *points_ptr = points.ptrw();
-	const real_t circle_point_step = Math_TAU / circle_points;
+		points.resize(circle_segments + 2);
+		Vector2 *points_ptr = points.ptrw();
 
-	for (int i = 0; i < circle_points; i++) {
-		float angle = i * circle_point_step;
-		points_ptr[i].x = Math::cos(angle) * p_radius;
-		points_ptr[i].y = Math::sin(angle) * p_radius;
-		points_ptr[i] += p_pos;
+		// Store circle center in the last point.
+		points_ptr[circle_segments + 1] = p_pos;
+
+		const real_t circle_point_step = Math_TAU / circle_segments;
+
+		for (int i = 0; i < circle_segments + 1; i++) {
+			float angle = i * circle_point_step;
+			points_ptr[i].x = Math::cos(angle) * p_radius;
+			points_ptr[i].y = Math::sin(angle) * p_radius;
+			points_ptr[i] += p_pos;
+		}
+
+		indices.resize(circle_segments * 3);
+		int *indices_ptr = indices.ptrw();
+
+		for (int i = 0; i < circle_segments; i++) {
+			indices_ptr[i * 3 + 0] = circle_segments + 1;
+			indices_ptr[i * 3 + 1] = i;
+			indices_ptr[i * 3 + 2] = i + 1;
+		}
+
+		Vector<Color> color;
+		color.push_back(p_color);
+		circle->polygon.create(indices, points, color);
 	}
 
-	indices.resize((circle_points - 2) * 3);
-	int *indices_ptr = indices.ptrw();
+	if (p_antialiased) {
+		float border_size = FEATHER_SIZE;
 
-	for (int i = 0; i < circle_points - 2; i++) {
-		indices_ptr[i * 3 + 0] = 0;
-		indices_ptr[i * 3 + 1] = i + 1;
-		indices_ptr[i * 3 + 2] = i + 2;
+		const float diameter = p_radius * 2.0f;
+		if (0.0f <= diameter && diameter < 1.0f) {
+			border_size *= p_radius;
+		}
+
+		Item::CommandPolygon *feather = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_NULL(feather);
+		feather->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+
+		Color transparent = Color(p_color, 0.0);
+
+		Vector<int> indices;
+		Vector<Color> colors;
+		Vector<Vector2> points;
+
+		points.resize(2 * circle_segments + 2);
+		colors.resize(2 * circle_segments + 2);
+
+		const real_t circle_point_step = Math_TAU / circle_segments;
+
+		Vector2 *points_ptr = points.ptrw();
+		Color *colors_ptr = colors.ptrw();
+
+		for (int i = 0; i < circle_segments + 1; i++) {
+			const float angle = i * circle_point_step;
+			const float c = Math::cos(angle);
+			const float s = Math::sin(angle);
+
+			points_ptr[i * 2].x = c * p_radius;
+			points_ptr[i * 2].y = s * p_radius;
+			points_ptr[i * 2] += p_pos;
+
+			points_ptr[i * 2 + 1].x = c * (p_radius + border_size);
+			points_ptr[i * 2 + 1].y = s * (p_radius + border_size);
+			points_ptr[i * 2 + 1] += p_pos;
+
+			colors_ptr[i * 2] = p_color;
+			colors_ptr[i * 2 + 1] = transparent;
+		}
+
+		feather->polygon.create(indices, points, colors);
 	}
-
-	Vector<Color> color;
-	color.push_back(p_color);
-	circle->polygon.create(indices, points, color);
 }
 
 void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile, const Color &p_modulate, bool p_transpose) {
@@ -2106,7 +2314,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 		if (visibility_notifier->just_visible) {
 			visibility_notifier->just_visible = false;
 
-			if (!visibility_notifier->enter_callable.is_null()) {
+			if (visibility_notifier->enter_callable.is_valid()) {
 				if (RSG::threaded) {
 					visibility_notifier->enter_callable.call_deferred();
 				} else {
@@ -2117,7 +2325,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 			if (visibility_notifier->visible_in_frame != RSG::rasterizer->get_frame_number()) {
 				visibility_notifier_list.remove(E);
 
-				if (!visibility_notifier->exit_callable.is_null()) {
+				if (visibility_notifier->exit_callable.is_valid()) {
 					if (RSG::threaded) {
 						visibility_notifier->exit_callable.call_deferred();
 					} else {

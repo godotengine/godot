@@ -144,7 +144,8 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	}
 
 	// Draw tile-related things.
-	Size2 tile_size = tile_set->get_tile_size();
+	const Size2 base_tile_size = tile_set->get_tile_size();
+	const Size2 tile_size = background_region.size;
 
 	Transform2D xform;
 	xform.set_origin(base_control->get_size() / 2 + panning);
@@ -170,12 +171,16 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	// Draw grid.
 	if (current_snap_option == SNAP_GRID) {
-		Vector2 spacing = tile_size / snap_subdivision->get_value();
+		Vector2 spacing = base_tile_size / snap_subdivision->get_value();
 		Vector2 offset = -tile_size / 2;
+		int w = snap_subdivision->get_value() * (tile_size / base_tile_size).x;
+		int h = snap_subdivision->get_value() * (tile_size / base_tile_size).y;
 
-		for (int i = 1; i < snap_subdivision->get_value(); i++) {
-			base_control->draw_line(Vector2(spacing.x * i, 0) + offset, Vector2(spacing.x * i, tile_size.y) + offset, Color(1, 1, 1, 0.33));
-			base_control->draw_line(Vector2(0, spacing.y * i) + offset, Vector2(tile_size.x, spacing.y * i) + offset, Color(1, 1, 1, 0.33));
+		for (int y = 1; y < h; y++) {
+			for (int x = 1; x < w; x++) {
+				base_control->draw_line(Vector2(spacing.x * x, 0) + offset, Vector2(spacing.x * x, tile_size.y) + offset, Color(1, 1, 1, 0.33));
+				base_control->draw_line(Vector2(0, spacing.y * y) + offset, Vector2(tile_size.x, spacing.y * y) + offset, Color(1, 1, 1, 0.33));
+			}
 		}
 	}
 
@@ -458,7 +463,7 @@ void GenericTilePolygonEditor::_snap_point(Point2 &r_point) {
 			break;
 
 		case SNAP_HALF_PIXEL:
-			r_point = r_point.snapped(Vector2(0.5, 0.5));
+			r_point = r_point.snappedf(0.5);
 			break;
 
 		case SNAP_GRID: {
@@ -674,6 +679,11 @@ void GenericTilePolygonEditor::_set_snap_option(int p_index) {
 	current_snap_option = p_index;
 	button_pixel_snap->set_icon(button_pixel_snap->get_popup()->get_item_icon(p_index));
 	snap_subdivision->set_visible(p_index == SNAP_GRID);
+
+	if (initializing) {
+		return;
+	}
+
 	base_control->queue_redraw();
 	_store_snap_options();
 }
@@ -929,8 +939,8 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	base_control = memnew(Control);
 	base_control->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	base_control->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	base_control->connect("draw", callable_mp(this, &GenericTilePolygonEditor::_base_control_draw));
-	base_control->connect("gui_input", callable_mp(this, &GenericTilePolygonEditor::_base_control_gui_input));
+	base_control->connect(SceneStringName(draw), callable_mp(this, &GenericTilePolygonEditor::_base_control_draw));
+	base_control->connect(SceneStringName(gui_input), callable_mp(this, &GenericTilePolygonEditor::_base_control_gui_input));
 	base_control->set_clip_contents(true);
 	base_control->set_focus_mode(Control::FOCUS_CLICK);
 	root->add_child(base_control);
@@ -947,7 +957,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_center_view = memnew(Button);
 	button_center_view->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
 	button_center_view->set_grow_direction_preset(Control::PRESET_TOP_RIGHT);
-	button_center_view->connect("pressed", callable_mp(this, &GenericTilePolygonEditor::_center_view));
+	button_center_view->connect(SceneStringName(pressed), callable_mp(this, &GenericTilePolygonEditor::_center_view));
 	button_center_view->set_theme_type_variation("FlatButton");
 	button_center_view->set_tooltip_text(TTR("Center View"));
 	button_center_view->set_disabled(true);
@@ -955,6 +965,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 
 	snap_subdivision->set_value_no_signal(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_snap_subdiv", 4));
 	_set_snap_option(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_snap_option", SNAP_NONE));
+	initializing = false;
 }
 
 void TileDataDefaultEditor::_property_value_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field) {

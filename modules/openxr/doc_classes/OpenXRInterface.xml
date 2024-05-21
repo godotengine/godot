@@ -106,6 +106,13 @@
 				[b]Note:[/b] This feature is only available on the compatibility renderer and currently only available on some stand alone headsets. For Vulkan set [member Viewport.vrs_mode] to [code]VRS_XR[/code] on desktop.
 			</description>
 		</method>
+		<method name="is_hand_interaction_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if OpenXR's hand interaction profile is supported and enabled.
+				[b]Note:[/b] This only returns a valid value after OpenXR has been initialized.
+			</description>
+		</method>
 		<method name="is_hand_tracking_supported">
 			<return type="bool" />
 			<description>
@@ -145,8 +152,21 @@
 		<member name="render_target_size_multiplier" type="float" setter="set_render_target_size_multiplier" getter="get_render_target_size_multiplier" default="1.0">
 			The render size multiplier for the current HMD. Must be set before the interface has been initialized.
 		</member>
+		<member name="vrs_min_radius" type="float" setter="set_vrs_min_radius" getter="get_vrs_min_radius" default="20.0">
+			The minimum radius around the focal point where full quality is guaranteed if VRS is used as a percentage of screen size.
+			[b]Note:[/b] Mobile and Forward+ renderers only. Requires [member Viewport.vrs_mode] to be set to [constant Viewport.VRS_XR].
+		</member>
+		<member name="vrs_strength" type="float" setter="set_vrs_strength" getter="get_vrs_strength" default="1.0">
+			The strength used to calculate the VRS density map. The greater this value, the more noticeable VRS is. This improves performance at the cost of quality.
+			[b]Note:[/b] Mobile and Forward+ renderers only. Requires [member Viewport.vrs_mode] to be set to [constant Viewport.VRS_XR].
+		</member>
 	</members>
 	<signals>
+		<signal name="instance_exiting">
+			<description>
+				Informs our OpenXR instance is exiting.
+			</description>
+		</signal>
 		<signal name="pose_recentered">
 			<description>
 				Informs the user queued a recenter of the player position.
@@ -167,6 +187,11 @@
 		<signal name="session_focussed">
 			<description>
 				Informs our OpenXR session now has focus.
+			</description>
+		</signal>
+		<signal name="session_loss_pending">
+			<description>
+				Informs our OpenXR session is in the process of being lost.
 			</description>
 		</signal>
 		<signal name="session_stopping">

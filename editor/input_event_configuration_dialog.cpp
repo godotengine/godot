@@ -285,7 +285,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		for (int i = 0; i < keycode_get_count(); i++) {
 			String name = keycode_get_name_by_index(i);
 
-			if (!search_term.is_empty() && name.findn(search_term) == -1) {
+			if (!search_term.is_empty() && !name.containsn(search_term)) {
 				continue;
 			}
 
@@ -309,7 +309,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			mb->set_button_index(mouse_buttons[i]);
 			String desc = EventListenerLineEdit::get_event_text(mb, false);
 
-			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
+			if (!search_term.is_empty() && !desc.containsn(search_term)) {
 				continue;
 			}
 
@@ -332,7 +332,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			joyb->set_button_index((JoyButton)i);
 			String desc = EventListenerLineEdit::get_event_text(joyb, false);
 
-			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
+			if (!search_term.is_empty() && !desc.containsn(search_term)) {
 				continue;
 			}
 
@@ -358,7 +358,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 			joym->set_axis_value(direction);
 			String desc = EventListenerLineEdit::get_event_text(joym, false);
 
-			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
+			if (!search_term.is_empty() && !desc.containsn(search_term)) {
 				continue;
 			}
 
@@ -648,8 +648,8 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	event_listener->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	event_listener->set_stretch_ratio(0.75);
 	event_listener->connect("event_changed", callable_mp(this, &InputEventConfigurationDialog::_on_listen_input_changed));
-	event_listener->connect("focus_entered", callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(false));
-	event_listener->connect("focus_exited", callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(true));
+	event_listener->connect(SceneStringName(focus_entered), callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(false));
+	event_listener->connect(SceneStringName(focus_exited), callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(true));
 	main_vbox->add_child(event_listener);
 
 	main_vbox->add_child(memnew(HSeparator));

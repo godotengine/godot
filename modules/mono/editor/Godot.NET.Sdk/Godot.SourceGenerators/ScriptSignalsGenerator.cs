@@ -319,11 +319,9 @@ namespace Godot.SourceGenerators
                 source.Append(
                     "    protected override bool HasGodotClassSignal(in godot_string_name signal)\n    {\n");
 
-                bool isFirstEntry = true;
                 foreach (var signal in godotSignalDelegates)
                 {
-                    GenerateHasSignalEntry(signal.Name, source, isFirstEntry);
-                    isFirstEntry = false;
+                    GenerateHasSignalEntry(signal.Name, source);
                 }
 
                 source.Append("        return base.HasGodotClassSignal(signal);\n");
@@ -473,13 +471,10 @@ namespace Godot.SourceGenerators
 
         private static void GenerateHasSignalEntry(
             string signalName,
-            StringBuilder source,
-            bool isFirstEntry
+            StringBuilder source
         )
         {
             source.Append("        ");
-            if (!isFirstEntry)
-                source.Append("else ");
             source.Append("if (signal == SignalName.");
             source.Append(signalName);
             source.Append(") {\n           return true;\n        }\n");

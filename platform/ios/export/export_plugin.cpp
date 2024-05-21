@@ -106,6 +106,94 @@ static const IconInfo icon_infos[] = {
 	{ PNAME("icons/notification_60x60"), "iphone", "Icon-60.png", "60", "3x", "20x20", false }
 };
 
+struct APIAccessInfo {
+	String prop_name;
+	String type_name;
+	Vector<String> prop_flag_value;
+	Vector<String> prop_flag_name;
+	int default_value;
+};
+
+static const APIAccessInfo api_info[] = {
+	{ "file_timestamp",
+			"NSPrivacyAccessedAPICategoryFileTimestamp",
+			{ "DDA9.1", "C617.1", "3B52.1" },
+			{ "Display to user on-device:", "Inside app or group container", "Files provided to app by user" },
+			3 },
+	{ "system_boot_time",
+			"NSPrivacyAccessedAPICategorySystemBootTime",
+			{ "35F9.1", "8FFB.1", "3D61.1" },
+			{ "Measure time on-device", "Calculate absolute event timestamps", "User-initiated bug report" },
+			1 },
+	{ "disk_space",
+			"NSPrivacyAccessedAPICategoryDiskSpace",
+			{ "E174.1", "85F4.1", "7D9E.1", "B728.1" },
+			{ "Write or delete file on-device", "Display to user on-device", "User-initiated bug report", "Health research app" },
+			3 },
+	{ "active_keyboard",
+			"NSPrivacyAccessedAPICategoryActiveKeyboards",
+			{ "3EC4.1", "54BD.1" },
+			{ "Custom keyboard app on-device", "Customize UI on-device:2" },
+			0 },
+	{ "user_defaults",
+			"NSPrivacyAccessedAPICategoryUserDefaults",
+			{ "1C8F.1", "AC6B.1", "CA92.1" },
+			{ "Access info from same App Group", "Access managed app configuration", "Access info from same app" },
+			0 }
+};
+
+struct DataCollectionInfo {
+	String prop_name;
+	String type_name;
+};
+
+static const DataCollectionInfo data_collect_type_info[] = {
+	{ "name", "NSPrivacyCollectedDataTypeName" },
+	{ "email_address", "NSPrivacyCollectedDataTypeEmailAddress" },
+	{ "phone_number", "NSPrivacyCollectedDataTypePhoneNumber" },
+	{ "physical_address", "NSPrivacyCollectedDataTypePhysicalAddress" },
+	{ "other_contact_info", "NSPrivacyCollectedDataTypeOtherUserContactInfo" },
+	{ "health", "NSPrivacyCollectedDataTypeHealth" },
+	{ "fitness", "NSPrivacyCollectedDataTypeFitness" },
+	{ "payment_info", "NSPrivacyCollectedDataTypePaymentInfo" },
+	{ "credit_info", "NSPrivacyCollectedDataTypeCreditInfo" },
+	{ "other_financial_info", "NSPrivacyCollectedDataTypeOtherFinancialInfo" },
+	{ "precise_location", "NSPrivacyCollectedDataTypePreciseLocation" },
+	{ "coarse_location", "NSPrivacyCollectedDataTypeCoarseLocation" },
+	{ "sensitive_info", "NSPrivacyCollectedDataTypeSensitiveInfo" },
+	{ "contacts", "NSPrivacyCollectedDataTypeContacts" },
+	{ "emails_or_text_messages", "NSPrivacyCollectedDataTypeEmailsOrTextMessages" },
+	{ "photos_or_videos", "NSPrivacyCollectedDataTypePhotosorVideos" },
+	{ "audio_data", "NSPrivacyCollectedDataTypeAudioData" },
+	{ "gameplay_content", "NSPrivacyCollectedDataTypeGameplayContent" },
+	{ "customer_support", "NSPrivacyCollectedDataTypeCustomerSupport" },
+	{ "other_user_content", "NSPrivacyCollectedDataTypeOtherUserContent" },
+	{ "browsing_history", "NSPrivacyCollectedDataTypeBrowsingHistory" },
+	{ "search_hhistory", "NSPrivacyCollectedDataTypeSearchHistory" },
+	{ "user_id", "NSPrivacyCollectedDataTypeUserID" },
+	{ "device_id", "NSPrivacyCollectedDataTypeDeviceID" },
+	{ "purchase_history", "NSPrivacyCollectedDataTypePurchaseHistory" },
+	{ "product_interaction", "NSPrivacyCollectedDataTypeProductInteraction" },
+	{ "advertising_data", "NSPrivacyCollectedDataTypeAdvertisingData" },
+	{ "other_usage_data", "NSPrivacyCollectedDataTypeOtherUsageData" },
+	{ "crash_data", "NSPrivacyCollectedDataTypeCrashData" },
+	{ "performance_data", "NSPrivacyCollectedDataTypePerformanceData" },
+	{ "other_diagnostic_data", "NSPrivacyCollectedDataTypeOtherDiagnosticData" },
+	{ "environment_scanning", "NSPrivacyCollectedDataTypeEnvironmentScanning" },
+	{ "hands", "NSPrivacyCollectedDataTypeHands" },
+	{ "head", "NSPrivacyCollectedDataTypeHead" },
+	{ "other_data_types", "NSPrivacyCollectedDataTypeOtherDataTypes" },
+};
+
+static const DataCollectionInfo data_collect_purpose_info[] = {
+	{ "Analytics", "NSPrivacyCollectedDataTypePurposeAnalytics" },
+	{ "App Functionality", "NSPrivacyCollectedDataTypePurposeAppFunctionality" },
+	{ "Developer Advertising", "NSPrivacyCollectedDataTypePurposeDeveloperAdvertising" },
+	{ "Third-party Advertising", "NSPrivacyCollectedDataTypePurposeThirdPartyAdvertising" },
+	{ "Product Personalization", "NSPrivacyCollectedDataTypePurposeProductPersonalization" },
+	{ "Other", "NSPrivacyCollectedDataTypePurposeOther" },
+};
+
 String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
 	if (p_preset) {
 		if (p_name == "application/app_store_team_id") {
@@ -118,6 +206,21 @@ String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPres
 			String pn_err;
 			if (!is_package_name_valid(identifier, &pn_err)) {
 				return TTR("Invalid Identifier:") + " " + pn_err;
+			}
+		} else if (p_name == "privacy/file_timestamp_access_reasons") {
+			int access = p_preset->get("privacy/file_timestamp_access_reasons");
+			if (access == 0) {
+				return TTR("At least one file timestamp access reason should be selected.");
+			}
+		} else if (p_name == "privacy/disk_space_access_reasons") {
+			int access = p_preset->get("privacy/disk_space_access_reasons");
+			if (access == 0) {
+				return TTR("At least one disk space access reason should be selected.");
+			}
+		} else if (p_name == "privacy/system_boot_time_access_reasons") {
+			int access = p_preset->get("privacy/system_boot_time_access_reasons");
+			if (access == 0) {
+				return TTR("At least one system boot time access reason should be selected.");
 			}
 		}
 	}
@@ -138,6 +241,15 @@ bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPre
 	// Hide unsupported .NET embedding option.
 	if (p_option == "dotnet/embed_build_outputs") {
 		return false;
+	}
+
+	if (p_preset == nullptr) {
+		return true;
+	}
+
+	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
+	if (p_option.begins_with("privacy")) {
+		return advanced_options_enabled;
 	}
 
 	return true;
@@ -175,6 +287,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_project_only"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/delete_old_export_files_unconditionally"), false));
 
 	Vector<PluginConfigIOS> found_plugins = get_plugins();
 	for (int i = 0; i < found_plugins.size(); i++) {
@@ -220,6 +333,37 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photolibrary_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need access to the photo library"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/photolibrary_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 
+	for (uint64_t i = 0; i < sizeof(api_info) / sizeof(api_info[0]); ++i) {
+		String prop_name = vformat("privacy/%s_access_reasons", api_info[i].prop_name);
+		String hint;
+		for (int j = 0; j < api_info[i].prop_flag_value.size(); j++) {
+			if (j != 0) {
+				hint += ",";
+			}
+			hint += vformat("%s - %s:%d", api_info[i].prop_flag_value[j], api_info[i].prop_flag_name[j], (1 << j));
+		}
+		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, prop_name, PROPERTY_HINT_FLAGS, hint), api_info[i].default_value));
+	}
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "privacy/tracking_enabled"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "privacy/tracking_domains"), Vector<String>()));
+
+	{
+		String hint;
+		for (uint64_t i = 0; i < sizeof(data_collect_purpose_info) / sizeof(data_collect_purpose_info[0]); ++i) {
+			if (i != 0) {
+				hint += ",";
+			}
+			hint += vformat("%s:%d", data_collect_purpose_info[i].prop_name, (1 << i));
+		}
+		for (uint64_t i = 0; i < sizeof(data_collect_type_info) / sizeof(data_collect_type_info[0]); ++i) {
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/collected", data_collect_type_info[i].prop_name)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[i].prop_name)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[i].prop_name)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::INT, vformat("privacy/collected_data/%s/collection_purposes", data_collect_type_info[i].prop_name), PROPERTY_HINT_FLAGS, hint), 0));
+		}
+	}
+
 	HashSet<String> used_names;
 	for (uint64_t i = 0; i < sizeof(icon_infos) / sizeof(icon_infos[0]); ++i) {
 		if (!used_names.has(icon_infos[i].preset_key)) {
@@ -256,65 +400,65 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 	str.parse_utf8((const char *)pfile.ptr(), pfile.size());
 	Vector<String> lines = str.split("\n");
 	for (int i = 0; i < lines.size(); i++) {
-		if (lines[i].find("$binary") != -1) {
+		if (lines[i].contains("$binary")) {
 			strnew += lines[i].replace("$binary", p_config.binary_name) + "\n";
-		} else if (lines[i].find("$modules_buildfile") != -1) {
+		} else if (lines[i].contains("$modules_buildfile")) {
 			strnew += lines[i].replace("$modules_buildfile", p_config.modules_buildfile) + "\n";
-		} else if (lines[i].find("$modules_fileref") != -1) {
+		} else if (lines[i].contains("$modules_fileref")) {
 			strnew += lines[i].replace("$modules_fileref", p_config.modules_fileref) + "\n";
-		} else if (lines[i].find("$modules_buildphase") != -1) {
+		} else if (lines[i].contains("$modules_buildphase")) {
 			strnew += lines[i].replace("$modules_buildphase", p_config.modules_buildphase) + "\n";
-		} else if (lines[i].find("$modules_buildgrp") != -1) {
+		} else if (lines[i].contains("$modules_buildgrp")) {
 			strnew += lines[i].replace("$modules_buildgrp", p_config.modules_buildgrp) + "\n";
-		} else if (lines[i].find("$name") != -1) {
+		} else if (lines[i].contains("$name")) {
 			strnew += lines[i].replace("$name", p_config.pkg_name) + "\n";
-		} else if (lines[i].find("$bundle_identifier") != -1) {
+		} else if (lines[i].contains("$bundle_identifier")) {
 			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
-		} else if (lines[i].find("$short_version") != -1) {
+		} else if (lines[i].contains("$short_version")) {
 			strnew += lines[i].replace("$short_version", p_preset->get_version("application/short_version")) + "\n";
-		} else if (lines[i].find("$version") != -1) {
+		} else if (lines[i].contains("$version")) {
 			strnew += lines[i].replace("$version", p_preset->get_version("application/version")) + "\n";
-		} else if (lines[i].find("$min_version") != -1) {
+		} else if (lines[i].contains("$min_version")) {
 			strnew += lines[i].replace("$min_version", p_preset->get("application/min_ios_version")) + "\n";
-		} else if (lines[i].find("$signature") != -1) {
+		} else if (lines[i].contains("$signature")) {
 			strnew += lines[i].replace("$signature", p_preset->get("application/signature")) + "\n";
-		} else if (lines[i].find("$team_id") != -1) {
+		} else if (lines[i].contains("$team_id")) {
 			strnew += lines[i].replace("$team_id", p_preset->get("application/app_store_team_id")) + "\n";
-		} else if (lines[i].find("$default_build_config") != -1) {
+		} else if (lines[i].contains("$default_build_config")) {
 			strnew += lines[i].replace("$default_build_config", p_debug ? "Debug" : "Release") + "\n";
-		} else if (lines[i].find("$export_method") != -1) {
+		} else if (lines[i].contains("$export_method")) {
 			int export_method = p_preset->get(p_debug ? "application/export_method_debug" : "application/export_method_release");
 			strnew += lines[i].replace("$export_method", export_method_string[export_method]) + "\n";
-		} else if (lines[i].find("$provisioning_profile_uuid_release") != -1) {
+		} else if (lines[i].contains("$provisioning_profile_uuid_release")) {
 			strnew += lines[i].replace("$provisioning_profile_uuid_release", p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE)) + "\n";
-		} else if (lines[i].find("$provisioning_profile_uuid_debug") != -1) {
+		} else if (lines[i].contains("$provisioning_profile_uuid_debug")) {
 			strnew += lines[i].replace("$provisioning_profile_uuid_debug", p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG)) + "\n";
-		} else if (lines[i].find("$code_sign_style_debug") != -1) {
+		} else if (lines[i].contains("$code_sign_style_debug")) {
 			if (dbg_manual) {
 				strnew += lines[i].replace("$code_sign_style_debug", "Manual") + "\n";
 			} else {
 				strnew += lines[i].replace("$code_sign_style_debug", "Automatic") + "\n";
 			}
-		} else if (lines[i].find("$code_sign_style_release") != -1) {
+		} else if (lines[i].contains("$code_sign_style_release")) {
 			if (rel_manual) {
 				strnew += lines[i].replace("$code_sign_style_release", "Manual") + "\n";
 			} else {
 				strnew += lines[i].replace("$code_sign_style_release", "Automatic") + "\n";
 			}
-		} else if (lines[i].find("$provisioning_profile_uuid") != -1) {
+		} else if (lines[i].contains("$provisioning_profile_uuid")) {
 			String uuid = p_debug ? p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG) : p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE);
 			strnew += lines[i].replace("$provisioning_profile_uuid", uuid) + "\n";
-		} else if (lines[i].find("$code_sign_identity_debug") != -1) {
+		} else if (lines[i].contains("$code_sign_identity_debug")) {
 			strnew += lines[i].replace("$code_sign_identity_debug", dbg_sign_id) + "\n";
-		} else if (lines[i].find("$code_sign_identity_release") != -1) {
+		} else if (lines[i].contains("$code_sign_identity_release")) {
 			strnew += lines[i].replace("$code_sign_identity_release", rel_sign_id) + "\n";
-		} else if (lines[i].find("$additional_plist_content") != -1) {
+		} else if (lines[i].contains("$additional_plist_content")) {
 			strnew += lines[i].replace("$additional_plist_content", p_config.plist_content) + "\n";
-		} else if (lines[i].find("$godot_archs") != -1) {
+		} else if (lines[i].contains("$godot_archs")) {
 			strnew += lines[i].replace("$godot_archs", p_config.architectures) + "\n";
-		} else if (lines[i].find("$linker_flags") != -1) {
+		} else if (lines[i].contains("$linker_flags")) {
 			strnew += lines[i].replace("$linker_flags", p_config.linker_flags) + "\n";
-		} else if (lines[i].find("$targeted_device_family") != -1) {
+		} else if (lines[i].contains("$targeted_device_family")) {
 			String xcode_value;
 			switch ((int)p_preset->get("application/targeted_device_family")) {
 				case 0: // iPhone
@@ -328,16 +472,16 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 					break;
 			}
 			strnew += lines[i].replace("$targeted_device_family", xcode_value) + "\n";
-		} else if (lines[i].find("$cpp_code") != -1) {
+		} else if (lines[i].contains("$cpp_code")) {
 			strnew += lines[i].replace("$cpp_code", p_config.cpp_code) + "\n";
-		} else if (lines[i].find("$docs_in_place") != -1) {
+		} else if (lines[i].contains("$docs_in_place")) {
 			strnew += lines[i].replace("$docs_in_place", ((bool)p_preset->get("user_data/accessible_from_files_app")) ? "<true/>" : "<false/>") + "\n";
-		} else if (lines[i].find("$docs_sharing") != -1) {
+		} else if (lines[i].contains("$docs_sharing")) {
 			strnew += lines[i].replace("$docs_sharing", ((bool)p_preset->get("user_data/accessible_from_itunes_sharing")) ? "<true/>" : "<false/>") + "\n";
-		} else if (lines[i].find("$entitlements_push_notifications") != -1) {
+		} else if (lines[i].contains("$entitlements_push_notifications")) {
 			bool is_on = p_preset->get("capabilities/push_notifications");
 			strnew += lines[i].replace("$entitlements_push_notifications", is_on ? "<key>aps-environment</key><string>development</string>" : "") + "\n";
-		} else if (lines[i].find("$required_device_capabilities") != -1) {
+		} else if (lines[i].contains("$required_device_capabilities")) {
 			String capabilities;
 
 			// I've removed armv7 as we can run on 64bit only devices
@@ -359,7 +503,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			}
 
 			strnew += lines[i].replace("$required_device_capabilities", capabilities);
-		} else if (lines[i].find("$interface_orientations") != -1) {
+		} else if (lines[i].contains("$interface_orientations")) {
 			String orientations;
 			const DisplayServer::ScreenOrientation screen_orientation =
 					DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation")));
@@ -397,35 +541,35 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			}
 
 			strnew += lines[i].replace("$interface_orientations", orientations);
-		} else if (lines[i].find("$camera_usage_description") != -1) {
+		} else if (lines[i].contains("$camera_usage_description")) {
 			String description = p_preset->get("privacy/camera_usage_description");
 			strnew += lines[i].replace("$camera_usage_description", description) + "\n";
-		} else if (lines[i].find("$microphone_usage_description") != -1) {
+		} else if (lines[i].contains("$microphone_usage_description")) {
 			String description = p_preset->get("privacy/microphone_usage_description");
 			strnew += lines[i].replace("$microphone_usage_description", description) + "\n";
-		} else if (lines[i].find("$photolibrary_usage_description") != -1) {
+		} else if (lines[i].contains("$photolibrary_usage_description")) {
 			String description = p_preset->get("privacy/photolibrary_usage_description");
 			strnew += lines[i].replace("$photolibrary_usage_description", description) + "\n";
-		} else if (lines[i].find("$plist_launch_screen_name") != -1) {
+		} else if (lines[i].contains("$plist_launch_screen_name")) {
 			String value = "<key>UILaunchStoryboardName</key>\n<string>Launch Screen</string>";
 			strnew += lines[i].replace("$plist_launch_screen_name", value) + "\n";
-		} else if (lines[i].find("$pbx_launch_screen_file_reference") != -1) {
+		} else if (lines[i].contains("$pbx_launch_screen_file_reference")) {
 			String value = "90DD2D9D24B36E8000717FE1 = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = \"Launch Screen.storyboard\"; sourceTree = \"<group>\"; };";
 			strnew += lines[i].replace("$pbx_launch_screen_file_reference", value) + "\n";
-		} else if (lines[i].find("$pbx_launch_screen_copy_files") != -1) {
+		} else if (lines[i].contains("$pbx_launch_screen_copy_files")) {
 			String value = "90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */,";
 			strnew += lines[i].replace("$pbx_launch_screen_copy_files", value) + "\n";
-		} else if (lines[i].find("$pbx_launch_screen_build_phase") != -1) {
+		} else if (lines[i].contains("$pbx_launch_screen_build_phase")) {
 			String value = "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */,";
 			strnew += lines[i].replace("$pbx_launch_screen_build_phase", value) + "\n";
-		} else if (lines[i].find("$pbx_launch_screen_build_reference") != -1) {
+		} else if (lines[i].contains("$pbx_launch_screen_build_reference")) {
 			String value = "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */; };";
 			strnew += lines[i].replace("$pbx_launch_screen_build_reference", value) + "\n";
 #ifndef DISABLE_DEPRECATED
-		} else if (lines[i].find("$pbx_launch_image_usage_setting") != -1) {
+		} else if (lines[i].contains("$pbx_launch_image_usage_setting")) {
 			strnew += lines[i].replace("$pbx_launch_image_usage_setting", "") + "\n";
 #endif
-		} else if (lines[i].find("$launch_screen_image_mode") != -1) {
+		} else if (lines[i].contains("$launch_screen_image_mode")) {
 			int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
 			String value;
 
@@ -442,7 +586,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			}
 
 			strnew += lines[i].replace("$launch_screen_image_mode", value) + "\n";
-		} else if (lines[i].find("$launch_screen_background_color") != -1) {
+		} else if (lines[i].contains("$launch_screen_background_color")) {
 			bool use_custom = p_preset->get("storyboard/use_custom_bg_color");
 			Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : GLOBAL_GET("application/boot_splash/bg_color");
 			const String value_format = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"";
@@ -455,7 +599,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			String value = value_format.format(value_dictionary, "$_");
 
 			strnew += lines[i].replace("$launch_screen_background_color", value) + "\n";
-		} else if (lines[i].find("$pbx_locale_file_reference") != -1) {
+		} else if (lines[i].contains("$pbx_locale_file_reference")) {
 			String locale_files;
 			Vector<String> translations = GLOBAL_GET("internationalization/locale/translations");
 			if (translations.size() > 0) {
@@ -474,7 +618,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 				}
 			}
 			strnew += lines[i].replace("$pbx_locale_file_reference", locale_files);
-		} else if (lines[i].find("$pbx_locale_build_reference") != -1) {
+		} else if (lines[i].contains("$pbx_locale_build_reference")) {
 			String locale_files;
 			Vector<String> translations = GLOBAL_GET("internationalization/locale/translations");
 			if (translations.size() > 0) {
@@ -493,10 +637,10 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 				}
 			}
 			strnew += lines[i].replace("$pbx_locale_build_reference", locale_files);
-		} else if (lines[i].find("$swift_runtime_migration") != -1) {
+		} else if (lines[i].contains("$swift_runtime_migration")) {
 			String value = !p_config.use_swift_runtime ? "" : "LastSwiftMigration = 1250;";
 			strnew += lines[i].replace("$swift_runtime_migration", value) + "\n";
-		} else if (lines[i].find("$swift_runtime_build_settings") != -1) {
+		} else if (lines[i].contains("$swift_runtime_build_settings")) {
 			String value = !p_config.use_swift_runtime ? "" : R"(
                      CLANG_ENABLE_MODULES = YES;
                      SWIFT_OBJC_BRIDGING_HEADER = "$binary/dummy.h";
@@ -504,24 +648,105 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
                      )";
 			value = value.replace("$binary", p_config.binary_name);
 			strnew += lines[i].replace("$swift_runtime_build_settings", value) + "\n";
-		} else if (lines[i].find("$swift_runtime_fileref") != -1) {
+		} else if (lines[i].contains("$swift_runtime_fileref")) {
 			String value = !p_config.use_swift_runtime ? "" : R"(
                      90B4C2AA2680BC560039117A /* dummy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dummy.h"; sourceTree = "<group>"; };
                      90B4C2B52680C7E90039117A /* dummy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "dummy.swift"; sourceTree = "<group>"; };
                      )";
 			strnew += lines[i].replace("$swift_runtime_fileref", value) + "\n";
-		} else if (lines[i].find("$swift_runtime_binary_files") != -1) {
+		} else if (lines[i].contains("$swift_runtime_binary_files")) {
 			String value = !p_config.use_swift_runtime ? "" : R"(
                      90B4C2AA2680BC560039117A /* dummy.h */,
                      90B4C2B52680C7E90039117A /* dummy.swift */,
                      )";
 			strnew += lines[i].replace("$swift_runtime_binary_files", value) + "\n";
-		} else if (lines[i].find("$swift_runtime_buildfile") != -1) {
+		} else if (lines[i].contains("$swift_runtime_buildfile")) {
 			String value = !p_config.use_swift_runtime ? "" : "90B4C2B62680C7E90039117A /* dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90B4C2B52680C7E90039117A /* dummy.swift */; };";
 			strnew += lines[i].replace("$swift_runtime_buildfile", value) + "\n";
-		} else if (lines[i].find("$swift_runtime_build_phase") != -1) {
+		} else if (lines[i].contains("$swift_runtime_build_phase")) {
 			String value = !p_config.use_swift_runtime ? "" : "90B4C2B62680C7E90039117A /* dummy.swift */,";
 			strnew += lines[i].replace("$swift_runtime_build_phase", value) + "\n";
+		} else if (lines[i].contains("$priv_collection")) {
+			bool section_opened = false;
+			for (uint64_t j = 0; j < sizeof(data_collect_type_info) / sizeof(data_collect_type_info[0]); ++j) {
+				bool data_collected = p_preset->get(vformat("privacy/collected_data/%s/collected", data_collect_type_info[j].prop_name));
+				bool linked = p_preset->get(vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[j].prop_name));
+				bool tracking = p_preset->get(vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[j].prop_name));
+				int purposes = p_preset->get(vformat("privacy/collected_data/%s/collection_purposes", data_collect_type_info[j].prop_name));
+				if (data_collected) {
+					if (!section_opened) {
+						section_opened = true;
+						strnew += "\t<key>NSPrivacyCollectedDataTypes</key>\n";
+						strnew += "\t<array>\n";
+					}
+					strnew += "\t\t<dict>\n";
+					strnew += "\t\t\t<key>NSPrivacyCollectedDataType</key>\n";
+					strnew += vformat("\t\t\t<string>%s</string>\n", data_collect_type_info[j].type_name);
+					strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypeLinked</key>\n";
+					if (linked) {
+						strnew += "\t\t\t\t<true/>\n";
+					} else {
+						strnew += "\t\t\t\t<false/>\n";
+					}
+					strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypeTracking</key>\n";
+					if (tracking) {
+						strnew += "\t\t\t\t<true/>\n";
+					} else {
+						strnew += "\t\t\t\t<false/>\n";
+					}
+					if (purposes != 0) {
+						strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypePurposes</key>\n";
+						strnew += "\t\t\t\t<array>\n";
+						for (uint64_t k = 0; k < sizeof(data_collect_purpose_info) / sizeof(data_collect_purpose_info[0]); ++k) {
+							if (purposes & (1 << k)) {
+								strnew += vformat("\t\t\t\t\t<string>%s</string>\n", data_collect_purpose_info[k].type_name);
+							}
+						}
+						strnew += "\t\t\t\t</array>\n";
+					}
+					strnew += "\t\t\t</dict>\n";
+				}
+			}
+			if (section_opened) {
+				strnew += "\t</array>\n";
+			}
+		} else if (lines[i].contains("$priv_tracking")) {
+			bool tracking = p_preset->get("privacy/tracking_enabled");
+			strnew += "\t<key>NSPrivacyTracking</key>\n";
+			if (tracking) {
+				strnew += "\t<true/>\n";
+			} else {
+				strnew += "\t<false/>\n";
+			}
+			Vector<String> tracking_domains = p_preset->get("privacy/tracking_domains");
+			if (!tracking_domains.is_empty()) {
+				strnew += "\t<key>NSPrivacyTrackingDomains</key>\n";
+				strnew += "\t<array>\n";
+				for (const String &E : tracking_domains) {
+					strnew += "\t\t<string>" + E + "</string>\n";
+				}
+				strnew += "\t</array>\n";
+			}
+		} else if (lines[i].contains("$priv_api_types")) {
+			strnew += "\t<array>\n";
+			for (uint64_t j = 0; j < sizeof(api_info) / sizeof(api_info[0]); ++j) {
+				int api_access = p_preset->get(vformat("privacy/%s_access_reasons", api_info[j].prop_name));
+				if (api_access != 0) {
+					strnew += "\t\t<dict>\n";
+					strnew += "\t\t\t<key>NSPrivacyAccessedAPITypeReasons</key>\n";
+					strnew += "\t\t\t<array>\n";
+					for (int k = 0; k < api_info[j].prop_flag_value.size(); k++) {
+						if (api_access & (1 << k)) {
+							strnew += vformat("\t\t\t\t<string>%s</string>\n", api_info[j].prop_flag_value[k]);
+						}
+					}
+					strnew += "\t\t\t</array>\n";
+					strnew += "\t\t\t<key>NSPrivacyAccessedAPIType</key>\n";
+					strnew += vformat("\t\t\t<string>%s</string>\n", api_info[j].type_name);
+					strnew += "\t\t</dict>\n";
+				}
+			}
+			strnew += "\t</array>\n";
 		} else {
 			strnew += lines[i] + "\n";
 		}
@@ -1632,19 +1857,72 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	}
 
 	{
+		bool delete_old = p_preset->get("application/delete_old_export_files_unconditionally");
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (da.is_valid()) {
 			String current_dir = da->get_current_dir();
 
-			// remove leftovers from last export so they don't interfere
-			// in case some files are no longer needed
+			// Remove leftovers from last export so they don't interfere in case some files are no longer needed.
 			if (da->change_dir(binary_dir + ".xcodeproj") == OK) {
-				da->erase_contents_recursive();
+				// Check directory content before deleting.
+				int expected_files = 0;
+				int total_files = 0;
+				if (!delete_old) {
+					da->list_dir_begin();
+					for (String n = da->get_next(); !n.is_empty(); n = da->get_next()) {
+						if (!n.begins_with(".")) { // Ignore ".", ".." and hidden files.
+							if (da->current_is_dir()) {
+								if (n == "xcshareddata" || n == "project.xcworkspace") {
+									expected_files++;
+								}
+							} else {
+								if (n == "project.pbxproj") {
+									expected_files++;
+								}
+							}
+							total_files++;
+						}
+					}
+					da->list_dir_end();
+				}
+				if ((total_files == 0) || (expected_files >= Math::floor(total_files * 0.8))) {
+					da->erase_contents_recursive();
+				} else {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Unexpected files found in the export destination directory \"%s.xcodeproj\", delete it manually or select another destination."), binary_dir));
+					return ERR_CANT_CREATE;
+				}
 			}
-			if (da->change_dir(binary_dir) == OK) {
-				da->erase_contents_recursive();
-			}
+			da->change_dir(current_dir);
 
+			if (da->change_dir(binary_dir) == OK) {
+				// Check directory content before deleting.
+				int expected_files = 0;
+				int total_files = 0;
+				if (!delete_old) {
+					da->list_dir_begin();
+					for (String n = da->get_next(); !n.is_empty(); n = da->get_next()) {
+						if (!n.begins_with(".")) { // Ignore ".", ".." and hidden files.
+							if (da->current_is_dir()) {
+								if (n == "dylibs" || n == "Images.xcassets" || n.ends_with(".lproj") || n == "godot-publish-dotnet" || n.ends_with(".xcframework") || n.ends_with(".framework")) {
+									expected_files++;
+								}
+							} else {
+								if (n == binary_name + "-Info.plist" || n == binary_name + ".entitlements" || n == "Launch Screen.storyboard" || n == "export_options.plist" || n.begins_with("dummy.") || n.ends_with(".gdip")) {
+									expected_files++;
+								}
+							}
+							total_files++;
+						}
+					}
+					da->list_dir_end();
+				}
+				if ((total_files == 0) || (expected_files >= Math::floor(total_files * 0.8))) {
+					da->erase_contents_recursive();
+				} else {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Unexpected files found in the export destination directory \"%s\", delete it manually or select another destination."), binary_dir));
+					return ERR_CANT_CREATE;
+				}
+			}
 			da->change_dir(current_dir);
 
 			if (!da->dir_exists(binary_dir)) {
@@ -1694,6 +1972,7 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	files_to_parse.insert("godot_ios.xcodeproj/xcshareddata/xcschemes/godot_ios.xcscheme");
 	files_to_parse.insert("godot_ios/godot_ios.entitlements");
 	files_to_parse.insert("godot_ios/Launch Screen.storyboard");
+	files_to_parse.insert("PrivacyInfo.xcprivacy");
 
 	IOSConfigData config_data = {
 		pkg_name,

@@ -41,7 +41,7 @@
 #include "core/templates/self_list.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #endif
 
 class CSharpScript;
@@ -215,6 +215,8 @@ private:
 	// Do not use unless you know what you are doing
 	static void update_script_class_info(Ref<CSharpScript> p_script);
 
+	void _get_script_signal_list(List<MethodInfo> *r_signals, bool p_include_base) const;
+
 protected:
 	static void _bind_methods();
 
@@ -250,8 +252,6 @@ public:
 
 	bool has_script_signal(const StringName &p_signal) const override;
 	void get_script_signal_list(List<MethodInfo> *r_signals) const override;
-
-	Vector<EventSignalInfo> get_script_event_signals() const;
 
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
 	void get_script_property_list(List<PropertyInfo> *r_list) const override;

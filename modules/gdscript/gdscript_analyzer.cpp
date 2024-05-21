@@ -37,7 +37,6 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
-#include "core/core_string_names.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
@@ -231,7 +230,7 @@ bool GDScriptAnalyzer::has_member_name_conflict_in_native_type(const StringName 
 	if (ClassDB::has_integer_constant(p_native_type_string, p_member_name)) {
 		return true;
 	}
-	if (p_member_name == CoreStringNames::get_singleton()->_script) {
+	if (p_member_name == CoreStringName(script)) {
 		return true;
 	}
 
@@ -722,13 +721,32 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			}
 		} else if (ProjectSettings::get_singleton()->has_autoload(first) && ProjectSettings::get_singleton()->get_autoload(first).is_singleton) {
 			const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(first);
-			Ref<GDScriptParserRef> ref = parser->get_depended_parser_for(autoload.path);
+			String script_path;
+			if (ResourceLoader::get_resource_type(autoload.path) == "PackedScene") {
+				// Try to get script from scene if possible.
+				if (GDScriptLanguage::get_singleton()->has_any_global_constant(autoload.name)) {
+					Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(autoload.name);
+					Node *node = Object::cast_to<Node>(constant);
+					if (node != nullptr) {
+						Ref<GDScript> scr = node->get_script();
+						if (scr.is_valid()) {
+							script_path = scr->get_script_path();
+						}
+					}
+				}
+			} else if (ResourceLoader::get_resource_type(autoload.path) == "GDScript") {
+				script_path = autoload.path;
+			}
+			if (script_path.is_empty()) {
+				return bad_type;
+			}
+			Ref<GDScriptParserRef> ref = parser->get_depended_parser_for(script_path);
 			if (ref.is_null()) {
-				push_error(vformat(R"(The referenced autoload "%s" (from "%s") could not be loaded.)", first, autoload.path), p_type);
+				push_error(vformat(R"(The referenced autoload "%s" (from "%s") could not be loaded.)", first, script_path), p_type);
 				return bad_type;
 			}
 			if (ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED) != OK) {
-				push_error(vformat(R"(Could not parse singleton "%s" from "%s".)", first, autoload.path), p_type);
+				push_error(vformat(R"(Could not parse singleton "%s" from "%s".)", first, script_path), p_type);
 				return bad_type;
 			}
 			result = ref->get_parser()->head->get_datatype();
@@ -2143,7 +2161,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			List<GDScriptParser::DataType> par_types;
 			int default_arg_count = 0;
 			BitField<MethodFlags> method_flags;
-			if (get_function_signature(p_for->list, false, list_type, CoreStringNames::get_singleton()->_iter_get, return_type, par_types, default_arg_count, method_flags)) {
+			if (get_function_signature(p_for->list, false, list_type, CoreStringName(_iter_get), return_type, par_types, default_arg_count, method_flags)) {
 				variable_type = return_type;
 				variable_type.type_source = list_type.type_source;
 			} else if (!list_type.is_hard_type()) {
@@ -3001,6 +3019,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				case Variant::PACKED_VECTOR2_ARRAY:
 				case Variant::PACKED_VECTOR3_ARRAY:
 				case Variant::PACKED_COLOR_ARRAY:
+				case Variant::PACKED_VECTOR4_ARRAY:
 					safe_to_fold = false;
 					break;
 				default:
@@ -3099,24 +3118,28 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 					bool types_match = true;
 
-					for (int i = 0; i < p_call->arguments.size(); i++) {
-						GDScriptParser::DataType par_type = type_from_property(info.arguments[i], true);
-						GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
-						if (!is_type_compatible(par_type, arg_type, true)) {
-							types_match = false;
-							break;
+					{
+						List<PropertyInfo>::ConstIterator arg_itr = info.arguments.begin();
+						for (int i = 0; i < p_call->arguments.size(); ++arg_itr, ++i) {
+							GDScriptParser::DataType par_type = type_from_property(*arg_itr, true);
+							GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
+							if (!is_type_compatible(par_type, arg_type, true)) {
+								types_match = false;
+								break;
 #ifdef DEBUG_ENABLED
-						} else {
-							if (par_type.builtin_type == Variant::INT && arg_type.builtin_type == Variant::FLOAT && builtin_type != Variant::INT) {
-								parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, function_name);
-							}
+							} else {
+								if (par_type.builtin_type == Variant::INT && arg_type.builtin_type == Variant::FLOAT && builtin_type != Variant::INT) {
+									parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, function_name);
+								}
 #endif
+							}
 						}
 					}
 
 					if (types_match) {
-						for (int i = 0; i < p_call->arguments.size(); i++) {
-							GDScriptParser::DataType par_type = type_from_property(info.arguments[i], true);
+						List<PropertyInfo>::ConstIterator arg_itr = info.arguments.begin();
+						for (int i = 0; i < p_call->arguments.size(); ++arg_itr, ++i) {
+							GDScriptParser::DataType par_type = type_from_property(*arg_itr, true);
 							if (p_call->arguments[i]->is_constant) {
 								update_const_expression_builtin_type(p_call->arguments[i], par_type, "pass");
 							}
@@ -3336,8 +3359,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		// If the function requires typed arrays we must make literals be typed.
 		for (const KeyValue<int, GDScriptParser::ArrayNode *> &E : arrays) {
 			int index = E.key;
-			if (index < par_types.size() && par_types[index].is_hard_type() && par_types[index].has_container_element_type(0)) {
-				update_array_literal_element_type(E.value, par_types[index].get_container_element_type(0));
+			if (index < par_types.size() && par_types.get(index).is_hard_type() && par_types.get(index).has_container_element_type(0)) {
+				update_array_literal_element_type(E.value, par_types.get(index).get_container_element_type(0));
 			}
 		}
 		validate_call_arg(par_types, default_arg_count, method_flags.has_flag(METHOD_FLAG_VARARG), p_call);
@@ -3355,7 +3378,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			}
 
 			if (parent_function) {
-				push_error(vformat(R"*(Cannot call non-static function "%s()" from static function "%s()".)*", p_call->function_name, parent_function->identifier->name), p_call);
+				push_error(vformat(R"*(Cannot call non-static function "%s()" from the static function "%s()".)*", p_call->function_name, parent_function->identifier->name), p_call);
 			} else {
 				push_error(vformat(R"*(Cannot call non-static function "%s()" from a static variable initializer.)*", p_call->function_name), p_call);
 			}
@@ -3371,6 +3394,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		}
 
 #ifdef DEBUG_ENABLED
+		// FIXME: No warning for built-in constructors and utilities due to early return.
 		if (p_is_root && return_type.kind != GDScriptParser::DataType::UNRESOLVED && return_type.builtin_type != Variant::NIL &&
 				!(p_call->is_super && p_call->function_name == GDScriptLanguage::get_singleton()->strings._init)) {
 			parser->push_warning(p_call, GDScriptWarning::RETURN_VALUE_DISCARDED, p_call->function_name);
@@ -3769,9 +3793,11 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				} break;
 
 				case GDScriptParser::ClassNode::Member::FUNCTION: {
-					if (is_base && (!base.is_meta_type || member.function->is_static)) {
+					if (is_base && (!base.is_meta_type || member.function->is_static || is_constructor)) {
 						p_identifier->set_datatype(make_callable_type(member.function->info));
 						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_FUNCTION;
+						p_identifier->function_source = member.function;
+						p_identifier->function_source_is_static = member.function->is_static;
 						return;
 					}
 				} break;
@@ -3820,6 +3846,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		if (method_info.name == p_identifier->name) {
 			p_identifier->set_datatype(make_callable_type(method_info));
 			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_FUNCTION;
+			p_identifier->function_source_is_static = method_info.flags & METHOD_FLAG_STATIC;
 			return;
 		}
 
@@ -4000,25 +4027,37 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	}
 
 	if (found_source) {
-		bool source_is_variable = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_VARIABLE || p_identifier->source == GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
-		bool source_is_signal = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_SIGNAL;
-		if ((source_is_variable || source_is_signal) && static_context) {
+		const bool source_is_instance_variable = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_VARIABLE || p_identifier->source == GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
+		const bool source_is_instance_function = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_FUNCTION && !p_identifier->function_source_is_static;
+		const bool source_is_signal = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_SIGNAL;
+
+		if (static_context && (source_is_instance_variable || source_is_instance_function || source_is_signal)) {
 			// Get the parent function above any lambda.
 			GDScriptParser::FunctionNode *parent_function = parser->current_function;
 			while (parent_function && parent_function->source_lambda) {
 				parent_function = parent_function->source_lambda->parent_function;
 			}
 
+			String source_type;
+			if (source_is_instance_variable) {
+				source_type = "non-static variable";
+			} else if (source_is_instance_function) {
+				source_type = "non-static function";
+			} else { // source_is_signal
+				source_type = "signal";
+			}
+
 			if (parent_function) {
-				push_error(vformat(R"*(Cannot access %s "%s" from the static function "%s()".)*", source_is_signal ? "signal" : "instance variable", p_identifier->name, parent_function->identifier->name), p_identifier);
+				push_error(vformat(R"*(Cannot access %s "%s" from the static function "%s()".)*", source_type, p_identifier->name, parent_function->identifier->name), p_identifier);
 			} else {
-				push_error(vformat(R"*(Cannot access %s "%s" from a static variable initializer.)*", source_is_signal ? "signal" : "instance variable", p_identifier->name), p_identifier);
+				push_error(vformat(R"*(Cannot access %s "%s" from a static variable initializer.)*", source_type, p_identifier->name), p_identifier);
 			}
 		}
 
 		if (current_lambda != nullptr) {
-			// If the identifier is a member variable (including the native class properties) or a signal, we consider the lambda to be using `self`, so we keep a reference to the current instance.
-			if (source_is_variable || source_is_signal) {
+			// If the identifier is a member variable (including the native class properties), member function, or a signal,
+			// we consider the lambda to be using `self`, so we keep a reference to the current instance.
+			if (source_is_instance_variable || source_is_instance_function || source_is_signal) {
 				mark_lambda_use_self();
 				return; // No need to capture.
 			}
@@ -4378,7 +4417,6 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 						switch (base_type.builtin_type) {
 							// Expect int or real as index.
 							case Variant::PACKED_BYTE_ARRAY:
-							case Variant::PACKED_COLOR_ARRAY:
 							case Variant::PACKED_FLOAT32_ARRAY:
 							case Variant::PACKED_FLOAT64_ARRAY:
 							case Variant::PACKED_INT32_ARRAY:
@@ -4386,6 +4424,8 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 							case Variant::PACKED_STRING_ARRAY:
 							case Variant::PACKED_VECTOR2_ARRAY:
 							case Variant::PACKED_VECTOR3_ARRAY:
+							case Variant::PACKED_COLOR_ARRAY:
+							case Variant::PACKED_VECTOR4_ARRAY:
 							case Variant::ARRAY:
 							case Variant::STRING:
 								error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::FLOAT;
@@ -4484,10 +4524,6 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					case Variant::QUATERNION:
 						result_type.builtin_type = Variant::FLOAT;
 						break;
-					// Return Color.
-					case Variant::PACKED_COLOR_ARRAY:
-						result_type.builtin_type = Variant::COLOR;
-						break;
 					// Return String.
 					case Variant::PACKED_STRING_ARRAY:
 					case Variant::STRING:
@@ -4508,6 +4544,14 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					case Variant::AABB:
 					case Variant::BASIS:
 						result_type.builtin_type = Variant::VECTOR3;
+						break;
+					// Return Color.
+					case Variant::PACKED_COLOR_ARRAY:
+						result_type.builtin_type = Variant::COLOR;
+						break;
+					// Return Vector4.
+					case Variant::PACKED_VECTOR4_ARRAY:
+						result_type.builtin_type = Variant::VECTOR4;
 						break;
 					// Depends on the index.
 					case Variant::TRANSFORM3D:
@@ -5172,12 +5216,13 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 		push_error(vformat(R"*(Too many arguments for "%s()" call. Expected at most %d but received %d.)*", p_call->function_name, p_par_types.size(), p_call->arguments.size()), p_call->arguments[p_par_types.size()]);
 	}
 
-	for (int i = 0; i < p_call->arguments.size(); i++) {
+	List<GDScriptParser::DataType>::ConstIterator par_itr = p_par_types.begin();
+	for (int i = 0; i < p_call->arguments.size(); ++par_itr, ++i) {
 		if (i >= p_par_types.size()) {
 			// Already on vararg place.
 			break;
 		}
-		GDScriptParser::DataType par_type = p_par_types[i];
+		GDScriptParser::DataType par_type = *par_itr;
 
 		if (par_type.is_hard_type() && p_call->arguments[i]->is_constant) {
 			update_const_expression_builtin_type(p_call->arguments[i], par_type, "pass");

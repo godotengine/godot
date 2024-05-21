@@ -30,6 +30,8 @@
 
 #include "animation_library.h"
 
+#include "scene/scene_string_names.h"
+
 bool AnimationLibrary::is_valid_animation_name(const String &p_name) {
 	return !(p_name.is_empty() || p_name.contains("/") || p_name.contains(":") || p_name.contains(",") || p_name.contains("["));
 }
@@ -106,7 +108,7 @@ TypedArray<StringName> AnimationLibrary::_get_animation_list() const {
 }
 
 void AnimationLibrary::_animation_changed(const StringName &p_name) {
-	emit_signal(SNAME("animation_changed"), p_name);
+	emit_signal(SceneStringName(animation_changed), p_name);
 }
 
 void AnimationLibrary::get_animation_list(List<StringName> *p_animations) const {

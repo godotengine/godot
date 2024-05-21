@@ -1,7 +1,7 @@
 """Functions used to generate source files during build time"""
 
 import os.path
-
+from methods import print_error
 from typing import Optional
 
 
@@ -94,11 +94,11 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
                 if not included_file in header_data.vertex_included_files and header_data.reading == "vertex":
                     header_data.vertex_included_files += [included_file]
                     if include_file_in_gles3_header(included_file, header_data, depth + 1) is None:
-                        print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
+                        print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
                 elif not included_file in header_data.fragment_included_files and header_data.reading == "fragment":
                     header_data.fragment_included_files += [included_file]
                     if include_file_in_gles3_header(included_file, header_data, depth + 1) is None:
-                        print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
+                        print_error(f'In file "{filename}": #include "{includeline}" could not be found!"')
 
                 line = fs.readline()
 
@@ -588,7 +588,7 @@ def build_gles3_header(
         fd.write("\t}\n\n")
 
         fd.write("};\n\n")
-        fd.write("#endif\n\n")
+        fd.write("#endif\n")
 
 
 def build_gles3_headers(target, source, env):

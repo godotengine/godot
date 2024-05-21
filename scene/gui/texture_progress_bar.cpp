@@ -249,7 +249,7 @@ Point2 TextureProgressBar::get_relative_center() {
 	p += rad_center_off;
 	p.x /= progress->get_width();
 	p.y /= progress->get_height();
-	p = p.clamp(Point2(), Point2(1, 1));
+	p = p.clampf(0, 1);
 	return p;
 }
 
@@ -494,7 +494,7 @@ void TextureProgressBar::_notification(int p_what) {
 								Rect2 source = Rect2(Point2(), progress->get_size());
 								draw_texture_rect_region(progress, region, source, tint_progress);
 							} else if (val != 0) {
-								Array pts;
+								LocalVector<float> pts;
 								float direction = mode == FILL_COUNTER_CLOCKWISE ? -1 : 1;
 								float start;
 
@@ -507,11 +507,11 @@ void TextureProgressBar::_notification(int p_what) {
 								float end = start + direction * val;
 								float from = MIN(start, end);
 								float to = MAX(start, end);
-								pts.append(from);
+								pts.push_back(from);
 								for (float corner = Math::floor(from * 4 + 0.5) * 0.25 + 0.125; corner < to; corner += 0.25) {
-									pts.append(corner);
+									pts.push_back(corner);
 								}
-								pts.append(to);
+								pts.push_back(to);
 
 								Ref<AtlasTexture> atlas_progress = progress;
 								bool valid_atlas_progress = atlas_progress.is_valid() && atlas_progress->get_atlas().is_valid();
@@ -524,9 +524,9 @@ void TextureProgressBar::_notification(int p_what) {
 
 								Vector<Point2> uvs;
 								Vector<Point2> points;
-								for (int i = 0; i < pts.size(); i++) {
-									Point2 uv = unit_val_to_uv(pts[i]);
-									if (uvs.find(uv) >= 0) {
+								for (const float &f : pts) {
+									Point2 uv = unit_val_to_uv(f);
+									if (uvs.has(uv)) {
 										continue;
 									}
 									points.push_back(progress_offset + Point2(uv.x * s.x, uv.y * s.y));

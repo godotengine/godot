@@ -163,6 +163,8 @@ private:
 	void _input_type_changed(Type p_type, int p_id);
 	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;
 
+	bool _check_reroute_subgraph(Type p_type, int p_target_port_type, int p_reroute_node, List<int> *r_visited_reroute_nodes = nullptr) const;
+
 protected:
 	virtual void _update_shader() const override;
 	static void _bind_methods();
@@ -228,6 +230,8 @@ public: // internal methods
 
 	void attach_node_to_frame(Type p_type, int p_node, int p_frame);
 	void detach_node_from_frame(Type p_type, int p_node);
+
+	String get_reroute_parameter_name(Type p_type, int p_reroute_node) const;
 
 	void rebuild();
 	void get_node_connections(Type p_type, List<Connection> *r_connections) const;
@@ -878,6 +882,7 @@ public:
 	String get_expression() const;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+	virtual bool is_output_port_expandable(int p_port) const override;
 
 	VisualShaderNodeExpression();
 };

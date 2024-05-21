@@ -107,7 +107,7 @@ void EditorDebuggerSession::detach_debugger() {
 	debugger->disconnect("started", callable_mp(this, &EditorDebuggerSession::_started));
 	debugger->disconnect("stopped", callable_mp(this, &EditorDebuggerSession::_stopped));
 	debugger->disconnect("breaked", callable_mp(this, &EditorDebuggerSession::_breaked));
-	debugger->disconnect("tree_exited", callable_mp(this, &EditorDebuggerSession::_debugger_gone_away));
+	debugger->disconnect(SceneStringName(tree_exited), callable_mp(this, &EditorDebuggerSession::_debugger_gone_away));
 	for (Control *tab : tabs) {
 		debugger->remove_debugger_tab(tab);
 	}
@@ -126,7 +126,7 @@ EditorDebuggerSession::EditorDebuggerSession(ScriptEditorDebugger *p_debugger) {
 	debugger->connect("started", callable_mp(this, &EditorDebuggerSession::_started));
 	debugger->connect("stopped", callable_mp(this, &EditorDebuggerSession::_stopped));
 	debugger->connect("breaked", callable_mp(this, &EditorDebuggerSession::_breaked));
-	debugger->connect("tree_exited", callable_mp(this, &EditorDebuggerSession::_debugger_gone_away), CONNECT_ONE_SHOT);
+	debugger->connect(SceneStringName(tree_exited), callable_mp(this, &EditorDebuggerSession::_debugger_gone_away), CONNECT_ONE_SHOT);
 }
 
 EditorDebuggerSession::~EditorDebuggerSession() {
@@ -140,8 +140,8 @@ EditorDebuggerPlugin::~EditorDebuggerPlugin() {
 }
 
 void EditorDebuggerPlugin::clear() {
-	for (int i = 0; i < sessions.size(); i++) {
-		sessions[i]->detach_debugger();
+	for (Ref<EditorDebuggerSession> &session : sessions) {
+		session->detach_debugger();
 	}
 	sessions.clear();
 }
@@ -157,13 +157,13 @@ void EditorDebuggerPlugin::setup_session(int p_idx) {
 
 Ref<EditorDebuggerSession> EditorDebuggerPlugin::get_session(int p_idx) {
 	ERR_FAIL_INDEX_V(p_idx, sessions.size(), nullptr);
-	return sessions[p_idx];
+	return sessions.get(p_idx);
 }
 
 Array EditorDebuggerPlugin::get_sessions() {
 	Array ret;
-	for (int i = 0; i < sessions.size(); i++) {
-		ret.push_back(sessions[i]);
+	for (const Ref<EditorDebuggerSession> &session : sessions) {
+		ret.push_back(session);
 	}
 	return ret;
 }

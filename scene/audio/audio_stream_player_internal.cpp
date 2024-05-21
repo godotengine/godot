@@ -31,7 +31,6 @@
 #include "audio_stream_player_internal.h"
 
 #include "scene/main/node.h"
-#include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
 void AudioStreamPlayerInternal::_set_process(bool p_enabled) {
@@ -78,7 +77,7 @@ void AudioStreamPlayerInternal::process() {
 		_set_process(false);
 	}
 	if (!playbacks_to_remove.is_empty()) {
-		node->emit_signal(SNAME("finished"));
+		node->emit_signal(SceneStringName(finished));
 	}
 }
 
@@ -307,14 +306,14 @@ StringName AudioStreamPlayerInternal::get_bus() const {
 			return bus;
 		}
 	}
-	return SceneStringNames::get_singleton()->Master;
+	return SceneStringName(Master);
 }
 
 AudioStreamPlayerInternal::AudioStreamPlayerInternal(Node *p_node, const Callable &p_play_callable, bool p_physical) {
 	node = p_node;
 	play_callable = p_play_callable;
 	physical = p_physical;
-	bus = SceneStringNames::get_singleton()->Master;
+	bus = SceneStringName(Master);
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp((Object *)node, &Object::notify_property_list_changed));
 	AudioServer::get_singleton()->connect("bus_renamed", callable_mp((Object *)node, &Object::notify_property_list_changed).unbind(3));

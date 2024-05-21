@@ -38,7 +38,6 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
-import android.graphics.Rect
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -46,10 +45,12 @@ import android.hardware.SensorManager
 import android.os.*
 import android.util.Log
 import android.view.*
-import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.FrameLayout
 import androidx.annotation.Keep
 import androidx.annotation.StringRes
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsAnimationCompat
+import androidx.core.view.WindowInsetsCompat
 import com.google.android.vending.expansion.downloader.*
 import org.godotengine.godot.input.GodotEditText
 import org.godotengine.godot.io.directory.DirectoryAccessHandler
@@ -418,58 +419,42 @@ class Godot(private val context: Context) : SensorEventListener {
 			io?.setEdit(editText)
 
 			// Listeners for keyboard height.
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-				// Report the height of virtual keyboard as it changes during the animation.
-				val decorView = activity.window.decorView
-				decorView.setWindowInsetsAnimationCallback(object : WindowInsetsAnimation.Callback(DISPATCH_MODE_STOP) {
-					var startBottom = 0
-					var endBottom = 0
-					override fun onPrepare(animation: WindowInsetsAnimation) {
-						startBottom = decorView.rootWindowInsets.getInsets(WindowInsets.Type.ime()).bottom
-					}
+			val decorView = activity.window.decorView
+			// Report the height of virtual keyboard as it changes during the animation.
+			ViewCompat.setWindowInsetsAnimationCallback(decorView, object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
+				var startBottom = 0
+				var endBottom = 0
+				override fun onPrepare(animation: WindowInsetsAnimationCompat) {
+					startBottom = ViewCompat.getRootWindowInsets(decorView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
+				}
 
-					override fun onStart(animation: WindowInsetsAnimation, bounds: WindowInsetsAnimation.Bounds): WindowInsetsAnimation.Bounds {
-						endBottom = decorView.rootWindowInsets.getInsets(WindowInsets.Type.ime()).bottom
-						return bounds
-					}
+				override fun onStart(animation: WindowInsetsAnimationCompat, bounds: WindowInsetsAnimationCompat.BoundsCompat): WindowInsetsAnimationCompat.BoundsCompat {
+					endBottom = ViewCompat.getRootWindowInsets(decorView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
+					return bounds
+				}
 
-					override fun onProgress(windowInsets: WindowInsets, list: List<WindowInsetsAnimation>): WindowInsets {
-						// Find the IME animation.
-						var imeAnimation: WindowInsetsAnimation? = null
-						for (animation in list) {
-							if (animation.typeMask and WindowInsets.Type.ime() != 0) {
-								imeAnimation = animation
-								break
-							}
-						}
-						// Update keyboard height based on IME animation.
-						if (imeAnimation != null) {
-							val interpolatedFraction = imeAnimation.interpolatedFraction
-							// Linear interpolation between start and end values.
-							val keyboardHeight = startBottom * (1.0f - interpolatedFraction) + endBottom * interpolatedFraction
-							GodotLib.setVirtualKeyboardHeight(keyboardHeight.toInt())
-						}
-						return windowInsets
-					}
-
-					override fun onEnd(animation: WindowInsetsAnimation) {}
-				})
-			} else {
-				// Infer the virtual keyboard height using visible area.
-				renderView?.view?.viewTreeObserver?.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
-					// Don't allocate a new Rect every time the callback is called.
-					val visibleSize = Rect()
-					override fun onGlobalLayout() {
-						renderView?.let {
-							val surfaceView = it.view
-
-							surfaceView.getWindowVisibleDisplayFrame(visibleSize)
-							val keyboardHeight = surfaceView.height - visibleSize.bottom
-							GodotLib.setVirtualKeyboardHeight(keyboardHeight)
+				override fun onProgress(windowInsets: WindowInsetsCompat, animationsList: List<WindowInsetsAnimationCompat>): WindowInsetsCompat {
+					// Find the IME animation.
+					var imeAnimation: WindowInsetsAnimationCompat? = null
+					for (animation in animationsList) {
+						if (animation.typeMask and WindowInsetsCompat.Type.ime() != 0) {
+							imeAnimation = animation
+							break
 						}
 					}
-				})
-			}
+
+					// Update keyboard height based on IME animation.
+					if (imeAnimation != null) {
+						val interpolatedFraction = imeAnimation.interpolatedFraction
+						// Linear interpolation between start and end values.
+						val keyboardHeight = startBottom * (1.0f - interpolatedFraction) + endBottom * interpolatedFraction
+						GodotLib.setVirtualKeyboardHeight(keyboardHeight.toInt())
+					}
+					return windowInsets
+				}
+
+				override fun onEnd(animation: WindowInsetsAnimationCompat) {}
+			})
 
 			if (host == primaryHost) {
 				renderView?.queueOnRenderThread {
@@ -894,16 +879,25 @@ class Godot(private val context: Context) : SensorEventListener {
 	 */
 	@SuppressLint("MissingPermission")
 	@Keep
-	private fun vibrate(durationMs: Int) {
+	private fun vibrate(durationMs: Int, amplitude: Int) {
 		if (durationMs > 0 && requestPermission("VIBRATE")) {
 			val vibratorService = getActivity()?.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator? ?: return
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				vibratorService.vibrate(
-					VibrationEffect.createOneShot(
-						durationMs.toLong(),
-						VibrationEffect.DEFAULT_AMPLITUDE
+				if (amplitude <= -1) {
+					vibratorService.vibrate(
+						VibrationEffect.createOneShot(
+							durationMs.toLong(),
+							VibrationEffect.DEFAULT_AMPLITUDE
+						)
 					)
-				)
+				} else {
+					vibratorService.vibrate(
+						VibrationEffect.createOneShot(
+							durationMs.toLong(),
+							amplitude
+						)
+					)
+				}
 			} else {
 				// deprecated in API 26
 				vibratorService.vibrate(durationMs.toLong())

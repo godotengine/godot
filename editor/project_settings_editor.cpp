@@ -287,6 +287,8 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 	presets.insert("s3tc");
 	presets.insert("etc2");
 	presets.insert("editor");
+	presets.insert("editor_hint");
+	presets.insert("editor_runtime");
 	presets.insert("template_debug");
 	presets.insert("template_release");
 	presets.insert("debug");
@@ -681,13 +683,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
 	add_button->set_disabled(true);
-	add_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_add_setting));
+	add_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_add_setting));
 	custom_properties->add_child(add_button);
 
 	del_button = memnew(Button);
 	del_button->set_text(TTR("Delete"));
 	del_button->set_disabled(true);
-	del_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_delete_setting));
+	del_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_delete_setting));
 	custom_properties->add_child(del_button);
 
 	general_settings_inspector = memnew(SectionedInspector);
@@ -716,13 +718,13 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_hb->add_spacer();
 
 	Button *restart_button = memnew(Button);
-	restart_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart));
+	restart_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_editor_restart));
 	restart_hb->add_child(restart_button);
 	restart_button->set_text(TTR("Save & Restart"));
 
 	restart_close_button = memnew(Button);
 	restart_close_button->set_flat(true);
-	restart_close_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart_close));
+	restart_close_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_editor_restart_close));
 	restart_hb->add_child(restart_close_button);
 
 	action_map_editor = memnew(ActionMapEditor);

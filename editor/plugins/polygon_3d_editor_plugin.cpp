@@ -334,9 +334,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 			}
 
 			if (!snap_ignore && Node3DEditor::get_singleton()->is_snap_enabled()) {
-				cpoint = cpoint.snapped(Vector2(
-						Node3DEditor::get_singleton()->get_translate_snap(),
-						Node3DEditor::get_singleton()->get_translate_snap()));
+				cpoint = cpoint.snappedf(Node3DEditor::get_singleton()->get_translate_snap());
 			}
 			edited_point_pos = cpoint;
 
@@ -540,13 +538,13 @@ Polygon3DEditor::Polygon3DEditor() {
 	button_create = memnew(Button);
 	button_create->set_theme_type_variation("FlatButton");
 	add_child(button_create);
-	button_create->connect("pressed", callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_CREATE));
+	button_create->connect(SceneStringName(pressed), callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_CREATE));
 	button_create->set_toggle_mode(true);
 
 	button_edit = memnew(Button);
 	button_edit->set_theme_type_variation("FlatButton");
 	add_child(button_edit);
-	button_edit->connect("pressed", callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_EDIT));
+	button_edit->connect(SceneStringName(pressed), callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
 
 	mode = MODE_EDIT;

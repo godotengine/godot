@@ -288,6 +288,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		}
 	}
 
+	minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
 	return minsize;
 }
 
@@ -2834,6 +2835,7 @@ void PopupMenu::_bind_methods() {
 	Item defaults(true);
 
 	base_property_helper.set_prefix("item_");
+	base_property_helper.set_array_length_getter(&PopupMenu::get_item_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, &PopupMenu::set_item_text, &PopupMenu::get_item_text);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &PopupMenu::set_item_icon, &PopupMenu::get_item_icon);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"), defaults.checkable_type, &PopupMenu::_set_item_checkable_type, &PopupMenu::_get_item_checkable_type);
@@ -2859,9 +2861,9 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 		if (!is_embedded()) {
 			float win_scale = get_parent_visible_window()->get_content_scale_factor();
 			set_content_scale_factor(win_scale);
-			Size2 minsize = get_contents_minimum_size();
-			minsize.height += 0.5 * win_scale; // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
-			set_min_size(minsize * win_scale);
+			Size2 minsize = get_contents_minimum_size() * win_scale;
+			minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
+			set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
 			set_size(Vector2(0, 0)); // Shrinkwraps to min size.
 		}
 		Popup::popup(p_bounds);
@@ -2899,7 +2901,7 @@ PopupMenu::PopupMenu() {
 	control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	scroll_container->add_child(control, false, INTERNAL_MODE_FRONT);
-	control->connect("draw", callable_mp(this, &PopupMenu::_draw_items));
+	control->connect(SceneStringName(draw), callable_mp(this, &PopupMenu::_draw_items));
 
 	submenu_timer = memnew(Timer);
 	submenu_timer->set_wait_time(0.3);

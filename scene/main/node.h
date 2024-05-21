@@ -35,6 +35,7 @@
 #include "core/templates/rb_map.h"
 #include "core/variant/typed_array.h"
 #include "scene/main/scene_tree.h"
+#include "scene/scene_string_names.h"
 
 class Viewport;
 class Window;
@@ -266,7 +267,7 @@ private:
 	void _propagate_groups_dirty();
 	Array _get_node_and_resource(const NodePath &p_path);
 
-	void _duplicate_properties_node(const Node *p_root, const Node *p_original, Node *p_copy) const;
+	void _duplicate_properties(const Node *p_root, const Node *p_original, Node *p_copy, int p_flags) const;
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
 	Node *_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap = nullptr) const;
 
@@ -525,6 +526,8 @@ public:
 	bool is_property_pinned(const StringName &p_property) const;
 	virtual StringName get_property_store_alias(const StringName &p_property) const;
 	bool is_part_of_edited_scene() const;
+#else
+	bool is_part_of_edited_scene() const { return false; }
 #endif
 	void get_storable_properties(HashSet<StringName> &r_storable_properties) const;
 

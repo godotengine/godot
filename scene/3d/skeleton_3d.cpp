@@ -34,7 +34,6 @@
 #include "core/variant/type_info.h"
 #include "scene/3d/skeleton_modifier_3d.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/scene_string_names.h"
 #ifndef DISABLE_DEPRECATED
 #include "scene/3d/physical_bone_simulator_3d.h"
 #endif // _DISABLE_DEPRECATED
@@ -253,7 +252,7 @@ void Skeleton3D::_update_process_order() {
 			int parent_bone_idx = bonesptr[i].parent;
 
 			// Check to see if this node is already added to the parent.
-			if (bonesptr[parent_bone_idx].child_bones.find(i) < 0) {
+			if (!bonesptr[parent_bone_idx].child_bones.has(i)) {
 				// Add the child node.
 				bonesptr[parent_bone_idx].child_bones.push_back(i);
 			} else {
@@ -264,6 +263,8 @@ void Skeleton3D::_update_process_order() {
 		}
 	}
 
+	bones_backup.resize(bones.size());
+
 	process_order_dirty = false;
 
 	emit_signal("bone_list_changed");
@@ -271,16 +272,15 @@ void Skeleton3D::_update_process_order() {
 
 #ifndef DISABLE_DEPRECATED
 void Skeleton3D::setup_simulator() {
+	if (simulator && simulator->get_parent() == this) {
+		remove_child(simulator);
+		simulator->queue_free();
+	}
 	PhysicalBoneSimulator3D *sim = memnew(PhysicalBoneSimulator3D);
 	simulator = sim;
 	sim->is_compat = true;
 	sim->set_active(false); // Don't run unneeded process.
-	add_child(sim);
-}
-
-void Skeleton3D::remove_simulator() {
-	remove_child(simulator);
-	memdelete(simulator);
+	add_child(simulator);
 }
 #endif // _DISABLE_DEPRECATED
 
@@ -294,11 +294,6 @@ void Skeleton3D::_notification(int p_what) {
 			setup_simulator();
 #endif // _DISABLE_DEPRECATED
 		} break;
-#ifndef DISABLE_DEPRECATED
-		case NOTIFICATION_EXIT_TREE: {
-			remove_simulator();
-		} break;
-#endif // _DISABLE_DEPRECATED
 		case NOTIFICATION_UPDATE_SKELETON: {
 			// Update bone transforms to apply unprocessed poses.
 			force_update_all_dirty_bones();
@@ -310,24 +305,15 @@ void Skeleton3D::_notification(int p_what) {
 
 			// Process modifiers.
 			_find_modifiers();
-			LocalVector<Transform3D> current_bone_poses;
-			LocalVector<Vector3> current_pose_positions;
-			LocalVector<Quaternion> current_pose_rotations;
-			LocalVector<Vector3> current_pose_scales;
-			LocalVector<Transform3D> current_bone_global_poses;
 			if (!modifiers.is_empty()) {
 				// Store unmodified bone poses.
-				for (int i = 0; i < len; i++) {
-					current_bone_poses.push_back(bones[i].pose_cache);
-					current_pose_positions.push_back(bones[i].pose_position);
-					current_pose_rotations.push_back(bones[i].pose_rotation);
-					current_pose_scales.push_back(bones[i].pose_scale);
-					current_bone_global_poses.push_back(bones[i].global_pose);
+				for (int i = 0; i < bones.size(); i++) {
+					bones_backup[i].save(bones[i]);
 				}
 				_process_modifiers();
 			}
 
-			emit_signal(SceneStringNames::get_singleton()->skeleton_updated);
+			emit_signal(SceneStringName(skeleton_updated));
 
 			// Update skins.
 			RenderingServer *rs = RenderingServer::get_singleton();
@@ -388,12 +374,8 @@ void Skeleton3D::_notification(int p_what) {
 
 			if (!modifiers.is_empty()) {
 				// Restore unmodified bone poses.
-				for (int i = 0; i < len; i++) {
-					bonesptr[i].pose_cache = current_bone_poses[i];
-					bonesptr[i].pose_position = current_pose_positions[i];
-					bonesptr[i].pose_rotation = current_pose_rotations[i];
-					bonesptr[i].pose_scale = current_pose_scales[i];
-					bonesptr[i].global_pose = current_bone_global_poses[i];
+				for (int i = 0; i < bones.size(); i++) {
+					bones_backup[i].restore(bones.write[i]);
 				}
 			}
 
@@ -622,7 +604,7 @@ void Skeleton3D::set_bone_enabled(int p_bone, bool p_enabled) {
 	ERR_FAIL_INDEX(p_bone, bone_size);
 
 	bones.write[p_bone].enabled = p_enabled;
-	emit_signal(SceneStringNames::get_singleton()->bone_enabled_changed, p_bone);
+	emit_signal(SceneStringName(bone_enabled_changed), p_bone);
 	_make_dirty();
 }
 
@@ -634,7 +616,7 @@ bool Skeleton3D::is_bone_enabled(int p_bone) const {
 
 void Skeleton3D::set_show_rest_only(bool p_enabled) {
 	show_rest_only = p_enabled;
-	emit_signal(SceneStringNames::get_singleton()->show_rest_only_changed);
+	emit_signal(SceneStringName(show_rest_only_changed));
 	_make_dirty();
 }
 
@@ -857,7 +839,7 @@ void Skeleton3D::force_update_all_bone_transforms() {
 	if (updating) {
 		return;
 	}
-	emit_signal(SceneStringNames::get_singleton()->pose_updated);
+	emit_signal(SceneStringName(pose_updated));
 }
 
 void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
@@ -865,12 +847,13 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 	ERR_FAIL_INDEX(p_bone_idx, bone_size);
 
 	Bone *bonesptr = bones.ptrw();
-	List<int> bones_to_process = List<int>();
+	thread_local LocalVector<int> bones_to_process;
+	bones_to_process.clear();
 	bones_to_process.push_back(p_bone_idx);
 
-	while (bones_to_process.size() > 0) {
-		int current_bone_idx = bones_to_process[0];
-		bones_to_process.erase(current_bone_idx);
+	uint32_t index = 0;
+	while (index < bones_to_process.size()) {
+		int current_bone_idx = bones_to_process[index];
 
 		Bone &b = bonesptr[current_bone_idx];
 		bool bone_enabled = b.enabled && !show_rest_only;
@@ -923,6 +906,8 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 		for (int i = 0; i < child_bone_size; i++) {
 			bones_to_process.push_back(b.child_bones[i]);
 		}
+
+		index++;
 	}
 }
 

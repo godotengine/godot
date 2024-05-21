@@ -148,14 +148,14 @@ NavigationPolygonEditor::NavigationPolygonEditor() {
 	button_bake->set_toggle_mode(true);
 	button_bake->set_text(TTR("Bake NavigationPolygon"));
 	button_bake->set_tooltip_text(TTR("Bakes the NavigationPolygon by first parsing the scene for source geometry and then creating the navigation polygon vertices and polygons."));
-	button_bake->connect("pressed", callable_mp(this, &NavigationPolygonEditor::_bake_pressed));
+	button_bake->connect(SceneStringName(pressed), callable_mp(this, &NavigationPolygonEditor::_bake_pressed));
 
 	button_reset = memnew(Button);
 	button_reset->set_flat(true);
 	bake_hbox->add_child(button_reset);
 	button_reset->set_text(TTR("Clear NavigationPolygon"));
 	button_reset->set_tooltip_text(TTR("Clears the internal NavigationPolygon outlines, vertices and polygons."));
-	button_reset->connect("pressed", callable_mp(this, &NavigationPolygonEditor::_clear_pressed));
+	button_reset->connect(SceneStringName(pressed), callable_mp(this, &NavigationPolygonEditor::_clear_pressed));
 
 	bake_info = memnew(Label);
 	bake_hbox->add_child(bake_info);
@@ -177,8 +177,8 @@ NavigationPolygonEditor::NavigationPolygonEditor() {
 void NavigationPolygonEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			button_bake->set_icon(get_theme_icon(SNAME("Bake"), SNAME("EditorIcons")));
-			button_reset->set_icon(get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+			button_bake->set_icon(get_editor_theme_icon(SNAME("Bake")));
+			button_reset->set_icon(get_editor_theme_icon(SNAME("Reload")));
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (rebake_timer) {

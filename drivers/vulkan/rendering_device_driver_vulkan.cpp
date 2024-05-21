@@ -758,11 +758,13 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 				vrs_capabilities.min_texel_size.y = vrs_properties.minFragmentShadingRateAttachmentTexelSize.height;
 				vrs_capabilities.max_texel_size.x = vrs_properties.maxFragmentShadingRateAttachmentTexelSize.width;
 				vrs_capabilities.max_texel_size.y = vrs_properties.maxFragmentShadingRateAttachmentTexelSize.height;
+				vrs_capabilities.max_fragment_size.x = vrs_properties.maxFragmentSize.width; // either 4 or 8
+				vrs_capabilities.max_fragment_size.y = vrs_properties.maxFragmentSize.height; // generally the same as width
 
 				// We'll attempt to default to a texel size of 16x16.
 				vrs_capabilities.texel_size = Vector2i(16, 16).clamp(vrs_capabilities.min_texel_size, vrs_capabilities.max_texel_size);
 
-				print_verbose(String("  Attachment fragment shading rate") + String(", min texel size: (") + itos(vrs_capabilities.min_texel_size.x) + String(", ") + itos(vrs_capabilities.min_texel_size.y) + String(")") + String(", max texel size: (") + itos(vrs_capabilities.max_texel_size.x) + String(", ") + itos(vrs_capabilities.max_texel_size.y) + String(")"));
+				print_verbose(String("  Attachment fragment shading rate") + String(", min texel size: (") + itos(vrs_capabilities.min_texel_size.x) + String(", ") + itos(vrs_capabilities.min_texel_size.y) + String(")") + String(", max texel size: (") + itos(vrs_capabilities.max_texel_size.x) + String(", ") + itos(vrs_capabilities.max_texel_size.y) + String(")") + String(", max fragment size: (") + itos(vrs_capabilities.max_fragment_size.x) + String(", ") + itos(vrs_capabilities.max_fragment_size.y) + String(")"));
 			}
 
 		} else {
@@ -1008,7 +1010,7 @@ VkResult RenderingDeviceDriverVulkan::_create_render_pass(VkDevice p_device, con
 			const uint32_t depth_attachment_index = vector_base_index + 3;
 			_convert_subpass_attachments(p_create_info->pSubpasses[i].pInputAttachments, p_create_info->pSubpasses[i].inputAttachmentCount, subpasses_attachments[input_attachments_index]);
 			_convert_subpass_attachments(p_create_info->pSubpasses[i].pColorAttachments, p_create_info->pSubpasses[i].colorAttachmentCount, subpasses_attachments[color_attachments_index]);
-			_convert_subpass_attachments(p_create_info->pSubpasses[i].pResolveAttachments, p_create_info->pSubpasses[i].colorAttachmentCount, subpasses_attachments[resolve_attachments_index]);
+			_convert_subpass_attachments(p_create_info->pSubpasses[i].pResolveAttachments, (p_create_info->pSubpasses[i].pResolveAttachments != nullptr) ? p_create_info->pSubpasses[i].colorAttachmentCount : 0, subpasses_attachments[resolve_attachments_index]);
 			_convert_subpass_attachments(p_create_info->pSubpasses[i].pDepthStencilAttachment, (p_create_info->pSubpasses[i].pDepthStencilAttachment != nullptr) ? 1 : 0, subpasses_attachments[depth_attachment_index]);
 
 			// Ignores sType and pNext from the subpass.
@@ -2601,7 +2603,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 			break;
 	}
 
-	bool present_mode_available = present_modes.find(present_mode) >= 0;
+	bool present_mode_available = present_modes.has(present_mode);
 	if (present_mode_available) {
 		print_verbose("Using present mode: " + present_mode_name);
 	} else {
@@ -3814,11 +3816,11 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 		if (p_data.is_empty()) {
 			// No pre-existing cache, just create it.
 		} else if (p_data.size() <= (int)sizeof(PipelineCacheHeader)) {
-			WARN_PRINT("Invalid/corrupt pipelines cache.");
+			print_verbose("Invalid/corrupt Vulkan pipelines cache. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
 		} else {
 			const PipelineCacheHeader *loaded_header = reinterpret_cast<const PipelineCacheHeader *>(p_data.ptr());
 			if (loaded_header->magic != 868 + VK_PIPELINE_CACHE_HEADER_VERSION_ONE) {
-				WARN_PRINT("Invalid pipelines cache magic number.");
+				print_verbose("Invalid Vulkan pipelines cache magic number. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
 			} else {
 				const uint8_t *loaded_buffer_start = p_data.ptr() + sizeof(PipelineCacheHeader);
 				uint32_t loaded_buffer_size = p_data.size() - sizeof(PipelineCacheHeader);
@@ -3830,7 +3832,7 @@ bool RenderingDeviceDriverVulkan::pipeline_cache_create(const Vector<uint8_t> &p
 						loaded_header->driver_version != current_header->driver_version ||
 						memcmp(loaded_header->uuid, current_header->uuid, VK_UUID_SIZE) != 0 ||
 						loaded_header->driver_abi != current_header->driver_abi) {
-					WARN_PRINT("Invalid pipelines cache header.");
+					print_verbose("Invalid Vulkan pipelines cache header. This may be due to an engine change, GPU change or graphics driver version change. Existing shader pipeline cache will be ignored, which may result in stuttering during gameplay.");
 				} else {
 					pipelines_cache.current_size = loaded_buffer_size;
 					pipelines_cache.buffer = p_data;
@@ -4887,6 +4889,10 @@ uint64_t RenderingDeviceDriverVulkan::limit_get(Limit p_limit) {
 			return vrs_capabilities.texel_size.x;
 		case LIMIT_VRS_TEXEL_HEIGHT:
 			return vrs_capabilities.texel_size.y;
+		case LIMIT_VRS_MAX_FRAGMENT_WIDTH:
+			return vrs_capabilities.max_fragment_size.x;
+		case LIMIT_VRS_MAX_FRAGMENT_HEIGHT:
+			return vrs_capabilities.max_fragment_size.y;
 		default:
 			ERR_FAIL_V(0);
 	}

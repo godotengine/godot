@@ -73,7 +73,9 @@ public:
 	virtual uint32_t add_or_get_name(const StringName &p_name) = 0;
 	virtual uint32_t add_temporary(const GDScriptDataType &p_type) = 0;
 	virtual void pop_temporary() = 0;
-	virtual void clean_temporaries() = 0;
+	virtual void clear_temporaries() = 0;
+	virtual void clear_address(const Address &p_address) = 0;
+	virtual bool is_local_dirty(const Address &p_address) const = 0;
 
 	virtual void start_parameters() = 0;
 	virtual void end_parameters() = 0;
@@ -114,6 +116,7 @@ public:
 	virtual void write_get_static_variable(const Address &p_target, const Address &p_class, int p_index) = 0;
 	virtual void write_assign(const Address &p_target, const Address &p_source) = 0;
 	virtual void write_assign_with_conversion(const Address &p_target, const Address &p_source) = 0;
+	virtual void write_assign_null(const Address &p_target) = 0;
 	virtual void write_assign_true(const Address &p_target) = 0;
 	virtual void write_assign_false(const Address &p_target) = 0;
 	virtual void write_assign_default_parameter(const Address &dst, const Address &src, bool p_use_conversion) = 0;
@@ -128,6 +131,7 @@ public:
 	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_builtin_type_static(const Address &p_target, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) = 0;
+	virtual void write_call_native_static_validated(const Address &p_target, MethodBind *p_method, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_method_bind_validated(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;

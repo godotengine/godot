@@ -162,7 +162,8 @@ void PropertySelector::_update_search() {
 			search_options->get_editor_theme_icon(SNAME("PackedStringArray")),
 			search_options->get_editor_theme_icon(SNAME("PackedVector2Array")),
 			search_options->get_editor_theme_icon(SNAME("PackedVector3Array")),
-			search_options->get_editor_theme_icon(SNAME("PackedColorArray"))
+			search_options->get_editor_theme_icon(SNAME("PackedColorArray")),
+			search_options->get_editor_theme_icon(SNAME("PackedVector4Array")),
 		};
 		static_assert((sizeof(type_icons) / sizeof(type_icons[0])) == Variant::VARIANT_MAX, "Number of type icons doesn't match the number of Variant types.");
 
@@ -189,7 +190,7 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			if (!search_box->get_text().is_empty() && E.name.findn(search_text) == -1) {
+			if (!search_box->get_text().is_empty() && !E.name.containsn(search_text)) {
 				continue;
 			}
 
@@ -202,7 +203,7 @@ void PropertySelector::_update_search() {
 			item->set_metadata(0, E.name);
 			item->set_icon(0, type_icons[E.type]);
 
-			if (!found && !search_box->get_text().is_empty() && E.name.findn(search_text) != -1) {
+			if (!found && !search_box->get_text().is_empty() && E.name.containsn(search_text)) {
 				item->select(0);
 				found = true;
 			}
@@ -280,7 +281,7 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			if (!search_box->get_text().is_empty() && name.findn(search_text) == -1) {
+			if (!search_box->get_text().is_empty() && !name.containsn(search_text)) {
 				continue;
 			}
 
@@ -298,20 +299,20 @@ void PropertySelector::_update_search() {
 
 			desc += vformat(" %s(", mi.name);
 
-			for (int i = 0; i < mi.arguments.size(); i++) {
-				if (i > 0) {
+			for (List<PropertyInfo>::Iterator arg_itr = mi.arguments.begin(); arg_itr != mi.arguments.end(); ++arg_itr) {
+				if (arg_itr != mi.arguments.begin()) {
 					desc += ", ";
 				}
 
-				desc += mi.arguments[i].name;
+				desc += arg_itr->name;
 
-				if (mi.arguments[i].type == Variant::NIL) {
+				if (arg_itr->type == Variant::NIL) {
 					desc += ": Variant";
-				} else if (mi.arguments[i].name.contains(":")) {
-					desc += vformat(": %s", mi.arguments[i].name.get_slice(":", 1));
-					mi.arguments[i].name = mi.arguments[i].name.get_slice(":", 0);
+				} else if (arg_itr->name.contains(":")) {
+					desc += vformat(": %s", arg_itr->name.get_slice(":", 1));
+					arg_itr->name = arg_itr->name.get_slice(":", 0);
 				} else {
-					desc += vformat(": %s", Variant::get_type_name(mi.arguments[i].type));
+					desc += vformat(": %s", Variant::get_type_name(arg_itr->type));
 				}
 			}
 
@@ -329,7 +330,7 @@ void PropertySelector::_update_search() {
 			item->set_metadata(0, name);
 			item->set_selectable(0, true);
 
-			if (!found && !search_box->get_text().is_empty() && name.findn(search_text) != -1) {
+			if (!found && !search_box->get_text().is_empty() && name.containsn(search_text)) {
 				item->select(0);
 				found = true;
 			}
@@ -551,7 +552,7 @@ PropertySelector::PropertySelector() {
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
 	search_box->connect("text_changed", callable_mp(this, &PropertySelector::_text_changed));
-	search_box->connect("gui_input", callable_mp(this, &PropertySelector::_sbox_input));
+	search_box->connect(SceneStringName(gui_input), callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);

@@ -18,13 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "Example: %s"
-msgstr "예: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d개 항목"
-
 msgid "New Code Region"
 msgstr "새 코드 구역"
 

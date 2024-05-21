@@ -75,8 +75,16 @@ struct _NO_DISCARD_ Vector4i {
 		return Vector4i(MIN(x, p_vector4i.x), MIN(y, p_vector4i.y), MIN(z, p_vector4i.z), MIN(w, p_vector4i.w));
 	}
 
+	Vector4i mini(int32_t p_scalar) const {
+		return Vector4i(MIN(x, p_scalar), MIN(y, p_scalar), MIN(z, p_scalar), MIN(w, p_scalar));
+	}
+
 	Vector4i max(const Vector4i &p_vector4i) const {
 		return Vector4i(MAX(x, p_vector4i.x), MAX(y, p_vector4i.y), MAX(z, p_vector4i.z), MAX(w, p_vector4i.w));
+	}
+
+	Vector4i maxi(int32_t p_scalar) const {
+		return Vector4i(MAX(x, p_scalar), MAX(y, p_scalar), MAX(z, p_scalar), MAX(w, p_scalar));
 	}
 
 	_FORCE_INLINE_ int64_t length_squared() const;
@@ -90,7 +98,9 @@ struct _NO_DISCARD_ Vector4i {
 	_FORCE_INLINE_ Vector4i abs() const;
 	_FORCE_INLINE_ Vector4i sign() const;
 	Vector4i clamp(const Vector4i &p_min, const Vector4i &p_max) const;
+	Vector4i clampi(int32_t p_min, int32_t p_max) const;
 	Vector4i snapped(const Vector4i &p_step) const;
+	Vector4i snappedi(int32_t p_step) const;
 
 	/* Operators */
 

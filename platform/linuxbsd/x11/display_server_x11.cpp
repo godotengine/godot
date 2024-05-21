@@ -1007,7 +1007,8 @@ int DisplayServerX11::get_screen_count() const {
 	if (xinerama_ext_ok && XineramaQueryExtension(x11_display, &event_base, &error_base)) {
 		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
 		XFree(xsi);
-	} else {
+	}
+	if (count == 0) {
 		count = XScreenCount(x11_display);
 	}
 
@@ -1068,25 +1069,29 @@ Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
 	ERR_FAIL_COND_V(p_screen < 0, rect);
 
 	// Using Xinerama Extension.
+	bool found = false;
 	int event_base, error_base;
 	if (xinerama_ext_ok && XineramaQueryExtension(x11_display, &event_base, &error_base)) {
 		int count;
 		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-
-		// Check if screen is valid.
-		if (p_screen < count) {
-			rect.position.x = xsi[p_screen].x_org;
-			rect.position.y = xsi[p_screen].y_org;
-			rect.size.width = xsi[p_screen].width;
-			rect.size.height = xsi[p_screen].height;
-		} else {
-			ERR_PRINT("Invalid screen index: " + itos(p_screen) + "(count: " + itos(count) + ").");
-		}
-
 		if (xsi) {
+			if (count > 0) {
+				// Check if screen is valid.
+				if (p_screen < count) {
+					rect.position.x = xsi[p_screen].x_org;
+					rect.position.y = xsi[p_screen].y_org;
+					rect.size.width = xsi[p_screen].width;
+					rect.size.height = xsi[p_screen].height;
+					found = true;
+				} else {
+					ERR_PRINT(vformat("Invalid screen index: %d (count: %d).", p_screen, count));
+				}
+			}
 			XFree(xsi);
 		}
-	} else {
+	}
+
+	if (!found) {
 		int count = XScreenCount(x11_display);
 		if (p_screen < count) {
 			Window root = XRootWindow(x11_display, p_screen);
@@ -1097,7 +1102,7 @@ Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
 			rect.size.width = xwa.width;
 			rect.size.height = xwa.height;
 		} else {
-			ERR_PRINT("Invalid screen index: " + itos(p_screen) + "(count: " + itos(count) + ").");
+			ERR_PRINT(vformat("Invalid screen index: %d (count: %d).", p_screen, count));
 		}
 	}
 
@@ -1503,25 +1508,33 @@ Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 
 	XImage *image = nullptr;
 
+	bool found = false;
 	int event_base, error_base;
 	if (xinerama_ext_ok && XineramaQueryExtension(x11_display, &event_base, &error_base)) {
 		int xin_count;
 		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &xin_count);
-		if (p_screen < xin_count) {
-			int x_count = XScreenCount(x11_display);
-			for (int i = 0; i < x_count; i++) {
-				Window root = XRootWindow(x11_display, i);
-				XWindowAttributes root_attrs;
-				XGetWindowAttributes(x11_display, root, &root_attrs);
-				if ((xsi[p_screen].x_org >= root_attrs.x) && (xsi[p_screen].x_org <= root_attrs.x + root_attrs.width) && (xsi[p_screen].y_org >= root_attrs.y) && (xsi[p_screen].y_org <= root_attrs.y + root_attrs.height)) {
-					image = XGetImage(x11_display, root, xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height, AllPlanes, ZPixmap);
-					break;
+		if (xsi) {
+			if (xin_count > 0) {
+				if (p_screen < xin_count) {
+					int x_count = XScreenCount(x11_display);
+					for (int i = 0; i < x_count; i++) {
+						Window root = XRootWindow(x11_display, i);
+						XWindowAttributes root_attrs;
+						XGetWindowAttributes(x11_display, root, &root_attrs);
+						if ((xsi[p_screen].x_org >= root_attrs.x) && (xsi[p_screen].x_org <= root_attrs.x + root_attrs.width) && (xsi[p_screen].y_org >= root_attrs.y) && (xsi[p_screen].y_org <= root_attrs.y + root_attrs.height)) {
+							found = true;
+							image = XGetImage(x11_display, root, xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height, AllPlanes, ZPixmap);
+							break;
+						}
+					}
+				} else {
+					ERR_PRINT(vformat("Invalid screen index: %d (count: %d).", p_screen, xin_count));
 				}
 			}
-		} else {
-			ERR_FAIL_V_MSG(Ref<Image>(), "Invalid screen index: " + itos(p_screen) + "(count: " + itos(xin_count) + ").");
+			XFree(xsi);
 		}
-	} else {
+	}
+	if (!found) {
 		int x_count = XScreenCount(x11_display);
 		if (p_screen < x_count) {
 			Window root = XRootWindow(x11_display, p_screen);
@@ -1531,7 +1544,7 @@ Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 
 			image = XGetImage(x11_display, root, root_attrs.x, root_attrs.y, root_attrs.width, root_attrs.height, AllPlanes, ZPixmap);
 		} else {
-			ERR_FAIL_V_MSG(Ref<Image>(), "Invalid screen index: " + itos(p_screen) + "(count: " + itos(x_count) + ").");
+			ERR_PRINT(vformat("Invalid screen index: %d (count: %d).", p_screen, x_count));
 		}
 	}
 
@@ -2225,7 +2238,7 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 
 	Size2i size = p_size;
-	size = size.max(Size2i(1, 1));
+	size = size.maxi(1);
 
 	WindowData &wd = windows[p_window];
 
@@ -4268,6 +4281,8 @@ bool DisplayServerX11::_window_focus_check() {
 }
 
 void DisplayServerX11::process_events() {
+	ERR_FAIL_COND(!Thread::is_main_thread());
+
 	_THREAD_SAFE_LOCK_
 
 #ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
@@ -4992,7 +5007,7 @@ void DisplayServerX11::process_events() {
 						files.write[i] = files[i].replace("file://", "").uri_decode();
 					}
 
-					if (!windows[window_id].drop_files_callback.is_null()) {
+					if (windows[window_id].drop_files_callback.is_valid()) {
 						windows[window_id].drop_files_callback.call(files);
 					}
 

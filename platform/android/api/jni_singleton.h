@@ -244,6 +244,7 @@ public:
 
 	~JNISingleton() {
 #ifdef ANDROID_ENABLED
+		method_map.clear();
 		if (instance) {
 			JNIEnv *env = get_jni_env();
 			ERR_FAIL_NULL(env);

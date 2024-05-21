@@ -253,8 +253,8 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 	file->clear_filters();
 	file->set_title(TTR("Import Scene"));
-	for (int i = 0; i < extensions.size(); i++) {
-		file->add_filter("*." + extensions[i], extensions[i].to_upper());
+	for (const String &extension : extensions) {
+		file->add_filter("*." + extension, extension.to_upper());
 	}
 	add_child(file);
 	file->connect("file_selected", callable_mp(this, &MeshLibraryEditor::_import_scene_cbk));
@@ -276,12 +276,12 @@ MeshLibraryEditor::MeshLibraryEditor() {
 
 	cd_remove = memnew(ConfirmationDialog);
 	add_child(cd_remove);
-	cd_remove->get_ok_button()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_remove_confirm));
+	cd_remove->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &MeshLibraryEditor::_menu_remove_confirm));
 	cd_update = memnew(ConfirmationDialog);
 	add_child(cd_update);
 	cd_update->set_ok_button_text(TTR("Apply without Transforms"));
-	cd_update->get_ok_button()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_update_confirm).bind(false));
-	cd_update->add_button(TTR("Apply with Transforms"))->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_update_confirm).bind(true));
+	cd_update->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &MeshLibraryEditor::_menu_update_confirm).bind(false));
+	cd_update->add_button(TTR("Apply with Transforms"))->connect(SceneStringName(pressed), callable_mp(this, &MeshLibraryEditor::_menu_update_confirm).bind(true));
 }
 
 void MeshLibraryEditorPlugin::edit(Object *p_node) {

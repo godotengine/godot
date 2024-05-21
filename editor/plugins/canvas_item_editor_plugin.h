@@ -31,11 +31,12 @@
 #ifndef CANVAS_ITEM_EDITOR_PLUGIN_H
 #define CANVAS_ITEM_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
-#include "scene/gui/base_button.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
 class AcceptDialog;
+class Button;
+class ButtonGroup;
 class CanvasItemEditorViewport;
 class ConfirmationDialog;
 class EditorData;
@@ -174,6 +175,7 @@ private:
 		DRAG_SCALE_BOTH,
 		DRAG_ROTATE,
 		DRAG_PIVOT,
+		DRAG_TEMP_PIVOT,
 		DRAG_V_GUIDE,
 		DRAG_H_GUIDE,
 		DRAG_DOUBLE_GUIDE,
@@ -251,6 +253,7 @@ private:
 	bool key_scale = false;
 
 	bool pan_pressed = false;
+	Vector2 temp_pivot = Vector2(INFINITY, INFINITY);
 
 	bool ruler_tool_active = false;
 	Point2 ruler_tool_origin;
@@ -407,7 +410,7 @@ private:
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
 	void _add_node_pressed(int p_result);
-	void _node_created(Node *p_node);
+	void _adjust_new_node_position(Node *p_node);
 	void _reset_create_position();
 	void _update_editor_settings();
 	bool _is_grid_visible() const;
@@ -632,15 +635,13 @@ class CanvasItemEditorViewport : public Control {
 	CanvasItemEditor *canvas_item_editor = nullptr;
 	Control *preview_node = nullptr;
 	AcceptDialog *accept = nullptr;
-	AcceptDialog *selector = nullptr;
-	Label *selector_label = nullptr;
+	AcceptDialog *texture_node_type_selector = nullptr;
 	Label *label = nullptr;
 	Label *label_desc = nullptr;
-	VBoxContainer *btn_group = nullptr;
 	Ref<ButtonGroup> button_group;
 
 	void _on_mouse_exit();
-	void _on_select_type(Object *selected);
+	void _on_select_texture_node_type(Object *selected);
 	void _on_change_type_confirmed();
 	void _on_change_type_closed();
 
@@ -648,11 +649,12 @@ class CanvasItemEditorViewport : public Control {
 	void _remove_preview();
 
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
-	bool _only_packed_scenes_selected() const;
-	void _create_nodes(Node *parent, Node *child, String &path, const Point2 &p_point);
-	bool _create_instance(Node *parent, String &path, const Point2 &p_point);
+	bool _is_any_texture_selected() const;
+	void _create_texture_node(Node *p_parent, Node *p_child, const String &p_path, const Point2 &p_point);
+	void _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
+	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _perform_drop_data();
-	void _show_resource_type_selector();
+	void _show_texture_node_type_selector();
 	void _update_theme();
 
 protected:

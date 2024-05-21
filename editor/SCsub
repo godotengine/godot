@@ -10,40 +10,59 @@ import editor_builders
 import methods
 
 
-def _make_doc_data_class_path(to_path):
-    file_path = os.path.join(to_path, "doc_data_class_path.gen.h")
-
-    class_path_data = ""
-    class_path_data += "static const int _doc_data_class_path_count = " + str(len(env.doc_class_path)) + ";\n"
-    class_path_data += "struct _DocDataClassPath { const char* name; const char* path; };\n"
-    class_path_data += (
-        "static const _DocDataClassPath _doc_data_class_paths[" + str(len(env.doc_class_path) + 1) + "] = {\n"
-    )
-    for c in sorted(env.doc_class_path):
-        class_path_data += '\t{"' + c + '", "' + env.doc_class_path[c] + '"},\n'
-    class_path_data += "\t{nullptr, nullptr}\n"
-    class_path_data += "};\n"
-
-    methods.write_file_if_needed(file_path, class_path_data)
-
-
 if env.editor_build:
+    # Generate doc data paths
+    def doc_data_class_path_builder(target, source, env):
+        paths = dict(sorted(source[0].read().items()))
+        data = "\n".join([f'\t{{"{key}", "{value}"}},' for key, value in paths.items()])
+        with methods.generated_wrapper(target) as file:
+            file.write(
+                f"""\
+static const int _doc_data_class_path_count = {len(paths)};
+
+struct _DocDataClassPath {{
+	const char *name;
+	const char *path;
+}};
+
+static const _DocDataClassPath _doc_data_class_paths[{len(env.doc_class_path) + 1}] = {{
+{data}
+	{{nullptr, nullptr}},
+}};
+"""
+            )
+
+    env.CommandNoCache("doc_data_class_path.gen.h", env.Value(env.doc_class_path), env.Run(doc_data_class_path_builder))
+
     # Register exporters
-    reg_exporters_inc = '#include "register_exporters.h"\n\n'
-    reg_exporters = "void register_exporters() {\n"
+    def register_exporters_builder(target, source, env):
+        platforms = source[0].read()
+        exp_inc = "\n".join([f'#include "platform/{p}/export/export.h"' for p in platforms])
+        exp_reg = "\n".join([f"\tregister_{p}_exporter();" for p in platforms])
+        exp_type = "\n".join([f"\tregister_{p}_exporter_types();" for p in platforms])
+        with methods.generated_wrapper(target) as file:
+            file.write(
+                f"""\
+#include "register_exporters.h"
+
+{exp_inc}
+
+void register_exporters() {{
+{exp_reg}
+}}
+
+void register_exporter_types() {{
+{exp_type}
+}}
+"""
+            )
+
+    gen_exporters = env.CommandNoCache(
+        "register_exporters.gen.cpp", env.Value(env.platform_exporters), env.Run(register_exporters_builder)
+    )
     for e in env.platform_exporters:
         # Add all .cpp files in export folder
-        env.add_source_files(env.editor_sources, "../platform/" + e + "/export/" + "*.cpp")
-
-        reg_exporters += "\tregister_" + e + "_exporter();\n"
-        reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
-    reg_exporters += "}\n\n"
-    reg_exporters += "void register_exporter_types() {\n"
-    for e in env.platform_exporters:
-        reg_exporters += "\tregister_" + e + "_exporter_types();\n"
-    reg_exporters += "}\n"
-
-    methods.write_file_if_needed("register_exporters.gen.cpp", reg_exporters_inc + reg_exporters)
+        env.add_source_files(env.editor_sources, f"../platform/{e}/export/*.cpp")
 
     # Core API documentation.
     docs = []
@@ -60,8 +79,6 @@ if env.editor_build:
             docs += Glob("#" + d + "/*.xml")  # Built-in.
         else:
             docs += Glob(d + "/*.xml")  # Custom.
-
-    _make_doc_data_class_path(env.Dir("#editor").abspath)
 
     docs = sorted(docs)
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
@@ -115,7 +132,7 @@ if env.editor_build:
     )
 
     env.add_source_files(env.editor_sources, "*.cpp")
-    env.add_source_files(env.editor_sources, "register_exporters.gen.cpp")
+    env.add_source_files(env.editor_sources, gen_exporters)
 
     SConscript("debugger/SCsub")
     SConscript("export/SCsub")

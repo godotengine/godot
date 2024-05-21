@@ -30,7 +30,6 @@
 
 #include "resource.h"
 
-#include "core/core_string_names.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
@@ -43,9 +42,9 @@
 void Resource::emit_changed() {
 	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
 		// Let the connection happen on the main thread, later, since signals are not thread-safe.
-		call_deferred("emit_signal", CoreStringNames::get_singleton()->changed);
+		call_deferred("emit_signal", CoreStringName(changed));
 	} else {
-		emit_signal(CoreStringNames::get_singleton()->changed);
+		emit_signal(CoreStringName(changed));
 	}
 }
 
@@ -172,8 +171,8 @@ void Resource::connect_changed(const Callable &p_callable, uint32_t p_flags) {
 		callable_mp(this, &Resource::connect_changed).call_deferred(p_callable, p_flags);
 		return;
 	}
-	if (!is_connected(CoreStringNames::get_singleton()->changed, p_callable) || p_flags & CONNECT_REFERENCE_COUNTED) {
-		connect(CoreStringNames::get_singleton()->changed, p_callable, p_flags);
+	if (!is_connected(CoreStringName(changed), p_callable) || p_flags & CONNECT_REFERENCE_COUNTED) {
+		connect(CoreStringName(changed), p_callable, p_flags);
 	}
 }
 
@@ -183,8 +182,8 @@ void Resource::disconnect_changed(const Callable &p_callable) {
 		callable_mp(this, &Resource::disconnect_changed).call_deferred(p_callable);
 		return;
 	}
-	if (is_connected(CoreStringNames::get_singleton()->changed, p_callable)) {
-		disconnect(CoreStringNames::get_singleton()->changed, p_callable);
+	if (is_connected(CoreStringName(changed), p_callable)) {
+		disconnect(CoreStringName(changed), p_callable);
 	}
 }
 
@@ -383,7 +382,8 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 			case Variant::Type::PACKED_FLOAT64_ARRAY:
 			case Variant::Type::PACKED_STRING_ARRAY:
 			case Variant::Type::PACKED_VECTOR2_ARRAY:
-			case Variant::Type::PACKED_VECTOR3_ARRAY: {
+			case Variant::Type::PACKED_VECTOR3_ARRAY:
+			case Variant::Type::PACKED_VECTOR4_ARRAY: {
 				r->set(E.name, p.duplicate(p_subresources));
 			} break;
 
@@ -569,11 +569,18 @@ Resource::Resource() :
 		remapped_list(this) {}
 
 Resource::~Resource() {
-	if (!path_cache.is_empty()) {
-		ResourceCache::lock.lock();
-		ResourceCache::resources.erase(path_cache);
-		ResourceCache::lock.unlock();
+	if (unlikely(path_cache.is_empty())) {
+		return;
 	}
+
+	ResourceCache::lock.lock();
+	// Only unregister from the cache if this is the actual resource listed there.
+	// (Other resources can have the same value in `path_cache` if loaded with `CACHE_IGNORE`.)
+	HashMap<String, Resource *>::Iterator E = ResourceCache::resources.find(path_cache);
+	if (likely(E && E->value == this)) {
+		ResourceCache::resources.remove(E);
+	}
+	ResourceCache::lock.unlock();
 }
 
 HashMap<String, Resource *> ResourceCache::resources;

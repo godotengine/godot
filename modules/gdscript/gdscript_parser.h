@@ -902,8 +902,11 @@ public:
 			VariableNode *variable_source;
 			ConstantNode *constant_source;
 			SignalNode *signal_source;
+			FunctionNode *function_source;
 		};
-		FunctionNode *source_function = nullptr;
+		bool function_source_is_static = false; // For non-GDScript scripts.
+
+		FunctionNode *source_function = nullptr; // TODO: Rename to disambiguate `function_source`.
 
 		int usages = 0; // Useful for binds/iterator variable.
 
@@ -1494,6 +1497,7 @@ private:
 	bool onready_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool export_storage_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_custom_annotation(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyUsageFlags t_usage>
 	bool export_group_annotations(const AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);

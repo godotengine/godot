@@ -269,7 +269,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 					FileCache fc;
 					fc.type = split[1];
-					if (fc.type.find("/") != -1) {
+					if (fc.type.contains("/")) {
 						fc.type = fc.type.get_slice("/", 0);
 						fc.resource_script_class = fc.type.get_slice("/", 1);
 					}
@@ -297,20 +297,20 @@ void EditorFileSystem::_scan_filesystem() {
 		}
 	}
 
-	String update_cache = EditorPaths::get_singleton()->get_project_settings_dir().path_join("filesystem_update4");
-
-	if (FileAccess::exists(update_cache)) {
+	const String update_cache = EditorPaths::get_singleton()->get_project_settings_dir().path_join("filesystem_update4");
+	if (first_scan && FileAccess::exists(update_cache)) {
 		{
 			Ref<FileAccess> f2 = FileAccess::open(update_cache, FileAccess::READ);
 			String l = f2->get_line().strip_edges();
 			while (!l.is_empty()) {
-				file_cache.erase(l); //erase cache for this, so it gets updated
+				dep_update_list.insert(l);
+				file_cache.erase(l); // Erase cache for this, so it gets updated.
 				l = f2->get_line().strip_edges();
 			}
 		}
 
-		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		d->remove(update_cache); //bye bye update cache
+		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		d->remove(update_cache); // Bye bye update cache.
 	}
 
 	EditorProgressBG scan_progress("efs", "ScanFS", 1000);
@@ -326,6 +326,7 @@ void EditorFileSystem::_scan_filesystem() {
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	d->change_dir("res://");
 	_scan_new_dir(new_filesystem, d, sp);
+	dep_update_list.clear();
 
 	file_cache.clear(); //clear caches, no longer needed
 
@@ -946,11 +947,14 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				fi->import_modified_time = 0;
 				fi->import_valid = true;
 
-				if (ClassDB::is_parent_class(fi->type, SNAME("Script"))) {
-					_queue_update_script_class(path);
-				}
-				if (fi->type == SNAME("PackedScene")) {
-					_queue_update_scene_groups(path);
+				// Files in dep_update_list are forced for rescan to update dependencies. They don't need other updates.
+				if (!dep_update_list.has(path)) {
+					if (ClassDB::is_parent_class(fi->type, SNAME("Script"))) {
+						_queue_update_script_class(path);
+					}
+					if (fi->type == SNAME("PackedScene")) {
+						_queue_update_scene_groups(path);
+					}
 				}
 			}
 		}
@@ -1578,31 +1582,7 @@ void EditorFileSystem::_update_script_classes() {
 	update_script_mutex.lock();
 
 	for (const String &path : update_script_paths) {
-		ScriptServer::remove_global_class_by_path(path); // First remove, just in case it changed
-
-		int index = -1;
-		EditorFileSystemDirectory *efd = find_file(path, &index);
-
-		if (!efd || index < 0) {
-			// The file was removed
-			continue;
-		}
-
-		if (!efd->files[index]->script_class_name.is_empty()) {
-			String lang;
-			for (int j = 0; j < ScriptServer::get_language_count(); j++) {
-				if (ScriptServer::get_language(j)->handles_global_class_type(efd->files[index]->type)) {
-					lang = ScriptServer::get_language(j)->get_name();
-				}
-			}
-			if (lang.is_empty()) {
-				continue; // No lang found that can handle this global class
-			}
-
-			ScriptServer::add_global_class(efd->files[index]->script_class_name, efd->files[index]->script_class_extends, lang, path);
-			EditorNode::get_editor_data().script_class_set_icon_path(efd->files[index]->script_class_name, efd->files[index]->script_class_icon_path);
-			EditorNode::get_editor_data().script_class_set_name(path, efd->files[index]->script_class_name);
-		}
+		EditorFileSystem::get_singleton()->register_global_class_script(path, path);
 	}
 
 	// Parse documentation second, as it requires the class names to be correct and registered
@@ -1842,6 +1822,34 @@ void EditorFileSystem::update_file(const String &p_file) {
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {
 	return valid_extensions;
+}
+
+void EditorFileSystem::register_global_class_script(const String &p_search_path, const String &p_target_path) {
+	ScriptServer::remove_global_class_by_path(p_search_path); // First remove, just in case it changed
+
+	int index = -1;
+	EditorFileSystemDirectory *efd = find_file(p_search_path, &index);
+
+	if (!efd || index < 0) {
+		// The file was removed
+		return;
+	}
+
+	if (!efd->files[index]->script_class_name.is_empty()) {
+		String lang;
+		for (int j = 0; j < ScriptServer::get_language_count(); j++) {
+			if (ScriptServer::get_language(j)->handles_global_class_type(efd->files[index]->type)) {
+				lang = ScriptServer::get_language(j)->get_name();
+			}
+		}
+		if (lang.is_empty()) {
+			return; // No lang found that can handle this global class
+		}
+
+		ScriptServer::add_global_class(efd->files[index]->script_class_name, efd->files[index]->script_class_extends, lang, p_target_path);
+		EditorNode::get_editor_data().script_class_set_icon_path(efd->files[index]->script_class_name, efd->files[index]->script_class_icon_path);
+		EditorNode::get_editor_data().script_class_set_name(p_target_path, efd->files[index]->script_class_name);
+	}
 }
 
 Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector<String> &p_files) {
@@ -2324,8 +2332,9 @@ void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file
 }
 
 void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_import_data) {
-	p_import_data->max_index = MAX(p_import_data->reimport_from + int(p_index), p_import_data->max_index);
-	_reimport_file(p_import_data->reimport_files[p_import_data->reimport_from + p_index].path);
+	int current_max = p_import_data->reimport_from + int(p_index);
+	p_import_data->max_index.exchange_if_greater(current_max);
+	_reimport_file(p_import_data->reimport_files[current_max].path);
 }
 
 void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
@@ -2405,15 +2414,15 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 					importer->import_threaded_begin();
 
 					ImportThreadData tdata;
-					tdata.max_index = from;
+					tdata.max_index.set(from);
 					tdata.reimport_from = from;
 					tdata.reimport_files = reimport_files.ptr();
 
 					WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &EditorFileSystem::_reimport_thread, &tdata, i - from + 1, -1, false, vformat(TTR("Import resources of type: %s"), reimport_files[from].importer));
 					int current_index = from - 1;
 					do {
-						if (current_index < tdata.max_index) {
-							current_index = tdata.max_index;
+						if (current_index < tdata.max_index.get()) {
+							current_index = tdata.max_index.get();
 							pr.step(reimport_files[current_index].path.get_file(), current_index);
 						}
 						OS::get_singleton()->delay_usec(1);
@@ -2702,7 +2711,7 @@ void EditorFileSystem::_update_extensions() {
 }
 
 void EditorFileSystem::add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query) {
-	ERR_FAIL_COND(import_support_queries.find(p_query) != -1);
+	ERR_FAIL_COND(import_support_queries.has(p_query));
 	import_support_queries.push_back(p_query);
 }
 void EditorFileSystem::remove_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query) {

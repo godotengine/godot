@@ -153,7 +153,7 @@ public:
 
 	virtual Error move_to_trash(const String &p_path) override;
 
-	void vibrate_handheld(int p_duration_ms) override;
+	void vibrate_handheld(int p_duration_ms, float p_amplitude = -1.0) override;
 
 	virtual String get_config_path() const override;
 

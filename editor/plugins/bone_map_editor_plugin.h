@@ -32,8 +32,8 @@
 #define BONE_MAP_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
+#include "editor/plugins/editor_plugin.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED

@@ -236,8 +236,8 @@ void EditorAutoloadSettings::_autoload_edited() {
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", selected_autoload, order);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
 
-		undo_redo->add_do_method(this, "call_deferred", "update_autoload");
-		undo_redo->add_undo_method(this, "call_deferred", "update_autoload");
+		undo_redo->add_do_method(this, CoreStringName(call_deferred), "update_autoload");
+		undo_redo->add_undo_method(this, CoreStringName(call_deferred), "update_autoload");
 
 		undo_redo->add_do_method(this, "emit_signal", autoload_changed);
 		undo_redo->add_undo_method(this, "emit_signal", autoload_changed);
@@ -271,8 +271,8 @@ void EditorAutoloadSettings::_autoload_edited() {
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", base, order);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", base, order);
 
-		undo_redo->add_do_method(this, "call_deferred", "update_autoload");
-		undo_redo->add_undo_method(this, "call_deferred", "update_autoload");
+		undo_redo->add_do_method(this, CoreStringName(call_deferred), "update_autoload");
+		undo_redo->add_undo_method(this, CoreStringName(call_deferred), "update_autoload");
 
 		undo_redo->add_do_method(this, "emit_signal", autoload_changed);
 		undo_redo->add_undo_method(this, "emit_signal", autoload_changed);
@@ -900,7 +900,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	browse_button = memnew(Button);
 	hbc->add_child(browse_button);
-	browse_button->connect("pressed", callable_mp(this, &EditorAutoloadSettings::_browse_autoload_add_path));
+	browse_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAutoloadSettings::_browse_autoload_add_path));
 
 	file_dialog = memnew(EditorFileDialog);
 	hbc->add_child(file_dialog);
@@ -924,7 +924,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	add_autoload = memnew(Button);
 	add_autoload->set_text(TTR("Add"));
-	add_autoload->connect("pressed", callable_mp(this, &EditorAutoloadSettings::_autoload_add));
+	add_autoload->connect(SceneStringName(pressed), callable_mp(this, &EditorAutoloadSettings::_autoload_add));
 	// The button will be enabled once a valid name is entered (either automatically or manually).
 	add_autoload->set_disabled(true);
 	hbc->add_child(add_autoload);

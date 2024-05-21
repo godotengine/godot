@@ -24,6 +24,15 @@
 
 #include <arm_neon.h>
 
+//TODO : need to support windows ARM
+ 
+#if defined(__ARM_64BIT_STATE) || defined(_M_ARM64)
+#define TVG_AARCH64 1
+#else
+#define TVG_AARCH64 0
+#endif
+
+
 static inline uint8x8_t ALPHA_BLEND(uint8x8_t c, uint8x8_t a)
 {
     uint16x8_t t = vmull_u8(c, a);
@@ -31,19 +40,50 @@ static inline uint8x8_t ALPHA_BLEND(uint8x8_t c, uint8x8_t a)
 }
 
 
+static void neonRasterGrayscale8(uint8_t* dst, uint8_t val, uint32_t offset, int32_t len)
+{
+    dst += offset;
+
+    int32_t i = 0;
+    const uint8x16_t valVec = vdupq_n_u8(val);
+#if TVG_AARCH64
+    uint8x16x4_t valQuad = {valVec, valVec, valVec, valVec};
+    for (; i <= len - 16 * 4; i += 16 * 4) {
+        vst1q_u8_x4(dst + i, valQuad);
+    }
+#else
+    for (; i <= len - 16; i += 16) {
+        vst1q_u8(dst + i, valVec);
+    }
+#endif
+    for (; i < len; i++) {
+        dst[i] = val;
+    }
+}
+
+
 static void neonRasterPixel32(uint32_t *dst, uint32_t val, uint32_t offset, int32_t len)
 {
+    dst += offset;
+
+    uint32x4_t vectorVal = vdupq_n_u32(val);
+
+#if TVG_AARCH64
+    uint32_t iterations = len / 16;
+    uint32_t neonFilled = iterations * 16;
+    uint32x4x4_t valQuad = {vectorVal, vectorVal, vectorVal, vectorVal};
+    for (uint32_t i = 0; i < iterations; ++i) {
+        vst4q_u32(dst, valQuad);
+        dst += 16;
+    }
+#else
     uint32_t iterations = len / 4;
     uint32_t neonFilled = iterations * 4;
-
-    dst += offset;
-    uint32x4_t vectorVal = {val, val, val, val};
-
     for (uint32_t i = 0; i < iterations; ++i) {
         vst1q_u32(dst, vectorVal);
         dst += 4;
     }
-
+#endif
     int32_t leftovers = len - neonFilled;
     while (leftovers--) *dst++ = val;
 }
@@ -56,7 +96,7 @@ static bool neonRasterTranslucentRle(SwSurface* surface, const SwRleData* rle, u
         return false;
     }
 
-    auto color = surface->blender.join(r, g, b, a);
+    auto color = surface->join(r, g, b, a);
     auto span = rle->spans;
     uint32_t src;
     uint8x8_t *vDst = nullptr;
@@ -67,9 +107,9 @@ static bool neonRasterTranslucentRle(SwSurface* surface, const SwRleData* rle, u
         else src = color;
 
         auto dst = &surface->buf32[span->y * surface->stride + span->x];
-        auto ialpha = IALPHA(src);
+        auto ialpha = IA(src);
 
-        if ((((uint32_t) dst) & 0x7) != 0) {
+        if ((((uintptr_t) dst) & 0x7) != 0) {
             //fill not aligned byte
             *dst = src + ALPHA_BLEND(*dst, ialpha);
             vDst = (uint8x8_t*)(dst + 1);
@@ -101,7 +141,7 @@ static bool neonRasterTranslucentRect(SwSurface* surface, const SwBBox& region, 
         return false;
     }
 
-    auto color = surface->blender.join(r, g, b, a);
+    auto color = surface->join(r, g, b, a);
     auto buffer = surface->buf32 + (region.min.y * surface->stride) + region.min.x;
     auto h = static_cast<uint32_t>(region.max.y - region.min.y);
     auto w = static_cast<uint32_t>(region.max.x - region.min.x);
@@ -116,7 +156,7 @@ static bool neonRasterTranslucentRect(SwSurface* surface, const SwBBox& region, 
     for (uint32_t y = 0; y < h; ++y) {
         auto dst = &buffer[y * surface->stride];
 
-        if ((((uint32_t) dst) & 0x7) != 0) {
+        if ((((uintptr_t) dst) & 0x7) != 0) {
             //fill not aligned byte
             *dst = color + ALPHA_BLEND(*dst, ialpha);
             vDst = (uint8x8_t*) (dst + 1);

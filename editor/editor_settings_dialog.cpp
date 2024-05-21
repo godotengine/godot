@@ -30,14 +30,13 @@
 
 #include "editor_settings_dialog.h"
 
-#include "core/config/project_settings.h"
 #include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_property_name_processor.h"
+#include "editor/editor_sectioned_inspector.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -45,7 +44,9 @@
 #include "editor/input_event_configuration_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
-#include "scene/gui/margin_container.h"
+#include "scene/gui/panel_container.h"
+#include "scene/gui/tab_container.h"
+#include "scene/gui/texture_rect.h"
 
 void EditorSettingsDialog::ok_pressed() {
 	if (!EditorSettings::get_singleton()) {
@@ -499,6 +500,9 @@ void EditorSettingsDialog::_update_shortcuts() {
 			memdelete(section);
 		}
 	}
+
+	// Update UI.
+	clear_all_search->set_disabled(shortcut_search_box->get_text().is_empty() && shortcut_search_by_event->get_event().is_null());
 }
 
 void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button) {
@@ -747,12 +751,12 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
 	Button *restart_button = memnew(Button);
-	restart_button->connect("pressed", callable_mp(this, &EditorSettingsDialog::_editor_restart));
+	restart_button->connect(SceneStringName(pressed), callable_mp(this, &EditorSettingsDialog::_editor_restart));
 	restart_hb->add_child(restart_button);
 	restart_button->set_text(TTR("Save & Restart"));
 	restart_close_button = memnew(Button);
 	restart_close_button->set_flat(true);
-	restart_close_button->connect("pressed", callable_mp(this, &EditorSettingsDialog::_editor_restart_close));
+	restart_close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorSettingsDialog::_editor_restart_close));
 	restart_hb->add_child(restart_close_button);
 	restart_container->hide();
 
@@ -778,14 +782,15 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcut_search_by_event->set_stretch_ratio(0.75);
 	shortcut_search_by_event->set_allowed_input_types(INPUT_KEY);
 	shortcut_search_by_event->connect("event_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts_by_event));
-	shortcut_search_by_event->connect("focus_entered", callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(false));
-	shortcut_search_by_event->connect("focus_exited", callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(true));
+	shortcut_search_by_event->connect(SceneStringName(focus_entered), callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(false));
+	shortcut_search_by_event->connect(SceneStringName(focus_exited), callable_mp((AcceptDialog *)this, &AcceptDialog::set_close_on_escape).bind(true));
 	top_hbox->add_child(shortcut_search_by_event);
 
-	Button *clear_all_search = memnew(Button);
+	clear_all_search = memnew(Button);
 	clear_all_search->set_text(TTR("Clear All"));
-	clear_all_search->connect("pressed", callable_mp(shortcut_search_box, &LineEdit::clear));
-	clear_all_search->connect("pressed", callable_mp(shortcut_search_by_event, &EventListenerLineEdit::clear_event));
+	clear_all_search->set_tooltip_text(TTR("Clear all search filters."));
+	clear_all_search->connect(SceneStringName(pressed), callable_mp(shortcut_search_box, &LineEdit::clear));
+	clear_all_search->connect(SceneStringName(pressed), callable_mp(shortcut_search_by_event, &EventListenerLineEdit::clear_event));
 	top_hbox->add_child(clear_all_search);
 
 	shortcuts = memnew(Tree);

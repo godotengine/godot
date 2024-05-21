@@ -31,7 +31,6 @@
 #include "sprite_3d.h"
 
 #include "scene/resources/atlas_texture.h"
-#include "scene/scene_string_names.h"
 
 Color SpriteBase3D::_get_color_accum() {
 	if (!color_dirty) {
@@ -796,15 +795,15 @@ void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
 		return;
 	}
 	if (texture.is_valid()) {
-		texture->disconnect(SceneStringNames::get_singleton()->changed, callable_mp((SpriteBase3D *)this, &Sprite3D::_queue_redraw));
+		texture->disconnect(CoreStringName(changed), callable_mp((SpriteBase3D *)this, &Sprite3D::_queue_redraw));
 	}
 	texture = p_texture;
 	if (texture.is_valid()) {
-		texture->connect(SceneStringNames::get_singleton()->changed, callable_mp((SpriteBase3D *)this, &Sprite3D::_queue_redraw));
+		texture->connect(CoreStringName(changed), callable_mp((SpriteBase3D *)this, &Sprite3D::_queue_redraw));
 	}
 
 	_queue_redraw();
-	emit_signal(SceneStringNames::get_singleton()->texture_changed);
+	emit_signal(SceneStringName(texture_changed));
 }
 
 Ref<Texture2D> Sprite3D::get_texture() const {
@@ -849,7 +848,7 @@ void Sprite3D::set_frame(int p_frame) {
 
 	frame = p_frame;
 	_queue_redraw();
-	emit_signal(SceneStringNames::get_singleton()->frame_changed);
+	emit_signal(SceneStringName(frame_changed));
 }
 
 int Sprite3D::get_frame() const {
@@ -1122,7 +1121,7 @@ void AnimatedSprite3D::_notification(int p_what) {
 							} else {
 								frame = last_frame;
 								pause();
-								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								emit_signal(SceneStringName(animation_finished));
 								return;
 							}
 						} else {
@@ -1131,7 +1130,7 @@ void AnimatedSprite3D::_notification(int p_what) {
 						_calc_frame_speed_scale();
 						frame_progress = 0.0;
 						_queue_redraw();
-						emit_signal(SceneStringNames::get_singleton()->frame_changed);
+						emit_signal(SceneStringName(frame_changed));
 					}
 					double to_process = MIN((1.0 - frame_progress) / abs_speed, remaining);
 					frame_progress += to_process * abs_speed;
@@ -1146,7 +1145,7 @@ void AnimatedSprite3D::_notification(int p_what) {
 							} else {
 								frame = 0;
 								pause();
-								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								emit_signal(SceneStringName(animation_finished));
 								return;
 							}
 						} else {
@@ -1155,7 +1154,7 @@ void AnimatedSprite3D::_notification(int p_what) {
 						_calc_frame_speed_scale();
 						frame_progress = 1.0;
 						_queue_redraw();
-						emit_signal(SceneStringNames::get_singleton()->frame_changed);
+						emit_signal(SceneStringName(frame_changed));
 					}
 					double to_process = MIN(frame_progress / abs_speed, remaining);
 					frame_progress -= to_process * abs_speed;
@@ -1177,12 +1176,12 @@ void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 	}
 
 	if (frames.is_valid()) {
-		frames->disconnect(SceneStringNames::get_singleton()->changed, callable_mp(this, &AnimatedSprite3D::_res_changed));
+		frames->disconnect(CoreStringName(changed), callable_mp(this, &AnimatedSprite3D::_res_changed));
 	}
 	stop();
 	frames = p_frames;
 	if (frames.is_valid()) {
-		frames->connect(SceneStringNames::get_singleton()->changed, callable_mp(this, &AnimatedSprite3D::_res_changed));
+		frames->connect(CoreStringName(changed), callable_mp(this, &AnimatedSprite3D::_res_changed));
 
 		List<StringName> al;
 		frames->get_animation_list(&al);
@@ -1191,7 +1190,7 @@ void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 			autoplay = String();
 		} else {
 			if (!frames->has_animation(animation)) {
-				set_animation(al[0]);
+				set_animation(al.front()->get());
 			}
 			if (!frames->has_animation(autoplay)) {
 				autoplay = String();
@@ -1249,7 +1248,7 @@ void AnimatedSprite3D::set_frame_and_progress(int p_frame, real_t p_progress) {
 		return; // No change, don't redraw.
 	}
 	_queue_redraw();
-	emit_signal(SceneStringNames::get_singleton()->frame_changed);
+	emit_signal(SceneStringName(frame_changed));
 }
 
 void AnimatedSprite3D::set_speed_scale(float p_speed_scale) {
@@ -1343,7 +1342,7 @@ void AnimatedSprite3D::play(const StringName &p_name, float p_custom_scale, bool
 		} else {
 			set_frame_and_progress(0, 0.0);
 		}
-		emit_signal("animation_changed");
+		emit_signal(SceneStringName(animation_changed));
 	} else {
 		bool is_backward = signbit(speed_scale * custom_speed_scale);
 		if (p_from_end && is_backward && frame == 0 && frame_progress <= 0.0) {
@@ -1398,7 +1397,7 @@ void AnimatedSprite3D::set_animation(const StringName &p_name) {
 
 	animation = p_name;
 
-	emit_signal("animation_changed");
+	emit_signal(SceneStringName(animation_changed));
 
 	if (frames == nullptr) {
 		animation = StringName();

@@ -37,6 +37,7 @@
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (get_flag(FLAG_POPUP) && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		hide_reason = HIDE_REASON_CANCELED; // ESC pressed, mark as canceled unconditionally.
 		_close_pressed();
 	}
 	Window::_input_from_window(p_event);
@@ -51,8 +52,8 @@ void Popup::_initialize_visible_parents() {
 			parent_window = parent_window->get_parent_visible_window();
 			if (parent_window) {
 				visible_parents.push_back(parent_window);
-				parent_window->connect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-				parent_window->connect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
+				parent_window->connect(SceneStringName(focus_entered), callable_mp(this, &Popup::_parent_focused));
+				parent_window->connect(SceneStringName(tree_exited), callable_mp(this, &Popup::_deinitialize_visible_parents));
 			}
 		}
 	}
@@ -61,8 +62,8 @@ void Popup::_initialize_visible_parents() {
 void Popup::_deinitialize_visible_parents() {
 	if (is_embedded()) {
 		for (Window *parent_window : visible_parents) {
-			parent_window->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-			parent_window->disconnect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
+			parent_window->disconnect(SceneStringName(focus_entered), callable_mp(this, &Popup::_parent_focused));
+			parent_window->disconnect(SceneStringName(tree_exited), callable_mp(this, &Popup::_deinitialize_visible_parents));
 		}
 
 		visible_parents.clear();
@@ -77,6 +78,9 @@ void Popup::_notification(int p_what) {
 					_initialize_visible_parents();
 				} else {
 					_deinitialize_visible_parents();
+					if (hide_reason == HIDE_REASON_NONE) {
+						hide_reason = HIDE_REASON_CANCELED;
+					}
 					emit_signal(SNAME("popup_hide"));
 					popped_up = false;
 				}
@@ -87,6 +91,7 @@ void Popup::_notification(int p_what) {
 			if (!is_in_edited_scene_root()) {
 				if (has_focus()) {
 					popped_up = true;
+					hide_reason = HIDE_REASON_NONE;
 				}
 			}
 		} break;
@@ -100,12 +105,18 @@ void Popup::_notification(int p_what) {
 
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			if (!is_in_edited_scene_root()) {
+				if (hide_reason == HIDE_REASON_NONE) {
+					hide_reason = HIDE_REASON_UNFOCUSED;
+				}
 				_close_pressed();
 			}
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
 			if (!is_in_edited_scene_root() && get_flag(FLAG_POPUP)) {
+				if (hide_reason == HIDE_REASON_NONE) {
+					hide_reason = HIDE_REASON_UNFOCUSED;
+				}
 				_close_pressed();
 			}
 		} break;
@@ -114,6 +125,9 @@ void Popup::_notification(int p_what) {
 
 void Popup::_parent_focused() {
 	if (popped_up && get_flag(FLAG_POPUP)) {
+		if (hide_reason == HIDE_REASON_NONE) {
+			hide_reason = HIDE_REASON_UNFOCUSED;
+		}
 		_close_pressed();
 	}
 }

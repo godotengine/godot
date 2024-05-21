@@ -8,6 +8,7 @@
 		Any [CanvasItem] can draw. For this, [method queue_redraw] is called by the engine, then [constant NOTIFICATION_DRAW] will be received on idle time to request a redraw. Because of this, canvas items don't need to be redrawn on every frame, improving the performance significantly. Several functions for drawing on the [CanvasItem] are provided (see [code]draw_*[/code] functions). However, they can only be used inside [method _draw], its corresponding [method Object._notification] or methods connected to the [signal draw] signal.
 		Canvas items are drawn in tree order on their canvas layer. By default, children are on top of their parents, so a root [CanvasItem] will be drawn behind everything. This behavior can be changed on a per-item basis.
 		A [CanvasItem] can be hidden, which will also hide its children. By adjusting various other properties of a [CanvasItem], you can also modulate its color (via [member modulate] or [member self_modulate]), change its Z-index, blend mode, and more.
+		Note that properties like transform, modulation, and visibility are only propagated to [i]direct[/i] [CanvasItem] child nodes. If there is a non-[CanvasItem] node in between, like [Node] or [AnimationPlayer], the [CanvasItem] nodes below will have an independent position and [member modulate] chain. See also [member top_level].
 	</description>
 	<tutorials>
 		<link title="Viewport and canvas transforms">$DOCS_URL/tutorials/2d/2d_transforms.html</link>
@@ -76,8 +77,15 @@
 			<param index="0" name="position" type="Vector2" />
 			<param index="1" name="radius" type="float" />
 			<param index="2" name="color" type="Color" />
+			<param index="3" name="filled" type="bool" default="true" />
+			<param index="4" name="width" type="float" default="-1.0" />
+			<param index="5" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a colored, filled circle. See also [method draw_arc], [method draw_polyline] and [method draw_polygon].
+				Draws a circle. See also [method draw_arc], [method draw_polyline], and [method draw_polygon].
+				If [param filled] is [code]true[/code], the circle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the circle will be drawn as a stroke with the [param color] and [param width] specified.
+				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
+				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
 			</description>
 		</method>
 		<method name="draw_colored_polygon">
@@ -98,9 +106,12 @@
 			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="dash" type="float" default="2.0" />
 			<param index="5" name="aligned" type="bool" default="true" />
+			<param index="6" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a dashed line from a 2D point to another, with a given color and width. See also [method draw_multiline] and [method draw_polyline].
 				If [param width] is negative, then a two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the line parts will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
+				[b]Note:[/b] [param antialiased] is only effective if [param width] is greater than [code]0.0[/code].
 			</description>
 		</method>
 		<method name="draw_end_animation">
@@ -168,9 +179,11 @@
 			<param index="0" name="points" type="PackedVector2Array" />
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="width" type="float" default="-1.0" />
+			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws multiple disconnected lines with a uniform [param width] and [param color]. Each line is defined by two consecutive points from [param points] array, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				[b]Note:[/b] [param antialiased] is only effective if [param width] is greater than [code]0.0[/code].
 			</description>
 		</method>
 		<method name="draw_multiline_colors">
@@ -178,9 +191,11 @@
 			<param index="0" name="points" type="PackedVector2Array" />
 			<param index="1" name="colors" type="PackedColorArray" />
 			<param index="2" name="width" type="float" default="-1.0" />
+			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws multiple disconnected lines with a uniform [param width] and segment-by-segment coloring. Each segment is defined by two consecutive points from [param points] array and a corresponding color from [param colors] array, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints and has [code]colors[i][/code] color. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				[b]Note:[/b] [param antialiased] is only effective if [param width] is greater than [code]0.0[/code].
 			</description>
 		</method>
 		<method name="draw_multiline_string" qualifiers="const">
@@ -276,9 +291,11 @@
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="filled" type="bool" default="true" />
 			<param index="3" name="width" type="float" default="-1.0" />
+			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a rectangle. If [param filled] is [code]true[/code], the rectangle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the rectangle will be drawn as a stroke with the [param color] and [param width] specified. See also [method draw_texture_rect].
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
 				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
 				[b]Note:[/b] Unfilled rectangles drawn with a negative [param width] may not display perfectly. For example, corners may be missing or brighter due to overlapping lines (for a translucent [param color]).
 			</description>

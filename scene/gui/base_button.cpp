@@ -33,7 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 
 void BaseButton::_unpress_group() {
 	if (!button_group.is_valid()) {
@@ -135,7 +134,7 @@ void BaseButton::_notification(int p_what) {
 void BaseButton::_pressed() {
 	GDVIRTUAL_CALL(_pressed);
 	pressed();
-	emit_signal(SNAME("pressed"));
+	emit_signal(SceneStringName(pressed));
 }
 
 void BaseButton::_toggled(bool p_pressed) {
@@ -162,7 +161,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				status.pressed = !status.pressed;
 				_unpress_group();
 				if (button_group.is_valid()) {
-					button_group->emit_signal(SNAME("pressed"), this);
+					button_group->emit_signal(SceneStringName(pressed), this);
 				}
 				_toggled(status.pressed);
 				_pressed();
@@ -226,7 +225,7 @@ void BaseButton::set_pressed(bool p_pressed) {
 	if (p_pressed) {
 		_unpress_group();
 		if (button_group.is_valid()) {
-			button_group->emit_signal(SNAME("pressed"), this);
+			button_group->emit_signal(SceneStringName(pressed), this);
 		}
 	}
 	_toggled(status.pressed);
@@ -368,7 +367,7 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 
 			_unpress_group();
 			if (button_group.is_valid()) {
-				button_group->emit_signal(SNAME("pressed"), this);
+				button_group->emit_signal(SceneStringName(pressed), this);
 			}
 
 			_toggled(status.pressed);

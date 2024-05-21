@@ -41,7 +41,7 @@ void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 	// TODO: See how to handle lossy quality.
 
 	Image::Format img_format = r_img->get_format();
-	if (img_format >= Image::FORMAT_DXT1) {
+	if (Image::is_format_compressed(img_format)) {
 		return; // Do not compress, already compressed.
 	}
 
@@ -132,7 +132,10 @@ void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 		int dst_mip_w, dst_mip_h;
 		int dst_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, dst_mip_w, dst_mip_h);
 		// Ensure that mip offset is a multiple of 8 (etcpak expects uint64_t pointer).
-		ERR_FAIL_COND(dst_ofs % 8 != 0);
+		if (unlikely(dst_ofs % 8 != 0)) {
+			astcenc_context_free(context);
+			ERR_FAIL_MSG("astcenc: Mip offset is not a multiple of 8.");
+		}
 		uint8_t *dest_mip_write = (uint8_t *)&dest_write[dst_ofs];
 
 		// Compress image.

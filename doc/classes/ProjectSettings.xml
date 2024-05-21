@@ -254,6 +254,7 @@
 			Path to an image used as the boot splash. If left empty, the default Godot Engine splash will be displayed instead.
 			[b]Note:[/b] Only effective if [member application/boot_splash/show_image] is [code]true[/code].
 			[b]Note:[/b] The only supported format is PNG. Using another image format will result in an error.
+			[b]Note:[/b] The image will also show when opening the project in the editor. If you want to display the default splash image in the editor, add an empty override for [code]editor_hint[/code] feature.
 		</member>
 		<member name="application/boot_splash/minimum_display_time" type="int" setter="" getter="" default="0">
 			Minimum boot splash display time (in milliseconds). It is not recommended to set too high values for this setting.
@@ -343,7 +344,7 @@
 			This setting can be overridden using the [code]--frame-delay &lt;ms;&gt;[/code] command line argument.
 		</member>
 		<member name="application/run/low_processor_mode" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables low-processor usage mode. This setting only works on desktop platforms. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) in most games.
+			If [code]true[/code], enables low-processor usage mode. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) in most games.
 		</member>
 		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="" default="6900">
 			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
@@ -553,10 +554,10 @@
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or subclass member variable that would shadow a variable that is inherited from a parent class.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_expression" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling an expression that may have no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_ternary" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a ternary expression that has no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a ternary expression that may have no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/static_called_on_instance" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a static method from an instance of a class instead of from the class directly.
@@ -797,8 +798,8 @@
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
 		</member>
-		<member name="display/window/energy_saving/keep_screen_on.editor" type="bool" setter="" getter="" default="false">
-			Editor-only override for [member display/window/energy_saving/keep_screen_on]. Does not affect exported projects in debug or release mode.
+		<member name="display/window/energy_saving/keep_screen_on.editor_hint" type="bool" setter="" getter="" default="false">
+			Editor-only override for [member display/window/energy_saving/keep_screen_on]. Does not affect running project.
 		</member>
 		<member name="display/window/handheld/orientation" type="int" setter="" getter="" default="0">
 			The default screen orientation to use on mobile devices. See [enum DisplayServer.ScreenOrientation] for possible values.
@@ -1070,6 +1071,9 @@
 		</member>
 		<member name="gui/timers/tooltip_delay_sec" type="float" setter="" getter="" default="0.5">
 			Default delay for tooltips (in seconds).
+		</member>
+		<member name="gui/timers/tooltip_delay_sec.editor_hint" type="float" setter="" getter="" default="0.5">
+			Delay for tooltips in the editor.
 		</member>
 		<member name="input/ui_accept" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to confirm a focused button, menu or list item, or validate input.
@@ -2709,8 +2713,8 @@
 		<member name="rendering/renderer/rendering_method.web" type="String" setter="" getter="" default="&quot;gl_compatibility&quot;">
 			Override for [member rendering/renderer/rendering_method] on web.
 		</member>
-		<member name="rendering/rendering_device/d3d12/agility_sdk_version" type="int" setter="" getter="" default="610">
-			Version code of the Direct3D 12 Agility SDK to use ([code]D3D12SDKVersion[/code]).
+		<member name="rendering/rendering_device/d3d12/agility_sdk_version" type="int" setter="" getter="" default="613">
+			Version code of the [url=https://devblogs.microsoft.com/directx/directx12agility/]Direct3D 12 Agility SDK[/url] to use ([code]D3D12SDKVersion[/code]). This must match the [i]minor[/i] version that is installed next to the editor binary and in the export templates directory for the current editor version. For example, if you have [code]1.613.3[/code] installed, you need to input [code]613[/code] here.
 		</member>
 		<member name="rendering/rendering_device/d3d12/max_misc_descriptors_per_frame" type="int" setter="" getter="" default="512">
 			The number of entries in the miscellaneous descriptors heap the Direct3D 12 rendering driver uses each frame, used for various operations like clearing a texture.
@@ -2895,6 +2899,9 @@
 		</member>
 		<member name="xr/openxr/extensions/eye_gaze_interaction" type="bool" setter="" getter="" default="false">
 			Specify whether to enable eye tracking for this project. Depending on the platform, additional export configuration may be needed.
+		</member>
+		<member name="xr/openxr/extensions/hand_interaction_profile" type="bool" setter="" getter="" default="false">
+			If true the hand interaction profile extension will be activated if supported by the platform.
 		</member>
 		<member name="xr/openxr/extensions/hand_tracking" type="bool" setter="" getter="" default="true">
 			If true we enable the hand tracking extension if available.

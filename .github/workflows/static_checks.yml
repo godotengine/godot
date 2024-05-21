@@ -19,15 +19,14 @@ jobs:
       - name: Install APT dependencies
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: dos2unix libxml2-utils moreutils
+          packages: libxml2-utils
 
       - name: Install Python dependencies and general setup
         run: |
-          pip3 install pytest==7.1.2 mypy==0.971
+          pip3 install pytest==7.1.2
           git config diff.wsErrorHighlight all
 
       - name: Get changed files
-        id: changed-files
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -48,50 +47,13 @@ jobs:
 
       - name: Style checks via pre-commit
         uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --verbose --files ${{ env.CHANGED_FILES }}
 
-      - name: File formatting checks (file_format.sh)
+      - name: Python builders checks via pytest
         run: |
-          bash ./misc/scripts/file_format.sh changed.txt
-
-      - name: Header guards formatting checks (header_guards.sh)
-        run: |
-          bash ./misc/scripts/header_guards.sh changed.txt
-
-      - name: Python scripts static analysis (mypy_check.sh)
-        run: |
-          if grep -qE '\.py$|SConstruct|SCsub' changed.txt || [ -z "$(cat changed.txt)" ]; then
-            bash ./misc/scripts/mypy_check.sh
-          else
-            echo "Skipping Python static analysis as no Python files were changed."
-          fi
-
-      - name: Python builders checks via pytest (pytest_builders.sh)
-        run: |
-          bash ./misc/scripts/pytest_builders.sh
-
-      - name: JavaScript style and documentation checks via ESLint and JSDoc
-        run: |
-          if grep -q "\.js" changed.txt || [ -z "$(cat changed.txt)" ]; then
-            cd platform/web
-            npm ci
-            npm run lint
-            npm run docs -- -d dry-run
-          else
-            echo "Skipping JavaScript formatting as no Web/JS files were changed."
-          fi
+          pytest ./tests/python_build
 
       - name: Class reference schema checks
         run: |
           xmllint --noout --schema doc/class.xsd doc/classes/*.xml modules/*/doc_classes/*.xml platform/*/doc_classes/*.xml
-
-      - name: Documentation checks
-        run: |
-          doc/tools/doc_status.py doc/classes modules/*/doc_classes platform/*/doc_classes
-
-      - name: Spell checks via codespell
-        if: github.event_name == 'pull_request' && env.CHANGED_FILES != ''
-        uses: codespell-project/actions-codespell@v2
-        with:
-          skip: "./bin,./thirdparty,*.desktop,*.gen.*,*.po,*.pot,*.rc,./AUTHORS.md,./COPYRIGHT.txt,./DONORS.md,./core/input/gamecontrollerdb.txt,./core/string/locales.h,./editor/project_converter_3_to_4.cpp,./misc/scripts/codespell.sh,./platform/android/java/lib/src/com,./platform/web/node_modules,./platform/web/package-lock.json"
-          ignore_words_list: "breaked,curvelinear,doubleclick,expct,findn,gird,hel,inout,lod,mis,nd,numer,ot,requestor,te,vai"
-          path: ${{ env.CHANGED_FILES }}

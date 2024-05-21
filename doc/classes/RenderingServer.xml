@@ -92,13 +92,13 @@
 				Sets the exposure values that will be used by the renderers. The normalization amount is used to bake a given Exposure Value (EV) into rendering calculations to reduce the dynamic range of the scene.
 				The normalization factor can be calculated from exposure value (EV100) as follows:
 				[codeblock]
-				func get_exposure_normalization(float ev100):
-				    			    return 1.0 / (pow(2.0, ev100) * 1.2)
+				func get_exposure_normalization(ev100: float):
+				    return 1.0 / (pow(2.0, ev100) * 1.2)
 				[/codeblock]
 				The exposure value can be calculated from aperture (in f-stops), shutter speed (in seconds), and sensitivity (in ISO) as follows:
 				[codeblock]
-				func get_exposure(float aperture, float shutter_speed, float sensitivity):
-				    return log2((aperture * aperture) / shutterSpeed * (100.0 / sensitivity))
+				func get_exposure(aperture: float, shutter_speed: float, sensitivity: float):
+				    return log((aperture * aperture) / shutter_speed * (100.0 / sensitivity)) / log(2)
 				[/codeblock]
 			</description>
 		</method>
@@ -214,6 +214,7 @@
 			<param index="1" name="pos" type="Vector2" />
 			<param index="2" name="radius" type="float" />
 			<param index="3" name="color" type="Color" />
+			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a circle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_circle].
 			</description>
@@ -280,6 +281,7 @@
 			<param index="1" name="points" type="PackedVector2Array" />
 			<param index="2" name="colors" type="PackedColorArray" />
 			<param index="3" name="width" type="float" default="-1.0" />
+			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a 2D multiline on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_multiline] and [method CanvasItem.draw_multiline_colors].
 			</description>
@@ -356,6 +358,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="rect" type="Rect2" />
 			<param index="2" name="color" type="Color" />
+			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a rectangle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_rect].
 			</description>
@@ -634,7 +637,7 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Transforms both the current and previous stored transform for a canvas item.
-				This allows transforming a canvas item without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilising a shifting origin.
+				This allows transforming a canvas item without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilizing a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_light_attach_to_canvas">
@@ -730,7 +733,7 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Transforms both the current and previous stored transform for a light occluder.
-				This allows transforming an occluder without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilising a shifting origin.
+				This allows transforming an occluder without creating a "glitch" in the interpolation, which is particularly useful for large worlds utilizing a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_light_reset_physics_interpolation">
@@ -901,7 +904,7 @@
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
 				Transforms both the current and previous stored transform for a canvas light.
-				This allows transforming a light without creating a "glitch" in the interpolation, which is is particularly useful for large worlds utilising a shifting origin.
+				This allows transforming a light without creating a "glitch" in the interpolation, which is is particularly useful for large worlds utilizing a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_create">
@@ -1977,6 +1980,12 @@
 			<description>
 				Returns an array of object IDs intersecting with the provided 3D ray. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
+			</description>
+		</method>
+		<method name="is_on_render_thread">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if our code is currently executing on the rendering thread.
 			</description>
 		</method>
 		<method name="light_directional_set_blend_splits">
@@ -4030,6 +4039,15 @@
 				The texture to use when the VRS mode is set to [constant RenderingServer.VIEWPORT_VRS_TEXTURE]. Equivalent to [member ProjectSettings.rendering/vrs/texture].
 			</description>
 		</method>
+		<method name="viewport_set_vrs_update_mode">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="mode" type="int" enum="RenderingServer.ViewportVRSUpdateMode" />
+			<description>
+				Sets the update mode for Variable Rate Shading (VRS) for the viewport. VRS requires the input texture to be converted to the format usable by the VRS method supported by the hardware. The update mode defines how often this happens. If the GPU does not support VRS, or VRS is not enabled, this property is ignored.
+				If set to [constant RenderingServer.VIEWPORT_VRS_UPDATE_ONCE], the input texture is copied once and the mode is changed to [constant RenderingServer.VIEWPORT_VRS_UPDATE_DISABLED].
+			</description>
+		</method>
 		<method name="visibility_notifier_create">
 			<return type="RID" />
 			<description>
@@ -4970,10 +4988,22 @@
 			Variable rate shading uses a texture. Note, for stereoscopic use a texture atlas with a texture for each view.
 		</constant>
 		<constant name="VIEWPORT_VRS_XR" value="2" enum="ViewportVRSMode">
-			Variable rate shading texture is supplied by the primary [XRInterface].
+			Variable rate shading texture is supplied by the primary [XRInterface]. Note that this may override the update mode.
 		</constant>
 		<constant name="VIEWPORT_VRS_MAX" value="3" enum="ViewportVRSMode">
 			Represents the size of the [enum ViewportVRSMode] enum.
+		</constant>
+		<constant name="VIEWPORT_VRS_UPDATE_DISABLED" value="0" enum="ViewportVRSUpdateMode">
+			The input texture for variable rate shading will not be processed.
+		</constant>
+		<constant name="VIEWPORT_VRS_UPDATE_ONCE" value="1" enum="ViewportVRSUpdateMode">
+			The input texture for variable rate shading will be processed once.
+		</constant>
+		<constant name="VIEWPORT_VRS_UPDATE_ALWAYS" value="2" enum="ViewportVRSUpdateMode">
+			The input texture for variable rate shading will be processed each frame.
+		</constant>
+		<constant name="VIEWPORT_VRS_UPDATE_MAX" value="3" enum="ViewportVRSUpdateMode">
+			Represents the size of the [enum ViewportVRSUpdateMode] enum.
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 			Automatically selects the appropriate process mode based on your sky shader. If your shader uses [code]TIME[/code] or [code]POSITION[/code], this will use [constant SKY_MODE_REALTIME]. If your shader uses any of the [code]LIGHT_*[/code] variables or any custom uniforms, this uses [constant SKY_MODE_INCREMENTAL]. Otherwise, this defaults to [constant SKY_MODE_QUALITY].

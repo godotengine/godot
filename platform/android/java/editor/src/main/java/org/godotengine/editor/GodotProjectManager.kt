@@ -42,4 +42,3 @@ class GodotProjectManager : GodotEditor() {
 		// Nothing to do here.. we have yet to select a project to load.
 	}
 }
-

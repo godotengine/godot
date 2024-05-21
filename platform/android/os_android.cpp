@@ -586,11 +586,11 @@ Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_na
 		}
 		if (score > best_score) {
 			best_score = score;
-			if (ret.find(root.path_join(E->get().filename)) < 0) {
+			if (!ret.has(root.path_join(E->get().filename))) {
 				ret.insert(0, root.path_join(E->get().filename));
 			}
 		} else if (score == best_score || E->get().script.is_empty()) {
-			if (ret.find(root.path_join(E->get().filename)) < 0) {
+			if (!ret.has(root.path_join(E->get().filename))) {
 				ret.push_back(root.path_join(E->get().filename));
 			}
 		}
@@ -746,8 +746,8 @@ ANativeWindow *OS_Android::get_native_window() const {
 #endif
 }
 
-void OS_Android::vibrate_handheld(int p_duration_ms) {
-	godot_java->vibrate(p_duration_ms);
+void OS_Android::vibrate_handheld(int p_duration_ms, float p_amplitude) {
+	godot_java->vibrate(p_duration_ms, p_amplitude);
 }
 
 String OS_Android::get_config_path() const {

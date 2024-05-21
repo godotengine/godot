@@ -32,7 +32,6 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
@@ -949,7 +948,7 @@ void GridMapEditor::_update_mesh_library() {
 void GridMapEditor::edit(GridMap *p_gridmap) {
 	if (node) {
 		node->disconnect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
-		node->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GridMapEditor::_update_mesh_library));
+		node->disconnect(CoreStringName(changed), callable_mp(this, &GridMapEditor::_update_mesh_library));
 		if (mesh_library.is_valid()) {
 			mesh_library->disconnect_changed(callable_mp(this, &GridMapEditor::update_palette));
 			mesh_library = Ref<MeshLibrary>();
@@ -987,7 +986,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	update_grid();
 
 	node->connect(SNAME("cell_size_changed"), callable_mp(this, &GridMapEditor::_draw_grids));
-	node->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GridMapEditor::_update_mesh_library));
+	node->connect(CoreStringName(changed), callable_mp(this, &GridMapEditor::_update_mesh_library));
 	_update_mesh_library();
 }
 
@@ -1225,8 +1224,8 @@ GridMapEditor::GridMapEditor() {
 
 	spatial_editor_hb->add_child(floor);
 	floor->connect("value_changed", callable_mp(this, &GridMapEditor::_floor_changed));
-	floor->connect("mouse_exited", callable_mp(this, &GridMapEditor::_floor_mouse_exited));
-	floor->get_line_edit()->connect("mouse_exited", callable_mp(this, &GridMapEditor::_floor_mouse_exited));
+	floor->connect(SceneStringName(mouse_exited), callable_mp(this, &GridMapEditor::_floor_mouse_exited));
+	floor->get_line_edit()->connect(SceneStringName(mouse_exited), callable_mp(this, &GridMapEditor::_floor_mouse_exited));
 
 	spatial_editor_hb->add_child(memnew(VSeparator));
 
@@ -1288,21 +1287,21 @@ GridMapEditor::GridMapEditor() {
 	search_box->set_clear_button_enabled(true);
 	hb->add_child(search_box);
 	search_box->connect("text_changed", callable_mp(this, &GridMapEditor::_text_changed));
-	search_box->connect("gui_input", callable_mp(this, &GridMapEditor::_sbox_input));
+	search_box->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_sbox_input));
 
 	mode_thumbnail = memnew(Button);
 	mode_thumbnail->set_theme_type_variation("FlatButton");
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
 	hb->add_child(mode_thumbnail);
-	mode_thumbnail->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_THUMBNAIL));
+	mode_thumbnail->connect(SceneStringName(pressed), callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_THUMBNAIL));
 
 	mode_list = memnew(Button);
 	mode_list->set_theme_type_variation("FlatButton");
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(false);
 	hb->add_child(mode_list);
-	mode_list->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_LIST));
+	mode_list->connect(SceneStringName(pressed), callable_mp(this, &GridMapEditor::_set_display_mode).bind(DISPLAY_LIST));
 
 	size_slider = memnew(HSlider);
 	size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1319,7 +1318,7 @@ GridMapEditor::GridMapEditor() {
 	mesh_library_palette->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(mesh_library_palette);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
-	mesh_library_palette->connect("gui_input", callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
+	mesh_library_palette->connect(SceneStringName(gui_input), callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
 
 	info_message = memnew(Label);
 	info_message->set_text(TTR("Give a MeshLibrary resource to this GridMap to use its meshes."));

@@ -249,6 +249,13 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="invalidate_paragraph">
+			<return type="bool" />
+			<param index="0" name="paragraph" type="int" />
+			<description>
+				Invalidates [param paragraph] and all subsequent paragraphs cache.
+			</description>
+		</method>
 		<method name="is_menu_visible" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -497,9 +504,11 @@
 		<method name="remove_paragraph">
 			<return type="bool" />
 			<param index="0" name="paragraph" type="int" />
+			<param index="1" name="no_invalidate" type="bool" default="false" />
 			<description>
 				Removes a paragraph of content from the label. Returns [code]true[/code] if the paragraph exists.
 				The [param paragraph] argument is the index of the paragraph to remove, it can take values in the interval [code][0, get_paragraph_count() - 1][/code].
+				If [param no_invalidate] is set to [code]true[/code], cache for the subsequent paragraphs is not invalidated. Use it for faster updates if deleted paragraph is fully self-contained (have no unclosed tags), or this call is part of the complex edit operation and [method invalidate_paragraph] will be called at the end of operation.
 			</description>
 		</method>
 		<method name="scroll_to_line">

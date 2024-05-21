@@ -126,7 +126,15 @@
 				GD.Print("team".Contains("I"));  // Prints false
 				[/csharp]
 				[/codeblocks]
-				If you need to know where [param what] is within the string, use [method find].
+				If you need to know where [param what] is within the string, use [method find]. See also [method containsn].
+			</description>
+		</method>
+		<method name="containsn" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="what" type="String" />
+			<description>
+				Returns [code]true[/code] if the string contains [param what], [b]ignoring case[/b].
+				If you need to know where [param what] is within the string, use [method findn]. See also [method contains].
 			</description>
 		</method>
 		<method name="count" qualifiers="const">
@@ -172,7 +180,7 @@
 			<return type="int" />
 			<param index="0" name="to" type="String" />
 			<description>
-				Like [method naturalcasecmp_to] but prioritises strings that begin with periods ([code].[/code]) and underscores ([code]_[/code]) before any other character. Useful when sorting folders or file names.
+				Like [method naturalcasecmp_to] but prioritizes strings that begin with periods ([code].[/code]) and underscores ([code]_[/code]) before any other character. Useful when sorting folders or file names.
 				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method filenocasecmp_to], [method naturalcasecmp_to], and [method casecmp_to].
 			</description>
 		</method>
@@ -180,7 +188,7 @@
 			<return type="int" />
 			<param index="0" name="to" type="String" />
 			<description>
-				Like [method naturalnocasecmp_to] but prioritises strings that begin with periods ([code].[/code]) and underscores ([code]_[/code]) before any other character. Useful when sorting folders or file names.
+				Like [method naturalnocasecmp_to] but prioritizes strings that begin with periods ([code].[/code]) and underscores ([code]_[/code]) before any other character. Useful when sorting folders or file names.
 				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method filecasecmp_to], [method naturalnocasecmp_to], and [method nocasecmp_to].
 			</description>
 		</method>
@@ -648,7 +656,7 @@
 		<method name="reverse" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the copy of this string in reverse order.
+				Returns the copy of this string in reverse order. This operation works on unicode codepoints, rather than sequences of codepoints, and may break things like compound letters or emojis.
 			</description>
 		</method>
 		<method name="rfind" qualifiers="const">

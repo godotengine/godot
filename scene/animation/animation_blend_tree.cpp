@@ -31,7 +31,6 @@
 #include "animation_blend_tree.h"
 
 #include "scene/resources/animation.h"
-#include "scene/scene_string_names.h"
 
 void AnimationNodeAnimation::set_animation(const StringName &p_name) {
 	animation = p_name;
@@ -194,8 +193,8 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 	nti.is_just_looped = is_just_looped;
 
 	// 3. Progress for Animation.
-	double prev_playback_time = prev_time - start_offset;
-	double cur_playback_time = cur_time - start_offset;
+	double prev_playback_time = prev_time + start_offset;
+	double cur_playback_time = cur_time + start_offset;
 	if (stretch_time_scale) {
 		double mlt = anim_size / cur_len;
 		cur_playback_time *= mlt;
@@ -215,7 +214,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 	} else if (cur_loop_mode == Animation::LOOP_PINGPONG) {
 		if (!Math::is_zero_approx(anim_size)) {
 			if (Math::fposmod(cur_playback_time, anim_size * 2.0) >= anim_size) {
-				cur_delta = -cur_delta; // Needed for retrieveing discrete keys correctly.
+				cur_delta = -cur_delta; // Needed for retrieving discrete keys correctly.
 			}
 			prev_playback_time = Math::pingpong(prev_playback_time, anim_size);
 			cur_playback_time = Math::pingpong(cur_playback_time, anim_size);
@@ -238,11 +237,11 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(const AnimationMixe
 		if (process_state->tree && !p_test_only) {
 			// AnimationTree uses seek to 0 "internally" to process the first key of the animation, which is used as the start detection.
 			if (p_seek && !p_is_external_seeking && cur_playback_time == 0) {
-				process_state->tree->call_deferred(SNAME("emit_signal"), "animation_started", animation);
+				process_state->tree->call_deferred(SNAME("emit_signal"), SceneStringName(animation_started), animation);
 			}
 			// Finished.
-			if (prev_time - start_offset < anim_size && cur_playback_time >= anim_size) {
-				process_state->tree->call_deferred(SNAME("emit_signal"), "animation_finished", animation);
+			if (prev_time + start_offset < anim_size && cur_playback_time >= anim_size) {
+				process_state->tree->call_deferred(SNAME("emit_signal"), SceneStringName(animation_finished), animation);
 			}
 		}
 	}
@@ -1421,7 +1420,7 @@ AnimationNodeOutput::AnimationNodeOutput() {
 void AnimationNodeBlendTree::add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position) {
 	ERR_FAIL_COND(nodes.has(p_name));
 	ERR_FAIL_COND(p_node.is_null());
-	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output);
+	ERR_FAIL_COND(p_name == SceneStringName(output));
 	ERR_FAIL_COND(String(p_name).contains("/"));
 
 	Node n;
@@ -1491,7 +1490,7 @@ Vector<StringName> AnimationNodeBlendTree::get_node_connection_array(const Strin
 
 void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 	ERR_FAIL_COND(!nodes.has(p_name));
-	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output); //can't delete output
+	ERR_FAIL_COND(p_name == SceneStringName(output)); //can't delete output
 
 	{
 		Ref<AnimationNode> node = nodes[p_name].node;
@@ -1520,8 +1519,8 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringName &p_new_name) {
 	ERR_FAIL_COND(!nodes.has(p_name));
 	ERR_FAIL_COND(nodes.has(p_new_name));
-	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output);
-	ERR_FAIL_COND(p_new_name == SceneStringNames::get_singleton()->output);
+	ERR_FAIL_COND(p_name == SceneStringName(output));
+	ERR_FAIL_COND(p_new_name == SceneStringName(output));
 
 	nodes[p_name].node->disconnect_changed(callable_mp(this, &AnimationNodeBlendTree::_node_changed));
 
@@ -1546,7 +1545,7 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 void AnimationNodeBlendTree::connect_node(const StringName &p_input_node, int p_input_index, const StringName &p_output_node) {
 	ERR_FAIL_COND(!nodes.has(p_output_node));
 	ERR_FAIL_COND(!nodes.has(p_input_node));
-	ERR_FAIL_COND(p_output_node == SceneStringNames::get_singleton()->output);
+	ERR_FAIL_COND(p_output_node == SceneStringName(output));
 	ERR_FAIL_COND(p_input_node == p_output_node);
 
 	Ref<AnimationNode> input = nodes[p_input_node].node;
@@ -1574,7 +1573,7 @@ void AnimationNodeBlendTree::disconnect_node(const StringName &p_node, int p_inp
 }
 
 AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node(const StringName &p_input_node, int p_input_index, const StringName &p_output_node) const {
-	if (!nodes.has(p_output_node) || p_output_node == SceneStringNames::get_singleton()->output) {
+	if (!nodes.has(p_output_node) || p_output_node == SceneStringName(output)) {
 		return CONNECTION_ERROR_NO_OUTPUT;
 	}
 
@@ -1627,8 +1626,8 @@ String AnimationNodeBlendTree::get_caption() const {
 }
 
 AnimationNode::NodeTimeInfo AnimationNodeBlendTree::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
-	Ref<AnimationNodeOutput> output = nodes[SceneStringNames::get_singleton()->output].node;
-	node_state.connections = nodes[SceneStringNames::get_singleton()->output].connections;
+	Ref<AnimationNodeOutput> output = nodes[SceneStringName(output)].node;
+	node_state.connections = nodes[SceneStringName(output)].connections;
 	ERR_FAIL_COND_V(output.is_null(), NodeTimeInfo());
 
 	AnimationMixer::PlaybackInfo pi = p_playback_info;

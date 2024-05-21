@@ -289,7 +289,7 @@ Button *ProjectManager::_add_main_view(MainViewTab p_id, const String &p_name, c
 	toggle_button->set_toggle_mode(true);
 	toggle_button->set_button_group(main_view_toggles_group);
 	toggle_button->set_text(p_name);
-	toggle_button->connect("pressed", callable_mp(this, &ProjectManager::_select_main_view).bind((int)p_id));
+	toggle_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_select_main_view).bind((int)p_id));
 
 	main_view_toggles->add_child(toggle_button);
 	main_view_toggle_map[p_id] = toggle_button;
@@ -802,18 +802,20 @@ void ProjectManager::_apply_project_tags() {
 		}
 	}
 
-	ConfigFile cfg;
 	const String project_godot = project_list->get_selected_projects()[0].path.path_join("project.godot");
-	Error err = cfg.load(project_godot);
-	if (err != OK) {
-		tag_edit_error->set_text(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err));
+	ProjectSettings *cfg = memnew(ProjectSettings(project_godot));
+	if (!cfg->is_project_loaded()) {
+		memdelete(cfg);
+		tag_edit_error->set_text(vformat(TTR("Couldn't load project at '%s'. It may be missing or corrupted."), project_godot));
 		tag_edit_error->show();
 		callable_mp((Window *)tag_manage_dialog, &Window::show).call_deferred(); // Make sure the dialog does not disappear.
 		return;
 	} else {
 		tags.sort();
-		cfg.set_value("application", "config/tags", tags);
-		err = cfg.save(project_godot);
+		cfg->set("application/config/tags", tags);
+		Error err = cfg->save_custom(project_godot);
+		memdelete(cfg);
+
 		if (err != OK) {
 			tag_edit_error->set_text(vformat(TTR("Couldn't save project at '%s' (error %d)."), project_godot, err));
 			tag_edit_error->show();
@@ -1151,7 +1153,7 @@ ProjectManager::ProjectManager() {
 		title_bar_logo = memnew(Button);
 		title_bar_logo->set_flat(true);
 		left_hbox->add_child(title_bar_logo);
-		title_bar_logo->connect("pressed", callable_mp(this, &ProjectManager::_show_about));
+		title_bar_logo->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_about));
 
 		if (can_expand) {
 			// Spacer to center main toggles.
@@ -1185,7 +1187,7 @@ ProjectManager::ProjectManager() {
 		quick_settings_button->set_flat(true);
 		quick_settings_button->set_text(TTR("Settings"));
 		right_hbox->add_child(quick_settings_button);
-		quick_settings_button->connect("pressed", callable_mp(this, &ProjectManager::_show_quick_settings));
+		quick_settings_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_quick_settings));
 
 		if (can_expand) {
 			// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
@@ -1214,19 +1216,19 @@ ProjectManager::ProjectManager() {
 			create_btn = memnew(Button);
 			create_btn->set_text(TTR("Create"));
 			create_btn->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD_OR_CTRL | Key::N));
-			create_btn->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
+			create_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_new_project));
 			hb->add_child(create_btn);
 
 			import_btn = memnew(Button);
 			import_btn->set_text(TTR("Import"));
 			import_btn->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD_OR_CTRL | Key::I));
-			import_btn->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
+			import_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_import_project));
 			hb->add_child(import_btn);
 
 			scan_btn = memnew(Button);
 			scan_btn->set_text(TTR("Scan"));
 			scan_btn->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD_OR_CTRL | Key::S));
-			scan_btn->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
+			scan_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_scan_projects));
 			hb->add_child(scan_btn);
 
 			loading_label = memnew(Label(TTR("Loading, please wait...")));
@@ -1310,19 +1312,19 @@ ProjectManager::ProjectManager() {
 				empty_list_create_project->set_text(TTR("Create New Project"));
 				empty_list_create_project->set_theme_type_variation("PanelBackgroundButton");
 				empty_list_actions->add_child(empty_list_create_project);
-				empty_list_create_project->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
+				empty_list_create_project->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_new_project));
 
 				empty_list_import_project = memnew(Button);
 				empty_list_import_project->set_text(TTR("Import Existing Project"));
 				empty_list_import_project->set_theme_type_variation("PanelBackgroundButton");
 				empty_list_actions->add_child(empty_list_import_project);
-				empty_list_import_project->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
+				empty_list_import_project->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_import_project));
 
 				empty_list_open_assetlib = memnew(Button);
 				empty_list_open_assetlib->set_text(TTR("Open Asset Library"));
 				empty_list_open_assetlib->set_theme_type_variation("PanelBackgroundButton");
 				empty_list_actions->add_child(empty_list_open_assetlib);
-				empty_list_open_assetlib->connect("pressed", callable_mp(this, &ProjectManager::_open_asset_library_confirmed));
+				empty_list_open_assetlib->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_asset_library_confirmed));
 
 				empty_list_online_warning = memnew(Label);
 				empty_list_online_warning->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
@@ -1343,20 +1345,20 @@ ProjectManager::ProjectManager() {
 			open_btn = memnew(Button);
 			open_btn->set_text(TTR("Edit"));
 			open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KeyModifierMask::CMD_OR_CTRL | Key::E));
-			open_btn->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
+			open_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects_ask));
 			project_list_sidebar->add_child(open_btn);
 
 			run_btn = memnew(Button);
 			run_btn->set_text(TTR("Run"));
 			run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KeyModifierMask::CMD_OR_CTRL | Key::R));
-			run_btn->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
+			run_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_run_project));
 			project_list_sidebar->add_child(run_btn);
 
 			rename_btn = memnew(Button);
 			rename_btn->set_text(TTR("Rename"));
 			// The F2 shortcut isn't overridden with Enter on macOS as Enter is already used to edit a project.
 			rename_btn->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTR("Rename Project"), Key::F2));
-			rename_btn->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
+			rename_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_rename_project));
 			project_list_sidebar->add_child(rename_btn);
 
 			manage_tags_btn = memnew(Button);
@@ -1366,7 +1368,7 @@ ProjectManager::ProjectManager() {
 			erase_btn = memnew(Button);
 			erase_btn->set_text(TTR("Remove"));
 			erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTR("Remove Project"), Key::KEY_DELETE));
-			erase_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_project));
+			erase_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_erase_project));
 			project_list_sidebar->add_child(erase_btn);
 
 			Control *filler = memnew(Control);
@@ -1375,7 +1377,7 @@ ProjectManager::ProjectManager() {
 
 			erase_missing_btn = memnew(Button);
 			erase_missing_btn->set_text(TTR("Remove Missing"));
-			erase_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
+			erase_missing_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_erase_missing_projects));
 			project_list_sidebar->add_child(erase_missing_btn);
 		}
 	}
@@ -1423,7 +1425,7 @@ ProjectManager::ProjectManager() {
 			build_date = TTR("(unknown)");
 		}
 		version_btn->set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
-		version_btn->connect("pressed", callable_mp(this, &ProjectManager::_version_button_pressed));
+		version_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_version_button_pressed));
 		footer_bar->add_child(version_btn);
 	}
 
@@ -1444,12 +1446,12 @@ ProjectManager::ProjectManager() {
 
 		erase_missing_ask = memnew(ConfirmationDialog);
 		erase_missing_ask->set_ok_button_text(TTR("Remove All"));
-		erase_missing_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
+		erase_missing_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
 		add_child(erase_missing_ask);
 
 		erase_ask = memnew(ConfirmationDialog);
 		erase_ask->set_ok_button_text(TTR("Remove"));
-		erase_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_erase_project_confirm));
+		erase_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_erase_project_confirm));
 		add_child(erase_ask);
 
 		VBoxContainer *erase_ask_vb = memnew(VBoxContainer);
@@ -1466,19 +1468,19 @@ ProjectManager::ProjectManager() {
 
 		multi_open_ask = memnew(ConfirmationDialog);
 		multi_open_ask->set_ok_button_text(TTR("Edit"));
-		multi_open_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects));
+		multi_open_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects));
 		add_child(multi_open_ask);
 
 		multi_run_ask = memnew(ConfirmationDialog);
 		multi_run_ask->set_ok_button_text(TTR("Run"));
-		multi_run_ask->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_run_project_confirm));
+		multi_run_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_run_project_confirm));
 		add_child(multi_run_ask);
 
 		ask_update_settings = memnew(ConfirmationDialog);
 		ask_update_settings->set_autowrap(true);
-		ask_update_settings->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects));
+		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects));
 		full_convert_button = ask_update_settings->add_button(TTR("Convert Full Project"), !GLOBAL_GET("gui/common/swap_cancel_ok"));
-		full_convert_button->connect("pressed", callable_mp(this, &ProjectManager::_full_convert_button_pressed));
+		full_convert_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_full_convert_button_pressed));
 		add_child(ask_update_settings);
 
 		ask_full_convert_dialog = memnew(ConfirmationDialog);
@@ -1505,8 +1507,8 @@ ProjectManager::ProjectManager() {
 		tag_manage_dialog = memnew(ConfirmationDialog);
 		add_child(tag_manage_dialog);
 		tag_manage_dialog->set_title(TTR("Manage Project Tags"));
-		tag_manage_dialog->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_apply_project_tags));
-		manage_tags_btn->connect("pressed", callable_mp(this, &ProjectManager::_manage_project_tags));
+		tag_manage_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_apply_project_tags));
+		manage_tags_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_manage_project_tags));
 
 		VBoxContainer *tag_vb = memnew(VBoxContainer);
 		tag_manage_dialog->add_child(tag_vb);
@@ -1546,7 +1548,7 @@ ProjectManager::ProjectManager() {
 		create_tag_dialog = memnew(ConfirmationDialog);
 		tag_manage_dialog->add_child(create_tag_dialog);
 		create_tag_dialog->set_title(TTR("Create New Tag"));
-		create_tag_dialog->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_create_new_tag));
+		create_tag_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_create_new_tag));
 
 		tag_vb = memnew(VBoxContainer);
 		create_tag_dialog->add_child(tag_vb);
@@ -1566,7 +1568,7 @@ ProjectManager::ProjectManager() {
 
 		create_tag_btn = memnew(Button);
 		all_tags->add_child(create_tag_btn);
-		create_tag_btn->connect("pressed", callable_mp((Window *)create_tag_dialog, &Window::popup_centered).bind(Vector2i(500, 0) * EDSCALE));
+		create_tag_btn->connect(SceneStringName(pressed), callable_mp((Window *)create_tag_dialog, &Window::popup_centered).bind(Vector2i(500, 0) * EDSCALE));
 	}
 
 	// Initialize project list.
@@ -1603,7 +1605,7 @@ ProjectManager::ProjectManager() {
 		DisplayServer::get_singleton()->process_events();
 		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServer::MAIN_WINDOW_ID);
 		title_bar->set_can_move_window(true);
-		title_bar->connect("item_rect_changed", callable_mp(this, &ProjectManager::_titlebar_resized));
+		title_bar->connect(SceneStringName(item_rect_changed), callable_mp(this, &ProjectManager::_titlebar_resized));
 	}
 
 	_update_size_limits();

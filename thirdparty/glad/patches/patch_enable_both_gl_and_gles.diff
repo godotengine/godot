@@ -1,8 +1,8 @@
 diff --git a/thirdparty/glad/gl.c b/thirdparty/glad/gl.c
-index 3f0884a3dc..38ecb514bd 100644
+index a0b59dbbfb..9f10f6544a 100644
 --- a/thirdparty/glad/gl.c
 +++ b/thirdparty/glad/gl.c
-@@ -2462,7 +2462,7 @@ static GLADapiproc glad_gl_get_proc(void *vuserptr, const char *name) {
+@@ -2475,7 +2475,7 @@ static GLADapiproc glad_gl_get_proc(void *vuserptr, const char *name) {
      return result;
  }
  
@@ -11,7 +11,7 @@ index 3f0884a3dc..38ecb514bd 100644
  
  static void* glad_gl_dlopen_handle(void) {
  #if GLAD_PLATFORM_APPLE
-@@ -2484,11 +2484,11 @@ static void* glad_gl_dlopen_handle(void) {
+@@ -2497,11 +2497,11 @@ static void* glad_gl_dlopen_handle(void) {
      };
  #endif
  
@@ -26,7 +26,7 @@ index 3f0884a3dc..38ecb514bd 100644
  }
  
  static struct _glad_gl_userptr glad_gl_build_userptr(void *handle) {
-@@ -2514,7 +2514,7 @@ int gladLoaderLoadGL(void) {
+@@ -2527,7 +2527,7 @@ int gladLoaderLoadGL(void) {
      int did_load = 0;
      struct _glad_gl_userptr userptr;
  
@@ -35,7 +35,7 @@ index 3f0884a3dc..38ecb514bd 100644
      handle = glad_gl_dlopen_handle();
      if (handle) {
          userptr = glad_gl_build_userptr(handle);
-@@ -2532,9 +2532,9 @@ int gladLoaderLoadGL(void) {
+@@ -2545,9 +2545,9 @@ int gladLoaderLoadGL(void) {
  
  
  void gladLoaderUnloadGL(void) {
@@ -49,7 +49,7 @@ index 3f0884a3dc..38ecb514bd 100644
  }
  
 diff --git a/thirdparty/glad/glad/gl.h b/thirdparty/glad/glad/gl.h
-index 77c6f33cab..1301d10b65 100644
+index 905c16aeed..f3cb7d8cb5 100644
 --- a/thirdparty/glad/glad/gl.h
 +++ b/thirdparty/glad/glad/gl.h
 @@ -67,6 +67,7 @@

@@ -31,8 +31,8 @@
 #ifndef VISUAL_SHADER_EDITOR_PLUGIN_H
 #define VISUAL_SHADER_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/resources/syntax_highlighter.h"
@@ -64,6 +64,34 @@ protected:
 public:
 	void set_editor(VisualShaderEditor *p_editor);
 	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
+};
+
+class VSGraphNode : public GraphNode {
+	GDCLASS(VSGraphNode, GraphNode);
+
+protected:
+	void _draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color, const Color &p_rim_color);
+	virtual void draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color) override;
+};
+
+class VSRerouteNode : public VSGraphNode {
+	GDCLASS(VSRerouteNode, GraphNode);
+
+	const float FADE_ANIMATION_LENGTH_SEC = 0.3;
+
+	float icon_opacity = 0.0;
+
+protected:
+	void _notification(int p_what);
+
+	virtual void draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color) override;
+
+public:
+	VSRerouteNode();
+	void set_icon_opacity(float p_opacity);
+
+	void _on_mouse_entered();
+	void _on_mouse_exited();
 };
 
 class VisualShaderGraphPlugin : public RefCounted {
@@ -140,6 +168,7 @@ public:
 	void set_frame_color_enabled(VisualShader::Type p_type, int p_node_id, bool p_enable);
 	void set_frame_color(VisualShader::Type p_type, int p_node_id, const Color &p_color);
 	void set_frame_autoshrink_enabled(VisualShader::Type p_type, int p_node_id, bool p_enable);
+	void update_reroute_nodes();
 	int get_constant_index(float p_constant) const;
 	Ref<Script> get_node_script(int p_node_id) const;
 	void update_theme();
@@ -297,6 +326,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	enum ConnectionMenuOptions {
 		INSERT_NEW_NODE,
+		INSERT_NEW_REROUTE,
 		DISCONNECT,
 	};
 

@@ -81,7 +81,7 @@ void ReplicationEditor::_pick_node_select_recursive(TreeItem *p_item, const Stri
 	NodePath np = p_item->get_metadata(0);
 	Node *node = get_node(np);
 
-	if (!p_filter.is_empty() && ((String)node->get_name()).findn(p_filter) != -1) {
+	if (!p_filter.is_empty() && ((String)node->get_name()).containsn(p_filter)) {
 		p_select_candidates.push_back(node);
 	}
 
@@ -234,7 +234,8 @@ ReplicationEditor::ReplicationEditor() {
 		Variant::PACKED_STRING_ARRAY,
 		Variant::PACKED_VECTOR2_ARRAY,
 		Variant::PACKED_VECTOR3_ARRAY,
-		Variant::PACKED_COLOR_ARRAY
+		Variant::PACKED_COLOR_ARRAY,
+		Variant::PACKED_VECTOR4_ARRAY,
 	};
 	prop_selector->set_type_filter(types);
 	prop_selector->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_property_selected));
@@ -243,7 +244,7 @@ ReplicationEditor::ReplicationEditor() {
 	vb->add_child(hb);
 
 	add_pick_button = memnew(Button);
-	add_pick_button->connect("pressed", callable_mp(this, &ReplicationEditor::_pick_new_property));
+	add_pick_button->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_pick_new_property));
 	add_pick_button->set_text(TTR("Add property to sync..."));
 	hb->add_child(add_pick_button);
 
@@ -259,7 +260,7 @@ ReplicationEditor::ReplicationEditor() {
 	hb->add_child(np_line_edit);
 
 	add_from_path_button = memnew(Button);
-	add_from_path_button->connect("pressed", callable_mp(this, &ReplicationEditor::_add_pressed));
+	add_from_path_button->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_add_pressed));
 	add_from_path_button->set_text(TTR("Add from path"));
 	hb->add_child(add_from_path_button);
 

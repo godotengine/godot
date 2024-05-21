@@ -47,7 +47,6 @@
 #include "scene/gui/tree.h"
 
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
-const char *FindInFiles::SIGNAL_FINISHED = "finished";
 
 // TODO: Would be nice in Vector and Vectors.
 template <typename T>
@@ -115,12 +114,12 @@ void FindInFiles::_notification(int p_what) {
 void FindInFiles::start() {
 	if (_pattern.is_empty()) {
 		print_verbose("Nothing to search, pattern is empty");
-		emit_signal(SNAME(SIGNAL_FINISHED));
+		emit_signal(SceneStringName(finished));
 		return;
 	}
 	if (_extension_filter.size() == 0) {
 		print_verbose("Nothing to search, filter matches no files");
-		emit_signal(SNAME(SIGNAL_FINISHED));
+		emit_signal(SceneStringName(finished));
 		return;
 	}
 
@@ -202,7 +201,7 @@ void FindInFiles::_iterate() {
 		set_process(false);
 		_current_dir = "";
 		_searching = false;
-		emit_signal(SNAME(SIGNAL_FINISHED));
+		emit_signal(SceneStringName(finished));
 	}
 }
 
@@ -222,7 +221,9 @@ void FindInFiles::_scan_dir(const String &path, PackedStringArray &out_folders, 
 
 	dir->list_dir_begin();
 
-	for (int i = 0; i < 1000; ++i) {
+	// Limit to 100,000 iterations to avoid an infinite loop just in case
+	// (this technically limits results to 100,000 files per folder).
+	for (int i = 0; i < 100'000; ++i) {
 		String file = dir->get_next();
 
 		if (file.is_empty()) {
@@ -290,7 +291,7 @@ void FindInFiles::_bind_methods() {
 			PropertyInfo(Variant::INT, "end"),
 			PropertyInfo(Variant::STRING, "text")));
 
-	ADD_SIGNAL(MethodInfo(SIGNAL_FINISHED));
+	ADD_SIGNAL(MethodInfo("finished"));
 }
 
 //-----------------------------------------------------------------------------
@@ -366,7 +367,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 		Button *folder_button = memnew(Button);
 		folder_button->set_text("...");
-		folder_button->connect("pressed", callable_mp(this, &FindInFilesDialog::_on_folder_button_pressed));
+		folder_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesDialog::_on_folder_button_pressed));
 		hbc->add_child(folder_button);
 
 		_folder_dialog = memnew(FileDialog);
@@ -571,7 +572,7 @@ const char *FindInFilesPanel::SIGNAL_CLOSE_BUTTON_CLICKED = "close_button_clicke
 FindInFilesPanel::FindInFilesPanel() {
 	_finder = memnew(FindInFiles);
 	_finder->connect(FindInFiles::SIGNAL_RESULT_FOUND, callable_mp(this, &FindInFilesPanel::_on_result_found));
-	_finder->connect(FindInFiles::SIGNAL_FINISHED, callable_mp(this, &FindInFilesPanel::_on_finished));
+	_finder->connect(SceneStringName(finished), callable_mp(this, &FindInFilesPanel::_on_finished));
 	add_child(_finder);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -602,19 +603,19 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		_refresh_button = memnew(Button);
 		_refresh_button->set_text(TTR("Refresh"));
-		_refresh_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_refresh_button_clicked));
+		_refresh_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_refresh_button_clicked));
 		_refresh_button->hide();
 		hbc->add_child(_refresh_button);
 
 		_cancel_button = memnew(Button);
 		_cancel_button->set_text(TTR("Cancel"));
-		_cancel_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_cancel_button_clicked));
+		_cancel_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_cancel_button_clicked));
 		_cancel_button->hide();
 		hbc->add_child(_cancel_button);
 
 		_close_button = memnew(Button);
 		_close_button->set_text(TTR("Close"));
-		_close_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_close_button_clicked));
+		_close_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_close_button_clicked));
 		hbc->add_child(_close_button);
 
 		vbc->add_child(hbc);
@@ -648,7 +649,7 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		_replace_all_button = memnew(Button);
 		_replace_all_button->set_text(TTR("Replace all (no undo)"));
-		_replace_all_button->connect("pressed", callable_mp(this, &FindInFilesPanel::_on_replace_all_clicked));
+		_replace_all_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_replace_all_clicked));
 		_replace_container->add_child(_replace_all_button);
 
 		_replace_container->hide();

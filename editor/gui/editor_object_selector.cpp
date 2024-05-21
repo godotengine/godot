@@ -211,7 +211,7 @@ void EditorObjectSelector::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			connect("pressed", callable_mp(this, &EditorObjectSelector::_show_popup));
+			connect(SceneStringName(pressed), callable_mp(this, &EditorObjectSelector::_show_popup));
 		} break;
 	}
 }

@@ -115,7 +115,24 @@ void RedirectStream(const char *p_file_name, const char *p_mode, FILE *p_cpp_str
 }
 
 void RedirectIOToConsole() {
+	// Save current handles.
+	HANDLE h_stdin = GetStdHandle(STD_INPUT_HANDLE);
+	HANDLE h_stdout = GetStdHandle(STD_OUTPUT_HANDLE);
+	HANDLE h_stderr = GetStdHandle(STD_ERROR_HANDLE);
+
 	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+		// Restore redirection (Note: if not redirected it's NULL handles not INVALID_HANDLE_VALUE).
+		if (h_stdin != 0) {
+			SetStdHandle(STD_INPUT_HANDLE, h_stdin);
+		}
+		if (h_stdout != 0) {
+			SetStdHandle(STD_OUTPUT_HANDLE, h_stdout);
+		}
+		if (h_stderr != 0) {
+			SetStdHandle(STD_ERROR_HANDLE, h_stderr);
+		}
+
+		// Update file handles.
 		RedirectStream("CONIN$", "r", stdin, STD_INPUT_HANDLE);
 		RedirectStream("CONOUT$", "w", stdout, STD_OUTPUT_HANDLE);
 		RedirectStream("CONOUT$", "w", stderr, STD_ERROR_HANDLE);
@@ -171,10 +188,6 @@ void OS_Windows::initialize() {
 	error_handlers.errfunc = _error_handler;
 	error_handlers.userdata = this;
 	add_error_handler(&error_handlers);
-#endif
-
-#ifndef WINDOWS_SUBSYSTEM_CONSOLE
-	RedirectIOToConsole();
 #endif
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
@@ -1521,10 +1534,10 @@ void OS_Windows::unset_environment(const String &p_var) const {
 }
 
 String OS_Windows::get_stdin_string() {
-	WCHAR buff[1024];
+	char buff[1024];
 	DWORD count = 0;
-	if (ReadConsoleW(GetStdHandle(STD_INPUT_HANDLE), buff, 1024, &count, nullptr)) {
-		return String::utf16((const char16_t *)buff, count);
+	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), buff, 1024, &count, nullptr)) {
+		return String::utf8((const char *)buff, count);
 	}
 
 	return String();
@@ -1907,6 +1920,13 @@ String OS_Windows::get_system_ca_certificates() {
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
+
+#ifndef WINDOWS_SUBSYSTEM_CONSOLE
+	RedirectIOToConsole();
+#endif
+
+	SetConsoleOutputCP(CP_UTF8);
+	SetConsoleCP(CP_UTF8);
 
 	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 

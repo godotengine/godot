@@ -14,6 +14,7 @@
 			The compression mode to use on import.
 			[b]Disabled:[/b] Imports audio data without any compression. This results in the highest possible quality.
 			[b]RAM (Ima-ADPCM):[/b] Performs fast lossy compression on import. Low CPU cost, but quality is noticeably decreased compared to Ogg Vorbis or even MP3.
+			[b]QOA ([url=https://qoaformat.org/]Quite OK Audio[/url]):[/b] Performs lossy compression on import. CPU cost is slightly higher than IMA-ADPCM, but quality is much higher.
 		</member>
 		<member name="edit/loop_begin" type="int" setter="" getter="" default="0">
 			The begin loop point to use when [member edit/loop_mode] is [b]Forward[/b], [b]Ping-Pong[/b] or [b]Backward[/b]. This is set in seconds after the beginning of the audio file.

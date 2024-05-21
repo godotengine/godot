@@ -216,7 +216,7 @@ License: Apache-2.0
 
 Files: ./thirdparty/enet/
 Comment: ENet
-Copyright: 2002-2020, Lee Salzman
+Copyright: 2002-2024, Lee Salzman
 License: Expat
 
 Files: ./thirdparty/etcpak/
@@ -285,13 +285,18 @@ License: HarfBuzz
 
 Files: ./thirdparty/icu4c/
 Comment: International Components for Unicode
-Copyright: 1991-2021, Unicode
+Copyright: 2016-2024, Unicode, Inc.
 License: Unicode
 
 Files: ./thirdparty/jpeg-compressor/
 Comment: jpeg-compressor
 Copyright: 2012, Rich Geldreich
 License: public-domain or Apache-2.0
+
+Files: ./thirdparty/libbacktrace/
+Comment: libbacktrace
+Copyright: 2012-2021, Free Software Foundation, Inc.
+License: BSD-3-clause
 
 Files: ./thirdparty/libktx/
 Comment: KTX
@@ -404,6 +409,11 @@ Files: ./thirdparty/misc/polypartition.cpp
  ./thirdparty/misc/polypartition.h
 Comment: PolyPartition / Triangulator
 Copyright: 2011-2021, Ivan Fratric and contributors
+License: Expat
+
+Files: ./thirdparty/misc/qoa.h
+Comment: Quite OK Audio Format
+Copyright: 2023, Dominic Szablewski
 License: Expat
 
 Files: ./thirdparty/misc/r128.c

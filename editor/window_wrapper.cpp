@@ -368,9 +368,9 @@ void ScreenSelect::_build_advanced_menu() {
 			button->add_theme_color_override("font_color", accent_color);
 		}
 
-		button->connect("pressed", callable_mp(this, &ScreenSelect::_emit_screen_signal).bind(i));
-		button->connect("pressed", callable_mp(static_cast<BaseButton *>(this), &ScreenSelect::set_pressed).bind(false));
-		button->connect("pressed", callable_mp(static_cast<Window *>(popup), &Popup::hide));
+		button->connect(SceneStringName(pressed), callable_mp(this, &ScreenSelect::_emit_screen_signal).bind(i));
+		button->connect(SceneStringName(pressed), callable_mp(static_cast<BaseButton *>(this), &ScreenSelect::set_pressed).bind(false));
+		button->connect(SceneStringName(pressed), callable_mp(static_cast<Window *>(popup), &Popup::hide));
 	}
 }
 
@@ -387,7 +387,7 @@ void ScreenSelect::_bind_methods() {
 void ScreenSelect::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			connect("gui_input", callable_mp(this, &ScreenSelect::_handle_mouse_shortcut));
+			connect(SceneStringName(gui_input), callable_mp(this, &ScreenSelect::_handle_mouse_shortcut));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			set_icon(get_editor_theme_icon("MakeFloating"));

@@ -219,7 +219,7 @@ protected:
 				case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
-					pinfo.hint_string = "Texture2DArray";
+					pinfo.hint_string = "Texture2DArray,CompressedTexture2DArray";
 				} break;
 				case RS::GLOBAL_VAR_TYPE_SAMPLER3D: {
 					pinfo.type = Variant::OBJECT;
@@ -229,7 +229,7 @@ protected:
 				case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE: {
 					pinfo.type = Variant::OBJECT;
 					pinfo.hint = PROPERTY_HINT_RESOURCE_TYPE;
-					pinfo.hint_string = "Cubemap";
+					pinfo.hint_string = "Cubemap,CompressedCubemap";
 				} break;
 				default: {
 				} break;
@@ -473,7 +473,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	variable_add = memnew(Button(TTR("Add")));
 	variable_add->set_disabled(true);
 	add_menu_hb->add_child(variable_add);
-	variable_add->connect("pressed", callable_mp(this, &ShaderGlobalsEditor::_variable_added));
+	variable_add->connect(SceneStringName(pressed), callable_mp(this, &ShaderGlobalsEditor::_variable_added));
 
 	inspector = memnew(EditorInspector);
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);

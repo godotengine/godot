@@ -4,7 +4,7 @@
 		A frame other visual shader nodes can be attached to for better organization.
 	</brief_description>
 	<description>
-		A rectangular frame that can be used to group visual shader nodes together to improve organization. 
+		A rectangular frame that can be used to group visual shader nodes together to improve organization.
 		Nodes attached to the frame will move with it when it is dragged and it can automatically resize to enclose all attached nodes.
 		Its title, description and color can be customized.
 	</description>

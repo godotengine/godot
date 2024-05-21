@@ -103,15 +103,19 @@ static const char* _skipComma(const char* content)
 }
 
 
-static bool _parseNumber(const char** content, float* number)
+static bool _parseNumber(const char** content, const char** end, float* number)
 {
-    char* end = nullptr;
+    const char* _end = end ? *end : nullptr;
 
-    *number = strToFloat(*content, &end);
+    *number = strToFloat(*content, (char**)&_end);
     //If the start of string is not number
-    if ((*content) == end) return false;
+    if ((*content) == _end) {
+        if (end) *end = _end;
+        return false;
+    }
     //Skip comma if any
-    *content = _skipComma(end);
+    *content = _skipComma(_end);
+    if (end) *end = _end;
 
     return true;
 }
@@ -576,7 +580,82 @@ static constexpr struct
 };
 
 
-static void _toColor(const char* str, uint8_t* r, uint8_t* g, uint8_t* b, char** ref)
+static bool _hslToRgb(float hue, float satuation, float brightness, uint8_t* red, uint8_t* green, uint8_t* blue)
+{
+    if (!red || !green || !blue) return false;
+
+    float sv, vsf, f, p, q, t, v;
+    float _red = 0, _green = 0, _blue = 0;
+    uint32_t i = 0;
+
+    if (mathZero(satuation))  _red = _green = _blue = brightness;
+    else {
+        if (mathEqual(hue, 360.0)) hue = 0.0f;
+        hue /= 60.0f;
+
+        v = (brightness <= 0.5f) ? (brightness * (1.0f + satuation)) : (brightness + satuation - (brightness * satuation));
+        p = brightness + brightness - v;
+
+        if (!mathZero(v)) sv = (v - p) / v;
+        else sv = 0;
+
+        i = static_cast<uint8_t>(hue);
+        f = hue - i;
+
+        vsf = v * sv * f;
+
+        t = p + vsf;
+        q = v - vsf;
+
+        switch (i) {
+            case 0: {
+                _red = v;
+                _green = t;
+                _blue = p;
+                break;
+            }
+            case 1: {
+                _red = q;
+                _green = v;
+                _blue = p;
+                break;
+            }
+            case 2: {
+                _red = p;
+                _green = v;
+                _blue = t;
+                break;
+            }
+            case 3: {
+                _red = p;
+                _green = q;
+                _blue = v;
+                break;
+            }
+            case 4: {
+                _red = t;
+                _green = p;
+                _blue = v;
+                break;
+            }
+            case 5: {
+                _red = v;
+                _green = p;
+                _blue = q;
+                break;
+            }
+        }
+    }
+
+    *red = static_cast<uint8_t>(roundf(_red * 255.0f));
+    *green = static_cast<uint8_t>(roundf(_green * 255.0f));
+    *blue = static_cast<uint8_t>(roundf(_blue * 255.0f));
+
+    return true;
+}
+
+
+static bool _toColor(const char* str, uint8_t* r, uint8_t* g, uint8_t* b, char** ref)
 {
     unsigned int len = strlen(str);
     char *red, *green, *blue;
@@ -596,6 +675,7 @@ static void _toColor(const char* str, uint8_t* r, uint8_t* g, uint8_t* b, char**
             tmp[1] = str[3];
             *b = strtol(tmp, nullptr, 16);
         }
+        return true;
     } else if (len == 7 && str[0] == '#') {
         if (isxdigit(str[1]) && isxdigit(str[2]) && isxdigit(str[3]) && isxdigit(str[4]) && isxdigit(str[5]) && isxdigit(str[6])) {
             char tmp[3] = { '\0', '\0', '\0' };
@@ -609,6 +689,7 @@ static void _toColor(const char* str, uint8_t* r, uint8_t* g, uint8_t* b, char**
             tmp[1] = str[6];
             *b = strtol(tmp, nullptr, 16);
         }
+        return true;
     } else if (len >= 10 && (str[0] == 'r' || str[0] == 'R') && (str[1] == 'g' || str[1] == 'G') && (str[2] == 'b' || str[2] == 'B') && str[3] == '(' && str[len - 1] == ')') {
         tr = _parseColor(str + 4, &red);
         if (red && *red == ',') {
@@ -622,9 +703,35 @@ static void _toColor(const char* str, uint8_t* r, uint8_t* g, uint8_t* b, char**
                 }
             }
         }
+        return true;
     } else if (ref && len >= 3 && !strncmp(str, "url", 3)) {
         if (*ref) free(*ref);
         *ref = _idFromUrl((const char*)(str + 3));
+        return true;
+    } else if (len >= 10 && (str[0] == 'h' || str[0] == 'H') && (str[1] == 's' || str[1] == 'S') && (str[2] == 'l' || str[2] == 'L') && str[3] == '(' && str[len - 1] == ')') {
+        float_t th, ts, tb;
+        const char *content, *hue, *satuation, *brightness;
+        content = str + 4;
+        content = _skipSpace(content, nullptr);
+        if (_parseNumber(&content, &hue, &th) && hue) {
+            th = float(uint32_t(th) % 360);
+            hue = _skipSpace(hue, nullptr);
+            hue = (char*)_skipComma(hue);
+            hue = _skipSpace(hue, nullptr);
+            if (_parseNumber(&hue, &satuation, &ts) && satuation && *satuation == '%') {
+                ts /= 100.0f;
+                satuation = _skipSpace(satuation + 1, nullptr);
+                satuation = (char*)_skipComma(satuation);
+                satuation = _skipSpace(satuation, nullptr);
+                if (_parseNumber(&satuation, &brightness, &tb) && brightness && *brightness == '%') {
+                    tb /= 100.0f;
+                    brightness = _skipSpace(brightness + 1, nullptr);
+                    if (brightness && brightness[0] == ')' && brightness[1] == '\0') {
+                       return _hslToRgb(th, ts, tb, r, g, b);
+                    }
+                }
+            }
+        }
     } else {
         //Handle named color
         for (unsigned int i = 0; i < (sizeof(colors) / sizeof(colors[0])); i++) {
@@ -632,10 +739,11 @@ static void _toColor(const char* str, uint8_t* r, uint8_t* g, uint8_t* b, char**
                 *r = (((uint8_t*)(&(colors[i].value)))[2]);
                 *g = (((uint8_t*)(&(colors[i].value)))[1]);
                 *b = (((uint8_t*)(&(colors[i].value)))[0]);
-                return;
+                return true;
             }
         }
     }
+    return false;
 }
 
 
@@ -745,8 +853,8 @@ static Matrix* _parseTransformationMatrix(const char* value)
             //Transform to signed.
             points[0] = fmodf(points[0], 360.0f);
             if (points[0] < 0) points[0] += 360.0f;
-            auto c = cosf(points[0] * (MATH_PI / 180.0f));
-            auto s = sinf(points[0] * (MATH_PI / 180.0f));
+            auto c = cosf(mathDeg2Rad(points[0]));
+            auto s = sinf(mathDeg2Rad(points[0]));
             if (ptCount == 1) {
                 Matrix tmp = { c, -s, 0, s, c, 0, 0, 0, 1 };
                 *matrix = mathMultiply(matrix, &tmp);
@@ -769,12 +877,12 @@ static Matrix* _parseTransformationMatrix(const char* value)
             *matrix = mathMultiply(matrix, &tmp);
         } else if (state == MatrixState::SkewX) {
             if (ptCount != 1) goto error;
-            auto deg = tanf(points[0] * (MATH_PI / 180.0f));
+            auto deg = tanf(mathDeg2Rad(points[0]));
             Matrix tmp = { 1, deg, 0, 0, 1, 0, 0, 0, 1 };
             *matrix = mathMultiply(matrix, &tmp);
         } else if (state == MatrixState::SkewY) {
             if (ptCount != 1) goto error;
-            auto deg = tanf(points[0] * (MATH_PI / 180.0f));
+            auto deg = tanf(mathDeg2Rad(points[0]));
             Matrix tmp = { 1, 0, 0, deg, 1, 0, 0, 0, 1 };
             *matrix = mathMultiply(matrix, &tmp);
         }
@@ -854,10 +962,10 @@ static bool _attrParseSvgNode(void* data, const char* key, const char* value)
             doc->viewFlag = (doc->viewFlag | SvgViewFlag::Height);
         }
     } else if (!strcmp(key, "viewBox")) {
-        if (_parseNumber(&value, &doc->vx)) {
-            if (_parseNumber(&value, &doc->vy)) {
-                if (_parseNumber(&value, &doc->vw)) {
-                    if (_parseNumber(&value, &doc->vh)) {
+        if (_parseNumber(&value, nullptr, &doc->vx)) {
+            if (_parseNumber(&value, nullptr, &doc->vy)) {
+                if (_parseNumber(&value, nullptr, &doc->vw)) {
+                    if (_parseNumber(&value, nullptr, &doc->vh)) {
                         doc->viewFlag = (doc->viewFlag | SvgViewFlag::Viewbox);
                         loader->svgParse->global.h = doc->vh;
                     }
@@ -898,20 +1006,21 @@ static void _handlePaintAttr(SvgPaint* paint, const char* value)
         paint->none = true;
         return;
     }
-    paint->none = false;
     if (!strcmp(value, "currentColor")) {
         paint->curColor = true;
+        paint->none = false;
         return;
     }
-    _toColor(value, &paint->color.r, &paint->color.g, &paint->color.b, &paint->url);
+    if (_toColor(value, &paint->color.r, &paint->color.g, &paint->color.b, &paint->url)) paint->none = false;
 }
 
 
 static void _handleColorAttr(TVG_UNUSED SvgLoaderData* loader, SvgNode* node, const char* value)
 {
     SvgStyleProperty* style = node->style;
-    style->curColorSet = true;
-    _toColor(value, &style->color.r, &style->color.g, &style->color.b, nullptr);
+    if (_toColor(value, &style->color.r, &style->color.g, &style->color.b, nullptr)) {
+        style->curColorSet = true;
+    }
 }
 
 
@@ -995,6 +1104,7 @@ static void _handleFillRuleAttr(TVG_UNUSED SvgLoaderData* loader, SvgNode* node,
 
 static void _handleOpacityAttr(TVG_UNUSED SvgLoaderData* loader, SvgNode* node, const char* value)
 {
+    node->style->flags = (node->style->flags | SvgStyleFlags::Opacity);
     node->style->opacity = _toOpacity(value);
 }
 
@@ -1046,8 +1156,9 @@ static void _handleDisplayAttr(TVG_UNUSED SvgLoaderData* loader, SvgNode* node, 
     //       The default is "inline" which means visible and "none" means invisible.
     //       Depending on the type of node, additional functionality may be required.
     //       refer to https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/display
-    if (!strcmp(value, "none")) node->display = false;
-    else node->display = true;
+    node->style->flags = (node->style->flags | SvgStyleFlags::Display);
+    if (!strcmp(value, "none")) node->style->display = false;
+    else node->style->display = true;
 }
 
 
@@ -1267,8 +1378,8 @@ static bool _attrParseSymbolNode(void* data, const char* key, const char* value)
     SvgSymbolNode* symbol = &(node->node.symbol);
 
     if (!strcmp(key, "viewBox")) {
-        if (!_parseNumber(&value, &symbol->vx) || !_parseNumber(&value, &symbol->vy)) return false;
-        if (!_parseNumber(&value, &symbol->vw) || !_parseNumber(&value, &symbol->vh)) return false;
+        if (!_parseNumber(&value, nullptr, &symbol->vx) || !_parseNumber(&value, nullptr, &symbol->vy)) return false;
+        if (!_parseNumber(&value, nullptr, &symbol->vw) || !_parseNumber(&value, nullptr, &symbol->vh)) return false;
         symbol->hasViewBox = true;
     } else if (!strcmp(key, "width")) {
         symbol->w = _toFloat(loader->svgParse, value, SvgParserLengthType::Horizontal);
@@ -1332,7 +1443,7 @@ static SvgNode* _createNode(SvgNode* parent, SvgNodeType type)
     node->style->paintOrder = _toPaintOrder("fill stroke");
 
     //Default display is true("inline").
-    node->display = true;
+    node->style->display = true;
 
     node->parent = parent;
     node->type = type;
@@ -1408,7 +1519,7 @@ static SvgNode* _createClipPathNode(SvgLoaderData* loader, SvgNode* parent, cons
     loader->svgParse->node = _createNode(parent, SvgNodeType::ClipPath);
     if (!loader->svgParse->node) return nullptr;
 
-    loader->svgParse->node->display = false;
+    loader->svgParse->node->style->display = false;
     loader->svgParse->node->node.clip.userSpace = true;
 
     func(buf, bufLength, _attrParseClipPathNode, loader);
@@ -1433,7 +1544,6 @@ static SvgNode* _createSymbolNode(SvgLoaderData* loader, SvgNode* parent, const 
     loader->svgParse->node = _createNode(parent, SvgNodeType::Symbol);
     if (!loader->svgParse->node) return nullptr;
 
-    loader->svgParse->node->display = false;
     loader->svgParse->node->node.symbol.align = AspectRatioAlign::XMidYMid;
     loader->svgParse->node->node.symbol.meetOrSlice = AspectRatioMeetOrSlice::Meet;
     loader->svgParse->node->node.symbol.overflowVisible = false;
@@ -1615,8 +1725,11 @@ static SvgNode* _createEllipseNode(SvgLoaderData* loader, SvgNode* parent, const
 
 static bool _attrParsePolygonPoints(const char* str, SvgPolygonNode* polygon)
 {
-    float num;
-    while (_parseNumber(&str, &num)) polygon->pts.push(num);
+    float num_x, num_y;
+    while (_parseNumber(&str, nullptr, &num_x) && _parseNumber(&str, nullptr, &num_y)) {
+        polygon->pts.push(num_x);
+        polygon->pts.push(num_y);
+    }
     return true;
 }
 
@@ -2378,8 +2491,9 @@ static bool _attrParseStopsStyle(void* data, const char* key, const char* value)
         stop->a = _toOpacity(value);
         loader->svgParse->flags = (loader->svgParse->flags | SvgStopStyleFlags::StopOpacity);
     } else if (!strcmp(key, "stop-color")) {
-        _toColor(value, &stop->r, &stop->g, &stop->b, nullptr);
-        loader->svgParse->flags = (loader->svgParse->flags | SvgStopStyleFlags::StopColor);
+        if (_toColor(value, &stop->r, &stop->g, &stop->b, nullptr)) {
+            loader->svgParse->flags = (loader->svgParse->flags | SvgStopStyleFlags::StopColor);
+        }
     } else {
         return false;
     }
@@ -2849,8 +2963,14 @@ static void _styleCopy(SvgStyleProperty* to, const SvgStyleProperty* from)
         to->color = from->color;
         to->curColorSet = true;
     }
+    if (from->flags & SvgStyleFlags::Opacity) {
+        to->opacity = from->opacity;
+    }
     if (from->flags & SvgStyleFlags::PaintOrder) {
         to->paintOrder = from->paintOrder;
+    }
+    if (from->flags & SvgStyleFlags::Display) {
+        to->display = from->display;
     }
     //Fill
     to->fill.flags = (to->fill.flags | from->fill.flags);
@@ -3080,6 +3200,14 @@ static void _svgLoaderParserXmlClose(SvgLoaderData* loader, const char* content)
         }
     }
 
+    for (unsigned int i = 0; i < sizeof(graphicsTags) / sizeof(graphicsTags[0]); i++) {
+        if (!strncmp(content, graphicsTags[i].tag, graphicsTags[i].sz - 1)) {
+            loader->currentGraphicsNode = nullptr;
+            loader->stack.pop();
+            break;
+        }
+    }
+
     loader->level--;
 }
 
@@ -3146,6 +3274,11 @@ static void _svgLoaderParserXmlOpen(SvgLoaderData* loader, const char* content, 
         if (loader->stack.count > 0) parent = loader->stack.last();
         else parent = loader->doc;
         node = method(loader, parent, attrs, attrsLength, simpleXmlParseAttributes);
+        if (node && !empty) {
+            auto defs = _createDefsNode(loader, nullptr, nullptr, 0, nullptr);
+            loader->stack.push(defs);
+            loader->currentGraphicsNode = node;
+        }
     } else if ((gradientMethod = _findGradientFactory(tagName))) {
         SvgStyleGradient* gradient;
         gradient = gradientMethod(loader, attrs, attrsLength);
@@ -3257,7 +3390,7 @@ static void _inefficientNodeCheck(TVG_UNUSED SvgNode* node)
 #ifdef THORVG_LOG_ENABLED
     auto type = simpleXmlNodeTypeToString(node->type);
 
-    if (!node->display && node->type != SvgNodeType::ClipPath && node->type != SvgNodeType::Symbol) TVGLOG("SVG", "Inefficient elements used [Display is none][Node Type : %s]", type);
+    if (!node->style->display && node->type != SvgNodeType::ClipPath) TVGLOG("SVG", "Inefficient elements used [Display is none][Node Type : %s]", type);
     if (node->style->opacity == 0) TVGLOG("SVG", "Inefficient elements used [Opacity is zero][Node Type : %s]", type);
     if (node->style->fill.opacity == 0 && node->style->stroke.opacity == 0) TVGLOG("SVG", "Inefficient elements used [Fill opacity and stroke opacity are zero][Node Type : %s]", type);
 
@@ -3699,10 +3832,11 @@ bool SvgLoader::open(const char* data, uint32_t size, bool copy)
     clear();
 
     if (copy) {
-        content = (char*)malloc(size);
+        content = (char*)malloc(size + 1);
         if (!content) return false;
         memcpy((char*)content, data, size);
-    } else content = data;
+        content[size] = '\0';
+    } else content = (char*)data;
 
     this->size = size;
     this->copy = copy;
@@ -3726,7 +3860,7 @@ bool SvgLoader::open(const string& path)
 
     if (filePath.empty()) return false;
 
-    content = filePath.c_str();
+    content = (char*)filePath.c_str();
     size = filePath.size();
 
     return header();

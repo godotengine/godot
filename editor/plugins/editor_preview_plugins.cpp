@@ -130,7 +130,7 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 	if (new_size.y > p_size.y) {
 		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
-	Vector2i new_size_i = Vector2i(new_size).max(Vector2i(1, 1));
+	Vector2i new_size_i = Vector2i(new_size).maxi(1);
 	img->resize(new_size_i.x, new_size_i.y, Image::INTERPOLATE_CUBIC);
 	post_process_preview(img);
 
@@ -677,6 +677,8 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_f
 			}
 		}
 	}
+
+	p_metadata["length"] = stream->get_length();
 
 	//post_process_preview(img);
 

@@ -278,7 +278,7 @@ public:
 			}
 
 			Vector3i grid_pos = Vector3i(points[i] * proportions * ACCEL_GRID_SIZE);
-			grid_pos = grid_pos.clamp(Vector3i(), Vector3i(ACCEL_GRID_SIZE - 1, ACCEL_GRID_SIZE - 1, ACCEL_GRID_SIZE - 1));
+			grid_pos = grid_pos.clampi(0, ACCEL_GRID_SIZE - 1);
 
 			for (List<Simplex *>::Element *E = acceleration_grid[grid_pos.x][grid_pos.y][grid_pos.z].front(); E;) {
 				List<Simplex *>::Element *N = E->next(); //may be deleted
@@ -335,8 +335,8 @@ public:
 					Vector3 extents = Vector3(radius2, radius2, radius2);
 					Vector3i from = Vector3i((center - extents) * proportions * ACCEL_GRID_SIZE);
 					Vector3i to = Vector3i((center + extents) * proportions * ACCEL_GRID_SIZE);
-					from = from.clamp(Vector3i(), Vector3i(ACCEL_GRID_SIZE - 1, ACCEL_GRID_SIZE - 1, ACCEL_GRID_SIZE - 1));
-					to = to.clamp(Vector3i(), Vector3i(ACCEL_GRID_SIZE - 1, ACCEL_GRID_SIZE - 1, ACCEL_GRID_SIZE - 1));
+					from = from.clampi(0, ACCEL_GRID_SIZE - 1);
+					to = to.clampi(0, ACCEL_GRID_SIZE - 1);
 
 					for (int32_t x = from.x; x <= to.x; x++) {
 						for (int32_t y = from.y; y <= to.y; y++) {

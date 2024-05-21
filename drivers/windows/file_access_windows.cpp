@@ -32,6 +32,7 @@
 
 #include "file_access_windows.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
@@ -121,19 +122,63 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	// Windows is case insensitive, but all other platforms are sensitive to it
 	// To ease cross-platform development, we issue a warning if users try to access
 	// a file using the wrong case (which *works* on Windows, but won't on other
-	// platforms).
-	if (p_mode_flags == READ) {
-		WIN32_FIND_DATAW d;
-		HANDLE fnd = FindFirstFileW((LPCWSTR)(path.utf16().get_data()), &d);
-		if (fnd != INVALID_HANDLE_VALUE) {
-			String fname = String::utf16((const char16_t *)(d.cFileName));
-			if (!fname.is_empty()) {
-				String base_file = path.get_file();
-				if (base_file != fname && base_file.findn(fname) == 0) {
-					WARN_PRINT("Case mismatch opening requested file '" + base_file + "', stored as '" + fname + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
+	// platforms), we only check for relative paths, or paths in res:// or user://,
+	// other paths aren't likely to be portable anyway.
+	if (p_mode_flags == READ && (p_path.is_relative_path() || get_access_type() != ACCESS_FILESYSTEM)) {
+		String base_path = path;
+		String working_path;
+		String proper_path;
+
+		if (get_access_type() == ACCESS_RESOURCES) {
+			if (ProjectSettings::get_singleton()) {
+				working_path = ProjectSettings::get_singleton()->get_resource_path();
+				if (!working_path.is_empty()) {
+					base_path = working_path.path_to_file(base_path);
 				}
 			}
+			proper_path = "res://";
+		} else if (get_access_type() == ACCESS_USERDATA) {
+			working_path = OS::get_singleton()->get_user_data_dir();
+			if (!working_path.is_empty()) {
+				base_path = working_path.path_to_file(base_path);
+			}
+			proper_path = "user://";
+		}
+
+		WIN32_FIND_DATAW d;
+		Vector<String> parts = base_path.split("/");
+
+		bool mismatch = false;
+
+		for (const String &part : parts) {
+			working_path = working_path.path_join(part);
+
+			// Skip if relative.
+			if (part == "." || part == "..") {
+				proper_path = proper_path.path_join(part);
+				continue;
+			}
+
+			HANDLE fnd = FindFirstFileW((LPCWSTR)(working_path.utf16().get_data()), &d);
+
+			if (fnd == INVALID_HANDLE_VALUE) {
+				mismatch = false;
+				break;
+			}
+
+			const String fname = String::utf16((const char16_t *)(d.cFileName));
+
 			FindClose(fnd);
+
+			if (!mismatch) {
+				mismatch = (part != fname && part.findn(fname) == 0);
+			}
+
+			proper_path = proper_path.path_join(fname);
+		}
+
+		if (mismatch) {
+			WARN_PRINT("Case mismatch opening requested file '" + p_path + "', stored as '" + proper_path + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
 		}
 	}
 #endif

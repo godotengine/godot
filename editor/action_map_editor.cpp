@@ -38,7 +38,6 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
-#include "scene/scene_string_names.h"
 
 static bool _is_action_name_valid(const String &p_name) {
 	const char32_t *cstr = p_name.get_data();
@@ -506,6 +505,9 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			event_item->set_button_color(2, 1, Color(1, 1, 1, 0.75));
 		}
 	}
+
+	// Update UI.
+	clear_all_search->set_disabled(action_list_search->get_text().is_empty() && action_list_search_by_event->get_event().is_null());
 }
 
 void ActionMapEditor::show_message(const String &p_message) {
@@ -547,14 +549,15 @@ ActionMapEditor::ActionMapEditor() {
 	action_list_search_by_event->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	action_list_search_by_event->set_stretch_ratio(0.75);
 	action_list_search_by_event->connect("event_changed", callable_mp(this, &ActionMapEditor::_search_by_event));
-	action_list_search_by_event->connect(SceneStringNames::get_singleton()->focus_entered, callable_mp(this, &ActionMapEditor::_on_filter_focused));
-	action_list_search_by_event->connect(SceneStringNames::get_singleton()->focus_exited, callable_mp(this, &ActionMapEditor::_on_filter_unfocused));
+	action_list_search_by_event->connect(SceneStringName(focus_entered), callable_mp(this, &ActionMapEditor::_on_filter_focused));
+	action_list_search_by_event->connect(SceneStringName(focus_exited), callable_mp(this, &ActionMapEditor::_on_filter_unfocused));
 	top_hbox->add_child(action_list_search_by_event);
 
-	Button *clear_all_search = memnew(Button);
+	clear_all_search = memnew(Button);
 	clear_all_search->set_text(TTR("Clear All"));
-	clear_all_search->connect("pressed", callable_mp(action_list_search_by_event, &EventListenerLineEdit::clear_event));
-	clear_all_search->connect("pressed", callable_mp(action_list_search, &LineEdit::clear));
+	clear_all_search->set_tooltip_text(TTR("Clear all search filters."));
+	clear_all_search->connect(SceneStringName(pressed), callable_mp(action_list_search_by_event, &EventListenerLineEdit::clear_event));
+	clear_all_search->connect(SceneStringName(pressed), callable_mp(action_list_search, &LineEdit::clear));
 	top_hbox->add_child(clear_all_search);
 
 	// Adding Action line edit + button
@@ -571,7 +574,7 @@ ActionMapEditor::ActionMapEditor() {
 
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
-	add_button->connect("pressed", callable_mp(this, &ActionMapEditor::_add_action_pressed));
+	add_button->connect(SceneStringName(pressed), callable_mp(this, &ActionMapEditor::_add_action_pressed));
 	add_hbox->add_child(add_button);
 	// Disable the button and set its tooltip.
 	_add_edit_text_changed(add_edit->get_text());

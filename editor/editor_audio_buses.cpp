@@ -87,9 +87,14 @@ void EditorAudioBus::_notification(int p_what) {
 
 			disabled_vu = get_editor_theme_icon(SNAME("BusVuFrozen"));
 
-			Color solo_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.89, 0.22) : Color(1.0, 0.92, 0.44);
-			Color mute_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.16, 0.16) : Color(1.0, 0.44, 0.44);
-			Color bypass_color = EditorThemeManager::is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(0.44, 0.87, 1.0);
+			Color solo_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.89, 0.22) : Color(1.9, 1.74, 0.83);
+			Color mute_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.16, 0.16) : Color(2.35, 1.03, 1.03);
+			Color bypass_color = EditorThemeManager::is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(1.03, 2.04, 2.35);
+			float darkening_factor = EditorThemeManager::is_dark_theme() ? 0.15 : 0.65;
+
+			Ref<StyleBoxFlat>(solo->get_theme_stylebox(SceneStringName(pressed)))->set_border_color(solo_color.darkened(darkening_factor));
+			Ref<StyleBoxFlat>(mute->get_theme_stylebox(SceneStringName(pressed)))->set_border_color(mute_color.darkened(darkening_factor));
+			Ref<StyleBoxFlat>(bypass->get_theme_stylebox(SceneStringName(pressed)))->set_border_color(bypass_color.darkened(darkening_factor));
 
 			solo->set_icon(get_editor_theme_icon(SNAME("AudioBusSolo")));
 			solo->add_theme_color_override("icon_pressed_color", solo_color);
@@ -800,7 +805,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 	track_name = memnew(LineEdit);
 	track_name->connect("text_submitted", callable_mp(this, &EditorAudioBus::_name_changed));
-	track_name->connect("focus_exited", callable_mp(this, &EditorAudioBus::_name_focus_exit));
+	track_name->connect(SceneStringName(focus_exited), callable_mp(this, &EditorAudioBus::_name_focus_exit));
 	vb->add_child(track_name);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -810,21 +815,21 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	solo->set_toggle_mode(true);
 	solo->set_tooltip_text(TTR("Solo"));
 	solo->set_focus_mode(FOCUS_NONE);
-	solo->connect("pressed", callable_mp(this, &EditorAudioBus::_solo_toggled));
+	solo->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBus::_solo_toggled));
 	hbc->add_child(solo);
 	mute = memnew(Button);
 	mute->set_theme_type_variation("FlatButton");
 	mute->set_toggle_mode(true);
 	mute->set_tooltip_text(TTR("Mute"));
 	mute->set_focus_mode(FOCUS_NONE);
-	mute->connect("pressed", callable_mp(this, &EditorAudioBus::_mute_toggled));
+	mute->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBus::_mute_toggled));
 	hbc->add_child(mute);
 	bypass = memnew(Button);
 	bypass->set_theme_type_variation("FlatButton");
 	bypass->set_toggle_mode(true);
 	bypass->set_tooltip_text(TTR("Bypass"));
 	bypass->set_focus_mode(FOCUS_NONE);
-	bypass->connect("pressed", callable_mp(this, &EditorAudioBus::_bypass_toggled));
+	bypass->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBus::_bypass_toggled));
 	hbc->add_child(bypass);
 	hbc->add_spacer();
 
@@ -835,7 +840,13 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		child->add_theme_style_override("normal", sbempty);
 		child->add_theme_style_override("hover", sbempty);
 		child->add_theme_style_override("focus", sbempty);
-		child->add_theme_style_override("pressed", sbempty);
+
+		Ref<StyleBoxFlat> sbflat = memnew(StyleBoxFlat);
+		sbflat->set_content_margin_all(0);
+		sbflat->set_bg_color(Color(1, 1, 1, 0));
+		sbflat->set_border_width(Side::SIDE_BOTTOM, Math::round(3 * EDSCALE));
+		child->add_theme_style_override(SceneStringName(pressed), sbflat);
+
 		child->end_bulk_theme_override();
 	}
 
@@ -915,14 +926,14 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	vb->add_child(effects);
 	effects->connect("item_edited", callable_mp(this, &EditorAudioBus::_effect_edited));
 	effects->connect("cell_selected", callable_mp(this, &EditorAudioBus::_effect_selected));
-	effects->connect("focus_exited", callable_mp(effects, &Tree::deselect_all));
+	effects->connect(SceneStringName(focus_exited), callable_mp(effects, &Tree::deselect_all));
 	effects->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	SET_DRAG_FORWARDING_GCD(effects, EditorAudioBus);
 	effects->connect("item_mouse_selected", callable_mp(this, &EditorAudioBus::_effect_rmb));
 	effects->set_allow_rmb_select(true);
 	effects->set_focus_mode(FOCUS_CLICK);
 	effects->set_allow_reselect(true);
-	effects->connect("gui_input", callable_mp(this, &EditorAudioBus::_effects_gui_input));
+	effects->connect(SceneStringName(gui_input), callable_mp(this, &EditorAudioBus::_effects_gui_input));
 
 	send = memnew(OptionButton);
 	send->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -971,7 +982,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 void EditorAudioBusDrop::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			draw_style_box(get_theme_stylebox(SNAME("normal"), SNAME("Button")), Rect2(Vector2(), get_size()));
+			draw_style_box(get_theme_stylebox(CoreStringName(normal), SNAME("Button")), Rect2(Vector2(), get_size()));
 
 			if (hovering_drop) {
 				Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
@@ -1302,7 +1313,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb->add_child(add);
 	add->set_text(TTR("Add Bus"));
 	add->set_tooltip_text(TTR("Add a new Audio Bus to this layout."));
-	add->connect("pressed", callable_mp(this, &EditorAudioBuses::_add_bus));
+	add->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_add_bus));
 
 	VSeparator *separator = memnew(VSeparator);
 	top_hb->add_child(separator);
@@ -1311,25 +1322,25 @@ EditorAudioBuses::EditorAudioBuses() {
 	load->set_text(TTR("Load"));
 	load->set_tooltip_text(TTR("Load an existing Bus Layout."));
 	top_hb->add_child(load);
-	load->connect("pressed", callable_mp(this, &EditorAudioBuses::_load_layout));
+	load->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_load_layout));
 
 	save_as = memnew(Button);
 	save_as->set_text(TTR("Save As"));
 	save_as->set_tooltip_text(TTR("Save this Bus Layout to a file."));
 	top_hb->add_child(save_as);
-	save_as->connect("pressed", callable_mp(this, &EditorAudioBuses::_save_as_layout));
+	save_as->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_save_as_layout));
 
 	_default = memnew(Button);
 	_default->set_text(TTR("Load Default"));
 	_default->set_tooltip_text(TTR("Load the default Bus Layout."));
 	top_hb->add_child(_default);
-	_default->connect("pressed", callable_mp(this, &EditorAudioBuses::_load_default_layout));
+	_default->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_load_default_layout));
 
 	_new = memnew(Button);
 	_new->set_text(TTR("Create"));
 	_new->set_tooltip_text(TTR("Create a new Bus Layout."));
 	top_hb->add_child(_new);
-	_new->connect("pressed", callable_mp(this, &EditorAudioBuses::_new_layout));
+	_new->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBuses::_new_layout));
 
 	bus_scroll = memnew(ScrollContainer);
 	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1415,9 +1426,9 @@ Size2 EditorAudioMeterNotches::get_minimum_size() const {
 	float width = 0;
 	float height = top_padding + btm_padding;
 
-	for (int i = 0; i < notches.size(); i++) {
-		if (notches[i].render_db_value) {
-			width = MAX(width, font->get_string_size(String::num(Math::abs(notches[i].db_value)) + "dB", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
+	for (const EditorAudioMeterNotches::AudioNotch &notch : notches) {
+		if (notch.render_db_value) {
+			width = MAX(width, font->get_string_size(String::num(Math::abs(notch.db_value)) + "dB", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
 			height += font_height;
 		}
 	}
@@ -1451,8 +1462,7 @@ void EditorAudioMeterNotches::_notification(int p_what) {
 void EditorAudioMeterNotches::_draw_audio_notches() {
 	float font_height = theme_cache.font->get_height(theme_cache.font_size);
 
-	for (int i = 0; i < notches.size(); i++) {
-		AudioNotch n = notches[i];
+	for (const AudioNotch &n : notches) {
 		draw_line(Vector2(0, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
 				Vector2(line_length * EDSCALE, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
 				theme_cache.notch_color,

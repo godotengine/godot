@@ -55,7 +55,6 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/world_2d.h"
-#include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
@@ -728,13 +727,6 @@ bool SceneTree::is_quit_on_go_back() const {
 void SceneTree::set_quit_on_go_back(bool p_enable) {
 	quit_on_go_back = p_enable;
 }
-
-#ifdef TOOLS_ENABLED
-
-bool SceneTree::is_node_being_edited(const Node *p_node) const {
-	return Engine::get_singleton()->is_editor_hint() && edited_scene_root && (edited_scene_root->is_ancestor_of(p_node) || edited_scene_root == p_node);
-}
-#endif
 
 #ifdef DEBUG_ENABLED
 void SceneTree::set_debug_collisions_hint(bool p_enabled) {
@@ -1883,7 +1875,7 @@ SceneTree::SceneTree() {
 
 	root->connect("close_requested", callable_mp(this, &SceneTree::_main_window_close));
 	root->connect("go_back_requested", callable_mp(this, &SceneTree::_main_window_go_back));
-	root->connect("focus_entered", callable_mp(this, &SceneTree::_main_window_focus_in));
+	root->connect(SceneStringName(focus_entered), callable_mp(this, &SceneTree::_main_window_focus_in));
 
 #ifdef TOOLS_ENABLED
 	edited_scene_root = nullptr;

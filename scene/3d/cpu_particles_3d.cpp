@@ -37,7 +37,6 @@
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/particle_process_material.h"
-#include "scene/scene_string_names.h"
 
 AABB CPUParticles3D::get_aabb() const {
 	return AABB();
@@ -880,7 +879,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 				} break;
 				case EMISSION_SHAPE_RING: {
 					real_t ring_random_angle = Math::randf() * Math_TAU;
-					real_t ring_random_radius = Math::randf() * (emission_ring_radius - emission_ring_inner_radius) + emission_ring_inner_radius;
+					real_t ring_random_radius = Math::sqrt(Math::randf() * (emission_ring_radius * emission_ring_radius - emission_ring_inner_radius * emission_ring_inner_radius) + emission_ring_inner_radius * emission_ring_inner_radius);
 					Vector3 axis = emission_ring_axis == Vector3(0.0, 0.0, 0.0) ? Vector3(0.0, 0.0, 1.0) : emission_ring_axis.normalized();
 					Vector3 ortho_axis;
 					if (axis.abs() == Vector3(1.0, 0.0, 0.0)) {
@@ -1125,7 +1124,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 			//turn particle by rotation in Y
 			if (particle_flags[PARTICLE_FLAG_ROTATE_Y]) {
 				Basis rot_y(Vector3(0, 1, 0), p.custom[0]);
-				p.transform.basis = p.transform.basis * rot_y;
+				p.transform.basis = rot_y;
 			}
 		}
 
@@ -1156,7 +1155,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 	}
 	if (!Math::is_equal_approx(time, 0.0) && active && !should_be_active) {
 		active = false;
-		emit_signal(SceneStringNames::get_singleton()->finished);
+		emit_signal(SceneStringName(finished));
 	}
 }
 

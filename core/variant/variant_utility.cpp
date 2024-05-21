@@ -30,7 +30,6 @@
 
 #include "variant_utility.h"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "core/object/ref_counted.h"
 #include "core/os/os.h"
@@ -917,6 +916,8 @@ Variant VariantUtilityFunctions::type_convert(const Variant &p_variant, const Va
 			return p_variant.operator PackedVector3Array();
 		case Variant::Type::PACKED_COLOR_ARRAY:
 			return p_variant.operator PackedColorArray();
+		case Variant::Type::PACKED_VECTOR4_ARRAY:
+			return p_variant.operator PackedVector4Array();
 		case Variant::Type::VARIANT_MAX:
 			ERR_PRINT("Invalid type argument to type_convert(), use the TYPE_* constants. Returning the unconverted Variant.");
 	}

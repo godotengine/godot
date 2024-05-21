@@ -242,16 +242,20 @@ ResourceLoader::LoadToken::~LoadToken() {
 }
 
 Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
+	const String &original_path = p_original_path.is_empty() ? p_path : p_original_path;
 	load_nesting++;
 	if (load_paths_stack->size()) {
 		thread_load_mutex.lock();
-		HashMap<String, ThreadLoadTask>::Iterator E = thread_load_tasks.find(load_paths_stack->get(load_paths_stack->size() - 1));
-		if (E) {
+		const String &parent_task_path = load_paths_stack->get(load_paths_stack->size() - 1);
+		HashMap<String, ThreadLoadTask>::Iterator E = thread_load_tasks.find(parent_task_path);
+		// Avoid double-tracking, for progress reporting, resources that boil down to a remapped path containing the real payload (e.g., imported resources).
+		bool is_remapped_load = original_path == parent_task_path;
+		if (E && !is_remapped_load) {
 			E->value.sub_tasks.insert(p_original_path);
 		}
 		thread_load_mutex.unlock();
 	}
-	load_paths_stack->push_back(p_original_path);
+	load_paths_stack->push_back(original_path);
 
 	// Try all loaders and pick the first match for the type hint
 	bool found = false;
@@ -261,7 +265,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 			continue;
 		}
 		found = true;
-		res = loader[i]->load(p_path, !p_original_path.is_empty() ? p_original_path : p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
+		res = loader[i]->load(p_path, original_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
 		if (!res.is_null()) {
 			break;
 		}

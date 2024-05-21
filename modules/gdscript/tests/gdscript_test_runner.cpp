@@ -38,7 +38,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_globals.h"
-#include "core/core_string_names.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/os.h"
@@ -573,7 +572,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
 		if (!errors.is_empty()) {
 			// Only the first error since the following might be cascading.
-			result.output += errors[0].message + "\n"; // TODO: line, column?
+			result.output += errors.front()->get().message + "\n"; // TODO: line, column?
 		}
 		if (!p_is_generating) {
 			result.passed = check_output(result.output);
@@ -592,7 +591,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
 		if (!errors.is_empty()) {
 			// Only the first error since the following might be cascading.
-			result.output += errors[0].message + "\n"; // TODO: line, column?
+			result.output += errors.front()->get().message + "\n"; // TODO: line, column?
 		}
 		if (!p_is_generating) {
 			result.passed = check_output(result.output);

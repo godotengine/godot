@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-EnsureSConsVersion(3, 0, 0)
+EnsureSConsVersion(3, 1, 2)
 EnsurePythonVersion(3, 6)
 
 # System
@@ -14,6 +14,7 @@ from types import ModuleType
 from collections import OrderedDict
 from importlib.util import spec_from_file_location, module_from_spec
 from SCons import __version__ as scons_raw_version
+
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
@@ -50,18 +51,36 @@ _helper_module("platform_methods", "platform_methods.py")
 _helper_module("version", "version.py")
 _helper_module("core.core_builders", "core/core_builders.py")
 _helper_module("main.main_builders", "main/main_builders.py")
-_helper_module("modules.modules_builders", "modules/modules_builders.py")
 
 # Local
 import methods
 import glsl_builders
 import gles3_builders
 import scu_builders
-from platform_methods import architectures, architecture_aliases, generate_export_icons
+from methods import print_warning, print_error
+from platform_methods import architectures, architecture_aliases
 
 if ARGUMENTS.get("target", "editor") == "editor":
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
     _helper_module("editor.template_builders", "editor/template_builders.py")
+
+# Enable ANSI escape code support on Windows 10 and later (for colored console output).
+# <https://github.com/python/cpython/issues/73245>
+if sys.stdout.isatty() and sys.platform == "win32":
+    try:
+        from ctypes import windll, byref, WinError  # type: ignore
+        from ctypes.wintypes import DWORD  # type: ignore
+
+        stdout_handle = windll.kernel32.GetStdHandle(DWORD(-11))
+        mode = DWORD(0)
+        if not windll.kernel32.GetConsoleMode(stdout_handle, byref(mode)):
+            raise WinError()
+        mode = DWORD(mode.value | 4)
+        if not windll.kernel32.SetConsoleMode(stdout_handle, mode):
+            raise WinError()
+    except Exception as e:
+        methods._colorize = False
+        print_error(f"Failed to enable ANSI escape code support, disabling color output.\n{e}")
 
 # Scan possible build platforms
 
@@ -95,7 +114,6 @@ for x in sorted(glob.glob("platform/*")):
 
     if os.path.exists(x + "/export/export.cpp"):
         platform_exporters.append(platform_name)
-        generate_export_icons(x, platform_name)
     if os.path.exists(x + "/api/api.cpp"):
         platform_apis.append(platform_name)
     if detect.can_build():
@@ -277,6 +295,9 @@ opts.Add("ccflags", "Custom flags for both the C and C++ compilers")
 opts.Add("cxxflags", "Custom flags for the C++ compiler")
 opts.Add("cflags", "Custom flags for the C compiler")
 opts.Add("linkflags", "Custom flags for the linker")
+opts.Add("asflags", "Custom flags for the assembler")
+opts.Add("arflags", "Custom flags for the archive tool")
+opts.Add("rcflags", "Custom flags for Windows resource compiler")
 
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
@@ -290,12 +311,10 @@ if env["import_env_vars"]:
 
 # Platform selection: validate input, and add options.
 
-selected_platform = env["platform"]
+if env.scons_version < (4, 3) and not env["platform"]:
+    env["platform"] = env["p"]
 
-if env.scons_version < (4, 3) and not selected_platform:
-    selected_platform = env["p"]
-
-if selected_platform == "":
+if env["platform"] == "":
     # Missing `platform` argument, try to detect platform automatically
     if (
         sys.platform.startswith("linux")
@@ -304,59 +323,57 @@ if selected_platform == "":
         or sys.platform.startswith("netbsd")
         or sys.platform.startswith("openbsd")
     ):
-        selected_platform = "linuxbsd"
+        env["platform"] = "linuxbsd"
     elif sys.platform == "darwin":
-        selected_platform = "macos"
+        env["platform"] = "macos"
     elif sys.platform == "win32":
-        selected_platform = "windows"
+        env["platform"] = "windows"
 
-    if selected_platform != "":
-        print("Automatically detected platform: " + selected_platform)
+    if env["platform"] != "":
+        print(f'Automatically detected platform: {env["platform"]}')
 
-if selected_platform == "osx":
+if env["platform"] == "osx":
     # Deprecated alias kept for compatibility.
-    print('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
-    selected_platform = "macos"
+    print_warning('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
+    env["platform"] = "macos"
 
-if selected_platform == "iphone":
+if env["platform"] == "iphone":
     # Deprecated alias kept for compatibility.
-    print('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
-    selected_platform = "ios"
+    print_warning('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
+    env["platform"] = "ios"
 
-if selected_platform in ["linux", "bsd", "x11"]:
-    if selected_platform == "x11":
+if env["platform"] in ["linux", "bsd", "x11"]:
+    if env["platform"] == "x11":
         # Deprecated alias kept for compatibility.
-        print('Platform "x11" has been renamed to "linuxbsd" in Godot 4. Building for platform "linuxbsd".')
+        print_warning('Platform "x11" has been renamed to "linuxbsd" in Godot 4. Building for platform "linuxbsd".')
     # Alias for convenience.
-    selected_platform = "linuxbsd"
+    env["platform"] = "linuxbsd"
 
-if selected_platform == "javascript":
+if env["platform"] == "javascript":
     # Deprecated alias kept for compatibility.
-    print('Platform "javascript" has been renamed to "web" in Godot 4. Building for platform "web".')
-    selected_platform = "web"
+    print_warning('Platform "javascript" has been renamed to "web" in Godot 4. Building for platform "web".')
+    env["platform"] = "web"
 
-if selected_platform not in platform_list:
-    if selected_platform == "":
-        print("Could not detect platform automatically.")
-    elif selected_platform != "list":
-        print(f'Invalid target platform "{selected_platform}".')
+if env["platform"] not in platform_list:
+    text = "The following platforms are available:\n\t{}\n".format("\n\t".join(platform_list))
+    text += "Please run SCons again and select a valid platform: platform=<string>."
 
-    print("The following platforms are available:\n\t{}\n".format("\n\t".join(platform_list)))
-    print("Please run SCons again and select a valid platform: platform=<string>.")
-    Exit(0 if selected_platform == "list" else 255)
+    if env["platform"] == "list":
+        print(text)
+    elif env["platform"] == "":
+        print_error("Could not detect platform automatically.\n" + text)
+    else:
+        print_error(f'Invalid target platform "{env["platform"]}".\n' + text)
 
-# Make sure to update this to the found, valid platform as it's used through the buildsystem as the reference.
-# It should always be re-set after calling `opts.Update()` otherwise it uses the original input value.
-env["platform"] = selected_platform
+    Exit(0 if env["platform"] == "list" else 255)
 
 # Add platform-specific options.
-if selected_platform in platform_opts:
-    for opt in platform_opts[selected_platform]:
+if env["platform"] in platform_opts:
+    for opt in platform_opts[env["platform"]]:
         opts.Add(opt)
 
 # Update the environment to take platform-specific options into account.
-opts.Update(env)
-env["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
+opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
 
 # Detect modules.
 modules_detected = OrderedDict()
@@ -368,7 +385,7 @@ if env["custom_modules"]:
         try:
             module_search_paths.append(methods.convert_custom_modules_path(p))
         except ValueError as e:
-            print(e)
+            print_error(e)
             Exit(255)
 
 for path in module_search_paths:
@@ -405,7 +422,7 @@ for name, path in modules_detected.items():
 
     # Add module-specific options.
     try:
-        for opt in config.get_opts(selected_platform):
+        for opt in config.get_opts(env["platform"]):
             opts.Add(opt)
     except AttributeError:
         pass
@@ -413,11 +430,10 @@ for name, path in modules_detected.items():
     sys.path.remove(path)
     sys.modules.pop("config")
 
-methods.write_modules(modules_detected)
+env.modules_detected = modules_detected
 
 # Update the environment again after all the module options are added.
-opts.Update(env)
-env["platform"] = selected_platform  # Must always be re-set after calling opts.Update().
+opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
 Help(opts.GenerateHelpText(env))
 
 # add default include paths
@@ -479,14 +495,15 @@ if methods.get_cmdline_bool("fast_unsafe", env.dev_build):
 if env["use_precise_math_checks"]:
     env.Append(CPPDEFINES=["PRECISE_MATH_CHECKS"])
 
-if env.editor_build and env["engine_update_check"]:
-    env.Append(CPPDEFINES=["ENGINE_UPDATE_CHECK_ENABLED"])
+if env.editor_build:
+    if env["engine_update_check"]:
+        env.Append(CPPDEFINES=["ENGINE_UPDATE_CHECK_ENABLED"])
 
-if not env.File("#main/splash_editor.png").exists():
-    # Force disabling editor splash if missing.
-    env["no_editor_splash"] = True
-if env["no_editor_splash"]:
-    env.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
+    if not env.File("#main/splash_editor.png").exists():
+        # Force disabling editor splash if missing.
+        env["no_editor_splash"] = True
+    if env["no_editor_splash"]:
+        env.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
 
 if not env["deprecated"]:
     env.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
@@ -494,7 +511,7 @@ if not env["deprecated"]:
 if env["precision"] == "double":
     env.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
 
-tmppath = "./platform/" + selected_platform
+tmppath = "./platform/" + env["platform"]
 sys.path.insert(0, tmppath)
 import detect
 
@@ -507,7 +524,7 @@ env.SetOption("num_jobs", altered_num_jobs)
 if env.GetOption("num_jobs") == altered_num_jobs:
     cpu_count = os.cpu_count()
     if cpu_count is None:
-        print("Couldn't auto-detect CPU count to configure build parallelism. Specify it with the -j argument.")
+        print_warning("Couldn't auto-detect CPU count to configure build parallelism. Specify it with the -j argument.")
     else:
         safer_cpu_count = cpu_count if cpu_count <= 4 else cpu_count - 1
         print(
@@ -527,29 +544,31 @@ env.Append(CCFLAGS=env.get("ccflags", "").split())
 env.Append(CXXFLAGS=env.get("cxxflags", "").split())
 env.Append(CFLAGS=env.get("cflags", "").split())
 env.Append(LINKFLAGS=env.get("linkflags", "").split())
+env.Append(ASFLAGS=env.get("asflags", "").split())
+env.Append(ARFLAGS=env.get("arflags", "").split())
+env.Append(RCFLAGS=env.get("rcflags", "").split())
 
 # Feature build profile
-disabled_classes = []
+env.disabled_classes = []
 if env["build_profile"] != "":
-    print("Using feature build profile: " + env["build_profile"])
+    print('Using feature build profile: "{}"'.format(env["build_profile"]))
     import json
 
     try:
         ft = json.load(open(env["build_profile"]))
         if "disabled_classes" in ft:
-            disabled_classes = ft["disabled_classes"]
+            env.disabled_classes = ft["disabled_classes"]
         if "disabled_build_options" in ft:
             dbo = ft["disabled_build_options"]
             for c in dbo:
                 env[c] = dbo[c]
     except:
-        print("Error opening feature build profile: " + env["build_profile"])
+        print_error('Failed to open feature build profile: "{}"'.format(env["build_profile"]))
         Exit(255)
-methods.write_disabled_classes(disabled_classes)
 
 # Platform specific flags.
 # These can sometimes override default options.
-flag_list = platform_flags[selected_platform]
+flag_list = platform_flags[env["platform"]]
 for f in flag_list:
     if not (f[0] in ARGUMENTS) or ARGUMENTS[f[0]] == "auto":  # Allow command line to override platform flags
         env[f[0]] = f[1]
@@ -586,7 +605,7 @@ if env["scu_build"]:
 # are actually handled to change compile options, etc.
 detect.configure(env)
 
-print(f'Building for platform "{selected_platform}", architecture "{env["arch"]}", target "{env["target"]}".')
+print(f'Building for platform "{env["platform"]}", architecture "{env["arch"]}", target "{env["target"]}".')
 if env.dev_build:
     print("NOTE: Developer build, with debug optimization level and debug symbols (unless overridden).")
 
@@ -605,30 +624,20 @@ cc_version_metadata1 = cc_version["metadata1"] or ""
 
 if methods.using_gcc(env):
     if cc_version_major == -1:
-        print(
+        print_warning(
             "Couldn't detect compiler version, skipping version checks. "
             "Build may fail if the compiler doesn't support C++17 fully."
         )
-    # GCC 8 before 8.4 has a regression in the support of guaranteed copy elision
-    # which causes a build failure: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86521
-    elif cc_version_major == 8 and cc_version_minor < 4:
-        print(
-            "Detected GCC 8 version < 8.4, which is not supported due to a "
-            "regression in its C++17 guaranteed copy elision support. Use a "
-            'newer GCC version, or Clang 6 or later by passing "use_llvm=yes" '
-            "to the SCons command line."
-        )
-        Exit(255)
-    elif cc_version_major < 7:
-        print(
-            "Detected GCC version older than 7, which does not fully support "
-            "C++17. Supported versions are GCC 7, 9 and later. Use a newer GCC "
-            'version, or Clang 6 or later by passing "use_llvm=yes" to the '
-            "SCons command line."
+    elif cc_version_major < 9:
+        print_error(
+            "Detected GCC version older than 9, which does not fully support "
+            "C++17, or has bugs when compiling Godot. Supported versions are 9 "
+            "and later. Use a newer GCC version, or Clang 6 or later by passing "
+            '"use_llvm=yes" to the SCons command line.'
         )
         Exit(255)
     elif cc_version_metadata1 == "win32":
-        print(
+        print_error(
             "Detected mingw version is not using posix threads. Only posix "
             "version of mingw is supported. "
             'Use "update-alternatives --config x86_64-w64-mingw32-g++" '
@@ -636,11 +645,11 @@ if methods.using_gcc(env):
         )
         Exit(255)
     if env["debug_paths_relative"] and cc_version_major < 8:
-        print("GCC < 8 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+        print_warning("GCC < 8 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
         env["debug_paths_relative"] = False
 elif methods.using_clang(env):
     if cc_version_major == -1:
-        print(
+        print_warning(
             "Couldn't detect compiler version, skipping version checks. "
             "Build may fail if the compiler doesn't support C++17 fully."
         )
@@ -649,28 +658,30 @@ elif methods.using_clang(env):
     elif env["platform"] == "macos" or env["platform"] == "ios":
         vanilla = methods.is_vanilla_clang(env)
         if vanilla and cc_version_major < 6:
-            print(
+            print_warning(
                 "Detected Clang version older than 6, which does not fully support "
                 "C++17. Supported versions are Clang 6 and later."
             )
             Exit(255)
         elif not vanilla and cc_version_major < 10:
-            print(
+            print_error(
                 "Detected Apple Clang version older than 10, which does not fully "
                 "support C++17. Supported versions are Apple Clang 10 and later."
             )
             Exit(255)
         if env["debug_paths_relative"] and not vanilla and cc_version_major < 12:
-            print("Apple Clang < 12 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+            print_warning(
+                "Apple Clang < 12 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option."
+            )
             env["debug_paths_relative"] = False
     elif cc_version_major < 6:
-        print(
+        print_error(
             "Detected Clang version older than 6, which does not fully support "
             "C++17. Supported versions are Clang 6 and later."
         )
         Exit(255)
     if env["debug_paths_relative"] and cc_version_major < 10:
-        print("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+        print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
         env["debug_paths_relative"] = False
 
 # Set optimize and debug_symbols flags.
@@ -840,7 +851,7 @@ else:  # GCC, Clang
 if hasattr(detect, "get_program_suffix"):
     suffix = "." + detect.get_program_suffix()
 else:
-    suffix = "." + selected_platform
+    suffix = "." + env["platform"]
 
 suffix += "." + env["target"]
 if env.dev_build:
@@ -871,7 +882,7 @@ for name, path in modules_detected.items():
     env.current_module = name
     import config
 
-    if config.can_build(env, selected_platform):
+    if config.can_build(env, env["platform"]):
         # Disable it if a required dependency is missing.
         if not env.module_check_dependencies(name):
             continue
@@ -906,10 +917,10 @@ if env.editor_build:
 
     # And check if they are met.
     if not env.module_check_dependencies("editor"):
-        print("Not all modules required by editor builds are enabled.")
+        print_error("Not all modules required by editor builds are enabled.")
         Exit(255)
 
-methods.generate_version_header(env.module_version_string)
+env.version_info = methods.get_version_info(env.module_version_string)
 
 env["PROGSUFFIX_WRAP"] = suffix + env.module_version_string + ".console" + env["PROGSUFFIX"]
 env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
@@ -932,14 +943,14 @@ env["SHOBJPREFIX"] = env["object_prefix"]
 
 if env["disable_3d"]:
     if env.editor_build:
-        print("Build option 'disable_3d=yes' cannot be used for editor builds, only for export template builds.")
+        print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
         Exit(255)
     else:
         env.Append(CPPDEFINES=["_3D_DISABLED"])
 if env["disable_advanced_gui"]:
     if env.editor_build:
-        print(
-            "Build option 'disable_advanced_gui=yes' cannot be used for editor builds, "
+        print_error(
+            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, "
             "only for export template builds."
         )
         Exit(255)
@@ -951,7 +962,7 @@ if env["brotli"]:
     env.Append(CPPDEFINES=["BROTLI_ENABLED"])
 
 if not env["verbose"]:
-    methods.no_verbose(sys, env)
+    methods.no_verbose(env)
 
 GLSL_BUILDERS = {
     "RD_GLSL": env.Builder(
@@ -983,7 +994,7 @@ if env["vsproj"]:
 
 if env["compiledb"] and env.scons_version < (4, 0, 0):
     # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-    print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
+    print_error("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
     Exit(255)
 if env.scons_version >= (4, 0, 0):
     env.Tool("compilation_db")
@@ -991,7 +1002,7 @@ if env.scons_version >= (4, 0, 0):
 
 if env["ninja"]:
     if env.scons_version < (4, 2, 0):
-        print("The `ninja=yes` option requires SCons 4.2 or later, but your version is %s." % scons_raw_version)
+        print_error("The `ninja=yes` option requires SCons 4.2 or later, but your version is %s." % scons_raw_version)
         Exit(255)
 
     SetOption("experimental", "ninja")
@@ -1023,7 +1034,7 @@ if env["tests"]:
     SConscript("tests/SCsub")
 SConscript("main/SCsub")
 
-SConscript("platform/" + selected_platform + "/SCsub")  # Build selected platform.
+SConscript("platform/" + env["platform"] + "/SCsub")  # Build selected platform.
 
 # Microsoft Visual Studio Project Generation
 if env["vsproj"]:
@@ -1048,9 +1059,16 @@ methods.dump(env)
 
 
 def print_elapsed_time():
-    elapsed_time_sec = round(time.time() - time_at_start, 3)
-    time_ms = round((elapsed_time_sec % 1) * 1000)
-    print("[Time elapsed: {}.{:03}]".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)), time_ms))
+    elapsed_time_sec = round(time.time() - time_at_start, 2)
+    time_centiseconds = round((elapsed_time_sec % 1) * 100)
+    print(
+        "{}[Time elapsed: {}.{:02}]{}".format(
+            methods.ANSI.GRAY,
+            time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)),
+            time_centiseconds,
+            methods.ANSI.RESET,
+        )
+    )
 
 
 atexit.register(print_elapsed_time)

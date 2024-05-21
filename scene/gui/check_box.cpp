@@ -34,7 +34,6 @@
 #include "servers/rendering_server.h"
 
 Size2 CheckBox::get_icon_size() const {
-
 	Size2 tex_size = Size2(0, 0);
 	if (!theme_cache.checked.is_null()) {
 		tex_size = theme_cache.checked->get_size();
@@ -60,23 +59,14 @@ Size2 CheckBox::get_icon_size() const {
 	if (!theme_cache.radio_unchecked_disabled.is_null()) {
 		tex_size = tex_size.max(theme_cache.radio_unchecked_disabled->get_size());
 	}
-
-	float texture_scale = 1.0;
-
-	if (!theme_cache.normal_style.is_null()) {
-		float computed_checkbox_height = get_size().height - (theme_cache.normal_style->get_margin(SIDE_TOP) + theme_cache.normal_style->get_margin(SIDE_BOTTOM));
-
-		texture_scale = (tex_size.height > 0) ? MIN(1.0, computed_checkbox_height / tex_size.height) : 1.0;
-	}
-
-	return tex_size * texture_scale;
+	return _fit_icon_size(tex_size);
 }
 
 Size2 CheckBox::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();
 	const Size2 tex_size = get_icon_size();
 	if (tex_size.width > 0 || tex_size.height > 0) {
-		const Size2 padding = _get_current_stylebox()->get_minimum_size();
+		const Size2 padding = _get_largest_stylebox_size();
 		Size2 content_size = minsize - padding;
 		if (content_size.width > 0 && tex_size.width > 0) {
 			content_size.width += MAX(0, theme_cache.h_separation);
@@ -107,48 +97,39 @@ void CheckBox::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 
-			Ref<Texture2D> on_texture;
-			Ref<Texture2D> off_texture;
+			Ref<Texture2D> on_tex;
+			Ref<Texture2D> off_tex;
 
 			if (is_radio()) {
 				if (is_disabled()) {
-					on_texture = theme_cache.radio_checked_disabled;
-					off_texture = theme_cache.radio_unchecked_disabled;
+					on_tex = theme_cache.radio_checked_disabled;
+					off_tex = theme_cache.radio_unchecked_disabled;
 				} else {
-					on_texture = theme_cache.radio_checked;
-					off_texture = theme_cache.radio_unchecked;
+					on_tex = theme_cache.radio_checked;
+					off_tex = theme_cache.radio_unchecked;
 				}
 			} else {
 				if (is_disabled()) {
-					on_texture = theme_cache.checked_disabled;
-					off_texture = theme_cache.unchecked_disabled;
+					on_tex = theme_cache.checked_disabled;
+					off_tex = theme_cache.unchecked_disabled;
 				} else {
-					on_texture = theme_cache.checked;
-					off_texture = theme_cache.unchecked;
+					on_tex = theme_cache.checked;
+					off_tex = theme_cache.unchecked;
 				}
 			}
 
-			Vector2 offset;
-			float computed_checkbox_height = get_size().height - (theme_cache.normal_style->get_margin(SIDE_TOP) + theme_cache.normal_style->get_margin(SIDE_BOTTOM));
-
+			Vector2 ofs;
 			if (is_layout_rtl()) {
-				offset.x = get_size().x - theme_cache.normal_style->get_margin(SIDE_RIGHT) - get_icon_size().width;
+				ofs.x = get_size().x - theme_cache.normal_style->get_margin(SIDE_RIGHT) - get_icon_size().width;
 			} else {
-				offset.x = theme_cache.normal_style->get_margin(SIDE_LEFT);
+				ofs.x = theme_cache.normal_style->get_margin(SIDE_LEFT);
 			}
+			ofs.y = int((get_size().height - get_icon_size().height) / 2) + theme_cache.check_v_offset;
 
 			if (is_pressed()) {
-				Size2 texture_size = on_texture->get_size();
-				float texture_scale = MIN(1.0, computed_checkbox_height / texture_size.height);
-
-				offset.y = int((get_size().height - texture_scale * on_texture->get_height()) / 2);
-				on_texture->draw_rect(ci, Rect2(offset, texture_size * texture_scale));
+				on_tex->draw_rect(ci, Rect2(ofs, _fit_icon_size(on_tex->get_size())));
 			} else {
-				Size2 texture_size = off_texture->get_size();
-				float texture_scale = MIN(1.0, computed_checkbox_height / texture_size.height);
-
-				offset.y = int((get_size().height - texture_scale * off_texture->get_height()) / 2);
-				off_texture->draw_rect(ci, Rect2(offset, texture_size * texture_scale));
+				off_tex->draw_rect(ci, Rect2(ofs, _fit_icon_size(off_tex->get_size())));
 			}
 		} break;
 	}

@@ -31,7 +31,7 @@
 #ifndef SHADER_EDITOR_PLUGIN_H
 #define SHADER_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class HSplitContainer;
 class ItemList;

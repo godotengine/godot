@@ -80,8 +80,8 @@ void GroupSettingsEditor::_item_edited() {
 		undo_redo->add_do_property(ProjectSettings::get_singleton(), name, new_description);
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, old_description);
 
-		undo_redo->add_do_method(this, "call_deferred", "update_groups");
-		undo_redo->add_undo_method(this, "call_deferred", "update_groups");
+		undo_redo->add_do_method(this, CoreStringName(call_deferred), "update_groups");
+		undo_redo->add_undo_method(this, CoreStringName(call_deferred), "update_groups");
 
 		undo_redo->add_do_method(this, "emit_signal", group_changed);
 		undo_redo->add_undo_method(this, "emit_signal", group_changed);
@@ -157,8 +157,8 @@ void GroupSettingsEditor::_add_group(const String &p_name, const String &p_descr
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, p_description);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, Variant());
 
-	undo_redo->add_do_method(this, "call_deferred", "update_groups");
-	undo_redo->add_undo_method(this, "call_deferred", "update_groups");
+	undo_redo->add_do_method(this, CoreStringName(call_deferred), "update_groups");
+	undo_redo->add_undo_method(this, CoreStringName(call_deferred), "update_groups");
 
 	undo_redo->add_do_method(this, "emit_signal", group_changed);
 	undo_redo->add_undo_method(this, "emit_signal", group_changed);
@@ -354,8 +354,8 @@ void GroupSettingsEditor::_confirm_rename() {
 		undo_redo->add_undo_method(this, "rename_references", new_name, old_name);
 	}
 
-	undo_redo->add_do_method(this, "call_deferred", "update_groups");
-	undo_redo->add_undo_method(this, "call_deferred", "update_groups");
+	undo_redo->add_do_method(this, CoreStringName(call_deferred), "update_groups");
+	undo_redo->add_undo_method(this, CoreStringName(call_deferred), "update_groups");
 
 	undo_redo->add_do_method(this, "emit_signal", group_changed);
 	undo_redo->add_undo_method(this, "emit_signal", group_changed);
@@ -383,8 +383,8 @@ void GroupSettingsEditor::_confirm_delete() {
 		undo_redo->add_do_method(this, "remove_references", name);
 	}
 
-	undo_redo->add_do_method(this, "call_deferred", "update_groups");
-	undo_redo->add_undo_method(this, "call_deferred", "update_groups");
+	undo_redo->add_do_method(this, CoreStringName(call_deferred), "update_groups");
+	undo_redo->add_undo_method(this, CoreStringName(call_deferred), "update_groups");
 
 	undo_redo->add_do_method(this, "emit_signal", group_changed);
 	undo_redo->add_undo_method(this, "emit_signal", group_changed);
@@ -516,7 +516,7 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
 	add_button->set_disabled(true);
-	add_button->connect("pressed", callable_mp(this, &GroupSettingsEditor::_add_group));
+	add_button->connect(SceneStringName(pressed), callable_mp(this, &GroupSettingsEditor::_add_group));
 	hbc->add_child(add_button);
 
 	tree = memnew(Tree);

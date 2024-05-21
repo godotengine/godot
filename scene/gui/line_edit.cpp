@@ -771,7 +771,7 @@ void LineEdit::_notification(int p_what) {
 	switch (p_what) {
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_ENTER_TREE: {
-			if (Engine::get_singleton()->is_editor_hint() && !get_tree()->is_node_being_edited(this)) {
+			if (Engine::get_singleton()->is_editor_hint() && !is_part_of_edited_scene()) {
 				set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
 				set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
 
@@ -1805,7 +1805,6 @@ void LineEdit::clear_internal() {
 }
 
 Size2 LineEdit::get_minimum_size() const {
-	Ref<StyleBox> style = theme_cache.normal;
 	Ref<Font> font = theme_cache.font;
 	int font_size = theme_cache.font_size;
 
@@ -1834,7 +1833,8 @@ Size2 LineEdit::get_minimum_size() const {
 	}
 	min_size.width += icon_max_width;
 
-	return style->get_minimum_size() + min_size;
+	Size2 style_min_size = theme_cache.normal->get_minimum_size().max(theme_cache.read_only->get_minimum_size());
+	return style_min_size + min_size;
 }
 
 void LineEdit::deselect() {
@@ -2473,8 +2473,8 @@ void LineEdit::_generate_context_menu() {
 	menu_dir->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
 	menu_ctl->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
 
-	menu->connect(SNAME("focus_entered"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
-	menu->connect(SNAME("focus_exited"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
+	menu->connect(SceneStringName(focus_entered), callable_mp(this, &LineEdit::_validate_caret_can_draw));
+	menu->connect(SceneStringName(focus_exited), callable_mp(this, &LineEdit::_validate_caret_can_draw));
 }
 
 void LineEdit::_update_context_menu() {

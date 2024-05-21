@@ -37,7 +37,6 @@
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/world_2d.h"
-#include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 #include "servers/audio_server.h"
 
@@ -81,10 +80,10 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 
 	//check if any area is diverting sound into a bus
 	Ref<World2D> world_2d = get_world_2d();
-	ERR_FAIL_COND_V(world_2d.is_null(), SceneStringNames::get_singleton()->Master);
+	ERR_FAIL_COND_V(world_2d.is_null(), SceneStringName(Master));
 
 	PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
-	ERR_FAIL_NULL_V(space_state, SceneStringNames::get_singleton()->Master);
+	ERR_FAIL_NULL_V(space_state, SceneStringName(Master));
 	PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
 	PhysicsDirectSpaceState2D::PointParameters point_params;

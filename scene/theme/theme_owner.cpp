@@ -69,18 +69,18 @@ bool ThemeOwner::has_owner_node() const {
 void ThemeOwner::set_owner_context(ThemeContext *p_context, bool p_propagate) {
 	ThemeContext *default_context = ThemeDB::get_singleton()->get_default_theme_context();
 
-	if (owner_context && owner_context->is_connected("changed", callable_mp(this, &ThemeOwner::_owner_context_changed))) {
-		owner_context->disconnect("changed", callable_mp(this, &ThemeOwner::_owner_context_changed));
-	} else if (default_context->is_connected("changed", callable_mp(this, &ThemeOwner::_owner_context_changed))) {
-		default_context->disconnect("changed", callable_mp(this, &ThemeOwner::_owner_context_changed));
+	if (owner_context && owner_context->is_connected(CoreStringName(changed), callable_mp(this, &ThemeOwner::_owner_context_changed))) {
+		owner_context->disconnect(CoreStringName(changed), callable_mp(this, &ThemeOwner::_owner_context_changed));
+	} else if (default_context->is_connected(CoreStringName(changed), callable_mp(this, &ThemeOwner::_owner_context_changed))) {
+		default_context->disconnect(CoreStringName(changed), callable_mp(this, &ThemeOwner::_owner_context_changed));
 	}
 
 	owner_context = p_context;
 
 	if (owner_context) {
-		owner_context->connect("changed", callable_mp(this, &ThemeOwner::_owner_context_changed));
+		owner_context->connect(CoreStringName(changed), callable_mp(this, &ThemeOwner::_owner_context_changed));
 	} else {
-		default_context->connect("changed", callable_mp(this, &ThemeOwner::_owner_context_changed));
+		default_context->connect(CoreStringName(changed), callable_mp(this, &ThemeOwner::_owner_context_changed));
 	}
 
 	if (p_propagate) {

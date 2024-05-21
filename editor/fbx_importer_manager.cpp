@@ -153,7 +153,7 @@ FBXImporterManager::FBXImporterManager() {
 	hb->add_child(fbx_path);
 	fbx_path_browse = memnew(Button);
 	fbx_path_browse->set_text(TTR("Browse"));
-	fbx_path_browse->connect("pressed", callable_mp(this, &FBXImporterManager::_browse_install));
+	fbx_path_browse->connect(SceneStringName(pressed), callable_mp(this, &FBXImporterManager::_browse_install));
 	hb->add_child(fbx_path_browse);
 	hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
@@ -168,7 +168,7 @@ FBXImporterManager::FBXImporterManager() {
 	fbx_path->connect("text_changed", callable_mp(this, &FBXImporterManager::_validate_path));
 
 	get_ok_button()->set_text(TTR("Confirm Path"));
-	get_cancel_button()->connect("pressed", callable_mp(this, &FBXImporterManager::_cancel_setup));
+	get_cancel_button()->connect(SceneStringName(pressed), callable_mp(this, &FBXImporterManager::_cancel_setup));
 
 	browse_dialog = memnew(EditorFileDialog);
 	browse_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);

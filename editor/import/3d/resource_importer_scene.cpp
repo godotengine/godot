@@ -326,8 +326,8 @@ void ResourceImporterScene::_pre_fix_global(Node *p_scene, const HashMap<StringN
 		Ref<Animation> reset_anim;
 		for (int i = 0; i < anim_players.size(); i++) {
 			AnimationPlayer *player = cast_to<AnimationPlayer>(anim_players[i]);
-			if (player->has_animation(SNAME("RESET"))) {
-				reset_anim = player->get_animation(SNAME("RESET"));
+			if (player->has_animation(SceneStringName(RESET))) {
+				reset_anim = player->get_animation(SceneStringName(RESET));
 				break;
 			}
 		}
@@ -341,7 +341,7 @@ void ResourceImporterScene::_pre_fix_global(Node *p_scene, const HashMap<StringN
 				anim_library.instantiate();
 				anim_player->add_animation_library(StringName(), anim_library);
 			}
-			anim_library->add_animation(SNAME("RESET"), reset_anim);
+			anim_library->add_animation(SceneStringName(RESET), reset_anim);
 		}
 		TypedArray<Node> skeletons = p_scene->find_children("*", "Skeleton3D");
 		for (int i = 0; i < skeletons.size(); i++) {
@@ -387,7 +387,7 @@ static bool _teststr(const String &p_what, const String &p_str) {
 		what = what.substr(0, what.length() - 1);
 	}
 
-	if (what.findn("$" + p_str) != -1) { //blender and other stuff
+	if (what.containsn("$" + p_str)) { // Blender and other stuff.
 		return true;
 	}
 	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
@@ -410,7 +410,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 
 	String end = p_what.substr(what.length(), p_what.length() - what.length());
 
-	if (what.findn("$" + p_str) != -1) { //blender and other stuff
+	if (what.containsn("$" + p_str)) { // Blender and other stuff.
 		return what.replace("$" + p_str, "") + end;
 	}
 	if (what.to_lower().ends_with("-" + p_str)) { //collada only supports "_" and "-" besides letters
@@ -1392,7 +1392,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 					List<StringName> anim_list;
 					anim_player->get_animation_list(&anim_list);
 					if (anim_list.size() == 1) {
-						selected_animation_name = anim_list[0];
+						selected_animation_name = anim_list.front()->get();
 					}
 					rest_animation = anim_player->get_animation(selected_animation_name);
 					if (rest_animation.is_valid()) {
@@ -1408,7 +1408,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 						List<StringName> anim_list;
 						library->get_animation_list(&anim_list);
 						if (anim_list.size() == 1) {
-							selected_animation_name = String(anim_list[0]);
+							selected_animation_name = String(anim_list.front()->get());
 						}
 						rest_animation = library->get_animation(selected_animation_name);
 					}
@@ -1949,7 +1949,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate/physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "Static,Dynamic,Area"), 0));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 2));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
@@ -2086,12 +2086,12 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 					p_options.has("generate/physics") &&
 					p_options["generate/physics"].operator bool();
 
-			if (p_option.find("physics/") >= 0) {
+			if (p_option.contains("physics/")) {
 				// Show if need to generate collisions.
 				return generate_physics;
 			}
 
-			if (p_option.find("decomposition/") >= 0) {
+			if (p_option.contains("decomposition/")) {
 				// Show if need to generate collisions.
 				if (generate_physics &&
 						// Show if convex is enabled.
@@ -2203,7 +2203,7 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 						List<StringName> anim_list;
 						library->get_animation_list(&anim_list);
 						if (anim_list.size() == 1) {
-							selected_animation_name = String(anim_list[0]);
+							selected_animation_name = String(anim_list.front()->get());
 						}
 						if (library->has_animation(selected_animation_name)) {
 							anim = library->get_animation(selected_animation_name);
@@ -2285,8 +2285,8 @@ bool ResourceImporterScene::get_internal_option_update_view_required(InternalImp
 			if (
 					p_option == "generate/physics" ||
 					p_option == "physics/shape_type" ||
-					p_option.find("decomposition/") >= 0 ||
-					p_option.find("primitive/") >= 0) {
+					p_option.contains("decomposition/") ||
+					p_option.contains("primitive/")) {
 				return true;
 			}
 		} break;

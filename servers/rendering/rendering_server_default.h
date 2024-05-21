@@ -63,7 +63,7 @@ class RenderingServerDefault : public RenderingServer {
 
 	static void _changes_changed() {}
 
-	uint64_t frame_profile_frame;
+	uint64_t frame_profile_frame = 0;
 	Vector<FrameProfileArea> frame_profile;
 
 	double frame_setup_time = 0;
@@ -76,18 +76,17 @@ class RenderingServerDefault : public RenderingServer {
 
 	mutable CommandQueueMT command_queue;
 
-	void _thread_loop();
-
-	Thread::ID server_thread = Thread::UNASSIGNED_ID;
+	Thread::ID server_thread = Thread::MAIN_ID;
 	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	bool exit = false;
 	bool create_thread = false;
 
-	void _thread_draw(bool p_swap_buffers, double frame_step);
-
+	void _assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id);
 	void _thread_exit();
+	void _thread_loop();
 
 	void _draw(bool p_swap_buffers, double frame_step);
+	void _run_post_draw_steps();
 	void _init();
 	void _finish();
 
@@ -104,10 +103,6 @@ public:
 		changes++;
 		_changes_changed();
 	}
-
-#define DISPLAY_CHANGED \
-	changes++;          \
-	_changes_changed();
 
 #else
 	_FORCE_INLINE_ static void redraw_request() {
@@ -676,6 +671,7 @@ public:
 	FUNC2(call_set_vsync_mode, DisplayServer::VSyncMode, DisplayServer::WindowID)
 
 	FUNC2(viewport_set_vrs_mode, RID, ViewportVRSMode)
+	FUNC2(viewport_set_vrs_update_mode, RID, ViewportVRSUpdateMode)
 	FUNC2(viewport_set_vrs_texture, RID, RID)
 
 	/* COMPOSITOR EFFECT */
@@ -889,9 +885,9 @@ public:
 
 	FUNC6(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float, bool)
 	FUNC5(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
-	FUNC4(canvas_item_add_multiline, RID, const Vector<Point2> &, const Vector<Color> &, float)
-	FUNC3(canvas_item_add_rect, RID, const Rect2 &, const Color &)
-	FUNC4(canvas_item_add_circle, RID, const Point2 &, float, const Color &)
+	FUNC5(canvas_item_add_multiline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
+	FUNC4(canvas_item_add_rect, RID, const Rect2 &, const Color &, bool)
+	FUNC5(canvas_item_add_circle, RID, const Point2 &, float, const Color &, bool)
 	FUNC6(canvas_item_add_texture_rect, RID, const Rect2 &, RID, bool, const Color &, bool)
 	FUNC7(canvas_item_add_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, bool, bool)
 	FUNC8(canvas_item_add_msdf_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, int, float, float)
@@ -1001,9 +997,22 @@ public:
 	FUNC1(global_shader_parameters_load_settings, bool)
 	FUNC0(global_shader_parameters_clear)
 
+	/* COMPOSITOR */
+
 #undef server_name
 #undef ServerName
+#define ServerName RendererCompositor
+#define server_name RSG::rasterizer
+
+	FUNC4S(set_boot_image, const Ref<Image> &, const Color &, bool, bool)
+
 	/* STATUS INFORMATION */
+
+#undef server_name
+#undef ServerName
+
+	/* UTILITIES */
+
 #define ServerName RendererUtilities
 #define server_name RSG::utilities
 	FUNC0RC(String, get_video_adapter_name)
@@ -1052,10 +1061,14 @@ public:
 	virtual void init() override;
 	virtual void finish() override;
 
+	virtual bool is_on_render_thread() override {
+		return Thread::get_caller_id() == server_thread;
+	}
+
 	virtual void call_on_render_thread(const Callable &p_callable) override {
 		if (Thread::get_caller_id() == server_thread) {
 			command_queue.flush_if_pending();
-			_call_on_render_thread(p_callable);
+			p_callable.call();
 		} else {
 			command_queue.push(this, &RenderingServerDefault::_call_on_render_thread, p_callable);
 		}
@@ -1065,7 +1078,6 @@ public:
 
 	virtual double get_frame_setup_time_cpu() const override;
 
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) override;
 	virtual Color get_default_clear_color() override;
 	virtual void set_default_clear_color(const Color &p_color) override;
 

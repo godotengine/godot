@@ -1022,47 +1022,6 @@ struct GDEF
   void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
   { get_lig_caret_list ().collect_variation_indices (c); }
 
-  void remap_layout_variation_indices (const hb_set_t *layout_variation_indices,
-				       const hb_vector_t<int>& normalized_coords,
-				       bool calculate_delta, /* not pinned at default */
-				       bool no_variations, /* all axes pinned */
-				       hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map /* OUT */) const
-  {
-    if (!has_var_store ()) return;
-    const ItemVariationStore &var_store = get_var_store ();
-    float *store_cache = var_store.create_cache ();
-
-    unsigned new_major = 0, new_minor = 0;
-    unsigned last_major = (layout_variation_indices->get_min ()) >> 16;
-    for (unsigned idx : layout_variation_indices->iter ())
-    {
-      int delta = 0;
-      if (calculate_delta)
-        delta = roundf (var_store.get_delta (idx, normalized_coords.arrayZ,
-                                             normalized_coords.length, store_cache));
-
-      if (no_variations)
-      {
-        layout_variation_idx_delta_map->set (idx, hb_pair_t<unsigned, int> (HB_OT_LAYOUT_NO_VARIATIONS_INDEX, delta));
-        continue;
-      }
-
-      uint16_t major = idx >> 16;
-      if (major >= var_store.get_sub_table_count ()) break;
-      if (major != last_major)
-      {
-	new_minor = 0;
-	++new_major;
-      }
-
-      unsigned new_idx = (new_major << 16) + new_minor;
-      layout_variation_idx_delta_map->set (idx, hb_pair_t<unsigned, int> (new_idx, delta));
-      ++new_minor;
-      last_major = major;
-    }
-    var_store.destroy_cache (store_cache);
-  }
-
   protected:
   union {
   FixedVersion<>		version;	/* Version identifier */

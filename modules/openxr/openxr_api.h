@@ -46,12 +46,10 @@
 #include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/vector.h"
+#include "servers/rendering_server.h"
 #include "servers/xr/xr_pose.h"
 
 #include <openxr/openxr.h>
-
-// Note, OpenXR code that we wrote for our plugin makes use of C++20 notation for initializing structs which ensures zeroing out unspecified members.
-// Godot is currently restricted to C++17 which doesn't allow this notation. Make sure critical fields are set.
 
 // forward declarations, we don't want to include these fully
 class OpenXRInterface;
@@ -77,7 +75,7 @@ public:
 		static void free_queued();
 		void free();
 
-		bool acquire(XrBool32 &p_should_render);
+		bool acquire(bool &p_should_render);
 		bool release();
 		RID get_image();
 	};
@@ -151,9 +149,6 @@ private:
 
 	uint32_t view_count = 0;
 	XrViewConfigurationView *view_configuration_views = nullptr;
-	XrView *views = nullptr;
-	XrCompositionLayerProjectionView *projection_views = nullptr;
-	XrCompositionLayerDepthInfoKHR *depth_views = nullptr; // Only used by Composition Layer Depth Extension if available
 
 	enum OpenXRSwapChainTypes {
 		OPENXR_SWAPCHAIN_COLOR,
@@ -164,14 +159,11 @@ private:
 
 	int64_t color_swapchain_format = 0;
 	int64_t depth_swapchain_format = 0;
-	Size2i main_swapchain_size = { 0, 0 };
-	OpenXRSwapChainInfo main_swapchains[OPENXR_SWAPCHAIN_MAX];
 
+	bool play_space_is_dirty = true;
 	XrSpace play_space = XR_NULL_HANDLE;
 	XrSpace view_space = XR_NULL_HANDLE;
-	bool view_pose_valid = false;
 	XRPose::TrackingConfidence head_pose_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
-	bool has_xr_viewport = false;
 
 	bool emulating_local_floor = false;
 	bool should_reset_emulated_floor_height = false;
@@ -328,6 +320,72 @@ private:
 	// convenience
 	void copy_string_to_char_buffer(const String p_string, char *p_buffer, int p_buffer_len);
 
+	// Render state, Only accessible in rendering thread
+	struct RenderState {
+		bool running = false;
+		bool should_render = false;
+		bool has_xr_viewport = false;
+		XrTime predicted_display_time = 0;
+		XrSpace play_space = XR_NULL_HANDLE;
+		double render_target_size_multiplier = 1.0;
+
+		uint32_t view_count = 0;
+		XrView *views = nullptr;
+		XrCompositionLayerProjectionView *projection_views = nullptr;
+		XrCompositionLayerDepthInfoKHR *depth_views = nullptr; // Only used by Composition Layer Depth Extension if available
+		bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
+		bool view_pose_valid = false;
+
+		Size2i main_swapchain_size;
+		OpenXRSwapChainInfo main_swapchains[OPENXR_SWAPCHAIN_MAX];
+	} render_state;
+
+	static void _allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer);
+	static void _set_render_session_running(bool p_is_running);
+	static void _set_render_display_info(XrTime p_predicted_display_time, bool p_should_render);
+	static void _set_render_play_space(uint64_t p_play_space);
+	static void _set_render_state_multiplier(double p_render_target_size_multiplier);
+
+	_FORCE_INLINE_ void allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer) {
+		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_allocate_view_buffers).bind(p_view_count, p_submit_depth_buffer));
+	}
+
+	_FORCE_INLINE_ void set_render_session_running(bool p_is_running) {
+		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_session_running).bind(p_is_running));
+	}
+
+	_FORCE_INLINE_ void set_render_display_info(XrTime p_predicted_display_time, bool p_should_render) {
+		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_display_info).bind(p_predicted_display_time, p_should_render));
+	}
+
+	_FORCE_INLINE_ void set_render_play_space(XrSpace p_play_space) {
+		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_play_space).bind(uint64_t(p_play_space)));
+	}
+
+	_FORCE_INLINE_ void set_render_state_multiplier(double p_render_target_size_multiplier) {
+		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_multiplier).bind(p_render_target_size_multiplier));
+	}
+
 public:
 	XrInstance get_instance() const { return instance; };
 	XrSystemId get_system_id() const { return system_id; };
@@ -384,9 +442,13 @@ public:
 	bool initialize_session();
 	void finish();
 
-	XrSpace get_play_space() const { return play_space; }
-	XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; }
-	bool can_render() { return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && view_pose_valid && frame_state.shouldRender; }
+	_FORCE_INLINE_ XrSpace get_play_space() const { return play_space; }
+	_FORCE_INLINE_ XrTime get_predicted_display_time() { return frame_state.predictedDisplayTime; }
+	_FORCE_INLINE_ XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; }
+	_FORCE_INLINE_ bool can_render() {
+		ERR_ON_RENDER_THREAD_V(false);
+		return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && frame_state.shouldRender;
+	}
 
 	XrHandTrackerEXT get_hand_tracker(int p_hand_index);
 
@@ -394,6 +456,7 @@ public:
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	bool get_view_transform(uint32_t p_view, Transform3D &r_transform);
 	bool get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, Projection &p_camera_matrix);
+	Vector2 get_eye_focus(uint32_t p_view, float p_aspect);
 	bool process();
 
 	void pre_render();
@@ -452,6 +515,9 @@ public:
 	bool interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String p_path);
 	bool interaction_profile_suggest_bindings(RID p_interaction_profile);
 	void interaction_profile_free(RID p_interaction_profile);
+
+	RID find_tracker(const String &p_name);
+	RID find_action(const String &p_name);
 
 	bool sync_action_sets(const Vector<RID> p_active_sets);
 	bool get_action_bool(RID p_action, RID p_tracker);

@@ -69,7 +69,6 @@ class Skeleton3D : public Node3D {
 #ifndef DISABLE_DEPRECATED
 	Node *simulator = nullptr;
 	void setup_simulator();
-	void remove_simulator();
 #endif // _DISABLE_DEPRECATED
 
 public:
@@ -88,15 +87,15 @@ private:
 	struct Bone {
 		String name;
 
-		int parent;
+		int parent = -1;
 		Vector<int> child_bones;
 
 		Transform3D rest;
 		Transform3D global_rest;
 
-		bool enabled;
-		Transform3D pose_cache;
+		bool enabled = true;
 		bool pose_cache_dirty = true;
+		Transform3D pose_cache;
 		Vector3 pose_position;
 		Quaternion pose_rotation;
 		Vector3 pose_scale = Vector3(1, 1, 1);
@@ -116,15 +115,29 @@ private:
 		bool global_pose_override_reset = false;
 		Transform3D global_pose_override;
 #endif // _DISABLE_DEPRECATED
+	};
 
-		Bone() {
-			parent = -1;
-			child_bones = Vector<int>();
-			enabled = true;
-#ifndef DISABLE_DEPRECATED
-			global_pose_override_amount = 0;
-			global_pose_override_reset = false;
-#endif // _DISABLE_DEPRECATED
+	struct BonePoseBackup {
+		Transform3D pose_cache;
+		Vector3 pose_position;
+		Quaternion pose_rotation;
+		Vector3 pose_scale = Vector3(1, 1, 1);
+		Transform3D global_pose;
+
+		void save(const Bone &p_bone) {
+			pose_cache = p_bone.pose_cache;
+			pose_position = p_bone.pose_position;
+			pose_rotation = p_bone.pose_rotation;
+			pose_scale = p_bone.pose_scale;
+			global_pose = p_bone.global_pose;
+		}
+
+		void restore(Bone &r_bone) {
+			r_bone.pose_cache = pose_cache;
+			r_bone.pose_position = pose_position;
+			r_bone.pose_rotation = pose_rotation;
+			r_bone.pose_scale = pose_scale;
+			r_bone.global_pose = global_pose;
 		}
 	};
 
@@ -156,6 +169,7 @@ private:
 	void _process_modifiers();
 	void _process_changed();
 	void _make_modifiers_dirty();
+	LocalVector<BonePoseBackup> bones_backup;
 
 #ifndef DISABLE_DEPRECATED
 	void _add_bone_bind_compat_88791(const String &p_name);

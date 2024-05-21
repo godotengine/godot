@@ -360,7 +360,7 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 			break;
 	}
 	panel->set_modulate(Color(1, 1, 1, 0));
-	panel->connect("draw", callable_mp(this, &EditorToaster::_draw_progress).bind(panel));
+	panel->connect(SceneStringName(draw), callable_mp(this, &EditorToaster::_draw_progress).bind(panel));
 
 	// Horizontal container.
 	HBoxContainer *hbox_container = memnew(HBoxContainer);
@@ -376,8 +376,8 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 		Button *close_button = memnew(Button);
 		close_button->set_flat(true);
 		close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
-		close_button->connect("pressed", callable_mp(this, &EditorToaster::close).bind(panel));
-		close_button->connect("theme_changed", callable_mp(this, &EditorToaster::_close_button_theme_changed).bind(close_button));
+		close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::close).bind(panel));
+		close_button->connect(SceneStringName(theme_changed), callable_mp(this, &EditorToaster::_close_button_theme_changed).bind(close_button));
 		hbox_container->add_child(close_button);
 	}
 
@@ -506,7 +506,7 @@ EditorToaster::EditorToaster() {
 	// VBox.
 	vbox_container = memnew(VBoxContainer);
 	vbox_container->set_as_top_level(true);
-	vbox_container->connect("resized", callable_mp(this, &EditorToaster::_update_vbox_position));
+	vbox_container->connect(SceneStringName(resized), callable_mp(this, &EditorToaster::_update_vbox_position));
 	add_child(vbox_container);
 
 	// Theming (background).
@@ -544,9 +544,9 @@ EditorToaster::EditorToaster() {
 	main_button->set_modulate(Color(0.5, 0.5, 0.5));
 	main_button->set_disabled(true);
 	main_button->set_theme_type_variation("FlatMenuButton");
-	main_button->connect("pressed", callable_mp(this, &EditorToaster::_set_notifications_enabled).bind(true));
-	main_button->connect("pressed", callable_mp(this, &EditorToaster::_repop_old));
-	main_button->connect("draw", callable_mp(this, &EditorToaster::_draw_button));
+	main_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::_set_notifications_enabled).bind(true));
+	main_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::_repop_old));
+	main_button->connect(SceneStringName(draw), callable_mp(this, &EditorToaster::_draw_button));
 	add_child(main_button);
 
 	// Disable notification button.
@@ -558,7 +558,7 @@ EditorToaster::EditorToaster() {
 	disable_notifications_button = memnew(Button);
 	disable_notifications_button->set_tooltip_text(TTR("Silence the notifications."));
 	disable_notifications_button->set_flat(true);
-	disable_notifications_button->connect("pressed", callable_mp(this, &EditorToaster::_set_notifications_enabled).bind(false));
+	disable_notifications_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::_set_notifications_enabled).bind(false));
 	disable_notifications_panel->add_child(disable_notifications_button);
 
 	// Other

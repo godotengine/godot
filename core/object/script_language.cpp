@@ -31,7 +31,6 @@
 #include "script_language.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/resource_loader.h"
@@ -537,6 +536,7 @@ void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const 
 	p_core_type_words->push_back("PackedVector2Array");
 	p_core_type_words->push_back("PackedVector3Array");
 	p_core_type_words->push_back("PackedColorArray");
+	p_core_type_words->push_back("PackedVector4Array");
 }
 
 void ScriptLanguage::frame() {

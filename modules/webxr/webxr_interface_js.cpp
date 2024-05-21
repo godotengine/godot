@@ -39,6 +39,7 @@
 #include "drivers/gles3/storage/texture_storage.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/scene_string_names.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/xr/xr_hand_tracker.h"
@@ -641,7 +642,7 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 	}
 
 	Transform3D aim_transform = _js_matrix_to_transform(target_pose);
-	tracker->set_pose(SNAME("default"), aim_transform, Vector3(), Vector3());
+	tracker->set_pose(SceneStringName(default_), aim_transform, Vector3(), Vector3());
 	tracker->set_pose(SNAME("aim"), aim_transform, Vector3(), Vector3());
 	if (has_grip_pose) {
 		tracker->set_pose(SNAME("grip"), _js_matrix_to_transform(grip_pose), Vector3(), Vector3());
@@ -713,7 +714,7 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 
 			if (unlikely(hand_tracker.is_null())) {
 				hand_tracker.instantiate();
-				hand_tracker->set_hand(p_input_source_id == 0 ? XRHandTracker::HAND_LEFT : XRHandTracker::HAND_RIGHT);
+				hand_tracker->set_tracker_hand(p_input_source_id == 0 ? XRPositionalTracker::TRACKER_HAND_LEFT : XRPositionalTracker::TRACKER_HAND_RIGHT);
 				hand_tracker->set_tracker_name(p_input_source_id == 0 ? "/user/hand_tracker/left" : "/user/hand_tracker/right");
 
 				// These flags always apply, since WebXR doesn't give us enough insight to be more fine grained.

@@ -34,7 +34,7 @@
 #include "core/os/thread.h"
 #include "editor/code_editor.h"
 #include "editor/doc_tools.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup.h"
@@ -311,7 +311,8 @@ protected:
 public:
 	void parse_symbol(const String &p_symbol);
 	void set_custom_text(const String &p_type, const String &p_name, const String &p_description);
-	void prepend_description(const String &p_text);
+	void set_description(const String &p_text);
+	_FORCE_INLINE_ String get_description() const { return help_data.description; }
 
 	void set_content_height_limits(float p_min, float p_max);
 	void update_content_height();
@@ -325,6 +326,10 @@ class EditorHelpBitTooltip : public PopupPanel {
 	GDCLASS(EditorHelpBitTooltip, PopupPanel);
 
 	Timer *timer = nullptr;
+	int _pushing_input = 0;
+	bool _need_free = false;
+
+	void _safe_queue_free();
 
 protected:
 	void _notification(int p_what);
