@@ -76,7 +76,9 @@ public:
 	bool is_server() { return get_unique_id() == MultiplayerPeer::TARGET_PEER_SERVER; }
 
 	MultiplayerAPI() {}
-	virtual ~MultiplayerAPI() {}
+	virtual ~MultiplayerAPI() {
+		default_interface = StringName();
+	}
 };
 
 VARIANT_ENUM_CAST(MultiplayerAPI::RPCMode);

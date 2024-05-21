@@ -1378,38 +1378,15 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 
 	SignalData *s = signal_map.getptr(p_signal);
 
-	if (String(get_class()) == "NavigationServer3D") {
-		std::cout << "TOTO: "
-				  << " s value " << s << std::endl;
-		if (!s) {
-			std::cout << "TOTO: "
-					  << " s is null " << std::endl;
-		}
-	}
 	if (!s) {
-		if (String(get_class()) == "NavigationServer3D") {
-			std::cout << "connect => ENTER IF(!s) " << String(get_class()).utf8().get_data() << std::endl;
-
-			std::cout << "TOTO: "
-					  << "connect => get_class_name() " << String(get_class_name(true)).utf8().get_data() << std::endl;
-			std::cout << "TOTO: "
-					  << "connect => _get_class_namev " << String(*_get_class_namev()).utf8().get_data() << std::endl;
-		}
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
-		if (String(get_class()) == "NavigationServer3D")
-			std::cout << "TOTO: "
-					  << "connect => signal_is_valid " << signal_is_valid << std::endl;
 
 		//check in script
-		std::cout << "connect => script is null ?? " << script.is_null() << std::endl;
 
 		if (!signal_is_valid && !script.is_null()) {
-			std::cout << "connect => script is nullllllll " << std::endl;
-
 			if (Ref<Script>(script)->has_script_signal(p_signal)) {
 				signal_is_valid = true;
 			}
-			std::cout << "connect => has_script_signal " << signal_is_valid << std::endl;
 #ifdef TOOLS_ENABLED
 			else {
 				//allow connecting signals anyway if script is invalid, see issue #17070
@@ -1419,16 +1396,11 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 			}
 #endif
 		}
-		//
+
 		ERR_FAIL_COND_V_MSG(!signal_is_valid, ERR_INVALID_PARAMETER, "In Object of type '" + String(get_class()) + "': Attempt to connect nonexistent signal '" + p_signal + "' to callable '" + p_callable + "'.");
 
 		signal_map[p_signal] = SignalData();
 		s = &signal_map[p_signal];
-
-		if (String(get_class()) == "NavigationServer3D") {
-			std::cout << "TOTO: "
-					  << " on " << String(p_callable).utf8().get_data() << std::endl;
-		}
 	}
 
 	//compare with the base callable, so binds can be ignored

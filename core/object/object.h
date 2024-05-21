@@ -469,10 +469,6 @@ protected:                                                                      
                                                                                                                                                  \
 public:                                                                                                                                          \
 	static void initialize_class() {                                                                                                             \
-		/*static bool initialized = false; Je veux être capable de reset ce truc                                                                \
-		if (initialized) {                                                                                                                       \
-			return;                                                                                                                              \
-		}*/                                                                                                                                      \
 		static int versionYoloLocal = -1;                                                                                                        \
 		if (Main::versionYolo == versionYoloLocal) {                                                                                             \
 			return;                                                                                                                              \
@@ -480,13 +476,11 @@ public:                                                                         
 		m_inherits::initialize_class();                                                                                                          \
 		::ClassDB::_add_class<m_class>();                                                                                                        \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                                   \
-			_bind_methods(); /******************/                                                                                                \
-			std::cout << "_bind_methods AA => " << std::endl;                                                                                    \
+			_bind_methods();                                                                                                                     \
 		}                                                                                                                                        \
 		if (m_class::_get_bind_compatibility_methods() != m_inherits::_get_bind_compatibility_methods()) {                                       \
 			_bind_compatibility_methods();                                                                                                       \
 		}                                                                                                                                        \
-		/*initialized = true;*/                                                                                                                  \
 		versionYoloLocal++;                                                                                                                      \
 	}                                                                                                                                            \
                                                                                                                                                  \

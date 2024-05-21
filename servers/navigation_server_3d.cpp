@@ -292,7 +292,6 @@ NavigationServer3D::NavigationServer3D() {
 
 NavigationServer3D::~NavigationServer3D() {
 	singleton = nullptr;
-	std::cout << "TOTO NAVIGATION SEREVR 3D REMOVE SINGLETON" << std::endl;
 }
 
 void NavigationServer3D::set_debug_enabled(bool p_enabled) {
