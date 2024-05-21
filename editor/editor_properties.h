@@ -625,6 +625,7 @@ class EditorPropertyColor : public EditorProperty {
 
 	Color last_color;
 	bool live_changes_enabled = true;
+	bool was_checked = false;
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
