@@ -4201,31 +4201,36 @@ void EditorNode::update_diff_data_for_node(
 			p_modification_table[p_root->get_path_to(p_node)] = modification_node_entry;
 		}
 	} else {
-		AdditiveNodeEntry new_additive_node_entry;
-		new_additive_node_entry.node = p_node;
-		new_additive_node_entry.parent = p_root->get_path_to(p_node->get_parent());
-		new_additive_node_entry.owner = p_node->get_owner();
-		new_additive_node_entry.index = p_node->get_index();
+		// Only save additional nodes which have an owner since this was causing issues transient ownerless nodes
+		// which get recreated upon scene tree entry.
+		// For now instead, assume all ownerless nodes are transient and will have to be recreated.
+		if (p_node->get_owner()) {
+			AdditiveNodeEntry new_additive_node_entry;
+			new_additive_node_entry.node = p_node;
+			new_additive_node_entry.parent = p_root->get_path_to(p_node->get_parent());
+			new_additive_node_entry.owner = p_node->get_owner();
+			new_additive_node_entry.index = p_node->get_index();
 
-		Node2D *node_2d = Object::cast_to<Node2D>(p_node);
-		if (node_2d) {
-			new_additive_node_entry.transform_2d = node_2d->get_relative_transform_to_parent(node_2d->get_parent());
+			Node2D *node_2d = Object::cast_to<Node2D>(p_node);
+			if (node_2d) {
+				new_additive_node_entry.transform_2d = node_2d->get_relative_transform_to_parent(node_2d->get_parent());
+			}
+			Node3D *node_3d = Object::cast_to<Node3D>(p_node);
+			if (node_3d) {
+				new_additive_node_entry.transform_3d = node_3d->get_relative_transform(node_3d->get_parent());
+			}
+
+			// Gathers the ownership of all ancestor nodes for later use.
+			HashMap<Node *, Node *> ownership_table;
+			for (int i = 0; i < p_node->get_child_count(); i++) {
+				Node *child = p_node->get_child(i);
+				update_ownership_table_for_addition_node_ancestors(child, ownership_table);
+			}
+
+			new_additive_node_entry.ownership_table = ownership_table;
+
+			p_addition_list.push_back(new_additive_node_entry);
 		}
-		Node3D *node_3d = Object::cast_to<Node3D>(p_node);
-		if (node_3d) {
-			new_additive_node_entry.transform_3d = node_3d->get_relative_transform(node_3d->get_parent());
-		}
-
-		// Gathers the ownership of all ancestor nodes for later use.
-		HashMap<Node *, Node *> ownership_table;
-		for (int i = 0; i < p_node->get_child_count(); i++) {
-			Node *child = p_node->get_child(i);
-			update_ownership_table_for_addition_node_ancestors(child, ownership_table);
-		}
-
-		new_additive_node_entry.ownership_table = ownership_table;
-
-		p_addition_list.push_back(new_additive_node_entry);
 
 		return;
 	}
@@ -5531,12 +5536,11 @@ void EditorNode::_file_access_close_error_notify_impl(const String &p_str) {
 	add_io_error(vformat(TTR("Unable to write to file '%s', file in use, locked or lacking permissions."), p_str));
 }
 
-// Since we felt that a bespoke NOTIFICATION might not be desirable, this function
-// provides the hardcoded callbacks to address known bugs which occur on certain
-// nodes during reimport.
-// Ideally, we should probably agree on a standardized method name which could be
-// called from here instead.
-void EditorNode::_notify_scene_updated(Node *p_node) {
+// Recursive function to inform nodes that an array of nodes have had their scene reimported.
+// It will attempt to call a method named '_nodes_scene_reimported' on every node in the
+// tree so that editor scripts which create transient nodes will have the opportunity
+// to recreate them.
+void EditorNode::_notify_nodes_scene_reimported(Node *p_node, Array p_reimported_nodes) {
 	Skeleton3D *skel_3d = Object::cast_to<Skeleton3D>(p_node);
 	if (skel_3d) {
 		skel_3d->reset_bone_poses();
@@ -5547,8 +5551,12 @@ void EditorNode::_notify_scene_updated(Node *p_node) {
 		}
 	}
 
+	if (p_node->has_method("_nodes_scene_reimported")) {
+		p_node->call("_nodes_scene_reimported", p_reimported_nodes);
+	}
+
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_notify_scene_updated(p_node->get_child(i));
+		_notify_nodes_scene_reimported(p_node->get_child(i), p_reimported_nodes);
 	}
 }
 
@@ -5618,6 +5626,7 @@ void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *
 void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_instance_path) {
 	int original_edited_scene_idx = editor_data.get_edited_scene();
 	HashMap<int, List<Node *>> edited_scene_map;
+	Array replaced_nodes;
 
 	// Walk through each opened scene to get a global list of all instances which match
 	// the current reimported scenes.
@@ -5745,7 +5754,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 					// be properly updated.
 					for (String path : required_load_paths) {
 						if (!local_scene_cache.find(path)) {
-							current_packed_scene = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
+							current_packed_scene = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP, &err);
 							local_scene_cache[path] = current_packed_scene;
 						} else {
 							current_packed_scene = local_scene_cache[path];
@@ -5762,6 +5771,9 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 				}
 
 				ERR_FAIL_NULL(instantiated_node);
+
+				// For clear instance state for path recaching.
+				instantiated_node->set_scene_instance_state(Ref<SceneState>());
 
 				bool original_node_is_displayed_folded = original_node->is_displayed_folded();
 				bool original_node_scene_instance_load_placeholder = original_node->get_scene_instance_load_placeholder();
@@ -5932,13 +5944,18 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 						}
 					}
 				}
+				// Add the newly instantiated node to the edited scene's replaced node list.
+				replaced_nodes.push_back(instantiated_node);
 			}
 
 			// Cleanup the history of the changes.
 			editor_history.cleanup_history();
-
-			_notify_scene_updated(current_edited_scene);
 		}
+
+		// For the whole editor, call the _notify_nodes_scene_reimported with a list of replaced nodes.
+		// To inform anything that depends on them that they should update as appropriate.
+		_notify_nodes_scene_reimported(this, replaced_nodes);
+
 		edited_scene_map.clear();
 	}
 	editor_data.set_edited_scene(original_edited_scene_idx);
