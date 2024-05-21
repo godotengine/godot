@@ -2901,10 +2901,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 			// FPS Counter.
 			bool show_fps = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
 
-			if (show_fps != fps_label->is_visible()) {
-				cpu_time_label->set_visible(show_fps);
-				gpu_time_label->set_visible(show_fps);
-				fps_label->set_visible(show_fps);
+			if (show_fps != frame_time_panel->is_visible()) {
+				frame_time_panel->set_visible(show_fps);
 				RS::get_singleton()->viewport_set_measure_render_time(viewport->get_viewport_rid(), show_fps);
 				for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
 					// Initialize to 120 FPS, so that the initial estimation until we get enough data is always reasonable.
@@ -3033,9 +3031,15 @@ void Node3DEditorViewport::_notification(int p_what) {
 			frame_time_gradient->set_color(2, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			info_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			cpu_time_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			gpu_time_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
-			fps_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+
+			frame_time_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
+			// Set a minimum width to prevent the width from changing all the time
+			// when numbers vary rapidly. This minimum width is set based on a
+			// GPU time of 999.99 ms in the current editor language.
+			const float min_width = get_theme_font(SNAME("main"), EditorStringName(EditorFonts))->get_string_size(vformat(TTR("GPU Time: %s ms"), 999.99)).x;
+			frame_time_panel->set_custom_minimum_size(Size2(min_width, 0) * EDSCALE);
+			frame_time_vbox->add_theme_constant_override("separation", Math::round(-1 * EDSCALE));
+
 			cinema_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 			locked_label->add_theme_style_override("normal", gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles)));
 		} break;
@@ -5379,10 +5383,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	top_right_vbox = memnew(VBoxContainer);
 	top_right_vbox->set_anchors_and_offsets_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 10.0 * EDSCALE);
 	top_right_vbox->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-	// Make sure frame time labels don't touch the viewport's edge.
-	top_right_vbox->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
-	// Prevent visible spacing between frame time labels.
-	top_right_vbox->add_theme_constant_override("separation", 0);
 
 	const int navigation_control_size = 150;
 
@@ -5414,18 +5414,22 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	rotation_control->set_viewport(this);
 	top_right_vbox->add_child(rotation_control);
 
+	frame_time_panel = memnew(PanelContainer);
+	top_right_vbox->add_child(frame_time_panel);
+	frame_time_panel->hide();
+
+	frame_time_vbox = memnew(VBoxContainer);
+	frame_time_panel->add_child(frame_time_vbox);
+
 	// Individual Labels are used to allow coloring each label with its own color.
 	cpu_time_label = memnew(Label);
-	top_right_vbox->add_child(cpu_time_label);
-	cpu_time_label->hide();
+	frame_time_vbox->add_child(cpu_time_label);
 
 	gpu_time_label = memnew(Label);
-	top_right_vbox->add_child(gpu_time_label);
-	gpu_time_label->hide();
+	frame_time_vbox->add_child(gpu_time_label);
 
 	fps_label = memnew(Label);
-	top_right_vbox->add_child(fps_label);
-	fps_label->hide();
+	frame_time_vbox->add_child(fps_label);
 
 	surface->add_child(top_right_vbox);
 
