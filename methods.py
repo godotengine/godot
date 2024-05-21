@@ -750,6 +750,20 @@ def Run(env, function):
     return Action(function, "$GENCOMSTR")
 
 
+def arrange_program_clean(env, prog):
+    """
+    Given an SCons program, arrange for output files SCons doesn't know about
+    to be cleaned when SCons is called with --clean
+    """
+    EXTENSIONS_TO_CLEAN = [".ilk", ".exp", ".pdb", ".lib", ".debugsymbols", ".dSym"]
+    for program in prog:
+        path = "#" + Path(str(program)).relative_to(base_folder_path).as_posix()
+        if path.endswith(".exe"):
+            path = path[:-4]
+        extra_files_to_clean = [f"{path}{extension}" for extension in EXTENSIONS_TO_CLEAN]
+        env.Clean(prog, extra_files_to_clean)
+
+
 def detect_darwin_sdk_path(platform, env):
     sdk_name = ""
     if platform == "macos":

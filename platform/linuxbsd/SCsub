@@ -2,7 +2,7 @@
 
 Import("env")
 
-import platform_linuxbsd_builders
+import os
 
 common_linuxbsd = [
     "crash_handler_linuxbsd.cpp",
@@ -39,6 +39,17 @@ if env["dbus"]:
         common_linuxbsd.append("dbus-so_wrap.c")
 
 prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_linuxbsd)
+env.arrange_program_clean(prog)
+
+
+def make_debug_linuxbsd(target, source, env):
+    src = str(target[0])
+    dst = f"{src}.debugsymbols"
+
+    os.system(f"objcopy --only-keep-debug {src} {dst}")
+    os.system(f"strip --strip-debug --strip-unneeded {src}")
+    os.system(f"objcopy --add-gnu-debuglink={dst} {src}")
+
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
-    env.AddPostAction(prog, env.Run(platform_linuxbsd_builders.make_debug_linuxbsd))
+    env.AddPostAction(prog, env.Run(make_debug_linuxbsd))

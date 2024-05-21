@@ -4,7 +4,6 @@ Import("env")
 
 import os, json
 from platform_methods import architectures, lipo, get_build_version
-import platform_macos_builders
 import subprocess
 import shutil
 
@@ -123,9 +122,24 @@ files = [
 ]
 
 prog = env.add_program("#bin/godot", files)
+env.arrange_program_clean(prog)
+
+
+def make_debug_macos(target, source, env):
+    src = str(target[0])
+    dst = f"{src}.dSYM"
+
+    if env["macports_clang"] != "no":
+        mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
+        mpclangver = env["macports_clang"]
+        os.system(f"{mpprefix}/libexec/llvm-{mpclangver}/bin/llvm-dsymutil {src} -o {dst}")
+    else:
+        os.system(f"dsymutil {src} -o {dst}")
+    os.system(f"strip -u -r {src}")
+
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
-    env.AddPostAction(prog, env.Run(platform_macos_builders.make_debug_macos))
+    env.AddPostAction(prog, env.Run(make_debug_macos))
 
 if env["generate_bundle"]:
     generate_bundle_command = env.Command("generate_bundle", [], generate_bundle)
