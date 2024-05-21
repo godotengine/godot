@@ -591,7 +591,7 @@ void FreeDesktopPortalDesktop::_thread_monitor(void *p_ud) {
 			dbus_connection_read_write(portal->monitor_connection, 0);
 		}
 
-		usleep(50000);
+		OS::get_singleton()->delay_usec(50'000);
 	}
 }
 

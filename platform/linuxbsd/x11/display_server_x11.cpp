@@ -2269,7 +2269,7 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 			break;
 		}
 
-		usleep(10000);
+		OS::get_singleton()->delay_usec(10'000);
 	}
 
 	// Keep rendering context window size in sync
@@ -2544,7 +2544,7 @@ void DisplayServerX11::_set_wm_maximized(WindowID p_window, bool p_enabled) {
 		// Give up after 0.5s, it's not going to happen on this WM.
 		// https://github.com/godotengine/godot/issues/19978
 		for (int attempt = 0; window_get_mode(p_window) != WINDOW_MODE_MAXIMIZED && attempt < 50; attempt++) {
-			usleep(10000);
+			OS::get_singleton()->delay_usec(10'000);
 		}
 	}
 	wd.maximized = p_enabled;
