@@ -10,7 +10,6 @@ _FORCE_INLINE_ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
 def generate_mod_version(argcount, const=False, returns=False):
     s = proto_mod
     sproto = str(argcount)
-    method_info = ""
     if returns:
         sproto += "R"
         s = s.replace("$RETTYPE", "m_ret, ")
@@ -68,7 +67,6 @@ virtual $RETVAL m_name($FUNCARGS) $CONST override { \\
 def generate_ex_version(argcount, const=False, returns=False):
     s = proto_ex
     sproto = str(argcount)
-    method_info = ""
     if returns:
         sproto += "R"
         s = s.replace("$RETTYPE", "m_ret, ")

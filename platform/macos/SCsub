@@ -2,11 +2,13 @@
 
 Import("env")
 
-import os, json
-from platform_methods import architectures, lipo, get_build_version
-import platform_macos_builders
-import subprocess
+import os
 import shutil
+import subprocess
+
+import platform_macos_builders
+
+from platform_methods import get_build_version, lipo
 
 
 def generate_bundle(target, source, env):

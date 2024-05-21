@@ -2,10 +2,10 @@
 
 Import("env")
 
-import os, json
-from platform_methods import architectures, lipo, get_build_version, detect_mvk
-import subprocess
+import os
 import shutil
+
+from platform_methods import detect_mvk, lipo
 
 
 def generate_bundle(target, source, env):

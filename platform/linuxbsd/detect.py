@@ -1,10 +1,10 @@
 import os
 import platform
 import sys
-from methods import print_warning, print_error, get_compiler_version, using_gcc
-from platform_methods import detect_arch
-
 from typing import TYPE_CHECKING
+
+from methods import get_compiler_version, print_error, print_warning, using_gcc
+from platform_methods import detect_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment

@@ -1,17 +1,14 @@
-import os
-import sys
-import re
-import glob
-import subprocess
 import contextlib
+import glob
+import os
+import re
+import subprocess
+import sys
 from collections import OrderedDict
-from collections.abc import Mapping
 from enum import Enum
-from typing import Generator, Optional
-from io import TextIOWrapper, StringIO
+from io import StringIO, TextIOWrapper
 from pathlib import Path
-from os.path import normpath, basename
-
+from typing import Generator, Optional
 
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
@@ -199,7 +196,7 @@ def add_module_version_string(self, s):
 
 def get_version_info(module_version_string="", silent=False):
     build_name = "custom_build"
-    if os.getenv("BUILD_NAME") != None:
+    if os.getenv("BUILD_NAME") is not None:
         build_name = str(os.getenv("BUILD_NAME"))
         if not silent:
             print(f"Using custom build name: '{build_name}'.")
@@ -221,7 +218,7 @@ def get_version_info(module_version_string="", silent=False):
 
     # For dev snapshots (alpha, beta, RC, etc.) we do not commit status change to Git,
     # so this define provides a way to override it without having to modify the source.
-    if os.getenv("GODOT_VERSION_STATUS") != None:
+    if os.getenv("GODOT_VERSION_STATUS") is not None:
         version_info["status"] = str(os.getenv("GODOT_VERSION_STATUS"))
         if not silent:
             print(f"Using version status '{version_info['status']}', overriding the original '{version.status}'.")
@@ -435,7 +432,7 @@ def module_check_dependencies(self, module):
     required_deps = self.module_dependencies[module][0] if module in self.module_dependencies else []
     for dep in required_deps:
         opt = "module_{}_enabled".format(dep)
-        if not opt in self or not self[opt]:
+        if opt not in self or not self[opt]:
             missing_deps.append(dep)
 
     if missing_deps != []:
@@ -450,7 +447,6 @@ def module_check_dependencies(self, module):
 
 
 def sort_module_list(env):
-    out = OrderedDict()
     deps = {k: v[0] + list(filter(lambda x: x in env.module_list, v[1])) for k, v in env.module_dependencies.items()}
 
     frontier = list(env.module_list.keys())
@@ -650,7 +646,7 @@ def detect_visual_c_compiler_version(tools_env):
 
 
 def find_visual_c_batch_file(env):
-    from SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file, find_vc_pdir
+    from SCons.Tool.MSCommon.vc import find_batch_file, find_vc_pdir, get_default_version, get_host_target
 
     msvc_version = get_default_version(env)
 
@@ -696,10 +692,7 @@ def glob_recursive(pattern, node="."):
 
 def add_to_vs_project(env, sources):
     for x in sources:
-        if type(x) == type(""):
-            fname = env.File(x).path
-        else:
-            fname = env.File(x)[0].path
+        fname = env.File(x).path if isinstance(x, str) else env.File(x)[0].path
         pieces = fname.split(".")
         if len(pieces) > 0:
             basename = pieces[0]
@@ -884,7 +877,8 @@ def show_progress(env):
         return
 
     import sys
-    from SCons.Script import Progress, Command, AlwaysBuild
+
+    from SCons.Script import AlwaysBuild, Command, Progress
 
     screen = sys.stdout
     # Progress reporting is not available in non-TTY environments since it
@@ -895,7 +889,8 @@ def show_progress(env):
     node_count_interval = 1
     node_count_fname = str(env.Dir("#")) + "/.scons_node_count"
 
-    import time, math
+    import math
+    import time
 
     class cache_progress:
         # The default is 1 GB cache and 12 hours half life
@@ -903,7 +898,7 @@ def show_progress(env):
             self.path = path
             self.limit = limit
             self.exponent_scale = math.log(2) / half_life
-            if env["verbose"] and path != None:
+            if env["verbose"] and path is not None:
                 screen.write(
                     "Current cache limit is {} (used: {})\n".format(
                         self.convert_size(limit), self.convert_size(self.get_size(path))
@@ -1049,11 +1044,11 @@ def generate_vs_project(env, original_args, project_name="godot"):
             if type(f) is Node.FS.Dir:
                 results += glob_recursive_2(pattern, dirs, f)
         r = Glob(str(node) + "/" + pattern, source=True)
-        if len(r) > 0 and not str(node) in dirs:
+        if len(r) > 0 and str(node) not in dirs:
             d = ""
             for part in str(node).split("\\"):
                 d += part
-                if not d in dirs:
+                if d not in dirs:
                     dirs.append(d)
                 d += "\\"
         results += r
@@ -1066,7 +1061,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         if val is not None:
             try:
                 return _text2bool(val)
-            except:
+            except (ValueError, AttributeError):
                 return default
         else:
             return default
@@ -1239,13 +1234,13 @@ def generate_vs_project(env, original_args, project_name="godot"):
     others_active = []
     for x in envsources:
         fname = ""
-        if type(x) == type(""):
+        if isinstance(x, str):
             fname = env.File(x).path
         else:
             # Some object files might get added directly as a File object and not a list.
             try:
                 fname = env.File(x)[0].path
-            except:
+            except Exception:
                 fname = x.path
                 pass
 
@@ -1324,7 +1319,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         itemlist = {}
         for item in activeItems:
             key = os.path.dirname(item).replace("\\", "_")
-            if not key in itemlist:
+            if key not in itemlist:
                 itemlist[key] = [item]
             else:
                 itemlist[key] += [item]
@@ -1465,14 +1460,14 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 if godot_platform != "windows":
                     configurations += [
                         f'<ProjectConfiguration Include="editor|{proj_plat}">',
-                        f"  <Configuration>editor</Configuration>",
+                        "  <Configuration>editor</Configuration>",
                         f"  <Platform>{proj_plat}</Platform>",
                         "</ProjectConfiguration>",
                     ]
 
                     properties += [
                         f"<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='editor|{proj_plat}'\">",
-                        f"  <GodotConfiguration>editor</GodotConfiguration>",
+                        "  <GodotConfiguration>editor</GodotConfiguration>",
                         f"  <GodotPlatform>{proj_plat}</GodotPlatform>",
                         "</PropertyGroup>",
                     ]

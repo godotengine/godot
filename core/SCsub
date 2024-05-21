@@ -2,9 +2,11 @@
 
 Import("env")
 
-import core_builders
-import methods
 import os
+
+import core_builders
+
+import methods
 
 env.core_sources = []
 
@@ -188,9 +190,7 @@ def version_info_builder(target, source, env):
 #define VERSION_WEBSITE "{website}"
 #define VERSION_DOCS_BRANCH "{docs_branch}"
 #define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH
-""".format(
-                **env.version_info
-            )
+""".format(**env.version_info)
         )
 
 
@@ -206,9 +206,7 @@ def version_hash_builder(target, source, env):
 
 const char *const VERSION_HASH = "{git_hash}";
 const uint64_t VERSION_TIMESTAMP = {git_timestamp};
-""".format(
-                **env.version_info
-            )
+""".format(**env.version_info)
         )
 
 

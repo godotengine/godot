@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
 import os
-import urllib.request
 import shutil
 import subprocess
 import sys
+import urllib.request
 
 # Enable ANSI escape code support on Windows 10 and later (for colored console output).
 # <https://github.com/python/cpython/issues/73245>
 if sys.platform == "win32":
-    from ctypes import windll, c_int, byref
+    from ctypes import byref, c_int, windll
 
     stdout_handle = windll.kernel32.GetStdHandle(c_int(-11))
     mode = c_int(0)

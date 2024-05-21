@@ -1,10 +1,7 @@
 import os
-import sys
-import json
 import platform
-import uuid
-import functools
 import subprocess
+
 import methods
 
 # NOTE: The multiprocessing module is not compatible with SCons due to conflict on cPickle
@@ -47,14 +44,14 @@ def get_build_version(short):
     import version
 
     name = "custom_build"
-    if os.getenv("BUILD_NAME") != None:
+    if os.getenv("BUILD_NAME") is not None:
         name = os.getenv("BUILD_NAME")
     v = "%d.%d" % (version.major, version.minor)
     if version.patch > 0:
         v += ".%d" % version.patch
     status = version.status
     if not short:
-        if os.getenv("GODOT_VERSION_STATUS") != None:
+        if os.getenv("GODOT_VERSION_STATUS") is not None:
             status = str(os.getenv("GODOT_VERSION_STATUS"))
         v += ".%s.%s" % (status, name)
     return v
@@ -86,7 +83,7 @@ def get_mvk_sdk_path(osname):
     def int_or_zero(i):
         try:
             return int(i)
-        except:
+        except (TypeError, ValueError):
             return 0
 
     def ver_parse(a):
@@ -140,9 +137,8 @@ def detect_mvk(env, osname):
         )
 
     for mvk_path in mvk_list:
-        if mvk_path and os.path.isfile(os.path.join(mvk_path, osname + "/libMoltenVK.a")):
-            mvk_found = True
-            print("MoltenVK found at: " + mvk_path)
+        if mvk_path and os.path.isfile(os.path.join(mvk_path, f"{osname}/libMoltenVK.a")):
+            print(f"MoltenVK found at: {mvk_path}")
             return mvk_path
 
     return ""
