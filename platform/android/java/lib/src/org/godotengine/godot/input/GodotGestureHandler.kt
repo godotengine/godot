@@ -61,6 +61,9 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 	private var contextClickInProgress = false
 	private var pointerCaptureInProgress = false
 
+	private var lastDragX: Float = 0.0f
+	private var lastDragY: Float = 0.0f
+
 	override fun onDown(event: MotionEvent): Boolean {
 		GodotInputHandler.handleMotionEvent(event.source, MotionEvent.ACTION_DOWN, event.buttonState, event.x, event.y, nextDownIsDoubleTap)
 		nextDownIsDoubleTap = false
@@ -165,6 +168,8 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 			pointerCaptureInProgress = false
 			dragInProgress = false
 			contextClickInProgress = false
+			lastDragX = 0.0f
+			lastDragY = 0.0f
 			return true
 		}
 
@@ -189,6 +194,17 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 				sourceMouseRelative
 			)
 			return true
+		} else if (!scaleInProgress) {
+			// The 'onScroll' event is triggered with a long delay.
+			// Force the 'InputEventScreenDrag' event earlier here.
+			// We don't toggle 'dragInProgress' here so that the scaling logic can override the drag operation if needed.
+			// Once the 'onScroll' event kicks-in, 'dragInProgress' will be properly set.
+			if (lastDragX != event.getX(0) || lastDragY != event.getY(0)) {
+				lastDragX = event.getX(0)
+				lastDragY = event.getY(0)
+				GodotInputHandler.handleMotionEvent(event)
+				return true
+			}
 		}
 		return false
 	}
@@ -216,7 +232,7 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 		distanceY: Float
 	): Boolean {
 		if (scaleInProgress) {
-			if (dragInProgress) {
+			if (dragInProgress || lastDragX != 0.0f || lastDragY != 0.0f) {
 				if (originEvent != null) {
 					// Cancel the drag
 					GodotInputHandler.handleMotionEvent(
@@ -228,6 +244,8 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 					)
 				}
 				dragInProgress = false
+				lastDragX = 0.0f
+				lastDragY = 0.0f
 			}
 		}
 
@@ -235,8 +253,10 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 		val y = terminusEvent.y
 		if (terminusEvent.pointerCount >= 2 && panningAndScalingEnabled && !pointerCaptureInProgress && !dragInProgress) {
 			GodotLib.pan(x, y, distanceX / 5f, distanceY / 5f)
-		} else if (!scaleInProgress){
+		} else if (!scaleInProgress) {
 			dragInProgress = true
+			lastDragX = terminusEvent.getX(0)
+			lastDragY = terminusEvent.getY(0)
 			GodotInputHandler.handleMotionEvent(terminusEvent)
 		}
 		return true
