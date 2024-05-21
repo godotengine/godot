@@ -146,6 +146,7 @@ repos:
         exclude: |
           (?x)^(
             core/math/bvh_.*\.inc$|
+            platform/(?!android|ios|linuxbsd|macos|web|windows)\w+/.*|
             platform/android/java/lib/src/com/.*|
             platform/android/java/lib/src/org/godotengine/godot/gl/GLSurfaceView\.java$|
             platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper\.java$|
@@ -186,3 +187,15 @@ repos:
         language: python
         entry: python3 misc/scripts/dotnet_format.py
         types_or: [c#]
+
+# End of upstream Godot pre-commit hooks.
+#
+# Keep this separation to let downstream forks add their own hooks to this file,
+# without running into merge conflicts when rebasing on latest upstream.
+#
+# Start of downstream pre-commit hooks.
+#
+# This is still the "repo: local" scope, so new local hooks can be defined directly at this indentation:
+#     - id: new-local-hook
+# To add external repo hooks, bring the indentation back to:
+# - repo: my-remote-hook
