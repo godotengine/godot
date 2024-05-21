@@ -4551,6 +4551,7 @@ void Main::cleanup(bool p_force) {
 		memdelete(steam_tracker);
 	}
 #endif
+	ProjectSettings::reset();
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
