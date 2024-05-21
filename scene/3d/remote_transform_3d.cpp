@@ -113,6 +113,16 @@ void RemoteTransform3D::_notification(int p_what) {
 			_update_cache();
 		} break;
 
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (cache.is_valid()) {
+				_update_remote();
+				Node3D *n = Object::cast_to<Node3D>(ObjectDB::get_instance(cache));
+				if (n) {
+					n->reset_physics_interpolation();
+				}
+			}
+		} break;
+
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (!is_inside_tree()) {
