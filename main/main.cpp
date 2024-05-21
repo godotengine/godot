@@ -67,6 +67,7 @@
 #include "servers/camera_server.h"
 #include "servers/navigation_2d_server.h"
 #include "servers/navigation_server.h"
+#include "servers/navigation_server_dummy.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "servers/register_server_types.h"
@@ -235,8 +236,21 @@ void finalize_physics() {
 
 void initialize_navigation_server() {
 	ERR_FAIL_COND(navigation_server != nullptr);
+
+	// Init 3D Navigation Server
 	navigation_server = NavigationServerManager::new_default_server();
+
+	// Fall back to dummy if no default server has been registered.
+	if (!navigation_server) {
+		navigation_server = memnew(NavigationServerDummy);
+	}
+
+	// Should be impossible, but make sure it's not null.
+	ERR_FAIL_NULL_MSG(navigation_server, "Failed to initialize NavigationServer.");
+
+	// Init 2D Navigation Server
 	navigation_2d_server = memnew(Navigation2DServer);
+	ERR_FAIL_NULL_MSG(navigation_2d_server, "Failed to initialize Navigation2DServer.");
 }
 
 void finalize_navigation_server() {
