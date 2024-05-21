@@ -662,7 +662,7 @@ private:
 
 	void _begin_first_scan();
 
-	void _notify_scene_updated(Node *p_node);
+	void _notify_nodes_scene_reimported(Node *p_node, Array p_reimported_nodes);
 
 protected:
 	friend class FileSystemDock;
