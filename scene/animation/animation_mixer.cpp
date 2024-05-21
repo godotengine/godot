@@ -33,6 +33,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/templates/bit_set.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "servers/audio/audio_stream.h"
@@ -1068,11 +1069,13 @@ void AnimationMixer::blend_capture(double p_delta) {
 }
 
 void AnimationMixer::_blend_calc_total_weight() {
+	thread_local BitSet processed_indices;
 	for (const AnimationInstance &ai : animation_instances) {
 		Ref<Animation> a = ai.animation_data.animation;
 		real_t weight = ai.playback_info.weight;
 		Vector<real_t> track_weights = ai.playback_info.track_weights;
-		Vector<int> processed_indices;
+		processed_indices.clear();
+		processed_indices.resize(track_count);
 		for (int i = 0; i < a->get_track_count(); i++) {
 			if (!a->track_is_enabled(i)) {
 				continue;
@@ -1083,13 +1086,13 @@ void AnimationMixer::_blend_calc_total_weight() {
 			}
 			TrackCache *track = track_cache[thash];
 			int blend_idx = track_map[track->path];
-			if (processed_indices.has(blend_idx)) {
-				continue; // There is the case different track type with same path... Is there more faster iterating way than has()?
-			}
 			ERR_CONTINUE(blend_idx < 0 || blend_idx >= track_count);
+			if (processed_indices.get(blend_idx)) {
+				continue; // Different track type with the same path.
+			}
 			real_t blend = blend_idx < track_weights.size() ? track_weights[blend_idx] * weight : weight;
 			track->total_weight += blend;
-			processed_indices.push_back(blend_idx);
+			processed_indices.set(blend_idx, true);
 		}
 	}
 }
