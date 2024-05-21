@@ -5419,7 +5419,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	lock_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(LOCK_SELECTED));
 	lock_button->set_tooltip_text(TTR("Lock selected node, preventing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	lock_button->set_shortcut(ED_SHORTCUT("editor/lock_selected_nodes", TTR("Lock Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::L));
+	lock_button->set_shortcut(ED_GET_SHORTCUT("editor/lock_selected_nodes"));
 
 	unlock_button = memnew(Button);
 	unlock_button->set_theme_type_variation("FlatButton");
@@ -5427,7 +5427,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	unlock_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(UNLOCK_SELECTED));
 	unlock_button->set_tooltip_text(TTR("Unlock selected node, allowing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	unlock_button->set_shortcut(ED_SHORTCUT("editor/unlock_selected_nodes", TTR("Unlock Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::L));
+	unlock_button->set_shortcut(ED_GET_SHORTCUT("editor/unlock_selected_nodes"));
 
 	group_button = memnew(Button);
 	group_button->set_theme_type_variation("FlatButton");
@@ -5435,7 +5435,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	group_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(GROUP_SELECTED));
 	group_button->set_tooltip_text(TTR("Groups the selected node with its children. This causes the parent to be selected when any child node is clicked in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	group_button->set_shortcut(ED_SHORTCUT("editor/group_selected_nodes", TTR("Group Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::G));
+	group_button->set_shortcut(ED_GET_SHORTCUT("editor/group_selected_nodes"));
 
 	ungroup_button = memnew(Button);
 	ungroup_button->set_theme_type_variation("FlatButton");
@@ -5443,7 +5443,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	ungroup_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(UNGROUP_SELECTED));
 	ungroup_button->set_tooltip_text(TTR("Ungroups the selected node from its children. Child nodes will be individual items in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	ungroup_button->set_shortcut(ED_SHORTCUT("editor/ungroup_selected_nodes", TTR("Ungroup Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::G));
+	ungroup_button->set_shortcut(ED_GET_SHORTCUT("editor/ungroup_selected_nodes"));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
