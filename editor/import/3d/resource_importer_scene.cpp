@@ -2329,6 +2329,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 		}
 		script_ext_hint += "*." + E;
 	}
+	bool trimming_defaults_on = p_path.get_extension().to_lower() == "fbx";
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/apply_root_scale"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
@@ -2342,7 +2343,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "skins/use_named_skins"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 30));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/trimming"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/trimming"), trimming_defaults_on));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/remove_immutable_tracks"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import_rest_as_RESET"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "import_script/path", PROPERTY_HINT_FILE, script_ext_hint), ""));

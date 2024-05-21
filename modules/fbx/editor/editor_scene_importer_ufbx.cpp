@@ -111,7 +111,7 @@ void EditorSceneFormatImporterUFBX::get_import_options(const String &p_path,
 
 void EditorSceneFormatImporterUFBX::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
 	if (!p_import_params.has("fbx/importer")) {
-		p_import_params["fbx/importer"] = EditorSceneFormatImporterUFBX::FBX_IMPORTER_UFBX;
+		p_import_params["fbx/importer"] = EditorSceneFormatImporterUFBX::FBX_IMPORTER_FBX2GLTF;
 	}
 }
 
