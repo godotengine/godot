@@ -895,9 +895,22 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	Vector<Vector3> nav_vertices;
 
+	HashMap<Vector3, int> recast_vertex_to_native_index;
+	LocalVector<int> recast_index_to_native_index;
+	recast_index_to_native_index.resize(detail_mesh->nverts);
+
 	for (int i = 0; i < detail_mesh->nverts; i++) {
 		const float *v = &detail_mesh->verts[i * 3];
-		nav_vertices.push_back(Vector3(v[0], v[1], v[2]));
+		const Vector3 vertex = Vector3(v[0], v[1], v[2]);
+		int *existing_index_ptr = recast_vertex_to_native_index.getptr(vertex);
+		if (!existing_index_ptr) {
+			int new_index = recast_vertex_to_native_index.size();
+			recast_index_to_native_index[i] = new_index;
+			recast_vertex_to_native_index[vertex] = new_index;
+			nav_vertices.push_back(vertex);
+		} else {
+			recast_index_to_native_index[i] = *existing_index_ptr;
+		}
 	}
 	p_navigation_mesh->set_vertices(nav_vertices);
 	p_navigation_mesh->clear_polygons();
@@ -912,9 +925,14 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 			Vector<int> nav_indices;
 			nav_indices.resize(3);
 			// Polygon order in recast is opposite than godot's
-			nav_indices.write[0] = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 0]));
-			nav_indices.write[1] = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 2]));
-			nav_indices.write[2] = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 1]));
+			int index1 = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 0]));
+			int index2 = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 2]));
+			int index3 = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 1]));
+
+			nav_indices.write[0] = recast_index_to_native_index[index1];
+			nav_indices.write[1] = recast_index_to_native_index[index2];
+			nav_indices.write[2] = recast_index_to_native_index[index3];
+
 			p_navigation_mesh->add_polygon(nav_indices);
 		}
 	}
