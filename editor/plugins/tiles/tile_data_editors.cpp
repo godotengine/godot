@@ -1325,7 +1325,7 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 	picker_button = memnew(Button);
 	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
-	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P));
+	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
 	toolbar->add_child(picker_button);
 }
 
@@ -2812,7 +2812,7 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 	picker_button = memnew(Button);
 	picker_button->set_theme_type_variation("FlatButton");
 	picker_button->set_toggle_mode(true);
-	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", TTR("Picker"), Key::P));
+	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
 	toolbar->add_child(picker_button);
 
 	// Setup

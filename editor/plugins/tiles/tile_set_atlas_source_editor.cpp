@@ -2627,7 +2627,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tools_settings_erase_button = memnew(Button);
 	tools_settings_erase_button->set_theme_type_variation("FlatButton");
 	tools_settings_erase_button->set_toggle_mode(true);
-	tools_settings_erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", TTR("Eraser"), Key::E));
+	tools_settings_erase_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/eraser"));
 	tools_settings_erase_button->set_shortcut_context(this);
 	tool_settings->add_child(tools_settings_erase_button);
 
@@ -2687,7 +2687,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_create_help->set_grow_direction_preset(Control::PRESET_BOTTOM_LEFT);
 
 	base_tile_popup_menu = memnew(PopupMenu);
-	base_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete", TTR("Delete"), Key::KEY_DELETE), TILE_DELETE);
+	base_tile_popup_menu->add_shortcut(ED_GET_SHORTCUT("tiles_editor/delete"), TILE_DELETE);
 	base_tile_popup_menu->add_item(TTR("Create an Alternative Tile"), TILE_CREATE_ALTERNATIVE);
 	base_tile_popup_menu->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tile_atlas_view->add_child(base_tile_popup_menu);
