@@ -1,8 +1,8 @@
 import os
 import sys
-from methods import print_error, detect_darwin_sdk_path
-
 from typing import TYPE_CHECKING
+
+from methods import detect_darwin_sdk_path, print_error
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment

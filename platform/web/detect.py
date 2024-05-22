@@ -1,18 +1,19 @@
 import os
 import sys
+from typing import TYPE_CHECKING
 
 from emscripten_helpers import (
-    run_closure_compiler,
-    create_engine_file,
+    add_js_externs,
     add_js_libraries,
     add_js_pre,
-    add_js_externs,
+    create_engine_file,
     create_template_zip,
     get_template_zip_path,
+    run_closure_compiler,
 )
-from methods import print_warning, print_error, get_compiler_version
 from SCons.Util import WhereIs
-from typing import TYPE_CHECKING
+
+from methods import get_compiler_version, print_error, print_warning
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment

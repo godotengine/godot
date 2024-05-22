@@ -1,8 +1,8 @@
 """Functions used to generate source files during build time"""
 
 import os
-from detect import get_mingw_bin_prefix
-from detect import try_cmd
+
+from detect import get_mingw_bin_prefix, try_cmd
 
 
 def make_debug_mingw(target, source, env):

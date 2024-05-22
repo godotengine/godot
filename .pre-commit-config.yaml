@@ -17,12 +17,12 @@ repos:
             platform/android/java/lib/src/com/.*
           )
 
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.2.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.4
     hooks:
-      - id: black
-        files: (\.py$|SConstruct|SCsub)
-        types_or: [text]
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.971
