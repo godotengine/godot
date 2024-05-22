@@ -1,4 +1,4 @@
-var Godot;
-var WebAssembly = {};
-WebAssembly.instantiate = function(buffer, imports) {};
-WebAssembly.instantiateStreaming = function(response, imports) {};
+let Godot;
+const WebAssembly = {};
+WebAssembly.instantiate = (buffer, imports) => {};
+WebAssembly.instantiateStreaming = (response, imports) => {};

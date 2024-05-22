@@ -1,4 +1,4 @@
-const Features = { // eslint-disable-line no-unused-vars
+const Features = {
 	/**
 	 * Check whether WebGL is available. Optionally, specify a particular version of WebGL to check for.
 	 *
@@ -6,10 +6,14 @@ const Features = { // eslint-disable-line no-unused-vars
 	 * @returns {boolean} If the given major version of WebGL is available.
 	 * @function Engine.isWebGLAvailable
 	 */
-	isWebGLAvailable: function (majorVersion = 1) {
+	isWebGLAvailable: (majorVersion = 1) => {
 		try {
-			return !!document.createElement('canvas').getContext(['webgl', 'webgl2'][majorVersion - 1]);
-		} catch (e) { /* Not available */ }
+			return !!document
+				.createElement("canvas")
+				.getContext(["webgl", "webgl2"][majorVersion - 1]);
+		} catch (e) {
+			/* Not available */
+		}
 		return false;
 	},
 
@@ -19,9 +23,10 @@ const Features = { // eslint-disable-line no-unused-vars
 	 * @returns {boolean} If the Fetch API is available and supports streaming responses.
 	 * @function Engine.isFetchAvailable
 	 */
-	isFetchAvailable: function () {
-		return 'fetch' in window && 'Response' in window && 'body' in window.Response.prototype;
-	},
+	isFetchAvailable: () =>
+		"fetch" in window &&
+		"Response" in window &&
+		"body" in window.Response.prototype,
 
 	/**
 	 * Check whether the engine is running in a Secure Context.
@@ -29,9 +34,7 @@ const Features = { // eslint-disable-line no-unused-vars
 	 * @returns {boolean} If the engine is running in a Secure Context.
 	 * @function Engine.isSecureContext
 	 */
-	isSecureContext: function () {
-		return window['isSecureContext'] === true;
-	},
+	isSecureContext: () => window.isSecureContext === true,
 
 	/**
 	 * Check whether the engine is cross origin isolated.
@@ -40,9 +43,7 @@ const Features = { // eslint-disable-line no-unused-vars
 	 * @returns {boolean} If the engine is running in a Secure Context.
 	 * @function Engine.isSecureContext
 	 */
-	isCrossOriginIsolated: function () {
-		return window['crossOriginIsolated'] === true;
-	},
+	isCrossOriginIsolated: () => window.crossOriginIsolated === true,
 
 	/**
 	 * Check whether SharedBufferArray is available.
@@ -53,9 +54,7 @@ const Features = { // eslint-disable-line no-unused-vars
 	 * @returns {boolean} If SharedArrayBuffer is available.
 	 * @function Engine.isSharedArrayBufferAvailable
 	 */
-	isSharedArrayBufferAvailable: function () {
-		return 'SharedArrayBuffer' in window;
-	},
+	isSharedArrayBufferAvailable: () => "SharedArrayBuffer" in window,
 
 	/**
 	 * Check whether the AudioContext supports AudioWorkletNodes.
@@ -63,9 +62,8 @@ const Features = { // eslint-disable-line no-unused-vars
 	 * @returns {boolean} If AudioWorkletNode is available.
 	 * @function Engine.isAudioWorkletAvailable
 	 */
-	isAudioWorkletAvailable: function () {
-		return 'AudioContext' in window && 'audioWorklet' in AudioContext.prototype;
-	},
+	isAudioWorkletAvailable: () =>
+		"AudioContext" in window && "audioWorklet" in AudioContext.prototype,
 
 	/**
 	 * Return an array of missing required features (as string).
@@ -74,28 +72,34 @@ const Features = { // eslint-disable-line no-unused-vars
 	 * @function Engine.getMissingFeatures
 	 * @param {{threads: (boolean|undefined)}} supportedFeatures
 	 */
-	getMissingFeatures: function (supportedFeatures = {}) {
-		const {
-			threads: supportsThreads = true,
-		} = supportedFeatures;
+	getMissingFeatures: (supportedFeatures = {}) => {
+		const { threads: supportsThreads = true } = supportedFeatures;
 
 		const missing = [];
 		if (!Features.isWebGLAvailable(2)) {
-			missing.push('WebGL2 - Check web browser configuration and hardware support');
+			missing.push(
+				"WebGL2 - Check web browser configuration and hardware support",
+			);
 		}
 		if (!Features.isFetchAvailable()) {
-			missing.push('Fetch - Check web browser version');
+			missing.push("Fetch - Check web browser version");
 		}
 		if (!Features.isSecureContext()) {
-			missing.push('Secure Context - Check web server configuration (use HTTPS)');
+			missing.push(
+				"Secure Context - Check web server configuration (use HTTPS)",
+			);
 		}
 
 		if (supportsThreads) {
 			if (!Features.isCrossOriginIsolated()) {
-				missing.push('Cross-Origin Isolation - Check that the web server configuration sends the correct headers.');
+				missing.push(
+					"Cross-Origin Isolation - Check that the web server configuration sends the correct headers.",
+				);
 			}
 			if (!Features.isSharedArrayBufferAvailable()) {
-				missing.push('SharedArrayBuffer - Check that the web server configuration sends the correct headers.');
+				missing.push(
+					"SharedArrayBuffer - Check that the web server configuration sends the correct headers.",
+				);
 			}
 		}
 

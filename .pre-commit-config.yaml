@@ -105,6 +105,13 @@ repos:
         args: [--fix, --no-eslintrc, --config, platform/web/.eslintrc.html.js]
         additional_dependencies: *eslint-deps
 
+  - repo: https://github.com/biomejs/pre-commit
+    rev: "v0.1.0"
+    hooks:
+      - id: biome-check
+        additional_dependencies: ["@biomejs/biome@1.7.1"]
+        exclude: .*thirdparty.*
+
   - repo: local
     hooks:
       - id: make-rst

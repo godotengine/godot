@@ -8,11 +8,11 @@
  * @module Engine
  * @header Web export JavaScript reference
  */
-const Engine = (function () {
+const Engine = (() => {
 	const preloader = new Preloader();
 
 	let loadPromise = null;
-	let loadPath = '';
+	let loadPath = "";
 	let initPromise = null;
 
 	/**
@@ -26,7 +26,7 @@ const Engine = (function () {
 	 * @constructor
 	 * @param {EngineConfig} initConfig The initial config for this instance.
 	 */
-	function Engine(initConfig) { // eslint-disable-line no-shadow
+	function Engine(initConfig) {
 		this.config = new InternalConfig(initConfig);
 		this.rtenv = null;
 	}
@@ -40,7 +40,7 @@ const Engine = (function () {
 	 *
 	 * @function Engine.load
 	 */
-	Engine.load = function (basePath, size) {
+	Engine.load = (basePath, size) => {
 		if (loadPromise == null) {
 			loadPath = basePath;
 			loadPromise = preloader.loadPromise(`${loadPath}.wasm`, size, true);
@@ -56,7 +56,7 @@ const Engine = (function () {
 	 *
 	 * @function Engine.unload
 	 */
-	Engine.unload = function () {
+	Engine.unload = () => {
 		loadPromise = null;
 	};
 
@@ -80,7 +80,11 @@ const Engine = (function () {
 				}
 				if (loadPromise == null) {
 					if (!basePath) {
-						initPromise = Promise.reject(new Error('A base path must be provided when calling `init` and the engine is not loaded.'));
+						initPromise = Promise.reject(
+							new Error(
+								"A base path must be provided when calling `init` and the engine is not loaded.",
+							),
+						);
 						return initPromise;
 					}
 					Engine.load(basePath, this.config.fileSizes[`${basePath}.wasm`]);
@@ -90,19 +94,23 @@ const Engine = (function () {
 					// Care! Promise chaining is bogus with old emscripten versions.
 					// This caused a regression with the Mono build (which uses an older emscripten version).
 					// Make sure to test that when refactoring.
-					return new Promise(function (resolve, reject) {
-						promise.then(function (response) {
-							const cloned = new Response(response.clone().body, { 'headers': [['content-type', 'application/wasm']] });
-							Godot(me.config.getModuleConfig(loadPath, cloned)).then(function (module) {
-								const paths = me.config.persistentPaths;
-								module['initFS'](paths).then(function (err) {
-									me.rtenv = module;
-									if (me.config.unloadAfterInit) {
-										Engine.unload();
-									}
-									resolve();
-								});
+					return new Promise((resolve, reject) => {
+						promise.then((response) => {
+							const cloned = new Response(response.clone().body, {
+								headers: [["content-type", "application/wasm"]],
 							});
+							Godot(me.config.getModuleConfig(loadPath, cloned)).then(
+								(module) => {
+									const paths = me.config.persistentPaths;
+									module.initFS(paths).then((err) => {
+										me.rtenv = module;
+										if (me.config.unloadAfterInit) {
+											Engine.unload();
+										}
+										resolve();
+									});
+								},
+							);
 						});
 					});
 				}
@@ -145,44 +153,55 @@ const Engine = (function () {
 			 */
 			start: function (override) {
 				this.config.update(override);
-				const me = this;
-				return me.init().then(function () {
-					if (!me.rtenv) {
-						return Promise.reject(new Error('The engine must be initialized before it can be started'));
+				return this.init().then(() => {
+					if (!this.rtenv) {
+						return Promise.reject(
+							new Error(
+								"The engine must be initialized before it can be started",
+							),
+						);
 					}
 
 					let config = {};
 					try {
-						config = me.config.getGodotConfig(function () {
-							me.rtenv = null;
+						config = this.config.getGodotConfig(() => {
+							this.rtenv = null;
 						});
 					} catch (e) {
 						return Promise.reject(e);
 					}
 					// Godot configuration.
-					me.rtenv['initConfig'](config);
+					this.rtenv.initConfig(config);
 
 					// Preload GDExtension libraries.
 					const libs = [];
-					if (me.config.gdextensionLibs.length > 0 && !me.rtenv['loadDynamicLibrary']) {
-						return Promise.reject(new Error('GDExtension libraries are not supported by this engine version. '
-							+ 'Enable "Extensions Support" for your export preset and/or build your custom template with "dlink_enabled=yes".'));
+					if (
+						this.config.gdextensionLibs.length > 0 &&
+						!this.rtenv.loadDynamicLibrary
+					) {
+						return Promise.reject(
+							new Error(
+								"GDExtension libraries are not supported by this engine version. " +
+									'Enable "Extensions Support" for your export preset and/or build your custom template with "dlink_enabled=yes".',
+							),
+						);
 					}
-					me.config.gdextensionLibs.forEach(function (lib) {
-						libs.push(me.rtenv['loadDynamicLibrary'](lib, { 'loadAsync': true }));
-					});
-					return Promise.all(libs).then(function () {
-						return new Promise(function (resolve, reject) {
-							preloader.preloadedFiles.forEach(function (file) {
-								me.rtenv['copyToFS'](file.path, file.buffer);
-							});
-							preloader.preloadedFiles.length = 0; // Clear memory
-							me.rtenv['callMain'](me.config.args);
-							initPromise = null;
-							me.installServiceWorker();
-							resolve();
-						});
-					});
+					for (const lib of this.config.gdextensionLibs) {
+						libs.push(this.rtenv.loadDynamicLibrary(lib, { loadAsync: true }));
+					}
+					return Promise.all(libs).then(
+						() =>
+							new Promise((resolve, reject) => {
+								for (const file of preloader.preloadedFiles) {
+									this.rtenv.copyToFS(file.path, file.buffer);
+								}
+								preloader.preloadedFiles.length = 0; // Clear memory
+								this.rtenv.callMain(this.config.args);
+								initPromise = null;
+								this.installServiceWorker();
+								resolve();
+							}),
+					);
 				});
 			},
 
@@ -204,15 +223,10 @@ const Engine = (function () {
 				// Add main-pack argument.
 				const exe = this.config.executable;
 				const pack = this.config.mainPack || `${exe}.pck`;
-				this.config.args = ['--main-pack', pack].concat(this.config.args);
-				// Start and init with execName as loadPath if not inited.
-				const me = this;
-				return Promise.all([
-					this.init(exe),
-					this.preloadFile(pack, pack),
-				]).then(function () {
-					return me.start.apply(me);
-				});
+				this.config.args = ["--main-pack", pack].concat(this.config.args);
+				return Promise.all([this.init(exe), this.preloadFile(pack, pack)]).then(
+					() => this.start.apply(this),
+				);
 			},
 
 			/**
@@ -223,9 +237,9 @@ const Engine = (function () {
 			 */
 			copyToFS: function (path, buffer) {
 				if (this.rtenv == null) {
-					throw new Error('Engine must be inited before copying files');
+					throw new Error("Engine must be inited before copying files");
 				}
-				this.rtenv['copyToFS'](path, buffer);
+				this.rtenv.copyToFS(path, buffer);
 			},
 
 			/**
@@ -237,7 +251,7 @@ const Engine = (function () {
 			 */
 			requestQuit: function () {
 				if (this.rtenv) {
-					this.rtenv['request_quit']();
+					this.rtenv.request_quit();
 				}
 			},
 
@@ -246,7 +260,7 @@ const Engine = (function () {
 			 * @returns {Promise} The service worker registration promise.
 			 */
 			installServiceWorker: function () {
-				if (this.config.serviceWorker && 'serviceWorker' in navigator) {
+				if (this.config.serviceWorker && "serviceWorker" in navigator) {
 					return navigator.serviceWorker.register(this.config.serviceWorker);
 				}
 				return Promise.resolve();
@@ -254,35 +268,28 @@ const Engine = (function () {
 		};
 
 		Engine.prototype = proto;
-		// Closure compiler exported instance methods.
-		Engine.prototype['init'] = Engine.prototype.init;
-		Engine.prototype['preloadFile'] = Engine.prototype.preloadFile;
-		Engine.prototype['start'] = Engine.prototype.start;
-		Engine.prototype['startGame'] = Engine.prototype.startGame;
-		Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
-		Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
-		Engine.prototype['installServiceWorker'] = Engine.prototype.installServiceWorker;
-		// Also expose static methods as instance methods
-		Engine.prototype['load'] = Engine.load;
-		Engine.prototype['unload'] = Engine.unload;
+		// Expose static methods as instance methods
+		Engine.prototype.load = Engine.load;
+		Engine.prototype.unload = Engine.unload;
 		return new Engine(initConfig);
 	}
 
 	// Closure compiler exported static methods.
-	SafeEngine['load'] = Engine.load;
-	SafeEngine['unload'] = Engine.unload;
+	SafeEngine.load = Engine.load;
+	SafeEngine.unload = Engine.unload;
 
 	// Feature-detection utilities.
-	SafeEngine['isWebGLAvailable'] = Features.isWebGLAvailable;
-	SafeEngine['isFetchAvailable'] = Features.isFetchAvailable;
-	SafeEngine['isSecureContext'] = Features.isSecureContext;
-	SafeEngine['isCrossOriginIsolated'] = Features.isCrossOriginIsolated;
-	SafeEngine['isSharedArrayBufferAvailable'] = Features.isSharedArrayBufferAvailable;
-	SafeEngine['isAudioWorkletAvailable'] = Features.isAudioWorkletAvailable;
-	SafeEngine['getMissingFeatures'] = Features.getMissingFeatures;
+	SafeEngine.isWebGLAvailable = Features.isWebGLAvailable;
+	SafeEngine.isFetchAvailable = Features.isFetchAvailable;
+	SafeEngine.isSecureContext = Features.isSecureContext;
+	SafeEngine.isCrossOriginIsolated = Features.isCrossOriginIsolated;
+	SafeEngine.isSharedArrayBufferAvailable =
+		Features.isSharedArrayBufferAvailable;
+	SafeEngine.isAudioWorkletAvailable = Features.isAudioWorkletAvailable;
+	SafeEngine.getMissingFeatures = Features.getMissingFeatures;
 
 	return SafeEngine;
-}());
-if (typeof window !== 'undefined') {
-	window['Engine'] = Engine;
+})();
+if (typeof window !== "undefined") {
+	window.Engine = Engine;
 }

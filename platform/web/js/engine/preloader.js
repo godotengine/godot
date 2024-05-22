@@ -1,7 +1,7 @@
-const Preloader = /** @constructor */ function () { // eslint-disable-line no-unused-vars
+const Preloader = /** @constructor */ function () {
 	function getTrackedResponse(response, load_status) {
 		function onloadprogress(reader, controller) {
-			return reader.read().then(function (result) {
+			return reader.read().then((result) => {
 				if (load_status.done) {
 					return Promise.resolve();
 				}
@@ -17,13 +17,16 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 			});
 		}
 		const reader = response.body.getReader();
-		return new Response(new ReadableStream({
-			start: function (controller) {
-				onloadprogress(reader, controller).then(function () {
-					controller.close();
-				});
-			},
-		}), { headers: response.headers });
+		return new Response(
+			new ReadableStream({
+				start: (controller) => {
+					onloadprogress(reader, controller).then(() => {
+						controller.close();
+					});
+				},
+			}),
+			{ headers: response.headers },
+		);
 	}
 
 	function loadFetch(file, tracker, fileSize, raw) {
@@ -32,7 +35,7 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 			loaded: 0,
 			done: false,
 		};
-		return fetch(file).then(function (response) {
+		return fetch(file).then((response) => {
 			if (!response.ok) {
 				return Promise.reject(new Error(`Failed loading file '${file}'`));
 			}
@@ -49,9 +52,11 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 			if (attempts <= 1) {
 				return Promise.reject(err);
 			}
-			return new Promise(function (resolve, reject) {
-				setTimeout(function () {
-					retry(func, attempts - 1).then(resolve).catch(reject);
+			return new Promise((resolve, reject) => {
+				setTimeout(() => {
+					retry(func, attempts - 1)
+						.then(resolve)
+						.catch(reject);
 				}, 1000);
 			});
 		}
@@ -63,13 +68,13 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 	const lastProgress = { loaded: 0, total: 0 };
 	let progressFunc = null;
 
-	const animateProgress = function () {
+	const animateProgress = () => {
 		let loaded = 0;
 		let total = 0;
 		let totalIsValid = true;
 		let progressIsFinal = true;
 
-		Object.keys(loadingFiles).forEach(function (file) {
+		for (const file of Object.keys(loadingFiles)) {
 			const stat = loadingFiles[file];
 			if (!stat.done) {
 				progressIsFinal = false;
@@ -81,11 +86,11 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 				total += stat.total;
 			}
 			loaded += stat.loaded;
-		});
+		}
 		if (loaded !== lastProgress.loaded || total !== lastProgress.total) {
 			lastProgress.loaded = loaded;
 			lastProgress.total = total;
-			if (typeof progressFunc === 'function') {
+			if (typeof progressFunc === "function") {
 				progressFunc(loaded, total);
 			}
 		}
@@ -96,27 +101,29 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 
 	this.animateProgress = animateProgress;
 
-	this.setProgressFunc = function (callback) {
+	this.setProgressFunc = (callback) => {
 		progressFunc = callback;
 	};
 
-	this.loadPromise = function (file, fileSize, raw = false) {
-		return retry(loadFetch.bind(null, file, loadingFiles, fileSize, raw), DOWNLOAD_ATTEMPTS_MAX);
-	};
+	this.loadPromise = (file, fileSize, raw = false) =>
+		retry(
+			loadFetch.bind(null, file, loadingFiles, fileSize, raw),
+			DOWNLOAD_ATTEMPTS_MAX,
+		);
 
 	this.preloadedFiles = [];
 	this.preload = function (pathOrBuffer, destPath, fileSize) {
 		let buffer = null;
-		if (typeof pathOrBuffer === 'string') {
-			const me = this;
-			return this.loadPromise(pathOrBuffer, fileSize).then(function (buf) {
-				me.preloadedFiles.push({
+		if (typeof pathOrBuffer === "string") {
+			return this.loadPromise(pathOrBuffer, fileSize).then((buf) => {
+				this.preloadedFiles.push({
 					path: destPath || pathOrBuffer,
 					buffer: buf,
 				});
 				return Promise.resolve();
 			});
-		} else if (pathOrBuffer instanceof ArrayBuffer) {
+		}
+		if (pathOrBuffer instanceof ArrayBuffer) {
 			buffer = new Uint8Array(pathOrBuffer);
 		} else if (ArrayBuffer.isView(pathOrBuffer)) {
 			buffer = new Uint8Array(pathOrBuffer.buffer);
@@ -128,6 +135,6 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 			});
 			return Promise.resolve();
 		}
-		return Promise.reject(new Error('Invalid object for preloading'));
+		return Promise.reject(new Error("Invalid object for preloading"));
 	};
 };
