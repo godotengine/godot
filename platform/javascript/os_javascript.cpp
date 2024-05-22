@@ -779,6 +779,8 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 
 	swap_ok_cancel = godot_js_display_is_swap_ok_cancel() == 1;
 
+	tts = GLOBAL_GET("audio/general/text_to_speech");
+
 	EmscriptenWebGLContextAttributes attributes;
 	emscripten_webgl_init_context_attributes(&attributes);
 	attributes.alpha = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
@@ -1179,8 +1181,6 @@ OS_JavaScript *OS_JavaScript::get_singleton() {
 }
 
 OS_JavaScript::OS_JavaScript() {
-	tts = GLOBAL_GET("audio/general/text_to_speech");
-
 	// Expose method for requesting quit.
 	godot_js_os_request_quit_cb(&request_quit_callback);
 	// Set canvas ID
@@ -1198,6 +1198,7 @@ OS_JavaScript::OS_JavaScript() {
 	main_loop = NULL;
 	visual_server = NULL;
 
+	tts = false;
 	swap_ok_cancel = false;
 	idb_available = godot_js_os_fs_is_persistent() != 0;
 	idb_needs_sync = false;
