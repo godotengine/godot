@@ -1,12 +1,18 @@
 #!/usr/bin/env python
 
-Import("env")
-
 import os
+from typing import TYPE_CHECKING
 
 import core_builders
+from SCons.Script.SConscript import SConsEnvironment
 
 import methods
+
+if TYPE_CHECKING:
+    env = SConsEnvironment()
+    Import = SConsEnvironment.Import
+
+Import("env")
 
 env.core_sources = []
 
@@ -242,7 +248,7 @@ if not ec_valid:
         "Unset `SCRIPT_AES256_ENCRYPTION_KEY` in your environment "
         "or make sure that it contains exactly 64 hexadecimal characters."
     )
-    Exit(255)
+    env.Exit(255)
 gen_encrypt = env.CommandNoCache("script_encryption_key.gen.cpp", env.Value(gdkey), env.Run(encryption_key_builder))
 env.add_source_files(env.core_sources, gen_encrypt)
 
@@ -275,19 +281,19 @@ env.CommandNoCache(
 )
 
 # Chain load SCsubs
-SConscript("os/SCsub")
-SConscript("math/SCsub")
-SConscript("crypto/SCsub")
-SConscript("io/SCsub")
-SConscript("debugger/SCsub")
-SConscript("input/SCsub")
-SConscript("variant/SCsub")
-SConscript("extension/SCsub")
-SConscript("object/SCsub")
-SConscript("templates/SCsub")
-SConscript("string/SCsub")
-SConscript("config/SCsub")
-SConscript("error/SCsub")
+env.SConscript("os/SCsub")
+env.SConscript("math/SCsub")
+env.SConscript("crypto/SCsub")
+env.SConscript("io/SCsub")
+env.SConscript("debugger/SCsub")
+env.SConscript("input/SCsub")
+env.SConscript("variant/SCsub")
+env.SConscript("extension/SCsub")
+env.SConscript("object/SCsub")
+env.SConscript("templates/SCsub")
+env.SConscript("string/SCsub")
+env.SConscript("config/SCsub")
+env.SConscript("error/SCsub")
 
 
 # Build it all as a library

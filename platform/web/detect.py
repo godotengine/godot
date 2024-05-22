@@ -1,5 +1,4 @@
 import os
-import sys
 from typing import TYPE_CHECKING
 
 from emscripten_helpers import (
@@ -90,13 +89,13 @@ def configure(env: "SConsEnvironment"):
             'Unsupported CPU architecture "%s" for Web. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit(255)
+        env.Exit(255)
 
     try:
         env["initial_memory"] = int(env["initial_memory"])
     except Exception:
         print_error("Initial memory must be a valid integer")
-        sys.exit(255)
+        env.Exit(255)
 
     ## Build type
 
@@ -246,7 +245,7 @@ def configure(env: "SConsEnvironment"):
 
         if cc_semver < (3, 1, 14):
             print_error("GDExtension support requires emscripten >= 3.1.14, detected: %s.%s.%s" % cc_semver)
-            sys.exit(255)
+            env.Exit(255)
 
         env.Append(CCFLAGS=["-s", "SIDE_MODULE=2"])
         env.Append(LINKFLAGS=["-s", "SIDE_MODULE=2"])

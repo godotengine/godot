@@ -2,8 +2,20 @@
 import atexit
 import sys
 import time
+from typing import TYPE_CHECKING
+
+from SCons.Script import ARGUMENTS
+from SCons.Script.SConscript import SConsEnvironment
+from SCons.Variables import BoolVariable, Variables
 
 import methods
+
+if TYPE_CHECKING:
+    env = SConsEnvironment()
+
+    def SConscript(*args, **kwargs) -> SConsEnvironment:
+        return SConsEnvironment()
+
 
 # Enable ANSI escape code support on Windows 10 and later (for colored console output).
 # <https://github.com/python/cpython/issues/73245>
@@ -759,7 +771,7 @@ env.Append(LIBS=[lib])
 
 env.Append(CPPDEFINES=["GDEXTENSION"])
 env.Append(CPPPATH=["../"])
-sources = Glob("../*.cpp")
+sources = env.Glob("../*.cpp")
 
 if env["platform"] == "macos":
     methods.write_macos_plist(
@@ -778,7 +790,7 @@ else:
         source=sources,
     )
 
-Default(library)
+env.Default(library)
 
 
 def print_elapsed_time():

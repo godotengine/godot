@@ -1,15 +1,21 @@
 #!/usr/bin/env python
 
+import glob
+import os
+from typing import TYPE_CHECKING
+
+import editor_builders
+from SCons.Script.SConscript import SConsEnvironment
+
+import methods
+
+if TYPE_CHECKING:
+    env = SConsEnvironment()
+    Import = SConsEnvironment.Import
+
 Import("env")
 
 env.editor_sources = []
-
-import glob
-import os
-
-import editor_builders
-
-import methods
 
 if env.editor_build:
     # Generate doc data paths
@@ -67,7 +73,7 @@ void register_exporter_types() {{
 
     # Core API documentation.
     docs = []
-    docs += Glob("#doc/classes/*.xml")
+    docs += env.Glob("#doc/classes/*.xml")
 
     # Module API documentation.
     module_dirs = []
@@ -77,9 +83,9 @@ void register_exporter_types() {{
 
     for d in module_dirs:
         if not os.path.isabs(d):
-            docs += Glob("#" + d + "/*.xml")  # Built-in.
+            docs += env.Glob("#" + d + "/*.xml")  # Built-in.
         else:
-            docs += Glob(d + "/*.xml")  # Custom.
+            docs += env.Glob(d + "/*.xml")  # Custom.
 
     docs = sorted(docs)
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
@@ -135,14 +141,14 @@ void register_exporter_types() {{
     env.add_source_files(env.editor_sources, "*.cpp")
     env.add_source_files(env.editor_sources, gen_exporters)
 
-    SConscript("debugger/SCsub")
-    SConscript("export/SCsub")
-    SConscript("gui/SCsub")
-    SConscript("icons/SCsub")
-    SConscript("import/SCsub")
-    SConscript("plugins/SCsub")
-    SConscript("project_manager/SCsub")
-    SConscript("themes/SCsub")
+    env.SConscript("debugger/SCsub")
+    env.SConscript("export/SCsub")
+    env.SConscript("gui/SCsub")
+    env.SConscript("icons/SCsub")
+    env.SConscript("import/SCsub")
+    env.SConscript("plugins/SCsub")
+    env.SConscript("project_manager/SCsub")
+    env.SConscript("themes/SCsub")
 
     lib = env.add_library("editor", env.editor_sources)
     env.Prepend(LIBS=[lib])

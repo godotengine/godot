@@ -21,9 +21,3 @@ target-version = "py37"
 extend-select = [
 	"I", # isort
 ]
-
-[tool.ruff.lint.per-file-ignores]
-"{SConstruct,SCsub}" = [
-	"E402", # Module level import not at top of file
-	"F821", # Undefined name
-]

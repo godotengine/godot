@@ -79,7 +79,7 @@ def configure(env: "SConsEnvironment"):
             'Unsupported CPU architecture "%s" for Linux / *BSD. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit(255)
+        env.Exit(255)
 
     ## Build type
 
@@ -131,7 +131,7 @@ def configure(env: "SConsEnvironment"):
                     print_error(
                         "Couldn't locate mold installation path. Make sure it's installed in /usr or /usr/local."
                     )
-                    sys.exit(255)
+                    env.Exit(255)
             else:
                 env.Append(LINKFLAGS=["-fuse-ld=mold"])
         else:
@@ -188,7 +188,7 @@ def configure(env: "SConsEnvironment"):
         if env["lto"] == "thin":
             if not env["use_llvm"]:
                 print_error("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
-                sys.exit(255)
+                env.Exit(255)
             env.Append(CCFLAGS=["-flto=thin"])
             env.Append(LINKFLAGS=["-flto=thin"])
         elif not env["use_llvm"] and env.GetOption("num_jobs") > 1:
@@ -234,7 +234,7 @@ def configure(env: "SConsEnvironment"):
             "freetype, libpng, zlib, graphite, harfbuzz.\n"
             "Please specify `builtin_<name>=no` for all of them, or none."
         )
-        sys.exit(255)
+        env.Exit(255)
 
     if not env["builtin_freetype"]:
         env.ParseConfig("pkg-config freetype2 --cflags --libs")
@@ -376,7 +376,7 @@ def configure(env: "SConsEnvironment"):
         else:
             if env["wayland"]:
                 print_error("libxkbcommon development libraries required by Wayland not found. Aborting.")
-                sys.exit(255)
+                env.Exit(255)
             else:
                 print_warning(
                     "libxkbcommon development libraries not found. Disabling dead key composition and key label support."
@@ -419,31 +419,31 @@ def configure(env: "SConsEnvironment"):
         if not env["use_sowrap"]:
             if os.system("pkg-config --exists x11"):
                 print_error("X11 libraries not found. Aborting.")
-                sys.exit(255)
+                env.Exit(255)
             env.ParseConfig("pkg-config x11 --cflags --libs")
             if os.system("pkg-config --exists xcursor"):
                 print_error("Xcursor library not found. Aborting.")
-                sys.exit(255)
+                env.Exit(255)
             env.ParseConfig("pkg-config xcursor --cflags --libs")
             if os.system("pkg-config --exists xinerama"):
                 print_error("Xinerama library not found. Aborting.")
-                sys.exit(255)
+                env.Exit(255)
             env.ParseConfig("pkg-config xinerama --cflags --libs")
             if os.system("pkg-config --exists xext"):
                 print_error("Xext library not found. Aborting.")
-                sys.exit(255)
+                env.Exit(255)
             env.ParseConfig("pkg-config xext --cflags --libs")
             if os.system("pkg-config --exists xrandr"):
                 print_error("XrandR library not found. Aborting.")
-                sys.exit(255)
+                env.Exit(255)
             env.ParseConfig("pkg-config xrandr --cflags --libs")
             if os.system("pkg-config --exists xrender"):
                 print_error("XRender library not found. Aborting.")
-                sys.exit(255)
+                env.Exit(255)
             env.ParseConfig("pkg-config xrender --cflags --libs")
             if os.system("pkg-config --exists xi"):
                 print_error("Xi library not found. Aborting.")
-                sys.exit(255)
+                env.Exit(255)
             env.ParseConfig("pkg-config xi --cflags --libs")
         env.Append(CPPDEFINES=["X11_ENABLED"])
 
@@ -456,15 +456,15 @@ def configure(env: "SConsEnvironment"):
                 env.ParseConfig("pkg-config libdecor-0 --cflags --libs")
             if os.system("pkg-config --exists wayland-client"):
                 print_error("Wayland client library not found. Aborting.")
-                sys.exit(255)
+                env.Exit(255)
             env.ParseConfig("pkg-config wayland-client --cflags --libs")
             if os.system("pkg-config --exists wayland-cursor"):
                 print_error("Wayland cursor library not found. Aborting.")
-                sys.exit(255)
+                env.Exit(255)
             env.ParseConfig("pkg-config wayland-cursor --cflags --libs")
             if os.system("pkg-config --exists wayland-egl"):
                 print_error("Wayland EGL library not found. Aborting.")
-                sys.exit(255)
+                env.Exit(255)
             env.ParseConfig("pkg-config wayland-egl --cflags --libs")
 
         if env["libdecor"]:

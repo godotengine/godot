@@ -1,18 +1,24 @@
 #!/usr/bin/env python
 
-Import("env")
-
 import os
 import shutil
 import subprocess
+from typing import TYPE_CHECKING
 
 import platform_macos_builders
+from SCons.Script.SConscript import SConsEnvironment
 
 from platform_methods import get_build_version, lipo
 
+if TYPE_CHECKING:
+    env = SConsEnvironment()
+    Import = SConsEnvironment.Import
+
+Import("env")
+
 
 def generate_bundle(target, source, env):
-    bin_dir = Dir("#bin").abspath
+    bin_dir = env.Dir("#bin").abspath
 
     if env.editor_build:
         # Editor bundle.
@@ -26,8 +32,8 @@ def generate_bundle(target, source, env):
         target_bin = lipo(bin_dir + "/" + prefix, env.extra_suffix)
 
         # Assemble .app bundle and update version info.
-        app_dir = Dir("#bin/" + (prefix + env.extra_suffix).replace(".", "_") + ".app").abspath
-        templ = Dir("#misc/dist/macos_tools.app").abspath
+        app_dir = env.Dir("#bin/" + (prefix + env.extra_suffix).replace(".", "_") + ".app").abspath
+        templ = env.Dir("#misc/dist/macos_tools.app").abspath
         if os.path.exists(app_dir):
             shutil.rmtree(app_dir)
         shutil.copytree(templ, app_dir, ignore=shutil.ignore_patterns("Contents/Info.plist"))
@@ -37,7 +43,7 @@ def generate_bundle(target, source, env):
             shutil.copy(target_bin, app_dir + "/Contents/MacOS/Godot")
         version = get_build_version(False)
         short_version = get_build_version(True)
-        with open(Dir("#misc/dist/macos").abspath + "/editor_info_plist.template", "rt") as fin:
+        with open(env.Dir("#misc/dist/macos").abspath + "/editor_info_plist.template", "rt") as fin:
             with open(app_dir + "/Contents/Info.plist", "wt", encoding="utf-8", newline="\n") as fout:
                 for line in fin:
                     line = line.replace("$version", version)
@@ -56,9 +62,9 @@ def generate_bundle(target, source, env):
                 "--entitlements",
             ]
             if env.dev_build:
-                sign_command += [Dir("#misc/dist/macos").abspath + "/editor_debug.entitlements"]
+                sign_command += [env.Dir("#misc/dist/macos").abspath + "/editor_debug.entitlements"]
             else:
-                sign_command += [Dir("#misc/dist/macos").abspath + "/editor.entitlements"]
+                sign_command += [env.Dir("#misc/dist/macos").abspath + "/editor.entitlements"]
             sign_command += [app_dir]
             subprocess.run(sign_command)
     else:
@@ -80,8 +86,8 @@ def generate_bundle(target, source, env):
         dbg_target_bin = lipo(bin_dir + "/" + dbg_prefix, env.extra_suffix)
 
         # Assemble .app bundle.
-        app_dir = Dir("#bin/macos_template.app").abspath
-        templ = Dir("#misc/dist/macos_template.app").abspath
+        app_dir = env.Dir("#bin/macos_template.app").abspath
+        templ = env.Dir("#misc/dist/macos_template.app").abspath
         if os.path.exists(app_dir):
             shutil.rmtree(app_dir)
         shutil.copytree(templ, app_dir)
@@ -93,7 +99,7 @@ def generate_bundle(target, source, env):
             shutil.copy(dbg_target_bin, app_dir + "/Contents/MacOS/godot_macos_debug.universal")
 
         # ZIP .app bundle.
-        zip_dir = Dir("#bin/" + (app_prefix + env.extra_suffix).replace(".", "_")).abspath
+        zip_dir = env.Dir("#bin/" + (app_prefix + env.extra_suffix).replace(".", "_")).abspath
         shutil.make_archive(zip_dir, "zip", root_dir=bin_dir, base_dir="macos_template.app")
         shutil.rmtree(app_dir)
 

@@ -2,6 +2,13 @@
 
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING, Any, List, Tuple, Union
+
+from SCons.Script.SConscript import SConsEnvironment
+
+if TYPE_CHECKING:
+    env = SConsEnvironment()
+    Import = SConsEnvironment.Import
 
 Import("env")
 
@@ -42,8 +49,8 @@ if env["use_pix"]:
 
 mesa_dir = (env["mesa_libs"] + "/godot-mesa").replace("\\", "/")
 mesa_gen_dir = (env["mesa_libs"] + "/godot-mesa/generated").replace("\\", "/")
-mesa_absdir = Dir(mesa_dir).abspath
-mesa_gen_absdir = Dir(mesa_dir + "/generated").abspath
+mesa_absdir = env.Dir(mesa_dir).abspath
+mesa_gen_absdir = env.Dir(mesa_dir + "/generated").abspath
 
 custom_build_steps = [
     [
@@ -102,7 +109,7 @@ mesa_blacklist_inc_paths = [mesa_dir + "/" + v for v in mesa_blacklist_inc_paths
 mesa_private_inc_paths = [v for v in mesa_private_inc_paths if v not in mesa_blacklist_inc_paths]
 
 # Added by ourselves.
-extra_defines = [
+extra_defines: List[Union[str, Tuple[str, Any]]] = [
     "WINDOWS_NO_FUTEX",
 ]
 

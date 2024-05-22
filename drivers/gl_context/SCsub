@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+from typing import TYPE_CHECKING
+
+from SCons.Script.SConscript import SConsEnvironment
+
+if TYPE_CHECKING:
+    env = SConsEnvironment()
+    Import = SConsEnvironment.Import
+
 Import("env")
 
 if env["platform"] in ["macos", "windows", "linuxbsd"]:
@@ -14,7 +22,7 @@ if env["platform"] in ["macos", "windows", "linuxbsd"]:
 
     # Treat glad headers as system headers to avoid raising warnings. Not supported on MSVC.
     if not env.msvc:
-        env.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path])
+        env.Append(CPPFLAGS=["-isystem", env.Dir(thirdparty_dir).path])
     else:
         env.Prepend(CPPPATH=[thirdparty_dir])
 

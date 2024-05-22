@@ -1,5 +1,14 @@
 #!/usr/bin/env python
 
+from typing import TYPE_CHECKING
+
+from SCons.Script.SConscript import SConsEnvironment
+
+if TYPE_CHECKING:
+    env = SConsEnvironment()
+    env_modules = SConsEnvironment()
+    Import = SConsEnvironment.Import
+
 Import("env")
 Import("env_modules")
 
@@ -98,14 +107,14 @@ module_obj = []
 env_openxr.add_source_files(module_obj, "*.cpp")
 env.modules_sources += module_obj
 
-Export("env_openxr")
+env.Export("env_openxr")
 
-SConscript("action_map/SCsub")
-SConscript("extensions/SCsub")
-SConscript("scene/SCsub")
+env.SConscript("action_map/SCsub")
+env.SConscript("extensions/SCsub")
+env.SConscript("scene/SCsub")
 
 if env.editor_build:
-    SConscript("editor/SCsub")
+    env.SConscript("editor/SCsub")
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
 env.Depends(module_obj, thirdparty_obj)

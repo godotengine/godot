@@ -2,8 +2,17 @@
 
 import subprocess
 import sys
+from typing import TYPE_CHECKING
+
+from SCons.Script.SConscript import SConsEnvironment
 
 from methods import print_warning
+
+if TYPE_CHECKING:
+    env = SConsEnvironment()
+    Import = SConsEnvironment.Import
+    Copy = SConsEnvironment.Builder
+    Move = SConsEnvironment.Builder
 
 Import("env")
 

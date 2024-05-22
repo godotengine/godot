@@ -1,11 +1,18 @@
 #!/usr/bin/env python
 
-Import("env")
-
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import platform_windows_builders
+from SCons.Script.SConscript import SConsEnvironment
+
+if TYPE_CHECKING:
+    env = SConsEnvironment()
+    Import = SConsEnvironment.Import
+    Copy = SConsEnvironment.Builder
+
+Import("env")
 
 sources = []
 
@@ -44,7 +51,7 @@ def arrange_program_clean(prog):
     for program in prog:
         executable_stem = Path(program.name).stem
         extra_files_to_clean = [f"#bin/{executable_stem}{extension}" for extension in extensions_to_clean]
-        Clean(prog, extra_files_to_clean)
+        env.Clean(prog, extra_files_to_clean)
 
 
 res_file = "godot_res.rc"

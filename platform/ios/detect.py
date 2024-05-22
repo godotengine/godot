@@ -64,7 +64,7 @@ def configure(env: "SConsEnvironment"):
             'Unsupported CPU architecture "%s" for iOS. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit(255)
+        env.Exit(255)
 
     ## LTO
 
@@ -119,7 +119,7 @@ def configure(env: "SConsEnvironment"):
     if env["arch"] == "x86_64":
         if not env["ios_simulator"]:
             print_error("Building for iOS with 'arch=x86_64' requires 'ios_simulator=yes'.")
-            sys.exit(255)
+            env.Exit(255)
 
         env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
         env.Append(

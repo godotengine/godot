@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+from typing import TYPE_CHECKING
+
+from SCons.Script.SConscript import Return, SConsEnvironment
+
+if TYPE_CHECKING:
+    env = SConsEnvironment()
+    Import = SConsEnvironment.Import
+
 Import("env")
 
 source_files = [

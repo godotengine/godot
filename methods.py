@@ -1106,7 +1106,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
             continue
         tmppath = "./" + x
         sys.path.insert(0, tmppath)
-        import msvs
+        import msvs  # type: ignore
 
         vs_plats = []
         vs_confs = []

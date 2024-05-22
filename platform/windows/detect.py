@@ -299,7 +299,7 @@ def setup_msvc_manual(env: "SConsEnvironment"):
             "Run SCons again without arch argument (example: scons p=windows) and SCons will attempt to detect what MSVC compiler will be executed and inform you."
             % (env["arch"], env_arch)
         )
-        sys.exit(255)
+        env.Exit(255)
 
     print("Using VCVARS-determined MSVC, arch %s" % (env_arch))
 
@@ -348,7 +348,7 @@ def setup_mingw(env: "SConsEnvironment"):
         print_error(
             "Running from base MSYS2 console/environment, use target specific environment instead (e.g., mingw32, mingw64, clang32, clang64)."
         )
-        sys.exit(255)
+        env.Exit(255)
 
     if env_arch != "" and env["arch"] != env_arch:
         print_error(
@@ -356,13 +356,13 @@ def setup_mingw(env: "SConsEnvironment"):
             "Run SCons again without arch argument (example: scons p=windows) and SCons will attempt to detect what MSYS2 compiler will be executed and inform you."
             % (env["arch"], env_arch)
         )
-        sys.exit(255)
+        env.Exit(255)
 
     if not try_cmd("gcc --version", env["mingw_prefix"], env["arch"]) and not try_cmd(
         "clang --version", env["mingw_prefix"], env["arch"]
     ):
         print_error("No valid compilers found, use MINGW_PREFIX environment variable to set MinGW path.")
-        sys.exit(255)
+        env.Exit(255)
 
     print("Using MinGW, arch %s" % (env["arch"]))
 
@@ -449,7 +449,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
     if int(env["target_win_version"], 16) < 0x0601:
         print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
-        sys.exit(255)
+        env.Exit(255)
 
     env.AppendUnique(
         CPPDEFINES=[
@@ -512,7 +512,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
                 "See the documentation for more information:\n\t"
                 "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
             )
-            sys.exit(255)
+            env.Exit(255)
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         LIBS += ["dxgi", "dxguid"]
@@ -567,7 +567,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     if env["lto"] != "none":
         if env["lto"] == "thin":
             print_error("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
-            sys.exit(255)
+            env.Exit(255)
         env.AppendUnique(CCFLAGS=["/GL"])
         env.AppendUnique(ARFLAGS=["/LTCG"])
         if env["progress"]:
@@ -669,7 +669,7 @@ def configure_mingw(env: "SConsEnvironment"):
         if env["lto"] == "thin":
             if not env["use_llvm"]:
                 print("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
-                sys.exit(255)
+                env.Exit(255)
             env.Append(CCFLAGS=["-flto=thin"])
             env.Append(LINKFLAGS=["-flto=thin"])
         elif not env["use_llvm"] and env.GetOption("num_jobs") > 1:
@@ -685,7 +685,7 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if int(env["target_win_version"], 16) < 0x0601:
         print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
-        sys.exit(255)
+        env.Exit(255)
 
     if not env["use_llvm"]:
         env.Append(CCFLAGS=["-mwindows"])
@@ -744,7 +744,7 @@ def configure_mingw(env: "SConsEnvironment"):
                 "See the documentation for more information:\n\t"
                 "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
             )
-            sys.exit(255)
+            env.Exit(255)
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         env.Append(LIBS=["dxgi", "dxguid"])
@@ -792,7 +792,7 @@ def configure(env: "SConsEnvironment"):
             'Unsupported CPU architecture "%s" for Windows. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit(255)
+        env.Exit(255)
 
     # At this point the env has been set up with basic tools/compilers.
     env.Prepend(CPPPATH=["#platform/windows"])

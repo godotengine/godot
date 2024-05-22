@@ -1,17 +1,24 @@
 #!/usr/bin/env python
 
-Import("env")
+from typing import TYPE_CHECKING
 
 import default_theme_icons_builders
+from SCons.Script.SConscript import SConsEnvironment
 
-env["BUILDERS"]["MakeDefaultThemeIconsBuilder"] = Builder(
+if TYPE_CHECKING:
+    env = SConsEnvironment()
+    Import = SConsEnvironment.Import
+
+Import("env")
+
+env["BUILDERS"]["MakeDefaultThemeIconsBuilder"] = env.Builder(
     action=env.Run(default_theme_icons_builders.make_default_theme_icons_action),
     suffix=".h",
     src_suffix=".svg",
 )
 
 # Default theme icons
-icon_sources = Glob("*.svg")
+icon_sources = env.Glob("*.svg")
 
 env.Alias(
     "default_theme_icons",

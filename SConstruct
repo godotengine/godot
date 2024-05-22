@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-EnsureSConsVersion(3, 1, 2)
-EnsurePythonVersion(3, 6)
-
 # System
 import atexit
 import glob
@@ -15,6 +12,12 @@ from importlib.util import module_from_spec, spec_from_file_location
 from types import ModuleType
 
 from SCons import __version__ as scons_raw_version
+from SCons.Script import ARGUMENTS, EnsurePythonVersion, EnsureSConsVersion, GetBuildFailures
+from SCons.Script.SConscript import SConsEnvironment
+from SCons.Variables import BoolVariable, EnumVariable, Variables
+
+EnsureSConsVersion(3, 1, 2)
+EnsurePythonVersion(3, 6)
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
@@ -53,12 +56,12 @@ _helper_module("core.core_builders", "core/core_builders.py")
 _helper_module("main.main_builders", "main/main_builders.py")
 
 # Local
-import gles3_builders
-import glsl_builders
-import methods
-import scu_builders
-from methods import print_error, print_warning
-from platform_methods import architecture_aliases, architectures
+import gles3_builders  # noqa: E402
+import glsl_builders  # noqa: E402
+import methods  # noqa: E402
+import scu_builders  # noqa: E402
+from methods import print_error, print_warning  # noqa: E402
+from platform_methods import architecture_aliases, architectures  # noqa: E402
 
 if ARGUMENTS.get("target", "editor") == "editor":
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
@@ -99,7 +102,7 @@ for x in sorted(glob.glob("platform/*")):
     tmppath = "./" + x
 
     sys.path.insert(0, tmppath)
-    import detect
+    import detect  # type: ignore
 
     # Get doc classes paths (if present)
     try:
@@ -140,7 +143,7 @@ elif os.name == "nt" and methods.get_cmdline_bool("use_mingw", False):
 # We let SCons build its default ENV as it includes OS-specific things which we don't
 # want to have to pull in manually.
 # Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
-env = Environment(tools=custom_tools)
+env = SConsEnvironment(tools=custom_tools)
 env.PrependENVPath("PATH", os.getenv("PATH"))
 env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 if "TERM" in os.environ:  # Used for colored output.
@@ -172,7 +175,7 @@ env["x86_libtheora_opt_gcc"] = False
 env["x86_libtheora_opt_vc"] = False
 
 # avoid issues when building with different versions of python out of the same directory
-env.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)
+env.SConsignFile(env.File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)
 
 # Build options
 
@@ -365,7 +368,7 @@ if env["platform"] not in platform_list:
     else:
         print_error(f'Invalid target platform "{env["platform"]}".\n' + text)
 
-    Exit(0 if env["platform"] == "list" else 255)
+    env.Exit(0 if env["platform"] == "list" else 255)
 
 # Add platform-specific options.
 if env["platform"] in platform_opts:
@@ -386,7 +389,7 @@ if env["custom_modules"]:
             module_search_paths.append(methods.convert_custom_modules_path(p))
         except ValueError as e:
             print_error(e)
-            Exit(255)
+            env.Exit(255)
 
 for path in module_search_paths:
     if path == "modules":
@@ -407,7 +410,7 @@ for path in module_search_paths:
 # Add module options.
 for name, path in modules_detected.items():
     sys.path.insert(0, path)
-    import config
+    import config  # type: ignore
 
     if env["modules_enabled_by_default"]:
         enabled = True
@@ -434,7 +437,7 @@ env.modules_detected = modules_detected
 
 # Update the environment again after all the module options are added.
 opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
-Help(opts.GenerateHelpText(env))
+env.Help(opts.GenerateHelpText(env))
 
 # add default include paths
 
@@ -513,7 +516,7 @@ if env["precision"] == "double":
 
 tmppath = "./platform/" + env["platform"]
 sys.path.insert(0, tmppath)
-import detect
+import detect  # type: ignore # noqa: E402
 
 # Default num_jobs to local cpu count if not user specified.
 # SCons has a peculiarity where user-specified options won't be overridden
@@ -564,7 +567,7 @@ if env["build_profile"] != "":
                 env[c] = dbo[c]
     except json.JSONDecodeError:
         print_error('Failed to open feature build profile: "{}"'.format(env["build_profile"]))
-        Exit(255)
+        env.Exit(255)
 
 # Platform specific flags.
 # These can sometimes override default options.
@@ -635,7 +638,7 @@ if methods.using_gcc(env):
             "and later. Use a newer GCC version, or Clang 6 or later by passing "
             '"use_llvm=yes" to the SCons command line.'
         )
-        Exit(255)
+        env.Exit(255)
     elif cc_version_metadata1 == "win32":
         print_error(
             "Detected mingw version is not using posix threads. Only posix "
@@ -643,7 +646,7 @@ if methods.using_gcc(env):
             'Use "update-alternatives --config x86_64-w64-mingw32-g++" '
             "to switch to posix threads."
         )
-        Exit(255)
+        env.Exit(255)
     if env["debug_paths_relative"] and cc_version_major < 8:
         print_warning("GCC < 8 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
         env["debug_paths_relative"] = False
@@ -662,13 +665,13 @@ elif methods.using_clang(env):
                 "Detected Clang version older than 6, which does not fully support "
                 "C++17. Supported versions are Clang 6 and later."
             )
-            Exit(255)
+            env.Exit(255)
         elif not vanilla and cc_version_major < 10:
             print_error(
                 "Detected Apple Clang version older than 10, which does not fully "
                 "support C++17. Supported versions are Apple Clang 10 and later."
             )
-            Exit(255)
+            env.Exit(255)
         if env["debug_paths_relative"] and not vanilla and cc_version_major < 12:
             print_warning(
                 "Apple Clang < 12 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option."
@@ -679,7 +682,7 @@ elif methods.using_clang(env):
             "Detected Clang version older than 6, which does not fully support "
             "C++17. Supported versions are Clang 6 and later."
         )
-        Exit(255)
+        env.Exit(255)
     if env["debug_paths_relative"] and cc_version_major < 10:
         print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
         env["debug_paths_relative"] = False
@@ -716,7 +719,7 @@ else:
             env.Append(CCFLAGS=["-g2"])
         if env["debug_paths_relative"]:
             # Remap absolute paths to relative paths for debug symbols.
-            project_path = Dir("#").abspath
+            project_path = env.Dir("#").abspath
             env.Append(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
     else:
         if methods.using_clang(env) and not methods.is_vanilla_clang(env):
@@ -880,7 +883,7 @@ for name, path in modules_detected.items():
         continue
     sys.path.insert(0, path)
     env.current_module = name
-    import config
+    import config  # type: ignore
 
     if config.can_build(env, env["platform"]):
         # Disable it if a required dependency is missing.
@@ -918,7 +921,7 @@ if env.editor_build:
     # And check if they are met.
     if not env.module_check_dependencies("editor"):
         print_error("Not all modules required by editor builds are enabled.")
-        Exit(255)
+        env.Exit(255)
 
 env.version_info = methods.get_version_info(env.module_version_string)
 
@@ -944,7 +947,7 @@ env["SHOBJPREFIX"] = env["object_prefix"]
 if env["disable_3d"]:
     if env.editor_build:
         print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
-        Exit(255)
+        env.Exit(255)
     else:
         env.Append(CPPDEFINES=["_3D_DISABLED"])
 if env["disable_advanced_gui"]:
@@ -953,7 +956,7 @@ if env["disable_advanced_gui"]:
             "Build option `disable_advanced_gui=yes` cannot be used for editor builds, "
             "only for export template builds."
         )
-        Exit(255)
+        env.Exit(255)
     else:
         env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
 if env["minizip"]:
@@ -985,7 +988,7 @@ env.Append(BUILDERS=GLSL_BUILDERS)
 
 scons_cache_path = os.environ.get("SCONS_CACHE")
 if scons_cache_path is not None:
-    CacheDir(scons_cache_path)
+    env.CacheDir(scons_cache_path)
     print("Scons cache enabled... (path: '" + scons_cache_path + "')")
 
 if env["vsproj"]:
@@ -995,7 +998,7 @@ if env["vsproj"]:
 if env["compiledb"] and env.scons_version < (4, 0, 0):
     # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
     print_error("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
-    Exit(255)
+    env.Exit(255)
 if env.scons_version >= (4, 0, 0):
     env.Tool("compilation_db")
     env.Alias("compiledb", env.CompilationDatabase())
@@ -1003,14 +1006,14 @@ if env.scons_version >= (4, 0, 0):
 if env["ninja"]:
     if env.scons_version < (4, 2, 0):
         print_error("The `ninja=yes` option requires SCons 4.2 or later, but your version is %s." % scons_raw_version)
-        Exit(255)
+        env.Exit(255)
 
-    SetOption("experimental", "ninja")
+    env.SetOption("experimental", "ninja")
 
     # By setting this we allow the user to run ninja by themselves with all
     # the flags they need, as apparently automatically running from scons
     # is way slower.
-    SetOption("disable_execute_ninja", True)
+    env.SetOption("disable_execute_ninja", True)
 
     env.Tool("ninja")
 
@@ -1019,31 +1022,31 @@ if env["threads"]:
     env.Append(CPPDEFINES=["THREADS_ENABLED"])
 
 # Build subdirs, the build order is dependent on link order.
-Export("env")
+env.Export("env")
 
-SConscript("core/SCsub")
-SConscript("servers/SCsub")
-SConscript("scene/SCsub")
+env.SConscript("core/SCsub")
+env.SConscript("servers/SCsub")
+env.SConscript("scene/SCsub")
 if env.editor_build:
-    SConscript("editor/SCsub")
-SConscript("drivers/SCsub")
+    env.SConscript("editor/SCsub")
+env.SConscript("drivers/SCsub")
 
-SConscript("platform/SCsub")
-SConscript("modules/SCsub")
+env.SConscript("platform/SCsub")
+env.SConscript("modules/SCsub")
 if env["tests"]:
-    SConscript("tests/SCsub")
-SConscript("main/SCsub")
+    env.SConscript("tests/SCsub")
+env.SConscript("main/SCsub")
 
-SConscript("platform/" + env["platform"] + "/SCsub")  # Build selected platform.
+env.SConscript("platform/" + env["platform"] + "/SCsub")  # Build selected platform.
 
 # Microsoft Visual Studio Project Generation
 if env["vsproj"]:
-    env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
+    env["CPPPATH"] = [env.Dir(path) for path in env["CPPPATH"]]
     methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
     methods.generate_cpp_hint_file("cpp.hint")
 
 # Check for the existence of headers
-conf = Configure(env)
+conf = env.Configure()
 if "check_c_headers" in env:
     headers = env["check_c_headers"]
     for header in headers:

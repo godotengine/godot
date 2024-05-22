@@ -1,9 +1,17 @@
 #!/usr/bin/env python
 
+from typing import TYPE_CHECKING
+
+from SCons.Script.SConscript import SConsEnvironment
+
+if TYPE_CHECKING:
+    env = SConsEnvironment()
+    Import = SConsEnvironment.Import
+
 Import("env")
 
 env.add_source_files(env.servers_sources, "*.cpp")
 
-SConscript("dummy/SCsub")
-SConscript("renderer_rd/SCsub")
-SConscript("storage/SCsub")
+env.SConscript("dummy/SCsub")
+env.SConscript("renderer_rd/SCsub")
+env.SConscript("storage/SCsub")

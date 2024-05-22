@@ -68,7 +68,7 @@ def configure(env: "SConsEnvironment"):
             'Unsupported CPU architecture "%s" for macOS. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit(255)
+        env.Exit(255)
 
     ## Build type
 
@@ -257,4 +257,4 @@ def configure(env: "SConsEnvironment"):
                 print_error(
                     "MoltenVK SDK installation directory not found, use 'vulkan_sdk_path' SCons parameter to specify SDK path."
                 )
-                sys.exit(255)
+                env.Exit(255)

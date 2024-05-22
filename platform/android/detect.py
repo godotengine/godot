@@ -91,7 +91,7 @@ def install_ndk_if_needed(env: "SConsEnvironment"):
                 f'Cannot find "{sdkmanager}". Please ensure ANDROID_HOME is correct and cmdline-tools'
                 f' are installed, or install NDK version "{get_ndk_version()}" manually.'
             )
-            sys.exit(255)
+            env.Exit(255)
     env["ANDROID_NDK_ROOT"] = get_android_ndk_root(env)
 
 
@@ -103,7 +103,7 @@ def configure(env: "SConsEnvironment"):
             'Unsupported CPU architecture "%s" for Android. Supported architectures are: %s.'
             % (env["arch"], ", ".join(supported_arches))
         )
-        sys.exit(255)
+        env.Exit(255)
 
     if get_min_sdk_version(env["ndk_platform"]) < get_min_target_api():
         print_warning(
