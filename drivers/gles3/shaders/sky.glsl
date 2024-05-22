@@ -116,7 +116,7 @@ uniform float z_far;
 uniform uint directional_light_count;
 
 #ifdef USE_MULTIVIEW
-layout(std140) uniform MultiviewData { // ubo:5
+layout(std140) uniform MultiviewData { // ubo:11
 	highp mat4 projection_matrix_view[MAX_VIEWS];
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 	highp vec4 eye_offset[MAX_VIEWS];
