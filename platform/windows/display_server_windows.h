@@ -396,6 +396,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool exclusive = false;
 		bool context_created = false;
 		bool mpass = false;
+		bool temp_mode_change = false;
 
 		// Used to transfer data between events using timer.
 		WPARAM saved_wparam;
@@ -441,6 +442,8 @@ class DisplayServerWindows : public DisplayServer {
 		Callable input_event_callback;
 		Callable input_text_callback;
 		Callable drop_files_callback;
+		Callable mode_will_change_callback;
+		Callable mode_changed_callback;
 
 		WindowID transient_parent = INVALID_WINDOW_ID;
 		HashSet<WindowID> transient_children;
@@ -595,6 +598,9 @@ public:
 	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id) override;
 
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+
+	virtual void window_set_mode_will_change_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_mode_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;

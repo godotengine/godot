@@ -97,6 +97,12 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	wd.fs_transition = false;
+
+	if (!wd.temp_mode_change) {
+		if (wd.mode_changed_callback.is_valid()) {
+			wd.mode_changed_callback.call(wd.exclusive_fullscreen ? DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN : DisplayServer::WINDOW_MODE_FULLSCREEN);
+		}
+	}
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
@@ -122,6 +128,12 @@
 
 	// Force window resize event and redraw.
 	[self windowDidResize:notification];
+
+	if (!wd.temp_mode_change) {
+		if (wd.mode_changed_callback.is_valid()) {
+			wd.mode_changed_callback.call(ds->window_get_mode(window_id));
+		}
+	}
 }
 
 - (void)windowWillExitFullScreen:(NSNotification *)notification {
@@ -132,6 +144,12 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	wd.fs_transition = true;
+
+	if (!wd.temp_mode_change) {
+		if (wd.mode_will_change_callback.is_valid()) {
+			wd.mode_will_change_callback.call(DisplayServer::WINDOW_MODE_WINDOWED);
+		}
+	}
 
 	// Restore custom window buttons.
 	if ([wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView) {
@@ -200,6 +218,12 @@
 
 	// Force window resize event and redraw.
 	[self windowDidResize:notification];
+
+	if (!wd.temp_mode_change) {
+		if (wd.mode_changed_callback.is_valid()) {
+			wd.mode_changed_callback.call(ds->window_get_mode(window_id));
+		}
+	}
 }
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification {

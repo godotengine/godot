@@ -1496,6 +1496,20 @@ void DisplayServerWindows::window_set_rect_changed_callback(const Callable &p_ca
 	windows[p_window].rect_changed_callback = p_callable;
 }
 
+void DisplayServerWindows::window_set_mode_will_change_callback(const Callable &p_callable, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	windows[p_window].mode_will_change_callback = p_callable;
+}
+
+void DisplayServerWindows::window_set_mode_changed_callback(const Callable &p_callable, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	windows[p_window].mode_changed_callback = p_callable;
+}
+
 void DisplayServerWindows::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -1979,6 +1993,16 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	WindowMode old_mode = window_get_mode(p_window);
+	if (old_mode == p_mode) {
+		return; // Do nothing.
+	}
+
+	if (wd.mode_will_change_callback.is_valid()) {
+		wd.mode_will_change_callback.call(p_mode);
+	}
+	wd.temp_mode_change = true;
+
 	if (wd.fullscreen && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		RECT rect;
 
@@ -2062,6 +2086,11 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, nullptr, 0);
 		}
 	}
+
+	if (wd.mode_changed_callback.is_valid()) {
+		wd.mode_changed_callback.call(p_mode);
+	}
+	wd.temp_mode_change = false;
 }
 
 DisplayServer::WindowMode DisplayServerWindows::window_get_mode(WindowID p_window) const {
@@ -4606,6 +4635,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			WINDOWPOS *window_pos_params = (WINDOWPOS *)lParam;
 			WindowData &window = windows[window_id];
 
+			bool prev_max = window.maximized;
+			bool prev_min = window.minimized;
+			bool prev_fs = window.fullscreen;
+
 			bool rect_changed = false;
 			if (!(window_pos_params->flags & SWP_NOSIZE) || window_pos_params->flags & SWP_FRAMECHANGED) {
 				int screen_id = window_get_current_screen(window_id);
@@ -4668,6 +4701,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					ClientToScreen(window.hWnd, (POINT *)&crect.left);
 					ClientToScreen(window.hWnd, (POINT *)&crect.right);
 					ClipCursor(&crect);
+				}
+			}
+
+			if (!window.temp_mode_change && (prev_max != window.maximized || prev_min != window.minimized || prev_fs != window.fullscreen)) {
+				if (window.mode_changed_callback.is_valid()) {
+					window.mode_changed_callback.call(window_get_mode(window_id));
 				}
 			}
 

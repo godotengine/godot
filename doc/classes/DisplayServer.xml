@@ -1657,6 +1657,24 @@
 				[b]Note:[/b] Setting the window to full screen forcibly sets the borderless flag to [code]true[/code], so make sure to set it back to [code]false[/code] when not wanted.
 			</description>
 		</method>
+		<method name="window_set_mode_changed_callback">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the [param callback] that will be called after the window mode is changed.
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
+			</description>
+		</method>
+		<method name="window_set_mode_will_change_callback">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the [param callback] that will be called before the window mode is changed.
+				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
+			</description>
+		</method>
 		<method name="window_set_mouse_passthrough">
 			<return type="void" />
 			<param index="0" name="region" type="PackedVector2Array" />

@@ -1736,6 +1736,8 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	window_set_input_event_callback(Callable(), p_id);
 	window_set_input_text_callback(Callable(), p_id);
 	window_set_drop_files_callback(Callable(), p_id);
+	window_set_mode_will_change_callback(Callable(), p_id);
+	window_set_mode_changed_callback(Callable(), p_id);
 
 	while (wd.transient_children.size()) {
 		window_set_transient(*wd.transient_children.begin(), INVALID_WINDOW_ID);
@@ -1911,6 +1913,20 @@ void DisplayServerX11::window_set_rect_changed_callback(const Callable &p_callab
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	wd.rect_changed_callback = p_callable;
+}
+
+void DisplayServerX11::window_set_mode_will_change_callback(const Callable &p_callable, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	windows[p_window].mode_will_change_callback = p_callable;
+}
+
+void DisplayServerX11::window_set_mode_changed_callback(const Callable &p_callable, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	windows[p_window].mode_changed_callback = p_callable;
 }
 
 void DisplayServerX11::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
@@ -2657,26 +2673,31 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 
 	WindowMode old_mode = window_get_mode(p_window);
 	if (old_mode == p_mode) {
-		return; // do nothing
+		return; // Do nothing.
 	}
-	//remove all "extra" modes
 
+	if (wd.mode_will_change_callback.is_valid()) {
+		wd.mode_will_change_callback.call(p_mode);
+	}
+	wd.temp_mode_change = true;
+
+	// Remove all "extra" modes.
 	switch (old_mode) {
 		case WINDOW_MODE_WINDOWED: {
-			//do nothing
+			// Do nothing.
 		} break;
 		case WINDOW_MODE_MINIMIZED: {
 			_set_wm_minimized(p_window, false);
 		} break;
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
-			//Remove full-screen
+			// Remove full-screen.
 			wd.fullscreen = false;
 			wd.exclusive_fullscreen = false;
 
 			_set_wm_fullscreen(p_window, false, false);
 
-			//un-maximize required for always on top
+			// Un-maximize required for always on top.
 			bool on_top = window_get_flag(WINDOW_FLAG_ALWAYS_ON_TOP, p_window);
 
 			window_set_position(wd.last_position_before_fs, p_window);
@@ -2691,9 +2712,10 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 	}
 
+	// Set new mode.
 	switch (p_mode) {
 		case WINDOW_MODE_WINDOWED: {
-			//do nothing
+			// Do nothing.
 		} break;
 		case WINDOW_MODE_MINIMIZED: {
 			_set_wm_minimized(p_window, true);
@@ -2719,6 +2741,11 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			_set_wm_maximized(p_window, true);
 		} break;
 	}
+
+	if (wd.mode_changed_callback.is_valid()) {
+		wd.mode_changed_callback.call(p_mode);
+	}
+	wd.temp_mode_change = false;
 }
 
 DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) const {
@@ -3921,7 +3948,7 @@ void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
 void DisplayServerX11::_window_changed(XEvent *event) {
 	WindowID window_id = MAIN_WINDOW_ID;
 
-	// Assign the event to the relevant window
+	// Assign the event to the relevant window.
 	for (const KeyValue<WindowID, WindowData> &E : windows) {
 		if (event->xany.window == E.value.x11_window) {
 			window_id = E.key;
@@ -3932,16 +3959,20 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	Rect2i new_rect;
 
 	WindowData &wd = windows[window_id];
-	if (wd.x11_window != event->xany.window) { // Check if the correct window, in case it was not main window or anything else
+	if (wd.x11_window != event->xany.window) { // Check if the correct window, in case it was not main window or anything else.
 		return;
 	}
+
+	bool prev_max = wd.maximized;
+	bool prev_min = wd.minimized;
+	bool prev_fs = wd.fullscreen;
 
 	// Query display server about a possible new window state.
 	wd.fullscreen = _window_fullscreen_check(window_id);
 	wd.maximized = _window_maximize_check(window_id, "_NET_WM_STATE") && !wd.fullscreen;
 	wd.minimized = _window_minimize_check(window_id) && !wd.fullscreen && !wd.maximized;
 
-	// Readjusting the window position if the window is being reparented by the window manager for decoration
+	// Readjusting the window position if the window is being reparented by the window manager for decoration.
 	Window root, parent, *children;
 	unsigned int nchildren;
 	if (XQueryTree(x11_display, wd.x11_window, &root, &parent, &children, &nchildren) && wd.parent != parent) {
@@ -3951,7 +3982,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	XFree(children);
 
 	{
-		//the position in xconfigure is not useful here, obtain it manually
+		// The position in xconfigure is not useful here, obtain it manually.
 		int x = 0, y = 0;
 		Window child;
 		XTranslateCoordinates(x11_display, wd.x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
@@ -3985,6 +4016,12 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 
 	if (wd.rect_changed_callback.is_valid()) {
 		wd.rect_changed_callback.call(new_rect);
+	}
+
+	if (!wd.temp_mode_change && (prev_max != wd.maximized || prev_min != wd.minimized || prev_fs != wd.fullscreen)) {
+		if (wd.mode_changed_callback.is_valid()) {
+			wd.mode_changed_callback.call(window_get_mode(window_id));
+		}
 	}
 }
 
@@ -4570,10 +4607,18 @@ void DisplayServerX11::process_events() {
 				if (ime_window_event) {
 					break;
 				}
+				WindowData &wd = windows[window_id];
 
-				windows[window_id].fullscreen = _window_fullscreen_check(window_id);
+				bool prev_fs = wd.fullscreen;
+				wd.fullscreen = _window_fullscreen_check(window_id);
 
 				Main::force_redraw();
+
+				if (!wd.temp_mode_change && prev_fs != wd.fullscreen) {
+					if (wd.mode_changed_callback.is_valid()) {
+						wd.mode_changed_callback.call(window_get_mode(window_id));
+					}
+				}
 			} break;
 
 			case NoExpose: {

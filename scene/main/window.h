@@ -123,6 +123,8 @@ private:
 	bool focused = false;
 	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
 	bool force_native = false;
+	bool was_in_exfs = false;
+	bool prev_embed_subwindows = false;
 
 	bool use_font_oversampling = false;
 	bool transient = false;
@@ -227,6 +229,8 @@ private:
 	void _window_drop_files(const Vector<String> &p_files);
 	void _rect_changed_callback(const Rect2i &p_callback);
 	void _event_callback(DisplayServer::WindowEvent p_event);
+	void _mode_will_change_callback(DisplayServer::WindowMode p_mode);
+	void _mode_changed_callback(DisplayServer::WindowMode p_mode);
 	virtual bool _can_consume_input_events() const override;
 
 	bool mouse_in_window = false;

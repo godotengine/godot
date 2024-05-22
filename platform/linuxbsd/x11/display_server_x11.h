@@ -183,6 +183,8 @@ class DisplayServerX11 : public DisplayServer {
 		Callable input_event_callback;
 		Callable input_text_callback;
 		Callable drop_files_callback;
+		Callable mode_will_change_callback;
+		Callable mode_changed_callback;
 
 		Vector<Vector2> mpath;
 
@@ -207,6 +209,7 @@ class DisplayServerX11 : public DisplayServer {
 		bool is_popup = false;
 		bool layered_window = false;
 		bool mpass = false;
+		bool temp_mode_change = false;
 
 		Rect2i parent_safe_rect;
 
@@ -458,6 +461,10 @@ public:
 	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+
+	virtual void window_set_mode_will_change_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_mode_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_input_text_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;

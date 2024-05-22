@@ -1766,6 +1766,20 @@ void DisplayServerMacOS::window_set_rect_changed_callback(const Callable &p_call
 	wd.rect_changed_callback = p_callable;
 }
 
+void DisplayServerMacOS::window_set_mode_will_change_callback(const Callable &p_callable, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	windows[p_window].mode_will_change_callback = p_callable;
+}
+
+void DisplayServerMacOS::window_set_mode_changed_callback(const Callable &p_callable, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	windows[p_window].mode_changed_callback = p_callable;
+}
+
 void DisplayServerMacOS::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -1875,6 +1889,7 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 	}
 
 	bool was_fullscreen = false;
+	wd.temp_mode_change = true;
 	if (wd.fullscreen) {
 		// Temporary exit fullscreen mode to move window.
 		[wd.window_object toggleFullScreen:nil];
@@ -1893,6 +1908,7 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 		// Re-enter fullscreen mode.
 		[wd.window_object toggleFullScreen:nil];
 	}
+	wd.temp_mode_change = false;
 }
 
 void DisplayServerMacOS::reparent_check(WindowID p_window) {
@@ -2190,6 +2206,11 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		return; // Do nothing.
 	}
 
+	if (wd.mode_will_change_callback.is_valid()) {
+		wd.mode_will_change_callback.call(p_mode);
+	}
+	wd.temp_mode_change = true;
+
 	switch (old_mode) {
 		case WINDOW_MODE_WINDOWED: {
 			// Do nothing.
@@ -2271,6 +2292,11 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			}
 		} break;
 	}
+
+	if (wd.mode_changed_callback.is_valid()) {
+		wd.mode_changed_callback.call(p_mode);
+	}
+	wd.temp_mode_change = false;
 }
 
 DisplayServer::WindowMode DisplayServerMacOS::window_get_mode(WindowID p_window) const {

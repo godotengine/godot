@@ -105,6 +105,8 @@ public:
 		Callable input_event_callback;
 		Callable input_text_callback;
 		Callable drop_files_callback;
+		Callable mode_will_change_callback;
+		Callable mode_changed_callback;
 
 		ObjectID instance_id;
 		bool fs_transition = false;
@@ -126,6 +128,7 @@ public:
 		bool focused = false;
 		bool is_visible = true;
 		bool extend_to_title = false;
+		bool temp_mode_change = false;
 
 		Rect2i parent_safe_rect;
 	};
@@ -337,6 +340,10 @@ public:
 	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const override;
 
 	virtual void window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+
+	virtual void window_set_mode_will_change_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_mode_changed_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_input_text_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;

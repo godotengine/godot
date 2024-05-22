@@ -698,6 +698,25 @@ void Window::_rect_changed_callback(const Rect2i &p_callback) {
 	}
 }
 
+void Window::_mode_will_change_callback(DisplayServer::WindowMode p_mode) {
+	if (get_mode() != Mode::MODE_EXCLUSIVE_FULLSCREEN && (Mode)p_mode == Mode::MODE_EXCLUSIVE_FULLSCREEN && !was_in_exfs) {
+		// Change subwindow embedding before entering exclusive fullscreen.
+		prev_embed_subwindows = is_embedding_subwindows();
+		was_in_exfs = true;
+		print_line("_set_mode set");
+		set_embedding_subwindows(true);
+	}
+}
+
+void Window::_mode_changed_callback(DisplayServer::WindowMode p_mode) {
+	if ((Mode)p_mode != Mode::MODE_EXCLUSIVE_FULLSCREEN && was_in_exfs) {
+		// Change subwindow embedding after exiting exclusive fullscreen.
+		was_in_exfs = false;
+		print_line("_set_mode reset");
+		set_embedding_subwindows(prev_embed_subwindows);
+	}
+}
+
 void Window::_propagate_window_notification(Node *p_node, int p_notification) {
 	p_node->notification(p_notification);
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -1224,6 +1243,8 @@ void Window::_update_window_callbacks() {
 	DisplayServer::get_singleton()->window_set_input_event_callback(callable_mp(this, &Window::_window_input), window_id);
 	DisplayServer::get_singleton()->window_set_input_text_callback(callable_mp(this, &Window::_window_input_text), window_id);
 	DisplayServer::get_singleton()->window_set_drop_files_callback(callable_mp(this, &Window::_window_drop_files), window_id);
+	DisplayServer::get_singleton()->window_set_mode_will_change_callback(callable_mp(this, &Window::_mode_will_change_callback), window_id);
+	DisplayServer::get_singleton()->window_set_mode_changed_callback(callable_mp(this, &Window::_mode_changed_callback), window_id);
 }
 
 void Window::set_force_native(bool p_force_native) {

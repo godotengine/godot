@@ -3791,14 +3791,16 @@ void Viewport::set_embedding_subwindows(bool p_embed) {
 		return;
 	}
 
-	bool allow_change = true;
+	// Get opened window list.
+	Vector<Window *> opened_windows;
 
 	if (!is_inside_tree()) {
 		// Change can happen since no child window is displayed.
 	} else if (gui.embed_subwindows_hint) {
-		if (!gui.sub_windows.is_empty()) {
-			// Prevent change when this viewport has embedded windows.
-			allow_change = false;
+		for (const SubWindow &sw : gui.sub_windows) {
+			if (sw.window) {
+				opened_windows.push_back(sw.window);
+			}
 		}
 	} else {
 		Viewport *vp = this;
@@ -3811,41 +3813,47 @@ void Viewport::set_embedding_subwindows(bool p_embed) {
 			if (vp->is_embedding_subwindows()) {
 				for (int i = 0; i < vp->gui.sub_windows.size(); i++) {
 					if (is_ancestor_of(vp->gui.sub_windows[i].window)) {
-						// Prevent change when this viewport has child windows that are displayed in an ancestor viewport.
-						allow_change = false;
-						break;
+						opened_windows.push_back(vp->gui.sub_windows[i].window);
 					}
 				}
 			}
 		}
 
-		if (allow_change) {
-			Vector<int> wl = DisplayServer::get_singleton()->get_window_list();
-			for (int index = 0; index < wl.size(); index++) {
-				DisplayServer::WindowID wid = wl[index];
-				if (wid == DisplayServer::INVALID_WINDOW_ID) {
-					continue;
-				}
+		Vector<int> wl = DisplayServer::get_singleton()->get_window_list();
+		for (int index = 0; index < wl.size(); index++) {
+			DisplayServer::WindowID wid = wl[index];
+			if (wid == DisplayServer::INVALID_WINDOW_ID) {
+				continue;
+			}
 
-				ObjectID woid = DisplayServer::get_singleton()->window_get_attached_instance_id(wid);
-				if (woid.is_null()) {
-					continue;
-				}
+			ObjectID woid = DisplayServer::get_singleton()->window_get_attached_instance_id(wid);
+			if (woid.is_null()) {
+				continue;
+			}
 
-				Window *w = Object::cast_to<Window>(ObjectDB::get_instance(woid));
-				if (w && is_ancestor_of(w)) {
-					// Prevent change when this viewport has child windows that are displayed as native windows.
-					allow_change = false;
-					break;
-				}
+			Window *w = Object::cast_to<Window>(ObjectDB::get_instance(woid));
+			if (w && is_ancestor_of(w)) {
+				opened_windows.push_back(w);
 			}
 		}
 	}
 
-	if (allow_change) {
-		gui.embed_subwindows_hint = p_embed;
-	} else {
-		WARN_PRINT("Can't change \"gui_embed_subwindows\" while a child window is displayed. Consider hiding all child windows before changing this value.");
+	// Close opened windows.
+	for (Window *w : opened_windows) {
+		w->set_visible(false);
+	}
+
+	gui.embed_subwindows_hint = p_embed;
+
+	// Reopen previously opened non-popup windows.
+	const Rect2 visible_rect = get_visible_rect();
+	for (Window *w : opened_windows) {
+		if (!w->get_flag(Window::FLAG_POPUP)) {
+			w->set_visible(true);
+			if (gui.embed_subwindows_hint && visible_rect != Rect2i() && !visible_rect.intersects(Rect2i(w->get_position(), w->get_size()))) {
+				w->set_position((visible_rect.size - w->get_size()) / 2); // Force embedded window to the viewport rect.
+			}
+		}
 	}
 }
 
