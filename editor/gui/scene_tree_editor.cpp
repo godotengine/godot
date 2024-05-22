@@ -994,6 +994,8 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 		return;
 	}
 
+	_update_tree();
+
 	TreeItem *item = p_node ? _find(tree->get_root(), p_node->get_path()) : nullptr;
 
 	if (item) {
