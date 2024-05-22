@@ -1988,6 +1988,46 @@ TEST_CASE("[String] Variant ptr indexed set") {
 	CHECK_EQ(s, String("azcd"));
 }
 
+TEST_CASE("[String] parse_url") {
+	String scheme, host, path, fragment;
+	int port;
+
+	SUBCASE("Typical URL") {
+		Error err = String("https://docs.godotengine.org/en/stable/").parse_url(scheme, host, port, path, fragment);
+		REQUIRE(err == OK);
+		CHECK_EQ(scheme, "https://");
+		CHECK_EQ(host, "docs.godotengine.org");
+		CHECK_EQ(port, 0);
+		CHECK_EQ(path, "/en/stable/");
+		CHECK_EQ(fragment, "");
+	}
+
+	SUBCASE("All Elements") {
+		Error err = String("https://www.example.com:8080/path/to/file.html#fragment").parse_url(scheme, host, port, path, fragment);
+		REQUIRE(err == OK);
+		CHECK_EQ(scheme, "https://");
+		CHECK_EQ(host, "www.example.com");
+		CHECK_EQ(port, 8080);
+		CHECK_EQ(path, "/path/to/file.html");
+		CHECK_EQ(fragment, "fragment");
+	}
+
+	SUBCASE("Invalid Scheme") {
+		Error err = String("http_://example.com").parse_url(scheme, host, port, path, fragment);
+		REQUIRE(err == ERR_INVALID_PARAMETER); // Host being empty is an error.
+	}
+
+	SUBCASE("Scheme vs Fragment") {
+		Error err = String("google.com/#goto=http://redirect_url/").parse_url(scheme, host, port, path, fragment);
+		REQUIRE(err == OK);
+		CHECK_EQ(scheme, "");
+		CHECK_EQ(host, "google.com");
+		CHECK_EQ(port, 0);
+		CHECK_EQ(path, "/");
+		CHECK_EQ(fragment, "goto=http://redirect_url/");
+	}
+}
+
 TEST_CASE("[Stress][String] Empty via ' == String()'") {
 	for (int i = 0; i < 100000; ++i) {
 		String str = "Hello World!";
