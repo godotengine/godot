@@ -614,9 +614,9 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 
 	updating_tree = true;
 	tree->clear();
+	last_hash = hash_djb2_one_64(0);
 	if (get_scene_node()) {
 		_add_nodes(get_scene_node(), nullptr);
-		last_hash = hash_djb2_one_64(0);
 		_compute_hash(get_scene_node(), last_hash);
 	}
 	updating_tree = false;
