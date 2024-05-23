@@ -74,37 +74,6 @@ repos:
   #       files: ^(doc/classes|.*/doc_classes)/.*\.xml$
   #       args: [--schema, doc/class.xsd]
 
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.46.0
-    hooks:
-      - id: eslint
-        name: eslint-engine
-        files: ^(platform/web/js/engine/|js/jsdoc2rst/).*\.js$
-        args: [--fix, --no-eslintrc, --config, platform/web/.eslintrc.engine.js]
-        additional_dependencies: &eslint-deps
-          - eslint@8.46.0
-          - eslint-config-airbnb-base@15.0.0
-          - eslint-plugin-import@2.28.0
-          - eslint-plugin-html@7.1.0
-          - '@html-eslint/eslint-plugin@0.19.1'
-          - '@html-eslint/parser@0.19.1'
-      - id: eslint
-        name: eslint-libs
-        files: ^(platform/web/js/libs/|modules/).*\.js$
-        args: [--fix, --no-eslintrc, --config, platform/web/.eslintrc.libs.js]
-        additional_dependencies: *eslint-deps
-      - id: eslint
-        name: eslint-sw
-        files: ^misc/dist/html/service-worker\.js$
-        args: [--fix, --no-eslintrc, --config, platform/web/.eslintrc.sw.js]
-        additional_dependencies: *eslint-deps
-      - id: eslint
-        name: eslint-html
-        files: ^misc/dist/html/.*\.html$
-        types: [html]
-        args: [--fix, --no-eslintrc, --config, platform/web/.eslintrc.html.js]
-        additional_dependencies: *eslint-deps
-
   - repo: local
     hooks:
       - id: make-rst
@@ -119,6 +88,22 @@ repos:
         language: python
         entry: python3 doc/tools/doc_status.py
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
+
+      - id: eslint
+        name: eslint
+        language: node
+        entry: eslint
+        files: ^(platform/web/js/|modules/|misc/dist/html/).*\.(js|html)$
+        args: [--fix, --no-warn-ignored, --no-config-lookup, --config, platform/web/eslint.config.cjs]
+        additional_dependencies:
+          - '@eslint/js@^9.3.0'
+          - '@html-eslint/eslint-plugin@^0.24.1'
+          - '@html-eslint/parser@^0.24.1'
+          - '@stylistic/eslint-plugin@^2.1.0'
+          - 'eslint@^9.3.0'
+          - 'eslint-plugin-html@^8.1.1'
+          - 'globals@^15.3.0'
+          - 'espree@^10.0.1'
 
       - id: jsdoc
         name: jsdoc
