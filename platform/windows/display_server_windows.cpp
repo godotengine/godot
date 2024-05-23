@@ -3401,6 +3401,19 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 void DisplayServerWindows::set_context(Context p_context) {
 }
 
+bool DisplayServerWindows::is_window_transparency_available() const {
+	BOOL dwm_enabled = true;
+	if (DwmIsCompositionEnabled(&dwm_enabled) == S_OK) { // Note: Always enabled on Windows 8+, this check can be removed after Windows 7 support is dropped.
+		if (!dwm_enabled) {
+			return false;
+		}
+	}
+	if (rendering_device && !rendering_device->is_composite_alpha_supported()) {
+		return false;
+	}
+	return OS::get_singleton()->is_layered_allowed();
+}
+
 #define MI_WP_SIGNATURE 0xFF515700
 #define SIGNATURE_MASK 0xFFFFFF00
 // Keeping the name suggested by Microsoft, but this macro really answers:

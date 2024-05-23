@@ -2646,6 +2646,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 				break;
 			}
 		}
+		has_comp_alpha[(uint64_t)p_cmd_queue.id] = (composite_alpha != VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
 	}
 
 	VkSwapchainCreateInfoKHR swap_create_info = {};
@@ -4943,6 +4944,13 @@ String RenderingDeviceDriverVulkan::get_pipeline_cache_uuid() const {
 
 const RDD::Capabilities &RenderingDeviceDriverVulkan::get_capabilities() const {
 	return device_capabilities;
+}
+
+bool RenderingDeviceDriverVulkan::is_composite_alpha_supported(CommandQueueID p_queue) const {
+	if (has_comp_alpha.has((uint64_t)p_queue.id)) {
+		return has_comp_alpha[(uint64_t)p_queue.id];
+	}
+	return false;
 }
 
 /******************/

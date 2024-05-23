@@ -530,6 +530,8 @@ public:
 
 	virtual void set_context(Context p_context) override;
 
+	virtual bool is_window_transparency_available() const override;
+
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 

@@ -4734,6 +4734,10 @@ String RenderingDevice::get_device_api_name() const {
 	return driver->get_api_name();
 }
 
+bool RenderingDevice::is_composite_alpha_supported() const {
+	return driver->is_composite_alpha_supported(main_queue);
+}
+
 String RenderingDevice::get_device_api_version() const {
 	return driver->get_api_version();
 }

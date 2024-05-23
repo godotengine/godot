@@ -930,6 +930,12 @@
 				Returns [code]true[/code] if touch events are available (Android or iOS), the capability is detected on the Web platform or if [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is [code]true[/code].
 			</description>
 		</method>
+		<method name="is_window_transparency_available" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the window background can be made transparent. This method returns [code]false[/code] if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code], or if transparency is not supported by the renderer or OS compositor.
+			</description>
+		</method>
 		<method name="keyboard_get_current_layout" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -2045,7 +2051,7 @@
 		</constant>
 		<constant name="WINDOW_FLAG_TRANSPARENT" value="3" enum="WindowFlags">
 			The window background can be transparent.
-			[b]Note:[/b] This flag has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
+			[b]Note:[/b] This flag has no effect if [method is_window_transparency_available] returns [code]false[/code].
 			[b]Note:[/b] Transparency support is implemented on Linux (X11/Wayland), macOS, and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
 		</constant>
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
