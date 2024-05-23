@@ -304,6 +304,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_project_only"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/delete_old_export_files_unconditionally"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/generate_simulator_library_if_missing"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/supports_indirect_input"), true));
 
 	Vector<PluginConfigIOS> found_plugins = get_plugins();
 	for (int i = 0; i < found_plugins.size(); i++) {
@@ -850,6 +851,9 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 				}
 			}
 			strnew += "\t</array>\n";
+		} else if (lines[i].contains("$ui_indirect_events")) {
+			bool ind = p_preset->get("application/supports_indirect_input");
+			strnew += lines[i].replace("$ui_indirect_events", ind ? "<true/>" : "<false/>") + "\n";
 		} else {
 			strnew += lines[i] + "\n";
 		}

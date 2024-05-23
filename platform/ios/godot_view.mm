@@ -30,9 +30,11 @@
 
 #import "godot_view.h"
 
+#import "app_delegate.h"
 #import "display_layer.h"
 #import "display_server_ios.h"
 #import "godot_view_renderer.h"
+#import "view_controller.h"
 
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
@@ -355,6 +357,9 @@ static const float earth_gravity = 9.80665;
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
 	for (UITouch *touch in touches) {
+		if (touch.type != UITouchTypeDirect && touch.type != UITouchTypePencil && AppDelegate.viewController.hasMouse) {
+			continue;
+		}
 		int tid = [self getTouchIDForTouch:touch];
 		ERR_FAIL_COND(tid == -1);
 		CGPoint touchPoint = [touch locationInView:self];
@@ -364,6 +369,9 @@ static const float earth_gravity = 9.80665;
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
 	for (UITouch *touch in touches) {
+		if (touch.type != UITouchTypeDirect && touch.type != UITouchTypePencil && AppDelegate.viewController.hasMouse) {
+			continue;
+		}
 		int tid = [self getTouchIDForTouch:touch];
 		ERR_FAIL_COND(tid == -1);
 		CGPoint touchPoint = [touch locationInView:self];
@@ -376,6 +384,10 @@ static const float earth_gravity = 9.80665;
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
 	for (UITouch *touch in touches) {
+		if (touch.type != UITouchTypeDirect && touch.type != UITouchTypePencil && AppDelegate.viewController.hasMouse) {
+			[self removeTouch:touch];
+			continue;
+		}
 		int tid = [self getTouchIDForTouch:touch];
 		ERR_FAIL_COND(tid == -1);
 		[self removeTouch:touch];
@@ -386,6 +398,9 @@ static const float earth_gravity = 9.80665;
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
 	for (UITouch *touch in touches) {
+		if (touch.type != UITouchTypeDirect && touch.type != UITouchTypePencil && AppDelegate.viewController.hasMouse) {
+			continue;
+		}
 		int tid = [self getTouchIDForTouch:touch];
 		ERR_FAIL_COND(tid == -1);
 		DisplayServerIOS::get_singleton()->touches_canceled(tid);

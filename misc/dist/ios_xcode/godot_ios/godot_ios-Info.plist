@@ -58,6 +58,9 @@
 	</array>
 	$additional_plist_content
 	$plist_launch_screen_name
-	<key>CADisableMinimumFrameDurationOnPhone</key><true/>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	$ui_indirect_events
 </dict>
 </plist>

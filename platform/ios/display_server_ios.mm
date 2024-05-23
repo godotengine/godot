@@ -773,6 +773,30 @@ bool DisplayServerIOS::has_hardware_keyboard() const {
 	}
 }
 
+void DisplayServerIOS::mouse_set_mode(DisplayServer::MouseMode p_mode) {
+	if (mouse_mode == p_mode) {
+		return;
+	}
+	ERR_FAIL_COND_MSG(p_mode == DisplayServer::MouseMode::MOUSE_MODE_HIDDEN || p_mode == DisplayServer::MouseMode::MOUSE_MODE_CONFINED || p_mode == DisplayServer::MouseMode::MOUSE_MODE_CONFINED_HIDDEN, "Confined and hidden mouse modes not supported.");
+
+	mouse_mode = p_mode;
+	if (@available(iOS 14, *)) {
+		[AppDelegate.viewController setNeedsUpdateOfPrefersPointerLocked];
+	}
+}
+
+DisplayServer::MouseMode DisplayServerIOS::mouse_get_mode() const {
+	return mouse_mode;
+}
+
+BitField<MouseButtonMask> DisplayServerIOS::mouse_get_button_state() const {
+	if (@available(iOS 14, *)) {
+		return [AppDelegate.viewController mouseGetButtonState];
+	} else {
+		return 0;
+	}
+}
+
 void DisplayServerIOS::clipboard_set(const String &p_text) {
 	[UIPasteboard generalPasteboard].string = [NSString stringWithUTF8String:p_text.utf8()];
 }
