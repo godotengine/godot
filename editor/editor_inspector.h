@@ -344,7 +344,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 		MODE_NONE,
 		MODE_USE_COUNT_PROPERTY,
 		MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION,
-	} mode;
+	} mode = MODE_NONE;
 	StringName count_property;
 	StringName array_element_prefix;
 	String swap_method;
