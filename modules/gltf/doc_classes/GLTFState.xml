@@ -275,6 +275,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="bake_fps" type="float" setter="set_bake_fps" getter="get_bake_fps" default="30.0">
+			The baking fps of the animation for either import or export.
+		</member>
 		<member name="base_path" type="String" setter="set_base_path" getter="get_base_path" default="&quot;&quot;">
 			The folder path associated with this GLTF data. This is used to find other files the GLTF file references, like images or binary buffers. This will be set during import when appending from a file, and will be set during export when writing to a file.
 		</member>

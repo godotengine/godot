@@ -62,6 +62,7 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
 		state->set_import_as_skeleton_bones(true);
 	}
+	state->set_bake_fps(p_options["animation/fps"]);
 	Error err = gltf->append_from_file(p_path, state, p_flags);
 	if (err != OK) {
 		if (r_err) {
@@ -75,9 +76,9 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 
 #ifndef DISABLE_DEPRECATED
 	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
-	return gltf->generate_scene(state, (float)p_options["animation/fps"], trimming, false);
+	return gltf->generate_scene(state, state->get_bake_fps(), trimming, false);
 #else
-	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], false);
+	return gltf->generate_scene(state, state->get_bake_fps(), (bool)p_options["animation/trimming"], false);
 #endif
 }
 

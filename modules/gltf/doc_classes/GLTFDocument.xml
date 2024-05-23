@@ -60,6 +60,7 @@
 			<param index="3" name="remove_immutable_tracks" type="bool" default="true" />
 			<description>
 				Takes a [GLTFState] object through the [param state] parameter and returns a Godot Engine scene node.
+				The [param bake_fps] parameter overrides the bake_fps in [param state].
 			</description>
 		</method>
 		<method name="register_gltf_document_extension" qualifiers="static">
