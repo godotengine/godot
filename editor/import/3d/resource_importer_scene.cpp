@@ -279,7 +279,7 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 		}
 	}
 
-	if (animation_importer && (p_option.begins_with("nodes/") || p_option.begins_with("meshes/") || p_option.begins_with("skins/"))) {
+	if (animation_importer && (p_option == "nodes/root_type" || p_option == "nodes/root_name" || p_option.begins_with("meshes/") || p_option.begins_with("skins/"))) {
 		return false; // Nothing to do here for animations.
 	}
 
