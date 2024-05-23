@@ -4107,7 +4107,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	return OK;
 }
 
-HashMap<StringName, Variant> EditorNode::get_modified_properties_for_node(Node *p_node) {
+HashMap<StringName, Variant> EditorNode::get_modified_properties_for_node(Node *p_node, bool p_node_references_only) {
 	HashMap<StringName, Variant> modified_property_map;
 
 	List<PropertyInfo> pinfo;
@@ -4119,7 +4119,17 @@ HashMap<StringName, Variant> EditorNode::get_modified_properties_for_node(Node *
 			Variant current_value = p_node->get(E.name);
 			if (is_valid_revert) {
 				if (PropertyUtils::is_property_value_different(current_value, revert_value)) {
-					modified_property_map[E.name] = current_value;
+					// If this property is a direct node reference, save a NodePath instead to prevent corrupted references.
+					if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
+						Node *target_node = Object::cast_to<Node>(current_value);
+						if (target_node) {
+							modified_property_map[E.name] = p_node->get_path_to(target_node);
+						}
+					} else {
+						if (!p_node_references_only) {
+							modified_property_map[E.name] = current_value;
+						}
+					}
 				}
 			}
 		}
@@ -4137,9 +4147,117 @@ void EditorNode::update_ownership_table_for_addition_node_ancestors(Node *p_curr
 	}
 }
 
-void EditorNode::update_diff_data_for_node(
-		Node *p_edited_scene,
+void EditorNode::update_node_from_node_modification_entry(Node *p_node, ModificationNodeEntry &p_node_modification) {
+	if (p_node) {
+		// First, attempt to restore the script property since it may affect the get_property_list method.
+		Variant *script_property_table_entry = p_node_modification.property_table.getptr(CoreStringName(script));
+		if (script_property_table_entry) {
+			p_node->set_script(*script_property_table_entry);
+		}
+
+		// Get properties for this node.
+		List<PropertyInfo> pinfo;
+		p_node->get_property_list(&pinfo);
+
+		// Get names of all valid property names.
+		HashMap<StringName, bool> property_node_reference_table;
+		for (const PropertyInfo &E : pinfo) {
+			if (E.usage & PROPERTY_USAGE_STORAGE) {
+				if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
+					property_node_reference_table[E.name] = true;
+				} else {
+					property_node_reference_table[E.name] = false;
+				}
+			}
+		}
+
+		// Restore the modified properties for this node.
+		for (const KeyValue<StringName, Variant> &E : p_node_modification.property_table) {
+			bool *property_node_reference_table_entry = property_node_reference_table.getptr(E.key);
+			if (property_node_reference_table_entry) {
+				// If the property is a node reference, attempt to restore from the node path instead.
+				bool is_node_reference = *property_node_reference_table_entry;
+				if (is_node_reference) {
+					if (E.value.get_type() == Variant::NODE_PATH) {
+						p_node->set(E.key, p_node->get_node_or_null(E.value));
+					}
+				} else {
+					p_node->set(E.key, E.value);
+				}
+			}
+		}
+
+		// Restore the connections to other nodes.
+		for (const ConnectionWithNodePath &E : p_node_modification.connections_to) {
+			Connection conn = E.connection;
+
+			// Get the node the callable is targeting.
+			Node *target_node = Object::cast_to<Node>(conn.callable.get_object());
+
+			// If the callable object no longer exists or is marked for deletion,
+			// attempt to reaccquire the closest match by using the node path
+			// we saved earlier.
+			if (!target_node || !target_node->is_queued_for_deletion()) {
+				target_node = p_node->get_node_or_null(E.node_path);
+			}
+
+			if (target_node) {
+				// Reconstruct the callable.
+				Callable new_callable = Callable(target_node, conn.callable.get_method());
+
+				if (!p_node->is_connected(conn.signal.get_name(), new_callable)) {
+					ERR_FAIL_COND(p_node->connect(conn.signal.get_name(), new_callable, conn.flags) != OK);
+				}
+			}
+		}
+
+		// Restore the connections from other nodes.
+		for (const Connection &E : p_node_modification.connections_from) {
+			Connection conn = E;
+
+			bool valid = p_node->has_method(conn.callable.get_method()) || Ref<Script>(p_node->get_script()).is_null() || Ref<Script>(p_node->get_script())->has_method(conn.callable.get_method());
+			ERR_CONTINUE_MSG(!valid, vformat("Attempt to connect signal '%s.%s' to nonexistent method '%s.%s'.", conn.signal.get_object()->get_class(), conn.signal.get_name(), conn.callable.get_object()->get_class(), conn.callable.get_method()));
+
+			// Get the object which the signal is connected from.
+			Object *source_object = conn.signal.get_object();
+
+			if (source_object) {
+				ERR_FAIL_COND(source_object->connect(conn.signal.get_name(), Callable(p_node, conn.callable.get_method()), conn.flags) != OK);
+			}
+		}
+
+		// Re-add the groups.
+		for (const Node::GroupInfo &E : p_node_modification.groups) {
+			p_node->add_to_group(E.name, E.persistent);
+		}
+	}
+}
+
+void EditorNode::update_node_reference_modification_table_for_node(
 		Node *p_root,
+		Node *p_node,
+		List<Node *> p_excluded_nodes,
+		HashMap<NodePath, ModificationNodeEntry> &p_modification_table) {
+	if (!p_excluded_nodes.find(p_node)) {
+		HashMap<StringName, Variant> modified_properties = get_modified_properties_for_node(p_node, false);
+
+		if (!modified_properties.is_empty()) {
+			ModificationNodeEntry modification_node_entry;
+			modification_node_entry.property_table = modified_properties;
+
+			p_modification_table[p_root->get_path_to(p_node)] = modification_node_entry;
+		}
+
+		for (int i = 0; i < p_node->get_child_count(); i++) {
+			Node *child = p_node->get_child(i);
+			update_node_reference_modification_table_for_node(p_root, child, p_excluded_nodes, p_modification_table);
+		}
+	}
+}
+
+void EditorNode::update_reimported_diff_data_for_node(
+		Node *p_edited_scene,
+		Node *p_reimported_root,
 		Node *p_node,
 		HashMap<NodePath, ModificationNodeEntry> &p_modification_table,
 		List<AdditiveNodeEntry> &p_addition_list) {
@@ -4150,14 +4268,14 @@ void EditorNode::update_diff_data_for_node(
 	// Loop through the owners until either we reach the root node or nullptr
 	Node *valid_node_owner = p_node->get_owner();
 	while (valid_node_owner) {
-		if (valid_node_owner == p_root) {
+		if (valid_node_owner == p_reimported_root) {
 			break;
 		}
 		valid_node_owner = valid_node_owner->get_owner();
 	}
 
-	if ((valid_node_owner == p_root && (p_root != p_edited_scene || !p_edited_scene->get_scene_file_path().is_empty())) || node_part_of_subscene || p_node == p_root) {
-		HashMap<StringName, Variant> modified_properties = get_modified_properties_for_node(p_node);
+	if ((valid_node_owner == p_reimported_root && (p_reimported_root != p_edited_scene || !p_edited_scene->get_scene_file_path().is_empty())) || node_part_of_subscene || p_node == p_reimported_root) {
+		HashMap<StringName, Variant> modified_properties = get_modified_properties_for_node(p_node, false);
 
 		// Find all valid connections to other nodes.
 		List<Connection> connections_to;
@@ -4189,7 +4307,7 @@ void EditorNode::update_diff_data_for_node(
 			if (source_node) {
 				valid_source_owner = source_node->get_owner();
 				while (valid_source_owner) {
-					if (valid_source_owner == p_root) {
+					if (valid_source_owner == p_reimported_root) {
 						break;
 					}
 					valid_source_owner = valid_source_owner->get_owner();
@@ -4215,46 +4333,55 @@ void EditorNode::update_diff_data_for_node(
 			modification_node_entry.connections_from = valid_connections_from;
 			modification_node_entry.groups = groups;
 
-			p_modification_table[p_root->get_path_to(p_node)] = modification_node_entry;
+			p_modification_table[p_reimported_root->get_path_to(p_node)] = modification_node_entry;
 		}
 	} else {
 		// Only save additional nodes which have an owner since this was causing issues transient ownerless nodes
 		// which get recreated upon scene tree entry.
 		// For now instead, assume all ownerless nodes are transient and will have to be recreated.
 		if (p_node->get_owner()) {
-			AdditiveNodeEntry new_additive_node_entry;
-			new_additive_node_entry.node = p_node;
-			new_additive_node_entry.parent = p_root->get_path_to(p_node->get_parent());
-			new_additive_node_entry.owner = p_node->get_owner();
-			new_additive_node_entry.index = p_node->get_index();
+			HashMap<StringName, Variant> modified_properties = get_modified_properties_for_node(p_node, true);
 
-			Node2D *node_2d = Object::cast_to<Node2D>(p_node);
-			if (node_2d) {
-				new_additive_node_entry.transform_2d = node_2d->get_relative_transform_to_parent(node_2d->get_parent());
+			if (p_node->get_parent()->get_owner() != nullptr && p_node->get_parent()->get_owner() != p_edited_scene) {
+				AdditiveNodeEntry new_additive_node_entry;
+				new_additive_node_entry.node = p_node;
+				new_additive_node_entry.parent = p_reimported_root->get_path_to(p_node->get_parent());
+				new_additive_node_entry.owner = p_node->get_owner();
+				new_additive_node_entry.index = p_node->get_index();
+
+				Node2D *node_2d = Object::cast_to<Node2D>(p_node);
+				if (node_2d) {
+					new_additive_node_entry.transform_2d = node_2d->get_relative_transform_to_parent(node_2d->get_parent());
+				}
+				Node3D *node_3d = Object::cast_to<Node3D>(p_node);
+				if (node_3d) {
+					new_additive_node_entry.transform_3d = node_3d->get_relative_transform(node_3d->get_parent());
+				}
+
+				// Gathers the ownership of all ancestor nodes for later use.
+				HashMap<Node *, Node *> ownership_table;
+				for (int i = 0; i < p_node->get_child_count(); i++) {
+					Node *child = p_node->get_child(i);
+					update_ownership_table_for_addition_node_ancestors(child, ownership_table);
+				}
+
+				new_additive_node_entry.ownership_table = ownership_table;
+
+				p_addition_list.push_back(new_additive_node_entry);
 			}
-			Node3D *node_3d = Object::cast_to<Node3D>(p_node);
-			if (node_3d) {
-				new_additive_node_entry.transform_3d = node_3d->get_relative_transform(node_3d->get_parent());
+
+			if (!modified_properties.is_empty()) {
+				ModificationNodeEntry modification_node_entry;
+				modification_node_entry.property_table = modified_properties;
+
+				p_modification_table[p_reimported_root->get_path_to(p_node)] = modification_node_entry;
 			}
-
-			// Gathers the ownership of all ancestor nodes for later use.
-			HashMap<Node *, Node *> ownership_table;
-			for (int i = 0; i < p_node->get_child_count(); i++) {
-				Node *child = p_node->get_child(i);
-				update_ownership_table_for_addition_node_ancestors(child, ownership_table);
-			}
-
-			new_additive_node_entry.ownership_table = ownership_table;
-
-			p_addition_list.push_back(new_additive_node_entry);
 		}
-
-		return;
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *child = p_node->get_child(i);
-		update_diff_data_for_node(p_edited_scene, p_root, child, p_modification_table, p_addition_list);
+		update_reimported_diff_data_for_node(p_edited_scene, p_reimported_root, child, p_modification_table, p_addition_list);
 	}
 }
 //
@@ -5684,12 +5811,16 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 			// Update the version
 			editor_data.is_scene_changed(current_scene_idx);
 
+			// Contains modifications in the edited scene which reference nodes inside of any nodes we will be reimporting.
+			HashMap<NodePath, ModificationNodeEntry> edited_scene_global_modification_table;
+			update_node_reference_modification_table_for_node(current_edited_scene, current_edited_scene, edited_scene_map_elem.value, edited_scene_global_modification_table);
+
 			for (Node *original_node : edited_scene_map_elem.value) {
 				// Walk the tree for the current node and extract relevant diff data, storing it in the modification table.
 				// For additional nodes which are part of the current scene, they get added to the addition table.
 				HashMap<NodePath, ModificationNodeEntry> modification_table;
 				List<AdditiveNodeEntry> addition_list;
-				update_diff_data_for_node(current_edited_scene, original_node, original_node, modification_table, addition_list);
+				update_reimported_diff_data_for_node(current_edited_scene, original_node, original_node, modification_table, addition_list);
 
 				// Disconnect all relevant connections, all connections from and persistent connections to.
 				for (const KeyValue<NodePath, ModificationNodeEntry> &modification_table_entry : modification_table) {
@@ -5897,72 +6028,20 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 					NodePath new_current_path = E.key;
 					Node *modifiable_node = instantiated_node->get_node_or_null(new_current_path);
 
-					if (modifiable_node) {
-						// Get properties for this node.
-						List<PropertyInfo> pinfo;
-						modifiable_node->get_property_list(&pinfo);
-
-						// Get names of all valid property names (TODO: make this more efficient).
-						List<String> property_names;
-						for (const PropertyInfo &E2 : pinfo) {
-							if (E2.usage & PROPERTY_USAGE_STORAGE) {
-								property_names.push_back(E2.name);
-							}
-						}
-
-						// Restore the modified properties for this node.
-						for (const KeyValue<StringName, Variant> &E2 : E.value.property_table) {
-							if (property_names.find(E2.key)) {
-								modifiable_node->set(E2.key, E2.value);
-							}
-						}
-						// Restore the connections to other nodes.
-						for (const ConnectionWithNodePath &E2 : E.value.connections_to) {
-							Connection conn = E2.connection;
-
-							// Get the node the callable is targeting.
-							Node *target_node = cast_to<Node>(conn.callable.get_object());
-
-							// If the callable object no longer exists or is marked for deletion,
-							// attempt to reaccquire the closest match by using the node path
-							// we saved earlier.
-							if (!target_node || !target_node->is_queued_for_deletion()) {
-								target_node = modifiable_node->get_node_or_null(E2.node_path);
-							}
-
-							if (target_node) {
-								// Reconstruct the callable.
-								Callable new_callable = Callable(target_node, conn.callable.get_method());
-
-								if (!modifiable_node->is_connected(conn.signal.get_name(), new_callable)) {
-									ERR_FAIL_COND(modifiable_node->connect(conn.signal.get_name(), new_callable, conn.flags) != OK);
-								}
-							}
-						}
-
-						// Restore the connections from other nodes.
-						for (const Connection &E2 : E.value.connections_from) {
-							Connection conn = E2;
-
-							bool valid = modifiable_node->has_method(conn.callable.get_method()) || Ref<Script>(modifiable_node->get_script()).is_null() || Ref<Script>(modifiable_node->get_script())->has_method(conn.callable.get_method());
-							ERR_CONTINUE_MSG(!valid, vformat("Attempt to connect signal '%s.%s' to nonexistent method '%s.%s'.", conn.signal.get_object()->get_class(), conn.signal.get_name(), conn.callable.get_object()->get_class(), conn.callable.get_method()));
-
-							// Get the object which the signal is connected from.
-							Object *source_object = conn.signal.get_object();
-
-							if (source_object) {
-								ERR_FAIL_COND(source_object->connect(conn.signal.get_name(), Callable(modifiable_node, conn.callable.get_method()), conn.flags) != OK);
-							}
-						}
-
-						// Re-add the groups.
-						for (const Node::GroupInfo &E2 : E.value.groups) {
-							modifiable_node->add_to_group(E2.name, E2.persistent);
-						}
-					}
+					update_node_from_node_modification_entry(modifiable_node, E.value);
 				}
 				// Add the newly instantiated node to the edited scene's replaced node list.
 				replaced_nodes.push_back(instantiated_node);
+			}
+
+			// Attempt to restore the modified properties and signals for the instantitated node and all its owned children.
+			for (KeyValue<NodePath, ModificationNodeEntry> &E : edited_scene_global_modification_table) {
+				NodePath new_current_path = E.key;
+				Node *modifiable_node = current_edited_scene->get_node_or_null(new_current_path);
+
+				if (modifiable_node) {
+					update_node_from_node_modification_entry(modifiable_node, E.value);
+				}
 			}
 
 			// Cleanup the history of the changes.
